@@ -7,6 +7,7 @@ import com.siemens.cto.aem.common.request.state.SetStateRequest;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.common.domain.model.jvm.message.JvmStateMessage;
+import com.siemens.cto.aem.service.MapWrapper;
 import com.siemens.cto.aem.service.MessagingService;
 import com.siemens.cto.aem.service.group.GroupStateNotificationService;
 import com.siemens.cto.aem.service.jvm.JvmService;
@@ -20,7 +21,6 @@ import javax.jms.JMSException;
 import javax.jms.MapMessage;
 import javax.jms.Message;
 import javax.jms.MessageListener;
-import java.util.Map;
 
 public class JvmStateMessageListener implements MessageListener {
 
@@ -30,18 +30,18 @@ public class JvmStateMessageListener implements MessageListener {
     private final JvmService jvmService;
     private final MessagingService messagingService;
     private final GroupStateNotificationService groupStateNotificationService;
-    private final Map<Identifier<Jvm>, CurrentState<Jvm, JvmState>> stateMap;
+    private final MapWrapper<Identifier<Jvm>, CurrentState<Jvm, JvmState>> stateMapWrapper;
 
-    public JvmStateMessageListener(final JvmStateMapMessageConverter theConverter,
+    public JvmStateMessageListener(final JvmStateMapMessageConverter converter,
                                    final JvmService jvmService,
                                    final MessagingService messagingTemplate,
                                    final GroupStateNotificationService groupStateNotificationService,
-                                   final Map stateMap) {
-        converter = theConverter;
+                                   final MapWrapper stateMapWrapper) {
+        this.converter = converter;
         this.jvmService = jvmService;
         this.messagingService = messagingTemplate;
         this.groupStateNotificationService = groupStateNotificationService;
-        this.stateMap = stateMap;
+        this.stateMapWrapper = stateMapWrapper;
     }
 
     @Override
@@ -87,15 +87,15 @@ public class JvmStateMessageListener implements MessageListener {
     private boolean isStateChangedAndOrMsgNotEmpty(CurrentState<Jvm, JvmState> newState) {
         boolean stateAndOrMsgChanged = false;
 
-        if (!stateMap.containsKey(newState.getId()) ||
-            !stateMap.get(newState.getId()).getState().equals(newState.getState())) {
-                stateMap.put(newState.getId(), newState);
+        if (!stateMapWrapper.getMap().containsKey(newState.getId()) ||
+            !stateMapWrapper.getMap().get(newState.getId()).getState().equals(newState.getState())) {
+                stateMapWrapper.getMap().put(newState.getId(), newState);
                 stateAndOrMsgChanged = true;
         }
 
-        if (StringUtils.isNotEmpty(newState.getMessage()) && (!stateMap.containsKey(newState.getId()) ||
-            !stateMap.get(newState.getId()).getMessage().equals(newState.getMessage()))) {
-                stateMap.put(newState.getId(), newState);
+        if (StringUtils.isNotEmpty(newState.getMessage()) && (!stateMapWrapper.getMap().containsKey(newState.getId()) ||
+            !stateMapWrapper.getMap().get(newState.getId()).getMessage().equals(newState.getMessage()))) {
+                stateMapWrapper.getMap().put(newState.getId(), newState);
                 stateAndOrMsgChanged = true;
         }
         return stateAndOrMsgChanged;

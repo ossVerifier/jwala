@@ -6,7 +6,10 @@ import com.siemens.cto.aem.commandprocessor.CommandExecutor;
 import com.siemens.cto.aem.commandprocessor.impl.jsch.JschBuilder;
 import com.siemens.cto.aem.commandprocessor.jsch.impl.ChannelSessionKey;
 import com.siemens.cto.aem.commandprocessor.jsch.impl.KeyedPooledJschChannelFactory;
+import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.ssh.SshConfiguration;
+import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
+import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState;
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.control.configuration.AemCommandExecutorConfig;
 import com.siemens.cto.aem.control.configuration.AemSshConfig;
@@ -304,6 +307,22 @@ public class AemServiceConfiguration implements SchedulingConfigurer {
         return threadPoolTaskExecutor;
     }
 
+    @Bean(name = "jvmTaskExecutor")
+    public TaskExecutor getJvmTaskExecutor(@Qualifier("pollingThreadFactory") final ThreadFactory threadFactory,
+                                                 @Value("${jvm.thread-task-executor.pool.size}") final int corePoolSize,
+                                                 @Value("${jvm.thread-task-executor.pool.max-size}") final int maxPoolSize,
+                                                 @Value("${jvm.thread-task-executor.pool.queue-capacity}") final int queueCapacity,
+                                                 @Value("${jvm.thread-task-executor.pool.keep-alive-sec}") final int keepAliveSeconds) {
+        final ThreadPoolTaskExecutor threadPoolTaskExecutor = new ThreadPoolTaskExecutor();
+        threadPoolTaskExecutor.setCorePoolSize(corePoolSize);
+        threadPoolTaskExecutor.setMaxPoolSize(maxPoolSize);
+        threadPoolTaskExecutor.setQueueCapacity(queueCapacity);
+        threadPoolTaskExecutor.setKeepAliveSeconds(keepAliveSeconds);
+        threadPoolTaskExecutor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
+        threadPoolTaskExecutor.setThreadFactory(threadFactory);
+        return threadPoolTaskExecutor;
+    }
+
     @Bean
     public HistoryService getHistoryService(final HistoryCrudService historyCrudService) {
         return new HistoryServiceImpl(historyCrudService);
@@ -328,8 +347,8 @@ public class AemServiceConfiguration implements SchedulingConfigurer {
     }
 
     @Bean(name = "webServerStateMapWrapper")
-    MapWrapper getWebServerStateMapWrapper() {
-        return new MapWrapper(new HashedMap());
+    MapWrapper<Identifier<WebServer>, WebServerReachableState> getWebServerStateMapWrapper() {
+        return new MapWrapper<>(new HashedMap());
     }
 
     @Override

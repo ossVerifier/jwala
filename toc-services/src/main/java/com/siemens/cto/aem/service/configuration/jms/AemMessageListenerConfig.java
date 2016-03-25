@@ -1,7 +1,12 @@
 package com.siemens.cto.aem.service.configuration.jms;
 
+import com.siemens.cto.aem.common.domain.model.id.Identifier;
+import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
+import com.siemens.cto.aem.common.domain.model.state.CurrentState;
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.persistence.service.JvmPersistenceService;
+import com.siemens.cto.aem.service.MapWrapper;
 import com.siemens.cto.aem.service.MessagingService;
 import com.siemens.cto.aem.service.configuration.service.AemServiceConfiguration;
 import com.siemens.cto.aem.service.group.GroupStateNotificationService;
@@ -18,7 +23,6 @@ import org.springframework.transaction.PlatformTransactionManager;
 import javax.jms.MessageListener;
 import javax.jms.Session;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 @Configuration
@@ -64,15 +68,15 @@ public class AemMessageListenerConfig {
         return container;
     }
 
-    @Bean
-    public Map getJvmCurrentStateMap() {
-        return new HashMap();
+    @Bean(name = "jvmStateMapWrapper")
+    public MapWrapper<Identifier<Jvm>, CurrentState<Jvm, JvmState>> getJvmStateMapWrapper() {
+        return new MapWrapper<>(new HashMap());
     }
 
     @Bean
     public MessageListener getJvmStateMessageListener() {
         return new JvmStateMessageListener(new JvmStateMapMessageConverterImpl(), jvmService, messagingService,
-                groupStateNotificationService, getJvmCurrentStateMap());
+                groupStateNotificationService, getJvmStateMapWrapper());
     }
 
 }

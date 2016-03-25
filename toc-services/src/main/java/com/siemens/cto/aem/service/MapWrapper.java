@@ -8,15 +8,15 @@ import java.util.Map;
  *
  * Created by JC043760 on 3/23/2016.
  */
-public class MapWrapper {
+public class MapWrapper<K, V> {
 
-    private final Map map;
+    private final Map<K, V> map;
 
-    public MapWrapper(Map map) {
+    public MapWrapper(Map<K, V> map) {
         this.map = map;
     }
 
-    public Map getMap() {
+    public Map<K, V> getMap() {
         return map;
     }
 

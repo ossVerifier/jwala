@@ -6,6 +6,7 @@ import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.common.domain.model.jvm.message.JvmStateMessage;
 import com.siemens.cto.aem.common.domain.model.state.CurrentState;
 import com.siemens.cto.aem.common.request.state.JvmSetStateRequest;
+import com.siemens.cto.aem.service.MapWrapper;
 import com.siemens.cto.aem.service.MessagingService;
 import com.siemens.cto.aem.service.group.GroupStateNotificationService;
 import com.siemens.cto.aem.service.jvm.JvmService;
@@ -66,7 +67,7 @@ public class JvmStateMessageListenerTest {
         when(stateCommand.getNewState()).thenReturn(newCurrentState);
         when(newCurrentState.getId()).thenReturn(Identifier.<Jvm>id(10L));
         listener = spy(new JvmStateMessageListener(converter, mockJvmService, mockMessagingService,
-                mockGroupStateNotificationService, new HashMap()));
+                mockGroupStateNotificationService, new MapWrapper(new HashMap())));
     }
 
     @Test

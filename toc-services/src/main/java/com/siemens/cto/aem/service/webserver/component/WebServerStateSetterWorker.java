@@ -46,7 +46,7 @@ public class WebServerStateSetterWorker {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(WebServerStateSetterWorker.class);
 
-    private final Map<Identifier<WebServer>, WebServerReachableState> webServerReachableStateMap;
+    private final MapWrapper<Identifier<WebServer>, WebServerReachableState> stateMapWrapper;
     private final WebServerService webServerService;
     private final MessagingService messagingService;
     private final GroupStateNotificationService groupStateNotificationService;
@@ -60,7 +60,7 @@ public class WebServerStateSetterWorker {
                                       final WebServerService webServerService, final MessagingService messagingService,
                                       final GroupStateNotificationService groupStateNotificationService,
                                       final ClientFactoryHelper clientFactoryHelper) {
-        this.webServerReachableStateMap = stateMapWrapper.getMap();
+        this.stateMapWrapper = stateMapWrapper;
         this.webServerService = webServerService;
         this.messagingService = messagingService;
         this.groupStateNotificationService = groupStateNotificationService;
@@ -123,8 +123,8 @@ public class WebServerStateSetterWorker {
      * @return true if web server is starting or stopping
      */
     private boolean isWebServerBusy(final WebServer webServer) {
-        return webServerReachableStateMap.get(webServer.getId()) == WebServerReachableState.WS_START_SENT ||
-                webServerReachableStateMap.get(webServer.getId()) == WebServerReachableState.WS_STOP_SENT;
+        return stateMapWrapper.getMap().get(webServer.getId()) == WebServerReachableState.WS_START_SENT ||
+                stateMapWrapper.getMap().get(webServer.getId()) == WebServerReachableState.WS_STOP_SENT;
     }
 
     /**
