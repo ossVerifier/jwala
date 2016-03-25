@@ -1,6 +1,5 @@
 package com.siemens.cto.aem.service;
 
-import java.util.HashMap;
 import java.util.Map;
 
 /**
