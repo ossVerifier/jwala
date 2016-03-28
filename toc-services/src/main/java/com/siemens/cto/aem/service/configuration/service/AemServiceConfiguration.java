@@ -7,7 +7,10 @@ import com.siemens.cto.aem.commandprocessor.impl.jsch.JschBuilder;
 import com.siemens.cto.aem.commandprocessor.jsch.impl.ChannelSessionKey;
 import com.siemens.cto.aem.commandprocessor.jsch.impl.KeyedPooledJschChannelFactory;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
+import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.common.domain.model.ssh.SshConfiguration;
+import com.siemens.cto.aem.common.domain.model.state.CurrentState;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState;
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
@@ -152,6 +155,10 @@ public class AemServiceConfiguration implements SchedulingConfigurer {
     @Autowired
     private MessagingService messagingService;
 
+    @Autowired
+    @Qualifier("jvmInMemoryStateManagerService")
+    private InMemoryStateManagerService<Identifier<Jvm>, CurrentState<Jvm, JvmState>> jvmInMemoryStateManagerService;
+
     /**
      * Make toc.properties available to spring integration configuration
      * System properties are only used if there is no setting in toc.properties.
@@ -235,7 +242,7 @@ public class AemServiceConfiguration implements SchedulingConfigurer {
     @Bean(name = "webServerControlService")
     public WebServerControlService getWebServerControlService(final HistoryService historyService) {
         return new WebServerControlServiceImpl(getWebServerService(), aemCommandExecutorConfig.getRemoteCommandExecutor(),
-                getInMemoryStateManagerService(), historyService, getStateNotificationService(), messagingTemplate);
+                getWebServerInMemoryStateManagerService(), historyService, getStateNotificationService(), messagingTemplate);
     }
 
     @Bean(name = "webServerCommandService")
@@ -343,7 +350,8 @@ public class AemServiceConfiguration implements SchedulingConfigurer {
 
     @Bean
     public JvmStateReceiverAdapter getSimpleJvmReceiverAdapter() {
-        return new JvmStateReceiverAdapter(getJvmService(), messagingService, groupStateNotificationService);
+        return new JvmStateReceiverAdapter(getJvmService(), messagingService, groupStateNotificationService,
+                jvmInMemoryStateManagerService);
     }
 
     @Bean
@@ -352,7 +360,7 @@ public class AemServiceConfiguration implements SchedulingConfigurer {
     }
 
     @Bean(name = "webServerInMemoryStateManagerService")
-    InMemoryStateManagerService<Identifier<WebServer>, WebServerReachableState> getInMemoryStateManagerService() {
+    InMemoryStateManagerService<Identifier<WebServer>, WebServerReachableState> getWebServerInMemoryStateManagerService() {
         return new InMemoryStateManagerServiceImpl<>();
     }
 

@@ -11,6 +11,7 @@ import com.siemens.cto.aem.service.MessagingService;
 import com.siemens.cto.aem.service.group.GroupStateNotificationService;
 import com.siemens.cto.aem.service.jvm.JvmService;
 import com.siemens.cto.aem.service.jvm.state.jms.listener.message.JvmStateMapMessageConverterImpl;
+import com.siemens.cto.aem.service.state.InMemoryStateManagerService;
 import com.siemens.cto.infrastructure.report.runnable.jms.impl.ReportingJmsMessageKey;
 import org.apache.commons.lang3.StringUtils;
 import org.jgroups.Address;
@@ -22,7 +23,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class JvmStateReceiverAdapter extends ReceiverAdapter {
 
@@ -31,17 +31,16 @@ public class JvmStateReceiverAdapter extends ReceiverAdapter {
     private final JvmService jvmService;
     private final MessagingService messagingTemplate;
     private JvmStateMapMessageConverterImpl converter = new JvmStateMapMessageConverterImpl();
-
-    private static final Map<Identifier<Jvm>, JvmState> JVM_LAST_PERSISTED_STATE_MAP = new ConcurrentHashMap<>();
-    private static final Map<Identifier<Jvm>, String> JVM_LAST_PERSISTED_ERROR_STATUS_MAP = new ConcurrentHashMap<>();
-
     private final GroupStateNotificationService groupStateNotificationService;
+    private final InMemoryStateManagerService<Identifier<Jvm>, CurrentState<Jvm, JvmState>> inMemoryStateManagerService;
 
     public JvmStateReceiverAdapter(final JvmService jvmService, final MessagingService messagingService,
-                                   final GroupStateNotificationService groupStateNotificationService) {
+                                   final GroupStateNotificationService groupStateNotificationService,
+                                   final InMemoryStateManagerService<Identifier<Jvm>, CurrentState<Jvm, JvmState>> inMemoryStateManagerService) {
         this.jvmService = jvmService;
         this.messagingTemplate = messagingService;
         this.groupStateNotificationService = groupStateNotificationService;
+        this.inMemoryStateManagerService = inMemoryStateManagerService;
     }
 
     @Override
@@ -57,13 +56,14 @@ public class JvmStateReceiverAdapter extends ReceiverAdapter {
             final String msg = newState.getMessage();
             final JvmState state = newState.getState();
             final Identifier<Jvm> id = newState.getId();
-            final CurrentState currentState = new CurrentState(id, state, DateTime.now(), StateType.JVM, msg);
+            final CurrentState currentState = new CurrentState<>(id, state, DateTime.now(), StateType.JVM, msg);
             logger.info("Processed JGroups, running update {}", message);
             jvmService.updateState(id, state, msg);
             messagingTemplate.send(currentState);
             groupStateNotificationService.retrieveStateAndSendToATopic(newState.getId(), Jvm.class);
         }
-
+        // Always update the JVM state map even if the state did not change since there's another thread that checks if the state is stale of not!
+        inMemoryStateManagerService.put(newState.getId(), newState);
     }
 
     @Override
@@ -77,18 +77,16 @@ public class JvmStateReceiverAdapter extends ReceiverAdapter {
      * @param newState the latest state
      * @return returns true if the state is not the same compared to the previous state or if there's a message (error message)
      */
-    protected boolean isStateChangedAndOrMsgNotEmpty(CurrentState<Jvm, JvmState> newState) {
+    private boolean isStateChangedAndOrMsgNotEmpty(CurrentState<Jvm, JvmState> newState) {
         boolean stateAndOrMsgChanged = false;
 
-        if (!JVM_LAST_PERSISTED_STATE_MAP.containsKey(newState.getId()) ||
-                !JVM_LAST_PERSISTED_STATE_MAP.get(newState.getId()).equals(newState.getState())) {
-            JVM_LAST_PERSISTED_STATE_MAP.put(newState.getId(), newState.getState());
+        if (!inMemoryStateManagerService.containsKey(newState.getId()) ||
+                !inMemoryStateManagerService.get(newState.getId()).getState().equals(newState.getState())) {
             stateAndOrMsgChanged = true;
         }
 
-        if (StringUtils.isNotEmpty(newState.getMessage()) && (!JVM_LAST_PERSISTED_ERROR_STATUS_MAP.containsKey(newState.getId()) ||
-                !JVM_LAST_PERSISTED_ERROR_STATUS_MAP.get(newState.getId()).equals(newState.getMessage()))) {
-            JVM_LAST_PERSISTED_ERROR_STATUS_MAP.put(newState.getId(), newState.getMessage());
+        if (StringUtils.isNotEmpty(newState.getMessage()) && (!inMemoryStateManagerService.containsKey(newState.getId()) ||
+                !inMemoryStateManagerService.get(newState.getId()).getMessage().equals(newState.getMessage()))) {
             stateAndOrMsgChanged = true;
         }
         return stateAndOrMsgChanged;
