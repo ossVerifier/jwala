@@ -1,11 +1,15 @@
 package com.siemens.cto.aem.service.jvm.impl.spring.component;
 
+import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
+import com.siemens.cto.aem.common.domain.model.state.CurrentState;
+import com.siemens.cto.aem.common.domain.model.state.StateType;
 import com.siemens.cto.aem.service.RemoteCommandReturnInfo;
 import com.siemens.cto.aem.service.jvm.JvmStateService;
 import com.siemens.cto.aem.service.webserver.component.ClientFactoryHelper;
 import org.apache.commons.lang3.StringUtils;
+import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,21 +43,23 @@ public class JvmStateResolverWorker {
     }
 
     @Async("jvmTaskExecutor")
-    public Future pingAndUpdateJvmState(final Jvm jvm, final JvmStateService jvmStateService) {
+    public Future<CurrentState<Jvm, JvmState>> pingAndUpdateJvmState(final Jvm jvm, final JvmStateService jvmStateService) {
         LOGGER.debug("+++ pingAndUpdateJvmState");
         ClientHttpResponse response = null;
+        CurrentState<Jvm, JvmState> currentState = null;
         try {
             response = clientFactoryHelper.requestGet(jvm.getStatusUri());
             LOGGER.debug(">>> Response = {} from JVM {}", response.getStatusCode(), jvm.getId().getId());
             if (response.getStatusCode() == HttpStatus.OK) {
                 jvmStateService.updateNotInMemOrStartedButStaleState(jvm, JvmState.JVM_STARTED, StringUtils.EMPTY);
+                currentState = new CurrentState<>(jvm.getId(), JvmState.JVM_STARTED, DateTime.now(), StateType.JVM);
             } else {
-                verifyStateRemotelyAndDoAnUpdate(jvm, jvmStateService, "Request for '" + jvm.getStatusUri() + "' failed with a response code of '"
-                        + response.getStatusCode() + "'");
+                currentState = verifyStateRemotelyAndDoAnUpdate(jvm, jvmStateService, "Request for '" + jvm.getStatusUri() +
+                        "' failed with a response code of '" + response.getStatusCode() + "'");
             }
         } catch (final IOException ioe) {
             LOGGER.debug("{} {}", jvm.getJvmName(), ioe.getMessage(), ioe);
-            verifyStateRemotelyAndDoAnUpdate(jvm, jvmStateService, ioe.getMessage());
+            currentState = verifyStateRemotelyAndDoAnUpdate(jvm, jvmStateService, ioe.getMessage());
         } catch (final RuntimeException rte) {
             // This method is executed asynchronously and we do not want to interrupt the thread's lifecycle.
             LOGGER.error(rte.getMessage(), rte);
@@ -64,17 +70,18 @@ public class JvmStateResolverWorker {
             }
             LOGGER.debug("--- pingAndUpdateJvmState");
         }
-        return new AsyncResult(null);
+        return new AsyncResult<>(currentState);
     }
 
-    private void verifyStateRemotelyAndDoAnUpdate(final Jvm jvm, final JvmStateService jvmStateService, final String errMsg) {
+    private CurrentState<Jvm, JvmState> verifyStateRemotelyAndDoAnUpdate(final Jvm jvm, final JvmStateService jvmStateService, final String errMsg) {
         final RemoteCommandReturnInfo remoteCommandReturnInfo = jvmStateService.getServiceStatus(jvm);
         LOGGER.debug("RemoteCommandReturnInfo = {}", remoteCommandReturnInfo);
         if ((remoteCommandReturnInfo.retCode == 0 && remoteCommandReturnInfo.standardOuput.contains(STOPPED))) {
             jvmStateService.updateNotInMemOrStartedButStaleState(jvm, JvmState.JVM_STOPPED, StringUtils.EMPTY);
-        } else {
-            jvmStateService.updateNotInMemOrStartedButStaleState(jvm, JvmState.JVM_FAILED, errMsg);
+            return new CurrentState<>(jvm.getId(), JvmState.JVM_STOPPED, DateTime.now(), StateType.JVM);
         }
+        jvmStateService.updateNotInMemOrStartedButStaleState(jvm, JvmState.JVM_FAILED, errMsg);
+        return new CurrentState<>(jvm.getId(), JvmState.JVM_FAILED, DateTime.now(), StateType.JVM, errMsg);
     }
 
 }

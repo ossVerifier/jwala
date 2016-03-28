@@ -4,10 +4,10 @@ import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.path.Path;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState;
-import com.siemens.cto.aem.service.MapWrapper;
 import com.siemens.cto.aem.service.MessagingService;
 import com.siemens.cto.aem.service.group.GroupStateNotificationService;
 import com.siemens.cto.aem.service.ssl.hc.HttpClientRequestFactory;
+import com.siemens.cto.aem.service.state.InMemoryStateManagerService;
 import com.siemens.cto.aem.service.webserver.WebServerService;
 import com.siemens.cto.aem.service.webserver.WebServerStateRetrievalScheduledTaskHandler;
 import com.siemens.cto.aem.service.webserver.component.WebServerStateSetterWorker;
@@ -104,7 +104,7 @@ public class AsyncWebServerStateRetrievalScheduledTaskHandlerTest {
     @Ignore
     public void testWebServerStatePollerTaskExecuteHttpStatusOk() throws IOException, InterruptedException {
         when(Config.mockWebServerService.getWebServers()).thenReturn(webServers);
-        when(Config.mockWebServerStateMap.get(any(Identifier.class))).thenReturn(WebServerReachableState.WS_REACHABLE);
+        when(Config.mockInMemoryStateManagerService.get(any(Identifier.class))).thenReturn(WebServerReachableState.WS_REACHABLE);
         when(Config.mockHttpClientRequestFactory.createRequest(any(URI.class), eq(HttpMethod.GET))).thenReturn(request);
         when(request.execute()).thenReturn(clientHttpResponse);
         when(clientHttpResponse.getStatusCode()).thenReturn(HttpStatus.OK);
@@ -127,7 +127,7 @@ public class AsyncWebServerStateRetrievalScheduledTaskHandlerTest {
     @Test
     public void testWebServerStatePollerTaskExecuteHttpStatusNotFound() throws IOException, InterruptedException {
         when(Config.mockWebServerService.getWebServersPropagationNew()).thenReturn(webServers);
-        when(Config.mockWebServerStateMap.get(any(Identifier.class))).thenReturn(WebServerReachableState.WS_REACHABLE);
+        when(Config.mockInMemoryStateManagerService.get(any(Identifier.class))).thenReturn(WebServerReachableState.WS_REACHABLE);
         when(Config.mockHttpClientRequestFactory.createRequest(any(URI.class), eq(HttpMethod.GET))).thenReturn(request);
         when(request.execute()).thenReturn(clientHttpResponse);
         when(clientHttpResponse.getStatusCode()).thenReturn(HttpStatus.NOT_FOUND);
@@ -150,7 +150,7 @@ public class AsyncWebServerStateRetrievalScheduledTaskHandlerTest {
     @Test
     public void testWebServerStatePollerTaskExecuteIoException() throws IOException, InterruptedException {
         when(Config.mockWebServerService.getWebServersPropagationNew()).thenReturn(webServers);
-        when(Config.mockWebServerStateMap.get(any(Identifier.class))).thenReturn(WebServerReachableState.WS_REACHABLE);
+        when(Config.mockInMemoryStateManagerService.get(any(Identifier.class))).thenReturn(WebServerReachableState.WS_REACHABLE);
         when(Config.mockHttpClientRequestFactory.createRequest(any(URI.class), eq(HttpMethod.GET))).thenThrow(new IOException());
 
         try {
@@ -173,7 +173,7 @@ public class AsyncWebServerStateRetrievalScheduledTaskHandlerTest {
     // TODO: Fix the problem wherein this test Intermittently fails.
     public void testWebServerStatePollerTaskExecuteHttpStatusOkWithCleanup() throws IOException, InterruptedException {
         when(Config.mockWebServerService.getWebServers()).thenReturn(webServers);
-        when(Config.mockWebServerStateMap.get(any(Identifier.class))).thenReturn(WebServerReachableState.WS_REACHABLE);
+        when(Config.mockInMemoryStateManagerService.get(any(Identifier.class))).thenReturn(WebServerReachableState.WS_REACHABLE);
         when(Config.mockHttpClientRequestFactory.createRequest(any(URI.class), eq(HttpMethod.GET))).thenReturn(request);
         when(request.execute()).thenReturn(clientHttpResponse);
         when(clientHttpResponse.getStatusCode()).thenReturn(HttpStatus.OK);
@@ -213,7 +213,7 @@ public class AsyncWebServerStateRetrievalScheduledTaskHandlerTest {
     @Test
     public void testWebServerStatePollerTaskExecuteThrowRuntimeException() throws IOException, InterruptedException {
         when(Config.mockWebServerService.getWebServersPropagationNew()).thenReturn(webServers);
-        when(Config.mockWebServerStateMap.get(any(Identifier.class))).thenReturn(WebServerReachableState.WS_REACHABLE);
+        when(Config.mockInMemoryStateManagerService.get(any(Identifier.class))).thenReturn(WebServerReachableState.WS_REACHABLE);
         when(Config.mockHttpClientRequestFactory.createRequest(any(URI.class), eq(HttpMethod.GET))).thenReturn(request);
         when(request.execute()).thenThrow(UnsupportedOperationException.class);
 
@@ -265,13 +265,13 @@ public class AsyncWebServerStateRetrievalScheduledTaskHandlerTest {
         private static HttpClientRequestFactory mockHttpClientRequestFactory;
 
         @Mock
-        private static Map mockWebServerStateMap;
-
-        @Mock
         private static MessagingService mockMessagingService;
 
         @Mock
         private static GroupStateNotificationService mockGroupNotificationService;
+
+        @Mock
+        private static InMemoryStateManagerService mockInMemoryStateManagerService;
 
         private static volatile Map webServerFutureMap = new HashMap();
 
@@ -279,9 +279,9 @@ public class AsyncWebServerStateRetrievalScheduledTaskHandlerTest {
             MockitoAnnotations.initMocks(this);
         }
 
-        @Bean(name = "webServerStateMapWrapper")
-        public MapWrapper getMockWebServerStateMap() {
-            return new MapWrapper(mockWebServerStateMap);
+        @Bean(name = "webServerInMemoryStateManagerService")
+        public InMemoryStateManagerService getinMemoryStateManagerService() {
+            return mockInMemoryStateManagerService;
         }
 
         @Bean

@@ -8,9 +8,9 @@ import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState
 import com.siemens.cto.aem.common.domain.model.webserver.WebServerState;
 import com.siemens.cto.aem.common.request.state.SetStateRequest;
 import com.siemens.cto.aem.common.request.state.WebServerSetStateRequest;
-import com.siemens.cto.aem.service.MapWrapper;
 import com.siemens.cto.aem.service.MessagingService;
 import com.siemens.cto.aem.service.group.GroupStateNotificationService;
+import com.siemens.cto.aem.service.state.InMemoryStateManagerService;
 import com.siemens.cto.aem.service.webserver.WebServerService;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.conn.ConnectTimeoutException;
@@ -46,7 +46,7 @@ public class WebServerStateSetterWorker {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(WebServerStateSetterWorker.class);
 
-    private final MapWrapper<Identifier<WebServer>, WebServerReachableState> stateMapWrapper;
+    private final InMemoryStateManagerService<Identifier<WebServer>, WebServerReachableState> inMemoryStateManagerService;
     private final WebServerService webServerService;
     private final MessagingService messagingService;
     private final GroupStateNotificationService groupStateNotificationService;
@@ -56,11 +56,12 @@ public class WebServerStateSetterWorker {
     private static final Map<Identifier<WebServer>, String> WEB_SERVER_LAST_PERSISTED_ERROR_STATUS_MAP = new ConcurrentHashMap<>();
 
     @Autowired
-    public WebServerStateSetterWorker(@Qualifier("webServerStateMapWrapper") final MapWrapper stateMapWrapper,
+    public WebServerStateSetterWorker(@Qualifier("webServerInMemoryStateManagerService")
+                                      final InMemoryStateManagerService<Identifier<WebServer>, WebServerReachableState> inMemoryStateManagerService,
                                       final WebServerService webServerService, final MessagingService messagingService,
                                       final GroupStateNotificationService groupStateNotificationService,
                                       final ClientFactoryHelper clientFactoryHelper) {
-        this.stateMapWrapper = stateMapWrapper;
+        this.inMemoryStateManagerService = inMemoryStateManagerService;
         this.webServerService = webServerService;
         this.messagingService = messagingService;
         this.groupStateNotificationService = groupStateNotificationService;
@@ -123,8 +124,8 @@ public class WebServerStateSetterWorker {
      * @return true if web server is starting or stopping
      */
     private boolean isWebServerBusy(final WebServer webServer) {
-        return stateMapWrapper.getMap().get(webServer.getId()) == WebServerReachableState.WS_START_SENT ||
-                stateMapWrapper.getMap().get(webServer.getId()) == WebServerReachableState.WS_STOP_SENT;
+        return inMemoryStateManagerService.get(webServer.getId()) == WebServerReachableState.WS_START_SENT ||
+                inMemoryStateManagerService.get(webServer.getId()) == WebServerReachableState.WS_STOP_SENT;
     }
 
     /**

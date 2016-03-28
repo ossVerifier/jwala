@@ -9,13 +9,13 @@ import com.siemens.cto.aem.common.domain.model.state.StateType;
 import com.siemens.cto.aem.common.exec.ExecCommand;
 import com.siemens.cto.aem.common.exec.RemoteExecCommand;
 import com.siemens.cto.aem.common.exec.RemoteSystemConnection;
-import com.siemens.cto.aem.service.MapWrapper;
 import com.siemens.cto.aem.service.MessagingService;
 import com.siemens.cto.aem.service.RemoteCommandExecutorService;
 import com.siemens.cto.aem.service.RemoteCommandReturnInfo;
 import com.siemens.cto.aem.service.group.GroupStateNotificationService;
 import com.siemens.cto.aem.service.jvm.JvmService;
 import com.siemens.cto.aem.service.jvm.JvmStateService;
+import com.siemens.cto.aem.service.state.InMemoryStateManagerService;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,7 +41,7 @@ public class JvmStateServiceImpl implements JvmStateService {
     private static final Logger LOGGER = LoggerFactory.getLogger(JvmStateServiceImpl.class);
 
     private final JvmService jvmService;
-    private final MapWrapper<Identifier<Jvm>, CurrentState<Jvm, JvmState>> stateMapWrapper;
+    private final InMemoryStateManagerService<Identifier<Jvm>, CurrentState<Jvm, JvmState>> inMemoryStateManagerService;
     private final JvmStateResolverWorker jvmStateResolverWorker;
     private final long jvmStateUpdateInterval;
     private final MessagingService messagingService;
@@ -49,11 +49,12 @@ public class JvmStateServiceImpl implements JvmStateService {
     private final RemoteCommandExecutorService remoteCommandExecutorService;
     private final SshConfiguration sshConfig;
 
-    private static final Map<Identifier<Jvm>, Future<CurrentState<Identifier<Jvm>, JvmState>>> PING_FUTURE_MAP = new HashMap<>();
+    private static final Map<Identifier<Jvm>, Future<CurrentState<Jvm, JvmState>>> PING_FUTURE_MAP = new HashMap<>();
 
     @Autowired
     public JvmStateServiceImpl(final JvmService jvmService,
-                               @Qualifier("jvmStateMapWrapper") final MapWrapper stateMapWrapper,
+                               @Qualifier("jvmInMemoryStateManagerService")
+                               final InMemoryStateManagerService<Identifier<Jvm>, CurrentState<Jvm, JvmState>> inMemoryStateManagerService,
                                final JvmStateResolverWorker jvmStateResolverWorker,
                                final MessagingService messagingService,
                                final GroupStateNotificationService groupStateNotificationService,
@@ -62,7 +63,7 @@ public class JvmStateServiceImpl implements JvmStateService {
                                final RemoteCommandExecutorService remoteCommandExecutorService,
                                final SshConfiguration sshConfig) {
         this.jvmService = jvmService;
-        this.stateMapWrapper = stateMapWrapper;
+        this.inMemoryStateManagerService = inMemoryStateManagerService;
         this.jvmStateResolverWorker = jvmStateResolverWorker;
         this.jvmStateUpdateInterval = jvmStateUpdateInterval;
         this.messagingService = messagingService;
@@ -91,7 +92,7 @@ public class JvmStateServiceImpl implements JvmStateService {
      * @return true if the state is stale.
      */
     protected boolean isStale(final Jvm jvm) {
-        final long interval = DateTime.now().getMillis() - stateMapWrapper.getMap().get(jvm.getId()).getAsOf().getMillis();
+        final long interval = DateTime.now().getMillis() - inMemoryStateManagerService.get(jvm.getId()).getAsOf().getMillis();
         if (interval > jvmStateUpdateInterval) {
             LOGGER.debug("JVM {}'s state is stale. Interval since last update = {} sec!", jvm.getJvmName(), interval/1000);
             return true;
@@ -105,7 +106,7 @@ public class JvmStateServiceImpl implements JvmStateService {
      * @return true if the state is started.
      */
     protected boolean isStarted(final Jvm jvm) {
-        return stateMapWrapper.getMap().get(jvm.getId()).getState().equals(JvmState.JVM_STARTED);
+        return inMemoryStateManagerService.get(jvm.getId()).getState().equals(JvmState.JVM_STARTED);
     }
 
     @Override
@@ -114,9 +115,9 @@ public class JvmStateServiceImpl implements JvmStateService {
         if (!isStateInMemory(jvm) || (isStarted(jvm) && isStale(jvm))) {
                 LOGGER.debug("Updating state of JVM {} ...", jvm.getJvmName());
                 jvmService.updateState(jvm.getId(), state, errMsg);
-                final CurrentState currentState = new CurrentState(jvm.getId(), state, DateTime.now(), StateType.JVM, errMsg);
+                final CurrentState<Jvm, JvmState> currentState = new CurrentState<>(jvm.getId(), state, DateTime.now(), StateType.JVM, errMsg);
                 messagingService.send(currentState);
-                stateMapWrapper.getMap().put(jvm.getId(), currentState);
+                inMemoryStateManagerService.put(jvm.getId(), currentState);
                 groupStateNotificationService.retrieveStateAndSendToATopic(jvm.getId(), Jvm.class);
                 LOGGER.debug("Updated state of JVM {}!", jvm.getJvmName());
         }
@@ -128,7 +129,7 @@ public class JvmStateServiceImpl implements JvmStateService {
      * @return true if the state of a certain JVM is in the application context state map.
      */
     protected boolean isStateInMemory(Jvm jvm) {
-        return stateMapWrapper.getMap().containsKey(jvm.getId());
+        return inMemoryStateManagerService.containsKey(jvm.getId());
     }
 
     @Override

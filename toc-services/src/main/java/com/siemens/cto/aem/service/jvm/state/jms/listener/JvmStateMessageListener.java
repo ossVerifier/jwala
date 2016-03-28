@@ -7,11 +7,11 @@ import com.siemens.cto.aem.common.request.state.SetStateRequest;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.common.domain.model.jvm.message.JvmStateMessage;
-import com.siemens.cto.aem.service.MapWrapper;
 import com.siemens.cto.aem.service.MessagingService;
 import com.siemens.cto.aem.service.group.GroupStateNotificationService;
 import com.siemens.cto.aem.service.jvm.JvmService;
 import com.siemens.cto.aem.service.jvm.state.jms.listener.message.JvmStateMapMessageConverter;
+import com.siemens.cto.aem.service.state.InMemoryStateManagerService;
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
@@ -30,18 +30,18 @@ public class JvmStateMessageListener implements MessageListener {
     private final JvmService jvmService;
     private final MessagingService messagingService;
     private final GroupStateNotificationService groupStateNotificationService;
-    private final MapWrapper<Identifier<Jvm>, CurrentState<Jvm, JvmState>> stateMapWrapper;
+    private final InMemoryStateManagerService<Identifier<Jvm>, CurrentState<Jvm, JvmState>> inMemoryStateManagerService;
 
     public JvmStateMessageListener(final JvmStateMapMessageConverter converter,
                                    final JvmService jvmService,
                                    final MessagingService messagingTemplate,
                                    final GroupStateNotificationService groupStateNotificationService,
-                                   final MapWrapper stateMapWrapper) {
+                                   final InMemoryStateManagerService<Identifier<Jvm>, CurrentState<Jvm, JvmState>> inMemoryStateManagerService) {
         this.converter = converter;
         this.jvmService = jvmService;
         this.messagingService = messagingTemplate;
         this.groupStateNotificationService = groupStateNotificationService;
-        this.stateMapWrapper = stateMapWrapper;
+        this.inMemoryStateManagerService = inMemoryStateManagerService;
     }
 
     @Override
@@ -71,15 +71,15 @@ public class JvmStateMessageListener implements MessageListener {
         final CurrentState<Jvm, JvmState> newState = setStateCommand.getNewState();
 
         if (isStateChangedAndOrMsgNotEmpty(newState)) {
-            LOGGER.debug("The state has changed from {} to {}", stateMapWrapper.getMap().get(newState.getId()) != null ?
-                    stateMapWrapper.getMap().get(newState.getId()).getState() : "NO STATE", newState.getState());
+            LOGGER.debug("The state has changed from {} to {}", inMemoryStateManagerService.get(newState.getId()) != null ?
+                    inMemoryStateManagerService.get(newState.getId()).getState() : "NO STATE", newState.getState());
             jvmService.updateState(newState.getId(), newState.getState(), newState.getMessage());
             messagingService.send(new CurrentState(newState.getId(), newState.getState(), DateTime.now(), StateType.JVM,
                     newState.getMessage()));
             groupStateNotificationService.retrieveStateAndSendToATopic(newState.getId(), Jvm.class);
         }
         // Always update the JVM state map even if the state did not change since there's another thread that checks if the state is stale of not!
-        stateMapWrapper.getMap().put(newState.getId(), newState);
+        inMemoryStateManagerService.put(newState.getId(), newState);
     }
 
     /**
@@ -91,13 +91,13 @@ public class JvmStateMessageListener implements MessageListener {
     private boolean isStateChangedAndOrMsgNotEmpty(CurrentState<Jvm, JvmState> newState) {
         boolean stateAndOrMsgChanged = false;
 
-        if (!stateMapWrapper.getMap().containsKey(newState.getId()) ||
-            !stateMapWrapper.getMap().get(newState.getId()).getState().equals(newState.getState())) {
+        if (!inMemoryStateManagerService.containsKey(newState.getId()) ||
+            !inMemoryStateManagerService.get(newState.getId()).getState().equals(newState.getState())) {
                 stateAndOrMsgChanged = true;
         }
 
-        if (StringUtils.isNotEmpty(newState.getMessage()) && (!stateMapWrapper.getMap().containsKey(newState.getId()) ||
-            !stateMapWrapper.getMap().get(newState.getId()).getMessage().equals(newState.getMessage()))) {
+        if (StringUtils.isNotEmpty(newState.getMessage()) && (!inMemoryStateManagerService.containsKey(newState.getId()) ||
+            !inMemoryStateManagerService.get(newState.getId()).getMessage().equals(newState.getMessage()))) {
                 stateAndOrMsgChanged = true;
         }
         return stateAndOrMsgChanged;

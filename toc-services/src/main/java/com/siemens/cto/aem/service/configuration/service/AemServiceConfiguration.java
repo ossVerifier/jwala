@@ -22,7 +22,6 @@ import com.siemens.cto.aem.persistence.jpa.service.impl.GroupJvmRelationshipServ
 import com.siemens.cto.aem.persistence.service.JvmPersistenceService;
 import com.siemens.cto.aem.persistence.service.impl.JpaJvmPersistenceServiceImpl;
 import com.siemens.cto.aem.service.HistoryService;
-import com.siemens.cto.aem.service.MapWrapper;
 import com.siemens.cto.aem.service.MessagingService;
 import com.siemens.cto.aem.service.app.ApplicationCommandService;
 import com.siemens.cto.aem.service.app.ApplicationService;
@@ -33,17 +32,22 @@ import com.siemens.cto.aem.service.app.impl.PrivateApplicationServiceImpl;
 import com.siemens.cto.aem.service.configuration.jms.AemJmsConfig;
 import com.siemens.cto.aem.service.dispatch.CommandDispatchGateway;
 import com.siemens.cto.aem.service.group.*;
-import com.siemens.cto.aem.service.group.impl.*;
+import com.siemens.cto.aem.service.group.impl.GroupControlServiceImpl;
+import com.siemens.cto.aem.service.group.impl.GroupJvmControlServiceImpl;
+import com.siemens.cto.aem.service.group.impl.GroupServiceImpl;
+import com.siemens.cto.aem.service.group.impl.GroupWebServerControlServiceImpl;
 import com.siemens.cto.aem.service.impl.HistoryServiceImpl;
+import com.siemens.cto.aem.service.initializer.JGroupsClusterInitializer;
 import com.siemens.cto.aem.service.jvm.JvmControlService;
 import com.siemens.cto.aem.service.jvm.JvmService;
 import com.siemens.cto.aem.service.jvm.impl.JvmControlServiceImpl;
 import com.siemens.cto.aem.service.jvm.impl.JvmServiceImpl;
-import com.siemens.cto.aem.service.initializer.JGroupsClusterInitializer;
 import com.siemens.cto.aem.service.jvm.state.JvmStateReceiverAdapter;
+import com.siemens.cto.aem.service.state.impl.InMemoryStateManagerServiceImpl;
 import com.siemens.cto.aem.service.resource.ResourceService;
 import com.siemens.cto.aem.service.resource.impl.ResourceServiceImpl;
 import com.siemens.cto.aem.service.ssl.hc.HttpClientRequestFactory;
+import com.siemens.cto.aem.service.state.InMemoryStateManagerService;
 import com.siemens.cto.aem.service.state.StateNotificationConsumerBuilder;
 import com.siemens.cto.aem.service.state.StateNotificationService;
 import com.siemens.cto.aem.service.state.jms.JmsStateNotificationConsumerBuilderImpl;
@@ -58,7 +62,6 @@ import com.siemens.cto.aem.service.webserver.impl.WebServerControlServiceImpl;
 import com.siemens.cto.aem.service.webserver.impl.WebServerServiceImpl;
 import com.siemens.cto.aem.template.HarmonyTemplateEngine;
 import com.siemens.cto.toc.files.FileManager;
-import org.apache.commons.collections.map.HashedMap;
 import org.apache.commons.pool2.impl.GenericKeyedObjectPool;
 import org.apache.commons.pool2.impl.GenericKeyedObjectPoolConfig;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -86,7 +89,9 @@ import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.*;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
 
 @Configuration
 @EnableAsync
@@ -230,7 +235,7 @@ public class AemServiceConfiguration implements SchedulingConfigurer {
     @Bean(name = "webServerControlService")
     public WebServerControlService getWebServerControlService(final HistoryService historyService) {
         return new WebServerControlServiceImpl(getWebServerService(), aemCommandExecutorConfig.getRemoteCommandExecutor(),
-                getWebServerStateMapWrapper().getMap(), historyService, getStateNotificationService(), messagingTemplate);
+                getInMemoryStateManagerService(), historyService, getStateNotificationService(), messagingTemplate);
     }
 
     @Bean(name = "webServerCommandService")
@@ -346,9 +351,9 @@ public class AemServiceConfiguration implements SchedulingConfigurer {
         return new JGroupsClusterInitializer(getSimpleJvmReceiverAdapter());
     }
 
-    @Bean(name = "webServerStateMapWrapper")
-    MapWrapper<Identifier<WebServer>, WebServerReachableState> getWebServerStateMapWrapper() {
-        return new MapWrapper<>(new HashedMap());
+    @Bean(name = "webServerInMemoryStateManagerService")
+    InMemoryStateManagerService<Identifier<WebServer>, WebServerReachableState> getInMemoryStateManagerService() {
+        return new InMemoryStateManagerServiceImpl<>();
     }
 
     @Override

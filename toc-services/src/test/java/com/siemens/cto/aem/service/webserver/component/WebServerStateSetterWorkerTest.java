@@ -4,10 +4,10 @@ import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServerState;
-import com.siemens.cto.aem.service.MapWrapper;
 import com.siemens.cto.aem.service.MessagingService;
 import com.siemens.cto.aem.service.group.GroupStateNotificationService;
 import com.siemens.cto.aem.service.ssl.hc.HttpClientRequestFactory;
+import com.siemens.cto.aem.service.state.InMemoryStateManagerService;
 import com.siemens.cto.aem.service.webserver.WebServerService;
 import org.junit.Before;
 import org.junit.Test;
@@ -18,7 +18,6 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.client.ClientHttpRequest;
 import org.springframework.http.client.ClientHttpResponse;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import java.io.IOException;
 import java.net.URI;
@@ -65,11 +64,14 @@ public class WebServerStateSetterWorkerTest {
     @Mock
     private GroupStateNotificationService mockGroupNotificationService;
 
+    @Mock
+    InMemoryStateManagerService mockInMemoryStateManagerService;
+
     @Before
     @SuppressWarnings("unchecked")
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
-        webServerStateSetterWorker = new WebServerStateSetterWorker(new MapWrapper(mockWebServerReachableStateMap), mockWebServerService,
+        webServerStateSetterWorker = new WebServerStateSetterWorker(mockInMemoryStateManagerService, mockWebServerService,
                 mockMessagingService, mockGroupNotificationService, mockClientFactoryHelper);
     }
 

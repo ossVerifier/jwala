@@ -6,13 +6,14 @@ import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.common.domain.model.state.CurrentState;
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.persistence.service.JvmPersistenceService;
-import com.siemens.cto.aem.service.MapWrapper;
 import com.siemens.cto.aem.service.MessagingService;
 import com.siemens.cto.aem.service.configuration.service.AemServiceConfiguration;
 import com.siemens.cto.aem.service.group.GroupStateNotificationService;
 import com.siemens.cto.aem.service.jvm.JvmService;
+import com.siemens.cto.aem.service.state.impl.InMemoryStateManagerServiceImpl;
 import com.siemens.cto.aem.service.jvm.state.jms.listener.JvmStateMessageListener;
 import com.siemens.cto.aem.service.jvm.state.jms.listener.message.JvmStateMapMessageConverterImpl;
+import com.siemens.cto.aem.service.state.InMemoryStateManagerService;
 import com.siemens.cto.aem.service.state.StateNotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -22,7 +23,6 @@ import org.springframework.transaction.PlatformTransactionManager;
 
 import javax.jms.MessageListener;
 import javax.jms.Session;
-import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
 
 @Configuration
@@ -68,15 +68,15 @@ public class AemMessageListenerConfig {
         return container;
     }
 
-    @Bean(name = "jvmStateMapWrapper")
-    public MapWrapper<Identifier<Jvm>, CurrentState<Jvm, JvmState>> getJvmStateMapWrapper() {
-        return new MapWrapper<>(new HashMap());
+    @Bean(name = "jvmInMemoryStateManagerService")
+    public InMemoryStateManagerService<Identifier<Jvm>, CurrentState<Jvm, JvmState>> getInMemoryStateManagerService() {
+        return new InMemoryStateManagerServiceImpl<>();
     }
 
     @Bean
     public MessageListener getJvmStateMessageListener() {
         return new JvmStateMessageListener(new JvmStateMapMessageConverterImpl(), jvmService, messagingService,
-                groupStateNotificationService, getJvmStateMapWrapper());
+                groupStateNotificationService, getInMemoryStateManagerService());
     }
 
 }

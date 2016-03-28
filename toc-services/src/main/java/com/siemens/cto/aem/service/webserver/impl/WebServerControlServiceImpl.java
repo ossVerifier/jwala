@@ -20,6 +20,7 @@ import com.siemens.cto.aem.control.webserver.command.impl.WindowsWebServerPlatfo
 import com.siemens.cto.aem.exception.CommandFailureException;
 import com.siemens.cto.aem.persistence.jpa.type.EventType;
 import com.siemens.cto.aem.service.HistoryService;
+import com.siemens.cto.aem.service.state.InMemoryStateManagerService;
 import com.siemens.cto.aem.service.state.StateNotificationService;
 import com.siemens.cto.aem.service.webserver.WebServerControlService;
 import com.siemens.cto.aem.service.webserver.WebServerService;
@@ -34,7 +35,6 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Map;
 
 public class WebServerControlServiceImpl implements WebServerControlService {
 
@@ -46,20 +46,20 @@ public class WebServerControlServiceImpl implements WebServerControlService {
     private final WebServerService webServerService;
     private final RemoteCommandExecutor<WebServerControlOperation> commandExecutor;
     private static final Logger LOGGER = LoggerFactory.getLogger(WebServerControlServiceImpl.class);
-    private final Map<Identifier<WebServer>, WebServerReachableState> webServerReachableStateMap;
+    private final InMemoryStateManagerService<Identifier<WebServer>, WebServerReachableState> inMemoryStateManagerService;
     private final HistoryService historyService;
     private final StateNotificationService stateNotificationService;
     private final SimpMessagingTemplate messagingTemplate;
 
     public WebServerControlServiceImpl(final WebServerService theWebServerService,
                                        final RemoteCommandExecutor<WebServerControlOperation> theExecutor,
-                                       final Map<Identifier<WebServer>, WebServerReachableState> theWebServerReachableStateMap,
+                                       final InMemoryStateManagerService<Identifier<WebServer>, WebServerReachableState> inMemoryStateManagerService,
                                        final HistoryService historyService,
                                        final StateNotificationService stateNotificationService,
                                        final SimpMessagingTemplate messagingTemplate) {
         webServerService = theWebServerService;
         commandExecutor = theExecutor;
-        webServerReachableStateMap = theWebServerReachableStateMap;
+        this.inMemoryStateManagerService = inMemoryStateManagerService;
         this.historyService = historyService;
         this.stateNotificationService = stateNotificationService;
         this.messagingTemplate = messagingTemplate;
@@ -191,7 +191,7 @@ public class WebServerControlServiceImpl implements WebServerControlService {
      */
     private void setFailedState(final WebServer webServer, String msg) {
         msg = webServer.getName() + " at " + webServer.getHost() + ": " + msg;
-        webServerReachableStateMap.put(webServer.getId(), WebServerReachableState.WS_FAILED);
+        inMemoryStateManagerService.put(webServer.getId(), WebServerReachableState.WS_FAILED);
         webServerService.updateErrorStatus(webServer.getId(), msg);
 
         // Send the error via JMS so TOC client can display it in the control window.

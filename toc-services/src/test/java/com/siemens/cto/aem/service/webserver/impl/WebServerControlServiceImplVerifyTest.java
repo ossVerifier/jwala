@@ -20,6 +20,7 @@ import com.siemens.cto.aem.exception.CommandFailureException;
 import com.siemens.cto.aem.persistence.jpa.type.EventType;
 import com.siemens.cto.aem.service.HistoryService;
 import com.siemens.cto.aem.service.VerificationBehaviorSupport;
+import com.siemens.cto.aem.service.state.InMemoryStateManagerService;
 import com.siemens.cto.aem.service.state.StateNotificationService;
 import com.siemens.cto.aem.service.webserver.WebServerService;
 import org.junit.Before;
@@ -35,7 +36,6 @@ import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import java.util.HashSet;
-import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -54,7 +54,7 @@ public class WebServerControlServiceImplVerifyTest extends VerificationBehaviorS
     private RemoteCommandExecutor<WebServerControlOperation> commandExecutor;
 
     @Mock
-    private Map<Identifier<WebServer>, WebServerReachableState> webServerReachableStateMap;
+    private InMemoryStateManagerService<Identifier<WebServer>, WebServerReachableState> mockInMemoryStateManagerService;
 
     @Captor
     private ArgumentCaptor<SetStateRequest<WebServer, WebServerReachableState>> setStateCommandCaptor;
@@ -71,7 +71,7 @@ public class WebServerControlServiceImplVerifyTest extends VerificationBehaviorS
 
     @Before
     public void setup() {
-        webServerControlService = new WebServerControlServiceImpl(webServerService, commandExecutor, webServerReachableStateMap,
+        webServerControlService = new WebServerControlServiceImpl(webServerService, commandExecutor, mockInMemoryStateManagerService,
                 mockHistoryService, stateNotificationService, mockMessagingTemplate);
 
         user = new User("unused");

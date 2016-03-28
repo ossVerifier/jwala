@@ -6,10 +6,10 @@ import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.common.domain.model.jvm.message.JvmStateMessage;
 import com.siemens.cto.aem.common.domain.model.state.CurrentState;
 import com.siemens.cto.aem.common.request.state.JvmSetStateRequest;
-import com.siemens.cto.aem.service.MapWrapper;
 import com.siemens.cto.aem.service.MessagingService;
 import com.siemens.cto.aem.service.group.GroupStateNotificationService;
 import com.siemens.cto.aem.service.jvm.JvmService;
+import com.siemens.cto.aem.service.state.impl.InMemoryStateManagerServiceImpl;
 import com.siemens.cto.aem.service.jvm.state.jms.listener.message.JvmStateMapMessageConverter;
 import com.siemens.cto.aem.service.state.StateNotificationService;
 import org.junit.Before;
@@ -24,8 +24,6 @@ import javax.jms.JMSException;
 import javax.jms.MapMessage;
 import javax.jms.Message;
 import javax.jms.TextMessage;
-
-import java.util.HashMap;
 
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
@@ -67,7 +65,7 @@ public class JvmStateMessageListenerTest {
         when(stateCommand.getNewState()).thenReturn(newCurrentState);
         when(newCurrentState.getId()).thenReturn(Identifier.<Jvm>id(10L));
         listener = spy(new JvmStateMessageListener(converter, mockJvmService, mockMessagingService,
-                mockGroupStateNotificationService, new MapWrapper(new HashMap())));
+                mockGroupStateNotificationService, new InMemoryStateManagerServiceImpl<Identifier<Jvm>, CurrentState<Jvm, JvmState>>()));
     }
 
     @Test
