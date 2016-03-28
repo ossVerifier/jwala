@@ -413,7 +413,7 @@ public class GroupServiceImpl implements GroupService {
 
         public WebApp(final Application app, final Jvm parentJvm) {
             super(app.getId(), app.getName(), app.getWarPath(), app.getWebAppContext(), app.getGroup(), app.isSecure(),
-                    app.isLoadBalanceAcrossServers(), app.getWarName());
+                    app.isLoadBalanceAcrossServers(), app.isUnpackWar(), app.getWarName());
             jvm = parentJvm;
         }
 

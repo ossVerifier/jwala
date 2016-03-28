@@ -10,7 +10,8 @@ public enum ApplicationControlOperation {
 
     DEPLOY_WAR("deployWar"),
     DEPLOY_CONFIG_FILE("deployConfigFile"),
-    BACK_UP_CONFIG_FILE("backUpHttpConfigFile");
+    BACK_UP_CONFIG_FILE("backUpHttpConfigFile"),
+    UNPACK_WAR("unpackWar");
 
     private static final Map<String, ApplicationControlOperation> LOOKUP_MAP = new HashMap<>();
 

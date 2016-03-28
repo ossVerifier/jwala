@@ -21,7 +21,7 @@ import static org.junit.Assert.assertSame;
 public class UploadWebArchiveRequestTest {
 
     private Application initApplication(String name, String context, String groupName) {
-        return new Application(id(0L, Application.class), name, (String)null, context, new Group(id(0L, Group.class), groupName), true, true, "testWar.war");
+        return new Application(id(0L, Application.class), name, (String)null, context, new Group(id(0L, Group.class), groupName), true, true, false, "testWar.war");
     }
     
     private UploadWebArchiveRequest initUploadCommand(Application app, String filename, byte[] data) {
@@ -69,7 +69,7 @@ public class UploadWebArchiveRequestTest {
         Mockito.when(badInputStream.markSupported()).thenReturn(true);
         Mockito.when(badInputStream.read()).thenReturn(-1);
         
-        Application app = new Application(null, null, null, null, null, true, true, null);
+        Application app = new Application(null, null, null, null, null, true, true, false, null);
         
         UploadWebArchiveRequest cmd = new UploadWebArchiveRequest(app, "filename.war", 2L, badInputStream);
         cmd.validate(); // should trigger BadRequestException
@@ -82,7 +82,7 @@ public class UploadWebArchiveRequestTest {
         Mockito.when(badInputStream.markSupported()).thenReturn(false);
         Mockito.when(badInputStream.available()).thenReturn(0);
         
-        Application app = new Application(null, null, null, null, null, true, true, null);
+        Application app = new Application(null, null, null, null, null, true, true, false, null);
         
         UploadWebArchiveRequest cmd = new UploadWebArchiveRequest(app, "filename.war", 2L, badInputStream);
         cmd.validate(); // should trigger BadRequestException

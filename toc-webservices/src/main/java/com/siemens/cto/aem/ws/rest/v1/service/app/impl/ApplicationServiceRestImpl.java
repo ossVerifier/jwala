@@ -16,7 +16,6 @@ import com.siemens.cto.aem.service.app.ApplicationService;
 import com.siemens.cto.aem.ws.rest.v1.provider.AuthenticatedUser;
 import com.siemens.cto.aem.ws.rest.v1.response.ResponseBuilder;
 import com.siemens.cto.aem.ws.rest.v1.service.app.ApplicationServiceRest;
-import com.siemens.cto.aem.ws.rest.v1.service.webserver.impl.WebServerServiceRestImpl;
 import org.apache.commons.fileupload.FileItemIterator;
 import org.apache.commons.fileupload.FileItemStream;
 import org.apache.commons.fileupload.FileUploadException;
@@ -25,8 +24,6 @@ import org.apache.cxf.jaxrs.ext.MessageContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.BeanParam;
-import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -38,7 +35,7 @@ import java.util.Set;
 
 public class ApplicationServiceRestImpl implements ApplicationServiceRest {
 
-    private final static Logger LOGGER = LoggerFactory.getLogger(WebServerServiceRestImpl.class);
+    private final static Logger LOGGER = LoggerFactory.getLogger(ApplicationServiceRestImpl.class);
 
     private ApplicationService service;
     private static ApplicationServiceRestImpl instance;
@@ -80,7 +77,7 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
 
     @Override
     public Response createApplication(final JsonCreateApplication anAppToCreate, final AuthenticatedUser aUser) {
-        LOGGER.debug("Create Application requested: {}", anAppToCreate);
+        LOGGER.info("Create Application requested: {}", anAppToCreate);
         Application created = service.createApplication(anAppToCreate.toCreateCommand(), aUser.getUser());
         return ResponseBuilder.created(created);
     }

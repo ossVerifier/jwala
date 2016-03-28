@@ -142,7 +142,7 @@ public class WebArchiveManagerTest {
 
         uploadedFile = new ByteArrayInputStream(buf.array());
         
-        app = new Application(null, null, null, null, null, false, false, null);
+        app = new Application(null, null, null, null, null, false, false, false, null);
     }
     
     @After

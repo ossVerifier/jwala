@@ -1,9 +1,8 @@
 package com.siemens.cto.aem.common.request.app;
 
-import com.siemens.cto.aem.common.exception.BadRequestException;
-import com.siemens.cto.aem.common.request.Request;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
+import com.siemens.cto.aem.common.request.Request;
 import com.siemens.cto.aem.common.rule.MultipleRules;
 import com.siemens.cto.aem.common.rule.app.ApplicationContextRule;
 import com.siemens.cto.aem.common.rule.app.ApplicationNameRule;
@@ -18,6 +17,7 @@ public class CreateApplicationRequest implements Serializable, Request {
     private String name;
     private String webAppContext;
     private Identifier<Group> groupId;
+    private final boolean unpackWar;
     private boolean secure;
     private boolean loadBalanceAcrossServers;
     
@@ -25,12 +25,14 @@ public class CreateApplicationRequest implements Serializable, Request {
                                     String name,
                                     String webAppContext,
                                     boolean secure,
-                                    boolean loadBalanceAcrossServers) {
+                                    boolean loadBalanceAcrossServers,
+                                    boolean unpackWar) {
         this.name = name;
         this.webAppContext = webAppContext;
         this.groupId = groupId;
         this.secure = secure;
         this.loadBalanceAcrossServers = loadBalanceAcrossServers;
+        this.unpackWar = unpackWar;
     }
 
     public Identifier<Group> getGroupId() {
@@ -57,5 +59,9 @@ public class CreateApplicationRequest implements Serializable, Request {
         new MultipleRules(new GroupIdRule(groupId),
                                 new ApplicationNameRule(name),
                                 new ApplicationContextRule(webAppContext)).validate();
+    }
+
+    public boolean isUnpackWar() {
+        return unpackWar;
     }
 }

@@ -26,6 +26,7 @@ public class AemControl {
         DELETE_SERVICE_SCRIPT_NAME("commands.cygwin.delete-service", "delete-service.sh"),
         INVOKE_SERVICE_SCRIPT_NAME("commands.cygwin.invoke-service", "invoke-service.sh"),
         INVOKE_WS_SERVICE_SCRIPT_NAME("commands.cygwin.invoke-ws-service", "invoke-ws-service.sh"),
+        UNPACK_WAR_SCRIPT_NAME("commands.cygwin.unpack-war.sh", "unpack-war.sh"),
         SLEEP_TIME("net.stop.sleep.time.seconds", NET_STOP_SLEEP_TIME_SECONDS_DEFAULT);
 
         private final String propertyName;

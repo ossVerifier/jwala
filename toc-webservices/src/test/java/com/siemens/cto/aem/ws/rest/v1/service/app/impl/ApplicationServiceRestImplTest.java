@@ -2,7 +2,6 @@ package com.siemens.cto.aem.ws.rest.v1.service.app.impl;
 
 import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
-import com.siemens.cto.aem.common.exception.MessageResponseStatus;
 import com.siemens.cto.aem.common.request.app.UpdateApplicationRequest;
 import com.siemens.cto.aem.common.request.app.UploadAppTemplateRequest;
 import com.siemens.cto.aem.common.request.app.UploadWebArchiveRequest;
@@ -74,9 +73,9 @@ public class ApplicationServiceRestImplTest {
     private ApplicationServiceRest cut;
 
     Group group1 = new Group(Identifier.id(0L, Group.class), "");
-    Application application = new Application(Identifier.id(1L, Application.class), "", "", "", group1, true, true, "testWar.war");
-    Application applicationWithWar = new Application(Identifier.id(1L, Application.class), "", "D:\\APACHE\\TOMCAT\\WEBAPPS\\toc-webapp-1.0-SNAPSHOT-b6349ade-d8f2-4a2f-bdc5-d92d644a1a67-.war", "", group1, true, true, "testWar.war");
-    Application newlyCreatedApp = new Application(Identifier.id(2L, Application.class), "", "", "", group1, true, true, "testWar.war");
+    Application application = new Application(Identifier.id(1L, Application.class), "", "", "", group1, true, true, false, "testWar.war");
+    Application applicationWithWar = new Application(Identifier.id(1L, Application.class), "", "D:\\APACHE\\TOMCAT\\WEBAPPS\\toc-webapp-1.0-SNAPSHOT-b6349ade-d8f2-4a2f-bdc5-d92d644a1a67-.war", "", group1, true, true, false, "testWar.war");
+    Application newlyCreatedApp = new Application(Identifier.id(2L, Application.class), "", "", "", group1, true, true, false, "testWar.war");
 
     List<Application> applications = new ArrayList<>(1);
     List<Application> applications2 = new ArrayList<>(2);
@@ -100,8 +99,8 @@ public class ApplicationServiceRestImplTest {
 
     @Test
     public void testJsonSettersGetters() {
-        JsonUpdateApplication testJua = new JsonUpdateApplication(2L, "name", "/ctx", 1L, true, true);
-        JsonCreateApplication testJca = new JsonCreateApplication(2L, "name", "/ctx", true, true);
+        JsonUpdateApplication testJua = new JsonUpdateApplication(2L, "name", "/ctx", 1L, true, true, false);
+        JsonCreateApplication testJca = new JsonCreateApplication(2L, "name", "/ctx", true, true, false);
         assertEquals(testJca, testJca.clone());
         assertEquals(testJua, testJua.clone());
         assertEquals(testJca.hashCode(), testJca.clone().hashCode());
@@ -453,7 +452,7 @@ public class ApplicationServiceRestImplTest {
     public void testUpdate() {
         when(service.updateApplication(any(UpdateApplicationRequest.class), any(User.class))).thenReturn(newlyCreatedApp);
         ArrayList<UpdateApplicationRequest> multiUpdate = new ArrayList<>();
-        multiUpdate.add(new UpdateApplicationRequest(Identifier.id(0L, Application.class), Identifier.id(0L, Group.class), "", "", true, true));
+        multiUpdate.add(new UpdateApplicationRequest(Identifier.id(0L, Application.class), Identifier.id(0L, Group.class), "", "", true, true, false));
         JsonUpdateApplication jsonUpdateAppRequest = new JsonUpdateApplication();
         Response resp = cut.updateApplication(jsonUpdateAppRequest, authenticatedUser);
         assertNotNull(resp.getEntity());

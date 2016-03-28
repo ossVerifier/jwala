@@ -1,9 +1,8 @@
 package com.siemens.cto.aem.ws.rest.v1.service.app.impl;
 
-import com.siemens.cto.aem.common.request.app.CreateApplicationRequest;
-import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
+import com.siemens.cto.aem.common.request.app.CreateApplicationRequest;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
@@ -14,21 +13,23 @@ public class JsonCreateApplication {
     private String webappContext;
     private boolean secure;
     private boolean loadBalanceAcrossServers;
+    private boolean unpackWar;
 
     public JsonCreateApplication() {
     }
 
-    public JsonCreateApplication(Long groupId2, String name2, String webappContext2, boolean secure, boolean loadBalanceAcrossServers) {
+    public JsonCreateApplication(Long groupId2, String name2, String webappContext2, boolean secure, boolean loadBalanceAcrossServers, boolean unpackWar) {
         groupId = groupId2;
         name = name2;
         webappContext = webappContext2;
         this.secure = secure;
         this.loadBalanceAcrossServers = loadBalanceAcrossServers;
+        this.unpackWar = unpackWar;
     }
 
     public CreateApplicationRequest toCreateCommand() {
         return new CreateApplicationRequest(
-                Identifier.id(groupId, Group.class), name, webappContext, secure, loadBalanceAcrossServers);
+                Identifier.id(groupId, Group.class), name, webappContext, secure, loadBalanceAcrossServers, unpackWar);
     }
 
 
@@ -39,7 +40,8 @@ public class JsonCreateApplication {
                 getName(),
                 getWebappContext(),
                 isSecure(),
-                isLoadBalanceAcrossServers());
+                isLoadBalanceAcrossServers(),
+                isUnpackWar());
     }
 
     @Override
@@ -101,4 +103,23 @@ public class JsonCreateApplication {
         this.loadBalanceAcrossServers = loadBalanceAcrossServers;
     }
 
+    public void setUnpackWar(boolean unpack) {
+        this.unpackWar = unpack;
+    }
+
+    public boolean isUnpackWar() {
+        return unpackWar;
+    }
+
+    @Override
+    public String toString() {
+        return "JsonCreateApplication{" +
+                "name='" + name + '\'' +
+                ", groupId=" + groupId +
+                ", webappContext='" + webappContext + '\'' +
+                ", secure=" + secure +
+                ", loadBalanceAcrossServers=" + loadBalanceAcrossServers +
+                ", unpackWar=" + unpackWar +
+                '}';
+    }
 }

@@ -35,9 +35,9 @@ class ApacheWebServerConfigFileGeneratorTest extends GroovyTestCase {
                 new Path("/statusPath"), "EXAMPLE_OPTS=%someEvn%/someVal", JvmState.JVM_STOPPED, null))
 
         apps = new ArrayList<>()
-        apps.add(new Application(null, "hello-world-1", null, "/hello-world-1", null, true, true, "testWar.war"))
-        apps.add(new Application(null, "hello-world-2", null, "/hello-world-2", null, true, true, "testWar.war"))
-        apps.add(new Application(null, "hello-world-3", null, "/hello-world-3", null, true, true, "testWar.war"))
+        apps.add(new Application(null, "hello-world-1", null, "/hello-world-1", null, true, true, false, "testWar.war"))
+        apps.add(new Application(null, "hello-world-2", null, "/hello-world-2", null, true, true, false, "testWar.war"))
+        apps.add(new Application(null, "hello-world-3", null, "/hello-world-3", null, true, true, false, "testWar.war"))
     }
 
     void testGetHttpdConf() {

@@ -40,6 +40,7 @@ public class ApplicationCrudServiceImpl extends AbstractCrudServiceImpl<JpaAppli
         jpaApp.setWebAppContext(createApplicationRequest.getWebAppContext());
         jpaApp.setSecure(createApplicationRequest.isSecure());
         jpaApp.setLoadBalanceAcrossServers(createApplicationRequest.isLoadBalanceAcrossServers());
+        jpaApp.setUnpackWar(createApplicationRequest.isUnpackWar());
 
         try {
             return create(jpaApp);

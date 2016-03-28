@@ -98,7 +98,7 @@ public abstract class
     
     @Test
     public void testCreateApp() {
-        CreateApplicationRequest request = new CreateApplicationRequest(expGroupId,  textName, textContext, true, true);
+        CreateApplicationRequest request = new CreateApplicationRequest(expGroupId,  textName, textContext, true, true, false);
         Application created = applicationPersistenceService.createApplication(request, "", "", "");
         assertNotNull(created.getGroup());
         assertEquals(expGroupId, created.getGroup().getId());
@@ -111,7 +111,7 @@ public abstract class
 
     @Test
     public void testCreateNonSecureApp() {
-        CreateApplicationRequest request = new CreateApplicationRequest(expGroupId,  textName, textContext, false, true);
+        CreateApplicationRequest request = new CreateApplicationRequest(expGroupId,  textName, textContext, false, true, false);
         Application created = applicationPersistenceService.createApplication(request, "", "", "");
         assertNotNull(created.getGroup());
         assertEquals(expGroupId, created.getGroup().getId());
@@ -128,7 +128,7 @@ public abstract class
             testCreateApp();
         }
         
-        UpdateApplicationRequest updateApplicationRequest = new UpdateApplicationRequest(updateAppId, expUpdatedGroupId,  textUpdatedContext, textUpdatedName, true, true);
+        UpdateApplicationRequest updateApplicationRequest = new UpdateApplicationRequest(updateAppId, expUpdatedGroupId,  textUpdatedContext, textUpdatedName, true, true, false);
         Application created = applicationPersistenceService.updateApplication(updateApplicationRequest);
         assertEquals(updateAppId, created.getId());
         assertNotNull(created.getGroup());
@@ -153,7 +153,7 @@ public abstract class
     
     @Test
     public void testUpdateWARPath() { 
-        CreateApplicationRequest request = new CreateApplicationRequest(expGroupId,  textName, textContext, true, true);
+        CreateApplicationRequest request = new CreateApplicationRequest(expGroupId,  textName, textContext, true, true, false);
         Application created = applicationPersistenceService.createApplication(request, "", "", "");
         
         UploadWebArchiveRequest uploadWebArchiveRequest = new UploadWebArchiveRequest(created, "filename-uuid.war", 0L, null);
@@ -164,7 +164,7 @@ public abstract class
     
     @Test
     public void testRemoveWARPath() {        
-        CreateApplicationRequest request = new CreateApplicationRequest(expGroupId,  textName, textContext, true, true);
+        CreateApplicationRequest request = new CreateApplicationRequest(expGroupId,  textName, textContext, true, true, false);
         Application created = applicationPersistenceService.createApplication(request, "", "", "");
         
         UploadWebArchiveRequest uploadWebArchiveRequest = new UploadWebArchiveRequest(created, "filename-uuid.war", 0L, null);
@@ -180,7 +180,7 @@ public abstract class
 
     @Test
     public void testUpdateSecureFlag() {
-        CreateApplicationRequest request = new CreateApplicationRequest(expGroupId,  textName, textContext, true, true);
+        CreateApplicationRequest request = new CreateApplicationRequest(expGroupId,  textName, textContext, true, true, false);
         Application created = applicationPersistenceService.createApplication(request, "", "", "");
         assertTrue(created.isSecure());
 
@@ -188,7 +188,7 @@ public abstract class
                 new UpdateApplicationRequest(created.getId(),
                                              created.getGroup().getId(),
                                              created.getWebAppContext(),
-                                             created.getName(), false, true);
+                                             created.getName(), false, true, false);
         Application updatedApplication = applicationPersistenceService.updateApplication(updateApplicationRequest);
         assertTrue(!updatedApplication.isSecure());
     }
@@ -200,7 +200,7 @@ public abstract class
         CreateGroupRequest createGroupReq = new CreateGroupRequest("testGroupName");
         Group group = groupPersistenceService.createGroup(createGroupReq);
 
-        CreateApplicationRequest request = new CreateApplicationRequest(group.getId(), "testAppName", "/hctTest", true, true);
+        CreateApplicationRequest request = new CreateApplicationRequest(group.getId(), "testAppName", "/hctTest", true, true, false);
         Application app = applicationPersistenceService.createApplication(request, "app context template", "role mapping properties", "app properties template");
 
         CreateJvmRequest createJvmRequest = new CreateJvmRequest(jvmName, "testHost", 9101, 9102, 9103, -1, 9104, new Path("./"), "");
@@ -231,7 +231,7 @@ public abstract class
         AddJvmToGroupRequest addJvmToGroup = new AddJvmToGroupRequest(group.getId(), jvm.getId());
         group = groupPersistenceService.addJvmToGroup(addJvmToGroup);
 
-        CreateApplicationRequest request = new CreateApplicationRequest(group.getId(), "testAppName", "/hctTest", true, true);
+        CreateApplicationRequest request = new CreateApplicationRequest(group.getId(), "testAppName", "/hctTest", true, true, false);
         Application app = applicationPersistenceService.createApplication(request, "app context template", "role mapping properties", "app properties template");
 
         String oldContent = applicationPersistenceService.getResourceTemplate(app.getName(), "hctTest.xml", jvmName, group.getName());
@@ -258,7 +258,7 @@ public abstract class
         AddJvmToGroupRequest addJvmGrpRequest = new AddJvmToGroupRequest(group.getId(), jvm.getId());
         group = groupPersistenceService.addJvmToGroup(addJvmGrpRequest);
 
-        CreateApplicationRequest request = new CreateApplicationRequest(group.getId(), "testAppName", "/hctTest", true, true);
+        CreateApplicationRequest request = new CreateApplicationRequest(group.getId(), "testAppName", "/hctTest", true, true, false);
         Application app = applicationPersistenceService.createApplication(request, "app context template", "role mapping properties", "app properties template");
 
         Application sameApp = applicationPersistenceService.getApplication(app.getId());

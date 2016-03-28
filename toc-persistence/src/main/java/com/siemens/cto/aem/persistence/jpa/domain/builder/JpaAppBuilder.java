@@ -16,6 +16,7 @@ public class JpaAppBuilder {
                 jpaApp.getGroup() != null ? new JpaGroupBuilder(jpaApp.getGroup()).build() : null,
                 jpaApp.isSecure(),
                 jpaApp.isLoadBalanceAcrossServers(),
+                jpaApp.isUnpackWar(),
                 jpaApp.getWarName());
 
     }

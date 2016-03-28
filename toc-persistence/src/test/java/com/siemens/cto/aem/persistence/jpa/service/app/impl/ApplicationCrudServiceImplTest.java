@@ -13,9 +13,7 @@ import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.user.User;
-import com.siemens.cto.aem.common.request.group.UpdateGroupRequest;
 import com.siemens.cto.aem.common.request.jvm.CreateJvmRequest;
-import com.siemens.cto.aem.common.request.jvm.UpdateJvmRequest;
 import com.siemens.cto.aem.persistence.configuration.TestJpaConfiguration;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaApplication;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
@@ -52,15 +50,12 @@ import org.springframework.test.context.support.AnnotationConfigContextLoader;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.NoResultException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import static org.junit.Assert.*;
 
@@ -163,7 +158,7 @@ public class ApplicationCrudServiceImplTest {
 
     @Test(expected = BadRequestException.class)
     public void testApplicationCrudServiceEEE() {
-        CreateApplicationRequest request = new CreateApplicationRequest(expGroupId, textName, textContext, true, true);
+        CreateApplicationRequest request = new CreateApplicationRequest(expGroupId, textName, textContext, true, true, false);
 
         JpaApplication created = applicationCrudService.createApplication(request, jpaGroup);
 
@@ -188,7 +183,7 @@ public class ApplicationCrudServiceImplTest {
 
     @Test
     public void testDuplicateContextsOk() {
-        CreateApplicationRequest request = new CreateApplicationRequest(expGroupId, textName, textContext, true, true);
+        CreateApplicationRequest request = new CreateApplicationRequest(expGroupId, textName, textContext, true, true, false);
 
         JpaApplication created2 = null;
         JpaApplication created = applicationCrudService.createApplication(request, jpaGroup);
@@ -196,7 +191,7 @@ public class ApplicationCrudServiceImplTest {
         assertNotNull(created);
 
         try {
-            CreateApplicationRequest request2 = new CreateApplicationRequest(expGroupId, textName + "-another", textContext, true, true);
+            CreateApplicationRequest request2 = new CreateApplicationRequest(expGroupId, textName + "-another", textContext, true, true, false);
 
             created2 = applicationCrudService.createApplication(request2, jpaGroup);
 
@@ -234,7 +229,7 @@ public class ApplicationCrudServiceImplTest {
     public void testGetResourceTemplate() throws FileNotFoundException {
         InputStream data = new FileInputStream(new File("./src/test/resources/ServerXMLTemplate.tpl"));
         CreateJvmRequest createJvmRequest = new CreateJvmRequest("testJvmName", "testHost", 9100, 9101, 9102, -1, 9103, new Path("./"), "");
-        CreateApplicationRequest createApplicationRequest = new CreateApplicationRequest(new Identifier<Group>(jpaGroup.getId()), "testAppResourceTemplateName", "/hctTest", true, true);
+        CreateApplicationRequest createApplicationRequest = new CreateApplicationRequest(new Identifier<Group>(jpaGroup.getId()), "testAppResourceTemplateName", "/hctTest", true, true, false);
         Group group = new Group(new Identifier<Group>(jpaGroup.getId()), jpaGroup.getName());
         JpaJvm jpaJvm = jvmCrudService.createJvm(createJvmRequest);
         JpaApplication jpaApp = applicationCrudService.createApplication(createApplicationRequest, jpaGroup);
@@ -242,7 +237,7 @@ public class ApplicationCrudServiceImplTest {
         List<Application> appsForJpaGroup = applicationCrudService.findApplicationsBelongingTo(new Identifier<Group>(jpaGroup.getId()));
         assertEquals(1, appsForJpaGroup.size());
 
-        Application app = new Application(new Identifier<Application>(jpaApp.getId()), jpaApp.getName(), jpaApp.getWarPath(), jpaApp.getWebAppContext(), group, true, true, "testApp.war");
+        Application app = new Application(new Identifier<Application>(jpaApp.getId()), jpaApp.getName(), jpaApp.getWarPath(), jpaApp.getWebAppContext(), group, true, true, false, "testApp.war");
         UploadAppTemplateRequest uploadTemplateRequest = new UploadAppTemplateRequest(app, "ServerXMLTemplate.tpl", "hct.xml", "testJvmName", data);
 
         applicationCrudService.uploadAppTemplate(uploadTemplateRequest, jpaJvm);
@@ -276,7 +271,7 @@ public class ApplicationCrudServiceImplTest {
 
     @Test
     public void testGetApplication() {
-        CreateApplicationRequest createTestApp = new CreateApplicationRequest(new Identifier<Group>(jpaGroup.getId()), "testAppName", "/testApp", true, true);
+        CreateApplicationRequest createTestApp = new CreateApplicationRequest(new Identifier<Group>(jpaGroup.getId()), "testAppName", "/testApp", true, true, false);
         JpaApplication jpaApp = applicationCrudService.createApplication(createTestApp, jpaGroup);
         Application application = applicationCrudService.getApplication(new Identifier<Application>(jpaApp.getId()));
         assertEquals(jpaApp.getName(), application.getName());
@@ -304,7 +299,7 @@ public class ApplicationCrudServiceImplTest {
 
     @Test
     public void testFindApplication() {
-        CreateApplicationRequest createTestApp = new CreateApplicationRequest(new Identifier<Group>(jpaGroup.getId()), "testAppName", "/testApp", true, true);
+        CreateApplicationRequest createTestApp = new CreateApplicationRequest(new Identifier<Group>(jpaGroup.getId()), "testAppName", "/testApp", true, true, false);
         JpaApplication jpaApp = applicationCrudService.createApplication(createTestApp, jpaGroup);
 
         CreateJvmRequest createJvmRequest =new CreateJvmRequest("testJvmName", "hostName", 9100, 9101, 9102, -1, 9103, new Path("./"), "");

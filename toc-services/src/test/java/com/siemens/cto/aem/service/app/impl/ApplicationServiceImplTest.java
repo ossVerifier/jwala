@@ -201,7 +201,7 @@ public class ApplicationServiceImplTest {
     public void testCreateBadRequest() {
         when(applicationPersistenceService.createApplication(any(CreateApplicationRequest.class), anyString(), anyString(), anyString())).thenReturn(mockApplication2);
 
-        CreateApplicationRequest cac = new CreateApplicationRequest(Identifier.id(1L, Group.class), "", "", true, true);
+        CreateApplicationRequest cac = new CreateApplicationRequest(Identifier.id(1L, Group.class), "", "", true, true, false);
         Application created = applicationService.createApplication(cac, new User("user"));
 
         assertTrue(created == mockApplication2);
@@ -212,7 +212,7 @@ public class ApplicationServiceImplTest {
     public void testCreate() {
         when(applicationPersistenceService.createApplication(any(CreateApplicationRequest.class), anyString(), anyString(), anyString())).thenReturn(mockApplication2);
 
-        CreateApplicationRequest cac = new CreateApplicationRequest(Identifier.id(1L, Group.class), "wan", "/wan", true, true);
+        CreateApplicationRequest cac = new CreateApplicationRequest(Identifier.id(1L, Group.class), "wan", "/wan", true, true, false);
         Application created = applicationService.createApplication(cac, new User("user"));
 
         assertTrue(created == mockApplication2);
@@ -224,7 +224,7 @@ public class ApplicationServiceImplTest {
     public void testUpdate() {
         when(applicationPersistenceService.updateApplication(any(UpdateApplicationRequest.class))).thenReturn(mockApplication2);
 
-        UpdateApplicationRequest cac = new UpdateApplicationRequest(mockApplication2.getId(), Identifier.id(1L, Group.class), "wan", "/wan", true, true);
+        UpdateApplicationRequest cac = new UpdateApplicationRequest(mockApplication2.getId(), Identifier.id(1L, Group.class), "wan", "/wan", true, true, false);
         Application created = applicationService.updateApplication(cac, new User("user"));
 
         assertTrue(created == mockApplication2);
@@ -576,7 +576,7 @@ public class ApplicationServiceImplTest {
         List<String> templateNames = new ArrayList<>();
         templateNames.add("app.xml");
         when(applicationPersistenceService.getResourceTemplateNames(anyString())).thenReturn(templateNames);
-        when(applicationPersistenceService.findApplication(anyString(), anyString(), anyString())).thenReturn(new Application(new Identifier<Application>(111L), "appName", "./warPath", "/context", mockGroup, true, true, "app.war"));
+        when(applicationPersistenceService.findApplication(anyString(), anyString(), anyString())).thenReturn(new Application(new Identifier<Application>(111L), "appName", "./warPath", "/context", mockGroup, true, true, false, "app.war"));
         when(applicationPersistenceService.getResourceTemplate(anyString(), anyString(), anyString(), anyString())).thenReturn("template this!");
         when(remoteCommandExecutor.executeRemoteCommand(anyString(), anyString(), any(ApplicationControlOperation.class), any(PlatformCommandProvider.class), anyString(), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(0), "Success!", ""));
 
@@ -615,7 +615,7 @@ public class ApplicationServiceImplTest {
         List<String> templateNames = new ArrayList<>();
         templateNames.add("app.xml");
         when(applicationPersistenceService.getResourceTemplateNames(anyString())).thenReturn(templateNames);
-        when(applicationPersistenceService.findApplication(anyString(), anyString(), anyString())).thenReturn(new Application(new Identifier<Application>(111L), "appName", "./warPath", "/context", mockGroup, true, true, "app.war"));
+        when(applicationPersistenceService.findApplication(anyString(), anyString(), anyString())).thenReturn(new Application(new Identifier<Application>(111L), "appName", "./warPath", "/context", mockGroup, true, true, false, "app.war"));
         when(applicationPersistenceService.getResourceTemplate(anyString(), anyString(), anyString(), anyString())).thenReturn("template this!");
         when(remoteCommandExecutor.executeRemoteCommand(anyString(), anyString(), any(ApplicationControlOperation.class), any(PlatformCommandProvider.class), anyString(), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(0), "Success!", ""));
 

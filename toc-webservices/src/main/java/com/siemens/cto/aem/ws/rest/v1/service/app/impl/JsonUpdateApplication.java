@@ -9,6 +9,7 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
 
 public class JsonUpdateApplication {
 
+    private boolean unpackWar;
     private Long   webappId;
     private String name;
     private Long   groupId;
@@ -23,19 +24,21 @@ public class JsonUpdateApplication {
                                  String webappContext,
                                  Long webappId,
                                  boolean secure,
-                                 boolean loadBalanceAcrossServers) {
+                                 boolean loadBalanceAcrossServers,
+                                 boolean unpackWar) {
         this.groupId = groupId;
         this.webappId = webappId;
         this.name = name;
         this.webappContext = webappContext;
         this.secure = secure;
         this.loadBalanceAcrossServers = loadBalanceAcrossServers;
+        this.unpackWar = unpackWar;
     }
 
     public UpdateApplicationRequest toUpdateCommand() {
         return  new UpdateApplicationRequest(
                     Identifier.id(webappId, Application.class),
-                    Identifier.id(groupId, Group.class), webappContext, name, secure, loadBalanceAcrossServers);
+                    Identifier.id(groupId, Group.class), webappContext, name, secure, loadBalanceAcrossServers, unpackWar);
     }
 
     public Long getWebappId() {
@@ -104,12 +107,19 @@ public class JsonUpdateApplication {
                 getWebappContext(),
                 getWebappId(),
                 isSecure(),
-                isLoadBalanceAcrossServers());
+                isLoadBalanceAcrossServers(), false);
     }
     
     @Override
     public boolean equals(Object other) {
         return EqualsBuilder.reflectionEquals(this, other);        
+    }
+
+    public void setUnpackWar(boolean unpack) {
+        this.unpackWar = unpack;
+    }
+    public boolean isUnpackWar() {
+        return unpackWar;
     }
     
     /* test code:

@@ -141,8 +141,11 @@ public class ApplicationServiceImpl implements ApplicationService {
         final String appContext = fileManager.getResourceTypeTemplate(ApplicationProperties.get(APP_CONTEXT_TEMPLATE));
         final String roleMappingProperties = fileManager.getResourceTypeTemplate(ApplicationProperties.get(ROLE_MAPPING_PROPERTIES_TEMPLATE));
         final String appProperties = fileManager.getResourceTypeTemplate(ApplicationProperties.get(APP_PROPERTIES_TEMPLATE));
+
         final Application application = applicationPersistenceService.createApplication(createApplicationRequest, appContext, roleMappingProperties, appProperties);
+
         groupService.populateGroupAppTemplates(application, appContext, roleMappingProperties, appProperties);
+
         return application;
     }
 
@@ -282,12 +285,14 @@ public class ApplicationServiceImpl implements ApplicationService {
             final String srcPath = confFile.getAbsolutePath().replace("\\", "/");
             // back up the original file first only if the war was uploaded
             // if the war wasn't uploaded yet then there is no file to backup
+            final String deployJvmName = jvm.getJvmName();
+            final String hostName = jvm.getHostName();
             if (app.getWarPath() != null && backUp) {
                 String currentDateSuffix = new SimpleDateFormat(".yyyyMMdd_HHmmss").format(new Date());
                 final String destPathBackup = destPath + currentDateSuffix;
                 final CommandOutput commandOutput = applicationCommandExecutor.executeRemoteCommand(
-                        jvm.getJvmName(),
-                        jvm.getHostName(),
+                        deployJvmName,
+                        hostName,
                         ApplicationControlOperation.BACK_UP_CONFIG_FILE,
                         new WindowsApplicationPlatformCommandProvider(),
                         destPath,
@@ -298,8 +303,8 @@ public class ApplicationServiceImpl implements ApplicationService {
 
             }
             final CommandOutput execData = applicationCommandExecutor.executeRemoteCommand(
-                    jvm.getJvmName(),
-                    jvm.getHostName(),
+                    deployJvmName,
+                    hostName,
                     ApplicationControlOperation.DEPLOY_CONFIG_FILE,
                     new WindowsApplicationPlatformCommandProvider(),
                     srcPath,
@@ -363,7 +368,7 @@ public class ApplicationServiceImpl implements ApplicationService {
             if (theJvms != null && theJvms.size() > 0) {
                 Set<String> hostNames = new HashSet<>();
                 for (Jvm jvm : theJvms) {
-                    final String host = jvm.getHostName();
+                    final String host = jvm.getHostName().toLowerCase();
                     if (hostNames.contains(host)) {
                         continue;
                     } else {
@@ -403,7 +408,15 @@ public class ApplicationServiceImpl implements ApplicationService {
             @Override
             public CommandOutput call() throws Exception {
                 LOGGER.info("Copying {} war to host {}", name, host);
-                return applicationCommandExecutor.executeRemoteCommand(jvm.getJvmName(), jvm.getHostName(), ApplicationControlOperation.DEPLOY_WAR, new WindowsApplicationPlatformCommandProvider(), tempWarFile.getAbsolutePath().replaceAll("\\\\", "/"), destPath);
+                final String jvmName = jvm.getJvmName();
+                final String hostName = jvm.getHostName();
+                CommandOutput commandOutput = applicationCommandExecutor.executeRemoteCommand(jvmName, hostName, ApplicationControlOperation.DEPLOY_WAR, new WindowsApplicationPlatformCommandProvider(), tempWarFile.getAbsolutePath().replaceAll("\\\\", "/"), destPath);
+                if (application.isUnpackWar()) {
+                    final String warName = application.getWarName();
+                    LOGGER.info("Unpacking war {} on host {}", warName, hostName);
+                    commandOutput = applicationCommandExecutor.executeRemoteCommand(jvmName, hostName, ApplicationControlOperation.UNPACK_WAR, new WindowsApplicationPlatformCommandProvider(), warName);
+                }
+                return commandOutput;
             }
         });
         return commandOutputFuture;
@@ -539,7 +552,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 
         public WebApp(final Application app, final Jvm parentJvm) {
             super(app.getId(), app.getName(), app.getWarPath(), app.getWebAppContext(), app.getGroup(), app.isSecure(),
-                    app.isLoadBalanceAcrossServers(), app.getWarName());
+                    app.isLoadBalanceAcrossServers(), app.isUnpackWar(), app.getWarName());
             jvm = parentJvm;
         }
 

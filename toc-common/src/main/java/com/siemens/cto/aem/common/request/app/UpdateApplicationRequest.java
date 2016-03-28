@@ -1,10 +1,9 @@
 package com.siemens.cto.aem.common.request.app;
 
-import com.siemens.cto.aem.common.request.Request;
-import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.common.domain.model.app.Application;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
+import com.siemens.cto.aem.common.request.Request;
 import com.siemens.cto.aem.common.rule.MultipleRules;
 import com.siemens.cto.aem.common.rule.app.ApplicationContextRule;
 import com.siemens.cto.aem.common.rule.app.ApplicationIdRule;
@@ -23,19 +22,21 @@ public class UpdateApplicationRequest implements Serializable, Request {
     private final String newName;
     private final boolean newSecure;
     private final boolean newLoadBalanceAcrossServers;
+    private final boolean unpackWar;
 
     public UpdateApplicationRequest(
             final Identifier<Application> theId,
             final Identifier<Group> theGroupId,
             final String theNewWebAppContext,
             final String theNewName,
-            boolean theNewSecure, boolean theNewLoadBalanceAcrossServers) {
+            boolean theNewSecure, boolean theNewLoadBalanceAcrossServers, boolean unpackWar) {
         id = theId;
         newGroupId = theGroupId;
         newName = theNewName;
         newWebAppContext = theNewWebAppContext;
         newSecure = theNewSecure;
         newLoadBalanceAcrossServers = theNewLoadBalanceAcrossServers;
+        this.unpackWar = unpackWar;
     }
 
     public Identifier<Application> getId() {
@@ -67,5 +68,9 @@ public class UpdateApplicationRequest implements Serializable, Request {
                                 new GroupIdRule(newGroupId),
                                 new ApplicationNameRule(newName),
                                 new ApplicationContextRule(newWebAppContext)).validate();
+    }
+
+    public boolean isUnpackWar() {
+        return unpackWar;
     }
 }

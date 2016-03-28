@@ -193,7 +193,7 @@ public class WebServerCrudServiceImplTest {
 
         CreateGroupRequest creatGroupReq = new CreateGroupRequest("testGroupName");
         JpaGroup group = groupCrudService.createGroup(creatGroupReq);
-        CreateApplicationRequest createAppReq = new CreateApplicationRequest(new Identifier<Group>(group.getId()), "testAppName", "/context", true, true);
+        CreateApplicationRequest createAppReq = new CreateApplicationRequest(new Identifier<Group>(group.getId()), "testAppName", "/context", true, true, false);
         JpaApplication application = applicationCrudService.createApplication(createAppReq, group);
         List<JpaWebServer> wsList = new ArrayList<>();
         wsList.add(impl.findById(webServer.getId().getId()));

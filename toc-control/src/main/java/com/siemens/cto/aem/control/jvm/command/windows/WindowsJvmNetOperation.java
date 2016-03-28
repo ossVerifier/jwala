@@ -135,7 +135,7 @@ public enum WindowsJvmNetOperation implements ServiceCommandBuilder {
         return LOOKUP_MAP.get(anOperation);
     }
 
-    private static String cygpathWrapper(AemControl.Properties scriptPath) {
+    protected static String cygpathWrapper(AemControl.Properties scriptPath) {
         return "`" + CYGPATH.toString() + " " + SCRIPTS_PATH.toString() + scriptPath + "`";
     }
 }

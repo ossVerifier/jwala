@@ -15,7 +15,7 @@ public class ApplicationRequestTest {
         CreateApplicationRequest cac = new CreateApplicationRequest(
                 Identifier.id(id, Group.class),
                 name, 
-                ctx, true, true);
+                ctx, true, true, false);
         assertEquals(name, cac.getName());
         assertEquals(ctx, cac.getWebAppContext());
         assertEquals(Identifier.id(id, Group.class), cac.getGroupId());
@@ -53,7 +53,7 @@ public class ApplicationRequestTest {
                 Identifier.id(groupId, Group.class),
                 ctx,
                 name,
-                true, true);
+                true, true, false);
         assertEquals(name, uac.getNewName());
         assertEquals(ctx, uac.getNewWebAppContext());
         assertEquals(Identifier.id(appId, Application.class), uac.getId());

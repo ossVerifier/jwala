@@ -18,6 +18,9 @@ public class Application {
     private boolean secure;
 
     private boolean loadBalanceAcrossServers;
+
+    private boolean unpackWar;
+
     private String warName;
 
     public Application(Identifier<Application> anId,
@@ -27,7 +30,7 @@ public class Application {
                        Group aGroup,
                        boolean secure,
                        boolean loadBalanceAcrossServers,
-                       String warName) {
+                       boolean unpackWar, String warName) {
         group = aGroup;
         id = anId;
         webAppContext = aWebAppContext;
@@ -35,6 +38,7 @@ public class Application {
         name = aName;
         this.secure = secure;
         this.loadBalanceAcrossServers = loadBalanceAcrossServers;
+        this.unpackWar = unpackWar;
         this.warName = warName;
     }
 
@@ -100,5 +104,13 @@ public class Application {
 
     public void setWarName(String warName) {
         this.warName = warName;
+    }
+
+    public boolean isUnpackWar() {
+        return unpackWar;
+    }
+
+    public void setUnpackWar(boolean unpackWar) {
+        this.unpackWar = unpackWar;
     }
 }

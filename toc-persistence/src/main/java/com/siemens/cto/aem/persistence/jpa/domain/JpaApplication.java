@@ -1,17 +1,6 @@
 package com.siemens.cto.aem.persistence.jpa.domain;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.ManyToOne;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
-import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
-
-import com.siemens.cto.aem.common.domain.model.app.Application;
+import javax.persistence.*;
 
 /**
  * An application is usually a web application stored in a war file
@@ -103,6 +92,8 @@ public class JpaApplication extends AbstractEntity<JpaApplication> {
 
     private boolean loadBalanceAcrossServers;
 
+    private boolean unpackWar;
+
     @Column(nullable = true, unique = false)
     private String warName;
 
@@ -165,5 +156,13 @@ public class JpaApplication extends AbstractEntity<JpaApplication> {
 
     public String getWarName() {
         return warName;
+    }
+
+    public boolean isUnpackWar() {
+        return unpackWar;
+    }
+
+    public void setUnpackWar(boolean unpackWar) {
+        this.unpackWar = unpackWar;
     }
 }
