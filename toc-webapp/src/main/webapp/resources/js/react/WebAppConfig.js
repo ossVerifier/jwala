@@ -150,6 +150,7 @@ var WebAppConfigForm = React.createClass({
             GroupId: "",
             groupIds: [],
             secure: true,
+            unpackWar: false,
             loadBalanceAcrossServers: true
         }
     },
@@ -185,6 +186,7 @@ var WebAppConfigForm = React.createClass({
             GroupId:this.getWebAppGroupIdProp(nextProps, "id"),
             GroupName:this.getWebAppGroupProp(nextProps, "name"),
             secure:this.getWebAppProp(nextProps, "secure", true),
+            unpackWar:this.getWebAppProp(nextProps, "unpackWar", false),
             loadBalanceAcrossServers:this.getWebAppProp(nextProps, "loadBalanceAcrossServers", true)
           });
     },
@@ -255,6 +257,15 @@ var WebAppConfigForm = React.createClass({
                             </tr>
 
                             <tr>
+                                <td>Unpack War</td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <input name="unpackWar" type="checkbox" checked={this.state.unpackWar} onChange={this.onUnpackWarCheckboxChanged}/>
+                                </td>
+                            </tr>
+
+                            <tr>
                                 <td>Load Balance</td>
                             </tr>
                             <tr>
@@ -278,6 +289,9 @@ var WebAppConfigForm = React.createClass({
     },
     onSecureCheckboxChanged: function() {
         this.setState({secure:!this.state.secure});
+    },
+    onUnpackWarCheckboxChanged: function() {
+        this.setState({unpackWar:!this.state.unpackWar});
     },
     onLbAcrossServersCheckboxChanged: function() {
         this.setState({loadBalanceAcrossServers: true});
