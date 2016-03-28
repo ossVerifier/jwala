@@ -5,26 +5,30 @@ import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.jvm.JvmControlOperation;
 import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
+import com.siemens.cto.aem.common.domain.model.ssh.SshConfiguration;
 import com.siemens.cto.aem.common.domain.model.state.CurrentState;
 import com.siemens.cto.aem.common.domain.model.state.StateType;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.exception.InternalErrorException;
-import com.siemens.cto.aem.common.exec.CommandOutput;
-import com.siemens.cto.aem.common.exec.CommandOutputReturnCode;
-import com.siemens.cto.aem.common.exec.ExecReturnCode;
+import com.siemens.cto.aem.common.exec.*;
 import com.siemens.cto.aem.common.request.jvm.ControlJvmRequest;
 import com.siemens.cto.aem.control.command.RemoteCommandExecutor;
+import com.siemens.cto.aem.control.command.ServiceCommandBuilder;
 import com.siemens.cto.aem.control.jvm.command.impl.WindowsJvmPlatformCommandProvider;
 import com.siemens.cto.aem.exception.CommandFailureException;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
 import com.siemens.cto.aem.persistence.jpa.type.EventType;
 import com.siemens.cto.aem.service.HistoryService;
+import com.siemens.cto.aem.service.RemoteCommandExecutorService;
+import com.siemens.cto.aem.service.RemoteCommandReturnInfo;
+import com.siemens.cto.aem.service.exception.RemoteCommandExecutorServiceException;
 import com.siemens.cto.aem.service.jvm.JvmControlService;
 import com.siemens.cto.aem.service.jvm.JvmService;
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 
@@ -44,6 +48,14 @@ public class JvmControlServiceImpl implements JvmControlService {
     private final RemoteCommandExecutor<JvmControlOperation> remoteCommandExecutor;
     private final HistoryService historyService;
     private final SimpMessagingTemplate messagingTemplate;
+
+    @Autowired
+    // TODO: Initialize with the constructor!
+    private RemoteCommandExecutorService remoteCommandExecutorService;
+
+    @Autowired
+    // TODO: Initialize with the constructor!
+    private SshConfiguration sshConfig;
 
     public JvmControlServiceImpl(final JvmService theJvmService,
                                  final RemoteCommandExecutor<JvmControlOperation> theExecutor,
@@ -73,18 +85,33 @@ public class JvmControlServiceImpl implements JvmControlService {
                         aUser.getId(), DateTime.now(), StateType.JVM));
             }
 
-            CommandOutput commandOutput = remoteCommandExecutor.executeRemoteCommand(jvm.getJvmName(), jvm.getHostName(),
-                    ctrlOp, new WindowsJvmPlatformCommandProvider());
+            // CommandOutput commandOutput = remoteCommandExecutor.executeRemoteCommand(jvm.getJvmName(), jvm.getHostName(),
+            //    ctrlOp, new WindowsJvmPlatformCommandProvider());
 
-            if (commandOutput != null && StringUtils.isNotEmpty(commandOutput.getStandardOutput()) &&
-                    (controlJvmRequest.getControlOperation().equals(JvmControlOperation.START) ||
-                     controlJvmRequest.getControlOperation().equals(JvmControlOperation.STOP))) {
+            // The code above was replaced by the code below which eliminate's a lot of java class layers just to execute
+            // a command via JSCH. Once the said code has be tested thoroughly, then the commented out code above will
+            // be deleted along with its class and supporting files.
+            final WindowsJvmPlatformCommandProvider windowsJvmPlatformCommandProvider = new WindowsJvmPlatformCommandProvider();
+            final ServiceCommandBuilder serviceCommandBuilder = windowsJvmPlatformCommandProvider.getServiceCommandBuilderFor(controlJvmRequest.getControlOperation());
+            final ExecCommand execCommand = serviceCommandBuilder.buildCommandForService(jvm.getJvmName());
+            final RemoteExecCommand remoteExecCommand = new RemoteExecCommand(new RemoteSystemConnection(sshConfig.getUserName(),
+                    sshConfig.getPassword(), jvm.getHostName(), sshConfig.getPort()) , execCommand);
+
+            RemoteCommandReturnInfo remoteCommandReturnInfo = remoteCommandExecutorService.executeCommand(remoteExecCommand);
+
+            // TODO: Decide whether we keep CommandOuput or RemoteCommandReturnInfo!
+            CommandOutput commandOutput = new CommandOutput(new ExecReturnCode(remoteCommandReturnInfo.retCode),
+                    remoteCommandReturnInfo.standardOuput, remoteCommandReturnInfo.errorOupout);
+
+            if (StringUtils.isNotEmpty(commandOutput.getStandardOutput()) && (controlJvmRequest.getControlOperation()
+                    .equals(JvmControlOperation.START) || controlJvmRequest.getControlOperation()
+                    .equals(JvmControlOperation.STOP))) {
                 commandOutput.cleanStandardOutput();
                 LOGGER.info("shell command output{}", commandOutput.getStandardOutput());
             }
 
             // Process non successful return codes...
-            if (commandOutput != null && !commandOutput.getReturnCode().wasSuccessful()) {
+            if (!commandOutput.getReturnCode().wasSuccessful()) {
                 switch (commandOutput.getReturnCode().getReturnCode()) {
                     case ExecReturnCode.STP_EXIT_PROCESS_KILLED:
                         commandOutput = new CommandOutput(new ExecReturnCode(0), FORCED_STOPPED, commandOutput.getStandardError());
@@ -109,15 +136,15 @@ public class JvmControlServiceImpl implements JvmControlService {
             }
 
             return commandOutput;
-        } catch (final CommandFailureException cfe) {
-            LOGGER.error(cfe.getMessage(), cfe);
-            historyService.createHistory(getServerName(jvm), new ArrayList<>(jvm.getGroups()), cfe.getMessage(), EventType.APPLICATION_ERROR,
+        } catch (final RemoteCommandExecutorServiceException e) {
+            LOGGER.error(e.getMessage(), e);
+            historyService.createHistory(getServerName(jvm), new ArrayList<>(jvm.getGroups()), e.getMessage(), EventType.APPLICATION_ERROR,
                     aUser.getId());
             messagingTemplate.convertAndSend(topicServerStates, new CurrentState<>(jvm.getId(), JvmState.JVM_FAILED,
-                    DateTime.now(), StateType.JVM, cfe.getMessage()));
+                    DateTime.now(), StateType.JVM, e.getMessage()));
 
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE,
-                    "CommandFailureException when attempting to control a JVM: " + controlJvmRequest, cfe);
+                    "CommandFailureException when attempting to control a JVM: " + controlJvmRequest, e);
         }
     }
 
