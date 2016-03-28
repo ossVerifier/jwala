@@ -10,14 +10,14 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
 public class JsonUpdateApplication {
 
     private boolean unpackWar;
-    private Long   webappId;
+    private Long webappId;
     private String name;
-    private Long   groupId;
+    private Long groupId;
     private String webappContext;
     private boolean secure;
     private boolean loadBalanceAcrossServers;
-    
-    public JsonUpdateApplication() {  
+
+    public JsonUpdateApplication() {
     }
 
     public JsonUpdateApplication(Long groupId, String name,
@@ -36,9 +36,9 @@ public class JsonUpdateApplication {
     }
 
     public UpdateApplicationRequest toUpdateCommand() {
-        return  new UpdateApplicationRequest(
-                    Identifier.id(webappId, Application.class),
-                    Identifier.id(groupId, Group.class), webappContext, name, secure, loadBalanceAcrossServers, unpackWar);
+        return new UpdateApplicationRequest(
+                Identifier.id(webappId, Application.class),
+                Identifier.id(groupId, Group.class), webappContext, name, secure, loadBalanceAcrossServers, unpackWar);
     }
 
     public Long getWebappId() {
@@ -68,7 +68,7 @@ public class JsonUpdateApplication {
     public String getWebappContext() {
         return webappContext;
     }
-    
+
     public void setWebappContext(String webappContext) {
         this.webappContext = webappContext;
     }
@@ -88,36 +88,51 @@ public class JsonUpdateApplication {
     public void setLoadBalanceAcrossServers(boolean loadBalanceAcrossServers) {
         this.loadBalanceAcrossServers = loadBalanceAcrossServers;
     }
-    
+
     @Override
     public int hashCode() {
         return new HashCodeBuilder().append(getGroupId())
-                                    .append(getName())
-                                    .append(getWebappContext())
-                                    .append(getWebappId())
-                                    .append(isSecure())
-                                    .append(isLoadBalanceAcrossServers()).toHashCode();
+                .append(getName())
+                .append(getWebappContext())
+                .append(getWebappId())
+                .append(isSecure())
+                .append(isLoadBalanceAcrossServers())
+                .append(isUnpackWar()).toHashCode();
     }
 
     @Override
-    public Object clone( ) {
+    public String toString() {
+        return "JsonUpdateApplication{" +
+                "unpackWar=" + unpackWar +
+                ", webappId=" + webappId +
+                ", name='" + name + '\'' +
+                ", groupId=" + groupId +
+                ", webappContext='" + webappContext + '\'' +
+                ", secure=" + secure +
+                ", loadBalanceAcrossServers=" + loadBalanceAcrossServers +
+                '}';
+    }
+
+    @Override
+    public Object clone() {
         return new JsonUpdateApplication(
                 getGroupId(),
                 getName(),
                 getWebappContext(),
                 getWebappId(),
                 isSecure(),
-                isLoadBalanceAcrossServers(), false);
+                isLoadBalanceAcrossServers(), isUnpackWar());
     }
-    
+
     @Override
     public boolean equals(Object other) {
-        return EqualsBuilder.reflectionEquals(this, other);        
+        return EqualsBuilder.reflectionEquals(this, other);
     }
 
     public void setUnpackWar(boolean unpack) {
         this.unpackWar = unpack;
     }
+
     public boolean isUnpackWar() {
         return unpackWar;
     }

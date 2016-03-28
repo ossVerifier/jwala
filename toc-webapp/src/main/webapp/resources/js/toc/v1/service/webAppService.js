@@ -26,7 +26,10 @@ var webAppService = {
                     json[this.name] = this.value === "on" ? true : false;
                 } else if (this.name === "loadBalance") {
                     json["loadBalanceAcrossServers"] = this.value === "acrossServers" ? true : false;
-                } else {
+                } else if (this.name === "unpackWar") {
+                    json[this.name] = this.value === "on" ? true : false;
+                }
+                else {
                     json[this.name] = this.value;
                 }
             }

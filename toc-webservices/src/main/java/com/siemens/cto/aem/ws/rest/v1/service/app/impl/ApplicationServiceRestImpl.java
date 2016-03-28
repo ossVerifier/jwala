@@ -84,7 +84,7 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
 
     @Override
     public Response updateApplication(final JsonUpdateApplication anAppToUpdate, final AuthenticatedUser aUser) {
-        LOGGER.debug("Update Application requested: {}", anAppToUpdate);
+        LOGGER.info("Update Application requested: {}", anAppToUpdate);
         Application updated = service.updateApplication(anAppToUpdate.toUpdateCommand(), aUser.getUser());
         return ResponseBuilder.ok(updated);
     }

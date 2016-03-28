@@ -50,7 +50,8 @@ public class JsonCreateApplication {
                 .append(getName())
                 .append(getWebappContext())
                 .append(isSecure())
-                .append(isLoadBalanceAcrossServers()).toHashCode();
+                .append(isLoadBalanceAcrossServers())
+                .append(isUnpackWar()).toHashCode();
     }
 
     @Override

@@ -100,6 +100,7 @@ public class ApplicationCrudServiceImpl extends AbstractCrudServiceImpl<JpaAppli
             jpaApp.setGroup(jpaGroup);
             jpaApp.setSecure(updateApplicationRequest.isNewSecure());
             jpaApp.setLoadBalanceAcrossServers(updateApplicationRequest.isNewLoadBalanceAcrossServers());
+            jpaApp.setUnpackWar(updateApplicationRequest.isUnpackWar());
 
             return update(jpaApp);
         } else {
