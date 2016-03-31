@@ -2,7 +2,7 @@
   "name": "JediContext",
   "templateName": "jedi-context.tpl",
   "contentType": "application/xml",
-  "configFileName":"jedicontext.xml",
+  "configFileName":"jedi-context.xml",
   "relativeDir":"/conf",
   "entity": {
     "type": "jvm",
