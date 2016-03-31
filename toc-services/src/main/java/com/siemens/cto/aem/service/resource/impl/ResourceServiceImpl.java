@@ -14,11 +14,9 @@ import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.common.exception.FaultCodeException;
 import com.siemens.cto.aem.common.request.app.UploadAppTemplateRequest;
 import com.siemens.cto.aem.common.request.jvm.UploadJvmConfigTemplateRequest;
-import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
 import com.siemens.cto.aem.common.request.resource.ResourceInstanceRequest;
 import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateRequest;
-import com.siemens.cto.aem.persistence.service.GroupPersistenceService;
-import com.siemens.cto.aem.persistence.service.ResourcePersistenceService;
+import com.siemens.cto.aem.persistence.service.*;
 import com.siemens.cto.aem.service.app.ApplicationService;
 import com.siemens.cto.aem.service.exception.ResourceServiceException;
 import com.siemens.cto.aem.service.jvm.JvmService;
@@ -68,6 +66,15 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Autowired // TODO: Instantiate in the constructor...
     private ApplicationService applicationService;
+
+    @Autowired // TODO: Instantiate in the constructor...
+    private ApplicationPersistenceService applicationPersistenceService;
+
+    @Autowired  // TODO: Instantiate in the constructor...
+    private JvmPersistenceService jvmPersistenceService;
+
+    @Autowired  // TODO: Instantiate in the constructor...
+    private WebServerPersistenceService webServerPersistenceService;
 
     @Value("${paths.resource-types}")
     private String templatePath;
@@ -337,4 +344,12 @@ public class ResourceServiceImpl implements ResourceService {
         }
     }
 
+    @Override
+    @Transactional
+    public int removeTemplate(String name) {
+        final int recordsRemovedTotal = applicationPersistenceService.removeTemplate(name) + jvmPersistenceService.removeTemplate(name)
+                + webServerPersistenceService.removeTemplate(name);
+        // TODO: Delete the template file here!
+        return recordsRemovedTotal;
+    }
 }

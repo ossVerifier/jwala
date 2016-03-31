@@ -49,4 +49,5 @@ public interface ApplicationCrudService extends CrudService<JpaApplication> {
 
     Application getApplication(String name);
 
+    int removeTemplate(String name);
 }

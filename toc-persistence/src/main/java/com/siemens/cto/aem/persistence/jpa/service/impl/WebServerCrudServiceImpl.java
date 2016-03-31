@@ -348,4 +348,11 @@ public class WebServerCrudServiceImpl extends AbstractCrudServiceImpl<JpaWebServ
         query.setParameter(JpaWebServer.QUERY_PARAM_GROUP_NAME, groupName);
         return (Long) query.getSingleResult();
     }
+
+    @Override
+    public int removeTemplate(final String name) {
+        final Query q = entityManager.createNamedQuery(JpaWebServerConfigTemplate.QUERY_DELETE_WEB_SERVER_TEMPLATE);
+        q.setParameter(JpaWebServerConfigTemplate.QUERY_PARAM_TEMPLATE_NAME, name);
+        return q.executeUpdate();
+    }
 }

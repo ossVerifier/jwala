@@ -172,4 +172,8 @@ public class JpaJvmPersistenceServiceImpl implements JvmPersistenceService {
         return jvms;
     }
 
+    @Override
+    public int removeTemplate(final String name) {
+        return jvmCrudService.removeTemplate(name);
+    }
 }

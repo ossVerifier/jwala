@@ -61,4 +61,10 @@ public interface ResourceService {
      */
     void createTemplate(String metaDataFile, String templateFile, User user);
 
+    /**
+     * Deletes a resource template.
+     * @param name the template name (the actual name of the resource file when deployed e.g. context.xml)
+     * @return the number of records deleted.
+     */
+    int removeTemplate(String name);
 }

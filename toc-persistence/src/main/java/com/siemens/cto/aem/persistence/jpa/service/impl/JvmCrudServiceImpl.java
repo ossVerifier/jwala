@@ -288,4 +288,11 @@ public class JvmCrudServiceImpl extends AbstractCrudServiceImpl<JpaJvm> implemen
         query.setParameter(JpaJvm.QUERY_PARAM_GROUP_NAME, groupName);
         return (Long) query.getSingleResult();
     }
+
+    @Override
+    public int removeTemplate(final String name) {
+        final Query q = entityManager.createNamedQuery(JpaJvmConfigTemplate.QUERY_DELETE_JVM_TEMPLATE);
+        q.setParameter(JpaJvmConfigTemplate.QUERY_PARAM_TEMPLATE_NAME, name);
+        return q.executeUpdate();
+    }
 }

@@ -131,4 +131,12 @@ public interface ResourceServiceRest {
                             @QueryParam("templateFile") String templateFile,
                             @BeanParam AuthenticatedUser user);
 
+    /**
+     * Deletes a resource template.
+     * @param name the template name (the actual name of the resource file when deployed e.g. context.xml)
+     * @return {@link Response} which contains the number of records deleted.
+     */
+    @DELETE
+    @Path("/template/{name}")
+    Response removeTemplate(@PathParam("name") String name);
 }

@@ -61,4 +61,6 @@ public interface WebServerCrudService extends CrudService<JpaWebServer> {
 	JpaWebServer getWebServerAndItsGroups(Long id);
 
 	Long getWebServerStoppedCount(String groupName);
+
+	int removeTemplate(String name);
 }

@@ -146,4 +146,9 @@ public class WebServerPersistenceServiceImpl implements WebServerPersistenceServ
     public Long getWebServerStoppedCount(final String groupName) {
         return webServerCrudService.getWebServerStoppedCount(groupName);
     }
+
+    @Override
+    public int removeTemplate(final String name) {
+        return webServerCrudService.removeTemplate(name);
+    }
 }

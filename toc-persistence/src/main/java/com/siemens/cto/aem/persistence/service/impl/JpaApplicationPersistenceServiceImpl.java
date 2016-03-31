@@ -169,6 +169,11 @@ public class JpaApplicationPersistenceServiceImpl implements ApplicationPersiste
         }
     }
 
+    @Override
+    public int removeTemplate(final String name) {
+        return applicationCrudService.removeTemplate(name);
+    }
+
     private JpaJvm getJpaJvmForAppXml(String resourceTemplateName, String jvmName, String groupName) {
         // the application context xml is created for each JVM, unlike the the properties and RoleMapping.properties files
         // so when we retrieve or update the template for the context xml make sure we send in a specific JVM

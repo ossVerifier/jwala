@@ -1,7 +1,10 @@
 package com.siemens.cto.aem.ws.rest.v1.service.resource.impl;
 
+import com.siemens.cto.aem.common.exception.FaultCodeException;
 import com.siemens.cto.aem.common.exception.InternalErrorException;
 import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
+import com.siemens.cto.aem.common.exception.MessageResponseStatus;
+import com.siemens.cto.aem.service.exception.ResourceServiceException;
 import com.siemens.cto.aem.service.group.GroupService;
 import com.siemens.cto.aem.service.jvm.JvmService;
 import com.siemens.cto.aem.service.resource.ResourceService;
@@ -93,4 +96,14 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
         }
     }
 
+    @Override
+    public Response removeTemplate(final String name) {
+        try {
+
+            return ResponseBuilder.ok(resourceService.removeTemplate(name));
+        } catch (final ResourceServiceException rse) {
+            return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR,
+                    new FaultCodeException(AemFaultType.PERSISTENCE_ERROR, rse.getMessage()));
+        }
+    }
 }

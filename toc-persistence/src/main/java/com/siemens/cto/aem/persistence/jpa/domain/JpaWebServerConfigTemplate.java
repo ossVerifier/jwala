@@ -15,8 +15,8 @@ import javax.persistence.*;
         @NamedQuery(name = JpaWebServerConfigTemplate.UPDATE_WEBSERVER_TEMPLATE_CONTENT,
                 query = "UPDATE JpaWebServerConfigTemplate t SET t.templateContent = :templateContent WHERE t.webServer.name = :webServerName AND t.templateName = :templateName"),
         @NamedQuery(name = JpaWebServerConfigTemplate.GET_WEBSERVER_TEMPLATE,
-        query = "SELECT t FROM JpaWebServerConfigTemplate t where t.webServer.name = :webServerName and t.templateName = :templateName")
-
+        query = "SELECT t FROM JpaWebServerConfigTemplate t where t.webServer.name = :webServerName and t.templateName = :templateName"),
+        @NamedQuery(name = JpaWebServerConfigTemplate.QUERY_DELETE_WEB_SERVER_TEMPLATE, query="DELETE FROM JpaWebServerConfigTemplate t WHERE t.templateName = :templateName")
         })
 public class JpaWebServerConfigTemplate {
 
@@ -24,6 +24,9 @@ public class JpaWebServerConfigTemplate {
     public static final String GET_WEBSERVER_TEMPLATE_CONTENT = "getWebServerTemplateContent";
     public static final String UPDATE_WEBSERVER_TEMPLATE_CONTENT = "updateWebServerTemplateContent";
     public static final String GET_WEBSERVER_TEMPLATE = "getWebServerTemplate";
+    public static final String QUERY_DELETE_WEB_SERVER_TEMPLATE = "deleteWebServerTemplate";
+
+    public static final String QUERY_PARAM_TEMPLATE_NAME = "templateName";
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

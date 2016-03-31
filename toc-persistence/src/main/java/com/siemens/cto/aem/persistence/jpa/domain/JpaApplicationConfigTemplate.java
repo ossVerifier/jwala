@@ -17,7 +17,8 @@ import javax.persistence.*;
         @NamedQuery(name = JpaApplicationConfigTemplate.GET_APP_TEMPLATE_NO_JVM,
                 query = "SELECT t FROM JpaApplicationConfigTemplate t where t.templateName = :tempName and t.app.name = :appName"),
         @NamedQuery(name = JpaApplicationConfigTemplate.GET_APP_TEMPLATE,
-                query = "SELECT t FROM JpaApplicationConfigTemplate t where t.templateName = :tempName and t.app.name = :appName and t.jvm.name = :jvmName")
+                query = "SELECT t FROM JpaApplicationConfigTemplate t where t.templateName = :tempName and t.app.name = :appName and t.jvm.name = :jvmName"),
+        @NamedQuery(name = JpaApplicationConfigTemplate.QUERY_DELETE_APP_TEMPLATE, query = "DELETE FROM JpaApplicationConfigTemplate t WHERE t.templateName = :templateName")
 })
 public class JpaApplicationConfigTemplate {
 
@@ -26,6 +27,9 @@ public class JpaApplicationConfigTemplate {
     public static final String UPDATE_APP_TEMPLATE_CONTENT = "updateAppTemplateContent";
     public static final String GET_APP_TEMPLATE_NO_JVM = "getAppTemplateNoJvm";
     public static final String GET_APP_TEMPLATE = "getAppTemplate";
+    public static final String QUERY_DELETE_APP_TEMPLATE = "deleteAppTemplate";
+
+    public static final String QUERY_PARAM_TEMPLATE_NAME = "templateName";
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
