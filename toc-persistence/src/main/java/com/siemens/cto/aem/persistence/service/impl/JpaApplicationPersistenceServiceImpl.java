@@ -141,6 +141,11 @@ public class JpaApplicationPersistenceServiceImpl implements ApplicationPersiste
     }
 
     @Override
+    public Application getApplication(final String name) {
+        return applicationCrudService.getApplication(name);
+    }
+
+    @Override
     public List<Application> getApplications() {
         return applicationCrudService.getApplications();
     }

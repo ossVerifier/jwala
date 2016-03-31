@@ -82,4 +82,15 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
     public Response getTemplate(final String resourceTypeName) {
         return ResponseBuilder.ok(resourceService.getTemplate(resourceTypeName));
     }
+
+    @Override
+    public Response createTemplate(final String metaDataFile, final String templateFile, AuthenticatedUser user) {
+        try {
+            resourceService.createTemplate(metaDataFile, templateFile, user.getUser());
+            return ResponseBuilder.ok();
+        } catch (final RuntimeException rte) {
+            throw new InternalErrorException(null, rte.getMessage(), rte); // TODO Refactor later...
+        }
+    }
+
 }

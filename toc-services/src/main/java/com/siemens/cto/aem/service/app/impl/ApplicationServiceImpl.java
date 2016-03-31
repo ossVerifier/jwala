@@ -107,6 +107,12 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     @Transactional(readOnly = true)
     @Override
+    public Application getApplication(final String name) {
+        return applicationPersistenceService.getApplication(name);
+    }
+
+    @Transactional(readOnly = true)
+    @Override
     public List<Application> getApplications() {
         return applicationPersistenceService.getApplications();
     }

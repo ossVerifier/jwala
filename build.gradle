@@ -33,7 +33,8 @@ ext {
             jacoco: '0.6.5.201403032054',
             devbundle: '1.1-SNAPSHOT',
             objenesis: '1.0',
-            jgroups: '3.6.6.Final'
+            jgroups: '3.6.6.Final',
+            commons_io: '2.4'
     ]
 }
 

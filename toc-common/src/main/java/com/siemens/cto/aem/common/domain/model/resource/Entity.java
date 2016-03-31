@@ -1,0 +1,47 @@
+package com.siemens.cto.aem.common.domain.model.resource;
+
+/**
+ * Resource entity that wraps type, group and target.
+ *
+ * Created by JC043760 on 3/30/2016.
+ */
+public class Entity {
+
+    private String type;
+    private String group;
+    private String target;
+    private String parentName;
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public String getGroup() {
+        return group;
+    }
+
+    public void setGroup(String group) {
+        this.group = group;
+    }
+
+    public String getTarget() {
+        return target;
+    }
+
+    public void setTarget(String target) {
+        this.target = target;
+    }
+
+    public String getParentName() {
+        return parentName;
+    }
+
+    public void setParentName(String parentName) {
+        this.parentName = parentName;
+    }
+
+}

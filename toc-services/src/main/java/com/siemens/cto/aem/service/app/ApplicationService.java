@@ -18,6 +18,8 @@ public interface ApplicationService {
 
     Application getApplication(Identifier<Application> aApplicationId);
 
+    Application getApplication(String name);
+
     Application updateApplication(UpdateApplicationRequest anAppToUpdate, User user);
 
     Application createApplication(CreateApplicationRequest anAppToCreate, User user);

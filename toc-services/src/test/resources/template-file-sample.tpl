@@ -1,0 +1,1 @@
+<Context docBase="\${STP_HOME}/app/webapps/jedi-webapp.war"/>

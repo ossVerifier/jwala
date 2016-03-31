@@ -249,5 +249,12 @@ public class ApplicationCrudServiceImpl extends AbstractCrudServiceImpl<JpaAppli
         return JpaAppBuilder.appFrom((JpaApplication) q.getSingleResult());
     }
 
+    @Override
+    public Application getApplication(final String name) {
+        final Query q = entityManager.createNamedQuery(JpaApplication.QUERY_BY_NAME);
+        q.setParameter("appName", name);
+        return JpaAppBuilder.appFrom((JpaApplication) q.getSingleResult());
+    }
+
 }
 

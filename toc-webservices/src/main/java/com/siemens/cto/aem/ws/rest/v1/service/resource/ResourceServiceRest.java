@@ -103,4 +103,32 @@ public interface ResourceServiceRest {
     @Path("/types/{resourceTypeName}/template")
     Response getTemplate(@PathParam("resourceTypeName") final String resourceTypeName);
 
+    /**
+     * Creates a template file and it's corresponding JSON meta data file.
+     * A template file is used when generating the actual resource file what will be deployed with the application.
+     *
+     * @param metaDataFile the template meta data file written in JSON.
+     *                             example:
+     *                                      {
+     *                                          "name": "My Context XML",
+     *                                          "templateName": "my-context.tpl",
+     *                                          "contentType": "application/xml",
+     *                                          "configFileName":"mycontext.xml",
+     *                                          "relativeDir":"/conf",
+     *                                          "entity": {
+     *                                              "type": "jvm",
+     *                                              "group": "HEALTH CHECK 4.0",
+     *                                              "target": "CTO-N9SF-LTST-HEALTH-CHECK-4.0-USMLVV1CTO4900-2"
+     *                                          }
+     *                                      }
+     * @param templateFile the file the contains the template
+     * @param user a logged in user who's calling this service
+     * @return {@link Response}
+     */
+    @POST
+    @Path("/template/{name}")
+    Response createTemplate(@QueryParam("metaDataFile") String metaDataFile,
+                            @QueryParam("templateFile") String templateFile,
+                            @BeanParam AuthenticatedUser user);
+
 }

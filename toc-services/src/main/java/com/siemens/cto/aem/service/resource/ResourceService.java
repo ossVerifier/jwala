@@ -39,4 +39,26 @@ public interface ResourceService {
 
     String getTemplate(final String resourceTypeName);
 
+    /**
+     * Creates a template file and it's corresponding JSON meta data file.
+     * A template file is used when generating the actual resource file what will be deployed with the application.
+     * @param metaDataFile the template meta data file written in JSON.
+     *                             example:
+     *                                      {
+     *                                          "name": "My Context XML",
+     *                                          "templateName": "my-context.tpl",
+     *                                          "contentType": "application/xml",
+     *                                          "configFileName":"mycontext.xml",
+     *                                          "relativeDir":"/conf",
+     *                                          "entity": {
+     *                                              "type": "jvm",
+     *                                              "group": "HEALTH CHECK 4.0",
+     *                                              "target": "CTO-N9SF-LTST-HEALTH-CHECK-4.0-USMLVV1CTO4900-2"
+     *                                          }
+     *                                      }
+     * @param templateFile the file the contains the template
+     * @param user the user calling this service
+     */
+    void createTemplate(String metaDataFile, String templateFile, User user);
+
 }

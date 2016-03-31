@@ -1,27 +1,47 @@
 package com.siemens.cto.aem.service.resource.impl;
 
-import com.siemens.cto.aem.common.request.resource.ResourceInstanceRequest;
-import com.siemens.cto.aem.common.exception.FaultCodeException;
+import com.siemens.cto.aem.common.domain.model.app.Application;
 import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
+import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.common.domain.model.resource.EntityType;
 import com.siemens.cto.aem.common.domain.model.resource.ResourceInstance;
+import com.siemens.cto.aem.common.domain.model.resource.ResourceTemplateMetaData;
 import com.siemens.cto.aem.common.domain.model.resource.ResourceType;
 import com.siemens.cto.aem.common.domain.model.user.User;
+import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
+import com.siemens.cto.aem.common.exception.FaultCodeException;
+import com.siemens.cto.aem.common.request.app.UploadAppTemplateRequest;
+import com.siemens.cto.aem.common.request.jvm.UploadJvmConfigTemplateRequest;
+import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
+import com.siemens.cto.aem.common.request.resource.ResourceInstanceRequest;
+import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateRequest;
 import com.siemens.cto.aem.persistence.service.GroupPersistenceService;
 import com.siemens.cto.aem.persistence.service.ResourcePersistenceService;
+import com.siemens.cto.aem.service.app.ApplicationService;
+import com.siemens.cto.aem.service.exception.ResourceServiceException;
+import com.siemens.cto.aem.service.jvm.JvmService;
 import com.siemens.cto.aem.service.resource.ResourceService;
+import com.siemens.cto.aem.service.webserver.WebServerService;
 import com.siemens.cto.aem.template.HarmonyTemplate;
 import com.siemens.cto.aem.template.HarmonyTemplateEngine;
 import com.siemens.cto.toc.files.FileManager;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.expression.Expression;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.transaction.annotation.Transactional;
+import org.apache.commons.io.FileUtils;
 
+import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -38,8 +58,20 @@ public class ResourceServiceImpl implements ResourceService {
     private final ResourcePersistenceService resourcePersistenceService;
     private final GroupPersistenceService groupPersistenceService;
 
-    private final String encryptExpressionString="new com.siemens.cto.infrastructure.StpCryptoService().encryptToBase64( #stringToEncrypt )"; 
-    
+    private final String encryptExpressionString="new com.siemens.cto.infrastructure.StpCryptoService().encryptToBase64( #stringToEncrypt )";
+
+    @Autowired // TODO: Instantiate in the constructor...
+    private JvmService jvmService;
+
+    @Autowired // TODO: Instantiate in the constructor...
+    private WebServerService webServerService;
+
+    @Autowired // TODO: Instantiate in the constructor...
+    private ApplicationService applicationService;
+
+    @Value("${paths.resource-types}")
+    private String templatePath;
+
     public ResourceServiceImpl(
             final FileManager theFileManager,
             final HarmonyTemplateEngine harmonyTemplateEngine,
@@ -160,4 +192,147 @@ public class ResourceServiceImpl implements ResourceService {
     public String getTemplate(final String resourceTypeName) {
         return templateEngine.getTemplate(resourceTypeName);
     }
+
+    @Override
+    public void createTemplate(final String metaDataFile, final String templateFile, User user) {
+        final ObjectMapper mapper = new ObjectMapper();
+        final ResourceTemplateMetaData metaData;
+        final String templateData;
+        try {
+            final String jsonData = FileUtils.readFileToString(new File(metaDataFile));
+            metaData = mapper.readValue(jsonData, ResourceTemplateMetaData.class);
+            templateData = FileUtils.readFileToString(new File(templateFile));
+
+            // Make a local copy of the template file and its meta data in the templates path since they are used in resource generation.
+            final File localCopyMetaDataFile = new File(templatePath + metaData.getName() + "Properties.json");
+            FileUtils.writeStringToFile(localCopyMetaDataFile, jsonData);
+            final File localCopyTemplateFile = new File(templatePath + metaData.getName() + "Template.tpl");
+            FileUtils.writeStringToFile(localCopyTemplateFile, templateData);
+        } catch(final IOException ioe) {
+            throw new ResourceServiceException(ioe);
+        }
+
+        // Let's create the template!
+        final EntityType entityType = EntityType.fromValue(metaData.getEntity().getType());
+        switch (entityType) {
+            case JVM:
+                createJvmTemplate(user, metaData, templateData);
+                break;
+            case JVMS:
+                createJvmsTemplate(user, metaData, templateData);
+                break;
+            case WEB_SERVER:
+                createWebServerTemplate(user, metaData, templateData);
+                break;
+            case WEB_SERVERS:
+                createWebServersTemplate(user, metaData, templateData);
+                break;
+            case APP:
+                createApplicationTemplate(user, metaData, templateData);
+                break;
+            case APPS:
+                createApplicationsTemplate(user, metaData, templateData);
+                break;
+            default:
+                throw new ResourceServiceException("Invalid entity type '" + metaData.getEntity().getType() + "'");
+        }
+
+    }
+
+    /**
+     * Create the JVM template in the db and in the templates path for a specific JVM entity target.
+     * @param user the user
+     * @param metaData the data that describes the template, please see {@link ResourceTemplateMetaData}
+     * @param templateData the template content/data
+     */
+    private void createJvmTemplate(final User user, final ResourceTemplateMetaData metaData, final String templateData) {
+        final Jvm jvm = jvmService.getJvm(metaData.getEntity().getTarget());
+        UploadJvmTemplateRequest uploadJvmTemplateRequest = new UploadJvmConfigTemplateRequest(jvm, metaData.getTemplateName(),
+                new ByteArrayInputStream(templateData.getBytes(StandardCharsets.UTF_8)));
+        jvmService.uploadJvmTemplateXml(uploadJvmTemplateRequest, user);
+    }
+
+    /**
+     * Create the JVM template in the db and in the templates path for all the JVMs.
+     * @param user the user
+     * @param metaData the data that describes the template, please see {@link ResourceTemplateMetaData}
+     * @param templateData the template content/data
+     */
+    private void createJvmsTemplate(final User user, final ResourceTemplateMetaData metaData, final String templateData) {
+        final List<Jvm> jvms = jvmService.getJvms();
+        for (final Jvm jvm: jvms) {
+            UploadJvmTemplateRequest uploadJvmTemplateRequest = new UploadJvmConfigTemplateRequest(jvm, metaData.getTemplateName(),
+                    new ByteArrayInputStream(templateData.getBytes(StandardCharsets.UTF_8)));
+            jvmService.uploadJvmTemplateXml(uploadJvmTemplateRequest, user);
+        }
+    }
+
+    /**
+     * Create the web server template in the db and in the templates path for a specific web server entity target.
+     * @param user the user
+     * @param metaData the data that describes the template, please see {@link ResourceTemplateMetaData}
+     * @param templateData the template content/data
+     */
+    private void createWebServerTemplate(final User user, final ResourceTemplateMetaData metaData, final String templateData) {
+        final WebServer webServer = webServerService.getWebServer(metaData.getEntity().getTarget());
+        UploadWebServerTemplateRequest uploadWebArchiveRequest = new UploadWebServerTemplateRequest(webServer,
+                metaData.getTemplateName(), new ByteArrayInputStream(templateData.getBytes(StandardCharsets.UTF_8))) {
+            @Override
+            public String getConfFileName() {
+                return metaData.getConfigFileName();
+            }
+        };
+        webServerService.uploadWebServerConfig(uploadWebArchiveRequest, user);
+    }
+
+    /**
+     * Create the web server template in the db and in the templates path for all the web servers.
+     * @param user the user
+     * @param metaData the data that describes the template, please see {@link ResourceTemplateMetaData}
+     * @param templateData the template content/data
+     */
+    private void createWebServersTemplate(final User user, final ResourceTemplateMetaData metaData, final String templateData) {
+        final List<WebServer> webServers = webServerService.getWebServers();
+        for (final WebServer webServer: webServers) {
+            UploadWebServerTemplateRequest uploadWebArchiveRequest = new UploadWebServerTemplateRequest(webServer,
+                    metaData.getTemplateName(), new ByteArrayInputStream(templateData.getBytes(StandardCharsets.UTF_8))) {
+                @Override
+                public String getConfFileName() {
+                    return metaData.getConfigFileName();
+                }
+            };
+            webServerService.uploadWebServerConfig(uploadWebArchiveRequest, user);
+        }
+    }
+
+    /**
+     * Create the application template in the db and in the templates path for a specific application entity target.
+     * @param user the user
+     * @param metaData the data that describes the template, please see {@link ResourceTemplateMetaData}
+     * @param templateData the template content/data
+     */
+    private void createApplicationTemplate(final User user, final ResourceTemplateMetaData metaData, final String templateData) {
+        final Application application = applicationService.getApplication(metaData.getEntity().getTarget());
+        UploadAppTemplateRequest uploadAppTemplateRequest = new UploadAppTemplateRequest(application, metaData.getTemplateName(),
+                metaData.getConfigFileName(), metaData.getEntity().getParentName(),
+                new ByteArrayInputStream(templateData.getBytes(StandardCharsets.UTF_8)));
+        applicationService.uploadAppTemplate(uploadAppTemplateRequest, user);
+    }
+
+    /**
+     * Create the application template in the db and in the templates path for all the application.
+     * @param user the user
+     * @param metaData the data that describes the template, please see {@link ResourceTemplateMetaData}
+     * @param templateData the template content/data
+     */
+    private void createApplicationsTemplate(final User user, final ResourceTemplateMetaData metaData, final String templateData) {
+        final List<Application> applications = applicationService.getApplications();
+        for (final Application application: applications) {
+            UploadAppTemplateRequest uploadAppTemplateRequest = new UploadAppTemplateRequest(application, metaData.getTemplateName(),
+                    metaData.getConfigFileName(), metaData.getEntity().getParentName(),
+                    new ByteArrayInputStream(templateData.getBytes(StandardCharsets.UTF_8)));
+            applicationService.uploadAppTemplate(uploadAppTemplateRequest, user);
+        }
+    }
+
 }
