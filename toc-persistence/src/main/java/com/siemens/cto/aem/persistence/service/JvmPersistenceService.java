@@ -62,4 +62,7 @@ public interface JvmPersistenceService {
 
     Long getJvmCount(String groupName);
 
+    Long getJvmStoppedCount(String groupName);
+
+    Long getJvmForciblyStoppedCount(String groupName);
 }

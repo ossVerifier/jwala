@@ -252,4 +252,12 @@ public interface GroupServiceRest {
     @Path("/{groupName}/children/startedCount")
     Response getStartedWebServersAndJvmsCount(@PathParam("groupName") String groupName);
 
+    @GET
+    @Path("/children/stoppedCount")
+    Response getStoppedWebServersAndJvmsCount();
+
+    @GET
+    @Path("/{groupName}/children/stoppedCount")
+    Response getStoppedWebServersAndJvmsCount(@PathParam("groupName") String groupName);
+
 }

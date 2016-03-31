@@ -150,6 +150,16 @@ public class JpaJvmPersistenceServiceImpl implements JvmPersistenceService {
         return jvmCrudService.getJvmCount(groupName);
     }
 
+    @Override
+    public Long getJvmStoppedCount(final String groupName) {
+        return jvmCrudService.getJvmStoppedCount(groupName);
+    }
+
+    @Override
+    public Long getJvmForciblyStoppedCount(final String groupName) {
+        return jvmCrudService.getJvmForciblyStoppedCount(groupName);
+    }
+
     protected Jvm jvmFrom(final JpaJvm aJpaJvm) {
         return new JvmBuilder(aJpaJvm).build();
     }

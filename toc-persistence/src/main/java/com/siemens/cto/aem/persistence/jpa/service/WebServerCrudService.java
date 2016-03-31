@@ -54,10 +54,11 @@ public interface WebServerCrudService extends CrudService<JpaWebServer> {
 
 	void updateState(Identifier<WebServer> id, WebServerReachableState state, String errorStatus);
 
-	Long getStartedWebServerCount(String groupName);
+	Long getWebServerStartedCount(String groupName);
 
 	Long getWebServerCount(String groupName);
 
 	JpaWebServer getWebServerAndItsGroups(Long id);
 
+	Long getWebServerStoppedCount(String groupName);
 }

@@ -240,6 +240,14 @@ public class JvmCrudServiceImpl extends AbstractCrudServiceImpl<JpaJvm> implemen
     }
 
     @Override
+    public Long getJvmStoppedCount(final String groupName) {
+        final Query query = entityManager.createNamedQuery(JpaJvm.QUERY_GET_JVM_COUNT_BY_STATE_AND_GROUP_NAME);
+        query.setParameter(JpaJvm.QUERY_PARAM_STATE, JvmState.JVM_STOPPED);
+        query.setParameter(JpaJvm.QUERY_PARAM_GROUP_NAME, groupName);
+        return (Long) query.getSingleResult();
+    }
+
+    @Override
     public Long getJvmCount(final String groupName) {
         final Query query = entityManager.createNamedQuery(JpaJvm.QUERY_GET_JVM_COUNT_BY_GROUP_NAME);
         query.setParameter(JpaJvm.QUERY_PARAM_GROUP_NAME, groupName);
@@ -273,4 +281,11 @@ public class JvmCrudServiceImpl extends AbstractCrudServiceImpl<JpaJvm> implemen
         query.executeUpdate();
     }
 
+    @Override
+    public Long getJvmForciblyStoppedCount(final String groupName) {
+        final Query query = entityManager.createNamedQuery(JpaJvm.QUERY_GET_JVM_COUNT_BY_STATE_AND_GROUP_NAME);
+        query.setParameter(JpaJvm.QUERY_PARAM_STATE, JvmState.FORCED_STOPPED);
+        query.setParameter(JpaJvm.QUERY_PARAM_GROUP_NAME, groupName);
+        return (Long) query.getSingleResult();
+    }
 }

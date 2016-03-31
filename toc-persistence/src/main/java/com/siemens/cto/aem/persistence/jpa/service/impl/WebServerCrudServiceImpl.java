@@ -320,7 +320,7 @@ public class WebServerCrudServiceImpl extends AbstractCrudServiceImpl<JpaWebServ
     }
 
     @Override
-    public Long getStartedWebServerCount(final String groupName) {
+    public Long getWebServerStartedCount(final String groupName) {
         final Query query = entityManager.createNamedQuery(JpaWebServer.QUERY_GET_WS_COUNT_BY_STATE_AND_GROUP_NAME);
         query.setParameter(JpaWebServer.QUERY_PARAM_STATE, WebServerReachableState.WS_REACHABLE);
         query.setParameter(JpaWebServer.QUERY_PARAM_GROUP_NAME, groupName);
@@ -341,4 +341,11 @@ public class WebServerCrudServiceImpl extends AbstractCrudServiceImpl<JpaWebServ
         return (JpaWebServer) query.getSingleResult();
     }
 
+    @Override
+    public Long getWebServerStoppedCount(final String groupName) {
+        final Query query = entityManager.createNamedQuery(JpaWebServer.QUERY_GET_WS_COUNT_BY_STATE_AND_GROUP_NAME);
+        query.setParameter(JpaWebServer.QUERY_PARAM_STATE, WebServerReachableState.WS_UNREACHABLE);
+        query.setParameter(JpaWebServer.QUERY_PARAM_GROUP_NAME, groupName);
+        return (Long) query.getSingleResult();
+    }
 }

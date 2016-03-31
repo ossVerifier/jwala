@@ -49,6 +49,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -103,7 +104,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         if (byName) {
             return ResponseBuilder.ok(groupService.getGroup(groupIdOrName));
         }
-        final Identifier<Group> groupId = new Identifier<Group>(groupIdOrName);
+        final Identifier<Group> groupId = new Identifier<>(groupIdOrName);
         LOGGER.debug("Get Group requested: {}", groupId);
         return ResponseBuilder.ok(groupService.getGroup(groupId));
     }
@@ -456,7 +457,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
 
     protected void checkResponsesForErrorStatus(Map<String, Future<Response>> futureMap) {
         for (String keyEntityName : futureMap.keySet()) {
-            Response response = null;
+            Response response;
             try {
                 response = futureMap.get(keyEntityName).get();
                 if (response.getStatus() > 399) {
@@ -816,9 +817,11 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     public Response getStartedWebServersAndJvmsCount() {
         final List<GroupServerInfo> groupServerInfos = new ArrayList<>();
         for (final Group group : groupService.getGroups()) {
-            final GroupServerInfo groupServerInfo = new GroupServerInfo(group.getName(), jvmService.getJvmCount(group.getName()),
-                    jvmService.getJvmStartedCount(group.getName()), webServerService.getWebServerCount(group.getName()),
-                    webServerService.getStartedWebServerCount(group.getName()));
+            final GroupServerInfo groupServerInfo = new GroupServerInfoBuilder().setGroupName(group.getName())
+                    .setJvmStartedCount(jvmService.getJvmStartedCount(group.getName()))
+                    .setJvmCount(jvmService.getJvmCount(group.getName()))
+                    .setWebServerStartedCount(webServerService.getWebServerStartedCount(group.getName()))
+                    .setWebServerCount(webServerService.getWebServerCount(group.getName())).build();
             groupServerInfos.add(groupServerInfo);
         }
         return ResponseBuilder.ok(groupServerInfos);
@@ -826,56 +829,38 @@ public class GroupServiceRestImpl implements GroupServiceRest {
 
     @Override
     public Response getStartedWebServersAndJvmsCount(final String groupName) {
-        final GroupServerInfo groupServerInfo = new GroupServerInfo(groupName, jvmService.getJvmCount(groupName),
-                jvmService.getJvmStartedCount(groupName), webServerService.getWebServerCount(groupName),
-                webServerService.getStartedWebServerCount(groupName));
+        final GroupServerInfo groupServerInfo = new GroupServerInfoBuilder().setGroupName(groupName)
+                .setJvmStartedCount(jvmService.getJvmStartedCount(groupName))
+                .setJvmCount(jvmService.getJvmCount(groupName))
+                .setWebServerStartedCount(webServerService.getWebServerStartedCount(groupName))
+                .setWebServerCount(webServerService.getWebServerCount(groupName)).build();
         return ResponseBuilder.ok(groupServerInfo);
     }
 
-    public enum GroupResourceType {
-        WEBSERVER,
-        JVM,
-        WEBAPP
+    @Override
+    public Response getStoppedWebServersAndJvmsCount() {
+        final List<GroupServerInfo> groupServerInfos = new ArrayList<>();
+        for (final Group group : groupService.getGroups()) {
+            final GroupServerInfo groupServerInfo = new GroupServerInfoBuilder().setGroupName(group.getName())
+                    .setJvmStoppedCount(jvmService.getJvmStoppedCount(group.getName()))
+                    .setJvmForciblyStoppedCount(jvmService.getJvmForciblyStoppedCount(group.getName()))
+                    .setJvmCount(jvmService.getJvmCount(group.getName()))
+                    .setWebServerStoppedCount(webServerService.getWebServerStoppedCount(group.getName()))
+                    .setWebServerCount(webServerService.getWebServerCount(group.getName())).build();
+            groupServerInfos.add(groupServerInfo);
+        }
+        return ResponseBuilder.ok(groupServerInfos);
     }
 
-    /**
-     * Wrapper to pass jvm and web server count information to the UI.
-     */
-    private static class GroupServerInfo {
-        private final String groupName;
-        private final Long jvmCount;
-        private final Long jvmStartedCount;
-        private final Long webServerCount;
-        private final Long webServerStartedCount;
-
-        public GroupServerInfo(final String groupName, final Long jvmCount, final Long jvmStartedCount,
-                               final Long webServerCount, final Long webServerStartedCount) {
-            this.groupName = groupName;
-            this.jvmCount = jvmCount;
-            this.jvmStartedCount = jvmStartedCount;
-            this.webServerCount = webServerCount;
-            this.webServerStartedCount = webServerStartedCount;
-        }
-
-        public String getGroupName() {
-            return groupName;
-        }
-
-        public Long getJvmCount() {
-            return jvmCount;
-        }
-
-        public Long getJvmStartedCount() {
-            return jvmStartedCount;
-        }
-
-        public Long getWebServerCount() {
-            return webServerCount;
-        }
-
-        public Long getWebServerStartedCount() {
-            return webServerStartedCount;
-        }
+    @Override
+    public Response getStoppedWebServersAndJvmsCount(final String groupName) {
+        final GroupServerInfo groupServerInfo = new GroupServerInfoBuilder().setGroupName(groupName)
+                .setJvmStoppedCount(jvmService.getJvmStoppedCount(groupName))
+                .setJvmForciblyStoppedCount(jvmService.getJvmForciblyStoppedCount(groupName))
+                .setJvmCount(jvmService.getJvmCount(groupName))
+                .setWebServerStoppedCount(webServerService.getWebServerStoppedCount(groupName))
+                .setWebServerCount(webServerService.getWebServerCount(groupName)).build();
+        return ResponseBuilder.ok(groupServerInfo);
     }
 
 }

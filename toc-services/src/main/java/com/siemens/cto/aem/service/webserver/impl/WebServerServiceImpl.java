@@ -257,8 +257,8 @@ public class WebServerServiceImpl implements WebServerService {
 
     @Override
     @Transactional(readOnly = true)
-    public Long getStartedWebServerCount(final String groupName) {
-        return webServerPersistenceService.getStartedWebServerCount(groupName);
+    public Long getWebServerStartedCount(final String groupName) {
+        return webServerPersistenceService.getWebServerStartedCount(groupName);
     }
 
     @Override
@@ -267,4 +267,8 @@ public class WebServerServiceImpl implements WebServerService {
         return webServerPersistenceService.getWebServerCount(groupName);
     }
 
+    @Override
+    public Long getWebServerStoppedCount(final String groupName) {
+        return webServerPersistenceService.getWebServerStoppedCount(groupName);
+    }
 }

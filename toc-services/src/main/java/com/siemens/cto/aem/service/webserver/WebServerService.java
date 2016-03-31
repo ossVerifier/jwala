@@ -56,10 +56,11 @@ public interface WebServerService {
 
     void updateState(Identifier<WebServer> id, WebServerReachableState state, String errorStatus);
 
-    Long getStartedWebServerCount(String groupName);
+    Long getWebServerStartedCount(String groupName);
 
     Long getWebServerCount(String groupName);
 
     List<WebServer> getWebServersPropagationNew();
 
+    Long getWebServerStoppedCount(String groupName);
 }

@@ -357,4 +357,13 @@ public class JvmServiceImpl implements JvmService {
         return jvmPersistenceService.getJvmCount(groupName);
     }
 
+    @Override
+    public Long getJvmStoppedCount(final String groupName) {
+        return jvmPersistenceService.getJvmStoppedCount(groupName);
+    }
+
+    @Override
+    public Long getJvmForciblyStoppedCount(final String groupName) {
+        return jvmPersistenceService.getJvmForciblyStoppedCount(groupName);
+    }
 }
