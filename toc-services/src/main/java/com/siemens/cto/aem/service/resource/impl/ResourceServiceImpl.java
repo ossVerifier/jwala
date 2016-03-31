@@ -204,9 +204,9 @@ public class ResourceServiceImpl implements ResourceService {
             templateData = FileUtils.readFileToString(new File(templateFile));
 
             // Make a local copy of the template file and its meta data in the templates path since they are used in resource generation.
-            final File localCopyMetaDataFile = new File(templatePath + metaData.getName() + "Properties.json");
+            final File localCopyMetaDataFile = new File(templatePath + "/" + metaData.getName() + "Properties.json");
             FileUtils.writeStringToFile(localCopyMetaDataFile, jsonData);
-            final File localCopyTemplateFile = new File(templatePath + metaData.getName() + "Template.tpl");
+            final File localCopyTemplateFile = new File(templatePath + "/" + metaData.getName() + "Template.tpl");
             FileUtils.writeStringToFile(localCopyTemplateFile, templateData);
         } catch(final IOException ioe) {
             throw new ResourceServiceException(ioe);
@@ -247,8 +247,9 @@ public class ResourceServiceImpl implements ResourceService {
      */
     private void createJvmTemplate(final User user, final ResourceTemplateMetaData metaData, final String templateData) {
         final Jvm jvm = jvmService.getJvm(metaData.getEntity().getTarget());
-        UploadJvmTemplateRequest uploadJvmTemplateRequest = new UploadJvmConfigTemplateRequest(jvm, metaData.getTemplateName(),
+        UploadJvmConfigTemplateRequest uploadJvmTemplateRequest = new UploadJvmConfigTemplateRequest(jvm, metaData.getTemplateName(),
                 new ByteArrayInputStream(templateData.getBytes(StandardCharsets.UTF_8)));
+        uploadJvmTemplateRequest.setConfFileName(metaData.getConfigFileName());
         jvmService.uploadJvmTemplateXml(uploadJvmTemplateRequest, user);
     }
 
@@ -261,8 +262,9 @@ public class ResourceServiceImpl implements ResourceService {
     private void createJvmsTemplate(final User user, final ResourceTemplateMetaData metaData, final String templateData) {
         final List<Jvm> jvms = jvmService.getJvms();
         for (final Jvm jvm: jvms) {
-            UploadJvmTemplateRequest uploadJvmTemplateRequest = new UploadJvmConfigTemplateRequest(jvm, metaData.getTemplateName(),
+            UploadJvmConfigTemplateRequest uploadJvmTemplateRequest = new UploadJvmConfigTemplateRequest(jvm, metaData.getTemplateName(),
                     new ByteArrayInputStream(templateData.getBytes(StandardCharsets.UTF_8)));
+            uploadJvmTemplateRequest.setConfFileName(metaData.getConfigFileName());
             jvmService.uploadJvmTemplateXml(uploadJvmTemplateRequest, user);
         }
     }

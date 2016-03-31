@@ -126,7 +126,7 @@ public interface ResourceServiceRest {
      * @return {@link Response}
      */
     @POST
-    @Path("/template/{name}")
+    @Path("/template")
     Response createTemplate(@QueryParam("metaDataFile") String metaDataFile,
                             @QueryParam("templateFile") String templateFile,
                             @BeanParam AuthenticatedUser user);
