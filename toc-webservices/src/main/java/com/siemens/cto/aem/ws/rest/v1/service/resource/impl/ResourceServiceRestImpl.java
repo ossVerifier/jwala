@@ -84,7 +84,7 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
     }
 
     @Override
-    public Response createTemplate(final String metaDataFile, final String templateFile, AuthenticatedUser user) {
+    public Response createTemplate(final String metaDataFile, final String templateFile, final AuthenticatedUser user) {
         try {
             resourceService.createTemplate(metaDataFile, templateFile, user.getUser());
             return ResponseBuilder.ok();
