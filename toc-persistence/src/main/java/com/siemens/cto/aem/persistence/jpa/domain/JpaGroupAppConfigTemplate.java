@@ -10,12 +10,16 @@ import javax.persistence.*;
         @NamedQuery(name = JpaGroupAppConfigTemplate.GET_GROUP_APP_TEMPLATE_CONTENT,
                 query = "SELECT t.templateContent FROM JpaGroupAppConfigTemplate t where t.grp.name = :grpName and t.templateName = :templateName"),
         @NamedQuery(name = JpaGroupAppConfigTemplate.UPDATE_GROUP_APP_TEMPLATE_CONTENT,
-                query = "UPDATE JpaGroupAppConfigTemplate t SET t.templateContent = :templateContent WHERE t.grp.name = :grpName AND t.templateName = :templateName")
+                query = "UPDATE JpaGroupAppConfigTemplate t SET t.templateContent = :templateContent WHERE t.grp.name = :grpName AND t.templateName = :templateName"),
+        @NamedQuery(name = JpaGroupAppConfigTemplate.QUERY_DELETE_GRP_APP_TEMPLATE, query = "DELETE FROM JpaGroupAppConfigTemplate t WHERE t.templateName = :templateName")
 })
 public class JpaGroupAppConfigTemplate {
     public static final String GET_GROUP_APP_TEMPLATE_RESOURCE_NAMES = "getGroupAppTemplateResourceNames";
     public static final String GET_GROUP_APP_TEMPLATE_CONTENT = "getGroupAppTemplateContent";
     public static final String UPDATE_GROUP_APP_TEMPLATE_CONTENT = "updateGroupAppTemplateContent";
+    public static final String QUERY_DELETE_GRP_APP_TEMPLATE = "deleteGrpAppTemplate";
+
+    public static final String QUERY_PARAM_TEMPLATE_NAME = "templateName";
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

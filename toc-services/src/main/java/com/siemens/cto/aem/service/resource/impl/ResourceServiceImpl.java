@@ -196,7 +196,7 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Override
     @Transactional
-    public void createTemplate(final String metaDataFile, final String templateFile, User user) {
+    public void createTemplate(final String metaDataFile, final String templateFile, final User user) {
         final ObjectMapper mapper = new ObjectMapper();
         final ResourceTemplateMetaData metaData;
         final String templateData;
@@ -281,6 +281,7 @@ public class ResourceServiceImpl implements ResourceService {
      * @param metaData the data that describes the template, please see {@link ResourceTemplateMetaData}
      * @param templateData the template content/data
      */
+    // TODO: When the resource file is locked, don't overwrite!
     private void createJvmsTemplate(final User user, final ResourceTemplateMetaData metaData, final String templateData) {
         final Set<Jvm> jvms = groupPersistenceService.getGroup(metaData.getEntity().getGroup()).getJvms();
         final List<UploadJvmTemplateRequest> uploadJvmTemplateRequestList = new ArrayList<>();
@@ -370,9 +371,10 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Override
     @Transactional
-    public int removeTemplate(String name) {
+    public int removeTemplate(final String name) {
         final int recordsRemovedTotal = applicationPersistenceService.removeTemplate(name) + jvmPersistenceService.removeTemplate(name)
-                + webServerPersistenceService.removeTemplate(name);
+                + webServerPersistenceService.removeTemplate(name) + groupPersistenceService.removeAppTemplate(name) +
+                  groupPersistenceService.removeJvmTemplate(name) + groupPersistenceService.removeWeServerTemplate(name);
         // TODO: Delete the template file here!
         return recordsRemovedTotal;
     }

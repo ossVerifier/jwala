@@ -223,7 +223,7 @@ public class GroupCrudServiceImpl extends AbstractCrudServiceImpl<JpaGroup> impl
         q.setParameter("templateName", resourceTemplateName);
         q.setParameter("templateContent", content);
 
-        int numEntities = 0;
+        int numEntities;
 
         try {
             numEntities = q.executeUpdate();
@@ -262,7 +262,7 @@ public class GroupCrudServiceImpl extends AbstractCrudServiceImpl<JpaGroup> impl
         q.setParameter("templateName", resourceTemplateName);
         q.setParameter("templateContent", content);
 
-        int numEntities = 0;
+        int numEntities;
 
         try {
             numEntities = q.executeUpdate();
@@ -294,7 +294,7 @@ public class GroupCrudServiceImpl extends AbstractCrudServiceImpl<JpaGroup> impl
         q.setParameter("templateName", resourceTemplateName);
         q.setParameter("templateContent", content);
 
-        int numEntities = 0;
+        int numEntities;
 
         try {
             numEntities = q.executeUpdate();
@@ -350,6 +350,27 @@ public class GroupCrudServiceImpl extends AbstractCrudServiceImpl<JpaGroup> impl
         query.setParameter(JpaGroup.QUERY_PARAM_STATE, state.toString());
         query.setParameter(JpaGroup.QUERY_PARAM_ID, id.getId());
         query.executeUpdate();
+    }
+
+    @Override
+    public int removeAppTemplate(final String name) {
+        final Query q = entityManager.createNamedQuery(JpaGroupAppConfigTemplate.QUERY_DELETE_GRP_APP_TEMPLATE);
+        q.setParameter(JpaGroupAppConfigTemplate.QUERY_PARAM_TEMPLATE_NAME, name);
+        return q.executeUpdate();
+    }
+
+    @Override
+    public int removeJvmTemplate(final String name) {
+        final Query q = entityManager.createNamedQuery(JpaGroupJvmConfigTemplate.QUERY_DELETE_GRP_JVM_TEMPLATE);
+        q.setParameter(JpaGroupJvmConfigTemplate.QUERY_PARAM_TEMPLATE_NAME, name);
+        return q.executeUpdate();
+    }
+
+    @Override
+    public int removeWeServerTemplate(final String name) {
+        final Query q = entityManager.createNamedQuery(JpaGroupWebServerConfigTemplate.QUERY_DELETE_GRP_WEBSERVER_TEMPLATE);
+        q.setParameter(JpaGroupWebServerConfigTemplate.QUERY_PARAM_TEMPLATE_NAME, name);
+        return q.executeUpdate();
     }
 }
 

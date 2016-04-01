@@ -74,4 +74,10 @@ public interface GroupPersistenceService extends StatePersistenceService<Group, 
 
     void updateState(Identifier<Group> id, GroupState state);
 
+    int removeAppTemplate(String name);
+
+    int removeJvmTemplate(String name);
+
+    int removeWeServerTemplate(String name);
+
 }

@@ -1,12 +1,8 @@
 package com.siemens.cto.aem.ws.rest.v1.service.resource.impl;
 
-import com.siemens.cto.aem.common.exception.FaultCodeException;
-import com.siemens.cto.aem.common.exception.InternalErrorException;
 import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
-import com.siemens.cto.aem.common.exception.MessageResponseStatus;
+import com.siemens.cto.aem.common.exception.FaultCodeException;
 import com.siemens.cto.aem.service.exception.ResourceServiceException;
-import com.siemens.cto.aem.service.group.GroupService;
-import com.siemens.cto.aem.service.jvm.JvmService;
 import com.siemens.cto.aem.service.resource.ResourceService;
 import com.siemens.cto.aem.ws.rest.v1.provider.AuthenticatedUser;
 import com.siemens.cto.aem.ws.rest.v1.response.ResponseBuilder;
@@ -27,13 +23,9 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
     private final static Logger LOGGER = LoggerFactory.getLogger(ResourceServiceRestImpl.class);
 
     private final ResourceService resourceService;
-    private final JvmService jvmService;
-    private final GroupService groupService;
 
-    public ResourceServiceRestImpl(ResourceService resourceService, GroupService groupService, JvmService jvmService) {
+    public ResourceServiceRestImpl(ResourceService resourceService) {
         this.resourceService = resourceService;
-        this.groupService = groupService;
-        this.jvmService = jvmService;
     }
 
     @Override

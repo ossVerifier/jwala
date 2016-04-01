@@ -9,7 +9,6 @@ import com.siemens.cto.aem.service.group.GroupService;
 import com.siemens.cto.aem.service.group.GroupWebServerControlService;
 import com.siemens.cto.aem.service.jvm.JvmControlService;
 import com.siemens.cto.aem.service.jvm.JvmService;
-import com.siemens.cto.aem.service.jvm.state.JvmStateReceiverAdapter;
 import com.siemens.cto.aem.service.resource.ResourceService;
 import com.siemens.cto.aem.service.state.StateNotificationService;
 import com.siemens.cto.aem.service.webserver.WebServerCommandService;
@@ -187,7 +186,7 @@ public class AemWebServiceConfiguration {
 
     @Bean
     public ResourceServiceRest getV1ResourceServiceRest() {
-        return new ResourceServiceRestImpl(resourceService, groupService, jvmService);
+        return new ResourceServiceRestImpl(resourceService);
     }
 
     @Bean

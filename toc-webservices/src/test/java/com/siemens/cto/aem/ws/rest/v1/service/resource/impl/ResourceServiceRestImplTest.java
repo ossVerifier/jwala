@@ -29,6 +29,8 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 
 /**
+ * Unit test for {@link ResourceServiceRestImpl}.
+ *
  * Created by z0033r5b on 9/29/2015.
  */
 @RunWith(MockitoJUnitRunner.class)
@@ -51,7 +53,7 @@ public class ResourceServiceRestImplTest {
     public void setUp() {
         group = new Group(new Identifier<Group>(1L), "theGroup");
         resourceInstance = new ResourceInstance(new Identifier<ResourceInstance>(1L), "resourceName", "resourceType", new LiteGroup(group.getId(), group.getName()), new HashMap<String, String>());
-        cut = new ResourceServiceRestImpl(impl, groupService, jvmService);
+        cut = new ResourceServiceRestImpl(impl);
         when(authenticatedUser.getUser()).thenReturn(new User("Unused"));
         when(jsonResourceInstance.getCommand()).thenReturn(new ResourceInstanceRequest("resourceType", "resourceName", group.getName(), new HashMap<String, String>()));
     }

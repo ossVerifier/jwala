@@ -1,17 +1,17 @@
 package com.siemens.cto.aem.persistence.service.impl;
 
-import com.siemens.cto.aem.common.domain.model.state.StateType;
-import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
-import com.siemens.cto.aem.common.request.state.SetStateRequest;
-import com.siemens.cto.aem.common.exception.NotFoundException;
-import com.siemens.cto.aem.common.request.group.*;
-import com.siemens.cto.aem.common.domain.model.group.*;
+import com.siemens.cto.aem.common.domain.model.group.CurrentGroupState;
+import com.siemens.cto.aem.common.domain.model.group.Group;
+import com.siemens.cto.aem.common.domain.model.group.GroupState;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.state.CurrentState;
+import com.siemens.cto.aem.common.domain.model.state.StateType;
 import com.siemens.cto.aem.common.domain.model.user.User;
+import com.siemens.cto.aem.common.exception.NotFoundException;
+import com.siemens.cto.aem.common.request.group.*;
+import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
+import com.siemens.cto.aem.common.request.state.SetStateRequest;
 import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateRequest;
-import com.siemens.cto.aem.persistence.jpa.service.WebServerCrudService;
-import com.siemens.cto.aem.persistence.jpa.service.impl.WebServerCrudServiceImpl;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
 import com.siemens.cto.aem.persistence.jpa.domain.builder.JpaGroupBuilder;
 import com.siemens.cto.aem.persistence.jpa.service.GroupCrudService;
@@ -20,20 +20,21 @@ import com.siemens.cto.aem.persistence.service.GroupPersistenceService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 public class JpaGroupPersistenceServiceImpl implements GroupPersistenceService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JpaGroupPersistenceServiceImpl.class);
     private final GroupCrudService groupCrudService;
     private final GroupJvmRelationshipService groupJvmRelationshipService;
-    private final WebServerCrudService webServerCrudService;
 
     public JpaGroupPersistenceServiceImpl(final GroupCrudService theGroupCrudService,
                                           final GroupJvmRelationshipService theGroupJvmRelationshipService) {
         groupCrudService = theGroupCrudService;
         groupJvmRelationshipService = theGroupJvmRelationshipService;
-        webServerCrudService = new WebServerCrudServiceImpl();
     }
 
     @Override
@@ -252,4 +253,18 @@ public class JpaGroupPersistenceServiceImpl implements GroupPersistenceService {
         groupCrudService.updateState(id, state);
     }
 
+    @Override
+    public int removeAppTemplate(String name) {
+        return groupCrudService.removeAppTemplate(name);
+    }
+
+    @Override
+    public int removeJvmTemplate(String name) {
+        return groupCrudService.removeJvmTemplate(name);
+    }
+
+    @Override
+    public int removeWeServerTemplate(String name) {
+        return groupCrudService.removeWeServerTemplate(name);
+    }
 }
