@@ -18,6 +18,8 @@ import javax.ws.rs.core.Response;
 import java.util.List;
 
 /**
+ * {@link ResourceServiceRest} implementation.
+ *
  * Created by z003e5zv on 3/16/2015.
  */
 public class ResourceServiceRestImpl implements ResourceServiceRest {
@@ -77,7 +79,8 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
             return ResponseBuilder.ok();
         } catch (RuntimeException e) {
             LOGGER.error("Could not remove resources {}", resourceNames);
-        	throw new InternalErrorException(AemFaultType.PERSISTENCE_ERROR, String.format("Could not remove resources {}", resourceNames), e);
+            return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR,
+                    new FaultCodeException(AemFaultType.PERSISTENCE_ERROR, e.getMessage()));
         }
     }
 
@@ -92,14 +95,14 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
             resourceService.createTemplate(metaDataFile, templateFile, user.getUser());
             return ResponseBuilder.ok();
         } catch (final RuntimeException rte) {
-            throw new InternalErrorException(null, rte.getMessage(), rte); // TODO Refactor later...
+            return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR,
+                    new FaultCodeException(AemFaultType.PERSISTENCE_ERROR, rte.getMessage()));
         }
     }
 
     @Override
     public Response removeTemplate(final String name) {
         try {
-
             return ResponseBuilder.ok(resourceService.removeTemplate(name));
         } catch (final ResourceServiceException rse) {
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR,

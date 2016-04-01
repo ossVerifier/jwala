@@ -5,10 +5,7 @@ import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
-import com.siemens.cto.aem.common.domain.model.resource.EntityType;
-import com.siemens.cto.aem.common.domain.model.resource.ResourceInstance;
-import com.siemens.cto.aem.common.domain.model.resource.ResourceTemplateMetaData;
-import com.siemens.cto.aem.common.domain.model.resource.ResourceType;
+import com.siemens.cto.aem.common.domain.model.resource.*;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.common.exception.FaultCodeException;
@@ -190,9 +187,8 @@ public class ResourceServiceImpl implements ResourceService {
     @Override
     public String encryptUsingPlatformBean(String cleartext) {
         StandardEvaluationContext context = new StandardEvaluationContext();
-        context.setVariable("stringToEncrypt", cleartext);        
-        String result = encryptExpression.getValue(context, String.class);
-        return result;
+        context.setVariable("stringToEncrypt", cleartext);
+        return encryptExpression.getValue(context, String.class);
     }
 
     @Override
@@ -201,20 +197,17 @@ public class ResourceServiceImpl implements ResourceService {
     }
 
     @Override
+    @Transactional
     public void createTemplate(final String metaDataFile, final String templateFile, User user) {
         final ObjectMapper mapper = new ObjectMapper();
         final ResourceTemplateMetaData metaData;
         final String templateData;
+        final String jsonData;
+
         try {
-            final String jsonData = FileUtils.readFileToString(new File(metaDataFile));
+            jsonData = FileUtils.readFileToString(new File(metaDataFile));
             metaData = mapper.readValue(jsonData, ResourceTemplateMetaData.class);
             templateData = FileUtils.readFileToString(new File(templateFile));
-
-            // Make a local copy of the template file and its meta data in the templates path since they are used in resource generation.
-            final File localCopyMetaDataFile = new File(templatePath + "/" + metaData.getName() + "Properties.json");
-            FileUtils.writeStringToFile(localCopyMetaDataFile, jsonData);
-            final File localCopyTemplateFile = new File(templatePath + "/" + metaData.getName() + "Template.tpl");
-            FileUtils.writeStringToFile(localCopyTemplateFile, templateData);
         } catch(final IOException ioe) {
             throw new ResourceServiceException(ioe);
         }
@@ -243,7 +236,31 @@ public class ResourceServiceImpl implements ResourceService {
             default:
                 throw new ResourceServiceException("Invalid entity type '" + metaData.getEntity().getType() + "'");
         }
+        createMetaAndTemplateDataLocalCopy(metaData, templateData, jsonData);
+    }
 
+    /**
+     * Make a local copy of the template file and its meta data in the templates path since they are used in resource generation.
+     * @param metaData {@link ResourceTemplateMetaData}
+     * @param templateData the template file content
+     * @param jsonData the meta data String that describes templateData
+     */
+    protected void createMetaAndTemplateDataLocalCopy(final ResourceTemplateMetaData metaData, final String templateData,
+                                                      final String jsonData) {
+        final ContentType contentType = ContentType.fromContentTypeStr(metaData.getContentType());
+        if (contentType != ContentType.UNDEFINED) {
+            try {
+                final String tmpFileName = templatePath + "/" + metaData.getName() + contentType;
+                final File localCopyMetaDataFile = new File(tmpFileName + "Properties.json");
+                FileUtils.writeStringToFile(localCopyMetaDataFile, jsonData);
+                final File localCopyTemplateFile = new File(tmpFileName + "Template.tpl");
+                FileUtils.writeStringToFile(localCopyTemplateFile, templateData);
+            } catch (final IOException ioe) {
+                throw new ResourceServiceException(ioe);
+            }
+        } else {
+            throw new ResourceServiceException("Invalid content type = \"" + metaData.getContentType() + "\"!");
+        }
     }
 
     /**

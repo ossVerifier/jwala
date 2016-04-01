@@ -1,7 +1,7 @@
 {
   "name": "JediContext",
   "templateName": "jedi-context.tpl",
-  "contentType": "application/xml",
+  "contentType": "text/xml",
   "configFileName":"jedi-context.xml",
   "relativeDir":"/conf",
   "entity": {
