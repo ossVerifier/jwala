@@ -61,6 +61,12 @@ public class JpaGroupPersistenceServiceImpl implements GroupPersistenceService {
     }
 
     @Override
+    public Group getGroupWithWebServers(final String groupName) throws NotFoundException {
+        final JpaGroup group = groupCrudService.getGroup(groupName);
+        return groupFrom(group, true);
+    }
+
+    @Override
     public Group getGroup(final String name) throws NotFoundException {
         final JpaGroup group = groupCrudService.getGroup(name);
         return groupFrom(group, false);

@@ -64,7 +64,7 @@ public class ApplicationCrudServiceImpl extends AbstractCrudServiceImpl<JpaAppli
 
     @Override
     public String getResourceTemplate(String appName, String resourceTemplateName, String jvmName, String groupName) {
-        JpaJvm jpaJvm = null;
+        JpaJvm jpaJvm;
         Query jvmQuery = entityManager.createNamedQuery(JpaJvm.QUERY_FIND_JVM_BY_GROUP_AND_JVM_NAME);
         jvmQuery.setParameter("jvmName", jvmName);
         jvmQuery.setParameter("groupName", groupName);
@@ -230,6 +230,13 @@ public class ApplicationCrudServiceImpl extends AbstractCrudServiceImpl<JpaAppli
     public List<Application> findApplicationsBelongingTo(Identifier<Group> aGroupId) {
         Query q = entityManager.createNamedQuery(JpaApplication.QUERY_BY_GROUP_ID);
         q.setParameter(JpaApplication.GROUP_ID_PARAM, aGroupId.getId());
+        return buildApplications(q.getResultList());
+    }
+
+    @Override
+    public List<Application> findApplicationsBelongingTo(final String groupName) {
+        Query q = entityManager.createNamedQuery(JpaApplication.QUERY_BY_GROUP_NAME);
+        q.setParameter(JpaApplication.GROUP_NAME_PARAM, groupName);
         return buildApplications(q.getResultList());
     }
 

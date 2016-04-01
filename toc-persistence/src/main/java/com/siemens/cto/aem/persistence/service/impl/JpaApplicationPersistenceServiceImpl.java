@@ -136,6 +136,11 @@ public class JpaApplicationPersistenceServiceImpl implements ApplicationPersiste
     }
 
     @Override
+    public List<Application> findApplicationsBelongingTo(final String groupName) {
+        return applicationCrudService.findApplicationsBelongingTo(groupName);
+    }
+
+    @Override
     public Application getApplication(Identifier<Application> aApplicationId) {
         return applicationCrudService.getApplication(aApplicationId);
     }

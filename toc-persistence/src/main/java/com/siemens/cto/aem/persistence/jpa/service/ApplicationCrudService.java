@@ -43,6 +43,8 @@ public interface ApplicationCrudService extends CrudService<JpaApplication> {
 
     List<Application> findApplicationsBelongingTo(Identifier<Group> aGroupId);
 
+    List<Application> findApplicationsBelongingTo(String groupName);
+
     List<Application> findApplicationsBelongingToJvm(Identifier<Jvm> aJvmId);
 
     Application findApplication(String appName, String groupName, String jvmName);

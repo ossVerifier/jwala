@@ -39,6 +39,8 @@ public interface ApplicationPersistenceService {
 
     List<Application> findApplicationsBelongingTo(Identifier<Group> groupId);
 
+    List<Application> findApplicationsBelongingTo(String groupName);
+
     List<Application> findApplicationsBelongingToJvm(Identifier<Jvm> jvmId);
 
     Application findApplication(String appName, String groupName, String jvmName);

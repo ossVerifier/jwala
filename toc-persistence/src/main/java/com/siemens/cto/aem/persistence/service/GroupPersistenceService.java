@@ -22,6 +22,8 @@ public interface GroupPersistenceService extends StatePersistenceService<Group, 
 
     Group getGroupWithWebServers(final Identifier<Group> aGroupId) throws NotFoundException;
 
+    Group getGroupWithWebServers(String groupName) throws NotFoundException;
+
     Group getGroup(final String name) throws NotFoundException;
 
     List<Group> getGroups();

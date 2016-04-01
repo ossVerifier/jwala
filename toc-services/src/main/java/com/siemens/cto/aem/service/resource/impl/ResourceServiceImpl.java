@@ -11,6 +11,7 @@ import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.common.exception.FaultCodeException;
 import com.siemens.cto.aem.common.request.app.UploadAppTemplateRequest;
 import com.siemens.cto.aem.common.request.jvm.UploadJvmConfigTemplateRequest;
+import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
 import com.siemens.cto.aem.common.request.resource.ResourceInstanceRequest;
 import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateRequest;
 import com.siemens.cto.aem.persistence.service.*;
@@ -37,10 +38,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class ResourceServiceImpl implements ResourceService {
 
@@ -284,13 +282,16 @@ public class ResourceServiceImpl implements ResourceService {
      * @param templateData the template content/data
      */
     private void createJvmsTemplate(final User user, final ResourceTemplateMetaData metaData, final String templateData) {
-        final List<Jvm> jvms = jvmService.getJvms();
+        final Set<Jvm> jvms = groupPersistenceService.getGroup(metaData.getEntity().getGroup()).getJvms();
+        final List<UploadJvmTemplateRequest> uploadJvmTemplateRequestList = new ArrayList<>();
         for (final Jvm jvm: jvms) {
             UploadJvmConfigTemplateRequest uploadJvmTemplateRequest = new UploadJvmConfigTemplateRequest(jvm, metaData.getTemplateName(),
                     new ByteArrayInputStream(templateData.getBytes(StandardCharsets.UTF_8)));
             uploadJvmTemplateRequest.setConfFileName(metaData.getConfigFileName());
+            uploadJvmTemplateRequestList.add(uploadJvmTemplateRequest);
             jvmService.uploadJvmTemplateXml(uploadJvmTemplateRequest, user);
         }
+        groupPersistenceService.populateGroupJvmTemplates(metaData.getEntity().getGroup(), uploadJvmTemplateRequestList, user);
     }
 
     /**
@@ -318,17 +319,21 @@ public class ResourceServiceImpl implements ResourceService {
      * @param templateData the template content/data
      */
     private void createWebServersTemplate(final User user, final ResourceTemplateMetaData metaData, final String templateData) {
-        final List<WebServer> webServers = webServerService.getWebServers();
+        final Group group = groupPersistenceService.getGroupWithWebServers(metaData.getEntity().getGroup());
+        final Set<WebServer> webServers = group.getWebServers();
+        final List<UploadWebServerTemplateRequest> uploadWebServerTemplateRequestList = new ArrayList<>();
         for (final WebServer webServer: webServers) {
-            UploadWebServerTemplateRequest uploadWebArchiveRequest = new UploadWebServerTemplateRequest(webServer,
+            UploadWebServerTemplateRequest uploadWebServerTemplateRequest = new UploadWebServerTemplateRequest(webServer,
                     metaData.getTemplateName(), new ByteArrayInputStream(templateData.getBytes(StandardCharsets.UTF_8))) {
                 @Override
                 public String getConfFileName() {
                     return metaData.getConfigFileName();
                 }
             };
-            webServerService.uploadWebServerConfig(uploadWebArchiveRequest, user);
+            uploadWebServerTemplateRequestList.add(uploadWebServerTemplateRequest);
+            webServerService.uploadWebServerConfig(uploadWebServerTemplateRequest, user);
         }
+        groupPersistenceService.populateGroupWebServerTemplates(group.getName(), uploadWebServerTemplateRequestList, user);
     }
 
     /**
@@ -352,12 +357,14 @@ public class ResourceServiceImpl implements ResourceService {
      * @param templateData the template content/data
      */
     private void createApplicationsTemplate(final User user, final ResourceTemplateMetaData metaData, final String templateData) {
-        final List<Application> applications = applicationService.getApplications();
+        final Group group = groupPersistenceService.getGroup(metaData.getEntity().getGroup());
+        final List<Application> applications = applicationPersistenceService.findApplicationsBelongingTo(metaData.getEntity().getGroup());
         for (final Application application: applications) {
             UploadAppTemplateRequest uploadAppTemplateRequest = new UploadAppTemplateRequest(application, metaData.getTemplateName(),
                     metaData.getConfigFileName(), metaData.getEntity().getParentName(),
                     new ByteArrayInputStream(templateData.getBytes(StandardCharsets.UTF_8)));
             applicationService.uploadAppTemplate(uploadAppTemplateRequest, user);
+            groupPersistenceService.populateGroupAppTemplate(group, metaData.getConfigFileName(), templateData);
         }
     }
 
