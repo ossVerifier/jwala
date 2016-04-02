@@ -76,45 +76,47 @@ public class WebServerStateSetterWorker {
     @Async("webServerTaskExecutor")
     public Future<?> pingWebServer(final WebServer webServer) {
         ClientHttpResponse response = null;
-        if (!isWebServerBusy(webServer)) {
-            final String webServerName = webServer.getName();
-            final WebServerReachableState webServerState = webServer.getState();
-            try {
-                response = clientFactoryHelper.requestGet(webServer.getStatusUri());
-                LOGGER.debug(">>> Response = {} from web server {}", response.getStatusCode(), webServer.getId().getId());
-                if (response.getStatusCode() == HttpStatus.OK) {
-                    setState(webServer, WebServerReachableState.WS_REACHABLE, StringUtils.EMPTY);
-                } else {
+        synchronized (webServer) {
+            if (!isWebServerBusy(webServer)) {
+                final String webServerName = webServer.getName();
+                final WebServerReachableState webServerState = webServer.getState();
+                try {
+                    response = clientFactoryHelper.requestGet(webServer.getStatusUri());
+                    LOGGER.debug(">>> Response = {} from web server {}", response.getStatusCode(), webServer.getId().getId());
+                    if (response.getStatusCode() == HttpStatus.OK) {
+                        setState(webServer, WebServerReachableState.WS_REACHABLE, StringUtils.EMPTY);
+                    } else {
+                        if (!webServerState.equals(WebServerReachableState.WS_NEW)) {
+                            setState(webServer, WebServerReachableState.WS_UNREACHABLE,
+                                    "Request for '" + webServer.getStatusUri() + "' failed with a response code of '" +
+                                            response.getStatusCode() + "'");
+                        } else {
+                            LOGGER.debug("Not setting web server state to WS_UNREACHABLE because still in WS_NEW state for {}", webServerName);
+                        }
+                    }
+                } catch (final IOException ioe) {
+                    if (ioe instanceof ConnectTimeoutException) {
+                        LOGGER.debug("{} {}", webServerName, ioe.getMessage(), ioe);
+                    } else {
+                        LOGGER.info("{} {}", webServerName, ioe.getMessage(), ioe);
+                    }
                     if (!webServerState.equals(WebServerReachableState.WS_NEW)) {
-                        setState(webServer, WebServerReachableState.WS_UNREACHABLE,
-                                "Request for '" + webServer.getStatusUri() + "' failed with a response code of '" +
-                                        response.getStatusCode() + "'");
+                        setState(webServer, WebServerReachableState.WS_UNREACHABLE, StringUtils.EMPTY);
                     } else {
                         LOGGER.debug("Not setting web server state to WS_UNREACHABLE because still in WS_NEW state for {}", webServerName);
                     }
+                } catch (final RuntimeException rte) {
+                    LOGGER.error(rte.getMessage(), rte);
+                } finally {
+                    if (response != null) {
+                        response.close();
+                    }
                 }
-            } catch (final IOException ioe) {
-                if (ioe instanceof ConnectTimeoutException) {
-                    LOGGER.debug("{} {}", webServerName, ioe.getMessage(), ioe);
-                } else {
-                    LOGGER.info("{} {}", webServerName, ioe.getMessage(), ioe);
-                }
-                if (!webServerState.equals(WebServerReachableState.WS_NEW)) {
-                    setState(webServer, WebServerReachableState.WS_UNREACHABLE, StringUtils.EMPTY);
-                } else {
-                    LOGGER.debug("Not setting web server state to WS_UNREACHABLE because still in WS_NEW state for {}", webServerName);
-                }
-            } catch (final RuntimeException rte) {
-                LOGGER.error(rte.getMessage(), rte);
-            } finally {
-                if (response != null) {
-                    response.close();
-                }
+
             }
 
+            return new AsyncResult<>(null);
         }
-
-        return new AsyncResult<>(null);
     }
 
     /**

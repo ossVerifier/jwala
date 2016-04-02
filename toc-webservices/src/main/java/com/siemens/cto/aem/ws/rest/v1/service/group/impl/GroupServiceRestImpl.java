@@ -49,7 +49,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -498,6 +497,25 @@ public class GroupServiceRestImpl implements GroupServiceRest {
                 }
             }
 
+            // update the web server templates first in case there are any new web servers that haven't been generated yet
+            // TODO actually, I'm confused - do we want to do this?
+//            final String name = group.getName();
+//            Map<String, Future<Response>> futuresMap = new HashMap<>();
+//            for (final String resourceName : groupService.getGroupWebServersResourceTemplateNames(name)) {
+//                Future<Response> updateJvmResponse = executorService.submit(new Callable<Response>() {
+//                    @Override
+//                    public Response call() throws Exception {
+//                        final boolean doNotReplaceTokens = false;
+//                        final String groupWSTemplate = groupService.getGroupWebServerResourceTemplate(name, resourceName, doNotReplaceTokens);
+//                        return updateGroupWebServerResourceTemplate(name, resourceName, groupWSTemplate);
+//                    }
+//                });
+//                futuresMap.put(resourceName, updateJvmResponse);
+//            }
+//            waitForDeployToComplete(new HashSet<>(futuresMap.values()));
+//            checkResponsesForErrorStatus(futuresMap);
+
+            // generate and deploy the web servers
             final WebServerServiceRestImpl webServerServiceRest = WebServerServiceRestImpl.get();
             Map<String, Future<Response>> futuresMap = new HashMap<>();
             for (final WebServer webServer : webServers) {
@@ -523,7 +541,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     @Override
     public Response generateGroupJvms(final Identifier<Group> aGroupId, final AuthenticatedUser aUser) {
         LOGGER.info("Starting group generation of JVMs for group ID {}", aGroupId);
-        Group group = groupService.getGroup(aGroupId);
+        final Group group = groupService.getGroup(aGroupId);
         Set<Jvm> jvms = group.getJvms();
         if (null != jvms && jvms.size() > 0) {
             for (Jvm jvm : jvms) {
@@ -534,6 +552,28 @@ public class GroupServiceRestImpl implements GroupServiceRest {
             }
 
             final JvmServiceRest jvmServiceRest = JvmServiceRestImpl.get();
+
+            // update the JVM templates first in case there are any new JVMs that haven't been generated yet
+            // TODO again: do we really want to do this?
+//            final boolean doNotIncludeGroupAppResources = false;
+//            final String name = group.getName();
+//            Map<String, Future<Response>> futuresMap = new HashMap<>();
+//            for (final Map<String, String> resource : groupService.getGroupJvmsResourceTemplateNames(name, doNotIncludeGroupAppResources)) {
+//                final String resourceName = resource.get("resourceName");
+//                Future<Response> updateJvmResponse = executorService.submit(new Callable<Response>() {
+//                    @Override
+//                    public Response call() throws Exception {
+//                        final boolean doNotReplaceTokens = false;
+//                        final String groupJvmTemplate = groupService.getGroupJvmResourceTemplate(name, resourceName, doNotReplaceTokens);
+//                        return updateGroupJvmResourceTemplate(name, resourceName, groupJvmTemplate);
+//                    }
+//                });
+//                futuresMap.put(resourceName, updateJvmResponse);
+//            }
+//            waitForDeployToComplete(new HashSet<>(futuresMap.values()));
+//            checkResponsesForErrorStatus(futuresMap);
+
+            // generate and deploy the JVMs
             Map<String, Future<Response>> futuresMap = new HashMap<>();
             for (final Jvm jvm : jvms) {
                 final String jvmName = jvm.getJvmName();
@@ -549,7 +589,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
             waitForDeployToComplete(new HashSet<>(futuresMap.values()));
             checkResponsesForErrorStatus(futuresMap);
         } else {
-            LOGGER.info("No web servers in group {}", aGroupId);
+            LOGGER.info("No JVMs in group {}", aGroupId);
         }
 
         return ResponseBuilder.ok(group);
