@@ -10,6 +10,7 @@
 
 .rsplitter.container.horz {
     display: table;
+    position: absolute;
 }
 
 .rsplitter.childContainer.horz {

@@ -6,15 +6,14 @@
 
 .resource-static-dialog-content-1 {
     width: 100%;
-    min-height: 277px;
-    max-height: 277px;
+    height: 600px;
     padding: 0 0 0 0 !important;
     overflow-y: auto !important;
     overflow-x: hidden !important;
 }
 
 .resource-static-dialog-content-2 {
-    min-height: 277px;
+    height: 600px;
     width: 100%;
     padding: 0 0 0 0 !important;
     overflow-y: auto !important;
@@ -22,8 +21,7 @@
 }
 
 .resource-static-dialog-content-3 {
-    min-height: 277px;
-    max-height: 277px;
+    height: 600px;
     width: 100%;
     padding: 0 0 0 0 !important;
     overflow-y: auto !important;
@@ -34,4 +32,5 @@
     width: 100%;
     padding: 0 0 0 0 !important;
     border: 0 !important;
+    height: 600px;
 }
