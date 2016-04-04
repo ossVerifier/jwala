@@ -12,6 +12,7 @@ import javax.persistence.*;
         @NamedQuery(name = JpaGroupJvmConfigTemplate.UPDATE_GROUP_JVM_TEMPLATE_CONTENT,
                 query = "UPDATE JpaGroupJvmConfigTemplate t SET t.templateContent = :templateContent WHERE t.grp.name = :grpName AND t.templateName = :templateName"),
         @NamedQuery(name = JpaGroupJvmConfigTemplate.QUERY_DELETE_GRP_JVM_TEMPLATE, query = "DELETE FROM JpaGroupJvmConfigTemplate t WHERE t.templateName = :templateName"),
+        @NamedQuery(name = JpaGroupJvmConfigTemplate.QUERY_DELETE_GROUP_JVM_TEMPLATE_BY_GROUP_NAME, query = "DELETE FROM JpaGroupJvmConfigTemplate t WHERE t.templateName = :templateName AND t.jpaGroup.name = :groupName")
 })
 
 public class JpaGroupJvmConfigTemplate {
@@ -20,8 +21,11 @@ public class JpaGroupJvmConfigTemplate {
     public static final String GET_GROUP_JVM_TEMPLATE_CONTENT = "getGroupJvmTemplateContent";
     public static final java.lang.String UPDATE_GROUP_JVM_TEMPLATE_CONTENT = "updateGroupJvmTemplateContent";
     public static final String QUERY_DELETE_GRP_JVM_TEMPLATE = "deleteGrpJvmTemplate";
+    public static final String QUERY_DELETE_GROUP_JVM_TEMPLATE_BY_GROUP_NAME = "deleteGroupJvmTemplateByGroupName";
 
     public static final String QUERY_PARAM_TEMPLATE_NAME = "templateName";
+    public static final String QUERY_PARAM_GROUP_NAME = "groupName";
+
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

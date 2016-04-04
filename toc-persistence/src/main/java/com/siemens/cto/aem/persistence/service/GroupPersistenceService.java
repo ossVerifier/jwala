@@ -80,4 +80,7 @@ public interface GroupPersistenceService extends StatePersistenceService<Group, 
 
     int removeWeServerTemplate(String name);
 
+    int removeJvmTemplate(String groupName, String templateName);
+
+    int removeWeServerTemplate(String groupName, String templateName);
 }

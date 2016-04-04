@@ -67,4 +67,6 @@ public interface JvmPersistenceService {
     Long getJvmForciblyStoppedCount(String groupName);
 
     int removeTemplate(String name);
+
+    int removeTemplate(String jvmName, String templateName);
 }

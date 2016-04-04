@@ -1,5 +1,6 @@
 package com.siemens.cto.aem.service.resource;
 
+import com.siemens.cto.aem.common.domain.model.resource.EntityType;
 import com.siemens.cto.aem.common.request.resource.ResourceInstanceRequest;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.resource.ResourceInstance;
@@ -67,4 +68,22 @@ public interface ResourceService {
      * @return the number of records deleted.
      */
     int removeTemplate(String name);
+
+    /**
+     * Deletes a resource template of a specific group and entity type (e.g. group = Group1, entity type = JVMS)
+     * @param groupName the group name
+     * @param entityType the entity type {@link EntityType}
+     * @param templateNames comma separated names of templates to delete e.g. server.xml, context.xml (user can specify one template name as well)
+     * @return the number of records deleted.
+     */
+    int removeTemplate(String groupName, EntityType entityType, String templateNames);
+
+    /**
+     * Deletes a resource template of a specific entity type and name (e.g. entity type = jvms, entity name = jvm1).
+     * @param entityType {@link EntityType}
+     * @param entityName the name of the entity
+     * @param templateNames comma separated names of templates to delete e.g. server.xml, context.xml (user can specify one template name as well)
+     * @return the number records deleted.
+     */
+    int removeTemplate(EntityType entityType, String entityName, String templateNames);
 }

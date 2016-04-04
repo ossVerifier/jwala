@@ -1,5 +1,6 @@
 package com.siemens.cto.aem.ws.rest.v1.service.resource;
 
+import com.siemens.cto.aem.common.domain.model.resource.EntityType;
 import com.siemens.cto.aem.ws.rest.v1.provider.AuthenticatedUser;
 import com.siemens.cto.aem.ws.rest.v1.service.resource.impl.JsonResourceInstance;
 
@@ -27,8 +28,7 @@ public interface ResourceServiceRest {
     /**
      * /aem/v1.0/resources;groupName=[your group name]
      *
-     * @PathParam name  the name of the resource instance
-     * @MatrixParam groupName the name of the previously created group
+     * @param groupName the name of the previously created group
      * @return a list of ResourceInstance objects associated with a group
      */
     @GET
@@ -52,7 +52,7 @@ public interface ResourceServiceRest {
     /**
      * /aem/v1.0/resources <br/>
      * JSON POST data of JsonResourceInstance
-     * @param aResourceInstanceToCreate
+     * @param aResourceInstanceToCreate {@link JsonResourceInstance}
      * @param aUser the authenticated user who is creating the ResourceInstance
      * @return the newly created ResourceInstance object
      */
@@ -63,9 +63,9 @@ public interface ResourceServiceRest {
     /**
      * /aem/v1.0/resources/[resource instance name];groupName=[your group name] <br/>
      * JSON PUT conttaining the same object as create, but empty attributes will remain the same and it will detect changes in the name within the JsonResourceInstance object
-     * @PathParam name the name of an existing resource instance for updating
-     * @MatrixParam groupName the name of an existing group which is associcated with the resource instance to be updated.
-     * @BeanParam AuthenticatedUser  the authenticated user who is updating the resource instance
+     * @param name the name of an existing resource instance for updating
+     * @param groupName the name of an existing group which is associcated with the resource instance to be updated.
+     * @param aUser the authenticated user who is updating the resource instance
      * @return the updated ResourceInstance object
      */
     @PUT
@@ -75,9 +75,8 @@ public interface ResourceServiceRest {
 
     /**
      * /aem/v1.0/resources/[resource instance name];groupName=[your group name]
-     * @PathParam name the name of a the existing ResourceInstance to be deleted
-     * @MatrixParam groupName the group name of the resource instance to be deleted
-     * @BeanParam AuthenticatedUser the user which is doing the deletion
+     * @param name the name of a the existing ResourceInstance to be deleted
+     * @param groupName the group name of the resource instance to be deleted
      * @return  If successful nothing.
      */
     @DELETE
@@ -92,7 +91,7 @@ public interface ResourceServiceRest {
      * @param groupName the group where the resources to be removed belong to.
      * @param resourceNames the names of the resources to remove.
      *
-     * @return
+     * @return {@link Response}
      */
     @DELETE
     @Consumes(MediaType.APPLICATION_JSON)
@@ -139,4 +138,28 @@ public interface ResourceServiceRest {
     @DELETE
     @Path("/template/{name}")
     Response removeTemplate(@PathParam("name") String name);
+
+    /**
+     * Deletes a resource template of a specific group and entity type (e.g. group = Group1, entity type = JVMS)
+     * @param groupName the group name
+     * @param entityType the entity type {@link EntityType}
+     * @param templateNames comma separated names of templates to delete e.g. server.xml, context.xml (user can specify one template name as well)
+     * @return {@link Response} that contains the number of records deleted.
+     */
+    @DELETE
+    @Path("/template/{groupName}/{entityType}")
+    Response removeTemplate(@PathParam("groupName") String groupName, @PathParam("entityType") EntityType entityType,
+                            @QueryParam("templateNames") String templateNames);
+
+    /**
+     * Deletes a resource template of a specific entity type and name (e.g. entity type = jvms, entity name = jvm1).
+     * @param entityType {@link EntityType}
+     * @param entityName the name of the entity
+     * @param @param templateNames comma separated names of templates to delete e.g. server.xml, context.xml (user can specify one template name as well)
+     * @return {@link Response} that contains the number records deleted.
+     */
+    @DELETE
+    @Path("/template/{entityType}/{entityName}")
+    Response removeTemplate(@PathParam("entityType") EntityType entityType, @PathParam("entityName") String entityName,
+                            @QueryParam("templateNames") String templateNames);
 }

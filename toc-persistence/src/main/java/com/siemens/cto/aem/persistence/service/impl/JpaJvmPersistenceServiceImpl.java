@@ -176,4 +176,9 @@ public class JpaJvmPersistenceServiceImpl implements JvmPersistenceService {
     public int removeTemplate(final String name) {
         return jvmCrudService.removeTemplate(name);
     }
+
+    @Override
+    public int removeTemplate(final String jvmName, final String templateName) {
+        return jvmCrudService.removeTemplate(jvmName, templateName);
+    }
 }

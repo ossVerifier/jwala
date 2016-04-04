@@ -78,4 +78,8 @@ public interface GroupCrudService extends CrudService<JpaGroup> {
     int removeJvmTemplate(String name);
 
     int removeWeServerTemplate(String name);
+
+    int removeJvmTemplate(String groupName, String templateName);
+
+    int removeWeServerTemplate(String groupName, String templateName);
 }

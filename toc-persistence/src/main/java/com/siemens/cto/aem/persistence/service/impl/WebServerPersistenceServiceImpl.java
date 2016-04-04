@@ -151,4 +151,9 @@ public class WebServerPersistenceServiceImpl implements WebServerPersistenceServ
     public int removeTemplate(final String name) {
         return webServerCrudService.removeTemplate(name);
     }
+
+    @Override
+    public int removeTemplate(final String webServerName, final String templateName) {
+        return webServerCrudService.removeTemplate(webServerName, templateName);
+    }
 }

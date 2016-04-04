@@ -1,6 +1,7 @@
 package com.siemens.cto.aem.ws.rest.v1.service.resource.impl;
 
 import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
+import com.siemens.cto.aem.common.domain.model.resource.EntityType;
 import com.siemens.cto.aem.common.exception.FaultCodeException;
 import com.siemens.cto.aem.service.exception.ResourceServiceException;
 import com.siemens.cto.aem.service.resource.ResourceService;
@@ -10,6 +11,8 @@ import com.siemens.cto.aem.ws.rest.v1.service.resource.ResourceServiceRest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.ws.rs.PathParam;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 import java.util.List;
 
@@ -96,6 +99,28 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
     public Response removeTemplate(final String name) {
         try {
             return ResponseBuilder.ok(resourceService.removeTemplate(name));
+        } catch (final ResourceServiceException rse) {
+            return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR,
+                    new FaultCodeException(AemFaultType.PERSISTENCE_ERROR, rse.getMessage()));
+        }
+    }
+
+    @Override
+    public Response removeTemplate(@PathParam("groupName") final String groupName, @PathParam("entityType") final EntityType entityType,
+                                   @QueryParam("templateNames") final String templateNames) {
+        try {
+            return ResponseBuilder.ok(resourceService.removeTemplate(groupName, entityType, templateNames));
+        } catch (final ResourceServiceException rse) {
+            return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR,
+                    new FaultCodeException(AemFaultType.PERSISTENCE_ERROR, rse.getMessage()));
+        }
+    }
+
+    @Override
+    public Response removeTemplate(@PathParam("entityType") final EntityType entityType, @PathParam("entityName") final String entityName,
+                                   @QueryParam("templateNames") final String templateNames) {
+        try {
+            return ResponseBuilder.ok(resourceService.removeTemplate(entityType, entityName, templateNames));
         } catch (final ResourceServiceException rse) {
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR,
                     new FaultCodeException(AemFaultType.PERSISTENCE_ERROR, rse.getMessage()));

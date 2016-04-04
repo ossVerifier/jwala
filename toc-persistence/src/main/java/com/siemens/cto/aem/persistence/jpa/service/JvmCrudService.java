@@ -58,4 +58,6 @@ public interface JvmCrudService extends CrudService<JpaJvm> {
     Long getJvmForciblyStoppedCount(String groupName);
 
     int removeTemplate(String name);
+
+    int removeTemplate(String jvmName, String templateName);
 }

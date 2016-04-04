@@ -66,4 +66,6 @@ public interface WebServerPersistenceService {
     Long getWebServerStoppedCount(String groupName);
 
     int removeTemplate(String name);
+
+    int removeTemplate(String webServerName, String templateName);
 }

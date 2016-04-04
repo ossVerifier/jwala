@@ -378,4 +378,42 @@ public class ResourceServiceImpl implements ResourceService {
         // TODO: Delete the template file here!
         return recordsRemovedTotal;
     }
+
+    @Override
+    public int removeTemplate(final String groupName, final EntityType entityType, final String templateNames) {
+        final List<String> templateNameList =  Arrays.asList(templateNames.split(","));
+        int totalDeletedRecs = 0;
+        for (final String templateName: templateNameList) {
+            switch (entityType) {
+                case JVMS:
+                    totalDeletedRecs = groupPersistenceService.removeJvmTemplate(groupName, templateName);
+                    break;
+                case WEB_SERVERS:
+                    totalDeletedRecs = groupPersistenceService.removeWeServerTemplate(groupName, templateName);
+                    break;
+                default:
+                    throw new ResourceServiceException("Invalid entity type parameter! Entity type can only be JVMS or WEB_SERVERS.");
+            }
+        }
+        return totalDeletedRecs;
+    }
+
+    @Override
+    public int removeTemplate(final EntityType entityType, final String entityName, final String templateNames) {
+        final List<String> templateNameList =  Arrays.asList(templateNames.split(","));
+        int totalDeletedRecs = 0;
+        for (final String templateName: templateNameList) {
+            switch (entityType) {
+                case JVMS:
+                    totalDeletedRecs = jvmPersistenceService.removeTemplate(entityName, templateName);
+                    break;
+                case WEB_SERVERS:
+                    totalDeletedRecs = webServerPersistenceService.removeTemplate(entityName, templateName);
+                    break;
+                default:
+                    throw new ResourceServiceException("Invalid entity type parameter! Entity type can only be JVMS or WEB_SERVERS.");
+            }
+        }
+        return totalDeletedRecs;
+    }
 }
