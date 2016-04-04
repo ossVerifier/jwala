@@ -1,8 +1,12 @@
-package com.siemens.cto.aem.persistence.jpa.domain;
+package com.siemens.cto.aem.persistence.jpa.domain.resource.config.template;
+
+import com.siemens.cto.aem.persistence.jpa.domain.JpaWebServer;
 
 import javax.persistence.*;
 
 /**
+ * POJO that describes a db table that holds data about web server related resource configuration templates.
+ *
  * Created by z003bpej on 8/25/2015.
  */
 @Entity
@@ -19,8 +23,7 @@ import javax.persistence.*;
         @NamedQuery(name = JpaWebServerConfigTemplate.QUERY_DELETE_WEB_SERVER_TEMPLATE, query="DELETE FROM JpaWebServerConfigTemplate t WHERE t.templateName = :templateName"),
         @NamedQuery(name = JpaWebServerConfigTemplate.QUERY_DELETE_WEB_SERVER_TEMPLATE_BY_WEBSERVER_NAME, query="DELETE FROM JpaWebServerConfigTemplate t WHERE t.templateName = :templateName AND t.webServer.name = :webServerName")
         })
-public class JpaWebServerConfigTemplate {
-
+public class JpaWebServerConfigTemplate extends ConfigTemplate {
     public static final String GET_WEBSERVER_RESOURCE_TEMPLATE_NAMES = "getWebServerResourceTemplateNames";
     public static final String GET_WEBSERVER_TEMPLATE_CONTENT = "getWebServerTemplateContent";
     public static final String UPDATE_WEBSERVER_TEMPLATE_CONTENT = "updateWebServerTemplateContent";
@@ -31,21 +34,10 @@ public class JpaWebServerConfigTemplate {
     public static final String QUERY_PARAM_TEMPLATE_NAME = "templateName";
     public static final String QUERY_PARAM_WEBSERVER_NAME = "webServerName";
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "ID")
-    private Long id;
-
     @ManyToOne(fetch = FetchType.EAGER)
     @Column(nullable = true)    
     @org.apache.openjpa.persistence.jdbc.ForeignKey(deleteAction=org.apache.openjpa.persistence.jdbc.ForeignKeyAction.CASCADE)
     private JpaWebServer webServer;
-
-    @Column(name="TEMPLATE_NAME", nullable = false)
-    private String templateName;
-
-    @Column(name="TEMPLATE_CONTENT", nullable = false, length=2147483647)
-    private String templateContent;
 
     public JpaWebServer getWebServer() {
         return webServer;
@@ -54,29 +46,4 @@ public class JpaWebServerConfigTemplate {
     public void setWebServer(final JpaWebServer webServer) {
         this.webServer = webServer;
     }
-
-    public String getTemplateName() {
-        return templateName;
-    }
-
-    public void setTemplateName(String templateName) {
-        this.templateName = templateName;
-    }
-
-    public String getTemplateContent() {
-        return templateContent;
-    }
-
-    public void setTemplateContent(final String templateContent) {
-        this.templateContent = templateContent;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
 }
