@@ -10,6 +10,7 @@ import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState
 import com.siemens.cto.aem.common.exception.FaultCodeException;
 import com.siemens.cto.aem.common.exception.InternalErrorException;
 import com.siemens.cto.aem.common.exec.CommandOutput;
+import com.siemens.cto.aem.common.exec.CommandOutputReturnCode;
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.common.request.webserver.ControlWebServerRequest;
 import com.siemens.cto.aem.common.request.webserver.UploadHttpdConfTemplateRequest;
@@ -163,7 +164,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
             final String standardOut = commandOutput.getStandardOutput();
             String errMessage = null != standardError && !standardError.isEmpty() ? standardError : standardOut;
             LOGGER.error("Control Operation Unsuccessful: " + errMessage);
-            throw new InternalErrorException(AemFaultType.CONTROL_OPERATION_UNSUCCESSFUL, errMessage);
+            throw new InternalErrorException(AemFaultType.CONTROL_OPERATION_UNSUCCESSFUL, CommandOutputReturnCode.fromReturnCode(commandOutput.getReturnCode().getReturnCode()).getDesc());
         }
     }
 
@@ -210,7 +211,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
                 Map<String, String> errorDetails = new HashMap<>();
                 errorDetails.put("webServerName", aWebServerName);
                 return ResponseBuilder.notOkWithDetails(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
-                        AemFaultType.REMOTE_COMMAND_FAILURE, standardError), errorDetails);
+                        AemFaultType.REMOTE_COMMAND_FAILURE, CommandOutputReturnCode.fromReturnCode(execData.getReturnCode().getReturnCode()).getDesc()), errorDetails);
             }
         } catch (CommandFailureException e) {
             LOGGER.error("Failed to copy the httpd.conf to {} :: ERROR: {}", aWebServerName, e);
@@ -297,7 +298,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
                     commandOutput.getStandardError().isEmpty() ?
                             commandOutput.getStandardOutput() : commandOutput.getStandardError();
             LOGGER.error("Deleting windows service {} failed :: ERROR: {}", webServerName, standardError);
-            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, standardError);
+            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, CommandOutputReturnCode.fromReturnCode(commandOutput.getReturnCode().getReturnCode()).getDesc());
         }
     }
 

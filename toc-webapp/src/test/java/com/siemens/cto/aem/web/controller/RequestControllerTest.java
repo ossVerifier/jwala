@@ -1,6 +1,7 @@
 package com.siemens.cto.aem.web.controller;
 
 import com.siemens.cto.aem.common.exec.CommandOutput;
+import com.siemens.cto.aem.common.exec.CommandOutputReturnCode;
 import com.siemens.cto.aem.common.exec.ExecReturnCode;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
@@ -101,7 +102,9 @@ public class RequestControllerTest {
         when(request.getParameter(eq("webServerId"))).thenReturn("1");
 
         final CommandOutput execData = mock(CommandOutput.class);
-        when(execData.getReturnCode()).thenReturn(mock(ExecReturnCode.class));
+        ExecReturnCode mockExecReturnCode = mock(ExecReturnCode.class);
+        when(mockExecReturnCode.getReturnCode()).thenReturn(ExecReturnCode.STP_EXIT_NO_SUCH_SERVICE);
+        when(execData.getReturnCode()).thenReturn(mockExecReturnCode);
         when(execData.getReturnCode().wasSuccessful()).thenReturn(false);
         when(execData.getStandardError()).thenReturn("Error!");
 
@@ -115,7 +118,7 @@ public class RequestControllerTest {
 
         verify(response).setContentType(eq("text/plain"));
         verify(response).getWriter();
-        verify(printWriter).print(eq("Error reading httpd.conf: " + execData.getStandardError()));
+        verify(printWriter).print(eq("Error reading httpd.conf: " + CommandOutputReturnCode.NO_SUCH_SERVICE.getDesc()));
     }
 
     @Test

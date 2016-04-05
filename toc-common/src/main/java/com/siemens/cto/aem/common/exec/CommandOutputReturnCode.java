@@ -8,7 +8,7 @@ package com.siemens.cto.aem.common.exec;
 public enum CommandOutputReturnCode {
 
     SUCCESS(0, "Successful"),
-    FAILED(1, "Failed executing the command"),
+        FAILED(1, "Failed executing the command"),
     NO_SUCH_SERVICE(123, "No such service to control"),
     TIMED_OUT(124, "Command timed out"),
     ABNORMAL_SUCCESS(126, "Service already started/stopped"),

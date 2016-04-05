@@ -13,6 +13,7 @@ import com.siemens.cto.aem.common.domain.model.resource.ResourceType;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.exception.InternalErrorException;
 import com.siemens.cto.aem.common.exec.CommandOutput;
+import com.siemens.cto.aem.common.exec.CommandOutputReturnCode;
 import com.siemens.cto.aem.common.exec.ExecCommand;
 import com.siemens.cto.aem.common.exec.ExecReturnCode;
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
@@ -273,6 +274,7 @@ public class JvmServiceRestImplTest {
         assertTrue(content instanceof CommandOutput);
 
         when(execDataReturnCode.wasSuccessful()).thenReturn(false);
+        when(execDataReturnCode.getReturnCode()).thenReturn(123);
         boolean exceptionThrown = false;
 
         when(jvmControlService.controlJvm(any(ControlJvmRequest.class), any(User.class))).thenReturn(new CommandOutput(execDataReturnCode, "", "Jvm Control Failed"));
@@ -280,7 +282,7 @@ public class JvmServiceRestImplTest {
             jvmServiceRest.controlJvm(Identifier.id(1l, Jvm.class), jsonControlJvm, authenticatedUser);
         } catch (Exception e) {
             exceptionThrown = true;
-            assertEquals("Jvm Control Failed", e.getMessage());
+            assertEquals(CommandOutputReturnCode.NO_SUCH_SERVICE.getDesc(), e.getMessage());
         }
         assertTrue(exceptionThrown);
     }
@@ -416,7 +418,7 @@ public class JvmServiceRestImplTest {
         when(jvmControlService.controlJvm(any(ControlJvmRequest.class), any(User.class))).thenReturn(new CommandOutput(new ExecReturnCode(1), "", "FAIL CONTROL SERVICE"));
 
         final Response response = jvmServiceRest.generateAndDeployConf(jvm.getJvmName(), authenticatedUser);
-        assertEquals("FAIL CONTROL SERVICE", ((Map) (((ApplicationResponse) response.getEntity()).getApplicationResponseContent())).get("message"));
+        assertEquals(CommandOutputReturnCode.FAILED.getDesc(), ((Map) (((ApplicationResponse) response.getEntity()).getApplicationResponseContent())).get("message"));
     }
 
     @Test
@@ -431,7 +433,7 @@ public class JvmServiceRestImplTest {
         when(jvmControlService.controlJvm(new ControlJvmRequest(jvm.getId(), JvmControlOperation.DELETE_SERVICE), authenticatedUser.getUser())).thenReturn(new CommandOutput(new ExecReturnCode(0), "", ""));
 
         final Response response = jvmServiceRest.generateAndDeployConf(jvm.getJvmName(), authenticatedUser);
-        assertEquals("FAIL THE SERVICE SECURE COPY TEST", ((Map) (((ApplicationResponse) response.getEntity()).getApplicationResponseContent())).get("message"));
+        assertEquals(CommandOutputReturnCode.FAILED.getDesc(), ((Map) (((ApplicationResponse) response.getEntity()).getApplicationResponseContent())).get("message"));
     }
 
     @Test

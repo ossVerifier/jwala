@@ -1,6 +1,7 @@
 package com.siemens.cto.aem.web.controller;
 
 import com.siemens.cto.aem.common.exec.CommandOutput;
+import com.siemens.cto.aem.common.exec.CommandOutputReturnCode;
 import com.siemens.cto.aem.common.request.jvm.ControlJvmRequest;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
@@ -61,7 +62,7 @@ public class CommandController {
             if (execData.getReturnCode().wasSuccessful()) {
                 response.getWriter().print(execData.getStandardOutput());
             } else {
-                response.getWriter().print(ERROR_MSG_PREFIX + execData.getStandardError());
+                response.getWriter().print(ERROR_MSG_PREFIX + CommandOutputReturnCode.fromReturnCode(execData.getReturnCode().getReturnCode()).getDesc());
             }
         } catch (CommandFailureException cmdFailEx) {
             LOGGER.warn("Request Failure occurred", cmdFailEx);

@@ -11,6 +11,7 @@ import com.siemens.cto.aem.common.domain.model.ssh.SshConfiguration;
 import com.siemens.cto.aem.common.exec.ExecCommand;
 import com.siemens.cto.aem.common.exec.RemoteExecCommand;
 import com.siemens.cto.aem.common.exec.RemoteSystemConnection;
+import com.siemens.cto.aem.control.AemControl;
 import com.siemens.cto.aem.exception.CommandFailureException;
 import org.apache.commons.pool2.impl.GenericKeyedObjectPool;
 
@@ -53,7 +54,7 @@ public class RemoteCommandProcessorBuilder implements CommandProcessorBuilder {
     @Override
     public CommandProcessor build() throws CommandFailureException {
         final RemoteExecCommand remoteCommand = new RemoteExecCommand(getRemoteSystemConnection(), command);
-        if (command.getCommandFragments().get(0).contains("secure-copy")) {
+        if (command.getCommandFragments().get(0).contains(AemControl.Properties.SCP_SCRIPT_NAME.getValue())) {
             return new JschScpCommandProcessorImpl(jsch, remoteCommand);
         } else {
             return new JschCommandProcessorImpl(jsch, remoteCommand, channelPool);

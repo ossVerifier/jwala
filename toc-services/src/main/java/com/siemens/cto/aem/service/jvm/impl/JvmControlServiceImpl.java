@@ -112,18 +112,21 @@ public class JvmControlServiceImpl implements JvmControlService {
 
             // Process non successful return codes...
             if (!commandOutput.getReturnCode().wasSuccessful()) {
+                final String commandOutputReturnDescription = CommandOutputReturnCode.fromReturnCode(commandOutput.getReturnCode().getReturnCode()).getDesc();
                 switch (commandOutput.getReturnCode().getReturnCode()) {
                     case ExecReturnCode.STP_EXIT_PROCESS_KILLED:
                         commandOutput = new CommandOutput(new ExecReturnCode(0), FORCED_STOPPED, commandOutput.getStandardError());
                         jvmService.updateState(jvm.getId(), JvmState.FORCED_STOPPED);
                         break;
                     case ExecReturnCode.STP_EXIT_CODE_ABNORMAL_SUCCESS:
-                        LOGGER.warn(CommandOutputReturnCode.fromReturnCode(commandOutput.getReturnCode().getReturnCode()).getDesc());
+                        LOGGER.warn(commandOutputReturnDescription);
+                        historyService.createHistory(getServerName(jvm), new ArrayList<>(jvm.getGroups()), commandOutputReturnDescription, EventType.APPLICATION_ERROR, aUser.getId());
+                        messagingTemplate.convertAndSend(topicServerStates, new CurrentState<>(jvm.getId(), JvmState.JVM_FAILED, DateTime.now(), StateType.JVM, commandOutputReturnDescription));
                         break;
                     default:
                         final String errorMsg = "JVM control command was not successful! Return code = "
                                 + commandOutput.getReturnCode().getReturnCode() + ", description = " +
-                                CommandOutputReturnCode.fromReturnCode(commandOutput.getReturnCode().getReturnCode()).getDesc();
+                                commandOutputReturnDescription;
 
                         LOGGER.error(errorMsg);
                         historyService.createHistory(getServerName(jvm), new ArrayList<>(jvm.getGroups()), errorMsg, EventType.APPLICATION_ERROR,

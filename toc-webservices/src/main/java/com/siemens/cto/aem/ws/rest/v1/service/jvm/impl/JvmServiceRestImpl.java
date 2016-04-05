@@ -10,6 +10,7 @@ import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.exception.FaultCodeException;
 import com.siemens.cto.aem.common.exception.InternalErrorException;
 import com.siemens.cto.aem.common.exec.CommandOutput;
+import com.siemens.cto.aem.common.exec.CommandOutputReturnCode;
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.common.request.jvm.ControlJvmRequest;
 import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
@@ -172,7 +173,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
             final String standardOutput = commandOutput.getStandardOutput();
             String errMessage = standardError != null && !standardError.isEmpty() ? standardError : standardOutput;
             LOGGER.error("Control JVM unsuccessful: " + errMessage);
-            throw new InternalErrorException(AemFaultType.CONTROL_OPERATION_UNSUCCESSFUL, errMessage);
+            throw new InternalErrorException(AemFaultType.CONTROL_OPERATION_UNSUCCESSFUL, CommandOutputReturnCode.fromReturnCode(commandOutput.getReturnCode().getReturnCode()).getDesc());
         }
     }
 
@@ -337,7 +338,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
             String standardError =
                     execData.getStandardError().isEmpty() ? execData.getStandardOutput() : execData.getStandardError();
             LOGGER.error("Invoking windows service {} failed :: ERROR: {}", jvm.getJvmName(), standardError);
-            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, standardError);
+            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, CommandOutputReturnCode.fromReturnCode(execData.getReturnCode().getReturnCode()).getDesc());
         }
     }
 
@@ -352,7 +353,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
             LOGGER.error(
                     "Deploy command completed with error trying to extract and back up JVM config {} :: ERROR: {}",
                     jvm.getJvmName(), standardError);
-            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, standardError);
+            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, CommandOutputReturnCode.fromReturnCode(execData.getReturnCode().getReturnCode()).getDesc());
         }
     }
 
@@ -369,7 +370,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
                     execData.getStandardError().isEmpty() ? execData.getStandardOutput() : execData.getStandardError();
             LOGGER.error("Copy command completed with error trying to copy config tar to {} :: ERROR: {}",
                     jvm.getJvmName(), standardError);
-            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, standardError);
+            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, CommandOutputReturnCode.fromReturnCode(execData.getReturnCode().getReturnCode()).getDesc());
         }
     }
 
@@ -382,7 +383,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
                     commandOutput.getStandardError().isEmpty() ?
                             commandOutput.getStandardOutput() : commandOutput.getStandardError();
             LOGGER.error("Deleting windows service {} failed :: ERROR: {}", jvmName, standardError);
-            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, standardError);
+            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, CommandOutputReturnCode.fromReturnCode(commandOutput.getReturnCode().getReturnCode()).getDesc());
         }
     }
 
@@ -440,7 +441,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
             String standardError =
                     result.getStandardError().isEmpty() ? result.getStandardOutput() : result.getStandardError();
             LOGGER.error("Copying config file {} failed :: ERROR: {}", fileName, standardError);
-            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, standardError);
+            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, CommandOutputReturnCode.fromReturnCode(result.getReturnCode().getReturnCode()).getDesc());
         }
     }
 
