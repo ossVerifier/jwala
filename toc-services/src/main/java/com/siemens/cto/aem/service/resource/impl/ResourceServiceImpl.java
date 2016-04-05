@@ -196,16 +196,16 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Override
     @Transactional
-    public void createTemplate(final String metaDataFile, final String templateFile, final User user) {
+    public void createTemplate(final StringBuilder metaDataBuilder, final StringBuilder templateDataBuilder, final User user) {
         final ObjectMapper mapper = new ObjectMapper();
         final ResourceTemplateMetaData metaData;
         final String templateData;
         final String jsonData;
 
         try {
-            jsonData = FileUtils.readFileToString(new File(metaDataFile));
+            jsonData = metaDataBuilder.toString();
             metaData = mapper.readValue(jsonData, ResourceTemplateMetaData.class);
-            templateData = FileUtils.readFileToString(new File(templateFile));
+            templateData = templateDataBuilder.toString();
         } catch(final IOException ioe) {
             throw new ResourceServiceException(ioe);
         }
@@ -234,7 +234,9 @@ public class ResourceServiceImpl implements ResourceService {
             default:
                 throw new ResourceServiceException("Invalid entity type '" + metaData.getEntity().getType() + "'");
         }
-        createMetaAndTemplateDataLocalCopy(metaData, templateData, jsonData);
+
+        // TODO: Save meta data in db instead.
+        // createMetaAndTemplateDataLocalCopy(metaData, templateData, jsonData);
     }
 
     /**

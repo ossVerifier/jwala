@@ -122,12 +122,18 @@ public enum AemFaultType implements MessageResponseStatus {
 
     APP_TEMPLATE_NOT_FOUND("AEM58","AppTemplateNotFound"),
 
-    RUNTIME_COMMAND_FAILURE("AEM59", "RuntimeCommandFailure");
+    RUNTIME_COMMAND_FAILURE("AEM59", "RuntimeCommandFailure"),
+
+    IO_EXCEPTION("AEM60", "IoException"),
+
+    INVALID_NUMBER_OF_ATTACHMENTS("AEM61", "InvalidNumberOfAttachments"),
+
+    SERVICE_EXCEPTION("AEM62", "ServiceException");
 
 	private final String faultCode;
 	private final String faultMessage;
 
-	private AemFaultType(final String theFaultCode,
+	AemFaultType(final String theFaultCode,
                          final String theFaultMessage) {
 		faultCode = theFaultCode;
 		faultMessage = theFaultMessage;

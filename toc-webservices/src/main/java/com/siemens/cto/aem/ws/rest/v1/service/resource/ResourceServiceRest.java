@@ -3,6 +3,7 @@ package com.siemens.cto.aem.ws.rest.v1.service.resource;
 import com.siemens.cto.aem.common.domain.model.resource.EntityType;
 import com.siemens.cto.aem.ws.rest.v1.provider.AuthenticatedUser;
 import com.siemens.cto.aem.ws.rest.v1.service.resource.impl.JsonResourceInstance;
+import org.apache.cxf.jaxrs.ext.multipart.Attachment;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -104,31 +105,15 @@ public interface ResourceServiceRest {
 
     /**
      * Creates a template file and it's corresponding JSON meta data file.
-     * A template file is used when generating the actual resource file what will be deployed with the application.
-     *
-     * @param metaDataFile the template meta data file written in JSON.
-     *                             example:
-     *                                      {
-     *                                          "name": "My Context XML",
-     *                                          "templateName": "my-context.tpl",
-     *                                          "contentType": "application/xml",
-     *                                          "configFileName":"mycontext.xml",
-     *                                          "relativeDir":"/conf",
-     *                                          "entity": {
-     *                                              "type": "jvm",
-     *                                              "group": "HEALTH CHECK 4.0",
-     *                                              "target": "CTO-N9SF-LTST-HEALTH-CHECK-4.0-USMLVV1CTO4900-2"
-     *                                          }
-     *                                      }
-     * @param templateFile the file the contains the template
+     * A template file is used when generating the actual resource file what will be deployed to a JVM or web server.
+     * @param attachments contains the template's meta data and main content
      * @param user a logged in user who's calling this service
      * @return {@link Response}
      */
     @POST
     @Path("/template")
-    Response createTemplate(@QueryParam("metaDataFile") String metaDataFile,
-                            @QueryParam("templateFile") String templateFile,
-                            @BeanParam AuthenticatedUser user);
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    Response createTemplate(List<Attachment> attachments, @BeanParam AuthenticatedUser user);
 
     /**
      * Deletes a resource template.
@@ -155,7 +140,7 @@ public interface ResourceServiceRest {
      * Deletes a resource template of a specific entity type and name (e.g. entity type = jvms, entity name = jvm1).
      * @param entityType {@link EntityType}
      * @param entityName the name of the entity
-     * @param @param templateNames comma separated names of templates to delete e.g. server.xml, context.xml (user can specify one template name as well)
+     * @param templateNames comma separated names of templates to delete e.g. server.xml, context.xml (user can specify one template name as well)
      * @return {@link Response} that contains the number records deleted.
      */
     @DELETE

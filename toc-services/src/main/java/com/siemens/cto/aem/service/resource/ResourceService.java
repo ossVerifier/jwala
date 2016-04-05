@@ -43,7 +43,7 @@ public interface ResourceService {
     /**
      * Creates a template file and it's corresponding JSON meta data file.
      * A template file is used when generating the actual resource file what will be deployed with the application.
-     * @param metaDataFile the template meta data file written in JSON.
+     * @param metaDataBuilder the template meta data in JSON.
      *                             example:
      *                                      {
      *                                          "name": "My Context XML",
@@ -57,10 +57,10 @@ public interface ResourceService {
      *                                              "target": "CTO-N9SF-LTST-HEALTH-CHECK-4.0-USMLVV1CTO4900-2"
      *                                          }
      *                                      }
-     * @param templateFile the file the contains the template
+     * @param templateDataBuilder the template data
      * @param user the user calling this service
      */
-    void createTemplate(String metaDataFile, String templateFile, User user);
+    void createTemplate(StringBuilder metaDataBuilder, StringBuilder templateDataBuilder, User user);
 
     /**
      * Deletes a resource template.
