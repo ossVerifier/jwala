@@ -2,6 +2,7 @@
     min-height: 303px;
     width: auto;
     padding-top: 2px;
+    border: 1px solid white !important; /* overrides ui-widget-content's border property */
 }
 
 .root-node-ul {
