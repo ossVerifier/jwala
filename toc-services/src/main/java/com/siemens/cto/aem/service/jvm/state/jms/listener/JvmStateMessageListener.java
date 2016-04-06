@@ -78,7 +78,9 @@ public class JvmStateMessageListener implements MessageListener {
                     newState.getMessage()));
             groupStateNotificationService.retrieveStateAndSendToATopic(newState.getId(), Jvm.class);
         }
-        // Always update the JVM state map even if the state did not change since there's another thread that checks if the state is stale of not!
+
+        // Always update the JVM state since JvmStateService.verifyAndUpdateNotInMemOrStartedAndStaleStates checks if the
+        // state is stale of not!
         inMemoryStateManagerService.put(newState.getId(), newState);
     }
 

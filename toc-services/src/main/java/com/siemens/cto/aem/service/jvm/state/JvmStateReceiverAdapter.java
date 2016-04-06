@@ -44,6 +44,7 @@ public class JvmStateReceiverAdapter extends ReceiverAdapter {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public void receive(Message jgroupMessage) {
         final Address src = jgroupMessage.getSrc();
         final Map<ReportingJmsMessageKey, String> messageMap = (Map<ReportingJmsMessageKey, String>) jgroupMessage.getObject();
@@ -62,7 +63,9 @@ public class JvmStateReceiverAdapter extends ReceiverAdapter {
             messagingTemplate.send(currentState);
             groupStateNotificationService.retrieveStateAndSendToATopic(newState.getId(), Jvm.class);
         }
-        // Always update the JVM state map even if the state did not change since there's another thread that checks if the state is stale of not!
+
+        // Always update the JVM state since JvmStateService.verifyAndUpdateNotInMemOrStartedAndStaleStates checks if the
+        // state is stale of not!
         inMemoryStateManagerService.put(newState.getId(), newState);
     }
 
