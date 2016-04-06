@@ -1,5 +1,6 @@
 package com.siemens.cto.aem.service.jvm;
 
+import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.service.RemoteCommandReturnInfo;
@@ -31,4 +32,10 @@ public interface JvmStateService {
      */
     RemoteCommandReturnInfo getServiceStatus(final Jvm jvm);
 
+    /**
+     * Update JVM state.
+     * @param id jvm id
+     * @param state {@link JvmState}
+     */
+    void updateState(Identifier<Jvm> id, JvmState state);
 }

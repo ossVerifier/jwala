@@ -67,21 +67,23 @@ public class JvmStateMessageListener implements MessageListener {
         final JvmStateMessage message = converter.convert(aMapMessage);
         LOGGER.debug("Processing message: {}", message);
 
-        final SetStateRequest<Jvm, JvmState> setStateCommand = message.toCommand();
-        final CurrentState<Jvm, JvmState> newState = setStateCommand.getNewState();
+        if (!JvmState.JVM_STOPPED.toString().equalsIgnoreCase(message.getState())) {
+            final SetStateRequest<Jvm, JvmState> setStateCommand = message.toCommand();
+            final CurrentState<Jvm, JvmState> newState = setStateCommand.getNewState();
 
-        if (isStateChangedAndOrMsgNotEmpty(newState)) {
-            LOGGER.debug("The state has changed from {} to {}", inMemoryStateManagerService.get(newState.getId()) != null ?
-                    inMemoryStateManagerService.get(newState.getId()).getState() : "NO STATE", newState.getState());
-            jvmService.updateState(newState.getId(), newState.getState(), newState.getMessage());
-            messagingService.send(new CurrentState(newState.getId(), newState.getState(), DateTime.now(), StateType.JVM,
-                    newState.getMessage()));
-            groupStateNotificationService.retrieveStateAndSendToATopic(newState.getId(), Jvm.class);
+            if (isStateChangedAndOrMsgNotEmpty(newState)) {
+                LOGGER.debug("The state has changed from {} to {}", inMemoryStateManagerService.get(newState.getId()) != null ?
+                        inMemoryStateManagerService.get(newState.getId()).getState() : "NO STATE", newState.getState());
+                jvmService.updateState(newState.getId(), newState.getState(), newState.getMessage());
+                messagingService.send(new CurrentState(newState.getId(), newState.getState(), DateTime.now(), StateType.JVM,
+                        newState.getMessage()));
+                groupStateNotificationService.retrieveStateAndSendToATopic(newState.getId(), Jvm.class);
+            }
+
+            // Always update the JVM state since JvmStateService.verifyAndUpdateNotInMemOrStartedAndStaleStates checks if the
+            // state is stale of not!
+            inMemoryStateManagerService.put(newState.getId(), newState);
         }
-
-        // Always update the JVM state since JvmStateService.verifyAndUpdateNotInMemOrStartedAndStaleStates checks if the
-        // state is stale of not!
-        inMemoryStateManagerService.put(newState.getId(), newState);
     }
 
     /**

@@ -43,6 +43,7 @@ import com.siemens.cto.aem.service.impl.HistoryServiceImpl;
 import com.siemens.cto.aem.service.initializer.JGroupsClusterInitializer;
 import com.siemens.cto.aem.service.jvm.JvmControlService;
 import com.siemens.cto.aem.service.jvm.JvmService;
+import com.siemens.cto.aem.service.jvm.JvmStateService;
 import com.siemens.cto.aem.service.jvm.impl.JvmControlServiceImpl;
 import com.siemens.cto.aem.service.jvm.impl.JvmServiceImpl;
 import com.siemens.cto.aem.service.jvm.state.JvmStateReceiverAdapter;
@@ -219,9 +220,10 @@ public class AemServiceConfiguration implements SchedulingConfigurer {
     }
 
     @Bean(name = "jvmControlService")
-    public JvmControlService getJvmControlService(final HistoryCrudService historyCrudService) {
+    public JvmControlService getJvmControlService(final HistoryCrudService historyCrudService, final MessagingService messagingService,
+                                                  final JvmStateService jvmStateService) {
         return new JvmControlServiceImpl(getJvmService(), aemCommandExecutorConfig.getRemoteCommandExecutor(),
-                getHistoryService(historyCrudService), messagingTemplate);
+                getHistoryService(historyCrudService), messagingService, jvmStateService);
     }
 
     @Bean(name = "groupControlService")

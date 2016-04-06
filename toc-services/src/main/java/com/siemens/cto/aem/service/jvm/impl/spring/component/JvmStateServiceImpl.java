@@ -9,13 +9,14 @@ import com.siemens.cto.aem.common.domain.model.state.StateType;
 import com.siemens.cto.aem.common.exec.ExecCommand;
 import com.siemens.cto.aem.common.exec.RemoteExecCommand;
 import com.siemens.cto.aem.common.exec.RemoteSystemConnection;
+import com.siemens.cto.aem.persistence.service.JvmPersistenceService;
 import com.siemens.cto.aem.service.MessagingService;
 import com.siemens.cto.aem.service.RemoteCommandExecutorService;
 import com.siemens.cto.aem.service.RemoteCommandReturnInfo;
 import com.siemens.cto.aem.service.group.GroupStateNotificationService;
-import com.siemens.cto.aem.service.jvm.JvmService;
 import com.siemens.cto.aem.service.jvm.JvmStateService;
 import com.siemens.cto.aem.service.state.InMemoryStateManagerService;
+import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,6 +25,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashMap;
 import java.util.List;
@@ -40,7 +42,7 @@ public class JvmStateServiceImpl implements JvmStateService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JvmStateServiceImpl.class);
 
-    private final JvmService jvmService;
+    private final JvmPersistenceService jvmPersistenceService;
     private final InMemoryStateManagerService<Identifier<Jvm>, CurrentState<Jvm, JvmState>> inMemoryStateManagerService;
     private final JvmStateResolverWorker jvmStateResolverWorker;
     private final long jvmStateUpdateInterval;
@@ -52,7 +54,7 @@ public class JvmStateServiceImpl implements JvmStateService {
     private static final Map<Identifier<Jvm>, Future<CurrentState<Jvm, JvmState>>> PING_FUTURE_MAP = new HashMap<>();
 
     @Autowired
-    public JvmStateServiceImpl(final JvmService jvmService,
+    public JvmStateServiceImpl(final JvmPersistenceService jvmPersistenceService,
                                @Qualifier("jvmInMemoryStateManagerService")
                                final InMemoryStateManagerService<Identifier<Jvm>, CurrentState<Jvm, JvmState>> inMemoryStateManagerService,
                                final JvmStateResolverWorker jvmStateResolverWorker,
@@ -62,7 +64,7 @@ public class JvmStateServiceImpl implements JvmStateService {
                                final long jvmStateUpdateInterval,
                                final RemoteCommandExecutorService remoteCommandExecutorService,
                                final SshConfiguration sshConfig) {
-        this.jvmService = jvmService;
+        this.jvmPersistenceService = jvmPersistenceService;
         this.inMemoryStateManagerService = inMemoryStateManagerService;
         this.jvmStateResolverWorker = jvmStateResolverWorker;
         this.jvmStateUpdateInterval = jvmStateUpdateInterval;
@@ -75,7 +77,7 @@ public class JvmStateServiceImpl implements JvmStateService {
     @Override
     @Scheduled(fixedDelayString = "${ping.jvm.period.millis}")
     public void verifyAndUpdateNotInMemOrStartedAndStaleStates() {
-        final List<Jvm> jvms = jvmService.getJvms();
+        final List<Jvm> jvms = jvmPersistenceService.getJvms();
         for (final Jvm jvm : jvms) {
             if ((!isStateInMemory(jvm) || (isStarted(jvm) && isStale(jvm))) &&
                 (!PING_FUTURE_MAP.containsKey(jvm.getId()) || PING_FUTURE_MAP.get(jvm.getId()).isDone())) {
@@ -114,10 +116,7 @@ public class JvmStateServiceImpl implements JvmStateService {
         // Check again before updating to make sure that nothing has change after pinging the JVM.
         if (!isStateInMemory(jvm) || (isStarted(jvm) && isStale(jvm))) {
                 LOGGER.debug("Updating state of JVM {} ...", jvm.getJvmName());
-                jvmService.updateState(jvm.getId(), state, errMsg);
-                final CurrentState<Jvm, JvmState> currentState = new CurrentState<>(jvm.getId(), state, DateTime.now(), StateType.JVM, errMsg);
-                messagingService.send(currentState);
-                inMemoryStateManagerService.put(jvm.getId(), currentState);
+                updateState(jvm.getId(), state, errMsg);
                 groupStateNotificationService.retrieveStateAndSendToATopic(jvm.getId(), Jvm.class);
                 LOGGER.debug("Updated state of JVM {}!", jvm.getJvmName());
         }
@@ -140,4 +139,21 @@ public class JvmStateServiceImpl implements JvmStateService {
         return remoteCommandExecutorService.executeCommand(remoteExecCommand);
     }
 
+    @Override
+    @Transactional
+    public void updateState(final Identifier<Jvm> id, final JvmState state) {
+        updateState(id, state, StringUtils.EMPTY);
+    }
+
+    /**
+     * Update state in persistence context, in memory and messaging topic.
+     * @param id jvm id
+     * @param state {@link JvmState}
+     * @param errMsg the error message
+     */
+    protected void updateState(final Identifier<Jvm> id, final JvmState state, final String errMsg) {
+        jvmPersistenceService.updateState(id, state, errMsg);
+        inMemoryStateManagerService.put(id, new CurrentState<>(id, state, DateTime.now(), StateType.JVM));
+        messagingService.send(new CurrentState<>(id, state, DateTime.now(), StateType.JVM, errMsg));
+    }
 }

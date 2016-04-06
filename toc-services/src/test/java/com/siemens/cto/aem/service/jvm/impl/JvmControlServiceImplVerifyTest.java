@@ -20,8 +20,10 @@ import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
 import com.siemens.cto.aem.persistence.jpa.type.EventType;
 import com.siemens.cto.aem.service.HistoryService;
+import com.siemens.cto.aem.service.MessagingService;
 import com.siemens.cto.aem.service.VerificationBehaviorSupport;
 import com.siemens.cto.aem.service.jvm.JvmService;
+import com.siemens.cto.aem.service.jvm.JvmStateService;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -54,7 +56,10 @@ public class JvmControlServiceImplVerifyTest extends VerificationBehaviorSupport
     private HistoryService mockHistoryService;
 
     @Mock
-    private SimpMessagingTemplate mockMessagingTemplate;
+    private MessagingService mockMessagingService;
+
+    @Mock
+    private JvmStateService mockJvmStateService;
 
     private List<JpaGroup> groups = new ArrayList<>();
 
@@ -66,7 +71,8 @@ public class JvmControlServiceImplVerifyTest extends VerificationBehaviorSupport
     public void setup() {
         jvmService = mock(JvmService.class);
         commandExecutor = mock(RemoteCommandExecutor.class);
-        jvmControlService = new JvmControlServiceImpl(jvmService, commandExecutor, mockHistoryService, mockMessagingTemplate);
+        jvmControlService = new JvmControlServiceImpl(jvmService, commandExecutor, mockHistoryService, mockMessagingService,
+                mockJvmStateService);
         user = new User("unused");
         when(jvmService.getJpaJvm(any(Identifier.class), eq(true))).thenReturn(new JpaJvm());
     }

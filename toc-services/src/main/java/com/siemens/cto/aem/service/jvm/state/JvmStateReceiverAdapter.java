@@ -51,22 +51,24 @@ public class JvmStateReceiverAdapter extends ReceiverAdapter {
         logger.debug("Received JGroups JVM state message {} {}", src, messageMap);
 
         final JvmStateMessage message = converter.convert(messageMap);
-        final SetStateRequest<Jvm, JvmState> setStateCommand = message.toCommand();
-        final CurrentState<Jvm, JvmState> newState = setStateCommand.getNewState();
-        if (isStateChangedAndOrMsgNotEmpty(newState)) {
-            final String msg = newState.getMessage();
-            final JvmState state = newState.getState();
-            final Identifier<Jvm> id = newState.getId();
-            final CurrentState currentState = new CurrentState<>(id, state, DateTime.now(), StateType.JVM, msg);
-            logger.info("Processed JGroups, running update {}", message);
-            jvmService.updateState(id, state, msg);
-            messagingTemplate.send(currentState);
-            groupStateNotificationService.retrieveStateAndSendToATopic(newState.getId(), Jvm.class);
-        }
+        if (!JvmState.JVM_STOPPED.toString().equalsIgnoreCase(message.getState())) {
+            final SetStateRequest<Jvm, JvmState> setStateCommand = message.toCommand();
+            final CurrentState<Jvm, JvmState> newState = setStateCommand.getNewState();
+            if (isStateChangedAndOrMsgNotEmpty(newState)) {
+                final String msg = newState.getMessage();
+                final JvmState state = newState.getState();
+                final Identifier<Jvm> id = newState.getId();
+                final CurrentState currentState = new CurrentState<>(id, state, DateTime.now(), StateType.JVM, msg);
+                logger.info("Processed JGroups, running update {}", message);
+                jvmService.updateState(id, state, msg);
+                messagingTemplate.send(currentState);
+                groupStateNotificationService.retrieveStateAndSendToATopic(newState.getId(), Jvm.class);
+            }
 
-        // Always update the JVM state since JvmStateService.verifyAndUpdateNotInMemOrStartedAndStaleStates checks if the
-        // state is stale of not!
-        inMemoryStateManagerService.put(newState.getId(), newState);
+            // Always update the JVM state since JvmStateService.verifyAndUpdateNotInMemOrStartedAndStaleStates checks if the
+            // state is stale of not!
+            inMemoryStateManagerService.put(newState.getId(), newState);
+        }
     }
 
     @Override
