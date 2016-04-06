@@ -72,11 +72,15 @@ public enum WindowsWebServerNetOperation implements ServiceCommandBuilder {
     };
 
 
-    private static String cygpathWrapper(AemControl.Properties scriptPath) {
-        return "`" + CYGPATH.toString() + " " + SCRIPTS_PATH.toString() + scriptPath + "`";
+
+    private static String cygpathWrapper(AemControl.Properties scriptName) {
+        final String httpdConfPath = HTTPD_CONF_PATH + "/";
+        return "`" + CYGPATH.toString() + " " + httpdConfPath + scriptName + "`";
     }
 
     private static final Map<WebServerControlOperation, WindowsWebServerNetOperation> LOOKUP_MAP = new EnumMap<>(WebServerControlOperation.class);
+
+    public static final String HTTPD_CONF_PATH = ApplicationProperties.get("paths.httpd.conf");
 
     static {
         for (final WindowsWebServerNetOperation o : values()) {

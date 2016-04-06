@@ -16,6 +16,7 @@ import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.common.request.webserver.ControlWebServerRequest;
 import com.siemens.cto.aem.common.request.webserver.UploadHttpdConfTemplateRequest;
 import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateRequest;
+import com.siemens.cto.aem.control.AemControl;
 import com.siemens.cto.aem.exception.CommandFailureException;
 import com.siemens.cto.aem.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
 import com.siemens.cto.aem.persistence.jpa.service.exception.ResourceTemplateUpdateException;
@@ -247,6 +248,9 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
             // create the httpd.conf
             generateAndDeployConfig(aWebServerName, doBackup);
 
+            // copy the start and stop scripts
+            deployStartStopScripts(webServer);
+
             // re-install the service
             installWebServerWindowsService(aUser, new ControlWebServerRequest(webServer.getId(), WebServerControlOperation.INVOKE_SERVICE), webServer, doBackup);
 
@@ -259,6 +263,22 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
             wsWriteLocks.get(aWebServerName).writeLock().unlock();
         }
         return ResponseBuilder.ok(webServerService.getWebServer(aWebServerName));
+    }
+
+    protected void deployStartStopScripts(WebServer webServer) throws CommandFailureException {
+        final String webServerName = webServer.getName();
+        final boolean doNotBackup = false;
+        final String commandsScriptsPath = ApplicationProperties.get("commands.scripts-path");
+        final String destHttpdConfPath = ApplicationProperties.get("paths.httpd.conf") + "/";
+
+        final String sourceStartServicePath = commandsScriptsPath + "/" + AemControl.Properties.START_SCRIPT_NAME.getValue();
+        webServerControlService.secureCopyFileWithBackup(webServerName, sourceStartServicePath, destHttpdConfPath, doNotBackup);
+
+        final String sourceStopServicePath = commandsScriptsPath + "/" + AemControl.Properties.STOP_SCRIPT_NAME.getValue();
+        webServerControlService.secureCopyFileWithBackup(webServerName, sourceStopServicePath, destHttpdConfPath, doNotBackup);
+
+        final String sourceInvokeWsServicePath = commandsScriptsPath + "/" + AemControl.Properties.INVOKE_WS_SERVICE_SCRIPT_NAME.getValue();
+        webServerControlService.secureCopyFileWithBackup(webServerName, sourceInvokeWsServicePath, destHttpdConfPath, doNotBackup);
     }
 
     protected void installWebServerWindowsService(final AuthenticatedUser user, final ControlWebServerRequest invokeWSBatRequest, final WebServer webServer, final boolean doBackup) throws CommandFailureException {

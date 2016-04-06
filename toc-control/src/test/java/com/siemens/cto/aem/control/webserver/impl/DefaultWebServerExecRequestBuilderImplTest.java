@@ -43,7 +43,7 @@ public class DefaultWebServerExecRequestBuilderImplTest {
 
         final ExecCommand actualCommand = impl.build(new WindowsWebServerPlatformCommandProvider());
         final ExecCommand expectedCommand =
-                new ShellCommand("`/usr/bin/cygpath /cygdrive/d/stp/siemens/lib/scripts/start-service.sh`",
+                new ShellCommand("`/usr/bin/cygpath d:/stp/app/data/httpd/start-service.sh`",
                         "\"" + webServerName + "\"", "20");
 
         assertEquals(expectedCommand.toCommandString(), actualCommand.toCommandString());
@@ -59,7 +59,7 @@ public class DefaultWebServerExecRequestBuilderImplTest {
 
         final ExecCommand actualCommand = impl.build(new WindowsWebServerPlatformCommandProvider());
         final ShellCommand expectedCommand =
-                new ShellCommand("`/usr/bin/cygpath /cygdrive/d/stp/siemens/lib/scripts/stop-service.sh`",
+                new ShellCommand("`/usr/bin/cygpath d:/stp/app/data/httpd/stop-service.sh`",
                         "\"" + webServerName + "\"", "20");
 
         assertEquals(expectedCommand.toCommandString(), actualCommand.toCommandString());
