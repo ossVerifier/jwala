@@ -232,7 +232,7 @@ public class JvmServiceRestImplTest {
     @Test
     public void testRemoveJvm() {
         when(jvmService.getJvm(jvm.getId())).thenReturn(jvm);
-
+        when(jvmService.getJvm(anyString())).thenReturn(jvm);
         when(jvmControlService.controlJvm(any(ControlJvmRequest.class), any(User.class))).thenReturn(new CommandOutput(new ExecReturnCode(0), "", ""));
 
         Response response = jvmServiceRest.removeJvm(jvm.getId(), authenticatedUser);
@@ -331,6 +331,8 @@ public class JvmServiceRestImplTest {
         ResourceType mockResource = mock(ResourceType.class);
         mockResourceTypes.add(mockResource);
         CommandOutput commandOutput = mock(CommandOutput.class);
+        Jvm mockJvm = mock(Jvm.class);
+        when(mockJvm.getState()).thenReturn(JvmState.JVM_STOPPED);
         when(commandOutput.getReturnCode()).thenReturn(new ExecReturnCode(0));
         when(mockResource.getEntityType()).thenReturn("jvm");
         when(mockResource.getTemplateName()).thenReturn("ServerXMLTemplate.tpl");
@@ -341,6 +343,7 @@ public class JvmServiceRestImplTest {
         when(jvmControlService.controlJvm(new ControlJvmRequest(jvm.getId(), JvmControlOperation.DEPLOY_CONFIG_TAR), authenticatedUser.getUser())).thenReturn(commandOutput);
         when(jvmControlService.controlJvm(new ControlJvmRequest(jvm.getId(), JvmControlOperation.INVOKE_SERVICE), authenticatedUser.getUser())).thenReturn(commandOutput);
 
+        when(jvmService.getJvm(anyString())).thenReturn(mockJvm);
         when(resourceService.getResourceTypes()).thenReturn(mockResourceTypes);
         Jvm response = jvmServiceRest.generateAndDeployConf(jvm, authenticatedUser);
         assertEquals(response, jvm);

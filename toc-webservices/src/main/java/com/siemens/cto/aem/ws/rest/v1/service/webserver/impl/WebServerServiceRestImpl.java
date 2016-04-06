@@ -290,15 +290,18 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
     }
 
     protected void deleteWebServerWindowsService(AuthenticatedUser user, ControlWebServerRequest controlWebServerRequest, String webServerName) {
-        CommandOutput commandOutput = webServerControlService.controlWebServer(controlWebServerRequest, user.getUser());
-        if (commandOutput.getReturnCode().wasSuccessful()) {
-            LOGGER.info("Delete of windows service {} was successful", webServerName);
-        } else {
-            String standardError =
-                    commandOutput.getStandardError().isEmpty() ?
-                            commandOutput.getStandardOutput() : commandOutput.getStandardError();
-            LOGGER.error("Deleting windows service {} failed :: ERROR: {}", webServerName, standardError);
-            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, CommandOutputReturnCode.fromReturnCode(commandOutput.getReturnCode().getReturnCode()).getDesc());
+        WebServer webServer = webServerService.getWebServer(webServerName);
+        if (!webServer.getState().equals(WebServerReachableState.WS_NEW)) {
+            CommandOutput commandOutput = webServerControlService.controlWebServer(controlWebServerRequest, user.getUser());
+            if (commandOutput.getReturnCode().wasSuccessful()) {
+                LOGGER.info("Delete of windows service {} was successful", webServerName);
+            } else {
+                String standardError =
+                        commandOutput.getStandardError().isEmpty() ?
+                                commandOutput.getStandardOutput() : commandOutput.getStandardError();
+                LOGGER.error("Deleting windows service {} failed :: ERROR: {}", webServerName, standardError);
+                throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, CommandOutputReturnCode.fromReturnCode(commandOutput.getReturnCode().getReturnCode()).getDesc());
+            }
         }
     }
 

@@ -1,6 +1,5 @@
 package com.siemens.cto.aem.service.jvm.impl.spring.component;
 
-import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.common.domain.model.state.CurrentState;
@@ -47,6 +46,12 @@ public class JvmStateResolverWorker {
         LOGGER.debug("+++ pingAndUpdateJvmState");
         ClientHttpResponse response = null;
         CurrentState<Jvm, JvmState> currentState = null;
+
+        // if the jvm was just created do not check its state
+        if (jvm.getState().equals(JvmState.JVM_NEW)){
+            return new AsyncResult<>(new CurrentState<>(jvm.getId(), jvm.getState(), DateTime.now(), StateType.JVM));
+        }
+
         try {
             response = clientFactoryHelper.requestGet(jvm.getStatusUri());
             LOGGER.debug(">>> Response = {} from JVM {}", response.getStatusCode(), jvm.getId().getId());

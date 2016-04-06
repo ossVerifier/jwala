@@ -10,6 +10,7 @@ import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.common.domain.model.resource.ResourceType;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
+import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState;
 import com.siemens.cto.aem.common.exception.InternalErrorException;
 import com.siemens.cto.aem.common.exec.CommandOutput;
 import com.siemens.cto.aem.common.exec.ExecReturnCode;
@@ -249,6 +250,7 @@ public class GroupServiceImplDeployTest {
 
         when(mockWebServer.getName()).thenReturn("webServerName");
         when(mockGroup.getId()).thenReturn(new Identifier<Group>(111L));
+        when(mockWebServer.getState()).thenReturn(WebServerReachableState.WS_UNREACHABLE);
         when(mockGroup.getWebServers()).thenReturn(mockWSList);
         when(mockGroupService.getGroupWithWebServers(any(Identifier.class))).thenReturn(mockGroup);
         when(mockWebServerService.isStarted(any(WebServer.class))).thenReturn(false);

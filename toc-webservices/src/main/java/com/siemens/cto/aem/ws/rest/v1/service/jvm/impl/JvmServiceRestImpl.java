@@ -149,11 +149,10 @@ public class JvmServiceRestImpl implements JvmServiceRest {
         final Jvm jvm = jvmService.getJvm(aJvmId);
         if (!jvm.getState().isStartedState()) {
             LOGGER.info("Removing JVM from the database and deleting the service for id {}", aJvmId.getId());
-            jvmService.removeJvm(aJvmId);
             if (!jvm.getState().equals(JvmState.JVM_NEW)) {
-                deleteJvmWindowsService(user, new ControlJvmRequest(aJvmId, JvmControlOperation.DELETE_SERVICE),
-                        jvm.getJvmName());
+                deleteJvmWindowsService(user, new ControlJvmRequest(aJvmId, JvmControlOperation.DELETE_SERVICE),jvm.getJvmName());
             }
+            jvmService.removeJvm(aJvmId);
         } else {
             LOGGER.error("The target JVM {} must be stopped before attempting to delete it", jvm.getJvmName());
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE,
@@ -375,15 +374,18 @@ public class JvmServiceRestImpl implements JvmServiceRest {
     }
 
     protected void deleteJvmWindowsService(AuthenticatedUser user, ControlJvmRequest controlJvmRequest, String jvmName) {
-        CommandOutput commandOutput = jvmControlService.controlJvm(controlJvmRequest, user.getUser());
-        if (commandOutput.getReturnCode().wasSuccessful()) {
-            LOGGER.info("Delete of windows service {} was successful", jvmName);
-        } else {
-            String standardError =
-                    commandOutput.getStandardError().isEmpty() ?
-                            commandOutput.getStandardOutput() : commandOutput.getStandardError();
-            LOGGER.error("Deleting windows service {} failed :: ERROR: {}", jvmName, standardError);
-            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, CommandOutputReturnCode.fromReturnCode(commandOutput.getReturnCode().getReturnCode()).getDesc());
+        Jvm jvm = jvmService.getJvm(jvmName);
+        if (!jvm.getState().equals(JvmState.JVM_NEW)) {
+            CommandOutput commandOutput = jvmControlService.controlJvm(controlJvmRequest, user.getUser());
+            if (commandOutput.getReturnCode().wasSuccessful()) {
+                LOGGER.info("Delete of windows service {} was successful", jvmName);
+            } else {
+                String standardError =
+                        commandOutput.getStandardError().isEmpty() ?
+                                commandOutput.getStandardOutput() : commandOutput.getStandardError();
+                LOGGER.error("Deleting windows service {} failed :: ERROR: {}", jvmName, standardError);
+                throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, CommandOutputReturnCode.fromReturnCode(commandOutput.getReturnCode().getReturnCode()).getDesc());
+            }
         }
     }
 

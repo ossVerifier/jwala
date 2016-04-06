@@ -55,7 +55,7 @@ public enum WindowsWebServerNetOperation implements ServiceCommandBuilder {
         @Override
         public ExecCommand buildCommandForService(String aServiceName, String... aParams) {
             return new ExecCommand(
-                    cygpathWrapper(DELETE_SERVICE_SCRIPT_NAME),
+                    "sc delete",
                     aServiceName
             );
         }
