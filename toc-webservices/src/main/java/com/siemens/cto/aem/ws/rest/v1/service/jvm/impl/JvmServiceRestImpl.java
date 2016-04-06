@@ -15,6 +15,7 @@ import com.siemens.cto.aem.common.exec.ExecReturnCode;
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.common.request.jvm.ControlJvmRequest;
 import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
+import com.siemens.cto.aem.control.AemControl;
 import com.siemens.cto.aem.exception.CommandFailureException;
 import com.siemens.cto.aem.exception.RemoteCommandFailureException;
 import com.siemens.cto.aem.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
@@ -308,6 +309,9 @@ public class JvmServiceRestImpl implements JvmServiceRest {
             // deploy any application context xml's in the group
             deployApplicationContextXMLs(jvm);
 
+            // copy the start and stop scripts
+            deployStartStopScripts(jvm);
+
             // re-install the service
             installJvmWindowsService(jvm, user);
 
@@ -322,6 +326,22 @@ public class JvmServiceRestImpl implements JvmServiceRest {
             jvmWriteLocks.get(jvm.getId().toString()).writeLock().unlock();
         }
         return jvm;
+    }
+
+    protected void deployStartStopScripts(Jvm jvm) throws CommandFailureException {
+        final ControlJvmRequest secureCopyRequest = new ControlJvmRequest(jvm.getId(), JvmControlOperation.SECURE_COPY);
+
+        final String commandsScriptsPath = ApplicationProperties.get("commands.scripts-path");
+        final String jvmBinAbsolutePath = ApplicationProperties.get("paths.instances") + "/" + jvm.getJvmName() + "/bin/";
+
+        final String startServicePath = commandsScriptsPath + "/" + AemControl.Properties.START_SCRIPT_NAME.getValue();
+        jvmControlService.secureCopyFile(secureCopyRequest, startServicePath, jvmBinAbsolutePath);
+
+        final String stopServicePath = commandsScriptsPath + "/" + AemControl.Properties.STOP_SCRIPT_NAME.getValue();
+        jvmControlService.secureCopyFile(secureCopyRequest, stopServicePath, jvmBinAbsolutePath);
+
+        final String invokeServicePath = commandsScriptsPath + "/" + AemControl.Properties.INVOKE_SERVICE_SCRIPT_NAME.getValue();
+        jvmControlService.secureCopyFile(secureCopyRequest, invokeServicePath, jvmBinAbsolutePath);
     }
 
     protected void deployApplicationContextXMLs(Jvm jvm) {

@@ -31,7 +31,7 @@ public enum WindowsJvmNetOperation implements ServiceCommandBuilder {
         @Override
         public ExecCommand buildCommandForService(final String aServiceName, final String... aParams) {
             return new ShellCommand(
-                    cygpathWrapper(START_SCRIPT_NAME),
+                    cygpathWrapper(START_SCRIPT_NAME, aServiceName),
                     quotedServiceName(aServiceName),
                     SLEEP_TIME.getValue()
             );
@@ -41,7 +41,7 @@ public enum WindowsJvmNetOperation implements ServiceCommandBuilder {
         @Override
         public ExecCommand buildCommandForService(final String aServiceName, final String... aParams) {
             return new ShellCommand(
-                    cygpathWrapper(STOP_SCRIPT_NAME),
+                    cygpathWrapper(STOP_SCRIPT_NAME, aServiceName),
                     quotedServiceName(aServiceName),
                     SLEEP_TIME.getValue());
 
@@ -107,7 +107,7 @@ public enum WindowsJvmNetOperation implements ServiceCommandBuilder {
         @Override
         public ExecCommand buildCommandForService(String aServiceName, String... aParams) {
             return new ExecCommand(
-                    cygpathWrapper(INVOKE_SERVICE_SCRIPT_NAME),
+                    cygpathWrapper(INVOKE_SERVICE_SCRIPT_NAME, aServiceName),
                     aServiceName,
                     ApplicationProperties.get("paths.instances")
             );
@@ -129,6 +129,8 @@ public enum WindowsJvmNetOperation implements ServiceCommandBuilder {
     private static final Map<JvmControlOperation, WindowsJvmNetOperation> LOOKUP_MAP = new EnumMap<>(
             JvmControlOperation.class);
 
+    public static final String INSTANCES_DIR = ApplicationProperties.get("paths.instances");
+
     static {
         for (final WindowsJvmNetOperation o : values()) {
             LOOKUP_MAP.put(o.operation, o);
@@ -149,7 +151,8 @@ public enum WindowsJvmNetOperation implements ServiceCommandBuilder {
         return LOOKUP_MAP.get(anOperation);
     }
 
-    protected static String cygpathWrapper(AemControl.Properties scriptPath) {
-        return "`" + CYGPATH.toString() + " " + SCRIPTS_PATH.toString() + scriptPath + "`";
+    protected static String cygpathWrapper(AemControl.Properties scriptName, String serviceName) {
+        final String jvmInstancesBinDir = INSTANCES_DIR + "/" + serviceName + "/bin/";
+        return "`" + CYGPATH.toString() + " " + jvmInstancesBinDir + scriptName + "`";
     }
 }
