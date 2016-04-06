@@ -75,13 +75,15 @@ public enum WindowsJvmNetOperation implements ServiceCommandBuilder {
 
             final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd_HHmmss");
             final String instancesDir = ApplicationProperties.get("paths.instances");
+            final String javaJarAbsolutePath = ApplicationProperties.get("stp.java.home") + "/bin/jar";
+
             final String destinationDir = instancesDir + "/" + aServiceName;
             final String destinationDirBackup = destinationDir + "." + dateFormat.format(new Date());
-            final String javaJarAbsolutePath = ApplicationProperties.get("stp.java.home") + "/bin/jar";
             final String jvmJarFileName = aServiceName + "_config.jar";
-
             final String jvmJarAbsolutePath = instancesDir + "/" + jvmJarFileName;
+
             final String exitWithError = "echo 'EXIT_CODE='1***; echo -n -e '\\xff';";
+
             return new ExecCommand( new MessageFormat("if [ ! -e \"{0}\" ]; then echo Could not deploy {1}. No such directory {0}; {2} fi;").format(new String[]{instancesDir, jvmJarFileName, exitWithError}),
                                     new MessageFormat("if [ ! -e \"{0}\" ]; then echo Could not deploy {1}. Jar file does not exist at {0}; {2} fi;").format(new String[]{jvmJarAbsolutePath, jvmJarAbsolutePath, exitWithError}),
                                     new MessageFormat("if [ ! -e \"{0}\" ]; then echo Could not deploy {1}. No jar executable at {0}; {2} fi;").format(new String[]{javaJarAbsolutePath, jvmJarFileName, exitWithError}),

@@ -6,6 +6,9 @@ import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.control.AemControl;
 import com.siemens.cto.aem.control.command.ServiceCommandBuilder;
 
+import java.text.MessageFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.EnumMap;
 import java.util.Map;
 
@@ -40,10 +43,23 @@ public enum WindowsApplicationNetOperation implements ServiceCommandBuilder {
     UNPACK_WAR(ApplicationControlOperation.UNPACK_WAR) {
         @Override
         public ExecCommand buildCommandForService(String aServiceName, String... aParams) {
-            final String appWarName = aParams[0];
+            final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd_HHmmss");
             final String appWarsDirPath = ApplicationProperties.get("stp.webapps.dir");
             final String javaHomePath = ApplicationProperties.get("stp.java.home");
-            return new ExecCommand(cygpathWrapper(UNPACK_WAR_SCRIPT_NAME), appWarsDirPath, javaHomePath, appWarName);
+
+            final String appWarName = aParams[0];
+            final String appWarNameDir = appWarName.replace(".war", "");
+            final String appWarNameDirBackup = appWarNameDir + "." + dateFormat.format(new Date());
+
+            final String exitWithError = "echo 'EXIT_CODE='1***; echo -n -e '\\xff';";
+
+            return new ExecCommand( new MessageFormat("if [ ! -e \"{0}\" ]; then echo Could not unpack {1}. No such directory {0}; {2} fi;").format(new String[]{appWarsDirPath, appWarName, exitWithError}),
+                                    new MessageFormat("if [ ! -e \"{0}\" ]; then echo Could not unpack {1}. No such directory {0}; {2} fi;").format(new String[]{javaHomePath, appWarName, exitWithError}),
+                                    new MessageFormat("cd {0};").format(new String[]{appWarsDirPath}),
+                                    new MessageFormat("if [ -d {0} ]; then /usr/bin/mv {0} {1}; fi;").format(new String[]{appWarNameDir, appWarNameDirBackup}),
+                                    new MessageFormat("/usr/bin/mkdir {0};").format(new String[]{appWarNameDir}),
+                                    new MessageFormat("cd {0};").format(new String[]{appWarNameDir}),
+                                    new MessageFormat("{0}/bin/jar xf {1}/{2};").format(new String[]{javaHomePath, appWarsDirPath, appWarName}));
         }
     };
 
