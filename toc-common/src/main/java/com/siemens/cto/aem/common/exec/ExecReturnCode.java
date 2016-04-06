@@ -19,6 +19,7 @@ public class ExecReturnCode implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private static final Integer ZERO = 0;
+    public static final int STP_EXIT_CODE_SERVICE_DOES_NOT_EXIST = 36;
     public static final int STP_EXIT_CODE_FAST_FAIL = 125; /* Use FailFast Listener */
     public static final int STP_EXIT_CODE_ABNORMAL_SUCCESS = 126;
     public static final int STP_EXIT_CODE_NO_OP = 127;

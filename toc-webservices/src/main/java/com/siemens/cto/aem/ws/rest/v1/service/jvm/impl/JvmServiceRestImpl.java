@@ -11,6 +11,7 @@ import com.siemens.cto.aem.common.exception.FaultCodeException;
 import com.siemens.cto.aem.common.exception.InternalErrorException;
 import com.siemens.cto.aem.common.exec.CommandOutput;
 import com.siemens.cto.aem.common.exec.CommandOutputReturnCode;
+import com.siemens.cto.aem.common.exec.ExecReturnCode;
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.common.request.jvm.ControlJvmRequest;
 import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
@@ -150,7 +151,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
         if (!jvm.getState().isStartedState()) {
             LOGGER.info("Removing JVM from the database and deleting the service for id {}", aJvmId.getId());
             if (!jvm.getState().equals(JvmState.JVM_NEW)) {
-                deleteJvmWindowsService(user, new ControlJvmRequest(aJvmId, JvmControlOperation.DELETE_SERVICE),jvm.getJvmName());
+                deleteJvmWindowsService(user, new ControlJvmRequest(aJvmId, JvmControlOperation.DELETE_SERVICE), jvm.getJvmName());
             }
             jvmService.removeJvm(aJvmId);
         } else {
@@ -379,6 +380,8 @@ public class JvmServiceRestImpl implements JvmServiceRest {
             CommandOutput commandOutput = jvmControlService.controlJvm(controlJvmRequest, user.getUser());
             if (commandOutput.getReturnCode().wasSuccessful()) {
                 LOGGER.info("Delete of windows service {} was successful", jvmName);
+            } else if (ExecReturnCode.STP_EXIT_CODE_SERVICE_DOES_NOT_EXIST == commandOutput.getReturnCode().getReturnCode()) {
+                LOGGER.info("No such service found for {} during delete. Continuing with request.", jvmName);
             } else {
                 String standardError =
                         commandOutput.getStandardError().isEmpty() ?

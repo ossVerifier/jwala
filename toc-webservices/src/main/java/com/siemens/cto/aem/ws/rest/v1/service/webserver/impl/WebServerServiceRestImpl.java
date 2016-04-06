@@ -11,6 +11,7 @@ import com.siemens.cto.aem.common.exception.FaultCodeException;
 import com.siemens.cto.aem.common.exception.InternalErrorException;
 import com.siemens.cto.aem.common.exec.CommandOutput;
 import com.siemens.cto.aem.common.exec.CommandOutputReturnCode;
+import com.siemens.cto.aem.common.exec.ExecReturnCode;
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.common.request.webserver.ControlWebServerRequest;
 import com.siemens.cto.aem.common.request.webserver.UploadHttpdConfTemplateRequest;
@@ -295,7 +296,10 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
             CommandOutput commandOutput = webServerControlService.controlWebServer(controlWebServerRequest, user.getUser());
             if (commandOutput.getReturnCode().wasSuccessful()) {
                 LOGGER.info("Delete of windows service {} was successful", webServerName);
-            } else {
+            } else if (ExecReturnCode.STP_EXIT_CODE_SERVICE_DOES_NOT_EXIST == commandOutput.getReturnCode().getReturnCode()){
+                LOGGER.info("No such service found for {} during delete. Continuing with request.", webServerName);
+            }
+            else {
                 String standardError =
                         commandOutput.getStandardError().isEmpty() ?
                                 commandOutput.getStandardOutput() : commandOutput.getStandardError();

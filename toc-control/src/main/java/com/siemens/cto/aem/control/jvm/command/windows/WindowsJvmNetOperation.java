@@ -10,6 +10,9 @@ import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
+import java.text.MessageFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.Properties;
@@ -69,15 +72,24 @@ public enum WindowsJvmNetOperation implements ServiceCommandBuilder {
     DEPLOY_CONFIG_TAR(JvmControlOperation.DEPLOY_CONFIG_TAR) {
         @Override
         public ExecCommand buildCommandForService(String aServiceName, String... aParams) {
-            String dataJvmResourcesDir = ApplicationProperties.get("stp.jvm.resources.dir");
-            String instancesDir = ApplicationProperties.get("paths.instances");
-            return new ExecCommand(
-                    cygpathWrapper(DEPLOY_CONFIG_TAR_SCRIPT_NAME),
-                    dataJvmResourcesDir + "/" + aServiceName + "_config.jar",
-                    instancesDir + "/" + aServiceName,
-                    dataJvmResourcesDir,
-                    ApplicationProperties.get("stp.java.home") + "/bin/jar"
-            );
+
+            final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd_HHmmss");
+            final String instancesDir = ApplicationProperties.get("paths.instances");
+            final String destinationDir = instancesDir + "/" + aServiceName;
+            final String destinationDirBackup = destinationDir + "." + dateFormat.format(new Date());
+            final String javaJarAbsolutePath = ApplicationProperties.get("stp.java.home") + "/bin/jar";
+            final String jvmJarFileName = aServiceName + "_config.jar";
+
+            final String jvmJarAbsolutePath = instancesDir + "/" + jvmJarFileName;
+            final String exitWithError = "echo 'EXIT_CODE='1***; echo -n -e '\\xff';";
+            return new ExecCommand( new MessageFormat("if [ ! -e \"{0}\" ]; then echo Could not deploy {1}. No such directory {0}; {2} fi;").format(new String[]{instancesDir, jvmJarFileName, exitWithError}),
+                                    new MessageFormat("if [ ! -e \"{0}\" ]; then echo Could not deploy {1}. Jar file does not exist at {0}; {2} fi;").format(new String[]{jvmJarAbsolutePath, jvmJarAbsolutePath, exitWithError}),
+                                    new MessageFormat("if [ ! -e \"{0}\" ]; then echo Could not deploy {1}. No jar executable at {0}; {2} fi;").format(new String[]{javaJarAbsolutePath, jvmJarFileName, exitWithError}),
+                                    new MessageFormat("cd {0};").format(new String[]{instancesDir}),
+                                    new MessageFormat("if [ -e \"{0}\" ]; then /usr/bin/mv {0} {1}; fi;").format(new String[]{destinationDir, destinationDirBackup}),
+                                    new MessageFormat("/usr/bin/mkdir {0};").format(new String[]{destinationDir}),
+                                    new MessageFormat("{0} xf {1};").format(new String[]{javaJarAbsolutePath, jvmJarFileName}),
+                                    new MessageFormat("/usr/bin/rm {0};").format(new String[]{jvmJarFileName}));
         }
     },
     DELETE_SERVICE(JvmControlOperation.DELETE_SERVICE) {
