@@ -140,7 +140,6 @@ public class JvmStateServiceImpl implements JvmStateService {
     }
 
     @Override
-    @Transactional
     public void updateState(final Identifier<Jvm> id, final JvmState state) {
         updateState(id, state, StringUtils.EMPTY);
     }
@@ -151,6 +150,7 @@ public class JvmStateServiceImpl implements JvmStateService {
      * @param state {@link JvmState}
      * @param errMsg the error message
      */
+    @Transactional
     protected void updateState(final Identifier<Jvm> id, final JvmState state, final String errMsg) {
         jvmPersistenceService.updateState(id, state, errMsg);
         inMemoryStateManagerService.put(id, new CurrentState<>(id, state, DateTime.now(), StateType.JVM));
