@@ -38,4 +38,12 @@ public interface JvmStateService {
      * @param state {@link JvmState}
      */
     void updateState(Identifier<Jvm> id, JvmState state);
+
+    /**
+     * Update JVM state.
+     * @param id jvm id
+     * @param state {@link JvmState}
+     * @param errMsg the error message
+     */
+    void updateState(Identifier<Jvm> id, JvmState state, String errMsg);
 }

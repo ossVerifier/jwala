@@ -25,7 +25,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashMap;
 import java.util.List;
@@ -144,14 +143,8 @@ public class JvmStateServiceImpl implements JvmStateService {
         updateState(id, state, StringUtils.EMPTY);
     }
 
-    /**
-     * Update state in persistence context, in memory and messaging topic.
-     * @param id jvm id
-     * @param state {@link JvmState}
-     * @param errMsg the error message
-     */
-    @Transactional
-    protected void updateState(final Identifier<Jvm> id, final JvmState state, final String errMsg) {
+    @Override
+    public void updateState(final Identifier<Jvm> id, final JvmState state, final String errMsg) {
         jvmPersistenceService.updateState(id, state, errMsg);
         inMemoryStateManagerService.put(id, new CurrentState<>(id, state, DateTime.now(), StateType.JVM));
         messagingService.send(new CurrentState<>(id, state, DateTime.now(), StateType.JVM, errMsg));
