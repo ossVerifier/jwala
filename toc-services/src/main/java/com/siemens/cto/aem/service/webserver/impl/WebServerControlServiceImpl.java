@@ -183,6 +183,30 @@ public class WebServerControlServiceImpl implements WebServerControlService {
                 destPath);
     }
 
+    @Override
+    public CommandOutput createDirectory(WebServer webServer, String dirAbsolutePath) throws CommandFailureException {
+        return commandExecutor.executeRemoteCommand(
+                webServer.getName(),
+                webServer.getHost(),
+                WebServerControlOperation.CREATE_DIRECTORY,
+                new WindowsWebServerPlatformCommandProvider(),
+                dirAbsolutePath);
+
+    }
+
+    @Override
+    public CommandOutput changeFileMode(WebServer webServer, String fileMode, String targetDirPath, String targetFile) throws CommandFailureException {
+        return commandExecutor.executeRemoteCommand(
+                webServer.getName(),
+                webServer.getHost(),
+                WebServerControlOperation.CHANGE_FILE_MODE,
+                new WindowsWebServerPlatformCommandProvider(),
+                fileMode,
+                targetDirPath,
+                targetFile);
+
+    }
+
     /**
      * Set web server state to failed.
      *

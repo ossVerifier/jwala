@@ -3,7 +3,6 @@ package com.siemens.cto.aem.control.application.command.windows;
 import com.siemens.cto.aem.common.domain.model.app.ApplicationControlOperation;
 import com.siemens.cto.aem.common.exec.ExecCommand;
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
-import com.siemens.cto.aem.control.AemControl;
 import com.siemens.cto.aem.control.command.ServiceCommandBuilder;
 
 import java.text.MessageFormat;
@@ -12,7 +11,7 @@ import java.util.Date;
 import java.util.EnumMap;
 import java.util.Map;
 
-import static com.siemens.cto.aem.control.AemControl.Properties.*;
+import static com.siemens.cto.aem.control.AemControl.Properties.SCP_SCRIPT_NAME;
 
 public enum WindowsApplicationNetOperation implements ServiceCommandBuilder {
 
@@ -82,7 +81,4 @@ public enum WindowsApplicationNetOperation implements ServiceCommandBuilder {
         return LOOKUP_MAP.get(anOperation);
     }
 
-    protected static String cygpathWrapper(AemControl.Properties scriptPath) {
-        return "`" + CYGPATH.toString() + " " + SCRIPTS_PATH.toString() + scriptPath + "`";
-    }
 }

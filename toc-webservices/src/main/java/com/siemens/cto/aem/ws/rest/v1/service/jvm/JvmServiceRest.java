@@ -3,7 +3,6 @@ package com.siemens.cto.aem.ws.rest.v1.service.jvm;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.ws.rest.v1.provider.AuthenticatedUser;
-import com.siemens.cto.aem.ws.rest.v1.provider.JvmIdsParameterProvider;
 import com.siemens.cto.aem.ws.rest.v1.service.jvm.impl.JsonControlJvm;
 import com.siemens.cto.aem.ws.rest.v1.service.jvm.impl.JsonCreateJvm;
 import com.siemens.cto.aem.ws.rest.v1.service.jvm.impl.JsonUpdateJvm;
@@ -45,13 +44,9 @@ public interface JvmServiceRest extends InitializingBean{
                         final JsonControlJvm aJvmToControl,
                         @BeanParam final AuthenticatedUser aUser);
 
-    @GET
-    @Path("/{jvmName}/conf")
-    Response generateConfig(@PathParam("jvmName") final String aJvmName);
-
     @PUT
     @Path("/{jvmName}/conf")
-    Response generateAndDeployConf(@PathParam("jvmName") final String jvmName,
+    Response generateAndDeployJvm(@PathParam("jvmName") final String jvmName,
                                    @BeanParam final AuthenticatedUser aUser);
 
     @PUT

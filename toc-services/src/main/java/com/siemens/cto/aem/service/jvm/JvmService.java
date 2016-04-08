@@ -53,7 +53,6 @@ public interface JvmService {
 
     String previewResourceTemplate(String jvmName, String groupName, String template);
 
-    @Deprecated
     void updateState(Identifier<Jvm> id, JvmState state);
 
     void updateState(Identifier<Jvm> id, JvmState state, String msg);

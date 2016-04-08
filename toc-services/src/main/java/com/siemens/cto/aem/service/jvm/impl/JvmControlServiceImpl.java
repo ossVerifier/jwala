@@ -201,4 +201,25 @@ public class JvmControlServiceImpl implements JvmControlService {
         return secureCopyFile(secureCopyRequest, sourcePath, destPath);
     }
 
+    @Override
+    public CommandOutput changeFileMode(Jvm jvm, String modifiedPermissions, String targetAbsoluteDir, String targetFile) throws CommandFailureException {
+        return remoteCommandExecutor.executeRemoteCommand(
+                jvm.getJvmName(),
+                jvm.getHostName(),
+                JvmControlOperation.CHANGE_FILE_MODE,
+                new WindowsJvmPlatformCommandProvider(),
+                modifiedPermissions,
+                targetAbsoluteDir,
+                targetFile);
+    }
+
+    @Override
+    public CommandOutput createDirectory(Jvm jvm, String dirAbsolutePath) throws CommandFailureException {
+        return remoteCommandExecutor.executeRemoteCommand(
+                jvm.getJvmName(),
+                jvm.getHostName(),
+                JvmControlOperation.CREATE_DIRECTORY,
+                new WindowsJvmPlatformCommandProvider(),
+                dirAbsolutePath);
+    }
 }

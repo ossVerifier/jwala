@@ -580,7 +580,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
                 Future<Response> responseFuture = executorService.submit(new Callable<Response>() {
                     @Override
                     public Response call() throws Exception {
-                        return jvmServiceRest.generateAndDeployConf(jvmName, aUser);
+                        return jvmServiceRest.generateAndDeployJvm(jvmName, aUser);
                     }
                 });
                 futuresMap.put(jvmName, responseFuture);

@@ -1,5 +1,6 @@
 package com.siemens.cto.aem.service.jvm;
 
+import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.exec.CommandOutput;
 import com.siemens.cto.aem.common.request.jvm.ControlJvmRequest;
@@ -12,4 +13,8 @@ public interface JvmControlService {
     CommandOutput secureCopyFile(ControlJvmRequest secureCopyRequest, String sourcePath, String destPath) throws CommandFailureException;
 
     CommandOutput secureCopyFileWithBackup(ControlJvmRequest secureCopyRequest, String sourcePath, String destPath) throws CommandFailureException;
+
+    CommandOutput createDirectory(Jvm jvm, String dirAbsolutePath) throws CommandFailureException;
+
+    CommandOutput changeFileMode(Jvm jvm, String modifiedPermissions, String targetAbsoluteDir, String targetFile) throws CommandFailureException;
 }

@@ -10,9 +10,6 @@ import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
-import java.text.MessageFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.Properties;
@@ -31,7 +28,7 @@ public enum WindowsJvmNetOperation implements ServiceCommandBuilder {
         @Override
         public ExecCommand buildCommandForService(final String aServiceName, final String... aParams) {
             return new ShellCommand(
-                    cygpathWrapper(START_SCRIPT_NAME, aServiceName),
+                    cygpathWrapper(START_SCRIPT_NAME, INSTANCES_DIR + "/" + aServiceName + "/bin/"),
                     quotedServiceName(aServiceName),
                     SLEEP_TIME.getValue()
             );
@@ -41,7 +38,7 @@ public enum WindowsJvmNetOperation implements ServiceCommandBuilder {
         @Override
         public ExecCommand buildCommandForService(final String aServiceName, final String... aParams) {
             return new ShellCommand(
-                    cygpathWrapper(STOP_SCRIPT_NAME, aServiceName),
+                    cygpathWrapper(STOP_SCRIPT_NAME, INSTANCES_DIR + "/" + aServiceName + "/bin/"),
                     quotedServiceName(aServiceName),
                     SLEEP_TIME.getValue());
 
@@ -73,25 +70,16 @@ public enum WindowsJvmNetOperation implements ServiceCommandBuilder {
         @Override
         public ExecCommand buildCommandForService(String aServiceName, String... aParams) {
 
-            final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd_HHmmss");
-            final String instancesDir = ApplicationProperties.get("paths.instances");
-            final String javaJarAbsolutePath = ApplicationProperties.get("stp.java.home") + "/bin/jar";
+            String dataJvmResourcesDir = ApplicationProperties.get("stp.jvm.resources.dir");
+            String instancesDir = ApplicationProperties.get("paths.instances");
+            return new ExecCommand(
+                    cygpathWrapper(DEPLOY_CONFIG_TAR_SCRIPT_NAME, USER_TOC_SCRIPTS_PATH + "/"),
+                    USER_TOC_SCRIPTS_PATH + "/" + aServiceName + "_config.jar",
+                    instancesDir + "/" + aServiceName,
+                    dataJvmResourcesDir,
+                    ApplicationProperties.get("stp.java.home") + "/bin/jar"
+            );
 
-            final String destinationDir = instancesDir + "/" + aServiceName;
-            final String destinationDirBackup = destinationDir + "." + dateFormat.format(new Date());
-            final String jvmJarFileName = aServiceName + "_config.jar";
-            final String jvmJarAbsolutePath = instancesDir + "/" + jvmJarFileName;
-
-            final String exitWithError = "echo 'EXIT_CODE='1***; echo -n -e '\\xff';";
-
-            return new ExecCommand( new MessageFormat("if [ ! -e \"{0}\" ]; then echo Could not deploy {1}. No such directory {0}; {2} fi;").format(new String[]{instancesDir, jvmJarFileName, exitWithError}),
-                                    new MessageFormat("if [ ! -e \"{0}\" ]; then echo Could not deploy {1}. Jar file does not exist at {0}; {2} fi;").format(new String[]{jvmJarAbsolutePath, jvmJarAbsolutePath, exitWithError}),
-                                    new MessageFormat("if [ ! -e \"{0}\" ]; then echo Could not deploy {1}. No jar executable at {0}; {2} fi;").format(new String[]{javaJarAbsolutePath, jvmJarFileName, exitWithError}),
-                                    new MessageFormat("cd {0};").format(new String[]{instancesDir}),
-                                    new MessageFormat("if [ -e \"{0}\" ]; then /usr/bin/mv {0} {1}; fi;").format(new String[]{destinationDir, destinationDirBackup}),
-                                    new MessageFormat("/usr/bin/mkdir {0};").format(new String[]{destinationDir}),
-                                    new MessageFormat("{0} xf {1};").format(new String[]{javaJarAbsolutePath, jvmJarFileName}),
-                                    new MessageFormat("/usr/bin/rm {0};").format(new String[]{jvmJarFileName}));
         }
     },
     DELETE_SERVICE(JvmControlOperation.DELETE_SERVICE) {
@@ -107,7 +95,7 @@ public enum WindowsJvmNetOperation implements ServiceCommandBuilder {
         @Override
         public ExecCommand buildCommandForService(String aServiceName, String... aParams) {
             return new ExecCommand(
-                    cygpathWrapper(INVOKE_SERVICE_SCRIPT_NAME, aServiceName),
+                    cygpathWrapper(INVOKE_SERVICE_SCRIPT_NAME, USER_TOC_SCRIPTS_PATH + "/"),
                     aServiceName,
                     ApplicationProperties.get("paths.instances")
             );
@@ -123,6 +111,18 @@ public enum WindowsJvmNetOperation implements ServiceCommandBuilder {
         @Override
         public ExecCommand buildCommandForService(String aServiceName, String... aParams) {
             return new ExecCommand("/usr/bin/cp", aParams[0], aParams[1]);
+        }
+    },
+    CREATE_DIRECTORY(JvmControlOperation.CREATE_DIRECTORY){
+        @Override
+        public ExecCommand buildCommandForService(String aServiceName, String... aParams) {
+            return new ExecCommand("if [ ! -e \"" + aParams[0] + "\" ]; then /usr/bin/mkdir -p " + aParams[0] + "; fi;");
+        }
+    },
+    CHANGE_FILE_MODE(JvmControlOperation.CHANGE_FILE_MODE){
+        @Override
+        public ExecCommand buildCommandForService(String aServiceName, String... aParams) {
+            return new ExecCommand("/usr/bin/chmod " + aParams[0] + " " + aParams[1] + "/" + aParams[2]);
         }
     };
 
@@ -151,8 +151,7 @@ public enum WindowsJvmNetOperation implements ServiceCommandBuilder {
         return LOOKUP_MAP.get(anOperation);
     }
 
-    protected static String cygpathWrapper(AemControl.Properties scriptName, String serviceName) {
-        final String jvmInstancesBinDir = INSTANCES_DIR + "/" + serviceName + "/bin/";
-        return "`" + CYGPATH.toString() + " " + jvmInstancesBinDir + scriptName + "`";
+    protected static String cygpathWrapper(AemControl.Properties scriptName, String scriptAbsolutePath) {
+        return "`" + CYGPATH.toString() + " " + scriptAbsolutePath + scriptName + "`";
     }
 }

@@ -256,6 +256,7 @@ public class GroupServiceImplDeployTest {
         when(mockWebServerService.isStarted(any(WebServer.class))).thenReturn(false);
         when(mockWebServerService.getWebServer(anyString())).thenReturn(mockWebServer);
         when(mockWebServerControlService.controlWebServer(any(ControlWebServerRequest.class), any(User.class))).thenReturn(successCommandOutput);
+        when(mockWebServerControlService.createDirectory(any(WebServer.class), anyString())).thenReturn(successCommandOutput);
         when(mockWebServerService.generateHttpdConfig(anyString())).thenReturn("httpd.conf content");
         when(mockWebServerControlService.secureCopyFileWithBackup(anyString(), anyString(), anyString(), anyBoolean())).thenReturn(successCommandOutput);
         when(mockWebServerService.generateInvokeWSBat(any(WebServer.class))).thenReturn("invokeWS.bat content");
@@ -284,6 +285,7 @@ public class GroupServiceImplDeployTest {
         when(mockGroupService.getGroup(any(Identifier.class))).thenReturn(mockGroup);
         when(mockJvmService.getJvm(anyString())).thenReturn(mockJvm);
         when(mockJvmControlService.controlJvm(any(ControlJvmRequest.class), any(User.class))).thenReturn(successCommandOutput);
+        when(mockJvmControlService.createDirectory(any(Jvm.class), anyString())).thenReturn(successCommandOutput);
         when(mockResourceService.getResourceTypes()).thenReturn(new ArrayList<ResourceType>());
         when(mockJvmControlService.secureCopyFile(any(ControlJvmRequest.class), anyString(), anyString())).thenReturn(successCommandOutput);
 
@@ -359,7 +361,7 @@ public class GroupServiceImplDeployTest {
             }
 
             @Override
-            protected String generateJvmConfigTar(String jvmName) {
+            protected String generateJvmConfigJar(String jvmName) {
                 return "./testJvmConfigTar.tar";
             }
         }

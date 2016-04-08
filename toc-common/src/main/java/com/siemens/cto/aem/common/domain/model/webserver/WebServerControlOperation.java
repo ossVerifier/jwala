@@ -14,7 +14,9 @@ public enum WebServerControlOperation {
     DEPLOY_HTTP_CONFIG_FILE("deployHttpConfigFile", null),
     BACK_UP_HTTP_CONFIG_FILE("backUpHttpConfigFile", null),
     DELETE_SERVICE("deleteService", WebServerReachableState.WS_UNREACHABLE),
-    INVOKE_SERVICE("invokeWSBat", null);
+    INVOKE_SERVICE("invokeWSBat", null),
+    CREATE_DIRECTORY("mkdir", null),
+    CHANGE_FILE_MODE("chmod", null);
 
     private static final Map<String, WebServerControlOperation> LOOKUP_MAP = new HashMap<>();
 

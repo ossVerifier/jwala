@@ -18,7 +18,7 @@ public enum WindowsWebServerNetOperation implements ServiceCommandBuilder {
         @Override
         public ExecCommand buildCommandForService(final String aServiceName, final String... aParams) {
             return new ShellCommand(
-                    cygpathWrapper(START_SCRIPT_NAME),
+                    cygpathWrapper(START_SCRIPT_NAME, WEBSERVER_CONF_PATH + "/"),
                     quotedServiceName(aServiceName),
                     SLEEP_TIME.getValue()
             );
@@ -28,7 +28,7 @@ public enum WindowsWebServerNetOperation implements ServiceCommandBuilder {
         @Override
         public ExecCommand buildCommandForService(final String aServiceName, final String... aParams) {
             return new ShellCommand(
-                    cygpathWrapper(STOP_SCRIPT_NAME),
+                    cygpathWrapper(STOP_SCRIPT_NAME, WEBSERVER_CONF_PATH + "/"),
                     quotedServiceName(aServiceName),
                     SLEEP_TIME.getValue());
         }
@@ -64,23 +64,36 @@ public enum WindowsWebServerNetOperation implements ServiceCommandBuilder {
         @Override
         public ExecCommand buildCommandForService(String aServiceName, String... aParams) {
             return new ExecCommand(
-                    cygpathWrapper(INVOKE_WS_SERVICE_SCRIPT_NAME),
+                    cygpathWrapper(INVOKE_WS_SERVICE_SCRIPT_NAME, USER_TOC_SCRIPTS_PATH + "/"),
                     aServiceName,
-                    ApplicationProperties.get("paths.httpd.conf")
+                    WEBSERVER_CONF_PATH
             );
         }
+    },
+    CREATE_DIRECTORY(WebServerControlOperation.CREATE_DIRECTORY){
+        @Override
+        public ExecCommand buildCommandForService(String aServiceName, String... aParams) {
+            return new ExecCommand("if [ ! -e \"" + aParams[0] + "\" ]; then /usr/bin/mkdir -p " + aParams[0] + "; fi;");
+        }
+    },
+    CHANGE_FILE_MODE(WebServerControlOperation.CHANGE_FILE_MODE){
+        @Override
+        public ExecCommand buildCommandForService(String aServiceName, String... aParams) {
+            return new ExecCommand("/usr/bin/chmod " + aParams[0] + " " + aParams[1] + "/" + aParams[2]);
+        }
     };
+    ;
 
 
 
-    private static String cygpathWrapper(AemControl.Properties scriptName) {
-        final String httpdConfPath = HTTPD_CONF_PATH + "/";
-        return "`" + CYGPATH.toString() + " " + httpdConfPath + scriptName + "`";
+    private static String cygpathWrapper(AemControl.Properties scriptName, String scriptPath) {
+        return "`" + CYGPATH.toString() + " " + scriptPath + scriptName + "`";
     }
 
     private static final Map<WebServerControlOperation, WindowsWebServerNetOperation> LOOKUP_MAP = new EnumMap<>(WebServerControlOperation.class);
 
     public static final String HTTPD_CONF_PATH = ApplicationProperties.get("paths.httpd.conf");
+    public static final String WEBSERVER_CONF_PATH = ApplicationProperties.get("paths.webserver.conf", HTTPD_CONF_PATH);
 
     static {
         for (final WindowsWebServerNetOperation o : values()) {

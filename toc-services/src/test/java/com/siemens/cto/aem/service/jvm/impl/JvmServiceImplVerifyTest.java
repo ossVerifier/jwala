@@ -405,7 +405,7 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
     public void testUpdateState() {
         Identifier<Jvm> jvmId = new Identifier<Jvm>(999L);
         impl.updateState(jvmId, JvmState.JVM_STOPPED);
-        verify(jvmPersistenceService).updateState(jvmId, JvmState.JVM_STOPPED);
+        verify(jvmPersistenceService).updateState(jvmId, JvmState.JVM_STOPPED, "");
 
         impl.updateState(jvmId, JvmState.JVM_STOPPED, "test error status");
         verify(jvmPersistenceService).updateState(jvmId, JvmState.JVM_STOPPED, "test error status");

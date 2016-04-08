@@ -242,17 +242,21 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
                 throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "The target Web Server must be stopped before attempting to update the resource file");
             }
 
-            // delete the service
-            deleteWebServerWindowsService(aUser, new ControlWebServerRequest(webServer.getId(), WebServerControlOperation.DELETE_SERVICE), aWebServerName);
-
-            // create the httpd.conf
-            generateAndDeployConfig(aWebServerName, doBackup);
+            // create the remote scripts directory
+            createScriptsDirectory(webServer);
 
             // copy the start and stop scripts
             deployStartStopScripts(webServer);
 
+            // delete the service
+            deleteWebServerWindowsService(aUser, new ControlWebServerRequest(webServer.getId(), WebServerControlOperation.DELETE_SERVICE), aWebServerName);
+
+            // create the httpd.conf
+            boolean doNotBackupFilesForNewWebServer = !WebServerReachableState.WS_NEW.equals(webServer.getState()) && doBackup;
+            generateAndDeployConfig(aWebServerName, doNotBackupFilesForNewWebServer);
+
             // re-install the service
-            installWebServerWindowsService(aUser, new ControlWebServerRequest(webServer.getId(), WebServerControlOperation.INVOKE_SERVICE), webServer, doBackup);
+            installWebServerWindowsService(aUser, new ControlWebServerRequest(webServer.getId(), WebServerControlOperation.INVOKE_SERVICE), webServer, doNotBackupFilesForNewWebServer);
 
             webServerService.updateState(webServer.getId(), WebServerReachableState.WS_UNREACHABLE, StringUtils.EMPTY);
 
@@ -265,20 +269,48 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
         return ResponseBuilder.ok(webServerService.getWebServer(aWebServerName));
     }
 
+    protected void createScriptsDirectory(WebServer webServer) throws CommandFailureException {
+        final String scriptsDir = AemControl.Properties.USER_TOC_SCRIPTS_PATH.getValue();
+
+        final CommandOutput result = webServerControlService.createDirectory(webServer, scriptsDir);
+
+        final ExecReturnCode resultReturnCode = result.getReturnCode();
+        if (!resultReturnCode.wasSuccessful()) {
+            LOGGER.error("Creating scripts directory {} FAILED ", scriptsDir);
+            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, CommandOutputReturnCode.fromReturnCode(resultReturnCode.getReturnCode()).getDesc());
+        }
+
+    }
+
     protected void deployStartStopScripts(WebServer webServer) throws CommandFailureException {
         final String webServerName = webServer.getName();
         final boolean doNotBackup = false;
-        final String commandsScriptsPath = ApplicationProperties.get("commands.scripts-path");
-        final String destHttpdConfPath = ApplicationProperties.get("paths.httpd.conf") + "/";
+        final String destHttpdConfPath = ApplicationProperties.get("paths.webserver.conf", ApplicationProperties.get("paths.httpd.conf")) + "/";
 
-        final String sourceStartServicePath = commandsScriptsPath + "/" + AemControl.Properties.START_SCRIPT_NAME.getValue();
-        webServerControlService.secureCopyFileWithBackup(webServerName, sourceStartServicePath, destHttpdConfPath, doNotBackup);
+        final String sourceStartServicePath = AemControl.Properties.SCRIPTS_PATH + "/" + AemControl.Properties.START_SCRIPT_NAME.getValue();
+        if (!webServerControlService.secureCopyFileWithBackup(webServerName, sourceStartServicePath, destHttpdConfPath, doNotBackup).getReturnCode().wasSuccessful()){
+            LOGGER.error("Failed to secure copy file {} during creation of {}", sourceStartServicePath, webServerName);
+            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to secure copy file " + sourceStartServicePath + " during the creation of " + webServerName);
+        }
 
-        final String sourceStopServicePath = commandsScriptsPath + "/" + AemControl.Properties.STOP_SCRIPT_NAME.getValue();
-        webServerControlService.secureCopyFileWithBackup(webServerName, sourceStopServicePath, destHttpdConfPath, doNotBackup);
+        final String sourceStopServicePath = AemControl.Properties.SCRIPTS_PATH + "/" + AemControl.Properties.STOP_SCRIPT_NAME.getValue();
+        if (!webServerControlService.secureCopyFileWithBackup(webServerName, sourceStopServicePath, destHttpdConfPath, doNotBackup).getReturnCode().wasSuccessful()){
+            LOGGER.error("Failed to secure copy file {} during creation of {}", sourceStopServicePath, webServerName);
+            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to secure copy file " + sourceStopServicePath + " during the creation of " + webServerName);
+        }
 
-        final String sourceInvokeWsServicePath = commandsScriptsPath + "/" + AemControl.Properties.INVOKE_WS_SERVICE_SCRIPT_NAME.getValue();
-        webServerControlService.secureCopyFileWithBackup(webServerName, sourceInvokeWsServicePath, destHttpdConfPath, doNotBackup);
+        final String sourceInvokeWsServicePath = AemControl.Properties.SCRIPTS_PATH + "/" + AemControl.Properties.INVOKE_WS_SERVICE_SCRIPT_NAME.getValue();
+        final String tocScriptsPath = AemControl.Properties.USER_TOC_SCRIPTS_PATH.getValue();
+        if (!webServerControlService.secureCopyFileWithBackup(webServerName, sourceInvokeWsServicePath, tocScriptsPath, doNotBackup).getReturnCode().wasSuccessful()){
+            LOGGER.error("Failed to secure copy file {} during creation of {}", sourceInvokeWsServicePath, webServerName);
+            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to secure copy file " + sourceInvokeWsServicePath + " during the creation of " + webServerName);
+        }
+
+        // make sure the scripts are executable
+        if (!webServerControlService.changeFileMode(webServer, "a+x", tocScriptsPath, "*.sh").getReturnCode().wasSuccessful()){
+            LOGGER.error("Failed to update the permissions in {} during the creation of {}", tocScriptsPath, webServerName);
+            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to update the permissions in " + sourceInvokeWsServicePath + " during the creation of " + webServerName);
+        }
     }
 
     protected void installWebServerWindowsService(final AuthenticatedUser user, final ControlWebServerRequest invokeWSBatRequest, final WebServer webServer, final boolean doBackup) throws CommandFailureException {
@@ -316,10 +348,9 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
             CommandOutput commandOutput = webServerControlService.controlWebServer(controlWebServerRequest, user.getUser());
             if (commandOutput.getReturnCode().wasSuccessful()) {
                 LOGGER.info("Delete of windows service {} was successful", webServerName);
-            } else if (ExecReturnCode.STP_EXIT_CODE_SERVICE_DOES_NOT_EXIST == commandOutput.getReturnCode().getReturnCode()){
+            } else if (ExecReturnCode.STP_EXIT_CODE_SERVICE_DOES_NOT_EXIST == commandOutput.getReturnCode().getReturnCode()) {
                 LOGGER.info("No such service found for {} during delete. Continuing with request.", webServerName);
-            }
-            else {
+            } else {
                 String standardError =
                         commandOutput.getStandardError().isEmpty() ?
                                 commandOutput.getStandardOutput() : commandOutput.getStandardError();
