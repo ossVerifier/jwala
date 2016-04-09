@@ -323,6 +323,7 @@ public class JvmServiceRestImplTest {
         when(mockResource.getConfigFileName()).thenReturn("server.xml");
         when(jvmControlService.secureCopyFile(any(ControlJvmRequest.class), anyString(), anyString())).thenReturn(commandOutput);
         when(jvmControlService.createDirectory(any(Jvm.class), anyString())).thenReturn(commandOutput);
+        when(jvmControlService.changeFileMode(any(Jvm.class), anyString(), anyString(), anyString())).thenReturn(commandOutput);
 
         when(jvmControlService.controlJvm(new ControlJvmRequest(jvm.getId(), JvmControlOperation.DELETE_SERVICE), authenticatedUser.getUser())).thenReturn(commandOutput);
         when(jvmControlService.controlJvm(new ControlJvmRequest(jvm.getId(), JvmControlOperation.DEPLOY_CONFIG_TAR), authenticatedUser.getUser())).thenReturn(commandOutput);
@@ -404,6 +405,7 @@ public class JvmServiceRestImplTest {
         final CommandOutput successCommandOutput = new CommandOutput(new ExecReturnCode(0), "", "");
         when(jvmControlService.secureCopyFile(any(ControlJvmRequest.class), anyString(), anyString())).thenReturn(successCommandOutput);
         when(jvmControlService.createDirectory(any(Jvm.class), anyString())).thenReturn(successCommandOutput);
+        when(jvmControlService.changeFileMode(any(Jvm.class), anyString(), anyString(), anyString())).thenReturn(successCommandOutput);
 
         when(jvmControlService.controlJvm(any(ControlJvmRequest.class), any(User.class))).thenReturn(new CommandOutput(new ExecReturnCode(1), "", "FAIL CONTROL SERVICE"));
 
@@ -419,12 +421,14 @@ public class JvmServiceRestImplTest {
         when(jvmService.generateConfigFile(jvm.getJvmName(), "context.xml")).thenReturn("<content>xml-content</content>");
         when(jvmService.generateConfigFile(jvm.getJvmName(), "setenv.bat")).thenReturn("SET TEST=xxtestxx");
         when(jvmControlService.secureCopyFile(any(ControlJvmRequest.class), anyString(), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(1), "", "FAIL THE SERVICE SECURE COPY TEST"));
-        when(jvmControlService.createDirectory(any(Jvm.class), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(0),"",""));
+        final CommandOutput successCommandOutput = new CommandOutput(new ExecReturnCode(0), "", "");
+        when(jvmControlService.createDirectory(any(Jvm.class), anyString())).thenReturn(successCommandOutput);
+        when(jvmControlService.changeFileMode(any(Jvm.class), anyString(), anyString(), anyString())).thenReturn(successCommandOutput);
 
-        when(jvmControlService.controlJvm(new ControlJvmRequest(jvm.getId(), JvmControlOperation.DELETE_SERVICE), authenticatedUser.getUser())).thenReturn(new CommandOutput(new ExecReturnCode(0), "", ""));
+        when(jvmControlService.controlJvm(new ControlJvmRequest(jvm.getId(), JvmControlOperation.DELETE_SERVICE), authenticatedUser.getUser())).thenReturn(successCommandOutput);
 
         final Response response = jvmServiceRest.generateAndDeployJvm(jvm.getJvmName(), authenticatedUser);
-        assertEquals(CommandOutputReturnCode.FAILED.getDesc(), ((Map) (((ApplicationResponse) response.getEntity()).getApplicationResponseContent())).get("message"));
+        assertEquals("Failed to secure copy ./src/test/resources/deploy-config-tar.sh during the creation of jvmName", ((Map) (((ApplicationResponse) response.getEntity()).getApplicationResponseContent())).get("message"));
     }
 
     @Test

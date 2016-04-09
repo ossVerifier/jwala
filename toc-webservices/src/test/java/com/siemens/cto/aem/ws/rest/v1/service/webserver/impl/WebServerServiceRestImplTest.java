@@ -383,6 +383,7 @@ public class WebServerServiceRestImplTest {
         when(webServerControlService.controlWebServer(any(ControlWebServerRequest.class), any(User.class))).thenReturn(retSuccessExecData);
         when(webServerControlService.secureCopyFileWithBackup(anyString(), anyString(), anyString(), anyBoolean())).thenReturn(retSuccessExecData);
         when(webServerControlService.createDirectory(any(WebServer.class), anyString())).thenReturn(retSuccessExecData);
+        when(webServerControlService.changeFileMode(any(WebServer.class), anyString(), anyString(), anyString())).thenReturn(retSuccessExecData);
         when(impl.getWebServer(anyString())).thenReturn(webServer);
         when(impl.generateHttpdConfig(anyString())).thenReturn("innocuous content");
         when(impl.generateInvokeWSBat(any(WebServer.class))).thenReturn("invoke me");
