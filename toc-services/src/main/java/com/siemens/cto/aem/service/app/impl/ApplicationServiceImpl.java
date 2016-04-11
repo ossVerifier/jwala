@@ -13,6 +13,7 @@ import com.siemens.cto.aem.common.exception.InternalErrorException;
 import com.siemens.cto.aem.common.exec.CommandOutput;
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.common.request.app.*;
+import com.siemens.cto.aem.control.AemControl;
 import com.siemens.cto.aem.control.application.command.impl.WindowsApplicationPlatformCommandProvider;
 import com.siemens.cto.aem.control.command.RemoteCommandExecutor;
 import com.siemens.cto.aem.exception.CommandFailureException;
@@ -311,7 +312,7 @@ public class ApplicationServiceImpl implements ApplicationService {
             final CommandOutput execData = applicationCommandExecutor.executeRemoteCommand(
                     deployJvmName,
                     hostName,
-                    ApplicationControlOperation.DEPLOY_CONFIG_FILE,
+                    ApplicationControlOperation.SECURE_COPY,
                     new WindowsApplicationPlatformCommandProvider(),
                     srcPath,
                     destPath);
@@ -408,7 +409,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     }
 
-    protected Future<CommandOutput> executeCopyCommand(final Application application, final File tempWarFile, final String destPath, final Jvm jvm, final String host){
+    protected Future<CommandOutput> executeCopyCommand(final Application application, final File tempWarFile, final String destPath, final Jvm jvm, final String host) {
         final String name = application.getName();
         Future<CommandOutput> commandOutputFuture = executorService.submit(new Callable<CommandOutput>() {
             @Override
@@ -416,10 +417,32 @@ public class ApplicationServiceImpl implements ApplicationService {
                 LOGGER.info("Copying {} war to host {}", name, host);
                 final String jvmName = jvm.getJvmName();
                 final String hostName = jvm.getHostName();
-                CommandOutput commandOutput = applicationCommandExecutor.executeRemoteCommand(jvmName, hostName, ApplicationControlOperation.DEPLOY_WAR, new WindowsApplicationPlatformCommandProvider(), tempWarFile.getAbsolutePath().replaceAll("\\\\", "/"), destPath);
+                CommandOutput commandOutput = applicationCommandExecutor.executeRemoteCommand(jvmName, hostName, ApplicationControlOperation.SECURE_COPY, new WindowsApplicationPlatformCommandProvider(), tempWarFile.getAbsolutePath().replaceAll("\\\\", "/"), destPath);
                 if (application.isUnpackWar()) {
                     final String warName = application.getWarName();
                     LOGGER.info("Unpacking war {} on host {}", warName, hostName);
+
+                    // create the .toc directory as the destination for the unpack-war script
+                    final String tocScriptsPath = AemControl.Properties.USER_TOC_SCRIPTS_PATH.getValue();
+                    commandOutput = applicationCommandExecutor.executeRemoteCommand(jvmName, hostName, ApplicationControlOperation.CREATE_DIRECTORY, new WindowsApplicationPlatformCommandProvider(), tocScriptsPath);
+                    if (!commandOutput.getReturnCode().wasSuccessful()) {
+                        return commandOutput; // return immediately if creating the dir failed
+                    }
+
+                    // copy the unpack war script to .toc
+                    final String unpackWarScriptPath = ApplicationProperties.get("commands.scripts-path") + "/" + AemControl.Properties.UNPACK_WAR_SCRIPT_NAME;
+                    commandOutput = applicationCommandExecutor.executeRemoteCommand(jvmName, hostName, ApplicationControlOperation.SECURE_COPY, new WindowsApplicationPlatformCommandProvider(), unpackWarScriptPath, tocScriptsPath);
+                    if (!commandOutput.getReturnCode().wasSuccessful()) {
+                        return commandOutput; // return immediately if the copy failed
+                    }
+
+                    // make sure the scripts are executable
+                    commandOutput = applicationCommandExecutor.executeRemoteCommand(jvmName, hostName, ApplicationControlOperation.CHANGE_FILE_MODE, new WindowsApplicationPlatformCommandProvider(), "a+x", tocScriptsPath, "*.sh");
+                    if (!commandOutput.getReturnCode().wasSuccessful()) {
+                        return commandOutput;
+                    }
+
+                    // call the unpack war script
                     commandOutput = applicationCommandExecutor.executeRemoteCommand(jvmName, hostName, ApplicationControlOperation.UNPACK_WAR, new WindowsApplicationPlatformCommandProvider(), warName);
                 }
                 return commandOutput;

@@ -52,7 +52,7 @@ public class ApplicationRequestServiceImplTest {
         when(sshConfiguration.getUserName()).thenReturn("user");
         when(sshConfiguration.getPassword()).thenReturn("oops");
         when(sshConfiguration.getPort()).thenReturn(22);
-        ControlApplicationRequest appRequest = new ControlApplicationRequest(appId, ApplicationControlOperation.DEPLOY_CONFIG_FILE);
+        ControlApplicationRequest appRequest = new ControlApplicationRequest(appId, ApplicationControlOperation.SECURE_COPY);
         applicationCommandService.controlApplication(appRequest, mockApp, "testHost", "source path", "dest path");
     }
 

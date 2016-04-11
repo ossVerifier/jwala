@@ -5,25 +5,14 @@ import com.siemens.cto.aem.common.exec.ExecCommand;
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.control.command.ServiceCommandBuilder;
 
-import java.text.MessageFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.EnumMap;
 import java.util.Map;
 
-import static com.siemens.cto.aem.control.AemControl.Properties.SCP_SCRIPT_NAME;
+import static com.siemens.cto.aem.control.AemControl.Properties.*;
 
 public enum WindowsApplicationNetOperation implements ServiceCommandBuilder {
 
-    DEPLOY_WAR(ApplicationControlOperation.DEPLOY_WAR) {
-        @Override
-        public ExecCommand buildCommandForService(String aServiceName, String... aParams) {
-            final String generatedTarPath = aParams[0];
-            final String webAppsDirPath = aParams[1];
-            return new ExecCommand(SCP_SCRIPT_NAME.getValue(), generatedTarPath, webAppsDirPath);
-        }
-    },
-    DEPLOY_CONFIG_FILE(ApplicationControlOperation.DEPLOY_CONFIG_FILE) {
+    SECURE_COPY(ApplicationControlOperation.SECURE_COPY) {
         @Override
         public ExecCommand buildCommandForService(String aServiceName, String... aParams) {
             final String configFilePath = aParams[0];
@@ -42,25 +31,26 @@ public enum WindowsApplicationNetOperation implements ServiceCommandBuilder {
     UNPACK_WAR(ApplicationControlOperation.UNPACK_WAR) {
         @Override
         public ExecCommand buildCommandForService(String aServiceName, String... aParams) {
-            final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd_HHmmss");
+            final String appWarName = aParams[0];
             final String appWarsDirPath = ApplicationProperties.get("stp.webapps.dir");
             final String javaHomePath = ApplicationProperties.get("stp.java.home");
-
-            final String appWarName = aParams[0];
-            final String appWarNameDir = appWarName.replace(".war", "");
-            final String appWarNameDirBackup = appWarNameDir + "." + dateFormat.format(new Date());
-
-            final String exitWithError = "echo 'EXIT_CODE='1***; echo -n -e '\\xff';";
-
-            return new ExecCommand( new MessageFormat("if [ ! -e \"{0}\" ]; then echo Could not unpack {1}. No such directory {0}; {2} fi;").format(new String[]{appWarsDirPath, appWarName, exitWithError}),
-                                    new MessageFormat("if [ ! -e \"{0}\" ]; then echo Could not unpack {1}. No such directory {0}; {2} fi;").format(new String[]{javaHomePath, appWarName, exitWithError}),
-                                    new MessageFormat("cd {0};").format(new String[]{appWarsDirPath}),
-                                    new MessageFormat("if [ -d {0} ]; then /usr/bin/mv {0} {1}; fi;").format(new String[]{appWarNameDir, appWarNameDirBackup}),
-                                    new MessageFormat("/usr/bin/mkdir {0};").format(new String[]{appWarNameDir}),
-                                    new MessageFormat("cd {0};").format(new String[]{appWarNameDir}),
-                                    new MessageFormat("{0}/bin/jar xf {1}/{2};").format(new String[]{javaHomePath, appWarsDirPath, appWarName}));
+            final String unpackWarScriptPath = "`" + CYGPATH + " " + USER_TOC_SCRIPTS_PATH + "/" + UNPACK_WAR_SCRIPT_NAME + "`";
+            return new ExecCommand(unpackWarScriptPath, appWarsDirPath, javaHomePath, appWarName);
         }
-    };
+    },
+    CREATE_DIRECTORY(ApplicationControlOperation.CREATE_DIRECTORY){
+        @Override
+        public ExecCommand buildCommandForService(String aServiceName, String... aParams) {
+            return new ExecCommand("if [ ! -e \"" + aParams[0] + "\" ]; then /usr/bin/mkdir -p " + aParams[0] + "; fi;");
+        }
+    },
+    CHANGE_FILE_MODE(ApplicationControlOperation.CHANGE_FILE_MODE){
+        @Override
+        public ExecCommand buildCommandForService(String aServiceName, String... aParams) {
+            return new ExecCommand("/usr/bin/chmod " + aParams[0] + " " + aParams[1] + "/" + aParams[2]);
+        }
+    }
+    ;
 
     private static final Map<ApplicationControlOperation, WindowsApplicationNetOperation> LOOKUP_MAP = new EnumMap<>(
             ApplicationControlOperation.class);

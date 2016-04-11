@@ -8,10 +8,11 @@ import java.util.Map;
 
 public enum ApplicationControlOperation {
 
-    DEPLOY_WAR("deployWar"),
-    DEPLOY_CONFIG_FILE("deployConfigFile"),
+    SECURE_COPY("scp"),
     BACK_UP_CONFIG_FILE("backUpHttpConfigFile"),
-    UNPACK_WAR("unpackWar");
+    UNPACK_WAR("unpackWar"),
+    CREATE_DIRECTORY("mkdir"),
+    CHANGE_FILE_MODE("chmod");
 
     private static final Map<String, ApplicationControlOperation> LOOKUP_MAP = new HashMap<>();
 
