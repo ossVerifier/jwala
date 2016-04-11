@@ -269,6 +269,8 @@ public class JvmServiceRestImpl implements JvmServiceRest {
     Jvm generateConfFilesAndDeploy(final Jvm jvm, final AuthenticatedUser user) {
 
         // only one at a time per JVM
+        // TODO return error if .toc directory is already being written to
+        // TODO lock on host name (check performance on 125 JVM env)
         if (!jvmWriteLocks.containsKey(jvm.getId().toString())) {
             jvmWriteLocks.put(jvm.getId().toString(), new ReentrantReadWriteLock());
         }

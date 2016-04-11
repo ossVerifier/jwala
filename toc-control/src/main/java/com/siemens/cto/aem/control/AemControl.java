@@ -32,7 +32,7 @@ public class AemControl {
         private final String propertyName;
         private final String defaultValue;
 
-        private Properties(final String thePropertyName, final String theDefaultValue) {
+        Properties(final String thePropertyName, final String theDefaultValue) {
             propertyName = thePropertyName;
             defaultValue = theDefaultValue;
         }
