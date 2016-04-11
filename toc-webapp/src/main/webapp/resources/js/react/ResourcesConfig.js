@@ -308,11 +308,18 @@ var XmlTabs = React.createClass({
             } else if (this.state.entityType === "webApps") {
                 thePromise = this.props.webAppService.updateResourceTemplate(this.state.entity.name,
                     this.state.resourceTemplateName, template, this.state.entityParent.jvmName, this.state.entity.group.name);
+            } else if (this.state.groupJvmEntityType && this.state.groupJvmEntityType === "webApp") {
+                thePromise = this.props.groupService.updateGroupAppResourceTemplate(this.state.entityGroupName, this.state.resourceTemplateName, template);
+            }  else if (this.state.entityType === "webServerSection") {
+                thePromise = this.props.groupService.updateGroupWebServerResourceTemplate(this.state.entityGroupName, this.state.resourceTemplateName, template);
+            } else {
+                thePromise = this.props.groupService.updateGroupJvmResourceTemplate(this.state.entityGroupName, this.state.resourceTemplateName, template);
             }
         }
         return thePromise;
     },
     saveGroupTemplate: function(){
+        var thePromise;
         if (this.state.groupJvmEntityType && this.state.groupJvmEntityType === "webApp") {
             thePromise = this.props.groupService.updateGroupAppResourceTemplate(this.state.entityGroupName, this.state.resourceTemplateName, this.state.template);
         }  else if (this.state.entityType === "webServerSection") {
