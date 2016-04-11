@@ -284,7 +284,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
             }
 
             // create the scripts directory if it doesn't exist
-            createScriptsDirectory(jvm);
+            createScriptsAndInstancesDirectory(jvm);
 
             // copy the invoke and deploy scripts
             deployScriptsToUserTocScriptsDir(jvm);
@@ -322,14 +322,18 @@ public class JvmServiceRestImpl implements JvmServiceRest {
         return jvm;
     }
 
-    protected void createScriptsDirectory(Jvm jvm) throws CommandFailureException {
+    protected void createScriptsAndInstancesDirectory(Jvm jvm) throws CommandFailureException {
         final String scriptsDir = AemControl.Properties.USER_TOC_SCRIPTS_PATH.getValue();
 
-        final CommandOutput result = jvmControlService.createDirectory(jvm, scriptsDir);
-
-        final ExecReturnCode resultReturnCode = result.getReturnCode();
+        ExecReturnCode resultReturnCode = jvmControlService.createDirectory(jvm, scriptsDir).getReturnCode();
         if (!resultReturnCode.wasSuccessful()) {
             LOGGER.error("Creating scripts directory {} FAILED ", scriptsDir);
+            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, CommandOutputReturnCode.fromReturnCode(resultReturnCode.getReturnCode()).getDesc());
+        }
+
+        resultReturnCode = jvmControlService.createDirectory(jvm, stpTomcatInstancesPath).getReturnCode();
+        if (!resultReturnCode.wasSuccessful()){
+            LOGGER.error("Creating instances directory {} FAILED", stpTomcatInstancesPath);
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, CommandOutputReturnCode.fromReturnCode(resultReturnCode.getReturnCode()).getDesc());
         }
     }
