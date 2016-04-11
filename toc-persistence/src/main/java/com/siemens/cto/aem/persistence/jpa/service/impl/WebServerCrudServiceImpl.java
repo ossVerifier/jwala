@@ -264,6 +264,7 @@ public class WebServerCrudServiceImpl extends AbstractCrudServiceImpl<JpaWebServ
             jpaConfigTemplate.setWebServer(jpaWebServer);
             jpaConfigTemplate.setTemplateName(request.getConfFileName());
             jpaConfigTemplate.setTemplateContent(templateContent);
+            jpaConfigTemplate.setMetaData(request.getMetaData());
             entityManager.persist(jpaConfigTemplate);
             entityManager.flush();
         } else {

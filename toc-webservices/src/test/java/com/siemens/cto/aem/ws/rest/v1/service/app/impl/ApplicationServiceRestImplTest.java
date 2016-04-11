@@ -553,7 +553,7 @@ public class ApplicationServiceRestImplTest {
         final AuthenticatedUser authenticatedUser = new AuthenticatedUser(securityContextMock);
 
         applicationServiceRest.uploadConfigTemplate(application.getName(), authenticatedUser, "hct.xml", "jvm-1Test");
-        verify(service).uploadAppTemplate(any(UploadAppTemplateRequest.class), any(User.class));
+        verify(service).uploadAppTemplate(any(UploadAppTemplateRequest.class));
     }
 
     @Test (expected = InternalErrorException.class)
@@ -575,7 +575,7 @@ public class ApplicationServiceRestImplTest {
         final AuthenticatedUser authenticatedUser = new AuthenticatedUser(securityContextMock);
 
         applicationServiceRest.uploadConfigTemplate("testAppName", authenticatedUser, "hct.xml", "jvm-1Test");
-        verify(service).uploadAppTemplate(any(UploadAppTemplateRequest.class), any(User.class));
+        verify(service).uploadAppTemplate(any(UploadAppTemplateRequest.class));
     }
 
     @Test

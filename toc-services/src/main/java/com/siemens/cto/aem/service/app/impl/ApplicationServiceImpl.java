@@ -334,7 +334,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     @Override
     @Transactional
-    public JpaApplicationConfigTemplate uploadAppTemplate(UploadAppTemplateRequest uploadAppTemplateRequest, User user) {
+    public JpaApplicationConfigTemplate uploadAppTemplate(UploadAppTemplateRequest uploadAppTemplateRequest) {
         uploadAppTemplateRequest.validate();
         Jvm appJvm = null;
         // if the template is the context xml for the app then associate it with a jvm

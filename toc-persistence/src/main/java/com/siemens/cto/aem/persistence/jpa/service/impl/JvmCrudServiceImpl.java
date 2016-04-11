@@ -138,6 +138,7 @@ public class JvmCrudServiceImpl extends AbstractCrudServiceImpl<JpaJvm> implemen
             jpaConfigTemplate.setJvm(jpaJvm);
             jpaConfigTemplate.setTemplateName(uploadJvmTemplateRequest.getConfFileName());
             jpaConfigTemplate.setTemplateContent(templateContent);
+            jpaConfigTemplate.setMetaData(uploadJvmTemplateRequest.getMetaData());
             entityManager.persist(jpaConfigTemplate);
             entityManager.flush();
         } else {
@@ -146,7 +147,6 @@ public class JvmCrudServiceImpl extends AbstractCrudServiceImpl<JpaJvm> implemen
         }
 
         return jpaConfigTemplate;
-
     }
 
     @Override

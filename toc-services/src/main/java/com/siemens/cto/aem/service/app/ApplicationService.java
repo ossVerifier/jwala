@@ -54,7 +54,7 @@ public interface ApplicationService {
      */
     CommandOutput deployConf(String appName, String groupName, String jvmName, String resourceTemplateName, boolean backUp, User user);
 
-    JpaApplicationConfigTemplate uploadAppTemplate(UploadAppTemplateRequest command, User user);
+    JpaApplicationConfigTemplate uploadAppTemplate(UploadAppTemplateRequest command);
 
     /**
      * Gets a preview of a resource file.

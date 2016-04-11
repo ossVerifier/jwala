@@ -8,8 +8,6 @@ import com.siemens.cto.aem.service.resource.ResourceService;
 import com.siemens.cto.aem.ws.rest.v1.provider.AuthenticatedUser;
 import com.siemens.cto.aem.ws.rest.v1.response.ResponseBuilder;
 import com.siemens.cto.aem.ws.rest.v1.service.resource.ResourceServiceRest;
-import org.apache.commons.collections.map.MultiValueMap;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.jaxrs.ext.multipart.Attachment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,7 +15,6 @@ import org.slf4j.LoggerFactory;
 import javax.activation.DataHandler;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import java.io.*;
 import java.util.List;
@@ -94,29 +91,21 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
     }
 
     @Override
+    // TODO: Refactor resourceService.createTemplate(inputStreams[0], inputStreams[1]) since it looks ambiguous.
     public Response createTemplate(final List<Attachment> attachments, final AuthenticatedUser user) {
         try {
             if (attachments.size() == CREATE_TEMPLATE_EXPECTED_NUM_OF_ATTACHMENTS) {
-                final StringBuilder [] builderArray = {new StringBuilder(), new StringBuilder()};
+                final InputStream [] inputStreams = new InputStream[CREATE_TEMPLATE_EXPECTED_NUM_OF_ATTACHMENTS];
                 for (int i = 0; i < attachments.size(); i++) {
                     final DataHandler handler = attachments.get(i).getDataHandler();
                     try {
-                        final InputStream in = handler.getInputStream();
-                        final byte[] bytes = new byte[1024];
-                        int count;
-                        while (true) {
-                            count = in.read(bytes);
-                            if (count == -1) {
-                                break;
-                            }
-                            builderArray[i].append(new String(bytes, 0, count));
-                        }
+                        inputStreams[i] = handler.getInputStream();
                     } catch (final IOException ioe) {
                         return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR,
                                 new FaultCodeException(AemFaultType.IO_EXCEPTION, ioe.getMessage()));
                     }
                 }
-                resourceService.createTemplate(builderArray[0], builderArray[1], user.getUser());
+                resourceService.createTemplate(inputStreams[0], inputStreams[1]);
                 return ResponseBuilder.ok();
             } else {
                 return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(

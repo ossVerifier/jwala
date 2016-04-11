@@ -22,6 +22,7 @@ import com.siemens.cto.aem.service.group.GroupStateNotificationService;
 import com.siemens.cto.aem.service.state.StateNotificationService;
 import com.siemens.cto.aem.service.webserver.component.ClientFactoryHelper;
 import com.siemens.cto.toc.files.FileManager;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -391,7 +392,8 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
     public void testUploadTemplateXML() throws FileNotFoundException {
         Jvm mockJvm = mock(Jvm.class);
         when(mockJvm.getId()).thenReturn(new Identifier<Jvm>(99L));
-        UploadJvmTemplateRequest uploadRequest = new UploadJvmTemplateRequest(mockJvm, "ServerXMLTemplate.tpl", new FileInputStream(new File("./src/test/resources/ServerXMLTemplate.tpl"))) {
+        UploadJvmTemplateRequest uploadRequest = new UploadJvmTemplateRequest(mockJvm, "ServerXMLTemplate.tpl",
+                new FileInputStream(new File("./src/test/resources/ServerXMLTemplate.tpl")), StringUtils.EMPTY) {
             @Override
             public String getConfFileName() {
                 return "server.xml";

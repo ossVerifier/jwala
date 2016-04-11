@@ -33,6 +33,7 @@ import com.siemens.cto.aem.persistence.service.impl.JpaGroupPersistenceServiceIm
 import com.siemens.cto.aem.persistence.service.JvmPersistenceService;
 import com.siemens.cto.aem.persistence.service.impl.JpaJvmPersistenceServiceImpl;
 import org.apache.commons.lang.RandomStringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -238,7 +239,8 @@ public class ApplicationCrudServiceImplTest {
         assertEquals(1, appsForJpaGroup.size());
 
         Application app = new Application(new Identifier<Application>(jpaApp.getId()), jpaApp.getName(), jpaApp.getWarPath(), jpaApp.getWebAppContext(), group, true, true, false, "testApp.war");
-        UploadAppTemplateRequest uploadTemplateRequest = new UploadAppTemplateRequest(app, "ServerXMLTemplate.tpl", "hct.xml", "testJvmName", data);
+        UploadAppTemplateRequest uploadTemplateRequest = new UploadAppTemplateRequest(app, "ServerXMLTemplate.tpl", "hct.xml",
+                "testJvmName", data, StringUtils.EMPTY);
 
         applicationCrudService.uploadAppTemplate(uploadTemplateRequest, jpaJvm);
         String templateContent = applicationCrudService.getResourceTemplate("testAppResourceTemplateName", "hct.xml", jpaJvm);
@@ -246,7 +248,8 @@ public class ApplicationCrudServiceImplTest {
         assertTrue(!templateContent.isEmpty());
 
         data = new FileInputStream(new File("./src/test/resources/ServerXMLTemplate.tpl"));
-        uploadTemplateRequest = new UploadAppTemplateRequest(app, "ServerXMLTemplate.tpl", "hct.xml", "testJvmName", data);
+        uploadTemplateRequest = new UploadAppTemplateRequest(app, "ServerXMLTemplate.tpl", "hct.xml", "testJvmName", data,
+                StringUtils.EMPTY);
         applicationCrudService.uploadAppTemplate(uploadTemplateRequest, jpaJvm);
         String templateContentUpdateWithTheSame = applicationCrudService.getResourceTemplate("testAppResourceTemplateName", "hct.xml", jpaJvm);
 

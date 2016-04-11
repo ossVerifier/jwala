@@ -462,7 +462,7 @@ public class ApplicationServiceImplTest {
         final UploadAppTemplateRequest cmd = mock(UploadAppTemplateRequest.class);
         when(cmd.getConfFileName()).thenReturn("roleMapping.properties");
         when(cmd.getJvmName()).thenReturn("testJvmName");
-        applicationService.uploadAppTemplate(cmd, testUser);
+        applicationService.uploadAppTemplate(cmd);
         verify(cmd).validate();
         verify(applicationPersistenceService).uploadAppTemplate(any(UploadAppTemplateRequest.class), any(JpaJvm.class));
 
@@ -472,12 +472,12 @@ public class ApplicationServiceImplTest {
         when(mockJvm.getJvmName()).thenReturn("testJvmName");
         when(cmd.getConfFileName()).thenReturn("hct.xml");
         when(jvmPersistenceService.findJvms(anyString())).thenReturn(jvmList);
-        applicationService.uploadAppTemplate(cmd, testUser);
+        applicationService.uploadAppTemplate(cmd);
         verify(cmd, times(2)).validate();
         verify(applicationPersistenceService, times(2)).uploadAppTemplate(any(UploadAppTemplateRequest.class), any(JpaJvm.class));
 
         when(mockJvm.getJvmName()).thenReturn("notTestJvmName");
-        applicationService.uploadAppTemplate(cmd, testUser);
+        applicationService.uploadAppTemplate(cmd);
         verify(cmd, times(3)).validate();
         verify(applicationPersistenceService, times(3)).uploadAppTemplate(any(UploadAppTemplateRequest.class), any(JpaJvm.class));
 

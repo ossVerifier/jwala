@@ -17,6 +17,7 @@ import com.siemens.cto.aem.persistence.service.GroupPersistenceService;
 import com.siemens.cto.aem.service.VerificationBehaviorSupport;
 import com.siemens.cto.aem.service.webserver.WebServerService;
 import groovy.lang.MissingPropertyException;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -214,7 +215,8 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
     public void testPopulateJvmConfig() throws FileNotFoundException {
         List<UploadJvmTemplateRequest> uploadRequests = new ArrayList<>();
         InputStream data = new FileInputStream(new File("./src/test/resources/ServerXMLTemplate.tpl"));
-        UploadJvmTemplateRequest uploadJvmRequest = new UploadJvmTemplateRequest(new Jvm(new Identifier<Jvm>(11L), "testJvm", new HashSet<Group>()), "ServerXMLTemplate.tpl", data) {
+        UploadJvmTemplateRequest uploadJvmRequest = new UploadJvmTemplateRequest(new Jvm(new Identifier<Jvm>(11L), "testJvm",
+                new HashSet<Group>()), "ServerXMLTemplate.tpl", data, StringUtils.EMPTY) {
             @Override
             public String getConfFileName() {
                 return "server.xml";
@@ -230,7 +232,8 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
     public void testPopulateWebServerConfig() throws FileNotFoundException {
         List<UploadWebServerTemplateRequest> uploadRequests = new ArrayList<>();
         InputStream data = new FileInputStream(new File("./src/test/resources/HttpdSslConfTemplate.tpl"));
-        UploadWebServerTemplateRequest uploadWSRequest = new UploadWebServerTemplateRequest(new WebServer(new Identifier<WebServer>(11L), new HashSet<Group>(), "testWebServer"), "HttpdSslConfTemplate.tpl", data) {
+        UploadWebServerTemplateRequest uploadWSRequest = new UploadWebServerTemplateRequest(new WebServer(new Identifier<WebServer>(11L),
+                new HashSet<Group>(), "testWebServer"), "HttpdSslConfTemplate.tpl", data, StringUtils.EMPTY) {
             @Override
             public String getConfFileName() {
                 return "httpd.conf";
@@ -246,7 +249,8 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
     public void testPopulateGroupJvmTemplates() throws FileNotFoundException {
         List<UploadJvmTemplateRequest> uploadRequests = new ArrayList<>();
         InputStream data = new FileInputStream(new File("./src/test/resources/ServerXMLTemplate.tpl"));
-        UploadJvmTemplateRequest uploadJvmRequest = new UploadJvmTemplateRequest(new Jvm(new Identifier<Jvm>(11L), "testJvm", new HashSet<Group>()), "ServerXMLTemplate.tpl", data) {
+        UploadJvmTemplateRequest uploadJvmRequest = new UploadJvmTemplateRequest(new Jvm(new Identifier<Jvm>(11L), "testJvm",
+                new HashSet<Group>()), "ServerXMLTemplate.tpl", data, StringUtils.EMPTY) {
             @Override
             public String getConfFileName() {
                 return "server.xml";
@@ -254,14 +258,15 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
         };
         uploadRequests.add(uploadJvmRequest);
         groupService.populateGroupJvmTemplates("testGroupName", uploadRequests, user);
-        verify(groupPersistenceService, times(1)).populateGroupJvmTemplates("testGroupName", uploadRequests, user);
+        verify(groupPersistenceService, times(1)).populateGroupJvmTemplates("testGroupName", uploadRequests);
     }
 
     @Test
     public void testPopulateGroupWebServerTemplates() throws FileNotFoundException {
         List<UploadWebServerTemplateRequest> uploadRequests = new ArrayList<>();
         InputStream data = new FileInputStream(new File("./src/test/resources/HttpdSslConfTemplate.tpl"));
-        UploadWebServerTemplateRequest uploadWSRequest = new UploadWebServerTemplateRequest(new WebServer(new Identifier<WebServer>(11L), new HashSet<Group>(), "testWebServer"), "HttpdSslConfTemplate.tpl", data) {
+        UploadWebServerTemplateRequest uploadWSRequest = new UploadWebServerTemplateRequest(new WebServer(new Identifier<WebServer>(11L),
+                new HashSet<Group>(), "testWebServer"), "HttpdSslConfTemplate.tpl", data, StringUtils.EMPTY) {
             @Override
             public String getConfFileName() {
                 return "httpd.conf";
@@ -269,7 +274,7 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
         };
         uploadRequests.add(uploadWSRequest);
         groupService.populateGroupWebServerTemplates("testGroupName", uploadRequests, user);
-        verify(groupPersistenceService, times(1)).populateGroupWebServerTemplates("testGroupName", uploadRequests, user);
+        verify(groupPersistenceService, times(1)).populateGroupWebServerTemplates("testGroupName", uploadRequests);
     }
 
     @Test

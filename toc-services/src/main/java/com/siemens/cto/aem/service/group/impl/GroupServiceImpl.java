@@ -205,13 +205,13 @@ public class GroupServiceImpl implements GroupService {
     @Override
     @Transactional
     public Group populateGroupJvmTemplates(String groupName, List<UploadJvmTemplateRequest> uploadJvmTemplateCommands, User user) {
-        return groupPersistenceService.populateGroupJvmTemplates(groupName, uploadJvmTemplateCommands, user);
+        return groupPersistenceService.populateGroupJvmTemplates(groupName, uploadJvmTemplateCommands);
     }
 
     @Override
     @Transactional
     public Group populateGroupWebServerTemplates(String groupName, List<UploadWebServerTemplateRequest> uploadWSTemplateCommands, User user) {
-        return groupPersistenceService.populateGroupWebServerTemplates(groupName, uploadWSTemplateCommands, user);
+        return groupPersistenceService.populateGroupWebServerTemplates(groupName, uploadWSTemplateCommands);
     }
 
     @Override

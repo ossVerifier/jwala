@@ -12,6 +12,7 @@ import com.siemens.cto.aem.persistence.configuration.TestJpaConfiguration;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
 import com.siemens.cto.aem.persistence.jpa.domain.resource.config.template.JpaJvmConfigTemplate;
 import com.siemens.cto.aem.persistence.jpa.service.impl.JvmCrudServiceImpl;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -71,7 +72,8 @@ public class JvmCrudServiceImplTest {
     public void testUploadJvmTemplateXml() throws FileNotFoundException {
         final String expectedTemplateName = SERVER_XML;
         File testTemplate = new File("./src/test/resources/HttpdSslConfTemplate.tpl");
-        UploadJvmTemplateRequest uploadJvmTemplateRequest = new UploadJvmTemplateRequest(jvm, expectedTemplateName, new FileInputStream(testTemplate)) {
+        UploadJvmTemplateRequest uploadJvmTemplateRequest = new UploadJvmTemplateRequest(jvm, expectedTemplateName,
+                new FileInputStream(testTemplate), StringUtils.EMPTY) {
             @Override
             public String getConfFileName() {
                 return SERVER_XML;

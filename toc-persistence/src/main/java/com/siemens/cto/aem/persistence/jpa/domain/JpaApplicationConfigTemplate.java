@@ -1,8 +1,12 @@
 package com.siemens.cto.aem.persistence.jpa.domain;
 
+import com.siemens.cto.aem.persistence.jpa.domain.resource.config.template.ConfigTemplate;
+
 import javax.persistence.*;
 
 /**
+ * JPA POJO for application resource template data.
+ *
  * Created by z003bpej on 8/25/2015.
  */
 @Entity
@@ -20,7 +24,7 @@ import javax.persistence.*;
                 query = "SELECT t FROM JpaApplicationConfigTemplate t where t.templateName = :tempName and t.app.name = :appName and t.jvm.name = :jvmName"),
         @NamedQuery(name = JpaApplicationConfigTemplate.QUERY_DELETE_APP_TEMPLATE, query = "DELETE FROM JpaApplicationConfigTemplate t WHERE t.templateName = :templateName")
 })
-public class JpaApplicationConfigTemplate {
+public class JpaApplicationConfigTemplate extends ConfigTemplate {
 
     public static final String GET_APP_RESOURCE_TEMPLATE_NAMES = "getAppResourceTemplateNames";
     public static final String GET_APP_TEMPLATE_CONTENT = "getAppTemplateContent";
@@ -30,11 +34,6 @@ public class JpaApplicationConfigTemplate {
     public static final String QUERY_DELETE_APP_TEMPLATE = "deleteAppTemplate";
 
     public static final String QUERY_PARAM_TEMPLATE_NAME = "templateName";
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "ID")
-    private Long id;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @Column(nullable = true)
@@ -46,42 +45,12 @@ public class JpaApplicationConfigTemplate {
     @org.apache.openjpa.persistence.jdbc.ForeignKey(deleteAction = org.apache.openjpa.persistence.jdbc.ForeignKeyAction.CASCADE)
     private JpaJvm jvm;
 
-    @Column(name = "TEMPLATE_NAME", nullable = false)
-    private String templateName;
-
-    @Column(name = "TEMPLATE_CONTENT", nullable = false, length = 2147483647)
-    private String templateContent;
-
     public JpaApplication getApplication() {
         return app;
     }
 
     public void setApplication(final JpaApplication app) {
         this.app = app;
-    }
-
-    public String getTemplateName() {
-        return templateName;
-    }
-
-    public void setTemplateName(String templateName) {
-        this.templateName = templateName;
-    }
-
-    public String getTemplateContent() {
-        return templateContent;
-    }
-
-    public void setTemplateContent(final String templateContent) {
-        this.templateContent = templateContent;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
     }
 
     public JpaJvm getJvm() {

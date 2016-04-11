@@ -10,8 +10,8 @@ import java.io.InputStream;
 public class UploadJvmConfigTemplateRequest extends UploadJvmTemplateRequest {
     private String confFileName;
 
-    public UploadJvmConfigTemplateRequest(Jvm jvm, String fileName, InputStream data) {
-        super(jvm, fileName, data);
+    public UploadJvmConfigTemplateRequest(final Jvm jvm, final String fileName, final InputStream data, final String metaData) {
+        super(jvm, fileName, data, metaData);
     }
 
     public void setConfFileName(String fileName){

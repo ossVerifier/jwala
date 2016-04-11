@@ -23,7 +23,8 @@ public class ConfigTemplate extends AbstractEntity<ConfigTemplate> {
     @Column(name = "TEMPLATE_CONTENT", nullable = false, length = 2147483647)
     private String templateContent;
 
-    private String deploymentPath;
+    @Column(nullable = false, length = 2147483647)
+    private String metaData;
 
     private boolean locked;
 
@@ -52,12 +53,12 @@ public class ConfigTemplate extends AbstractEntity<ConfigTemplate> {
         this.templateContent = templateContent;
     }
 
-    public String getDeploymentPath() {
-        return deploymentPath;
+    public String getMetaData() {
+        return metaData;
     }
 
-    public void setDeploymentPath(String deploymentPath) {
-        this.deploymentPath = deploymentPath;
+    public void setMetaData(String metaData) {
+        this.metaData = metaData;
     }
 
     public boolean isLocked() {

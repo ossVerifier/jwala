@@ -7,6 +7,7 @@ import com.siemens.cto.aem.common.domain.model.resource.ResourceInstance;
 import com.siemens.cto.aem.common.domain.model.resource.ResourceType;
 import com.siemens.cto.aem.common.domain.model.user.User;
 
+import java.io.InputStream;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -43,7 +44,7 @@ public interface ResourceService {
     /**
      * Creates a template file and it's corresponding JSON meta data file.
      * A template file is used when generating the actual resource file what will be deployed with the application.
-     * @param metaDataBuilder the template meta data in JSON.
+     * @param metaDataInputStream the template meta data in JSON.
      *                             example:
      *                                      {
      *                                          "name": "My Context XML",
@@ -57,10 +58,9 @@ public interface ResourceService {
      *                                              "target": "CTO-N9SF-LTST-HEALTH-CHECK-4.0-USMLVV1CTO4900-2"
      *                                          }
      *                                      }
-     * @param templateDataBuilder the template data
-     * @param user the user calling this service
+     * @param templateData the template data
      */
-    void createTemplate(StringBuilder metaDataBuilder, StringBuilder templateDataBuilder, User user);
+    void createTemplate(InputStream metaDataInputStream, InputStream templateData);
 
     /**
      * Deletes a resource template.

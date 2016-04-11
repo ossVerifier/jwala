@@ -100,6 +100,13 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
         return ResponseBuilder.created(webServer);
     }
 
+    /**
+     * Uploads a template. This method is specifically used by WebServerServiceRest.createWebServer.
+     * Note: This method was deprecated in lieu of an approach that also retrieves the template file's meta data.
+     * @param aUser the user
+     * @param webServer the web server in which the template's for
+     */
+    @Deprecated
     protected void uploadWebServerResourceTemplates(AuthenticatedUser aUser, WebServer webServer) {
         for (final ResourceType resourceType : resourceService.getResourceTypes()) {
             if ("webServer".equals(resourceType.getEntityType()) && !"invokeWS.bat".equals(resourceType.getConfigFileName())) {

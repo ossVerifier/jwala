@@ -176,7 +176,7 @@ public class JpaGroupPersistenceServiceImpl implements GroupPersistenceService {
     }
 
     @Override
-    public Group populateGroupJvmTemplates(String groupName, List<UploadJvmTemplateRequest> uploadJvmTemplateRequests, User user) {
+    public Group populateGroupJvmTemplates(String groupName, List<UploadJvmTemplateRequest> uploadJvmTemplateRequests) {
         final JpaGroup group = groupCrudService.getGroup(groupName);
         for (UploadJvmTemplateRequest uploadRequest : uploadJvmTemplateRequests) {
             groupCrudService.uploadGroupJvmTemplate(uploadRequest, group);
@@ -185,7 +185,7 @@ public class JpaGroupPersistenceServiceImpl implements GroupPersistenceService {
     }
 
     @Override
-    public Group populateGroupWebServerTemplates(String groupName, List<UploadWebServerTemplateRequest> uploadWSTemplateRequests, User user) {
+    public Group populateGroupWebServerTemplates(String groupName, List<UploadWebServerTemplateRequest> uploadWSTemplateRequests) {
         final JpaGroup group = groupCrudService.getGroup(groupName);
         for (UploadWebServerTemplateRequest uploadRequest : uploadWSTemplateRequests) {
             groupCrudService.uploadGroupWebServerTemplate(uploadRequest, group);

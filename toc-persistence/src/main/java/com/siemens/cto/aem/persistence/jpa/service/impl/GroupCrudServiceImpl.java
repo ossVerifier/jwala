@@ -174,6 +174,7 @@ public class GroupCrudServiceImpl extends AbstractCrudServiceImpl<JpaGroup> impl
             jpaConfigTemplate.setJpaGroup(group);
             jpaConfigTemplate.setTemplateName(uploadJvmTemplateRequest.getConfFileName());
             jpaConfigTemplate.setTemplateContent(templateContent);
+            jpaConfigTemplate.setMetaData(uploadJvmTemplateRequest.getMetaData());
             entityManager.persist(jpaConfigTemplate);
             entityManager.flush();
         }
@@ -200,6 +201,7 @@ public class GroupCrudServiceImpl extends AbstractCrudServiceImpl<JpaGroup> impl
             jpaConfigTemplate.setJpaGroup(group);
             jpaConfigTemplate.setTemplateName(uploadWSTemplateRequest.getConfFileName());
             jpaConfigTemplate.setTemplateContent(templateContent);
+            jpaConfigTemplate.setMetaData(uploadWSTemplateRequest.getMetaData());
             entityManager.persist(jpaConfigTemplate);
             entityManager.flush();
         }

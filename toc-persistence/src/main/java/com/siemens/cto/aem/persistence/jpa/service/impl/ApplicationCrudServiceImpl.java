@@ -188,6 +188,7 @@ public class ApplicationCrudServiceImpl extends AbstractCrudServiceImpl<JpaAppli
             jpaConfigTemplate.setApplication(jpaApp);
             jpaConfigTemplate.setTemplateName(uploadAppTemplateRequest.getConfFileName());
             jpaConfigTemplate.setTemplateContent(templateContent);
+            jpaConfigTemplate.setMetaData(uploadAppTemplateRequest.getMedataData());
             if (jpaJvm != null) {
                 jpaConfigTemplate.setJvm(jpaJvm);
             }

@@ -6,26 +6,42 @@ import com.siemens.cto.aem.common.rule.MultipleRules;
 import com.siemens.cto.aem.common.rule.ValidTemplateNameRule;
 import com.siemens.cto.aem.common.rule.app.ApplicationIdRule;
 import com.siemens.cto.aem.common.rule.app.GoodStreamRule;
-import com.siemens.cto.aem.common.rule.jvm.JvmIdRule;
 import com.siemens.cto.aem.common.rule.jvm.JvmNameRule;
 
 import java.io.InputStream;
 import java.io.Serializable;
 
+/**
+ * Request wrapper for uploading an application resource template.
+ */
 public class UploadAppTemplateRequest implements Serializable, Request {
     private final Application application;
     private final String fileName;
-    private String jvmName;
+    private final String jvmName;
     private final InputStream data;
-    private String confFileName;
+    private final String confFileName;
+    private final String medataData;
 
-    public UploadAppTemplateRequest(Application application, String name, String confFileName, String jvmName, InputStream data) {
+    public UploadAppTemplateRequest(final Application application, final String name, final String confFileName,
+                                    final String jvmName, final InputStream data) {
 
         this.application = application;
         this.fileName = name;
         this.jvmName = jvmName;
         this.data = data;
         this.confFileName = confFileName;
+        this.medataData = null;
+    }
+
+    public UploadAppTemplateRequest(final Application application, final String name, final String confFileName,
+                                    final String jvmName, final InputStream data, final String metaData) {
+
+        this.application = application;
+        this.fileName = name;
+        this.jvmName = jvmName;
+        this.data = data;
+        this.confFileName = confFileName;
+        this.medataData = metaData;
     }
 
     public void validate() {
@@ -51,5 +67,9 @@ public class UploadAppTemplateRequest implements Serializable, Request {
 
     public String getJvmName() {
         return jvmName;
+    }
+
+    public String getMedataData() {
+        return medataData;
     }
 }

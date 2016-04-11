@@ -1,6 +1,5 @@
 package com.siemens.cto.aem.common.request.jvm;
 
-import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.common.request.Request;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.rule.MultipleRules;
@@ -12,17 +11,28 @@ import java.io.InputStream;
 import java.io.Serializable;
 
 /**
+ * Request wrapper to upload JVM resource template.
+ *
  * Created by z0033r5b on 8/25/2015.
  */
 public abstract class UploadJvmTemplateRequest implements Serializable, Request {
     private final Jvm jvm;
-    private String fileName;
+    private final String fileName;
     private final InputStream data;
+    private final String metaData;
 
-    public UploadJvmTemplateRequest(Jvm jvm, String fileName, InputStream data) {
+    public UploadJvmTemplateRequest(final Jvm jvm, final String fileName, final InputStream data) {
         this.jvm = jvm;
         this.fileName = fileName;
         this.data = data;
+        this.metaData = null;
+    }
+
+    public UploadJvmTemplateRequest(final Jvm jvm, final String fileName, final InputStream data, final String metaData) {
+        this.jvm = jvm;
+        this.fileName = fileName;
+        this.data = data;
+        this.metaData = metaData;
     }
 
     @Override
@@ -44,4 +54,8 @@ public abstract class UploadJvmTemplateRequest implements Serializable, Request 
     }
 
     public abstract String getConfFileName();
+
+    public String getMetaData() {
+        return metaData;
+    }
 }
