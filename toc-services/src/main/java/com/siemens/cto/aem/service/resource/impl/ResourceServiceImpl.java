@@ -207,19 +207,19 @@ public class ResourceServiceImpl implements ResourceService {
                 responseWrapper = createJvmTemplate(resourceTemplateMetaData, templateData);
                 break;
             case JVMS:
-                responseWrapper = createJvmsTemplate(resourceTemplateMetaData, templateData);
+                responseWrapper = createGroupedJvmsTemplate(resourceTemplateMetaData, templateData);
                 break;
             case WEB_SERVER:
                 responseWrapper = createWebServerTemplate(resourceTemplateMetaData, templateData);
                 break;
             case WEB_SERVERS:
-                responseWrapper = createWebServersTemplate(resourceTemplateMetaData, templateData);
+                responseWrapper = createGroupedWebServersTemplate(resourceTemplateMetaData, templateData);
                 break;
             case APP:
                 responseWrapper = createApplicationTemplate(resourceTemplateMetaData, templateData);
                 break;
             case APPS:
-                responseWrapper = createApplicationsTemplate(resourceTemplateMetaData, templateData);
+                responseWrapper = createGroupedApplicationsTemplate(resourceTemplateMetaData, templateData);
                 break;
             default:
                 throw new ResourceServiceException("Invalid entity type '" + resourceTemplateMetaData.getEntity().getType() + "'");
@@ -280,7 +280,7 @@ public class ResourceServiceImpl implements ResourceService {
      * @param templateData the template content/data
      */
     // TODO: When the resource file is locked, don't overwrite!
-    private CreateResourceTemplateApplicationResponseWrapper createJvmsTemplate(final ResourceTemplateMetaData metaData, final InputStream templateData) {
+    private CreateResourceTemplateApplicationResponseWrapper createGroupedJvmsTemplate(final ResourceTemplateMetaData metaData, final InputStream templateData) {
         final Set<Jvm> jvms = groupPersistenceService.getGroup(metaData.getEntity().getGroup()).getJvms();
         final List<UploadJvmTemplateRequest> uploadJvmTemplateRequestList = new ArrayList<>();
         ConfigTemplate createdJpaJvmConfigTemplate = null;
@@ -321,7 +321,7 @@ public class ResourceServiceImpl implements ResourceService {
      * @param metaData the data that describes the template, please see {@link ResourceTemplateMetaData}
      * @param templateData the template content/data
      */
-    private CreateResourceTemplateApplicationResponseWrapper createWebServersTemplate(final ResourceTemplateMetaData metaData, final InputStream templateData) {
+    private CreateResourceTemplateApplicationResponseWrapper createGroupedWebServersTemplate(final ResourceTemplateMetaData metaData, final InputStream templateData) {
         final Group group = groupPersistenceService.getGroupWithWebServers(metaData.getEntity().getGroup());
         final Set<WebServer> webServers = group.getWebServers();
         final List<UploadWebServerTemplateRequest> uploadWebServerTemplateRequestList = new ArrayList<>();
@@ -361,7 +361,7 @@ public class ResourceServiceImpl implements ResourceService {
      * @param metaData the data that describes the template, please see {@link ResourceTemplateMetaData}
      * @param templateData the template content/data
      */
-    private CreateResourceTemplateApplicationResponseWrapper createApplicationsTemplate(final ResourceTemplateMetaData metaData, final InputStream templateData) {
+    private CreateResourceTemplateApplicationResponseWrapper createGroupedApplicationsTemplate(final ResourceTemplateMetaData metaData, final InputStream templateData) {
         Group group = groupPersistenceService.getGroup(metaData.getEntity().getGroup());
         final List<Application> applications = applicationPersistenceService.findApplicationsBelongingTo(metaData.getEntity().getGroup());
         ConfigTemplate createdConfigTemplate = null;
