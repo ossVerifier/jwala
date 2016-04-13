@@ -105,3 +105,7 @@
 .select-meta-data-and-template-files-widget .hide {
     display: none;
 }
+
+.ui-dialog .note {
+    color: #2e6e9e;
+}

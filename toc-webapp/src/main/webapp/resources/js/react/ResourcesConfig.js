@@ -702,6 +702,8 @@ var SelectMetaDataAndTemplateFilesWidget = React.createClass({
     render: function() {
         return <div className="select-meta-data-and-template-files-widget">
                    <form ref="form">
+                       <p className="note">Note: The resource template that is about to be created will not follow the<br/>
+                          selected topology since the meta data (*.json) file is the one that determines it.</p>
                        <div className={(!this.state.invalidMetaFile ? "hide " : "") + "error"}>Please select a meta data file (*.json)</div>
                        <div className="file-input-container">
                            <input type="file" ref="metaDataFile" name="metaDataFile" accept=".json" onChange={this.onMetaDataFileChange}>Meta Data File</input>
