@@ -105,8 +105,7 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
                                 new FaultCodeException(AemFaultType.IO_EXCEPTION, ioe.getMessage()));
                     }
                 }
-                resourceService.createTemplate(inputStreams[0], inputStreams[1]);
-                return ResponseBuilder.ok();
+                return ResponseBuilder.created(resourceService.createTemplate(inputStreams[0], inputStreams[1]));
             } else {
                 return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
                         AemFaultType.INVALID_NUMBER_OF_ATTACHMENTS,

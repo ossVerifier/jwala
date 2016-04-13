@@ -60,7 +60,7 @@ public interface ResourceService {
      *                                      }
      * @param templateData the template data
      */
-    void createTemplate(InputStream metaDataInputStream, InputStream templateData);
+    CreatedTemplateWrapper createTemplate(InputStream metaDataInputStream, InputStream templateData);
 
     /**
      * Deletes a resource template.
