@@ -15,3 +15,7 @@ div.option.label {
     -ms-user-select: none !important;
     user-select: none !important;
 }
+
+li.padding {
+    padding: 0px 1em 0px .4em !important;
+}

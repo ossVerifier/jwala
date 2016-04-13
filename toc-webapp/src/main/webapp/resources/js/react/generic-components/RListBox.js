@@ -59,7 +59,7 @@ var Option = React.createClass({
             stateClassName = " ui-state-focus";
         }
 
-        var className = "ui-menu-item " + stateClassName;
+        var className = "ui-menu-item padding " + stateClassName;
 
         var listItem;
         if (this.props.checkBoxEnabled === true) {
