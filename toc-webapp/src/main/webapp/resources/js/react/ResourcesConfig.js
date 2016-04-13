@@ -347,7 +347,12 @@ var XmlTabs = React.createClass({
             MainArea.unsavedChanges = false;
         }
     },
-
+    checkGroupJvmsAreStopped: function(groupName){
+        return this.props.groupService.getAllGroupJvmsAreStopped(groupName);
+    },
+    checkGroupWebServersAreStopped: function(groupName){
+        return this.props.groupService.getAllGroupWebServersAreStopped(groupName);
+    },
     /*** Save and Deploy methods: Start ***/
     saveResource: function(template) {
         if (this.state.entityType === "jvmSection" || this.state.entityType === "webServerSection"){
@@ -445,17 +450,44 @@ var XmlTabs = React.createClass({
         }
     },
     deployResource: function(ajaxProcessDoneCallback) {
+        var saveAndDeploy = function(response, self, type) {
+                        if (response.applicationResponseContent.allStopped === "true") {
+                            self.saveResourcePromise(self.refs.xmlEditor.getText())
+                            .then(function(response){
+                                self.savedResourceCallback(response);
+                                return self.deployResourcePromise();
+                            })
+                            .then(self.deployResourceCallback).caught(self.failed.bind(this, "Deploy Resource"))
+                            .lastly(ajaxProcessDoneCallback);
+                        } else {
+                            $.errorAlert("All " + type + "s in the group must be stopped before continuing. Operation stopped for " + type + " " + response.applicationResponseContent.entityNotStopped,"Error", false);
+                            ajaxProcessDoneCallback();
+                        }
+        };
+
         if (this.refs.xmlEditor !== undefined && this.refs.xmlEditor.isContentChanged()) {
             var ans = confirm("Changes to the resource template will be saved before deployment. Are you sure you want to proceed ?");
             if (ans) {
                 var self = this;
-                this.saveResourcePromise(this.refs.xmlEditor.getText())
+                if (this.state.entityType === "jvmSection") {
+                    this.checkGroupJvmsAreStopped(this.state.entityGroupName)
+                    .then(function(response) {
+                        saveAndDeploy(response, self, "JVM");
+                    });
+                } else if (this.state.entityType === "webServerSection") {
+                    this.checkGroupWebServersAreStopped(this.state.entityGroupName)
+                    .then(function(response) {
+                        saveAndDeploy(response, self, "Web Server");
+                    });
+                } else {
+                    this.saveResourcePromise(self.refs.xmlEditor.getText())
                     .then(function(response){
                         self.savedResourceCallback(response);
                         return self.deployResourcePromise();
                     })
-                    .then(this.deployResourceCallback).caught(this.failed.bind(this, "Deploy Resource"))
+                    .then(self.deployResourceCallback).caught(self.failed.bind(this, "Deploy Resource"))
                     .lastly(ajaxProcessDoneCallback);
+                }
             } else {
                 ajaxProcessDoneCallback();
             }

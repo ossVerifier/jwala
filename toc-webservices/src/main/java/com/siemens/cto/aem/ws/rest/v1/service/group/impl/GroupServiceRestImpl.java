@@ -306,19 +306,30 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         final String groupJvmTemplateContent = groupService.getGroupJvmResourceTemplate(groupName, fileName, doNotReplaceTokens);
         Set<Future<Response>> futures = new HashSet<>();
         final JvmServiceRest jvmServiceRest = JvmServiceRestImpl.get();
-        for (final Jvm jvm : group.getJvms()) {
-            final String jvmName = jvm.getJvmName();
-            Future<Response> responseFuture = executorService.submit(new Callable<Response>() {
-                @Override
-                public Response call() throws Exception {
-                    jvmServiceRest.updateResourceTemplate(jvmName, fileName, groupJvmTemplateContent);
-                    return jvmServiceRest.generateAndDeployFile(jvmName, fileName, aUser);
-
+        final Set<Jvm> jvms = group.getJvms();
+        if (null != jvms && jvms.size() > 0) {
+            for (final Jvm jvm : jvms) {
+                if (jvm.getState().isStartedState()) {
+                    LOGGER.info("Failed to deploy file {} for group {}: not all JVMs were stopped - {} was started", fileName, group.getName(), jvm.getJvmName());
+                    throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "All JVMs in the group must be stopped before continuing. Operation stopped for JVM " + jvm.getJvmName());
                 }
-            });
-            futures.add(responseFuture);
+            }
+            for (final Jvm jvm : jvms) {
+                final String jvmName = jvm.getJvmName();
+                Future<Response> responseFuture = executorService.submit(new Callable<Response>() {
+                    @Override
+                    public Response call() throws Exception {
+                        jvmServiceRest.updateResourceTemplate(jvmName, fileName, groupJvmTemplateContent);
+                        return jvmServiceRest.generateAndDeployFile(jvmName, fileName, aUser);
+
+                    }
+                });
+                futures.add(responseFuture);
+            }
+            waitForDeployToComplete(futures);
+        } else {
+            LOGGER.info("No JVMs in group {}", groupName);
         }
-        waitForDeployToComplete(futures);
         return ResponseBuilder.ok(group);
     }
 
@@ -435,22 +446,34 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         group = groupService.getGroupWithWebServers(group.getId());
         final String httpdTemplateContent = groupService.getGroupWebServerResourceTemplate(groupName, "httpd.conf", false);
         final WebServerServiceRestImpl webServerServiceRest = WebServerServiceRestImpl.get();
-        Map<String, Future<Response>> futureMap = new HashMap<>();
-        for (final WebServer webserver : group.getWebServers()) {
-            final String name = webserver.getName();
-            Future<Response> responseFuture = executorService.submit(new Callable<Response>() {
-                @Override
-                public Response call() throws Exception {
-                    webServerServiceRest.updateResourceTemplate(name, "httpd.conf", httpdTemplateContent);
-                    final boolean doBackup = true;
-                    return webServerServiceRest.generateAndDeployConfig(name, doBackup);
-
+        final Set<WebServer> webServers = group.getWebServers();
+        if (null != webServers && webServers.size() > 0) {
+            for (WebServer webServer : webServers) {
+                if (webServerService.isStarted(webServer)) {
+                    LOGGER.info("Failed to deploy httpd.conf for group {}: not all web servers were stopped - {} was started", group.getName(), webServer.getName());
+                    throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "All web servers in the group must be stopped before continuing. Operation stopped for web server " + webServer.getName());
                 }
-            });
-            futureMap.put(name, responseFuture);
+            }
+
+            Map<String, Future<Response>> futureMap = new HashMap<>();
+            for (final WebServer webserver : webServers) {
+                final String name = webserver.getName();
+                Future<Response> responseFuture = executorService.submit(new Callable<Response>() {
+                    @Override
+                    public Response call() throws Exception {
+                        webServerServiceRest.updateResourceTemplate(name, "httpd.conf", httpdTemplateContent);
+                        final boolean doBackup = true;
+                        return webServerServiceRest.generateAndDeployConfig(name, doBackup);
+
+                    }
+                });
+                futureMap.put(name, responseFuture);
+            }
+            waitForDeployToComplete(new HashSet<>(futureMap.values()));
+            checkResponsesForErrorStatus(futureMap);
+        } else {
+            LOGGER.info("No web servers in group {}", groupName);
         }
-        waitForDeployToComplete(new HashSet<>(futureMap.values()));
-        checkResponsesForErrorStatus(futureMap);
         return ResponseBuilder.ok(group);
     }
 
@@ -497,24 +520,6 @@ public class GroupServiceRestImpl implements GroupServiceRest {
                 }
             }
 
-            // update the web server templates first in case there are any new web servers that haven't been generated yet
-            // TODO actually, I'm confused - do we want to do this?
-//            final String name = group.getName();
-//            Map<String, Future<Response>> futuresMap = new HashMap<>();
-//            for (final String resourceName : groupService.getGroupWebServersResourceTemplateNames(name)) {
-//                Future<Response> updateJvmResponse = executorService.submit(new Callable<Response>() {
-//                    @Override
-//                    public Response call() throws Exception {
-//                        final boolean doNotReplaceTokens = false;
-//                        final String groupWSTemplate = groupService.getGroupWebServerResourceTemplate(name, resourceName, doNotReplaceTokens);
-//                        return updateGroupWebServerResourceTemplate(name, resourceName, groupWSTemplate);
-//                    }
-//                });
-//                futuresMap.put(resourceName, updateJvmResponse);
-//            }
-//            waitForDeployToComplete(new HashSet<>(futuresMap.values()));
-//            checkResponsesForErrorStatus(futuresMap);
-
             // generate and deploy the web servers
             final WebServerServiceRestImpl webServerServiceRest = WebServerServiceRestImpl.get();
             Map<String, Future<Response>> futuresMap = new HashMap<>();
@@ -552,26 +557,6 @@ public class GroupServiceRestImpl implements GroupServiceRest {
             }
 
             final JvmServiceRest jvmServiceRest = JvmServiceRestImpl.get();
-
-            // update the JVM templates first in case there are any new JVMs that haven't been generated yet
-            // TODO again: do we really want to do this?
-//            final boolean doNotIncludeGroupAppResources = false;
-//            final String name = group.getName();
-//            Map<String, Future<Response>> futuresMap = new HashMap<>();
-//            for (final Map<String, String> resource : groupService.getGroupJvmsResourceTemplateNames(name, doNotIncludeGroupAppResources)) {
-//                final String resourceName = resource.get("resourceName");
-//                Future<Response> updateJvmResponse = executorService.submit(new Callable<Response>() {
-//                    @Override
-//                    public Response call() throws Exception {
-//                        final boolean doNotReplaceTokens = false;
-//                        final String groupJvmTemplate = groupService.getGroupJvmResourceTemplate(name, resourceName, doNotReplaceTokens);
-//                        return updateGroupJvmResourceTemplate(name, resourceName, groupJvmTemplate);
-//                    }
-//                });
-//                futuresMap.put(resourceName, updateJvmResponse);
-//            }
-//            waitForDeployToComplete(new HashSet<>(futuresMap.values()));
-//            checkResponsesForErrorStatus(futuresMap);
 
             // generate and deploy the JVMs
             Map<String, Future<Response>> futuresMap = new HashMap<>();
@@ -804,6 +789,12 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         Map<String, Future<Response>> futureMap = new HashMap<>();
         final Set<Jvm> jvms = group.getJvms();
         if (null != jvms && jvms.size() > 0) {
+            for (Jvm jvm : jvms) {
+                if (jvm.getState().isStartedState()) {
+                    LOGGER.info("Failed to deploy file {} for group {}: not all JVMs were stopped - {} was started", fileName, group.getName(), jvm.getJvmName());
+                    throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "All JVMs in the group must be stopped before continuing. Operation stopped for JVM " + jvm.getJvmName());
+                }
+            }
             if (fileName.endsWith(".xml")) {
                 for (Jvm jvm : jvms) {
                     final String jvmName = jvm.getJvmName();
@@ -903,4 +894,46 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         return ResponseBuilder.ok(groupServerInfo);
     }
 
+    @Override
+    public Response areAllJvmsStopped(final String groupName) {
+        HashMap<String, String> resultTrue = new HashMap<>();
+        resultTrue.put("allStopped", Boolean.TRUE.toString());
+        Group group = groupService.getGroup(groupName);
+        Set<Jvm> jvms = group.getJvms();
+        if (null != jvms && jvms.size() > 0) {
+            for (final Jvm jvm : jvms) {
+                if (jvm.getState().isStartedState()){
+                    HashMap<String, String> notStopped= new HashMap<>();
+                    notStopped.put("allStopped", Boolean.FALSE.toString());
+                    notStopped.put("entityNotStopped", jvm.getJvmName());
+                    return ResponseBuilder.ok(notStopped);
+                }
+            }
+            return ResponseBuilder.ok(resultTrue);
+        } else {
+            return ResponseBuilder.ok(resultTrue);
+        }
+    }
+
+    @Override
+    public Response areAllWebServersStopped(final String groupName) {
+        HashMap<String, String> resultTrue = new HashMap<>();
+        resultTrue.put("allStopped", Boolean.TRUE.toString());
+        Group group = groupService.getGroup(groupName);
+        group = groupService.getGroupWithWebServers(group.getId());
+        Set<WebServer> webServers = group.getWebServers();
+        if (null != webServers && webServers.size() > 0) {
+            for (final WebServer webServer : webServers) {
+                if (webServerService.isStarted(webServer)){
+                    HashMap<String, String> notStopped= new HashMap<>();
+                    notStopped.put("allStopped", Boolean.FALSE.toString());
+                    notStopped.put("entityNotStopped", webServer.getName());
+                    return ResponseBuilder.ok(notStopped);
+                }
+            }
+            return ResponseBuilder.ok(resultTrue);
+        } else {
+            return ResponseBuilder.ok(resultTrue);
+        }
+    }
 }

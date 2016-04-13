@@ -145,8 +145,14 @@ var groupService = {
     },
     getStartedWebServersAndJvmsCount: function(groupName) {
         if (groupName) {
-            return serviceFoundation.promisedGet("v1.0/groups/" + groupName + "/children/startedCount");
+            return serviceFoundation.promisedGet("v1.0/groups/" + encodeURI(groupName) + "/children/startedCount");
         }
         return serviceFoundation.promisedGet("v1.0/groups/children/startedCount");
+    },
+    getAllGroupJvmsAreStopped: function(groupName) {
+        return serviceFoundation.promisedGet("v1.0/groups/" + encodeURI(groupName) + "/jvms/allStopped");
+    },
+    getAllGroupWebServersAreStopped: function(groupName) {
+        return serviceFoundation.promisedGet("v1.0/groups/" + encodeURI(groupName) + "/webservers/allStopped");
     }
 }

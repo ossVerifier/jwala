@@ -177,6 +177,7 @@ public class GroupServiceImplDeployTest {
         when(mockGroup.getWebServers()).thenReturn(webServerSet);
         when(mockWebServer.getName()).thenReturn("testWebServer");
         when(mockWebServer.getId()).thenReturn(new Identifier<WebServer>(99L));
+        when(mockWebServer.getState()).thenReturn(WebServerReachableState.WS_UNREACHABLE);
         when(mockResponse.getStatus()).thenReturn(200);
         when(mockResourceType.getRelativeDir()).thenReturn("./");
         when(mockResourceType.getEntityType()).thenReturn("webServer");
@@ -218,6 +219,7 @@ public class GroupServiceImplDeployTest {
         when(mockGroup.getJvms()).thenReturn(jvmSet);
         when(mockJvm.getJvmName()).thenReturn("testJvm");
         when(mockJvm.getId()).thenReturn(new Identifier<Jvm>(99L));
+        when(mockJvm.getState()).thenReturn(JvmState.JVM_STOPPED);
         when(mockResponse.getStatus()).thenReturn(200);
         when(mockResourceType.getRelativeDir()).thenReturn("./");
         when(mockResourceType.getEntityType()).thenReturn("webApp");

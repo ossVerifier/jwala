@@ -260,4 +260,11 @@ public interface GroupServiceRest {
     @Path("/{groupName}/children/stoppedCount")
     Response getStoppedWebServersAndJvmsCount(@PathParam("groupName") String groupName);
 
+    @GET
+    @Path("/{groupName}/jvms/allStopped")
+    Response areAllJvmsStopped(@PathParam("groupName") String groupName);
+
+    @GET
+    @Path("/{groupName}/webservers/allStopped")
+    Response areAllWebServersStopped(@PathParam("groupName") String groupName);
 }
