@@ -40,6 +40,7 @@
 <script src="public-resources/js/toc/group-operations-helper.js"></script>
 
 <!-- React UI -->
+<script type="text/jsx" src="public-resources/js/react/generic-components/RToolbar.js"></script>
 <script type="text/jsx" src="public-resources/js/react/generic-components/RTabs.js"></script>
 <script type="text/jsx" src="public-resources/js/react/XmlPreview.js"></script>
 <script type="text/jsx" src="public-resources/js/react/generic-components/tabs.js"></script>

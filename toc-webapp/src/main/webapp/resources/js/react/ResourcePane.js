@@ -7,17 +7,26 @@
  */
 var ResourcePane = React.createClass({
     getInitialState: function() {
-        return {resourceOptions: []}
+        return {resourceOptions: [], showModalResourceTemplateMetaData: false, data: null}
     },
     render: function() {
+        var metaData = [{icon: "ui-icon-plusthick", title: "create", onClickCallback: this.createResource},
+        			     {icon: "ui-icon-trash", title: "delete", onClickCallback: this.deleteResource}];
+        var toolbar = <RToolbar className="resource-pane toolbar-container" btnClassName="ui-button-text-only ui-button-height" metaData={metaData}/>;
         if (this.state.resourceOptions.length > 0) {
             return <div className="resource-list-box ui-widget-content">
-                       <RListBox ref="listBox" options={this.state.resourceOptions} selectCallback={this.selectCallback} />
+                       {toolbar}
+                       <RListBox ref="listBox" options={this.state.resourceOptions} selectCallback={this.selectCallback}
+                                 multiSelect={true} />
                    </div>
         }
-        return <div className="resource-list-box ui-widget-content" style={{padding: "2px 2px"}}><span>Please select a JVM, Web Server or Web Application...</span></div>
+        return <div className="resource-list-box ui-widget-content" style={{padding: "2px 2px"}}>
+                   {toolbar}
+                   <span>Please select a JVM, Web Server or Web Application...</span>
+               </div>
     },
     getData: function(data) {
+        this.state.data = data; // We don't want the component to render that's why we just assign data via '='
         if (data !== null) {
             if (data.rtreeListMetaData.entity === "jvms") {
                 this.props.jvmService.getResources(data.jvmName, this.getDataCallback);
@@ -58,5 +67,32 @@ var ResourcePane = React.createClass({
             return this.refs.listBox.getSelectedValue();
         }
         return null;
+    },
+    createResource: function() {
+        this.props.createResourceCallback(this.state.data);
+//        if (this.state.data !== null) {
+//            if (this.state.data.rtreeListMetaData.entity === "jvms") {
+//                this.setState({showModalResourceTemplateMetaData: true});
+//                // this.props.jvmService.getResources(data.jvmName, this.getDataCallback);
+//            } else if (this.state.data.rtreeListMetaData.entity === "webServers") {
+//                // this.props.wsService.getResources(data.name, this.getDataCallback);
+//            } else if (this.state.data.rtreeListMetaData.entity === "webApps") {
+//                // this.props.webAppService.getResources(data.name, this.getDataCallback);
+//            } else if (this.state.data.rtreeListMetaData.entity === "webServerSection") {
+//                // this.props.groupService.getGroupWebServerResources(data.rtreeListMetaData.parent.name, this.getDataCallback);
+//            } else if (this.state.data.rtreeListMetaData.entity === "jvmSection") {
+//                // this.props.groupService.getGroupJvmResourcesWithAppResources(data.rtreeListMetaData.parent.name, this.getDataCallback);
+//            }
+//        }
+    },
+    deleteResource: function() {
+        var resourceName = this.getSelectedValue();
+        if (resourceName !== null) {
+            this.props.deleteResourceCallback(resourceName);
+        }
     }
 });
+
+
+
+

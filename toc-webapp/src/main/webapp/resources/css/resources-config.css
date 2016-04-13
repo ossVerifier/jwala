@@ -92,3 +92,16 @@
     clear: left;
     height: 100%;
 }
+
+.select-meta-data-and-template-files-widget .file-input-container {
+    padding-bottom: 5px;
+}
+
+.select-meta-data-and-template-files-widget .error {
+    color: red;
+    padding-bottom: 2px;
+}
+
+.select-meta-data-and-template-files-widget .hide {
+    display: none;
+}

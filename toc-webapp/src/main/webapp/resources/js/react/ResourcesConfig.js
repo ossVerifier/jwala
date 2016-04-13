@@ -3,7 +3,8 @@ var ResourcesConfig = React.createClass({
     render: function() {
         var splitterComponents = [];
 
-        splitterComponents.push(<div><ResourceEditor resourceService={this.props.resourceService}
+        splitterComponents.push(<div><ResourceEditor ref="resourceEditor"
+                                                     resourceService={this.props.resourceService}
                                                      groupService={this.props.groupService}
                                                      jvmService={this.props.jvmService}
                                                      wsService={this.props.wsService}
@@ -11,7 +12,9 @@ var ResourcesConfig = React.createClass({
                                                      generateXmlSnippetCallback={this.generateXmlSnippetCallback}
                                                      getTemplateCallback={this.getTemplateCallback}
                                                      selectEntityCallback={this.selectEntityCallback}
-                                                     selectResourceTemplateCallback={this.selectResourceTemplateCallback}/></div>);
+                                                     selectResourceTemplateCallback={this.selectResourceTemplateCallback}
+                                                     createResourceCallback={this.createResourceCallback}
+                                                     deleteResourceCallback={this.deleteResourceCallback}/></div>);
         splitterComponents.push(<XmlTabs jvmService={this.props.jvmService}
                                          wsService={this.props.wsService}
                                          webAppService={this.props.webAppService}
@@ -21,7 +24,7 @@ var ResourcesConfig = React.createClass({
                                          updateGroupTemplateCallback={this.launchUpdateGroupTemplate}
                                          />);
 
-        var splitter = <RSplitter disabled={true} components={splitterComponents} orientation={RSplitter.VERTICAL_ORIENTATION} updateCallback={this.verticalSplitterDidUpdateCallback}/>
+        var splitter = <RSplitter disabled={true} components={splitterComponents} orientation={RSplitter.VERTICAL_ORIENTATION} updateCallback={this.verticalSplitterDidUpdateCallback}/>;
 
         return <div className="react-dialog-container resources-div-container">
                     <div className="resource-container">{splitter}</div>
@@ -41,7 +44,18 @@ var ResourcesConfig = React.createClass({
                      content={<ConfirmUpdateGroupDialog componentDidMountCallback={this.confirmUpdateGroupDidMount}/>}
                      ref="templateUpdateGroupModal"
                     />
-
+                    <ModalDialogBox ref="selectMetaDataAndTemplateFilesModalDlg"
+                                    title="Create Resource Template"
+                                    show={false}
+                                    okCallback={this.onCreateResourceOkClicked}
+                                    content={<SelectMetaDataAndTemplateFilesWidget ref="selectMetaDataAndTemplateFilesWidget"/>}/>
+                    <ModalDialogBox ref="confirmDeleteResourceModalDlg"
+                                    title="Confirm Resource Template Deletion"
+                                    show={false}
+                                    okCallback={this.confirmDeleteResourceCallback}
+                                    content={<div className="text-align-center"><br/><b>Are you sure you want to delete the selected resource template(s) ?</b><br/><br/></div>}
+                                    okLabel="Yes"
+                                    cancelLabel="No" />
                 </div>
     },
     componentDidMount: function() {
@@ -235,6 +249,54 @@ var ResourcesConfig = React.createClass({
 
          var tabContentHeight = $(".horz-divider.rsplitter.childContainer.vert").height() - 20;
          $(".xml-editor-preview-tab-component").not(".content").css("cssText", "height:" + tabContentHeight + "px !important;");
+     },
+     createResourceCallback: function(data) {
+        this.refs.selectMetaDataAndTemplateFilesModalDlg.show();
+     },
+     deleteResourceCallback: function() {
+        this.refs.confirmDeleteResourceModalDlg.show(true);
+     },
+     confirmDeleteResourceCallback: function() {
+        var self = this;
+        this.refs.confirmDeleteResourceModalDlg.close();
+        this.props.resourceService.deleteAllResource(this.refs.resourceEditor.refs.resourcePane.getSelectedValue()).then(function(response){
+            self.refreshResourcePane();
+        }).caught(function(e){
+            console.log(e);
+            $.errorAlert("Error deleting resource template(s)!", title, true);
+        });
+     },
+     onCreateResourceOkClicked: function() {
+        var metaDataFile = this.refs.selectMetaDataAndTemplateFilesWidget.refs.metaDataFile.getDOMNode().files[0];
+        var templateFile = this.refs.selectMetaDataAndTemplateFilesWidget.refs.templateFile.getDOMNode().files[0];
+
+        if (metaDataFile === undefined) {
+            this.refs.selectMetaDataAndTemplateFilesWidget.setState({invalidMetaFile: true});
+        }
+
+        if (templateFile === undefined) {
+            this.refs.selectMetaDataAndTemplateFilesWidget.setState({invalidTemplateFile: true});
+        }
+
+        if (metaDataFile && templateFile) {
+            // Submit!
+            var formData = new FormData();
+            var self = this;
+            formData.append("metaData", metaDataFile);
+            formData.append("templateFile", metaDataFile);
+            this.props.resourceService.createResource(formData).then(function(response){
+                self.refs.selectMetaDataAndTemplateFilesModalDlg.close();
+                self.refreshResourcePane();
+            }).caught(function(e){
+                console.log(e);
+                $.errorAlert("Error creating resource template!", title, true);
+            });
+        }
+     },
+     refreshResourcePane: function() {
+        var data = this.refs.resourceEditor.refs.treeList.getSelectedNodeData();
+        this.refs.resourceEditor.refs.resourcePane.getData(data);
+        this.refs.resourceEditor.refs.resourceAttrPane.showAttributes(data);
      },
      statics: {
         getEntityName: function(entity, type) {
@@ -625,6 +687,47 @@ var ConfirmUpdateGroupDialog = React.createClass({
     },
     componentDidMount: function(){
         this.props.componentDidMountCallback(this);
+    }
+});
+
+/**
+ * Lets user select the meta data and template file used to create a resource.
+ */
+var SelectMetaDataAndTemplateFilesWidget = React.createClass({
+    getInitialState: function() {
+        // Let's not use jQuery form validation since we only need to check if the user has chosen files to use in creating the resource.
+        // Besides, this is doing it the React way. :)
+        return {invalidMetaFile: false, invalidTemplateFile: false};
+    },
+    render: function() {
+        return <div className="select-meta-data-and-template-files-widget">
+                   <form ref="form">
+                       <div className={(!this.state.invalidMetaFile ? "hide " : "") + "error"}>Please select a meta data file (*.json)</div>
+                       <div className="file-input-container">
+                           <input type="file" ref="metaDataFile" name="metaDataFile" accept=".json" onChange={this.onMetaDataFileChange}>Meta Data File</input>
+                       </div>
+                       <div className={(!this.state.invalidTemplateFile ? "hide " : "") + "error"}>Please select a resource template file (*.tpl)</div>
+                       <div>
+                           <input type="file" ref="templateFile" name="templateFile" accept=".tpl" onChange={this.onTemplateFileChange}>Template File</input>
+                       </div>
+                   </form>
+               </div>
+    },
+    componentDidMount: function() {
+        $(this.refs.form.getDOMNode()).submit(function(e) {
+                                                  console.log("Submit!");
+                                                  e.preventDefault();
+                                              });
+    },
+    onMetaDataFileChange: function(e) {
+        if(this.refs.metaDataFile.getDOMNode().files[0]) {
+            this.setState({invalidMetaFile: false});
+        }
+    },
+    onTemplateFileChange: function(e) {
+        if(this.refs.templateFile.getDOMNode().files[0]) {
+            this.setState({invalidTemplateFile: false});
+        }
     }
 });
 

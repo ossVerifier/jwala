@@ -137,8 +137,7 @@ var Node = React.createClass({
     },
     onClickNodeHandler: function() {
         if (this.props.theTree.state.selectedNode !== null) {
-            if ($(this.props.theTree.state.selectedNode.getDOMNode()).attr("data-reactid") ===
-                $(this.getDOMNode()).attr("data-reactid")) {
+            if ($(this.props.theTree.state.selectedNode.getDOMNode()).attr("data-reactid") === $(this.getDOMNode()).attr("data-reactid")) {
                 return;
             }
         }

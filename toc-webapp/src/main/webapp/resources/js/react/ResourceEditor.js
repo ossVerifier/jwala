@@ -46,7 +46,9 @@ var ResourceEditor = React.createClass({
                                               wsService={this.props.wsService}
                                               webAppService={this.props.webAppService}
                                               groupService={this.props.groupService}
-                                              selectCallback={this.selectResourceCallback}/>
+                                              selectCallback={this.selectResourceCallback}
+                                              createResourceCallback={this.props.createResourceCallback}
+                                              deleteResourceCallback={this.props.deleteResourceCallback}/>
                             </RStaticDialog>
 
         var resourceAttrPane = <RStaticDialog title="Properties and Values" contentClassName="resource-static-dialog-content-3"

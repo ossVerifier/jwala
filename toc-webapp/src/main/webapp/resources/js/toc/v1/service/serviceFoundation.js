@@ -63,16 +63,22 @@ var serviceFoundation = {
                                         }
                                    });
     },
-    promisedPost : function(url, dataType, content) {
+    promisedPost : function(url, dataType, content, contentType, isFileUpload) {
         var loadingUiBehavior = serviceFoundationUi.visibleLoading(false);
         var ajaxParams = {url: url,
                           dataType: dataType,
                           type: 'POST',
                           data: content,
-                          contentType: 'application/json',
                           cache: false,
                           beforeSend: loadingUiBehavior.showLoading,
                           complete: loadingUiBehavior.hideLoading};
+
+        if (isFileUpload) {
+            ajaxParams.contentType = false;
+            ajaxParams.processData = false;
+        } else {
+            ajaxParams.contentType = contentType ? contentType : 'application/json';
+        }
 
         return Promise.cast($.ajax(ajaxParams));
     },
