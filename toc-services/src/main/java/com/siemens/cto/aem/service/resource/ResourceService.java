@@ -6,6 +6,7 @@ import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.resource.ResourceInstance;
 import com.siemens.cto.aem.common.domain.model.resource.ResourceType;
 import com.siemens.cto.aem.common.domain.model.user.User;
+import com.siemens.cto.aem.service.resource.impl.CreateResourceTemplateApplicationResponseWrapper;
 
 import java.io.InputStream;
 import java.util.Collection;
@@ -60,7 +61,7 @@ public interface ResourceService {
      *                                      }
      * @param templateData the template data
      */
-    CreatedTemplateWrapper createTemplate(InputStream metaDataInputStream, InputStream templateData);
+    CreateResourceTemplateApplicationResponseWrapper createTemplate(InputStream metaDataInputStream, InputStream templateData);
 
     /**
      * Deletes a resource template.

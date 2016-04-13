@@ -263,7 +263,7 @@ var ResourcesConfig = React.createClass({
             self.refreshResourcePane();
         }).caught(function(e){
             console.log(e);
-            $.errorAlert("Error deleting resource template(s)!", title, true);
+            $.errorAlert("Error deleting resource template(s)!", "Error", true);
         });
      },
      onCreateResourceOkClicked: function() {
@@ -283,13 +283,13 @@ var ResourcesConfig = React.createClass({
             var formData = new FormData();
             var self = this;
             formData.append("metaData", metaDataFile);
-            formData.append("templateFile", metaDataFile);
+            formData.append("templateFile", templateFile);
             this.props.resourceService.createResource(formData).then(function(response){
                 self.refs.selectMetaDataAndTemplateFilesModalDlg.close();
                 self.refreshResourcePane();
             }).caught(function(e){
                 console.log(e);
-                $.errorAlert("Error creating resource template!", title, true);
+                $.errorAlert("Error creating resource template!", "Error", true);
             });
         }
      },

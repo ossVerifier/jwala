@@ -41,7 +41,8 @@ public class JpaJvm extends AbstractEntity<JpaJvm> {
 
     private String hostName;
 
-    @ManyToMany(mappedBy = "jvms", fetch = FetchType.EAGER)
+    // @ManyToMany(mappedBy = "jvms", fetch = FetchType.EAGER)
+    @ManyToMany(mappedBy = "jvms")
     private List<JpaGroup> groups;
 
     @Column(nullable = false)
