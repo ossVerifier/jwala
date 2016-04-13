@@ -23,6 +23,8 @@ import com.siemens.cto.aem.template.HarmonyTemplate;
 import com.siemens.cto.aem.template.HarmonyTemplateEngine;
 import com.siemens.cto.toc.files.FileManager;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.output.*;
+import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,9 +36,7 @@ import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.transaction.annotation.Transactional;
 import org.apache.commons.io.FileUtils;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.*;
 
 public class ResourceServiceImpl implements ResourceService {
@@ -196,33 +196,33 @@ public class ResourceServiceImpl implements ResourceService {
 
         try {
             resourceTemplateMetaData = mapper.readValue(IOUtils.toString(metaData), ResourceTemplateMetaData.class);
+
+            // Let's create the template!
+            final EntityType entityType = EntityType.fromValue(resourceTemplateMetaData.getEntity().getType());
+            switch (entityType) {
+                case JVM:
+                    responseWrapper = createJvmTemplate(resourceTemplateMetaData, templateData);
+                    break;
+                case JVMS:
+                    responseWrapper = createGroupedJvmsTemplate(resourceTemplateMetaData, templateData);
+                    break;
+                case WEB_SERVER:
+                    responseWrapper = createWebServerTemplate(resourceTemplateMetaData, templateData);
+                    break;
+                case WEB_SERVERS:
+                    responseWrapper = createGroupedWebServersTemplate(resourceTemplateMetaData, templateData);
+                    break;
+                case APP:
+                    responseWrapper = createApplicationTemplate(resourceTemplateMetaData, templateData);
+                    break;
+                case APPS:
+                    responseWrapper = createGroupedApplicationsTemplate(resourceTemplateMetaData, templateData);
+                    break;
+                default:
+                    throw new ResourceServiceException("Invalid entity type '" + resourceTemplateMetaData.getEntity().getType() + "'");
+            }
         } catch(final IOException ioe) {
             throw new ResourceServiceException(ioe);
-        }
-
-        // Let's create the template!
-        final EntityType entityType = EntityType.fromValue(resourceTemplateMetaData.getEntity().getType());
-        switch (entityType) {
-            case JVM:
-                responseWrapper = createJvmTemplate(resourceTemplateMetaData, templateData);
-                break;
-            case JVMS:
-                responseWrapper = createGroupedJvmsTemplate(resourceTemplateMetaData, templateData);
-                break;
-            case WEB_SERVER:
-                responseWrapper = createWebServerTemplate(resourceTemplateMetaData, templateData);
-                break;
-            case WEB_SERVERS:
-                responseWrapper = createGroupedWebServersTemplate(resourceTemplateMetaData, templateData);
-                break;
-            case APP:
-                responseWrapper = createApplicationTemplate(resourceTemplateMetaData, templateData);
-                break;
-            case APPS:
-                responseWrapper = createGroupedApplicationsTemplate(resourceTemplateMetaData, templateData);
-                break;
-            default:
-                throw new ResourceServiceException("Invalid entity type '" + resourceTemplateMetaData.getEntity().getType() + "'");
         }
 
         return responseWrapper;
@@ -280,13 +280,15 @@ public class ResourceServiceImpl implements ResourceService {
      * @param templateData the template content/data
      */
     // TODO: When the resource file is locked, don't overwrite!
-    private CreateResourceTemplateApplicationResponseWrapper createGroupedJvmsTemplate(final ResourceTemplateMetaData metaData, final InputStream templateData) {
+    private CreateResourceTemplateApplicationResponseWrapper createGroupedJvmsTemplate(final ResourceTemplateMetaData metaData,
+                                                                                       final InputStream templateData) throws IOException {
         final Set<Jvm> jvms = groupPersistenceService.getGroup(metaData.getEntity().getGroup()).getJvms();
         final List<UploadJvmTemplateRequest> uploadJvmTemplateRequestList = new ArrayList<>();
         ConfigTemplate createdJpaJvmConfigTemplate = null;
+        final byte [] bytes = IOUtils.toByteArray(templateData);
         for (final Jvm jvm: jvms) {
             UploadJvmConfigTemplateRequest uploadJvmTemplateRequest = new UploadJvmConfigTemplateRequest(jvm, metaData.getTemplateName(),
-                    templateData, convertResourceTemplateMetaDataToJson(metaData));
+                    new ByteArrayInputStream(bytes), convertResourceTemplateMetaDataToJson(metaData));
             uploadJvmTemplateRequest.setConfFileName(metaData.getConfigFileName());
             uploadJvmTemplateRequestList.add(uploadJvmTemplateRequest);
 
@@ -321,14 +323,16 @@ public class ResourceServiceImpl implements ResourceService {
      * @param metaData the data that describes the template, please see {@link ResourceTemplateMetaData}
      * @param templateData the template content/data
      */
-    private CreateResourceTemplateApplicationResponseWrapper createGroupedWebServersTemplate(final ResourceTemplateMetaData metaData, final InputStream templateData) {
+    private CreateResourceTemplateApplicationResponseWrapper createGroupedWebServersTemplate(final ResourceTemplateMetaData metaData,
+                                                                                             final InputStream templateData) throws IOException {
         final Group group = groupPersistenceService.getGroupWithWebServers(metaData.getEntity().getGroup());
         final Set<WebServer> webServers = group.getWebServers();
         final List<UploadWebServerTemplateRequest> uploadWebServerTemplateRequestList = new ArrayList<>();
         ConfigTemplate createdConfigTemplate = null;
+        final byte [] bytes = IOUtils.toByteArray(templateData);
         for (final WebServer webServer: webServers) {
             UploadWebServerTemplateRequest uploadWebServerTemplateRequest = new UploadWebServerTemplateRequest(webServer,
-                    metaData.getTemplateName(), templateData, convertResourceTemplateMetaDataToJson(metaData)) {
+                    metaData.getTemplateName(), new ByteArrayInputStream(bytes), convertResourceTemplateMetaDataToJson(metaData)) {
                 @Override
                 public String getConfFileName() {
                     return metaData.getConfigFileName();
@@ -361,13 +365,16 @@ public class ResourceServiceImpl implements ResourceService {
      * @param metaData the data that describes the template, please see {@link ResourceTemplateMetaData}
      * @param templateData the template content/data
      */
-    private CreateResourceTemplateApplicationResponseWrapper createGroupedApplicationsTemplate(final ResourceTemplateMetaData metaData, final InputStream templateData) {
+    private CreateResourceTemplateApplicationResponseWrapper createGroupedApplicationsTemplate(final ResourceTemplateMetaData metaData,
+                                                                                               final InputStream templateData) throws IOException {
         Group group = groupPersistenceService.getGroup(metaData.getEntity().getGroup());
         final List<Application> applications = applicationPersistenceService.findApplicationsBelongingTo(metaData.getEntity().getGroup());
         ConfigTemplate createdConfigTemplate = null;
+        final byte [] bytes = IOUtils.toByteArray(templateData);
         for (final Application application: applications) {
             UploadAppTemplateRequest uploadAppTemplateRequest = new UploadAppTemplateRequest(application, metaData.getTemplateName(),
-                    metaData.getConfigFileName(), metaData.getEntity().getParentName(), templateData, convertResourceTemplateMetaDataToJson(metaData));
+                    metaData.getConfigFileName(), metaData.getEntity().getParentName(), new ByteArrayInputStream(bytes),
+                    convertResourceTemplateMetaDataToJson(metaData));
 
             // Since we're just creating the same template for all the JVMs, we just keep one copy of the created
             // configuration template.
