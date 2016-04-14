@@ -24,6 +24,7 @@
 <script src="public-resources/js/toc/v1/service/serviceFoundation.js"></script>
 <script src="public-resources/js/toc/v1/service/serviceFoundationUi.js"></script>
 <script src="public-resources/js/toc/v1/service/adminService.js"></script>
+<script src="public-resources/js/server-state-websocket-service.js"></script>
 <script src="public-resources/js/toc/v1/service/groupService.js"></script>
 <script src="public-resources/js/toc/v1/service/webServerService.js"></script>
 <script src="public-resources/js/toc/v1/service/webAppService.js"></script>
@@ -85,3 +86,7 @@
 <script type="text/jsx" src="public-resources/js/react/ResourceAttrPane.js"></script>
 <script type="text/jsx" src="public-resources/js/react/main-area.js"></script>
 <script type="text/jsx" src="public-resources/js/react/error-msg-list.js"></script>
+
+<!-- Web sockets and STOMP --->
+<script src="public-resources/js/sockjs-0.3.4.js"></script>
+<script src="public-resources/js/stomp.js"></script>
