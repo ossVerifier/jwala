@@ -6,7 +6,7 @@ import static com.siemens.cto.aem.template.GeneratorUtils.bindDataToTemplate
 import static com.siemens.cto.aem.template.GeneratorUtils.bindDataToTemplateText
 
 /**
- * Wrapper that contains methods that generates configuration files for an Apache Web Server
+ * Wrapper that contains methods that generates configuration files for Apache Tomcat.
  *
  * Created by Z003BPEJ on 6/20/14.
  */
