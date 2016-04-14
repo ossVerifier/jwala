@@ -33,15 +33,20 @@ var RButton = React.createClass({
 
         var theHoverClassName = (this.props.hoverClassName !== undefined) ? this.props.hoverClassName : "ui-state-hover";
         var hoverClassName = this.state.hover ? theHoverClassName : "";
-        return React.DOM.button({className: className + " " + hoverClassName,
-                                 title:this.props.title,
-                                 type:"button",
-                                 role:"button",
-                                 ariaDisabled:false,
-                                 onClick: this.handleClick,
-                                 onMouseOver:this.mouseOverHandler,
-                                 onMouseOut:this.mouseOutHandler},
-                                 React.DOM.span({className:spanClassName}, this.props.label));
+
+        var attr = {className: className + " " + hoverClassName,
+                    title: this.props.disabled === true ? this.props.disabledTitle : this.props.title,
+                    type:"button",
+                    role:"button",
+                    ariaDisabled:false,
+                    onClick: this.handleClick,
+                    onMouseOver:this.mouseOverHandler,
+                    onMouseOut:this.mouseOutHandler};
+        if (this.props.disabled === true) {
+            attr["disabled"] = "disabled";
+            attr["className"] = attr["className"] + " ui-state-disabled";
+        }
+        return React.createElement("button", attr, React.DOM.span({className:spanClassName}, this.props.label));
     },
     handleClick: function(e) {
         if (!this.state.busy) {

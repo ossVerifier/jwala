@@ -47,38 +47,53 @@ var Banner = React.createClass({
 
 var MainTabs = React.createClass({
     getInitialState:function() {
-        items = [{title:"Operations", content:<GroupOperations className="group-config"
-                                           service={ServiceFactory.getGroupService()}
-                                           stateService={ServiceFactory.getStateService()}
-                                           statePollTimeout={tocVars.statePollTimeout}/>},
-                 {title: "Configuration", content:<ConfigureTabs/>},
-                 {title: "Admin", content:<AdminTab/>}];
-        return null;
+        return {items: []};
     },
     render: function() {
-        return <Tabs theme="default" items={items} depth="0"/>
+        if (this.state.items.length > 0) {
+            return <Tabs theme="default" items={this.state.items} depth="0"/>
+        }
+        return <div>Loading tab items...</div>
+    },
+    componentDidMount: function() {
+        var items = [{title:"Operations", content:<GroupOperations className="group-config"
+                                                                   service={ServiceFactory.getGroupService()}
+                                                                   stateService={ServiceFactory.getStateService()}
+                                                                   statePollTimeout={tocVars.statePollTimeout}/>},
+                     {title: "Configuration", content:<ConfigureTabs/>},
+                     {title: "Admin", content:<AdminTab/>}]
+        this.setState({items: items});
     }
 });
 
 var ConfigureTabs = React.createClass({
     getInitialState:function() {
-        items = [{title:"JVM", content:<JvmConfig className="jvm-config"
-                                                  service={ServiceFactory.getJvmService()}/>},
-                 {title:"Web Servers", content:<WebServerConfig className="webserver-config"
-                                                                service={ServiceFactory.getWebServerService()}/>},
-                 {title: "Web Apps", content:<WebAppConfig className="webapp-config"
-                                                                service={ServiceFactory.getWebAppService()}
-                                                                groupService={ServiceFactory.getGroupService()}/>},
-                 {title: "Resources", content:<ResourcesConfig resourceService={ServiceFactory.getResourceService()}
-                                                               groupService={ServiceFactory.getGroupService()}
-                                                               jvmService={ServiceFactory.getJvmService()}
-                                                               wsService={ServiceFactory.getWebServerService()}
-                                                               webAppService={ServiceFactory.getWebAppService()}/>},
-                 {title: "Group", content:<GroupConfig service={ServiceFactory.getGroupService()}/>}];
-        return null;
+        return {items: []};
     },
     render: function() {
-        return <Tabs theme="default" items={items} depth="1"/>
+        if (this.state.items.length > 0) {
+            return <Tabs theme="default" items={this.state.items} depth="1"/>
+        }
+        return <div>Loading tab items...</div>
+    },
+    componentDidMount: function() {
+        this.state.items.push({title:"JVM", content:<JvmConfig className="jvm-config" service={ServiceFactory.getJvmService()}/>});
+        this.state.items.push({title:"Web Servers", content:<WebServerConfig className="webserver-config"
+                                         service={ServiceFactory.getWebServerService()}/>});
+        this.state.items.push({title: "Web Apps", content:<WebAppConfig className="webapp-config"
+                                       service={ServiceFactory.getWebAppService()}
+                                       groupService={ServiceFactory.getGroupService()}/>});
+
+        if (tocVars["resourcesEnabled"] === "true") {
+            this.state.items.push({title: "Resources", content:<ResourcesConfig resourceService={ServiceFactory.getResourceService()}
+                                                                     groupService={ServiceFactory.getGroupService()}
+                                                                     jvmService={ServiceFactory.getJvmService()}
+                                                                     wsService={ServiceFactory.getWebServerService()}
+                                                                     webAppService={ServiceFactory.getWebAppService()}/>});
+        }
+
+        this.state.items.push({title: "Group", content:<GroupConfig service={ServiceFactory.getGroupService()}/>});
+        this.forceUpdate();
     }
 });
 

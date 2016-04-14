@@ -22,6 +22,8 @@ var WebServerControlPanelWidget = React.createClass({
                              spanClassName="ui-icon ui-icon-gear-custom"
                              onClick={this.generateServiceAndHttpdConf}
                              title="Generate the httpd.conf and deploy as a service"
+                             disabled={tocVars["resourcesEnabled"] === "false"}
+                             disabledTitle="Resource generation is disabled for this version"
                              busyClassName="busy-button"/>
 
                     <button ref="httpdConfBtn" className="button-link anchor-font-style">httpd.conf</button>

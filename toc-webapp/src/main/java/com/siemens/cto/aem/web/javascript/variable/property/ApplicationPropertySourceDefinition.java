@@ -11,7 +11,8 @@ public enum ApplicationPropertySourceDefinition {
     STATE_POLL_TIMEOUT("statePollTimeout", "state.poll.timeout", "1000", VariableStyle.STRING),
     START_STOP_TIMEOUT("startStopTimeout", "start.stop.timeout", "180000", VariableStyle.STRING),
     HEALTH_CHECK_APP("healthCheckApp", "health.check.app", "/hct", VariableStyle.STRING),
-    HISTORY_MAX_READ_REC_COUNT("historyReadMaxRecCount", "history.max-read-rec-count", "30", VariableStyle.STRING);
+    HISTORY_MAX_READ_REC_COUNT("historyReadMaxRecCount", "history.max-read-rec-count", "30", VariableStyle.STRING),
+    RESOURCES_ENABLED("resourcesEnabled", "resources.enabled", "true", VariableStyle.STRING);
 
     private final String variableName;
     private final String propertyKey;
