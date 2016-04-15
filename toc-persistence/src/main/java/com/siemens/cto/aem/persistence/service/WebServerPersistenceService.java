@@ -68,4 +68,6 @@ public interface WebServerPersistenceService {
     int removeTemplate(String name);
 
     int removeTemplate(String webServerName, String templateName);
+
+    List<JpaWebServerConfigTemplate> getJpaWebServerConfigTemplates(String webServerName);
 }

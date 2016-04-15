@@ -365,4 +365,11 @@ public class WebServerCrudServiceImpl extends AbstractCrudServiceImpl<JpaWebServ
         q.setParameter(JpaWebServerConfigTemplate.QUERY_PARAM_TEMPLATE_NAME, templateName);
         return q.executeUpdate();
     }
+
+    @Override
+    public List<JpaWebServerConfigTemplate> getJpaWebServerConfigTemplates(final String webServerName) {
+        final Query q = entityManager.createNamedQuery(JpaWebServerConfigTemplate.QUERY_GET_WEBSERVER_RESOURCE_TEMPLATES);
+        q.setParameter(JpaWebServerConfigTemplate.QUERY_PARAM_WEBSERVER_NAME, webServerName);
+        return q.getResultList();
+    }
 }

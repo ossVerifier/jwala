@@ -320,7 +320,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
                     @Override
                     public Response call() throws Exception {
                         jvmServiceRest.updateResourceTemplate(jvmName, fileName, groupJvmTemplateContent);
-                        return jvmServiceRest.generateAndDeployFile(jvmName, fileName, aUser);
+                        return jvmServiceRest.generateAndDeployFile(jvmName, fileName, false, aUser);
 
                     }
                 });
@@ -565,7 +565,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
                 Future<Response> responseFuture = executorService.submit(new Callable<Response>() {
                     @Override
                     public Response call() throws Exception {
-                        return jvmServiceRest.generateAndDeployJvm(jvmName, aUser);
+                        return jvmServiceRest.generateAndDeployJvm(jvmName, false, aUser);
                     }
                 });
                 futuresMap.put(jvmName, responseFuture);

@@ -4,6 +4,7 @@ import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
+import com.siemens.cto.aem.common.domain.model.resource.ResourceTemplateMetaData;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.request.jvm.CreateJvmAndAddToGroupsRequest;
 import com.siemens.cto.aem.common.request.jvm.CreateJvmRequest;
@@ -12,6 +13,7 @@ import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
 import com.siemens.cto.aem.persistence.jpa.domain.resource.config.template.JpaJvmConfigTemplate;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 
@@ -74,4 +76,19 @@ public interface JvmService {
     Long getJvmStoppedCount(String groupName);
 
     Long getJvmForciblyStoppedCount(String groupName);
+
+    ResourceTemplateMetaData getResourceTemplateMetaData(String jvmName) throws IOException;
+
+    /**
+     * Combines data to the template to come up with resource file(s) which are saved in a file who's location
+     * is determined by a path definition found in the meta data of the JVMs configuration template data
+     * ({@link JpaJvmConfigTemplate}). This method generates all the resource files associated to a JVM as specified
+     * by the JVM name.
+     *
+     * @param jvmName the JVM name
+     * @param destPath the path where the file(s) are saved
+     * @return the number of resource files generated
+     * @throws IOException
+     */
+    int generateResourceFiles(String jvmName, String destPath) throws IOException;
 }

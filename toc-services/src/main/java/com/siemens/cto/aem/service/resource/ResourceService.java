@@ -1,6 +1,9 @@
 package com.siemens.cto.aem.service.resource;
 
+import com.siemens.cto.aem.common.domain.model.app.Application;
+import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.resource.EntityType;
+import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.common.request.resource.ResourceInstanceRequest;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.resource.ResourceInstance;
@@ -16,6 +19,7 @@ import java.util.Map;
 
 public interface ResourceService {
 
+    @Deprecated
     Collection<ResourceType> getResourceTypes();
 
     ResourceInstance getResourceInstance(final Identifier<ResourceInstance> aResourceInstanceId);
@@ -87,4 +91,19 @@ public interface ResourceService {
      * @return the number records deleted.
      */
     int removeTemplate(EntityType entityType, String entityName, String templateNames);
+
+    /**
+     * Maps data to the template specified by the template parameter.
+     * @param template the template parameter.
+     * @param webServerList list of web servers
+     * @param currentWebServer a current web server (in UI terms, a selected web server)
+     * @param jvmList list of JVMs
+     * @param currentJvm a current JVM (in UI terms, a selected JVM)
+     * @param applicationList list of applications
+     * @param currentApplication a current application (in UI terms, a selected application)
+     * @return the generated resource file string
+     */
+    String generateResourceFile(final String template, final List<WebServer> webServerList, final WebServer currentWebServer,
+                                final List<Jvm> jvmList, final Jvm currentJvm, final List<Application> applicationList,
+                                final Application currentApplication);
 }

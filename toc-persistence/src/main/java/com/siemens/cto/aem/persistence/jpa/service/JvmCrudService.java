@@ -60,4 +60,13 @@ public interface JvmCrudService extends CrudService<JpaJvm> {
     int removeTemplate(String name);
 
     int removeTemplate(String jvmName, String templateName);
+
+    List<JpaJvmConfigTemplate> getConfigTemplates(String jvmName);
+
+    /**
+     * Gets only one {@link JpaJvmConfigTemplate} from the db.
+     * @param jvmName the jvm name
+     * @return {@link JpaJvmConfigTemplate}
+     */
+    JpaJvmConfigTemplate getConfigTemplate(String jvmName);
 }

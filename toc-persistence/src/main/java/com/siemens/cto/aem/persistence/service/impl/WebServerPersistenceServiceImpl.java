@@ -156,4 +156,9 @@ public class WebServerPersistenceServiceImpl implements WebServerPersistenceServ
     public int removeTemplate(final String webServerName, final String templateName) {
         return webServerCrudService.removeTemplate(webServerName, templateName);
     }
+
+    @Override
+    public List<JpaWebServerConfigTemplate> getJpaWebServerConfigTemplates(final String webServerName) {
+        return webServerCrudService.getJpaWebServerConfigTemplates(webServerName);
+    }
 }

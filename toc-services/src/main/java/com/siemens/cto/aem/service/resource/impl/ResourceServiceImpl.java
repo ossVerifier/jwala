@@ -21,10 +21,9 @@ import com.siemens.cto.aem.service.exception.ResourceServiceException;
 import com.siemens.cto.aem.service.resource.ResourceService;
 import com.siemens.cto.aem.template.HarmonyTemplate;
 import com.siemens.cto.aem.template.HarmonyTemplateEngine;
+import com.siemens.cto.aem.template.ResourceFileGenerator;
 import com.siemens.cto.toc.files.FileManager;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.io.output.*;
-import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -433,5 +432,13 @@ public class ResourceServiceImpl implements ResourceService {
             }
         }
         return totalDeletedRecs;
+    }
+
+    @Override
+    public String generateResourceFile(final String template, final List<WebServer> webServerList, final WebServer currentWebServer,
+                                       final List<Jvm> jvmList, final Jvm currentJvm, final List<Application> applicationList,
+                                       final Application currentApplication) {
+        return ResourceFileGenerator.generateResourceConfig(template, webServerList, currentWebServer, jvmList, currentJvm,
+                   applicationList, currentApplication);
     }
 }

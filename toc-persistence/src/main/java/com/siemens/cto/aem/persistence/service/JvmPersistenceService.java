@@ -69,4 +69,8 @@ public interface JvmPersistenceService {
     int removeTemplate(String name);
 
     int removeTemplate(String jvmName, String templateName);
+
+    List<JpaJvmConfigTemplate> getConfigTemplates(String jvmName);
+
+    JpaJvmConfigTemplate getConfigTemplate(String jvmName);
 }
