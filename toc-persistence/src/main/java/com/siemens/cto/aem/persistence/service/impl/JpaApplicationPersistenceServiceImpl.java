@@ -36,31 +36,33 @@ public class JpaApplicationPersistenceServiceImpl implements ApplicationPersiste
                                          final String roleMappingPropertiesTemplate, String appPropertiesTemplate) {
         JpaGroup jpaGroup = groupCrudService.getGroup(createApplicationRequest.getGroupId());
         final JpaApplication jpaApp = applicationCrudService.createApplication(createApplicationRequest, jpaGroup);
-        final int idx = jpaApp.getWebAppContext().lastIndexOf('/');
-        final String resourceName = idx == -1 ? jpaApp.getWebAppContext() : jpaApp.getWebAppContext().substring(idx + 1);
 
-        if (roleMappingPropertiesTemplate != null) {
-            applicationCrudService.createConfigTemplate(jpaApp, resourceName + "RoleMapping.properties",
-                    roleMappingPropertiesTemplate, null);
-        } else {
-            LOGGER.warn("Role mapping properties template is null!");
-        }
-
-        if (appPropertiesTemplate != null) {
-            applicationCrudService.createConfigTemplate(jpaApp, resourceName + ".properties", appPropertiesTemplate, null);
-        } else {
-            LOGGER.warn("Application properties template is null!");
-        }
-
-        if (appContextTemplate != null) {
-            if (jpaGroup.getJvms() != null) {
-                for (JpaJvm jvm : jpaGroup.getJvms()) {
-                    applicationCrudService.createConfigTemplate(jpaApp, resourceName + ".xml", appContextTemplate, jvm);
-                }
-            }
-        } else {
-            LOGGER.warn("Application context template is null!");
-        }
+        //TODO do not propagate the default application templates since they are healthcheck specific
+//        final int idx = jpaApp.getWebAppContext().lastIndexOf('/');
+//        final String resourceName = idx == -1 ? jpaApp.getWebAppContext() : jpaApp.getWebAppContext().substring(idx + 1);
+//
+//        if (roleMappingPropertiesTemplate != null) {
+//            applicationCrudService.createConfigTemplate(jpaApp, resourceName + "RoleMapping.properties",
+//                    roleMappingPropertiesTemplate, null);
+//        } else {
+//            LOGGER.warn("Role mapping properties template is null!");
+//        }
+//
+//        if (appPropertiesTemplate != null) {
+//            applicationCrudService.createConfigTemplate(jpaApp, resourceName + ".properties", appPropertiesTemplate, null);
+//        } else {
+//            LOGGER.warn("Application properties template is null!");
+//        }
+//
+//        if (appContextTemplate != null) {
+//            if (jpaGroup.getJvms() != null) {
+//                for (JpaJvm jvm : jpaGroup.getJvms()) {
+//                    applicationCrudService.createConfigTemplate(jpaApp, resourceName + ".xml", appContextTemplate, jvm);
+//                }
+//            }
+//        } else {
+//            LOGGER.warn("Application context template is null!");
+//        }
 
         return JpaAppBuilder.appFrom(jpaApp);
     }

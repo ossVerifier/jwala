@@ -145,13 +145,18 @@ public class ApplicationServiceImpl implements ApplicationService {
 
         createApplicationRequest.validate();
 
-        final String appContext = fileManager.getResourceTypeTemplate(ApplicationProperties.get(APP_CONTEXT_TEMPLATE));
-        final String roleMappingProperties = fileManager.getResourceTypeTemplate(ApplicationProperties.get(ROLE_MAPPING_PROPERTIES_TEMPLATE));
-        final String appProperties = fileManager.getResourceTypeTemplate(ApplicationProperties.get(APP_PROPERTIES_TEMPLATE));
+//      TODO do not propagate the default application templates since they are healthcheck specific
+//        final String appContext = fileManager.getResourceTypeTemplate(ApplicationProperties.get(APP_CONTEXT_TEMPLATE));
+//        final String roleMappingProperties = fileManager.getResourceTypeTemplate(ApplicationProperties.get(ROLE_MAPPING_PROPERTIES_TEMPLATE));
+//        final String appProperties = fileManager.getResourceTypeTemplate(ApplicationProperties.get(APP_PROPERTIES_TEMPLATE));
 
+        String appContext = "";
+        String roleMappingProperties = "";
+        String appProperties = "";
         final Application application = applicationPersistenceService.createApplication(createApplicationRequest, appContext, roleMappingProperties, appProperties);
 
-        groupService.populateGroupAppTemplates(application, appContext, roleMappingProperties, appProperties);
+        // TODO do not propagate the default application templates since they are healthcheck specific
+        // groupService.populateGroupAppTemplates(application, appContext, roleMappingProperties, appProperties);
 
         return application;
     }
@@ -418,6 +423,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                 final String jvmName = jvm.getJvmName();
                 final String hostName = jvm.getHostName();
                 CommandOutput commandOutput = applicationCommandExecutor.executeRemoteCommand(jvmName, hostName, ApplicationControlOperation.SECURE_COPY, new WindowsApplicationPlatformCommandProvider(), tempWarFile.getAbsolutePath().replaceAll("\\\\", "/"), destPath);
+
                 if (application.isUnpackWar()) {
                     final String warName = application.getWarName();
                     LOGGER.info("Unpacking war {} on host {}", warName, hostName);

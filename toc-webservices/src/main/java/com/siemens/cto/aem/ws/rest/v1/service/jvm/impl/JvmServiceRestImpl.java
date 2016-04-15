@@ -104,10 +104,11 @@ public class JvmServiceRestImpl implements JvmServiceRest {
         // JVM
         uploadAllJvmResourceTemplates(aUser, jvm);
 
-        if (aJvmToCreate.areGroupsPresent()) {
-            LOGGER.info("Creating app template for new JVM {}", jvm.getJvmName());
-            jvmService.addAppTemplatesForJvm(jvm, aJvmToCreate.toCreateAndAddRequest().getGroups());
-        }
+//        TODO do not propagate the default application templates since they are healthcheck specific
+//        if (aJvmToCreate.areGroupsPresent()) {
+//            LOGGER.info("Creating app template for new JVM {}", jvm.getJvmName());
+//            jvmService.addAppTemplatesForJvm(jvm, aJvmToCreate.toCreateAndAddRequest().getGroups());
+//        }
 
         return ResponseBuilder.created(jvm);
     }

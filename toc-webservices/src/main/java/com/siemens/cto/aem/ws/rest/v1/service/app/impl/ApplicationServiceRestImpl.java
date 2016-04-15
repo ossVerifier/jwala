@@ -172,7 +172,8 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
                 }
             }
             service.copyApplicationWarToGroupHosts(app);
-            service.copyApplicationConfigToGroupJvms(group, appName, aUser.getUser());
+//            TODO do not propagate the default application templates since they are healthcheck specific
+//            service.copyApplicationConfigToGroupJvms(group, appName, aUser.getUser());
         } else {
             LOGGER.info("Skip deploying application {}, no JVM's in group {}", appName, group.getName() );
         }

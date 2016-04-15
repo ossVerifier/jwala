@@ -618,7 +618,8 @@ public class ApplicationServiceRestImplTest {
         applicationServiceRest.deployWebArchive(new Identifier<Application>(111L), authenticatedUser);
 
         verify(service).copyApplicationWarToGroupHosts(any(Application.class));
-        verify(service).copyApplicationConfigToGroupJvms(any(Group.class), anyString(), any(User.class));
+//        TODO do not propagate the default application templates since they are healthcheck specific
+//        verify(service).copyApplicationConfigToGroupJvms(any(Group.class), anyString(), any(User.class));
     }
     /**
      * Instead of mocking the ServletInputStream, let's extend it instead.
