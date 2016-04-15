@@ -616,9 +616,12 @@ public class JvmServiceRestImpl implements JvmServiceRest {
         }
     }
 
-    protected void createConfigFile(String path, String configFileName, String serverXmlStr) throws IOException {
-        File serverXml = new File(path + configFileName);
-        FileUtils.writeStringToFile(serverXml, serverXmlStr);
+    protected void createConfigFile(String path, String configFileName, String templateContent) throws IOException{
+        File configFile = new File(path + configFileName);
+        if (configFileName.endsWith(".bat")){
+            templateContent = templateContent.replaceAll("\n", "\r\n");
+        }
+        FileUtils.writeStringToFile(configFile, templateContent);
     }
 
     protected void createDirectory(String absoluteDirPath) {
