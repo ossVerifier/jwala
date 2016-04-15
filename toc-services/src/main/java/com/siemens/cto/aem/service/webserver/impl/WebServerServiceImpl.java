@@ -165,7 +165,7 @@ public class WebServerServiceImpl implements WebServerService {
     @Override
     public String generateInvokeWSBat(WebServer webServer) {
         String invokeWSBatTemplateText = fileManager.getResourceTypeTemplate("InvokeWSBat");
-        return ApacheWebServerConfigFileGenerator.getInvokeWSBatFromText(webServer, invokeWSBatTemplateText);
+        return ApacheWebServerConfigFileGenerator.getInvokeWSBatFromText(webServer, invokeWSBatTemplateText).replaceAll("\n", "\r\n");
     }
 
     @Override
