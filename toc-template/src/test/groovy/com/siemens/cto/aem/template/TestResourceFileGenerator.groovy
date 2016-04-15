@@ -60,11 +60,43 @@ class TestResourceFileGenerator extends GroovyTestCase{
         [jvms, webServers]
     }
 
-    void testGenerateConfigFile(){
+    void testGenerateHttpdConfConfigFile(){
         File httpdTemplate = new File("./src/test/resources/HttpdConfTemplate.tpl");
 
-        def generatedText = ResourceFileGenerator.generateResourceConfig(httpdTemplate.text,webServers,webServer, jvms, null, apps, null);
+        def generatedText = ResourceFileGenerator.generateResourceConfig(httpdTemplate.text,webServers, webServer, jvms, null, apps, null);
         def expectedText = new File("./src/test/resources/HttpdConfTemplate-EXPECTED.conf").text
+        assertEquals(removeCarriageReturnsAndNewLines(expectedText), removeCarriageReturnsAndNewLines(generatedText));
+    }
+
+    void testGenerateInvokeBatConfigFile(){
+        File httpdTemplate = new File("./src/test/resources/InvokeBatTemplate.tpl");
+
+        def generatedText = ResourceFileGenerator.generateResourceConfig(httpdTemplate.text,webServers, null, jvms, jvm, apps, null);
+        def expectedText = new File("./src/test/resources/InvokeBatTemplate-EXPECTED.bat").text
+        assertEquals(removeCarriageReturnsAndNewLines(expectedText), removeCarriageReturnsAndNewLines(generatedText));
+    }
+
+    void testGenerateInvokeWSBatConfigFile() {
+        File httpdTemplate = new File("./src/test/resources/InvokeWSBatTemplate.tpl");
+
+        def generatedText = ResourceFileGenerator.generateResourceConfig(httpdTemplate.text,webServers, webServer, jvms, null, apps, null);
+        def expectedText = new File("./src/test/resources/InvokeWSBatTemplate-EXPECTED.bat").text
+        assertEquals(removeCarriageReturnsAndNewLines(expectedText), removeCarriageReturnsAndNewLines(generatedText));
+    }
+
+    void testGenerateServerXMLConfigFile() {
+        File httpdTemplate = new File("./src/test/resources/ServerXMLTemplate.tpl");
+
+        def generatedText = ResourceFileGenerator.generateResourceConfig(httpdTemplate.text,webServers, null, jvms, jvm, apps, null);
+        def expectedText = new File("./src/test/resources/ServerXMLTemplate-EXPECTED.xml").text
+        assertEquals(removeCarriageReturnsAndNewLines(expectedText), removeCarriageReturnsAndNewLines(generatedText));
+    }
+
+    void testGenerateSetenvBatConfigFile() {
+        File httpdTemplate = new File("./src/test/resources/SetenvBatTemplate.tpl");
+
+        def generatedText = ResourceFileGenerator.generateResourceConfig(httpdTemplate.text,webServers, null, jvms, jvm, apps, null);
+        def expectedText = new File("./src/test/resources/SetenvBatTemplate-EXPECTED.bat").text
         assertEquals(removeCarriageReturnsAndNewLines(expectedText), removeCarriageReturnsAndNewLines(generatedText));
     }
 
