@@ -18,7 +18,6 @@ import com.siemens.cto.aem.persistence.service.JvmPersistenceService;
 import org.apache.commons.lang.RandomStringUtils;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,9 +33,7 @@ import java.util.List;
 import static org.junit.Assert.*;
 
 @Transactional
-public abstract class
-
-        AbstractApplicationPersistenceServiceTest {
+public abstract class AbstractApplicationPersistenceServiceTest {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(AbstractApplicationPersistenceServiceTest.class); 
 
@@ -96,8 +93,6 @@ public abstract class
     }
     
     @Test
-    @Ignore
-    // TODO: Test is failing because of null meta data!
     public void testCreateApp() {
         CreateApplicationRequest request = new CreateApplicationRequest(expGroupId,  textName, textContext, true, true, false);
         Application created = applicationPersistenceService.createApplication(request, "", "", "");
@@ -111,8 +106,6 @@ public abstract class
     }
 
     @Test
-    @Ignore
-    // TODO: Test is failing because of null meta data!
     public void testCreateNonSecureApp() {
         CreateApplicationRequest request = new CreateApplicationRequest(expGroupId,  textName, textContext, false, true, false);
         Application created = applicationPersistenceService.createApplication(request, "", "", "");
@@ -126,8 +119,6 @@ public abstract class
     }
     
     @Test
-    @Ignore
-    // TODO: Test is failing because of null meta data!
     public void testUpdateApp() {
         if(updateAppId == null) {
             testCreateApp();
@@ -144,24 +135,18 @@ public abstract class
     }
     
     @Test
-    @Ignore
-    // TODO: Test is failing because of null meta data!
     public void testRemoveApp() {
         testCreateApp();
         applicationPersistenceService.removeApplication(deleteAppId);
     }
 
     @Test(expected = NotFoundException.class)
-    @Ignore
-    // TODO: Test is failing because of null meta data!
     public void testRemoveAppAndFailUpdate() {
         testRemoveApp();
         testUpdateApp();
     }    
     
     @Test
-    @Ignore
-    // TODO: Test is failing because of null meta data!
     public void testUpdateWARPath() { 
         CreateApplicationRequest request = new CreateApplicationRequest(expGroupId,  textName, textContext, true, true, false);
         Application created = applicationPersistenceService.createApplication(request, "", "", "");
@@ -173,8 +158,6 @@ public abstract class
     }
     
     @Test
-    @Ignore
-    // TODO: Test is failing because of null meta data!
     public void testRemoveWARPath() {        
         CreateApplicationRequest request = new CreateApplicationRequest(expGroupId,  textName, textContext, true, true, false);
         Application created = applicationPersistenceService.createApplication(request, "", "", "");
@@ -191,8 +174,6 @@ public abstract class
     }
 
     @Test
-    @Ignore
-    // TODO: Test is failing because of null meta data!
     public void testUpdateSecureFlag() {
         CreateApplicationRequest request = new CreateApplicationRequest(expGroupId,  textName, textContext, true, true, false);
         Application created = applicationPersistenceService.createApplication(request, "", "", "");
@@ -208,8 +189,6 @@ public abstract class
     }
 
     @Test
-    @Ignore
-    // TODO: Test is failing because of null meta data!
     public void testCreateAppConfForJvm() {
         String jvmName = "testJvmName";
 
@@ -225,7 +204,7 @@ public abstract class
         AddJvmToGroupRequest addJvmToGroup = new AddJvmToGroupRequest(group.getId(), jvm.getId());
         group = groupPersistenceService.addJvmToGroup(addJvmToGroup);
 
-        applicationPersistenceService.createApplicationConfigTemplateForJvm(jvmName, app, group.getId(), "app context template");
+        applicationPersistenceService.createApplicationConfigTemplateForJvm(jvmName, app, group.getId(), "app context meta data", "app context template");
         String resourceContent = applicationPersistenceService.getResourceTemplate(app.getName(), "hctTest.xml", jvmName, group.getName());
         assertEquals("app context template", resourceContent);
 
@@ -235,8 +214,6 @@ public abstract class
     }
 
     @Test
-    @Ignore
-    // TODO: Test is failing because of null meta data!
     public void testUpdateResourceTemplate() {
         String jvmName = "testJvmName";
 
@@ -252,20 +229,22 @@ public abstract class
         CreateApplicationRequest request = new CreateApplicationRequest(group.getId(), "testAppName", "/hctTest", true, true, false);
         Application app = applicationPersistenceService.createApplication(request, "app context template", "role mapping properties", "app properties template");
 
-        String oldContent = applicationPersistenceService.getResourceTemplate(app.getName(), "hctTest.xml", jvmName, group.getName());
-        assertEquals("app context template", oldContent);
+// NOTE: The codes below fails because create hct resource files have been commented out on application creation.
+//       In the near future the codes below should be removed since the consensus is to generate generic resources
+//       when an application is created.
 
-        String newContent = applicationPersistenceService.updateResourceTemplate(app.getName(), "hctTest.xml", "new app context template", jvm.getJvmName(), group.getName());
-        assertEquals("new app context template", newContent);
-
+//        String oldContent = applicationPersistenceService.getResourceTemplate(app.getName(), "hctTest.xml", jvmName, group.getName());
+//        assertEquals("app context template", oldContent);
+//
+//        String newContent = applicationPersistenceService.updateResourceTemplate(app.getName(), "hctTest.xml", "new app context template", jvm.getJvmName(), group.getName());
+//        assertEquals("new app context template", newContent);
+//
         applicationPersistenceService.removeApplication(app.getId());
         jvmPersistenceService.removeJvm(jvm.getId());
         groupPersistenceService.removeGroup(group.getId());
     }
 
     @Test
-    @Ignore
-    // TODO: Test is failing because of null meta data!
     public void testUploadAppTemplate() throws FileNotFoundException {
         CreateJvmRequest createJvmRequest = new CreateJvmRequest("testJvmName", "testHostName", 9101, 9102, 9103, -1, 9104, new Path("./"), "");
 
@@ -292,7 +271,7 @@ public abstract class
         assertEquals(app.getName(), appList.get(0).getName());
 
         InputStream dataStream = new FileInputStream(new File("./src/test/resources/ServerXMLTemplate.tpl"));
-        UploadAppTemplateRequest uploadAppTemplateRequest = new UploadAppTemplateRequest(app, "ServerXMLTemplate.tpl", "hctTest.xml", jvm.getJvmName(), dataStream, null);
+        UploadAppTemplateRequest uploadAppTemplateRequest = new UploadAppTemplateRequest(app, "ServerXMLTemplate.tpl", "hctTest.xml", jvm.getJvmName(), "meta data", dataStream);
 
         applicationPersistenceService.uploadAppTemplate(uploadAppTemplateRequest, jpaJvm);
 

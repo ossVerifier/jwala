@@ -33,7 +33,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
@@ -178,7 +177,7 @@ public class GroupCrudServiceImplTest {
         InputStream dataInputStream = new FileInputStream(new File("./src/test/resources/HttpdSslConfTemplate.tpl"));
         WebServer webServer = new WebServer(new Identifier<WebServer>(1313L), new HashSet<Group>(), "testWebServer");
         UploadWebServerTemplateRequest uploadWsTemplateRequest = new UploadWebServerTemplateRequest(webServer,
-                "HttpdSslConfTemplate.tpl", dataInputStream, StringUtils.EMPTY) {
+                "HttpdSslConfTemplate.tpl", StringUtils.EMPTY, dataInputStream) {
             @Override
             public String getConfFileName() {
                 return "httpd.conf";
@@ -206,8 +205,6 @@ public class GroupCrudServiceImplTest {
     }
 
     @Test
-    @Ignore
-    // TODO: Test is failing because of null meta data!
     public void testUpdateJvmResourceTemplate() throws FileNotFoundException {
         testUploadGroupJvmTemplate();
         groupCrudService.updateGroupJvmResourceTemplate(groupName, "server.xml", "new content");
@@ -227,8 +224,6 @@ public class GroupCrudServiceImplTest {
     }
 
     @Test
-    @Ignore
-    // TODO: Test is failing because of null meta data!
     public void testUpdateWebServerResourceTemplate() throws FileNotFoundException {
         testUploadGroupWebServerTemplate();
         groupCrudService.updateGroupWebServerResourceTemplate(groupName, "httpd.conf", "new httpd content");
@@ -242,12 +237,10 @@ public class GroupCrudServiceImplTest {
     }
 
     @Test
-    @Ignore
-    // TODO: Test is failing because of null meta data!
     public void testPopulateGroupAppTemplate() {
         final JpaGroup group = groupCrudService.getGroup(groupName);
-        groupCrudService.populateGroupAppTemplate(group, "app.xml", "content!");
-        groupCrudService.populateGroupAppTemplate(group, "app.xml", "content new!");
+        groupCrudService.populateGroupAppTemplate(group, "app.xml", "someMetaData", "content!");
+        groupCrudService.populateGroupAppTemplate(group, "app.xml", "someMetaData", "content new!");
     }
 
     @Test(expected = ResourceTemplateUpdateException.class)
@@ -256,10 +249,8 @@ public class GroupCrudServiceImplTest {
     }
 
     @Test
-    @Ignore
-    // TODO: Test is failing because of null meta data!
     public void testUpdateGroupAppTemplate() {
-        groupCrudService.populateGroupAppTemplate(groupCrudService.getGroup(groupName), "hct.xml", "old hct.xml template");
+        groupCrudService.populateGroupAppTemplate(groupCrudService.getGroup(groupName), "hct.xml", "hct meta data", "old hct.xml template");
         String appTemplateContent = groupCrudService.getGroupAppResourceTemplate(groupName, "hct.xml");
         assertEquals("old hct.xml template", appTemplateContent);
 

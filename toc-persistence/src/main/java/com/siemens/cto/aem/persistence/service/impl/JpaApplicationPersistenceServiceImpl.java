@@ -158,7 +158,8 @@ public class JpaApplicationPersistenceServiceImpl implements ApplicationPersiste
     }
 
     @Override
-    public void createApplicationConfigTemplateForJvm(String jvmName, Application app, Identifier<Group> groupId, String appContextTemplate) {
+    public void createApplicationConfigTemplateForJvm(final String jvmName, final Application app, final Identifier<Group> groupId,
+                                                      final String templateMetaData, final String appContextTemplate) {
         final String webAppContext = app.getWebAppContext();
         final int idx = webAppContext.lastIndexOf('/');
         final String resourceName = idx == -1 ? webAppContext : webAppContext.substring(idx + 1);
@@ -168,7 +169,8 @@ public class JpaApplicationPersistenceServiceImpl implements ApplicationPersiste
             if (jpaGroup.getJvms() != null) {
                 for (JpaJvm jvm : jpaGroup.getJvms()) {
                     if (jvm.getName().equals(jvmName)) {
-                        applicationCrudService.createConfigTemplate(applicationCrudService.getExisting(app.getId()), resourceName + ".xml", appContextTemplate, jvm);
+                        applicationCrudService.createConfigTemplate(applicationCrudService.getExisting(app.getId()), resourceName + ".xml",
+                                templateMetaData, appContextTemplate, jvm);
                         LOGGER.info("Creation of config template {} SUCCEEDED for {}", resourceName, jvm.getName());
                     }
                 }

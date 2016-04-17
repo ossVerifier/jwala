@@ -308,7 +308,7 @@ public class ResourceServiceImpl implements ResourceService {
     private CreateResourceTemplateApplicationResponseWrapper createWebServerTemplate(final ResourceTemplateMetaData metaData, final InputStream templateData) {
         final WebServer webServer = webServerPersistenceService.findWebServerByName(metaData.getEntity().getTarget());
         final UploadWebServerTemplateRequest uploadWebArchiveRequest = new UploadWebServerTemplateRequest(webServer,
-                metaData.getTemplateName(), templateData, convertResourceTemplateMetaDataToJson(metaData)) {
+                metaData.getTemplateName(), convertResourceTemplateMetaDataToJson(metaData), templateData) {
             @Override
             public String getConfFileName() {
                 return metaData.getConfigFileName();
@@ -331,7 +331,7 @@ public class ResourceServiceImpl implements ResourceService {
         final byte [] bytes = IOUtils.toByteArray(templateData);
         for (final WebServer webServer: webServers) {
             UploadWebServerTemplateRequest uploadWebServerTemplateRequest = new UploadWebServerTemplateRequest(webServer,
-                    metaData.getTemplateName(), new ByteArrayInputStream(bytes), convertResourceTemplateMetaDataToJson(metaData)) {
+                    metaData.getTemplateName(), convertResourceTemplateMetaDataToJson(metaData), new ByteArrayInputStream(bytes)) {
                 @Override
                 public String getConfFileName() {
                     return metaData.getConfigFileName();
@@ -355,7 +355,7 @@ public class ResourceServiceImpl implements ResourceService {
     private CreateResourceTemplateApplicationResponseWrapper createApplicationTemplate(final ResourceTemplateMetaData metaData, final InputStream templateData) {
         final Application application = applicationPersistenceService.getApplication(metaData.getEntity().getTarget());
         UploadAppTemplateRequest uploadAppTemplateRequest = new UploadAppTemplateRequest(application, metaData.getTemplateName(),
-                metaData.getConfigFileName(), metaData.getEntity().getParentName(), templateData, convertResourceTemplateMetaDataToJson(metaData));
+                metaData.getConfigFileName(), metaData.getEntity().getParentName(), convertResourceTemplateMetaDataToJson(metaData), templateData);
         return new CreateResourceTemplateApplicationResponseWrapper(applicationService.uploadAppTemplate(uploadAppTemplateRequest));
     }
 
@@ -372,15 +372,16 @@ public class ResourceServiceImpl implements ResourceService {
         final byte [] bytes = IOUtils.toByteArray(templateData);
         for (final Application application: applications) {
             UploadAppTemplateRequest uploadAppTemplateRequest = new UploadAppTemplateRequest(application, metaData.getTemplateName(),
-                    metaData.getConfigFileName(), metaData.getEntity().getParentName(), new ByteArrayInputStream(bytes),
-                    convertResourceTemplateMetaDataToJson(metaData));
+                    metaData.getConfigFileName(), metaData.getEntity().getParentName(), convertResourceTemplateMetaDataToJson(metaData), new ByteArrayInputStream(bytes)
+            );
 
             // Since we're just creating the same template for all the JVMs, we just keep one copy of the created
             // configuration template.
             createdConfigTemplate = applicationService.uploadAppTemplate(uploadAppTemplateRequest);
 
             try {
-                group = groupPersistenceService.populateGroupAppTemplate(group, metaData.getConfigFileName(), IOUtils.toString(templateData));
+                group = groupPersistenceService.populateGroupAppTemplate(group, metaData.getConfigFileName(),
+                        convertResourceTemplateMetaDataToJson(metaData), IOUtils.toString(templateData));
             } catch (final IOException ioe) {
                 throw new ResourceServiceException(ioe);
             }

@@ -23,7 +23,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
@@ -398,7 +397,7 @@ public abstract class AbstractGroupPersistenceServiceIntegrationTest {
         List<UploadWebServerTemplateRequest> uploadCommands = new ArrayList<>();
         InputStream data = new FileInputStream(new File("./src/test/resources/HttpdSslConfTemplate.tpl"));
         WebServer webServer = new WebServer(new Identifier<WebServer>(1L), new HashSet<Group>(),"testWebServer");
-        UploadWebServerTemplateRequest request = new UploadWebServerTemplateRequest(webServer, "HttpdSslConfTemplate.tpl", data, StringUtils.EMPTY) {
+        UploadWebServerTemplateRequest request = new UploadWebServerTemplateRequest(webServer, "HttpdSslConfTemplate.tpl", StringUtils.EMPTY, data) {
             @Override
             public String getConfFileName() {
                 return "httpd.conf";
@@ -421,8 +420,6 @@ public abstract class AbstractGroupPersistenceServiceIntegrationTest {
     }
 
     @Test
-    @Ignore
-    // TODO: Test is failing because of null meta data!
     public void testUpdateGroupJvmResourceTemplate() throws FileNotFoundException {
         testPopulateGroupJvmTemplates();
         String content = groupPersistenceService.updateGroupJvmResourceTemplate(preCreatedGroup.getName(), "server.xml",
@@ -434,8 +431,6 @@ public abstract class AbstractGroupPersistenceServiceIntegrationTest {
     }
 
     @Test
-    @Ignore
-    // TODO: Test is failing because of null meta data!
     public void testUpdateGroupWebServerResourceTemplate() throws FileNotFoundException {
         testPopulateGroupWebServerTemplates();
         String content = groupPersistenceService.updateGroupWebServerResourceTemplate(preCreatedGroup.getName(), "httpd.conf", "now this is the httpd.conf");
@@ -445,10 +440,8 @@ public abstract class AbstractGroupPersistenceServiceIntegrationTest {
     }
 
     @Test
-    @Ignore
-    // TODO: Test is failing because of null meta data!
     public void testPopulateGroupAppTemplate() {
-        Group group = groupPersistenceService.populateGroupAppTemplate(preCreatedGroup, "app.xml", "app content");
+        Group group = groupPersistenceService.populateGroupAppTemplate(preCreatedGroup, "app.xml", "some meta data", "app content");
         assertNotNull(group);
     }
 }

@@ -240,7 +240,7 @@ public class ApplicationCrudServiceImplTest {
 
         Application app = new Application(new Identifier<Application>(jpaApp.getId()), jpaApp.getName(), jpaApp.getWarPath(), jpaApp.getWebAppContext(), group, true, true, false, "testApp.war");
         UploadAppTemplateRequest uploadTemplateRequest = new UploadAppTemplateRequest(app, "ServerXMLTemplate.tpl", "hct.xml",
-                "testJvmName", data, StringUtils.EMPTY);
+                "testJvmName", StringUtils.EMPTY, data);
 
         applicationCrudService.uploadAppTemplate(uploadTemplateRequest, jpaJvm);
         String templateContent = applicationCrudService.getResourceTemplate("testAppResourceTemplateName", "hct.xml", jpaJvm);
@@ -248,8 +248,8 @@ public class ApplicationCrudServiceImplTest {
         assertTrue(!templateContent.isEmpty());
 
         data = new FileInputStream(new File("./src/test/resources/ServerXMLTemplate.tpl"));
-        uploadTemplateRequest = new UploadAppTemplateRequest(app, "ServerXMLTemplate.tpl", "hct.xml", "testJvmName", data,
-                StringUtils.EMPTY);
+        uploadTemplateRequest = new UploadAppTemplateRequest(app, "ServerXMLTemplate.tpl", "hct.xml", "testJvmName", StringUtils.EMPTY, data
+        );
         applicationCrudService.uploadAppTemplate(uploadTemplateRequest, jpaJvm);
         String templateContentUpdateWithTheSame = applicationCrudService.getResourceTemplate("testAppResourceTemplateName", "hct.xml", jpaJvm);
 

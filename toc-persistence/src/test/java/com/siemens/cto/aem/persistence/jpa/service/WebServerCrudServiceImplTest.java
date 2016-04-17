@@ -249,7 +249,8 @@ public class WebServerCrudServiceImplTest {
                 "testHost", 101, 102, new Path("./statusPath"), new FileSystemPath("./httpdConfPath"), new Path("./svrRootPath"),
                 new Path("./docRoot"), WebServerReachableState.WS_UNREACHABLE, StringUtils.EMPTY);
         webServer = impl.createWebServer(webServer, "testUser");
-        UploadWebServerTemplateRequest uploadWsTemplateRequest = new UploadWebServerTemplateRequest(webServer, "HttpdSslConfTemplate.tpl", dataInputStream, StringUtils.EMPTY) {
+        UploadWebServerTemplateRequest uploadWsTemplateRequest = new UploadWebServerTemplateRequest(webServer,
+                "HttpdSslConfTemplate.tpl", "HttpdSslConfTemplate meta data", dataInputStream) {
             @Override
             public String getConfFileName() {
                 return "httpd.conf";
@@ -260,7 +261,8 @@ public class WebServerCrudServiceImplTest {
 
         // again!
         dataInputStream = new FileInputStream(new File("./src/test/resources/HttpdSslConfTemplate.tpl"));
-        uploadWsTemplateRequest = new UploadWebServerTemplateRequest(webServer, "HttpdSslConfTemplate.tpl", dataInputStream, StringUtils.EMPTY) {
+        uploadWsTemplateRequest = new UploadWebServerTemplateRequest(webServer, "HttpdSslConfTemplate.tpl",
+                "HttpdSslConfTemplate meta data", dataInputStream) {
             @Override
             public String getConfFileName() {
                 return "httpd.conf";
@@ -281,7 +283,8 @@ public class WebServerCrudServiceImplTest {
                 "testHost", 101, 102, new Path("./statusPath"), new FileSystemPath("./httpdConfPath"), new Path("./svrRootPath"),
                 new Path("./docRoot"), WebServerReachableState.WS_UNREACHABLE, StringUtils.EMPTY);
         webServer = impl.createWebServer(webServer, "testUser");
-        UploadWebServerTemplateRequest uploadWsTemplateRequest = new UploadWebServerTemplateRequest(webServer, "HttpdSslConfTemplate.tpl", dataInputStream, StringUtils.EMPTY) {
+        UploadWebServerTemplateRequest uploadWsTemplateRequest = new UploadWebServerTemplateRequest(webServer,
+                "HttpdSslConfTemplate.tpl", StringUtils.EMPTY, dataInputStream) {
             @Override
             public String getConfFileName() {
                 return "httpd.conf";

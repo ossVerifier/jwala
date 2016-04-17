@@ -620,7 +620,7 @@ public class GroupServiceRestImplTest {
         final AuthenticatedUser authenticatedUser = new AuthenticatedUser(securityContextMock);
 
         groupServiceRest.uploadGroupAppConfigTemplate("any", authenticatedUser, "any");
-        verify(mockGroupService).populateGroupAppTemplate(anyString(), anyString(), anyString());
+        verify(mockGroupService).populateGroupAppTemplate(anyString(), anyString(), anyString(), anyString());
     }
 
     @Test

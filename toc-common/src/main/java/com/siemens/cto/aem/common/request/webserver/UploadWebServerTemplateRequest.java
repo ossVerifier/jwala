@@ -28,8 +28,8 @@ public abstract class UploadWebServerTemplateRequest implements Serializable, Re
         this.metaData = null;
     }
 
-    public UploadWebServerTemplateRequest(final WebServer webServer, final String fileName, final InputStream data,
-                                          final String metaData) {
+    public UploadWebServerTemplateRequest(final WebServer webServer, final String fileName, final String metaData,
+                                          final InputStream data) {
         this.webServer = webServer;
         this.fileName = fileName;
         this.data = data;

@@ -44,6 +44,7 @@ import org.apache.commons.fileupload.FileItemIterator;
 import org.apache.commons.fileupload.FileItemStream;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.jaxrs.ext.MessageContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -735,7 +736,9 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         Scanner scanner = new Scanner(data).useDelimiter("\\A");
         String content = scanner.hasNext() ? scanner.next() : "";
 
-        return ResponseBuilder.created(groupService.populateGroupAppTemplate(groupName, templateName, content));
+        // meta data can be empty since the method below (I assume based on the usage) updates an existing template rather
+        // than creating a new one.
+        return ResponseBuilder.created(groupService.populateGroupAppTemplate(groupName, templateName, StringUtils.EMPTY, content));
     }
 
     @Override

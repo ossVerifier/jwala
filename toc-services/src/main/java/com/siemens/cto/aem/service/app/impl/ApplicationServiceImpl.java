@@ -23,12 +23,14 @@ import com.siemens.cto.aem.persistence.service.ApplicationPersistenceService;
 import com.siemens.cto.aem.persistence.service.JvmPersistenceService;
 import com.siemens.cto.aem.service.app.ApplicationService;
 import com.siemens.cto.aem.service.app.PrivateApplicationService;
+import com.siemens.cto.aem.service.exception.ApplicationServiceException;
 import com.siemens.cto.aem.service.group.GroupService;
 import com.siemens.cto.aem.template.GeneratorUtils;
 import com.siemens.cto.toc.files.FileManager;
 import com.siemens.cto.toc.files.RepositoryFileInformation;
 import com.siemens.cto.toc.files.RepositoryFileInformation.Type;
 import com.siemens.cto.toc.files.WebArchiveManager;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,6 +61,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     private static final String ROLE_MAPPING_PROPERTIES_TEMPLATE = "stp.app.role.mapping.properties.template";
     private static final String APP_PROPERTIES_TEMPLATE = "stp.app.properties.template";
     private static final String STR_PROPERTIES = "properties";
+    private static final String PATHS_RESOURCE_TYPES = "paths.resource-types";
     private final ExecutorService executorService;
 
     @Autowired
@@ -575,8 +578,21 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     @Override
     @Transactional
+    @Deprecated
+    // TODO: Replace with the generic resource template approach (stop using fileManager also).
     public void createAppConfigTemplateForJvm(Jvm jvm, Application app, Identifier<Group> groupId) {
-        applicationPersistenceService.createApplicationConfigTemplateForJvm(jvm.getJvmName(), app, groupId, fileManager.getResourceTypeTemplate(ApplicationProperties.get(APP_CONTEXT_TEMPLATE)));
+        String metaData;
+        try {
+            metaData = FileUtils.readFileToString(new File(ApplicationProperties.get(PATHS_RESOURCE_TYPES) + "/" +
+                    ApplicationProperties.get(APP_CONTEXT_TEMPLATE) + ".json"));
+        } catch (IOException ioe) {
+            metaData = ""; // Note: This is bad code! This is just an interim solution since this method will be refactored
+                           // not to use fileManager in addition Fileutils can't easily be mocked hence the reason for not
+                           //  throwing an exception here!
+        }
+
+        applicationPersistenceService.createApplicationConfigTemplateForJvm(jvm.getJvmName(), app, groupId,
+                metaData, fileManager.getResourceTypeTemplate(ApplicationProperties.get(APP_CONTEXT_TEMPLATE)));
     }
 
     /**

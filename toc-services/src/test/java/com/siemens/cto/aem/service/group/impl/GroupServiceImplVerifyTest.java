@@ -233,7 +233,7 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
         List<UploadWebServerTemplateRequest> uploadRequests = new ArrayList<>();
         InputStream data = new FileInputStream(new File("./src/test/resources/HttpdSslConfTemplate.tpl"));
         UploadWebServerTemplateRequest uploadWSRequest = new UploadWebServerTemplateRequest(new WebServer(new Identifier<WebServer>(11L),
-                new HashSet<Group>(), "testWebServer"), "HttpdSslConfTemplate.tpl", data, StringUtils.EMPTY) {
+                new HashSet<Group>(), "testWebServer"), "HttpdSslConfTemplate.tpl", StringUtils.EMPTY, data) {
             @Override
             public String getConfFileName() {
                 return "httpd.conf";
@@ -266,7 +266,7 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
         List<UploadWebServerTemplateRequest> uploadRequests = new ArrayList<>();
         InputStream data = new FileInputStream(new File("./src/test/resources/HttpdSslConfTemplate.tpl"));
         UploadWebServerTemplateRequest uploadWSRequest = new UploadWebServerTemplateRequest(new WebServer(new Identifier<WebServer>(11L),
-                new HashSet<Group>(), "testWebServer"), "HttpdSslConfTemplate.tpl", data, StringUtils.EMPTY) {
+                new HashSet<Group>(), "testWebServer"), "HttpdSslConfTemplate.tpl", StringUtils.EMPTY, data) {
             @Override
             public String getConfFileName() {
                 return "httpd.conf";
@@ -413,24 +413,28 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
         Group mockGroup = mock(Group.class);
         when(mockApplication.getGroup()).thenReturn(mockGroup);
         when(mockApplication.getWebAppContext()).thenReturn("/testApp");
-        when(groupPersistenceService.populateGroupAppTemplate(any(Group.class), anyString(), anyString())).thenReturn(mockGroup);
+        when(groupPersistenceService.populateGroupAppTemplate(any(Group.class), anyString(), anyString(), anyString()))
+                .thenReturn(mockGroup);
 
-        groupService.populateGroupAppTemplates(mockApplication, "app content", "role mapping content", "properties content");
+        groupService.populateGroupAppTemplates(mockApplication, "app content meta data", "app content", "role mapping content meta data",
+                "role mapping content", "properties content meta data" ,"properties content");
 
-        verify(groupPersistenceService).populateGroupAppTemplate(mockGroup, "testApp.xml", "app content");
-        verify(groupPersistenceService).populateGroupAppTemplate(mockGroup, "testAppRoleMapping.properties", "role mapping content");
-        verify(groupPersistenceService).populateGroupAppTemplate(mockGroup, "testApp.properties", "properties content");
+        verify(groupPersistenceService).populateGroupAppTemplate(mockGroup, "testApp.xml", "app content meta data", "app content");
+        verify(groupPersistenceService).populateGroupAppTemplate(mockGroup, "testAppRoleMapping.properties",
+                "role mapping content meta data", "role mapping content");
+        verify(groupPersistenceService).populateGroupAppTemplate(mockGroup, "testApp.properties", "properties content meta data",
+                "properties content");
     }
 
     @Test
     public void testPopulateGroupAppTemplate() {
         Group mockGroup = mock(Group.class);
         when(groupPersistenceService.getGroup(anyString())).thenReturn(mockGroup);
-        when(groupPersistenceService.populateGroupAppTemplate(any(Group.class), anyString(), anyString())).thenReturn(mockGroup);
+        when(groupPersistenceService.populateGroupAppTemplate(any(Group.class), anyString(), anyString(), anyString())).thenReturn(mockGroup);
         when(groupPersistenceService.getGroupAppResourceTemplate(anyString(), anyString())).thenReturn("template content");
-        groupService.populateGroupAppTemplate("testGroup", "hct.xml", "template content");
+        groupService.populateGroupAppTemplate("testGroup", "hct.xml", "hct meta data", "template content");
 
-        verify(groupPersistenceService).populateGroupAppTemplate(mockGroup, "hct.xml", "template content");
+        verify(groupPersistenceService).populateGroupAppTemplate(mockGroup, "hct.xml", "hct meta data", "template content");
     }
 
     @Test

@@ -34,7 +34,7 @@ public class UploadAppTemplateRequest implements Serializable, Request {
     }
 
     public UploadAppTemplateRequest(final Application application, final String name, final String confFileName,
-                                    final String jvmName, final InputStream data, final String metaData) {
+                                    final String jvmName, final String metaData, final InputStream data) {
 
         this.application = application;
         this.fileName = name;

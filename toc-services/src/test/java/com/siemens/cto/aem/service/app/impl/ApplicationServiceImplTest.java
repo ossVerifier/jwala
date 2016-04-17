@@ -632,6 +632,7 @@ public class ApplicationServiceImplTest {
         when(fileManager.getResourceTypeTemplate(anyString())).thenReturn("testTemplate.tpl");
 
         applicationService.createAppConfigTemplateForJvm(mockJvm, app, groupId);
-        verify(applicationPersistenceService).createApplicationConfigTemplateForJvm("testJvmName", app, groupId, "testTemplate.tpl");
+        verify(applicationPersistenceService).createApplicationConfigTemplateForJvm("testJvmName", app, groupId, "",
+                "testTemplate.tpl");
     }
 }

@@ -146,11 +146,12 @@ public class ApplicationCrudServiceImpl extends AbstractCrudServiceImpl<JpaAppli
     @Override
     public void createConfigTemplate(final JpaApplication app,
                                      final String resourceTemplateName,
-                                     final String resourceTemplateContent,
+                                     final String metaData, final String resourceTemplateContent,
                                      final JpaJvm jvm) {
         final JpaApplicationConfigTemplate template = new JpaApplicationConfigTemplate();
         template.setApplication(app);
         template.setTemplateName(resourceTemplateName);
+        template.setMetaData(metaData);
         template.setTemplateContent(resourceTemplateContent);
         template.setJvm(jvm);
         entityManager.persist(template);

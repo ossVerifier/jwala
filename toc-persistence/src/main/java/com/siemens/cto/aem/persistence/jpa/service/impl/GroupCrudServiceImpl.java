@@ -325,7 +325,8 @@ public class GroupCrudServiceImpl extends AbstractCrudServiceImpl<JpaGroup> impl
     }
 
     @Override
-    public void populateGroupAppTemplate(JpaGroup group, String templateFileName, String templateContent) {
+    public void populateGroupAppTemplate(final JpaGroup group, final String templateFileName, final String metaData,
+                                         final String templateContent) {
         Query query = entityManager.createQuery("SELECT t FROM JpaGroupAppConfigTemplate t where t.templateName = :tempName and t.grp.name = :grpName");
         query.setParameter("grpName", group.getName());
         query.setParameter("tempName", templateFileName);
@@ -340,6 +341,7 @@ public class GroupCrudServiceImpl extends AbstractCrudServiceImpl<JpaGroup> impl
             jpaConfigTemplate = new JpaGroupAppConfigTemplate();
             jpaConfigTemplate.setJpaGroup(group);
             jpaConfigTemplate.setTemplateName(templateFileName);
+            jpaConfigTemplate.setMetaData(metaData);
             jpaConfigTemplate.setTemplateContent(templateContent);
             entityManager.persist(jpaConfigTemplate);
             entityManager.flush();

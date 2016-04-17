@@ -82,7 +82,7 @@ public interface GroupService {
 
     String updateGroupWebServerResourceTemplate(String groupName, String resourceTemplateName, String content);
 
-    void populateGroupAppTemplates(Application application, String appContext, String roleMappingProperties, String appProperties);
+    void populateGroupAppTemplates(Application application, String appContextMetaData, String appContext, String roleMappingPropsMetaData, String roleMappingProperties, String appPropsMetaData, String appProperties);
 
     List<String> getGroupAppsResourceTemplateNames(String groupName);
 
@@ -92,7 +92,7 @@ public interface GroupService {
 
     String previewGroupAppResourceTemplate(String groupName, String resourceTemplateName, String template);
 
-    String populateGroupAppTemplate(String groupName, String templateName, String content);
+    String populateGroupAppTemplate(String groupName, String templateName, String metaData, String content);
 
     String getAppNameFromResourceTemplate(String resourceTemplateName);
 
