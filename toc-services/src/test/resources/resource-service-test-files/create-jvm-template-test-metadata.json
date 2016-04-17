@@ -1,0 +1,12 @@
+{
+  "name": "Server XML",
+  "templateName": "server.xml.tpl",
+  "contentType": "text/xml",
+  "configFileName":"server.xml",
+  "relativeDir":"/conf",
+  "entity": {
+    "type": "JVM",
+    "group": "HEALTH CHECK 4.0",
+    "target": "some jvm"
+  }
+}

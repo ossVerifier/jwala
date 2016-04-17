@@ -22,7 +22,9 @@ import com.siemens.cto.aem.persistence.jpa.service.GroupJvmRelationshipService;
 import com.siemens.cto.aem.persistence.jpa.service.HistoryCrudService;
 import com.siemens.cto.aem.persistence.jpa.service.JvmCrudService;
 import com.siemens.cto.aem.persistence.jpa.service.impl.GroupJvmRelationshipServiceImpl;
+import com.siemens.cto.aem.persistence.service.ApplicationPersistenceService;
 import com.siemens.cto.aem.persistence.service.JvmPersistenceService;
+import com.siemens.cto.aem.persistence.service.WebServerPersistenceService;
 import com.siemens.cto.aem.persistence.service.impl.JpaJvmPersistenceServiceImpl;
 import com.siemens.cto.aem.service.HistoryService;
 import com.siemens.cto.aem.service.MessagingService;
@@ -275,9 +277,12 @@ public class AemServiceConfiguration implements SchedulingConfigurer {
     }
 
     @Bean(name = "resourceService")
-    public ResourceService getResourceService() {
+    public ResourceService getResourceService(final ApplicationPersistenceService applicationPersistenceService,
+                                              final JvmPersistenceService jvmPersistenceService,
+                                              final WebServerPersistenceService webServerPersistenceService) {
         return new ResourceServiceImpl(fileManager, harmonyTemplateEngine, persistenceServiceConfiguration.getResourcePersistenceService(),
-                persistenceServiceConfiguration.getGroupPersistenceService());
+                persistenceServiceConfiguration.getGroupPersistenceService(), applicationPersistenceService, jvmPersistenceService,
+                webServerPersistenceService);
     }
 
     @Bean(name = "webServerHttpRequestFactory")

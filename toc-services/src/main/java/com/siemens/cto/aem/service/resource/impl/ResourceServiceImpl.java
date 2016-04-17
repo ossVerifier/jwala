@@ -54,13 +54,10 @@ public class ResourceServiceImpl implements ResourceService {
     @Autowired
     private ApplicationService applicationService;
 
-    @Autowired // TODO: Instantiate in the constructor...
     private ApplicationPersistenceService applicationPersistenceService;
 
-    @Autowired  // TODO: Instantiate in the constructor...
     private JvmPersistenceService jvmPersistenceService;
 
-    @Autowired  // TODO: Instantiate in the constructor...
     private WebServerPersistenceService webServerPersistenceService;
 
     @Value("${paths.resource-types}")
@@ -70,14 +67,19 @@ public class ResourceServiceImpl implements ResourceService {
             final FileManager theFileManager,
             final HarmonyTemplateEngine harmonyTemplateEngine,
             final ResourcePersistenceService resourcePersistenceService,
-            final GroupPersistenceService groupPersistenceService
-            ) {
+            final GroupPersistenceService groupPersistenceService,
+            final ApplicationPersistenceService applicationPersistenceService,
+            final JvmPersistenceService jvmPersistenceService,
+            final WebServerPersistenceService webServerPersistenceService) {
         fileManager = theFileManager;
         templateEngine = harmonyTemplateEngine;
         this.resourcePersistenceService = resourcePersistenceService;
         this.groupPersistenceService = groupPersistenceService;
         expressionParser = new SpelExpressionParser();
         encryptExpression = expressionParser.parseExpression(encryptExpressionString);
+        this.applicationPersistenceService = applicationPersistenceService;
+        this.jvmPersistenceService = jvmPersistenceService;
+        this.webServerPersistenceService = webServerPersistenceService;
     }
 
     @Override
