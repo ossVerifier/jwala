@@ -1,0 +1,12 @@
+{
+  "name": "Application Context",
+  "templateName": "app.xml.tpl",
+  "contentType": "text/xml",
+  "configFileName":"app.xml",
+  "relativeDir":"/conf",
+  "entity": {
+    "type": "GROUPED_APPS",
+    "group": "HEALTH CHECK 4.0",
+    "target": "some application"
+  }
+}

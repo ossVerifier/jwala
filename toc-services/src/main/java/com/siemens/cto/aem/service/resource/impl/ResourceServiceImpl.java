@@ -216,7 +216,7 @@ public class ResourceServiceImpl implements ResourceService {
                 case APP:
                     responseWrapper = createApplicationTemplate(resourceTemplateMetaData, templateData);
                     break;
-                case APPS:
+                case GROUPED_APPS:
                     responseWrapper = createGroupedApplicationsTemplate(resourceTemplateMetaData, templateData);
                     break;
                 default:
@@ -380,14 +380,15 @@ public class ResourceServiceImpl implements ResourceService {
             // Since we're just creating the same template for all the JVMs, we just keep one copy of the created
             // configuration template.
             createdConfigTemplate = applicationService.uploadAppTemplate(uploadAppTemplateRequest);
-
-            try {
-                group = groupPersistenceService.populateGroupAppTemplate(group, metaData.getConfigFileName(),
-                        convertResourceTemplateMetaDataToJson(metaData), IOUtils.toString(templateData));
-            } catch (final IOException ioe) {
-                throw new ResourceServiceException(ioe);
-            }
         }
+
+        try {
+            groupPersistenceService.populateGroupAppTemplate(group, metaData.getConfigFileName(),
+                    convertResourceTemplateMetaDataToJson(metaData), IOUtils.toString(templateData));
+        } catch (final IOException ioe) {
+            throw new ResourceServiceException(ioe);
+        }
+
         return new CreateResourceTemplateApplicationResponseWrapper(createdConfigTemplate);
     }
 

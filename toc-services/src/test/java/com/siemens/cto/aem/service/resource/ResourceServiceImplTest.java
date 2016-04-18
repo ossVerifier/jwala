@@ -1,5 +1,6 @@
 package com.siemens.cto.aem.service.resource;
 
+import com.siemens.cto.aem.common.domain.model.app.Application;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.common.request.app.UploadAppTemplateRequest;
@@ -303,5 +304,23 @@ public class ResourceServiceImplTest {
         resourceService.createTemplate(metaDataIn, templateIn);
         verify(mockAppPersistenceService).getApplication("some application");
         verify(mockAppService).uploadAppTemplate(any(UploadAppTemplateRequest.class));
+    }
+
+    @Test
+    public void testCreateGroupedAppsTemplate() {
+        final InputStream metaDataIn = this.getClass().getClassLoader()
+                .getResourceAsStream("resource-service-test-files/create-grouped-apps-template-test-metadata.json");
+        final InputStream templateIn = this.getClass().getClassLoader()
+                .getResourceAsStream("resource-service-test-files/httpd.conf.tpl");
+
+        final List<Application> appList = new ArrayList<>();
+        appList.add(mock(Application.class));
+        appList.add(mock(Application.class));
+        when(mockAppPersistenceService.findApplicationsBelongingTo(eq("HEALTH CHECK 4.0"))).thenReturn(appList);
+        final Group mockGroup = mock(Group.class);
+        when(mockGroupPesistenceService.getGroup(eq("HEALTH CHECK 4.0"))).thenReturn(mockGroup);
+        resourceService.createTemplate(metaDataIn, templateIn);
+        verify(mockAppService, new Times(2)).uploadAppTemplate(any(UploadAppTemplateRequest.class));
+        verify(mockGroupPesistenceService).populateGroupAppTemplate(eq(mockGroup), anyString(), anyString(), anyString());
     }
 }
