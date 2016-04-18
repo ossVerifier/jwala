@@ -35,7 +35,7 @@ public class JpaGroup extends AbstractEntity<JpaGroup> {
     @Column(nullable = false, unique = true)
     public String name;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "GRP_JVM",
                joinColumns = {@JoinColumn(name = "GROUP_ID", referencedColumnName = "ID")},
                inverseJoinColumns = {@JoinColumn(name = "JVM_ID", referencedColumnName = "ID")},
