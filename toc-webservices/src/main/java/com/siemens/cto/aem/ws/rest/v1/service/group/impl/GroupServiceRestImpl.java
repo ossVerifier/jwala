@@ -242,10 +242,10 @@ public class GroupServiceRestImpl implements GroupServiceRest {
                     });
                     futureContents.add(futureContent);
                 }
+                waitForDeployToComplete(futureContents);
             } else {
                 LOGGER.info("No Web Servers to update in group {}", groupName);
             }
-            waitForDeployToComplete(futureContents);
 
             LOGGER.info("Update SUCCESSFUL");
             return ResponseBuilder.ok(updatedContent);
@@ -387,10 +387,10 @@ public class GroupServiceRestImpl implements GroupServiceRest {
                     });
                     futureContents.add(futureContent);
                 }
+                waitForDeployToComplete(futureContents);
             } else {
                 LOGGER.info("No JVMs to update in group {}", groupName);
             }
-            waitForDeployToComplete(futureContents);
 
             LOGGER.info("Update SUCCESSFUL");
             return ResponseBuilder.ok(updatedContent);

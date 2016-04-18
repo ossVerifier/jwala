@@ -486,6 +486,10 @@ public class GroupServiceRestImplTest {
     public void testPreviewJvmTemplate() {
         Response response = groupServiceRest.previewGroupJvmResourceTemplate(group.getName(), "server.xml");
         assertNotNull(response);
+
+        when(mockGroupService.previewGroupJvmResourceTemplate(anyString(), anyString())).thenThrow(new RuntimeException());
+        response = groupServiceRest.previewGroupJvmResourceTemplate(group.getName(), "server.xml");
+        assertTrue(response.getStatus() > 499);
     }
 
     @Test
@@ -590,6 +594,17 @@ public class GroupServiceRestImplTest {
     }
 
     @Test
+    public void testUpdateGroupWebServerTemplateNoWebServers() {
+        Group mockGroupNoWebServers = mock(Group.class);
+        when(mockGroupNoWebServers.getWebServers()).thenReturn(null);
+        when(mockGroupService.updateGroupWebServerResourceTemplate(anyString(), anyString(), anyString())).thenReturn("no content updated");
+        when(mockGroupService.getGroup(anyString())).thenReturn(mockGroupNoWebServers);
+        when(mockGroupService.getGroupWithWebServers(any(Identifier.class))).thenReturn(mockGroupNoWebServers);
+        Response response = groupServiceRest.updateGroupWebServerResourceTemplate("groupName", "resourceTemplateName.txt", "no content");
+        assertTrue(response.getStatus() > 199 && response.getStatus() < 300);
+    }
+
+    @Test
     public void testUploadGroupWebServerConfigTemplate() throws Exception {
         final MessageContext msgContextMock = mock(MessageContext.class);
         final HttpHeaders httpHeadersMock = mock(HttpHeaders.class);
@@ -653,6 +668,16 @@ public class GroupServiceRestImplTest {
 
         groupServiceRest.uploadGroupJvmConfigTemplate("any", authenticatedUser, "any");
         verify(mockGroupService).populateGroupJvmTemplates(anyString(), anyList(), any(User.class));
+    }
+
+    @Test
+    public void testTestUpdateGroupJvmTemplateNoJvms() {
+        when(mockGroupService.updateGroupJvmResourceTemplate(anyString(), anyString(), anyString())).thenReturn("no content updated");
+        Group mockGroupNoJvms = mock(Group.class);
+        when(mockGroupNoJvms.getJvms()).thenReturn(null);
+        when(mockGroupService.getGroup(anyString())).thenReturn(mockGroupNoJvms);
+        Response response = groupServiceRest.updateGroupJvmResourceTemplate("groupName", "resourceTemplateName.xml", "no content");
+        assertTrue(response.getStatus() > 199 && response.getStatus() < 300);
     }
 
     @Test

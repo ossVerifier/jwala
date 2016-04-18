@@ -210,6 +210,19 @@ public class GroupServiceImplDeployTest {
         }
     }
 
+    @Test (expected = InternalErrorException.class)
+    public void testGenerateAndDeployGroupWebServerFileWithWebServerStarted() {
+        Group mockGroup = mock(Group.class);
+        WebServer mockWebServer = mock(WebServer.class);
+        Set<WebServer> webServerSet = new HashSet<>();
+        webServerSet.add(mockWebServer);
+        when(mockGroupService.getGroupWithWebServers(any(Identifier.class))).thenReturn(mockGroup);
+        when(mockGroupService.getGroup(anyString())).thenReturn(mockGroup);
+        when(mockGroupService.getGroupWebServerResourceTemplate(anyString(), anyString(), anyBoolean())).thenReturn("Httpd.conf template content");
+        when(mockGroup.getWebServers()).thenReturn(webServerSet);
+        when(mockWebServerService.isStarted(any(WebServer.class))).thenReturn(true);
+        groupServiceRest.generateAndDeployGroupWebServersFile("groupName", mockAuthUser);
+    }
     @Test
     public void testGroupAppDeploy() throws CommandFailureException {
         Group mockGroup = mock(Group.class);
@@ -287,6 +300,28 @@ public class GroupServiceImplDeployTest {
         assertNotNull(response);
     }
 
+    @Test (expected = InternalErrorException.class)
+    public void testGenerateGroupWebServersWithWebServerStarted() {
+        Group mockGroup = mock(Group.class);
+        Set<WebServer> webServersSet = new HashSet<>();
+        WebServer mockWebServer = mock(WebServer.class);
+        webServersSet.add(mockWebServer);
+        when(mockGroup.getWebServers()).thenReturn(webServersSet);
+        when(mockWebServerService.isStarted(any(WebServer.class))).thenReturn(true);
+        when(mockGroupService.getGroupWithWebServers(any(Identifier.class))).thenReturn(mockGroup);
+        groupServiceRest.generateGroupWebservers(new Identifier<Group>(111L), mockAuthUser);
+    }
+
+    @Test
+    public void testGenerateGroupWebServersWithNoWebServers() {
+        Group mockGroup = mock(Group.class);
+        Set<WebServer> webServersSet = new HashSet<>();
+        when(mockGroup.getWebServers()).thenReturn(webServersSet);
+        when(mockGroupService.getGroupWithWebServers(any(Identifier.class))).thenReturn(mockGroup);
+        Response response = groupServiceRest.generateGroupWebservers(new Identifier<Group>(111L), mockAuthUser);
+        assertTrue(response.getStatus() > 199 && response.getStatus() < 300);
+    }
+
     @Test
     public void testGenerateAndDeployJvms() throws CommandFailureException {
         reset(mockGroupService);
@@ -314,6 +349,28 @@ public class GroupServiceImplDeployTest {
 
         Response response = groupServiceRest.generateGroupJvms(new Identifier<Group>(111L), mockAuthUser);
         assertNotNull(response);
+    }
+
+    @Test
+    public void testGenerateAndDeployJvmsNoJvms() {
+        Group mockGroup = mock(Group.class);
+        when(mockGroup.getJvms()).thenReturn(new HashSet<Jvm>());
+        when(mockGroupService.getGroup(any(Identifier.class))).thenReturn(mockGroup);
+        Response response = groupServiceRest.generateGroupJvms(new Identifier<Group>(11212L), mockAuthUser);
+        assertTrue(response.getStatus() > 199 && response.getStatus() < 300);
+
+    }
+
+    @Test (expected = InternalErrorException.class)
+    public void testGenerateGroupJvmsWithJvmStarted() {
+        Group mockGroup = mock(Group.class);
+        Set<Jvm> jvmSet = new HashSet<>();
+        Jvm mockJvm = mock(Jvm.class);
+        jvmSet.add(mockJvm);
+        when(mockJvm.getState()).thenReturn(JvmState.JVM_STARTED);
+        when(mockGroup.getJvms()).thenReturn(jvmSet);
+        when(mockGroupService.getGroup(any(Identifier.class))).thenReturn(mockGroup);
+        groupServiceRest.generateGroupJvms(new Identifier<Group>(111L), mockAuthUser);
     }
 
     @Test
