@@ -2,6 +2,8 @@ package com.siemens.cto.aem.service.resource;
 
 import com.siemens.cto.aem.common.domain.model.app.Application;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.common.domain.model.resource.Entity;
+import com.siemens.cto.aem.common.domain.model.resource.EntityType;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.common.request.app.UploadAppTemplateRequest;
 import com.siemens.cto.aem.common.request.jvm.UploadJvmConfigTemplateRequest;
@@ -14,6 +16,7 @@ import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateRequest;
 import com.siemens.cto.aem.persistence.service.*;
 import com.siemens.cto.aem.service.app.ApplicationService;
+import com.siemens.cto.aem.service.exception.ResourceServiceException;
 import com.siemens.cto.aem.service.resource.impl.ResourceServiceImpl;
 import com.siemens.cto.aem.template.HarmonyTemplate;
 import com.siemens.cto.aem.template.HarmonyTemplateEngine;
@@ -333,5 +336,22 @@ public class ResourceServiceImplTest {
         verify(mockGroupPesistenceService).removeAppTemplate(eq("some-template-name"));
         verify(mockGroupPesistenceService).removeJvmTemplate(eq("some-template-name"));
         verify(mockGroupPesistenceService).removeWeServerTemplate(eq("some-template-name"));
+    }
+
+    @Test
+    public void testRemoveTemplateGroupedJvms() {
+        resourceService.removeTemplate("HCT GROUP", EntityType.GROUPED_JVMS, "some-template-name");
+        verify(mockGroupPesistenceService).removeJvmTemplate(eq("HCT GROUP"), eq("some-template-name"));
+    }
+
+    @Test
+    public void testRemoveTemplateGroupedWebServers() {
+        resourceService.removeTemplate("HCT GROUP", EntityType.GROUPED_WEBSERVERS, "some-template-name");
+        verify(mockGroupPesistenceService).removeWeServerTemplate(eq("HCT GROUP"), eq("some-template-name"));
+    }
+
+    @Test(expected = ResourceServiceException.class)
+    public void testRemoveTemplateResourceServiceEx() {
+        resourceService.removeTemplate("HCT GROUP", EntityType.WEB_SERVER, "some-template-name");
     }
 }

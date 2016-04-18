@@ -49,7 +49,7 @@ public class JschRemoteCommandExecutorServiceImpl implements RemoteCommandExecut
     }
 
     @Override
-    public RemoteCommandReturnInfo executeCommand(RemoteExecCommand remoteExecCommand) {
+    public RemoteCommandReturnInfo executeCommand(final RemoteExecCommand remoteExecCommand) {
         ChannelShell channel = null;
         ChannelSessionKey channelSessionKey = new ChannelSessionKey(remoteExecCommand.getRemoteSystemConnection(), ChannelType.SHELL);
         LOGGER.debug("channel session key = {}", channelSessionKey);
@@ -66,20 +66,22 @@ public class JschRemoteCommandExecutorServiceImpl implements RemoteCommandExecut
                 channel = (ChannelShell) channelPool.borrowObject(channelSessionKey);
                 LOGGER.debug("channel {} borrowed", channel.getId());
 
-                in = channel.getInputStream();
-                out = channel.getOutputStream();
-                if (!channel.isConnected()) {
-                    try {
-                        LOGGER.debug("channel {} connecting...");
-                        channel.connect(CHANNEL_CONNECT_TIMEOUT);
-                        LOGGER.debug("channel {} connected!", channel.getId());
-                    } catch (final JSchException jsche) {
-                        LOGGER.error("Borrowed channel {} connection failed! Invalidating the channel!",
-                                channel.getId(), jsche);
-                        channelPool.invalidateObject(channelSessionKey, channel);
+                if (channel != null) {
+                    in = channel.getInputStream();
+                    out = channel.getOutputStream();
+                    if (!channel.isConnected()) {
+                        try {
+                            LOGGER.debug("channel {} connecting...");
+                            channel.connect(CHANNEL_CONNECT_TIMEOUT);
+                            LOGGER.debug("channel {} connected!", channel.getId());
+                        } catch (final JSchException jsche) {
+                            LOGGER.error("Borrowed channel {} connection failed! Invalidating the channel!",
+                                    channel.getId(), jsche);
+                            channelPool.invalidateObject(channelSessionKey, channel);
+                        }
+                    } else {
+                        LOGGER.debug("Channel {} already connected!", channel.getId());
                     }
-                } else {
-                    LOGGER.debug("Channel {} already connected!", channel.getId());
                 }
             }
 
