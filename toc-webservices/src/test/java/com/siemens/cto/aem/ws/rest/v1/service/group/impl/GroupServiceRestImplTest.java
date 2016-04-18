@@ -697,6 +697,18 @@ public class GroupServiceRestImplTest {
         assertEquals(Response.Status.NO_CONTENT.getStatusCode(), resp.getStatus());
     }
 
+    @Test
+    public void testGetStartedWebServersAndJvmCounts() {
+        when(mockGroupService.getGroups()).thenReturn(new ArrayList<>(groups));
+        when(mockJvmService.getJvmStartedCount(anyString())).thenReturn(0L);
+        when(mockJvmService.getJvmCount(anyString())).thenReturn(1L);
+        when(mockWebServerService.getWebServerStartedCount(anyString())).thenReturn(0L);
+        when(mockWebServerService.getWebServerCount(anyString())).thenReturn(1L);
+
+        Response response = groupServiceRest.getStartedWebServersAndJvmsCount();
+        assertNotNull(response.getEntity());
+    }
+
     /**
      * Instead of mocking the ServletInputStream, let's extend it instead.
      *
