@@ -3,7 +3,7 @@ package com.siemens.cto.aem.service.state.impl;
 import com.siemens.cto.aem.service.state.InMemoryStateManagerService;
 import org.junit.Test;
 
-import static org.jgroups.util.Util.assertEquals;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
