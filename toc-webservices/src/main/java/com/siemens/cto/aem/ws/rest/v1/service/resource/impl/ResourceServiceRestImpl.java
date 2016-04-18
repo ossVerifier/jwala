@@ -112,6 +112,7 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
                         "Invalid number of attachments! 2 attachments is expected by the service."));
             }
         } catch (final ResourceServiceException rse) {
+            LOGGER.error("Remove template failed!", rse);
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR,
                     new FaultCodeException(AemFaultType.SERVICE_EXCEPTION, rse.getMessage()));
         }
@@ -122,6 +123,7 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
         try {
             return ResponseBuilder.ok(resourceService.removeTemplate(name));
         } catch (final ResourceServiceException rse) {
+            LOGGER.error("Remove template failed!", rse);
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR,
                     new FaultCodeException(AemFaultType.PERSISTENCE_ERROR, rse.getMessage()));
         }
@@ -133,6 +135,7 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
         try {
             return ResponseBuilder.ok(resourceService.removeTemplate(groupName, entityType, templateNames));
         } catch (final ResourceServiceException rse) {
+            LOGGER.error("Remove template failed!", rse);
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR,
                     new FaultCodeException(AemFaultType.PERSISTENCE_ERROR, rse.getMessage()));
         }
@@ -144,6 +147,7 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
         try {
             return ResponseBuilder.ok(resourceService.removeTemplate(entityType, entityName, templateNames));
         } catch (final ResourceServiceException rse) {
+            LOGGER.error("Remove template failed!", rse);
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR,
                     new FaultCodeException(AemFaultType.PERSISTENCE_ERROR, rse.getMessage()));
         }
