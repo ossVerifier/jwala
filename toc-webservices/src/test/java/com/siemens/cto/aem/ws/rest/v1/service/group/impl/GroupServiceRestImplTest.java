@@ -447,6 +447,14 @@ public class GroupServiceRestImplTest {
     }
 
     @Test
+    public void testPreviewWebServerTemplateThrowsRuntimeException() {
+        when(mockGroupService.previewGroupWebServerResourceTemplate(anyString(), anyString())).thenThrow(new RuntimeException());
+        Response response = groupServiceRest.previewGroupWebServerResourceTemplate(group.getName(), "httpd.conf");
+        assertNotNull(response);
+        assertTrue(response.getStatus() > 499);
+    }
+
+    @Test
     public void testGetWebServerTemplate() {
         Response response = groupServiceRest.getGroupWebServerResourceTemplate(group.getName(), "httpd.conf", false);
         assertNotNull(response);

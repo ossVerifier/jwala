@@ -159,6 +159,15 @@ public class GroupServiceImplDeployTest {
         Response returnedResponse = groupServiceRest.generateAndDeployGroupJvmFile("testGroup", "server.xml", mockAuthUser);
         assertEquals(200, returnedResponse.getStatusInfo().getStatusCode());
 
+        boolean internalError = false;
+        when(mockJvm.getState()).thenReturn(JvmState.JVM_STARTED);
+        try {
+            groupServiceRest.generateAndDeployGroupJvmFile("testGroup", "server.xml", mockAuthUser);
+        } catch (InternalErrorException iee) {
+            internalError = true;
+        }
+        assertTrue(internalError);
+
         FileUtils.deleteDirectory(new File("./src/test/resources/jvm-resources_test/" + mockJvm.getJvmName()));
     }
 
