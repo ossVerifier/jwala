@@ -27,7 +27,6 @@ import org.apache.commons.io.IOUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.expression.Expression;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
@@ -51,7 +50,6 @@ public class ResourceServiceImpl implements ResourceService {
 
     private final String encryptExpressionString="new com.siemens.cto.infrastructure.StpCryptoService().encryptToBase64( #stringToEncrypt )";
 
-    @Autowired
     private ApplicationService applicationService;
 
     private ApplicationPersistenceService applicationPersistenceService;
@@ -69,6 +67,7 @@ public class ResourceServiceImpl implements ResourceService {
             final ResourcePersistenceService resourcePersistenceService,
             final GroupPersistenceService groupPersistenceService,
             final ApplicationPersistenceService applicationPersistenceService,
+            final ApplicationService applicationService,
             final JvmPersistenceService jvmPersistenceService,
             final WebServerPersistenceService webServerPersistenceService) {
         fileManager = theFileManager;
@@ -78,6 +77,7 @@ public class ResourceServiceImpl implements ResourceService {
         expressionParser = new SpelExpressionParser();
         encryptExpression = expressionParser.parseExpression(encryptExpressionString);
         this.applicationPersistenceService = applicationPersistenceService;
+        this.applicationService = applicationService;
         this.jvmPersistenceService = jvmPersistenceService;
         this.webServerPersistenceService = webServerPersistenceService;
     }

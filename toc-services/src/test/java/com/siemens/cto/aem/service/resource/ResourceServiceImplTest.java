@@ -2,8 +2,8 @@ package com.siemens.cto.aem.service.resource;
 
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
+import com.siemens.cto.aem.common.request.app.UploadAppTemplateRequest;
 import com.siemens.cto.aem.common.request.jvm.UploadJvmConfigTemplateRequest;
-import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
 import com.siemens.cto.aem.common.request.resource.ResourceInstanceRequest;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
@@ -12,6 +12,7 @@ import com.siemens.cto.aem.common.domain.model.resource.ResourceType;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateRequest;
 import com.siemens.cto.aem.persistence.service.*;
+import com.siemens.cto.aem.service.app.ApplicationService;
 import com.siemens.cto.aem.service.resource.impl.ResourceServiceImpl;
 import com.siemens.cto.aem.template.HarmonyTemplate;
 import com.siemens.cto.aem.template.HarmonyTemplateEngine;
@@ -59,6 +60,9 @@ public class ResourceServiceImplTest {
     @Mock
     private WebServerPersistenceService mockWebServerPersistenceService;
 
+    @Mock
+    private ApplicationService mockAppService;
+
     private ResourceService resourceService;
 
     @Before
@@ -67,7 +71,7 @@ public class ResourceServiceImplTest {
         // initialized here. This makes sure that unrelated tests don't affect each other.
         MockitoAnnotations.initMocks(this);
         resourceService = new ResourceServiceImpl(mockFileManager, mockHarmonyTemplateEngine, mockResourcePersistenceService,
-                mockGroupPesistenceService, mockAppPersistenceService, mockJvmPersistenceService,
+                mockGroupPesistenceService, mockAppPersistenceService, mockAppService, mockJvmPersistenceService,
                 mockWebServerPersistenceService);
     }
 
@@ -288,5 +292,16 @@ public class ResourceServiceImplTest {
         resourceService.createTemplate(metaDataIn, templateIn);
         verify(mockWebServerPersistenceService, new Times(2)).uploadWebserverConfigTemplate(any(UploadWebServerTemplateRequest.class));
         verify(mockGroupPesistenceService).populateGroupWebServerTemplates(eq("HEALTH CHECK 4.0"), any(List.class));
+    }
+
+    @Test
+    public void testCreateAppTemplate() {
+        final InputStream metaDataIn = this.getClass().getClassLoader()
+                .getResourceAsStream("resource-service-test-files/create-app-template-test-metadata.json");
+        final InputStream templateIn = this.getClass().getClassLoader()
+                .getResourceAsStream("resource-service-test-files/app.xml.tpl");
+        resourceService.createTemplate(metaDataIn, templateIn);
+        verify(mockAppPersistenceService).getApplication("some application");
+        verify(mockAppService).uploadAppTemplate(any(UploadAppTemplateRequest.class));
     }
 }

@@ -279,10 +279,11 @@ public class AemServiceConfiguration implements SchedulingConfigurer {
     @Bean(name = "resourceService")
     public ResourceService getResourceService(final ApplicationPersistenceService applicationPersistenceService,
                                               final JvmPersistenceService jvmPersistenceService,
-                                              final WebServerPersistenceService webServerPersistenceService) {
+                                              final WebServerPersistenceService webServerPersistenceService,
+                                              final ApplicationService applicationService) {
         return new ResourceServiceImpl(fileManager, harmonyTemplateEngine, persistenceServiceConfiguration.getResourcePersistenceService(),
-                persistenceServiceConfiguration.getGroupPersistenceService(), applicationPersistenceService, jvmPersistenceService,
-                webServerPersistenceService);
+                persistenceServiceConfiguration.getGroupPersistenceService(), applicationPersistenceService, applicationService,
+                jvmPersistenceService, webServerPersistenceService);
     }
 
     @Bean(name = "webServerHttpRequestFactory")
