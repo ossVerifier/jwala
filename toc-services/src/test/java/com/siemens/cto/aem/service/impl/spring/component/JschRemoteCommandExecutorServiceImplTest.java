@@ -2,13 +2,11 @@ package com.siemens.cto.aem.service.impl.spring.component;
 
 import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.ChannelShell;
-import com.jcraft.jsch.JSchException;
 import com.siemens.cto.aem.commandprocessor.jsch.impl.ChannelSessionKey;
 import com.siemens.cto.aem.common.exec.ExecCommand;
 import com.siemens.cto.aem.common.exec.RemoteExecCommand;
 import com.siemens.cto.aem.common.exec.RemoteSystemConnection;
 import com.siemens.cto.aem.service.RemoteCommandReturnInfo;
-import netscape.javascript.JSException;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.commons.pool2.impl.GenericKeyedObjectPool;
 import org.junit.Before;
