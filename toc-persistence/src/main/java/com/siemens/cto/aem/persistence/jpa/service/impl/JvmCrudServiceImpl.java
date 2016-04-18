@@ -215,6 +215,12 @@ public class JvmCrudServiceImpl extends AbstractCrudServiceImpl<JpaJvm> implemen
         }
     }
 
+    /**
+     * 
+     * @param jvmName
+     * @param groupName
+     * @return
+     */
     @Override
     public Jvm findJvm(final String jvmName, final String groupName) {
         final Query q = entityManager.createNamedQuery(JpaJvm.QUERY_FIND_JVM_BY_GROUP_AND_JVM_NAME);
