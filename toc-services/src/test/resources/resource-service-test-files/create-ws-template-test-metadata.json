@@ -1,0 +1,12 @@
+{
+  "name": "HTTPD Conf",
+  "templateName": "httpd.conf.tpl",
+  "contentType": "text/plain",
+  "configFileName":"httpd.conf",
+  "relativeDir":"/conf",
+  "entity": {
+    "type": "WEBSERVER",
+    "group": "HEALTH CHECK 4.0",
+    "target": "some webserver"
+  }
+}

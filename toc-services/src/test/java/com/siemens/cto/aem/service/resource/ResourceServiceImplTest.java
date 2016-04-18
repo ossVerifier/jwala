@@ -1,6 +1,7 @@
 package com.siemens.cto.aem.service.resource;
 
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.common.request.jvm.UploadJvmConfigTemplateRequest;
 import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
 import com.siemens.cto.aem.common.request.resource.ResourceInstanceRequest;
@@ -9,7 +10,7 @@ import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.resource.ResourceInstance;
 import com.siemens.cto.aem.common.domain.model.resource.ResourceType;
 import com.siemens.cto.aem.common.domain.model.user.User;
-import com.siemens.cto.aem.persistence.jpa.domain.resource.config.template.JpaJvmConfigTemplate;
+import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateRequest;
 import com.siemens.cto.aem.persistence.service.*;
 import com.siemens.cto.aem.service.resource.impl.ResourceServiceImpl;
 import com.siemens.cto.aem.template.HarmonyTemplate;
@@ -236,8 +237,6 @@ public class ResourceServiceImplTest {
                 .getResourceAsStream("resource-service-test-files/create-jvm-template-test-metadata.json");
         final InputStream templateIn = this.getClass().getClassLoader()
                 .getResourceAsStream("resource-service-test-files/server.xml.tpl");
-        when(mockJvmPersistenceService.findJvmByExactName(eq("some jvm"))).thenReturn(mock(Jvm.class));
-        when(mockJvmPersistenceService.uploadJvmTemplateXml(any(UploadJvmConfigTemplateRequest.class))).thenReturn(mock(JpaJvmConfigTemplate.class));
         resourceService.createTemplate(metaDataIn, templateIn);
         verify(mockJvmPersistenceService).findJvmByExactName("some jvm");
         verify(mockJvmPersistenceService).uploadJvmTemplateXml(any(UploadJvmConfigTemplateRequest.class));
@@ -259,5 +258,35 @@ public class ResourceServiceImplTest {
         resourceService.createTemplate(metaDataIn, templateIn);
         verify(mockJvmPersistenceService, new Times(2)).uploadJvmTemplateXml(any(UploadJvmConfigTemplateRequest.class));
         verify(mockGroupPesistenceService).populateGroupJvmTemplates(eq("HEALTH CHECK 4.0"), any(List.class));
+    }
+
+    @Test
+    public void testCreateWebServerTemplate() {
+        final InputStream metaDataIn = this.getClass().getClassLoader()
+                .getResourceAsStream("resource-service-test-files/create-ws-template-test-metadata.json");
+        final InputStream templateIn = this.getClass().getClassLoader()
+                .getResourceAsStream("resource-service-test-files/httpd.conf.tpl");
+        resourceService.createTemplate(metaDataIn, templateIn);
+        verify(mockWebServerPersistenceService).findWebServerByName("some webserver");
+        verify(mockWebServerPersistenceService).uploadWebserverConfigTemplate(any(UploadWebServerTemplateRequest.class));
+    }
+
+    @Test
+    public void testCreateGroupedWebServersTemplate() {
+        final InputStream metaDataIn = this.getClass().getClassLoader()
+                .getResourceAsStream("resource-service-test-files/create-grouped-ws-template-test-metadata.json");
+        final InputStream templateIn = this.getClass().getClassLoader()
+                .getResourceAsStream("resource-service-test-files/httpd.conf.tpl");
+
+        final Set<WebServer> webServerSet = new HashSet<>();
+        webServerSet.add(mock(WebServer.class));
+        webServerSet.add(mock(WebServer.class));
+        final Group mockGroup = mock(Group.class);
+        when(mockGroup.getWebServers()).thenReturn(webServerSet);
+        when(mockGroup.getName()).thenReturn("HEALTH CHECK 4.0");
+        when(mockGroupPesistenceService.getGroupWithWebServers(eq("HEALTH CHECK 4.0"))).thenReturn(mockGroup);
+        resourceService.createTemplate(metaDataIn, templateIn);
+        verify(mockWebServerPersistenceService, new Times(2)).uploadWebserverConfigTemplate(any(UploadWebServerTemplateRequest.class));
+        verify(mockGroupPesistenceService).populateGroupWebServerTemplates(eq("HEALTH CHECK 4.0"), any(List.class));
     }
 }

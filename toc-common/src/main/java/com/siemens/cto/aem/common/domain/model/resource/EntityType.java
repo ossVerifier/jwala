@@ -6,7 +6,7 @@ package com.siemens.cto.aem.common.domain.model.resource;
  * Created by JC043760 on 3/30/2016.
  */
 public enum EntityType {
-    JVM("JVM"), GROUPED_JVMS("GROUPED_JVMS"), WEB_SERVER("webServer"), WEB_SERVERS("webServers"), APP("application"), APPS("applications"),
+    JVM("JVM"), GROUPED_JVMS("GROUPED_JVMS"), WEB_SERVER("webServer"), GROUPED_WEBSERVERS("GROUPED_WEBSERVERS"), APP("application"), APPS("applications"),
     UNDEFINED(null);
 
     final private String entityTypeValue;

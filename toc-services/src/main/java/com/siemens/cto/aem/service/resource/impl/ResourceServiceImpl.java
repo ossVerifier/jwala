@@ -210,7 +210,7 @@ public class ResourceServiceImpl implements ResourceService {
                 case WEB_SERVER:
                     responseWrapper = createWebServerTemplate(resourceTemplateMetaData, templateData);
                     break;
-                case WEB_SERVERS:
+                case GROUPED_WEBSERVERS:
                     responseWrapper = createGroupedWebServersTemplate(resourceTemplateMetaData, templateData);
                     break;
                 case APP:
@@ -408,11 +408,11 @@ public class ResourceServiceImpl implements ResourceService {
                 case GROUPED_JVMS:
                     totalDeletedRecs = groupPersistenceService.removeJvmTemplate(groupName, templateName);
                     break;
-                case WEB_SERVERS:
+                case GROUPED_WEBSERVERS:
                     totalDeletedRecs = groupPersistenceService.removeWeServerTemplate(groupName, templateName);
                     break;
                 default:
-                    throw new ResourceServiceException("Invalid entity type parameter! Entity type can only be GROUPED_JVMS or WEB_SERVERS.");
+                    throw new ResourceServiceException("Invalid entity type parameter! Entity type can only be GROUPED_JVMS or GROUPED_WEBSERVERS.");
             }
         }
         return totalDeletedRecs;
@@ -427,11 +427,11 @@ public class ResourceServiceImpl implements ResourceService {
                 case GROUPED_JVMS:
                     totalDeletedRecs = jvmPersistenceService.removeTemplate(entityName, templateName);
                     break;
-                case WEB_SERVERS:
+                case GROUPED_WEBSERVERS:
                     totalDeletedRecs = webServerPersistenceService.removeTemplate(entityName, templateName);
                     break;
                 default:
-                    throw new ResourceServiceException("Invalid entity type parameter! Entity type can only be GROUPED_JVMS or WEB_SERVERS.");
+                    throw new ResourceServiceException("Invalid entity type parameter! Entity type can only be GROUPED_JVMS or GROUPED_WEBSERVERS.");
             }
         }
         return totalDeletedRecs;
