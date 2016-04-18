@@ -578,6 +578,15 @@ public class JvmServiceRestImplTest {
         FileUtils.deleteDirectory(new File("./" + jvm.getJvmName()));
     }
 
+    @Test (expected = InternalErrorException.class)
+    public void testGenerateAndDeployFileJvmStarted() {
+        Jvm mockJvm = mock(Jvm.class);
+        when(mockJvm.getState()).thenReturn(JvmState.JVM_STARTED);
+        when(mockJvm.getId()).thenReturn(new Identifier<Jvm>(11111L));
+        when(jvmService.getJvm(anyString())).thenReturn(mockJvm);
+        jvmServiceRest.generateAndDeployFile("jvmName", "fileName", true, authenticatedUser);
+    }
+
     @Test
     public void testUpdateResourceTemplate() {
         final String updateValue = "<server>update</server>";
@@ -632,6 +641,17 @@ public class JvmServiceRestImplTest {
 
         Response resp = jvmServiceRest.uploadConfigTemplate(jvm.getJvmName(), authenticatedUser, "ServerXMLTemplate.tpl");
         assertEquals(Response.Status.NO_CONTENT.getStatusCode(), resp.getStatus());
+    }
+
+    @Test
+    public void testCreateConfigFile() {
+        try {
+            jvmServiceRest.createConfigFile("./src/test/resources/", "testConfigFile.bat", "REM BAT ME");
+            FileUtils.forceDelete(new File("./src/test/resources/testConfigFile.bat"));
+        } catch (IOException e) {
+            e.printStackTrace();
+            assertFalse(true);
+        }
     }
 
     /**
