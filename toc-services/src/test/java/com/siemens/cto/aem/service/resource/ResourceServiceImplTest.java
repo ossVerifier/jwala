@@ -323,4 +323,15 @@ public class ResourceServiceImplTest {
         verify(mockAppService, new Times(2)).uploadAppTemplate(any(UploadAppTemplateRequest.class));
         verify(mockGroupPesistenceService).populateGroupAppTemplate(eq(mockGroup), anyString(), anyString(), anyString());
     }
+
+    @Test
+    public void testRemoveTemplate() {
+        resourceService.removeTemplate("some-template-name");
+        verify(mockAppPersistenceService).removeTemplate(eq("some-template-name"));
+        verify(mockJvmPersistenceService).removeTemplate(eq("some-template-name"));
+        verify(mockWebServerPersistenceService).removeTemplate(eq("some-template-name"));
+        verify(mockGroupPesistenceService).removeAppTemplate(eq("some-template-name"));
+        verify(mockGroupPesistenceService).removeJvmTemplate(eq("some-template-name"));
+        verify(mockGroupPesistenceService).removeWeServerTemplate(eq("some-template-name"));
+    }
 }
