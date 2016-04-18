@@ -812,11 +812,13 @@ public class GroupServiceRestImpl implements GroupServiceRest {
                 }
                 waitForDeployToComplete(new HashSet<>(futureMap.values()));
                 checkResponsesForErrorStatus(futureMap);
-            } else {
-                final String jvmName = jvms.iterator().next().getJvmName();
-                appServiceRest.updateResourceTemplate(appName, fileName, jvmName, groupName, groupAppTemplateContent);
-                appServiceRest.deployConf(appName, groupName, jvmName, fileName, aUser);
             }
+            // TODO replace with generic application config file implementation (use meta data to determine deployed file location)
+//            else {
+//                final String jvmName = jvms.iterator().next().getJvmName();
+//                appServiceRest.updateResourceTemplate(appName, fileName, jvmName, groupName, groupAppTemplateContent);
+//                appServiceRest.deployConf(appName, groupName, jvmName, fileName, aUser);
+//            }
         }
         return ResponseBuilder.ok(group);
     }

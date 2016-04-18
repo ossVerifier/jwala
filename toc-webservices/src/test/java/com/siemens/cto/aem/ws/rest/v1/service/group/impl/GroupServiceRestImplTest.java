@@ -649,6 +649,10 @@ public class GroupServiceRestImplTest {
     public void testPreviewGroupAppResourceTemplate() {
         groupServiceRest.previewGroupAppResourceTemplate("testGroup", "hct.xml", "preview me!");
         verify(mockGroupService).previewGroupAppResourceTemplate("testGroup", "hct.xml", "preview me!");
+
+        when(mockGroupService.previewGroupAppResourceTemplate(anyString(), anyString(), anyString())).thenThrow(new RuntimeException());
+        Response response = groupServiceRest.previewGroupAppResourceTemplate("testGroup", "hct.xml", "preview me!");
+        assertTrue(response.getStatus() > 499);
     }
 
     @Test
