@@ -240,6 +240,16 @@ public class GroupServiceImplDeployTest {
         } catch (InternalErrorException ie) {
             assertEquals(AemFaultType.REMOTE_COMMAND_FAILURE, ie.getMessageResponseStatus());
         }
+
+        boolean internalErrorException = false;
+        when(mockJvm.getState()).thenReturn(JvmState.JVM_STARTED);
+        try{
+            groupServiceRest.generateAndDeployGroupAppFile("testGroup", "hct.xml", mockAuthUser);
+        } catch (InternalErrorException ie) {
+            internalErrorException = true;
+            assertTrue(ie.getMessage().contains("All JVMs in the group must be stopped"));
+        }
+        assertTrue(internalErrorException);
     }
 
     @Test
@@ -317,6 +327,14 @@ public class GroupServiceImplDeployTest {
         when(mockGroupService.updateGroupAppResourceTemplate(anyString(), anyString(), anyString())).thenThrow(new ResourceTemplateUpdateException("testApp", "hct.xml"));
         response = groupServiceRest.updateGroupAppResourceTemplate("testGroup", "hct.xml", "newer hct.xml content");
         assertEquals(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), response.getStatus());
+
+        reset(mockGroupService);
+        when(mockGroupService.updateGroupAppResourceTemplate(anyString(), anyString(), anyString())).thenReturn("new hct.xml content");
+        when(mockGroupService.getAppNameFromResourceTemplate(anyString())).thenReturn("testApp");
+        when(mockGroupService.getGroup(anyString())).thenReturn(mockGroupWithJvms);
+        when(mockGroupWithJvms.getJvms()).thenReturn(null);
+        response = groupServiceRest.updateGroupAppResourceTemplate("testGroup", "hct.xml", "newer hct.xml content");
+        assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
     }
 
 

@@ -768,10 +768,10 @@ public class GroupServiceRestImpl implements GroupServiceRest {
                     });
                     futureContents.add(futureContent);
                 }
+                waitForDeployToComplete(futureContents);
             } else {
                 LOGGER.info("No JVMs to update in group {}", groupName);
             }
-            waitForDeployToComplete(futureContents);
 
             LOGGER.info("Update SUCCESSFUL");
             return ResponseBuilder.ok(updatedContent);
@@ -905,8 +905,8 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         Set<Jvm> jvms = group.getJvms();
         if (null != jvms && jvms.size() > 0) {
             for (final Jvm jvm : jvms) {
-                if (jvm.getState().isStartedState()){
-                    HashMap<String, String> notStopped= new HashMap<>();
+                if (jvm.getState().isStartedState()) {
+                    HashMap<String, String> notStopped = new HashMap<>();
                     notStopped.put("allStopped", Boolean.FALSE.toString());
                     notStopped.put("entityNotStopped", jvm.getJvmName());
                     return ResponseBuilder.ok(notStopped);
@@ -927,8 +927,8 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         Set<WebServer> webServers = group.getWebServers();
         if (null != webServers && webServers.size() > 0) {
             for (final WebServer webServer : webServers) {
-                if (webServerService.isStarted(webServer)){
-                    HashMap<String, String> notStopped= new HashMap<>();
+                if (webServerService.isStarted(webServer)) {
+                    HashMap<String, String> notStopped = new HashMap<>();
                     notStopped.put("allStopped", Boolean.FALSE.toString());
                     notStopped.put("entityNotStopped", webServer.getName());
                     return ResponseBuilder.ok(notStopped);
