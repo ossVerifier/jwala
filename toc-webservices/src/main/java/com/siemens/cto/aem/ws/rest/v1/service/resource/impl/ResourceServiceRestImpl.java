@@ -79,7 +79,7 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
             resourceService.deleteResources(groupName, resourceNames);
             return ResponseBuilder.ok();
         } catch (RuntimeException e) {
-            LOGGER.error("Could not remove resources {}", resourceNames);
+            LOGGER.error("Could not remove resources {}", resourceNames, e);
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR,
                     new FaultCodeException(AemFaultType.PERSISTENCE_ERROR, e.getMessage()));
         }
@@ -101,6 +101,7 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
                     try {
                         inputStreams[i] = handler.getInputStream();
                     } catch (final IOException ioe) {
+                        LOGGER.error("Create template failed!", ioe);
                         return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR,
                                 new FaultCodeException(AemFaultType.IO_EXCEPTION, ioe.getMessage()));
                     }
