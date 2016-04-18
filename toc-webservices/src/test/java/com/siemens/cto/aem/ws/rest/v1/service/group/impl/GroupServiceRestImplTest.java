@@ -5,10 +5,12 @@ import com.siemens.cto.aem.common.domain.model.group.GroupControlOperation;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.jvm.JvmControlOperation;
+import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.common.domain.model.resource.ResourceType;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServerControlOperation;
+import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState;
 import com.siemens.cto.aem.common.exception.InternalErrorException;
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.common.request.group.AddJvmsToGroupRequest;
@@ -707,8 +709,75 @@ public class GroupServiceRestImplTest {
 
         Response response = groupServiceRest.getStartedWebServersAndJvmsCount();
         assertNotNull(response.getEntity());
+
+        response = groupServiceRest.getStartedWebServersAndJvmsCount("testGroup");
+        assertNotNull(response.getEntity());
     }
 
+    @Test
+    public void testGetStoppedWebServersAndJvmsCount() {
+        when(mockGroupService.getGroups()).thenReturn(new ArrayList<>(groups));
+        when(mockJvmService.getJvmStoppedCount(anyString())).thenReturn(0L);
+        when(mockJvmService.getJvmForciblyStoppedCount(anyString())).thenReturn(0L);
+        when(mockJvmService.getJvmCount(anyString())).thenReturn(1L);
+        when(mockWebServerService.getWebServerStoppedCount(anyString())).thenReturn(0L);
+        when(mockWebServerService.getWebServerCount(anyString())).thenReturn(1L);
+
+        Response response = groupServiceRest.getStoppedWebServersAndJvmsCount();
+        assertNotNull(response);
+
+        response = groupServiceRest.getStoppedWebServersAndJvmsCount("testGroup");
+        assertNotNull(response);
+
+    }
+
+    @Test
+    public void testAreAllJvmsStopped() {
+        when(mockGroupService.getGroup(anyString())).thenReturn(group);
+        Response response = groupServiceRest.areAllJvmsStopped("testGroup");
+        assertNotNull(response);
+
+        Group mockGroupWithJvms = mock(Group.class);
+        Set<Jvm> mockJvmList = new HashSet<>();
+        Jvm mockJvmStarted = mock(Jvm.class);
+        mockJvmList.add(mockJvmStarted);
+
+        when(mockJvmStarted.getState()).thenReturn(JvmState.JVM_STARTED);
+        when(mockGroupWithJvms.getJvms()).thenReturn(mockJvmList);
+        when(mockGroupService.getGroup(anyString())).thenReturn(mockGroupWithJvms);
+        response = groupServiceRest.areAllJvmsStopped("testGroup");
+        assertNotNull(response);
+
+        when(mockJvmStarted.getState()).thenReturn(JvmState.JVM_STOPPED);
+        response = groupServiceRest.areAllJvmsStopped("testGroup");
+        assertNotNull(response);
+     }
+
+    @Test
+    public void testAreAllWebServerStopped() {
+        when(mockGroupService.getGroup(anyString())).thenReturn(mockGroup);
+        when(mockGroupService.getGroupWithWebServers(any(Identifier.class))).thenReturn(mockGroup);
+        Response response = groupServiceRest.areAllWebServersStopped("testGroup");
+        assertNotNull(response);
+
+        Group mockGroupWithWebServers = mock(Group.class);
+        Set<WebServer> mockWSList = new HashSet<>();
+        WebServer mockWSStarted = mock(WebServer.class);
+        mockWSList.add(mockWSStarted);
+
+        when(mockWSStarted.getState()).thenReturn(WebServerReachableState.WS_REACHABLE);
+        when(mockGroupWithWebServers.getWebServers()).thenReturn(mockWSList);
+        when(mockGroupService.getGroup(anyString())).thenReturn(mockGroupWithWebServers);
+        when(mockGroupService.getGroupWithWebServers(any(Identifier.class))).thenReturn(mockGroupWithWebServers);
+        when(mockWebServerService.isStarted(any(WebServer.class))).thenReturn(true);
+        response = groupServiceRest.areAllWebServersStopped("testGroup");
+        assertNotNull(response);
+
+        when(mockWSStarted.getState()).thenReturn(WebServerReachableState.WS_UNREACHABLE);
+        when(mockWebServerService.isStarted(any(WebServer.class))).thenReturn(false);
+        response = groupServiceRest.areAllWebServersStopped("testGroup");
+        assertNotNull(response);
+    }
     /**
      * Instead of mocking the ServletInputStream, let's extend it instead.
      *
