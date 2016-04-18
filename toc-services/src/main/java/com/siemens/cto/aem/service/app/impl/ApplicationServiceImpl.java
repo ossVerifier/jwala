@@ -589,6 +589,7 @@ public class ApplicationServiceImpl implements ApplicationService {
             metaData = ""; // Note: This is bad code! This is just an interim solution since this method will be refactored
                            // not to use fileManager in addition Fileutils can't easily be mocked hence the reason for not
                            //  throwing an exception here!
+            LOGGER.error("Failed to get meta data for JVM {} template", jvm.getJvmName(), ioe);
         }
 
         applicationPersistenceService.createApplicationConfigTemplateForJvm(jvm.getJvmName(), app, groupId,

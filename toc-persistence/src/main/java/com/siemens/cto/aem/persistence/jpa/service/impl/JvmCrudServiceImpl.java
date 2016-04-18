@@ -216,7 +216,7 @@ public class JvmCrudServiceImpl extends AbstractCrudServiceImpl<JpaJvm> implemen
     }
 
     /**
-     * 
+     *
      * @param jvmName
      * @param groupName
      * @return
