@@ -125,7 +125,7 @@ public interface ResourceServiceRest {
     Response removeTemplate(@PathParam("name") String name);
 
     /**
-     * Deletes a resource template of a specific group and entity type (e.g. group = Group1, entity type = JVMS)
+     * Deletes a resource template of a specific group and entity type (e.g. group = Group1, entity type = GROUPED_JVMS)
      * @param groupName the group name
      * @param entityType the entity type {@link EntityType}
      * @param templateNames comma separated names of templates to delete e.g. server.xml, context.xml (user can specify one template name as well)

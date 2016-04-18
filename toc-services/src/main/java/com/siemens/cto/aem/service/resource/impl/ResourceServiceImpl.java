@@ -204,7 +204,7 @@ public class ResourceServiceImpl implements ResourceService {
                 case JVM:
                     responseWrapper = createJvmTemplate(resourceTemplateMetaData, templateData);
                     break;
-                case JVMS:
+                case GROUPED_JVMS:
                     responseWrapper = createGroupedJvmsTemplate(resourceTemplateMetaData, templateData);
                     break;
                 case WEB_SERVER:
@@ -405,14 +405,14 @@ public class ResourceServiceImpl implements ResourceService {
         int totalDeletedRecs = 0;
         for (final String templateName: templateNameList) {
             switch (entityType) {
-                case JVMS:
+                case GROUPED_JVMS:
                     totalDeletedRecs = groupPersistenceService.removeJvmTemplate(groupName, templateName);
                     break;
                 case WEB_SERVERS:
                     totalDeletedRecs = groupPersistenceService.removeWeServerTemplate(groupName, templateName);
                     break;
                 default:
-                    throw new ResourceServiceException("Invalid entity type parameter! Entity type can only be JVMS or WEB_SERVERS.");
+                    throw new ResourceServiceException("Invalid entity type parameter! Entity type can only be GROUPED_JVMS or WEB_SERVERS.");
             }
         }
         return totalDeletedRecs;
@@ -424,14 +424,14 @@ public class ResourceServiceImpl implements ResourceService {
         int totalDeletedRecs = 0;
         for (final String templateName: templateNameList) {
             switch (entityType) {
-                case JVMS:
+                case GROUPED_JVMS:
                     totalDeletedRecs = jvmPersistenceService.removeTemplate(entityName, templateName);
                     break;
                 case WEB_SERVERS:
                     totalDeletedRecs = webServerPersistenceService.removeTemplate(entityName, templateName);
                     break;
                 default:
-                    throw new ResourceServiceException("Invalid entity type parameter! Entity type can only be JVMS or WEB_SERVERS.");
+                    throw new ResourceServiceException("Invalid entity type parameter! Entity type can only be GROUPED_JVMS or WEB_SERVERS.");
             }
         }
         return totalDeletedRecs;
