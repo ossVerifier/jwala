@@ -312,7 +312,8 @@ public class JvmServiceRestImpl implements JvmServiceRest {
             deployJvmConfigJar(jvm, user, jvmConfigJar);
 
             // deploy any application context xml's in the group
-            deployApplicationContextXMLs(jvm);
+            // TODO reimplement this once the generic resource template APIs are complete
+            // deployApplicationContextXMLs(jvm);
 
             // re-install the service
             installJvmWindowsService(jvm, user);
