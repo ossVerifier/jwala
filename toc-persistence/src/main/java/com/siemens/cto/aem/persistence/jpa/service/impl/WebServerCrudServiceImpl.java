@@ -135,7 +135,6 @@ public class WebServerCrudServiceImpl extends AbstractCrudServiceImpl<JpaWebServ
         final Query query = entityManager.createNamedQuery(JpaGroup.QUERY_GET_GROUP);
         query.setParameter("groupId", aGroup.getId());
         final JpaGroup group = (JpaGroup) query.getSingleResult();
-        group.getWebServers().size();
         return webserversFrom(group.getWebServers()); // TODO: Verify if we need to sort web servers by name.
     }
 
