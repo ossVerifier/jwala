@@ -92,7 +92,7 @@ public class JvmStateMessageListener implements MessageListener {
      * @param newState the latest state
      * @return returns true if the state is not the same compared to the previous state or if there's a message (error message)
      */
-    private boolean isStateChangedAndOrMsgNotEmpty(CurrentState<Jvm, JvmState> newState) {
+    private boolean isStateChangedAndOrMsgNotEmpty(final CurrentState<Jvm, JvmState> newState) {
         boolean stateAndOrMsgChanged = false;
 
         if (!inMemoryStateManagerService.containsKey(newState.getId()) ||
