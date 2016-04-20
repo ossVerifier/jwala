@@ -29,6 +29,9 @@ var stateService = function() {
         },
         getNextStates: function() {
             return serviceFoundation.promisedGet("v1.0/states/next" + createPollingParameters(clientId),"json");
+        },
+        requestForJvmStates: function(groupName) {
+            return serviceFoundation.promisedGet("v1.0/states/" + groupName + "/jvm","json");
         }
     };
 }();

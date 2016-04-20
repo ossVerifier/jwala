@@ -193,4 +193,9 @@ public class JpaJvmPersistenceServiceImpl implements JvmPersistenceService {
     public JpaJvmConfigTemplate getConfigTemplate(final String jvmName) {
         return jvmCrudService.getConfigTemplate(jvmName);
     }
+
+    @Override
+    public List<JpaJvm> getJvmsByGroupId(final String groupName) {
+        return jvmCrudService.getJvmsByGroupId(groupName);
+    }
 }

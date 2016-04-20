@@ -265,6 +265,10 @@ var GroupOperationsDataTable = React.createClass({
            });
        }
 
+       // Request JVM current states.
+       stateService.requestForJvmStates(groupName).then(function(response){
+           console.log(response);
+       });
    },
    renderGroupStateRowData: function(type, dataTable, data, aoColumnDefs, itemIndex, parentId) {
       var self= this;

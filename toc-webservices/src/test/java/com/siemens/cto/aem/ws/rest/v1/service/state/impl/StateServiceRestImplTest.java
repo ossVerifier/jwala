@@ -7,6 +7,7 @@ import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.common.domain.model.state.CurrentState;
 import com.siemens.cto.aem.common.domain.model.state.StateType;
 import com.siemens.cto.aem.service.jvm.JvmService;
+import com.siemens.cto.aem.service.jvm.JvmStateService;
 import com.siemens.cto.aem.service.state.StateNotificationConsumerId;
 import com.siemens.cto.aem.service.state.StateNotificationService;
 import com.siemens.cto.aem.service.webserver.WebServerService;
@@ -49,13 +50,17 @@ public class StateServiceRestImplTest {
     private JvmService mockJvmService;
 
     @Mock
+    private JvmStateService mockJvmStateService;
+
+    @Mock
     private WebServerService mockWebServerService;
 
     @Before
     public void setup() {
         stateNotificationService = mock(StateNotificationService.class);
         stateConsumerManager = mock(StateConsumerManager.class);
-        cut = new StateServiceRestImpl(stateNotificationService, stateConsumerManager, mockJvmService, mockWebServerService);
+        cut = new StateServiceRestImpl(stateNotificationService, stateConsumerManager, mockJvmService, mockJvmStateService,
+                mockWebServerService);
     }
 
     @Test

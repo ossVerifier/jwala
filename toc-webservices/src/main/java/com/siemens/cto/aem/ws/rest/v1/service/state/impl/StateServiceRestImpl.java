@@ -12,6 +12,7 @@ import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.common.domain.model.state.CurrentState;
 import com.siemens.cto.aem.common.domain.model.state.CurrentStateChronologicalComparator;
 import com.siemens.cto.aem.service.jvm.JvmService;
+import com.siemens.cto.aem.service.jvm.JvmStateService;
 import com.siemens.cto.aem.service.state.StateNotificationConsumerId;
 import com.siemens.cto.aem.service.state.StateNotificationService;
 import com.siemens.cto.aem.service.webserver.WebServerService;
@@ -38,14 +39,16 @@ public class StateServiceRestImpl implements StateServiceRest {
     private final JvmService jvmService;
     private final WebServerService webServerService;
     private final Collection<CurrentState<?, ?>> noStates = Collections.emptyList();
+    private final JvmStateService jvmStateService;
 
     public StateServiceRestImpl(final StateNotificationService theStateNotificationService,
                                 final StateConsumerManager theStateConsumerManager, final JvmService jvmService,
-                                final WebServerService webServerService) {
+                                final JvmStateService jvmStateService, final WebServerService webServerService) {
         stateNotificationService = theStateNotificationService;
         stateConsumerManager = theStateConsumerManager;
         this.jvmService = jvmService;
         this.webServerService = webServerService;
+        this.jvmStateService = jvmStateService;
     }
 
     @Override
@@ -123,4 +126,8 @@ public class StateServiceRestImpl implements StateServiceRest {
         return ResponseBuilder.ok(updates);
     }
 
+    @Override
+    public Response requestCurrentStatesRetrievalAndNotification(final String groupName) {
+        return ResponseBuilder.ok(jvmStateService.requestCurrentStatesRetrievalAndNotification(groupName));
+    }
 }

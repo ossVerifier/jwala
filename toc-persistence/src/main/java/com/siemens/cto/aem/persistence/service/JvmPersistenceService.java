@@ -73,4 +73,6 @@ public interface JvmPersistenceService {
     List<JpaJvmConfigTemplate> getConfigTemplates(String jvmName);
 
     JpaJvmConfigTemplate getConfigTemplate(String jvmName);
+
+    List<JpaJvm> getJvmsByGroupId(String groupName);
 }
