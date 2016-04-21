@@ -63,8 +63,6 @@ public class GroupWebServerControlServiceImplTest {
                 controlGroupWebServerRequest, testUser);
         WebServerDispatchCommandResult commandResult = new WebServerDispatchCommandResult(true, groupWebServerDispatchCommand);
         results.add(commandResult);
-
-        cut.dispatchCommandComplete(results);
     }
 
 }

@@ -1,5 +1,11 @@
 var groupControlService = function() {
 
+    var controlGroups = function(operation) {
+        return serviceFoundation.promisedPost("v1.0/groups/commands",
+                                              "json",
+                                              JSON.stringify({controlOperation : operation}));
+    };
+
     var control = function(groupId, operation) {
         return serviceFoundation.promisedPost("v1.0/groups/" + groupId + "/commands",
                                               "json",
@@ -34,6 +40,12 @@ var groupControlService = function() {
     }
 
     return {
+        startGroups: function() {
+            return controlGroups("start");
+        },
+        stopGroups: function() {
+            return controlGroups("stop");
+        },
         startGroup : function(groupId) {
             return control(groupId, "start");
         },

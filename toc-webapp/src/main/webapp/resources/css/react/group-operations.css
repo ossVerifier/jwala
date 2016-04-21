@@ -92,3 +92,8 @@
 .display-none {
     display: none;
 }
+
+.start-stop-groups-btn-container {
+    width: 100%;
+    text-align: right;
+}

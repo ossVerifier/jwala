@@ -25,6 +25,28 @@ var GroupOperations = React.createClass({
 
         return  <div className={this.props.className}>
                     <div ref="stompMsgDiv"/>
+                    <div className="start-stop-groups-btn-container">
+                        <RButton label="START GROUPS!"
+                                 className="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only start-stop-all-groups-button"
+                                 onClick={this.startGroups}/>
+                        <RButton label="STOP GROUPS!"
+                                 className="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only start-stop-all-groups-button"
+                                 onClick={this.stopGroups}/>
+                    </div>
+                    <ModalDialogBox ref="stopGroupsModalDlg"
+                                    title="Confirmation Dialog Box"
+                                    show={false}
+                                    okCallback={this.confirmStopGroupsCallback}
+                                    content={<div className="text-align-center"><br/><b>Are you sure you want to STOP all the groups ?</b><br/><br/></div>}
+                                    okLabel="Yes"
+                                    cancelLabel="No" />
+                    <ModalDialogBox ref="startGroupsModalDlg"
+                                    title="Confirmation Dialog Box"
+                                    show={false}
+                                    okCallback={this.confirmStartGroupsCallback}
+                                    content={<div className="text-align-center"><br/><b>Are you sure you want to START all the groups ?</b><br/><br/></div>}
+                                    okLabel="Yes"
+                                    cancelLabel="No" />
                     <table style={{width:"1084px"}}>
                         <tr>
                             <td>
@@ -45,6 +67,24 @@ var GroupOperations = React.createClass({
                         </tr>
                    </table>
                </div>
+    },
+    startGroups: function() {
+        this.refs.startGroupsModalDlg.show(true);
+    },
+    confirmStartGroupsCallback: function() {
+        groupControlService.startGroups().caught(function(e){
+            console.log(e);
+        });
+        this.refs.startGroupsModalDlg.close();
+    },
+    stopGroups: function() {
+        this.refs.stopGroupsModalDlg.show(true);
+    },
+    confirmStopGroupsCallback: function() {
+        groupControlService.stopGroups().caught(function(e){
+            console.log(e);
+        });
+        this.refs.stopGroupsModalDlg.close();
     },
     retrieveData: function() {
         var self = this;

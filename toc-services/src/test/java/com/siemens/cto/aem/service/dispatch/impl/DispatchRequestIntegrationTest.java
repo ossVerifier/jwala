@@ -15,12 +15,13 @@ import com.siemens.cto.aem.common.domain.model.jvm.JvmControlOperation;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServerControlOperation;
+import com.siemens.cto.aem.persistence.service.JvmPersistenceService;
+import com.siemens.cto.aem.persistence.service.WebServerPersistenceService;
 import com.siemens.cto.aem.service.dispatch.CommandDispatchGateway;
 import com.siemens.cto.aem.service.group.GroupJvmControlService;
 import com.siemens.cto.aem.service.group.GroupWebServerControlService;
 import com.siemens.cto.aem.service.jvm.JvmControlService;
 import com.siemens.cto.aem.service.webserver.WebServerControlService;
-import com.siemens.cto.aem.service.webserver.WebServerService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -78,37 +79,31 @@ public class DispatchRequestIntegrationTest {
     private Jvm mockJvm2;
     private WebServer mockWs1;
     private WebServer mockWs2;
-    private Set<Jvm> jvmSet;
+
+    // Using static variables in unit tests that are initialized in the class level is not good practice.
+    // TODO: Refactor this in the near future.
+    private static List<Jvm> jvmList = new ArrayList<>();
     private static List<WebServer> wsList = new ArrayList<>();
+
     private Group theGroup;
 
     @Before
     public void setup() {
-
         mockJvm1 = mock(Jvm.class);
         when(mockJvm1.getId()).thenReturn(JVM1_IDENTIFIER);
         mockJvm2 = mock(Jvm.class);
         when(mockJvm2.getId()).thenReturn(JVM2_IDENTIFIER);
-
-        jvmSet = new HashSet<Jvm>();
+        final Set<Jvm> jvmSet = new HashSet<>();
         jvmSet.add(mockJvm1);
         jvmSet.add(mockJvm2);
-
-        mockWs1 = mock(WebServer.class);
-        when(mockWs1.getId()).thenReturn(WS1_IDENTIFIER);
-        mockWs2 = mock(WebServer.class);
-        when(mockWs2.getId()).thenReturn(WS2_IDENTIFIER);
-
-        wsList.add(mockWs1);
-        wsList.add(mockWs2);
-
         theGroup = new Group(GROUP1_IDENTIFIER, "group1", jvmSet);
-
         blockingQueue = new ArrayBlockingQueue<>(1);
     }
 
     @Test
     public void splitGroupIntoTwoJvmControls() throws InterruptedException {
+        jvmList.add(mockJvm1);
+        jvmList.add(mockJvm2);
 
         ControlGroupJvmRequest startGroupCommand = new ControlGroupJvmRequest(GROUP1_IDENTIFIER, JvmControlOperation.START);
         @SuppressWarnings("deprecation")
@@ -140,6 +135,13 @@ public class DispatchRequestIntegrationTest {
 
     @Test
     public void splitGroupIntoTwoWebServerControls() throws InterruptedException {
+        mockWs1 = mock(WebServer.class);
+        when(mockWs1.getId()).thenReturn(WS1_IDENTIFIER);
+        mockWs2 = mock(WebServer.class);
+        when(mockWs2.getId()).thenReturn(WS2_IDENTIFIER);
+
+        wsList.add(mockWs1);
+        wsList.add(mockWs2);
 
         ControlGroupWebServerRequest startGroupCommand = new ControlGroupWebServerRequest(GROUP1_IDENTIFIER, WebServerControlOperation.START);
         @SuppressWarnings("deprecation")
@@ -200,11 +202,19 @@ public class DispatchRequestIntegrationTest {
         }
 
         @SuppressWarnings("unchecked")
-        @Bean(name = "webServerService")
-        public WebServerService getWebServerService() {
-            WebServerService mockWebServerService = mock(WebServerService.class);
-            when(mockWebServerService.findWebServers(any(Identifier.class))).thenReturn(wsList);
-            return mockWebServerService;
+        @Bean(name = "webServerPersistenceService")
+        public WebServerPersistenceService getWebServerPersistenceService() {
+            WebServerPersistenceService mockWebServerPersistenceService = mock(WebServerPersistenceService.class);
+            when(mockWebServerPersistenceService.findWebServersBelongingTo(any(Identifier.class))).thenReturn(wsList);
+            return mockWebServerPersistenceService;
+        }
+
+        @SuppressWarnings("unchecked")
+        @Bean(name = "jvmPersistenceService")
+        public JvmPersistenceService getJvmPersistenceService() {
+            JvmPersistenceService mockJvmPersistenceService = mock(JvmPersistenceService.class);
+            when(mockJvmPersistenceService.findJvmsBelongingTo(any(Identifier.class))).thenReturn(jvmList);
+            return mockJvmPersistenceService;
         }
         
         @Bean(name="webServerControlService")

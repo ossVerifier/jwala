@@ -594,6 +594,13 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         return ResponseBuilder.ok();
     }
 
+    @Override
+    public Response controlGroups(final JsonControlGroup jsonControlGroup, final AuthenticatedUser authenticatedUser) {
+        groupControlService.controlGroups(new ControlGroupRequest(null, jsonControlGroup.toControlOperation()),
+                authenticatedUser.getUser());
+        return ResponseBuilder.ok();
+    }
+
     protected List<MembershipDetails> createMembershipDetailsFromJvms(final List<Jvm> jvms) {
         final List<MembershipDetails> membershipDetailsList = new LinkedList<>();
         for (Jvm jvm : jvms) {
