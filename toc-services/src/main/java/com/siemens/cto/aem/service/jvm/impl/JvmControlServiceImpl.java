@@ -73,10 +73,11 @@ public class JvmControlServiceImpl implements JvmControlService {
 
     @Override
     public CommandOutput controlJvm(final ControlJvmRequest controlJvmRequest, final User aUser) {
-        LOGGER.debug("Control JVM request operation = {}", controlJvmRequest.getControlOperation().toString());
+        final JvmControlOperation controlOperation = controlJvmRequest.getControlOperation();
+        LOGGER.debug("Control JVM request operation = {}", controlOperation.toString());
         final Jvm jvm = jvmService.getJvm(controlJvmRequest.getJvmId());
         try {
-            final JvmControlOperation ctrlOp = controlJvmRequest.getControlOperation();
+            final JvmControlOperation ctrlOp = controlOperation;
             final String event = ctrlOp.getOperationState() == null ? ctrlOp.name() : ctrlOp.getOperationState().toStateLabel();
 
             historyService.createHistory(getServerName(jvm), new ArrayList<>(jvm.getGroups()), event, EventType.USER_ACTION, aUser.getId());
@@ -97,7 +98,7 @@ public class JvmControlServiceImpl implements JvmControlService {
             // a command via JSCH. Once the said code has be tested thoroughly, then the commented out code above will
             // be deleted along with its class and supporting files.
             final WindowsJvmPlatformCommandProvider windowsJvmPlatformCommandProvider = new WindowsJvmPlatformCommandProvider();
-            final ServiceCommandBuilder serviceCommandBuilder = windowsJvmPlatformCommandProvider.getServiceCommandBuilderFor(controlJvmRequest.getControlOperation());
+            final ServiceCommandBuilder serviceCommandBuilder = windowsJvmPlatformCommandProvider.getServiceCommandBuilderFor(controlOperation);
             final ExecCommand execCommand = serviceCommandBuilder.buildCommandForService(jvm.getJvmName());
             final RemoteExecCommand remoteExecCommand = new RemoteExecCommand(new RemoteSystemConnection(sshConfig.getUserName(),
                     sshConfig.getPassword(), jvm.getHostName(), sshConfig.getPort()) , execCommand);
@@ -108,22 +109,26 @@ public class JvmControlServiceImpl implements JvmControlService {
             CommandOutput commandOutput = new CommandOutput(new ExecReturnCode(remoteCommandReturnInfo.retCode),
                     remoteCommandReturnInfo.standardOuput, remoteCommandReturnInfo.errorOupout);
 
-            if (StringUtils.isNotEmpty(commandOutput.getStandardOutput()) && (JvmControlOperation.START
-                    .equals(controlJvmRequest.getControlOperation()) || JvmControlOperation.STOP
-                    .equals(controlJvmRequest.getControlOperation()))) {
+            final String standardOutput = commandOutput.getStandardOutput();
+            final ExecReturnCode returnCode = commandOutput.getReturnCode();
+            if (StringUtils.isNotEmpty(standardOutput) && (JvmControlOperation.START
+                    .equals(controlOperation) || JvmControlOperation.STOP
+                    .equals(controlOperation))) {
                 commandOutput.cleanStandardOutput();
-                LOGGER.info("shell command output{}", commandOutput.getStandardOutput());
+                LOGGER.info("shell command output{}", standardOutput);
+            } else if (StringUtils.isNoneBlank(standardOutput) && JvmControlOperation.HEAP_DUMP.equals(controlOperation) && returnCode.wasSuccessful()){
+                commandOutput.cleanHeapDumpStandardOutput();
             }
 
-            LOGGER.debug("Command output return code = {}", commandOutput.getReturnCode());
-            if (commandOutput.getReturnCode().wasSuccessful()) {
-                if (JvmControlOperation.STOP.equals(controlJvmRequest.getControlOperation())) {
+            LOGGER.debug("Command output return code = {}", returnCode);
+            if (returnCode.wasSuccessful()) {
+                if (JvmControlOperation.STOP.equals(controlOperation)) {
                     jvmStateService.updateState(jvm.getId(), JvmState.JVM_STOPPED);
                 }
             } else {
                 // Process non successful return codes...
-                final String commandOutputReturnDescription = CommandOutputReturnCode.fromReturnCode(commandOutput.getReturnCode().getReturnCode()).getDesc();
-                switch (commandOutput.getReturnCode().getReturnCode()) {
+                final String commandOutputReturnDescription = CommandOutputReturnCode.fromReturnCode(returnCode.getReturnCode()).getDesc();
+                switch (returnCode.getReturnCode()) {
                     case ExecReturnCode.STP_EXIT_PROCESS_KILLED:
                         commandOutput = new CommandOutput(new ExecReturnCode(0), FORCED_STOPPED, commandOutput.getStandardError());
                         jvmStateService.updateState(jvm.getId(), JvmState.FORCED_STOPPED);
@@ -136,7 +141,7 @@ public class JvmControlServiceImpl implements JvmControlService {
                         break;
                     default:
                         final String errorMsg = "JVM control command was not successful! Return code = "
-                                + commandOutput.getReturnCode().getReturnCode() + ", description = " +
+                                + returnCode.getReturnCode() + ", description = " +
                                 commandOutputReturnDescription;
 
                         LOGGER.error(errorMsg);
