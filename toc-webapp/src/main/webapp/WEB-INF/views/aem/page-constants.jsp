@@ -4,3 +4,4 @@ var tocVars = {};
 <c:forEach var="javaScriptVariable" items="${javaScriptVariables}">
     tocVars["${javaScriptVariable.variableName}"] = ${javaScriptVariable.variableValue};
 </c:forEach>
+tocVars["rootContextName"]="<%= request.getContextPath() %>";
