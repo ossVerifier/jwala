@@ -2,7 +2,7 @@
     display: inline-block;
     height: 18px;
     margin-top: 4px;
-    margin-right: 10px;
+    margin-right: 15px;
 }
 
 .dot {
@@ -17,7 +17,7 @@
 }
 
 .dot.partial {
-    background: #4297d7;
+    background: #DE5145;
 }
 
 .dot.stopped {
