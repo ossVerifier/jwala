@@ -271,7 +271,7 @@ var GroupOperations = React.createClass({
                             var commandStatusWidget = self.commandStatusWidgetMap[GroupOperations.getExtDivCompId(webServer.groupId.id)];
                             if (commandStatusWidget !== undefined) {
                                 commandStatusWidget.push({stateString: newWebServerState.stateString,
-                                                          asOf: newWebServerState.asOf,
+                                                          asOf: newWebServerState.asOf.millis,
                                                           message: newWebServerState.message,
                                                           from: "Web Server " + webServer.name, userId: newWebServerState.userId},
                                                           newWebServerState.stateString === GroupOperations.FAILED ? "error-status-font" : "action-status-font");
@@ -303,7 +303,7 @@ var GroupOperations = React.createClass({
                             var commandStatusWidget = self.commandStatusWidgetMap[GroupOperations.getExtDivCompId(jvm.groupId.id)];
                             if (commandStatusWidget !== undefined) {
                                 commandStatusWidget.push({stateString: newJvmState.stateString,
-                                                          asOf: newJvmState.asOf,
+                                                          asOf: newJvmState.asOf.millis,
                                                           message: newJvmState.message,
                                                           from: "JVM " + jvm.name,
                                                           userId: newJvmState.userId},
