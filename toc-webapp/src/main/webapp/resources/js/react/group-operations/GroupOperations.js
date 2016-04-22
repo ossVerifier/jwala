@@ -26,10 +26,10 @@ var GroupOperations = React.createClass({
         return  <div className={this.props.className}>
                     <div ref="stompMsgDiv"/>
                     <div className="start-stop-groups-btn-container">
-                        <RButton label="START GROUPS!"
+                        <RButton label="START GROUPS"
                                  className="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only start-stop-all-groups-button"
                                  onClick={this.startGroups}/>
-                        <RButton label="STOP GROUPS!"
+                        <RButton label="STOP GROUPS"
                                  className="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only start-stop-all-groups-button"
                                  onClick={this.stopGroups}/>
                     </div>
@@ -88,7 +88,7 @@ var GroupOperations = React.createClass({
     },
     retrieveData: function() {
         var self = this;
-        this.props.service.getGroups().then(this.retrieveGroupDataHandler).then(this.props.service.getStartedWebServersAndJvmsCount)
+        this.props.service.getGroups().then(this.retrieveGroupDataHandler).then(this.props.service.getStartedAndStoppedWebServersAndJvmsCount)
             .then(this.retrieveChildrenInfoHandler).then(function(){self.forceUpdate()});
     },
     /**
@@ -125,8 +125,11 @@ var GroupOperations = React.createClass({
                 if (group.name === info.groupName) {
                     group.currentState.jvmCount = info.jvmCount;
                     group.currentState.jvmStartedCount = info.jvmStartedCount;
+                    group.currentState.jvmStoppedCount = info.jvmStoppedCount;
+                    group.currentState.jvmForciblyStoppedCount = info.jvmForciblyStoppedCount;
                     group.currentState.webServerCount = info.webServerCount;
                     group.currentState.webServerStartedCount = info.webServerStartedCount;
+                    group.currentState.webServerStoppedCount = info.webServerStoppedCount;
                 }
             });
         });
@@ -216,9 +219,19 @@ var GroupOperations = React.createClass({
                     // infrastructure, we have to put the said info in the stateString property.
                     var serverCount = newGroupState.webServerCount + newGroupState.jvmCount;
                     var serverStartedCount = newGroupState.webServerStartedCount + newGroupState.jvmStartedCount;
+                    var serverStoppedCount = newGroupState.webServerStoppedCount + newGroupState.jvmStoppedCount
+                                    + newGroupState.jvmForciblyStoppedCount;
                     newGroupState.stateString = "Started: " + serverStartedCount + "/" + serverCount;
+
+                    var statusColorCode = "partial";
+                    if (serverStartedCount === serverCount) {
+                        statusColorCode = "started";
+                    } else if (serverStoppedCount === serverCount) {
+                        statusColorCode = "stopped";
+                    }
+
                     GroupOperations.groupStatusWidgetMap["grp" + group.groupId.id].setStatus(newGroupState.stateString,
-                        newGroupState.asOf, newGroupState.message);
+                        newGroupState.asOf, newGroupState.message, statusColorCode);
 
                     // Update web server and JVM header states
                     // Note: Since the group operations page is a mix of React and spaghetti code, we do the update using jquery.

@@ -97,10 +97,14 @@ public class StateServiceRestImpl implements StateServiceRest {
             for (final Group group : groupSet) {
                 final Long webServerCount = webServerService.getWebServerCount(group.getName());
                 final Long webServerStartedCount = webServerService.getWebServerStartedCount(group.getName());
+                final Long webServerStoppedCount = webServerService.getWebServerStoppedCount(group.getName());
                 final Long jvmCount = jvmService.getJvmCount(group.getName());
                 final Long jvmStartedCount = jvmService.getJvmStartedCount(group.getName());
-                groupCurrentState = new CurrentState<>(group.getId(), GroupState.GRP_UNKNOWN, DateTime.now(), StateType.GROUP, webServerCount,
-                        webServerStartedCount, jvmCount, jvmStartedCount);
+                final Long jvmStoppedCount = jvmService.getJvmStoppedCount(group.getName());
+                final Long jvmForciblyStoppedCount = jvmService.getJvmForciblyStoppedCount(group.getName());
+                groupCurrentState = new CurrentState<>(group.getId(), GroupState.GRP_UNKNOWN, DateTime.now(),
+                        StateType.GROUP, webServerCount, webServerStartedCount, webServerStoppedCount, jvmCount,
+                        jvmStartedCount, jvmStoppedCount, jvmForciblyStoppedCount);
             }
 
         } catch (Exception e) {

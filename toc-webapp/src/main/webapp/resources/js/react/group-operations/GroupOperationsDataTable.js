@@ -280,7 +280,17 @@ var GroupOperationsDataTable = React.createClass({
                       GroupOperations.groupStatusWidgetMap[key] = this;
                       var serverCount = oData.currentState.jvmCount + oData.currentState.webServerCount;
                       var serverStartedCount = oData.currentState.jvmStartedCount + oData.currentState.webServerStartedCount;
-                      this.setStatus("Started: " + serverStartedCount + "/" + serverCount, new Date(), "");
+                      var serverStoppedCount = oData.currentState.webServerStoppedCount + oData.currentState.jvmStoppedCount
+                                    + oData.currentState.jvmForciblyStoppedCount;;
+
+                      var statusColorCode = "partial";
+                      if (serverStartedCount === serverCount) {
+                          statusColorCode = "started";
+                      } else if (serverStoppedCount === serverCount) {
+                          statusColorCode = "stopped";
+                      }
+
+                      this.setStatus("Started: " + serverStartedCount + "/" + serverCount, new Date(), "", statusColorCode);
                   });
       }.bind(this);
    },

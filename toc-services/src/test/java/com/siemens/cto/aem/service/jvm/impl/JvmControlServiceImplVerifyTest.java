@@ -5,6 +5,7 @@ import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.jvm.JvmControlOperation;
 import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
+import com.siemens.cto.aem.common.domain.model.ssh.SshConfiguration;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.exception.ExternalSystemErrorException;
 import com.siemens.cto.aem.common.exception.InternalErrorException;
@@ -21,7 +22,9 @@ import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
 import com.siemens.cto.aem.persistence.jpa.type.EventType;
 import com.siemens.cto.aem.service.HistoryService;
 import com.siemens.cto.aem.service.MessagingService;
+import com.siemens.cto.aem.service.RemoteCommandExecutorService;
 import com.siemens.cto.aem.service.VerificationBehaviorSupport;
+import com.siemens.cto.aem.service.group.GroupStateNotificationService;
 import com.siemens.cto.aem.service.jvm.JvmService;
 import com.siemens.cto.aem.service.jvm.JvmStateService;
 import org.junit.Before;
@@ -32,7 +35,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -61,6 +63,15 @@ public class JvmControlServiceImplVerifyTest extends VerificationBehaviorSupport
     @Mock
     private JvmStateService mockJvmStateService;
 
+    @Mock
+    private RemoteCommandExecutorService mockRemoteCommandExecutorService;
+
+    @Mock
+    private SshConfiguration mcokSshConfig;
+
+    @Mock
+    private GroupStateNotificationService mockGroupStateNotificationService;
+
     private List<JpaGroup> groups = new ArrayList<>();
 
     public JvmControlServiceImplVerifyTest() {
@@ -72,7 +83,7 @@ public class JvmControlServiceImplVerifyTest extends VerificationBehaviorSupport
         jvmService = mock(JvmService.class);
         commandExecutor = mock(RemoteCommandExecutor.class);
         jvmControlService = new JvmControlServiceImpl(jvmService, commandExecutor, mockHistoryService, mockMessagingService,
-                mockJvmStateService);
+                mockJvmStateService, mockRemoteCommandExecutorService, mcokSshConfig, mockGroupStateNotificationService);
         user = new User("unused");
         when(jvmService.getJpaJvm(any(Identifier.class), eq(true))).thenReturn(new JpaJvm());
     }

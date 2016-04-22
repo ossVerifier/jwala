@@ -24,8 +24,11 @@ public class CurrentState<S, T extends OperationalState> implements KeyValueStat
 
     private Long webServerCount;
     private Long webServerStartedCount;
+    private Long webServerStoppedCount;
     private Long jvmCount;
     private Long jvmStartedCount;
+    private Long jvmStoppedCount;
+    private Long jvmForciblyStoppedCount;
 
     public CurrentState(final Identifier<S> id, final T state, final DateTime asOf, final StateType stateType) {
         this(id, state, asOf, stateType, DEFAULT_EMPTY_MESSAGE);
@@ -36,9 +39,10 @@ public class CurrentState<S, T extends OperationalState> implements KeyValueStat
         setUserId(userId);
     }
 
+    // TODO: Create a builder for this
     public CurrentState(final Identifier<S> id, final T state, final DateTime asOf, final StateType type,
-                        final Long webServerCount, final Long webServerStartedCount, final Long jvmCount,
-                        final Long jvmStartedCount) {
+                        final Long webServerCount, final Long webServerStartedCount, final Long webServerStoppedCount,
+                        final Long jvmCount, final Long jvmStartedCount, final Long jvmStoppedCount, final Long jvmForciblyStoppedCount) {
         this.id = id;
         this.state = state;
         this.asOf = asOf;
@@ -46,8 +50,11 @@ public class CurrentState<S, T extends OperationalState> implements KeyValueStat
         this.message = DEFAULT_EMPTY_MESSAGE;
         this.webServerCount = webServerCount;
         this.webServerStartedCount = webServerStartedCount;
+        this.webServerStoppedCount = webServerStoppedCount;
         this.jvmCount = jvmCount;
         this.jvmStartedCount = jvmStartedCount;
+        this.jvmStoppedCount = jvmStoppedCount;
+        this.jvmForciblyStoppedCount = jvmForciblyStoppedCount;
     }
 
     public CurrentState(final Identifier<S> id, final T state, final DateTime asOf, final StateType type, final String message) {
@@ -159,6 +166,10 @@ public class CurrentState<S, T extends OperationalState> implements KeyValueStat
         return webServerStartedCount;
     }
 
+    public Long getWebServerStoppedCount() {
+        return webServerStoppedCount;
+    }
+
     public Long getJvmCount() {
         return jvmCount;
     }
@@ -167,4 +178,11 @@ public class CurrentState<S, T extends OperationalState> implements KeyValueStat
         return jvmStartedCount;
     }
 
+    public Long getJvmStoppedCount() {
+        return jvmStoppedCount;
+    }
+
+    public Long getJvmForciblyStoppedCount() {
+        return jvmForciblyStoppedCount;
+    }
 }

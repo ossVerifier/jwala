@@ -3,7 +3,8 @@
  */
 var StatusWidget = React.createClass({
     getInitialState: function() {
-        return {status:this.props.defaultStatus, errorMessages:[], showErrorBtn:false, newErrorMsg:false};
+        return {status:this.props.defaultStatus, errorMessages:[], showErrorBtn:false, newErrorMsg:false,
+                statusColorCode: null};
     },
     render: function() {
         var errorBtn = null;
@@ -19,10 +20,15 @@ var StatusWidget = React.createClass({
                    <div ref="errorDlg" className="react-dialog-container"/>
                    <span className="status-label">{this.state.status}</span>
                    {errorBtn}
+                   <div className={"dot " + this.state.statusColorCode} title={this.state.statusColorCode} />
                </div>;
     },
-    setStatus: function(newStatus, dateTime, errorMsg) {
+    setStatus: function(newStatus, dateTime, errorMsg, statusColorCode) {
         var newState = {status:newStatus};
+
+        if (statusColorCode) {
+            newState["statusColorCode"] = statusColorCode;
+        }
 
         if (errorMsg !== "" && errorMsg !== null) {
             newState["newErrorMsg"] = true;

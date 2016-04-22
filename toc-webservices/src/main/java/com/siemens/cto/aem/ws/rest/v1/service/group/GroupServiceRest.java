@@ -259,8 +259,16 @@ public interface GroupServiceRest {
     Response getStartedWebServersAndJvmsCount();
 
     @GET
+    @Path("/children/startedAndStoppedCount")
+    Response getStartedAndStoppedWebServersAndJvmsCount();
+
+    @GET
     @Path("/{groupName}/children/startedCount")
     Response getStartedWebServersAndJvmsCount(@PathParam("groupName") String groupName);
+
+    @GET
+    @Path("/{groupName}/children/startedAndStoppedCount")
+    Response getStartedAndStoppedWebServersAndJvmsCount(@PathParam("groupName") String groupName);
 
     @GET
     @Path("/children/stoppedCount")

@@ -69,12 +69,15 @@ public class GroupStateNotificationServiceImpl implements GroupStateNotification
 
             for (final JpaGroup group: groups) {
                 final Long jvmStartedCount = jvmCrudService.getJvmStartedCount(group.getName());
+                final Long jvmStoppedCount = jvmCrudService.getJvmStoppedCount(group.getName());
+                final Long jvmForciblyStoppedCount = jvmCrudService.getJvmForciblyStoppedCount(group.getName());
                 final Long jvmCount = jvmCrudService.getJvmCount(group.getName());
                 final Long webServerStartedCount = webServerCrudService.getWebServerStartedCount(group.getName());
+                final Long webServerStoppedCount = webServerCrudService.getWebServerStoppedCount(group.getName());
                 final Long webServerCount = webServerCrudService.getWebServerCount(group.getName());
                 final CurrentState<Group, GroupState> groupState = new CurrentState<>(new Identifier<Group>(group.getId()),
                         GroupState.GRP_UNKNOWN, DateTime.now(), StateType.GROUP, webServerCount, webServerStartedCount,
-                        jvmCount, jvmStartedCount);
+                        webServerStoppedCount, jvmCount, jvmStartedCount, jvmStoppedCount, jvmForciblyStoppedCount);
                 messagingService.send(groupState);
                 LOGGER.debug("Group '{}' state = {}", group.getName(), groupState);
             }
