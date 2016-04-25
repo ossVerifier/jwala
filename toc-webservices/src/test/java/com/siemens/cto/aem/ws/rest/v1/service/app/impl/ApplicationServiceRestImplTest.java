@@ -621,6 +621,18 @@ public class ApplicationServiceRestImplTest {
 //        TODO do not propagate the default application templates since they are healthcheck specific
 //        verify(service).copyApplicationConfigToGroupJvms(any(Group.class), anyString(), any(User.class));
     }
+
+    @Test
+    public void testDeployWebArchive() {
+        Application mockApplication = mock(Application.class);
+        String hostname = "localhost";
+        when(mockApplication.getName()).thenReturn("appName");
+        when(service.getApplication(any(Identifier.class))).thenReturn(mockApplication);
+
+        applicationServiceRest.deployWebArchive(new Identifier<Application>(111L), hostname);
+
+        verify(service).copyApplicationWarToHost(any(Application.class), eq(hostname));
+    }
     /**
      * Instead of mocking the ServletInputStream, let's extend it instead.
      *

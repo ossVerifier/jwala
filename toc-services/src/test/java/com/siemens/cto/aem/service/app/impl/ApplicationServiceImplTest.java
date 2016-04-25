@@ -555,6 +555,53 @@ public class ApplicationServiceImplTest {
     }
 
     @Test
+    public void testCopyApplicationWarToHost() {
+        when(mockApplication.getWarPath()).thenReturn("./src/test/resources/archive/test_archive.war");
+        when(mockApplication.getWarName()).thenReturn("test.war");
+
+        ApplicationServiceImpl mockApplicationService = new ApplicationServiceImpl(applicationPersistenceService, jvmPersistenceService, remoteCommandExecutor, null, fileManager, webArchiveManager, privateApplicationService);
+
+        try {
+            CommandOutput successCommandOutput = new CommandOutput(new ExecReturnCode(0), "SUCCESS", "");
+            when(remoteCommandExecutor.executeRemoteCommand(anyString(), anyString(), any(ApplicationControlOperation.class), any(PlatformCommandProvider.class), anyString(), anyString())).thenReturn(successCommandOutput);
+            mockApplicationService.copyApplicationWarToHost(mockApplication, "localhost");
+        } catch (CommandFailureException e) {
+            assertTrue("should not fail " + e.getMessage(), false);
+        }
+        new File("./src/test/resources/webapps/test.war").delete();
+
+        try {
+            CommandOutput failedCommandOutput = new CommandOutput(new ExecReturnCode(1), "FAILED", "");
+            when(remoteCommandExecutor.executeRemoteCommand(anyString(), anyString(), any(ApplicationControlOperation.class), any(PlatformCommandProvider.class), anyString(), anyString())).thenReturn(failedCommandOutput);
+            mockApplicationService.copyApplicationWarToHost(mockApplication, "localhost");
+        } catch (CommandFailureException e) {
+            assertTrue("should not fail " + e.getMessage(), false);
+        } catch (InternalErrorException ie) {
+            assertEquals(AemFaultType.REMOTE_COMMAND_FAILURE, ie.getMessageResponseStatus());
+        }
+        new File("./src/test/resources/webapps/test.war").delete();
+
+        boolean exceptionThrown = false;
+        try {
+            when(remoteCommandExecutor.executeRemoteCommand(anyString(), anyString(), any(ApplicationControlOperation.class), any(PlatformCommandProvider.class), anyString(), anyString())).thenThrow(new CommandFailureException(new ExecCommand("FAILED"), new Throwable("Expected to fail test")));
+            mockApplicationService.copyApplicationWarToHost(mockApplication, "localhost");
+        } catch (Exception e) {
+            exceptionThrown = true;
+        }
+        assertTrue(exceptionThrown);
+        new File("./src/test/resources/webapps/test.war").delete();
+
+        when(mockApplication.getWarPath()).thenReturn("./src/test/resources/archive/test_archive_FAIL_COPY.war");
+        exceptionThrown = false;
+        try {
+            mockApplicationService.copyApplicationWarToGroupHosts(mockApplication);
+        } catch (Exception e) {
+            exceptionThrown = true;
+        }
+        assertTrue(exceptionThrown);
+    }
+
+    @Test
     public void testCopyToGroupJvms() throws CommandFailureException {
         GroupService mockGroupService = mock(GroupService.class);
         Group mockGroup = mock(Group.class);

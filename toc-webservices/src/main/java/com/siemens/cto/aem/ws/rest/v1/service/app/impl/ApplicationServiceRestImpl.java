@@ -164,13 +164,13 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
         Set<Jvm> jvms = group.getJvms();
         final String appName = app.getName();
         if (null != jvms && jvms.size() > 0) {
-            for (Jvm jvm : jvms){
-                if (jvm.getState().isStartedState()){
-                    final String jvmName = jvm.getJvmName();
-                    LOGGER.error("The JVM {} must be stopped before deploying the application", jvmName);
-                    throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "The JVM " + jvmName + " must be stopped before attempting to deploy application " + appName);
-                }
-            }
+//            for (Jvm jvm : jvms){
+//                if (jvm.getState().isStartedState()){
+//                    final String jvmName = jvm.getJvmName();
+//                    LOGGER.error("The JVM {} must be stopped before deploying the application", jvmName);
+//                    throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "The JVM " + jvmName + " must be stopped before attempting to deploy application " + appName);
+//                }
+//            }
             service.copyApplicationWarToGroupHosts(app);
 //            TODO do not propagate the default application templates since they are healthcheck specific
 //            service.copyApplicationConfigToGroupJvms(group, appName, aUser.getUser());
@@ -178,6 +178,16 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
             LOGGER.info("Skip deploying application {}, no JVM's in group {}", appName, group.getName() );
         }
         return ResponseBuilder.ok(app);
+    }
+
+    @Override
+    public Response deployWebArchive(final Identifier<Application> anAppToGet, String hostName) {
+        LOGGER.info("Deploying web archive for app ID {}", anAppToGet);
+        Application app = service.getApplication(anAppToGet);
+        final Group group = app.getGroup();
+        final String appName = app.getName();
+        service.copyApplicationWarToHost(app, hostName);
+        return null;
     }
 
     @Override

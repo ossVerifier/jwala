@@ -69,6 +69,8 @@ public interface ApplicationService {
 
     void copyApplicationWarToGroupHosts(Application application);
 
+    void copyApplicationWarToHost(Application application, String hostName);
+
     void copyApplicationConfigToGroupJvms(Group group, String appName, User user);
 
     void deployConfToOtherJvmHosts(String appName, String groupName, String jvmName, String resourceTemplateName, User user);

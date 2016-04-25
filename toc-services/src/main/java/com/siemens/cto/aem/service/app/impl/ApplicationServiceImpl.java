@@ -48,6 +48,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.Map.Entry;
 
 public class ApplicationServiceImpl implements ApplicationService {
 
@@ -371,6 +372,31 @@ public class ApplicationServiceImpl implements ApplicationService {
     @Override
     @Transactional
     public void copyApplicationWarToGroupHosts(Application application) {
+        Group group = groupService.getGroup(application.getGroup().getId());
+        final Set<Jvm> theJvms = group.getJvms();
+        if (theJvms != null && theJvms.size() > 0) {
+            Set<String> hostNames = new HashSet<>();
+            for (Jvm jvm : theJvms) {
+                final String host = jvm.getHostName().toLowerCase();
+                if (!hostNames.contains(host)) {
+                    hostNames.add(host);
+                }
+            }
+            copyAndExecuteCommand(application, hostNames);
+        }
+    }
+    
+    @Override
+    @Transactional
+    public void copyApplicationWarToHost(Application application, String hostName) {
+        if(hostName != null && !hostName.isEmpty()) {
+            Set<String> hostNames = new HashSet<>();
+            hostNames.add(hostName);
+            copyAndExecuteCommand(application, hostNames);
+        }
+    }
+
+    private void copyAndExecuteCommand(Application application, Set<String> hostNames) {
         File applicationWar = new File(application.getWarPath());
         final String sourcePath = applicationWar.getParent();
         File tempWarFile = new File(sourcePath + "/" + application.getWarName());
@@ -378,29 +404,18 @@ public class ApplicationServiceImpl implements ApplicationService {
         try {
             FileCopyUtils.copy(applicationWar, tempWarFile);
             final String destPath = ApplicationProperties.get("stp.webapps.dir");
-            Group group = groupService.getGroup(application.getGroup().getId());
-            final Set<Jvm> theJvms = group.getJvms();
-            if (theJvms != null && theJvms.size() > 0) {
-                Set<String> hostNames = new HashSet<>();
-                for (Jvm jvm : theJvms) {
-                    final String host = jvm.getHostName().toLowerCase();
-                    if (hostNames.contains(host)) {
-                        continue;
-                    } else {
-                        hostNames.add(host);
-                    }
-                    Future<CommandOutput> commandOutputFuture = executeCopyCommand(application, tempWarFile, destPath, jvm, host);
-                    futures.put(host, commandOutputFuture);
-                }
-                for (String keyHostName : futures.keySet()) {
-                    CommandOutput execData = futures.get(keyHostName).get();
-                    if (execData.getReturnCode().wasSuccessful()) {
-                        LOGGER.info("Copy of application war {} to {} was successful", applicationWar.getName(), keyHostName);
-                    } else {
-                        String errorOutput = execData.getStandardError().isEmpty() ? execData.getStandardOutput() : execData.getStandardError();
-                        LOGGER.error("Copy of application war {} to {} FAILED::{}", applicationWar.getName(), keyHostName, errorOutput);
-                        throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to copy application war to the group host " + keyHostName);
-                    }
+            for(String hostName: hostNames) {
+                Future<CommandOutput> commandOutputFuture = executeCopyCommand(application, tempWarFile, destPath, null, hostName);
+                futures.put(hostName, commandOutputFuture);
+            }
+            for(Entry<String, Future<CommandOutput>> entry:futures.entrySet()) {
+                CommandOutput execData = entry.getValue().get();
+                if (execData.getReturnCode().wasSuccessful()) {
+                    LOGGER.info("Copy of application war {} to {} was successful", applicationWar.getName(), entry.getKey());
+                } else {
+                    String errorOutput = execData.getStandardError().isEmpty() ? execData.getStandardOutput() : execData.getStandardError();
+                    LOGGER.error("Copy of application war {} to {} FAILED::{}", applicationWar.getName(), entry.getKey(), errorOutput);
+                    throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to copy application war to the group host " + entry.getKey());
                 }
             }
         } catch (IOException e) {
@@ -414,7 +429,6 @@ public class ApplicationServiceImpl implements ApplicationService {
                 tempWarFile.delete();
             }
         }
-
     }
 
     protected Future<CommandOutput> executeCopyCommand(final Application application, final File tempWarFile, final String destPath, final Jvm jvm, final String host) {
@@ -423,36 +437,34 @@ public class ApplicationServiceImpl implements ApplicationService {
             @Override
             public CommandOutput call() throws Exception {
                 LOGGER.info("Copying {} war to host {}", name, host);
-                final String jvmName = jvm.getJvmName();
-                final String hostName = jvm.getHostName();
-                CommandOutput commandOutput = applicationCommandExecutor.executeRemoteCommand(jvmName, hostName, ApplicationControlOperation.SECURE_COPY, new WindowsApplicationPlatformCommandProvider(), tempWarFile.getAbsolutePath().replaceAll("\\\\", "/"), destPath);
+                CommandOutput commandOutput = applicationCommandExecutor.executeRemoteCommand(null, host, ApplicationControlOperation.SECURE_COPY, new WindowsApplicationPlatformCommandProvider(), tempWarFile.getAbsolutePath().replaceAll("\\\\", "/"), destPath);
 
                 if (application.isUnpackWar()) {
                     final String warName = application.getWarName();
-                    LOGGER.info("Unpacking war {} on host {}", warName, hostName);
+                    LOGGER.info("Unpacking war {} on host {}", warName, host);
 
                     // create the .toc directory as the destination for the unpack-war script
                     final String tocScriptsPath = AemControl.Properties.USER_TOC_SCRIPTS_PATH.getValue();
-                    commandOutput = applicationCommandExecutor.executeRemoteCommand(jvmName, hostName, ApplicationControlOperation.CREATE_DIRECTORY, new WindowsApplicationPlatformCommandProvider(), tocScriptsPath);
+                    commandOutput = applicationCommandExecutor.executeRemoteCommand(null, host, ApplicationControlOperation.CREATE_DIRECTORY, new WindowsApplicationPlatformCommandProvider(), tocScriptsPath);
                     if (!commandOutput.getReturnCode().wasSuccessful()) {
                         return commandOutput; // return immediately if creating the dir failed
                     }
 
                     // copy the unpack war script to .toc
                     final String unpackWarScriptPath = ApplicationProperties.get("commands.scripts-path") + "/" + AemControl.Properties.UNPACK_WAR_SCRIPT_NAME;
-                    commandOutput = applicationCommandExecutor.executeRemoteCommand(jvmName, hostName, ApplicationControlOperation.SECURE_COPY, new WindowsApplicationPlatformCommandProvider(), unpackWarScriptPath, tocScriptsPath);
+                    commandOutput = applicationCommandExecutor.executeRemoteCommand(null, host, ApplicationControlOperation.SECURE_COPY, new WindowsApplicationPlatformCommandProvider(), unpackWarScriptPath, tocScriptsPath);
                     if (!commandOutput.getReturnCode().wasSuccessful()) {
                         return commandOutput; // return immediately if the copy failed
                     }
 
                     // make sure the scripts are executable
-                    commandOutput = applicationCommandExecutor.executeRemoteCommand(jvmName, hostName, ApplicationControlOperation.CHANGE_FILE_MODE, new WindowsApplicationPlatformCommandProvider(), "a+x", tocScriptsPath, "*.sh");
+                    commandOutput = applicationCommandExecutor.executeRemoteCommand(null, host, ApplicationControlOperation.CHANGE_FILE_MODE, new WindowsApplicationPlatformCommandProvider(), "a+x", tocScriptsPath, "*.sh");
                     if (!commandOutput.getReturnCode().wasSuccessful()) {
                         return commandOutput;
                     }
 
                     // call the unpack war script
-                    commandOutput = applicationCommandExecutor.executeRemoteCommand(jvmName, hostName, ApplicationControlOperation.UNPACK_WAR, new WindowsApplicationPlatformCommandProvider(), warName);
+                    commandOutput = applicationCommandExecutor.executeRemoteCommand(null, host, ApplicationControlOperation.UNPACK_WAR, new WindowsApplicationPlatformCommandProvider(), warName);
                 }
                 return commandOutput;
             }
