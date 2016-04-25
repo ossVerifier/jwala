@@ -38,12 +38,12 @@ var GroupOperationsDataTable = React.createClass({
                                 extraDataToPassOnCallback:"name",
                                 onClickMessage:"Stopping..."
                               }],
-
                               {sTitle:"State",
                                mData:null,
                                tocType:"custom",
                                tocRenderCfgFn: this.renderGroupStateRowData.bind(this, "grp"),
-                               colWidth:"130px"}];
+                               colWidth:"130px"},
+                               {mData:"jvmDetails", bVisible:false}];
 
         var webServerOfGrpChildTableDef = [{sTitle:"Web Server ID", mData:"id.id", bVisible:false},
                                            {mData:null, colWidth:"10px"},
