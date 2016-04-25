@@ -594,6 +594,13 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         return ResponseBuilder.ok();
     }
 
+    @Override
+    public Response controlGroups(final JsonControlGroup jsonControlGroup, final AuthenticatedUser authenticatedUser) {
+        groupControlService.controlGroups(new ControlGroupRequest(null, jsonControlGroup.toControlOperation()),
+                authenticatedUser.getUser());
+        return ResponseBuilder.ok();
+    }
+
     protected List<MembershipDetails> createMembershipDetailsFromJvms(final List<Jvm> jvms) {
         final List<MembershipDetails> membershipDetailsList = new LinkedList<>();
         for (Jvm jvm : jvms) {
@@ -864,6 +871,16 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     }
 
     @Override
+    public Response getStartedAndStoppedWebServersAndJvmsCount() {
+        final List<GroupServerInfo> groupServerInfos = new ArrayList<>();
+        for (final Group group : groupService.getGroups()) {
+            final GroupServerInfo groupServerInfo = getGroupServerInfo(group.getName());
+            groupServerInfos.add(groupServerInfo);
+        }
+        return ResponseBuilder.ok(groupServerInfos);
+    }
+
+    @Override
     public Response getStartedWebServersAndJvmsCount(final String groupName) {
         final GroupServerInfo groupServerInfo = new GroupServerInfoBuilder().setGroupName(groupName)
                 .setJvmStartedCount(jvmService.getJvmStartedCount(groupName))
@@ -871,6 +888,28 @@ public class GroupServiceRestImpl implements GroupServiceRest {
                 .setWebServerStartedCount(webServerService.getWebServerStartedCount(groupName))
                 .setWebServerCount(webServerService.getWebServerCount(groupName)).build();
         return ResponseBuilder.ok(groupServerInfo);
+    }
+
+    @Override
+    public Response getStartedAndStoppedWebServersAndJvmsCount(final String groupName) {
+        final GroupServerInfo groupServerInfo = getGroupServerInfo(groupName);
+        return ResponseBuilder.ok(groupServerInfo);
+    }
+
+    /**
+     * Get a group's children servers info (e.g. jvm count, web server count etc...)
+     * @param groupName the group name
+     * @return {@GroupServerInfo}
+     */
+    private GroupServerInfo getGroupServerInfo(final String groupName) {
+        return new GroupServerInfoBuilder().setGroupName(groupName)
+                    .setJvmStartedCount(jvmService.getJvmStartedCount(groupName))
+                    .setJvmStoppedCount(jvmService.getJvmStoppedCount(groupName))
+                    .setJvmForciblyStoppedCount(jvmService.getJvmForciblyStoppedCount(groupName))
+                    .setJvmCount(jvmService.getJvmCount(groupName))
+                    .setWebServerStartedCount(webServerService.getWebServerStartedCount(groupName))
+                    .setWebServerStoppedCount(webServerService.getWebServerStoppedCount(groupName))
+                    .setWebServerCount(webServerService.getWebServerCount(groupName)).build();
     }
 
     @Override

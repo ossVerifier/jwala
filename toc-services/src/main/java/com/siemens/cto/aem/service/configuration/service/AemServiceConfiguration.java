@@ -28,6 +28,7 @@ import com.siemens.cto.aem.persistence.service.WebServerPersistenceService;
 import com.siemens.cto.aem.persistence.service.impl.JpaJvmPersistenceServiceImpl;
 import com.siemens.cto.aem.service.HistoryService;
 import com.siemens.cto.aem.service.MessagingService;
+import com.siemens.cto.aem.service.RemoteCommandExecutorService;
 import com.siemens.cto.aem.service.app.ApplicationCommandService;
 import com.siemens.cto.aem.service.app.ApplicationService;
 import com.siemens.cto.aem.service.app.PrivateApplicationService;
@@ -222,10 +223,14 @@ public class AemServiceConfiguration implements SchedulingConfigurer {
     }
 
     @Bean(name = "jvmControlService")
-    public JvmControlService getJvmControlService(final HistoryCrudService historyCrudService, final MessagingService messagingService,
-                                                  final JvmStateService jvmStateService) {
+    public JvmControlService getJvmControlService(final HistoryCrudService historyCrudService,
+                                                  final MessagingService messagingService,
+                                                  final JvmStateService jvmStateService,
+                                                  final RemoteCommandExecutorService remoteCommandExecutorService,
+                                                  final SshConfiguration sshConfig) {
         return new JvmControlServiceImpl(getJvmService(), aemCommandExecutorConfig.getRemoteCommandExecutor(),
-                getHistoryService(historyCrudService), messagingService, jvmStateService);
+                getHistoryService(historyCrudService), messagingService, jvmStateService, remoteCommandExecutorService,
+                sshConfig, groupStateNotificationService);
     }
 
     @Bean(name = "groupControlService")

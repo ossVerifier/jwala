@@ -1,10 +1,11 @@
 package com.siemens.cto.aem.commandprocessor.impl.jsch;
 
+import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.JSchException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.jcraft.jsch.JSch;
-import com.jcraft.jsch.JSchException;
+import java.io.File;
 
 public class JschBuilder {
 
@@ -34,8 +35,12 @@ public class JschBuilder {
         LOGGER.debug("Initializing JSch Logger");
         JSch.setLogger(new JschLogger());
         final JSch jsch = new JSch();
-        jsch.setKnownHosts(knownHostsFileName);
-        jsch.addIdentity(privateKeyFileName);
+        if (null != knownHostsFileName && new File(knownHostsFileName).exists()) {
+            jsch.setKnownHosts(knownHostsFileName);
+        }
+        if (null != privateKeyFileName && new File(privateKeyFileName).exists()) {
+            jsch.addIdentity(privateKeyFileName);
+        }
         return jsch;
     }
 }

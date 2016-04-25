@@ -51,6 +51,10 @@ public class JvmStateReceiverAdapter extends ReceiverAdapter {
         logger.debug("Received JGroups JVM state message {} {}", src, messageMap);
 
         final JvmStateMessage message = converter.convert(messageMap);
+
+        // We don't report the "JVM" stopped state since it does not mean that the service has also stopped running.
+        // JvmControlServiceImpl is the one that knows if the service has stopped and thus has the responsibility of
+        // notifying the client.
         if (!JvmState.JVM_STOPPED.toString().equalsIgnoreCase(message.getState())) {
             final SetStateRequest<Jvm, JvmState> setStateCommand = message.toCommand();
             final CurrentState<Jvm, JvmState> newState = setStateCommand.getNewState();

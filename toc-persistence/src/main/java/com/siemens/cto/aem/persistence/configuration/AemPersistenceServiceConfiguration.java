@@ -58,7 +58,7 @@ public class AemPersistenceServiceConfiguration {
         return new JpaApplicationPersistenceServiceImpl(getApplicationCrudService(), getGroupCrudService());
     }
 
-    @Bean
+    @Bean(name = "webServerPersistenceService")
     public WebServerPersistenceService getWebServerPersistenceService() {
         return new WebServerPersistenceServiceImpl(getGroupCrudService(), getWebserverCrudService());
     }

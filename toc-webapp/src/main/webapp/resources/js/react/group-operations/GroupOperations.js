@@ -25,6 +25,28 @@ var GroupOperations = React.createClass({
 
         return  <div className={this.props.className}>
                     <div ref="stompMsgDiv"/>
+                    <div className="start-stop-groups-btn-container">
+                        <RButton label="START GROUPS"
+                                 className="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only start-stop-all-groups-button"
+                                 onClick={this.startGroups}/>
+                        <RButton label="STOP GROUPS"
+                                 className="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only start-stop-all-groups-button"
+                                 onClick={this.stopGroups}/>
+                    </div>
+                    <ModalDialogBox ref="stopGroupsModalDlg"
+                                    title="Confirmation Dialog Box"
+                                    show={false}
+                                    okCallback={this.confirmStopGroupsCallback}
+                                    content={<div className="text-align-center"><br/><b>Are you sure you want to STOP all the groups ?</b><br/><br/></div>}
+                                    okLabel="Yes"
+                                    cancelLabel="No" />
+                    <ModalDialogBox ref="startGroupsModalDlg"
+                                    title="Confirmation Dialog Box"
+                                    show={false}
+                                    okCallback={this.confirmStartGroupsCallback}
+                                    content={<div className="text-align-center"><br/><b>Are you sure you want to START all the groups ?</b><br/><br/></div>}
+                                    okLabel="Yes"
+                                    cancelLabel="No" />
                     <table style={{width:"1084px"}}>
                         <tr>
                             <td>
@@ -46,9 +68,27 @@ var GroupOperations = React.createClass({
                    </table>
                </div>
     },
+    startGroups: function() {
+        this.refs.startGroupsModalDlg.show(true);
+    },
+    confirmStartGroupsCallback: function() {
+        groupControlService.startGroups().caught(function(e){
+            console.log(e);
+        });
+        this.refs.startGroupsModalDlg.close();
+    },
+    stopGroups: function() {
+        this.refs.stopGroupsModalDlg.show(true);
+    },
+    confirmStopGroupsCallback: function() {
+        groupControlService.stopGroups().caught(function(e){
+            console.log(e);
+        });
+        this.refs.stopGroupsModalDlg.close();
+    },
     retrieveData: function() {
         var self = this;
-        this.props.service.getGroups().then(this.retrieveGroupDataHandler).then(this.props.service.getStartedWebServersAndJvmsCount)
+        this.props.service.getGroups().then(this.retrieveGroupDataHandler).then(this.props.service.getStartedAndStoppedWebServersAndJvmsCount)
             .then(this.retrieveChildrenInfoHandler).then(function(){self.forceUpdate()});
     },
     /**
@@ -85,8 +125,11 @@ var GroupOperations = React.createClass({
                 if (group.name === info.groupName) {
                     group.currentState.jvmCount = info.jvmCount;
                     group.currentState.jvmStartedCount = info.jvmStartedCount;
+                    group.currentState.jvmStoppedCount = info.jvmStoppedCount;
+                    group.currentState.jvmForciblyStoppedCount = info.jvmForciblyStoppedCount;
                     group.currentState.webServerCount = info.webServerCount;
                     group.currentState.webServerStartedCount = info.webServerStartedCount;
+                    group.currentState.webServerStoppedCount = info.webServerStoppedCount;
                 }
             });
         });
@@ -176,9 +219,19 @@ var GroupOperations = React.createClass({
                     // infrastructure, we have to put the said info in the stateString property.
                     var serverCount = newGroupState.webServerCount + newGroupState.jvmCount;
                     var serverStartedCount = newGroupState.webServerStartedCount + newGroupState.jvmStartedCount;
+                    var serverStoppedCount = newGroupState.webServerStoppedCount + newGroupState.jvmStoppedCount
+                                    + newGroupState.jvmForciblyStoppedCount;
                     newGroupState.stateString = "Started: " + serverStartedCount + "/" + serverCount;
+
+                    var statusColorCode = "partial";
+                    if (serverStartedCount === serverCount) {
+                        statusColorCode = "started";
+                    } else if (serverStoppedCount === serverCount) {
+                        statusColorCode = "stopped";
+                    }
+
                     GroupOperations.groupStatusWidgetMap["grp" + group.groupId.id].setStatus(newGroupState.stateString,
-                        newGroupState.asOf, newGroupState.message);
+                        newGroupState.asOf, newGroupState.message, statusColorCode);
 
                     // Update web server and JVM header states
                     // Note: Since the group operations page is a mix of React and spaghetti code, we do the update using jquery.
@@ -218,7 +271,7 @@ var GroupOperations = React.createClass({
                             var commandStatusWidget = self.commandStatusWidgetMap[GroupOperations.getExtDivCompId(webServer.groupId.id)];
                             if (commandStatusWidget !== undefined) {
                                 commandStatusWidget.push({stateString: newWebServerState.stateString,
-                                                          asOf: newWebServerState.asOf,
+                                                          asOf: newWebServerState.asOf.millis,
                                                           message: newWebServerState.message,
                                                           from: "Web Server " + webServer.name, userId: newWebServerState.userId},
                                                           newWebServerState.stateString === GroupOperations.FAILED ? "error-status-font" : "action-status-font");
@@ -250,7 +303,7 @@ var GroupOperations = React.createClass({
                             var commandStatusWidget = self.commandStatusWidgetMap[GroupOperations.getExtDivCompId(jvm.groupId.id)];
                             if (commandStatusWidget !== undefined) {
                                 commandStatusWidget.push({stateString: newJvmState.stateString,
-                                                          asOf: newJvmState.asOf,
+                                                          asOf: newJvmState.asOf.millis,
                                                           message: newJvmState.message,
                                                           from: "JVM " + jvm.name,
                                                           userId: newJvmState.userId},

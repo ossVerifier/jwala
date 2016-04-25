@@ -99,4 +99,13 @@ public class CommandOutput implements Serializable {
                 .replaceAll("\\s\\sexitNEWLINElogout", "")                      // remove the remaining shell prompt info
                 .replaceAll("NEWLINE", "\\\n");                                 // restore the new line formatting
     }
+
+    public void cleanHeapDumpStandardOutput() {
+        final String beginPhrase = "Dumping heap to";
+        final String endPhrase = "Heap dump file created";
+        int startIndex = standardOutput.indexOf(beginPhrase);
+        int endIndex = standardOutput.indexOf(endPhrase);
+        endIndex += endPhrase.length();
+        standardOutput = standardOutput.substring(startIndex, endIndex);
+    }
 }

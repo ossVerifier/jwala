@@ -71,7 +71,7 @@ public class JpaWebServer extends AbstractEntity<JpaWebServer> {
     @Column(name = "ERR_STS", length = 2147483647)
     private String errorStatus = "";
 
-    @ManyToMany(mappedBy = "webServers")
+    @ManyToMany(mappedBy = "webServers", fetch = FetchType.EAGER)
     private List<JpaGroup> groups = new ArrayList<>();
 
     public Long getId() {

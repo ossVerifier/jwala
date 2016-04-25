@@ -9,6 +9,7 @@ import com.siemens.cto.aem.common.domain.model.state.StateType;
 import com.siemens.cto.aem.common.exec.ExecCommand;
 import com.siemens.cto.aem.common.exec.RemoteExecCommand;
 import com.siemens.cto.aem.common.exec.RemoteSystemConnection;
+import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
 import com.siemens.cto.aem.persistence.service.JvmPersistenceService;
 import com.siemens.cto.aem.service.MessagingService;
 import com.siemens.cto.aem.service.RemoteCommandExecutorService;
@@ -26,9 +27,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.Future;
 
 /**
@@ -148,5 +147,30 @@ public class JvmStateServiceImpl implements JvmStateService {
         jvmPersistenceService.updateState(id, state, errMsg);
         inMemoryStateManagerService.put(id, new CurrentState<>(id, state, DateTime.now(), StateType.JVM));
         messagingService.send(new CurrentState<>(id, state, DateTime.now(), StateType.JVM, errMsg));
+    }
+
+    /**
+     * This method will deliver the states using a messaging service.
+     *
+     * @param groupName the group name
+     * @return number of JVM state notifications.
+     */
+    @Override
+    public int requestCurrentStatesRetrievalAndNotification(final String groupName) {
+        final List<JpaJvm> jpaJvmList = jvmPersistenceService.getJvmsByGroupId(groupName);
+            for (final JpaJvm jpaJvm : jpaJvmList) {
+                final CurrentState<Jvm, JvmState> inMemoryState = inMemoryStateManagerService.get(new Identifier<Jvm>(jpaJvm.getId()));
+                if (inMemoryState == null) {
+                    LOGGER.debug("in-memory JVM state = null");
+                    final CurrentState<Jvm, JvmState> currentState = new CurrentState<>(new Identifier<Jvm>(jpaJvm.getId()), jpaJvm.getState(),
+                            new DateTime(jpaJvm.getLastUpdateDate()), StateType.JVM, jpaJvm.getErrorStatus());
+                    LOGGER.debug("Sending JVM state from db: {}", currentState);
+                    messagingService.send(currentState);
+                } else {
+                    LOGGER.debug("Sending in-memory JVM state {}", inMemoryState);
+                    messagingService.send(inMemoryState);
+                }
+            }
+        return jpaJvmList.size();
     }
 }

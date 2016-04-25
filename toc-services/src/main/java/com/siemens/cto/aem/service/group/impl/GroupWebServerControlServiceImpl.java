@@ -2,9 +2,9 @@ package com.siemens.cto.aem.service.group.impl;
 
 import com.siemens.cto.aem.common.dispatch.GroupWebServerDispatchCommand;
 import com.siemens.cto.aem.common.dispatch.WebServerDispatchCommandResult;
-import com.siemens.cto.aem.common.request.webserver.ControlGroupWebServerRequest;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.user.User;
+import com.siemens.cto.aem.common.request.webserver.ControlGroupWebServerRequest;
 import com.siemens.cto.aem.service.dispatch.CommandDispatchGateway;
 import com.siemens.cto.aem.service.group.GroupService;
 import com.siemens.cto.aem.service.group.GroupWebServerControlService;
@@ -35,9 +35,16 @@ public class GroupWebServerControlServiceImpl implements GroupWebServerControlSe
         commandDispatchGateway.asyncDispatchCommand(dispatchCommand);
     }
 
-    @Transactional
     @Override
-    public void dispatchCommandComplete(List<WebServerDispatchCommandResult> results) {
+    public void controlAllWebSevers(final ControlGroupWebServerRequest controlGroupWebServerRequest, final User user) {
+        commandDispatchGateway.asyncDispatchCommand(new GroupWebServerDispatchCommand(null, controlGroupWebServerRequest,
+                user));
     }
 
+    @Transactional
+    @Override
+    public void dispatchCommandComplete(final List<WebServerDispatchCommandResult> results) {
+        // We need to have this or else Spring integration will complain that this service
+        // does not have any eligible methods for handling Messages.
+    }
 }

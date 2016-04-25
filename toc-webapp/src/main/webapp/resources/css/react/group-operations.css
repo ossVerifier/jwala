@@ -3,12 +3,6 @@
     float: left;
 }
 
-.status-label {
-    display: inline-block;
-    height: 18px;
-    margin-top: 4px;
-}
-
 .error-indicator-button {
     float: right;
     display: inline-block;
@@ -91,4 +85,9 @@
 
 .display-none {
     display: none;
+}
+
+.start-stop-groups-btn-container {
+    width: 100%;
+    text-align: right;
 }

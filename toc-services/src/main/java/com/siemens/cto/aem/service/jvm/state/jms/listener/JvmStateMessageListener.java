@@ -67,6 +67,9 @@ public class JvmStateMessageListener implements MessageListener {
         final JvmStateMessage message = converter.convert(aMapMessage);
         LOGGER.debug("Processing message: {}", message);
 
+        // We don't report the "JVM" stopped state since it does not mean that the service has also stopped running.
+        // JvmControlServiceImpl is the one that knows if the service has stopped and thus has the responsibility of
+        // notifying the client.
         if (!JvmState.JVM_STOPPED.toString().equalsIgnoreCase(message.getState())) {
             final SetStateRequest<Jvm, JvmState> setStateCommand = message.toCommand();
             final CurrentState<Jvm, JvmState> newState = setStateCommand.getNewState();
@@ -92,7 +95,7 @@ public class JvmStateMessageListener implements MessageListener {
      * @param newState the latest state
      * @return returns true if the state is not the same compared to the previous state or if there's a message (error message)
      */
-    private boolean isStateChangedAndOrMsgNotEmpty(CurrentState<Jvm, JvmState> newState) {
+    private boolean isStateChangedAndOrMsgNotEmpty(final CurrentState<Jvm, JvmState> newState) {
         boolean stateAndOrMsgChanged = false;
 
         if (!inMemoryStateManagerService.containsKey(newState.getId()) ||

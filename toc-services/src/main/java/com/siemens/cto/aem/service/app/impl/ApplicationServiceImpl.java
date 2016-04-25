@@ -23,7 +23,6 @@ import com.siemens.cto.aem.persistence.service.ApplicationPersistenceService;
 import com.siemens.cto.aem.persistence.service.JvmPersistenceService;
 import com.siemens.cto.aem.service.app.ApplicationService;
 import com.siemens.cto.aem.service.app.PrivateApplicationService;
-import com.siemens.cto.aem.service.exception.ApplicationServiceException;
 import com.siemens.cto.aem.service.group.GroupService;
 import com.siemens.cto.aem.template.GeneratorUtils;
 import com.siemens.cto.toc.files.FileManager;

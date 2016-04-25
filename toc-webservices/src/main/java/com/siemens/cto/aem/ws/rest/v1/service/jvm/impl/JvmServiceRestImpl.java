@@ -271,7 +271,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
      * @param jvm the JVM
      * @param useGeneric tells the app to use the generic resource generation API. This is an interim option until the old resource API has been phased out.
      * @param user the user
-     * @return
+     * @return {@link Jvm}
      */
     protected Jvm generateConfFilesAndDeploy(final Jvm jvm, final boolean useGeneric, final AuthenticatedUser user) {
 
@@ -312,7 +312,8 @@ public class JvmServiceRestImpl implements JvmServiceRest {
             deployJvmConfigJar(jvm, user, jvmConfigJar);
 
             // deploy any application context xml's in the group
-            deployApplicationContextXMLs(jvm);
+            // TODO reimplement this once the generic resource template APIs are complete
+            // deployApplicationContextXMLs(jvm);
 
             // re-install the service
             installJvmWindowsService(jvm, user);
@@ -523,15 +524,16 @@ public class JvmServiceRestImpl implements JvmServiceRest {
         try {
             // copy the tomcat instance-template directory
             final File srcDir = new File(pathsTomcatInstanceTemplatedir);
-            final File destDir = generatedDir;
-            final String destDirPath = destDir.getAbsolutePath();
+            final String destDirPath = generatedDir.getAbsolutePath();
+
+            // Copy the templates that would be included in the JAR file.
             LOGGER.debug("location of template copy: {}", destDirPath);
             for (String dirPath : srcDir.list()) {
                 final File srcChild = new File(srcDir + "/" + dirPath);
                 if (srcChild.isDirectory()) {
-                    FileUtils.copyDirectoryToDirectory(srcChild, destDir);
+                    FileUtils.copyDirectoryToDirectory(srcChild, generatedDir);
                 } else {
-                    FileUtils.copyFileToDirectory(srcChild, destDir);
+                    FileUtils.copyFileToDirectory(srcChild, generatedDir);
                 }
             }
 
@@ -573,7 +575,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
 
         // jar up the file
         String jvmConfigTar = jvmName + CONFIG_JAR;
-        JarOutputStream target = null;
+        JarOutputStream target;
         final String configJarPath = stpJvmResourcesDir + "/" + jvmConfigTar;
         try {
             final File jvmResourcesDirFile = new File(stpJvmResourcesDir);

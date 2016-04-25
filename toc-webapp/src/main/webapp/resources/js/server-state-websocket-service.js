@@ -4,7 +4,7 @@
 var serverStateWebSocketService = {
     connect: function(msgHandler, connectedCallback, errorHandler) {
         var self = this;
-        var socket = new SockJS("/toc/endpoint");
+        var socket = new SockJS(tocVars["rootContextName"] + "/endpoint");
         stompClient = Stomp.over(socket);
         stompClient.connect({}, function(frame) {
             console.log("Connected: " + frame);

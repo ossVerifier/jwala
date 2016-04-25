@@ -11,4 +11,11 @@ public interface GroupJvmControlService {
     void controlGroup(final ControlGroupJvmRequest controlGroupJvmRequest, final User aUser);
     
     void dispatchCommandComplete(List<JvmDispatchCommandResult> results);
+
+    /**
+     * Control all JVMs.
+     * @param controlGroupJvmRequest {@link ControlGroupJvmRequest}
+     * @param user the user who's executing this method
+     */
+    void controlAllJvms(ControlGroupJvmRequest controlGroupJvmRequest, User user);
 }

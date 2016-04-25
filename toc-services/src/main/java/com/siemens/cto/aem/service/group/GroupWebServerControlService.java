@@ -9,7 +9,13 @@ import java.util.List;
 public interface GroupWebServerControlService {
 
     void controlGroup(final ControlGroupWebServerRequest controlGroupWebServerRequest, final User aUser);
-    
-    void dispatchCommandComplete(List<WebServerDispatchCommandResult> results);
 
+    /**
+     * Control all web servers.
+     * @param controlGroupWebServerRequest {@link ControlGroupWebServerRequest}
+     * @param user the user who's executed this method
+     */
+    void controlAllWebSevers(ControlGroupWebServerRequest controlGroupWebServerRequest, User user);
+
+    void dispatchCommandComplete(List<WebServerDispatchCommandResult> results);
 }

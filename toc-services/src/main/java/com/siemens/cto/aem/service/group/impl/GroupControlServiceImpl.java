@@ -56,4 +56,19 @@ public class GroupControlServiceImpl implements GroupControlService {
         groupJvmControlService.controlGroup(controlGroupJvmCommand, aUser);
     }
 
+    @Override
+    public void controlGroups(final ControlGroupRequest controlGroupRequest, final User user) {
+        LOGGER.debug("Controlling groups. ControlGroupRequest = {}", controlGroupRequest);
+
+        final WebServerControlOperation wsControlOperation = WebServerControlOperation
+                .convertFrom(controlGroupRequest.getControlOperation().getExternalValue());
+        groupWebServerControlService.controlAllWebSevers(new ControlGroupWebServerRequest(controlGroupRequest.getGroupId(),
+                wsControlOperation), user);
+
+
+        final JvmControlOperation jvmControlOperation = JvmControlOperation.convertFrom(controlGroupRequest.getControlOperation()
+                .getExternalValue());
+
+        groupJvmControlService.controlAllJvms(new ControlGroupJvmRequest(controlGroupRequest.getGroupId(), jvmControlOperation), user);
+    }
 }

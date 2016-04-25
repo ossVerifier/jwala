@@ -66,4 +66,8 @@ public class GroupJvmControlServiceImpl implements GroupJvmControlService {
         }
     }
 
+    @Override
+    public void controlAllJvms(final ControlGroupJvmRequest controlGroupJvmRequest, final User user) {
+        commandDispatchGateway.asyncDispatchCommand(new GroupJvmDispatchCommand(null, controlGroupJvmRequest, user));
+    }
 }

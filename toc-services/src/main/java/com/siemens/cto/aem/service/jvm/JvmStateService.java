@@ -46,4 +46,10 @@ public interface JvmStateService {
      * @param errMsg the error message
      */
     void updateState(Identifier<Jvm> id, JvmState state, String errMsg);
+
+    /**
+     * Make a request to retrieve and send "current" states.
+     * @param groupName the group name
+     */
+    int requestCurrentStatesRetrievalAndNotification(String groupName);
 }

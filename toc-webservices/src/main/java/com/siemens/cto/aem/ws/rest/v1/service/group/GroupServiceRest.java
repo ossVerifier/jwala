@@ -214,6 +214,16 @@ public interface GroupServiceRest {
                           final JsonControlGroup groupControlOperation,
                           @BeanParam final AuthenticatedUser aUser);
 
+    /**
+     * Controls all groups.
+     * @param jsonControlGroup contains the actual operation to execute e.g. start/stop. Please see {@link JsonControlGroup}.
+     * @param authenticatedUser the user who made this control request
+     * @return {@link Response}
+     */
+    @POST
+    @Path("/commands")
+    Response controlGroups(JsonControlGroup jsonControlGroup, @BeanParam AuthenticatedUser authenticatedUser);
+
     @POST
     @Path("/{groupId}/webservers/commands")
     Response controlGroupWebservers(@PathParam("groupId") final Identifier<Group> aGroupId,
@@ -249,8 +259,16 @@ public interface GroupServiceRest {
     Response getStartedWebServersAndJvmsCount();
 
     @GET
+    @Path("/children/startedAndStoppedCount")
+    Response getStartedAndStoppedWebServersAndJvmsCount();
+
+    @GET
     @Path("/{groupName}/children/startedCount")
     Response getStartedWebServersAndJvmsCount(@PathParam("groupName") String groupName);
+
+    @GET
+    @Path("/{groupName}/children/startedAndStoppedCount")
+    Response getStartedAndStoppedWebServersAndJvmsCount(@PathParam("groupName") String groupName);
 
     @GET
     @Path("/children/stoppedCount")

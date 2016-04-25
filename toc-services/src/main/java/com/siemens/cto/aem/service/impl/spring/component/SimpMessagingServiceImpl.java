@@ -26,7 +26,7 @@ public class SimpMessagingServiceImpl implements MessagingService {
     }
 
     @Override
-    public void send(final Object payLoad) {
+    public synchronized void send(final Object payLoad) {
         messagingTemplate.convertAndSend(topic, payLoad);
     }
 

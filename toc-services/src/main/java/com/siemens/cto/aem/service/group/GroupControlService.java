@@ -7,4 +7,5 @@ public interface GroupControlService {
 
     void controlGroup(ControlGroupRequest controlGroupRequest, User aUser);
 
+    void controlGroups(ControlGroupRequest controlGroupRequest, User user);
 }

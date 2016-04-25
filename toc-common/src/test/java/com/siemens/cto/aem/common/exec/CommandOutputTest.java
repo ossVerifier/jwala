@@ -76,4 +76,11 @@ public class CommandOutputTest {
         testObject.cleanStandardOutput();
         assertEquals(STANDARD_OUTPUT_WITH_SHELL_INFO_REMOVED, testObject.extractMessageFromStandardOutput());
     }
+
+    @Test
+    public void testCleanStandardOutForHeapDump() {
+        CommandOutput commandOutput = new CommandOutput(new ExecReturnCode(0), "SHOULD NOT SHOW UP IN STANDARD OUTDumping heap to d:/test/location/for/heap/dump \r\nHeap dump file createdDO NOT SHOW UP EITHER", "");
+        commandOutput.cleanHeapDumpStandardOutput();
+        assertEquals("Dumping heap to d:/test/location/for/heap/dump \r\nHeap dump file created", commandOutput.getStandardOutput());
+    }
 }

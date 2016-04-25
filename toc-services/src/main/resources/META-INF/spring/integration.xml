@@ -51,8 +51,10 @@
 	<int:service-activator id="groupJvmControlServiceActivator"
 		input-channel="jvmAggregated" method="dispatchCommandComplete" ref="groupJvmControlService" />
 
-	<bean id="groupJvmSplitterBean"
-		class="com.siemens.cto.aem.service.dispatch.impl.GroupJvmSplitterBean" />
+	<bean id="groupJvmSplitterBean" class="com.siemens.cto.aem.service.dispatch.impl.GroupJvmSplitterBean">
+		<constructor-arg ref="jvmPersistenceService"/>
+	</bean>
+
 	<bean id="jvmCommandExecutorBean"
 		class="com.siemens.cto.aem.service.dispatch.impl.JvmCommandExecutorBean">
 		<constructor-arg ref="jvmControlService" />
@@ -79,9 +81,8 @@
 			send-partial-result-on-expiry="true" discard-channel="subcommand-error" />
 	</int:chain>
 
-	<bean id="groupWebServerSplitterBean"
-		class="com.siemens.cto.aem.service.dispatch.impl.GroupWebServerSplitterBean">
-		<constructor-arg ref="webServerService"/>
+	<bean id="groupWebServerSplitterBean" class="com.siemens.cto.aem.service.dispatch.impl.GroupWebServerSplitterBean">
+		<constructor-arg ref="webServerPersistenceService"/>
 	</bean>
 
 	<bean id="webServerCommandExecutorBean"
