@@ -77,6 +77,7 @@ var ExpandCollapseControl = React.createClass({
             // on its top level container (the parent of the parent)
             if (!dataTable.parent().parent().hasClass("ui-accordion")) {
                 dataTable.parent().parent().accordion({
+                    active: tocVars["opsGrpChildrenViewCollapsed"] === "false" ? 0 : false /* active = true will not open the accordion by default, it has to be 0! */,
                     header: headerComponents === undefined ? "h3" : "div.accordion-title",
                     collapsible: true,
                     heightStyle: "content",
