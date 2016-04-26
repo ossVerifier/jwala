@@ -4,6 +4,7 @@ import com.siemens.cto.aem.common.configuration.TestExecutionProfile;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.common.domain.model.path.Path;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.request.jvm.CreateJvmRequest;
@@ -13,6 +14,7 @@ import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
 import com.siemens.cto.aem.persistence.jpa.domain.resource.config.template.JpaJvmConfigTemplate;
 import com.siemens.cto.aem.persistence.jpa.service.impl.JvmCrudServiceImpl;
 import org.apache.commons.lang3.StringUtils;
+import org.joda.time.DateTime;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -26,6 +28,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.File;
@@ -116,6 +119,33 @@ public class JvmCrudServiceImplTest {
 
         foundJvm = jvmCrudService.findJvmByExactName("jvm-11");
         assertEquals(jvmOneOne.getName(), foundJvm.getJvmName());
+    }
+
+    @Test
+    public void testUpdateState() throws InterruptedException {
+        final CreateJvmRequest createJvmRequest = new CreateJvmRequest("jvmName", "hostName", 0, 0, 0, 0, 0,
+                new Path("./stp.png"), StringUtils.EMPTY);
+        final JpaJvm newJpaJvm = jvmCrudService.createJvm(createJvmRequest);
+        final Identifier<Jvm> jpaJvmId = new Identifier<>(newJpaJvm.getId());
+        assertEquals(1, jvmCrudService.updateState(jpaJvmId, JvmState.JVM_STOPPED));
+    }
+
+    @Test
+    public void testUpdateErrorStatus() {
+        final CreateJvmRequest createJvmRequest = new CreateJvmRequest("jvmName", "hostName", 0, 0, 0, 0, 0,
+                new Path("./stp.png"), StringUtils.EMPTY);
+        final JpaJvm newJpaJvm = jvmCrudService.createJvm(createJvmRequest);
+        final Identifier<Jvm> jpaJvmId = new Identifier<>(newJpaJvm.getId());
+        assertEquals(1, jvmCrudService.updateErrorStatus(jpaJvmId, "error!"));
+    }
+
+    @Test
+    public void testUpdateStateAndErrSts() {
+        final CreateJvmRequest createJvmRequest = new CreateJvmRequest("jvmName", "hostName", 0, 0, 0, 0, 0,
+                new Path("./stp.png"), StringUtils.EMPTY);
+        final JpaJvm newJpaJvm = jvmCrudService.createJvm(createJvmRequest);
+        final Identifier<Jvm> jpaJvmId = new Identifier<>(newJpaJvm.getId());
+        assertEquals(1, jvmCrudService.updateState(jpaJvmId, JvmState.JVM_FAILED, "error!"));
     }
 
     @Configuration

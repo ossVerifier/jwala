@@ -296,30 +296,30 @@ public class WebServerCrudServiceImpl extends AbstractCrudServiceImpl<JpaWebServ
     }
 
     @Override
-    public void updateState(final Identifier<WebServer> id, final WebServerReachableState state) {
+    public int updateState(final Identifier<WebServer> id, final WebServerReachableState state) {
         // Normally we would load the JpaWebServer then set the states but I reckon running an UPDATE query would be faster since
         // it's only one transaction vs 2 (find and update).
         final Query query = entityManager.createNamedQuery(JpaWebServer.QUERY_UPDATE_STATE_BY_ID);
         query.setParameter(JpaWebServer.QUERY_PARAM_STATE, state);
         query.setParameter(JpaWebServer.QUERY_PARAM_ID, id.getId());
-        query.executeUpdate();
+        return query.executeUpdate();
     }
 
     @Override
-    public void updateErrorStatus(final Identifier<WebServer> id, final String errorStatus) {
+    public int updateErrorStatus(final Identifier<WebServer> id, final String errorStatus) {
         final Query query = entityManager.createNamedQuery(JpaWebServer.QUERY_UPDATE_ERROR_STATUS_BY_ID);
         query.setParameter(JpaWebServer.QUERY_PARAM_ERROR_STATUS, errorStatus);
         query.setParameter(JpaWebServer.QUERY_PARAM_ID, id.getId());
-        query.executeUpdate();
+        return query.executeUpdate();
     }
 
     @Override
-    public void updateState(final Identifier<WebServer> id, final WebServerReachableState state, final String errorStatus) {
+    public int updateState(final Identifier<WebServer> id, final WebServerReachableState state, final String errorStatus) {
         final Query query = entityManager.createNamedQuery(JpaWebServer.QUERY_UPDATE_STATE_AND_ERR_STS_BY_ID);
         query.setParameter(JpaWebServer.QUERY_PARAM_STATE, state);
         query.setParameter(JpaWebServer.QUERY_PARAM_ERROR_STATUS, errorStatus);
         query.setParameter(JpaWebServer.QUERY_PARAM_ID, id.getId());
-        query.executeUpdate();
+        return query.executeUpdate();
     }
 
     @Override

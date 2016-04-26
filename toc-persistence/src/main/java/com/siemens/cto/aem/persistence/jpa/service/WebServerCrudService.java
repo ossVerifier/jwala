@@ -48,11 +48,11 @@ public interface WebServerCrudService extends CrudService<JpaWebServer> {
 
     void updateResourceTemplate(final String wsName, final String resourceTemplateName, final String template);
 
-	void updateState(Identifier<WebServer> id, WebServerReachableState state);
+	int updateState(Identifier<WebServer> id, WebServerReachableState state);
 
-	void updateErrorStatus(Identifier<WebServer> id, String errorStatus);
+	int updateErrorStatus(Identifier<WebServer> id, String errorStatus);
 
-	void updateState(Identifier<WebServer> id, WebServerReachableState state, String errorStatus);
+	int updateState(Identifier<WebServer> id, WebServerReachableState state, String errorStatus);
 
 	Long getWebServerStartedCount(String groupName);
 
