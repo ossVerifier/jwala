@@ -8,7 +8,6 @@ div.noDataFoundMsg {
 
 tr.row_selected > td {
     background:#fbec88 !important;
-    font-weight:bold
 }
 
 table.dataTable tr.odd { background-color: #F2F2F2; }

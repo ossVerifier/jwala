@@ -30,14 +30,21 @@ task createDdl (type:JavaExec) {
     main = 'org.apache.openjpa.jdbc.meta.MappingTool'
     classpath = files(project.buildDir.path + "/classes/main", sourceSets.test.compileClasspath)
     systemProperties = pm
-    args = ["-action","buildSchema",
-            "-schemaAction","build",
-            "-sql","create.sql",
-            "-pk","true",
-            "-fk","true",
-            "-ix","true",
-            "-sq","true",
-            "-p","${project.projectDir.path}/src/main/resources/META-INF/persistence.xml"]
+    args = ["-action", "buildSchema",
+            "-schemaAction", "build",
+            "-sql", "create.sql",
+            "-pk", "true",
+            "-fk", "true",
+            "-ix", "true",
+            "-sq", "true",
+            "-p", "${project.projectDir.path}/src/main/resources/META-INF/persistence.xml"]
+
+    doLast {
+        def createSql = new File("./create.sql")
+        def version = project.properties['buildVersion']
+        createSql.append('CREATE TABLE IF NOT EXISTS VERSION (RELEASE_VERSION VARCHAR(255), LAST_UPDATED TIMESTAMP);\n' +
+                'INSERT INTO VERSION (RELEASE_VERSION, LAST_UPDATED) VALUES (\'' + version + '\', NOW());')
+    }
 }
 
 task dropDdl (type:JavaExec) {

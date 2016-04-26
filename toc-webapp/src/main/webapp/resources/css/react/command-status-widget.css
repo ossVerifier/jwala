@@ -1,0 +1,8 @@
+.command-status-widget.container {
+    padding: 0 0 0 0 !important;
+    position: relative !important;
+}
+
+.command-status-widget > .title {
+    padding-left: 5px;
+}

@@ -103,10 +103,16 @@ var GroupOperations = React.createClass({
         // If the jvm is already in the said array, do not put it in anymore.
         theGroups.forEach(function(group){
             for (var i = 0; i < group.jvms.length; i++) {
+                var jvmDetails = "";
                 if (jvmArrayIdxMap[group.jvms[i].id.id] == undefined) {
                     jvms.push(group.jvms[i]);
                     jvmArrayIdxMap[group.jvms[i].id.id] = i;
+
+                    // Make a string of all the JVM name and host name of a group.
+                    // This will be used to make jQuery datatable do filtering by JVM and host name.
+                    jvmDetails = jvmDetails + group.jvms[i].jvmName + group.jvms[i].hostName;
                 }
+                group["jvmDetails"] = escape(jvmDetails);
             }
         });
 

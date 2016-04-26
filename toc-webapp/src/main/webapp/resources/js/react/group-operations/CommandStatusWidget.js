@@ -3,7 +3,7 @@
  */
 var CommandStatusWidget = React.createClass({
     getInitialState: function() {
-        return {statusRows: [], isOpen: true};
+        return {statusRows: [], isOpen: this.props.isOpen === undefined ? true : this.props.isOpen};
     },
     render: function() {
         var self = this;
@@ -19,8 +19,8 @@ var CommandStatusWidget = React.createClass({
                       </div>;
         }
 
-        return  <div ref="commandStatusContainer" className="ui-dialog ui-widget ui-widget-content ui-front command-status-container">
-                    <div className="ui-dialog-titlebar ui-widget-header ui-helper-clearfix command-status-header">
+        return  <div ref="commandStatusContainer" className="command-status-widget container ui-dialog ui-widget ui-widget-content ui-front title-container-style">
+                    <div className="title accordion-title nowrap ui-accordion-header ui-state-default ui-corner-all ui-accordion-icons">
                         <span className={"ui-accordion-header-icon ui-icon " + openCloseBtnClassName} style={{display:"inline-block"}} onClick={this.clickOpenCloseWindowHandler}></span>
                         <span className="ui-dialog-title" style={{display:"inline-block", float:"none", width:"auto"}}>Action and Event Logs</span>
                     </div>
