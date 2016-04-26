@@ -242,9 +242,11 @@ var GroupOperationsDataTable = React.createClass({
        // Mount a status window where one can see action events and status errors.
        var mountingNode = $("#" + key);
        mountingNode.empty(); // Remove the node. TODO: Use react's unmount.
-       React.render(<CommandStatusWidget key={key} groupName={groupName} serverName={serverName}/>, mountingNode.get(0), function(){
-           self.props.commandStatusWidgetMap[key] = this;
-       });
+       React.render(<CommandStatusWidget key={key} groupName={groupName} serverName={serverName}
+                                         isOpen={tocVars["opsGrpChildrenViewOpen"] === "true"}/>, mountingNode.get(0),
+                                         function(){
+                                             self.props.commandStatusWidgetMap[key] = this;
+                                         });
 
        // Update web servers and JVMs header states.
        // Note: Since the group operations page is a mix of React and spaghetti code, we do the update using jquery.

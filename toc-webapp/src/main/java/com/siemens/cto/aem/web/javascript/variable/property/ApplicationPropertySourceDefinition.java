@@ -13,7 +13,7 @@ public enum ApplicationPropertySourceDefinition {
     HEALTH_CHECK_APP("healthCheckApp", "health.check.app", "/hct", VariableStyle.STRING),
     HISTORY_MAX_READ_REC_COUNT("historyReadMaxRecCount", "history.max-read-rec-count", "30", VariableStyle.STRING),
     RESOURCES_ENABLED("resourcesEnabled", "resources.enabled", "true", VariableStyle.STRING),
-    OPS_GRP_CHILDREN_VIEW_COLLAPSED("opsGrpChildrenViewCollapsed", "operations.group.children.view.collapsed", "false", VariableStyle.STRING);
+    OPS_GRP_CHILDREN_VIEW_OPEN("opsGrpChildrenViewOpen", "operations.group.children.view.open", "true", VariableStyle.STRING);
 
     private final String variableName;
     private final String propertyKey;
