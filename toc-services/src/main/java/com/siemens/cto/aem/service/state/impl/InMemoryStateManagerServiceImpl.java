@@ -33,5 +33,4 @@ public class InMemoryStateManagerServiceImpl<K, V>  implements InMemoryStateMana
     public boolean containsKey(K key) {
         return stateMap.containsKey(key);
     }
-
 }
