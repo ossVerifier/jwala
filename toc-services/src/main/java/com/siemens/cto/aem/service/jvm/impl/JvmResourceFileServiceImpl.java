@@ -3,6 +3,7 @@ package com.siemens.cto.aem.service.jvm.impl;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.jvm.JvmControlOperation;
 import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
+import com.siemens.cto.aem.common.domain.model.resource.ResourceGroup;
 import com.siemens.cto.aem.common.domain.model.resource.ResourceTemplateMetaData;
 import com.siemens.cto.aem.common.exec.CommandOutput;
 import com.siemens.cto.aem.common.exec.ExecReturnCode;
@@ -203,8 +204,7 @@ public class JvmResourceFileServiceImpl implements JvmResourceFileService {
             // TODO: Find out if we need to pass all the JVMs or the JVMs of a certain group!
             // Note: We'll find out when we write a JVM resource file template.
             final String generatedResourceStr = resourceService.generateResourceFile(jpaJvmConfigTemplate.getTemplateContent(),
-                    null, null, jvmPersistenceService.getJvms(), jvmPersistenceService.findJvmByExactName(jvmName), null,
-                    null);
+                    new ResourceGroup(null, null, jvmPersistenceService.getJvms(), jvmPersistenceService.findJvmByExactName(jvmName), null, null));
 
             final String jvmResourcesRelativeDir = destPath + resourceTemplateMetaData.getRelativeDir();
             LOGGER.debug("generating template in location: {}", jvmResourcesRelativeDir + "/", resourceTemplateMetaData.getConfigFileName());

@@ -9,6 +9,7 @@ import com.siemens.cto.aem.common.domain.model.jvm.Jvm
 import com.siemens.cto.aem.common.domain.model.jvm.JvmState
 import com.siemens.cto.aem.common.domain.model.path.FileSystemPath
 import com.siemens.cto.aem.common.domain.model.path.Path
+import com.siemens.cto.aem.common.domain.model.resource.ResourceGroup
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer
 import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState
 import org.joda.time.DateTime
@@ -21,7 +22,7 @@ class TestResourceFileGenerator extends GroovyTestCase{
     WebServer webServer
     Jvm jvm
     Application app
-
+    ResourceGroup resourceGroup;
 
     void setUp() {
         def groupHashSet = new HashSet<Group>();
@@ -62,40 +63,40 @@ class TestResourceFileGenerator extends GroovyTestCase{
 
     void testGenerateHttpdConfConfigFile(){
         File httpdTemplate = new File("./src/test/resources/HttpdConfTemplate.tpl");
-
-        def generatedText = ResourceFileGenerator.generateResourceConfig(httpdTemplate.text,webServers, webServer, jvms, null, apps, null);
+        resourceGroup = new ResourceGroup(webServers, webServer, jvms, null, apps, null)
+        def generatedText = ResourceFileGenerator.generateResourceConfig(httpdTemplate.text, resourceGroup);
         def expectedText = new File("./src/test/resources/HttpdConfTemplate-EXPECTED.conf").text
         assertEquals(removeCarriageReturnsAndNewLines(expectedText), removeCarriageReturnsAndNewLines(generatedText));
     }
 
     void testGenerateInvokeBatConfigFile(){
         File httpdTemplate = new File("./src/test/resources/InvokeBatTemplate.tpl");
-
-        def generatedText = ResourceFileGenerator.generateResourceConfig(httpdTemplate.text,webServers, null, jvms, jvm, apps, null);
+        resourceGroup = new ResourceGroup(webServers, null, jvms, jvm, apps, null)
+        def generatedText = ResourceFileGenerator.generateResourceConfig(httpdTemplate.text, resourceGroup);
         def expectedText = new File("./src/test/resources/InvokeBatTemplate-EXPECTED.bat").text
         assertEquals(removeCarriageReturnsAndNewLines(expectedText), removeCarriageReturnsAndNewLines(generatedText));
     }
 
     void testGenerateInvokeWSBatConfigFile() {
         File httpdTemplate = new File("./src/test/resources/InvokeWSBatTemplate.tpl");
-
-        def generatedText = ResourceFileGenerator.generateResourceConfig(httpdTemplate.text,webServers, webServer, jvms, null, apps, null);
+        resourceGroup = new ResourceGroup(webServers, webServer, jvms, null, apps, null)
+        def generatedText = ResourceFileGenerator.generateResourceConfig(httpdTemplate.text, resourceGroup);
         def expectedText = new File("./src/test/resources/InvokeWSBatTemplate-EXPECTED.bat").text
         assertEquals(removeCarriageReturnsAndNewLines(expectedText), removeCarriageReturnsAndNewLines(generatedText));
     }
 
     void testGenerateServerXMLConfigFile() {
         File httpdTemplate = new File("./src/test/resources/ServerXMLTemplate.tpl");
-
-        def generatedText = ResourceFileGenerator.generateResourceConfig(httpdTemplate.text,webServers, null, jvms, jvm, apps, null);
+        resourceGroup = new ResourceGroup(webServers, null, jvms, jvm, apps, null)
+        def generatedText = ResourceFileGenerator.generateResourceConfig(httpdTemplate.text, resourceGroup);
         def expectedText = new File("./src/test/resources/ServerXMLTemplate-EXPECTED.xml").text
         assertEquals(removeCarriageReturnsAndNewLines(expectedText), removeCarriageReturnsAndNewLines(generatedText));
     }
 
     void testGenerateSetenvBatConfigFile() {
         File httpdTemplate = new File("./src/test/resources/SetenvBatTemplate.tpl");
-
-        def generatedText = ResourceFileGenerator.generateResourceConfig(httpdTemplate.text,webServers, null, jvms, jvm, apps, null);
+        resourceGroup = new ResourceGroup(webServers, null, jvms, jvm, apps, null)
+        def generatedText = ResourceFileGenerator.generateResourceConfig(httpdTemplate.text, resourceGroup);
         def expectedText = new File("./src/test/resources/SetenvBatTemplate-EXPECTED.bat").text
         assertEquals(removeCarriageReturnsAndNewLines(expectedText), removeCarriageReturnsAndNewLines(generatedText));
     }

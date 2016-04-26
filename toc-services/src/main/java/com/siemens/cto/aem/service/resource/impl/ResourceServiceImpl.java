@@ -439,10 +439,7 @@ public class ResourceServiceImpl implements ResourceService {
     }
 
     @Override
-    public String generateResourceFile(final String template, final List<WebServer> webServerList, final WebServer currentWebServer,
-                                       final List<Jvm> jvmList, final Jvm currentJvm, final List<Application> applicationList,
-                                       final Application currentApplication) {
-        return ResourceFileGenerator.generateResourceConfig(template, webServerList, currentWebServer, jvmList, currentJvm,
-                   applicationList, currentApplication);
+    public String generateResourceFile(final String template, final ResourceGroup resourceGroup) {
+        return ResourceFileGenerator.generateResourceConfig(template, resourceGroup);
     }
 }
