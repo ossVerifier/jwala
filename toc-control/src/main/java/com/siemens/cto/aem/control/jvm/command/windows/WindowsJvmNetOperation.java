@@ -154,6 +154,6 @@ public enum WindowsJvmNetOperation implements ServiceCommandBuilder {
     }
 
     protected static String cygpathWrapper(AemControl.Properties scriptName, String scriptAbsolutePath) {
-        return "`" + CYGPATH.toString() + " " + scriptAbsolutePath + scriptName + "`";
+        return "`" + CYGPATH.toString() + " " + scriptAbsolutePath + "/" + scriptName + "`";
     }
 }
