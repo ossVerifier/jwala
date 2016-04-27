@@ -17,6 +17,9 @@ import com.siemens.cto.aem.service.RemoteCommandReturnInfo;
 import com.siemens.cto.aem.service.group.GroupStateNotificationService;
 import com.siemens.cto.aem.service.jvm.JvmStateService;
 import com.siemens.cto.aem.service.state.InMemoryStateManagerService;
+import de.jkeylockmanager.manager.KeyLockManager;
+import de.jkeylockmanager.manager.LockCallback;
+import de.jkeylockmanager.manager.implementation.lockstripe.StripedKeyLockManager;
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
@@ -29,6 +32,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 /**
  * {@link JvmStateService} implementation.
@@ -51,6 +55,8 @@ public class JvmStateServiceImpl implements JvmStateService {
 
     private static final Map<Identifier<Jvm>, Future<CurrentState<Jvm, JvmState>>> PING_FUTURE_MAP = new HashMap<>();
 
+    private final KeyLockManager lockManager;
+
     @Autowired
     public JvmStateServiceImpl(final JvmPersistenceService jvmPersistenceService,
                                @Qualifier("jvmInMemoryStateManagerService")
@@ -59,9 +65,13 @@ public class JvmStateServiceImpl implements JvmStateService {
                                final MessagingService messagingService,
                                final GroupStateNotificationService groupStateNotificationService,
                                @Value("${jvm.state.update.interval:60000}")
-                               final long jvmStateUpdateInterval,
+                                   final long jvmStateUpdateInterval,
                                final RemoteCommandExecutorService remoteCommandExecutorService,
-                               final SshConfiguration sshConfig) {
+                               final SshConfiguration sshConfig,
+                               @Value("${jvm.state.key.lock.timeout.millis:600000}")
+                               final long lockTimeout,
+                               @Value("${jvm.state.key.lock.stripe.count:120}")
+                               final int keyLockStripeCount) {
         this.jvmPersistenceService = jvmPersistenceService;
         this.inMemoryStateManagerService = inMemoryStateManagerService;
         this.jvmStateResolverWorker = jvmStateResolverWorker;
@@ -70,6 +80,7 @@ public class JvmStateServiceImpl implements JvmStateService {
         this.groupStateNotificationService = groupStateNotificationService;
         this.remoteCommandExecutorService = remoteCommandExecutorService;
         this.sshConfig = sshConfig;
+        lockManager = new StripedKeyLockManager(lockTimeout, TimeUnit.MILLISECONDS, keyLockStripeCount);
     }
 
     @Override
@@ -144,23 +155,28 @@ public class JvmStateServiceImpl implements JvmStateService {
 
     @Override
     public void updateState(final Identifier<Jvm> id, final JvmState state, final String errMsg) {
-        LOGGER.debug("The state has changed from {} to {}", inMemoryStateManagerService.get(id) != null ?
-                inMemoryStateManagerService.get(id).getState() : "NO STATE", state);
-        // If the JVM is already stopped and the new state is stopping, don't do anything!
-        // We can't go from stopped to stopping. The stopped state that the JvmControlService issued has
-        // the last say for it means that the (windows) service has already stopped.
-        if (!(JvmState.JVM_STOPPING.equals(state) && isCurrentStateStopped(id))) {
-            if (isStateChangedAndOrMsgNotEmpty(id, state, errMsg)) {
-                jvmPersistenceService.updateState(id, state, errMsg);
-                messagingService.send(new CurrentState<>(id, state, DateTime.now(), StateType.JVM, errMsg));
-                groupStateNotificationService.retrieveStateAndSendToATopic(id, Jvm.class);
+        lockManager.executeLocked(id, new LockCallback() {
+            @Override
+            public void doInLock() {
+                LOGGER.debug("The state has changed from {} to {}", inMemoryStateManagerService.get(id) != null ?
+                        inMemoryStateManagerService.get(id).getState() : "NO STATE", state);
+                // If the JVM is already stopped and the new state is stopping, don't do anything!
+                // We can't go from stopped to stopping. The stopped state that the JvmControlService issued has
+                // the last say for it means that the (windows) service has already stopped.
+                if (!(JvmState.JVM_STOPPING.equals(state) && isCurrentStateStopped(id))) {
+                    if (isStateChangedAndOrMsgNotEmpty(id, state, errMsg)) {
+                        jvmPersistenceService.updateState(id, state, errMsg);
+                        messagingService.send(new CurrentState<>(id, state, DateTime.now(), StateType.JVM, errMsg));
+                        groupStateNotificationService.retrieveStateAndSendToATopic(id, Jvm.class);
+                    }
+                    // Always update the JVM state since JvmStateService.verifyAndUpdateNotInMemOrStartedAndStaleStates checks if the
+                    // state is stale of not!
+                    inMemoryStateManagerService.put(id, new CurrentState<>(id, state, DateTime.now(), StateType.JVM));
+                } else {
+                    LOGGER.warn("Ignoring {} state since the JVM is currently stopped.", state);
+                }
             }
-            // Always update the JVM state since JvmStateService.verifyAndUpdateNotInMemOrStartedAndStaleStates checks if the
-            // state is stale of not!
-            inMemoryStateManagerService.put(id, new CurrentState<>(id, state, DateTime.now(), StateType.JVM));
-        } else {
-            LOGGER.warn("Ignoring {} state since the JVM is currently stopped.", state);
-        }
+        });
     }
 
     /**

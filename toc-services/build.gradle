@@ -29,6 +29,8 @@ dependencies {
     compile group: 'org.apache.openjpa', name: 'openjpa', version: "$project.versions.jpa"
     compile group: "commons-io", name: "commons-io", version: "$project.versions.commons_io", classifier: "sources"
 
+    compile group: "de.jkeylockmanager", name: "jkeylockmanager", version: "$project.versions.jkeylockmanager"
+
     testCompile project(path: ":toc-common", configuration: "commonTest")
     testCompile group: "org.springframework", name: "spring-test", version: "$project.versions.spring"
     testCompile group: "org.springframework", name: "spring-orm", version: "$project.versions.spring"
