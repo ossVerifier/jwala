@@ -41,11 +41,11 @@ public interface JvmCrudService extends CrudService<JpaJvm> {
 
     Jvm findJvm(String jvmName, String groupName);
 
-    void updateState(Identifier<Jvm> id, JvmState state);
+    int updateState(Identifier<Jvm> id, JvmState state);
 
-    void updateErrorStatus(Identifier<Jvm> id, String errorStatus);
+    int updateErrorStatus(Identifier<Jvm> id, String errorStatus);
 
-    void updateState(Identifier<Jvm> id, JvmState state, String errorStatus);
+    int updateState(Identifier<Jvm> id, JvmState state, String errorStatus);
 
     Jvm findJvmByExactName(String jvmName);
 

@@ -10,6 +10,7 @@ import com.siemens.cto.aem.common.domain.model.path.Path;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState;
+import com.siemens.cto.aem.common.domain.model.webserver.WebServerState;
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.common.request.app.CreateApplicationRequest;
 import com.siemens.cto.aem.common.request.group.CreateGroupRequest;
@@ -64,7 +65,7 @@ import static org.junit.Assert.*;
 public class WebServerCrudServiceImplTest {
 
     @Autowired
-    private WebServerCrudService impl;
+    private WebServerCrudService webServerCrudService;
 
     @Autowired
     private GroupCrudService groupCrudService;
@@ -101,7 +102,7 @@ public class WebServerCrudServiceImplTest {
                                                      new Path("any"),
                                                      WebServerReachableState.WS_UNREACHABLE,
                                                      null);
-        final WebServer createdWebServer = impl.createWebServer(newWebServer, "me");
+        final WebServer createdWebServer = webServerCrudService.createWebServer(newWebServer, "me");
         assertTrue(createdWebServer.getId() != null);
         assertTrue(createdWebServer.getId().getId() != null);
         assertEquals(newWebServer.getName(), createdWebServer.getName());
@@ -118,23 +119,23 @@ public class WebServerCrudServiceImplTest {
                                                         new Path("anyx"),
                                                         WebServerReachableState.WS_UNREACHABLE,
                                                         null);
-        final WebServer updatedWebServer = impl.updateWebServer(editedWebServer, "me");
+        final WebServer updatedWebServer = webServerCrudService.updateWebServer(editedWebServer, "me");
         assertEquals(editedWebServer.getId().getId(), updatedWebServer.getId().getId());
 
         // Test getWebServer
-        WebServer gottenWebServer = impl.getWebServer(editedWebServer.getId());
+        WebServer gottenWebServer = webServerCrudService.getWebServer(editedWebServer.getId());
         assertEquals(editedWebServer.getName(), gottenWebServer.getName());
 
         // Test findWebServerByName
-        gottenWebServer = impl.findWebServerByName(editedWebServer.getName());
+        gottenWebServer = webServerCrudService.findWebServerByName(editedWebServer.getName());
         assertEquals(editedWebServer.getName(), gottenWebServer.getName());
 
         // Test getWebServers
-        assertEquals(1, impl.getWebServers().size());
+        assertEquals(1, webServerCrudService.getWebServers().size());
 
         // Test removeWebServer
-        impl.removeWebServer(editedWebServer.getId());
-        assertEquals(0, impl.getWebServers().size());
+        webServerCrudService.removeWebServer(editedWebServer.getId());
+        assertEquals(0, webServerCrudService.getWebServers().size());
     }
 
     @Test
@@ -149,16 +150,16 @@ public class WebServerCrudServiceImplTest {
         webServer.setStatusPath("zStatusPath");
         webServer.setSvrRoot("zSvrRoot");
         webServer.getGroups().add(group);
-        group.getWebServers().add(impl.create(webServer));
+        group.getWebServers().add(webServerCrudService.create(webServer));
         groupCrudService.update(group);
-        assertEquals(1, impl.getWebServer(new Identifier<WebServer>(webServer.getId())).getGroups().size());
-        impl.removeWebServersBelongingTo(new Identifier<Group>(group.getId()));
-        assertEquals(0, impl.getWebServers().size());
+        assertEquals(1, webServerCrudService.getWebServer(new Identifier<WebServer>(webServer.getId())).getGroups().size());
+        webServerCrudService.removeWebServersBelongingTo(new Identifier<Group>(group.getId()));
+        assertEquals(0, webServerCrudService.getWebServers().size());
     }
 
     @Test
     public void testFindWebServers() {
-        final List<WebServer> foundWebServers = impl.findWebServers("toast");
+        final List<WebServer> foundWebServers = webServerCrudService.findWebServers("toast");
         assertTrue(foundWebServers.size() == 0);
     }
 
@@ -166,17 +167,17 @@ public class WebServerCrudServiceImplTest {
     public void testFindWebServersBelongingTo() {
         CreateGroupRequest createGroupReq = new CreateGroupRequest("testGroupName");
         JpaGroup group = groupCrudService.createGroup(createGroupReq);
-        List<WebServer> webServersBelongingTo = impl.findWebServersBelongingTo(new Identifier<Group>(group.getId()));
+        List<WebServer> webServersBelongingTo = webServerCrudService.findWebServersBelongingTo(new Identifier<Group>(group.getId()));
         assertTrue(webServersBelongingTo.size() == 0);
 
         WebServer webServer = new WebServer(new Identifier<WebServer>(1111L), new HashSet<Group>(), "testWebServer",
                 "testHost", 101, 102, new Path("./statusPath"), new FileSystemPath("./httpdConfPath"), new Path("./svrRootPath"),
                 new Path("./docRoot"), WebServerReachableState.WS_UNREACHABLE, StringUtils.EMPTY);
-        webServer = impl.createWebServer(webServer, "testUser");
+        webServer = webServerCrudService.createWebServer(webServer, "testUser");
         List<JpaWebServer> wsList = new ArrayList<>();
-        wsList.add(impl.findById(webServer.getId().getId()));
+        wsList.add(webServerCrudService.findById(webServer.getId().getId()));
         group.setWebServers(wsList);
-        webServersBelongingTo = impl.findWebServersBelongingTo(new Identifier<Group>(group.getId()));
+        webServersBelongingTo = webServerCrudService.findWebServersBelongingTo(new Identifier<Group>(group.getId()));
         assertTrue(webServersBelongingTo.size() == 1);
     }
 
@@ -185,9 +186,9 @@ public class WebServerCrudServiceImplTest {
         WebServer webServer = new WebServer(new Identifier<WebServer>(1111L), new HashSet<Group>(), "testWebServer", "testHost",
                 101, 102, new Path("./statusPath"), new FileSystemPath("./httpdConfPath"), new Path("./svrRootPath"), new Path("./docRoot"),
                 WebServerReachableState.WS_UNREACHABLE, StringUtils.EMPTY);
-        impl.createWebServer(webServer, "testUser");
+        webServerCrudService.createWebServer(webServer, "testUser");
         // causes problems
-        impl.createWebServer(webServer, "testUser");
+        webServerCrudService.createWebServer(webServer, "testUser");
     }
 
     @Test
@@ -195,8 +196,8 @@ public class WebServerCrudServiceImplTest {
         WebServer webServer = new WebServer(new Identifier<WebServer>(1111L), new HashSet<Group>(), "testWebServer", "testHost",
                 101, 102, new Path("./statusPath"), new FileSystemPath("./httpdConfPath"), new Path("./svrRootPath"),
                 new Path("./docRoot"), WebServerReachableState.WS_UNREACHABLE, StringUtils.EMPTY);
-        webServer = impl.createWebServer(webServer, "testUser");
-        List<Application> applications = impl.findApplications("testWebServer");
+        webServer = webServerCrudService.createWebServer(webServer, "testUser");
+        List<Application> applications = webServerCrudService.findApplications("testWebServer");
         assertTrue(applications.size() == 0);
 
         CreateGroupRequest creatGroupReq = new CreateGroupRequest("testGroupName");
@@ -204,7 +205,7 @@ public class WebServerCrudServiceImplTest {
         CreateApplicationRequest createAppReq = new CreateApplicationRequest(new Identifier<Group>(group.getId()), "testAppName", "/context", true, true, false);
         JpaApplication application = applicationCrudService.createApplication(createAppReq, group);
         List<JpaWebServer> wsList = new ArrayList<>();
-        wsList.add(impl.findById(webServer.getId().getId()));
+        wsList.add(webServerCrudService.findById(webServer.getId().getId()));
         group.setWebServers(wsList);
         CreateJvmRequest createJvmReq = new CreateJvmRequest("testJvmName", "testHostName", 1212, 1213, 1214, -1, 1215, new Path("./statusPath"), "");
         final JpaJvm jvm = jvmCrudService.createJvm(createJvmReq);
@@ -213,11 +214,11 @@ public class WebServerCrudServiceImplTest {
         group.setJvms(jvmsList);
         List<JpaGroup> groupList = new ArrayList<>();
         groupList.add(group);
-        impl.findById(webServer.getId().getId()).setGroups(groupList);
-        applications = impl.findApplications(webServer.getName());
+        webServerCrudService.findById(webServer.getId().getId()).setGroups(groupList);
+        applications = webServerCrudService.findApplications(webServer.getName());
         assertTrue(applications.size() == 1);
 
-        final List<Jvm> jvms = impl.findJvms(webServer.getName());
+        final List<Jvm> jvms = webServerCrudService.findJvms(webServer.getName());
         assertEquals(1, jvms.size());
     }
 
@@ -226,20 +227,20 @@ public class WebServerCrudServiceImplTest {
         WebServer webServer = new WebServer(new Identifier<WebServer>(1111L), new HashSet<Group>(), "testWebServer",
                 "testHost", 101, 102, new Path("./statusPath"), new FileSystemPath("./httpdConfPath"), new Path("./svrRootPath"),
                 new Path("./docRoot"), WebServerReachableState.WS_UNREACHABLE, StringUtils.EMPTY);
-        impl.createWebServer(webServer, "testUser");
-        List<Jvm> jvms = impl.findJvms("testWebServer");
+        webServerCrudService.createWebServer(webServer, "testUser");
+        List<Jvm> jvms = webServerCrudService.findJvms("testWebServer");
         assertTrue(jvms.size() == 0);
     }
 
     @Test
     public void testGetResourceTemplateNames() {
-        final List<String> templates = impl.getResourceTemplateNames("toost");
+        final List<String> templates = webServerCrudService.getResourceTemplateNames("toost");
         assertTrue(templates.size() == 0);
     }
 
     @Test(expected = NonRetrievableResourceTemplateContentException.class)
     public void testGetResourceTemplate() {
-        impl.getResourceTemplate("teest", "tust");
+        webServerCrudService.getResourceTemplate("teest", "tust");
     }
 
     @Test
@@ -248,7 +249,7 @@ public class WebServerCrudServiceImplTest {
         WebServer webServer = new WebServer(new Identifier<WebServer>(1111L), new HashSet<Group>(), "testWebServer",
                 "testHost", 101, 102, new Path("./statusPath"), new FileSystemPath("./httpdConfPath"), new Path("./svrRootPath"),
                 new Path("./docRoot"), WebServerReachableState.WS_UNREACHABLE, StringUtils.EMPTY);
-        webServer = impl.createWebServer(webServer, "testUser");
+        webServer = webServerCrudService.createWebServer(webServer, "testUser");
         UploadWebServerTemplateRequest uploadWsTemplateRequest = new UploadWebServerTemplateRequest(webServer,
                 "HttpdSslConfTemplate.tpl", "HttpdSslConfTemplate meta data", dataInputStream) {
             @Override
@@ -256,7 +257,7 @@ public class WebServerCrudServiceImplTest {
                 return "httpd.conf";
             }
         };
-        JpaWebServerConfigTemplate template = impl.uploadWebserverConfigTemplate(uploadWsTemplateRequest);
+        JpaWebServerConfigTemplate template = webServerCrudService.uploadWebserverConfigTemplate(uploadWsTemplateRequest);
         assertNotNull(template);
 
         // again!
@@ -268,11 +269,11 @@ public class WebServerCrudServiceImplTest {
                 return "httpd.conf";
             }
         };
-        template = impl.uploadWebserverConfigTemplate(uploadWsTemplateRequest);
+        template = webServerCrudService.uploadWebserverConfigTemplate(uploadWsTemplateRequest);
         assertNotNull(template);
 
         // test getting the template while we're here
-        final String resourceTemplate = impl.getResourceTemplate(webServer.getName(), "httpd.conf");
+        final String resourceTemplate = webServerCrudService.getResourceTemplate(webServer.getName(), "httpd.conf");
         assertTrue(!resourceTemplate.isEmpty());
     }
 
@@ -282,7 +283,7 @@ public class WebServerCrudServiceImplTest {
         WebServer webServer = new WebServer(new Identifier<WebServer>(1111L), new HashSet<Group>(), "testWebServer",
                 "testHost", 101, 102, new Path("./statusPath"), new FileSystemPath("./httpdConfPath"), new Path("./svrRootPath"),
                 new Path("./docRoot"), WebServerReachableState.WS_UNREACHABLE, StringUtils.EMPTY);
-        webServer = impl.createWebServer(webServer, "testUser");
+        webServer = webServerCrudService.createWebServer(webServer, "testUser");
         UploadWebServerTemplateRequest uploadWsTemplateRequest = new UploadWebServerTemplateRequest(webServer,
                 "HttpdSslConfTemplate.tpl", StringUtils.EMPTY, dataInputStream) {
             @Override
@@ -292,22 +293,22 @@ public class WebServerCrudServiceImplTest {
         };
         List<UploadWebServerTemplateRequest> templateCommands = new ArrayList<>();
         templateCommands.add(uploadWsTemplateRequest);
-        impl.populateWebServerConfig(templateCommands, new User("userId"), false);
-        final String resourceTemplate = impl.getResourceTemplate(webServer.getName(), "httpd.conf");
+        webServerCrudService.populateWebServerConfig(templateCommands, new User("userId"), false);
+        final String resourceTemplate = webServerCrudService.getResourceTemplate(webServer.getName(), "httpd.conf");
         assertTrue(!resourceTemplate.isEmpty());
     }
 
     @Test
     public void testUpdateResourceTemplate() throws FileNotFoundException {
         testUploadWebServerTemplate();
-        impl.updateResourceTemplate("testWebServer", "httpd.conf", "this is my template");
-        final String updatedContent = impl.getResourceTemplate("testWebServer", "httpd.conf");
+        webServerCrudService.updateResourceTemplate("testWebServer", "httpd.conf", "this is my template");
+        final String updatedContent = webServerCrudService.getResourceTemplate("testWebServer", "httpd.conf");
         assertEquals("this is my template", updatedContent);
     }
 
     @Test(expected = ResourceTemplateUpdateException.class)
     public void testUpdateResourceTemplateThrowsException() {
-        impl.updateResourceTemplate("tyest", "templateNOOOO", "0_o");
+        webServerCrudService.updateResourceTemplate("tyest", "templateNOOOO", "0_o");
     }
 
     @Test
@@ -323,7 +324,7 @@ public class WebServerCrudServiceImplTest {
         webServer.setStatusPath("aStatusPath");
         webServer.setSvrRoot("aSvrRoot");
         webServer.getGroups().add(group);
-        group.getWebServers().add(impl.create(webServer));
+        group.getWebServers().add(webServerCrudService.create(webServer));
         groupCrudService.update(group);
 
         final JpaApplication application = new JpaApplication();
@@ -332,8 +333,47 @@ public class WebServerCrudServiceImplTest {
         application.setGroup(group);
         applicationCrudService.create(application);
 
-        assertEquals(1, impl.getWebServer(new Identifier<WebServer>(webServer.getId())).getGroups().size());
-        assertEquals(1, impl.findApplications(webServer.getName()).size());
+        assertEquals(1, webServerCrudService.getWebServer(new Identifier<WebServer>(webServer.getId())).getGroups().size());
+        assertEquals(1, webServerCrudService.findApplications(webServer.getName()).size());
+    }
+
+    @Test
+    public void testUpdateState() {
+        final JpaWebServer jpaWebServerParam = new JpaWebServer();
+        jpaWebServerParam.setName("WebServer");
+        jpaWebServerParam.setDocRoot("/htdocs");
+        jpaWebServerParam.setHttpConfigFile("conf");
+        jpaWebServerParam.setStatusPath("/stp.png");
+        jpaWebServerParam.setSvrRoot("root");
+        final JpaWebServer jpaWebServer = webServerCrudService.create(jpaWebServerParam);
+        assertEquals(1, webServerCrudService.updateState(new Identifier<WebServer>(jpaWebServer.getId()),
+                WebServerReachableState.WS_UNREACHABLE));
+    }
+
+    @Test
+    public void testUpdateErrorStatus() {
+        final JpaWebServer jpaWebServerParam = new JpaWebServer();
+        jpaWebServerParam.setName("WebServer");
+        jpaWebServerParam.setDocRoot("/htdocs");
+        jpaWebServerParam.setHttpConfigFile("conf");
+        jpaWebServerParam.setStatusPath("/stp.png");
+        jpaWebServerParam.setSvrRoot("root");
+        final JpaWebServer jpaWebServer = webServerCrudService.create(jpaWebServerParam);
+        assertEquals(1, webServerCrudService.updateErrorStatus(new Identifier<WebServer>(jpaWebServer.getId()),
+                "error!"));
+    }
+
+    @Test
+    public void testUpdateStateAndErrSts() {
+        final JpaWebServer jpaWebServerParam = new JpaWebServer();
+        jpaWebServerParam.setName("WebServer");
+        jpaWebServerParam.setDocRoot("/htdocs");
+        jpaWebServerParam.setHttpConfigFile("conf");
+        jpaWebServerParam.setStatusPath("/stp.png");
+        jpaWebServerParam.setSvrRoot("root");
+        final JpaWebServer jpaWebServer = webServerCrudService.create(jpaWebServerParam);
+        assertEquals(1, webServerCrudService.updateState(new Identifier<WebServer>(jpaWebServer.getId()),
+                WebServerReachableState.WS_UNREACHABLE, "error!"));
     }
 
     @Configuration

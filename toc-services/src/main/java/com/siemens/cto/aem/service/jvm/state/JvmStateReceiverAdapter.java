@@ -86,19 +86,14 @@ public class JvmStateReceiverAdapter extends ReceiverAdapter {
      * @param newState the latest state
      * @return returns true if the state is not the same compared to the previous state or if there's a message (error message)
      */
-    private boolean isStateChangedAndOrMsgNotEmpty(CurrentState<Jvm, JvmState> newState) {
-        boolean stateAndOrMsgChanged = false;
+    protected boolean isStateChangedAndOrMsgNotEmpty(final CurrentState<Jvm, JvmState> newState) {
+        final boolean newOrStateChanged = !inMemoryStateManagerService.containsKey(newState.getId()) ||
+                !inMemoryStateManagerService.get(newState.getId()).getState().equals(newState.getState());
 
-        final Identifier<Jvm> newStateId = newState.getId();
-        final JvmState newJvmState = newState.getState();
-        if (!inMemoryStateManagerService.containsKey(newStateId) || !inMemoryStateManagerService.get(newStateId).getState().equals(newJvmState)) {
-            stateAndOrMsgChanged = true;
-        }
+        final boolean newOrMsgChanged = StringUtils.isNotEmpty(newState.getMessage()) &&
+                (!inMemoryStateManagerService.containsKey(newState.getId())  ||
+                        !inMemoryStateManagerService.get(newState.getId()).getMessage().equals(newState.getMessage()));
 
-        if (StringUtils.isNotEmpty(newState.getMessage()) && (!inMemoryStateManagerService.containsKey(newStateId) || !inMemoryStateManagerService.get(newStateId).getMessage().equals(newState.getMessage()))) {
-            stateAndOrMsgChanged = true;
-        }
-        return stateAndOrMsgChanged;
+        return newOrStateChanged || newOrMsgChanged;
     }
-
 }

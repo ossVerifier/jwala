@@ -125,8 +125,9 @@ public class JvmControlServiceImpl implements JvmControlService {
             LOGGER.debug("Command output return code = {}", returnCode);
             if (returnCode.wasSuccessful()) {
                 if (JvmControlOperation.STOP.equals(controlOperation)) {
+                    LOGGER.debug("Updating state to {}...", JvmState.JVM_STOPPED);
                     jvmStateService.updateState(jvm.getId(), JvmState.JVM_STOPPED);
-                    groupStateNotificationService.retrieveStateAndSendToATopic(jvm.getId(), Jvm.class);
+                    LOGGER.debug("State successfully updated to {}", JvmState.JVM_STOPPED);
                 }
             } else {
                 // Process non successful return codes...
