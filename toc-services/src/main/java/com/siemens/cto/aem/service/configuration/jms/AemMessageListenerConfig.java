@@ -10,6 +10,7 @@ import com.siemens.cto.aem.service.MessagingService;
 import com.siemens.cto.aem.service.configuration.service.AemServiceConfiguration;
 import com.siemens.cto.aem.service.group.GroupStateNotificationService;
 import com.siemens.cto.aem.service.jvm.JvmService;
+import com.siemens.cto.aem.service.jvm.JvmStateService;
 import com.siemens.cto.aem.service.state.impl.InMemoryStateManagerServiceImpl;
 import com.siemens.cto.aem.service.jvm.state.jms.listener.JvmStateMessageListener;
 import com.siemens.cto.aem.service.jvm.state.jms.listener.message.JvmStateMapMessageConverterImpl;
@@ -50,13 +51,14 @@ public class AemMessageListenerConfig {
     private MessagingService messagingService;
 
     @Bean
-    public DefaultMessageListenerContainer getJvmStateListenerContainer(final PlatformTransactionManager transactionManager) {
+    public DefaultMessageListenerContainer getJvmStateListenerContainer(final PlatformTransactionManager transactionManager,
+                                                                        final MessageListener jvmMessageListener) {
         final DefaultMessageListenerContainer container = new DefaultMessageListenerContainer();
 
         container.setTransactionManager(transactionManager);
         container.setConnectionFactory(jmsConfig.getConnectionFactory());
         container.setReceiveTimeout(TimeUnit.MILLISECONDS.convert(25, TimeUnit.SECONDS));
-        container.setMessageListener(getJvmStateMessageListener());
+        container.setMessageListener(jvmMessageListener);
         container.setDestination(jmsConfig.getJvmStateDestination());
         container.setSessionTransacted(true);
         container.setSessionAcknowledgeMode(Session.SESSION_TRANSACTED);
@@ -74,9 +76,9 @@ public class AemMessageListenerConfig {
     }
 
     @Bean
-    public MessageListener getJvmStateMessageListener() {
+    public MessageListener getJvmStateMessageListener(final JvmStateService jvmStateService) {
         return new JvmStateMessageListener(new JvmStateMapMessageConverterImpl(), jvmService, messagingService,
-                groupStateNotificationService, getInMemoryStateManagerService());
+                groupStateNotificationService, jvmStateService);
     }
 
 }
