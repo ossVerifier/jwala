@@ -27,7 +27,7 @@ public enum WindowsJvmNetOperation implements ServiceCommandBuilder {
     START(JvmControlOperation.START) {
         @Override
         public ExecCommand buildCommandForService(final String aServiceName, final String... aParams) {
-            final String scriptAbsolutePath = ApplicationProperties.get("commands.jvm.start.stop.path.scripts-path", INSTANCES_DIR + "/" + aServiceName + "/bin/");
+            final String scriptAbsolutePath = ApplicationProperties.get("commands.jvm.start.stop.path.scripts-path", INSTANCES_DIR + "/" + aServiceName + "/bin");
             return new ShellCommand(
                     cygpathWrapper(START_SCRIPT_NAME, scriptAbsolutePath),
                     quotedServiceName(aServiceName),
@@ -38,7 +38,7 @@ public enum WindowsJvmNetOperation implements ServiceCommandBuilder {
     STOP(JvmControlOperation.STOP) {
         @Override
         public ExecCommand buildCommandForService(final String aServiceName, final String... aParams) {
-            final String scriptAbsolutePath = ApplicationProperties.get("commands.jvm.start.stop.path.scripts-path", INSTANCES_DIR + "/" + aServiceName + "/bin/");
+            final String scriptAbsolutePath = ApplicationProperties.get("commands.jvm.start.stop.path.scripts-path", INSTANCES_DIR + "/" + aServiceName + "/bin");
             return new ShellCommand(
                     cygpathWrapper(STOP_SCRIPT_NAME, scriptAbsolutePath),
                     quotedServiceName(aServiceName),
