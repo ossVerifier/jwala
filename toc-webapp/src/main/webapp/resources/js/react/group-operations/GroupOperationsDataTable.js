@@ -228,12 +228,16 @@ var GroupOperationsDataTable = React.createClass({
                              openRowLoadDataDoneCallback={this.openRowLoadDataDoneCallbackHandler}/>
    },
    onSelectWebServerTableRow: function(group, data, isActive) {
-        var serverName = isActive ? data.name : null;
-        this.openRowLoadDataDoneCallbackHandler(data.parentItemId, group, serverName);
+        // Why was I calling the method below ? It's causes a bug wherein the action and event logs items are cleared!
+        // TODO: Find out why we call the method below in this event.
+        // var serverName = isActive ? data.name : null;
+        // this.openRowLoadDataDoneCallbackHandler(data.parentItemId, group, serverName);
    },
    onSelectJvmTableRow: function(group, data, isActive) {
-        var serverName = isActive ? data.jvmName : null;
-        this.openRowLoadDataDoneCallbackHandler(data.parentItemId, group, data.jvmName);
+        // Why was I calling the method below ? It's causes a bug wherein the action and event logs items are cleared!
+        // TODO: Find out why we call the method below in this event.
+        // var serverName = isActive ? data.jvmName : null;
+        // this.openRowLoadDataDoneCallbackHandler(data.parentItemId, group, data.jvmName);
    },
    openRowLoadDataDoneCallbackHandler: function(groupId, groupName, serverName) {
        var self = this;
