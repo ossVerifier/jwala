@@ -69,7 +69,7 @@ public class JvmResourceFileServiceImpl implements JvmResourceFileService {
         if (jvmWriteLockMap.get(jvmName).writeLock().tryLock()) {
             jvmWriteLockMap.get(jvmName).writeLock().lock();
             final Jvm jvm = jvmPersistenceService.findJvmByExactName(jvmName);
-            if (jvm.getState().isStartedState()) {
+            if (!jvm.getState().isStartedState()) {
 
                 try {
                     createScriptsDirectory(jvm);
@@ -204,7 +204,7 @@ public class JvmResourceFileServiceImpl implements JvmResourceFileService {
             // TODO: Find out if we need to pass all the JVMs or the JVMs of a certain group!
             // Note: We'll find out when we write a JVM resource file template.
             final String generatedResourceStr = resourceService.generateResourceFile(jpaJvmConfigTemplate.getTemplateContent(),
-                    new ResourceGroup(null, null, jvmPersistenceService.getJvms(), jvmPersistenceService.findJvmByExactName(jvmName), null, null));
+                    new ResourceGroup(null, jvmPersistenceService.getJvms(), null), jvmPersistenceService.findJvmByExactName(jvmName));
 
             final String jvmResourcesRelativeDir = destPath + resourceTemplateMetaData.getRelativeDir();
             LOGGER.debug("generating template in location: {}", jvmResourcesRelativeDir + "/", resourceTemplateMetaData.getConfigFileName());

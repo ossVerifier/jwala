@@ -1,15 +1,12 @@
 package com.siemens.cto.aem.service.resource;
 
-import com.siemens.cto.aem.common.domain.model.app.Application;
-import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.resource.EntityType;
 import com.siemens.cto.aem.common.domain.model.resource.ResourceGroup;
-import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
-import com.siemens.cto.aem.common.request.resource.ResourceInstanceRequest;
-import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.resource.ResourceInstance;
 import com.siemens.cto.aem.common.domain.model.resource.ResourceType;
 import com.siemens.cto.aem.common.domain.model.user.User;
+import com.siemens.cto.aem.common.request.resource.ResourceInstanceRequest;
 import com.siemens.cto.aem.service.resource.impl.CreateResourceTemplateApplicationResponseWrapper;
 
 import java.io.InputStream;
@@ -98,5 +95,5 @@ public interface ResourceService {
      * @param template the template parameter.
      * @return the generated resource file string
      */
-    String generateResourceFile(final String template, final ResourceGroup resourceGroup);
+    <T> String generateResourceFile(final String template, final ResourceGroup resourceGroup, T selectedValue);
 }

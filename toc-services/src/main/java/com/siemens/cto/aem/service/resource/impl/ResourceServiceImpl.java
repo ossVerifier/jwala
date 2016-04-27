@@ -23,6 +23,7 @@ import com.siemens.cto.aem.template.HarmonyTemplate;
 import com.siemens.cto.aem.template.HarmonyTemplateEngine;
 import com.siemens.cto.aem.template.ResourceFileGenerator;
 import com.siemens.cto.toc.files.FileManager;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
@@ -32,9 +33,11 @@ import org.springframework.expression.Expression;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.transaction.annotation.Transactional;
-import org.apache.commons.io.FileUtils;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.*;
 
 public class ResourceServiceImpl implements ResourceService {
@@ -439,7 +442,7 @@ public class ResourceServiceImpl implements ResourceService {
     }
 
     @Override
-    public String generateResourceFile(final String template, final ResourceGroup resourceGroup) {
-        return ResourceFileGenerator.generateResourceConfig(template, resourceGroup);
+    public <T> String generateResourceFile(final String template, final ResourceGroup resourceGroup, T selectedValue) {
+        return ResourceFileGenerator.generateResourceConfig(template, resourceGroup, selectedValue);
     }
 }
