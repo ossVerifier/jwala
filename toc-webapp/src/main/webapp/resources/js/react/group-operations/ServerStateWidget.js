@@ -30,7 +30,7 @@ var ServerStateWidget = React.createClass({
             newState["statusColorCode"] = statusColorCode;
         }
 
-        if (errorMsg !== "" && errorMsg !== null) {
+        if (errorMsg) {
             newState["newErrorMsg"] = true;
             newState["showErrorBtn"] = true;
             var errMsg = groupOperationsHelper.splitErrorMsgIntoShortMsgAndStackTrace(errorMsg);

@@ -5,6 +5,7 @@ import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.common.domain.model.state.CurrentState;
 import com.siemens.cto.aem.common.domain.model.state.StateType;
 import com.siemens.cto.aem.service.RemoteCommandReturnInfo;
+import com.siemens.cto.aem.service.exception.RemoteCommandExecutorServiceException;
 import com.siemens.cto.aem.service.jvm.JvmStateService;
 import com.siemens.cto.aem.service.webserver.component.ClientFactoryHelper;
 import org.apache.commons.lang3.StringUtils;
@@ -56,7 +57,7 @@ public class JvmStateResolverWorker {
             response = clientFactoryHelper.requestGet(jvm.getStatusUri());
             LOGGER.debug(">>> Response = {} from JVM {}", response.getStatusCode(), jvm.getId().getId());
             if (response.getStatusCode() == HttpStatus.OK) {
-                jvmStateService.updateNotInMemOrStartedButStaleState(jvm, JvmState.JVM_STARTED, StringUtils.EMPTY);
+                jvmStateService.updateNotInMemOrStaleState(jvm, JvmState.JVM_STARTED, StringUtils.EMPTY);
                 currentState = new CurrentState<>(jvm.getId(), JvmState.JVM_STARTED, DateTime.now(), StateType.JVM);
             } else {
                 currentState = verifyStateRemotelyAndDoAnUpdate(jvm, jvmStateService, "Request for '" + jvm.getStatusUri() +
@@ -78,14 +79,28 @@ public class JvmStateResolverWorker {
         return new AsyncResult<>(currentState);
     }
 
-    private CurrentState<Jvm, JvmState> verifyStateRemotelyAndDoAnUpdate(final Jvm jvm, final JvmStateService jvmStateService, final String errMsg) {
-        final RemoteCommandReturnInfo remoteCommandReturnInfo = jvmStateService.getServiceStatus(jvm);
-        LOGGER.debug("RemoteCommandReturnInfo = {}", remoteCommandReturnInfo);
-        if ((remoteCommandReturnInfo.retCode == 0 && remoteCommandReturnInfo.standardOuput.contains(STOPPED))) {
-            jvmStateService.updateNotInMemOrStartedButStaleState(jvm, JvmState.JVM_STOPPED, StringUtils.EMPTY);
-            return new CurrentState<>(jvm.getId(), JvmState.JVM_STOPPED, DateTime.now(), StateType.JVM);
+    /**
+     * Verify the state in the remote server then do a state update.
+     * @param jvm the JVM
+     * @param jvmStateService {@link JvmStateService}
+     * @param errMsg an error message form the caller which will be included in the state update if it gets verified
+     * @return {@link CurrentState}
+     */
+    protected CurrentState<Jvm, JvmState> verifyStateRemotelyAndDoAnUpdate(final Jvm jvm, final JvmStateService jvmStateService, String errMsg) {
+        try {
+            final RemoteCommandReturnInfo remoteCommandReturnInfo = jvmStateService.getServiceStatus(jvm);
+            LOGGER.debug("RemoteCommandReturnInfo = {}", remoteCommandReturnInfo);
+            if ((remoteCommandReturnInfo.retCode == 0 && remoteCommandReturnInfo.standardOuput.contains(STOPPED))) {
+                jvmStateService.updateNotInMemOrStaleState(jvm, JvmState.JVM_STOPPED, StringUtils.EMPTY);
+                return new CurrentState<>(jvm.getId(), JvmState.JVM_STOPPED, DateTime.now(), StateType.JVM);
+            }
+        } catch (final RemoteCommandExecutorServiceException rcese) {
+            LOGGER.error("Verify state in remote server failed!", rcese);
+            errMsg = errMsg + ";" + rcese.getMessage();
         }
-        jvmStateService.updateNotInMemOrStartedButStaleState(jvm, JvmState.JVM_FAILED, errMsg);
+        // Just show what the state was before the error but provide an error message so that the client (UI)
+        // will get informed about the error.
+        jvmStateService.updateNotInMemOrStaleState(jvm, jvm.getState(), errMsg);
         return new CurrentState<>(jvm.getId(), JvmState.JVM_FAILED, DateTime.now(), StateType.JVM, errMsg);
     }
 

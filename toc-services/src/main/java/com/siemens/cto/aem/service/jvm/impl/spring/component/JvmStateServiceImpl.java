@@ -85,10 +85,10 @@ public class JvmStateServiceImpl implements JvmStateService {
 
     @Override
     @Scheduled(fixedDelayString = "${ping.jvm.period.millis}")
-    public void verifyAndUpdateNotInMemOrStartedAndStaleStates() {
+    public void verifyAndUpdateNotInMemOrStaleStates() {
         final List<Jvm> jvms = jvmPersistenceService.getJvms();
         for (final Jvm jvm : jvms) {
-            if ((!isStateInMemory(jvm) || (isStarted(jvm) && isStale(jvm))) &&
+            if ((!isStateInMemory(jvm) || ((isStarted(jvm) || isStopping(jvm)) && isStale(jvm))) &&
                 (!PING_FUTURE_MAP.containsKey(jvm.getId()) || PING_FUTURE_MAP.get(jvm.getId()).isDone())) {
                     LOGGER.debug("Pinging JVM {} ...", jvm.getJvmName());
                     PING_FUTURE_MAP.put(jvm.getId(), jvmStateResolverWorker.pingAndUpdateJvmState(jvm, this));
@@ -120,10 +120,19 @@ public class JvmStateServiceImpl implements JvmStateService {
         return inMemoryStateManagerService.get(jvm.getId()).getState().equals(JvmState.JVM_STARTED);
     }
 
+    /**
+     * Checks if a JVM's state is set to stopping.
+     * @param jvm {@link Jvm}
+     * @return true if the state is started.
+     */
+    protected boolean isStopping(final Jvm jvm) {
+        return inMemoryStateManagerService.get(jvm.getId()).getState().equals(JvmState.JVM_STOPPING);
+    }
+
     @Override
-    public void updateNotInMemOrStartedButStaleState(final Jvm jvm, final JvmState state, final String errMsg) {
+    public void updateNotInMemOrStaleState(final Jvm jvm, final JvmState state, final String errMsg) {
         // Check again before updating to make sure that nothing has change after pinging the JVM.
-        if (!isStateInMemory(jvm) || (isStarted(jvm) && isStale(jvm))) {
+        if (!isStateInMemory(jvm) || ((isStarted(jvm) || isStopping(jvm)) && isStale(jvm))) {
                 LOGGER.debug("Updating state of JVM {} ...", jvm.getJvmName());
                 updateState(jvm.getId(), state, errMsg);
                 groupStateNotificationService.retrieveStateAndSendToATopic(jvm.getId(), Jvm.class);
@@ -158,20 +167,26 @@ public class JvmStateServiceImpl implements JvmStateService {
         lockManager.executeLocked(id, new LockCallback() {
             @Override
             public void doInLock() {
-                LOGGER.debug("The state has changed from {} to {}", inMemoryStateManagerService.get(id) != null ?
-                        inMemoryStateManagerService.get(id).getState() : "NO STATE", state);
                 // If the JVM is already stopped and the new state is stopping, don't do anything!
                 // We can't go from stopped to stopping. The stopped state that the JvmControlService issued has
                 // the last say for it means that the (windows) service has already stopped.
                 if (!(JvmState.JVM_STOPPING.equals(state) && isCurrentStateStopped(id))) {
+                    final DateTime now = DateTime.now();
                     if (isStateChangedAndOrMsgNotEmpty(id, state, errMsg)) {
+                        LOGGER.debug("Updating JVM state, state = {}, msg = {}.", state, errMsg);
                         jvmPersistenceService.updateState(id, state, errMsg);
-                        messagingService.send(new CurrentState<>(id, state, DateTime.now(), StateType.JVM, errMsg));
+                        messagingService.send(new CurrentState<>(id, state, now, StateType.JVM, errMsg));
                         groupStateNotificationService.retrieveStateAndSendToATopic(id, Jvm.class);
+                        LOGGER.debug("JVM state updated and sent to topic. Group state retrieved and sent to topic.");
                     }
-                    // Always update the JVM state since JvmStateService.verifyAndUpdateNotInMemOrStartedAndStaleStates checks if the
+                    // Always update the JVM state since JvmStateService.verifyAndUpdateNotInMemOrStaleStates checks if the
                     // state is stale of not!
-                    inMemoryStateManagerService.put(id, new CurrentState<>(id, state, DateTime.now(), StateType.JVM));
+                    final String prevStateStr = inMemoryStateManagerService.get(id) != null ?
+                            inMemoryStateManagerService.get(id).getState().name() : null;
+                    final DateTime prevStateAsOf = inMemoryStateManagerService.get(id) != null ?
+                            inMemoryStateManagerService.get(id).getAsOf(): null;
+                    inMemoryStateManagerService.put(id, new CurrentState<>(id, state, now, StateType.JVM, errMsg));
+                    LOGGER.debug("The state has changed from {}:{} to {}:{}", prevStateStr, prevStateAsOf, state, now);
                 } else {
                     LOGGER.warn("Ignoring {} state since the JVM is currently stopped.", state);
                 }
@@ -202,11 +217,12 @@ public class JvmStateServiceImpl implements JvmStateService {
         final boolean newOrStateChanged = !inMemoryStateManagerService.containsKey(id) ||
                 !inMemoryStateManagerService.get(id).getState().equals(state);
 
-        final boolean newOrMsgChanged = StringUtils.isNotEmpty(errMsg) &&
-                (!inMemoryStateManagerService.containsKey(id)  ||
-                        !inMemoryStateManagerService.get(id).getMessage().equals(errMsg));
-
-        return newOrStateChanged || newOrMsgChanged;
+        final boolean newOrMsgChanged = !inMemoryStateManagerService.containsKey(id)  ||
+                                        !inMemoryStateManagerService.get(id).getMessage().equals(errMsg);
+        final boolean result = newOrStateChanged || newOrMsgChanged;
+        LOGGER.debug("isStateChangedAndOrMsgNotEmpty result: newOrStateChanged {} || newOrMsgChanged {} = {}",
+                     newOrStateChanged, newOrMsgChanged, result);
+        return result;
     }
 
     /**

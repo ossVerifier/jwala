@@ -69,7 +69,7 @@ public class JvmStateReceiverAdapter extends ReceiverAdapter {
                 groupStateNotificationService.retrieveStateAndSendToATopic(newState.getId(), Jvm.class);
             }
 
-            // Always update the JVM state since JvmStateService.verifyAndUpdateNotInMemOrStartedAndStaleStates checks if the
+            // Always update the JVM state since JvmStateService.verifyAndUpdateNotInMemOrStaleStates checks if the
             // state is stale of not!
             inMemoryStateManagerService.put(newState.getId(), newState);
         }
