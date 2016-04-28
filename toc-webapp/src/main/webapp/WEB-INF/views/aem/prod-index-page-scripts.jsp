@@ -72,7 +72,7 @@
 <script src="gen-public-resources/js/react/group-operations/GroupOperations.js"></script>
 <script src="gen-public-resources/js/react/group-operations/CommandStatusWidget.js"></script>
 <script src="gen-public-resources/js/react/group-operations/GroupOperationsDataTable.js"></script>
-<script src="gen-public-resources/js/react/group-operations/StatusWidget.js"></script>
+<script src="gen-public-resources/js/react/group-operations/ServerStateWidget.js"></script>
 <script src="gen-public-resources/js/react/group-operations/JvmControlPanelWidget.js"></script>
 <script src="gen-public-resources/js/react/group-operations/WebServerControlPanelWidget.js"></script>
 <script src="gen-public-resources/js/react/admin-tab.js"></script>

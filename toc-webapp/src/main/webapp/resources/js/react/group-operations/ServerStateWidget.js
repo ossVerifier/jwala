@@ -1,7 +1,7 @@
 /**
  * Displays the state and an error indicator if there are any errors in the state.
  */
-var StatusWidget = React.createClass({
+var ServerStateWidget = React.createClass({
     getInitialState: function() {
         return {status:this.props.defaultStatus, errorMessages:[], showErrorBtn:false, newErrorMsg:false,
                 statusColorCode: null};

@@ -281,7 +281,7 @@ var GroupOperationsDataTable = React.createClass({
       aoColumnDefs[itemIndex].bSortable = false;
       aoColumnDefs[itemIndex].fnCreatedCell = function (nTd, sData, oData, iRow, iCol) {
            var key = "grp" + oData.id.id;
-           return React.render(<StatusWidget key={key} defaultStatus=""
+           return React.render(<ServerStateWidget key={key} defaultStatus=""
                                     errorMsgDlgTitle={oData.name + " State Error Messages"} />, nTd, function() {
                       GroupOperations.groupStatusWidgetMap[key] = this;
                       var serverCount = oData.currentState.jvmCount + oData.currentState.webServerCount;
@@ -333,7 +333,7 @@ var GroupOperationsDataTable = React.createClass({
        var self= this;
        aoColumnDefs[itemIndex].fnCreatedCell = function (nTd, sData, oData, iRow, iCol) {
             var key = parentPrefix + parentId + type + oData.id.id;
-            return React.render(<StatusWidget key={key} defaultStatus=""
+            return React.render(<ServerStateWidget key={key} defaultStatus=""
                                      errorMsgDlgTitle={oData.name + " State Error Messages"} />, nTd, function() {
                        GroupOperations.webServerStatusWidgetMap[key] = this;
                        // TODO: Include lastUpdatedDate from REST and replace "new Date()".
@@ -345,7 +345,7 @@ var GroupOperationsDataTable = React.createClass({
         var self = this;
         aoColumnDefs[itemIndex].fnCreatedCell = function (nTd, sData, oData, iRow, iCol) {
              var key = parentPrefix + parentId + type + oData.id.id;
-             return React.render(<StatusWidget key={key} defaultStatus=""
+             return React.render(<ServerStateWidget key={key} defaultStatus=""
                                       errorMsgDlgTitle={oData.jvmName + " State Error Messages"} />, nTd, function() {
                         GroupOperations.jvmStatusWidgetMap[key] = this;
 
