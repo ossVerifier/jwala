@@ -5,9 +5,6 @@ import com.siemens.cto.aem.common.request.state.SetStateRequest;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.common.domain.model.jvm.message.JvmStateMessage;
-import com.siemens.cto.aem.service.MessagingService;
-import com.siemens.cto.aem.service.group.GroupStateNotificationService;
-import com.siemens.cto.aem.service.jvm.JvmService;
 import com.siemens.cto.aem.service.jvm.JvmStateService;
 import com.siemens.cto.aem.service.jvm.state.jms.listener.message.JvmStateMapMessageConverter;
 import org.slf4j.Logger;
@@ -18,25 +15,19 @@ import javax.jms.MapMessage;
 import javax.jms.Message;
 import javax.jms.MessageListener;
 
+/**
+ * The listener for JMS/EMS messages.
+ */
 public class JvmStateMessageListener implements MessageListener {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JvmStateMessageListener.class);
 
     private final JvmStateMapMessageConverter converter;
-    private final JvmService jvmService;
-    private final MessagingService messagingService;
-    private final GroupStateNotificationService groupStateNotificationService;
     private final JvmStateService jvmStateService;
 
     public JvmStateMessageListener(final JvmStateMapMessageConverter converter,
-                                   final JvmService jvmService,
-                                   final MessagingService messagingTemplate,
-                                   final GroupStateNotificationService groupStateNotificationService,
                                    final JvmStateService jvmStateService) {
         this.converter = converter;
-        this.jvmService = jvmService;
-        this.messagingService = messagingTemplate;
-        this.groupStateNotificationService = groupStateNotificationService;
         this.jvmStateService = jvmStateService;
     }
 

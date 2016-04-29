@@ -67,9 +67,7 @@ public class JvmStateMessageListenerTest {
         when(convertedMessage.toCommand()).thenReturn(stateCommand);
         when(stateCommand.getNewState()).thenReturn(newCurrentState);
         when(newCurrentState.getId()).thenReturn(Identifier.<Jvm>id(10L));
-        listener = spy(new JvmStateMessageListener(converter, mockJvmService, mockMessagingService,
-                mockGroupStateNotificationService,
-                mockJvmStateService));
+        listener = spy(new JvmStateMessageListener(converter, mockJvmStateService));
     }
 
     @Test
