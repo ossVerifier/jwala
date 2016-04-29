@@ -13,11 +13,11 @@
 }
 
 .dot.started {
-    background: green;
+    background: #5CD254;
 }
 
 .dot.partial {
-    background: #ECEC00;
+    background: #FFD200;
 }
 
 .dot.stopped {
