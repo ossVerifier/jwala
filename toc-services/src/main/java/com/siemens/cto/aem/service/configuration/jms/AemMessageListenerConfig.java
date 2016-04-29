@@ -77,8 +77,7 @@ public class AemMessageListenerConfig {
 
     @Bean
     public MessageListener getJvmStateMessageListener(final JvmStateService jvmStateService) {
-        return new JvmStateMessageListener(new JvmStateMapMessageConverterImpl(), jvmService, messagingService,
-                groupStateNotificationService, jvmStateService);
+        return new JvmStateMessageListener(new JvmStateMapMessageConverterImpl(), jvmStateService);
     }
 
 }

@@ -362,14 +362,13 @@ public class AemServiceConfiguration implements SchedulingConfigurer {
     }
 
     @Bean
-    public JvmStateReceiverAdapter getSimpleJvmReceiverAdapter() {
-        return new JvmStateReceiverAdapter(getJvmService(), messagingService, groupStateNotificationService,
-                jvmInMemoryStateManagerService);
+    public JvmStateReceiverAdapter getJvmReceiverAdapter(final JvmStateService jvmStateService) {
+        return new JvmStateReceiverAdapter(jvmStateService);
     }
 
     @Bean
-    public JGroupsClusterInitializer jGroupsClusterInitializer() {
-        return new JGroupsClusterInitializer(getSimpleJvmReceiverAdapter());
+    public JGroupsClusterInitializer jGroupsClusterInitializer(final JvmStateReceiverAdapter jvmStateReceiverAdapter) {
+        return new JGroupsClusterInitializer(jvmStateReceiverAdapter);
     }
 
     @Bean(name = "webServerInMemoryStateManagerService")
