@@ -98,10 +98,13 @@ public class JvmStateResolverWorker {
             LOGGER.error("Verify state in remote server failed!", rcese);
             errMsg = errMsg + ";" + rcese.getMessage();
         }
-        // Just show what the state was before the error but provide an error message so that the client (UI)
-        // will get informed about the error.
-        jvmStateService.updateNotInMemOrStaleState(jvm, jvm.getState(), errMsg);
-        return new CurrentState<>(jvm.getId(), JvmState.JVM_FAILED, DateTime.now(), StateType.JVM, errMsg);
+
+        // The state should be unknown if we can't verify the JVM's state.
+        // In addition, if we just leave the state as is and just report an error, if that state is in started,
+        // the state resolver (reverse heartbeat) will always end up trying to ping it which will eat CPU resources.
+        final JvmState state = JvmState.JVM_UNKNOWN;
+        jvmStateService.updateNotInMemOrStaleState(jvm, state, errMsg);
+        return new CurrentState<>(jvm.getId(), state, DateTime.now(), StateType.JVM, errMsg);
     }
 
 }

@@ -90,7 +90,7 @@ public class JvmStateResolverWorkerTest {
         final RemoteCommandReturnInfo remoteCommandReturnInfo = new RemoteCommandReturnInfo(-1, "STOPPED", "");
         when(mockJvmStateService.getServiceStatus(eq(mockJvm))).thenReturn(remoteCommandReturnInfo);
         Future<CurrentState<Jvm, JvmState>> future = jvmStateResolverWorker.pingAndUpdateJvmState(mockJvm, mockJvmStateService);
-        assertEquals(JvmState.JVM_FAILED, future.get().getState());
+        assertEquals(JvmState.JVM_UNKNOWN, future.get().getState());
     }
 
     @Test
@@ -100,7 +100,7 @@ public class JvmStateResolverWorkerTest {
         final RemoteCommandReturnInfo remoteCommandReturnInfo = new RemoteCommandReturnInfo(-1, "STOPPED", "");
         when(mockJvmStateService.getServiceStatus(eq(mockJvm))).thenReturn(remoteCommandReturnInfo);
         Future<CurrentState<Jvm, JvmState>> future = jvmStateResolverWorker.pingAndUpdateJvmState(mockJvm, mockJvmStateService);
-        assertEquals(JvmState.JVM_FAILED, future.get().getState());
+        assertEquals(JvmState.JVM_UNKNOWN, future.get().getState());
     }
 
     @Test

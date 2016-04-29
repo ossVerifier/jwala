@@ -30,6 +30,7 @@ public enum JvmState implements OperationalState {
     JVM_UNEXPECTED_STATE(StateLabel.UNEXPECTED_STATE, Started.NO),
     JVM_FAILED          (StateLabel.FAILED, Started.NO),
     FORCED_STOPPED      (StateLabel.FORCED_STOPPED, Started.NO),
+    JVM_UNKNOWN         (StateLabel.UNKNOWN, Started.NO)
     ;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JvmState.class);
@@ -89,6 +90,7 @@ public enum JvmState implements OperationalState {
         public static final String UNEXPECTED_STATE = "UNEXPECTED_STATE";
         public static final String FAILED = "FAILED";
         public static final String FORCED_STOPPED = "FORCE STOPPED";
+        public static final String UNKNOWN = "UNKNOWN";
     }
 
     private static class Started {
