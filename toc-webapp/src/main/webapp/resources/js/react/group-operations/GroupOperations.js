@@ -26,10 +26,10 @@ var GroupOperations = React.createClass({
         return  <div className={this.props.className}>
                     <div ref="stompMsgDiv"/>
                     <div className="start-stop-groups-btn-container">
-                        <RButton label="START GROUPS"
+                        <RButton label="START ALL GROUPS"
                                  className="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only start-stop-all-groups-button"
                                  onClick={this.startGroups}/>
-                        <RButton label="STOP GROUPS"
+                        <RButton label="STOP ALL GROUPS"
                                  className="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only start-stop-all-groups-button"
                                  onClick={this.stopGroups}/>
                     </div>
