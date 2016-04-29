@@ -101,11 +101,9 @@ public class CommandOutput implements Serializable {
     }
 
     public void cleanHeapDumpStandardOutput() {
-        final String beginPhrase = "Dumping heap to";
-        final String endPhrase = "Heap dump file created";
-        int startIndex = standardOutput.indexOf(beginPhrase);
-        int endIndex = standardOutput.indexOf(endPhrase);
-        endIndex += endPhrase.length();
-        standardOutput = standardOutput.substring(startIndex, endIndex);
+        final String outputStartStr = "***heapdump-start***";
+        int startIndex = standardOutput.lastIndexOf(outputStartStr);
+        int endIndex = standardOutput.lastIndexOf("***heapdump-end***");
+        standardOutput = standardOutput.substring(startIndex + outputStartStr.length(), endIndex);
     }
 }
