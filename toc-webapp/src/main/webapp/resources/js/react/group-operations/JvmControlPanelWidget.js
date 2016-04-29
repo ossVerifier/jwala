@@ -1,9 +1,15 @@
 /**
  * A panel widget for jvm buttons.
+ *
  */
 var JvmControlPanelWidget = React.createClass({
     doneCallback: {},
     render: function() {
+
+        // Can be defined here not outside since JvmControlPanelWidget is not really generic.
+        var mgrBtnDisplayClass = (tocVars["opsJvmMgrBtnEnabled"] === "true" ? "" : "ui-button-hide");
+        var diagnoseBtnDisplayClass = (tocVars["opsJvmMgrBtnEnabled"] === "true" ? "" : "ui-button-hide");
+
         return <div className="jvm-control-panel-widget">
                     <RButton ref="stopBtn"
                              className="zero-padding ui-widget ui-state-default ui-corner-all ui-button-text-only ui-button-height"
@@ -38,13 +44,13 @@ var JvmControlPanelWidget = React.createClass({
                             title="Thread Dump"/>
 
                    <RButton ref="diagnoseBtn"
-                            className="zero-padding ui-widget ui-state-default ui-corner-all ui-button-text-only ui-button-height"
+                            className={"zero-padding ui-widget ui-state-default ui-corner-all ui-button-text-only ui-button-height " + mgrBtnDisplayClass}
                             spanClassName="ui-icon ui-icon-wrench"
                             onClick={this.diagnose}
                             title="Diagnose and resolve state"/>
 
                    <RButton ref="managerBtn"
-                            className="zero-padding ui-widget ui-state-default ui-corner-all ui-button-text-only ui-button-height"
+                            className={"zero-padding ui-widget ui-state-default ui-corner-all ui-button-text-only ui-button-height " + diagnoseBtnDisplayClass}
                             spanClassName="ui-icon ui-icon-mgr"
                             onClick={this.showMgr}
                             title="Manager"/>

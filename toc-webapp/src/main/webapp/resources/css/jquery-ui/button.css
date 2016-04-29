@@ -44,3 +44,7 @@
 .ui-icon-mgr {
     background-image: url(../../img/icons/mgr.png)  !important
 }
+
+.ui-button-hide {
+    display: none !important;
+}
