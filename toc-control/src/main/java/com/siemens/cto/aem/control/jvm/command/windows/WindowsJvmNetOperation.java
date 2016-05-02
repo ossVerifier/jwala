@@ -6,6 +6,7 @@ import com.siemens.cto.aem.common.exec.ShellCommand;
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.control.AemControl;
 import com.siemens.cto.aem.control.command.ServiceCommandBuilder;
+import org.apache.commons.lang.StringUtils;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
@@ -56,13 +57,18 @@ public enum WindowsJvmNetOperation implements ServiceCommandBuilder {
     },
     HEAP_DUMP(JvmControlOperation.HEAP_DUMP) {
         @Override
+        // TODO: Refactor since the heap dump shell command is now a series of commands rather than one single command with parameters.
+        // Note: The heap dump creates the directories, executes an echo to mark the start, then executes the heap dump
+        //       itself then an echo to mark the end of the heap dump command sequence.
         public ExecCommand buildCommandForService(final String aServiceName, final String... aParams) {
             final Properties properties = ApplicationProperties.getProperties();
-            String jMapCmd = "echo '***heapdump-start***';" + properties.getProperty("stp.java.home") + "/bin/jmap";
             String dataDir = properties.getProperty("stp.data.dir");
+            String jMapCmd = "echo '***heapdump-start***';mkdir -p " + dataDir + ";" +
+                    properties.getProperty("stp.java.home") + "/bin/jmap";
             final boolean dumpLiveEnabled = Boolean.parseBoolean(properties.getProperty("jmap.dump.live.enabled"));
-            DateTimeFormatter fmt = DateTimeFormat.forPattern("yyyyMMdd-HHmmss.SSS");
-            String dumpFile = dataDir + "/heapDump-" + aServiceName + "-" + fmt.print(new DateTime());
+            DateTimeFormatter fmt = DateTimeFormat.forPattern("yyyyMMdd.HHmmss");
+            String dumpFile = dataDir + "/heapDump." + StringUtils.replace(aServiceName, " ", "") + "." +
+                    fmt.print(DateTime.now());
             String parameters = "-dump:" + (dumpLiveEnabled ? "live," : "") + "format=b,file=" + dumpFile + " `sc queryex " +
                     aServiceName + " | grep PID | awk '{ print $3 }'`;echo '***heapdump-end***'";
             return new ExecCommand(jMapCmd, parameters);

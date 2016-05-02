@@ -714,8 +714,6 @@ var GroupOperationsDataTable = React.createClass({
                                         var msg;
                                         if (response.applicationResponseContent.standardError === "") {
                                             msg = response.applicationResponseContent.standardOutput;
-                                            msg = msg.replace("Dumping heap to", "Heap dump saved to " + host + " in ");
-                                            msg = msg.replace("Heap dump file created", "");
                                         } else {
                                             msg = response.applicationResponseContent.execData.standardError;
                                         }
