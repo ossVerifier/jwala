@@ -442,6 +442,14 @@ public class ResourceServiceImpl implements ResourceService {
     }
 
     @Override
+    public ResourceGroup generateResourceGroup() {
+        return new ResourceGroup(groupPersistenceService.getGroups(),
+                webServerPersistenceService.getWebServers(),
+                jvmPersistenceService.getJvms(),
+                applicationPersistenceService.getApplications());
+    }
+
+    @Override
     public <T> String generateResourceFile(final String template, final ResourceGroup resourceGroup, T selectedValue) {
         return ResourceFileGenerator.generateResourceConfig(template, resourceGroup, selectedValue);
     }

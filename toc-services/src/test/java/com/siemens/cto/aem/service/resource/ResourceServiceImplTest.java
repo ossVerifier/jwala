@@ -1,18 +1,23 @@
 package com.siemens.cto.aem.service.resource;
 
 import com.siemens.cto.aem.common.domain.model.app.Application;
-import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
-import com.siemens.cto.aem.common.domain.model.resource.Entity;
-import com.siemens.cto.aem.common.domain.model.resource.EntityType;
-import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
-import com.siemens.cto.aem.common.request.app.UploadAppTemplateRequest;
-import com.siemens.cto.aem.common.request.jvm.UploadJvmConfigTemplateRequest;
-import com.siemens.cto.aem.common.request.resource.ResourceInstanceRequest;
+import com.siemens.cto.aem.common.domain.model.group.CurrentGroupState;
 import com.siemens.cto.aem.common.domain.model.group.Group;
+import com.siemens.cto.aem.common.domain.model.group.GroupState;
+import com.siemens.cto.aem.common.domain.model.group.History;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
+import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
+import com.siemens.cto.aem.common.domain.model.path.FileSystemPath;
+import com.siemens.cto.aem.common.domain.model.resource.EntityType;
 import com.siemens.cto.aem.common.domain.model.resource.ResourceInstance;
 import com.siemens.cto.aem.common.domain.model.resource.ResourceType;
 import com.siemens.cto.aem.common.domain.model.user.User;
+import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
+import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState;
+import com.siemens.cto.aem.common.request.app.UploadAppTemplateRequest;
+import com.siemens.cto.aem.common.request.jvm.UploadJvmConfigTemplateRequest;
+import com.siemens.cto.aem.common.request.resource.ResourceInstanceRequest;
 import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateRequest;
 import com.siemens.cto.aem.persistence.service.*;
 import com.siemens.cto.aem.service.app.ApplicationService;
@@ -22,12 +27,15 @@ import com.siemens.cto.aem.template.HarmonyTemplate;
 import com.siemens.cto.aem.template.HarmonyTemplateEngine;
 import com.siemens.cto.aem.template.webserver.exception.TemplateNotFoundException;
 import com.siemens.cto.toc.files.FileManager;
+import org.codehaus.groovy.runtime.ResourceGroovyMethods;
+import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.internal.verification.Times;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -35,7 +43,12 @@ import java.nio.file.Path;
 import java.util.*;
 
 import static org.junit.Assert.*;
-import static org.mockito.Matchers.*;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyList;
+import static org.mockito.Matchers.anyLong;
+import static org.mockito.Matchers.anyMap;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 
 /**
@@ -353,5 +366,42 @@ public class ResourceServiceImplTest {
     @Test(expected = ResourceServiceException.class)
     public void testRemoveTemplateResourceServiceEx() {
         resourceService.removeTemplate("HCT GROUP", EntityType.WEB_SERVER, "some-template-name");
+    }
+
+    @Test
+    public void testGenerateResourceFile() {
+        File httpdTemplate = new File("../toc-template/src/test/resources/HttpdConfTemplate.tpl");
+        try {
+            List<Group> groups = new ArrayList<>();
+            List<Jvm> jvms = new ArrayList<>();
+            List<WebServer> webServers = new ArrayList<>();
+            List<Application> applications = new ArrayList<>();
+            Group group = new Group(new Identifier<Group>(1111L), "groupName", new HashSet(jvms), new HashSet(webServers), new CurrentGroupState(new Identifier<Group>(1111L), GroupState.GRP_STOPPED, DateTime.now()), new HashSet<History>());
+            groups.add(group);
+            applications.add(new Application(new Identifier<Application>(111L), "hello-world-1", "d:/stp/app/archive", "/hello-world-1", group, true, true, false, "testWar.war"));
+            applications.add(new Application(new Identifier<Application>(222L), "hello-world-2", "d:/stp/app/archive", "/hello-world-2", group, true, true, false, "testWar.war"));
+            applications.add(new Application(new Identifier<Application>(333L), "hello-world-3", "d:/stp/app/archive", "/hello-world-3", group, true, true, false, "testWar.war"));
+            WebServer webServer = new WebServer(new Identifier<WebServer>(1L), groups, "Apache2.4", "localhost", 80, 443,
+                    new com.siemens.cto.aem.common.domain.model.path.Path("/statusPath"), new FileSystemPath("D:/stp/app/data/httpd//httpd.conf"),
+                    new com.siemens.cto.aem.common.domain.model.path.Path("./"), new com.siemens.cto.aem.common.domain.model.path.Path("htdocs"), WebServerReachableState.WS_UNREACHABLE, "");
+            webServers.add(webServer);
+            jvms.add(new Jvm(new Identifier<Jvm>(11L), "tc1", "usmlvv1ctoGenerateMe", new HashSet<>(groups), 11010, 11011, 11012, -1, 11013,
+                    new com.siemens.cto.aem.common.domain.model.path.Path("/statusPath"), "EXAMPLE_OPTS=%someEvn%/someVal", JvmState.JVM_STOPPED, ""));
+            jvms.add(new Jvm(new Identifier<Jvm>(22L), "tc2", "usmlvv1ctoGenerateMe", new HashSet<>(groups), 11020, 11021, 11022, -1, 11023,
+                    new com.siemens.cto.aem.common.domain.model.path.Path("/statusPath"), "EXAMPLE_OPTS=%someEvn%/someVal", JvmState.JVM_STOPPED, ""));
+
+            when(mockGroupPesistenceService.getGroups()).thenReturn(groups);
+            when(mockAppPersistenceService.getApplications()).thenReturn(applications);
+            when(mockJvmPersistenceService.getJvms()).thenReturn(jvms);
+            when(mockWebServerPersistenceService.getWebServers()).thenReturn(webServers);
+
+            String output = resourceService.generateResourceFile(ResourceGroovyMethods.getText(httpdTemplate), resourceService.generateResourceGroup(), webServer);
+
+            String expected = ResourceGroovyMethods.getText(new File("../toc-template/src/test/resources/HttpdConfTemplate-EXPECTED.conf")).replaceAll("\\r", "").replaceAll("\\n", "");
+            output = output.replaceAll("\\r", "").replaceAll("\\n", "");
+            assertEquals(expected, output);
+        } catch(IOException e ) {
+            fail(e.getMessage());
+        }
     }
 }

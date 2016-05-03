@@ -91,6 +91,12 @@ public interface ResourceService {
     int removeTemplate(EntityType entityType, String entityName, String templateNames);
 
     /**
+     * Generates the ResourceGroup class object, which contains all the jvms, webapps, webservers and groups information.
+     * @return the ResourceGroup object
+     */
+    ResourceGroup generateResourceGroup();
+
+    /**
      * Maps data to the template specified by the template parameter.
      * @param template the template parameter.
      * @return the generated resource file string
