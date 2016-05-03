@@ -16,6 +16,7 @@ import org.joda.time.DateTime
 
 class TestResourceFileGenerator extends GroovyTestCase{
 
+    List<Group> groups;
     List<Jvm> jvms
     List<Application> apps
     List<WebServer> webServers
@@ -25,12 +26,14 @@ class TestResourceFileGenerator extends GroovyTestCase{
     ResourceGroup resourceGroup;
 
     void setUp() {
+        groups = new ArrayList<>();
         def groupHashSet = new HashSet<Group>();
 
         (jvms, webServers) = createTestJvmsAndWebServers(groupHashSet)
 
 
         def group = new Group(new Identifier<Group>(1111L), "groupName", new HashSet(jvms), new HashSet(webServers), new CurrentGroupState<>(new Identifier<Group>(1111L), GroupState.GRP_STOPPED, DateTime.now()), new HashSet<History>())
+        groups.add(group);
         groupHashSet.add(group);
         app = new Application(new Identifier<Application>(111L), "hello-world-1", "d:/stp/app/archive", "/hello-world-1", group, true, true, false, "testWar.war")
 
@@ -63,7 +66,7 @@ class TestResourceFileGenerator extends GroovyTestCase{
 
     void testGenerateHttpdConfConfigFile(){
         File httpdTemplate = new File("./src/test/resources/HttpdConfTemplate.tpl");
-        resourceGroup = new ResourceGroup(webServers, jvms, apps);
+        resourceGroup = new ResourceGroup(groups, webServers, jvms, apps);
         def generatedText = ResourceFileGenerator.generateResourceConfig(httpdTemplate.text, resourceGroup, webServer);
         def expectedText = new File("./src/test/resources/HttpdConfTemplate-EXPECTED.conf").text
         assertEquals(removeCarriageReturnsAndNewLines(expectedText), removeCarriageReturnsAndNewLines(generatedText));
@@ -71,7 +74,7 @@ class TestResourceFileGenerator extends GroovyTestCase{
 
     void testGenerateInvokeBatConfigFile(){
         File httpdTemplate = new File("./src/test/resources/InvokeBatTemplate.tpl");
-        resourceGroup = new ResourceGroup(webServers, jvms, apps);
+        resourceGroup = new ResourceGroup(groups, webServers, jvms, apps);
         def generatedText = ResourceFileGenerator.generateResourceConfig(httpdTemplate.text, resourceGroup, jvm);
         def expectedText = new File("./src/test/resources/InvokeBatTemplate-EXPECTED.bat").text
         assertEquals(removeCarriageReturnsAndNewLines(expectedText), removeCarriageReturnsAndNewLines(generatedText));
@@ -79,7 +82,7 @@ class TestResourceFileGenerator extends GroovyTestCase{
 
     void testGenerateInvokeWSBatConfigFile() {
         File httpdTemplate = new File("./src/test/resources/InvokeWSBatTemplate.tpl");
-        resourceGroup = new ResourceGroup(webServers, jvms, apps);
+        resourceGroup = new ResourceGroup(groups, webServers, jvms, apps);
         def generatedText = ResourceFileGenerator.generateResourceConfig(httpdTemplate.text, resourceGroup, webServer);
         def expectedText = new File("./src/test/resources/InvokeWSBatTemplate-EXPECTED.bat").text
         assertEquals(removeCarriageReturnsAndNewLines(expectedText), removeCarriageReturnsAndNewLines(generatedText));
@@ -87,7 +90,7 @@ class TestResourceFileGenerator extends GroovyTestCase{
 
     void testGenerateServerXMLConfigFile() {
         File httpdTemplate = new File("./src/test/resources/ServerXMLTemplate.tpl");
-        resourceGroup = new ResourceGroup(webServers, jvms, apps);
+        resourceGroup = new ResourceGroup(groups, webServers, jvms, apps);
         def generatedText = ResourceFileGenerator.generateResourceConfig(httpdTemplate.text, resourceGroup, jvm);
         def expectedText = new File("./src/test/resources/ServerXMLTemplate-EXPECTED.xml").text
         assertEquals(removeCarriageReturnsAndNewLines(expectedText), removeCarriageReturnsAndNewLines(generatedText));
@@ -95,7 +98,7 @@ class TestResourceFileGenerator extends GroovyTestCase{
 
     void testGenerateSetenvBatConfigFile() {
         File httpdTemplate = new File("./src/test/resources/SetenvBatTemplate.tpl");
-        resourceGroup = new ResourceGroup(webServers, jvms, apps);
+        resourceGroup = new ResourceGroup(groups, webServers, jvms, apps);
         def generatedText = ResourceFileGenerator.generateResourceConfig(httpdTemplate.text, resourceGroup, jvm);
         def expectedText = new File("./src/test/resources/SetenvBatTemplate-EXPECTED.bat").text
         assertEquals(removeCarriageReturnsAndNewLines(expectedText), removeCarriageReturnsAndNewLines(generatedText));

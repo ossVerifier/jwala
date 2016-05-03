@@ -1,6 +1,7 @@
 package com.siemens.cto.aem.common.domain.model.resource;
 
 import com.siemens.cto.aem.common.domain.model.app.Application;
+import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 
@@ -12,6 +13,7 @@ import java.util.List;
  * This class contains all the information of a group resource. It contains the list of webservers, jvms and webapps for a select group.
  */
 public class ResourceGroup {
+    private List<Group> groups;
     private List<WebServer> webServers;
     private List<Jvm> jvms;
     private List<Application> applications;
@@ -19,7 +21,8 @@ public class ResourceGroup {
     public ResourceGroup() {
     }
 
-    public ResourceGroup(List<WebServer> webServers, List<Jvm> jvms, List<Application> applications) {
+    public ResourceGroup(List<Group> groups, List<WebServer> webServers, List<Jvm> jvms, List<Application> applications) {
+        this.groups = groups;
         this.webServers = webServers;
         this.jvms = jvms;
         this.applications = applications;
@@ -49,10 +52,19 @@ public class ResourceGroup {
         this.applications = applications;
     }
 
+    public List<Group> getGroups() {
+        return groups;
+    }
+
+    public void setGroups(List<Group> groups) {
+        this.groups = groups;
+    }
+
     @Override
     public String toString() {
         return "ResourceGroup{" +
-                "webServers=" + webServers +
+                "groups=" + groups +
+                ", webServers=" + webServers +
                 ", jvms=" + jvms +
                 ", applications=" + applications +
                 '}';
