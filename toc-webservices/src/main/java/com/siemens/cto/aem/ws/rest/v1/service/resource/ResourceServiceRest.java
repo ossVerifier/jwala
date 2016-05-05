@@ -1,6 +1,7 @@
 package com.siemens.cto.aem.ws.rest.v1.service.resource;
 
 import com.siemens.cto.aem.common.domain.model.resource.EntityType;
+import com.siemens.cto.aem.common.domain.model.resource.ResourceGroup;
 import com.siemens.cto.aem.ws.rest.v1.provider.AuthenticatedUser;
 import com.siemens.cto.aem.ws.rest.v1.service.resource.impl.JsonResourceInstance;
 import org.apache.cxf.jaxrs.ext.multipart.Attachment;
@@ -147,4 +148,8 @@ public interface ResourceServiceRest {
     @Path("/template/{entityType}/{entityName}")
     Response removeTemplate(@PathParam("entityType") EntityType entityType, @PathParam("entityName") String entityName,
                             @QueryParam("templateNames") String templateNames);
+
+    @GET
+    @Path("/data")
+    Response getResourceAttrData();
 }

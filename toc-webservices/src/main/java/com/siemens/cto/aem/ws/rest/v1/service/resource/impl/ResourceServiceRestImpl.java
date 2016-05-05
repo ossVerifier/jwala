@@ -33,7 +33,7 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
 
     private final ResourceService resourceService;
 
-    public ResourceServiceRestImpl(ResourceService resourceService) {
+    public ResourceServiceRestImpl(final ResourceService resourceService) {
         this.resourceService = resourceService;
     }
 
@@ -152,5 +152,10 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR,
                     new FaultCodeException(AemFaultType.PERSISTENCE_ERROR, rse.getMessage()));
         }
+    }
+
+    @Override
+    public Response getResourceAttrData() {
+        return ResponseBuilder.ok(resourceService.generateResourceGroup());
     }
 }

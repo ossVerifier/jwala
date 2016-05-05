@@ -9,7 +9,33 @@ var ResourceAttrPane = React.createClass({
     getInitialState: function() {
         return {attributes: null};
     },
+
     render: function() {
+        var attributes = this.state.attributes;
+        if (attributes === null) {
+            return <div>Loading attributes...</div>;
+        }
+        var reactAttributeElements = [];
+        for (var key in attributes) {
+            reactAttributeElements.push(<Attribute entity={key} value={attributes[key]}/>);
+        }
+        return <RJsonDataTreeDisplay ref="attrTree" data={attributes}/>
+    },
+
+    componentDidMount: function() {
+        // TODO: Decide whether we should call the service directly or pass it as a property.
+        var self = this;
+        resourceService.getResourceAttrData()
+            .then(function(response) {
+                self.setState({attributes: response.applicationResponseContent});
+            })
+            .caught(function(e){
+                alert(e);
+            });
+    },
+
+    // TODO: Remove when new code that replaces this is complete.
+    render_: function() {
         if (this.state.attributes === null ) {
             return <div className="attr-list ui-widget-content" style={{padding: "2px 2px"}}><span>Please select a JVM, Web Server or Web Application...</span></div>;
         }
@@ -98,13 +124,19 @@ var ResourceAttrPane = React.createClass({
                     </table>
                </div>;
     },
-    showAttributes: function(data) {
-        this.setState({attributes: data});
+    setCurrentlySelectedEntityData: function(data) {
+        if (this.state.attributes) {
+            this.state.attributes["this"] = data;
+            this.refs.attrTree.refresh(this.state.attributes);
+        }
     }
 })
 
 var Attribute = React.createClass({
     render: function() {
+        if (this.props.property === undefined) {
+            return <tr><td>{"+" + this.props.entity}</td><td>{"Array[" + this.props.value.length + "]"} </td></tr>;
+        }
         return <tr><td>{"${" + this.props.entity + "." + this.props.property + "}"}</td><td>{this.props.value.toString()}</td></tr>;
     }
 });

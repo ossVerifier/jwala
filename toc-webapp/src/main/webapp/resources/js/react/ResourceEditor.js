@@ -8,7 +8,8 @@
 var ResourceEditor = React.createClass({
     getInitialState: function() {
         return {
-            groupData: null
+            groupData: null,
+            resourceAttrData: null
         }
     },
     render: function() {
@@ -61,7 +62,8 @@ var ResourceEditor = React.createClass({
         splitterComponents.push(<div className="resource-pane">{resourcesPane}</div>);
         splitterComponents.push(<div className="resource-pane">{resourceAttrPane}</div>);
 
-        return <RSplitter components={splitterComponents}
+        return <RSplitter ref="mainSplitter"
+                          components={splitterComponents}
                           orientation={RSplitter.HORIZONTAL_ORIENTATION}
                           panelDimensions={[{width:"44%", height:"100%"},
                                             {width:"12%", height:"100%"},
@@ -119,7 +121,7 @@ var ResourceEditor = React.createClass({
     selectNodeCallback: function(data) {
         if (this.props.selectEntityCallback(data, null)) {
             this.refs.resourcePane.getData(data);
-            this.refs.resourceAttrPane.showAttributes(data);
+            this.refs.resourceAttrPane.setCurrentlySelectedEntityData(data);
             return true;
         }
         return false;

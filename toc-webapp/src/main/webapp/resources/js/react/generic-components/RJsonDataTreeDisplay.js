@@ -1,0 +1,106 @@
+/**
+ * Displays Json data in a tree like structure.
+ *
+ * Usages: <RJsonDataTreeDisplay refs="jsonTree" data={someJsonData} />
+ *         <RJsonDataTreeDisplay refs="jsonTree" data={someJsonData} displayValueOnly="true" />
+ *
+ * Created by JC043760 on 5/03/2016.
+ */
+var RJsonDataTreeDisplay = React.createClass({
+    getInitialState: function() {
+        return {data: this.props.data};
+    },
+    render: function() {
+        var nodeArray = [];
+
+        for (var key in this.state.data) {
+            // prop key is required by React internally and if used inside node will result to undefined
+            // that is why we need nodeKey
+            nodeArray.push(React.createElement(RJsonTreeNode, {key: key, nodeKey: key, val: this.state.data[key],
+                displayValueOnly: this.props.displayValueOnly}));
+        }
+
+        return React.createElement("div", {className: "rjson-data-tree-display container"},
+                   React.createElement("ul", {className: "rjson-data-tree-display"}, nodeArray));
+    },
+    componentWillReceiveProps: function(nextProps) {
+        if (nextProps.data) {
+            this.refresh(nextProps.data);
+        }
+    },
+    /**
+     * Refreshes data and regenerates the tree.
+     * Can be called using refs e.g. this.refs.jsonTree.refresh(someJsonData);
+     */
+    refresh: function(data) {
+        this.setState({data: data});
+    }
+});
+
+/**
+ * The node.
+ */
+var RJsonTreeNode = React.createClass({
+    getInitialState: function() {
+        return {collapsed: true};
+    },
+    render: function() {
+        if (this.props.val) {
+            if (this.props.val.constructor === Array) {
+                var treeArray = [];
+                if (!this.state.collapsed) {
+                    for (var key in this.props.val) {
+                        var object = {};
+                        object[this.props.nodeKey + "[" + key + "]"] = this.props.val[key];
+                        treeArray.push(React.createElement(RJsonDataTreeDisplay, {data: object,
+                                                                                  displayValueOnly: this.props.displayValueOnly}));
+                    }
+                }
+                return React.createElement("li", null, React.createElement(RJsonTreeNodeOpenCollapseWidget,
+                    {onClickCallback: this.onOpenCollapseWidgetClick}), React.createElement("span", {className: "node-key"},
+                    this.props.nodeKey), ":  Array[" + this.props.val.length + "]", treeArray);
+            } else if (this.props.val.constructor === Object) {
+                var tree = this.state.collapsed ? null : React.createElement(RJsonDataTreeDisplay, {data: this.props.val,
+                                                             displayValueOnly: this.props.displayValueOnly});
+                return React.createElement("li", null, React.createElement(RJsonTreeNodeOpenCollapseWidget,
+                    {onClickCallback: this.onOpenCollapseWidgetClick}), React.createElement("span", {className: "node-key"},
+                    this.props.nodeKey), tree);
+            }
+
+            if (!this.props.displayValueOnly) {
+                return React.createElement("li", {className: "rjson-tree-val-node"},
+                    React.createElement("span", {className: "node-key"}, this.props.nodeKey), ":  " + this.props.val);
+            }
+            return React.createElement("li", {className: "rjson-tree-val-node"}, this.props.val);
+
+        }
+        return null;
+    },
+    onOpenCollapseWidgetClick: function(collapsed) {
+        this.setState({collapsed: collapsed});
+    }
+});
+
+/**
+ * The open/collapse widget.
+ */
+var RJsonTreeNodeOpenCollapseWidget = React.createClass({
+    getInitialState: function() {
+        return {collapsed: true};
+    },
+    render: function() {
+        if (this.state.collapsed) {
+            return React.createElement("span", {className: "rjson-tree-node-open-collapse-widget ui-icon ui-icon-plus",
+                                                onClick: this.onClick});
+        }
+        return React.createElement("span", {className: "rjson-tree-node-open-collapse-widget ui-icon ui-icon-minus",
+                                            onClick: this.onClick});
+    },
+    onClick: function() {
+        var collapsed = !this.state.collapsed;
+        this.setState({collapsed: collapsed});
+        if (this.props.onClickCallback) {
+            this.props.onClickCallback(collapsed);
+        }
+    }
+});

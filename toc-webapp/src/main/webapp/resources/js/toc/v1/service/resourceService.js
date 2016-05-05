@@ -52,5 +52,8 @@ var resourceService = {
     },
     deleteAllResource: function(resourceName) {
         return serviceFoundation.del("v1.0/resources/template/" + resourceName);
+    },
+    getResourceAttrData: function() {
+        return serviceFoundation.promisedGet("v1.0/resources/data/");
     }
 };

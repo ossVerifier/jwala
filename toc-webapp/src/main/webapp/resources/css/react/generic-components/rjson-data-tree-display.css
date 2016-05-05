@@ -1,0 +1,22 @@
+div.rjson-data-tree-display.container {
+    /* tree container style goes in here */
+}
+
+ul.rjson-data-tree-display > li {
+    list-style-type: none;
+    font-style: italic;
+    font-family: Consolas, Tahoma, Helvetica, sans-serif;
+}
+
+ul.rjson-data-tree-display > li > span.node-key {
+    color: #881391;
+}
+
+.rjson-tree-node-open-collapse-widget {
+    display: inline-block !important;
+}
+
+.rjson-tree-val-node {
+    padding-left: 15px;
+}
+
