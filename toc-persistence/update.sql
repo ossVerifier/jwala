@@ -73,12 +73,26 @@ INSERT INTO VERSION (RELEASE_VERSION, LAST_UPDATED) VALUES ('1.3.0', NOW());
 -- ================================================ --
 
 -- ================================================== --
--- === BEGIN: UPGRADE FROM TOC 1.3.0 to TOC 1.3.2 === --
+-- === BEGIN: UPGRADE FROM TOC 1.3.0 to TOC 1.3.1 === --
+-- ================================================== --
+
+CREATE TABLE IF NOT EXISTS VERSION (RELEASE_VERSION VARCHAR(255), LAST_UPDATED TIMESTAMP);
+INSERT INTO VERSION (RELEASE_VERSION, LAST_UPDATED) VALUES ('1.3.1', NOW());
+
+-- ================================================ --
+-- === END: UPGRADE FROM TOC 1.3.0 to TOC 1.3.1 === --
+-- ================================================ --
+
+-- ================================================== --
+-- === BEGIN: UPGRADE FROM TOC 1.3.1 to TOC 1.3.2 === --
 -- ================================================== --
 
 -- Fix for JVM state set to null
 UPDATE JVM SET STATE='JVM_STARTED' WHERE STATE IS NULL;
 
+CREATE TABLE IF NOT EXISTS VERSION (RELEASE_VERSION VARCHAR(255), LAST_UPDATED TIMESTAMP);
+INSERT INTO VERSION (RELEASE_VERSION, LAST_UPDATED) VALUES ('1.3.2', NOW());
+
 -- ================================================ --
--- === END: UPGRADE FROM TOC 1.3.0 to TOC 1.3.2 === --
+-- === END: UPGRADE FROM TOC 1.3.1 to TOC 1.3.2 === --
 -- ================================================ --
