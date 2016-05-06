@@ -71,3 +71,14 @@ INSERT INTO VERSION (RELEASE_VERSION, LAST_UPDATED) VALUES ('1.3.0', NOW());
 -- ================================================ --
 -- === END: UPGRADE FROM TOC 0.0.1 to TOC 1.3.0 === --
 -- ================================================ --
+
+-- ================================================== --
+-- === BEGIN: UPGRADE FROM TOC 1.3.0 to TOC 1.3.2 === --
+-- ================================================== --
+
+-- Fix for JVM state set to null
+UPDATE JVM SET STATE='JVM_STARTED' WHERE STATE IS NULL;
+
+-- ================================================ --
+-- === END: UPGRADE FROM TOC 1.3.0 to TOC 1.3.2 === --
+-- ================================================ --
