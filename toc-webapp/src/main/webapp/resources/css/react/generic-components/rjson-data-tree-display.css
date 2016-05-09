@@ -12,6 +12,10 @@ ul.rjson-data-tree-display > li > span.node-key {
     color: #881391;
 }
 
+ul.rjson-data-tree-display > li > span.node-val {
+    cursor: pointer;
+}
+
 .rjson-tree-node-open-collapse-widget {
     display: inline-block !important;
 }
@@ -19,4 +23,3 @@ ul.rjson-data-tree-display > li > span.node-key {
 .rjson-tree-val-node {
     padding-left: 15px;
 }
-

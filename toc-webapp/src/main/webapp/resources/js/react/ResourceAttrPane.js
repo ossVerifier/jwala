@@ -19,9 +19,11 @@ var ResourceAttrPane = React.createClass({
         for (var key in attributes) {
             reactAttributeElements.push(<Attribute entity={key} value={attributes[key]}/>);
         }
-        return <RJsonDataTreeDisplay ref="attrTree" data={attributes}/>
+        return <RJsonDataTreeDisplay ref="attrTree" data={attributes} onShowToolTipCallback={this.onShowAttrTreeToolTipCallback}/>
     },
-
+    onShowAttrTreeToolTipCallback: function(hierarchy) {
+        return <div><span style={{display: "inline-block"}} className="ui-icon ui-icon-clipboard" /><span>{"${" + hierarchy + "}"}</span></div>;
+    },
     componentDidMount: function() {
         // TODO: Decide whether we should call the service directly or pass it as a property.
         var self = this;
