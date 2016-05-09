@@ -1,5 +1,6 @@
 package com.siemens.cto.aem.service.resource;
 
+import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.resource.EntityType;
 import com.siemens.cto.aem.common.domain.model.resource.ResourceGroup;
@@ -94,11 +95,14 @@ public interface ResourceService {
      * Generates the ResourceGroup class object, which contains all the jvms, webapps, webservers and groups information.
      * @return the ResourceGroup object
      */
+    @Deprecated
     ResourceGroup generateResourceGroup();
 
     /**
      * Maps data to the template specified by the template parameter.
      * @param template the template parameter.
+     * @param resourceGroup resourcegroup object
+     * @param selectedValue the selectedvalue
      * @return the generated resource file string
      */
     <T> String generateResourceFile(final String template, final ResourceGroup resourceGroup, T selectedValue);

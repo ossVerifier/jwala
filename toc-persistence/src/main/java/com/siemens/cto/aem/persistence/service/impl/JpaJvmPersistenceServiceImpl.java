@@ -198,4 +198,9 @@ public class JpaJvmPersistenceServiceImpl implements JvmPersistenceService {
     public List<JpaJvm> getJvmsByGroupId(final String groupName) {
         return jvmCrudService.getJvmsByGroupId(groupName);
     }
+
+    @Override
+    public List<Jvm> getJvmsByGroupName(final String groupName) {
+        return jvmCrudService.getJvmsByGroupName(groupName);
+    }
 }

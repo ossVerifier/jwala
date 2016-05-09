@@ -19,6 +19,7 @@ import com.siemens.cto.aem.persistence.jpa.service.exception.ResourceTemplateUpd
 
 import javax.persistence.*;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
@@ -327,5 +328,23 @@ public class JvmCrudServiceImpl extends AbstractCrudServiceImpl<JpaJvm> implemen
         final Query q = entityManager.createNamedQuery(JpaJvm.QUERY_GET_JVMS_BY_GROUP_NAME);
         q.setParameter(JpaJvm.QUERY_PARAM_GROUP_NAME, groupName);
         return q.getResultList();
+    }
+
+    @Override
+    public List<Jvm> getJvmsByGroupName(String groupName) {
+        final Query q = entityManager.createNamedQuery(JpaJvm.QUERY_GET_JVMS_BY_GROUP_NAME);
+        q.setParameter(JpaJvm.QUERY_PARAM_GROUP_NAME, groupName);
+        return buildJvms(q.getResultList());
+    }
+
+    private List<Jvm> buildJvms(List<JpaJvm> jpaJvms) {
+        List<Jvm> jvms = null;
+        for(JpaJvm jpaJvm:jpaJvms) {
+            if(jvms == null) {
+                jvms = new ArrayList<>(jpaJvms.size());
+            }
+            jvms.add(new JvmBuilder(jpaJvm).build());
+        }
+        return jvms;
     }
 }

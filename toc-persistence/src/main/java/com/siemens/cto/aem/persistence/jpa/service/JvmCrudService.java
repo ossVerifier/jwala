@@ -71,4 +71,6 @@ public interface JvmCrudService extends CrudService<JpaJvm> {
     JpaJvmConfigTemplate getConfigTemplate(String jvmName);
 
     List<JpaJvm> getJvmsByGroupId(String groupName);
+
+    List<Jvm> getJvmsByGroupName(String groupName);
 }

@@ -2,6 +2,9 @@ package com.siemens.cto.aem.common.domain.model.app;
 
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
+import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
+
+import java.util.List;
 
 public class Application {
     
@@ -22,6 +25,10 @@ public class Application {
     private boolean unpackWar;
 
     private String warName;
+
+    private List<Jvm> jvms;
+
+    private Jvm parentJvm;
 
     public Application(Identifier<Application> anId,
                        String aName,
@@ -112,5 +119,21 @@ public class Application {
 
     public void setUnpackWar(boolean unpackWar) {
         this.unpackWar = unpackWar;
+    }
+
+    public List<Jvm> getJvms() {
+        return jvms;
+    }
+
+    public void setJvms(List<Jvm> jvms) {
+        this.jvms = jvms;
+    }
+
+    public Jvm getParentJvm() {
+        return parentJvm;
+    }
+
+    public void setParentJvm(Jvm parentJvm) {
+        this.parentJvm = parentJvm;
     }
 }

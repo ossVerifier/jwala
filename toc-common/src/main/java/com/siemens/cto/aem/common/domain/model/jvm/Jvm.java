@@ -19,6 +19,7 @@ public class Jvm implements Serializable {
     private String jvmName;
     private String hostName;
     private Set<Group> groups;
+    private Group parentGroup;
 
     // JVM ports
     private Integer httpPort;
@@ -132,6 +133,14 @@ public class Jvm implements Serializable {
         return errorStatus;
     }
 
+    public Group getParentGroup() {
+        return parentGroup;
+    }
+
+    public void setParentGroup(Group parentGroup) {
+        this.parentGroup = parentGroup;
+    }
+
     public URI getStatusUri() {
         final UriBuilder builder = new UriBuilder().setHost(getHostName())
                                                    .setHttpsPort(getHttpsPort())
@@ -162,6 +171,7 @@ public class Jvm implements Serializable {
                 ", jvmName='" + jvmName + '\'' +
                 ", hostName='" + hostName + '\'' +
                 ", groups=" + groups +
+                ", parentGroup=" + parentGroup +
                 ", httpPort=" + httpPort +
                 ", httpsPort=" + httpsPort +
                 ", redirectPort=" + redirectPort +

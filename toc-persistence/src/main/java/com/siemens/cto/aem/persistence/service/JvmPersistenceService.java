@@ -75,4 +75,11 @@ public interface JvmPersistenceService {
     JpaJvmConfigTemplate getConfigTemplate(String jvmName);
 
     List<JpaJvm> getJvmsByGroupId(String groupName);
+
+    /**
+     * This service returns a list of JpaJvm objects which belong to a particular group. This method uses the group name to lookup the JpaJvms.
+     * @param groupName
+     * @return a list of JpaJvm objects
+     */
+    List<Jvm> getJvmsByGroupName(String groupName);
 }

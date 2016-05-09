@@ -345,14 +345,16 @@ ProxySet nofailover=On
 <%
     def app = it
     def desiredGroup = app.group.id.id
-    jvms.findAll { it.groups.find { it.id.id == desiredGroup } != null } each {
-        def hostName = it.hostName.replaceAll(" ", "")
-        def jvmName = it.jvmName.replaceAll(" ", "")
-        if (app.secure) {
+    groups.findAll { it.find { it.id.id == desiredGroup } != null } each {
+        it.jvms.each {
+            def hostName = it.hostName.replaceAll(" ", "")
+            def jvmName = it.jvmName.replaceAll(" ", "")
+            if (app.secure) {
 %>
 BalancerMember https://${hostName}:${it.httpsPort}${ctxPath} route=${jvmName} ping=5000ms keepalive=on ttl=300 retry=0
 <%  }  else { %>
 BalancerMember http://${hostName}:${it.httpPort}${ctxPath} route=${jvmName} ping=5000ms keepalive=on ttl=300 retry=0
+<%  } %>
 <%  } %>
 <%  } %>
 </Proxy>

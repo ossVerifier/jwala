@@ -1,5 +1,6 @@
 package com.siemens.cto.aem.common.domain.model.group;
 
+import com.siemens.cto.aem.common.domain.model.app.Application;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
@@ -23,6 +24,7 @@ public class Group implements Serializable {
     private final Set<WebServer> webServers;
     private final CurrentGroupState currentState;
     private final Set<History> history;
+    private final Set<Application> applications;
 
     public Group(final Identifier<Group> theId,
                  final String theName) {
@@ -46,6 +48,7 @@ public class Group implements Serializable {
         webServers = null;
         currentState = new CurrentGroupState(theId, theState, theAsOf);
         history = null;
+        applications = null;
     }
 
     public Group(final Identifier<Group> theId,
@@ -60,6 +63,7 @@ public class Group implements Serializable {
         webServers = Collections.unmodifiableSet(new HashSet<>(theWebServers));
         currentState = theState;
         history = theHistory;
+        applications = null;
     }
 
     public Group(final Identifier<Group> theId,
@@ -73,6 +77,17 @@ public class Group implements Serializable {
         webServers = null;
         currentState = theState;
         history = null;
+        applications = null;
+    }
+
+    public Group(Identifier<Group> id, String name, Set<Jvm> jvms, Set<WebServer> webServers, CurrentGroupState currentState, Set<History> history, Set<Application> applications) {
+        this.id = id;
+        this.name = name;
+        this.jvms = jvms;
+        this.webServers = webServers;
+        this.currentState = currentState;
+        this.history = history;
+        this.applications = applications;
     }
 
     public Identifier<Group> getId() {
@@ -97,6 +112,10 @@ public class Group implements Serializable {
 
     public Set<History> getHistory() {
         return history;
+    }
+
+    public Set<Application> getApplications() {
+        return applications;
     }
 
     @Override
@@ -132,12 +151,14 @@ public class Group implements Serializable {
 
     @Override
     public String toString() {
-        return new ToStringBuilder(this)
-                .append("id", id)
-                .append("name", name)
-                .append("jvms", jvms)
-                .append("currentState", currentState)
-                .append("history", history)
-                .toString();
+        return "Group{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", jvms=" + jvms +
+                ", webServers=" + webServers +
+                ", currentState=" + currentState +
+                ", history=" + history +
+                ", applications=" + applications +
+                '}';
     }
 }

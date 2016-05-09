@@ -161,4 +161,9 @@ public class WebServerPersistenceServiceImpl implements WebServerPersistenceServ
     public List<JpaWebServerConfigTemplate> getJpaWebServerConfigTemplates(final String webServerName) {
         return webServerCrudService.getJpaWebServerConfigTemplates(webServerName);
     }
+
+    @Override
+    public List<WebServer> getWebServersByGroupName(String groupName) {
+        return webServerCrudService.getWebServersByGroupName(groupName);
+    }
 }

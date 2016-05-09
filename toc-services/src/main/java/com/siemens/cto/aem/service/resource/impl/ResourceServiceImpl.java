@@ -441,12 +441,31 @@ public class ResourceServiceImpl implements ResourceService {
         return totalDeletedRecs;
     }
 
+//    @Override
+//    public ResourceGroup generateResourceGroup() {
+//        return generateResourceGroup(null);
+//    }
+
     @Override
     public ResourceGroup generateResourceGroup() {
-        return new ResourceGroup(groupPersistenceService.getGroups(),
-                webServerPersistenceService.getWebServers(),
-                jvmPersistenceService.getJvms(),
-                applicationPersistenceService.getApplications());
+        List<Group> groups = groupPersistenceService.getGroups();
+        List<Group> groupsToBeAdded = null;
+        for(Group group:groups) {
+            if(groupsToBeAdded == null) {
+                groupsToBeAdded = new ArrayList<>(groups.size());
+            }
+            List<Jvm> jvms = jvmPersistenceService.getJvmsByGroupName(group.getName());
+            List<WebServer> webServers = webServerPersistenceService.getWebServersByGroupName(group.getName());
+            List<Application> applications = applicationPersistenceService.findApplicationsBelongingTo(group.getName());
+            groupsToBeAdded.add(new Group(group.getId(),
+                    group.getName(),
+                    new LinkedHashSet<>(jvms),
+                    new LinkedHashSet<>(webServers),
+                    group.getCurrentState(),
+                    group.getHistory(),
+                    new LinkedHashSet<>(applications)));
+        }
+        return new ResourceGroup(groupsToBeAdded);
     }
 
     @Override

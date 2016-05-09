@@ -202,8 +202,9 @@ public class JvmResourceFileServiceImpl implements JvmResourceFileService {
 
             // TODO: Find out if we need to pass all the JVMs or the JVMs of a certain group!
             // Note: We'll find out when we write a JVM resource file template.
+            Jvm jvm = jvmPersistenceService.findJvmByExactName(jvmName);
             final String generatedResourceStr = resourceService.generateResourceFile(jpaJvmConfigTemplate.getTemplateContent(),
-                    resourceService.generateResourceGroup(), jvmPersistenceService.findJvmByExactName(jvmName));
+                    resourceService.generateResourceGroup(), jvm);
 
             final String jvmResourcesRelativeDir = destPath + resourceTemplateMetaData.getRelativeDir();
             LOGGER.debug("generating template in location: {}", jvmResourcesRelativeDir + "/", resourceTemplateMetaData.getConfigFileName());

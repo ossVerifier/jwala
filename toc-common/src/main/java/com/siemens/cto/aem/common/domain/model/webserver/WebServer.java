@@ -28,6 +28,7 @@ public class WebServer implements Serializable {
     private final Path docRoot;
     private final WebServerReachableState state;
     private final String errorStatus;
+    private final Group parentGroup;
 
     /**
      * Constructor for a bare minimum web server with group details.
@@ -52,6 +53,7 @@ public class WebServer implements Serializable {
         docRoot = null;
         state = WebServerReachableState.WS_UNEXPECTED_STATE;
         errorStatus = null;
+        parentGroup = null;
     }
 
     public WebServer(final Identifier<WebServer> theId,
@@ -79,6 +81,33 @@ public class WebServer implements Serializable {
         docRoot = theDocRoot;
         this.state = state;
         this.errorStatus = errorStatus;
+        this.parentGroup = null;
+    }
+
+    public WebServer(final Identifier<WebServer> id,
+                     final String host,
+                     final String name,
+                     final Integer port,
+                     final Integer httpsPort,
+                     final Path statusPath,
+                     final FileSystemPath httpConfigFile,
+                     final Path svrRoot,
+                     final Path docRoot,
+                     final WebServerReachableState state,
+                     final String errorStatus,
+                     final Group parentGroup) {
+        this.id = id;
+        this.host = host;
+        this.name = name;
+        this.port = port;
+        this.httpsPort = httpsPort;
+        this.statusPath = statusPath;
+        this.httpConfigFile = httpConfigFile;
+        this.svrRoot = svrRoot;
+        this.docRoot = docRoot;
+        this.state = state;
+        this.errorStatus = errorStatus;
+        this.parentGroup = parentGroup;
     }
 
     public Identifier<WebServer> getId() {
@@ -149,6 +178,10 @@ public class WebServer implements Serializable {
         return state.toStateLabel();
     }
 
+    public Group getParentGroup() {
+        return parentGroup;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -180,6 +213,7 @@ public class WebServer implements Serializable {
                 ", docRoot=" + docRoot +
                 ", state=" + state +
                 ", errorStatus='" + errorStatus + '\'' +
+                ", parentGroup=" + parentGroup +
                 '}';
     }
 }

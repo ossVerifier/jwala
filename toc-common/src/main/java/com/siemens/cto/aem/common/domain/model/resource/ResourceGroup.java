@@ -5,51 +5,22 @@ import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Created by SP043299 on 4/25/2016.
  *
- * This class contains all the information of a group resource. It contains the list of webservers, jvms and webapps for a select group.
+ * This class contains all the information of a group resource. It contains the list of webservers, jvms and webapps for a selected group.
  */
 public class ResourceGroup {
     private List<Group> groups;
-    private List<WebServer> webServers;
-    private List<Jvm> jvms;
-    private List<Application> applications;
 
     public ResourceGroup() {
     }
 
-    public ResourceGroup(List<Group> groups, List<WebServer> webServers, List<Jvm> jvms, List<Application> applications) {
+    public ResourceGroup(List<Group> groups) {
         this.groups = groups;
-        this.webServers = webServers;
-        this.jvms = jvms;
-        this.applications = applications;
-    }
-
-    public List<WebServer> getWebServers() {
-        return webServers;
-    }
-
-    public void setWebServers(List<WebServer> webServers) {
-        this.webServers = webServers;
-    }
-
-    public List<Jvm> getJvms() {
-        return jvms;
-    }
-
-    public void setJvms(List<Jvm> jvms) {
-        this.jvms = jvms;
-    }
-
-    public List<Application> getApplications() {
-        return applications;
-    }
-
-    public void setApplications(List<Application> applications) {
-        this.applications = applications;
     }
 
     public List<Group> getGroups() {
@@ -64,9 +35,6 @@ public class ResourceGroup {
     public String toString() {
         return "ResourceGroup{" +
                 "groups=" + groups +
-                ", webServers=" + webServers +
-                ", jvms=" + jvms +
-                ", applications=" + applications +
                 '}';
     }
 }

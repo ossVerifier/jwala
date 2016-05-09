@@ -11,7 +11,10 @@ import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.common.exception.NotFoundException;
 import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateRequest;
-import com.siemens.cto.aem.persistence.jpa.domain.*;
+import com.siemens.cto.aem.persistence.jpa.domain.JpaApplication;
+import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
+import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
+import com.siemens.cto.aem.persistence.jpa.domain.JpaWebServer;
 import com.siemens.cto.aem.persistence.jpa.domain.builder.JpaAppBuilder;
 import com.siemens.cto.aem.persistence.jpa.domain.builder.JpaWebServerBuilder;
 import com.siemens.cto.aem.persistence.jpa.domain.builder.JvmBuilder;
@@ -372,5 +375,23 @@ public class WebServerCrudServiceImpl extends AbstractCrudServiceImpl<JpaWebServ
         final Query q = entityManager.createNamedQuery(JpaWebServerConfigTemplate.QUERY_GET_WEBSERVER_RESOURCE_TEMPLATES);
         q.setParameter(JpaWebServerConfigTemplate.QUERY_PARAM_WEBSERVER_NAME, webServerName);
         return q.getResultList();
+    }
+
+    @Override
+    public List<WebServer> getWebServersByGroupName(final String groupName) {
+        final Query q = entityManager.createNamedQuery(JpaWebServer.QUERY_GET_WS_BY_GROUP_NAME);
+        q.setParameter(JpaWebServer.QUERY_PARAM_GROUP_NAME, groupName);
+        return buildWebServers(q.getResultList());
+    }
+
+    private List<WebServer> buildWebServers(List<JpaWebServer> jpaWebServers) {
+        List<WebServer> webServers = null;
+        for(JpaWebServer jpaWebServer:jpaWebServers) {
+            if(webServers==null) {
+                webServers = new ArrayList<>(jpaWebServers.size());
+            }
+            webServers.add(new JpaWebServerBuilder(jpaWebServer).build());
+        }
+        return webServers;
     }
 }
