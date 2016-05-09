@@ -90,6 +90,5 @@ public interface JvmService {
      * @return the number of resource files generated
      * @throws IOException
      */
-    @Deprecated
     int generateResourceFiles(String jvmName, String destPath) throws IOException;
 }

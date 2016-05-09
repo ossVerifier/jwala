@@ -95,7 +95,6 @@ public interface ResourceService {
      * Generates the ResourceGroup class object, which contains all the jvms, webapps, webservers and groups information.
      * @return the ResourceGroup object
      */
-    @Deprecated
     ResourceGroup generateResourceGroup();
 
     /**
