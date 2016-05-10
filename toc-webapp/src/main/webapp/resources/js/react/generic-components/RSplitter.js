@@ -14,34 +14,15 @@
  */
 var RSplitter = React.createClass({
     getInitialState: function() {
-        var panelStates = [];
-        var childContainerSize = (100 / this.props.components.length) + "%";
-
-        if (this.props.panelDimensions === undefined) {
-            var width = this.props.orientation === RSplitter.VERTICAL_ORIENTATION ?
-                                                        "100%" : childContainerSize;
-            var height = this.props.orientation === RSplitter.VERTICAL_ORIENTATION ?
-                                                        childContainerSize : "100%";
-
-            this.props.components.forEach(function(item) {
-                panelStates.push({width: width, height: height});
-            });
-        } else {
-            this.props.panelDimensions.forEach(function(dimension) {
-                panelStates.push({width: dimension.width, height: dimension.height});
-            });
-        }
-
         return {
             mouseOnSplitter: false,
             grabSplitter: false,
             splitterRef: null,
             splitterIdx: -1,
-            mousePos: -1,
-            panelStates: panelStates
+            mousePos: -1
         }
     },
-
+    panelRefs: null,
     render: function() {
         var divs = [];
         var self = this;
@@ -55,8 +36,9 @@ var RSplitter = React.createClass({
         } else {
             orientationClassName = "horz";
             dividerClassName = "vert-divider";
-        };
+        }
 
+        this.panelRefs = [];
         this.props.components.forEach(function(item) {
             ++i;
             var key = RSplitter.getKey(i);
@@ -68,12 +50,24 @@ var RSplitter = React.createClass({
                 }
             }
 
+            var childContainerSize = (100 / self.props.components.length) + "%";
+            var width;
+            var height;
+            if (self.props.panelDimensions === undefined) {
+                width = self.props.orientation === RSplitter.VERTICAL_ORIENTATION ? "100%" : childContainerSize;
+                height = self.props.orientation === RSplitter.VERTICAL_ORIENTATION ? childContainerSize : "100%";
+            } else {
+                width = self.props.panelDimensions[i - 1].width;
+                height = self.props.panelDimensions[i - 1].height;
+            }
+
+            self.panelRefs.push(key);
             divs.push(React.createElement(RPanel, {key: key,
                                                    ref: key,
                                                    className:(i > 1 ? dividerClassName : "") + " rsplitter childContainer " + orientationClassName,
-                                                   style:{width: self.state.panelStates[i - 1].width,
-                                                          height: self.state.panelStates[i - 1].height,
-                                                          cursor: cursor},
+                                                   style:{cursor: cursor},
+                                                   width: width,
+                                                   height: height,
                                                    mouseMoveHandler: self.mouseMoveHandler.bind(self, key, i - 1),
                                                    mouseDownHandler: self.mouseDownHandler.bind(self, key, i - 1),
                                                    mouseUpHandler: self.mouseUpHandler}, item));
@@ -104,8 +98,8 @@ var RSplitter = React.createClass({
 
                 // Prevent the 2 concerned panels height to affect other divs beside them
                 if (topDivHeight > 0 && bottomDivHeight > 0) {
-                    this.state.panelStates[this.state.splitterIdx - 1].height = topDivHeight;
-                    this.state.panelStates[this.state.splitterIdx].height = bottomDivHeight;
+                    this.refs[this.panelRefs[this.state.splitterIdx - 1]].setHeight(topDivHeight);
+                    this.refs[this.panelRefs[this.state.splitterIdx]].setHeight(topDivHeight);
                 }
 
             } else {
@@ -114,8 +108,8 @@ var RSplitter = React.createClass({
                 var currentDivWidth =
                         $(this.refs[RSplitter.getKey(this.state.splitterIdx + 1)].getDOMNode()).width();
                 var dif = pagePos - this.state.mousePos;
-                this.state.panelStates[this.state.splitterIdx - 1].width = leftDivWidth + dif;
-                this.state.panelStates[this.state.splitterIdx].width = currentDivWidth - dif;
+                this.refs[this.panelRefs[this.state.splitterIdx - 1]].setWidth(leftDivWidth + dif);
+                this.refs[this.panelRefs[this.state.splitterIdx]].setWidth(currentDivWidth - dif);
             }
             this.setState({mousePos: pagePos});
             e.preventDefault();
@@ -163,18 +157,29 @@ var RSplitter = React.createClass({
 
 /**
  * A panel component.
- *
- * Note: Refactor in the future in such a way that the panel maintains its dimensions and other stuff as state ?
- *       In doing so, we would have to devise a way to make panels know that the panel beside it has changed
- *       and that it should react accordingly e.g. adjust it's width or height.
  */
 var RPanel = React.createClass({
+    getInitialState: function() {
+        return {width: this.props.width, height: this.props.height};
+    },
     render: function() {
         var i = this.props.panelIdx;
-        return React.createElement("div", {className: this.props.className,
-                                           style: this.props.style,
-                                           onMouseMove: this.props.mouseMoveHandler,
-                                           onMouseDown: this.props.mouseDownHandler,
-                                           onMouseUp: this.props.mouseUpHandler}, this.props.children);
+
+        var computedStyle = this.props.style;
+        if (this.state.width !== undefined || this.state.height !== undefined) {
+            computedStyle["width"] = this.state.width;
+            computedStyle["height"] = this.state.height;
+        }
+
+        return React.createElement("div", {className: this.props.className, style: computedStyle,
+                   onMouseMove: this.props.mouseMoveHandler, onMouseDown: this.props.mouseDownHandler,
+                   onMouseUp: this.props.mouseUpHandler}, this.props.children);
+
+    },
+    setWidth: function(width) {
+        this.setState({width: width});
+    },
+    setHeight: function(height) {
+        this.setState({height: height});
     }
 });
