@@ -5,6 +5,7 @@ import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.common.domain.model.resource.ResourceGroup;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState;
@@ -16,6 +17,7 @@ import com.siemens.cto.aem.persistence.jpa.domain.resource.config.template.JpaWe
 import com.siemens.cto.aem.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
 import com.siemens.cto.aem.persistence.service.WebServerPersistenceService;
 import com.siemens.cto.aem.service.webserver.WebServerService;
+import com.siemens.cto.aem.template.ResourceFileGenerator;
 import com.siemens.cto.aem.template.webserver.ApacheWebServerConfigFileGenerator;
 import com.siemens.cto.toc.files.FileManager;
 import org.slf4j.Logger;
@@ -170,14 +172,13 @@ public class WebServerServiceImpl implements WebServerService {
 
     @Override
     @Transactional(readOnly = true)
-    public String generateHttpdConfig(final String aWebServerName) {
+    public String generateHttpdConfig(final String aWebServerName, ResourceGroup resourceGroup) {
         final WebServer server = webServerPersistenceService.findWebServerByName(aWebServerName);
-        final List<Application> apps = webServerPersistenceService.findApplications(aWebServerName);
-        final List<Jvm> jvms = webServerPersistenceService.findJvms(aWebServerName);
 
         try {
-            String httpdConfText = getResourceTemplate(aWebServerName, "httpd.conf", false);
-            return ApacheWebServerConfigFileGenerator.getHttpdConfFromText(aWebServerName, httpdConfText, server, jvms, apps);
+            final boolean dontReplaceTokens = false;
+            String httpdConfText = getResourceTemplate(aWebServerName, "httpd.conf", dontReplaceTokens);
+            return ResourceFileGenerator.generateResourceConfig(httpdConfText, resourceGroup, server);
         } catch (NonRetrievableResourceTemplateContentException nrtce) {
             LOGGER.error("Failed to retrieve resource template from the database", nrtce);
             throw new InternalErrorException(AemFaultType.TEMPLATE_NOT_FOUND, nrtce.getMessage());

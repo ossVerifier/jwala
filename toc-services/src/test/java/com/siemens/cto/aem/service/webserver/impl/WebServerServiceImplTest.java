@@ -6,6 +6,7 @@ import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.path.FileSystemPath;
 import com.siemens.cto.aem.common.domain.model.path.Path;
+import com.siemens.cto.aem.common.domain.model.resource.ResourceGroup;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState;
@@ -16,6 +17,7 @@ import com.siemens.cto.aem.common.request.webserver.UpdateWebServerRequest;
 import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateRequest;
 import com.siemens.cto.aem.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
 import com.siemens.cto.aem.persistence.service.WebServerPersistenceService;
+import com.siemens.cto.aem.service.resource.ResourceService;
 import com.siemens.cto.toc.files.FileManager;
 import com.siemens.cto.toc.files.RepositoryFileInformation;
 import com.siemens.cto.toc.files.TocFile;
@@ -30,10 +32,7 @@ import org.mockito.stubbing.Answer;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -78,6 +77,8 @@ public class WebServerServiceImplTest {
     private Collection<Group> groups2;
 
     private User testUser = new User("testUser");
+    private ResourceService resourceService;
+    private ResourceGroup resourceGroup;
 
 
     @Before
@@ -95,6 +96,9 @@ public class WebServerServiceImplTest {
         groups2 = new ArrayList<>(1);
         groups.add(group);
         groups2.add(group2);
+        resourceService = mock(ResourceService.class);
+
+        when(resourceService.generateResourceGroup()).thenReturn(new ResourceGroup(new ArrayList<Group>()));
 
         when(mockWebServer.getId()).thenReturn(new Identifier<WebServer>(1L));
         when(mockWebServer.getName()).thenReturn("the-ws-name");
@@ -140,6 +144,8 @@ public class WebServerServiceImplTest {
                 return null;
             }
         });
+
+        resourceGroup = new ResourceGroup(new ArrayList<>(groups));
     }
 
     @SuppressWarnings("unchecked")
@@ -288,7 +294,7 @@ public class WebServerServiceImplTest {
         when(webServerPersistenceService.findJvms(anyString())).thenReturn(Arrays.asList(jvmArray));
         when(webServerPersistenceService.getResourceTemplate(anyString(), anyString())).thenReturn("httpd.conf template content");
 
-        String generatedHttpdConf = wsService.generateHttpdConfig("Apache2.4");
+        String generatedHttpdConf = wsService.generateHttpdConfig("Apache2.4", resourceGroup);
 
         assertEquals("httpd.conf template content", generatedHttpdConf);
     }
@@ -301,10 +307,16 @@ public class WebServerServiceImplTest {
         Application[] appArray = {app1, app2};
 
         when(webServerPersistenceService.findWebServerByName(anyString())).thenReturn(mockWebServer);
-        when(webServerPersistenceService.findApplications(anyString())).thenReturn(Arrays.asList(appArray));
+        final List<Application> applications = Arrays.asList(appArray);
+        when(webServerPersistenceService.findApplications(anyString())).thenReturn(applications);
         when(webServerPersistenceService.getResourceTemplate(anyString(), anyString())).thenReturn(readReferenceFile("/httpd-ssl-conf.tpl"));
+        final ArrayList<Group> groupList = new ArrayList<>();
+        Group mockGroup = mock(Group.class);
+        when(mockGroup.getApplications()).thenReturn(new LinkedHashSet<>(applications));
+        groupList.add(mockGroup);
+        when(resourceService.generateResourceGroup()).thenReturn(new ResourceGroup(groupList));
 
-        String generatedHttpdConf = wsService.generateHttpdConfig("Apache2.4");
+        String generatedHttpdConf = wsService.generateHttpdConfig("Apache2.4", new ResourceGroup(groupList));
 
         assertEquals(removeCarriageReturnsAndNewLines(readReferenceFile("/httpd-ssl.conf")),
                 removeCarriageReturnsAndNewLines(generatedHttpdConf));
@@ -322,7 +334,7 @@ public class WebServerServiceImplTest {
 
         when(webServerPersistenceService.getResourceTemplate(anyString(), anyString())).thenThrow(NonRetrievableResourceTemplateContentException.class);
 
-        String generatedHttpdConf = wsService.generateHttpdConfig("Apache2.4");
+        String generatedHttpdConf = wsService.generateHttpdConfig("Apache2.4", resourceGroup);
 
         assertEquals(removeCarriageReturnsAndNewLines(readReferenceFile("/httpd-ssl.conf")),
                 removeCarriageReturnsAndNewLines(generatedHttpdConf));

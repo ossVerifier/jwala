@@ -12,7 +12,7 @@ import com.siemens.cto.aem.common.domain.model.path.Path
 import com.siemens.cto.aem.common.domain.model.resource.ResourceGroup
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer
 import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState
-import org.apache.commons.lang.StringUtils
+import com.siemens.cto.aem.common.properties.ApplicationProperties
 import org.joda.time.DateTime
 
 class TestResourceFileGenerator extends GroovyTestCase{
@@ -26,6 +26,8 @@ class TestResourceFileGenerator extends GroovyTestCase{
     ResourceGroup resourceGroup;
 
     void setUp() {
+        System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, new File(".").getAbsolutePath() + "/src/test/resources");
+
         def apps = new LinkedHashSet<Application>()
         groupHashSet = new LinkedHashSet<Group>();
 
@@ -62,17 +64,7 @@ class TestResourceFileGenerator extends GroovyTestCase{
         File httpdTemplate = new File("./src/test/resources/HttpdConfTemplate.tpl");
         resourceGroup = new ResourceGroup(new ArrayList<Group>(groupHashSet));
         def generatedText = ResourceFileGenerator.generateResourceConfig(httpdTemplate.text, resourceGroup, webServer);
-//        resourceGroup.getApplications().each {
-//            def ctxPath = it.webAppContext.replaceAll(" ", "")
-//            def app = it
-//            def desiredGroup = app.group.id.id
-//            resourceGroup.getJvms().findAll { it.groups.find { it.id.id == desiredGroup } != null } each {
-//                def hostName = it.hostName.replaceAll(" ", "")
-//                def jvmName = it.jvmName.replaceAll(" ", "")
-//            }
-//        }
         def expectedText = new File("./src/test/resources/HttpdConfTemplate-EXPECTED.conf").text
-        String diff = StringUtils.difference(generatedText, expectedText)
         assertEquals(removeCarriageReturnsAndNewLines(expectedText), removeCarriageReturnsAndNewLines(generatedText));
     }
 

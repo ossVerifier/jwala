@@ -5,6 +5,7 @@ import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.path.FileSystemPath;
 import com.siemens.cto.aem.common.domain.model.path.Path;
+import com.siemens.cto.aem.common.domain.model.resource.ResourceGroup;
 import com.siemens.cto.aem.common.domain.model.resource.ResourceType;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
@@ -264,7 +265,7 @@ public class WebServerServiceRestImplTest {
 
     @Test
     public void testGenerateHttpdConfig() {
-        when(impl.generateHttpdConfig(anyString())).thenReturn("httpd configuration");
+        when(impl.generateHttpdConfig(anyString(), any(ResourceGroup.class))).thenReturn("httpd configuration");
         Response response = webServerServiceRest.generateConfig("any-server-name");
         assertEquals("httpd configuration", response.getEntity());
     }
@@ -385,7 +386,7 @@ public class WebServerServiceRestImplTest {
         when(webServerControlService.createDirectory(any(WebServer.class), anyString())).thenReturn(retSuccessExecData);
         when(webServerControlService.changeFileMode(any(WebServer.class), anyString(), anyString(), anyString())).thenReturn(retSuccessExecData);
         when(impl.getWebServer(anyString())).thenReturn(webServer);
-        when(impl.generateHttpdConfig(anyString())).thenReturn("innocuous content");
+        when(impl.generateHttpdConfig(anyString(), any(ResourceGroup.class))).thenReturn("innocuous content");
         when(impl.generateInvokeWSBat(any(WebServer.class))).thenReturn("invoke me");
 
         Response response = null;

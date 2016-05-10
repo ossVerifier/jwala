@@ -459,11 +459,11 @@ public class ResourceServiceImpl implements ResourceService {
             List<Application> applications = applicationPersistenceService.findApplicationsBelongingTo(group.getName());
             groupsToBeAdded.add(new Group(group.getId(),
                     group.getName(),
-                    new LinkedHashSet<>(jvms),
-                    new LinkedHashSet<>(webServers),
+                    null != jvms ? new LinkedHashSet<>(jvms) : new LinkedHashSet<Jvm>(),
+                    null != webServers ? new LinkedHashSet<>(webServers) : new LinkedHashSet<WebServer>(),
                     group.getCurrentState(),
                     group.getHistory(),
-                    new LinkedHashSet<>(applications)));
+                    null != applications ? new LinkedHashSet<>(applications) : new LinkedHashSet<Application>()));
         }
         return new ResourceGroup(groupsToBeAdded);
     }
