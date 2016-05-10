@@ -20,9 +20,9 @@ var RJsonDataTreeDisplay = React.createClass({
                 displayValueOnly: this.props.displayValueOnly, hierarchy: this.props.hierarchy,
                 onShowToolTipCallback: this.props.onShowToolTipCallback}));
         }
-
-        return React.createElement("div", {className: "rjson-data-tree-display container"},
-                   React.createElement("ul", {className: "rjson-data-tree-display"}, nodeArray));
+        var title = this.props.title ? this.props.title : null;
+        return React.createElement("div", {className: "RJsonDataTreeDisplay container"},
+                   React.createElement("ul", null, title, nodeArray));
     },
     componentWillReceiveProps: function(nextProps) {
         if (nextProps.data) {
@@ -54,31 +54,33 @@ var RJsonTreeNode = React.createClass({
                     object[this.props.nodeKey + "[" + key + "]"] = this.props.val[key];
                     treeArray.push(React.createElement(RJsonDataTreeDisplay, {data: object,
                                                                               displayValueOnly: this.props.displayValueOnly,
-                                                                              hierarchy: "",
+                                                                              hierarchy: this.props.hierarchy,
                                                                               onShowToolTipCallback: this.props.onShowToolTipCallback}));
                 }
             }
-            return React.createElement("li", null, React.createElement(RJsonTreeNodeOpenCollapseWidget,
-                {onClickCallback: this.onOpenCollapseWidgetClick}), React.createElement("span", {className: "node-key"},
-                this.props.nodeKey), ":  Array[" + this.props.val.length + "]", treeArray);
+
+            var openCollapseIcon = this.props.val.length > 0 ? React.createElement(RJsonTreeNodeOpenCollapseWidget, {onClickCallback: this.onOpenCollapseWidgetClick}) : null;
+            var liClassName =  this.props.val.length > 0 ? null : "valNode";
+            return React.createElement("li", {className: liClassName}, openCollapseIcon, React.createElement("span", {className: "nodeKey"},
+                       this.props.nodeKey), ":  Array[" + this.props.val.length + "]", treeArray);
         } else if (this.props.val && this.props.val.constructor === Object) {
-            var tree = this.state.collapsed ? null : React.createElement(RJsonDataTreeDisplay, {data: this.props.val,
-                                                         displayValueOnly: this.props.displayValueOnly, hierarchy: this.createHierarchy(),
-                                                         onShowToolTipCallback: this.props.onShowToolTipCallback});
+            var tree = this.state.collapsed ? null : React.createElement(RJsonDataTreeDisplay,
+                           {data: this.props.val, displayValueOnly: this.props.displayValueOnly, hierarchy: this.createHierarchy(),
+                            onShowToolTipCallback: this.props.onShowToolTipCallback});
             return React.createElement("li", null, React.createElement(RJsonTreeNodeOpenCollapseWidget,
-                {onClickCallback: this.onOpenCollapseWidgetClick}), React.createElement("span", {className: "node-key"},
+                {onClickCallback: this.onOpenCollapseWidgetClick}), React.createElement("span", {className: "nodeKey"},
                 this.props.nodeKey), tree);
         }
 
         if (!this.props.displayValueOnly) {
-            return React.createElement("li", {className: "rjson-tree-val-node"},
-                       React.createElement("span", {className: "node-key"}, this.props.nodeKey),
-                       React.createElement("span", {className: "node-val", onMouseEnter: this.onMouseEnter,
+            return React.createElement("li", {className: "valNode"},
+                       React.createElement("span", {className: "nodeKey"}, this.props.nodeKey),
+                       React.createElement("span", {className: "nodeVal", onMouseEnter: this.onMouseEnter,
                                                     onMouseOut: this.onMouseOut, onMouseMove: this.onMouseMove},
                                                     ":  " + this.props.val),
                        React.createElement(RJsonDataTreeDisplayToolTip, {ref: "toolTip", onCloseCallback: this.onToolTipClose}));
         }
-        return React.createElement("li", {className: "rjson-tree-val-node"}, this.props.val);
+        return React.createElement("li", {className: "valNode"}, this.props.val);
     },
     createHierarchy: function() {
         return this.props.hierarchy ? this.props.hierarchy + "." + this.props.nodeKey : this.props.nodeKey;
@@ -137,10 +139,10 @@ var RJsonTreeNodeOpenCollapseWidget = React.createClass({
     },
     render: function() {
         if (this.state.collapsed) {
-            return React.createElement("span", {className: "rjson-tree-node-open-collapse-widget ui-icon ui-icon-plus",
+            return React.createElement("span", {className: "openCollapseWidget ui-icon ui-icon-plus",
                                                 onClick: this.onClick});
         }
-        return React.createElement("span", {className: "rjson-tree-node-open-collapse-widget ui-icon ui-icon-minus",
+        return React.createElement("span", {className: "openCollapseWidget ui-icon ui-icon-minus",
                                             onClick: this.onClick});
     },
     onClick: function() {
@@ -160,9 +162,9 @@ var RJsonDataTreeDisplayToolTip = React.createClass({
         return {show: false, x: 0, y: 0, content: "A tooltip!"};
     },
     render: function() {
-        var style = this.state.show ? {display: "block", top: this.state.y - 10, left: this.state.x - 10, position: "fixed"} :
+        var style = this.state.show ? {display: "block", top: this.state.y - 25, left: this.state.x - 25, position: "fixed"} :
                                       {display: "none"};
-        return React.createElement("div", {className: "ui-tooltip ui-widget ui-widget-content", style: style,
+        return React.createElement("div", {className: "tooltip container ui-tooltip ui-widget ui-widget-content", style: style,
                                            onMouseOut: this.onMouseOut}, this.state.content);
     },
     show: function(x, y, content) {

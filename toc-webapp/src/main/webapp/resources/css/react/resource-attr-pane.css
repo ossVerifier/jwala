@@ -62,3 +62,13 @@
     border: 1px dotted #C0C0C0;
     padding: 3px 2px 3px 2px;
 }
+
+.ResourceAttrPaneCopyPropValComponent .copyPropValBtn {
+    padding: 0 0 0 0 !important;
+}
+
+.ResourceAttrPaneCopyPropValComponent .propValStyle {
+    font-family: Courier New, Courier, monospace !important;
+    font-style: normal;
+    margin-left: 6px;
+}

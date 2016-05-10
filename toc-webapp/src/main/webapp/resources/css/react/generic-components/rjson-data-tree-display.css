@@ -1,25 +1,34 @@
-div.rjson-data-tree-display.container {
+.RJsonDataTreeDisplay.container {
     /* tree container style goes in here */
 }
 
-ul.rjson-data-tree-display > li {
+.RJsonDataTreeDisplay ul {
+    padding-left: 15px;
+}
+
+.RJsonDataTreeDisplay ul > li {
     list-style-type: none;
     font-style: italic;
     font-family: Consolas, Tahoma, Helvetica, sans-serif;
 }
 
-ul.rjson-data-tree-display > li > span.node-key {
+.RJsonDataTreeDisplay .nodeKey {
     color: #881391;
 }
 
-ul.rjson-data-tree-display > li > span.node-val {
+.RJsonDataTreeDisplay .nodeVal {
     cursor: pointer;
 }
 
-.rjson-tree-node-open-collapse-widget {
+.RJsonDataTreeDisplay .openCollapseWidget {
     display: inline-block !important;
 }
 
-.rjson-tree-val-node {
+.RJsonDataTreeDisplay .valNode {
     padding-left: 15px;
+}
+
+.RJsonDataTreeDisplay .tooltip.container {
+    padding: 6px 6px 6px 6px !important;
+    max-width: 100% !important;
 }
