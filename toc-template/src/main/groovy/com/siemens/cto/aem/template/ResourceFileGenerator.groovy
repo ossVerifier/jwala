@@ -26,7 +26,7 @@ class ResourceFileGenerator {
         } else if (selectedValue instanceof Jvm) {
             jvm = selectedValue as Jvm
             group = jvm.getParentGroup()
-        } else if (selectedValue.class instanceof Application) {
+        } else if (selectedValue instanceof Application) {
             webApp = selectedValue as Application
             jvm = webApp.getParentJvm()
             group = webApp.getGroup()

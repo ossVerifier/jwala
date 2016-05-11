@@ -193,7 +193,7 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Override
     @Transactional
-    public CreateResourceTemplateApplicationResponseWrapper createTemplate(final InputStream metaData, final InputStream templateData) {
+    public CreateResourceTemplateApplicationResponseWrapper createTemplate(final InputStream metaData, final InputStream templateData, String targetName) {
         final ObjectMapper mapper = new ObjectMapper();
         final ResourceTemplateMetaData resourceTemplateMetaData;
         final CreateResourceTemplateApplicationResponseWrapper responseWrapper;
@@ -220,7 +220,7 @@ public class ResourceServiceImpl implements ResourceService {
                     responseWrapper = createApplicationTemplate(resourceTemplateMetaData, templateData);
                     break;
                 case GROUPED_APPS:
-                    responseWrapper = createGroupedApplicationsTemplate(resourceTemplateMetaData, templateData);
+                    responseWrapper = createGroupedApplicationsTemplate(resourceTemplateMetaData, templateData, targetName);
                     break;
                 default:
                     throw new ResourceServiceException("Invalid entity type '" + resourceTemplateMetaData.getEntity().getType() + "'");
@@ -368,21 +368,26 @@ public class ResourceServiceImpl implements ResourceService {
      * Create the application template in the db and in the templates path for all the application.
      * @param metaData the data that describes the template, please see {@link ResourceTemplateMetaData}
      * @param templateData the template content/data
+     * @param targetName
      */
     private CreateResourceTemplateApplicationResponseWrapper createGroupedApplicationsTemplate(final ResourceTemplateMetaData metaData,
-                                                                                               final InputStream templateData) throws IOException {
-        Group group = groupPersistenceService.getGroup(metaData.getEntity().getGroup());
-        final List<Application> applications = applicationPersistenceService.findApplicationsBelongingTo(metaData.getEntity().getGroup());
+                                                                                               final InputStream templateData,
+                                                                                               final String targetName) throws IOException {
+        final String groupName = metaData.getEntity().getGroup();
+        Group group = groupPersistenceService.getGroup(groupName);
+        final List<Application> applications = applicationPersistenceService.findApplicationsBelongingTo(groupName);
         ConfigTemplate createdConfigTemplate = null;
         final byte [] bytes = IOUtils.toByteArray(templateData);
         for (final Application application: applications) {
-            UploadAppTemplateRequest uploadAppTemplateRequest = new UploadAppTemplateRequest(application, metaData.getTemplateName(),
-                    metaData.getConfigFileName(), metaData.getEntity().getParentName(), convertResourceTemplateMetaDataToJson(metaData), new ByteArrayInputStream(bytes)
-            );
+            if (application.getName().equals(targetName)) {
+                for (final Jvm jvm : group.getJvms()) {
+                    UploadAppTemplateRequest uploadAppTemplateRequest = new UploadAppTemplateRequest(application, metaData.getTemplateName(),
+                            metaData.getConfigFileName(), jvm.getJvmName(), convertResourceTemplateMetaDataToJson(metaData), new ByteArrayInputStream(bytes)
+                    );
 
-            // Since we're just creating the same template for all the JVMs, we just keep one copy of the created
-            // configuration template.
-            createdConfigTemplate = applicationService.uploadAppTemplate(uploadAppTemplateRequest);
+                    createdConfigTemplate = applicationService.uploadAppTemplate(uploadAppTemplateRequest);
+                }
+            }
         }
 
         try {

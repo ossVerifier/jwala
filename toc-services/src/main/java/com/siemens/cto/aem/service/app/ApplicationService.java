@@ -4,6 +4,7 @@ import com.siemens.cto.aem.common.domain.model.app.Application;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.common.domain.model.resource.ResourceGroup;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.exec.CommandOutput;
 import com.siemens.cto.aem.common.request.app.CreateApplicationRequest;
@@ -63,9 +64,10 @@ public interface ApplicationService {
      * @param groupName group name
      * @param jvmName   JVM name
      * @param template  the template to preview.
+     * @param resourceGroup
      * @return The resource file preview.
      */
-    String previewResourceTemplate(String appName, String groupName, String jvmName, String template);
+    String previewResourceTemplate(String appName, String groupName, String jvmName, String template, ResourceGroup resourceGroup);
 
     void copyApplicationWarToGroupHosts(Application application);
 

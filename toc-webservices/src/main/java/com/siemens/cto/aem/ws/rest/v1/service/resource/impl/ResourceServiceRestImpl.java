@@ -92,7 +92,7 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
 
     @Override
     // TODO: Refactor resourceService.createTemplate(inputStreams[0], inputStreams[1]) since it looks ambiguous.
-    public Response createTemplate(final List<Attachment> attachments, final AuthenticatedUser user) {
+    public Response createTemplate(final List<Attachment> attachments, final String targetName, final AuthenticatedUser user) {
         try {
             if (attachments.size() == CREATE_TEMPLATE_EXPECTED_NUM_OF_ATTACHMENTS) {
                 final InputStream [] inputStreams = new InputStream[CREATE_TEMPLATE_EXPECTED_NUM_OF_ATTACHMENTS];
@@ -106,7 +106,7 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
                                 new FaultCodeException(AemFaultType.IO_EXCEPTION, ioe.getMessage()));
                     }
                 }
-                return ResponseBuilder.created(resourceService.createTemplate(inputStreams[0], inputStreams[1]));
+                return ResponseBuilder.created(resourceService.createTemplate(inputStreams[0], inputStreams[1], targetName));
             } else {
                 return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
                         AemFaultType.INVALID_NUMBER_OF_ATTACHMENTS,

@@ -426,7 +426,7 @@ public class GroupServiceImplDeployTest {
 
         @Bean
         ApplicationServiceRest getApplicationServiceRest() {
-            return new ApplicationServiceRestImpl(mockApplicationService);
+            return new ApplicationServiceRestImpl(mockApplicationService, mock(ResourceService.class));
         }
 
         @Bean
