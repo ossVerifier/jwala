@@ -217,7 +217,7 @@ public class ResourceServiceImpl implements ResourceService {
                     responseWrapper = createGroupedWebServersTemplate(resourceTemplateMetaData, templateData);
                     break;
                 case APP:
-                    responseWrapper = createApplicationTemplate(resourceTemplateMetaData, templateData);
+                    responseWrapper = createApplicationTemplate(resourceTemplateMetaData, templateData, targetName);
                     break;
                 case GROUPED_APPS:
                     responseWrapper = createGroupedApplicationsTemplate(resourceTemplateMetaData, templateData, targetName);
@@ -356,11 +356,12 @@ public class ResourceServiceImpl implements ResourceService {
      * Create the application template in the db and in the templates path for a specific application entity target.
      * @param metaData the data that describes the template, please see {@link ResourceTemplateMetaData}
      * @param templateData the template content/data
+     * @param targetJvmName the name of the JVM to associate with the application template
      */
-    private CreateResourceTemplateApplicationResponseWrapper createApplicationTemplate(final ResourceTemplateMetaData metaData, final InputStream templateData) {
+    private CreateResourceTemplateApplicationResponseWrapper createApplicationTemplate(final ResourceTemplateMetaData metaData, final InputStream templateData, String targetJvmName) {
         final Application application = applicationPersistenceService.getApplication(metaData.getEntity().getTarget());
         UploadAppTemplateRequest uploadAppTemplateRequest = new UploadAppTemplateRequest(application, metaData.getTemplateName(),
-                metaData.getConfigFileName(), metaData.getEntity().getParentName(), convertResourceTemplateMetaDataToJson(metaData), templateData);
+                metaData.getConfigFileName(), targetJvmName, convertResourceTemplateMetaDataToJson(metaData), templateData);
         return new CreateResourceTemplateApplicationResponseWrapper(applicationService.uploadAppTemplate(uploadAppTemplateRequest));
     }
 
@@ -368,18 +369,18 @@ public class ResourceServiceImpl implements ResourceService {
      * Create the application template in the db and in the templates path for all the application.
      * @param metaData the data that describes the template, please see {@link ResourceTemplateMetaData}
      * @param templateData the template content/data
-     * @param targetName
+     * @param targetAppName the application name
      */
     private CreateResourceTemplateApplicationResponseWrapper createGroupedApplicationsTemplate(final ResourceTemplateMetaData metaData,
                                                                                                final InputStream templateData,
-                                                                                               final String targetName) throws IOException {
+                                                                                               final String targetAppName) throws IOException {
         final String groupName = metaData.getEntity().getGroup();
         Group group = groupPersistenceService.getGroup(groupName);
         final List<Application> applications = applicationPersistenceService.findApplicationsBelongingTo(groupName);
         ConfigTemplate createdConfigTemplate = null;
         final byte [] bytes = IOUtils.toByteArray(templateData);
         for (final Application application: applications) {
-            if (application.getName().equals(targetName)) {
+            if (application.getName().equals(targetAppName)) {
                 for (final Jvm jvm : group.getJvms()) {
                     UploadAppTemplateRequest uploadAppTemplateRequest = new UploadAppTemplateRequest(application, metaData.getTemplateName(),
                             metaData.getConfigFileName(), jvm.getJvmName(), convertResourceTemplateMetaDataToJson(metaData), new ByteArrayInputStream(bytes)
