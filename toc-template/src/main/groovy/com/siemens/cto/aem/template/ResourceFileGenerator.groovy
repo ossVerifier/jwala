@@ -5,6 +5,7 @@ import com.siemens.cto.aem.common.domain.model.group.Group
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm
 import com.siemens.cto.aem.common.domain.model.resource.ResourceGroup
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer
+import com.siemens.cto.aem.common.properties.ApplicationProperties
 import groovy.text.GStringTemplateEngine
 
 class ResourceFileGenerator {
@@ -19,42 +20,52 @@ class ResourceFileGenerator {
         List<Application> webApps = null;
         List<Jvm> jvms = null;
 
-        if(selectedValue.class == WebServer.class) {
-            webServer = (WebServer)selectedValue
+        if (selectedValue instanceof WebServer) {
+            webServer = selectedValue as WebServer
             group = webServer.getParentGroup()
-        } else if(selectedValue.class == Jvm.class) {
-            jvm = (Jvm)selectedValue
+        } else if (selectedValue instanceof Jvm) {
+            jvm = selectedValue as Jvm
             group = jvm.getParentGroup()
-        } else if(selectedValue.class == webApp.class) {
-            webApp = (Application)selectedValue
+        } else if (selectedValue instanceof Application) {
+            webApp = selectedValue as Application
             jvm = webApp.getParentJvm()
             group = webApp.getGroup()
         }
         groups.each {
-            if(webServers == null) {
-                webServers = new ArrayList<>();
+            if (it.getWebServers() != null) {
+                if (webServers == null) {
+                    webServers = new ArrayList<>();
+                }
+                webServers.addAll(it.getWebServers());
             }
-            if(webApps == null) {
-                webApps = new ArrayList<>();
+
+            if (it.getApplications() != null) {
+                if (webApps == null) {
+                    webApps = new ArrayList<>();
+                }
+                webApps.addAll(it.getApplications());
             }
-            if(jvms == null) {
-                jvms = new ArrayList<>();
+
+            if (it.getJvms() != null) {
+                if (jvms == null) {
+                    jvms = new ArrayList<>();
+                }
+                jvms.addAll(it.getJvms());
             }
-            webServers.addAll(it.getWebServers());
-            webApps.addAll(it.getApplications());
-            jvms.addAll(it.getJvms());
         }
-        final binding = [webServers     : webServers,
-                         webServer      : webServer,
-                         jvms           : jvms,
-                         jvm            : jvm,
-                         webApps        : webApps,
-                         webApp         : webApp,
-                         groups         : groups,
-                         group          : group ]
+        final map = new HashMap<String, String>(ApplicationProperties.properties);
+        def binding = [webServers   : webServers,
+                       webServer    : webServer,
+                       jvms         : jvms,
+                       jvm          : jvm,
+                       webApps      : webApps,
+                       webApp       : webApp,
+                       groups       : groups,
+                       group        : group,
+                       tocProperties: map]
 
         final engine = new GStringTemplateEngine()
 
-        return engine.createTemplate(templateText).make(binding.withDefault{''})
+        return engine.createTemplate(templateText).make(binding.withDefault { '' })
     }
 }

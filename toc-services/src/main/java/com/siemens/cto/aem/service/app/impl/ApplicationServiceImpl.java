@@ -6,6 +6,7 @@ import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.common.domain.model.resource.ResourceGroup;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.exception.ApplicationException;
 import com.siemens.cto.aem.common.exception.BadRequestException;
@@ -25,6 +26,7 @@ import com.siemens.cto.aem.service.app.ApplicationService;
 import com.siemens.cto.aem.service.app.PrivateApplicationService;
 import com.siemens.cto.aem.service.group.GroupService;
 import com.siemens.cto.aem.template.GeneratorUtils;
+import com.siemens.cto.aem.template.ResourceFileGenerator;
 import com.siemens.cto.toc.files.FileManager;
 import com.siemens.cto.toc.files.RepositoryFileInformation;
 import com.siemens.cto.toc.files.RepositoryFileInformation.Type;
@@ -361,11 +363,10 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     @Override
     @Transactional
-    public String previewResourceTemplate(String appName, String groupName, String jvmName, String template) {
-        final Map<String, Application> bindings = new HashMap<>();
-        bindings.put("webApp", new WebApp(applicationPersistenceService.findApplication(appName, groupName, jvmName),
-                jvmPersistenceService.findJvm(jvmName, groupName)));
-        return GeneratorUtils.bindDataToTemplateText(bindings, template);
+    public String previewResourceTemplate(String appName, String groupName, String jvmName, String template, ResourceGroup resourceGroup) {
+        final Application application = applicationPersistenceService.findApplication(appName, groupName, jvmName);
+        application.setParentJvm(jvmPersistenceService.findJvmByExactName(jvmName));
+        return ResourceFileGenerator.generateResourceConfig(template, resourceGroup, application);
     }
 
     @Override
@@ -610,6 +611,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     /**
      * Inner class application wrapper to include a web application's parent JVM.
      */
+    @Deprecated
     private class WebApp extends Application {
         final Jvm jvm;
 

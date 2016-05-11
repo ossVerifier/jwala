@@ -14,6 +14,7 @@ import com.siemens.cto.aem.common.request.app.UploadWebArchiveRequest;
 import com.siemens.cto.aem.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
 import com.siemens.cto.aem.persistence.jpa.service.exception.ResourceTemplateUpdateException;
 import com.siemens.cto.aem.service.app.ApplicationService;
+import com.siemens.cto.aem.service.resource.ResourceService;
 import com.siemens.cto.aem.ws.rest.v1.provider.AuthenticatedUser;
 import com.siemens.cto.aem.ws.rest.v1.response.ResponseBuilder;
 import com.siemens.cto.aem.ws.rest.v1.service.app.ApplicationServiceRest;
@@ -39,10 +40,12 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
     private final static Logger LOGGER = LoggerFactory.getLogger(ApplicationServiceRestImpl.class);
 
     private ApplicationService service;
+    private ResourceService resourceService;
     private static ApplicationServiceRestImpl instance;
 
-    public ApplicationServiceRestImpl(ApplicationService applicationService) {
+    public ApplicationServiceRestImpl(ApplicationService applicationService, ResourceService resourceService) {
         service = applicationService;
+        this.resourceService = resourceService;
     }
 
     @Override
@@ -299,7 +302,7 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
     public Response previewResourceTemplate(final String appName, final String groupName, final String jvmName,
                                             final String template) {
         try {
-            return ResponseBuilder.ok(service.previewResourceTemplate(appName, groupName, jvmName, template));
+            return ResponseBuilder.ok(service.previewResourceTemplate(appName, groupName, jvmName, template, resourceService.generateResourceGroup()));
         } catch (RuntimeException rte) {
             LOGGER.debug("Error previewing template.", rte);
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(

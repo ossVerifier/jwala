@@ -1,11 +1,7 @@
 package com.siemens.cto.aem.common.domain.model.resource;
 
-import com.siemens.cto.aem.common.domain.model.app.Application;
 import com.siemens.cto.aem.common.domain.model.group.Group;
-import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
-import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**

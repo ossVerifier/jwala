@@ -193,7 +193,7 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Override
     @Transactional
-    public CreateResourceTemplateApplicationResponseWrapper createTemplate(final InputStream metaData, final InputStream templateData) {
+    public CreateResourceTemplateApplicationResponseWrapper createTemplate(final InputStream metaData, final InputStream templateData, String targetName) {
         final ObjectMapper mapper = new ObjectMapper();
         final ResourceTemplateMetaData resourceTemplateMetaData;
         final CreateResourceTemplateApplicationResponseWrapper responseWrapper;
@@ -217,10 +217,10 @@ public class ResourceServiceImpl implements ResourceService {
                     responseWrapper = createGroupedWebServersTemplate(resourceTemplateMetaData, templateData);
                     break;
                 case APP:
-                    responseWrapper = createApplicationTemplate(resourceTemplateMetaData, templateData);
+                    responseWrapper = createApplicationTemplate(resourceTemplateMetaData, templateData, targetName);
                     break;
                 case GROUPED_APPS:
-                    responseWrapper = createGroupedApplicationsTemplate(resourceTemplateMetaData, templateData);
+                    responseWrapper = createGroupedApplicationsTemplate(resourceTemplateMetaData, templateData, targetName);
                     break;
                 default:
                     throw new ResourceServiceException("Invalid entity type '" + resourceTemplateMetaData.getEntity().getType() + "'");
@@ -356,11 +356,12 @@ public class ResourceServiceImpl implements ResourceService {
      * Create the application template in the db and in the templates path for a specific application entity target.
      * @param metaData the data that describes the template, please see {@link ResourceTemplateMetaData}
      * @param templateData the template content/data
+     * @param targetJvmName the name of the JVM to associate with the application template
      */
-    private CreateResourceTemplateApplicationResponseWrapper createApplicationTemplate(final ResourceTemplateMetaData metaData, final InputStream templateData) {
+    private CreateResourceTemplateApplicationResponseWrapper createApplicationTemplate(final ResourceTemplateMetaData metaData, final InputStream templateData, String targetJvmName) {
         final Application application = applicationPersistenceService.getApplication(metaData.getEntity().getTarget());
         UploadAppTemplateRequest uploadAppTemplateRequest = new UploadAppTemplateRequest(application, metaData.getTemplateName(),
-                metaData.getConfigFileName(), metaData.getEntity().getParentName(), convertResourceTemplateMetaDataToJson(metaData), templateData);
+                metaData.getConfigFileName(), targetJvmName, convertResourceTemplateMetaDataToJson(metaData), templateData);
         return new CreateResourceTemplateApplicationResponseWrapper(applicationService.uploadAppTemplate(uploadAppTemplateRequest));
     }
 
@@ -368,21 +369,26 @@ public class ResourceServiceImpl implements ResourceService {
      * Create the application template in the db and in the templates path for all the application.
      * @param metaData the data that describes the template, please see {@link ResourceTemplateMetaData}
      * @param templateData the template content/data
+     * @param targetAppName the application name
      */
     private CreateResourceTemplateApplicationResponseWrapper createGroupedApplicationsTemplate(final ResourceTemplateMetaData metaData,
-                                                                                               final InputStream templateData) throws IOException {
-        Group group = groupPersistenceService.getGroup(metaData.getEntity().getGroup());
-        final List<Application> applications = applicationPersistenceService.findApplicationsBelongingTo(metaData.getEntity().getGroup());
+                                                                                               final InputStream templateData,
+                                                                                               final String targetAppName) throws IOException {
+        final String groupName = metaData.getEntity().getGroup();
+        Group group = groupPersistenceService.getGroup(groupName);
+        final List<Application> applications = applicationPersistenceService.findApplicationsBelongingTo(groupName);
         ConfigTemplate createdConfigTemplate = null;
         final byte [] bytes = IOUtils.toByteArray(templateData);
         for (final Application application: applications) {
-            UploadAppTemplateRequest uploadAppTemplateRequest = new UploadAppTemplateRequest(application, metaData.getTemplateName(),
-                    metaData.getConfigFileName(), metaData.getEntity().getParentName(), convertResourceTemplateMetaDataToJson(metaData), new ByteArrayInputStream(bytes)
-            );
+            if (application.getName().equals(targetAppName)) {
+                for (final Jvm jvm : group.getJvms()) {
+                    UploadAppTemplateRequest uploadAppTemplateRequest = new UploadAppTemplateRequest(application, metaData.getTemplateName(),
+                            metaData.getConfigFileName(), jvm.getJvmName(), convertResourceTemplateMetaDataToJson(metaData), new ByteArrayInputStream(bytes)
+                    );
 
-            // Since we're just creating the same template for all the JVMs, we just keep one copy of the created
-            // configuration template.
-            createdConfigTemplate = applicationService.uploadAppTemplate(uploadAppTemplateRequest);
+                    createdConfigTemplate = applicationService.uploadAppTemplate(uploadAppTemplateRequest);
+                }
+            }
         }
 
         try {
@@ -459,11 +465,11 @@ public class ResourceServiceImpl implements ResourceService {
             List<Application> applications = applicationPersistenceService.findApplicationsBelongingTo(group.getName());
             groupsToBeAdded.add(new Group(group.getId(),
                     group.getName(),
-                    new LinkedHashSet<>(jvms),
-                    new LinkedHashSet<>(webServers),
+                    null != jvms ? new LinkedHashSet<>(jvms) : new LinkedHashSet<Jvm>(),
+                    null != webServers ? new LinkedHashSet<>(webServers) : new LinkedHashSet<WebServer>(),
                     group.getCurrentState(),
                     group.getHistory(),
-                    new LinkedHashSet<>(applications)));
+                    null != applications ? new LinkedHashSet<>(applications) : new LinkedHashSet<Application>()));
         }
         return new ResourceGroup(groupsToBeAdded);
     }

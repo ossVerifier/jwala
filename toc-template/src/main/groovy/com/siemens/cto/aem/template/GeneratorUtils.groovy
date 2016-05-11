@@ -22,6 +22,7 @@ public class GeneratorUtils {
         return engine.createTemplate(resource.text).make(binding)
     }
 
+    @Deprecated
     public static String bindDataToTemplateText(final binding, final String templateText) {
         final engine = new GStringTemplateEngine()
         return engine.createTemplate(templateText).make(binding.withDefault{''})

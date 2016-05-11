@@ -1,7 +1,6 @@
 package com.siemens.cto.aem.ws.rest.v1.service.resource;
 
 import com.siemens.cto.aem.common.domain.model.resource.EntityType;
-import com.siemens.cto.aem.common.domain.model.resource.ResourceGroup;
 import com.siemens.cto.aem.ws.rest.v1.provider.AuthenticatedUser;
 import com.siemens.cto.aem.ws.rest.v1.service.resource.impl.JsonResourceInstance;
 import org.apache.cxf.jaxrs.ext.multipart.Attachment;
@@ -112,9 +111,9 @@ public interface ResourceServiceRest {
      * @return {@link Response}
      */
     @POST
-    @Path("/template")
+    @Path("/template/{targetName}")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
-    Response createTemplate(List<Attachment> attachments, @BeanParam AuthenticatedUser user);
+    Response createTemplate(List<Attachment> attachments, @PathParam("targetName") final String targetName, @BeanParam AuthenticatedUser user);
 
     /**
      * Deletes a resource template.

@@ -3,6 +3,7 @@ package com.siemens.cto.aem.ws.rest.v1.service.webserver.impl;
 import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
+import com.siemens.cto.aem.common.domain.model.resource.ResourceGroup;
 import com.siemens.cto.aem.common.domain.model.resource.ResourceType;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServerControlOperation;
@@ -179,7 +180,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
 
     @Override
     public Response generateConfig(final String aWebServerName) {
-        String httpdConfStr = generateHttpdConfText(aWebServerName);
+        String httpdConfStr = generateHttpdConfText(aWebServerName, resourceService.generateResourceGroup());
         return Response.ok(httpdConfStr).build();
     }
 
@@ -196,7 +197,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
         try {
             // create the file
             final String httpdDataDir = ApplicationProperties.get(STP_HTTPD_DATA_DIR);
-            final String generatedHttpdConf = generateHttpdConfText(aWebServerName);
+            final String generatedHttpdConf = generateHttpdConfText(aWebServerName, resourceService.generateResourceGroup());
             final File httpdConfFile = createTempWebServerResourceFile(aWebServerName, httpdDataDir, "httpd", "conf", generatedHttpdConf);
 
             // copy the file
@@ -387,8 +388,8 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
         return httpdConfFile;
     }
 
-    protected String generateHttpdConfText(String aWebServerName) {
-        return webServerService.generateHttpdConfig(aWebServerName);
+    protected String generateHttpdConfText(String aWebServerName, ResourceGroup resourceGroup) {
+        return webServerService.generateHttpdConfig(aWebServerName, resourceGroup);
     }
 
     @Override

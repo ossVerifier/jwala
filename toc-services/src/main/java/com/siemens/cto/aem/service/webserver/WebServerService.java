@@ -2,6 +2,7 @@ package com.siemens.cto.aem.service.webserver;
 
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
+import com.siemens.cto.aem.common.domain.model.resource.ResourceGroup;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState;
@@ -34,7 +35,7 @@ public interface WebServerService {
 
     String generateInvokeWSBat(WebServer webServer);
 
-    String generateHttpdConfig(final String aWebServerName);
+    String generateHttpdConfig(final String aWebServerName, ResourceGroup resourceGroup);
 
     String generateWorkerProperties(final String aWebServerName);
 

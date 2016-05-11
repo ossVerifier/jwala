@@ -2,6 +2,7 @@ package com.siemens.cto.aem.ws.rest.v1.service.app.impl;
 
 import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
+import com.siemens.cto.aem.common.domain.model.resource.ResourceGroup;
 import com.siemens.cto.aem.common.request.app.UpdateApplicationRequest;
 import com.siemens.cto.aem.common.request.app.UploadAppTemplateRequest;
 import com.siemens.cto.aem.common.request.app.UploadWebArchiveRequest;
@@ -16,6 +17,7 @@ import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.persistence.jpa.service.exception.ResourceTemplateUpdateException;
 import com.siemens.cto.aem.service.app.ApplicationService;
+import com.siemens.cto.aem.service.resource.ResourceService;
 import com.siemens.cto.aem.ws.rest.v1.provider.AuthenticatedUser;
 import com.siemens.cto.aem.ws.rest.v1.response.ApplicationResponse;
 import com.siemens.cto.aem.ws.rest.v1.service.app.ApplicationServiceRest;
@@ -67,7 +69,7 @@ public class ApplicationServiceRestImplTest {
     private AuthenticatedUser authenticatedUser;
     @InjectMocks
     @Spy
-    private ApplicationServiceRestImpl applicationServiceRest = new ApplicationServiceRestImpl(service = Mockito.mock(ApplicationService.class));
+    private ApplicationServiceRestImpl applicationServiceRest = new ApplicationServiceRestImpl(service = Mockito.mock(ApplicationService.class), mock(ResourceService.class));
 
 
     private ApplicationServiceRest cut;
@@ -522,11 +524,11 @@ public class ApplicationServiceRestImplTest {
 
     @Test
     public void testPreviewResourceTemplate() {
-        when(service.previewResourceTemplate(anyString(), anyString(), anyString(), anyString())).thenReturn("preview content");
+        when(service.previewResourceTemplate(anyString(), anyString(), anyString(), anyString(), any(ResourceGroup.class))).thenReturn("preview content");
         Response response = cut.previewResourceTemplate(application.getName(), group1.getName(), "jvmName", "ServerXMLTemplate.tpl");
         assertNotNull(response.getEntity());
 
-        when(service.previewResourceTemplate(anyString(), anyString(), anyString(), anyString())).thenThrow(new RuntimeException("Test fail preview"));
+        when(service.previewResourceTemplate(anyString(), anyString(), anyString(), anyString(), any(ResourceGroup.class))).thenThrow(new RuntimeException("Test fail preview"));
         response = cut.previewResourceTemplate(application.getName(), group1.getName(), "jvmName", "ServerXMLTemplate.tpl");
         assertNotNull(response.getEntity());
     }

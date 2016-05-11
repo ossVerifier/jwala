@@ -337,12 +337,14 @@ public class JvmCrudServiceImpl extends AbstractCrudServiceImpl<JpaJvm> implemen
         return buildJvms(q.getResultList());
     }
 
+    /**
+     * Build the JVM list.
+     * @param jpaJvms {@link JpaJvm}
+     * @return The JVM list. Returns an empty list if there are no JVMs.
+     */
     private List<Jvm> buildJvms(List<JpaJvm> jpaJvms) {
-        List<Jvm> jvms = null;
-        for(JpaJvm jpaJvm:jpaJvms) {
-            if(jvms == null) {
-                jvms = new ArrayList<>(jpaJvms.size());
-            }
+        final List<Jvm> jvms = new ArrayList<>(jpaJvms.size());
+        for(final JpaJvm jpaJvm: jpaJvms) {
             jvms.add(new JvmBuilder(jpaJvm).build());
         }
         return jvms;

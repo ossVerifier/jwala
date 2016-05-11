@@ -10,7 +10,6 @@ import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.common.domain.model.path.FileSystemPath;
 import com.siemens.cto.aem.common.domain.model.resource.EntityType;
-import com.siemens.cto.aem.common.domain.model.resource.ResourceGroup;
 import com.siemens.cto.aem.common.domain.model.resource.ResourceInstance;
 import com.siemens.cto.aem.common.domain.model.resource.ResourceType;
 import com.siemens.cto.aem.common.domain.model.user.User;
@@ -260,7 +259,7 @@ public class ResourceServiceImplTest {
                 .getResourceAsStream("resource-service-test-files/create-jvm-template-test-metadata.json");
         final InputStream templateIn = this.getClass().getClassLoader()
                 .getResourceAsStream("resource-service-test-files/server.xml.tpl");
-        resourceService.createTemplate(metaDataIn, templateIn);
+        resourceService.createTemplate(metaDataIn, templateIn, "test-app-name");
         verify(mockJvmPersistenceService).findJvmByExactName("some jvm");
         verify(mockJvmPersistenceService).uploadJvmTemplateXml(any(UploadJvmConfigTemplateRequest.class));
     }
@@ -278,7 +277,7 @@ public class ResourceServiceImplTest {
         final Group mockGroup = mock(Group.class);
         when(mockGroup.getJvms()).thenReturn(jvmSet);
         when(mockGroupPesistenceService.getGroup(eq("HEALTH CHECK 4.0"))).thenReturn(mockGroup);
-        resourceService.createTemplate(metaDataIn, templateIn);
+        resourceService.createTemplate(metaDataIn, templateIn, "test-app-name");
         verify(mockJvmPersistenceService, new Times(2)).uploadJvmTemplateXml(any(UploadJvmConfigTemplateRequest.class));
         verify(mockGroupPesistenceService).populateGroupJvmTemplates(eq("HEALTH CHECK 4.0"), any(List.class));
     }
@@ -289,7 +288,7 @@ public class ResourceServiceImplTest {
                 .getResourceAsStream("resource-service-test-files/create-ws-template-test-metadata.json");
         final InputStream templateIn = this.getClass().getClassLoader()
                 .getResourceAsStream("resource-service-test-files/httpd.conf.tpl");
-        resourceService.createTemplate(metaDataIn, templateIn);
+        resourceService.createTemplate(metaDataIn, templateIn, "test-app-name");
         verify(mockWebServerPersistenceService).findWebServerByName("some webserver");
         verify(mockWebServerPersistenceService).uploadWebserverConfigTemplate(any(UploadWebServerTemplateRequest.class));
     }
@@ -308,7 +307,7 @@ public class ResourceServiceImplTest {
         when(mockGroup.getWebServers()).thenReturn(webServerSet);
         when(mockGroup.getName()).thenReturn("HEALTH CHECK 4.0");
         when(mockGroupPesistenceService.getGroupWithWebServers(eq("HEALTH CHECK 4.0"))).thenReturn(mockGroup);
-        resourceService.createTemplate(metaDataIn, templateIn);
+        resourceService.createTemplate(metaDataIn, templateIn, "test-app-name");
         verify(mockWebServerPersistenceService, new Times(2)).uploadWebserverConfigTemplate(any(UploadWebServerTemplateRequest.class));
         verify(mockGroupPesistenceService).populateGroupWebServerTemplates(eq("HEALTH CHECK 4.0"), any(List.class));
     }
@@ -319,7 +318,7 @@ public class ResourceServiceImplTest {
                 .getResourceAsStream("resource-service-test-files/create-app-template-test-metadata.json");
         final InputStream templateIn = this.getClass().getClassLoader()
                 .getResourceAsStream("resource-service-test-files/app.xml.tpl");
-        resourceService.createTemplate(metaDataIn, templateIn);
+        resourceService.createTemplate(metaDataIn, templateIn, "test-app-name");
         verify(mockAppPersistenceService).getApplication("some application");
         verify(mockAppService).uploadAppTemplate(any(UploadAppTemplateRequest.class));
     }
@@ -332,13 +331,22 @@ public class ResourceServiceImplTest {
                 .getResourceAsStream("resource-service-test-files/httpd.conf.tpl");
 
         final List<Application> appList = new ArrayList<>();
-        appList.add(mock(Application.class));
-        appList.add(mock(Application.class));
-        when(mockAppPersistenceService.findApplicationsBelongingTo(eq("HEALTH CHECK 4.0"))).thenReturn(appList);
+        final Application mockApp = mock(Application.class);
+        final Application mockApp2 = mock(Application.class);
+        when(mockApp.getName()).thenReturn("test-app-name");
+        when(mockApp2.getName()).thenReturn("test-app-name2");
+        appList.add(mockApp);
+        appList.add(mockApp2);
         final Group mockGroup = mock(Group.class);
+        Set<Jvm> jvmSet = new HashSet<>();
+        Jvm mockJvm = mock(Jvm.class);
+        jvmSet.add(mockJvm);
+        when(mockGroup.getJvms()).thenReturn(jvmSet);
+        when(mockJvm.getJvmName()).thenReturn("test-jvm-name");
+        when(mockAppPersistenceService.findApplicationsBelongingTo(eq("HEALTH CHECK 4.0"))).thenReturn(appList);
         when(mockGroupPesistenceService.getGroup(eq("HEALTH CHECK 4.0"))).thenReturn(mockGroup);
-        resourceService.createTemplate(metaDataIn, templateIn);
-        verify(mockAppService, new Times(2)).uploadAppTemplate(any(UploadAppTemplateRequest.class));
+        resourceService.createTemplate(metaDataIn, templateIn, "test-app-name");
+        verify(mockAppService).uploadAppTemplate(any(UploadAppTemplateRequest.class));
         verify(mockGroupPesistenceService).populateGroupAppTemplate(eq(mockGroup), anyString(), anyString(), anyString());
     }
 

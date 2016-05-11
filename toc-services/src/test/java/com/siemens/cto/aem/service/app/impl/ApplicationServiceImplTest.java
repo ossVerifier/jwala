@@ -7,6 +7,7 @@ import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
+import com.siemens.cto.aem.common.domain.model.resource.ResourceGroup;
 import com.siemens.cto.aem.common.domain.model.ssh.SshConfiguration;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.exception.ApplicationException;
@@ -453,7 +454,7 @@ public class ApplicationServiceImplTest {
         final Jvm jvm = mock(Jvm.class);
         when(applicationPersistenceService.findApplication(eq("hct"), eq("hct-group"), eq("jvm-1"))).thenReturn(mockApplication);
         when(jvmPersistenceService.findJvm(eq("jvm-1"), eq("hct-group"))).thenReturn(jvm);
-        final String preview = applicationService.previewResourceTemplate("hct", "hct-group", "jvm-1", "Template contents");
+        final String preview = applicationService.previewResourceTemplate("hct", "hct-group", "jvm-1", "Template contents", new ResourceGroup());
         assertEquals("Template contents", preview);
     }
 

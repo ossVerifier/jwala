@@ -19,10 +19,10 @@ var ResourceAttrPane = React.createClass({
         for (var key in attributes) {
             reactAttributeElements.push(<Attribute entity={key} value={attributes[key]}/>);
         }
-        return <RJsonDataTreeDisplay ref="attrTree" data={attributes} onShowToolTipCallback={this.onShowAttrTreeToolTipCallback}/>
+        return <RJsonDataTreeDisplay ref="attrTree" data={attributes} title="Data Tree" onShowToolTipCallback={this.onShowAttrTreeToolTipCallback}/>
     },
     onShowAttrTreeToolTipCallback: function(hierarchy) {
-        return <div><span style={{display: "inline-block"}} className="ui-icon ui-icon-clipboard" /><span>{"${" + hierarchy + "}"}</span></div>;
+        return <ResourceAttrPaneCopyPropValComponent hierarchy={hierarchy} />;
     },
     componentDidMount: function() {
         // TODO: Decide whether we should call the service directly or pass it as a property.
@@ -247,5 +247,42 @@ var WebAppTable = React.createClass({
     },
     onClick: function() {
         this.setState({isCollapsed: !this.state.isCollapsed});
+    }
+});
+
+ResourceAttrPaneCopyPropValComponent = React.createClass({
+    getInitialState: function() {
+        return {copyIconHover: false, showTextCopiedMsg: false};
+    },
+    render: function() {
+        var className = "copyPropValBtn ui-state-default ui-corner-all" + (this.state.copyIconHover ? " ui-state-hover" : "");
+        return <div className="ResourceAttrPaneCopyPropValComponent">
+                   <div style={!this.state.showTextCopiedMsg ? {display: "none"} : {}} ref="textCopiedMsg"
+                        className="ui-tooltip ui-widget ui-widget-content">Text copied....</div>
+                   <button className={className} onClick={this.onClick}>
+                       <span style={{display: "inline-block"}} className="ui-icon ui-icon-clipboard" onMouseEnter={this.onMouseEnter}
+                             onMouseOut={this.onMouseOut} title="copy" />
+                   </button>
+                   <span className="propValStyle">{"${" + this.props.hierarchy + "}"}</span>
+                   <div style={{position: "fixed", top: -9999, left: -9999}}>
+                       <textarea ref="textArea" />
+                   </div>
+               </div>;
+    },
+    onMouseEnter: function() {
+        this.setState({copyIconHover: true});
+    },
+    onMouseOut: function() {
+        this.setState({copyIconHover: false});
+    },
+    onClick: function() {
+        var self = this;
+        $(this.refs.textArea.getDOMNode()).val(this.props.hierarchy);
+        $(this.refs.textArea.getDOMNode()).select();
+        document.execCommand("copy");
+        this.setState({showTextCopiedMsg: true});
+        setTimeout(function() {
+            self.setState({showTextCopiedMsg: false});
+        }, 200);
     }
 });

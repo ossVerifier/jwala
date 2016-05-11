@@ -384,12 +384,14 @@ public class WebServerCrudServiceImpl extends AbstractCrudServiceImpl<JpaWebServ
         return buildWebServers(q.getResultList());
     }
 
+    /**
+     * Builds a list of Web Servers.
+     * @param jpaWebServers {@link JpaWebServer}
+     * @return A list of web servers. Returns an empty list if there are no web servers.
+     */
     private List<WebServer> buildWebServers(List<JpaWebServer> jpaWebServers) {
-        List<WebServer> webServers = null;
+        List<WebServer> webServers = new ArrayList<>();
         for(JpaWebServer jpaWebServer:jpaWebServers) {
-            if(webServers==null) {
-                webServers = new ArrayList<>(jpaWebServers.size());
-            }
             webServers.add(new JpaWebServerBuilder(jpaWebServer).build());
         }
         return webServers;
