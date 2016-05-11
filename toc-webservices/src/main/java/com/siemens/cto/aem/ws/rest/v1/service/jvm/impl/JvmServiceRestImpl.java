@@ -243,14 +243,14 @@ public class JvmServiceRestImpl implements JvmServiceRest {
     }
 
     @Override
-    public Response generateAndDeployJvm(final String jvmName, final boolean useGeneric, final AuthenticatedUser user) {
+    public Response generateAndDeployJvm(final String jvmName, final AuthenticatedUser user) {
         Map<String, String> errorDetails = new HashMap<>();
         errorDetails.put("jvmName", jvmName);
         final Jvm jvm = jvmService.getJvm(jvmName);
         errorDetails.put("jvmId", jvm.getId().getId().toString());
 
         try {
-            return ResponseBuilder.ok(generateConfFilesAndDeploy(jvm, false, user));
+            return ResponseBuilder.ok(generateConfFilesAndDeploy(jvm, user));
         } catch (RuntimeException re) {
             LOGGER.error("Failed to generate and deploy configuration files for JVM: {}", jvmName, re);
             if (re.getCause() != null && re.getCause() instanceof InternalErrorException
@@ -269,11 +269,10 @@ public class JvmServiceRestImpl implements JvmServiceRest {
     /**
      * Generate and deploy a JVM's configuration files.
      * @param jvm the JVM
-     * @param useGeneric tells the app to use the generic resource generation API. This is an interim option until the old resource API has been phased out.
      * @param user the user
      * @return {@link Jvm}
      */
-    protected Jvm generateConfFilesAndDeploy(final Jvm jvm, final boolean useGeneric, final AuthenticatedUser user) {
+    protected Jvm generateConfFilesAndDeploy(final Jvm jvm, final AuthenticatedUser user) {
 
         // only one at a time per JVM
         // TODO return error if .toc directory is already being written to
@@ -302,7 +301,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
 
             // create the tar file
             //
-            final String jvmConfigJar = generateJvmConfigJar(jvm.getJvmName(), useGeneric);
+            final String jvmConfigJar = generateJvmConfigJar(jvm.getJvmName());
 
             // copy the tar file
             secureCopyJvmConfigJar(jvm, jvmConfigJar);
@@ -440,7 +439,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
     }
 
     @Override
-    public Response generateAndDeployFile(final String jvmName, final String fileName, boolean useGeneric, AuthenticatedUser user) {
+    public Response generateAndDeployFile(final String jvmName, final String fileName, AuthenticatedUser user) {
         Jvm jvm = jvmService.getJvm(jvmName);
 
         // only one at a time per jvm
@@ -457,13 +456,8 @@ public class JvmServiceRestImpl implements JvmServiceRest {
             }
 
             final String relativeDir;
-            if (useGeneric) {
-                ResourceTemplateMetaData resourceTemplateMetaData = jvmService.getResourceTemplateMetaData(jvmName);
-                relativeDir = resourceTemplateMetaData.getRelativeDir();
-            } else {
-                ResourceType deployResource = getResourceTypeTemplate(jvmName, fileName);
-                relativeDir = deployResource.getRelativeDir();
-            }
+            ResourceTemplateMetaData resourceTemplateMetaData = jvmService.getResourceTemplateMetaData(jvmName);
+            relativeDir = resourceTemplateMetaData.getRelativeDir();
 
             String fileContent = jvmService.generateConfigFile(jvmName, fileName);
             String jvmResourcesNameDir = stpJvmResourcesDir + "/" + jvmName;
@@ -516,7 +510,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
         return deployResource;
     }
 
-    protected String generateJvmConfigJar(String jvmName, boolean useGeneric) {
+    protected String generateJvmConfigJar(String jvmName) {
         LOGGER.info("Generating JVM configuration tar for {}", jvmName);
         String jvmResourcesNameDir = stpJvmResourcesDir + "/" + jvmName;
 
@@ -537,26 +531,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
                 }
             }
 
-            if (useGeneric) {
-                jvmService.generateResourceFiles(jvmName, destDirPath);
-            } else {
-                for (ResourceType resourceType : resourceService.getResourceTypes()) {
-                    if (ENTITY_TYPE_JVM.equals(resourceType.getEntityType())) {
-                        String generatedText;
-                        if (CONFIG_FILENAME_INVOKE_BAT.equals(resourceType.getConfigFileName())) {
-                            // create the invoke.bat separately, since
-                            // it's not configurable it's actually NOT in
-                            // the database
-                            generatedText = jvmService.generateInvokeBat(jvmName);
-                        } else {
-                            generatedText = jvmService.generateConfigFile(jvmName, resourceType.getConfigFileName());
-                        }
-                        String jvmResourcesRelativeDir = destDirPath + resourceType.getRelativeDir();
-                        LOGGER.debug("gnerating template in location: {}", jvmResourcesRelativeDir + "/", resourceType.getConfigFileName());
-                        createConfigFile(jvmResourcesRelativeDir + "/", resourceType.getConfigFileName(), generatedText);
-                    }
-                }
-            }
+            jvmService.generateResourceFiles(jvmName, destDirPath);
 
             // copy the start and stop scripts to the instances/jvm/bin directory
             final String commandsScriptsPath = ApplicationProperties.get("commands.scripts-path");

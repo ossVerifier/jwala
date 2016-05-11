@@ -47,22 +47,18 @@ public interface JvmServiceRest extends InitializingBean{
     /**
      * Generate JVM config files then deploy the JVM.
      * @param jvmName the name of the JVM
-     * @param useGeneric tells the app to use the generic resource generation API. This is an interim option until the old resource API has been phased out.
      * @param aUser the user
      * @return {@link Response}
      */
     @PUT
     @Path("/{jvmName}/conf")
     Response generateAndDeployJvm(@PathParam("jvmName") final String jvmName,
-                                  @DefaultValue("false") @QueryParam("useGeneric") final boolean useGeneric,
                                   @BeanParam final AuthenticatedUser aUser);
 
     /**
      * Generates and deploy a single JVM resource file as specified by the fileName I presume...have to confirm
      * @param jvmName the jvm name
      * @param fileName the resource file name ?
-     * @param useGeneric tells the method to get the relative dir from the meta data from the db instead from the file
-     *                   which was the case with the old resource generation API.
      * @param aUser the user
      * @return {@link Response}
      */
@@ -70,7 +66,6 @@ public interface JvmServiceRest extends InitializingBean{
     @Path("/{jvmName}/conf/{fileName}")
     Response generateAndDeployFile(@PathParam("jvmName") final String jvmName,
                                    @PathParam("fileName") final String fileName,
-                                   @QueryParam("useGeneric") boolean useGeneric,
                                    @BeanParam final AuthenticatedUser aUser);
     
     @POST

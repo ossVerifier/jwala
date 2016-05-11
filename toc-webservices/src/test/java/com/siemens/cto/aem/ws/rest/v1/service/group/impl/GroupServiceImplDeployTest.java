@@ -449,7 +449,7 @@ public class GroupServiceImplDeployTest {
             }
 
             @Override
-            protected String generateJvmConfigJar(String jvmName, boolean useGeneric) {
+            protected String generateJvmConfigJar(String jvmName) {
                 return "./testJvmConfigTar.tar";
             }
         }
