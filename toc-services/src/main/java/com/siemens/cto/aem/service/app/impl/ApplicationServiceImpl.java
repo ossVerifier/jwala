@@ -60,8 +60,6 @@ public class ApplicationServiceImpl implements ApplicationService {
     private static final String JVM_INSTANCE_DIR = "paths.instances";
     private static final String GENERATED_RESOURCE_DIR = "stp.generated.resource.dir";
     private static final String APP_CONTEXT_TEMPLATE = "stp.app.context.template";
-    private static final String ROLE_MAPPING_PROPERTIES_TEMPLATE = "stp.app.role.mapping.properties.template";
-    private static final String APP_PROPERTIES_TEMPLATE = "stp.app.properties.template";
     private static final String STR_PROPERTIES = "properties";
     private static final String PATHS_RESOURCE_TYPES = "paths.resource-types";
     private final ExecutorService executorService;
@@ -346,18 +344,8 @@ public class ApplicationServiceImpl implements ApplicationService {
     @Transactional
     public JpaApplicationConfigTemplate uploadAppTemplate(UploadAppTemplateRequest uploadAppTemplateRequest) {
         uploadAppTemplateRequest.validate();
-        Jvm appJvm = null;
-        // if the template is the context xml for the app then associate it with a jvm
-        if (uploadAppTemplateRequest.getConfFileName().endsWith(".xml")) {
-            final String jvmName = uploadAppTemplateRequest.getJvmName();
-            for (Jvm jvm : jvmPersistenceService.findJvms(jvmName)) {
-                if (jvm.getJvmName().equals(jvmName)) {
-                    appJvm = jvm;
-                    break;
-                }
-            }
-        }
-        JpaJvm jpaJvm = appJvm != null ? jvmPersistenceService.getJpaJvm(appJvm.getId(), false) : null;
+        Jvm jvm = jvmPersistenceService.findJvmByExactName(uploadAppTemplateRequest.getJvmName());
+        JpaJvm jpaJvm = jvmPersistenceService.getJpaJvm(jvm.getId(), false);
         return applicationPersistenceService.uploadAppTemplate(uploadAppTemplateRequest, jpaJvm);
     }
 

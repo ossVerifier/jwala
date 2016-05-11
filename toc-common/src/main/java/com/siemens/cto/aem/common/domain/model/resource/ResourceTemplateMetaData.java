@@ -70,5 +70,4 @@ public class ResourceTemplateMetaData {
     public void setEntity(Entity entity) {
         this.entity = entity;
     }
-
 }

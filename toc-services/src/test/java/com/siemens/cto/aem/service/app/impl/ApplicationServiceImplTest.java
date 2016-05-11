@@ -463,12 +463,16 @@ public class ApplicationServiceImplTest {
         final UploadAppTemplateRequest cmd = mock(UploadAppTemplateRequest.class);
         when(cmd.getConfFileName()).thenReturn("roleMapping.properties");
         when(cmd.getJvmName()).thenReturn("testJvmName");
+        Jvm mockJvm = mock(Jvm.class);
+        when(mockJvm.getId()).thenReturn(new Identifier<Jvm>(111L));
+        when(jvmPersistenceService.findJvmByExactName(anyString())).thenReturn(mockJvm);
+        JpaJvm mockJpaJvm = mock(JpaJvm.class);
+        when(jvmPersistenceService.getJpaJvm(any(Identifier.class), anyBoolean())).thenReturn(mockJpaJvm);
         applicationService.uploadAppTemplate(cmd);
         verify(cmd).validate();
         verify(applicationPersistenceService).uploadAppTemplate(any(UploadAppTemplateRequest.class), any(JpaJvm.class));
 
         List<Jvm> jvmList = new ArrayList<>();
-        Jvm mockJvm = mock(Jvm.class);
         jvmList.add(mockJvm);
         when(mockJvm.getJvmName()).thenReturn("testJvmName");
         when(cmd.getConfFileName()).thenReturn("hct.xml");

@@ -12,7 +12,9 @@ import com.siemens.cto.aem.common.request.group.UpdateGroupRequest;
 import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
 import com.siemens.cto.aem.common.request.state.SetStateRequest;
 import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateRequest;
-import com.siemens.cto.aem.persistence.jpa.domain.*;
+import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
+import com.siemens.cto.aem.persistence.jpa.domain.JpaWebServer;
+import com.siemens.cto.aem.persistence.jpa.domain.resource.config.template.ConfigTemplate;
 import com.siemens.cto.aem.persistence.jpa.domain.resource.config.template.JpaGroupAppConfigTemplate;
 import com.siemens.cto.aem.persistence.jpa.domain.resource.config.template.JpaGroupJvmConfigTemplate;
 import com.siemens.cto.aem.persistence.jpa.domain.resource.config.template.JpaGroupWebServerConfigTemplate;
@@ -325,7 +327,7 @@ public class GroupCrudServiceImpl extends AbstractCrudServiceImpl<JpaGroup> impl
     }
 
     @Override
-    public void populateGroupAppTemplate(final JpaGroup group, final String templateFileName, final String metaData,
+    public ConfigTemplate populateGroupAppTemplate(final JpaGroup group, final String templateFileName, final String metaData,
                                          final String templateContent) {
         Query query = entityManager.createQuery("SELECT t FROM JpaGroupAppConfigTemplate t where t.templateName = :tempName and t.grp.name = :grpName");
         query.setParameter("grpName", group.getName());
@@ -349,6 +351,8 @@ public class GroupCrudServiceImpl extends AbstractCrudServiceImpl<JpaGroup> impl
             throw new BadRequestException(AemFaultType.APP_TEMPLATE_NOT_FOUND,
                     "Only expecting one template to be returned for GROUP APP Template [" + group.getName() + "] but returned " + templates.size() + " templates");
         }
+
+        return jpaConfigTemplate;
     }
 
     @Override

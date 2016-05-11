@@ -8,6 +8,7 @@ import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.state.CurrentState;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateRequest;
+import com.siemens.cto.aem.persistence.jpa.domain.resource.config.template.ConfigTemplate;
 
 import java.util.List;
 import java.util.Set;
@@ -64,7 +65,7 @@ public interface GroupPersistenceService extends StatePersistenceService<Group, 
 
     String updateGroupWebServerResourceTemplate(String groupName, String resourceTemplateName, String content);
 
-    Group populateGroupAppTemplate(Group group, String templateFileName, String metaData, String templateContent);
+    ConfigTemplate populateGroupAppTemplate(Group group, String templateFileName, String metaData, String templateContent);
 
     List<String> getGroupAppsResourceTemplateNames(String groupName);
 

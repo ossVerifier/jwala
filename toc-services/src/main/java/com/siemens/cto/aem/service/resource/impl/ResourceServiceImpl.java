@@ -51,7 +51,7 @@ public class ResourceServiceImpl implements ResourceService {
     private final ResourcePersistenceService resourcePersistenceService;
     private final GroupPersistenceService groupPersistenceService;
 
-    private final String encryptExpressionString="new com.siemens.cto.infrastructure.StpCryptoService().encryptToBase64( #stringToEncrypt )";
+    private final String encryptExpressionString = "new com.siemens.cto.infrastructure.StpCryptoService().encryptToBase64( #stringToEncrypt )";
 
     private ApplicationService applicationService;
 
@@ -89,12 +89,12 @@ public class ResourceServiceImpl implements ResourceService {
     public Collection<ResourceType> getResourceTypes() {
         try {
             Collection<ResourceType> resourceTypes = fileManager.getResourceTypes();
-            for(ResourceType rtype : resourceTypes) {
-                if(rtype.isValid()) {
+            for (ResourceType rtype : resourceTypes) {
+                if (rtype.isValid()) {
                     HarmonyTemplate template = templateEngine.getTemplate(rtype);
                     try {
                         template.check();
-                    } catch(Exception exception) { 
+                    } catch (Exception exception) {
                         LOGGER.error("Discovered a bad template", exception);
                         rtype.setValid(false);
                         rtype.addException(exception);
@@ -111,13 +111,13 @@ public class ResourceServiceImpl implements ResourceService {
     }
 
     @Override
-    @Transactional (readOnly = true)
+    @Transactional(readOnly = true)
     public ResourceInstance getResourceInstance(final Identifier<ResourceInstance> aResourceInstanceId) {
         return this.resourcePersistenceService.getResourceInstance(aResourceInstanceId);
     }
 
     @Override
-    @Transactional (readOnly = true)
+    @Transactional(readOnly = true)
     public List<ResourceInstance> getResourceInstancesByGroupName(final String groupName) {
         Group group = this.groupPersistenceService.getGroup(groupName);
         return this.resourcePersistenceService.getResourceInstancesByGroupId(group.getId().getId());
@@ -141,7 +141,7 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Override
     public String generateResourceInstanceFragment(String groupName, String resourceInstanceName, Map<String, String> mockedValues) {
-        ResourceInstance resourceInstance =  this.getResourceInstanceByGroupNameAndName(groupName, resourceInstanceName);
+        ResourceInstance resourceInstance = this.getResourceInstanceByGroupNameAndName(groupName, resourceInstanceName);
         return templateEngine.populateResourceInstanceTemplate(resourceInstance, null, mockedValues);
     }
 
@@ -225,7 +225,7 @@ public class ResourceServiceImpl implements ResourceService {
                 default:
                     throw new ResourceServiceException("Invalid entity type '" + resourceTemplateMetaData.getEntity().getType() + "'");
             }
-        } catch(final IOException ioe) {
+        } catch (final IOException ioe) {
             throw new ResourceServiceException(ioe);
         }
 
@@ -234,9 +234,10 @@ public class ResourceServiceImpl implements ResourceService {
 
     /**
      * Make a local copy of the template file and its meta data in the templates path since they are used in resource generation.
-     * @param metaData {@link ResourceTemplateMetaData}
+     *
+     * @param metaData     {@link ResourceTemplateMetaData}
      * @param templateData the template file content
-     * @param jsonData the meta data String that describes templateData
+     * @param jsonData     the meta data String that describes templateData
      */
     protected void createMetaAndTemplateDataLocalCopy(final ResourceTemplateMetaData metaData, final String templateData,
                                                       final String jsonData) {
@@ -258,7 +259,8 @@ public class ResourceServiceImpl implements ResourceService {
 
     /**
      * Create the JVM template in the db and in the templates path for a specific JVM entity target.
-     * @param metaData the data that describes the template, please see {@link ResourceTemplateMetaData}
+     *
+     * @param metaData     the data that describes the template, please see {@link ResourceTemplateMetaData}
      * @param templateData the template content/data
      */
     private CreateResourceTemplateApplicationResponseWrapper createJvmTemplate(final ResourceTemplateMetaData metaData, final InputStream templateData) {
@@ -280,7 +282,8 @@ public class ResourceServiceImpl implements ResourceService {
 
     /**
      * Create the JVM template in the db and in the templates path for all the JVMs.
-     * @param metaData the data that describes the template, please see {@link ResourceTemplateMetaData}
+     *
+     * @param metaData     the data that describes the template, please see {@link ResourceTemplateMetaData}
      * @param templateData the template content/data
      */
     // TODO: When the resource file is locked, don't overwrite!
@@ -289,8 +292,8 @@ public class ResourceServiceImpl implements ResourceService {
         final Set<Jvm> jvms = groupPersistenceService.getGroup(metaData.getEntity().getGroup()).getJvms();
         final List<UploadJvmTemplateRequest> uploadJvmTemplateRequestList = new ArrayList<>();
         ConfigTemplate createdJpaJvmConfigTemplate = null;
-        final byte [] bytes = IOUtils.toByteArray(templateData);
-        for (final Jvm jvm: jvms) {
+        final byte[] bytes = IOUtils.toByteArray(templateData);
+        for (final Jvm jvm : jvms) {
             UploadJvmConfigTemplateRequest uploadJvmTemplateRequest = new UploadJvmConfigTemplateRequest(jvm, metaData.getTemplateName(),
                     new ByteArrayInputStream(bytes), convertResourceTemplateMetaDataToJson(metaData));
             uploadJvmTemplateRequest.setConfFileName(metaData.getConfigFileName());
@@ -307,7 +310,8 @@ public class ResourceServiceImpl implements ResourceService {
 
     /**
      * Create the web server template in the db and in the templates path for a specific web server entity target.
-     * @param metaData the data that describes the template, please see {@link ResourceTemplateMetaData}
+     *
+     * @param metaData     the data that describes the template, please see {@link ResourceTemplateMetaData}
      * @param templateData the template content/data
      */
     private CreateResourceTemplateApplicationResponseWrapper createWebServerTemplate(final ResourceTemplateMetaData metaData, final InputStream templateData) {
@@ -324,7 +328,8 @@ public class ResourceServiceImpl implements ResourceService {
 
     /**
      * Create the web server template in the db and in the templates path for all the web servers.
-     * @param metaData the data that describes the template, please see {@link ResourceTemplateMetaData}
+     *
+     * @param metaData     the data that describes the template, please see {@link ResourceTemplateMetaData}
      * @param templateData the template content/data
      */
     private CreateResourceTemplateApplicationResponseWrapper createGroupedWebServersTemplate(final ResourceTemplateMetaData metaData,
@@ -333,8 +338,8 @@ public class ResourceServiceImpl implements ResourceService {
         final Set<WebServer> webServers = group.getWebServers();
         final List<UploadWebServerTemplateRequest> uploadWebServerTemplateRequestList = new ArrayList<>();
         ConfigTemplate createdConfigTemplate = null;
-        final byte [] bytes = IOUtils.toByteArray(templateData);
-        for (final WebServer webServer: webServers) {
+        final byte[] bytes = IOUtils.toByteArray(templateData);
+        for (final WebServer webServer : webServers) {
             UploadWebServerTemplateRequest uploadWebServerTemplateRequest = new UploadWebServerTemplateRequest(webServer,
                     metaData.getTemplateName(), convertResourceTemplateMetaDataToJson(metaData), new ByteArrayInputStream(bytes)) {
                 @Override
@@ -354,8 +359,9 @@ public class ResourceServiceImpl implements ResourceService {
 
     /**
      * Create the application template in the db and in the templates path for a specific application entity target.
-     * @param metaData the data that describes the template, please see {@link ResourceTemplateMetaData}
-     * @param templateData the template content/data
+     *
+     * @param metaData      the data that describes the template, please see {@link ResourceTemplateMetaData}
+     * @param templateData  the template content/data
      * @param targetJvmName the name of the JVM to associate with the application template
      */
     private CreateResourceTemplateApplicationResponseWrapper createApplicationTemplate(final ResourceTemplateMetaData metaData, final InputStream templateData, String targetJvmName) {
@@ -367,8 +373,9 @@ public class ResourceServiceImpl implements ResourceService {
 
     /**
      * Create the application template in the db and in the templates path for all the application.
-     * @param metaData the data that describes the template, please see {@link ResourceTemplateMetaData}
-     * @param templateData the template content/data
+     *
+     * @param metaData      the data that describes the template, please see {@link ResourceTemplateMetaData}
+     * @param templateData  the template content/data
      * @param targetAppName the application name
      */
     private CreateResourceTemplateApplicationResponseWrapper createGroupedApplicationsTemplate(final ResourceTemplateMetaData metaData,
@@ -378,25 +385,21 @@ public class ResourceServiceImpl implements ResourceService {
         Group group = groupPersistenceService.getGroup(groupName);
         final List<Application> applications = applicationPersistenceService.findApplicationsBelongingTo(groupName);
         ConfigTemplate createdConfigTemplate = null;
-        final byte [] bytes = IOUtils.toByteArray(templateData);
-        for (final Application application: applications) {
-            if (application.getName().equals(targetAppName)) {
+        String templateString = IOUtils.toString(templateData);
+        for (final Application application : applications) {
+            if (metaData.getEntity().getDeployToJvms() && application.getName().equals(targetAppName)) {
+                final byte[] bytes = templateString.getBytes();
                 for (final Jvm jvm : group.getJvms()) {
                     UploadAppTemplateRequest uploadAppTemplateRequest = new UploadAppTemplateRequest(application, metaData.getTemplateName(),
                             metaData.getConfigFileName(), jvm.getJvmName(), convertResourceTemplateMetaDataToJson(metaData), new ByteArrayInputStream(bytes)
                     );
-
-                    createdConfigTemplate = applicationService.uploadAppTemplate(uploadAppTemplateRequest);
+                    applicationService.uploadAppTemplate(uploadAppTemplateRequest);
                 }
             }
         }
 
-        try {
-            groupPersistenceService.populateGroupAppTemplate(group, metaData.getConfigFileName(),
-                    convertResourceTemplateMetaDataToJson(metaData), IOUtils.toString(templateData));
-        } catch (final IOException ioe) {
-            throw new ResourceServiceException(ioe);
-        }
+        createdConfigTemplate = groupPersistenceService.populateGroupAppTemplate(group, metaData.getConfigFileName(),
+                convertResourceTemplateMetaDataToJson(metaData), templateString);
 
         return new CreateResourceTemplateApplicationResponseWrapper(createdConfigTemplate);
     }
@@ -406,14 +409,14 @@ public class ResourceServiceImpl implements ResourceService {
     public int removeTemplate(final String name) {
         return applicationPersistenceService.removeTemplate(name) + jvmPersistenceService.removeTemplate(name)
                 + webServerPersistenceService.removeTemplate(name) + groupPersistenceService.removeAppTemplate(name) +
-                  groupPersistenceService.removeJvmTemplate(name) + groupPersistenceService.removeWeServerTemplate(name);
+                groupPersistenceService.removeJvmTemplate(name) + groupPersistenceService.removeWeServerTemplate(name);
     }
 
     @Override
     public int removeTemplate(final String groupName, final EntityType entityType, final String templateNames) {
-        final List<String> templateNameList =  Arrays.asList(templateNames.split(","));
+        final List<String> templateNameList = Arrays.asList(templateNames.split(","));
         int totalDeletedRecs = 0;
-        for (final String templateName: templateNameList) {
+        for (final String templateName : templateNameList) {
             switch (entityType) {
                 case GROUPED_JVMS:
                     totalDeletedRecs = groupPersistenceService.removeJvmTemplate(groupName, templateName);
@@ -430,9 +433,9 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Override
     public int removeTemplate(final EntityType entityType, final String entityName, final String templateNames) {
-        final List<String> templateNameList =  Arrays.asList(templateNames.split(","));
+        final List<String> templateNameList = Arrays.asList(templateNames.split(","));
         int totalDeletedRecs = 0;
-        for (final String templateName: templateNameList) {
+        for (final String templateName : templateNameList) {
             switch (entityType) {
                 case GROUPED_JVMS:
                     totalDeletedRecs = jvmPersistenceService.removeTemplate(entityName, templateName);
@@ -456,8 +459,8 @@ public class ResourceServiceImpl implements ResourceService {
     public ResourceGroup generateResourceGroup() {
         List<Group> groups = groupPersistenceService.getGroups();
         List<Group> groupsToBeAdded = null;
-        for(Group group:groups) {
-            if(groupsToBeAdded == null) {
+        for (Group group : groups) {
+            if (groupsToBeAdded == null) {
                 groupsToBeAdded = new ArrayList<>(groups.size());
             }
             List<Jvm> jvms = jvmPersistenceService.getJvmsByGroupName(group.getName());

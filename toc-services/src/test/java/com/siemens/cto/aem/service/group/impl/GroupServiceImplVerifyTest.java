@@ -12,6 +12,7 @@ import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.common.request.group.*;
 import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
 import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateRequest;
+import com.siemens.cto.aem.persistence.jpa.domain.resource.config.template.ConfigTemplate;
 import com.siemens.cto.aem.persistence.service.ApplicationPersistenceService;
 import com.siemens.cto.aem.persistence.service.GroupPersistenceService;
 import com.siemens.cto.aem.service.VerificationBehaviorSupport;
@@ -414,7 +415,7 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
         when(mockApplication.getGroup()).thenReturn(mockGroup);
         when(mockApplication.getWebAppContext()).thenReturn("/testApp");
         when(groupPersistenceService.populateGroupAppTemplate(any(Group.class), anyString(), anyString(), anyString()))
-                .thenReturn(mockGroup);
+                .thenReturn(mock(ConfigTemplate.class));
 
         groupService.populateGroupAppTemplates(mockApplication, "app content meta data", "app content", "role mapping content meta data",
                 "role mapping content", "properties content meta data" ,"properties content");
@@ -430,7 +431,7 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
     public void testPopulateGroupAppTemplate() {
         Group mockGroup = mock(Group.class);
         when(groupPersistenceService.getGroup(anyString())).thenReturn(mockGroup);
-        when(groupPersistenceService.populateGroupAppTemplate(any(Group.class), anyString(), anyString(), anyString())).thenReturn(mockGroup);
+        when(groupPersistenceService.populateGroupAppTemplate(any(Group.class), anyString(), anyString(), anyString())).thenReturn(mock(ConfigTemplate.class));
         when(groupPersistenceService.getGroupAppResourceTemplate(anyString(), anyString())).thenReturn("template content");
         groupService.populateGroupAppTemplate("testGroup", "hct.xml", "hct meta data", "template content");
 

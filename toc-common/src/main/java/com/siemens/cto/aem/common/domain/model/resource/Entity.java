@@ -2,7 +2,7 @@ package com.siemens.cto.aem.common.domain.model.resource;
 
 /**
  * Resource entity that wraps type, group and target.
- *
+ * <p/>
  * Created by JC043760 on 3/30/2016.
  */
 public class Entity {
@@ -11,6 +11,7 @@ public class Entity {
     private String group;
     private String target;
     private String parentName;
+    private boolean deployToJvms = true;
 
     public String getType() {
         return type;
@@ -42,6 +43,14 @@ public class Entity {
 
     public void setParentName(String parentName) {
         this.parentName = parentName;
+    }
+
+    public boolean getDeployToJvms() {
+        return deployToJvms;
+    }
+
+    public void setDeployToJvms(boolean deployToJvms){
+        this.deployToJvms = deployToJvms;
     }
 
 }

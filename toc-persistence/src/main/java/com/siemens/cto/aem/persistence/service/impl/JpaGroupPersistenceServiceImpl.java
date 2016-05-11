@@ -14,6 +14,7 @@ import com.siemens.cto.aem.common.request.state.SetStateRequest;
 import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateRequest;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
 import com.siemens.cto.aem.persistence.jpa.domain.builder.JpaGroupBuilder;
+import com.siemens.cto.aem.persistence.jpa.domain.resource.config.template.ConfigTemplate;
 import com.siemens.cto.aem.persistence.jpa.service.GroupCrudService;
 import com.siemens.cto.aem.persistence.jpa.service.GroupJvmRelationshipService;
 import com.siemens.cto.aem.persistence.service.GroupPersistenceService;
@@ -231,11 +232,10 @@ public class JpaGroupPersistenceServiceImpl implements GroupPersistenceService {
     }
 
     @Override
-    public Group populateGroupAppTemplate(final Group group, final String templateFileName, final String metaData,
-                                          final String templateContent) {
+    public ConfigTemplate populateGroupAppTemplate(final Group group, final String templateFileName, final String metaData,
+                                                   final String templateContent) {
         JpaGroup jpaGroup = groupCrudService.getGroup(group.getName());
-        groupCrudService.populateGroupAppTemplate(jpaGroup,templateFileName, metaData, templateContent);
-        return groupFrom(jpaGroup, false);
+        return groupCrudService.populateGroupAppTemplate(jpaGroup,templateFileName, metaData, templateContent);
     }
 
     @Override

@@ -15,6 +15,7 @@ import com.siemens.cto.aem.common.request.group.CreateGroupRequest;
 import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
 import com.siemens.cto.aem.common.request.state.SetStateRequest;
 import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateRequest;
+import com.siemens.cto.aem.persistence.jpa.domain.resource.config.template.ConfigTemplate;
 import com.siemens.cto.aem.persistence.service.CommonGroupPersistenceServiceBehavior;
 import com.siemens.cto.aem.persistence.service.CommonJvmPersistenceServiceBehavior;
 import com.siemens.cto.aem.persistence.service.GroupPersistenceService;
@@ -441,7 +442,7 @@ public abstract class AbstractGroupPersistenceServiceIntegrationTest {
 
     @Test
     public void testPopulateGroupAppTemplate() {
-        Group group = groupPersistenceService.populateGroupAppTemplate(preCreatedGroup, "app.xml", "some meta data", "app content");
-        assertNotNull(group);
+        ConfigTemplate template = groupPersistenceService.populateGroupAppTemplate(preCreatedGroup, "app.xml", "some meta data", "app content");
+        assertNotNull(template);
     }
 }
