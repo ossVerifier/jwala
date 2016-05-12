@@ -6,12 +6,14 @@ import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.common.domain.model.ssh.SshConfiguration;
 import com.siemens.cto.aem.common.domain.model.state.CurrentState;
+import com.siemens.cto.aem.common.exec.RemoteExecCommand;
 import com.siemens.cto.aem.persistence.service.JvmPersistenceService;
 import com.siemens.cto.aem.service.MessagingService;
 import com.siemens.cto.aem.service.RemoteCommandExecutorService;
 import com.siemens.cto.aem.service.group.GroupStateNotificationService;
 import com.siemens.cto.aem.service.jvm.JvmStateService;
 import com.siemens.cto.aem.service.state.InMemoryStateManagerService;
+import org.apache.commons.lang.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -88,20 +90,26 @@ public class JvmStateServiceImplTest {
     @Test
     public void testUpdateNotInMemOrStaleState() {
         final Jvm jvm = new Jvm(new Identifier<Jvm>(1L), "some-jvm", new HashSet<Group>());
-        jvmStateService.updateNotInMemOrStaleState(jvm, JvmState.JVM_STARTED, "");
-        verify(mockJvmPersistenceService).updateState(eq(jvm.getId()), eq(JvmState.JVM_STARTED), eq(""));
+        jvmStateService.updateNotInMemOrStaleState(jvm, JvmState.JVM_STARTED, StringUtils.EMPTY);
+        verify(mockJvmPersistenceService).updateState(eq(jvm.getId()), eq(JvmState.JVM_STARTED), eq(StringUtils.EMPTY));
         verify(mockMessagingService).send(any(CurrentState.class));
         verify(mockGroupStateNotificationService).retrieveStateAndSendToATopic(eq(jvm.getId()), eq(Jvm.class));
     }
 
     @Test
     public void testGetServiceStatus() {
-
+        final Jvm jvm = new Jvm(new Identifier<Jvm>(1L), "some-jvm", new HashSet<Group>());
+        jvmStateService.getServiceStatus(jvm);
+        verify(mockRemoteCommandExecutorService).executeCommand(any(RemoteExecCommand.class));
     }
 
     @Test
     public void testUpdateState() {
-
+        final Identifier<Jvm> id = new Identifier<>(1L);
+        jvmStateService.updateState(id, JvmState.JVM_STOPPED);
+        verify(mockJvmPersistenceService).updateState(eq(id), eq(JvmState.JVM_STOPPED), eq(StringUtils.EMPTY));
+        verify(mockMessagingService).send(any(CurrentState.class));
+        verify(mockGroupStateNotificationService).retrieveStateAndSendToATopic(eq(id), eq(Jvm.class));
     }
 
     @Test
