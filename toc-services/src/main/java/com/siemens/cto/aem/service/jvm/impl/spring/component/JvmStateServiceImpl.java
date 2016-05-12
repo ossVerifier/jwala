@@ -232,7 +232,7 @@ public class JvmStateServiceImpl implements JvmStateService {
      */
     @Override
     public int requestCurrentStatesRetrievalAndNotification(final String groupName) {
-        final List<JpaJvm> jpaJvmList = jvmPersistenceService.getJvmsByGroupId(groupName);
+        final List<JpaJvm> jpaJvmList = jvmPersistenceService.getJpaJvmsByGroupName(groupName);
             for (final JpaJvm jpaJvm : jpaJvmList) {
                 final CurrentState<Jvm, JvmState> inMemoryState = inMemoryStateManagerService.get(new Identifier<Jvm>(jpaJvm.getId()));
                 if (inMemoryState == null) {
