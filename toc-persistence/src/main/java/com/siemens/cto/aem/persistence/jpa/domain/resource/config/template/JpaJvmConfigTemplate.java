@@ -32,7 +32,7 @@ public class JpaJvmConfigTemplate extends ConfigTemplate {
     public static final String QUERY_GET_JVM_RESOURCE_TEMPLATES = "getJvmResourceTemplates";
 
     public static final String QUERY_PARAM_TEMPLATE_NAME = "templateName";
-    public static final String QUERY_PARAM_JVM_NAME = "jvmeName";
+    public static final String QUERY_PARAM_JVM_NAME = "jvmName";
 
 
     @ManyToOne(fetch = FetchType.EAGER)
