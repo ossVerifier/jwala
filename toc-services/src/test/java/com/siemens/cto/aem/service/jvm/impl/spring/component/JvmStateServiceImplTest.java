@@ -1,5 +1,6 @@
 package com.siemens.cto.aem.service.jvm.impl.spring.component;
 
+import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
@@ -16,8 +17,12 @@ import org.junit.Test;
 import org.mockito.Mock;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
@@ -58,22 +63,26 @@ public class JvmStateServiceImplTest {
 
     @Before
     public void setup() {
-        jvmStateService = new JvmStateServiceImpl(mockJvmPersistenceService,
-                mockInMemoryStateManagerService,
-                mockJvmStateResolverWorker,
-                mockMessagingService,
-                mockGroupStateNotificationService,
-                JVM_STATE_UPDATE_INTERVAL,
-                mockRemoteCommandExecutorService,
-                mockSshConfig,
-                LOCK_TIMEOUT,
-                KEY_LOCK_STRIPE_COUNT);
         initMocks(this);
+        jvmStateService = new JvmStateServiceImpl(mockJvmPersistenceService,
+                                                  mockInMemoryStateManagerService,
+                                                  mockJvmStateResolverWorker,
+                                                  mockMessagingService,
+                                                  mockGroupStateNotificationService,
+                                                  JVM_STATE_UPDATE_INTERVAL,
+                                                  mockRemoteCommandExecutorService,
+                                                  mockSshConfig,
+                                                  LOCK_TIMEOUT,
+                                                  KEY_LOCK_STRIPE_COUNT);
     }
 
     @Test
     public void testVerifyAndUpdateNotInMemOrStaleStates() {
-
+        final List<Jvm> jvmList = new ArrayList<>();
+        jvmList.add(new Jvm(new Identifier<Jvm>(1L), "some-jvm", new HashSet<Group>()));
+        when(mockJvmPersistenceService.getJvms()).thenReturn(jvmList);
+        jvmStateService.verifyAndUpdateNotInMemOrStaleStates();
+        verify(mockJvmStateResolverWorker).pingAndUpdateJvmState(eq(jvmList.get(0)), any(JvmStateService.class));
     }
 
     @Test
