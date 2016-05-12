@@ -135,7 +135,6 @@ public class JvmStateServiceImpl implements JvmStateService {
         if (!isStateInMemory(jvm) || ((isStarted(jvm) || isStopping(jvm)) && isStale(jvm))) {
                 LOGGER.debug("Updating state of JVM {} ...", jvm.getJvmName());
                 updateState(jvm.getId(), state, errMsg);
-                groupStateNotificationService.retrieveStateAndSendToATopic(jvm.getId(), Jvm.class);
                 LOGGER.debug("Updated state of JVM {}!", jvm.getJvmName());
         }
     }

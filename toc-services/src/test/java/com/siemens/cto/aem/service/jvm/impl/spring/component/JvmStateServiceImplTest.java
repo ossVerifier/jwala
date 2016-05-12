@@ -87,7 +87,11 @@ public class JvmStateServiceImplTest {
 
     @Test
     public void testUpdateNotInMemOrStaleState() {
-
+        final Jvm jvm = new Jvm(new Identifier<Jvm>(1L), "some-jvm", new HashSet<Group>());
+        jvmStateService.updateNotInMemOrStaleState(jvm, JvmState.JVM_STARTED, "");
+        verify(mockJvmPersistenceService).updateState(eq(jvm.getId()), eq(JvmState.JVM_STARTED), eq(""));
+        verify(mockMessagingService).send(any(CurrentState.class));
+        verify(mockGroupStateNotificationService).retrieveStateAndSendToATopic(eq(jvm.getId()), eq(Jvm.class));
     }
 
     @Test
