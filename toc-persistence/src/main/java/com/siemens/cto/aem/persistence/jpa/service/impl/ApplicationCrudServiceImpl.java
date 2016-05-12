@@ -19,7 +19,10 @@ import com.siemens.cto.aem.persistence.jpa.service.ApplicationCrudService;
 import com.siemens.cto.aem.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
 import com.siemens.cto.aem.persistence.jpa.service.exception.ResourceTemplateUpdateException;
 
-import javax.persistence.*;
+import javax.persistence.EntityExistsException;
+import javax.persistence.NoResultException;
+import javax.persistence.NonUniqueResultException;
+import javax.persistence.Query;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -68,9 +71,9 @@ public class ApplicationCrudServiceImpl extends AbstractCrudServiceImpl<JpaAppli
         Query jvmQuery = entityManager.createNamedQuery(JpaJvm.QUERY_FIND_JVM_BY_GROUP_AND_JVM_NAME);
         jvmQuery.setParameter("jvmName", jvmName);
         jvmQuery.setParameter("groupName", groupName);
-        try{
+        try {
             jpaJvm = (JpaJvm) jvmQuery.getSingleResult();
-        } catch (NoResultException | NonUniqueResultException e){
+        } catch (NoResultException | NonUniqueResultException e) {
             throw new NonRetrievableResourceTemplateContentException(appName, resourceTemplateName, e);
         }
         return getResourceTemplate(appName, resourceTemplateName, jpaJvm);
@@ -87,6 +90,30 @@ public class ApplicationCrudServiceImpl extends AbstractCrudServiceImpl<JpaAppli
         } catch (NoResultException | NonUniqueResultException e) {
             throw new NonRetrievableResourceTemplateContentException(appName, resourceTemplateName, e);
         }
+    }
+
+    @Override
+    public String getMetaData(String appName, String jvmName, String groupName, String resourceTemplateName) {
+        JpaJvm jpaJvm;
+        Query jvmQuery = entityManager.createNamedQuery(JpaJvm.QUERY_FIND_JVM_BY_GROUP_AND_JVM_NAME);
+        jvmQuery.setParameter("jvmName", jvmName);
+        jvmQuery.setParameter("groupName", groupName);
+        try {
+            jpaJvm = (JpaJvm) jvmQuery.getSingleResult();
+        } catch (NoResultException | NonUniqueResultException e) {
+            throw new NonRetrievableResourceTemplateContentException(appName, resourceTemplateName, e);
+        }
+
+        final Query q = entityManager.createNamedQuery(JpaApplicationConfigTemplate.GET_APP_TEMPLATE_META_DATA);
+        q.setParameter("appName", appName);
+        q.setParameter("templateName", resourceTemplateName);
+        q.setParameter("templateJvm", jpaJvm);
+        try {
+            return (String) q.getSingleResult();
+        } catch (NoResultException | NonUniqueResultException e) {
+            throw new NonRetrievableResourceTemplateContentException(appName, resourceTemplateName, e);
+        }
+
     }
 
     @Override
@@ -169,11 +196,8 @@ public class ApplicationCrudServiceImpl extends AbstractCrudServiceImpl<JpaAppli
         String templateContent = scanner.hasNext() ? scanner.next() : "";
 
         // get an instance and then do a create or update
-        Query query = entityManager.createNamedQuery(JpaApplicationConfigTemplate.GET_APP_TEMPLATE_NO_JVM);
-        if (jpaJvm != null) {
-            query = entityManager.createNamedQuery(JpaApplicationConfigTemplate.GET_APP_TEMPLATE);
-            query.setParameter("jvmName", jpaJvm.getName());
-        }
+        Query query = entityManager.createNamedQuery(JpaApplicationConfigTemplate.GET_APP_TEMPLATE);
+        query.setParameter("jvmName", jpaJvm.getName());
         query.setParameter("appName", application.getName());
         query.setParameter("tempName", uploadAppTemplateRequest.getConfFileName());
         List<JpaApplicationConfigTemplate> templates = query.getResultList();

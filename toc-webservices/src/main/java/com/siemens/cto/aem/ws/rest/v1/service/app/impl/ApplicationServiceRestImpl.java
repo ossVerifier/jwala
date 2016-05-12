@@ -134,7 +134,7 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
                     LOGGER.info("Upload succeeded");
 
                     return ResponseBuilder.created(application); // early out on first attachment
-                } catch (InternalErrorException ie){
+                } catch (InternalErrorException ie) {
                     LOGGER.error("Caught an internal error exception that would normally get out and converting to a response {}", ie);
                     return ResponseBuilder.notOk(Status.INTERNAL_SERVER_ERROR, ie);
                 } finally {
@@ -178,7 +178,7 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
 //            TODO do not propagate the default application templates since they are healthcheck specific
 //            service.copyApplicationConfigToGroupJvms(group, appName, aUser.getUser());
         } else {
-            LOGGER.info("Skip deploying application {}, no JVM's in group {}", appName, group.getName() );
+            LOGGER.info("Skip deploying application {}, no JVM's in group {}", appName, group.getName());
         }
         return ResponseBuilder.ok(app);
     }
@@ -201,8 +201,7 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
     @Override
     public Response getResourceTemplate(final String appName, final String groupName, final String jvmName,
                                         final String resourceTemplateName, final boolean tokensReplaced) {
-        return ResponseBuilder.ok(service.getResourceTemplate(appName, groupName, jvmName, resourceTemplateName,
-                tokensReplaced));
+        return ResponseBuilder.ok(service.getResourceTemplate(appName, groupName, jvmName, resourceTemplateName, resourceService.generateResourceGroup(), tokensReplaced));
     }
 
     @Override
@@ -228,12 +227,9 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
 
         final boolean doBackUpBeforeCopy = true;
         final CommandOutput execData =
-                service.deployConf(appName, groupName, jvmName, resourceTemplateName, doBackUpBeforeCopy, authUser.getUser());
+                service.deployConf(appName, groupName, jvmName, resourceTemplateName, doBackUpBeforeCopy, resourceService.generateResourceGroup(), authUser.getUser());
         if (execData.getReturnCode().wasSuccessful()) {
-            if (resourceTemplateName.endsWith(".properties")) {
-                // deploy the application.properties and roleMapping.properties to the other hosts in the group
-                service.deployConfToOtherJvmHosts(appName, groupName, jvmName, resourceTemplateName, authUser.getUser());
-            }
+            LOGGER.info("Successfully deployed {} of {} to {} ", resourceTemplateName, appName, jvmName);
             return ResponseBuilder.ok("Successfully deployed " + resourceTemplateName + " of " + appName + " to "
                     + jvmName);
         } else {
@@ -283,8 +279,8 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
 
                     service.uploadAppTemplate(command);
                     // return the template after uploading because returning the JpaAppConfigTemplate was returning an unreadable json object - so unreadable that it would actually crash editors when copied from the chrome debugger and pasted
-                    return ResponseBuilder.created(service.getResourceTemplate(appName, app.getGroup().getName(), jvmName, appXmlFileName, false)); // early out on first attachment
-                } finally{
+                    return ResponseBuilder.created(service.getResourceTemplate(appName, app.getGroup().getName(), jvmName, appXmlFileName, resourceService.generateResourceGroup(), false)); // early out on first attachment
+                } finally {
                     assert data != null;
                     data.close();
                 }

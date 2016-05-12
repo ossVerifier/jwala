@@ -40,20 +40,20 @@ public interface ApplicationService {
     List<String> getResourceTemplateNames(final String appName);
 
     String getResourceTemplate(final String appName, String groupName, String jvmName, final String resourceTemplateName,
-                               final boolean tokensReplaced);
+                               final ResourceGroup resourceGroup, final boolean tokensReplaced);
 
     String updateResourceTemplate(final String appName, final String resourceTemplateName, final String template, final String jvmName, final String groupName);
 
     /**
      * Deploy a configuration file.
-     *
-     * @param appName              - the application name.
+     *  @param appName              - the application name.
      * @param groupName
      * @param jvmName              - the jvm name where the application resides.
      * @param resourceTemplateName - the resource template in which the configuration file is based on.
+     * @param resourceGroup
      * @param user                 - the user.    @return {@link CommandOutput}
      */
-    CommandOutput deployConf(String appName, String groupName, String jvmName, String resourceTemplateName, boolean backUp, User user);
+    CommandOutput deployConf(String appName, String groupName, String jvmName, String resourceTemplateName, boolean backUp, ResourceGroup resourceGroup, User user);
 
     JpaApplicationConfigTemplate uploadAppTemplate(UploadAppTemplateRequest command);
 
@@ -73,9 +73,9 @@ public interface ApplicationService {
 
     void copyApplicationWarToHost(Application application, String hostName);
 
-    void copyApplicationConfigToGroupJvms(Group group, String appName, User user);
+    void copyApplicationConfigToGroupJvms(Group group, String appName, ResourceGroup resourceGroup, User user);
 
-    void deployConfToOtherJvmHosts(String appName, String groupName, String jvmName, String resourceTemplateName, User user);
+    void deployConfToOtherJvmHosts(String appName, String groupName, String jvmName, String resourceTemplateName, ResourceGroup resourceGroup, User user);
 
     void createAppConfigTemplateForJvm(Jvm jvm, Application app, Identifier<Group> groupId);
 }

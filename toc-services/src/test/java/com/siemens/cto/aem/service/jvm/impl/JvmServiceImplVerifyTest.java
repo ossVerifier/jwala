@@ -6,6 +6,7 @@ import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.common.domain.model.path.Path;
+import com.siemens.cto.aem.common.domain.model.resource.ResourceGroup;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
@@ -64,6 +65,8 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
     private ApplicationService applicationService = mock(ApplicationService.class);
     private SimpMessagingTemplate mockMessagingTemplate = mock(SimpMessagingTemplate.class);
     private GroupStateNotificationService mockGroupStateNotificationService = mock(GroupStateNotificationService.class);
+
+    static final String META_DATA_TEST_VALUES = "{\"name\":\"Context XML\",\"path\":\"./test/deploy-path/conf/stp/localhost\",\"contentType\":\"application/xml\",\"entity\":{\"type\":\"APPLICATION\",\"target\":\"soarcom-hct\",\"group\":\"soarcom-616\",\"parentName\":null,\"deployToJvms\":true},\"relativeDir\":null,\"templateName\":\"hctXmlTemplate.tpl\",\"configFileName\":\"hct.xml\"}";
 
     @Mock
     private ClientFactoryHelper mockClientFactoryHelper;
@@ -456,7 +459,7 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
         when(applicationService.findApplications(any(Identifier.class))).thenReturn(appList);
         when(jvmPersistenceService.findGroupsByJvm(any(Identifier.class))).thenReturn(groupsList);
         impl.deployApplicationContextXMLs(jvm);
-        verify(applicationService).deployConf(anyString(), anyString(), anyString(), anyString(), anyBoolean(), any(User.class));
+        verify(applicationService).deployConf(anyString(), anyString(), anyString(), anyString(), anyBoolean(), any(ResourceGroup.class), any(User.class));
     }
 
 }

@@ -253,11 +253,11 @@ public class GroupServiceImplDeployTest {
         when(mockJvmService.getJvm(anyString())).thenReturn(mockJvm);
         when(mockResourceService.getResourceTypes()).thenReturn(resourcesList);
         when(mockApplicationService.updateResourceTemplate(anyString(), anyString(), anyString(), anyString(), anyString())).thenReturn("new hct.xml content");
-        when(mockApplicationService.deployConf(anyString(), anyString(), anyString(), anyString(), anyBoolean(), any(User.class))).thenReturn(new CommandOutput(new ExecReturnCode(0), "SUCCESS", ""));
+        when(mockApplicationService.deployConf(anyString(), anyString(), anyString(), anyString(), anyBoolean(), any(ResourceGroup.class), any(User.class))).thenReturn(new CommandOutput(new ExecReturnCode(0), "SUCCESS", ""));
         Response returnResponse = groupServiceRest.generateAndDeployGroupAppFile("testGroup", "hct.xml", mockAuthUser);
         assertEquals(200, returnResponse.getStatus());
 
-        when(mockApplicationService.deployConf(anyString(), anyString(), anyString(), anyString(), anyBoolean(), any(User.class))).thenReturn(new CommandOutput(new ExecReturnCode(1), "", "NOT OK"));
+        when(mockApplicationService.deployConf(anyString(), anyString(), anyString(), anyString(), anyBoolean(), any(ResourceGroup.class), any(User.class))).thenReturn(new CommandOutput(new ExecReturnCode(1), "", "NOT OK"));
         try {
             groupServiceRest.generateAndDeployGroupAppFile("testGroup", "hct.xml", mockAuthUser);
         } catch (InternalErrorException ie) {

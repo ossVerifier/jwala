@@ -49,4 +49,7 @@ public interface ApplicationPersistenceService {
                                                String resourceTypeTemplate);
 
     int removeTemplate(String name);
+
+    String getMetaData(String appName, String jvmName, String groupName, String templateName);
+
 }

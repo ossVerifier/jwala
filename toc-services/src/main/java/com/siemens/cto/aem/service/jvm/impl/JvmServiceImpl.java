@@ -6,6 +6,7 @@ import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
+import com.siemens.cto.aem.common.domain.model.resource.ResourceGroup;
 import com.siemens.cto.aem.common.domain.model.resource.ResourceTemplateMetaData;
 import com.siemens.cto.aem.common.domain.model.state.CurrentState;
 import com.siemens.cto.aem.common.domain.model.state.StateType;
@@ -345,7 +346,7 @@ public class JvmServiceImpl implements JvmService {
                     // only deploy the context xml
                     if (templateName.endsWith(".xml")) {
                         LOGGER.info("Deploying application xml {} for JVM {} in group {}", templateName, jvm.getJvmName(), group.getName());
-                        applicationService.deployConf(app.getName(), group.getName(), jvm.getJvmName(), templateName, false, User.getThreadLocalUser());
+                        applicationService.deployConf(app.getName(), group.getName(), jvm.getJvmName(), templateName, false, new ResourceGroup(), User.getThreadLocalUser());
                     }
                 }
             }

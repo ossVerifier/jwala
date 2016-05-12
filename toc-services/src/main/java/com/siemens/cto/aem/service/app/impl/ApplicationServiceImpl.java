@@ -7,8 +7,8 @@ import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.resource.ResourceGroup;
+import com.siemens.cto.aem.common.domain.model.resource.ResourceTemplateMetaData;
 import com.siemens.cto.aem.common.domain.model.user.User;
-import com.siemens.cto.aem.common.exception.ApplicationException;
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.common.exception.InternalErrorException;
 import com.siemens.cto.aem.common.exec.CommandOutput;
@@ -25,14 +25,15 @@ import com.siemens.cto.aem.persistence.service.JvmPersistenceService;
 import com.siemens.cto.aem.service.app.ApplicationService;
 import com.siemens.cto.aem.service.app.PrivateApplicationService;
 import com.siemens.cto.aem.service.group.GroupService;
-import com.siemens.cto.aem.template.GeneratorUtils;
 import com.siemens.cto.aem.template.ResourceFileGenerator;
 import com.siemens.cto.toc.files.FileManager;
 import com.siemens.cto.toc.files.RepositoryFileInformation;
 import com.siemens.cto.toc.files.RepositoryFileInformation.Type;
 import com.siemens.cto.toc.files.WebArchiveManager;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang.StringUtils;
+import org.codehaus.jackson.JsonParseException;
+import org.codehaus.jackson.map.JsonMappingException;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,9 +48,9 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.Map.Entry;
 import java.util.concurrent.*;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.Map.Entry;
 
 public class ApplicationServiceImpl implements ApplicationService {
 
@@ -214,17 +215,13 @@ public class ApplicationServiceImpl implements ApplicationService {
                                       final String groupName,
                                       final String jvmName,
                                       final String resourceTemplateName,
+                                      final ResourceGroup resourceGroup,
                                       final boolean tokensReplaced) {
         final String template = applicationPersistenceService.getResourceTemplate(appName, resourceTemplateName, jvmName, groupName);
         if (tokensReplaced) {
-            final Map<String, Application> bindings = new HashMap<>();
-            Jvm jvm = jvmPersistenceService.findJvm(jvmName, groupName);
-            bindings.put("webApp", new WebApp(applicationPersistenceService.findApplication(appName, groupName, jvmName), jvm));
-            try {
-                return GeneratorUtils.bindDataToTemplateText(bindings, template);
-            } catch (Exception x) {
-                throw new ApplicationException("Template token replacement failed.", x);
-            }
+            final Application application = applicationPersistenceService.findApplication(appName, groupName, jvmName);
+            application.setParentJvm(jvmPersistenceService.findJvmByExactName(jvmName));
+            return ResourceFileGenerator.generateResourceConfig(template, resourceGroup, application);
         }
         return template;
     }
@@ -250,53 +247,35 @@ public class ApplicationServiceImpl implements ApplicationService {
     @Transactional
     // TODO: Have an option to do a hot deploy or not.
     public CommandOutput deployConf(final String appName, final String groupName, final String jvmName,
-                                    final String resourceTemplateName, boolean backUp, User user) {
+                                    final String resourceTemplateName, boolean backUp, ResourceGroup resourceGroup, User user) {
 
         final StringBuilder key = new StringBuilder();
         key.append(groupName).append(jvmName).append(appName).append(resourceTemplateName);
 
         try {
-            // only one at a time per web server
+            // only one at a time
             if (!writeLock.containsKey(key.toString())) {
                 writeLock.put(key.toString(), new ReentrantReadWriteLock());
             }
             writeLock.get(key.toString()).writeLock().lock();
 
-            final File confFile = createConfFile(appName, groupName, jvmName, resourceTemplateName);
             final Jvm jvm = jvmPersistenceService.findJvmByExactName(jvmName);
             if (jvm.getState().isStartedState()) {
                 LOGGER.error("The target JVM must be stopped before attempting to update the resource files");
                 throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE,
                         "The target JVM must be stopped before attempting to update the resource files");
             }
+
+            final File confFile = createConfFile(appName, groupName, jvmName, resourceTemplateName, resourceGroup);
             final Application app = applicationPersistenceService.findApplication(appName, groupName, jvmName);
 
-            final StringBuilder target = new StringBuilder();
-            if (getFileExtension(resourceTemplateName).equalsIgnoreCase(STR_PROPERTIES)) {
-                target.append(System.getProperty(ApplicationProperties.PROPERTIES_ROOT_PATH).replace("\\", "/")).append('/');
-            } else {
-                String appConfPath;
-                if (app.isSecure()) {
-                    appConfPath = ApplicationProperties.get(APP_CONF_PATH);
-                } else {
-                    appConfPath = ApplicationProperties.get(APP_CONF_PATH_INSECURE);
-                    if (StringUtils.isEmpty(appConfPath)) {
-                        // fall back on secure
-                        appConfPath = ApplicationProperties.get(APP_CONF_PATH);
-                    }
-                }
+            String metaData = applicationPersistenceService.getMetaData(appName, jvmName, groupName, resourceTemplateName);
+            ObjectMapper mapper = new ObjectMapper();
+            ResourceTemplateMetaData templateMetaData = mapper.readValue(metaData, ResourceTemplateMetaData.class);
+            String metaDataPath = templateMetaData.getPath();
 
-                target.append(ApplicationProperties.get(JVM_INSTANCE_DIR))
-                        .append('/')
-                        .append(jvmName)
-                        .append('/')
-                        .append(appConfPath)
-                        .append('/');
-            }
-
-            target.append(resourceTemplateName);
-
-            final String destPath = target.toString();
+            app.setParentJvm(jvm);
+            final String destPath = ResourceFileGenerator.generateResourceConfig(metaDataPath, resourceGroup, app) + '/' + resourceTemplateName;
             final String srcPath = confFile.getAbsolutePath().replace("\\", "/");
             // back up the original file first only if the war was uploaded
             // if the war wasn't uploaded yet then there is no file to backup
@@ -334,7 +313,14 @@ public class ApplicationServiceImpl implements ApplicationService {
                 throw new DeployApplicationConfException(standardError);
             }
         } catch (FileNotFoundException | CommandFailureException ex) {
+            LOGGER.error("Failed to deploy config file {} for app {} to jvm {} ", resourceTemplateName, appName, jvmName, ex);
             throw new DeployApplicationConfException(ex);
+        } catch (JsonMappingException | JsonParseException e) {
+            LOGGER.error("Failed to map meta data while deploying config file {} for app {} to jvm {}", resourceTemplateName, appName, jvmName, e);
+            throw new DeployApplicationConfException(e);
+        } catch (IOException e) {
+            LOGGER.error("Failed for IOException while deploying config file {} for app {} to jvm {}", resourceTemplateName, appName, jvmName, e);
+            throw new DeployApplicationConfException(e);
         } finally {
             writeLock.get(key.toString()).writeLock().unlock();
         }
@@ -462,7 +448,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     @Override
     @Transactional
-    public void copyApplicationConfigToGroupJvms(Group group, final String appName, final User user) {
+    public void copyApplicationConfigToGroupJvms(Group group, final String appName, final ResourceGroup resourceGroup, final User user) {
         final String groupName = group.getName();
         final List<String> resourceTemplateNames = applicationPersistenceService.getResourceTemplateNames(appName);
         Set<Future> futures = new HashSet<>();
@@ -477,7 +463,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                 Future<CommandOutput> commandOutputFuture = executorService.submit(new Callable<CommandOutput>() {
                     @Override
                     public CommandOutput call() throws Exception {
-                        return deployConf(appName, groupName, jvmName, templateName, doNotBackUpOriginals, user);
+                        return deployConf(appName, groupName, jvmName, templateName, doNotBackUpOriginals, resourceGroup, user);
                     }
                 });
                 futures.add(commandOutputFuture);
@@ -505,7 +491,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     @Override
     @Transactional
-    public void deployConfToOtherJvmHosts(String appName, String groupName, String jvmName, String resourceTemplateName, User user) {
+    public void deployConfToOtherJvmHosts(String appName, String groupName, String jvmName, String resourceTemplateName, ResourceGroup resourceGroup, User user) {
         List<String> deployedHosts = new ArrayList<>();
         deployedHosts.add(jvmPersistenceService.findJvm(jvmName, groupName).getHostName());
         Set<Jvm> jvmSet = groupService.getGroup(groupName).getJvms();
@@ -514,7 +500,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                 final String hostName = jvm.getHostName();
                 if (!deployedHosts.contains(hostName)) {
                     final boolean doBackUpOriginal = true;
-                    deployConf(appName, groupName, jvm.getJvmName(), resourceTemplateName, doBackUpOriginal, user);
+                    deployConf(appName, groupName, jvm.getJvmName(), resourceTemplateName, doBackUpOriginal, resourceGroup, user);
                     deployedHosts.add(jvm.getHostName());
                 }
             }
@@ -541,7 +527,7 @@ public class ApplicationServiceImpl implements ApplicationService {
      */
     @Transactional
     protected File createConfFile(final String appName, final String groupName, final String jvmName,
-                                  final String resourceTemplateName)
+                                  final String resourceTemplateName, final ResourceGroup resourceGroup)
             throws FileNotFoundException {
         PrintWriter out = null;
         final StringBuilder fileNameBuilder = new StringBuilder();
@@ -567,7 +553,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         final File appConfFile = new File(fileNameBuilder.toString());
         try {
             out = new PrintWriter(appConfFile.getAbsolutePath());
-            out.println(getResourceTemplate(appName, groupName, jvmName, resourceTemplateName, true));
+            out.println(getResourceTemplate(appName, groupName, jvmName, resourceTemplateName, resourceGroup, true));
         } finally {
             if (out != null) {
                 out.close();
