@@ -7,6 +7,7 @@ import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.common.domain.model.ssh.SshConfiguration;
 import com.siemens.cto.aem.common.domain.model.state.CurrentState;
 import com.siemens.cto.aem.common.exec.RemoteExecCommand;
+import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
 import com.siemens.cto.aem.persistence.service.JvmPersistenceService;
 import com.siemens.cto.aem.service.MessagingService;
 import com.siemens.cto.aem.service.RemoteCommandExecutorService;
@@ -23,6 +24,7 @@ import java.util.HashSet;
 import java.util.List;
 
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -113,12 +115,13 @@ public class JvmStateServiceImplTest {
     }
 
     @Test
-    public void testUpdateState2() {
-
-    }
-
-    @Test
+    @SuppressWarnings("unchecked")
     public void testRequestCurrentStatesRetrievalAndNotification() {
-
+        final List<JpaJvm> jpaJvmList = new ArrayList<>();
+        jpaJvmList.add(new JpaJvm());
+        when(mockJvmPersistenceService.getJvmsByGroupId(eq("some-group-name"))).thenReturn(jpaJvmList);
+        when(mockInMemoryStateManagerService.get(any(Identifier.class))).thenReturn(null);
+        jvmStateService.requestCurrentStatesRetrievalAndNotification("some-group-name");
+        verify(mockMessagingService).send(any(CurrentState.class));
     }
 }
