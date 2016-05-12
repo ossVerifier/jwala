@@ -1,15 +1,13 @@
-.RJsonDataTreeDisplay.container {
-    /* tree container style goes in here */
-}
-
-.RJsonDataTreeDisplay ul {
+.RJsonDataTreeDisplay {
     padding-left: 15px;
+    white-space: nowrap;
 }
 
-.RJsonDataTreeDisplay ul > li {
+.RJsonDataTreeDisplay > li {
     list-style-type: none;
     font-style: italic;
     font-family: Consolas, Tahoma, Helvetica, sans-serif;
+    white-space: nowrap;
 }
 
 .RJsonDataTreeDisplay .nodeKey {

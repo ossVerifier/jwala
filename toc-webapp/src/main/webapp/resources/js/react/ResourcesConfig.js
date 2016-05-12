@@ -3,18 +3,18 @@ var ResourcesConfig = React.createClass({
     render: function() {
         var splitterComponents = [];
 
-        splitterComponents.push(<div><ResourceEditor ref="resourceEditor"
-                                                     resourceService={this.props.resourceService}
-                                                     groupService={this.props.groupService}
-                                                     jvmService={this.props.jvmService}
-                                                     wsService={this.props.wsService}
-                                                     webAppService={this.props.webAppService}
-                                                     generateXmlSnippetCallback={this.generateXmlSnippetCallback}
-                                                     getTemplateCallback={this.getTemplateCallback}
-                                                     selectEntityCallback={this.selectEntityCallback}
-                                                     selectResourceTemplateCallback={this.selectResourceTemplateCallback}
-                                                     createResourceCallback={this.createResourceCallback}
-                                                     deleteResourceCallback={this.deleteResourceCallback}/></div>);
+        splitterComponents.push(<ResourceEditor ref="resourceEditor"
+                                                resourceService={this.props.resourceService}
+                                                groupService={this.props.groupService}
+                                                jvmService={this.props.jvmService}
+                                                wsService={this.props.wsService}
+                                                webAppService={this.props.webAppService}
+                                                generateXmlSnippetCallback={this.generateXmlSnippetCallback}
+                                                getTemplateCallback={this.getTemplateCallback}
+                                                selectEntityCallback={this.selectEntityCallback}
+                                                selectResourceTemplateCallback={this.selectResourceTemplateCallback}
+                                                createResourceCallback={this.createResourceCallback}
+                                                deleteResourceCallback={this.deleteResourceCallback}/>);
         splitterComponents.push(<XmlTabs jvmService={this.props.jvmService}
                                          wsService={this.props.wsService}
                                          webAppService={this.props.webAppService}
@@ -24,7 +24,11 @@ var ResourcesConfig = React.createClass({
                                          updateGroupTemplateCallback={this.launchUpdateGroupTemplate}
                                          />);
 
-        var splitter = <RSplitter disabled={true} components={splitterComponents} orientation={RSplitter.VERTICAL_ORIENTATION} updateCallback={this.verticalSplitterDidUpdateCallback}/>;
+        var splitter = <RSplitter disabled={true}
+                                  components={splitterComponents}
+                                  orientation={RSplitter.VERTICAL_ORIENTATION}
+                                  updateCallback={this.verticalSplitterDidUpdateCallback}
+                                  onSplitterChange={this.onChildSplitterChangeCallback}/>;
 
         return <div className="react-dialog-container resources-div-container">
                     <div className="resource-container">{splitter}</div>
@@ -66,6 +70,9 @@ var ResourcesConfig = React.createClass({
                                         return "A resource template has recently been modified.";
                                     }
                                 };
+    },
+    onChildSplitterChangeCallback: function(dimensions) {
+        this.refs.resourceEditor.onParentSplitterChange(dimensions);
     },
     generateXmlSnippetCallback: function(resourceName, groupName) {
         this.props.resourceService.getXmlSnippet(resourceName, groupName, this.generateXmlSnippetResponseCallback);

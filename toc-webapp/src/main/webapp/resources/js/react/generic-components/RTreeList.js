@@ -32,7 +32,7 @@ var RTreeList = React.createClass({
     },
     render: function() {
         var nodes = this.createTreeNodes(this.props.data, this.props.treeMetaData, 0, null, "");
-        return React.createElement("div", {className:"tree-list-content ui-widget-content"}, React.createElement("ul", {className: "root-node-ul"}, nodes));
+        return React.createElement("ul", {className: "RTreeList root-node-ul"}, nodes);
     },
     onSelectNode: function(data) {
         return this.props.selectNodeCallback(data);

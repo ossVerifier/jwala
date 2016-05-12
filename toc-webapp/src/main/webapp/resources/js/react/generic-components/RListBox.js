@@ -9,7 +9,7 @@ var RListBox = React.createClass({
         return {selectedValue: null};
     },
     render: function() {
-        return React.createElement("ul", {className: "rlistbox no-border ui-menu ui-widget ui-widget-content"}, this.createResourceList());
+        return React.createElement("ul", {className: "RListBox container"}, this.createResourceList());
     },
     createResourceList: function() {
         var self = this;
@@ -54,25 +54,23 @@ var Option = React.createClass({
     render: function() {
         var stateClassName = "";
         if (this.isSelected()) {
-            stateClassName = " ui-state-active";
+            stateClassName = "ui-state-active";
         } else if (this.state.mouseOver) {
-            stateClassName = " ui-state-focus";
+            stateClassName = "ui-state-focus";
         }
 
-        var className = "ui-menu-item padding " + stateClassName;
-
-        var listItem;
+        var listItems = [];
         if (this.props.checkBoxEnabled === true) {
-            listItem = React.createElement("div", {}, React.createElement("input", {type: "checkbox", className: "noSelect", onChange: this.onCheckBoxChange}),
-                                                      React.createElement("div", {className: "option label"}, this.props.label));
+            listItems.push(React.createElement("input", {type: "checkbox", className: "noSelect", onChange: this.onCheckBoxChange}));
+            listItems.push(React.createElement("span", null, this.props.label));
         } else {
-            listItem = this.props.label;
+            listItems.push(this.props.label);
         }
 
-        return React.createElement("li", {className: className,
+        return React.createElement("li", {className: stateClassName,
                                           onClick: this.props.onClick.bind(this, this.props.value),
                                           onMouseOver: this.onMouseOver,
-                                          onMouseOut: this.onMouseOut}, listItem);
+                                          onMouseOut: this.onMouseOut}, listItems);
     },
     onMouseOver: function() {
         this.setState({mouseOver: true});
@@ -81,7 +79,6 @@ var Option = React.createClass({
         this.setState({mouseOver: false});
     },
     onCheckBoxChange: function() {
-        console.log("Checkbox changed!");
         return false;
     }
 });

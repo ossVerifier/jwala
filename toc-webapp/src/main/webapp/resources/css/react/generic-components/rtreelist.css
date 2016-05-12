@@ -1,18 +1,11 @@
-.tree-list-content {
-    min-height: 303px;
-    width: auto;
-    padding-top: 2px;
-    border: 1px solid white !important; /* overrides ui-widget-content's border property */
-}
-
 .root-node-ul {
     padding: 0 0 0 4px;
-    margin-top: 2px;
 }
 
 .rtreelist-list {
     list-style-type: none;
     padding-left: 10px;
+    white-space: nowrap;
 }
 
 .rtreelist-list-item {
@@ -26,8 +19,20 @@
 span.rtreelist-list-item {
     cursor: pointer;
     margin: 4px 0 4px 0;
+    white-space: nowrap;
 }
 
 img.expand-collapse-padding {
     padding-right: 5px;
+}
+
+.RTreeList .ui-state-focus {
+    margin: 0 !important;
+    cursor: pointer;
+    font-weight: normal !important;
+}
+
+.RTreeList .ui-state-active {
+    margin: 0 !important;
+    font-weight: normal !important;
 }

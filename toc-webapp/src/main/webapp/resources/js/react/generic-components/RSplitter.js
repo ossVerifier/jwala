@@ -99,7 +99,10 @@ var RSplitter = React.createClass({
                 // Prevent the 2 concerned panels height to affect other divs beside them
                 if (topDivHeight > 0 && bottomDivHeight > 0) {
                     this.refs[this.panelRefs[this.state.splitterIdx - 1]].setHeight(topDivHeight);
-                    this.refs[this.panelRefs[this.state.splitterIdx]].setHeight(topDivHeight);
+                    this.refs[this.panelRefs[this.state.splitterIdx]].setHeight(bottomDivHeight);
+                    if (this.props.onSplitterChange) {
+                        this.props.onSplitterChange([{height: topDivHeight}, {height: bottomDivHeight}]);
+                    }
                 }
 
             } else {
@@ -110,6 +113,12 @@ var RSplitter = React.createClass({
                 var dif = pagePos - this.state.mousePos;
                 this.refs[this.panelRefs[this.state.splitterIdx - 1]].setWidth(leftDivWidth + dif);
                 this.refs[this.panelRefs[this.state.splitterIdx]].setWidth(currentDivWidth - dif);
+                if (this.props.onSplitterChange) {
+                    var dimensions = {};
+                    dimensions[this.state.splitterIdx - 1] = {width: leftDivWidth + dif};
+                    dimensions[this.state.splitterIdx] = {width: currentDivWidth - dif};
+                    this.props.onSplitterChange(dimensions);
+                }
             }
             this.setState({mousePos: pagePos});
             e.preventDefault();

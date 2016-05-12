@@ -12,15 +12,15 @@ var ResourcePane = React.createClass({
     render: function() {
         var metaData = [{icon: "ui-icon-plusthick", title: "create", onClickCallback: this.createResource},
         			     {icon: "ui-icon-trash", title: "delete", onClickCallback: this.deleteResource}];
-        var toolbar = <RToolbar className="resource-pane toolbar-container" btnClassName="ui-button-text-only ui-button-height" metaData={metaData}/>;
+        var toolbar = <RToolbar className="resourcePane toolbarContainer" btnClassName="ui-button-text-only ui-button-height" metaData={metaData}/>;
         if (this.state.resourceOptions.length > 0) {
-            return <div className="resource-list-box ui-widget-content">
+            return <div className="ResourcePane">
                        {toolbar}
                        <RListBox ref="listBox" options={this.state.resourceOptions} selectCallback={this.selectCallback}
                                  multiSelect={true} />
                    </div>
         }
-        return <div className="resource-list-box ui-widget-content" style={{padding: "2px 2px"}}>
+        return <div className="ResourcePane">
                    {toolbar}
                    <span>Please select a JVM, Web Server or Web Application...</span>
                </div>

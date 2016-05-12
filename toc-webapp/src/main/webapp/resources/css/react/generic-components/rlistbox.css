@@ -1,13 +1,14 @@
-.rlistbox.no-border {
-    border: none !important;
+.RListBox.container {
+    padding: 0 0 0 0;
 }
 
-div.option.label {
-    position: absolute;
-    display: inline-block;
+
+.RListBox li {
+    list-style-type: none;
+    white-space: nowrap;
 }
 
-.noSelect {
+.RListBox .noSelect {
     -webkit-touch-callout: none !important;
     -webkit-user-select: none !important;
     -khtml-user-select: none !important;
@@ -16,6 +17,13 @@ div.option.label {
     user-select: none !important;
 }
 
-li.padding {
-    padding: 0px 1em 0px 0px !important;
+.RListBox .ui-state-focus {
+    margin: 0 !important;
+    cursor: pointer;
+    font-weight: normal !important;
+}
+
+.RListBox .ui-state-active {
+    margin: 0 !important;
+    font-weight: normal !important;
 }

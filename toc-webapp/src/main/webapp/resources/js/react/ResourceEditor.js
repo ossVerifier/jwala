@@ -28,10 +28,7 @@ var ResourceEditor = React.createClass({
                                                              icon: "public-resources/img/icons/webapp.png"}]}]}],
                             };
 
-        var groupJvmTreeList = <RStaticDialog ref="groupsDlg"
-                                              title="Topology"
-                                              contentClassName="resource-static-dialog-content-1"
-                                              className="resource-box">
+        var groupJvmTreeList = <RStaticDialog ref="groupsDlg" title="Topology" defaultContentHeight="283px">
                                    <RTreeList ref="treeList"
                                               data={this.state.groupData}
                                               treeMetaData={treeMetaData}
@@ -40,8 +37,7 @@ var ResourceEditor = React.createClass({
                                               selectNodeCallback={this.selectNodeCallback} />
                                </RStaticDialog>
 
-        var resourcesPane = <RStaticDialog title="Resources" contentClassName="resource-static-dialog-content-2"
-                                           className="resource-box">
+        var resourcesPane = <RStaticDialog ref="resourceFileDlg" title="Resources" defaultContentHeight="283px">
                                 <ResourcePane ref="resourcePane"
                                               jvmService={this.props.jvmService}
                                               wsService={this.props.wsService}
@@ -52,19 +48,19 @@ var ResourceEditor = React.createClass({
                                               deleteResourceCallback={this.props.deleteResourceCallback}/>
                             </RStaticDialog>
 
-        var resourceAttrPane = <RStaticDialog title="Properties and Values" contentClassName="resource-static-dialog-content-3"
-                                              className="resource-box">
+        var resourceAttrPane = <RStaticDialog ref="resourceAttrDlg" title="Properties and Values" defaultContentHeight="283px">
                                    <ResourceAttrPane ref="resourceAttrPane" />
                                </RStaticDialog>
 
         var splitterComponents = [];
-        splitterComponents.push(<div className="resource-pane">{groupJvmTreeList}</div>);
-        splitterComponents.push(<div className="resource-pane">{resourcesPane}</div>);
-        splitterComponents.push(<div className="resource-pane">{resourceAttrPane}</div>);
+        splitterComponents.push(groupJvmTreeList);
+        splitterComponents.push(resourcesPane);
+        splitterComponents.push(resourceAttrPane);
 
         return <RSplitter ref="mainSplitter"
                           components={splitterComponents}
                           orientation={RSplitter.HORIZONTAL_ORIENTATION}
+                          onSplitterChange={this.onChildSplitterChangeCallback}
                           panelDimensions={[{width:"44%", height:"100%"},
                                             {width:"12%", height:"100%"},
                                             {width:"44%", height:"100%"}]} />
@@ -128,5 +124,23 @@ var ResourceEditor = React.createClass({
     },
     selectResourceCallback: function(value, groupJvmEntityType) {
         return this.props.selectResourceTemplateCallback(this.refs.treeList.getSelectedNodeData(), value, groupJvmEntityType);
+    },
+    onParentSplitterChange: function(dimensions) {
+        this.refs.groupsDlg.recomputeContentContainerSize(dimensions[0]);
+        this.refs.resourceFileDlg.recomputeContentContainerSize(dimensions[0]);
+        this.refs.resourceAttrDlg.recomputeContentContainerSize(dimensions[0]);
+    },
+    onChildSplitterChangeCallback: function(dimensions) {
+        if (dimensions[0]) {
+            this.refs.groupsDlg.recomputeContentContainerSize(dimensions[0]);
+        }
+
+        if (dimensions[1]) {
+            this.refs.resourceFileDlg.recomputeContentContainerSize(dimensions[1]);
+        }
+
+        if (dimensions[2]) {
+            this.refs.resourceAttrDlg.recomputeContentContainerSize(dimensions[2]);
+        }
     }
 });

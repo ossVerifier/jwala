@@ -21,8 +21,7 @@ var RJsonDataTreeDisplay = React.createClass({
                 onShowToolTipCallback: this.props.onShowToolTipCallback}));
         }
         var title = this.props.title ? this.props.title : null;
-        return React.createElement("div", {className: "RJsonDataTreeDisplay container"},
-                   React.createElement("ul", null, title, nodeArray));
+        return React.createElement("ul", {className: "RJsonDataTreeDisplay"}, title, nodeArray);
     },
     componentWillReceiveProps: function(nextProps) {
         if (nextProps.data) {
