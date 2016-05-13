@@ -6,6 +6,7 @@ import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.common.domain.model.path.Path;
+import com.siemens.cto.aem.common.domain.model.resource.ResourceGroup;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
@@ -472,7 +473,7 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
         when(mockApplicationService.findApplications(any(Identifier.class))).thenReturn(appList);
         when(mockJvmPersistenceService.findGroupsByJvm(any(Identifier.class))).thenReturn(groupsList);
         jvmService.deployApplicationContextXMLs(jvm);
-        // verify(mockApplicationService).deployConf(anyString(), anyString(), anyString(), anyString(), anyBoolean(), any(ResourceGroup.class), any(User.class));
+        verify(mockApplicationService).deployConf(anyString(), anyString(), anyString(), anyString(), anyBoolean(), any(ResourceGroup.class), any(User.class));
     }
 
 }
