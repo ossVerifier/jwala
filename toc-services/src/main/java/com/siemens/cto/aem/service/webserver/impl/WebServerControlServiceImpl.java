@@ -155,7 +155,7 @@ public class WebServerControlServiceImpl implements WebServerControlService {
 
         // back up the original file first
         final String host = aWebServer.getHost();
-        if (doBackup) {
+        if (doBackup) { // TODO: Check if the file exists before actually doing the backup.
             String currentDateSuffix = new SimpleDateFormat(".yyyyMMdd_HHmmss").format(new Date());
             final String destPathBackup = destPath + currentDateSuffix;
             final CommandOutput commandOutput = commandExecutor.executeRemoteCommand(

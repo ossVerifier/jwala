@@ -40,6 +40,7 @@ import static com.siemens.cto.aem.service.webserver.impl.ConfigurationTemplate.W
 public class WebServerServiceImpl implements WebServerService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(WebServerServiceImpl.class);
+    private static final String INVOKE_WSBAT_TEMPLATE_TPL_PATH = "/InvokeWSBatTemplate.tpl";
 
     private final WebServerPersistenceService webServerPersistenceService;
 
@@ -182,8 +183,13 @@ public class WebServerServiceImpl implements WebServerService {
 
     @Override
     public String generateInvokeWSBat(WebServer webServer) {
-        String invokeWSBatTemplateText = fileManager.getResourceTypeTemplate("InvokeWSBat");
-        return ApacheWebServerConfigFileGenerator.getInvokeWSBatFromText(webServer, invokeWSBatTemplateText).replaceAll("\n", "\r\n");
+        try {
+            // NOTE: invokeWS.bat is internal to TOC that is why the template is not in Db.
+            return resourceService.generateResourceFile(FileUtils.readFileToString(new File(templatePath + INVOKE_WSBAT_TEMPLATE_TPL_PATH)),
+                                                        resourceService.generateResourceGroup(), webServer);
+        } catch (final IOException ioe) {
+            throw new WebServerServiceException("Error generating invokeWS.bat!", ioe);
+        }
     }
 
     @Override
@@ -223,6 +229,7 @@ public class WebServerServiceImpl implements WebServerService {
 
     @Override
     @Transactional(readOnly = true)
+    @Deprecated
     public String getResourceTemplate(final String webServerName,
                                       final String resourceTemplateName,
                                       final boolean tokensReplaced) {

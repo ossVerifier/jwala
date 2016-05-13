@@ -320,7 +320,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
     protected void installWebServerWindowsService(final AuthenticatedUser user, final ControlWebServerRequest invokeWSBatRequest, final WebServer webServer, final boolean doBackup) throws CommandFailureException {
 
         // create the file
-        String invokeWSBatText = webServerService.generateInvokeWSBat(webServer);
+        String invokeWSBatText = webServerService.generateInvokeWSBat(webServer); // TODO: Ask this question "Can we just generate and deploy all the resources attached to the web server rather than having a specific methods for a particular file ?"
         final String httpdDataDir = ApplicationProperties.get(STP_HTTPD_DATA_DIR);
         final String name = webServer.getName();
         final File invokeWsBatFile = createTempWebServerResourceFile(name, httpdDataDir, "invokeWS", "bat", invokeWSBatText);
