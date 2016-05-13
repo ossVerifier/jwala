@@ -57,7 +57,7 @@ import static org.mockito.Mockito.*;
 @RunWith(MockitoJUnitRunner.class)
 public class ApplicationServiceImplTest {
 
-    static final String META_DATA_TEST_VALUES = "{\"name\":\"Context XML\",\"path\":\"./test/deploy-path/conf/stp/localhost\",\"contentType\":\"application/xml\",\"entity\":{\"type\":\"APPLICATION\",\"target\":\"soarcom-hct\",\"group\":\"soarcom-616\",\"parentName\":null,\"deployToJvms\":true},\"relativeDir\":null,\"templateName\":\"hctXmlTemplate.tpl\",\"configFileName\":\"hct.xml\"}";
+    static final String META_DATA_TEST_VALUES = "{\"name\":\"Context XML\",\"path\":\"./test/deploy-path/conf/stp/localhost\",\"contentType\":\"application/xml\",\"entity\":{\"type\":\"APPLICATION\",\"target\":\"soarcom-hct\",\"group\":\"soarcom-616\",\"parentName\":null,\"deployToJvms\":true},\"path\":\"somePath\",\"templateName\":\"hctXmlTemplate.tpl\",\"configFileName\":\"hct.xml\"}";
 
     @Mock
     private ApplicationPersistenceService applicationPersistenceService;
