@@ -15,6 +15,7 @@ import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateReque
 import com.siemens.cto.aem.persistence.jpa.domain.resource.config.template.ConfigTemplate;
 import com.siemens.cto.aem.persistence.service.ApplicationPersistenceService;
 import com.siemens.cto.aem.persistence.service.GroupPersistenceService;
+import com.siemens.cto.aem.persistence.service.WebServerPersistenceService;
 import com.siemens.cto.aem.service.VerificationBehaviorSupport;
 import com.siemens.cto.aem.service.webserver.WebServerService;
 import groovy.lang.MissingPropertyException;
@@ -40,19 +41,16 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
     private GroupServiceImpl groupService;
     private GroupPersistenceService groupPersistenceService;
     private ApplicationPersistenceService applicationPersistenceService;
-    private WebServerService webServerService;
+    private WebServerPersistenceService webServerPersistenceService;
     private User user;
 
     @Before
     public void setUp() {
         groupPersistenceService = mock(GroupPersistenceService.class);
         applicationPersistenceService = mock(ApplicationPersistenceService.class);
-        webServerService = mock(WebServerService.class);
+        webServerPersistenceService = mock(WebServerPersistenceService.class);
 
-        groupService = new GroupServiceImpl(groupPersistenceService,
-                webServerService,
-                applicationPersistenceService
-        );
+        groupService = new GroupServiceImpl(groupPersistenceService, webServerPersistenceService, applicationPersistenceService);
         user = new User("unused");
     }
 
@@ -243,7 +241,7 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
         uploadRequests.add(uploadWSRequest);
         final Identifier<Group> aGroupId = new Identifier<>(11L);
         groupService.populateWebServerConfig(aGroupId, uploadRequests, user, false);
-        verify(webServerService, times(1)).populateWebServerConfig(uploadRequests, user, false);
+        verify(webServerPersistenceService, times(1)).populateWebServerConfig(uploadRequests, user, false);
     }
 
     @Test
