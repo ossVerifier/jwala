@@ -91,4 +91,10 @@ public interface JvmService {
      * @throws IOException
      */
     int generateResourceFiles(String jvmName, String destPath) throws IOException;
+
+    /**
+     * Create JVM default templates.
+     * @param jvmName
+     */
+    void createDefaultTemplates(String jvmName);
 }

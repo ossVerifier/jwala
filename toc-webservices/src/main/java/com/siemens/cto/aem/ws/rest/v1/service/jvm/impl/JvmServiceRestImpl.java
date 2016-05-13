@@ -23,6 +23,7 @@ import com.siemens.cto.aem.persistence.jpa.service.exception.NonRetrievableResou
 import com.siemens.cto.aem.persistence.jpa.service.exception.ResourceTemplateUpdateException;
 import com.siemens.cto.aem.service.jvm.JvmControlService;
 import com.siemens.cto.aem.service.jvm.JvmService;
+import com.siemens.cto.aem.service.jvm.exception.JvmServiceException;
 import com.siemens.cto.aem.service.resource.ResourceService;
 import com.siemens.cto.aem.ws.rest.v1.provider.AuthenticatedUser;
 import com.siemens.cto.aem.ws.rest.v1.response.ResponseBuilder;
@@ -61,13 +62,14 @@ public class JvmServiceRestImpl implements JvmServiceRest {
     private final ExecutorService executorService;
     private Map<String, ReentrantReadWriteLock> jvmWriteLocks;
     private final String stpTomcatInstancesPath = ApplicationProperties.get("paths.instances");
-    private final String pathsTomcatInstanceTemplatedir = ApplicationProperties.get("paths.tomcat.instance.template");
     private final String stpJvmResourcesDir = ApplicationProperties.get("stp.jvm.resources.dir");
     private static JvmServiceRestImpl instance;
 
+    private static final String TEMPLATE_DIR = ApplicationProperties.get("paths.tomcat.instance.template");
+
     public JvmServiceRestImpl(final JvmService theJvmService, final JvmControlService theJvmControlService,
-                              final ResourceService theResourceService,
-                              final ExecutorService theExecutorService, final Map<String, ReentrantReadWriteLock> writeLockMap) {
+                              final ResourceService theResourceService, final ExecutorService theExecutorService,
+                              final Map<String, ReentrantReadWriteLock> writeLockMap) {
         jvmService = theJvmService;
         jvmControlService = theJvmControlService;
         resourceService = theResourceService;
@@ -101,15 +103,15 @@ public class JvmServiceRestImpl implements JvmServiceRest {
             jvm = jvmService.createJvm(aJvmToCreate.toCreateJvmRequest(), user);
         }
 
-        // upload the default resource templates for the newly created
-        // JVM
-        uploadAllJvmResourceTemplates(aUser, jvm);
-
-//        TODO do not propagate the default application templates since they are healthcheck specific
-//        if (aJvmToCreate.areGroupsPresent()) {
-//            LOGGER.info("Creating app template for new JVM {}", jvm.getJvmName());
-//            jvmService.addAppTemplatesForJvm(jvm, aJvmToCreate.toCreateAndAddRequest().getGroups());
-//        }
+        try {
+            jvmService.createDefaultTemplates(jvm.getJvmName());
+        } catch (final JvmServiceException jse) {
+            // TODO: If JVM creation is successful even though the template creation failed, we should have a mechanism to tell the UI.
+            // NOTE: JVM creation and template creation were not placed in a single transaction by design since
+            //       in the real world, a JVM can exist without its resource templates.
+            return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(AemFaultType.PERSISTENCE_ERROR,
+                       jse.getMessage(), jse));
+        }
 
         return ResponseBuilder.created(jvm);
     }
@@ -457,7 +459,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
 
             final String relativeDir;
             ResourceTemplateMetaData resourceTemplateMetaData = jvmService.getResourceTemplateMetaData(jvmName);
-            relativeDir = resourceTemplateMetaData.getRelativeDir();
+            relativeDir = resourceTemplateMetaData.getPath();
 
             String fileContent = jvmService.generateConfigFile(jvmName, fileName);
             String jvmResourcesNameDir = stpJvmResourcesDir + "/" + jvmName;
@@ -517,7 +519,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
         final File generatedDir = new File("./" + jvmName);
         try {
             // copy the tomcat instance-template directory
-            final File srcDir = new File(pathsTomcatInstanceTemplatedir);
+            final File srcDir = new File(TEMPLATE_DIR);
             final String destDirPath = generatedDir.getAbsolutePath();
 
             // Copy the templates that would be included in the JAR file.

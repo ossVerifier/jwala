@@ -259,7 +259,7 @@ public class ResourceServiceImplTest {
                 .getResourceAsStream("resource-service-test-files/create-jvm-template-test-metadata.json");
         final InputStream templateIn = this.getClass().getClassLoader()
                 .getResourceAsStream("resource-service-test-files/server.xml.tpl");
-        resourceService.createTemplate(metaDataIn, templateIn, "test-app-name");
+        resourceService.createTemplate(metaDataIn, templateIn, "some jvm");
         verify(mockJvmPersistenceService).findJvmByExactName("some jvm");
         verify(mockJvmPersistenceService).uploadJvmTemplateXml(any(UploadJvmConfigTemplateRequest.class));
     }

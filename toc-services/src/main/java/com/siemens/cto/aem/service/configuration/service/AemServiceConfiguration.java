@@ -63,6 +63,7 @@ import com.siemens.cto.aem.service.webserver.WebServerCommandService;
 import com.siemens.cto.aem.service.webserver.WebServerControlService;
 import com.siemens.cto.aem.service.webserver.WebServerService;
 import com.siemens.cto.aem.service.webserver.WebServerStateRetrievalScheduledTaskHandler;
+import com.siemens.cto.aem.service.webserver.component.ClientFactoryHelper;
 import com.siemens.cto.aem.service.webserver.component.WebServerStateSetterWorker;
 import com.siemens.cto.aem.service.webserver.impl.WebServerCommandServiceImpl;
 import com.siemens.cto.aem.service.webserver.impl.WebServerControlServiceImpl;
@@ -163,6 +164,18 @@ public class AemServiceConfiguration implements SchedulingConfigurer {
     @Qualifier("jvmInMemoryStateManagerService")
     private InMemoryStateManagerService<Identifier<Jvm>, CurrentState<Jvm, JvmState>> jvmInMemoryStateManagerService;
 
+    @Autowired
+    private ClientFactoryHelper clientFactoryHelper;
+
+    @Value("${spring.messaging.topic.serverStates:/topic/server-states}")
+    private String topicServerStates;
+
+    @Value("${paths.resource-types:D:/stp/app/data/toc/types}")
+    private String templatePath;
+
+    @Value("${default.jvm.templates:ServerXML,ContextXML}")
+    private String defaultJvmTemplateNames;
+
     /**
      * Make toc.properties available to spring integration configuration
      * System properties are only used if there is no setting in toc.properties.
@@ -184,10 +197,14 @@ public class AemServiceConfiguration implements SchedulingConfigurer {
     }
 
     @Bean(name = "jvmService")
-    public JvmService getJvmService() {
+    public JvmService getJvmService(final ResourceService resourceService, final ClientFactoryHelper clientFactoryHelper,
+                                    @Value("${spring.messaging.topic.serverStates:/topic/server-states}") final String topicServerStates,
+                                    @Value("${paths.resource-types:D:/stp/app/data/toc/types}") final String templatePath,
+                                    @Value("${default.jvm.templates:ServerXML,ContextXML}") final String defaultJvmTemplateNames) {
         final JvmPersistenceService jvmPersistenceService = persistenceServiceConfiguration.getJvmPersistenceService();
         return new JvmServiceImpl(jvmPersistenceService, getGroupService(), getApplicationService(jvmPersistenceService),
-                fileManager, getStateNotificationService(), messagingTemplate, groupStateNotificationService);
+                fileManager, getStateNotificationService(), messagingTemplate, groupStateNotificationService, resourceService,
+                clientFactoryHelper, topicServerStates, templatePath, defaultJvmTemplateNames);
     }
 
     @Bean(name = "webServerService")
@@ -227,8 +244,9 @@ public class AemServiceConfiguration implements SchedulingConfigurer {
                                                   final MessagingService messagingService,
                                                   final JvmStateService jvmStateService,
                                                   final RemoteCommandExecutorService remoteCommandExecutorService,
-                                                  final SshConfiguration sshConfig) {
-        return new JvmControlServiceImpl(getJvmService(), aemCommandExecutorConfig.getRemoteCommandExecutor(),
+                                                  final SshConfiguration sshConfig,
+                                                  final JvmService jvmService) {
+        return new JvmControlServiceImpl(jvmService, aemCommandExecutorConfig.getRemoteCommandExecutor(),
                 getHistoryService(historyCrudService), messagingService, jvmStateService, remoteCommandExecutorService,
                 sshConfig, groupStateNotificationService);
     }

@@ -3,7 +3,7 @@
   "templateName": "httpd.conf.tpl",
   "contentType": "text/plain",
   "configFileName":"httpd.conf",
-  "relativeDir":"/conf",
+  "path":"/conf",
   "entity": {
     "type": "WEBSERVER",
     "group": "HEALTH CHECK 4.0",

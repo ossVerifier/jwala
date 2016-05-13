@@ -26,6 +26,7 @@ import com.siemens.cto.aem.service.app.ApplicationService;
 import com.siemens.cto.aem.service.group.GroupService;
 import com.siemens.cto.aem.service.group.GroupStateNotificationService;
 import com.siemens.cto.aem.service.jvm.JvmService;
+import com.siemens.cto.aem.service.jvm.exception.JvmServiceException;
 import com.siemens.cto.aem.service.resource.ResourceService;
 import com.siemens.cto.aem.service.state.StateNotificationService;
 import com.siemens.cto.aem.service.webserver.component.ClientFactoryHelper;
@@ -39,16 +40,16 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -57,47 +58,51 @@ import java.util.Set;
 public class JvmServiceImpl implements JvmService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JvmServiceImpl.class);
-
-    @Value("${spring.messaging.topic.serverStates:/topic/server-states}")
-    protected String topicServerStates;
-
+    private String topicServerStates;
+    private String templatePath;
+    private String defaultJvmTemplateNames;
     private static final String DIAGNOSIS_INITIATED = "Diagnosis Initiated on JVM ${jvm.jvmName}, host ${jvm.hostName}";
-
     private final JvmPersistenceService jvmPersistenceService;
     private final GroupService groupService;
-    private ApplicationService applicationService;
+    private final ApplicationService applicationService;
     private final FileManager fileManager;
     private final StateNotificationService stateNotificationService;
     private final SimpMessagingTemplate messagingTemplate;
     private final GroupStateNotificationService groupStateNotificationService;
+    private final ResourceService resourceService;
+    private final ClientFactoryHelper clientFactoryHelper;
 
-    @Autowired
-    private ResourceService resourceService; // TODO: Make this final and initialize in the constructor!
-
-    @Autowired
-    private ClientFactoryHelper clientFactoryHelper;
-
-    public JvmServiceImpl(final JvmPersistenceService theJvmPersistenceService,
-                          final GroupService theGroupService,
-                          ApplicationService applicationService, final FileManager theFileManager,
+    public JvmServiceImpl(final JvmPersistenceService jvmPersistenceService,
+                          final GroupService groupService,
+                          final ApplicationService applicationService,
+                          final FileManager fileManager,
                           final StateNotificationService stateNotificationService,
-                          final SimpMessagingTemplate messagingTemplate, GroupStateNotificationService groupStateNotificationService) {
-        jvmPersistenceService = theJvmPersistenceService;
-        groupService = theGroupService;
+                          final SimpMessagingTemplate messagingTemplate,
+                          final GroupStateNotificationService groupStateNotificationService,
+                          final ResourceService resourceService,
+                          final ClientFactoryHelper clientFactoryHelper,
+                          final String topicServerStates,
+                          final String templatePath,
+                          final String defaultJvmTemplateNames) {
+        this.jvmPersistenceService = jvmPersistenceService;
+        this.groupService = groupService;
         this.applicationService = applicationService;
-        fileManager = theFileManager;
+        this.fileManager = fileManager;
         this.stateNotificationService = stateNotificationService;
         this.messagingTemplate = messagingTemplate;
         this.groupStateNotificationService = groupStateNotificationService;
+        this.resourceService = resourceService;
+        this.clientFactoryHelper = clientFactoryHelper;
+        this.topicServerStates = topicServerStates;
+        this.templatePath = templatePath;
+        this.defaultJvmTemplateNames = defaultJvmTemplateNames;
     }
 
     @Override
     @Transactional
     public Jvm createJvm(final CreateJvmRequest aCreateJvmRequest,
                          final User aCreatingUser) {
-
         aCreateJvmRequest.validate();
-        // TODO add JVM_NEW state to JVM state table (already done? Appears as NEW on UI)
         return jvmPersistenceService.createJvm(aCreateJvmRequest);
     }
 
@@ -105,15 +110,28 @@ public class JvmServiceImpl implements JvmService {
     @Transactional
     public Jvm createAndAssignJvm(final CreateJvmAndAddToGroupsRequest aCreateAndAssignRequest,
                                   final User aCreatingUser) {
-
-        //The commands are validated in createJvm() and groupService.addJvmToGroup()
-
+        // The commands are validated in createJvm() and groupService.addJvmToGroup()
         final Jvm newJvm = createJvm(aCreateAndAssignRequest.getCreateCommand(), aCreatingUser);
-
         final Set<AddJvmToGroupRequest> addJvmToGroupRequests = aCreateAndAssignRequest.toAddRequestsFor(newJvm.getId());
         addJvmToGroups(addJvmToGroupRequests, aCreatingUser);
-
         return getJvm(newJvm.getId());
+    }
+
+    @Override
+    @Transactional
+    public void createDefaultTemplates(final String jvmName) {
+        final String [] templateNameArray = defaultJvmTemplateNames.split(",");
+        for (final String templateName: templateNameArray) {
+            try {
+                final InputStream metaDataIn = new ByteArrayInputStream(FileUtils.readFileToByteArray(
+                        new File(templatePath + "/" + templateName + "Properties.json")));
+                final InputStream templateIn = new ByteArrayInputStream(FileUtils.readFileToByteArray(
+                        new File(templatePath + "/" + templateName + "Template.tpl")));
+                resourceService.createTemplate(metaDataIn, templateIn, jvmName);
+            } catch (final IOException ioe) {
+                throw new JvmServiceException("Error creating " + templateName + " template!", ioe);
+            }
+        }
     }
 
     @Override
@@ -397,7 +415,7 @@ public class JvmServiceImpl implements JvmService {
             final String generatedResourceStr = resourceService.generateResourceFile(jpaJvmConfigTemplate.getTemplateContent(),
                     resourceService.generateResourceGroup(), jvmPersistenceService.findJvmByExactName(jvmName));
 
-            final String jvmResourcesRelativeDir = destPath + resourceTemplateMetaData.getRelativeDir();
+            final String jvmResourcesRelativeDir = destPath + resourceTemplateMetaData.getPath();
             LOGGER.debug("generating template in location: {}", jvmResourcesRelativeDir + "/", resourceTemplateMetaData.getConfigFileName());
             createConfigFile(jvmResourcesRelativeDir + "/", resourceTemplateMetaData.getConfigFileName(), generatedResourceStr);
         }

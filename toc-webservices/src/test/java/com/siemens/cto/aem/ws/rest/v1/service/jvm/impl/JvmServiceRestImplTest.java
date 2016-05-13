@@ -529,7 +529,7 @@ public class JvmServiceRestImplTest {
         when(mockExecData.getReturnCode()).thenReturn(new ExecReturnCode(0));
         when(mockResourceTemplateMetaData.getName()).thenReturn("ServerXMLTemplate.tpl");
         when(mockResourceTemplateMetaData.getConfigFileName()).thenReturn("server.xml");
-        when(mockResourceTemplateMetaData.getRelativeDir()).thenReturn("/");
+        when(mockResourceTemplateMetaData.getPath()).thenReturn("/");
         when(jvmService.getJvm(jvm.getJvmName())).thenReturn(jvm);
         when(jvmService.generateConfigFile(anyString(), anyString())).thenReturn("<server>xml</server>");
         when(jvmService.getResourceTemplateMetaData(anyString())).thenReturn(mockResourceTemplateMetaData);

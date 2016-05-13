@@ -2,18 +2,17 @@ package com.siemens.cto.aem.common.domain.model.resource;
 
 /**
  * Resource template meta data.
- * <p/>
+ *
  * Created by JC043760 on 3/30/2016.
  */
 public class ResourceTemplateMetaData {
-
     private String name;
     private String templateName;
     private String contentType;
     private String configFileName;
     private String path;
     private Entity entity;
-    private String relativeDir;
+    private ResourceProperty [] properties;
 
     public String getName() {
         return name;
@@ -59,15 +58,15 @@ public class ResourceTemplateMetaData {
         this.path = path;
     }
 
-    public String getRelativeDir(){
-        return relativeDir;
-    }
-
-    public void setRelativeDir(String relativeDir) {
-        this.relativeDir = relativeDir;
-    }
-
     public void setEntity(Entity entity) {
         this.entity = entity;
+    }
+
+    public ResourceProperty [] getProperties() {
+        return properties;
+    }
+
+    public void setProperties(ResourceProperty [] properties) {
+        this.properties = properties;
     }
 }

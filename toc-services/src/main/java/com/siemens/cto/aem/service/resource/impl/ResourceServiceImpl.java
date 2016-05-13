@@ -193,7 +193,9 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Override
     @Transactional
-    public CreateResourceTemplateApplicationResponseWrapper createTemplate(final InputStream metaData, final InputStream templateData, String targetName) {
+    public CreateResourceTemplateApplicationResponseWrapper createTemplate(final InputStream metaData,
+                                                                           final InputStream templateData,
+                                                                           final String targetName) {
         final ObjectMapper mapper = new ObjectMapper();
         final ResourceTemplateMetaData resourceTemplateMetaData;
         final CreateResourceTemplateApplicationResponseWrapper responseWrapper;
@@ -205,7 +207,7 @@ public class ResourceServiceImpl implements ResourceService {
             final EntityType entityType = EntityType.fromValue(resourceTemplateMetaData.getEntity().getType());
             switch (entityType) {
                 case JVM:
-                    responseWrapper = createJvmTemplate(resourceTemplateMetaData, templateData);
+                    responseWrapper = createJvmTemplate(resourceTemplateMetaData, templateData, targetName);
                     break;
                 case GROUPED_JVMS:
                     responseWrapper = createGroupedJvmsTemplate(resourceTemplateMetaData, templateData);
@@ -259,12 +261,14 @@ public class ResourceServiceImpl implements ResourceService {
 
     /**
      * Create the JVM template in the db and in the templates path for a specific JVM entity target.
-     *
-     * @param metaData     the data that describes the template, please see {@link ResourceTemplateMetaData}
+     * @param metaData the data that describes the template, please see {@link ResourceTemplateMetaData}
      * @param templateData the template content/data
+     * @param jvmName identifies the JVM to which the template is attached to
      */
-    private CreateResourceTemplateApplicationResponseWrapper createJvmTemplate(final ResourceTemplateMetaData metaData, final InputStream templateData) {
-        final Jvm jvm = jvmPersistenceService.findJvmByExactName(metaData.getEntity().getTarget());
+    private CreateResourceTemplateApplicationResponseWrapper createJvmTemplate(final ResourceTemplateMetaData metaData,
+                                                                               final InputStream templateData,
+                                                                               final String jvmName) {
+        final Jvm jvm = jvmPersistenceService.findJvmByExactName(jvmName);
         final UploadJvmConfigTemplateRequest uploadJvmTemplateRequest = new UploadJvmConfigTemplateRequest(jvm, metaData.getTemplateName(),
                 templateData, convertResourceTemplateMetaDataToJson(metaData));
         uploadJvmTemplateRequest.setConfFileName(metaData.getConfigFileName());

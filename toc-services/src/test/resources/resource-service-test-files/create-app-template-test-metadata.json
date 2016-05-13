@@ -3,7 +3,7 @@
   "templateName": "app.xml.tpl",
   "contentType": "text/xml",
   "configFileName":"app.xml",
-  "relativeDir":"/conf",
+  "path":"/conf",
   "entity": {
     "type": "APPLICATION",
     "group": "HEALTH CHECK 4.0",

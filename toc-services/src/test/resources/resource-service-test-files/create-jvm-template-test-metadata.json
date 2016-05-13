@@ -3,7 +3,7 @@
   "templateName": "server.xml.tpl",
   "contentType": "text/xml",
   "configFileName":"server.xml",
-  "relativeDir":"/conf",
+  "path":"/conf",
   "entity": {
     "type": "JVM",
     "group": "HEALTH CHECK 4.0",
