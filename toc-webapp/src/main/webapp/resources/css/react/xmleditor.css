@@ -4,6 +4,8 @@ textarea.xml-editor {
      resize: none;
      padding-top: 0 !important;
      height: 244px;
+     font-size: 10pt;
+     font-family: monospace;
 }
 
 .toolbar-container {

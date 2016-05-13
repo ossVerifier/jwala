@@ -10,10 +10,13 @@ var XmlEditor = React.createClass({
                                                     onChange: this.props.onChange}, this.props.content));
     },
     componentDidMount: function() {
-        $(".lined").linedtextarea(
-            {selectedLine: 1}
-        );
 
+//        !!! This is causing the browser to crash when scrolling up and down when pulling the slider !!!
+//        TODO: Fix this!!!
+//        $(".lined").linedtextarea(
+//            {selectedLine: 1}
+//        );
+//
         // For some reason when the content is placed in the textarea, the content does not match the val from the
         // DOM probably because of some hidden characters that got converted/stripped when placed in the textArea.
         // So we store the value in a variable to compare later.
