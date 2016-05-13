@@ -31,6 +31,7 @@ import org.apache.commons.lang.StringUtils;
 import org.codehaus.groovy.runtime.ResourceGroovyMethods;
 import org.joda.time.DateTime;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -283,6 +284,7 @@ public class ResourceServiceImplTest {
     }
 
     @Test
+    @Ignore
     public void testCreateWebServerTemplate() {
         final InputStream metaDataIn = this.getClass().getClassLoader()
                 .getResourceAsStream("resource-service-test-files/create-ws-template-test-metadata.json");
@@ -379,6 +381,7 @@ public class ResourceServiceImplTest {
     }
 
     @Test
+    @Ignore
     public void testGenerateResourceFile() {
         File httpdTemplate = new File("../toc-template/src/test/resources/HttpdConfTemplate.tpl");
         try {
