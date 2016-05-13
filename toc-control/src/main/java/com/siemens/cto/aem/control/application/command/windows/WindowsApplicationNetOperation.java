@@ -49,6 +49,12 @@ public enum WindowsApplicationNetOperation implements ServiceCommandBuilder {
         public ExecCommand buildCommandForService(String aServiceName, String... aParams) {
             return new ExecCommand("/usr/bin/chmod " + aParams[0] + " " + aParams[1] + "/" + aParams[2]);
         }
+    },
+    CHECK_FILE_EXISTS(ApplicationControlOperation.CHECK_FILE_EXISTS){
+        @Override
+        public ExecCommand buildCommandForService(String aServiceName, String... aParams) {
+            return new ExecCommand("/usr/bin/test -e " + aParams[0]);
+        }
     }
     ;
 

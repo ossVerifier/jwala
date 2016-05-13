@@ -1,40 +1,66 @@
 package com.siemens.cto.aem.service.group.impl;
 
 import com.siemens.cto.aem.common.domain.model.app.Application;
+import com.siemens.cto.aem.common.domain.model.app.ApplicationControlOperation;
+import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.group.GroupState;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.common.domain.model.resource.ResourceGroup;
+import com.siemens.cto.aem.common.domain.model.resource.ResourceTemplateMetaData;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.common.exception.ApplicationException;
+import com.siemens.cto.aem.common.exception.InternalErrorException;
+import com.siemens.cto.aem.common.exec.CommandOutput;
+import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.common.request.group.*;
 import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
 import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateRequest;
 import com.siemens.cto.aem.common.rule.group.GroupNameRule;
+import com.siemens.cto.aem.control.application.command.impl.WindowsApplicationPlatformCommandProvider;
+import com.siemens.cto.aem.control.command.RemoteCommandExecutorImpl;
+import com.siemens.cto.aem.exception.CommandFailureException;
 import com.siemens.cto.aem.persistence.service.ApplicationPersistenceService;
 import com.siemens.cto.aem.persistence.service.GroupPersistenceService;
 import com.siemens.cto.aem.persistence.service.WebServerPersistenceService;
+import com.siemens.cto.aem.service.app.impl.DeployApplicationConfException;
 import com.siemens.cto.aem.service.group.GroupService;
-import com.siemens.cto.aem.template.GeneratorUtils;
+import com.siemens.cto.aem.template.ResourceFileGenerator;
 import com.siemens.cto.aem.template.jvm.TomcatJvmConfigFileGenerator;
 import com.siemens.cto.aem.template.webserver.ApacheWebServerConfigFileGenerator;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class GroupServiceImpl implements GroupService {
 
     private final GroupPersistenceService groupPersistenceService;
     private final WebServerPersistenceService webServerPersistenceService;
+    private final RemoteCommandExecutorImpl remoteCommandExecutor;
     private ApplicationPersistenceService applicationPersistenceService;
+
+    private static final String GENERATED_RESOURCE_DIR = "stp.generated.resource.dir";
+    private static final Logger LOGGER = LoggerFactory.getLogger(GroupServiceImpl.class);
 
     public GroupServiceImpl(final GroupPersistenceService groupPersistenceService,
                             final WebServerPersistenceService webServerPersistenceService,
-                            final ApplicationPersistenceService applicationPersistenceService) {
+                            final ApplicationPersistenceService applicationPersistenceService, RemoteCommandExecutorImpl remoteCommandExecutor) {
         this.groupPersistenceService = groupPersistenceService;
         this.webServerPersistenceService = webServerPersistenceService;
         this.applicationPersistenceService = applicationPersistenceService;
+        this.remoteCommandExecutor = remoteCommandExecutor;
     }
 
     @Override
@@ -356,51 +382,42 @@ public class GroupServiceImpl implements GroupService {
 
     @Override
     @Transactional
-    public String previewGroupAppResourceTemplate(String groupName, String resourceTemplateName, String template) {
-        final Map<String, Application> bindings = new HashMap<>();
-        Jvm jvm = groupPersistenceService.getGroup(groupName).getJvms().iterator().next();
-        String appName = getAppNameFromResourceTemplate(resourceTemplateName);
-        bindings.put("webApp", new WebApp(applicationPersistenceService.findApplication(appName, groupName, jvm.getJvmName()), jvm));
-        return GeneratorUtils.bindDataToTemplateText(bindings, template);
+    public String previewGroupAppResourceTemplate(String groupName, String resourceTemplateName, String template, ResourceGroup resourceGroup) {
+        final Set<Jvm> jvms = groupPersistenceService.getGroup(groupName).getJvms();
+        Jvm jvm = jvms != null && jvms.size() > 0 ? jvms.iterator().next() : null;
+        String metaDataStr = groupPersistenceService.getGroupAppResourceTemplateMetaData(groupName, resourceTemplateName);
+        try {
+            ResourceTemplateMetaData metaData = new ObjectMapper().readValue(metaDataStr, ResourceTemplateMetaData.class);
+            Application app = applicationPersistenceService.getApplication(metaData.getEntity().getTarget());
+            app.setParentJvm(jvm);
+            return ResourceFileGenerator.generateResourceConfig(template, resourceGroup, app);
+        } catch (Exception x) {
+            LOGGER.error("Failed to generate preview for template {} in  group {}", resourceTemplateName, groupName, x);
+            throw new ApplicationException("Template token replacement failed.", x);
+        }
+    }
+
+    @Override
+    public String getGroupAppResourceTemplateMetaData(String groupName, String fileName) {
+        return groupPersistenceService.getGroupAppResourceTemplateMetaData(groupName, fileName);
     }
 
     @Override
     @Transactional
-    public String getGroupAppResourceTemplate(String groupName, String resourceTemplateName, boolean tokensReplaced) {
+    public String getGroupAppResourceTemplate(String groupName, String resourceTemplateName, boolean tokensReplaced, ResourceGroup resourceGroup) {
         final String template = groupPersistenceService.getGroupAppResourceTemplate(groupName, resourceTemplateName);
         if (tokensReplaced) {
-            final Map<String, Application> bindings = new HashMap<>();
-            Jvm jvm = groupPersistenceService.getGroup(groupName).getJvms().iterator().next();
-            String appName = getAppNameFromResourceTemplate(resourceTemplateName);
-            bindings.put("webApp", new WebApp(applicationPersistenceService.findApplication(appName, groupName, jvm.getJvmName()), jvm));
+            String metaDataStr = groupPersistenceService.getGroupAppResourceTemplateMetaData(groupName, resourceTemplateName);
             try {
-                return GeneratorUtils.bindDataToTemplateText(bindings, template);
+                ResourceTemplateMetaData metaData = new ObjectMapper().readValue(metaDataStr, ResourceTemplateMetaData.class);
+                Application app = applicationPersistenceService.getApplication(metaData.getEntity().getTarget());
+                return ResourceFileGenerator.generateResourceConfig(template, resourceGroup, app);
             } catch (Exception x) {
+                LOGGER.error("Failed to tokenize template {} in group {}", resourceTemplateName, groupName, x);
                 throw new ApplicationException("Template token replacement failed.", x);
             }
         }
         return template;
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public String getAppNameFromResourceTemplate(String resourceTemplateName) {
-        String retVal = "";
-        String context;
-        if (resourceTemplateName.endsWith(".xml")){
-            context = resourceTemplateName.replace(".xml", "");
-        } else if (resourceTemplateName.endsWith("RoleMapping.properties")) {
-            context = resourceTemplateName.replace("RoleMapping.properties", "");
-        } else {
-            context = resourceTemplateName.replace(".properties", "");
-        }
-        for (Application app : applicationPersistenceService.getApplications()){
-            if (app.getWebAppContext().equals("/"+context)){
-                retVal = app.getName();
-                break;
-            }
-        }
-        return retVal;
     }
 
     @Override
@@ -409,22 +426,100 @@ public class GroupServiceImpl implements GroupService {
         groupPersistenceService.updateState(id, state);
     }
 
-    /**
-     * Inner class application wrapper to include a web application's parent JVM.
-     */
-    private class WebApp extends Application {
-        final Jvm jvm;
+    @Override
+    public CommandOutput deployGroupAppTemplate(String groupName, String fileName, ResourceGroup resourceGroup, Application application, Jvm jvm) {
+        String metaDataStr = getGroupAppResourceTemplateMetaData(groupName, fileName);
+        ResourceTemplateMetaData metaData;
+        try {
+            metaData = new ObjectMapper().readValue(metaDataStr, ResourceTemplateMetaData.class);
+            File confFile = createConfFile(metaData.getEntity().getTarget(), groupName, fileName, resourceGroup);
 
-        public WebApp(final Application app, final Jvm parentJvm) {
-            super(app.getId(), app.getName(), app.getWarPath(), app.getWebAppContext(), app.getGroup(), app.isSecure(),
-                    app.isLoadBalanceAcrossServers(), app.isUnpackWar(), app.getWarName());
-            jvm = parentJvm;
-        }
+            final String destPath = ResourceFileGenerator.generateResourceConfig(metaData.getPath(), resourceGroup, application) + '/' + fileName;
+            final String srcPath = confFile.getAbsolutePath().replace("\\", "/");
+            final String jvmName = jvm.getJvmName();
+            final String hostName = jvm.getHostName();
+            CommandOutput commandOutput = remoteCommandExecutor.executeRemoteCommand(
+                    jvmName,
+                    hostName,
+                    ApplicationControlOperation.CHECK_FILE_EXISTS,
+                    new WindowsApplicationPlatformCommandProvider(),
+                    destPath);
+            if (commandOutput.getReturnCode().wasSuccessful()) {
+                String currentDateSuffix = new SimpleDateFormat(".yyyyMMdd_HHmmss").format(new Date());
+                final String destPathBackup = destPath + currentDateSuffix;
+                commandOutput = remoteCommandExecutor.executeRemoteCommand(
+                        jvmName,
+                        hostName,
+                        ApplicationControlOperation.BACK_UP_CONFIG_FILE,
+                        new WindowsApplicationPlatformCommandProvider(),
+                        destPath,
+                        destPathBackup);
+                if (!commandOutput.getReturnCode().wasSuccessful()) {
+                    throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to back up " + destPath + " for " + jvm);
+                }
 
-        @SuppressWarnings("unused")
-            // used by template bindings
-        Jvm getJvm() {
-            return jvm;
+            }
+            final CommandOutput execData = remoteCommandExecutor.executeRemoteCommand(
+                    jvmName,
+                    hostName,
+                    ApplicationControlOperation.SECURE_COPY,
+                    new WindowsApplicationPlatformCommandProvider(),
+                    srcPath,
+                    destPath);
+            if (execData.getReturnCode().wasSuccessful()) {
+                LOGGER.info("Copy of {} successful: {}", fileName, confFile.getAbsolutePath());
+                return execData;
+            } else {
+                String standardError = execData.getStandardError().isEmpty() ? execData.getStandardOutput() : execData.getStandardError();
+                LOGGER.error("Copy command completed with error trying to copy {} to {} :: ERROR: {}",
+                        fileName, application.getName(), standardError);
+                throw new DeployApplicationConfException(standardError);
+            }
+        } catch (IOException e) {
+            LOGGER.error("Failed to deploy file {} in group {}", fileName, groupName, e);
+            throw new ApplicationException("Failed to deploy " + fileName + " in group " + groupName, e);
+        } catch (CommandFailureException e) {
+            LOGGER.error("Failed to execute remote command when deploying {} for group {}", fileName, groupName, e);
+            throw new ApplicationException("Failed to execute remote command when deploying " + fileName + " for group " + groupName, e);
         }
     }
+
+    protected File createConfFile(final String appName, final String groupName,
+                                  final String resourceTemplateName, final ResourceGroup resourceGroup)
+            throws FileNotFoundException {
+        PrintWriter out = null;
+        final StringBuilder fileNameBuilder = new StringBuilder();
+
+        createPathIfItDoesNotExists(ApplicationProperties.get(GENERATED_RESOURCE_DIR));
+        createPathIfItDoesNotExists(ApplicationProperties.get(GENERATED_RESOURCE_DIR) + "/"
+                + groupName.replace(" ", "-"));
+
+        fileNameBuilder.append(ApplicationProperties.get(GENERATED_RESOURCE_DIR))
+                .append('/')
+                .append(groupName.replace(" ", "-"))
+                .append('/')
+                .append(appName.replace(" ", "-"))
+                .append('.')
+                .append(new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date()))
+                .append('_')
+                .append(resourceTemplateName);
+
+        final File appConfFile = new File(fileNameBuilder.toString());
+        try {
+            out = new PrintWriter(appConfFile.getAbsolutePath());
+            out.println(getGroupAppResourceTemplate(groupName, resourceTemplateName, true, resourceGroup));
+        } finally {
+            if (out != null) {
+                out.close();
+            }
+        }
+        return appConfFile;
+    }
+
+    protected static void createPathIfItDoesNotExists(String path) {
+        if (!Files.exists(Paths.get(path))) {
+            new File(path).mkdir();
+        }
+    }
+
 }

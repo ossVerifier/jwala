@@ -56,12 +56,8 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ApplicationServiceImpl.class);
 
-    private static final String APP_CONF_PATH = "paths.app.conf";
-    private static final String APP_CONF_PATH_INSECURE = "paths.app.conf.insecure";
-    private static final String JVM_INSTANCE_DIR = "paths.instances";
     private static final String GENERATED_RESOURCE_DIR = "stp.generated.resource.dir";
     private static final String APP_CONTEXT_TEMPLATE = "stp.app.context.template";
-    private static final String STR_PROPERTIES = "properties";
     private static final String PATHS_RESOURCE_TYPES = "paths.resource-types";
     private final ExecutorService executorService;
 

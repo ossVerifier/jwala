@@ -12,7 +12,8 @@ public enum ApplicationControlOperation {
     BACK_UP_CONFIG_FILE("backUpHttpConfigFile"),
     UNPACK_WAR("unpackWar"),
     CREATE_DIRECTORY("mkdir"),
-    CHANGE_FILE_MODE("chmod");
+    CHANGE_FILE_MODE("chmod"),
+    CHECK_FILE_EXISTS("test");
 
     private static final Map<String, ApplicationControlOperation> LOOKUP_MAP = new HashMap<>();
 

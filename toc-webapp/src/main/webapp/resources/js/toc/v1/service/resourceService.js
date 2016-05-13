@@ -47,8 +47,8 @@ var resourceService = {
     getTemplate: function(resourceTypeName, responseCallback) {
         return serviceFoundation.get("v1.0/resources/types/" + resourceTypeName + "/template", "json", responseCallback);
     },
-    createResource: function(formData) {
-        return serviceFoundation.promisedPost("v1.0/resources/template", "json", formData, null, true);
+    createResource: function(targetName, formData) {
+        return serviceFoundation.promisedPost("v1.0/resources/template/" + targetName, "json", formData, null, true);
     },
     deleteAllResource: function(resourceName) {
         return serviceFoundation.del("v1.0/resources/template/" + resourceName);

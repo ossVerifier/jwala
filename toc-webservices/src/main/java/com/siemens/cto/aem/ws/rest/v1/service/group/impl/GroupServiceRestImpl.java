@@ -1,11 +1,14 @@
 package com.siemens.cto.aem.ws.rest.v1.service.group.impl;
 
+import com.siemens.cto.aem.common.domain.model.app.Application;
 import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.group.GroupControlOperation;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.jvm.JvmControlOperation;
+import com.siemens.cto.aem.common.domain.model.resource.ResourceGroup;
+import com.siemens.cto.aem.common.domain.model.resource.ResourceTemplateMetaData;
 import com.siemens.cto.aem.common.domain.model.resource.ResourceType;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServerControlOperation;
@@ -20,6 +23,7 @@ import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateComma
 import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateRequest;
 import com.siemens.cto.aem.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
 import com.siemens.cto.aem.persistence.jpa.service.exception.ResourceTemplateUpdateException;
+import com.siemens.cto.aem.service.app.ApplicationService;
 import com.siemens.cto.aem.service.group.GroupControlService;
 import com.siemens.cto.aem.service.group.GroupJvmControlService;
 import com.siemens.cto.aem.service.group.GroupService;
@@ -46,6 +50,9 @@ import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.jaxrs.ext.MessageContext;
+import org.codehaus.jackson.JsonParseException;
+import org.codehaus.jackson.map.JsonMappingException;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -64,6 +71,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     private final GroupService groupService;
     private final ResourceService resourceService;
     private final ExecutorService executorService;
+    private final ApplicationService applicationService;
     private GroupControlService groupControlService;
     private GroupJvmControlService groupJvmControlService;
     private GroupWebServerControlService groupWebServerControlService;
@@ -74,7 +82,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     public GroupServiceRestImpl(final GroupService groupService, final ResourceService resourceService,
                                 final GroupControlService groupControlService, final GroupJvmControlService groupJvmControlService,
                                 final GroupWebServerControlService groupWebServerControlService, final JvmService jvmService,
-                                final WebServerService webServerService) {
+                                final WebServerService webServerService, ApplicationService applicationService) {
         this.groupService = groupService;
         this.resourceService = resourceService;
         this.groupControlService = groupControlService;
@@ -82,6 +90,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         this.groupWebServerControlService = groupWebServerControlService;
         this.jvmService = jvmService;
         this.webServerService = webServerService;
+        this.applicationService = applicationService;
         executorService = Executors.newFixedThreadPool(Integer.parseInt(ApplicationProperties.get("resources.thread-task-executor.pool.size", "25")));
     }
 
@@ -753,11 +762,13 @@ public class GroupServiceRestImpl implements GroupServiceRest {
 
         LOGGER.info("Updating the group template {} for {}", resourceTemplateName, groupName);
 
-        try {
+        String metaDataStr = groupService.getGroupAppResourceTemplateMetaData(groupName, resourceTemplateName);
+        final Group group = groupService.getGroup(groupName);
 
+        try {
             final String updatedContent = groupService.updateGroupAppResourceTemplate(groupName, resourceTemplateName, content);
-            final Group group = groupService.getGroup(groupName);
-            final String appName = groupService.getAppNameFromResourceTemplate(resourceTemplateName);
+            ResourceTemplateMetaData metaData = new ObjectMapper().readValue(metaDataStr, ResourceTemplateMetaData.class);
+            final String appName = metaData.getEntity().getTarget();
 
             Set<Jvm> groupJvms = group.getJvms();
             Set<Future<Response>> futureContents = new HashSet<>();
@@ -787,15 +798,74 @@ public class GroupServiceRestImpl implements GroupServiceRest {
             LOGGER.error("Failed to update the template {}", resourceTemplateName, e);
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
                     AemFaultType.PERSISTENCE_ERROR, e.getMessage()));
+        } catch (JsonMappingException | JsonParseException e) {
+            LOGGER.error("Failed to map meta data object for template {} in group {} :: meta data: {} ", resourceTemplateName, groupName, metaDataStr, e);
+            return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
+                    AemFaultType.BAD_STREAM, e.getMessage()));
+        } catch (IOException e) {
+            LOGGER.error("Failed with IOException trying to map meta data object for template {} in group {} :: meta data: {}", resourceTemplateName, groupName, metaDataStr, e);
+            return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
+                    AemFaultType.BAD_STREAM, e.getMessage()));
         }
+
     }
 
     @Override
     public Response generateAndDeployGroupAppFile(final String groupName, final String fileName, final AuthenticatedUser aUser) {
         Group group = groupService.getGroup(groupName);
-        final String groupAppTemplateContent = groupService.getGroupAppResourceTemplate(groupName, fileName, false);
+        final String groupAppMetaData = groupService.getGroupAppResourceTemplateMetaData(groupName, fileName);
+        ObjectMapper objectMapper = new ObjectMapper();
+        ResourceTemplateMetaData metaData;
+        try {
+            metaData = objectMapper.readValue(groupAppMetaData, ResourceTemplateMetaData.class);
+        } catch (IOException e) {
+            LOGGER.error("Failed to map meta data for resource template {} in group {} :: meta data: {} ", fileName, groupName, groupAppMetaData, e);
+            throw new InternalErrorException(AemFaultType.BAD_STREAM, "Failed to map meta data for resource template " + fileName + " in group " + groupName, e);
+        }
+        final String appName = metaData.getEntity().getTarget();
         final ApplicationServiceRest appServiceRest = ApplicationServiceRestImpl.get();
-        final String appName = groupService.getAppNameFromResourceTemplate(fileName);
+        if (metaData.getEntity().getDeployToJvms()) {
+            // deploy to all jvms in group
+            performGroupAppDeployToJvms(groupName, fileName, aUser, group, appName, appServiceRest);
+        } else {
+            // deploy to all hosts in group
+            performGroupAppDeployToHosts(groupName, fileName, aUser, appName, appServiceRest);
+        }
+        return ResponseBuilder.ok(group);
+    }
+
+    private void performGroupAppDeployToHosts(final String groupName, final String fileName, final AuthenticatedUser aUser, final String appName, final ApplicationServiceRest appServiceRest) {
+        Map<String, Future<Response>> futureMap = new HashMap<>();
+        Set<Jvm> jvms = groupService.getGroup(groupName).getJvms();
+        if (null != jvms && jvms.size() > 0) {
+            for (Jvm jvm : jvms) {
+                if (jvm.getState().isStartedState()) {
+                    LOGGER.info("Failed to deploy file {} for group {}: not all JVMs were stopped - {} was started", fileName, groupName, jvm.getJvmName());
+                    throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "All JVMs in the group must be stopped before continuing. Operation stopped for JVM " + jvm.getJvmName());
+                }
+            }
+
+            List<String> deployedHosts = new LinkedList<>();
+            for (final Jvm jvm : jvms) {
+                final String hostName = jvm.getHostName();
+                if (!deployedHosts.contains(hostName)) {
+                    deployedHosts.add(hostName);
+                    final ResourceGroup resourceGroup = resourceService.generateResourceGroup();
+                    final Application application = applicationService.getApplication(appName);
+                    Future<Response> responseFuture = executorService.submit(new Callable<Response>() {
+                        @Override
+                        public Response call() throws Exception {
+                            return ResponseBuilder.ok(groupService.deployGroupAppTemplate(groupName, fileName, resourceGroup, application, jvm));
+                        }
+                    });
+                }
+            }
+            waitForDeployToComplete(new HashSet<>(futureMap.values()));
+            checkResponsesForErrorStatus(futureMap);
+        }
+    }
+
+    private void performGroupAppDeployToJvms(final String groupName, final String fileName, final AuthenticatedUser aUser, Group group, final String appName, final ApplicationServiceRest appServiceRest) {
         Map<String, Future<Response>> futureMap = new HashMap<>();
         final Set<Jvm> jvms = group.getJvms();
         if (null != jvms && jvms.size() > 0) {
@@ -805,29 +875,21 @@ public class GroupServiceRestImpl implements GroupServiceRest {
                     throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "All JVMs in the group must be stopped before continuing. Operation stopped for JVM " + jvm.getJvmName());
                 }
             }
-            if (fileName.endsWith(".xml")) {
-                for (Jvm jvm : jvms) {
-                    final String jvmName = jvm.getJvmName();
-                    Future<Response> responseFuture = executorService.submit(new Callable<Response>() {
-                        @Override
-                        public Response call() throws Exception {
-                            appServiceRest.updateResourceTemplate(appName, fileName, jvmName, groupName, groupAppTemplateContent);
-                            return appServiceRest.deployConf(appName, groupName, jvmName, fileName, aUser);
-                        }
-                    });
-                    futureMap.put(jvmName, responseFuture);
-                }
-                waitForDeployToComplete(new HashSet<>(futureMap.values()));
-                checkResponsesForErrorStatus(futureMap);
+            final String groupAppTemplateContent = groupService.getGroupAppResourceTemplate(groupName, fileName, false, new ResourceGroup());
+            for (Jvm jvm : jvms) {
+                final String jvmName = jvm.getJvmName();
+                Future<Response> responseFuture = executorService.submit(new Callable<Response>() {
+                    @Override
+                    public Response call() throws Exception {
+                        appServiceRest.updateResourceTemplate(appName, fileName, jvmName, groupName, groupAppTemplateContent);
+                        return appServiceRest.deployConf(appName, groupName, jvmName, fileName, aUser);
+                    }
+                });
+                futureMap.put(jvmName, responseFuture);
             }
-            // TODO replace with generic application config file implementation (use meta data to determine deployed file location)
-//            else {
-//                final String jvmName = jvms.iterator().next().getJvmName();
-//                appServiceRest.updateResourceTemplate(appName, fileName, jvmName, groupName, groupAppTemplateContent);
-//                appServiceRest.deployConf(appName, groupName, jvmName, fileName, aUser);
-//            }
+            waitForDeployToComplete(new HashSet<>(futureMap.values()));
+            checkResponsesForErrorStatus(futureMap);
         }
-        return ResponseBuilder.ok(group);
     }
 
     @Override
@@ -838,7 +900,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     @Override
     public Response previewGroupAppResourceTemplate(String groupName, String resourceTemplateName, String template) {
         try {
-            return ResponseBuilder.ok(groupService.previewGroupAppResourceTemplate(groupName, resourceTemplateName, template));
+            return ResponseBuilder.ok(groupService.previewGroupAppResourceTemplate(groupName, resourceTemplateName, template, resourceService.generateResourceGroup()));
         } catch (RuntimeException e) {
             LOGGER.error("Failed to preview the application template {} for {}", resourceTemplateName, groupName, e);
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
@@ -848,7 +910,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
 
     @Override
     public Response getGroupAppResourceTemplate(String groupName, String resourceTemplateName, boolean tokensReplaced) {
-        return ResponseBuilder.ok(groupService.getGroupAppResourceTemplate(groupName, resourceTemplateName, tokensReplaced));
+        return ResponseBuilder.ok(groupService.getGroupAppResourceTemplate(groupName, resourceTemplateName, tokensReplaced, tokensReplaced ? resourceService.generateResourceGroup() : new ResourceGroup()));
     }
 
     @Override
@@ -898,18 +960,19 @@ public class GroupServiceRestImpl implements GroupServiceRest {
 
     /**
      * Get a group's children servers info (e.g. jvm count, web server count etc...)
+     *
      * @param groupName the group name
      * @return {@GroupServerInfo}
      */
     private GroupServerInfo getGroupServerInfo(final String groupName) {
         return new GroupServerInfoBuilder().setGroupName(groupName)
-                    .setJvmStartedCount(jvmService.getJvmStartedCount(groupName))
-                    .setJvmStoppedCount(jvmService.getJvmStoppedCount(groupName))
-                    .setJvmForciblyStoppedCount(jvmService.getJvmForciblyStoppedCount(groupName))
-                    .setJvmCount(jvmService.getJvmCount(groupName))
-                    .setWebServerStartedCount(webServerService.getWebServerStartedCount(groupName))
-                    .setWebServerStoppedCount(webServerService.getWebServerStoppedCount(groupName))
-                    .setWebServerCount(webServerService.getWebServerCount(groupName)).build();
+                .setJvmStartedCount(jvmService.getJvmStartedCount(groupName))
+                .setJvmStoppedCount(jvmService.getJvmStoppedCount(groupName))
+                .setJvmForciblyStoppedCount(jvmService.getJvmForciblyStoppedCount(groupName))
+                .setJvmCount(jvmService.getJvmCount(groupName))
+                .setWebServerStartedCount(webServerService.getWebServerStartedCount(groupName))
+                .setWebServerStoppedCount(webServerService.getWebServerStoppedCount(groupName))
+                .setWebServerCount(webServerService.getWebServerCount(groupName)).build();
     }
 
     @Override

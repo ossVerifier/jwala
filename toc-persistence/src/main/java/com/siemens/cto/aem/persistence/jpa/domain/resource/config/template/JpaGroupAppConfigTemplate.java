@@ -14,6 +14,8 @@ import javax.persistence.*;
                 query = "SELECT t.templateName FROM JpaGroupAppConfigTemplate t WHERE t.grp.name = :grpName"),
         @NamedQuery(name = JpaGroupAppConfigTemplate.GET_GROUP_APP_TEMPLATE_CONTENT,
                 query = "SELECT t.templateContent FROM JpaGroupAppConfigTemplate t where t.grp.name = :grpName and t.templateName = :templateName"),
+        @NamedQuery(name = JpaGroupAppConfigTemplate.GET_GROUP_APP_TEMPLATE_META_DATA,
+                query = "SELECT t.metaData FROM JpaGroupAppConfigTemplate t where t.grp.name = :grpName and t.templateName = :templateName"),
         @NamedQuery(name = JpaGroupAppConfigTemplate.UPDATE_GROUP_APP_TEMPLATE_CONTENT,
                 query = "UPDATE JpaGroupAppConfigTemplate t SET t.templateContent = :templateContent WHERE t.grp.name = :grpName AND t.templateName = :templateName"),
         @NamedQuery(name = JpaGroupAppConfigTemplate.QUERY_DELETE_GRP_APP_TEMPLATE, query = "DELETE FROM JpaGroupAppConfigTemplate t WHERE t.templateName = :templateName")
@@ -21,6 +23,7 @@ import javax.persistence.*;
 public class JpaGroupAppConfigTemplate extends ConfigTemplate {
     public static final String GET_GROUP_APP_TEMPLATE_RESOURCE_NAMES = "getGroupAppTemplateResourceNames";
     public static final String GET_GROUP_APP_TEMPLATE_CONTENT = "getGroupAppTemplateContent";
+    public static final String GET_GROUP_APP_TEMPLATE_META_DATA = "getGroupAppTemplateMetaData";
     public static final String UPDATE_GROUP_APP_TEMPLATE_CONTENT = "updateGroupAppTemplateContent";
     public static final String QUERY_DELETE_GRP_APP_TEMPLATE = "deleteGrpAppTemplate";
 
