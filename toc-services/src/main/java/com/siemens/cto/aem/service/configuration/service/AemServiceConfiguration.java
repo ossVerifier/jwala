@@ -167,15 +167,6 @@ public class AemServiceConfiguration implements SchedulingConfigurer {
     @Autowired
     private ClientFactoryHelper clientFactoryHelper;
 
-    @Value("${spring.messaging.topic.serverStates:/topic/server-states}")
-    private String topicServerStates;
-
-    @Value("${paths.resource-types:D:/stp/app/data/toc/types}")
-    private String templatePath;
-
-    @Value("${default.jvm.templates:ServerXML,ContextXML}")
-    private String defaultJvmTemplateNames;
-
     /**
      * Make toc.properties available to spring integration configuration
      * System properties are only used if there is no setting in toc.properties.
@@ -190,29 +181,30 @@ public class AemServiceConfiguration implements SchedulingConfigurer {
     }
 
     @Bean
-    public GroupService getGroupService() {
-        return new GroupServiceImpl(
-                persistenceServiceConfiguration.getGroupPersistenceService(),
-                getWebServerService(), persistenceServiceConfiguration.getApplicationPersistenceService());
+    public GroupService getGroupService(final WebServerPersistenceService webServerPersistenceService) {
+        return new GroupServiceImpl(persistenceServiceConfiguration.getGroupPersistenceService(), webServerPersistenceService,
+                       persistenceServiceConfiguration.getApplicationPersistenceService());
     }
 
     @Bean(name = "jvmService")
-    public JvmService getJvmService(final ResourceService resourceService, final ClientFactoryHelper clientFactoryHelper,
+    public JvmService getJvmService(final GroupService groupService,
+                                    final ApplicationService applicationService,
+                                    final ResourceService resourceService, final ClientFactoryHelper clientFactoryHelper,
                                     @Value("${spring.messaging.topic.serverStates:/topic/server-states}") final String topicServerStates,
                                     @Value("${paths.resource-types:D:/stp/app/data/toc/types}") final String templatePath,
                                     @Value("${default.jvm.templates:ServerXML,ContextXML}") final String defaultJvmTemplateNames) {
         final JvmPersistenceService jvmPersistenceService = persistenceServiceConfiguration.getJvmPersistenceService();
-        return new JvmServiceImpl(jvmPersistenceService, getGroupService(), getApplicationService(jvmPersistenceService),
+        return new JvmServiceImpl(jvmPersistenceService, groupService, applicationService,
                 fileManager, getStateNotificationService(), messagingTemplate, groupStateNotificationService, resourceService,
                 clientFactoryHelper, topicServerStates, templatePath, defaultJvmTemplateNames);
     }
 
     @Bean(name = "webServerService")
-    public WebServerService getWebServerService() {
-        return new WebServerServiceImpl(
-                persistenceServiceConfiguration.getWebServerPersistenceService(),
-                fileManager
-        );
+    public WebServerService getWebServerService(final ResourceService resourceService,
+                                                @Value("${paths.resource-types:D:/stp/app/data/toc/types}") final String templatePath,
+                                                @Value("${default.webserver.templates:HttpdSslConf}") final String defaultWebServerTemplateNames) {
+        return new WebServerServiceImpl(persistenceServiceConfiguration.getWebServerPersistenceService(),
+                                        fileManager, resourceService, templatePath, defaultWebServerTemplateNames);
     }
 
     @Bean
@@ -228,9 +220,9 @@ public class AemServiceConfiguration implements SchedulingConfigurer {
     }
 
     @Bean
-    public ApplicationService getApplicationService(final JvmPersistenceService jvmPersistenceService) {
+    public ApplicationService getApplicationService(final JvmPersistenceService jvmPersistenceService, final GroupService groupService) {
         return new ApplicationServiceImpl(persistenceServiceConfiguration.getApplicationPersistenceService(),
-                jvmPersistenceService, aemCommandExecutorConfig.getRemoteCommandExecutor(), getGroupService(), fileManager,
+                jvmPersistenceService, aemCommandExecutorConfig.getRemoteCommandExecutor(), groupService, fileManager,
                 null, null);
     }
 
@@ -252,34 +244,35 @@ public class AemServiceConfiguration implements SchedulingConfigurer {
     }
 
     @Bean(name = "groupControlService")
-    public GroupControlService getGroupControlService() {
-        return new GroupControlServiceImpl(getGroupWebServerControlService(), getGroupJvmControlService());
+    public GroupControlService getGroupControlService(final GroupJvmControlService groupJvmControlService,
+                                                      final GroupWebServerControlService groupWebServerControlService) {
+        return new GroupControlServiceImpl(groupWebServerControlService, groupJvmControlService);
     }
 
     @Bean(name = "groupJvmControlService")
-    public GroupJvmControlService getGroupJvmControlService() {
-        return new GroupJvmControlServiceImpl(getGroupService(), commandDispatchGateway);
+    public GroupJvmControlService getGroupJvmControlService(final GroupService groupService) {
+        return new GroupJvmControlServiceImpl(groupService, commandDispatchGateway);
     }
 
     @Bean(name = "groupWebServerControlService")
-    public GroupWebServerControlService getGroupWebServerControlService() {
-        return new GroupWebServerControlServiceImpl(getGroupService(), commandDispatchGateway);
+    public GroupWebServerControlService getGroupWebServerControlService(final GroupService groupService) {
+        return new GroupWebServerControlServiceImpl(groupService, commandDispatchGateway);
     }
 
     @Bean(name = "webServerControlService")
-    public WebServerControlService getWebServerControlService(final HistoryService historyService) {
-        return new WebServerControlServiceImpl(getWebServerService(), aemCommandExecutorConfig.getRemoteCommandExecutor(),
+    public WebServerControlService getWebServerControlService(final HistoryService historyService, final WebServerService webServerService) {
+        return new WebServerControlServiceImpl(webServerService, aemCommandExecutorConfig.getRemoteCommandExecutor(),
                 getWebServerInMemoryStateManagerService(), historyService, getStateNotificationService(), messagingTemplate);
     }
 
     @Bean(name = "webServerCommandService")
-    public WebServerCommandService getWebServerCommandService() {
+    public WebServerCommandService getWebServerCommandService(final WebServerService webServerService) {
         final SshConfiguration sshConfig = aemSshConfig.getSshConfiguration();
 
         final JschBuilder jschBuilder = new JschBuilder().setPrivateKeyFileName(sshConfig.getPrivateKeyFile())
                 .setKnownHostsFileName(sshConfig.getKnownHostsFile());
 
-        return new WebServerCommandServiceImpl(getWebServerService(), commandExecutor, jschBuilder, sshConfig, channelPool);
+        return new WebServerCommandServiceImpl(webServerService, commandExecutor, jschBuilder, sshConfig, channelPool);
     }
 
     @Bean

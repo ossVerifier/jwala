@@ -288,7 +288,7 @@ public class ResourceServiceImplTest {
                 .getResourceAsStream("resource-service-test-files/create-ws-template-test-metadata.json");
         final InputStream templateIn = this.getClass().getClassLoader()
                 .getResourceAsStream("resource-service-test-files/httpd.conf.tpl");
-        resourceService.createTemplate(metaDataIn, templateIn, "test-app-name");
+        resourceService.createTemplate(metaDataIn, templateIn, "some webserver");
         verify(mockWebServerPersistenceService).findWebServerByName("some webserver");
         verify(mockWebServerPersistenceService).uploadWebserverConfigTemplate(any(UploadWebServerTemplateRequest.class));
     }

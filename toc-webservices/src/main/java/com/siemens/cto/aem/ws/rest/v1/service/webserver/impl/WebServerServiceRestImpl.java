@@ -92,12 +92,8 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
     @Override
     public Response createWebServer(final JsonCreateWebServer aWebServerToCreate, final AuthenticatedUser aUser) {
         LOGGER.info("Create WS requested: {}", aWebServerToCreate);
-
         final WebServer webServer = webServerService.createWebServer(aWebServerToCreate.toCreateWebServerRequest(), aUser.getUser());
-
-        // upload the default resource template for the newly created web server
-        uploadWebServerResourceTemplates(aUser, webServer);
-
+        webServerService.createDefaultTemplates(webServer.getName());
         return ResponseBuilder.created(webServer);
     }
 

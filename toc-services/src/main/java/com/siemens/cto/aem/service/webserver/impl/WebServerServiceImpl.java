@@ -16,16 +16,22 @@ import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateReque
 import com.siemens.cto.aem.persistence.jpa.domain.resource.config.template.JpaWebServerConfigTemplate;
 import com.siemens.cto.aem.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
 import com.siemens.cto.aem.persistence.service.WebServerPersistenceService;
+import com.siemens.cto.aem.service.resource.ResourceService;
 import com.siemens.cto.aem.service.webserver.WebServerService;
+import com.siemens.cto.aem.service.webserver.exception.WebServerServiceException;
 import com.siemens.cto.aem.template.ResourceFileGenerator;
 import com.siemens.cto.aem.template.webserver.ApacheWebServerConfigFileGenerator;
 import com.siemens.cto.toc.files.FileManager;
+import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -41,9 +47,19 @@ public class WebServerServiceImpl implements WebServerService {
 
     private final String HTTPD_CONF = "httpd.conf";
 
-    public WebServerServiceImpl(final WebServerPersistenceService webServerPersistenceService, final FileManager theFileManager) {
+    private final ResourceService resourceService;
+
+    private final String templatePath;
+
+    private final String defaultWebServerTemplateNames;
+
+    public WebServerServiceImpl(final WebServerPersistenceService webServerPersistenceService, final FileManager fileManager,
+                                final ResourceService resourceService, final String templatePath, final String defaultWebServerTemplateNames) {
         this.webServerPersistenceService = webServerPersistenceService;
-        fileManager = theFileManager;
+        this.fileManager = fileManager;
+        this.templatePath = templatePath;
+        this.defaultWebServerTemplateNames = defaultWebServerTemplateNames;
+        this.resourceService = resourceService;
     }
 
     @Override
@@ -271,5 +287,22 @@ public class WebServerServiceImpl implements WebServerService {
     @Override
     public Long getWebServerStoppedCount(final String groupName) {
         return webServerPersistenceService.getWebServerStoppedCount(groupName);
+    }
+
+    @Override
+    @Transactional
+    public void createDefaultTemplates(final String webServerName) {
+        final String [] templateNameArray = defaultWebServerTemplateNames.split(",");
+        for (final String templateName: templateNameArray) {
+            try {
+                final InputStream metaDataIn = new ByteArrayInputStream(FileUtils.readFileToByteArray(
+                        new File(templatePath + "/" + templateName + "Properties.json")));
+                final InputStream templateIn = new ByteArrayInputStream(FileUtils.readFileToByteArray(
+                        new File(templatePath + "/" + templateName + "Template.tpl")));
+                resourceService.createTemplate(metaDataIn, templateIn, webServerName);
+            } catch (final IOException ioe) {
+                throw new WebServerServiceException("Error creating " + templateName + " template!", ioe);
+            }
+        }
     }
 }

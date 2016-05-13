@@ -11,9 +11,11 @@ import com.siemens.cto.aem.persistence.jpa.service.impl.WebServerCrudServiceImpl
 import com.siemens.cto.aem.persistence.service.WebServerPersistenceService;
 import com.siemens.cto.aem.persistence.service.impl.WebServerPersistenceServiceImpl;
 import com.siemens.cto.aem.service.configuration.TestJpaConfiguration;
+import com.siemens.cto.aem.service.resource.ResourceService;
 import com.siemens.cto.aem.service.webserver.WebServerService;
 import com.siemens.cto.toc.files.FileManager;
 import com.siemens.cto.toc.files.configuration.TocFileManagerConfigReference;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -65,9 +67,13 @@ public class WebServerServiceImplIntegrationTest {
     @Autowired
     private FileManager fileManager;
 
+    @Autowired
+    private ResourceService resourceService;
+
     @Before
     public void setup() {
-        webServerService = new WebServerServiceImpl(webServerPersistenceService, fileManager);
+        webServerService = new WebServerServiceImpl(webServerPersistenceService, fileManager, resourceService,
+                "d:/stp/app/data/toc/types", "HttpdSslConf");
     }
 
     @Test(expected = NotFoundException.class)

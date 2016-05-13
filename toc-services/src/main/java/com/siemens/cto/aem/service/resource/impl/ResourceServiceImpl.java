@@ -213,7 +213,7 @@ public class ResourceServiceImpl implements ResourceService {
                     responseWrapper = createGroupedJvmsTemplate(resourceTemplateMetaData, templateData);
                     break;
                 case WEB_SERVER:
-                    responseWrapper = createWebServerTemplate(resourceTemplateMetaData, templateData);
+                    responseWrapper = createWebServerTemplate(resourceTemplateMetaData, templateData, targetName);
                     break;
                 case GROUPED_WEBSERVERS:
                     responseWrapper = createGroupedWebServersTemplate(resourceTemplateMetaData, templateData);
@@ -314,12 +314,14 @@ public class ResourceServiceImpl implements ResourceService {
 
     /**
      * Create the web server template in the db and in the templates path for a specific web server entity target.
-     *
-     * @param metaData     the data that describes the template, please see {@link ResourceTemplateMetaData}
+     *  @param metaData the data that describes the template, please see {@link ResourceTemplateMetaData}
      * @param templateData the template content/data
+     * @param webServerName identifies the web server to which the template belongs to
      */
-    private CreateResourceTemplateApplicationResponseWrapper createWebServerTemplate(final ResourceTemplateMetaData metaData, final InputStream templateData) {
-        final WebServer webServer = webServerPersistenceService.findWebServerByName(metaData.getEntity().getTarget());
+    private CreateResourceTemplateApplicationResponseWrapper createWebServerTemplate(final ResourceTemplateMetaData metaData,
+                                                                                     final InputStream templateData,
+                                                                                     final String webServerName) {
+        final WebServer webServer = webServerPersistenceService.findWebServerByName(webServerName);
         final UploadWebServerTemplateRequest uploadWebArchiveRequest = new UploadWebServerTemplateRequest(webServer,
                 metaData.getTemplateName(), convertResourceTemplateMetaDataToJson(metaData), templateData) {
             @Override

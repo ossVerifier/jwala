@@ -14,8 +14,8 @@ import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateReque
 import com.siemens.cto.aem.common.rule.group.GroupNameRule;
 import com.siemens.cto.aem.persistence.service.ApplicationPersistenceService;
 import com.siemens.cto.aem.persistence.service.GroupPersistenceService;
+import com.siemens.cto.aem.persistence.service.WebServerPersistenceService;
 import com.siemens.cto.aem.service.group.GroupService;
-import com.siemens.cto.aem.service.webserver.WebServerService;
 import com.siemens.cto.aem.template.GeneratorUtils;
 import com.siemens.cto.aem.template.jvm.TomcatJvmConfigFileGenerator;
 import com.siemens.cto.aem.template.webserver.ApacheWebServerConfigFileGenerator;
@@ -26,14 +26,14 @@ import java.util.*;
 public class GroupServiceImpl implements GroupService {
 
     private final GroupPersistenceService groupPersistenceService;
-    private final WebServerService webServerService;
+    private final WebServerPersistenceService webServerPersistenceService;
     private ApplicationPersistenceService applicationPersistenceService;
 
-    public GroupServiceImpl(final GroupPersistenceService theGroupPersistenceService,
-                            final WebServerService wSService,
+    public GroupServiceImpl(final GroupPersistenceService groupPersistenceService,
+                            final WebServerPersistenceService webServerPersistenceService,
                             final ApplicationPersistenceService applicationPersistenceService) {
-        groupPersistenceService = theGroupPersistenceService;
-        webServerService = wSService;
+        this.groupPersistenceService = groupPersistenceService;
+        this.webServerPersistenceService = webServerPersistenceService;
         this.applicationPersistenceService = applicationPersistenceService;
     }
 
@@ -198,7 +198,7 @@ public class GroupServiceImpl implements GroupService {
     @Override
     @Transactional
     public Group populateWebServerConfig(Identifier<Group> aGroupId, List<UploadWebServerTemplateRequest> uploadWSTemplateCommands, User user, boolean overwriteExisting) {
-        webServerService.populateWebServerConfig(uploadWSTemplateCommands, user, overwriteExisting);
+        webServerPersistenceService.populateWebServerConfig(uploadWSTemplateCommands, user, overwriteExisting);
         return groupPersistenceService.getGroup(aGroupId);
     }
 

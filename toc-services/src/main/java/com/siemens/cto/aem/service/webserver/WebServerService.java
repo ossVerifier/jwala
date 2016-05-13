@@ -64,4 +64,10 @@ public interface WebServerService {
     List<WebServer> getWebServersPropagationNew();
 
     Long getWebServerStoppedCount(String groupName);
+
+    /**
+     * Create web servers default templates.
+     * @param webServerName identifies the web server to which the templates will belong to
+     */
+    void createDefaultTemplates(String webServerName);
 }
