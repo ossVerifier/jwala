@@ -491,8 +491,8 @@ public class WebServerServiceImplTest {
         when(webServerPersistenceService.findWebServerByName(anyString())).thenReturn(mockWebServer);
         when(webServerPersistenceService.findJvms(anyString())).thenReturn(jvmList);
         when(webServerPersistenceService.findApplications(anyString())).thenReturn(appList);
-        String template = wsService.previewResourceTemplate("wsName", "groupName", "my template");
-        assertEquals("my template", template);
+        wsService.previewResourceTemplate("wsName", "groupName", "my template");
+        verify(resourceService).generateResourceFile(eq("my template"), any(ResourceGroup.class), any(WebServer.class));
     }
 
     @Test

@@ -265,11 +265,8 @@ public class WebServerServiceImpl implements WebServerService {
     @Override
     @Transactional(readOnly = true)
     public String previewResourceTemplate(final String webServerName, final String groupName, final String template) {
-        // TODO: Web server name shouldn't be unique therefore we will have to use the groupName parameter in the future.
-        return ApacheWebServerConfigFileGenerator.getHttpdConfFromText(webServerName, template,
-                webServerPersistenceService.findWebServerByName(webServerName),
-                webServerPersistenceService.findJvms(webServerName),
-                webServerPersistenceService.findApplications(webServerName));
+        return resourceService.generateResourceFile(template, resourceService.generateResourceGroup(),
+                                                    webServerPersistenceService.findWebServerByName(webServerName));
     }
 
     @Override
