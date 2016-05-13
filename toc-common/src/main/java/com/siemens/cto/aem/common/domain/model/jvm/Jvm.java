@@ -73,6 +73,36 @@ public class Jvm implements Serializable {
         this.errorStatus = errorStatus;
     }
 
+    public Jvm(Identifier<Jvm> id,
+               String jvmName,
+               String hostName,
+               Set<Group> groups,
+               Group parentGroup,
+               Integer httpPort,
+               Integer httpsPort,
+               Integer redirectPort,
+               Integer shutdownPort,
+               Integer ajpPort,
+               Path statusPath,
+               String systemProperties,
+               JvmState state,
+               String errorStatus) {
+        this.id = id;
+        this.jvmName = jvmName;
+        this.hostName = hostName;
+        this.groups = groups;
+        this.parentGroup = parentGroup;
+        this.httpPort = httpPort;
+        this.httpsPort = httpsPort;
+        this.redirectPort = redirectPort;
+        this.shutdownPort = shutdownPort;
+        this.ajpPort = ajpPort;
+        this.statusPath = statusPath;
+        this.systemProperties = systemProperties;
+        this.state = state;
+        this.errorStatus = errorStatus;
+    }
+
     public Identifier<Jvm> getId() {
         return id;
     }

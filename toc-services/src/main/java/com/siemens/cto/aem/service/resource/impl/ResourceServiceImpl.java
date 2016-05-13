@@ -269,7 +269,22 @@ public class ResourceServiceImpl implements ResourceService {
                                                                                final InputStream templateData,
                                                                                final String jvmName) {
         final Jvm jvm = jvmPersistenceService.findJvmByExactName(jvmName);
-        final UploadJvmConfigTemplateRequest uploadJvmTemplateRequest = new UploadJvmConfigTemplateRequest(jvm, metaData.getTemplateName(),
+        final Group parentGroup = groupPersistenceService.getGroup(metaData.getEntity().getGroup());
+        final Jvm jvmWithParentGroup = new Jvm(jvm.getId(),
+                jvm.getJvmName(),
+                jvm.getHostName(),
+                jvm.getGroups(),
+                parentGroup,
+                jvm.getHttpPort(),
+                jvm.getHttpsPort(),
+                jvm.getRedirectPort(),
+                jvm.getShutdownPort(),
+                jvm.getAjpPort(),
+                jvm.getStatusPath(),
+                jvm.getSystemProperties(),
+                jvm.getState(),
+                jvm.getErrorStatus());
+        final UploadJvmConfigTemplateRequest uploadJvmTemplateRequest = new UploadJvmConfigTemplateRequest(jvmWithParentGroup, metaData.getTemplateName(),
                 templateData, convertResourceTemplateMetaDataToJson(metaData));
         uploadJvmTemplateRequest.setConfFileName(metaData.getConfigFileName());
         return new CreateResourceTemplateApplicationResponseWrapper(jvmPersistenceService.uploadJvmTemplateXml(uploadJvmTemplateRequest));

@@ -260,6 +260,26 @@ public class ResourceServiceImplTest {
                 .getResourceAsStream("resource-service-test-files/create-jvm-template-test-metadata.json");
         final InputStream templateIn = this.getClass().getClassLoader()
                 .getResourceAsStream("resource-service-test-files/server.xml.tpl");
+        Group mockGroup = mock(Group.class);
+        Jvm mockJvm = mock(Jvm.class);
+        when(mockJvm.getId()).thenReturn(new Identifier<Jvm>(1L));
+        when(mockJvm.getAjpPort()).thenReturn(9103);
+        when(mockJvm.getErrorStatus()).thenReturn(null);
+        when(mockJvm.getGroups()).thenReturn(new HashSet<Group>());
+        when(mockJvm.getHostName()).thenReturn("localhost");
+        when(mockJvm.getHttpPort()).thenReturn(9100);
+        when(mockJvm.getHttpsPort()).thenReturn(9101);
+        when(mockJvm.getJvmName()).thenReturn("some jvm");
+        when(mockJvm.getParentGroup()).thenReturn(mockGroup);
+        when(mockJvm.getRedirectPort()).thenReturn(9102);
+        when(mockJvm.getShutdownPort()).thenReturn(-1);
+        when(mockJvm.getState()).thenReturn(JvmState.JVM_STOPPED);
+        when(mockJvm.getStateLabel()).thenReturn(null);
+        when(mockJvm.getStatusPath()).thenReturn(null);
+        when(mockJvm.getStatusUri()).thenReturn(null);
+        when(mockJvm.getSystemProperties()).thenReturn(null);
+        when(mockGroupPesistenceService.getGroup(anyString())).thenReturn(mockGroup);
+        when(mockJvmPersistenceService.findJvmByExactName(anyString())).thenReturn(mockJvm);
         resourceService.createTemplate(metaDataIn, templateIn, "some jvm");
         verify(mockJvmPersistenceService).findJvmByExactName("some jvm");
         verify(mockJvmPersistenceService).uploadJvmTemplateXml(any(UploadJvmConfigTemplateRequest.class));
