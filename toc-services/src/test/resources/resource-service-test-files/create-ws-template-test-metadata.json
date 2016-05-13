@@ -5,7 +5,7 @@
   "configFileName":"httpd.conf",
   "path":"/conf",
   "entity": {
-    "type": "WEBSERVER",
+    "type": "WEB_SERVER",
     "group": "HEALTH CHECK 4.0",
     "target": "some webserver"
   }

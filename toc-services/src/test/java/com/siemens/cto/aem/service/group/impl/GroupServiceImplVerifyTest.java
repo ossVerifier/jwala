@@ -4,6 +4,7 @@ import com.siemens.cto.aem.common.domain.model.app.Application;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.common.domain.model.resource.ResourceGroup;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState;
@@ -12,13 +13,12 @@ import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.common.request.group.*;
 import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
 import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateRequest;
+import com.siemens.cto.aem.control.command.RemoteCommandExecutorImpl;
 import com.siemens.cto.aem.persistence.jpa.domain.resource.config.template.ConfigTemplate;
 import com.siemens.cto.aem.persistence.service.ApplicationPersistenceService;
 import com.siemens.cto.aem.persistence.service.GroupPersistenceService;
 import com.siemens.cto.aem.persistence.service.WebServerPersistenceService;
 import com.siemens.cto.aem.service.VerificationBehaviorSupport;
-import com.siemens.cto.aem.service.webserver.WebServerService;
-import groovy.lang.MissingPropertyException;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -43,14 +43,19 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
     private ApplicationPersistenceService applicationPersistenceService;
     private WebServerPersistenceService webServerPersistenceService;
     private User user;
+    private RemoteCommandExecutorImpl remoteCommandExecutor;
 
     @Before
     public void setUp() {
         groupPersistenceService = mock(GroupPersistenceService.class);
         applicationPersistenceService = mock(ApplicationPersistenceService.class);
         webServerPersistenceService = mock(WebServerPersistenceService.class);
+        remoteCommandExecutor = mock(RemoteCommandExecutorImpl.class);
 
-        groupService = new GroupServiceImpl(groupPersistenceService, webServerPersistenceService, applicationPersistenceService);
+        groupService = new GroupServiceImpl(groupPersistenceService,
+                webServerPersistenceService,
+                applicationPersistenceService,
+                remoteCommandExecutor);
         user = new User("unused");
     }
 
@@ -450,7 +455,7 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
         verify(groupPersistenceService).updateGroupAppResourceTemplate("testGroup", "hct.xml", "template content");
     }
 
-    @Test(expected = MissingPropertyException.class)
+    @Test(expected = ApplicationException.class)
     public void testPreviewGroupAppTemplate() {
         Group mockGroup = mock(Group.class);
         Set<Jvm> jvmsList = new HashSet<>();
@@ -472,12 +477,13 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
         when(groupPersistenceService.getGroup(anyString())).thenReturn(mockGroup);
         when(applicationPersistenceService.getApplications()).thenReturn(appList);
         when(applicationPersistenceService.findApplication(anyString(), anyString(), anyString())).thenReturn(mockApp);
+        when(applicationPersistenceService.getApplication(anyString())).thenReturn(mockApp);
+        when(groupPersistenceService.getGroupAppResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"entity\":{\"target\": \"testApp\"}}");
 
-        String content = groupService.previewGroupAppResourceTemplate("testGroup", "hct.xml", "hct content");
+        String content = groupService.previewGroupAppResourceTemplate("testGroup", "hct.xml", "hct content", new ResourceGroup());
         assertEquals("hct content", content);
 
-        groupService.previewGroupAppResourceTemplate("testGroup", "hct.xml", "hct content ${webApp.fail.token}");
-
+        groupService.previewGroupAppResourceTemplate("testGroup", "hct.xml", "hct content ${webApp.fail.token}", new ResourceGroup());
     }
 
     @Test
@@ -503,16 +509,18 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
         when(groupPersistenceService.getGroupAppResourceTemplate(anyString(), anyString())).thenReturn("hct content ${webApp.name}");
         when(applicationPersistenceService.getApplications()).thenReturn(appList);
         when(applicationPersistenceService.findApplication(anyString(), anyString(), anyString())).thenReturn(mockApp);
+        when(applicationPersistenceService.getApplication(anyString())).thenReturn(mockApp);
 
-        String content = groupService.getGroupAppResourceTemplate("testGroup", "hct.xml", false);
+        String content = groupService.getGroupAppResourceTemplate("testGroup", "hct.xml", false, new ResourceGroup());
         assertEquals("hct content ${webApp.name}", content);
 
-        content = groupService.getGroupAppResourceTemplate("testGroup", "hct.xml", true);
+        when(groupPersistenceService.getGroupAppResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"entity\":{\"target\": \"testApp\"}}");
+        content = groupService.getGroupAppResourceTemplate("testGroup", "hct.xml", true, new ResourceGroup());
         assertEquals("hct content testApp", content);
 
         when(groupPersistenceService.getGroupAppResourceTemplate(anyString(), anyString())).thenReturn("hct content ${webApp.fail.name}");
         try {
-            content = groupService.getGroupAppResourceTemplate("testGroup", "hct.xml", true);
+            content = groupService.getGroupAppResourceTemplate("testGroup", "hct.xml", true, new ResourceGroup());
         } catch (ApplicationException ae) {
             assertEquals("Template token replacement failed.", ae.getMessage());
         } catch (Exception e) {
@@ -520,16 +528,4 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
         }
     }
 
-    @Test
-    public void testGetAppFromTemplateName() {
-        List<Application> appList = new ArrayList<>();
-        Application mockApp = mock(Application.class);
-        appList.add(mockApp);
-        when(mockApp.getWebAppContext()).thenReturn("/hct");
-        when(mockApp.getName()).thenReturn("testApp");
-        when(applicationPersistenceService.getApplications()).thenReturn(appList);
-        assertEquals("testApp", groupService.getAppNameFromResourceTemplate("hct.properties"));
-        assertEquals("testApp", groupService.getAppNameFromResourceTemplate("hctRoleMapping.properties"));
-        assertEquals("testApp", groupService.getAppNameFromResourceTemplate("hct.xml"));
-    }
 }

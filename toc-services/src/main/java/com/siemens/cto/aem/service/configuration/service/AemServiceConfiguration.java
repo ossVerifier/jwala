@@ -183,7 +183,7 @@ public class AemServiceConfiguration implements SchedulingConfigurer {
     @Bean
     public GroupService getGroupService(final WebServerPersistenceService webServerPersistenceService) {
         return new GroupServiceImpl(persistenceServiceConfiguration.getGroupPersistenceService(), webServerPersistenceService,
-                       persistenceServiceConfiguration.getApplicationPersistenceService());
+                       persistenceServiceConfiguration.getApplicationPersistenceService(), aemCommandExecutorConfig.getRemoteCommandExecutor());
     }
 
     @Bean(name = "jvmService")

@@ -248,8 +248,8 @@ public class GroupServiceImplDeployTest {
         when(mockResourceType.getEntityType()).thenReturn("webApp");
         when(mockResourceType.getConfigFileName()).thenReturn("hct.xml");
         when(mockGroupService.getGroup(anyString())).thenReturn(mockGroup);
-        when(mockGroupService.getGroupAppResourceTemplate(anyString(), anyString(), anyBoolean())).thenReturn("new hct.xml content");
-        when(mockGroupService.getAppNameFromResourceTemplate(anyString())).thenReturn("testApp");
+        when(mockGroupService.getGroupAppResourceTemplate(anyString(), anyString(), anyBoolean(), any(ResourceGroup.class))).thenReturn("new hct.xml content");
+        when(mockGroupService.getGroupAppResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"entity\":{\"target\": \"testApp\"}}");
         when(mockJvmService.getJvm(anyString())).thenReturn(mockJvm);
         when(mockResourceService.getResourceTypes()).thenReturn(resourcesList);
         when(mockApplicationService.updateResourceTemplate(anyString(), anyString(), anyString(), anyString(), anyString())).thenReturn("new hct.xml content");
@@ -384,7 +384,7 @@ public class GroupServiceImplDeployTest {
         when(mockGroupWithJvms.getJvms()).thenReturn(mockJvms);
         when(mockGroupService.updateGroupAppResourceTemplate(anyString(), anyString(), anyString())).thenReturn("new hct.xml content");
         when(mockGroupService.getGroup(anyString())).thenReturn(mockGroupWithJvms);
-        when(mockGroupService.getAppNameFromResourceTemplate(anyString())).thenReturn("testApp");
+        when(mockGroupService.getGroupAppResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"entity\":{\"target\": \"testApp\"}}");
         when(mockApplicationService.updateResourceTemplate(anyString(), anyString(), anyString(), anyString(),anyString())).thenReturn("new hct.xml content");
 
         Response response = groupServiceRest.updateGroupAppResourceTemplate("testGroup", "hct.xml", "new hct.xml context");
@@ -397,7 +397,7 @@ public class GroupServiceImplDeployTest {
 
         reset(mockGroupService);
         when(mockGroupService.updateGroupAppResourceTemplate(anyString(), anyString(), anyString())).thenReturn("new hct.xml content");
-        when(mockGroupService.getAppNameFromResourceTemplate(anyString())).thenReturn("testApp");
+        when(mockGroupService.getGroupAppResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"entity\":{\"target\": \"testApp\"}}");
         when(mockGroupService.getGroup(anyString())).thenReturn(mockGroupWithJvms);
         when(mockGroupWithJvms.getJvms()).thenReturn(null);
         response = groupServiceRest.updateGroupAppResourceTemplate("testGroup", "hct.xml", "newer hct.xml content");
@@ -411,7 +411,7 @@ public class GroupServiceImplDeployTest {
         @Bean
         public GroupServiceRest getGroupServiceRest() {
             return new GroupServiceRestImpl(mockGroupService, mockResourceService, mockGroupControlService, mockGroupJvmControlService,
-                    mockGroupWebServerControlService, mockJvmService, mockWebServerService);
+                    mockGroupWebServerControlService, mockJvmService, mockWebServerService, mockApplicationService);
         }
 
         @Bean

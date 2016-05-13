@@ -245,6 +245,11 @@ public class JpaGroupPersistenceServiceImpl implements GroupPersistenceService {
     }
 
     @Override
+    public String getGroupAppResourceTemplateMetaData(String groupName, String fileName) {
+        return groupCrudService.getGroupAppResourceTemplateMetaData(groupName, fileName);
+    }
+
+    @Override
     public String getGroupAppResourceTemplate(String groupName, String resourceTemplateName) {
         return groupCrudService.getGroupAppResourceTemplate(groupName, resourceTemplateName);
     }

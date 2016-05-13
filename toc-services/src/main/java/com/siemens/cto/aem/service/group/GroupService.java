@@ -5,8 +5,10 @@ import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.group.GroupState;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.common.domain.model.resource.ResourceGroup;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
+import com.siemens.cto.aem.common.exec.CommandOutput;
 import com.siemens.cto.aem.common.request.group.*;
 import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
 import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateRequest;
@@ -86,16 +88,17 @@ public interface GroupService {
 
     List<String> getGroupAppsResourceTemplateNames(String groupName);
 
-    String getGroupAppResourceTemplate(String groupName, String resourceTemplateName, boolean tokensReplaced);
+    String getGroupAppResourceTemplate(String groupName, String resourceTemplateName, boolean tokensReplaced, ResourceGroup resourceGroup);
+
+    String getGroupAppResourceTemplateMetaData(String groupName, String fileName);
 
     String updateGroupAppResourceTemplate(String groupName, String resourceTemplateName, String content);
 
-    String previewGroupAppResourceTemplate(String groupName, String resourceTemplateName, String template);
+    String previewGroupAppResourceTemplate(String groupName, String resourceTemplateName, String template, ResourceGroup resourceGroup);
 
     String populateGroupAppTemplate(String groupName, String templateName, String metaData, String content);
 
-    String getAppNameFromResourceTemplate(String resourceTemplateName);
-
     void updateState(Identifier<Group> id, GroupState state);
 
+    CommandOutput deployGroupAppTemplate(String groupName, String fileName, ResourceGroup resourceGroup, Application application, Jvm jvm);
 }

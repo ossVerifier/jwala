@@ -18,7 +18,6 @@ public class DefaultNameSynthesizerTest {
         DefaultNameSynthesizer defaultNameSynthesizer = new DefaultNameSynthesizer();
         final File file = new File("./src/test/resources/testDefaultNameSynthesizer.war");
         Path result = defaultNameSynthesizer.unique(file.toPath());
-        System.out.println("JMJM " + result);
         assertTrue(result.toString().length() > file.getName().length());
         assertTrue(result.toString().startsWith("testDefaultNameSynthesizer-"));
         assertTrue(result.toString().endsWith(".war"));
@@ -29,7 +28,6 @@ public class DefaultNameSynthesizerTest {
         DefaultNameSynthesizer defaultNameSynthesizer = new DefaultNameSynthesizer();
         final File file = new File("./src/test/resources/testDefaultNameSynthesizer");
         Path result = defaultNameSynthesizer.unique(file.toPath());
-        System.out.println("JMJM " + result);
         assertTrue(result.toString().length() > file.getName().length());
         assertTrue(result.toString().startsWith("testDefaultNameSynthesizer-"));
         assertTrue(result.toString().endsWith(""));

@@ -95,7 +95,7 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
 
     @Override
     public Response removeApplication(final Identifier<Application> anAppToRemove, final AuthenticatedUser aUser) {
-        LOGGER.debug("Delete JVM requested: {}", anAppToRemove);
+        LOGGER.debug("Delete application requested: {}", anAppToRemove);
         service.removeApplication(anAppToRemove, aUser.getUser());
         return ResponseBuilder.ok();
     }

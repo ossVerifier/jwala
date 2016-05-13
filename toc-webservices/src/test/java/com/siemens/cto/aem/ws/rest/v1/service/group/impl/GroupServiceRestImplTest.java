@@ -6,6 +6,7 @@ import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.jvm.JvmControlOperation;
 import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
+import com.siemens.cto.aem.common.domain.model.resource.ResourceGroup;
 import com.siemens.cto.aem.common.domain.model.resource.ResourceType;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
@@ -19,6 +20,7 @@ import com.siemens.cto.aem.common.request.group.RemoveJvmFromGroupRequest;
 import com.siemens.cto.aem.common.request.group.UpdateGroupRequest;
 import com.siemens.cto.aem.persistence.jpa.service.exception.ResourceTemplateUpdateException;
 import com.siemens.cto.aem.persistence.service.GroupPersistenceService;
+import com.siemens.cto.aem.service.app.ApplicationService;
 import com.siemens.cto.aem.service.group.GroupControlService;
 import com.siemens.cto.aem.service.group.GroupJvmControlService;
 import com.siemens.cto.aem.service.group.GroupWebServerControlService;
@@ -129,6 +131,9 @@ public class GroupServiceRestImplTest {
     @Mock
     private GroupJvmControlService mockGroupJvmControlService;
 
+    @Mock
+    private ApplicationService mockApplicationService;
+
     private static List<Group> createGroupList() {
         final Group ws = new Group(Identifier.id(1L, Group.class), name);
         final List<Group> result = new ArrayList<>();
@@ -158,7 +163,7 @@ public class GroupServiceRestImplTest {
         webServers.add(mockWebServer);
 
         groupServiceRest = new GroupServiceRestImpl(mockGroupService, mockResourceService, mockGroupControlService,
-                mockGroupJvmControlService, mockGroupWSControlService, mockJvmService, mockWebServerService);
+                mockGroupJvmControlService, mockGroupWSControlService, mockJvmService, mockWebServerService, mockApplicationService);
     }
 
     @After
@@ -682,10 +687,12 @@ public class GroupServiceRestImplTest {
 
     @Test
     public void testPreviewGroupAppResourceTemplate() {
+        final ResourceGroup resourceGroup = new ResourceGroup();
+        when(mockResourceService.generateResourceGroup()).thenReturn(resourceGroup);
         groupServiceRest.previewGroupAppResourceTemplate("testGroup", "hct.xml", "preview me!");
-        verify(mockGroupService).previewGroupAppResourceTemplate("testGroup", "hct.xml", "preview me!");
+        verify(mockGroupService).previewGroupAppResourceTemplate("testGroup", "hct.xml", "preview me!", resourceGroup);
 
-        when(mockGroupService.previewGroupAppResourceTemplate(anyString(), anyString(), anyString())).thenThrow(new RuntimeException());
+        when(mockGroupService.previewGroupAppResourceTemplate(anyString(), anyString(), anyString(), any(ResourceGroup.class))).thenThrow(new RuntimeException());
         Response response = groupServiceRest.previewGroupAppResourceTemplate("testGroup", "hct.xml", "preview me!");
         assertTrue(response.getStatus() > 499);
     }
@@ -693,7 +700,7 @@ public class GroupServiceRestImplTest {
     @Test
     public void testGetGroupAppResourceTemplate() {
         groupServiceRest.getGroupAppResourceTemplate("testGroup", "hct.xml", false);
-        verify(mockGroupService).getGroupAppResourceTemplate("testGroup", "hct.xml", false);
+        verify(mockGroupService).getGroupAppResourceTemplate(eq("testGroup"), eq("hct.xml"), eq(false), any(ResourceGroup.class));
     }
 
     @Test
