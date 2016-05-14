@@ -14,6 +14,7 @@ import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServerControlOperation;
 import com.siemens.cto.aem.common.exception.FaultCodeException;
 import com.siemens.cto.aem.common.exception.InternalErrorException;
+import com.siemens.cto.aem.common.exec.CommandOutput;
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.common.request.group.*;
 import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
@@ -855,9 +856,15 @@ public class GroupServiceRestImpl implements GroupServiceRest {
                     Future<Response> responseFuture = executorService.submit(new Callable<Response>() {
                         @Override
                         public Response call() throws Exception {
-                            return ResponseBuilder.ok(groupService.deployGroupAppTemplate(groupName, fileName, resourceGroup, application, jvm));
+                            final CommandOutput someContent = groupService.deployGroupAppTemplate(groupName, fileName, resourceGroup, application, jvm);
+                            if (someContent.getReturnCode().wasSuccessful()) {
+                                return ResponseBuilder.ok(someContent);
+                            } else {
+                                return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(AemFaultType.REMOTE_COMMAND_FAILURE,someContent.toString()));
+                            }
                         }
                     });
+                    futureMap.put(hostName, responseFuture);
                 }
             }
             waitForDeployToComplete(new HashSet<>(futureMap.values()));
