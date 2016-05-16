@@ -126,10 +126,45 @@ var ResourceAttrPane = React.createClass({
                     </table>
                </div>;
     },
-    setCurrentlySelectedEntityData: function(data) {
+    setCurrentlySelectedEntityData: function(data, entityName) {
         if (this.state.attributes) {
-            this.state.attributes["this"] = data;
-            this.refs.attrTree.refresh(this.state.attributes);
+            var newAttributes = {};
+            for (key in this.state.attributes) {
+                newAttributes[key] = this.state.attributes[key];
+            }
+
+            var newData = {};
+            for (key in data) {
+                if (key !== "rtreeListMetaData") {
+                    newData[key] = data[key];
+                }
+            }
+
+            var newEntityName;
+            switch (entityName) {
+                case "jvmSection":
+                    newEntityName = "jvms";
+                    newAttributes[newEntityName] = newData.jvms;
+                    break;
+                case "webServerSection":
+                    newEntityName = "webServers";
+                    newAttributes[newEntityName] = newData.webServers;
+                    break;
+                case "webApps":
+                    newEntityName = "webApp";
+                     newAttributes[newEntityName] = newData;
+                    break;
+                case "jvms":
+                    newEntityName = "jvm";
+                     newAttributes[newEntityName] = newData;
+                    break;
+                case "webServers":
+                    newEntityName = "webServer";
+                     newAttributes[newEntityName] = newData;
+                    break;
+            }
+
+            this.refs.attrTree.refresh(newAttributes);
         }
     }
 })

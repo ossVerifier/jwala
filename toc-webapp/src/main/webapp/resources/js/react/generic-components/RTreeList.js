@@ -34,8 +34,8 @@ var RTreeList = React.createClass({
         var nodes = this.createTreeNodes(this.props.data, this.props.treeMetaData, 0, null, "");
         return React.createElement("ul", {className: "RTreeList root-node-ul"}, nodes);
     },
-    onSelectNode: function(data) {
-        return this.props.selectNodeCallback(data);
+    onSelectNode: function(data, entityName) {
+        return this.props.selectNodeCallback(data, entityName);
     },
     createTreeNodes: function(data, meta, level, parent, parentLabel) {
         var self = this;
@@ -145,7 +145,7 @@ var Node = React.createClass({
         if (this.props.selectable === true) {
             var oldNode = this.props.theTree.state.selectedNode;
             this.props.theTree.setState({selectedNode: this});
-            if (!this.props.theTree.onSelectNode(this.props.data)) {
+            if (!this.props.theTree.onSelectNode(this.props.data, this.props.entity)) {
                 this.props.theTree.setState({selectedNode: oldNode});
             }
         }
