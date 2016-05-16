@@ -1,6 +1,7 @@
 package com.siemens.cto.aem.ws.rest.v1.service.jvm.impl;
 
 import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
+import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.jvm.JvmControlOperation;
@@ -103,14 +104,22 @@ public class JvmServiceRestImpl implements JvmServiceRest {
             jvm = jvmService.createJvm(aJvmToCreate.toCreateJvmRequest(), user);
         }
 
-        try {
-            jvmService.createDefaultTemplates(jvm.getJvmName());
-        } catch (final JvmServiceException jse) {
-            // TODO: If JVM creation is successful even though the template creation failed, we should have a mechanism to tell the UI.
-            // NOTE: JVM creation and template creation were not placed in a single transaction by design since
-            //       in the real world, a JVM can exist without its resource templates.
-            return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(AemFaultType.PERSISTENCE_ERROR,
-                       jse.getMessage(), jse));
+        if (null != jvm.getGroups() && jvm.getGroups().size() > 0) {
+            final Group parentGroup = jvm.getGroups().iterator().next();
+            try {
+                jvmService.createDefaultTemplates(jvm.getJvmName(), parentGroup);
+            } catch (final JvmServiceException jse) {
+                // TODO: If JVM creation is successful even though the template creation failed, we should have a mechanism to tell the UI.
+                // NOTE: JVM creation and template creation were not placed in a single transaction by design since
+                //       in the real world, a JVM can exist without its resource templates.
+                return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(AemFaultType.PERSISTENCE_ERROR,
+                        jse.getMessage(), jse));
+            }
+
+            // TODO if the JVM is associated with more than one group on creation only use the templates from the first group - need to discuss with team the correct course of action
+            if (jvm.getGroups().size() > 1){
+                return ResponseBuilder.notOk(Response.Status.EXPECTATION_FAILED, new FaultCodeException(AemFaultType.GROUP_NOT_SPECIFIED, "Multiple groups were associated with the JVM, but the JVM was created using the templates from group " + parentGroup.getName()));
+            }
         }
 
         return ResponseBuilder.created(jvm);

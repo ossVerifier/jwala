@@ -87,4 +87,5 @@ public interface GroupPersistenceService extends StatePersistenceService<Group, 
 
     int removeWeServerTemplate(String groupName, String templateName);
 
+    String getGroupJvmResourceTemplateMetaData(String groupName, String fileName);
 }

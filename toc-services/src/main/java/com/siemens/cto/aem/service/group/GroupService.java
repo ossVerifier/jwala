@@ -68,7 +68,7 @@ public interface GroupService {
 
     Group populateGroupWebServerTemplates(String groupName, List<UploadWebServerTemplateRequest> uploadWebServerTemplateRequests, User user);
 
-    List<Map<String, String>> getGroupJvmsResourceTemplateNames(String groupName, boolean includeGroupAppResources);
+    List<String> getGroupJvmsResourceTemplateNames(String groupName);
 
     List<String> getGroupWebServersResourceTemplateNames(String groupName);
 
@@ -91,6 +91,8 @@ public interface GroupService {
     String getGroupAppResourceTemplate(String groupName, String resourceTemplateName, boolean tokensReplaced, ResourceGroup resourceGroup);
 
     String getGroupAppResourceTemplateMetaData(String groupName, String fileName);
+
+    String getGroupJvmResourceTemplateMetaData(String groupName, String fileName);
 
     String updateGroupAppResourceTemplate(String groupName, String resourceTemplateName, String content);
 

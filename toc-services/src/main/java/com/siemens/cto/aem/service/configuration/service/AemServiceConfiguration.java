@@ -190,13 +190,11 @@ public class AemServiceConfiguration implements SchedulingConfigurer {
     public JvmService getJvmService(final GroupService groupService,
                                     final ApplicationService applicationService,
                                     final ResourceService resourceService, final ClientFactoryHelper clientFactoryHelper,
-                                    @Value("${spring.messaging.topic.serverStates:/topic/server-states}") final String topicServerStates,
-                                    @Value("${paths.resource-types:D:/stp/app/data/toc/types}") final String templatePath,
-                                    @Value("${default.jvm.templates:ServerXML,ContextXML}") final String defaultJvmTemplateNames) {
+                                    @Value("${spring.messaging.topic.serverStates:/topic/server-states}") final String topicServerStates) {
         final JvmPersistenceService jvmPersistenceService = persistenceServiceConfiguration.getJvmPersistenceService();
         return new JvmServiceImpl(jvmPersistenceService, groupService, applicationService,
                 fileManager, getStateNotificationService(), messagingTemplate, groupStateNotificationService, resourceService,
-                clientFactoryHelper, topicServerStates, templatePath, defaultJvmTemplateNames);
+                clientFactoryHelper, topicServerStates);
     }
 
     @Bean(name = "webServerService")

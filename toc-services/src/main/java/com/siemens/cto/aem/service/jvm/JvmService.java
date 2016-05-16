@@ -95,6 +95,7 @@ public interface JvmService {
     /**
      * Create JVM default templates.
      * @param jvmName
+     * @param parentGroup
      */
-    void createDefaultTemplates(String jvmName);
+    void createDefaultTemplates(String jvmName, Group parentGroup);
 }

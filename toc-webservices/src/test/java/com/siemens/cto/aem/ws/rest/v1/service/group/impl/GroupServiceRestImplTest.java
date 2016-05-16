@@ -483,7 +483,7 @@ public class GroupServiceRestImplTest {
 
     @Test
     public void testGetJvmResourceNames() {
-        Response response = groupServiceRest.getGroupJvmsResourceNames(group.getName(), false);
+        Response response = groupServiceRest.getGroupJvmsResourceNames(group.getName());
         assertNotNull(response);
     }
 

@@ -93,7 +93,7 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
         initMocks(this);
         jvmService = new JvmServiceImpl(mockJvmPersistenceService, mockGroupService, mockApplicationService, mockFileManager, mockStateNotificationService,
                        mockMessagingTemplate, mockGroupStateNotificationService, mockResourceService, mockClientFactoryHelper,
-                       "/topic/server-states", "D:/stp/app/data/toc/types", "ServerXML,ContextXML");
+                       "/topic/server-states");
     }
 
     @SuppressWarnings("unchecked")
