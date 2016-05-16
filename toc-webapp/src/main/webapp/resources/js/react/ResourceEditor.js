@@ -25,7 +25,8 @@ var ResourceEditor = React.createClass({
                                       {entity: "jvmSection", propKey: "key", label: "name", icon: "public-resources/img/icons/appserver.png", selectable: true,
                                        children:[{entity: "jvms", propKey: "jvmName", selectable: true,
                                                   children:[{entity: "webApps", propKey: "name", selectable: true,
-                                                             icon: "public-resources/img/icons/webapp.png"}]}]}],
+                                                             icon: "public-resources/img/icons/webapp.png"}]}]},
+                                      {entity: "webApps", propKey: "name", label: "name", icon: "public-resources/img/icons/webapp.png", selectable: true}],
                             };
 
         var groupJvmTreeList = <RStaticDialog ref="groupsDlg" title="Topology" defaultContentHeight="283px">
@@ -80,6 +81,13 @@ var ResourceEditor = React.createClass({
         if (response.applicationResponseContent !== undefined) {
             this.groupData = response.applicationResponseContent;
             this.groupData.forEach(function(group) {
+
+                self.props.webAppService.getWebAppsByGroup(group.id.id, function(response) {
+                    if (response.applicationResponseContent) {
+                        group["webApps"] = response.applicationResponseContent;
+                    }
+                });
+
                 group.jvms.forEach(function(jvm){
                     self.dataRetrievalCount++;
                     self.props.webAppService.getWebAppsByJvm(jvm.id.id, function(response){
@@ -88,6 +96,8 @@ var ResourceEditor = React.createClass({
                 });
             });
         }
+
+        console.log(this.groupData);
 
         if (this.dataRetrievalCount === 0) {
             this.setGroupData(this.groupData);
