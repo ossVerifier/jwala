@@ -362,21 +362,29 @@ public class ResourceServiceImpl implements ResourceService {
         final Set<WebServer> webServers = group.getWebServers();
         final List<UploadWebServerTemplateRequest> uploadWebServerTemplateRequestList = new ArrayList<>();
         ConfigTemplate createdConfigTemplate = null;
-        final byte[] bytes = IOUtils.toByteArray(templateData);
+        String templateContent = IOUtils.toString(templateData);
         for (final WebServer webServer : webServers) {
             UploadWebServerTemplateRequest uploadWebServerTemplateRequest = new UploadWebServerTemplateRequest(webServer,
-                    metaData.getTemplateName(), convertResourceTemplateMetaDataToJson(metaData), new ByteArrayInputStream(bytes)) {
+                    metaData.getTemplateName(), convertResourceTemplateMetaDataToJson(metaData), new ByteArrayInputStream(templateContent.getBytes())) {
                 @Override
                 public String getConfFileName() {
                     return metaData.getConfigFileName();
                 }
             };
-            uploadWebServerTemplateRequestList.add(uploadWebServerTemplateRequest);
 
             // Since we're just creating the same template for all the JVMs, we just keep one copy of the created
             // configuration template.
             createdConfigTemplate = webServerPersistenceService.uploadWebserverConfigTemplate(uploadWebServerTemplateRequest);
         }
+
+        UploadWebServerTemplateRequest uploadWebServerTemplateRequest = new UploadWebServerTemplateRequest(null,
+                metaData.getTemplateName(), convertResourceTemplateMetaDataToJson(metaData), new ByteArrayInputStream(templateContent.getBytes())) {
+            @Override
+            public String getConfFileName() {
+                return metaData.getConfigFileName();
+            }
+        };
+        uploadWebServerTemplateRequestList.add(uploadWebServerTemplateRequest);
         groupPersistenceService.populateGroupWebServerTemplates(group.getName(), uploadWebServerTemplateRequestList);
         return new CreateResourceTemplateApplicationResponseWrapper(createdConfigTemplate);
     }
