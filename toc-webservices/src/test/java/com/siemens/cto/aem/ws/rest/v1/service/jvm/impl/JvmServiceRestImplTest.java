@@ -332,6 +332,7 @@ public class JvmServiceRestImplTest {
 
         when(jvmService.getJvm(anyString())).thenReturn(mockJvm);
         when(resourceService.getResourceTypes()).thenReturn(mockResourceTypes);
+        when(jvmService.generateInvokeBat(anyString())).thenReturn("");
         Jvm response = jvmServiceRest.generateConfFilesAndDeploy(jvm, authenticatedUser);
         assertEquals(response, jvm);
         FileUtils.deleteDirectory(new File("./src/test/resources/jvm-resources_test/" + jvm.getJvmName()));

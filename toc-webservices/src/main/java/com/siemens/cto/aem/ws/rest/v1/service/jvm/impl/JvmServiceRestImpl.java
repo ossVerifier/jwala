@@ -131,7 +131,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
     //       resources (puts then in the db) based on the said default files.
     void uploadAllJvmResourceTemplates(AuthenticatedUser aUser, final Jvm jvm) {
         for (final ResourceType resourceType : resourceService.getResourceTypes()) {
-            if ("jvm".equals(resourceType.getEntityType()) && !"invoke.bat".equals(resourceType.getConfigFileName())) {
+            if ("jvm".equals(resourceType.getEntityType()) && !CONFIG_FILENAME_INVOKE_BAT.equals(resourceType.getConfigFileName())) {
                 FileInputStream dataInputStream = null;
                 try {
                     dataInputStream =
@@ -541,6 +541,10 @@ public class JvmServiceRestImpl implements JvmServiceRest {
                     FileUtils.copyFileToDirectory(srcChild, generatedDir);
                 }
             }
+            final String generatedText = jvmService.generateInvokeBat(jvmName);
+            final String invokeBatDir = generatedDir + "/bin";
+            LOGGER.debug("generating template in location: {}", invokeBatDir + "/" + CONFIG_FILENAME_INVOKE_BAT);
+            createConfigFile(invokeBatDir + "/", CONFIG_FILENAME_INVOKE_BAT, generatedText);
 
             jvmService.generateResourceFiles(jvmName, destDirPath);
 
