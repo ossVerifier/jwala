@@ -72,20 +72,6 @@ var ResourcePane = React.createClass({
     },
     createResource: function() {
         this.props.createResourceCallback(this.state.data);
-//        if (this.state.data !== null) {
-//            if (this.state.data.rtreeListMetaData.entity === "jvms") {
-//                this.setState({showModalResourceTemplateMetaData: true});
-//                // this.props.jvmService.getResources(data.jvmName, this.getDataCallback);
-//            } else if (this.state.data.rtreeListMetaData.entity === "webServers") {
-//                // this.props.wsService.getResources(data.name, this.getDataCallback);
-//            } else if (this.state.data.rtreeListMetaData.entity === "webApps") {
-//                // this.props.webAppService.getResources(data.name, this.getDataCallback);
-//            } else if (this.state.data.rtreeListMetaData.entity === "webServerSection") {
-//                // this.props.groupService.getGroupWebServerResources(data.rtreeListMetaData.parent.name, this.getDataCallback);
-//            } else if (this.state.data.rtreeListMetaData.entity === "jvmSection") {
-//                // this.props.groupService.getGroupJvmResourcesWithAppResources(data.rtreeListMetaData.parent.name, this.getDataCallback);
-//            }
-//        }
     },
     deleteResource: function() {
         var resourceName = this.getSelectedValue();
