@@ -35,7 +35,8 @@ var ResourceEditor = React.createClass({
                                               treeMetaData={treeMetaData}
                                               expandIcon="public-resources/img/icons/plus.png"
                                               collapseIcon="public-resources/img/icons/minus.png"
-                                              selectNodeCallback={this.selectNodeCallback} />
+                                              selectNodeCallback={this.selectNodeCallback}
+                                              collapsedByDefault={true}/>
                                </RStaticDialog>
 
         var resourcesPane = <RStaticDialog ref="resourceFileDlg" title="Resources" defaultContentHeight="283px">
