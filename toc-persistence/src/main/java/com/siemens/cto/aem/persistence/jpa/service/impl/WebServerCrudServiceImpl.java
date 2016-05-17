@@ -225,6 +225,18 @@ public class WebServerCrudServiceImpl extends AbstractCrudServiceImpl<JpaWebServ
     }
 
     @Override
+    public String getResourceTemplateMetaData(String webServerName, String resourceTemplateName) {
+        final Query q = entityManager.createNamedQuery(JpaWebServerConfigTemplate.GET_WEBSERVER_TEMPLATE_METADATA);
+        q.setParameter("webServerName", webServerName);
+        q.setParameter("templateName", resourceTemplateName);
+        try {
+            return (String) q.getSingleResult();
+        } catch (NoResultException | NonUniqueResultException e) {
+            throw new NonRetrievableResourceTemplateContentException(webServerName, resourceTemplateName, e);
+        }
+    }
+
+    @Override
     public void populateWebServerConfig(List<UploadWebServerTemplateRequest> uploadWSTemplateCommands, User user, boolean overwriteExisting) {
         for (UploadWebServerTemplateRequest request : uploadWSTemplateCommands) {
             final Query q = entityManager.createNamedQuery(JpaWebServerConfigTemplate.GET_WEBSERVER_TEMPLATE_CONTENT);

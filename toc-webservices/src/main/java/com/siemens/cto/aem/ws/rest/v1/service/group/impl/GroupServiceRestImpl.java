@@ -280,7 +280,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
 
     @Override
     public Response getGroupWebServerResourceTemplate(String groupName, String resourceTemplateName, boolean tokensReplaced) {
-        return ResponseBuilder.ok(groupService.getGroupWebServerResourceTemplate(groupName, resourceTemplateName, tokensReplaced));
+        return ResponseBuilder.ok(groupService.getGroupWebServerResourceTemplate(groupName, resourceTemplateName, tokensReplaced, tokensReplaced ? resourceService.generateResourceGroup() : new ResourceGroup()));
     }
 
     @Override
@@ -452,10 +452,10 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     }
 
     @Override
-    public Response generateAndDeployGroupWebServersFile(String groupName, AuthenticatedUser aUser) {
+    public Response generateAndDeployGroupWebServersFile(final String groupName, final String resourceFileName, final AuthenticatedUser aUser) {
         Group group = groupService.getGroup(groupName);
         group = groupService.getGroupWithWebServers(group.getId());
-        final String httpdTemplateContent = groupService.getGroupWebServerResourceTemplate(groupName, "httpd.conf", false);
+        final String httpdTemplateContent = groupService.getGroupWebServerResourceTemplate(groupName, resourceFileName, false, resourceService.generateResourceGroup());
         final WebServerServiceRestImpl webServerServiceRest = WebServerServiceRestImpl.get();
         final Set<WebServer> webServers = group.getWebServers();
         if (null != webServers && webServers.size() > 0) {
@@ -472,9 +472,9 @@ public class GroupServiceRestImpl implements GroupServiceRest {
                 Future<Response> responseFuture = executorService.submit(new Callable<Response>() {
                     @Override
                     public Response call() throws Exception {
-                        webServerServiceRest.updateResourceTemplate(name, "httpd.conf", httpdTemplateContent);
+                        webServerServiceRest.updateResourceTemplate(name, resourceFileName, httpdTemplateContent);
                         final boolean doBackup = true;
-                        return webServerServiceRest.generateAndDeployConfig(name, doBackup);
+                        return webServerServiceRest.generateAndDeployConfig(name, resourceFileName, doBackup);
 
                     }
                 });
@@ -485,7 +485,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         } else {
             LOGGER.info("No web servers in group {}", groupName);
         }
-        return ResponseBuilder.ok(group);
+        return ResponseBuilder.ok(httpdTemplateContent);
     }
 
     protected void checkResponsesForErrorStatus(Map<String, Future<Response>> futureMap) {

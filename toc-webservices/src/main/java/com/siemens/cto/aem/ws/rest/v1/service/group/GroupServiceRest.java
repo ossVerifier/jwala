@@ -120,8 +120,9 @@ public interface GroupServiceRest {
                                              @BeanParam final AuthenticatedUser aUser);
 
     @PUT
-    @Path("/{groupName}/webservers/conf")
+    @Path("/{groupName}/webservers/conf/{resourceFileName}")
     Response generateAndDeployGroupWebServersFile(@PathParam("groupName") final String groupName,
+                                                  @PathParam("resourceFileName") @DefaultValue("httpd.conf")final String resourceFileName,
                                                   @BeanParam final AuthenticatedUser aUser);
 
     @GET

@@ -4,6 +4,7 @@ import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.resource.ResourceGroup;
+import com.siemens.cto.aem.common.domain.model.resource.ResourceTemplateMetaData;
 import com.siemens.cto.aem.common.domain.model.resource.ResourceType;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServerControlOperation;
@@ -25,6 +26,7 @@ import com.siemens.cto.aem.service.resource.ResourceService;
 import com.siemens.cto.aem.service.webserver.WebServerCommandService;
 import com.siemens.cto.aem.service.webserver.WebServerControlService;
 import com.siemens.cto.aem.service.webserver.WebServerService;
+import com.siemens.cto.aem.template.ResourceFileGenerator;
 import com.siemens.cto.aem.ws.rest.v1.provider.AuthenticatedUser;
 import com.siemens.cto.aem.ws.rest.v1.response.ResponseBuilder;
 import com.siemens.cto.aem.ws.rest.v1.service.webserver.WebServerServiceRest;
@@ -34,6 +36,9 @@ import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.jaxrs.ext.MessageContext;
+import org.codehaus.jackson.JsonParseException;
+import org.codehaus.jackson.map.JsonMappingException;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -181,7 +186,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
     }
 
     @Override
-    public Response generateAndDeployConfig(final String aWebServerName, final boolean doBackup) {
+    public Response generateAndDeployConfig(final String aWebServerName, final String resourceFileName, final boolean doBackup) {
 
         // only one at a time per web server
         if (!wsWriteLocks.containsKey(aWebServerName)) {
@@ -194,7 +199,8 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
             // create the file
             final String httpdDataDir = ApplicationProperties.get(STP_HTTPD_DATA_DIR);
             final String generatedHttpdConf = generateHttpdConfText(aWebServerName, resourceService.generateResourceGroup());
-            final File httpdConfFile = createTempWebServerResourceFile(aWebServerName, httpdDataDir, "httpd", "conf", generatedHttpdConf);
+            int resourceNameDotIndex = resourceFileName.lastIndexOf(".");
+            final File httpdConfFile = createTempWebServerResourceFile(aWebServerName, httpdDataDir, resourceFileName.substring(0, resourceNameDotIndex), resourceFileName.substring(resourceNameDotIndex, resourceFileName.length() - 1), generatedHttpdConf);
 
             // copy the file
             final CommandOutput execData;
@@ -205,7 +211,10 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
                 throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "The target Web Server must be stopped before attempting to update the resource file");
             }
 
-            execData = webServerControlService.secureCopyFileWithBackup(aWebServerName, httpdUnixPath, httpdDataDir + "/httpd.conf", doBackup);
+            String metaDataStr = webServerService.getResourceTemplateMetaData(aWebServerName, resourceFileName);
+            ResourceTemplateMetaData metaData = new ObjectMapper().readValue(metaDataStr, ResourceTemplateMetaData.class);
+            String metaDataPath = ResourceFileGenerator.generateResourceConfig(metaData.getPath(), resourceService.generateResourceGroup(), webServerService.getWebServer(aWebServerName));
+            execData = webServerControlService.secureCopyFileWithBackup(aWebServerName, httpdUnixPath, metaDataPath + "/" + resourceFileName, doBackup);
             if (execData.getReturnCode().wasSuccessful()) {
                 LOGGER.info("Copy of httpd.conf successful: {}", httpdUnixPath);
             } else {
@@ -225,6 +234,12 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
             errorDetails.put("webServerName", aWebServerName);
             return ResponseBuilder.notOkWithDetails(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
                     AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to copy httpd.conf"), errorDetails);
+        } catch (JsonMappingException | JsonParseException e) {
+            LOGGER.error("Failed to map meta data for {}", aWebServerName, e);
+            return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(AemFaultType.BAD_STREAM, "Failed to map meta data for " + aWebServerName, e));
+        } catch (IOException e) {
+            LOGGER.error("Failed to map meta data because of IOException for {}", aWebServerName, e);
+            return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(AemFaultType.BAD_STREAM, "Failed to map meta data because of IOException for " + aWebServerName, e));
         } finally {
             wsWriteLocks.get(aWebServerName).writeLock().unlock();
         }
@@ -257,7 +272,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
 
             // create the httpd.conf
             boolean doNotBackupFilesForNewWebServer = !WebServerReachableState.WS_NEW.equals(webServer.getState()) && doBackup;
-            generateAndDeployConfig(aWebServerName, doNotBackupFilesForNewWebServer);
+            generateAndDeployConfig(aWebServerName, "httpd.conf", doNotBackupFilesForNewWebServer);
 
             // re-install the service
             installWebServerWindowsService(aUser, new ControlWebServerRequest(webServer.getId(), WebServerControlOperation.INVOKE_SERVICE), webServer, doNotBackupFilesForNewWebServer);
@@ -471,7 +486,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
     @Override
     public Response getResourceTemplate(final String wsName, final String resourceTemplateName,
                                         final boolean tokensReplaced) {
-        return ResponseBuilder.ok(webServerService.getResourceTemplate(wsName, resourceTemplateName, tokensReplaced));
+        return ResponseBuilder.ok(webServerService.getResourceTemplate(wsName, resourceTemplateName, tokensReplaced, resourceService.generateResourceGroup()));
     }
 
     @Override

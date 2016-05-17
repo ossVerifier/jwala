@@ -351,6 +351,18 @@ public class GroupCrudServiceImpl extends AbstractCrudServiceImpl<JpaGroup> impl
     }
 
     @Override
+    public String getGroupWebServerResourceTemplateMetaData(String groupName, String resourceTemplateName) {
+        final Query q = entityManager.createNamedQuery(JpaGroupWebServerConfigTemplate.GET_GROUP_WEBSERVER_TEMPLATE_META_DATA);
+        q.setParameter("grpName", groupName);
+        q.setParameter("templateName", resourceTemplateName);
+        try {
+            return (String) q.getSingleResult();
+        } catch (RuntimeException re) {
+            throw new NonRetrievableResourceTemplateContentException(groupName, resourceTemplateName, re);
+        }
+    }
+
+    @Override
     public ConfigTemplate populateGroupAppTemplate(final JpaGroup group, final String templateFileName, final String metaData,
                                          final String templateContent) {
         Query query = entityManager.createQuery("SELECT t FROM JpaGroupAppConfigTemplate t where t.templateName = :tempName and t.grp.name = :grpName");
