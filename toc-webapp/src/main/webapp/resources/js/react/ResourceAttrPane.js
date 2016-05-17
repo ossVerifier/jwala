@@ -143,24 +143,22 @@ var ResourceAttrPane = React.createClass({
             var newEntityName;
             switch (entityName) {
                 case "jvmSection":
-                    newEntityName = "jvms";
-                    newAttributes[newEntityName] = newData.jvms;
+                    newAttributes["jvms"] = newData.jvms;
                     break;
                 case "webServerSection":
-                    newEntityName = "webServers";
-                    newAttributes[newEntityName] = newData.webServers;
+                    newAttributes["webServers"] = newData.webServers;
+                    break;
+                case "webAppSection":
+                    newAttributes["webApps"] = newData.webApps;
                     break;
                 case "webApps":
-                    newEntityName = "webApp";
-                     newAttributes[newEntityName] = newData;
+                     newAttributes["webApp"] = newData;
                     break;
                 case "jvms":
-                    newEntityName = "jvm";
-                     newAttributes[newEntityName] = newData;
+                     newAttributes["jvm"] = newData;
                     break;
                 case "webServers":
-                    newEntityName = "webServer";
-                     newAttributes[newEntityName] = newData;
+                     newAttributes["webServer"] = newData;
                     break;
             }
 
