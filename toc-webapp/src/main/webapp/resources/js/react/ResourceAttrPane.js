@@ -37,13 +37,16 @@ var ResourceAttrPane = React.createClass({
     },
     setCurrentlySelectedEntityData: function(data, entityName, parent) {
         if (this.state.attributes) {
-            var newAttributes = {};
+            var newAttributes = {}; // we need this since we're mutating data
             for (key in this.state.attributes) {
                 newAttributes[key] = this.state.attributes[key];
             }
 
-            // Assign parent data
             var newEntityName;
+
+            // we need to clone data since we need to mutate it (e.g. add parent data)
+            var newData = ResourceAttrPane.sanitizeAndCloneData(data);
+            var newParentData = ResourceAttrPane.sanitizeAndCloneData(parent);
             switch (entityName) {
                 case "jvmSection":
                     newAttributes["jvms"] = newData.jvms;
@@ -78,6 +81,19 @@ var ResourceAttrPane = React.createClass({
             }
 
             this.refs.attrTree.refresh(newAttributes);
+        }
+    },
+    statics : {
+        sanitizeAndCloneData: function(data) {
+            var newData = {};
+            for (var key in data) {
+                // Note: We wouldn't be filtering the key if the RTreeList didn't mutate the topology data!
+                // TODO: Remove this if statement when RTreeList has been refactored not to mutate data passed to it.
+                if (key !== "rtreeListMetaData" && key !== "jvmSection" && key !== "webServerSection" && key !== "webAppSection") {
+                    newData[key] = data[key];
+                }
+            }
+            return newData;
         }
     }
 })
