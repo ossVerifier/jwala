@@ -16,7 +16,7 @@ var RListBox = React.createClass({
         var resourceList = [];
         var i = 0;
         this.props.options.forEach(function(option) {
-            resourceList.push(React.createElement(Option, {key: i++,
+            resourceList.push(React.createElement(Option, {key: option.value,
                                                            value: option.value,
                                                            selectedValue: self.state.selectedValue,
                                                            checkBoxEnabled: self.props.multiSelect,
@@ -61,16 +61,17 @@ var Option = React.createClass({
 
         var listItems = [];
         if (this.props.checkBoxEnabled === true) {
-            listItems.push(React.createElement("input", {type: "checkbox", className: "noSelect", onChange: this.onCheckBoxChange}));
-            listItems.push(React.createElement("span", null, this.props.label));
-        } else {
-            listItems.push(this.props.label);
+            listItems.push(React.createElement("input", {key: "checkBox", type: "checkbox", className: "noSelect", onChange: this.onCheckBoxChange}));
         }
+        listItems.push(React.createElement("span", {key: "label"}, this.props.label));
 
         return React.createElement("li", {className: stateClassName,
-                                          onClick: this.props.onClick.bind(this, this.props.value),
+                                          onClick: this.onClick,
                                           onMouseOver: this.onMouseOver,
                                           onMouseOut: this.onMouseOut}, listItems);
+    },
+    onClick: function() {
+        this.props.onClick(this.props.value);
     },
     onMouseOver: function() {
         this.setState({mouseOver: true});
