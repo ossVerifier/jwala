@@ -16,7 +16,9 @@ import javax.activation.DataHandler;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -30,6 +32,7 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
     public static final String CONTENT_DISPOSITION = "Content-Disposition";
     public static final String FILENAME = "filename";
     private static final int CREATE_TEMPLATE_EXPECTED_NUM_OF_ATTACHMENTS = 2;
+    private static final String JSON_FILE_EXTENSION = ".json";
 
     private final ResourceService resourceService;
 
@@ -94,19 +97,31 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
     // TODO: Refactor resourceService.createTemplate(inputStreams[0], inputStreams[1]) since it looks ambiguous.
     public Response createTemplate(final List<Attachment> attachments, final String targetName, final AuthenticatedUser user) {
         try {
-            if (attachments.size() == CREATE_TEMPLATE_EXPECTED_NUM_OF_ATTACHMENTS) {
-                final InputStream [] inputStreams = new InputStream[CREATE_TEMPLATE_EXPECTED_NUM_OF_ATTACHMENTS];
-                for (int i = 0; i < attachments.size(); i++) {
-                    final DataHandler handler = attachments.get(i).getDataHandler();
+            List<Attachment> filteredAttachements = new ArrayList<>();
+            for(Attachment attachment:attachments) {
+                if(attachment.getDataHandler().getName() != null) {
+                    filteredAttachements.add(attachment);
+                }
+            }
+            if (filteredAttachements.size() == CREATE_TEMPLATE_EXPECTED_NUM_OF_ATTACHMENTS) {
+                InputStream metadataInputStream = null;
+                InputStream templateInputStream = null;
+                for (Attachment attachment:filteredAttachements) {
+                    final DataHandler handler = attachment.getDataHandler();
                     try {
-                        inputStreams[i] = handler.getInputStream();
+                        LOGGER.debug("filename is {}", handler.getName());
+                        if(handler.getName().toLowerCase().endsWith(JSON_FILE_EXTENSION)) {
+                            metadataInputStream = attachment.getDataHandler().getInputStream();
+                        } else {
+                            templateInputStream = attachment.getDataHandler().getInputStream();
+                        }
                     } catch (final IOException ioe) {
                         LOGGER.error("Create template failed!", ioe);
                         return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR,
                                 new FaultCodeException(AemFaultType.IO_EXCEPTION, ioe.getMessage()));
                     }
                 }
-                return ResponseBuilder.created(resourceService.createTemplate(inputStreams[0], inputStreams[1], targetName));
+                return ResponseBuilder.created(resourceService.createTemplate(metadataInputStream, templateInputStream, targetName));
             } else {
                 return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
                         AemFaultType.INVALID_NUMBER_OF_ATTACHMENTS,
