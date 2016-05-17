@@ -27,13 +27,17 @@ var ResourceAttrPane = React.createClass({
     componentDidMount: function() {
         // TODO: Decide whether we should call the service directly or pass it as a property.
         var self = this;
-        resourceService.getResourceAttrData()
-            .then(function(response) {
-                self.setState({attributes: response.applicationResponseContent});
-            })
-            .caught(function(e){
-                alert(e);
-            });
+        var attributes;
+        ServiceFactory.getResourceService().getResourceAttrData()
+        .then(function(response) {
+            attributes = response.applicationResponseContent;
+            return ServiceFactory.getAdminService().viewProperties();
+        }).then(function(response){
+            attributes["properties"] = response.applicationResponseContent;
+            self.setState({attributes: attributes})
+        }).caught(function(e){
+            alert(e);
+        });
     },
     setCurrentlySelectedEntityData: function(data, entityName, parent) {
         if (this.state.attributes) {
