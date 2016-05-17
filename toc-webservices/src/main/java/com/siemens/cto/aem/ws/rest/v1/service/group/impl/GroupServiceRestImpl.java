@@ -664,8 +664,8 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     }
 
     @Override
-    public Response getGroupJvmsResourceNames(String groupName, boolean includeGroupAppResources) {
-        return ResponseBuilder.ok(groupService.getGroupJvmsResourceTemplateNames(groupName, includeGroupAppResources));
+    public Response getGroupJvmsResourceNames(String groupName) {
+        return ResponseBuilder.ok(groupService.getGroupJvmsResourceTemplateNames(groupName));
     }
 
     @Override

@@ -83,8 +83,7 @@ public interface GroupServiceRest {
 
     @GET
     @Path("/{groupName}/jvms/resources/name")
-    Response getGroupJvmsResourceNames(@PathParam("groupName") final String groupName,
-                                       @QueryParam("includeGroupAppResources") @DefaultValue("false") final boolean includeGroupAppResources);
+    Response getGroupJvmsResourceNames(@PathParam("groupName") final String groupName);
 
     @GET
     @Path("/{groupName}/jvms/resources/template/{resourceTemplateName}")

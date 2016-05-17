@@ -242,26 +242,11 @@ public class GroupServiceImpl implements GroupService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<Map<String, String>> getGroupJvmsResourceTemplateNames(String groupName, boolean includeGroupAppResources) {
-        List<Map<String, String>> retVal = new ArrayList<>();
+    public List<String> getGroupJvmsResourceTemplateNames(String groupName) {
+        List<String> retVal = new ArrayList<>();
         final List<String> groupJvmsResourceTemplateNames = groupPersistenceService.getGroupJvmsResourceTemplateNames(groupName);
         for (String jvmResourceName : groupJvmsResourceTemplateNames) {
-            Map<String, String> jvmResource = new HashMap<>();
-            jvmResource.put("entityType", "jvm");
-            jvmResource.put("resourceName", jvmResourceName);
-            retVal.add(jvmResource);
-        }
-        if (includeGroupAppResources) {
-            // result lists are returned as read-only so make a copy to add the app resource templates to the list
-            List<String> groupAppResourceTemplateNames = groupPersistenceService.getGroupAppsResourceTemplateNames(groupName);
-            List<Map<String, String>> groupAppList = new ArrayList<>();
-            for (String appResourceName : groupAppResourceTemplateNames) {
-                Map<String, String> appResource = new HashMap<>();
-                appResource.put("entityType", "webApp");
-                appResource.put("resourceName", appResourceName);
-                groupAppList.add(appResource);
-            }
-            retVal.addAll(groupAppList);
+            retVal.add(jvmResourceName);
         }
         return retVal;
     }
@@ -287,6 +272,11 @@ public class GroupServiceImpl implements GroupService {
             }
         }
         return template;
+    }
+
+    @Override
+    public String getGroupJvmResourceTemplateMetaData(String groupName, String fileName) {
+        return groupPersistenceService.getGroupJvmResourceTemplateMetaData(groupName, fileName);
     }
 
     @Override

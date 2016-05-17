@@ -309,21 +309,24 @@ public class ResourceServiceImpl implements ResourceService {
     private CreateResourceTemplateApplicationResponseWrapper createGroupedJvmsTemplate(final ResourceTemplateMetaData metaData,
                                                                                        final InputStream templateData) throws IOException {
         final Set<Jvm> jvms = groupPersistenceService.getGroup(metaData.getEntity().getGroup()).getJvms();
-        final List<UploadJvmTemplateRequest> uploadJvmTemplateRequestList = new ArrayList<>();
         ConfigTemplate createdJpaJvmConfigTemplate = null;
-        final byte[] bytes = IOUtils.toByteArray(templateData);
+        String templateContent = IOUtils.toString(templateData);
+
         for (final Jvm jvm : jvms) {
             UploadJvmConfigTemplateRequest uploadJvmTemplateRequest = new UploadJvmConfigTemplateRequest(jvm, metaData.getTemplateName(),
-                    new ByteArrayInputStream(bytes), convertResourceTemplateMetaDataToJson(metaData));
+                    new ByteArrayInputStream(templateContent.getBytes()), convertResourceTemplateMetaDataToJson(metaData));
             uploadJvmTemplateRequest.setConfFileName(metaData.getConfigFileName());
-            uploadJvmTemplateRequestList.add(uploadJvmTemplateRequest);
 
             // Since we're just creating the same template for all the JVMs, we just keep one copy of the created
             // configuration template.
             createdJpaJvmConfigTemplate = jvmPersistenceService.uploadJvmTemplateXml(uploadJvmTemplateRequest);
         }
-
-        final Group group = groupPersistenceService.populateGroupJvmTemplates(metaData.getEntity().getGroup(), uploadJvmTemplateRequestList);
+        final List<UploadJvmTemplateRequest> uploadJvmTemplateRequestList = new ArrayList<>();
+        UploadJvmConfigTemplateRequest uploadJvmTemplateRequest = new UploadJvmConfigTemplateRequest(null, metaData.getTemplateName(),
+                new ByteArrayInputStream(templateContent.getBytes()), convertResourceTemplateMetaDataToJson(metaData));
+        uploadJvmTemplateRequest.setConfFileName(metaData.getConfigFileName());
+        uploadJvmTemplateRequestList.add(uploadJvmTemplateRequest);
+        groupPersistenceService.populateGroupJvmTemplates(metaData.getEntity().getGroup(), uploadJvmTemplateRequestList);
         return new CreateResourceTemplateApplicationResponseWrapper(createdJpaJvmConfigTemplate);
     }
 
@@ -359,21 +362,29 @@ public class ResourceServiceImpl implements ResourceService {
         final Set<WebServer> webServers = group.getWebServers();
         final List<UploadWebServerTemplateRequest> uploadWebServerTemplateRequestList = new ArrayList<>();
         ConfigTemplate createdConfigTemplate = null;
-        final byte[] bytes = IOUtils.toByteArray(templateData);
+        String templateContent = IOUtils.toString(templateData);
         for (final WebServer webServer : webServers) {
             UploadWebServerTemplateRequest uploadWebServerTemplateRequest = new UploadWebServerTemplateRequest(webServer,
-                    metaData.getTemplateName(), convertResourceTemplateMetaDataToJson(metaData), new ByteArrayInputStream(bytes)) {
+                    metaData.getTemplateName(), convertResourceTemplateMetaDataToJson(metaData), new ByteArrayInputStream(templateContent.getBytes())) {
                 @Override
                 public String getConfFileName() {
                     return metaData.getConfigFileName();
                 }
             };
-            uploadWebServerTemplateRequestList.add(uploadWebServerTemplateRequest);
 
             // Since we're just creating the same template for all the JVMs, we just keep one copy of the created
             // configuration template.
             createdConfigTemplate = webServerPersistenceService.uploadWebserverConfigTemplate(uploadWebServerTemplateRequest);
         }
+
+        UploadWebServerTemplateRequest uploadWebServerTemplateRequest = new UploadWebServerTemplateRequest(null,
+                metaData.getTemplateName(), convertResourceTemplateMetaDataToJson(metaData), new ByteArrayInputStream(templateContent.getBytes())) {
+            @Override
+            public String getConfFileName() {
+                return metaData.getConfigFileName();
+            }
+        };
+        uploadWebServerTemplateRequestList.add(uploadWebServerTemplateRequest);
         groupPersistenceService.populateGroupWebServerTemplates(group.getName(), uploadWebServerTemplateRequestList);
         return new CreateResourceTemplateApplicationResponseWrapper(createdConfigTemplate);
     }
@@ -484,7 +495,7 @@ public class ResourceServiceImpl implements ResourceService {
             if (groupsToBeAdded == null) {
                 groupsToBeAdded = new ArrayList<>(groups.size());
             }
-            List<Jvm> jvms = jvmPersistenceService.getJvmsByGroupName(group.getName());
+            List<Jvm> jvms = jvmPersistenceService.getJvmsAndWebAppsByGroupName(group.getName());
             List<WebServer> webServers = webServerPersistenceService.getWebServersByGroupName(group.getName());
             List<Application> applications = applicationPersistenceService.findApplicationsBelongingTo(group.getName());
             groupsToBeAdded.add(new Group(group.getId(),

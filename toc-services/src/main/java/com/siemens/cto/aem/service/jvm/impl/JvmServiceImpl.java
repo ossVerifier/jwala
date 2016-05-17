@@ -13,11 +13,9 @@ import com.siemens.cto.aem.common.domain.model.state.StateType;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.exception.ApplicationException;
 import com.siemens.cto.aem.common.exception.BadRequestException;
+import com.siemens.cto.aem.common.exception.InternalErrorException;
 import com.siemens.cto.aem.common.request.group.AddJvmToGroupRequest;
-import com.siemens.cto.aem.common.request.jvm.CreateJvmAndAddToGroupsRequest;
-import com.siemens.cto.aem.common.request.jvm.CreateJvmRequest;
-import com.siemens.cto.aem.common.request.jvm.UpdateJvmRequest;
-import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
+import com.siemens.cto.aem.common.request.jvm.*;
 import com.siemens.cto.aem.common.rule.jvm.JvmNameRule;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
 import com.siemens.cto.aem.persistence.jpa.domain.resource.config.template.JpaJvmConfigTemplate;
@@ -26,7 +24,6 @@ import com.siemens.cto.aem.service.app.ApplicationService;
 import com.siemens.cto.aem.service.group.GroupService;
 import com.siemens.cto.aem.service.group.GroupStateNotificationService;
 import com.siemens.cto.aem.service.jvm.JvmService;
-import com.siemens.cto.aem.service.jvm.exception.JvmServiceException;
 import com.siemens.cto.aem.service.resource.ResourceService;
 import com.siemens.cto.aem.service.state.StateNotificationService;
 import com.siemens.cto.aem.service.webserver.component.ClientFactoryHelper;
@@ -34,6 +31,7 @@ import com.siemens.cto.aem.template.jvm.TomcatJvmConfigFileGenerator;
 import com.siemens.cto.toc.files.FileManager;
 import groovy.text.SimpleTemplateEngine;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -46,10 +44,8 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -59,8 +55,6 @@ public class JvmServiceImpl implements JvmService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JvmServiceImpl.class);
     private String topicServerStates;
-    private String templatePath;
-    private String defaultJvmTemplateNames;
     private static final String DIAGNOSIS_INITIATED = "Diagnosis Initiated on JVM ${jvm.jvmName}, host ${jvm.hostName}";
     private final JvmPersistenceService jvmPersistenceService;
     private final GroupService groupService;
@@ -81,9 +75,7 @@ public class JvmServiceImpl implements JvmService {
                           final GroupStateNotificationService groupStateNotificationService,
                           final ResourceService resourceService,
                           final ClientFactoryHelper clientFactoryHelper,
-                          final String topicServerStates,
-                          final String templatePath,
-                          final String defaultJvmTemplateNames) {
+                          final String topicServerStates) {
         this.jvmPersistenceService = jvmPersistenceService;
         this.groupService = groupService;
         this.applicationService = applicationService;
@@ -94,8 +86,6 @@ public class JvmServiceImpl implements JvmService {
         this.resourceService = resourceService;
         this.clientFactoryHelper = clientFactoryHelper;
         this.topicServerStates = topicServerStates;
-        this.templatePath = templatePath;
-        this.defaultJvmTemplateNames = defaultJvmTemplateNames;
     }
 
     @Override
@@ -119,17 +109,21 @@ public class JvmServiceImpl implements JvmService {
 
     @Override
     @Transactional
-    public void createDefaultTemplates(final String jvmName) {
-        final String [] templateNameArray = defaultJvmTemplateNames.split(",");
-        for (final String templateName: templateNameArray) {
+    public void createDefaultTemplates(final String jvmName, Group parentGroup) {
+        final String groupName = parentGroup.getName();
+        List<String> templateNames = groupService.getGroupJvmsResourceTemplateNames(groupName);
+        for (final String templateName : templateNames) {
+            String templateContent = groupService.getGroupJvmResourceTemplate(groupName, templateName, false);
+            String metaDataStr = groupService.getGroupJvmResourceTemplateMetaData(groupName, templateName);
             try {
-                final InputStream metaDataIn = new ByteArrayInputStream(FileUtils.readFileToByteArray(
-                        new File(templatePath + "/" + templateName + "Properties.json")));
-                final InputStream templateIn = new ByteArrayInputStream(FileUtils.readFileToByteArray(
-                        new File(templatePath + "/" + templateName + "Template.tpl")));
-                resourceService.createTemplate(metaDataIn, templateIn, jvmName);
-            } catch (final IOException ioe) {
-                throw new JvmServiceException("Error creating " + templateName + " template!", ioe);
+                ResourceTemplateMetaData metaData = new ObjectMapper().readValue(metaDataStr, ResourceTemplateMetaData.class);
+                final UploadJvmConfigTemplateRequest uploadJvmTemplateRequest = new UploadJvmConfigTemplateRequest(jvmPersistenceService.findJvmByExactName(jvmName), metaData.getTemplateName(),
+                        IOUtils.toInputStream(templateContent), metaDataStr);
+                uploadJvmTemplateRequest.setConfFileName(metaData.getConfigFileName());
+                jvmPersistenceService.uploadJvmTemplateXml(uploadJvmTemplateRequest);
+            } catch (IOException e) {
+                LOGGER.error("Failed to map meta data for JVM {} in group {}", jvmName, groupName, e);
+                throw new InternalErrorException(AemFaultType.BAD_STREAM, "Failed to map meta data for JVM " + jvmName + " in group " + groupName, e);
             }
         }
     }
@@ -255,7 +249,7 @@ public class JvmServiceImpl implements JvmService {
         // grpStateComputationAndNotificationSvc.computeAndNotify(jvm.getId(), state);
         messagingTemplate.convertAndSend(topicServerStates, new CurrentState<>(jvm.getId(), state, DateTime.now(), StateType.JVM));
         groupStateNotificationService.retrieveStateAndSendToATopic(jvm.getId(), Jvm.class);
-        }
+    }
 
     @Override
     @Transactional
@@ -406,7 +400,7 @@ public class JvmServiceImpl implements JvmService {
         // TODO: Testing, testing, testing!
         final List<JpaJvmConfigTemplate> jpaJvmConfigTemplateList = jvmPersistenceService.getConfigTemplates(jvmName);
         final ObjectMapper mapper = new ObjectMapper();
-        for (final JpaJvmConfigTemplate jpaJvmConfigTemplate: jpaJvmConfigTemplateList) {
+        for (final JpaJvmConfigTemplate jpaJvmConfigTemplate : jpaJvmConfigTemplateList) {
             final ResourceTemplateMetaData resourceTemplateMetaData =
                     mapper.readValue(jpaJvmConfigTemplate.getMetaData(), ResourceTemplateMetaData.class);
 
@@ -424,8 +418,9 @@ public class JvmServiceImpl implements JvmService {
 
     /**
      * Writes the generated resource data to a file.
-     * @param path location of the file.
-     * @param configFileName the name if the file e.g. server.xml.
+     *
+     * @param path                 location of the file.
+     * @param configFileName       the name if the file e.g. server.xml.
      * @param generatedResourceStr the string generated by mapping data to the template.
      * @throws IOException
      */

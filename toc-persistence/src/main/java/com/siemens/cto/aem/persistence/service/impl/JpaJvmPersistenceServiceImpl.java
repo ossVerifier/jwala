@@ -1,5 +1,6 @@
 package com.siemens.cto.aem.persistence.service.impl;
 
+import com.siemens.cto.aem.common.domain.model.app.Application;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
@@ -11,6 +12,7 @@ import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
 import com.siemens.cto.aem.persistence.jpa.domain.resource.config.template.JpaJvmConfigTemplate;
 import com.siemens.cto.aem.persistence.jpa.domain.builder.JvmBuilder;
+import com.siemens.cto.aem.persistence.jpa.service.ApplicationCrudService;
 import com.siemens.cto.aem.persistence.jpa.service.GroupJvmRelationshipService;
 import com.siemens.cto.aem.persistence.jpa.service.JvmCrudService;
 import com.siemens.cto.aem.persistence.service.JvmPersistenceService;
@@ -22,12 +24,15 @@ import java.util.List;
 public class JpaJvmPersistenceServiceImpl implements JvmPersistenceService {
 
     private final JvmCrudService jvmCrudService;
+    private final ApplicationCrudService applicationCrudService;
     private final GroupJvmRelationshipService groupJvmRelationshipService;
 
-    public JpaJvmPersistenceServiceImpl(final JvmCrudService theJvmCrudService,
-                                        final GroupJvmRelationshipService theGroupJvmRelationshipService) {
-        jvmCrudService = theJvmCrudService;
-        groupJvmRelationshipService = theGroupJvmRelationshipService;
+    public JpaJvmPersistenceServiceImpl(final JvmCrudService jvmCrudService,
+                                        final ApplicationCrudService applicationCrudService,
+                                        final GroupJvmRelationshipService groupJvmRelationshipService) {
+        this.jvmCrudService = jvmCrudService;
+        this.applicationCrudService = applicationCrudService;
+        this.groupJvmRelationshipService = groupJvmRelationshipService;
     }
 
     @Override
@@ -202,5 +207,32 @@ public class JpaJvmPersistenceServiceImpl implements JvmPersistenceService {
     @Override
     public List<Jvm> getJvmsByGroupName(final String groupName) {
         return jvmCrudService.getJvmsByGroupName(groupName);
+    }
+
+    @Override
+    public List<Jvm> getJvmsAndWebAppsByGroupName(final String groupName) {
+        final List<Jvm> jvms = jvmCrudService.getJvmsByGroupName(groupName);
+        final List<Jvm> jvmsWithWebApps = new ArrayList<>();
+        final com.siemens.cto.aem.common.domain.model.jvm.JvmBuilder jvmBuilder = new com.siemens.cto.aem.common.domain.model.jvm.JvmBuilder();
+        for (Jvm jvm : jvms) {
+            final List<Application> webApps = applicationCrudService.findApplicationsBelongingToJvm(jvm.getId());
+            // TODO: Decide whether to use a builder or have a setter just to set the applications ?
+            final Jvm jvmWithWebApps = jvmBuilder.setId(jvm.getId())
+                                                 .setName(jvm.getJvmName())
+                                                 .setHostName(jvm.getHostName())
+                                                 .setStatusPath(jvm.getStatusPath())
+                                                 .setGroups(jvm.getGroups())
+                                                 .setHttpPort(jvm.getHttpPort())
+                                                 .setHttpsPort(jvm.getHttpsPort())
+                                                 .setRedirectPort(jvm.getRedirectPort())
+                                                 .setShutdownPort(jvm.getShutdownPort())
+                                                 .setAjpPort(jvm.getAjpPort())
+                                                 .setSystemProperties(jvm.getSystemProperties())
+                                                 .setState(jvm.getState())
+                                                 .setErrorStatus(jvm.getErrorStatus())
+                                                 .setWebApps(webApps).build();
+            jvmsWithWebApps.add(jvmWithWebApps);
+        }
+        return jvmsWithWebApps;
     }
 }

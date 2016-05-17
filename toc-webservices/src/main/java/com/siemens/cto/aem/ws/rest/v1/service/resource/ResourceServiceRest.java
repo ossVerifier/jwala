@@ -151,4 +151,12 @@ public interface ResourceServiceRest {
     @GET
     @Path("/data")
     Response getResourceAttrData();
+
+    /**
+     * Gets the resource data topology.
+     * @return resource JSON data topology wrapped by {@link Response}.
+     */
+    @GET
+    @Path("/topology")
+    Response getResourceTopology();
 }

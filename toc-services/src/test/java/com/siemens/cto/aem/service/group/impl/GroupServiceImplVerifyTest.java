@@ -283,18 +283,15 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
 
     @Test
     public void testGroupJvmsResourceTemplateNames() {
-        groupService.getGroupJvmsResourceTemplateNames("testGroupName", false);
+        groupService.getGroupJvmsResourceTemplateNames("testGroupName");
         verify(groupPersistenceService, times(1)).getGroupJvmsResourceTemplateNames("testGroupName");
 
 
         List<String> jvmTemplates = new ArrayList<>();
         jvmTemplates.add("server.xml");
         when(groupPersistenceService.getGroupJvmsResourceTemplateNames(anyString())).thenReturn(jvmTemplates);
-        List<String> appTemplates = new ArrayList<>();
-        appTemplates.add("hct.xml");
-        when(groupPersistenceService.getGroupAppsResourceTemplateNames(anyString())).thenReturn(appTemplates);
-        List<Map<String, String>> templateNames = groupService.getGroupJvmsResourceTemplateNames("testGroupName", true);
-        assertEquals(2, templateNames.size());
+        List<String> templateNames = groupService.getGroupJvmsResourceTemplateNames("testGroupName");
+        assertEquals(1, templateNames.size());
     }
 
     @Test

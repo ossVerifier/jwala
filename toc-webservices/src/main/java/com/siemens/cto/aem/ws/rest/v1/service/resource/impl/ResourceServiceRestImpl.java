@@ -173,4 +173,9 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
     public Response getResourceAttrData() {
         return ResponseBuilder.ok(resourceService.generateResourceGroup());
     }
+
+    @Override
+    public Response getResourceTopology() {
+        return ResponseBuilder.ok(resourceService.generateResourceGroup());
+    }
 }

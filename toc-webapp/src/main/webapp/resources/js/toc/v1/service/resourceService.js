@@ -55,5 +55,8 @@ var resourceService = {
     },
     getResourceAttrData: function() {
         return serviceFoundation.promisedGet("v1.0/resources/data/");
+    },
+    getResourceTopology: function() {
+        return serviceFoundation.promisedGet("v1.0/resources/topology/");
     }
 };

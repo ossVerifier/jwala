@@ -2,7 +2,9 @@ package com.siemens.cto.aem.persistence.service.jvm.impl;
 
 import com.siemens.cto.aem.common.configuration.TestExecutionProfile;
 import com.siemens.cto.aem.persistence.configuration.TestJpaConfiguration;
+import com.siemens.cto.aem.persistence.jpa.service.ApplicationCrudService;
 import com.siemens.cto.aem.persistence.jpa.service.GroupCrudService;
+import com.siemens.cto.aem.persistence.jpa.service.impl.ApplicationCrudServiceImpl;
 import com.siemens.cto.aem.persistence.jpa.service.impl.GroupCrudServiceImpl;
 import com.siemens.cto.aem.persistence.jpa.service.GroupJvmRelationshipService;
 import com.siemens.cto.aem.persistence.jpa.service.impl.GroupJvmRelationshipServiceImpl;
@@ -45,8 +47,12 @@ public class JpaJvmPersistenceServiceImplTest extends AbstractJvmPersistenceServ
 
         @Bean
         public JvmPersistenceService getJvmPersistenceService() {
-            return new JpaJvmPersistenceServiceImpl(getJvmCrudService(),
-                                                    getGroupJvmRelationshipService());
+            return new JpaJvmPersistenceServiceImpl(getJvmCrudService(), getApplicationCrudService(), getGroupJvmRelationshipService());
+        }
+
+        @Bean
+        public ApplicationCrudService getApplicationCrudService() {
+            return new ApplicationCrudServiceImpl();
         }
 
         @Bean

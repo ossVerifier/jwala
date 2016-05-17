@@ -1,5 +1,6 @@
 package com.siemens.cto.aem.common.domain.model.jvm;
 
+import com.siemens.cto.aem.common.domain.model.app.Application;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.path.Path;
@@ -9,6 +10,7 @@ import java.io.Serializable;
 import java.net.URI;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 public class Jvm implements Serializable {
@@ -32,6 +34,7 @@ public class Jvm implements Serializable {
     private String systemProperties;
     private JvmState state;
     private String errorStatus;
+    private List<Application> webApps;
 
     /**
      * Constructor for a bare minimum Jvm with group details.
@@ -57,7 +60,8 @@ public class Jvm implements Serializable {
                final Path statusPath,
                final String systemsProperties,
                final JvmState state,
-               final String errorStatus) {
+               final String errorStatus,
+               final List<Application> webApps) {
         this.id = id;
         this.jvmName = name;
         this.hostName = hostName;
@@ -71,6 +75,7 @@ public class Jvm implements Serializable {
         this.systemProperties = systemsProperties;
         this.state = state;
         this.errorStatus = errorStatus;
+        this.webApps = webApps;
     }
 
     public Jvm(Identifier<Jvm> id,
@@ -177,6 +182,10 @@ public class Jvm implements Serializable {
                                                    .setPort(getHttpPort())
                                                    .setPath(getStatusPath());
         return builder.buildUnchecked();
+    }
+
+    public List<Application> getWebApps() {
+        return webApps;
     }
 
     @Override

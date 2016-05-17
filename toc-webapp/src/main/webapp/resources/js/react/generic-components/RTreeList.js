@@ -54,7 +54,7 @@ var RTreeList = React.createClass({
             var key = parentLabel + data[i][meta.propKey] + level;
             var label = data[i][meta.label] === undefined ? data[i][meta.propKey] : data[i][meta.label];
             nodes.push(React.createElement(Node, {label: label,
-                                                  collapsedByDefault:false,
+                                                  collapsedByDefault: this.props.collapsedByDefault,
                                                   expandIcon: this.props.expandIcon,
                                                   collapseIcon: this.props.collapseIcon,
                                                   selectable: meta.selectable,

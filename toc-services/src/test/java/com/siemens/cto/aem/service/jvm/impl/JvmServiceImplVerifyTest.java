@@ -93,7 +93,7 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
         initMocks(this);
         jvmService = new JvmServiceImpl(mockJvmPersistenceService, mockGroupService, mockApplicationService, mockFileManager, mockStateNotificationService,
                        mockMessagingTemplate, mockGroupStateNotificationService, mockResourceService, mockClientFactoryHelper,
-                       "/topic/server-states", "D:/stp/app/data/toc/types", "ServerXML,ContextXML");
+                       "/topic/server-states");
     }
 
     @SuppressWarnings("unchecked")
@@ -207,7 +207,7 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
 
         final Jvm jvm = new Jvm(new Identifier<Jvm>(-123456L),
                 "jvm-name", "host-name", new HashSet<Group>(), 80, 443, 443, 8005, 8009, new Path("/"),
-                "EXAMPLE_OPTS=%someEnv%/someVal", JvmState.JVM_STOPPED, null);
+                "EXAMPLE_OPTS=%someEnv%/someVal", JvmState.JVM_STOPPED, null, null);
 
         when(mockJvmPersistenceService.findJvmByExactName(eq(jvm.getJvmName()))).thenReturn(jvm);
         when(mockJvmPersistenceService.getJvmTemplate(eq("server.xml"), eq(jvm.getId()))).thenReturn("<server>test</server>");
@@ -220,7 +220,7 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
     public void testGenerateThrowsExceptionForEmptyTemplate() {
         final Jvm jvm = new Jvm(new Identifier<Jvm>(-123456L),
                 "jvm-name", "host-name", new HashSet<Group>(), 80, 443, 443, 8005, 8009, new Path("/"),
-                "EXAMPLE_OPTS=%someEnv%/someVal", JvmState.JVM_STOPPED, null);
+                "EXAMPLE_OPTS=%someEnv%/someVal", JvmState.JVM_STOPPED, null, null);
 
         when(mockJvmPersistenceService.findJvmByExactName(eq(jvm.getJvmName()))).thenReturn(jvm);
         when(mockJvmPersistenceService.getJvmTemplate(eq("server.xml"), eq(jvm.getId()))).thenReturn("");
@@ -395,7 +395,7 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
     @Test
     public void testPreviewTemplate() {
         final String jvmName = "jvm-1Test";
-        Jvm testJvm = new Jvm(new Identifier<Jvm>(111L), jvmName, "testHost", new HashSet<Group>(), 9101, 9102, 9103, -1, 9104, new Path("./"), "", JvmState.JVM_STOPPED, "");
+        Jvm testJvm = new Jvm(new Identifier<Jvm>(111L), jvmName, "testHost", new HashSet<Group>(), 9101, 9102, 9103, -1, 9104, new Path("./"), "", JvmState.JVM_STOPPED, "", null);
         List<Jvm> jvmList = new ArrayList<>();
         jvmList.add(testJvm);
         when(mockJvmPersistenceService.findJvmByExactName(anyString())).thenReturn(testJvm);

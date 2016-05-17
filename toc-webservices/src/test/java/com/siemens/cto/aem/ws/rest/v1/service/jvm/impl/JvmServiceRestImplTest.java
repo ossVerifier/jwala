@@ -106,7 +106,7 @@ public class JvmServiceRestImplTest {
                 statusPath,
                 systemProperties,
                 JvmState.JVM_STOPPED,
-                null);
+                null, null);
         final List<Jvm> result = new ArrayList<>();
         result.add(ws);
         return result;

@@ -47,9 +47,6 @@ var groupService = {
 	getGroupJvmResources: function(name, responseCallback) {
         return serviceFoundation.get("v1.0/groups/" + encodeURI(name) + "/jvms/resources/name", "json", responseCallback);
 	},
-	getGroupJvmResourcesWithAppResources: function(name, responseCallback) {
-        return serviceFoundation.get("v1.0/groups/" + encodeURI(name) + "/jvms/resources/name?includeGroupAppResources=true", "json", responseCallback);
-	},
 	getGroupJvmResourceTemplate : function(wsName, tokensReplaced, resourceTemplateName, responseCallback) {
         return serviceFoundation.get("v1.0/groups/" + encodeURI(wsName) + "/jvms/resources/template/" + encodeURI(resourceTemplateName) + "?tokensReplaced=" + tokensReplaced, "json", responseCallback);
     },

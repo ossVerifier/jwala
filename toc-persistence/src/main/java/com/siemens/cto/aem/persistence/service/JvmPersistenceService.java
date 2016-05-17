@@ -82,4 +82,11 @@ public interface JvmPersistenceService {
      * @return a list of JpaJvm objects
      */
     List<Jvm> getJvmsByGroupName(String groupName);
+
+    /**
+     * Get JVMs and applications under them.
+     * @param groupName the group name.
+     * @return List of {@link Jvm}
+     */
+    List<Jvm> getJvmsAndWebAppsByGroupName(String groupName);
 }

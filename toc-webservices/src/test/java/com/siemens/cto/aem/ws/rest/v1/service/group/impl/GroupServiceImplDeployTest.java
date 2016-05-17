@@ -34,6 +34,7 @@ import com.siemens.cto.aem.service.webserver.WebServerCommandService;
 import com.siemens.cto.aem.service.webserver.WebServerControlService;
 import com.siemens.cto.aem.service.webserver.WebServerService;
 import com.siemens.cto.aem.ws.rest.v1.provider.AuthenticatedUser;
+import com.siemens.cto.aem.ws.rest.v1.response.ApplicationResponse;
 import com.siemens.cto.aem.ws.rest.v1.service.app.ApplicationServiceRest;
 import com.siemens.cto.aem.ws.rest.v1.service.app.impl.ApplicationServiceRestImpl;
 import com.siemens.cto.aem.ws.rest.v1.service.group.GroupServiceRest;
@@ -276,6 +277,43 @@ public class GroupServiceImplDeployTest {
     }
 
     @Test
+    public void testGroupAppDeployNotToJvms() {
+        Group mockGroup = mock(Group.class);
+        Jvm mockJvm = mock(Jvm.class);
+        Application mockApp = mock(Application.class);
+        Response mockResponse = mock(Response.class);
+        ResourceType mockResourceType = mock(ResourceType.class);
+
+        Set<Jvm> jvmSet = new HashSet<>();
+        jvmSet.add(mockJvm);
+        Set<Application> appSet = new HashSet<>();
+        appSet.add(mockApp);
+        Collection<ResourceType> resourcesList = new ArrayList<>();
+        resourcesList.add(mockResourceType);
+
+        when(mockGroup.getJvms()).thenReturn(jvmSet);
+        when(mockJvm.getJvmName()).thenReturn("testJvm");
+        when(mockJvm.getId()).thenReturn(new Identifier<Jvm>(99L));
+        when(mockJvm.getState()).thenReturn(JvmState.JVM_STOPPED);
+        when(mockJvm.getHostName()).thenReturn("mockHost");
+        when(mockResponse.getStatus()).thenReturn(200);
+        when(mockResourceType.getRelativeDir()).thenReturn("./");
+        when(mockResourceType.getEntityType()).thenReturn("webApp");
+        when(mockResourceType.getConfigFileName()).thenReturn("hct.xml");
+        when(mockGroupService.getGroup(anyString())).thenReturn(mockGroup);
+        when(mockGroupService.getGroupAppResourceTemplate(anyString(), anyString(), anyBoolean(), any(ResourceGroup.class))).thenReturn("new hct.xml content");
+        when(mockGroupService.getGroupAppResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"entity\":{\"target\": \"testApp\", \"deployToJvms\":false}}");
+        when(mockGroupService.deployGroupAppTemplate(anyString(), anyString(), any(ResourceGroup.class), any(Application.class), any(Jvm.class))).thenReturn(new CommandOutput(new ExecReturnCode(0), "SUCCESS",""));
+                when(mockJvmService.getJvm(anyString())).thenReturn(mockJvm);
+        when(mockResourceService.generateResourceGroup()).thenReturn(new ResourceGroup());
+        when(mockApplicationService.updateResourceTemplate(anyString(), anyString(), anyString(), anyString(), anyString())).thenReturn("new hct.xml content");
+        when(mockResourceService.generateResourceGroup()).thenReturn(new ResourceGroup());
+        when(mockApplicationService.getApplication(anyString())).thenReturn(mockApp);
+        Response returnResponse = groupServiceRest.generateAndDeployGroupAppFile("testGroup", "hct.xml", mockAuthUser);
+        assertEquals(200, returnResponse.getStatus());
+    }
+
+    @Test
     public void testGenerateAndDeployWebServers() throws CommandFailureException {
         Set<WebServer> mockWSList = new HashSet<>();
         Group mockGroup = mock(Group.class);
@@ -402,6 +440,23 @@ public class GroupServiceImplDeployTest {
         when(mockGroupWithJvms.getJvms()).thenReturn(null);
         response = groupServiceRest.updateGroupAppResourceTemplate("testGroup", "hct.xml", "newer hct.xml content");
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
+    }
+
+    @Test
+    public void testUpdateGroupAppTemplateJsonParseException() {
+        when(mockGroupService.getGroupAppResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"throwParseException\":true}");
+        when(mockGroupService.getGroup(anyString())).thenReturn(mock(Group.class));
+        when(mockGroupService.updateGroupAppResourceTemplate(anyString(), anyString(), anyString())).thenReturn("updated group app resource template content");
+        Response notOk = groupServiceRest.updateGroupAppResourceTemplate("testGroup", "hct.xml", "newer hct.xml content");
+        assertTrue(((ApplicationResponse) notOk.getEntity()).getApplicationResponseContent().toString().contains("Unrecognized field"));
+        assertEquals(500, notOk.getStatus());
+
+        when(mockGroupService.getGroupAppResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"throwParseException\"");
+        notOk = groupServiceRest.updateGroupAppResourceTemplate("testGroup", "hct.xml", "newer hct.xml content");
+        assertTrue(((ApplicationResponse) notOk.getEntity()).getApplicationResponseContent().toString().contains("Unexpected end-of-input"));
+        assertEquals(500, notOk.getStatus());
+
+        reset(mockGroupService);
     }
 
 
