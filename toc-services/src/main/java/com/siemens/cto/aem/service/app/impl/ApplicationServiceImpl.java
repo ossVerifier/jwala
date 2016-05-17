@@ -277,10 +277,16 @@ public class ApplicationServiceImpl implements ApplicationService {
             // if the war wasn't uploaded yet then there is no file to backup
             final String deployJvmName = jvm.getJvmName();
             final String hostName = jvm.getHostName();
-            if (app.getWarPath() != null && backUp) {
+            CommandOutput commandOutput = applicationCommandExecutor.executeRemoteCommand(
+                    deployJvmName,
+                    hostName,
+                    ApplicationControlOperation.CHECK_FILE_EXISTS,
+                    new WindowsApplicationPlatformCommandProvider(),
+                    destPath);
+            if (commandOutput.getReturnCode().wasSuccessful()) {
                 String currentDateSuffix = new SimpleDateFormat(".yyyyMMdd_HHmmss").format(new Date());
                 final String destPathBackup = destPath + currentDateSuffix;
-                final CommandOutput commandOutput = applicationCommandExecutor.executeRemoteCommand(
+                commandOutput = applicationCommandExecutor.executeRemoteCommand(
                         deployJvmName,
                         hostName,
                         ApplicationControlOperation.BACK_UP_CONFIG_FILE,
@@ -290,7 +296,6 @@ public class ApplicationServiceImpl implements ApplicationService {
                 if (!commandOutput.getReturnCode().wasSuccessful()) {
                     throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to back up " + destPath + " for " + jvm);
                 }
-
             }
             final CommandOutput execData = applicationCommandExecutor.executeRemoteCommand(
                     deployJvmName,
@@ -482,24 +487,6 @@ public class ApplicationServiceImpl implements ApplicationService {
                 allDone = isDone;
             }
             LOGGER.info("Tasks complete: {}", size);
-        }
-    }
-
-    @Override
-    @Transactional
-    public void deployConfToOtherJvmHosts(String appName, String groupName, String jvmName, String resourceTemplateName, ResourceGroup resourceGroup, User user) {
-        List<String> deployedHosts = new ArrayList<>();
-        deployedHosts.add(jvmPersistenceService.findJvm(jvmName, groupName).getHostName());
-        Set<Jvm> jvmSet = groupService.getGroup(groupName).getJvms();
-        if (!jvmSet.isEmpty()) {
-            for (Jvm jvm : jvmSet) {
-                final String hostName = jvm.getHostName();
-                if (!deployedHosts.contains(hostName)) {
-                    final boolean doBackUpOriginal = true;
-                    deployConf(appName, groupName, jvm.getJvmName(), resourceTemplateName, doBackUpOriginal, resourceGroup, user);
-                    deployedHosts.add(jvm.getHostName());
-                }
-            }
         }
     }
 
