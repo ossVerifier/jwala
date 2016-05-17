@@ -17,8 +17,7 @@ public class AemPersistenceServiceConfiguration {
 
     @Bean(name="jvmPersistenceService")
     public JvmPersistenceService getJvmPersistenceService() {
-        return new JpaJvmPersistenceServiceImpl(getJvmCrudService(),
-                                                getGroupJvmRelationshipService());
+        return new JpaJvmPersistenceServiceImpl(getJvmCrudService(), getApplicationCrudService(), getGroupJvmRelationshipService());
     }
 
     @Bean(name="groupPersistenceService")

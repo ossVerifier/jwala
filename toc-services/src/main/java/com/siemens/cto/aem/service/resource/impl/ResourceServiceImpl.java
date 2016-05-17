@@ -487,7 +487,7 @@ public class ResourceServiceImpl implements ResourceService {
             if (groupsToBeAdded == null) {
                 groupsToBeAdded = new ArrayList<>(groups.size());
             }
-            List<Jvm> jvms = jvmPersistenceService.getJvmsByGroupName(group.getName());
+            List<Jvm> jvms = jvmPersistenceService.getJvmsAndWebAppsByGroupName(group.getName());
             List<WebServer> webServers = webServerPersistenceService.getWebServersByGroupName(group.getName());
             List<Application> applications = applicationPersistenceService.findApplicationsBelongingTo(group.getName());
             groupsToBeAdded.add(new Group(group.getId(),

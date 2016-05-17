@@ -17,10 +17,7 @@ import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.control.configuration.AemCommandExecutorConfig;
 import com.siemens.cto.aem.control.configuration.AemSshConfig;
 import com.siemens.cto.aem.persistence.configuration.AemPersistenceServiceConfiguration;
-import com.siemens.cto.aem.persistence.jpa.service.GroupCrudService;
-import com.siemens.cto.aem.persistence.jpa.service.GroupJvmRelationshipService;
-import com.siemens.cto.aem.persistence.jpa.service.HistoryCrudService;
-import com.siemens.cto.aem.persistence.jpa.service.JvmCrudService;
+import com.siemens.cto.aem.persistence.jpa.service.*;
 import com.siemens.cto.aem.persistence.jpa.service.impl.GroupJvmRelationshipServiceImpl;
 import com.siemens.cto.aem.persistence.service.ApplicationPersistenceService;
 import com.siemens.cto.aem.persistence.service.JvmPersistenceService;
@@ -213,8 +210,9 @@ public class AemServiceConfiguration implements SchedulingConfigurer {
 
     @Bean
     public JvmPersistenceService getJvmPersistenceService(final JvmCrudService jvmCrudService,
+                                                          final ApplicationCrudService applicationCrudService,
                                                           final GroupJvmRelationshipService groupJvmRelationshipService) {
-        return new JpaJvmPersistenceServiceImpl(jvmCrudService, groupJvmRelationshipService);
+        return new JpaJvmPersistenceServiceImpl(jvmCrudService, applicationCrudService, groupJvmRelationshipService);
     }
 
     @Bean

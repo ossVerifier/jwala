@@ -98,7 +98,7 @@ public class ApplicationServiceImplIntegrationTest {
         @Bean
         @Autowired
         public JvmPersistenceService getJvmPersistenceService(final GroupJvmRelationshipService groupJvmRelationshipService) {
-            return new JpaJvmPersistenceServiceImpl(new JvmCrudServiceImpl(), groupJvmRelationshipService);
+            return new JpaJvmPersistenceServiceImpl(new JvmCrudServiceImpl(), getApplicationCrudService(), groupJvmRelationshipService);
         }
 
         @Bean

@@ -24,9 +24,9 @@ var ResourceEditor = React.createClass({
                                        children:[{entity: "webServers", propKey: "name", selectable: true}]},
                                       {entity: "jvmSection", propKey: "key", label: "name", icon: "public-resources/img/icons/appserver.png", selectable: true,
                                        children:[{entity: "jvms", propKey: "jvmName", selectable: true,
-                                                  children:[{entity: "webApps", propKey: "name", selectable: true,
-                                                             icon: "public-resources/img/icons/webapp.png"}]}]},
-                                      {entity: "webApps", propKey: "name", label: "name", icon: "public-resources/img/icons/webapp.png", selectable: true}],
+                                                  children:[{entity: "webApps", propKey: "name", selectable: true}]}]},
+                                       {entity: "webAppSection", propKey: "key", label: "name", icon: "public-resources/img/icons/webapp.png", selectable: true,
+                                        children:[{entity: "webApps", propKey: "name", selectable: true}]}]
                             };
 
         var groupJvmTreeList = <RStaticDialog ref="groupsDlg" title="Topology" defaultContentHeight="283px">
@@ -67,7 +67,7 @@ var ResourceEditor = React.createClass({
                                             {width:"44%", height:"100%"}]} />
     },
     componentDidMount: function() {
-        this.props.groupService.getGroups("webServers=true").then(this.getGroupDataCallback);
+        this.props.resourceService.getResourceTopology().then(this.getGroupDataCallback);
         this.props.resourceService.getResourceTypes(this.getResourceTypesCallback);
     },
 
@@ -79,34 +79,13 @@ var ResourceEditor = React.createClass({
         this.dataRetrievalCount = 0; // set to zero since group data retrieval is done at this point
 
         if (response.applicationResponseContent !== undefined) {
-            this.groupData = response.applicationResponseContent;
-            this.groupData.forEach(function(group) {
-
-                self.props.webAppService.getWebAppsByGroup(group.id.id, function(response) {
-                    if (response.applicationResponseContent) {
-                        group["webApps"] = response.applicationResponseContent;
-                    }
-                });
-
-                group.jvms.forEach(function(jvm){
-                    self.dataRetrievalCount++;
-                    self.props.webAppService.getWebAppsByJvm(jvm.id.id, function(response){
-                        self.getJvmDataCallback(jvm, response.applicationResponseContent);
-                    });
-                });
-            });
+            this.groupData = response.applicationResponseContent.groups;
         }
 
         console.log(this.groupData);
 
         if (this.dataRetrievalCount === 0) {
-            this.setGroupData(this.groupData);
-        }
-    },
-    getJvmDataCallback: function(jvm, applicationResponseContent) {
-        this.dataRetrievalCount--;
-        jvm["webApps"] = applicationResponseContent;
-        if (this.dataRetrievalCount === 0) {
+            // Add the sections e.g. jvmSection
             this.setGroupData(this.groupData);
         }
     },
@@ -117,6 +96,7 @@ var ResourceEditor = React.createClass({
             theGroupData["jvmSection"] = [{key: theGroupData.name + "JVMs", name: "JVMs", jvms: theGroupData.jvms}];
             theGroupData["webServerSection"] = [{key: theGroupData.name + "WebServers", name: "Web Servers",
                 webServers: theGroupData.webServers}];
+            theGroupData["webAppSection"] = [{key: theGroupData.name + "WebApps", name: "Web Apps", webApps: theGroupData.applications}];
         });
 
         this.setState({groupData:groupData});

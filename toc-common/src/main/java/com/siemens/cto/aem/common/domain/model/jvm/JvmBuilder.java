@@ -1,14 +1,18 @@
 package com.siemens.cto.aem.common.domain.model.jvm;
 
+import com.siemens.cto.aem.common.domain.model.app.Application;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.path.Path;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
+/**
+ * Builds a {@link Jvm} from individual values.
+ */
 public class JvmBuilder {
-
     private Identifier<Jvm> id;
     private String name;
     private String hostName;
@@ -22,6 +26,7 @@ public class JvmBuilder {
     private String systemProperties;
     private JvmState state;
     private String errorStatus;
+    private List<Application> webApps;
 
     public JvmBuilder setId(final Identifier<Jvm> anId) {
         id = anId;
@@ -96,20 +101,13 @@ public class JvmBuilder {
         return this;
     }
 
-    public Jvm build() {
-        return new Jvm(id,
-                       name,
-                       hostName,
-                       groups,
-                       httpPort,
-                       httpsPort,
-                       redirectPort,
-                       shutdownPort,
-                       ajpPort,
-                       statusPath,
-                       systemProperties,
-                       state,
-                       errorStatus);
+    public JvmBuilder setWebApps(List<Application> webApps) {
+        this.webApps = webApps;
+        return this;
     }
 
+    public Jvm build() {
+        return new Jvm(id, name, hostName, groups, httpPort, httpsPort, redirectPort, shutdownPort, ajpPort, statusPath,
+                       systemProperties, state, errorStatus, webApps);
+    }
 }
