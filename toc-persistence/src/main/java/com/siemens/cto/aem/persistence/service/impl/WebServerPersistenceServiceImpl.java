@@ -163,6 +163,11 @@ public class WebServerPersistenceServiceImpl implements WebServerPersistenceServ
     }
 
     @Override
+    public String getResourceTemplateMetaData(String webServerName, String resourceTemplateName) {
+        return webServerCrudService.getResourceTemplateMetaData(webServerName, resourceTemplateName);
+    }
+
+    @Override
     public List<WebServer> getWebServersByGroupName(String groupName) {
         return webServerCrudService.getWebServersByGroupName(groupName);
     }

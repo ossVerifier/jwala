@@ -28,10 +28,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -186,7 +184,7 @@ public class WebServerServiceImpl implements WebServerService {
         try {
             // NOTE: invokeWS.bat is internal to TOC that is why the template is not in Db.
             return resourceService.generateResourceFile(FileUtils.readFileToString(new File(templatePath + INVOKE_WSBAT_TEMPLATE_TPL_PATH)),
-                                                        resourceService.generateResourceGroup(), webServer);
+                    resourceService.generateResourceGroup(), webServer);
         } catch (final IOException ioe) {
             throw new WebServerServiceException("Error generating invokeWS.bat!", ioe);
         }
@@ -198,8 +196,7 @@ public class WebServerServiceImpl implements WebServerService {
         final WebServer server = webServerPersistenceService.findWebServerByName(aWebServerName);
 
         try {
-            final boolean dontReplaceTokens = false;
-            String httpdConfText = getResourceTemplate(aWebServerName, "httpd.conf", dontReplaceTokens);
+            String httpdConfText = webServerPersistenceService.getResourceTemplate(aWebServerName, "httpd.conf");
             return ResourceFileGenerator.generateResourceConfig(httpdConfText, resourceGroup, server);
         } catch (NonRetrievableResourceTemplateContentException nrtce) {
             LOGGER.error("Failed to retrieve resource template from the database", nrtce);
@@ -229,23 +226,20 @@ public class WebServerServiceImpl implements WebServerService {
 
     @Override
     @Transactional(readOnly = true)
-    @Deprecated
     public String getResourceTemplate(final String webServerName,
                                       final String resourceTemplateName,
-                                      final boolean tokensReplaced) {
+                                      final boolean tokensReplaced, ResourceGroup resourceGroup) {
         final String template = webServerPersistenceService.getResourceTemplate(webServerName, resourceTemplateName);
         if (tokensReplaced) {
-            if (resourceTemplateName.equalsIgnoreCase(HTTPD_CONF)) {
-                return ApacheWebServerConfigFileGenerator.getHttpdConfFromText(webServerName,
-                        template, webServerPersistenceService.findWebServerByName(webServerName),
-                        webServerPersistenceService.findJvms(webServerName),
-                        webServerPersistenceService.findApplications(webServerName));
-            } else {
-                throw new UnsupportedOperationException("Data binding for \"" + resourceTemplateName +
-                        "\" template is currently not supported");
-            }
+            WebServer webServer = webServerPersistenceService.findWebServerByName(webServerName);
+            return ResourceFileGenerator.generateResourceConfig(template, resourceGroup, webServer);
         }
         return template;
+    }
+
+    @Override
+    public String getResourceTemplateMetaData(String aWebServerName, String resourceTemplateName) {
+        return webServerPersistenceService.getResourceTemplateMetaData(aWebServerName, resourceTemplateName);
     }
 
     @Override
@@ -273,7 +267,7 @@ public class WebServerServiceImpl implements WebServerService {
     @Transactional(readOnly = true)
     public String previewResourceTemplate(final String webServerName, final String groupName, final String template) {
         return resourceService.generateResourceFile(template, resourceService.generateResourceGroup(),
-                                                    webServerPersistenceService.findWebServerByName(webServerName));
+                webServerPersistenceService.findWebServerByName(webServerName));
     }
 
     @Override
@@ -293,20 +287,4 @@ public class WebServerServiceImpl implements WebServerService {
         return webServerPersistenceService.getWebServerStoppedCount(groupName);
     }
 
-    @Override
-    @Transactional
-    public void createDefaultTemplates(final String webServerName) {
-        final String [] templateNameArray = defaultWebServerTemplateNames.split(",");
-        for (final String templateName: templateNameArray) {
-            try {
-                final InputStream metaDataIn = new ByteArrayInputStream(FileUtils.readFileToByteArray(
-                        new File(templatePath + "/" + templateName + "Properties.json")));
-                final InputStream templateIn = new ByteArrayInputStream(FileUtils.readFileToByteArray(
-                        new File(templatePath + "/" + templateName + "Template.tpl")));
-                resourceService.createTemplate(metaDataIn, templateIn, webServerName);
-            } catch (final IOException ioe) {
-                throw new WebServerServiceException("Error creating " + templateName + " template!", ioe);
-            }
-        }
-    }
 }

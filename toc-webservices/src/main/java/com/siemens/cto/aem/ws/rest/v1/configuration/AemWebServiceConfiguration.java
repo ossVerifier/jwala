@@ -169,7 +169,8 @@ public class AemWebServiceConfiguration {
                 webServerControlService,
                 webServerCommandService,
                 wsWriteLockMap,
-                resourceService);
+                resourceService,
+                groupService);
     }
 
     @Bean

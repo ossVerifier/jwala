@@ -16,6 +16,8 @@ import javax.persistence.*;
                 query = "SELECT t.templateName FROM JpaWebServerConfigTemplate t WHERE t.webServer.name = :webServerName"),
         @NamedQuery(name = JpaWebServerConfigTemplate.GET_WEBSERVER_TEMPLATE_CONTENT,
                 query = "SELECT t.templateContent FROM JpaWebServerConfigTemplate t where t.webServer.name = :webServerName and t.templateName = :templateName"),
+        @NamedQuery(name = JpaWebServerConfigTemplate.GET_WEBSERVER_TEMPLATE_METADATA,
+                query = "SELECT t.metaData FROM JpaWebServerConfigTemplate t where t.webServer.name = :webServerName and t.templateName = :templateName"),
         @NamedQuery(name = JpaWebServerConfigTemplate.UPDATE_WEBSERVER_TEMPLATE_CONTENT,
                 query = "UPDATE JpaWebServerConfigTemplate t SET t.templateContent = :templateContent WHERE t.webServer.name = :webServerName AND t.templateName = :templateName"),
         @NamedQuery(name = JpaWebServerConfigTemplate.GET_WEBSERVER_TEMPLATE,
@@ -28,6 +30,7 @@ import javax.persistence.*;
 public class JpaWebServerConfigTemplate extends ConfigTemplate {
     public static final String GET_WEBSERVER_RESOURCE_TEMPLATE_NAMES = "getWebServerResourceTemplateNames";
     public static final String GET_WEBSERVER_TEMPLATE_CONTENT = "getWebServerTemplateContent";
+    public static final String GET_WEBSERVER_TEMPLATE_METADATA = "getWebServerTemplateMetaData";
     public static final String UPDATE_WEBSERVER_TEMPLATE_CONTENT = "updateWebServerTemplateContent";
     public static final String GET_WEBSERVER_TEMPLATE = "getWebServerTemplate";
     public static final String QUERY_DELETE_WEB_SERVER_TEMPLATE = "deleteWebServerTemplate";

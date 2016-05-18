@@ -27,144 +27,77 @@ var ResourceAttrPane = React.createClass({
     componentDidMount: function() {
         // TODO: Decide whether we should call the service directly or pass it as a property.
         var self = this;
-        resourceService.getResourceAttrData()
-            .then(function(response) {
-                self.setState({attributes: response.applicationResponseContent});
-            })
-            .caught(function(e){
-                alert(e);
-            });
+        var attributes;
+        ServiceFactory.getResourceService().getResourceAttrData()
+        .then(function(response) {
+            attributes = response.applicationResponseContent;
+            return ServiceFactory.getAdminService().viewProperties();
+        }).then(function(response){
+            attributes["properties"] = response.applicationResponseContent;
+            self.setState({attributes: attributes})
+        }).caught(function(e){
+            alert(e);
+        });
     },
-
-    // TODO: Remove when new code that replaces this is complete.
-    render_: function() {
-        if (this.state.attributes === null ) {
-            return <div className="attr-list ui-widget-content" style={{padding: "2px 2px"}}><span>Please select a JVM, Web Server or Web Application...</span></div>;
-        }
-
-        var entity = this.state.attributes.rtreeListMetaData.entity ;
-
-        // By design the entity name ends with 's' as in JVMs, webServers or webApps.
-        // We need to prefix the attributes with the entity name e.g. jvm.name so we need to strip the 's'.
-        entity = entity.substring(0, entity.length - 1);
-
-        var reactAttributeElements = [];
-        for (attr in this.state.attributes) {
-
-            var children;
-            if (attr === "rtreeListMetaData") {
-                var entityType = this.state.attributes[attr].entity;
-                if ( entityType === "webServers" || entityType === "jvms" || entityType === "webServerSection" || entityType === "jvmSection") {
-                    var wsArray = [];
-                    var jvmArray = [];
-                    var webApps = {};
-
-                    // Web Servers
-                    if (this.state.attributes[attr].parent.webServers !== undefined) {
-                        for (var wsIdx = 0; wsIdx < this.state.attributes[attr].parent.webServers.length; wsIdx++) {
-                            var webServer = this.state.attributes[attr].parent.webServers[wsIdx];
-                            wsArray.push(webServer);
-                        }
-                    }
-
-                    // JVMs
-                    if (this.state.attributes[attr].parent.jvms !== undefined) {
-                        for (var jvmIdx = 0; jvmIdx < this.state.attributes[attr].parent.jvms.length; jvmIdx++) {
-                            var jvm = this.state.attributes[attr].parent.jvms[jvmIdx];
-
-                            jvmArray.push(jvm);
-
-                            // Web Applications
-                            if (jvm.webApps !== undefined && jvm.webApps.length > 0) {
-                                jvm.webApps.forEach(function(webApp) {
-                                    webApps[webApp.name] = webApp;
-                                });
-                            }
-                        }
-                    }
-
-                    if (wsArray.length > 0) {
-                        reactAttributeElements.push(<tr><td colSpan="2"><WebServerTable attributes={wsArray}/></td></tr>);
-                    }
-
-                    if (jvmArray.length > 0) {
-                        reactAttributeElements.push(<tr><td colSpan="2"><JvmTable attributes={jvmArray}/></td></tr>);
-                    }
-
-                    if ((entityType === "webServers" || entityType === "webServerSection" || entityType === "jvmSection") && Object.keys(webApps).length > 0) {
-                        reactAttributeElements.push(<tr><td colSpan="2"><WebAppTable attributes={webApps} /></td></tr>);
-                    }
-                } else if (entityType === "webApps") {
-                    console.log(this.state.attributes[attr]);
-                    console.log(this.state.attributes[attr].parent);
-
-
-                    for (parentAttr in this.state.attributes[attr].parent) {
-                        if (typeof(this.state.attributes[attr].parent[parentAttr]) !== "object") {
-                            reactAttributeElements.push(<tr><td>{"${webApp.jvm." + parentAttr + "}"}</td>
-                                                            <td>{this.state.attributes[attr].parent[parentAttr]}</td></tr>);
-                        }
-                    }
-
-
-
-                }
-            }
-
-            if (typeof(this.state.attributes[attr]) !== "object" && entity !== "webServerSectio" && entity !== "jvmSectio") {
-                reactAttributeElements.push(React.createElement(Attribute,
-                                                    {entity: entity, key: attr, property: attr, value: this.state.attributes[attr]}));
-            }
-        }
-
-        return <div className="attr-list ui-widget-content">
-                    <table className="attr-table">
-                        <thead>
-                            <th>Property</th><th>Value</th>
-                        </thead>
-                        <tbody>{reactAttributeElements}</tbody>
-                    </table>
-               </div>;
-    },
-    setCurrentlySelectedEntityData: function(data, entityName) {
+    setCurrentlySelectedEntityData: function(data, entityName, parent) {
         if (this.state.attributes) {
-            var newAttributes = {};
+            var newAttributes = {}; // we need this since we're mutating data
             for (key in this.state.attributes) {
                 newAttributes[key] = this.state.attributes[key];
             }
 
-            var newData = {};
-            for (key in data) {
-                if (key !== "rtreeListMetaData") {
-                    newData[key] = data[key];
-                }
-            }
-
             var newEntityName;
+
+            // we need to clone data since we need to mutate it (e.g. add parent data)
+            var newData = ResourceAttrPane.sanitizeAndCloneData(data);
+            var newParentData = ResourceAttrPane.sanitizeAndCloneData(parent);
             switch (entityName) {
                 case "jvmSection":
-                    newEntityName = "jvms";
-                    newAttributes[newEntityName] = newData.jvms;
+                    newAttributes["jvms"] = newData.jvms;
+                    newAttributes["jvms"].forEach(function(item) {
+                        item["parentGroup"] = newParentData;
+                    });
                     break;
                 case "webServerSection":
-                    newEntityName = "webServers";
-                    newAttributes[newEntityName] = newData.webServers;
+                    newAttributes["webServers"] = newData.webServers;
+                    newAttributes["webServers"].forEach(function(item) {
+                        item["parentGroup"] = newParentData;
+                    });
+                    break;
+                case "webAppSection":
+                    newAttributes["webApps"] = newData.webApps;
+                    newAttributes["webApps"].forEach(function(item) {
+                        item["parentGroup"] = newParentData;
+                    });
                     break;
                 case "webApps":
-                    newEntityName = "webApp";
-                     newAttributes[newEntityName] = newData;
+                     newData["parentJvm"] = newParentData;
+                     newAttributes["webApp"] = newData;
                     break;
                 case "jvms":
-                    newEntityName = "jvm";
-                     newAttributes[newEntityName] = newData;
+                     newData["parentGroup"] = newParentData;
+                     newAttributes["jvm"] = newData;
                     break;
                 case "webServers":
-                    newEntityName = "webServer";
-                     newAttributes[newEntityName] = newData;
+                     newData["parentGroup"] = newParentData;
+                     newAttributes["webServer"] = newData;
                     break;
             }
 
             this.refs.attrTree.refresh(newAttributes);
+        }
+    },
+    statics : {
+        sanitizeAndCloneData: function(data) {
+            var newData = {};
+            for (var key in data) {
+                // Note: We wouldn't be filtering the key if the RTreeList didn't mutate the topology data!
+                // TODO: Remove this if statement when RTreeList has been refactored not to mutate data passed to it.
+                if (key !== "rtreeListMetaData" && key !== "jvmSection" && key !== "webServerSection" && key !== "webAppSection") {
+                    newData[key] = data[key];
+                }
+            }
+            return newData;
         }
     }
 })

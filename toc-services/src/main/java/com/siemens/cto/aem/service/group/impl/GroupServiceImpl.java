@@ -317,18 +317,23 @@ public class GroupServiceImpl implements GroupService {
     @Transactional
     public String getGroupWebServerResourceTemplate(final String groupName,
                                                     final String resourceTemplateName,
-                                                    final boolean tokensReplaced) {
+                                                    final boolean tokensReplaced,
+                                                    final ResourceGroup resourceGroup) {
         final String template = groupPersistenceService.getGroupWebServerResourceTemplate(groupName, resourceTemplateName);
         if (tokensReplaced) {
-            // TODO returns the tokenized version of a dummy JVM, but make sure that when deployed each instance is tokenized per JVM
             final Group group = groupPersistenceService.getGroup(groupName);
             Set<WebServer> webservers = groupPersistenceService.getGroupWithWebServers(group.getId()).getWebServers();
             if (webservers != null && !webservers.isEmpty()) {
                 final WebServer webServer = webservers.iterator().next();
-                return ApacheWebServerConfigFileGenerator.getHttpdConfFromText(webServer.getName(), template, webServer, new ArrayList(group.getJvms()), applicationPersistenceService.findApplicationsBelongingTo(group.getId()));
+                return ResourceFileGenerator.generateResourceConfig(template, resourceGroup, webServer);
             }
         }
         return template;
+    }
+
+    @Override
+    public String getGroupWebServerResourceTemplateMetaData(String groupName, String fileName) {
+        return groupPersistenceService.getGroupWebServerResourceTemplateMetaData(groupName, fileName);
     }
 
     @Override

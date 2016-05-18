@@ -88,9 +88,9 @@ var webServerService = {
     /**
      * Generate HTTPD Conf then deploy to a web server.
      */
-    deployHttpdConf: function(webserverName, successCallback, errorCallback) {
+    deployHttpdConf: function(webserverName, resourceTemplateName, successCallback, errorCallback) {
         if (successCallback === undefined) {
-            return serviceFoundation.promisedPut("v1.0/webservers/" + webserverName + "/conf",
+            return serviceFoundation.promisedPut("v1.0/webservers/" + webserverName + "/conf/" + resourceTemplateName,
                                                  "json",
                                                  null,
                                                  false);

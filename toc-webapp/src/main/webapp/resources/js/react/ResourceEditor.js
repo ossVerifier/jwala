@@ -105,10 +105,10 @@ var ResourceEditor = React.createClass({
     getResourceTypesCallback: function(response) {
         this.setState({resourceTypes:response.applicationResponseContent});
     },
-    selectNodeCallback: function(data, entityName) {
+    selectNodeCallback: function(data, entityName, parent) {
         if (this.props.selectEntityCallback(data, null)) {
             this.refs.resourcePane.getData(data);
-            this.refs.resourceAttrPane.setCurrentlySelectedEntityData(data, entityName);
+            this.refs.resourceAttrPane.setCurrentlySelectedEntityData(data, entityName, parent);
             return true;
         }
         return false;

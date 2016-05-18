@@ -30,7 +30,6 @@ import com.siemens.cto.toc.files.FileManager;
 import com.siemens.cto.toc.files.RepositoryFileInformation;
 import com.siemens.cto.toc.files.RepositoryFileInformation.Type;
 import com.siemens.cto.toc.files.WebArchiveManager;
-import org.apache.commons.io.FileUtils;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -57,8 +56,6 @@ public class ApplicationServiceImpl implements ApplicationService {
     private static final Logger LOGGER = LoggerFactory.getLogger(ApplicationServiceImpl.class);
 
     private static final String GENERATED_RESOURCE_DIR = "stp.generated.resource.dir";
-    private static final String APP_CONTEXT_TEMPLATE = "stp.app.context.template";
-    private static final String PATHS_RESOURCE_TYPES = "paths.resource-types";
     private final ExecutorService executorService;
 
     @Autowired
@@ -277,10 +274,16 @@ public class ApplicationServiceImpl implements ApplicationService {
             // if the war wasn't uploaded yet then there is no file to backup
             final String deployJvmName = jvm.getJvmName();
             final String hostName = jvm.getHostName();
-            if (app.getWarPath() != null && backUp) {
+            CommandOutput commandOutput = applicationCommandExecutor.executeRemoteCommand(
+                    deployJvmName,
+                    hostName,
+                    ApplicationControlOperation.CHECK_FILE_EXISTS,
+                    new WindowsApplicationPlatformCommandProvider(),
+                    destPath);
+            if (commandOutput.getReturnCode().wasSuccessful()) {
                 String currentDateSuffix = new SimpleDateFormat(".yyyyMMdd_HHmmss").format(new Date());
                 final String destPathBackup = destPath + currentDateSuffix;
-                final CommandOutput commandOutput = applicationCommandExecutor.executeRemoteCommand(
+                commandOutput = applicationCommandExecutor.executeRemoteCommand(
                         deployJvmName,
                         hostName,
                         ApplicationControlOperation.BACK_UP_CONFIG_FILE,
@@ -290,7 +293,6 @@ public class ApplicationServiceImpl implements ApplicationService {
                 if (!commandOutput.getReturnCode().wasSuccessful()) {
                     throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to back up " + destPath + " for " + jvm);
                 }
-
             }
             final CommandOutput execData = applicationCommandExecutor.executeRemoteCommand(
                     deployJvmName,
@@ -485,24 +487,6 @@ public class ApplicationServiceImpl implements ApplicationService {
         }
     }
 
-    @Override
-    @Transactional
-    public void deployConfToOtherJvmHosts(String appName, String groupName, String jvmName, String resourceTemplateName, ResourceGroup resourceGroup, User user) {
-        List<String> deployedHosts = new ArrayList<>();
-        deployedHosts.add(jvmPersistenceService.findJvm(jvmName, groupName).getHostName());
-        Set<Jvm> jvmSet = groupService.getGroup(groupName).getJvms();
-        if (!jvmSet.isEmpty()) {
-            for (Jvm jvm : jvmSet) {
-                final String hostName = jvm.getHostName();
-                if (!deployedHosts.contains(hostName)) {
-                    final boolean doBackUpOriginal = true;
-                    deployConf(appName, groupName, jvm.getJvmName(), resourceTemplateName, doBackUpOriginal, resourceGroup, user);
-                    deployedHosts.add(jvm.getHostName());
-                }
-            }
-        }
-    }
-
     /**
      * As the name describes, this method creates the path if it does not exists.
      */
@@ -556,26 +540,6 @@ public class ApplicationServiceImpl implements ApplicationService {
             }
         }
         return appConfFile;
-    }
-
-    @Override
-    @Transactional
-    @Deprecated
-    // TODO: Replace with the generic resource template approach (stop using fileManager also).
-    public void createAppConfigTemplateForJvm(Jvm jvm, Application app, Identifier<Group> groupId) {
-        String metaData;
-        try {
-            metaData = FileUtils.readFileToString(new File(ApplicationProperties.get(PATHS_RESOURCE_TYPES) + "/" +
-                    ApplicationProperties.get(APP_CONTEXT_TEMPLATE) + ".json"));
-        } catch (IOException ioe) {
-            metaData = ""; // Note: This is bad code! This is just an interim solution since this method will be refactored
-                           // not to use fileManager in addition Fileutils can't easily be mocked hence the reason for not
-                           //  throwing an exception here!
-            LOGGER.error("Failed to get meta data for JVM {} template", jvm.getJvmName(), ioe);
-        }
-
-        applicationPersistenceService.createApplicationConfigTemplateForJvm(jvm.getJvmName(), app, groupId,
-                metaData, fileManager.getResourceTypeTemplate(ApplicationProperties.get(APP_CONTEXT_TEMPLATE)));
     }
 
     /**

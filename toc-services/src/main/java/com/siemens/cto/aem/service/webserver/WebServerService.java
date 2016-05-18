@@ -41,7 +41,7 @@ public interface WebServerService {
 
     List<String> getResourceTemplateNames(final String webServerName);
 
-    String getResourceTemplate(final String webServerName, final String resourceTemplateName, final boolean tokensReplaced);
+    String getResourceTemplate(final String webServerName, final String resourceTemplateName, final boolean tokensReplaced, ResourceGroup resourceGroup);
 
     void populateWebServerConfig(List<UploadWebServerTemplateRequest> uploadWSTemplateCommands, User user, boolean overwriteExisting);
 
@@ -65,9 +65,5 @@ public interface WebServerService {
 
     Long getWebServerStoppedCount(String groupName);
 
-    /**
-     * Create web servers default templates.
-     * @param webServerName identifies the web server to which the templates will belong to
-     */
-    void createDefaultTemplates(String webServerName);
+    String getResourceTemplateMetaData(String aWebServerName, String resourceTemplateName);
 }

@@ -14,6 +14,7 @@ import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.exception.ApplicationException;
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.common.exception.InternalErrorException;
+import com.siemens.cto.aem.common.request.app.UploadAppTemplateRequest;
 import com.siemens.cto.aem.common.request.group.AddJvmToGroupRequest;
 import com.siemens.cto.aem.common.request.jvm.*;
 import com.siemens.cto.aem.common.rule.jvm.JvmNameRule;
@@ -44,6 +45,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
@@ -111,19 +113,40 @@ public class JvmServiceImpl implements JvmService {
     @Transactional
     public void createDefaultTemplates(final String jvmName, Group parentGroup) {
         final String groupName = parentGroup.getName();
+        // get the group JVM templates
         List<String> templateNames = groupService.getGroupJvmsResourceTemplateNames(groupName);
+        final Jvm jvm = jvmPersistenceService.findJvmByExactName(jvmName);
         for (final String templateName : templateNames) {
             String templateContent = groupService.getGroupJvmResourceTemplate(groupName, templateName, false);
             String metaDataStr = groupService.getGroupJvmResourceTemplateMetaData(groupName, templateName);
             try {
                 ResourceTemplateMetaData metaData = new ObjectMapper().readValue(metaDataStr, ResourceTemplateMetaData.class);
-                final UploadJvmConfigTemplateRequest uploadJvmTemplateRequest = new UploadJvmConfigTemplateRequest(jvmPersistenceService.findJvmByExactName(jvmName), metaData.getTemplateName(),
+                final UploadJvmConfigTemplateRequest uploadJvmTemplateRequest = new UploadJvmConfigTemplateRequest(jvm, metaData.getTemplateName(),
                         IOUtils.toInputStream(templateContent), metaDataStr);
                 uploadJvmTemplateRequest.setConfFileName(metaData.getConfigFileName());
                 jvmPersistenceService.uploadJvmTemplateXml(uploadJvmTemplateRequest);
             } catch (IOException e) {
                 LOGGER.error("Failed to map meta data for JVM {} in group {}", jvmName, groupName, e);
                 throw new InternalErrorException(AemFaultType.BAD_STREAM, "Failed to map meta data for JVM " + jvmName + " in group " + groupName, e);
+            }
+        }
+
+        // get the group App templates
+        templateNames = groupService.getGroupAppsResourceTemplateNames(groupName);
+        for (String templateName : templateNames) {
+            String metaDataStr = groupService.getGroupAppResourceTemplateMetaData(groupName, templateName);
+            try {
+                ResourceTemplateMetaData metaData = new ObjectMapper().readValue(metaDataStr, ResourceTemplateMetaData.class);
+                if (metaData.getEntity().getDeployToJvms()){
+                    String appTemplate = groupService.getGroupAppResourceTemplate(groupName, templateName, false, new ResourceGroup());
+                    final Application application = applicationService.getApplication(metaData.getEntity().getTarget());
+                    UploadAppTemplateRequest uploadAppTemplateRequest = new UploadAppTemplateRequest(application, metaData.getTemplateName(),
+                            metaData.getConfigFileName(), jvmName, metaDataStr, new ByteArrayInputStream(appTemplate.getBytes()));
+                    applicationService.uploadAppTemplate(uploadAppTemplateRequest);
+                }
+            } catch (IOException e) {
+                LOGGER.error("Failed to map meta data while creating JVM for template {} in group {}", templateName, groupName, e);
+                throw new InternalErrorException(AemFaultType.BAD_STREAM, "Failed to map data for template " + templateName + " in group " + groupName, e);
             }
         }
     }
@@ -333,17 +356,6 @@ public class JvmServiceImpl implements JvmService {
         } finally {
             if (response != null) {
                 response.close();
-            }
-        }
-    }
-
-    @Override
-    @Transactional
-    public void addAppTemplatesForJvm(Jvm jvm, Set<Identifier<Group>> groups) {
-        for (Identifier<Group> groupId : groups) {
-            for (Application app : applicationService.findApplications(groupId)) {
-                LOGGER.info("Creating config template for app {} associated with JVM {} and group {}", app.getName(), jvm.getJvmName(), groupId);
-                applicationService.createAppConfigTemplateForJvm(jvm, app, groupId);
             }
         }
     }

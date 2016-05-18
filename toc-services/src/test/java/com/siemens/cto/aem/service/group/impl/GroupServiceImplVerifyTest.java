@@ -320,7 +320,7 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
 
     @Test
     public void testGetGroupWebServerResourceTemplate() {
-        groupService.getGroupWebServerResourceTemplate("testGroupName", "httpd.conf", false);
+        groupService.getGroupWebServerResourceTemplate("testGroupName", "httpd.conf", false, new ResourceGroup());
         verify(groupPersistenceService, times(1)).getGroupWebServerResourceTemplate("testGroupName", "httpd.conf");
         verify(groupPersistenceService, times(0)).getGroup("testGroupName");
 
@@ -334,7 +334,7 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
         when(groupPersistenceService.getGroup(anyString())).thenReturn(mockGroup);
         when(groupPersistenceService.getGroupWithWebServers(any(Identifier.class))).thenReturn(mockGroup);
         when(groupPersistenceService.getGroupWebServerResourceTemplate(anyString(), anyString())).thenReturn("${webServer.name}");
-        String tokenizedTemplate = groupService.getGroupWebServerResourceTemplate("testGroupName", "httpd.conf", true);
+        String tokenizedTemplate = groupService.getGroupWebServerResourceTemplate("testGroupName", "httpd.conf", true, new ResourceGroup());
         assertEquals("testWebServerName", tokenizedTemplate);
     }
 

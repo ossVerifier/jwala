@@ -116,6 +116,9 @@ var JvmConfig = React.createClass({
                                             },
                                             function(errMsg) {
                                                 $.errorAlert(errMsg, "Error");
+                                                if (errMsg.indexOf("Multiple groups were associated with the JVM") === 0) {
+                                                    self.refreshData({showModalFormAddDialog:false});
+                                                }
                                             });
         }
     },

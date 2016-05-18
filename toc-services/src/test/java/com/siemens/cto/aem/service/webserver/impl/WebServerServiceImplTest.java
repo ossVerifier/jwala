@@ -440,7 +440,7 @@ public class WebServerServiceImplTest {
     @Test
     public void testGetResourceTemplate() {
         when(webServerPersistenceService.getResourceTemplate(anyString(), anyString())).thenReturn("<template/>");
-        assertEquals("<template/>", wsService.getResourceTemplate("any", "any", false));
+        assertEquals("<template/>", wsService.getResourceTemplate("any", "any", false, new ResourceGroup()));
     }
 
     @Test
@@ -449,16 +449,16 @@ public class WebServerServiceImplTest {
         when(mockWebServer.getName()).thenReturn("mockWebServer");
         when(webServerPersistenceService.getResourceTemplate(anyString(), anyString())).thenReturn("<template>${webServer.name}</template>");
         when(webServerPersistenceService.findWebServerByName(anyString())).thenReturn(mockWebServer);
-        assertEquals("<template>mockWebServer</template>", wsService.getResourceTemplate("any", "httpd.conf", true));
+        assertEquals("<template>mockWebServer</template>", wsService.getResourceTemplate("any", "httpd.conf", true, new ResourceGroup()));
     }
 
-    @Test(expected = UnsupportedOperationException.class)
+    @Test
     public void testNonHttpdConfGetResourceTemplateTokensReplaced() {
         final WebServer mockWebServer = mock(WebServer.class);
         when(mockWebServer.getName()).thenReturn("mockWebServer");
         when(webServerPersistenceService.getResourceTemplate(anyString(), anyString())).thenReturn("<template>${webServer.name}</template>");
         when(webServerPersistenceService.findWebServerByName(anyString())).thenReturn(mockWebServer);
-        assertEquals("<template>mockWebServer</template>", wsService.getResourceTemplate("any", "any-except-httpd.conf", true));
+        assertEquals("<template>mockWebServer</template>", wsService.getResourceTemplate("any", "any-except-httpd.conf", true, new ResourceGroup()));
     }
 
     @Test

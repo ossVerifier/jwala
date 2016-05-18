@@ -1,6 +1,5 @@
 package com.siemens.cto.aem.web.filter;
 
-import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import org.apache.log4j.Logger;
 
 import javax.servlet.*;
@@ -12,7 +11,7 @@ import java.util.regex.Pattern;
 
 /**
  * Authenticates request URL.
- * <p>
+ * <p/>
  * Original Author: z002xuvs
  * Modified by: z003bpej
  * Comments: Modified to fit TOC, this filter was originally used in EPM.
@@ -27,11 +26,9 @@ public class AuthenticationFilter implements Filter {
     private static final Pattern[] URL_EXCLUDES = {LOGIN_PAGE, GEN_PUBLIC_RESOURCES, PUBLIC_RESOURCES};
 
     private static final Logger LOG = Logger.getLogger(AuthenticationFilter.class);
-    private boolean ignoreAuthentication = false;
 
     @Override
     public void init(final FilterConfig filterConfig) throws ServletException {
-        ignoreAuthentication = ApplicationProperties.get("postman.auth", "alwaysAuth").equals("alwaysIgnore");
     }
 
     @Override
@@ -68,12 +65,7 @@ public class AuthenticationFilter implements Filter {
     }
 
     private boolean isAuthenticated(final HttpServletRequest httpReq) {
-        if (!ignoreAuthentication) {
-            return httpReq.getSession().getAttribute("user") != null;
-        } else {
-            httpReq.getSession().setAttribute("user", ApplicationProperties.get("AemSsh.userName","N9SFGLabTomcatAdmin"));
-            return true;
-        }
+        return httpReq.getSession().getAttribute("user") != null;
     }
 
     @Override

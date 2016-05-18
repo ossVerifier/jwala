@@ -195,18 +195,19 @@ public class GroupServiceImplDeployTest {
         when(mockResourceType.getConfigFileName()).thenReturn("httpd.conf");
         when(mockGroupService.getGroup(anyString())).thenReturn(mockGroup);
         when(mockGroupService.getGroupWithWebServers(any(Identifier.class))).thenReturn(mockGroup);
-        when(mockGroupService.getGroupWebServerResourceTemplate(anyString(), anyString(), anyBoolean())).thenReturn("new httpd.conf context");
-        when(mockResourceService.getResourceTypes()).thenReturn(resourcesList);
+        when(mockGroupService.getGroupWebServerResourceTemplate(anyString(), anyString(), anyBoolean(), any(ResourceGroup.class))).thenReturn("new httpd.conf context");
+        when(mockResourceService.generateResourceGroup()).thenReturn(new ResourceGroup());
+        when(mockWebServerService.getResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"path\":\"./anyPath\"}");
         when(mockWebServerService.updateResourceTemplate(anyString(), anyString(), anyString())).thenReturn("new httpd.conf context");
         when(mockWebServerService.generateHttpdConfig(anyString(), any(ResourceGroup.class))).thenReturn("new httpd.conf context");
         when(mockWebServerControlService.secureCopyFileWithBackup(anyString(), anyString(), anyString(), anyBoolean())).thenReturn(new CommandOutput(new ExecReturnCode(0), "SUCCESS", ""));
 
-        Response returnedResponse = groupServiceRest.generateAndDeployGroupWebServersFile("testGroup", mockAuthUser);
+        Response returnedResponse = groupServiceRest.generateAndDeployGroupWebServersFile("testGroup", "httpd.conf", mockAuthUser);
         assertEquals(200, returnedResponse.getStatusInfo().getStatusCode());
 
         when(mockWebServerControlService.secureCopyFileWithBackup(anyString(), anyString(), anyString(), anyBoolean())).thenReturn(new CommandOutput(new ExecReturnCode(1), "", "NOT OK"));
         try {
-            groupServiceRest.generateAndDeployGroupWebServersFile("testGroup", mockAuthUser);
+            groupServiceRest.generateAndDeployGroupWebServersFile("testGroup", "httpd.conf", mockAuthUser);
         } catch (InternalErrorException ie) {
             assertEquals(AemFaultType.REMOTE_COMMAND_FAILURE, ie.getMessageResponseStatus());
         }
@@ -220,10 +221,10 @@ public class GroupServiceImplDeployTest {
         webServerSet.add(mockWebServer);
         when(mockGroupService.getGroupWithWebServers(any(Identifier.class))).thenReturn(mockGroup);
         when(mockGroupService.getGroup(anyString())).thenReturn(mockGroup);
-        when(mockGroupService.getGroupWebServerResourceTemplate(anyString(), anyString(), anyBoolean())).thenReturn("Httpd.conf template content");
+        when(mockGroupService.getGroupWebServerResourceTemplate(anyString(), anyString(), anyBoolean(), any(ResourceGroup.class))).thenReturn("Httpd.conf template content");
         when(mockGroup.getWebServers()).thenReturn(webServerSet);
         when(mockWebServerService.isStarted(any(WebServer.class))).thenReturn(true);
-        groupServiceRest.generateAndDeployGroupWebServersFile("groupName", mockAuthUser);
+        groupServiceRest.generateAndDeployGroupWebServersFile("groupName", "httpd.conf", mockAuthUser);
     }
     @Test
     public void testGroupAppDeploy() throws CommandFailureException {
@@ -328,6 +329,8 @@ public class GroupServiceImplDeployTest {
         when(mockGroupService.getGroupWithWebServers(any(Identifier.class))).thenReturn(mockGroup);
         when(mockWebServerService.isStarted(any(WebServer.class))).thenReturn(false);
         when(mockWebServerService.getWebServer(anyString())).thenReturn(mockWebServer);
+        when(mockWebServerService.getResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"path\":./anyPath}");
+        when(mockResourceService.generateResourceGroup()).thenReturn(new ResourceGroup());
         when(mockWebServerControlService.controlWebServer(any(ControlWebServerRequest.class), any(User.class))).thenReturn(successCommandOutput);
         when(mockWebServerControlService.createDirectory(any(WebServer.class), anyString())).thenReturn(successCommandOutput);
         when(mockWebServerControlService.changeFileMode(any(WebServer.class), anyString(), anyString(), anyString())).thenReturn(successCommandOutput);
@@ -476,7 +479,7 @@ public class GroupServiceImplDeployTest {
 
         @Bean
         WebServerServiceRest getWebServerServiceRest() {
-            return new WebServerServiceRestImpl(mockWebServerService, mockWebServerControlService, mock(WebServerCommandService.class), new HashMap<String, ReentrantReadWriteLock>(), mockResourceService);
+            return new WebServerServiceRestImpl(mockWebServerService, mockWebServerControlService, mock(WebServerCommandService.class), new HashMap<String, ReentrantReadWriteLock>(), mockResourceService, mockGroupService);
         }
 
         @Bean

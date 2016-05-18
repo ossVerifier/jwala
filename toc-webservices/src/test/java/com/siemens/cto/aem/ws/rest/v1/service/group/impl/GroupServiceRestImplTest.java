@@ -471,7 +471,7 @@ public class GroupServiceRestImplTest {
         when(mockGroupService.getGroup(anyString())).thenReturn(mockGroup);
         when(mockGroupService.getGroupWithWebServers(any(Identifier.class))).thenReturn(mockGroup);
         when(mockGroup.getWebServers()).thenReturn(emptyWsSet);
-        Response response = groupServiceRest.generateAndDeployGroupWebServersFile(group.getName(), mockAuthenticatedUser);
+        Response response = groupServiceRest.generateAndDeployGroupWebServersFile(group.getName(), "httpd.conf", mockAuthenticatedUser);
         assertNotNull(response);
     }
 
