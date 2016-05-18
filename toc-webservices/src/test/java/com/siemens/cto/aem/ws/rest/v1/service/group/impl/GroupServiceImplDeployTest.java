@@ -213,7 +213,7 @@ public class GroupServiceImplDeployTest {
         }
     }
 
-    @Test (expected = InternalErrorException.class)
+    @Test(expected = InternalErrorException.class)
     public void testGenerateAndDeployGroupWebServerFileWithWebServerStarted() {
         Group mockGroup = mock(Group.class);
         WebServer mockWebServer = mock(WebServer.class);
@@ -226,6 +226,7 @@ public class GroupServiceImplDeployTest {
         when(mockWebServerService.isStarted(any(WebServer.class))).thenReturn(true);
         groupServiceRest.generateAndDeployGroupWebServersFile("groupName", "httpd.conf", mockAuthUser);
     }
+
     @Test
     public void testGroupAppDeploy() throws CommandFailureException {
         Group mockGroup = mock(Group.class);
@@ -268,7 +269,7 @@ public class GroupServiceImplDeployTest {
 
         boolean internalErrorException = false;
         when(mockJvm.getState()).thenReturn(JvmState.JVM_STARTED);
-        try{
+        try {
             groupServiceRest.generateAndDeployGroupAppFile("testGroup", "hct.xml", mockAuthUser);
         } catch (InternalErrorException ie) {
             internalErrorException = true;
@@ -304,14 +305,23 @@ public class GroupServiceImplDeployTest {
         when(mockGroupService.getGroup(anyString())).thenReturn(mockGroup);
         when(mockGroupService.getGroupAppResourceTemplate(anyString(), anyString(), anyBoolean(), any(ResourceGroup.class))).thenReturn("new hct.xml content");
         when(mockGroupService.getGroupAppResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"entity\":{\"target\": \"testApp\", \"deployToJvms\":false}}");
-        when(mockGroupService.deployGroupAppTemplate(anyString(), anyString(), any(ResourceGroup.class), any(Application.class), any(Jvm.class))).thenReturn(new CommandOutput(new ExecReturnCode(0), "SUCCESS",""));
-                when(mockJvmService.getJvm(anyString())).thenReturn(mockJvm);
+        when(mockGroupService.deployGroupAppTemplate(anyString(), anyString(), any(ResourceGroup.class), any(Application.class), any(Jvm.class))).thenReturn(new CommandOutput(new ExecReturnCode(0), "SUCCESS", ""));
+        when(mockJvmService.getJvm(anyString())).thenReturn(mockJvm);
         when(mockResourceService.generateResourceGroup()).thenReturn(new ResourceGroup());
         when(mockApplicationService.updateResourceTemplate(anyString(), anyString(), anyString(), anyString(), anyString())).thenReturn("new hct.xml content");
         when(mockResourceService.generateResourceGroup()).thenReturn(new ResourceGroup());
         when(mockApplicationService.getApplication(anyString())).thenReturn(mockApp);
         Response returnResponse = groupServiceRest.generateAndDeployGroupAppFile("testGroup", "hct.xml", mockAuthUser);
         assertEquals(200, returnResponse.getStatus());
+
+        when(mockJvm.getState()).thenReturn(JvmState.JVM_STARTED);
+        boolean internalErrorExceptionThrown = false;
+        try {
+            groupServiceRest.generateAndDeployGroupAppFile("testGroup", "hct.xml", mockAuthUser);
+        } catch (InternalErrorException e) {
+            internalErrorExceptionThrown = true;
+        }
+        assertTrue(internalErrorExceptionThrown);
     }
 
     @Test
@@ -342,7 +352,7 @@ public class GroupServiceImplDeployTest {
         assertNotNull(response);
     }
 
-    @Test (expected = InternalErrorException.class)
+    @Test(expected = InternalErrorException.class)
     public void testGenerateGroupWebServersWithWebServerStarted() {
         Group mockGroup = mock(Group.class);
         Set<WebServer> webServersSet = new HashSet<>();
@@ -403,7 +413,7 @@ public class GroupServiceImplDeployTest {
 
     }
 
-    @Test (expected = InternalErrorException.class)
+    @Test(expected = InternalErrorException.class)
     public void testGenerateGroupJvmsWithJvmStarted() {
         Group mockGroup = mock(Group.class);
         Set<Jvm> jvmSet = new HashSet<>();
@@ -426,7 +436,7 @@ public class GroupServiceImplDeployTest {
         when(mockGroupService.updateGroupAppResourceTemplate(anyString(), anyString(), anyString())).thenReturn("new hct.xml content");
         when(mockGroupService.getGroup(anyString())).thenReturn(mockGroupWithJvms);
         when(mockGroupService.getGroupAppResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"entity\":{\"target\": \"testApp\"}}");
-        when(mockApplicationService.updateResourceTemplate(anyString(), anyString(), anyString(), anyString(),anyString())).thenReturn("new hct.xml content");
+        when(mockApplicationService.updateResourceTemplate(anyString(), anyString(), anyString(), anyString(), anyString())).thenReturn("new hct.xml content");
 
         Response response = groupServiceRest.updateGroupAppResourceTemplate("testGroup", "hct.xml", "new hct.xml context");
         verify(mockGroupService).updateGroupAppResourceTemplate(anyString(), anyString(), anyString());
@@ -462,6 +472,55 @@ public class GroupServiceImplDeployTest {
         reset(mockGroupService);
     }
 
+    @Test
+    public void testGetStartedAndStoppedWebserversAndJvmsCount() {
+        List<Group> groupList = new ArrayList<>();
+        Group mockGroup = mock(Group.class);
+        when(mockGroup.getName()).thenReturn("test-group-name");
+        groupList.add(mockGroup);
+
+        when(mockJvmService.getJvmStartedCount(anyString())).thenReturn(0L);
+        when(mockJvmService.getJvmStoppedCount(anyString())).thenReturn(0L);
+        when(mockJvmService.getJvmForciblyStoppedCount(anyString())).thenReturn(0L);
+        when(mockJvmService.getJvmCount(anyString())).thenReturn(0L);
+        when(mockWebServerService.getWebServerStartedCount(anyString())).thenReturn(0L);
+        when(mockWebServerService.getWebServerStoppedCount(anyString())).thenReturn(0L);
+        when(mockWebServerService.getWebServerCount(anyString())).thenReturn(0L);
+        when(mockGroupService.getGroups()).thenReturn(groupList);
+
+        Response response = groupServiceRest.getStartedAndStoppedWebServersAndJvmsCount();
+        assertEquals(200, response.getStatus());
+        final GroupServerInfo groupServerInfoResponse = (GroupServerInfo) ((ArrayList)(((ApplicationResponse) response.getEntity()).getApplicationResponseContent())).get(0);
+        assertEquals(Long.valueOf(0), groupServerInfoResponse.getJvmStartedCount());
+        assertEquals(Long.valueOf(0), groupServerInfoResponse.getJvmStoppedCount());
+        assertEquals(Long.valueOf(0), groupServerInfoResponse.getJvmForciblyStoppedCount());
+        assertEquals(Long.valueOf(0), groupServerInfoResponse.getJvmCount());
+        assertEquals(Long.valueOf(0), groupServerInfoResponse.getWebServerCount());
+        assertEquals(Long.valueOf(0), groupServerInfoResponse.getWebServerStartedCount());
+        assertEquals(Long.valueOf(0), groupServerInfoResponse.getWebServerStoppedCount());
+    }
+
+    @Test
+    public void testgetStartedAndStoppedWebServersAndJvmsCount() {
+        when(mockJvmService.getJvmStartedCount(anyString())).thenReturn(0L);
+        when(mockJvmService.getJvmStoppedCount(anyString())).thenReturn(0L);
+        when(mockJvmService.getJvmForciblyStoppedCount(anyString())).thenReturn(0L);
+        when(mockJvmService.getJvmCount(anyString())).thenReturn(0L);
+        when(mockWebServerService.getWebServerStartedCount(anyString())).thenReturn(0L);
+        when(mockWebServerService.getWebServerStoppedCount(anyString())).thenReturn(0L);
+        when(mockWebServerService.getWebServerCount(anyString())).thenReturn(0L);
+
+        Response response = groupServiceRest.getStartedAndStoppedWebServersAndJvmsCount("test-group-name");
+        assertEquals(200, response.getStatus());
+        final GroupServerInfo groupServerInfoResponse = (GroupServerInfo) (((ApplicationResponse) response.getEntity()).getApplicationResponseContent());
+        assertEquals(Long.valueOf(0), groupServerInfoResponse.getJvmStartedCount());
+        assertEquals(Long.valueOf(0), groupServerInfoResponse.getJvmStoppedCount());
+        assertEquals(Long.valueOf(0), groupServerInfoResponse.getJvmForciblyStoppedCount());
+        assertEquals(Long.valueOf(0), groupServerInfoResponse.getJvmCount());
+        assertEquals(Long.valueOf(0), groupServerInfoResponse.getWebServerCount());
+        assertEquals(Long.valueOf(0), groupServerInfoResponse.getWebServerStartedCount());
+        assertEquals(Long.valueOf(0), groupServerInfoResponse.getWebServerStoppedCount());
+    }
 
     @Configuration
     static class Config {
