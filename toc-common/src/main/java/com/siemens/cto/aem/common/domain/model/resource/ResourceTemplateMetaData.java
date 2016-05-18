@@ -1,5 +1,7 @@
 package com.siemens.cto.aem.common.domain.model.resource;
 
+import java.util.Arrays;
+
 /**
  * Resource template meta data.
  *
@@ -68,5 +70,18 @@ public class ResourceTemplateMetaData {
 
     public void setProperties(ResourceProperty [] properties) {
         this.properties = properties;
+    }
+
+    @Override
+    public String toString() {
+        return "ResourceTemplateMetaData{" +
+                "name='" + name + '\'' +
+                ", templateName='" + templateName + '\'' +
+                ", contentType='" + contentType + '\'' +
+                ", configFileName='" + configFileName + '\'' +
+                ", path='" + path + '\'' +
+                ", entity=" + entity +
+                ", properties=" + Arrays.toString(properties) +
+                '}';
     }
 }

@@ -45,6 +45,7 @@ import java.io.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.jar.JarEntry;
@@ -321,6 +322,14 @@ public class JvmServiceRestImpl implements JvmServiceRest {
             // then untar the new tar
             deployJvmConfigJar(jvm, user, jvmConfigJar);
 
+            // copy the individual jvm templates to the destination
+            final Map<String, String> generatedFiles = jvmService.generateResourceFiles(jvm.getJvmName());
+            if(generatedFiles != null) {
+                for(Entry<String, String> entry:generatedFiles.entrySet()) {
+                    secureCopyFileToJvm(jvm, entry.getKey(), entry.getValue());
+                }
+            }
+
             // deploy any application context xml's in the group
             // TODO reimplement this once the generic resource template APIs are complete
             // deployApplicationContextXMLs(jvm);
@@ -410,19 +419,28 @@ public class JvmServiceRestImpl implements JvmServiceRest {
     }
 
     protected void secureCopyJvmConfigJar(Jvm jvm, String jvmConfigTar) throws CommandFailureException {
-        ControlJvmRequest secureCopyRequest = new ControlJvmRequest(jvm.getId(), JvmControlOperation.SECURE_COPY);
-        CommandOutput execData;
         String configTarName = jvm.getJvmName() + CONFIG_JAR;
-        execData =
-                jvmControlService.secureCopyFile(secureCopyRequest, stpJvmResourcesDir + "/" + configTarName, AemControl.Properties.USER_TOC_SCRIPTS_PATH + "/" + configTarName);
-        if (execData.getReturnCode().wasSuccessful()) {
-            LOGGER.info("Copy of config tar successful: {}", jvmConfigTar);
+        secureCopyFileToJvm(jvm, stpJvmResourcesDir + "/" + configTarName, AemControl.Properties.USER_TOC_SCRIPTS_PATH + "/" + configTarName);
+        LOGGER.info("Copy of config tar successful: {}", jvmConfigTar);
+    }
+
+    /**
+     * This method copies a given file to the destination location on the remote machine.
+     *
+     * @param jvm Jvm which requires the file
+     * @param sourceFile The source file, which needs to be copied.
+     * @param destinationFile The destination file, where the source file should be copied.
+     * @throws CommandFailureException If the command fails, this exception contains the details of the failure.
+     */
+    protected void  secureCopyFileToJvm(final Jvm jvm, final String sourceFile, final String destinationFile) throws CommandFailureException {
+        final ControlJvmRequest controlJvmRequest = new ControlJvmRequest(jvm.getId(), JvmControlOperation.SECURE_COPY);
+        final CommandOutput commandOutput = jvmControlService.secureCopyFile(controlJvmRequest, sourceFile, destinationFile);
+        if(commandOutput.getReturnCode().wasSuccessful()) {
+            LOGGER.info("Successfully copied {} to destination location {} on {}", sourceFile, destinationFile, jvm.getHostName());
         } else {
-            String standardError =
-                    execData.getStandardError().isEmpty() ? execData.getStandardOutput() : execData.getStandardError();
-            LOGGER.error("Copy command completed with error trying to copy config tar to {} :: ERROR: {}",
-                    jvm.getJvmName(), standardError);
-            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, CommandOutputReturnCode.fromReturnCode(execData.getReturnCode().getReturnCode()).getDesc());
+            final String standardError = commandOutput.getStandardError().isEmpty()? commandOutput.getStandardOutput(): commandOutput.getStandardError();
+            LOGGER.error("Copy command failed with error trying to copy file {} to {} :: ERROR: {}", sourceFile, jvm.getHostName(), standardError);
+            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, CommandOutputReturnCode.fromReturnCode(commandOutput.getReturnCode().getReturnCode()).getDesc());
         }
     }
 
@@ -545,8 +563,6 @@ public class JvmServiceRestImpl implements JvmServiceRest {
             final String invokeBatDir = generatedDir + "/bin";
             LOGGER.debug("generating template in location: {}", invokeBatDir + "/" + CONFIG_FILENAME_INVOKE_BAT);
             createConfigFile(invokeBatDir + "/", CONFIG_FILENAME_INVOKE_BAT, generatedText);
-
-            jvmService.generateResourceFiles(jvmName, destDirPath);
 
             // copy the start and stop scripts to the instances/jvm/bin directory
             final String commandsScriptsPath = ApplicationProperties.get("commands.scripts-path");

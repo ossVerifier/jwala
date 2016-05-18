@@ -15,6 +15,7 @@ import com.siemens.cto.aem.persistence.jpa.domain.resource.config.template.JpaJv
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public interface JvmService {
@@ -80,17 +81,15 @@ public interface JvmService {
     ResourceTemplateMetaData getResourceTemplateMetaData(String jvmName) throws IOException;
 
     /**
-     * Combines data to the template to come up with resource file(s) which are saved in a file who's location
-     * is determined by a path definition found in the meta data of the JVMs configuration template data
-     * ({@link JpaJvmConfigTemplate}). This method generates all the resource files associated to a JVM as specified
-     * by the JVM name.
+     * Generates all the required templates for the required jvm, and returns the source location and the destination
+     * location.
      *
-     * @param jvmName the JVM name
-     * @param destPath the path where the file(s) are saved
-     * @return the number of resource files generated
+     * @param jvmName Name of the jvm for which the templates need to be generated.
+     * @return a map with the key as the absolute location of the source file and the value
+     * as the absolute location of the destination file.
      * @throws IOException
      */
-    int generateResourceFiles(String jvmName, String destPath) throws IOException;
+    Map<String, String> generateResourceFiles(String jvmName) throws IOException;
 
     /**
      * Create JVM default templates.

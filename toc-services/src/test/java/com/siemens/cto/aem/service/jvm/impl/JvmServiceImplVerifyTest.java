@@ -15,6 +15,7 @@ import com.siemens.cto.aem.common.request.jvm.CreateJvmAndAddToGroupsRequest;
 import com.siemens.cto.aem.common.request.jvm.CreateJvmRequest;
 import com.siemens.cto.aem.common.request.jvm.UpdateJvmRequest;
 import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
+import com.siemens.cto.aem.persistence.jpa.domain.resource.config.template.JpaJvmConfigTemplate;
 import com.siemens.cto.aem.persistence.service.JvmPersistenceService;
 import com.siemens.cto.aem.service.VerificationBehaviorSupport;
 import com.siemens.cto.aem.service.app.ApplicationService;
@@ -25,6 +26,7 @@ import com.siemens.cto.aem.service.resource.ResourceService;
 import com.siemens.cto.aem.service.state.StateNotificationService;
 import com.siemens.cto.aem.service.webserver.component.ClientFactoryHelper;
 import com.siemens.cto.toc.files.FileManager;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -40,10 +42,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -88,12 +87,15 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
 
     private JvmService jvmService;
 
+    private JvmServiceImpl jvmServiceImpl;
+
     @Before
     public void setup() {
         initMocks(this);
-        jvmService = new JvmServiceImpl(mockJvmPersistenceService, mockGroupService, mockApplicationService, mockFileManager, mockStateNotificationService,
-                       mockMessagingTemplate, mockGroupStateNotificationService, mockResourceService, mockClientFactoryHelper,
-                       "/topic/server-states");
+        jvmServiceImpl = new JvmServiceImpl(mockJvmPersistenceService, mockGroupService, mockApplicationService, mockFileManager, mockStateNotificationService,
+                mockMessagingTemplate, mockGroupStateNotificationService, mockResourceService, mockClientFactoryHelper,
+                "/topic/server-states");
+        jvmService = jvmServiceImpl;
     }
 
     @SuppressWarnings("unchecked")
@@ -474,6 +476,28 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
         when(mockJvmPersistenceService.findGroupsByJvm(any(Identifier.class))).thenReturn(groupsList);
         jvmService.deployApplicationContextXMLs(jvm);
         verify(mockApplicationService).deployConf(anyString(), anyString(), anyString(), anyString(), anyBoolean(), any(ResourceGroup.class), any(User.class));
+    }
+
+    @Test
+    public void testGenerateResourceFiles() throws IOException {
+        final String jvmName = "testJvmName";
+        final JpaJvmConfigTemplate mockJpaJvmConfigTemplate = mock(JpaJvmConfigTemplate.class);
+        final ResourceGroup mockResourceGroup = mock(ResourceGroup.class);
+        List<JpaJvmConfigTemplate> jpaJvmConfigTemplates = new ArrayList<>();
+        jpaJvmConfigTemplates.add(mockJpaJvmConfigTemplate);
+        final String metadata = "{\"path\":\"D:/stp/app/instances/testJvmName/bin\",\"configFileName\": \"test.file\"}";
+        Map<String, String> expectedMap = new HashMap<>();
+        expectedMap.put("C:/Temp/test.file", "D:/stp/app/instances/testJvmName/bin/test.file");
+
+        when(mockResourceService.generateResourceGroup()).thenReturn(mockResourceGroup);
+        when(mockResourceService.generateResourceFile(anyString(), any(ResourceGroup.class), any(Jvm.class))).thenReturn(metadata);
+        when(mockJvmPersistenceService.getConfigTemplates(jvmName)).thenReturn(jpaJvmConfigTemplates);
+
+        Map<String, String> result = jvmService.generateResourceFiles(jvmName);
+        assertEquals(result.size(), 1);
+        for(Map.Entry<String, String> entry:result.entrySet()) {
+            FileUtils.forceDelete(new File(entry.getKey()));
+        }
     }
 
 }
