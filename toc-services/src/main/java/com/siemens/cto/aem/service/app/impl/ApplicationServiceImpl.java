@@ -30,7 +30,6 @@ import com.siemens.cto.toc.files.FileManager;
 import com.siemens.cto.toc.files.RepositoryFileInformation;
 import com.siemens.cto.toc.files.RepositoryFileInformation.Type;
 import com.siemens.cto.toc.files.WebArchiveManager;
-import org.apache.commons.io.FileUtils;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -57,8 +56,6 @@ public class ApplicationServiceImpl implements ApplicationService {
     private static final Logger LOGGER = LoggerFactory.getLogger(ApplicationServiceImpl.class);
 
     private static final String GENERATED_RESOURCE_DIR = "stp.generated.resource.dir";
-    private static final String APP_CONTEXT_TEMPLATE = "stp.app.context.template";
-    private static final String PATHS_RESOURCE_TYPES = "paths.resource-types";
     private final ExecutorService executorService;
 
     @Autowired
