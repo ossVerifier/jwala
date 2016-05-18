@@ -628,15 +628,4 @@ public class ApplicationServiceImplTest {
         mockApplicationService.copyApplicationConfigToGroupJvms(mockGroup, "testApp", mock(ResourceGroup.class), testUser);
     }
 
-    @Test
-    public void testCreateAppConfForJvm() {
-        Jvm mockJvm = mock(Jvm.class);
-
-        when(mockJvm.getJvmName()).thenReturn("testJvmName");
-        when(fileManager.getResourceTypeTemplate(anyString())).thenReturn("testTemplate.tpl");
-
-        applicationService.createAppConfigTemplateForJvm(mockJvm, app, groupId);
-        verify(applicationPersistenceService).createApplicationConfigTemplateForJvm("testJvmName", app, groupId, "",
-                "testTemplate.tpl");
-    }
 }

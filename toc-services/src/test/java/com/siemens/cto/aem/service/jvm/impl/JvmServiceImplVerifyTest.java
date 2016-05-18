@@ -431,24 +431,6 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
     }
 
     @Test
-    public void testAddTemplatesForJvm() {
-        final Jvm jvm = mockJvmWithId(new Identifier<Jvm>(111L));
-        Application mockApp = mock(Application.class);
-
-        Set<Identifier<Group>> groups = new HashSet<>();
-        final Identifier<Group> groupId = new Identifier<>(101L);
-        groups.add(groupId);
-        List<Application> mockAppList = new ArrayList<>();
-        mockAppList.add(mockApp);
-
-        when(mockApplicationService.findApplications(any(Identifier.class))).thenReturn(mockAppList);
-
-        jvmService.addAppTemplatesForJvm(jvm, groups);
-
-        verify(mockApplicationService).createAppConfigTemplateForJvm(jvm, mockApp, groupId);
-    }
-
-    @Test
     public void testDeployApplicationContextXMLs() {
         final Identifier<Jvm> jvmId = new Identifier<>(2323L);
         final Identifier<Group> groupId = new Identifier<>(222L);

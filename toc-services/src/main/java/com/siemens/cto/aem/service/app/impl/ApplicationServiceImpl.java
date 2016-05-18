@@ -545,26 +545,6 @@ public class ApplicationServiceImpl implements ApplicationService {
         return appConfFile;
     }
 
-    @Override
-    @Transactional
-    @Deprecated
-    // TODO: Replace with the generic resource template approach (stop using fileManager also).
-    public void createAppConfigTemplateForJvm(Jvm jvm, Application app, Identifier<Group> groupId) {
-        String metaData;
-        try {
-            metaData = FileUtils.readFileToString(new File(ApplicationProperties.get(PATHS_RESOURCE_TYPES) + "/" +
-                    ApplicationProperties.get(APP_CONTEXT_TEMPLATE) + ".json"));
-        } catch (IOException ioe) {
-            metaData = ""; // Note: This is bad code! This is just an interim solution since this method will be refactored
-                           // not to use fileManager in addition Fileutils can't easily be mocked hence the reason for not
-                           //  throwing an exception here!
-            LOGGER.error("Failed to get meta data for JVM {} template", jvm.getJvmName(), ioe);
-        }
-
-        applicationPersistenceService.createApplicationConfigTemplateForJvm(jvm.getJvmName(), app, groupId,
-                metaData, fileManager.getResourceTypeTemplate(ApplicationProperties.get(APP_CONTEXT_TEMPLATE)));
-    }
-
     /**
      * Inner class application wrapper to include a web application's parent JVM.
      */

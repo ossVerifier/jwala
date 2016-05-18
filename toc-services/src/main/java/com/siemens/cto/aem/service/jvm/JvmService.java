@@ -15,7 +15,6 @@ import com.siemens.cto.aem.persistence.jpa.domain.resource.config.template.JpaJv
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Set;
 
 public interface JvmService {
 
@@ -64,8 +63,6 @@ public interface JvmService {
      * @param jvm the JVM
      */
     void pingAndUpdateJvmState(Jvm jvm);
-
-    void addAppTemplatesForJvm(Jvm jvm, Set<Identifier<Group>> groups);
 
     void deployApplicationContextXMLs(Jvm jvm);
 
