@@ -70,6 +70,7 @@ import static org.mockito.Mockito.*;
 public class WebServerServiceRestImplTest {
 
     private static final String name = "webserverName";
+    private static final String name2 = "webserverName2";
     private static final String host = "localhost";
     private static final Path statusPath = new Path("/statusPath");
     private static final FileSystemPath httpConfigFile = new FileSystemPath("d:/some-dir/httpd.conf");
@@ -77,6 +78,7 @@ public class WebServerServiceRestImplTest {
     private static final Path DOC_ROOT = new Path("htdocs");
     private static final List<WebServer> webServerList = createWebServerList();
     private static final WebServer webServer = webServerList.get(0);
+    private static final WebServer webServer2 = webServerList.get(1);
 
     @Mock
     private WebServerServiceImpl impl;
@@ -106,11 +108,16 @@ public class WebServerServiceRestImplTest {
         final List<Group> groupsList = new ArrayList<>();
         groupsList.add(groupOne);
         groupsList.add(groupTwo);
+        final List<Group> singleGroupList = new ArrayList<>();
+        singleGroupList.add(groupOne);
 
         final WebServer ws = new WebServer(Identifier.id(1L, WebServer.class), groupsList, name, host, 8080, 8009, statusPath,
                 httpConfigFile, SVR_ROOT, DOC_ROOT, WebServerReachableState.WS_UNREACHABLE, null);
+        final WebServer ws2 = new WebServer(Identifier.id(2L, WebServer.class), singleGroupList, name2, host, 8080, 8009, statusPath,
+                httpConfigFile, SVR_ROOT, DOC_ROOT, WebServerReachableState.WS_UNREACHABLE, null);
         final List<WebServer> result = new ArrayList<>();
         result.add(ws);
+        result.add(ws2);
         return result;
     }
 
@@ -145,6 +152,8 @@ public class WebServerServiceRestImplTest {
         final List<WebServer> receivedList = (List<WebServer>) content;
         final WebServer received = receivedList.get(0);
         assertEquals(webServer, received);
+        final WebServer received2 = receivedList.get(1);
+        assertEquals(webServer2, received2);
     }
 
     @Test
@@ -165,7 +174,7 @@ public class WebServerServiceRestImplTest {
     @Test
     public void testCreateWebServer() {
         final JsonCreateWebServer jsonCreateWebServer = mock(JsonCreateWebServer.class);
-        when(impl.createWebServer(any(CreateWebServerRequest.class), any(User.class))).thenReturn(webServer);
+        when(impl.createWebServer(any(CreateWebServerRequest.class), any(User.class))).thenReturn(webServer2);
 
         final Response response = webServerServiceRest.createWebServer(jsonCreateWebServer, authenticatedUser);
         assertEquals(Response.Status.CREATED.getStatusCode(), response.getStatus());
@@ -175,24 +184,16 @@ public class WebServerServiceRestImplTest {
         assertTrue(content instanceof WebServer);
 
         final WebServer received = (WebServer) content;
-        assertEquals(webServer, received);
+        assertEquals(webServer2, received);
     }
 
     @Test
-    public void testCreateWebServerAndPopulateConfigs() {
+    public void testCreateWebServerAndPopulateConfigsFails() {
         final JsonCreateWebServer jsonCreateWebServer = mock(JsonCreateWebServer.class);
         when(impl.createWebServer(any(CreateWebServerRequest.class), any(User.class))).thenReturn(webServer);
 
-        final ArrayList<ResourceType> resourceTypes = new ArrayList<>();
-        ResourceType mockWsResourceType = mock(ResourceType.class);
-        when(mockWsResourceType.getConfigFileName()).thenReturn("httpd.conf");
-        when(mockWsResourceType.getEntityType()).thenReturn("webServer");
-        when(mockWsResourceType.getTemplateName()).thenReturn("HttpdSslConfTemplate.tpl");
-        resourceTypes.add(mockWsResourceType);
-        when(resourceService.getResourceTypes()).thenReturn(resourceTypes);
-
         final Response response = webServerServiceRest.createWebServer(jsonCreateWebServer, authenticatedUser);
-        assertEquals(Response.Status.CREATED.getStatusCode(), response.getStatus());
+        assertEquals(Response.Status.EXPECTATION_FAILED.getStatusCode(), response.getStatus());
     }
 
     @Test(expected = InternalErrorException.class)

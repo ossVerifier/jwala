@@ -110,6 +110,9 @@ var WebServerConfig = React.createClass({
                                                   },
                                                   function(errMsg) {
                                                         $.errorAlert(errMsg, "Error");
+                                                        if (errMsg.indexOf("Multiple groups were associated with the Web Server") === 0){
+                                                            self.refreshData({showModalFormAddDialog:false});
+                                                        }
                                                   });
         }
     },

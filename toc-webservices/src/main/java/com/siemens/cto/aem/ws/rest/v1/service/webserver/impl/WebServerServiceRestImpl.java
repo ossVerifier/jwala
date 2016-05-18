@@ -120,6 +120,9 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
                     return ResponseBuilder.notOk(Response.Status.EXPECTATION_FAILED, new FaultCodeException(AemFaultType.BAD_STREAM, "Created web server " + webServer.getName() + " but failed creating templates from parent group " + groupName, e));
                 }
             }
+            if (groups.size() > 1) {
+                return ResponseBuilder.notOk(Response.Status.EXPECTATION_FAILED, new FaultCodeException(AemFaultType.GROUP_NOT_SPECIFIED, "Multiple groups were associated with the Web Server, but the Web Server was created using the templates from group " + groupName));
+            }
         }
         return ResponseBuilder.created(webServer);
     }
