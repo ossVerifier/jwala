@@ -422,14 +422,16 @@ var XmlTabs = React.createClass({
                 thePromise = this.props.jvmService.deployJvmConf(this.state.entity.jvmName,
                                                                  this.state.resourceTemplateName);
             } else if (this.state.entityType === "webServers") {
-                thePromise = this.props.wsService.deployHttpdConf(this.state.entity.name);
+                thePromise = this.props.wsService.deployHttpdConf(this.state.entity.name,
+                                                                  this.state.resourceTemplateName);
             } else if (this.state.entityType === "webApps") {
                 thePromise = this.props.webAppService.deployWebAppsConf(this.state.entity.name,
                                                                         this.state.entity.group.name,
                                                                         this.state.entityParent.jvmName,
                                                                         this.state.resourceTemplateName);
             } else if (this.state.entityType === "webServerSection") {
-                thePromise = this.props.groupService.deployGroupWebServerConf(this.state.entityGroupName);
+                thePromise = this.props.groupService.deployGroupWebServerConf(this.state.entityGroupName,
+                                                                              this.state.resourceTemplateName);
             } else if (this.state.entityType === "jvmSection") {
                 if (this.state.groupJvmEntityType && this.state.groupJvmEntityType === "webApp") {
                     thePromise = this.props.groupService.deployGroupAppConf(this.state.entityGroupName,

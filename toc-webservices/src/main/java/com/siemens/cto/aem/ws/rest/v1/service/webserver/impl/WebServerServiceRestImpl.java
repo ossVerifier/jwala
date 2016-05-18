@@ -243,7 +243,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
         } finally {
             wsWriteLocks.get(aWebServerName).writeLock().unlock();
         }
-        return ResponseBuilder.ok(webServerService.getWebServer(aWebServerName));
+        return ResponseBuilder.ok(webServerService.getResourceTemplate(aWebServerName, resourceFileName, false, new ResourceGroup()));
     }
 
     @Override

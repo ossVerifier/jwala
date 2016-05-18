@@ -107,8 +107,8 @@ var groupService = {
     deployGroupAppConf: function(groupName, resourceTemplateName) {
         return serviceFoundation.promisedPut("v1.0/groups/" + groupName + "/apps/conf/" + resourceTemplateName, "json", null, false);
     },
-    deployGroupWebServerConf: function(groupName) {
-        return serviceFoundation.promisedPut("v1.0/groups/" + groupName + "/webservers/conf/", "json", null, false);
+    deployGroupWebServerConf: function(groupName, resourceTemplateName) {
+        return serviceFoundation.promisedPut("v1.0/groups/" + groupName + "/webservers/conf/" + resourceTemplateName, "json", null, false);
     },
     uploadGroupJvmTemplateForm: function(groupName, templateName, templateFile, successCallback, errorCallback) {
          return serviceFoundation.post("v1.0/groups/" + encodeURI(groupName) + "/jvms/resources/uploadTemplate?templateName=" + encodeURI(templateName),
