@@ -14,7 +14,6 @@ import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
 import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateRequest;
 
 import java.util.List;
-import java.util.Map;
 
 public interface GroupService {
 
@@ -93,6 +92,8 @@ public interface GroupService {
     String getGroupAppResourceTemplateMetaData(String groupName, String fileName);
 
     String getGroupJvmResourceTemplateMetaData(String groupName, String fileName);
+
+    String getGroupWebServerResourceTemplateMetaData(String groupName, String fileName);
 
     String updateGroupAppResourceTemplate(String groupName, String resourceTemplateName, String content);
 

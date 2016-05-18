@@ -21,6 +21,7 @@ import com.siemens.cto.aem.common.request.webserver.UpdateWebServerRequest;
 import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateRequest;
 import com.siemens.cto.aem.exception.CommandFailureException;
 import com.siemens.cto.aem.persistence.jpa.service.exception.ResourceTemplateUpdateException;
+import com.siemens.cto.aem.service.group.GroupService;
 import com.siemens.cto.aem.service.resource.ResourceService;
 import com.siemens.cto.aem.service.webserver.WebServerCommandService;
 import com.siemens.cto.aem.service.webserver.WebServerControlService;
@@ -90,6 +91,9 @@ public class WebServerServiceRestImplTest {
     private ResourceService resourceService;
 
     @Mock
+    private GroupService groupService;
+
+    @Mock
     private AuthenticatedUser authenticatedUser;
 
     private WebServerServiceRestImpl webServerServiceRest;
@@ -112,7 +116,7 @@ public class WebServerServiceRestImplTest {
 
     @Before
     public void setUp() {
-        webServerServiceRest = new WebServerServiceRestImpl(impl, webServerControlService, commandImpl, writeLockMap, resourceService);
+        webServerServiceRest = new WebServerServiceRestImpl(impl, webServerControlService, commandImpl, writeLockMap, resourceService, groupService);
         when(authenticatedUser.getUser()).thenReturn(new User("Unused"));
         final ArrayList<ResourceType> resourceTypes = new ArrayList<>();
         ResourceType mockWsResourceType = mock(ResourceType.class);

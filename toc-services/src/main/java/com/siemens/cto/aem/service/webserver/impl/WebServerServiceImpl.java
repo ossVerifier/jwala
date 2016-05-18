@@ -28,10 +28,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -289,20 +287,4 @@ public class WebServerServiceImpl implements WebServerService {
         return webServerPersistenceService.getWebServerStoppedCount(groupName);
     }
 
-    @Override
-    @Transactional
-    public void createDefaultTemplates(final String webServerName) {
-        final String[] templateNameArray = defaultWebServerTemplateNames.split(",");
-        for (final String templateName : templateNameArray) {
-            try {
-                final InputStream metaDataIn = new ByteArrayInputStream(FileUtils.readFileToByteArray(
-                        new File(templatePath + "/" + templateName + "Properties.json")));
-                final InputStream templateIn = new ByteArrayInputStream(FileUtils.readFileToByteArray(
-                        new File(templatePath + "/" + templateName + "Template.tpl")));
-                resourceService.createTemplate(metaDataIn, templateIn, webServerName);
-            } catch (final IOException ioe) {
-                throw new WebServerServiceException("Error creating " + templateName + " template!", ioe);
-            }
-        }
-    }
 }

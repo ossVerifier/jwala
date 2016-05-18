@@ -332,6 +332,11 @@ public class GroupServiceImpl implements GroupService {
     }
 
     @Override
+    public String getGroupWebServerResourceTemplateMetaData(String groupName, String fileName) {
+        return groupPersistenceService.getGroupWebServerResourceTemplateMetaData(groupName, fileName);
+    }
+
+    @Override
     @Transactional
     public void populateGroupAppTemplates(final Application application, final String appContextMetaData, final String appContext,
                                           final String roleMappingPropsMetaData, final String roleMappingProperties,

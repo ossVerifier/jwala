@@ -22,6 +22,7 @@ import com.siemens.cto.aem.control.AemControl;
 import com.siemens.cto.aem.exception.CommandFailureException;
 import com.siemens.cto.aem.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
 import com.siemens.cto.aem.persistence.jpa.service.exception.ResourceTemplateUpdateException;
+import com.siemens.cto.aem.service.group.GroupService;
 import com.siemens.cto.aem.service.resource.ResourceService;
 import com.siemens.cto.aem.service.webserver.WebServerCommandService;
 import com.siemens.cto.aem.service.webserver.WebServerControlService;
@@ -47,10 +48,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.*;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class WebServerServiceRestImpl implements WebServerServiceRest {
@@ -63,18 +61,20 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
     private final WebServerCommandService webServerCommandService;
     private final Map<String, ReentrantReadWriteLock> wsWriteLocks;
     private ResourceService resourceService;
+    private GroupService groupService;
     private static WebServerServiceRestImpl instance;
 
     public WebServerServiceRestImpl(final WebServerService theWebServerService,
                                     final WebServerControlService theWebServerControlService,
                                     final WebServerCommandService theWebServerCommandService,
                                     final Map<String, ReentrantReadWriteLock> theWriteLocks,
-                                    final ResourceService theResourceService) {
+                                    final ResourceService theResourceService, GroupService groupService) {
         webServerService = theWebServerService;
         webServerControlService = theWebServerControlService;
         webServerCommandService = theWebServerCommandService;
         wsWriteLocks = theWriteLocks;
         resourceService = theResourceService;
+        this.groupService = groupService;
     }
 
     @Override
@@ -98,14 +98,37 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
     public Response createWebServer(final JsonCreateWebServer aWebServerToCreate, final AuthenticatedUser aUser) {
         LOGGER.info("Create WS requested: {}", aWebServerToCreate);
         final WebServer webServer = webServerService.createWebServer(aWebServerToCreate.toCreateWebServerRequest(), aUser.getUser());
-        webServerService.createDefaultTemplates(webServer.getName());
+        Collection<Group> groups = webServer.getGroups();
+        if (null != groups && groups.size() > 0) {
+            Group group = groups.iterator().next();
+            final String groupName = group.getName();
+            for (final String templateName : groupService.getGroupWebServersResourceTemplateNames(groupName)) {
+                String templateContent = groupService.getGroupWebServerResourceTemplate(groupName, templateName, false, new ResourceGroup());
+                String metaDataStr = groupService.getGroupWebServerResourceTemplateMetaData(groupName, templateName);
+                ResourceTemplateMetaData metaData;
+                try {
+                    metaData = new ObjectMapper().readValue(metaDataStr, ResourceTemplateMetaData.class);
+                    UploadWebServerTemplateRequest uploadWSRequest = new UploadWebServerTemplateRequest(webServer, metaData.getTemplateName(), metaDataStr, new ByteArrayInputStream(templateContent.getBytes())) {
+                        @Override
+                        public String getConfFileName() {
+                            return templateName;
+                        }
+                    };
+                    webServerService.uploadWebServerConfig(uploadWSRequest, aUser.getUser());
+                } catch (IOException e) {
+                    LOGGER.error("Failed to map meta data when creating template {} for web server {}", templateName, webServer.getName(), e);
+                    return ResponseBuilder.notOk(Response.Status.EXPECTATION_FAILED, new FaultCodeException(AemFaultType.BAD_STREAM, "Created web server " + webServer.getName() + " but failed creating templates from parent group " + groupName, e));
+                }
+            }
+        }
         return ResponseBuilder.created(webServer);
     }
 
     /**
      * Uploads a template. This method is specifically used by WebServerServiceRest.createWebServer.
      * Note: This method was deprecated in lieu of an approach that also retrieves the template file's meta data.
-     * @param aUser the user
+     *
+     * @param aUser     the user
      * @param webServer the web server in which the template's for
      */
     @Deprecated
@@ -307,26 +330,26 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
         final String destHttpdConfPath = ApplicationProperties.get("paths.webserver.conf", ApplicationProperties.get("paths.httpd.conf")) + "/";
 
         final String sourceStartServicePath = AemControl.Properties.SCRIPTS_PATH + "/" + AemControl.Properties.START_SCRIPT_NAME.getValue();
-        if (!webServerControlService.secureCopyFileWithBackup(webServerName, sourceStartServicePath, destHttpdConfPath, doNotBackup).getReturnCode().wasSuccessful()){
+        if (!webServerControlService.secureCopyFileWithBackup(webServerName, sourceStartServicePath, destHttpdConfPath, doNotBackup).getReturnCode().wasSuccessful()) {
             LOGGER.error("Failed to secure copy file {} during creation of {}", sourceStartServicePath, webServerName);
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to secure copy file " + sourceStartServicePath + " during the creation of " + webServerName);
         }
 
         final String sourceStopServicePath = AemControl.Properties.SCRIPTS_PATH + "/" + AemControl.Properties.STOP_SCRIPT_NAME.getValue();
-        if (!webServerControlService.secureCopyFileWithBackup(webServerName, sourceStopServicePath, destHttpdConfPath, doNotBackup).getReturnCode().wasSuccessful()){
+        if (!webServerControlService.secureCopyFileWithBackup(webServerName, sourceStopServicePath, destHttpdConfPath, doNotBackup).getReturnCode().wasSuccessful()) {
             LOGGER.error("Failed to secure copy file {} during creation of {}", sourceStopServicePath, webServerName);
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to secure copy file " + sourceStopServicePath + " during the creation of " + webServerName);
         }
 
         final String sourceInvokeWsServicePath = AemControl.Properties.SCRIPTS_PATH + "/" + AemControl.Properties.INVOKE_WS_SERVICE_SCRIPT_NAME.getValue();
         final String tocScriptsPath = AemControl.Properties.USER_TOC_SCRIPTS_PATH.getValue();
-        if (!webServerControlService.secureCopyFileWithBackup(webServerName, sourceInvokeWsServicePath, tocScriptsPath, doNotBackup).getReturnCode().wasSuccessful()){
+        if (!webServerControlService.secureCopyFileWithBackup(webServerName, sourceInvokeWsServicePath, tocScriptsPath, doNotBackup).getReturnCode().wasSuccessful()) {
             LOGGER.error("Failed to secure copy file {} during creation of {}", sourceInvokeWsServicePath, webServerName);
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to secure copy file " + sourceInvokeWsServicePath + " during the creation of " + webServerName);
         }
 
         // make sure the scripts are executable
-        if (!webServerControlService.changeFileMode(webServer, "a+x", tocScriptsPath, "*.sh").getReturnCode().wasSuccessful()){
+        if (!webServerControlService.changeFileMode(webServer, "a+x", tocScriptsPath, "*.sh").getReturnCode().wasSuccessful()) {
             LOGGER.error("Failed to update the permissions in {} during the creation of {}", tocScriptsPath, webServerName);
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to update the permissions in " + sourceInvokeWsServicePath + " during the creation of " + webServerName);
         }
