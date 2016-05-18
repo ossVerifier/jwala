@@ -482,11 +482,6 @@ public class ResourceServiceImpl implements ResourceService {
         return totalDeletedRecs;
     }
 
-//    @Override
-//    public ResourceGroup generateResourceGroup() {
-//        return generateResourceGroup(null);
-//    }
-
     @Override
     public ResourceGroup generateResourceGroup() {
         List<Group> groups = groupPersistenceService.getGroups();
