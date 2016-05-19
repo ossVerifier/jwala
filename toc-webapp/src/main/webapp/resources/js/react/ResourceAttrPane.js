@@ -231,7 +231,8 @@ ResourceAttrPaneCopyPropValComponent = React.createClass({
                        <span style={{display: "inline-block"}} className="ui-icon ui-icon-clipboard" onMouseEnter={this.onMouseEnter}
                              onMouseOut={this.onMouseOut} title="copy" />
                    </button>
-                   <span className="propValStyle">{"${" + (this.props.hierarchy.indexOf("properties") === 0 ? this.props.hierarchy.substring("properties".length + 1) :
+                   <span className="propValStyle">{"${" + (this.props.hierarchy.indexOf("properties") === 0 ?  "tocProperties['" +
+                                                   this.props.hierarchy.substring("properties".length + 1) + "']" :
                                                    this.props.hierarchy) + "}"}</span>
                    <div style={{position: "fixed", top: -9999, left: -9999}}>
                        <textarea ref="textArea" />
@@ -249,7 +250,7 @@ ResourceAttrPaneCopyPropValComponent = React.createClass({
 
         if (this.props.hierarchy.indexOf("properties") === 0) {
             // Strip off "properties" since if hierarchy starts with "properties" then it means that it is a global property.
-            $(this.refs.textArea.getDOMNode()).val("${" + this.props.hierarchy.substring("properties".length + 1) + "}");
+            $(this.refs.textArea.getDOMNode()).val("${tocProperties['" + this.props.hierarchy.substring("properties".length + 1) + "']}");
         } else {
             $(this.refs.textArea.getDOMNode()).val("${" + this.props.hierarchy + "}");
         }
