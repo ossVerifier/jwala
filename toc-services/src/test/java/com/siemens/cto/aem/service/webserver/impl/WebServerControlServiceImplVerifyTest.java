@@ -3,6 +3,7 @@ package com.siemens.cto.aem.service.webserver.impl;
 import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
+import com.siemens.cto.aem.common.domain.model.ssh.SshConfiguration;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServerControlOperation;
@@ -19,6 +20,8 @@ import com.siemens.cto.aem.control.webserver.command.impl.WindowsWebServerPlatfo
 import com.siemens.cto.aem.exception.CommandFailureException;
 import com.siemens.cto.aem.persistence.jpa.type.EventType;
 import com.siemens.cto.aem.service.HistoryService;
+import com.siemens.cto.aem.service.MessagingService;
+import com.siemens.cto.aem.service.RemoteCommandExecutorService;
 import com.siemens.cto.aem.service.VerificationBehaviorSupport;
 import com.siemens.cto.aem.service.state.InMemoryStateManagerService;
 import com.siemens.cto.aem.service.state.StateNotificationService;
@@ -65,14 +68,21 @@ public class WebServerControlServiceImplVerifyTest extends VerificationBehaviorS
     @Mock
     private StateNotificationService stateNotificationService;
 
-    private SimpMessagingTemplate mockMessagingTemplate;
+    @Mock
+    private MessagingService mockMessagingService;
+
+    @Mock
+    RemoteCommandExecutorService remoteCommandExecutorService;
+
+    @Mock
+    private SshConfiguration mockSshConfig;
 
     private User user;
 
     @Before
     public void setup() {
         webServerControlService = new WebServerControlServiceImpl(webServerService, commandExecutor, mockInMemoryStateManagerService,
-                mockHistoryService, stateNotificationService, mockMessagingTemplate);
+                mockHistoryService, mockMessagingService, remoteCommandExecutorService, mockSshConfig);
 
         user = new User("unused");
     }

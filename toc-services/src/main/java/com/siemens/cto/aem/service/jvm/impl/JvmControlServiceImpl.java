@@ -92,12 +92,6 @@ public class JvmControlServiceImpl implements JvmControlService {
                         StateType.JVM));
             }
 
-            // CommandOutput commandOutput = remoteCommandExecutor.executeRemoteCommand(jvm.getJvmName(), jvm.getHostName(),
-            //    ctrlOp, new WindowsJvmPlatformCommandProvider());
-
-            // The code above was replaced by the code below which eliminate's a lot of java class layers just to execute
-            // a command via JSCH. Once the said code has be tested thoroughly, then the commented out code above will
-            // be deleted along with its class and supporting files.
             final WindowsJvmPlatformCommandProvider windowsJvmPlatformCommandProvider = new WindowsJvmPlatformCommandProvider();
             final ServiceCommandBuilder serviceCommandBuilder = windowsJvmPlatformCommandProvider.getServiceCommandBuilderFor(controlOperation);
             final ExecCommand execCommand = serviceCommandBuilder.buildCommandForService(jvm.getJvmName());
@@ -112,12 +106,12 @@ public class JvmControlServiceImpl implements JvmControlService {
 
             final String standardOutput = commandOutput.getStandardOutput();
             final ExecReturnCode returnCode = commandOutput.getReturnCode();
-            if (StringUtils.isNotEmpty(standardOutput) && (JvmControlOperation.START
-                    .equals(controlOperation) || JvmControlOperation.STOP
-                    .equals(controlOperation))) {
+            if (StringUtils.isNotEmpty(standardOutput) && (JvmControlOperation.START.equals(controlOperation) ||
+                JvmControlOperation.STOP.equals(controlOperation))) {
                 commandOutput.cleanStandardOutput();
                 LOGGER.info("shell command output{}", standardOutput);
-            } else if (StringUtils.isNoneBlank(standardOutput) && JvmControlOperation.HEAP_DUMP.equals(controlOperation) && returnCode.wasSuccessful()){
+            } else if (StringUtils.isNoneBlank(standardOutput) && JvmControlOperation.HEAP_DUMP.equals(controlOperation)
+                    && returnCode.wasSuccessful()){
                 commandOutput.cleanHeapDumpStandardOutput();
             }
 
@@ -138,7 +132,8 @@ public class JvmControlServiceImpl implements JvmControlService {
                         break;
                     case ExecReturnCode.STP_EXIT_CODE_ABNORMAL_SUCCESS:
                         LOGGER.warn(commandOutputReturnDescription);
-                        historyService.createHistory(getServerName(jvm), new ArrayList<>(jvm.getGroups()), commandOutputReturnDescription, EventType.APPLICATION_ERROR, aUser.getId());
+                        historyService.createHistory(getServerName(jvm), new ArrayList<>(jvm.getGroups()), commandOutputReturnDescription,
+                                EventType.APPLICATION_ERROR, aUser.getId());
                         messagingService.send(new CurrentState<>(jvm.getId(), JvmState.JVM_FAILED, DateTime.now(), StateType.JVM,
                                 commandOutputReturnDescription));
                         break;
@@ -148,8 +143,8 @@ public class JvmControlServiceImpl implements JvmControlService {
                                 commandOutputReturnDescription;
 
                         LOGGER.error(errorMsg);
-                        historyService.createHistory(getServerName(jvm), new ArrayList<>(jvm.getGroups()), errorMsg, EventType.APPLICATION_ERROR,
-                                aUser.getId());
+                        historyService.createHistory(getServerName(jvm), new ArrayList<>(jvm.getGroups()), errorMsg,
+                                EventType.APPLICATION_ERROR, aUser.getId());
                         messagingService.send(new CurrentState<>(jvm.getId(), JvmState.JVM_FAILED, DateTime.now(), StateType.JVM,
                                 errorMsg));
 
@@ -210,7 +205,8 @@ public class JvmControlServiceImpl implements JvmControlService {
     }
 
     @Override
-    public CommandOutput changeFileMode(Jvm jvm, String modifiedPermissions, String targetAbsoluteDir, String targetFile) throws CommandFailureException {
+    public CommandOutput changeFileMode(Jvm jvm, String modifiedPermissions, String targetAbsoluteDir, String targetFile)
+            throws CommandFailureException {
         return remoteCommandExecutor.executeRemoteCommand(
                 jvm.getJvmName(),
                 jvm.getHostName(),
