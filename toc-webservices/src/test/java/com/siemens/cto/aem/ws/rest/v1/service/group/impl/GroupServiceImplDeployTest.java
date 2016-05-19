@@ -155,8 +155,7 @@ public class GroupServiceImplDeployTest {
         when(mockJvmService.updateResourceTemplate(anyString(), anyString(), anyString())).thenReturn("new server.xml content");
         when(mockJvmService.getJvm(anyString())).thenReturn(mockJvm);
         when(mockJvmService.generateConfigFile(anyString(), anyString())).thenReturn("new server.xml content");
-        when(mockResourceService.getResourceTypes()).thenReturn(resourcesList);
-        when(mockJvmControlService.secureCopyFileWithBackup(any(ControlJvmRequest.class), anyString(), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(0), "SUCCESS", ""));
+        when(mockJvmControlService.secureCopyFile(any(ControlJvmRequest.class), anyString(), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(0), "SUCCESS", ""));
 
         Response returnedResponse = groupServiceRest.generateAndDeployGroupJvmFile("testGroup", "server.xml", mockAuthUser);
         assertEquals(200, returnedResponse.getStatusInfo().getStatusCode());

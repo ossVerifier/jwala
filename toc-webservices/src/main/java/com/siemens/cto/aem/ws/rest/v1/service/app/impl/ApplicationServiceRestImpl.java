@@ -167,19 +167,11 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
         Set<Jvm> jvms = group.getJvms();
         final String appName = app.getName();
         if (null != jvms && jvms.size() > 0) {
-//            for (Jvm jvm : jvms){
-//                if (jvm.getState().isStartedState()){
-//                    final String jvmName = jvm.getJvmName();
-//                    LOGGER.error("The JVM {} must be stopped before deploying the application", jvmName);
-//                    throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "The JVM " + jvmName + " must be stopped before attempting to deploy application " + appName);
-//                }
-//            }
             service.copyApplicationWarToGroupHosts(app);
-//            TODO do not propagate the default application templates since they are healthcheck specific
-//            service.copyApplicationConfigToGroupJvms(group, appName, aUser.getUser());
         } else {
             LOGGER.info("Skip deploying application {}, no JVM's in group {}", appName, group.getName());
         }
+        // TODO deploy the group level application resources that aren't associated with a JVM (hct.properties, etc.)
         return ResponseBuilder.ok(app);
     }
 

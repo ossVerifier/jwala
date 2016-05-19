@@ -121,16 +121,22 @@ public enum WindowsJvmNetOperation implements ServiceCommandBuilder {
             return new ExecCommand("/usr/bin/cp", aParams[0], aParams[1]);
         }
     },
-    CREATE_DIRECTORY(JvmControlOperation.CREATE_DIRECTORY){
+    CREATE_DIRECTORY(JvmControlOperation.CREATE_DIRECTORY) {
         @Override
         public ExecCommand buildCommandForService(String aServiceName, String... aParams) {
             return new ExecCommand("if [ ! -e \"" + aParams[0] + "\" ]; then /usr/bin/mkdir -p " + aParams[0] + "; fi;");
         }
     },
-    CHANGE_FILE_MODE(JvmControlOperation.CHANGE_FILE_MODE){
+    CHANGE_FILE_MODE(JvmControlOperation.CHANGE_FILE_MODE) {
         @Override
         public ExecCommand buildCommandForService(String aServiceName, String... aParams) {
             return new ExecCommand("/usr/bin/chmod " + aParams[0] + " " + aParams[1] + "/" + aParams[2]);
+        }
+    },
+    CHECK_FILE_EXISTS(JvmControlOperation.CHECK_FILE_EXISTS) {
+        @Override
+        public ExecCommand buildCommandForService(String aServiceName, String... aParams) {
+            return new ExecCommand("/usr/bin/test -e " + aParams[0]);
         }
     };
 

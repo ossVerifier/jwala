@@ -177,31 +177,27 @@ public class JvmControlServiceImpl implements JvmControlService {
                                         final String destPath) throws CommandFailureException {
         final Identifier<Jvm> jvmId = secureCopyRequest.getJvmId();
         final JpaJvm jvm = jvmService.getJpaJvm(jvmId, true);
-        return remoteCommandExecutor.executeRemoteCommand(jvm.getName(), jvm.getHostName(), secureCopyRequest.getControlOperation(),
-                new WindowsJvmPlatformCommandProvider(), sourcePath, destPath);
-    }
-
-    @Override
-    public CommandOutput secureCopyFileWithBackup(final ControlJvmRequest secureCopyRequest, final String sourcePath,
-                                                  final String destPath) throws CommandFailureException {
-        // back up the original file first
-        final Identifier<Jvm> jvmId = secureCopyRequest.getJvmId();
-        final JpaJvm jvm = jvmService.getJpaJvm(jvmId, true);
-
-        String currentDateSuffix = new SimpleDateFormat(".yyyyMMdd_HHmmss").format(new Date());
-        final String destPathBackup = destPath + currentDateSuffix;
-        final CommandOutput commandOutput = remoteCommandExecutor.executeRemoteCommand(
+        CommandOutput commandOutput = remoteCommandExecutor.executeRemoteCommand(
                 jvm.getName(),
                 jvm.getHostName(),
-                JvmControlOperation.BACK_UP_FILE,
+                JvmControlOperation.CHECK_FILE_EXISTS,
                 new WindowsJvmPlatformCommandProvider(),
-                destPath,
-                destPathBackup);
-        if (!commandOutput.getReturnCode().wasSuccessful()) {
-            LOGGER.error("Remote Command Failure: Failed to back up " + destPath + " for " + jvm + "::" + commandOutput.getStandardError());
-            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to back up " + destPath + " for " + jvm);
+                destPath
+        );
+        if (commandOutput.getReturnCode().wasSuccessful()){
+            String currentDateSuffix = new SimpleDateFormat(".yyyyMMdd_HHmmss").format(new Date());
+            final String destPathBackup = destPath + currentDateSuffix;
+            remoteCommandExecutor.executeRemoteCommand(
+                    jvm.getName(),
+                    jvm.getHostName(),
+                    JvmControlOperation.BACK_UP_FILE,
+                    new WindowsJvmPlatformCommandProvider(),
+                    destPath,
+                    destPathBackup);
         }
-        return secureCopyFile(secureCopyRequest, sourcePath, destPath);
+
+        return remoteCommandExecutor.executeRemoteCommand(jvm.getName(), jvm.getHostName(), secureCopyRequest.getControlOperation(),
+                new WindowsJvmPlatformCommandProvider(), sourcePath, destPath);
     }
 
     @Override
