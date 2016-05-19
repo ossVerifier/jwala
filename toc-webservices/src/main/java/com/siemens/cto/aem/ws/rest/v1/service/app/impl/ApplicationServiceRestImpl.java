@@ -225,9 +225,8 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
     public Response deployConf(final String appName, final String groupName, final String jvmName,
                                final String resourceTemplateName, final AuthenticatedUser authUser) {
 
-        final boolean doBackUpBeforeCopy = true;
         final CommandOutput execData =
-                service.deployConf(appName, groupName, jvmName, resourceTemplateName, doBackUpBeforeCopy, resourceService.generateResourceGroup(), authUser.getUser());
+                service.deployConf(appName, groupName, jvmName, resourceTemplateName, resourceService.generateResourceGroup(), authUser.getUser());
         if (execData.getReturnCode().wasSuccessful()) {
             LOGGER.info("Successfully deployed {} of {} to {} ", resourceTemplateName, appName, jvmName);
             return ResponseBuilder.ok("Successfully deployed " + resourceTemplateName + " of " + appName + " to "

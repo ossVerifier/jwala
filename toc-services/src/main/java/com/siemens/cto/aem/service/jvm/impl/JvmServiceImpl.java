@@ -137,7 +137,7 @@ public class JvmServiceImpl implements JvmService {
             String metaDataStr = groupService.getGroupAppResourceTemplateMetaData(groupName, templateName);
             try {
                 ResourceTemplateMetaData metaData = new ObjectMapper().readValue(metaDataStr, ResourceTemplateMetaData.class);
-                if (metaData.getEntity().getDeployToJvms()){
+                if (metaData.getEntity().getDeployToJvms()) {
                     String appTemplate = groupService.getGroupAppResourceTemplate(groupName, templateName, false, new ResourceGroup());
                     final Application application = applicationService.getApplication(metaData.getEntity().getTarget());
                     UploadAppTemplateRequest uploadAppTemplateRequest = new UploadAppTemplateRequest(application, metaData.getTemplateName(),
@@ -367,11 +367,8 @@ public class JvmServiceImpl implements JvmService {
         for (Group group : groupList) {
             for (Application app : applicationService.findApplications(group.getId())) {
                 for (String templateName : applicationService.getResourceTemplateNames(app.getName())) {
-                    // only deploy the context xml
-                    if (templateName.endsWith(".xml")) {
-                        LOGGER.info("Deploying application xml {} for JVM {} in group {}", templateName, jvm.getJvmName(), group.getName());
-                        applicationService.deployConf(app.getName(), group.getName(), jvm.getJvmName(), templateName, false, new ResourceGroup(), User.getThreadLocalUser());
-                    }
+                    LOGGER.info("Deploying application xml {} for JVM {} in group {}", templateName, jvm.getJvmName(), group.getName());
+                    applicationService.deployConf(app.getName(), group.getName(), jvm.getJvmName(), templateName, resourceService.generateResourceGroup(), User.getThreadLocalUser());
                 }
             }
         }
@@ -419,7 +416,7 @@ public class JvmServiceImpl implements JvmService {
                     mapper.readValue(resourceTemplateMetaDataString, ResourceTemplateMetaData.class);
             final String generatedResourceStr = resourceService.generateResourceFile(jpaJvmConfigTemplate.getTemplateContent(),
                     resourceGroup, jvm);
-            if(generatedFiles == null) {
+            if (generatedFiles == null) {
                 generatedFiles = new HashMap<>();
             }
             generatedFiles.put(createConfigFile(resourceTemplateMetaData.getConfigFileName(), generatedResourceStr),
@@ -431,14 +428,14 @@ public class JvmServiceImpl implements JvmService {
     /**
      * This method creates a temp file .tpl file, with the generatedResourceString as the input data for the file.
      *
-     * @param configFileName The file name that apprears at the destination.
+     * @param configFileName          The file name that apprears at the destination.
      * @param generatedResourceString The contents of the file.
      * @return the location of the newly created temp file
      * @throws IOException
      */
     protected String createConfigFile(final String configFileName, String generatedResourceString) throws IOException {
         File templateFile = File.createTempFile(configFileName, ".tpl");
-        if(configFileName.endsWith(".bat")) {
+        if (configFileName.endsWith(".bat")) {
             generatedResourceString = generatedResourceString.replaceAll("\n", "\r\n");
         }
         FileUtils.writeStringToFile(templateFile, generatedResourceString);

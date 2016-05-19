@@ -240,7 +240,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     @Transactional
     // TODO: Have an option to do a hot deploy or not.
     public CommandOutput deployConf(final String appName, final String groupName, final String jvmName,
-                                    final String resourceTemplateName, boolean backUp, ResourceGroup resourceGroup, User user) {
+                                    final String resourceTemplateName, ResourceGroup resourceGroup, User user) {
 
         final StringBuilder key = new StringBuilder();
         key.append(groupName).append(jvmName).append(appName).append(resourceTemplateName);
@@ -456,12 +456,11 @@ public class ApplicationServiceImpl implements ApplicationService {
 
                 final String jvmName = jvm.getJvmName();
                 LOGGER.info("Deploying application config {} to JVM {}", templateName, jvmName);
-                final boolean doNotBackUpOriginals = false;
 
                 Future<CommandOutput> commandOutputFuture = executorService.submit(new Callable<CommandOutput>() {
                     @Override
                     public CommandOutput call() throws Exception {
-                        return deployConf(appName, groupName, jvmName, templateName, doNotBackUpOriginals, resourceGroup, user);
+                        return deployConf(appName, groupName, jvmName, templateName, resourceGroup, user);
                     }
                 });
                 futures.add(commandOutputFuture);

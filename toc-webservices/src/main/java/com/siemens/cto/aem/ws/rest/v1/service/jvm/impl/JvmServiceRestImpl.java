@@ -323,16 +323,10 @@ public class JvmServiceRestImpl implements JvmServiceRest {
             deployJvmConfigJar(jvm, user, jvmConfigJar);
 
             // copy the individual jvm templates to the destination
-            final Map<String, String> generatedFiles = jvmService.generateResourceFiles(jvm.getJvmName());
-            if(generatedFiles != null) {
-                for(Entry<String, String> entry:generatedFiles.entrySet()) {
-                    secureCopyFileToJvm(jvm, entry.getKey(), entry.getValue());
-                }
-            }
+            deployJvmResourceFiles(jvm);
 
             // deploy any application context xml's in the group
-            // TODO reimplement this once the generic resource template APIs are complete
-            // deployApplicationContextXMLs(jvm);
+             deployApplicationContextXMLs(jvm);
 
             // re-install the service
             installJvmWindowsService(jvm, user);
@@ -347,6 +341,15 @@ public class JvmServiceRestImpl implements JvmServiceRest {
             jvmWriteLocks.get(jvm.getId().toString()).writeLock().unlock();
         }
         return jvm;
+    }
+
+    protected void deployJvmResourceFiles(Jvm jvm) throws IOException, CommandFailureException {
+        final Map<String, String> generatedFiles = jvmService.generateResourceFiles(jvm.getJvmName());
+        if(generatedFiles != null) {
+            for(Entry<String, String> entry:generatedFiles.entrySet()) {
+                secureCopyFileToJvm(jvm, entry.getKey(), entry.getValue());
+            }
+        }
     }
 
     protected void createScriptsDirectory(Jvm jvm) throws CommandFailureException {
