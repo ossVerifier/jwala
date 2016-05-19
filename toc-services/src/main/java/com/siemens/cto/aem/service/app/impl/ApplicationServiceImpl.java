@@ -349,6 +349,38 @@ public class ApplicationServiceImpl implements ApplicationService {
             copyAndExecuteCommand(application, hostNames);
         }
     }
+
+    @Override
+    @Transactional
+    public void deployApplicationResourcesToGroupHosts(String groupName, Application app, ResourceGroup resourceGroup){
+        List<String> appResourcesNames = groupService.getGroupAppsResourceTemplateNames(groupName);
+        Group group = groupService.getGroup(app.getGroup().getId());
+        final Set<Jvm> jvms = group.getJvms();
+        if (null != appResourcesNames && appResourcesNames.size() > 0) {
+            for (String resourceTemplateName : appResourcesNames) {
+                String metaDataStr = groupService.getGroupAppResourceTemplateMetaData(groupName, resourceTemplateName);
+                try {
+                    ResourceTemplateMetaData metaData = new ObjectMapper().readValue(metaDataStr, ResourceTemplateMetaData.class);
+                    if (jvms != null && jvms.size() > 0 && !metaData.getEntity().getDeployToJvms()) {
+                        // still need to iterate through the JVMs to get the host names
+                        Set<String> hostNames = new HashSet<>();
+                        for (Jvm jvm : jvms) {
+                            final String host = jvm.getHostName().toLowerCase();
+                            if (!hostNames.contains(host)) {
+                                hostNames.add(host);
+                                groupService.deployGroupAppTemplate(groupName, resourceTemplateName, resourceGroup, app, jvm);
+                            }
+                        }
+
+                    }
+                } catch (IOException e) {
+                    LOGGER.error("Failed to map meta data for template {} in group {}", resourceTemplateName, groupName, e);
+                    throw new InternalErrorException(AemFaultType.BAD_STREAM, "Failed to read meta data for template " + resourceTemplateName + " in group " + groupName, e);
+                }
+            }
+        }
+
+    }
     
     @Override
     @Transactional

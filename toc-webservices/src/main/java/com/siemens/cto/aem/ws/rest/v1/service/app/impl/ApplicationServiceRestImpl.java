@@ -166,12 +166,14 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
         final Group group = app.getGroup();
         Set<Jvm> jvms = group.getJvms();
         final String appName = app.getName();
+        final String groupName = group.getName();
         if (null != jvms && jvms.size() > 0) {
             service.copyApplicationWarToGroupHosts(app);
+            service.deployApplicationResourcesToGroupHosts(groupName, app, resourceService.generateResourceGroup());
         } else {
-            LOGGER.info("Skip deploying application {}, no JVM's in group {}", appName, group.getName());
+            LOGGER.info("Skip deploying application {}, no JVM's in group {}", appName, groupName);
         }
-        // TODO deploy the group level application resources that aren't associated with a JVM (hct.properties, etc.)
+
         return ResponseBuilder.ok(app);
     }
 
