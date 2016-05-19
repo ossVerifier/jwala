@@ -245,7 +245,7 @@ ResourceAttrPaneCopyPropValComponent = React.createClass({
     },
     onClick: function() {
         var self = this;
-        $(this.refs.textArea.getDOMNode()).val(this.props.hierarchy);
+        $(this.refs.textArea.getDOMNode()).val("${" + this.props.hierarchy + "}");
         $(this.refs.textArea.getDOMNode()).select();
         document.execCommand("copy");
         this.setState({showTextCopiedMsg: true});
