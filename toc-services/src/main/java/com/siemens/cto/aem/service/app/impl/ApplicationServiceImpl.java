@@ -142,18 +142,10 @@ public class ApplicationServiceImpl implements ApplicationService {
 
         createApplicationRequest.validate();
 
-//      TODO do not propagate the default application templates since they are healthcheck specific
-//        final String appContext = fileManager.getResourceTypeTemplate(ApplicationProperties.get(APP_CONTEXT_TEMPLATE));
-//        final String roleMappingProperties = fileManager.getResourceTypeTemplate(ApplicationProperties.get(ROLE_MAPPING_PROPERTIES_TEMPLATE));
-//        final String appProperties = fileManager.getResourceTypeTemplate(ApplicationProperties.get(APP_PROPERTIES_TEMPLATE));
-
         String appContext = "";
         String roleMappingProperties = "";
         String appProperties = "";
         final Application application = applicationPersistenceService.createApplication(createApplicationRequest, appContext, roleMappingProperties, appProperties);
-
-        // TODO do not propagate the default application templates since they are healthcheck specific
-        // groupService.populateGroupAppTemplates(application, appContext, roleMappingProperties, appProperties);
 
         return application;
     }
