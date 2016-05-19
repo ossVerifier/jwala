@@ -541,24 +541,4 @@ public class ApplicationServiceImpl implements ApplicationService {
         }
         return appConfFile;
     }
-
-    /**
-     * Inner class application wrapper to include a web application's parent JVM.
-     */
-    @Deprecated
-    private class WebApp extends Application {
-        final Jvm jvm;
-
-        public WebApp(final Application app, final Jvm parentJvm) {
-            super(app.getId(), app.getName(), app.getWarPath(), app.getWebAppContext(), app.getGroup(), app.isSecure(),
-                    app.isLoadBalanceAcrossServers(), app.isUnpackWar(), app.getWarName());
-            jvm = parentJvm;
-        }
-
-        @SuppressWarnings("unused")
-            // used by template bindings
-        Jvm getJvm() {
-            return jvm;
-        }
-    }
 }

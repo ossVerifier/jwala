@@ -142,6 +142,7 @@ public class WebServerControlServiceImpl implements WebServerControlService {
 
     /**
      * Get the server name prefixed by the server type - "Web Server".
+     *
      * @param webServer the {@link WebServer} object.
      * @return server name prefixed by "Web Server".
      */
@@ -156,21 +157,28 @@ public class WebServerControlServiceImpl implements WebServerControlService {
 
         // back up the original file first
         final String host = aWebServer.getHost();
-        if (doBackup) { // TODO: Check if the file exists before actually doing the backup.
-            String currentDateSuffix = new SimpleDateFormat(".yyyyMMdd_HHmmss").format(new Date());
-            final String destPathBackup = destPath + currentDateSuffix;
-            final CommandOutput commandOutput = commandExecutor.executeRemoteCommand(
-                    aWebServer.getName(),
+        if (doBackup) {
+            CommandOutput commandOutput = commandExecutor.executeRemoteCommand(aWebServerName,
                     host,
-                    WebServerControlOperation.BACK_UP_HTTP_CONFIG_FILE,
+                    WebServerControlOperation.CHECK_FILE_EXISTS,
                     new WindowsWebServerPlatformCommandProvider(),
-                    destPath,
-                    destPathBackup);
-            if (!commandOutput.getReturnCode().wasSuccessful()) {
-                LOGGER.error("Failed to back up the " + destPath + " for " + aWebServer.getName());
-                throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to back up " + destPath + " for " + aWebServer.getName());
-            } else {
-                LOGGER.info("Successfully backed up " + destPath + " at " + host);
+                    destPath);
+            if (commandOutput.getReturnCode().wasSuccessful()) {
+                String currentDateSuffix = new SimpleDateFormat(".yyyyMMdd_HHmmss").format(new Date());
+                final String destPathBackup = destPath + currentDateSuffix;
+                commandOutput = commandExecutor.executeRemoteCommand(
+                        aWebServerName,
+                        host,
+                        WebServerControlOperation.BACK_UP_HTTP_CONFIG_FILE,
+                        new WindowsWebServerPlatformCommandProvider(),
+                        destPath,
+                        destPathBackup);
+                if (!commandOutput.getReturnCode().wasSuccessful()) {
+                    LOGGER.error("Failed to back up the " + destPath + " for " + aWebServerName);
+                    throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to back up " + destPath + " for " + aWebServerName);
+                } else {
+                    LOGGER.info("Successfully backed up " + destPath + " at " + host);
+                }
             }
         }
 
