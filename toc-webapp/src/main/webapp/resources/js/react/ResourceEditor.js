@@ -25,7 +25,7 @@ var ResourceEditor = React.createClass({
                                       {entity: "jvmSection", propKey: "key", label: "name", icon: "public-resources/img/icons/appserver.png", selectable: true,
                                        children:[{entity: "jvms", propKey: "jvmName", selectable: true,
                                                   children:[{entity: "webApps", propKey: "name", selectable: true}]}]},
-                                       {entity: "webAppSection", propKey: "key", label: "name", icon: "public-resources/img/icons/webapp.png", selectable: true,
+                                       {entity: "webAppSection", propKey: "key", label: "name", icon: "public-resources/img/icons/webapp.png", selectable: false,
                                         children:[{entity: "webApps", propKey: "name", selectable: true}]}]
                             };
 
