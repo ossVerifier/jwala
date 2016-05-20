@@ -33,7 +33,7 @@ var ResourceAttrPane = React.createClass({
             attributes = response.applicationResponseContent;
             return ServiceFactory.getAdminService().viewProperties();
         }).then(function(response){
-            attributes["properties"] = response.applicationResponseContent;
+            attributes["tocProperties"] = response.applicationResponseContent;
             self.setState({attributes: attributes})
         }).caught(function(e){
             alert(e);
@@ -231,7 +231,9 @@ ResourceAttrPaneCopyPropValComponent = React.createClass({
                        <span style={{display: "inline-block"}} className="ui-icon ui-icon-clipboard" onMouseEnter={this.onMouseEnter}
                              onMouseOut={this.onMouseOut} title="copy" />
                    </button>
-                   <span className="propValStyle">{"${" + this.props.hierarchy + "}"}</span>
+                   <span className="propValStyle">{"${" + (this.props.hierarchy.indexOf("tocProperties") === 0 ?  "tocProperties['" +
+                                                   this.props.hierarchy.substring("tocProperties".length + 1) + "']" :
+                                                   this.props.hierarchy) + "}"}</span>
                    <div style={{position: "fixed", top: -9999, left: -9999}}>
                        <textarea ref="textArea" />
                    </div>
@@ -245,7 +247,14 @@ ResourceAttrPaneCopyPropValComponent = React.createClass({
     },
     onClick: function() {
         var self = this;
-        $(this.refs.textArea.getDOMNode()).val(this.props.hierarchy);
+
+        if (this.props.hierarchy.indexOf("tocProperties") === 0) {
+            // Property keys with '.' should be written as tocProperties['some.prop']
+            $(this.refs.textArea.getDOMNode()).val("${tocProperties['" + this.props.hierarchy.substring("tocProperties".length + 1) + "']}");
+        } else {
+            $(this.refs.textArea.getDOMNode()).val("${" + this.props.hierarchy + "}");
+        }
+
         $(this.refs.textArea.getDOMNode()).select();
         document.execCommand("copy");
         this.setState({showTextCopiedMsg: true});

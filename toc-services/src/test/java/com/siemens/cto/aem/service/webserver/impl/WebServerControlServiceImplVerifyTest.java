@@ -3,6 +3,7 @@ package com.siemens.cto.aem.service.webserver.impl;
 import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
+import com.siemens.cto.aem.common.domain.model.ssh.SshConfiguration;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServerControlOperation;
@@ -19,6 +20,8 @@ import com.siemens.cto.aem.control.webserver.command.impl.WindowsWebServerPlatfo
 import com.siemens.cto.aem.exception.CommandFailureException;
 import com.siemens.cto.aem.persistence.jpa.type.EventType;
 import com.siemens.cto.aem.service.HistoryService;
+import com.siemens.cto.aem.service.MessagingService;
+import com.siemens.cto.aem.service.RemoteCommandExecutorService;
 import com.siemens.cto.aem.service.VerificationBehaviorSupport;
 import com.siemens.cto.aem.service.state.InMemoryStateManagerService;
 import com.siemens.cto.aem.service.state.StateNotificationService;
@@ -33,7 +36,6 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.client.ClientHttpResponse;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import java.util.HashSet;
 
@@ -65,14 +67,21 @@ public class WebServerControlServiceImplVerifyTest extends VerificationBehaviorS
     @Mock
     private StateNotificationService stateNotificationService;
 
-    private SimpMessagingTemplate mockMessagingTemplate;
+    @Mock
+    private MessagingService mockMessagingService;
+
+    @Mock
+    RemoteCommandExecutorService remoteCommandExecutorService;
+
+    @Mock
+    private SshConfiguration mockSshConfig;
 
     private User user;
 
     @Before
     public void setup() {
         webServerControlService = new WebServerControlServiceImpl(webServerService, commandExecutor, mockInMemoryStateManagerService,
-                mockHistoryService, stateNotificationService, mockMessagingTemplate);
+                mockHistoryService, mockMessagingService, remoteCommandExecutorService, mockSshConfig);
 
         user = new User("unused");
     }
@@ -157,11 +166,13 @@ public class WebServerControlServiceImplVerifyTest extends VerificationBehaviorS
 
         CommandOutput successReturnOutput = new CommandOutput(new ExecReturnCode(0), "SUCCESSS", "");
         when(commandExecutor.executeRemoteCommand(anyString(), anyString(), any(WebServerControlOperation.class), any(PlatformCommandProvider.class), anyString(), anyString())).thenReturn(successReturnOutput);
+        when(commandExecutor.executeRemoteCommand(anyString(), anyString(), eq(WebServerControlOperation.CHECK_FILE_EXISTS), any(PlatformCommandProvider.class), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(1), "File does not exist", ""));
         CommandOutput returnOutput = webServerControlService.secureCopyFileWithBackup("testWebServer", "./source", "./dest", true);
         assertEquals(new ExecReturnCode(0), returnOutput.getReturnCode());
 
         CommandOutput failedReturnOutput = new CommandOutput(new ExecReturnCode(1), "FAILED", "");
         when(commandExecutor.executeRemoteCommand(anyString(), anyString(), any(WebServerControlOperation.class), any(PlatformCommandProvider.class), anyString(), anyString())).thenReturn(failedReturnOutput);
+        when(commandExecutor.executeRemoteCommand(anyString(), anyString(), eq(WebServerControlOperation.CHECK_FILE_EXISTS), any(PlatformCommandProvider.class), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(1), "File does not exist", ""));
         try {
             webServerControlService.secureCopyFileWithBackup("testWebServer", "./source", "./dest", true);
         } catch(InternalErrorException ie) {

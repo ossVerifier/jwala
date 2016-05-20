@@ -1,6 +1,5 @@
 package com.siemens.cto.aem.ws.rest.v1.service.resource;
 
-import com.siemens.cto.aem.common.domain.model.resource.EntityType;
 import com.siemens.cto.aem.ws.rest.v1.provider.AuthenticatedUser;
 import com.siemens.cto.aem.ws.rest.v1.service.resource.impl.JsonResourceInstance;
 import org.apache.cxf.jaxrs.ext.multipart.Attachment;
@@ -123,30 +122,6 @@ public interface ResourceServiceRest {
     @DELETE
     @Path("/template/{name}")
     Response removeTemplate(@PathParam("name") String name);
-
-    /**
-     * Deletes a resource template of a specific group and entity type (e.g. group = Group1, entity type = GROUPED_JVMS)
-     * @param groupName the group name
-     * @param entityType the entity type {@link EntityType}
-     * @param templateNames comma separated names of templates to delete e.g. server.xml, context.xml (user can specify one template name as well)
-     * @return {@link Response} that contains the number of records deleted.
-     */
-    @DELETE
-    @Path("/template/{groupName}/{entityType}")
-    Response removeTemplate(@PathParam("groupName") String groupName, @PathParam("entityType") EntityType entityType,
-                            @QueryParam("templateNames") String templateNames);
-
-    /**
-     * Deletes a resource template of a specific entity type and name (e.g. entity type = jvms, entity name = jvm1).
-     * @param entityType {@link EntityType}
-     * @param entityName the name of the entity
-     * @param templateNames comma separated names of templates to delete e.g. server.xml, context.xml (user can specify one template name as well)
-     * @return {@link Response} that contains the number records deleted.
-     */
-    @DELETE
-    @Path("/template/{entityType}/{entityName}")
-    Response removeTemplate(@PathParam("entityType") EntityType entityType, @PathParam("entityName") String entityName,
-                            @QueryParam("templateNames") String templateNames);
 
     @GET
     @Path("/data")

@@ -142,18 +142,10 @@ public class ApplicationServiceImpl implements ApplicationService {
 
         createApplicationRequest.validate();
 
-//      TODO do not propagate the default application templates since they are healthcheck specific
-//        final String appContext = fileManager.getResourceTypeTemplate(ApplicationProperties.get(APP_CONTEXT_TEMPLATE));
-//        final String roleMappingProperties = fileManager.getResourceTypeTemplate(ApplicationProperties.get(ROLE_MAPPING_PROPERTIES_TEMPLATE));
-//        final String appProperties = fileManager.getResourceTypeTemplate(ApplicationProperties.get(APP_PROPERTIES_TEMPLATE));
-
         String appContext = "";
         String roleMappingProperties = "";
         String appProperties = "";
         final Application application = applicationPersistenceService.createApplication(createApplicationRequest, appContext, roleMappingProperties, appProperties);
-
-        // TODO do not propagate the default application templates since they are healthcheck specific
-        // groupService.populateGroupAppTemplates(application, appContext, roleMappingProperties, appProperties);
 
         return application;
     }
@@ -240,7 +232,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     @Transactional
     // TODO: Have an option to do a hot deploy or not.
     public CommandOutput deployConf(final String appName, final String groupName, final String jvmName,
-                                    final String resourceTemplateName, boolean backUp, ResourceGroup resourceGroup, User user) {
+                                    final String resourceTemplateName, ResourceGroup resourceGroup, User user) {
 
         final StringBuilder key = new StringBuilder();
         key.append(groupName).append(jvmName).append(appName).append(resourceTemplateName);
@@ -357,6 +349,38 @@ public class ApplicationServiceImpl implements ApplicationService {
             copyAndExecuteCommand(application, hostNames);
         }
     }
+
+    @Override
+    @Transactional
+    public void deployApplicationResourcesToGroupHosts(String groupName, Application app, ResourceGroup resourceGroup){
+        List<String> appResourcesNames = groupService.getGroupAppsResourceTemplateNames(groupName);
+        Group group = groupService.getGroup(app.getGroup().getId());
+        final Set<Jvm> jvms = group.getJvms();
+        if (null != appResourcesNames && appResourcesNames.size() > 0) {
+            for (String resourceTemplateName : appResourcesNames) {
+                String metaDataStr = groupService.getGroupAppResourceTemplateMetaData(groupName, resourceTemplateName);
+                try {
+                    ResourceTemplateMetaData metaData = new ObjectMapper().readValue(metaDataStr, ResourceTemplateMetaData.class);
+                    if (jvms != null && jvms.size() > 0 && !metaData.getEntity().getDeployToJvms()) {
+                        // still need to iterate through the JVMs to get the host names
+                        Set<String> hostNames = new HashSet<>();
+                        for (Jvm jvm : jvms) {
+                            final String host = jvm.getHostName().toLowerCase();
+                            if (!hostNames.contains(host)) {
+                                hostNames.add(host);
+                                groupService.deployGroupAppTemplate(groupName, resourceTemplateName, resourceGroup, app, jvm);
+                            }
+                        }
+
+                    }
+                } catch (IOException e) {
+                    LOGGER.error("Failed to map meta data for template {} in group {}", resourceTemplateName, groupName, e);
+                    throw new InternalErrorException(AemFaultType.BAD_STREAM, "Failed to read meta data for template " + resourceTemplateName + " in group " + groupName, e);
+                }
+            }
+        }
+
+    }
     
     @Override
     @Transactional
@@ -456,12 +480,11 @@ public class ApplicationServiceImpl implements ApplicationService {
 
                 final String jvmName = jvm.getJvmName();
                 LOGGER.info("Deploying application config {} to JVM {}", templateName, jvmName);
-                final boolean doNotBackUpOriginals = false;
 
                 Future<CommandOutput> commandOutputFuture = executorService.submit(new Callable<CommandOutput>() {
                     @Override
                     public CommandOutput call() throws Exception {
-                        return deployConf(appName, groupName, jvmName, templateName, doNotBackUpOriginals, resourceGroup, user);
+                        return deployConf(appName, groupName, jvmName, templateName, resourceGroup, user);
                     }
                 });
                 futures.add(commandOutputFuture);
@@ -540,25 +563,5 @@ public class ApplicationServiceImpl implements ApplicationService {
             }
         }
         return appConfFile;
-    }
-
-    /**
-     * Inner class application wrapper to include a web application's parent JVM.
-     */
-    @Deprecated
-    private class WebApp extends Application {
-        final Jvm jvm;
-
-        public WebApp(final Application app, final Jvm parentJvm) {
-            super(app.getId(), app.getName(), app.getWarPath(), app.getWebAppContext(), app.getGroup(), app.isSecure(),
-                    app.isLoadBalanceAcrossServers(), app.isUnpackWar(), app.getWarName());
-            jvm = parentJvm;
-        }
-
-        @SuppressWarnings("unused")
-            // used by template bindings
-        Jvm getJvm() {
-            return jvm;
-        }
     }
 }

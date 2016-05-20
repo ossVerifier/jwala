@@ -819,23 +819,23 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         ResourceTemplateMetaData metaData;
         try {
             metaData = objectMapper.readValue(groupAppMetaData, ResourceTemplateMetaData.class);
+            final String appName = metaData.getEntity().getTarget();
+            final ApplicationServiceRest appServiceRest = ApplicationServiceRestImpl.get();
+            if (metaData.getEntity().getDeployToJvms()) {
+                // deploy to all jvms in group
+                performGroupAppDeployToJvms(groupName, fileName, aUser, group, appName, appServiceRest);
+            } else {
+                // deploy to all hosts in group
+                performGroupAppDeployToHosts(groupName, fileName, aUser, appName, appServiceRest);
+            }
         } catch (IOException e) {
             LOGGER.error("Failed to map meta data for resource template {} in group {} :: meta data: {} ", fileName, groupName, groupAppMetaData, e);
             throw new InternalErrorException(AemFaultType.BAD_STREAM, "Failed to map meta data for resource template " + fileName + " in group " + groupName, e);
         }
-        final String appName = metaData.getEntity().getTarget();
-        final ApplicationServiceRest appServiceRest = ApplicationServiceRestImpl.get();
-        if (metaData.getEntity().getDeployToJvms()) {
-            // deploy to all jvms in group
-            performGroupAppDeployToJvms(groupName, fileName, aUser, group, appName, appServiceRest);
-        } else {
-            // deploy to all hosts in group
-            performGroupAppDeployToHosts(groupName, fileName, aUser, appName, appServiceRest);
-        }
         return ResponseBuilder.ok(group);
     }
 
-    private void performGroupAppDeployToHosts(final String groupName, final String fileName, final AuthenticatedUser aUser, final String appName, final ApplicationServiceRest appServiceRest) {
+    protected void performGroupAppDeployToHosts(final String groupName, final String fileName, final AuthenticatedUser aUser, final String appName, final ApplicationServiceRest appServiceRest) {
         Map<String, Future<Response>> futureMap = new HashMap<>();
         Set<Jvm> jvms = groupService.getGroup(groupName).getJvms();
         if (null != jvms && jvms.size() > 0) {
@@ -860,7 +860,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
                             if (someContent.getReturnCode().wasSuccessful()) {
                                 return ResponseBuilder.ok(someContent);
                             } else {
-                                return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(AemFaultType.REMOTE_COMMAND_FAILURE,someContent.toString()));
+                                return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(AemFaultType.REMOTE_COMMAND_FAILURE, someContent.toString()));
                             }
                         }
                     });
@@ -872,7 +872,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         }
     }
 
-    private void performGroupAppDeployToJvms(final String groupName, final String fileName, final AuthenticatedUser aUser, Group group, final String appName, final ApplicationServiceRest appServiceRest) {
+    protected void performGroupAppDeployToJvms(final String groupName, final String fileName, final AuthenticatedUser aUser, Group group, final String appName, final ApplicationServiceRest appServiceRest) {
         Map<String, Future<Response>> futureMap = new HashMap<>();
         final Set<Jvm> jvms = group.getJvms();
         if (null != jvms && jvms.size() > 0) {
@@ -971,7 +971,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
      * @param groupName the group name
      * @return {@GroupServerInfo}
      */
-    private GroupServerInfo getGroupServerInfo(final String groupName) {
+    protected GroupServerInfo getGroupServerInfo(final String groupName) {
         return new GroupServerInfoBuilder().setGroupName(groupName)
                 .setJvmStartedCount(jvmService.getJvmStartedCount(groupName))
                 .setJvmStoppedCount(jvmService.getJvmStoppedCount(groupName))

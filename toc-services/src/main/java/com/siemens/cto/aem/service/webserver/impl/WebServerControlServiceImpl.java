@@ -2,6 +2,7 @@ package com.siemens.cto.aem.service.webserver.impl;
 
 import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
+import com.siemens.cto.aem.common.domain.model.ssh.SshConfiguration;
 import com.siemens.cto.aem.common.domain.model.state.CurrentState;
 import com.siemens.cto.aem.common.domain.model.state.StateType;
 import com.siemens.cto.aem.common.domain.model.user.User;
@@ -9,28 +10,28 @@ import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServerControlOperation;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState;
 import com.siemens.cto.aem.common.exception.InternalErrorException;
-import com.siemens.cto.aem.common.exec.CommandOutput;
-import com.siemens.cto.aem.common.exec.CommandOutputReturnCode;
-import com.siemens.cto.aem.common.exec.ExecReturnCode;
+import com.siemens.cto.aem.common.exec.*;
 import com.siemens.cto.aem.common.request.state.SetStateRequest;
 import com.siemens.cto.aem.common.request.state.WebServerSetStateRequest;
 import com.siemens.cto.aem.common.request.webserver.ControlWebServerRequest;
 import com.siemens.cto.aem.control.command.RemoteCommandExecutor;
+import com.siemens.cto.aem.control.command.ServiceCommandBuilder;
 import com.siemens.cto.aem.control.webserver.command.impl.WindowsWebServerPlatformCommandProvider;
 import com.siemens.cto.aem.exception.CommandFailureException;
 import com.siemens.cto.aem.persistence.jpa.type.EventType;
 import com.siemens.cto.aem.service.HistoryService;
+import com.siemens.cto.aem.service.MessagingService;
+import com.siemens.cto.aem.service.RemoteCommandExecutorService;
+import com.siemens.cto.aem.service.RemoteCommandReturnInfo;
+import com.siemens.cto.aem.service.exception.RemoteCommandExecutorServiceException;
 import com.siemens.cto.aem.service.state.InMemoryStateManagerService;
-import com.siemens.cto.aem.service.state.StateNotificationService;
 import com.siemens.cto.aem.service.webserver.WebServerControlService;
 import com.siemens.cto.aem.service.webserver.WebServerService;
-import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -48,27 +49,30 @@ public class WebServerControlServiceImpl implements WebServerControlService {
     private static final Logger LOGGER = LoggerFactory.getLogger(WebServerControlServiceImpl.class);
     private final InMemoryStateManagerService<Identifier<WebServer>, WebServerReachableState> inMemoryStateManagerService;
     private final HistoryService historyService;
-    private final StateNotificationService stateNotificationService;
-    private final SimpMessagingTemplate messagingTemplate;
+    private final MessagingService messagingService;
+    private final RemoteCommandExecutorService remoteCommandExecutorService;
+    private final SshConfiguration sshConfig;
 
-    public WebServerControlServiceImpl(final WebServerService theWebServerService,
-                                       final RemoteCommandExecutor<WebServerControlOperation> theExecutor,
+    public WebServerControlServiceImpl(final WebServerService webServerService,
+                                       final RemoteCommandExecutor<WebServerControlOperation> commandExecutor,
                                        final InMemoryStateManagerService<Identifier<WebServer>, WebServerReachableState> inMemoryStateManagerService,
                                        final HistoryService historyService,
-                                       final StateNotificationService stateNotificationService,
-                                       final SimpMessagingTemplate messagingTemplate) {
-        webServerService = theWebServerService;
-        commandExecutor = theExecutor;
+                                       final MessagingService messagingService,
+                                       final RemoteCommandExecutorService remoteCommandExecutorService,
+                                       final SshConfiguration sshConfig) {
+        this.webServerService = webServerService;
+        this.commandExecutor = commandExecutor;
         this.inMemoryStateManagerService = inMemoryStateManagerService;
         this.historyService = historyService;
-        this.stateNotificationService = stateNotificationService;
-        this.messagingTemplate = messagingTemplate;
+        this.messagingService = messagingService;
+        this.remoteCommandExecutorService = remoteCommandExecutorService;
+        this.sshConfig = sshConfig;
     }
 
     @Override
     public CommandOutput controlWebServer(final ControlWebServerRequest controlWebServerRequest, final User aUser) {
+        final WebServerControlOperation controlOperation = controlWebServerRequest.getControlOperation();
         final WebServer webServer = webServerService.getWebServer(controlWebServerRequest.getWebServerId());
-        CommandOutput commandOutput;
         try {
             final String event = controlWebServerRequest.getControlOperation().getOperationState() == null ?
                     controlWebServerRequest.getControlOperation().name() : controlWebServerRequest.getControlOperation().getOperationState().toStateLabel();
@@ -77,27 +81,32 @@ public class WebServerControlServiceImpl implements WebServerControlService {
                     aUser.getId());
 
             // Send a message to the UI about the control operation.
-            // Note: Sending the details of the control operation to a topic will enable the application to display
-            //       the control event to all the UI's opened in different browsers.
-            // TODO: We should also be able to send info to the UI about the other control operations e.g. thread dump, heap dump etc...
             if (controlWebServerRequest.getControlOperation().getOperationState() != null) {
-                    messagingTemplate.convertAndSend(topicServerStates, new CurrentState<>(webServer.getId(),
-                        controlWebServerRequest.getControlOperation().getOperationState(), aUser.getId(),
-                        DateTime.now(), StateType.WEB_SERVER));
+                    messagingService.send(new CurrentState<>(webServer.getId(), controlWebServerRequest.getControlOperation().getOperationState(),
+                                          aUser.getId(), DateTime.now(), StateType.WEB_SERVER));
             }
 
-            commandOutput = commandExecutor.executeRemoteCommand(webServer.getName(), webServer.getHost(),
-                    controlWebServerRequest.getControlOperation(), new WindowsWebServerPlatformCommandProvider());
+            final WindowsWebServerPlatformCommandProvider windowsJvmPlatformCommandProvider = new WindowsWebServerPlatformCommandProvider();
+            final ServiceCommandBuilder serviceCommandBuilder = windowsJvmPlatformCommandProvider.getServiceCommandBuilderFor(controlOperation);
+            final ExecCommand execCommand = serviceCommandBuilder.buildCommandForService(webServer.getName());
+            final RemoteExecCommand remoteExecCommand = new RemoteExecCommand(new RemoteSystemConnection(sshConfig.getUserName(),
+                    sshConfig.getPassword(), webServer.getHost(), sshConfig.getPort()) , execCommand);
 
-            if (commandOutput != null && StringUtils.isNotEmpty(commandOutput.getStandardOutput()) &&
-                    (controlWebServerRequest.getControlOperation().equals(WebServerControlOperation.START) ||
-                     controlWebServerRequest.getControlOperation().equals(WebServerControlOperation.STOP))) {
+            RemoteCommandReturnInfo remoteCommandReturnInfo = remoteCommandExecutorService.executeCommand(remoteExecCommand);
+
+            // TODO: Decide whether we keep CommandOuput or RemoteCommandReturnInfo!
+            CommandOutput commandOutput = new CommandOutput(new ExecReturnCode(remoteCommandReturnInfo.retCode),
+                    remoteCommandReturnInfo.standardOuput, remoteCommandReturnInfo.errorOupout);
+
+            final String standardOutput = commandOutput.getStandardOutput();
+            if (StringUtils.isNotEmpty(standardOutput) && (WebServerControlOperation.START.equals(controlOperation) ||
+                    WebServerControlOperation.STOP.equals(controlOperation))) {
                 commandOutput.cleanStandardOutput();
-                LOGGER.info("shell command output{}", commandOutput.getStandardOutput());
+                LOGGER.info("shell command output{}", standardOutput);
             }
 
             // Process non successful return codes...
-            if (commandOutput != null && !commandOutput.getReturnCode().wasSuccessful()) {
+            if (!commandOutput.getReturnCode().wasSuccessful()) {
                 switch (commandOutput.getReturnCode().getReturnCode()) {
                     case ExecReturnCode.STP_EXIT_PROCESS_KILLED:
                         commandOutput = new CommandOutput(new ExecReturnCode(0), FORCED_STOPPED, commandOutput.getStandardError());
@@ -112,35 +121,28 @@ public class WebServerControlServiceImpl implements WebServerControlService {
                                 CommandOutputReturnCode.fromReturnCode(commandOutput.getReturnCode().getReturnCode()).getDesc();
 
                         LOGGER.error(errorMsg);
-                        historyService.createHistory(getServerName(webServer), new ArrayList<>(webServer.getGroups()), errorMsg, EventType.APPLICATION_ERROR,
-                                aUser.getId());
-                        messagingTemplate.convertAndSend(topicServerStates, new CurrentState<>(webServer.getId(), WebServerReachableState.WS_FAILED,
+                        historyService.createHistory(getServerName(webServer), new ArrayList<>(webServer.getGroups()), errorMsg,
+                                EventType.APPLICATION_ERROR, aUser.getId());
+                        messagingService.send(new CurrentState<>(webServer.getId(), WebServerReachableState.WS_FAILED,
                                 DateTime.now(), StateType.WEB_SERVER, errorMsg));
-
                         break;
                 }
             }
-
-        } catch (final CommandFailureException cfe) {
-            LOGGER.error("Remote Command Failure: CommandFailureException when attempting to control a Web Server: " +
-                    controlWebServerRequest, cfe);
-
-
-            final String stackTrace = ExceptionUtils.getStackTrace(cfe);
-            historyService.createHistory(getServerName(webServer), new ArrayList<>(webServer.getGroups()), stackTrace,
+            return commandOutput;
+        } catch (final RemoteCommandExecutorServiceException e) {
+            LOGGER.error(e.getMessage(), e);
+            historyService.createHistory(getServerName(webServer), new ArrayList<>(webServer.getGroups()), e.getMessage(),
                     EventType.APPLICATION_ERROR, aUser.getId());
-
-            setFailedState(webServer, stackTrace);
-
-            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "CommandFailureException when attempting to control a Web Server: "
-                    + controlWebServerRequest, cfe);
+            messagingService.send(new CurrentState<>(webServer.getId(), WebServerReachableState.WS_FAILED, DateTime.now(),
+                    StateType.WEB_SERVER, e.getMessage()));
+            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE,
+                    "CommandFailureException when attempting to control a JVM: " + controlWebServerRequest, e);
         }
-
-        return commandOutput;
     }
 
     /**
      * Get the server name prefixed by the server type - "Web Server".
+     *
      * @param webServer the {@link WebServer} object.
      * @return server name prefixed by "Web Server".
      */
@@ -155,21 +157,28 @@ public class WebServerControlServiceImpl implements WebServerControlService {
 
         // back up the original file first
         final String host = aWebServer.getHost();
-        if (doBackup) { // TODO: Check if the file exists before actually doing the backup.
-            String currentDateSuffix = new SimpleDateFormat(".yyyyMMdd_HHmmss").format(new Date());
-            final String destPathBackup = destPath + currentDateSuffix;
-            final CommandOutput commandOutput = commandExecutor.executeRemoteCommand(
-                    aWebServer.getName(),
+        if (doBackup) {
+            CommandOutput commandOutput = commandExecutor.executeRemoteCommand(aWebServerName,
                     host,
-                    WebServerControlOperation.BACK_UP_HTTP_CONFIG_FILE,
+                    WebServerControlOperation.CHECK_FILE_EXISTS,
                     new WindowsWebServerPlatformCommandProvider(),
-                    destPath,
-                    destPathBackup);
-            if (!commandOutput.getReturnCode().wasSuccessful()) {
-                LOGGER.error("Failed to back up the " + destPath + " for " + aWebServer.getName());
-                throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to back up " + destPath + " for " + aWebServer.getName());
-            } else {
-                LOGGER.info("Successfully backed up " + destPath + " at " + host);
+                    destPath);
+            if (commandOutput.getReturnCode().wasSuccessful()) {
+                String currentDateSuffix = new SimpleDateFormat(".yyyyMMdd_HHmmss").format(new Date());
+                final String destPathBackup = destPath + currentDateSuffix;
+                commandOutput = commandExecutor.executeRemoteCommand(
+                        aWebServerName,
+                        host,
+                        WebServerControlOperation.BACK_UP_HTTP_CONFIG_FILE,
+                        new WindowsWebServerPlatformCommandProvider(),
+                        destPath,
+                        destPathBackup);
+                if (!commandOutput.getReturnCode().wasSuccessful()) {
+                    LOGGER.error("Failed to back up the " + destPath + " for " + aWebServerName);
+                    throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to back up " + destPath + " for " + aWebServerName);
+                } else {
+                    LOGGER.info("Successfully backed up " + destPath + " at " + host);
+                }
             }
         }
 
@@ -205,25 +214,6 @@ public class WebServerControlServiceImpl implements WebServerControlService {
                 targetDirPath,
                 targetFile);
 
-    }
-
-    /**
-     * Set web server state to failed.
-     *
-     * @param webServer the web server.
-     * @param msg       the message that details the cause of the failed state.
-     */
-    private void setFailedState(final WebServer webServer, String msg) {
-        msg = webServer.getName() + " at " + webServer.getHost() + ": " + msg;
-        inMemoryStateManagerService.put(webServer.getId(), WebServerReachableState.WS_FAILED);
-        webServerService.updateErrorStatus(webServer.getId(), msg);
-
-        // Send the error via JMS so TOC client can display it in the control window.
-//        stateNotificationService.notifyStateUpdated(new CurrentState(webServer.getId(), WebServerReachableState.WS_FAILED,
-//                DateTime.now(), StateType.WEB_SERVER));
-
-        messagingTemplate.convertAndSend(topicServerStates, new CurrentState<>(webServer.getId(), WebServerReachableState.WS_FAILED,
-                DateTime.now(), StateType.WEB_SERVER, msg));
     }
 
     /**

@@ -12,8 +12,10 @@ import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.common.domain.model.ssh.SshConfiguration;
 import com.siemens.cto.aem.common.domain.model.state.CurrentState;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
+import com.siemens.cto.aem.common.domain.model.webserver.WebServerControlOperation;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState;
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
+import com.siemens.cto.aem.control.command.RemoteCommandExecutor;
 import com.siemens.cto.aem.control.configuration.AemCommandExecutorConfig;
 import com.siemens.cto.aem.control.configuration.AemSshConfig;
 import com.siemens.cto.aem.persistence.configuration.AemPersistenceServiceConfiguration;
@@ -256,9 +258,15 @@ public class AemServiceConfiguration implements SchedulingConfigurer {
     }
 
     @Bean(name = "webServerControlService")
-    public WebServerControlService getWebServerControlService(final HistoryService historyService, final WebServerService webServerService) {
-        return new WebServerControlServiceImpl(webServerService, aemCommandExecutorConfig.getRemoteCommandExecutor(),
-                getWebServerInMemoryStateManagerService(), historyService, getStateNotificationService(), messagingTemplate);
+    public WebServerControlService getWebServerControlService(final WebServerService webServerService,
+                                                              final RemoteCommandExecutor<WebServerControlOperation> commandExecutor,
+                                                              final InMemoryStateManagerService<Identifier<WebServer>, WebServerReachableState> inMemoryStateManagerService,
+                                                              final HistoryService historyService,
+                                                              final MessagingService messagingService,
+                                                              final RemoteCommandExecutorService remoteCommandExecutorService,
+                                                              final SshConfiguration sshConfig) {
+        return new WebServerControlServiceImpl(webServerService, commandExecutor, inMemoryStateManagerService, historyService,
+                messagingService, remoteCommandExecutorService, sshConfig);
     }
 
     @Bean(name = "webServerCommandService")

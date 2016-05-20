@@ -49,7 +49,6 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.anyBoolean;
 import static org.mockito.Mockito.*;
 import static org.mockito.MockitoAnnotations.initMocks;
 
@@ -457,7 +456,7 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
         when(mockApplicationService.findApplications(any(Identifier.class))).thenReturn(appList);
         when(mockJvmPersistenceService.findGroupsByJvm(any(Identifier.class))).thenReturn(groupsList);
         jvmService.deployApplicationContextXMLs(jvm);
-        verify(mockApplicationService).deployConf(anyString(), anyString(), anyString(), anyString(), anyBoolean(), any(ResourceGroup.class), any(User.class));
+        verify(mockApplicationService).deployConf(anyString(), anyString(), anyString(), anyString(), any(ResourceGroup.class), any(User.class));
     }
 
     @Test

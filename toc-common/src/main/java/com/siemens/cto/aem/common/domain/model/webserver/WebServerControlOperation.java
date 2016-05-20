@@ -16,7 +16,8 @@ public enum WebServerControlOperation {
     DELETE_SERVICE("deleteService", WebServerReachableState.WS_UNREACHABLE),
     INVOKE_SERVICE("invokeWSBat", null),
     CREATE_DIRECTORY("mkdir", null),
-    CHANGE_FILE_MODE("chmod", null);
+    CHANGE_FILE_MODE("chmod", null),
+    CHECK_FILE_EXISTS("test", null);
 
     private static final Map<String, WebServerControlOperation> LOOKUP_MAP = new HashMap<>();
 

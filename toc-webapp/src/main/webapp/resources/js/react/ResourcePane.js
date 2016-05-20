@@ -20,9 +20,10 @@ var ResourcePane = React.createClass({
                                  multiSelect={true} />
                    </div>
         }
+
         return <div className="ResourcePane">
                    {toolbar}
-                   <span>Please select a JVM, Web Server or Web Application...</span>
+                   <span>{this.state.data === null ? "Please select a JVM, Web Server or Web Application..." : "No resources found..."}</span>
                </div>
     },
     getData: function(data) {
@@ -38,8 +39,6 @@ var ResourcePane = React.createClass({
                 this.props.groupService.getGroupWebServerResources(data.rtreeListMetaData.parent.name, this.getDataCallback);
             } else if (data.rtreeListMetaData.entity === "jvmSection") {
                 this.props.groupService.getGroupJvmResources(data.rtreeListMetaData.parent.name, this.getDataCallback);
-            } else if (data.rtreeListMetaData.entity === "webAppSection") {
-                this.setState({resourceOptions: []});
             }
         }
     },

@@ -1,13 +1,12 @@
 package com.siemens.cto.aem.web.controller;
 
-import com.siemens.cto.aem.common.exec.CommandOutput;
-import com.siemens.cto.aem.common.exec.CommandOutputReturnCode;
-import com.siemens.cto.aem.common.request.jvm.ControlJvmRequest;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.jvm.JvmControlOperation;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
+import com.siemens.cto.aem.common.exec.CommandOutput;
+import com.siemens.cto.aem.common.request.jvm.ControlJvmRequest;
 import com.siemens.cto.aem.exception.CommandFailureException;
 import com.siemens.cto.aem.service.jvm.JvmControlService;
 import com.siemens.cto.aem.service.webserver.WebServerCommandService;
@@ -62,7 +61,7 @@ public class CommandController {
             if (execData.getReturnCode().wasSuccessful()) {
                 response.getWriter().print(execData.getStandardOutput());
             } else {
-                response.getWriter().print(ERROR_MSG_PREFIX + CommandOutputReturnCode.fromReturnCode(execData.getReturnCode().getReturnCode()).getDesc());
+                response.getWriter().print(ERROR_MSG_PREFIX + execData.getStandardError());
             }
         } catch (CommandFailureException cmdFailEx) {
             LOGGER.warn("Request Failure occurred", cmdFailEx);

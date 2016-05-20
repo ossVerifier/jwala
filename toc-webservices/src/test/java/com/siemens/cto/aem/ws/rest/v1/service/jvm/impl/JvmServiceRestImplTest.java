@@ -8,6 +8,7 @@ import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.jvm.JvmControlOperation;
 import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.common.domain.model.path.Path;
+import com.siemens.cto.aem.common.domain.model.resource.ResourceGroup;
 import com.siemens.cto.aem.common.domain.model.resource.ResourceTemplateMetaData;
 import com.siemens.cto.aem.common.domain.model.resource.ResourceType;
 import com.siemens.cto.aem.common.domain.model.user.User;
@@ -535,7 +536,8 @@ public class JvmServiceRestImplTest {
         when(jvmService.getJvm(jvm.getJvmName())).thenReturn(jvm);
         when(jvmService.generateConfigFile(anyString(), anyString())).thenReturn("<server>xml</server>");
         when(jvmService.getResourceTemplateMetaData(anyString())).thenReturn(mockResourceTemplateMetaData);
-        when(jvmControlService.secureCopyFileWithBackup(any(ControlJvmRequest.class), anyString(), anyString())).thenReturn(mockExecData);
+        when(jvmControlService.secureCopyFile(any(ControlJvmRequest.class), anyString(), anyString())).thenReturn(mockExecData);
+        when(resourceService.generateResourceGroup()).thenReturn(new ResourceGroup());
         Response response = jvmServiceRest.generateAndDeployFile(jvm.getJvmName(), "server.xml", authenticatedUser);
         assertNotNull(response.hasEntity());
 
@@ -558,7 +560,7 @@ public class JvmServiceRestImplTest {
         }
         assertTrue(exceptionThrown);
 
-        when(jvmControlService.secureCopyFileWithBackup(any(ControlJvmRequest.class), anyString(), anyString())).thenThrow(new CommandFailureException(new ExecCommand("fail for secure copy"), new Throwable("test fail")));
+        when(jvmControlService.secureCopyFile(any(ControlJvmRequest.class), anyString(), anyString())).thenThrow(new CommandFailureException(new ExecCommand("fail for secure copy"), new Throwable("test fail")));
         exceptionThrown = false;
         try {
             jvmServiceRest.generateAndDeployFile(jvm.getJvmName(), "server.xml", authenticatedUser);

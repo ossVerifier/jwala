@@ -53,7 +53,7 @@ public interface ApplicationService {
      * @param resourceGroup
      * @param user                 - the user.    @return {@link CommandOutput}
      */
-    CommandOutput deployConf(String appName, String groupName, String jvmName, String resourceTemplateName, boolean backUp, ResourceGroup resourceGroup, User user);
+    CommandOutput deployConf(String appName, String groupName, String jvmName, String resourceTemplateName, ResourceGroup resourceGroup, User user);
 
     JpaApplicationConfigTemplate uploadAppTemplate(UploadAppTemplateRequest command);
 
@@ -74,4 +74,6 @@ public interface ApplicationService {
     void copyApplicationWarToHost(Application application, String hostName);
 
     void copyApplicationConfigToGroupJvms(Group group, String appName, ResourceGroup resourceGroup, User user);
+
+    void deployApplicationResourcesToGroupHosts(String groupName, Application app, ResourceGroup resourceGroup);
 }

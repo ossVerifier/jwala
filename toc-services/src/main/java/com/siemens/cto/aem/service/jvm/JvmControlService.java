@@ -12,8 +12,6 @@ public interface JvmControlService {
 
     CommandOutput secureCopyFile(ControlJvmRequest secureCopyRequest, String sourcePath, String destPath) throws CommandFailureException;
 
-    CommandOutput secureCopyFileWithBackup(ControlJvmRequest secureCopyRequest, String sourcePath, String destPath) throws CommandFailureException;
-
     CommandOutput createDirectory(Jvm jvm, String dirAbsolutePath) throws CommandFailureException;
 
     CommandOutput changeFileMode(Jvm jvm, String modifiedPermissions, String targetAbsoluteDir, String targetFile) throws CommandFailureException;

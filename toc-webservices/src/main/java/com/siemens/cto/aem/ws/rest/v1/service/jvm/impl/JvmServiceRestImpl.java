@@ -26,6 +26,7 @@ import com.siemens.cto.aem.service.jvm.JvmControlService;
 import com.siemens.cto.aem.service.jvm.JvmService;
 import com.siemens.cto.aem.service.jvm.exception.JvmServiceException;
 import com.siemens.cto.aem.service.resource.ResourceService;
+import com.siemens.cto.aem.template.ResourceFileGenerator;
 import com.siemens.cto.aem.ws.rest.v1.provider.AuthenticatedUser;
 import com.siemens.cto.aem.ws.rest.v1.response.ResponseBuilder;
 import com.siemens.cto.aem.ws.rest.v1.service.jvm.JvmServiceRest;
@@ -63,7 +64,6 @@ public class JvmServiceRestImpl implements JvmServiceRest {
     private final ResourceService resourceService;
     private final ExecutorService executorService;
     private Map<String, ReentrantReadWriteLock> jvmWriteLocks;
-    private final String stpTomcatInstancesPath = ApplicationProperties.get("paths.instances");
     private final String stpJvmResourcesDir = ApplicationProperties.get("stp.jvm.resources.dir");
     private static JvmServiceRestImpl instance;
 
@@ -323,16 +323,10 @@ public class JvmServiceRestImpl implements JvmServiceRest {
             deployJvmConfigJar(jvm, user, jvmConfigJar);
 
             // copy the individual jvm templates to the destination
-            final Map<String, String> generatedFiles = jvmService.generateResourceFiles(jvm.getJvmName());
-            if(generatedFiles != null) {
-                for(Entry<String, String> entry:generatedFiles.entrySet()) {
-                    secureCopyFileToJvm(jvm, entry.getKey(), entry.getValue());
-                }
-            }
+            deployJvmResourceFiles(jvm);
 
             // deploy any application context xml's in the group
-            // TODO reimplement this once the generic resource template APIs are complete
-            // deployApplicationContextXMLs(jvm);
+             deployApplicationContextXMLs(jvm);
 
             // re-install the service
             installJvmWindowsService(jvm, user);
@@ -347,6 +341,15 @@ public class JvmServiceRestImpl implements JvmServiceRest {
             jvmWriteLocks.get(jvm.getId().toString()).writeLock().unlock();
         }
         return jvm;
+    }
+
+    protected void deployJvmResourceFiles(Jvm jvm) throws IOException, CommandFailureException {
+        final Map<String, String> generatedFiles = jvmService.generateResourceFiles(jvm.getJvmName());
+        if(generatedFiles != null) {
+            for(Entry<String, String> entry:generatedFiles.entrySet()) {
+                secureCopyFileToJvm(jvm, entry.getKey(), entry.getValue());
+            }
+        }
     }
 
     protected void createScriptsDirectory(Jvm jvm) throws CommandFailureException {
@@ -484,17 +487,17 @@ public class JvmServiceRestImpl implements JvmServiceRest {
                         "The target JVM must be stopped before attempting to update the resource files");
             }
 
-            final String relativeDir;
+            final String metaDataPath;
             ResourceTemplateMetaData resourceTemplateMetaData = jvmService.getResourceTemplateMetaData(jvmName);
-            relativeDir = resourceTemplateMetaData.getPath();
+            metaDataPath = resourceTemplateMetaData.getPath();
+            String absolutePath = ResourceFileGenerator.generateResourceConfig(metaDataPath, resourceService.generateResourceGroup(), jvm);
 
             String fileContent = jvmService.generateConfigFile(jvmName, fileName);
             String jvmResourcesNameDir = stpJvmResourcesDir + "/" + jvmName;
-            String jvmResourcesDirDest = jvmResourcesNameDir + relativeDir;
+            String jvmResourcesDirDest = jvmResourcesNameDir;
             createConfigFile(jvmResourcesDirDest + "/", fileName, fileContent);
 
-            // TODO: Check if we need to generify this as well ????
-            deployJvmConfigFile(jvmName, fileName, jvm, relativeDir, jvmResourcesDirDest);
+            deployJvmConfigFile(jvmName, fileName, jvm, absolutePath, jvmResourcesDirDest);
         } catch (IOException e) {
             LOGGER.error("Bad Stream: Failed to write file", e);
             throw new InternalErrorException(AemFaultType.BAD_STREAM, "Failed to write file", e);
@@ -507,11 +510,11 @@ public class JvmServiceRestImpl implements JvmServiceRest {
         return ResponseBuilder.ok(jvm);
     }
 
-    protected void deployJvmConfigFile(String jvmName, String fileName, Jvm jvm, String relativeDir, String jvmResourcesDirDest)
+    protected void deployJvmConfigFile(String jvmName, String fileName, Jvm jvm, String absolutePath, String jvmResourcesDirDest)
             throws CommandFailureException {
-        final String destPath = stpTomcatInstancesPath + "/" + jvmName + relativeDir + "/" + fileName;
+        final String destPath = absolutePath + "/" + fileName;
         CommandOutput result =
-                jvmControlService.secureCopyFileWithBackup(new ControlJvmRequest(jvm.getId(), JvmControlOperation.SECURE_COPY), jvmResourcesDirDest + "/" + fileName, destPath);
+                jvmControlService.secureCopyFile(new ControlJvmRequest(jvm.getId(), JvmControlOperation.SECURE_COPY), jvmResourcesDirDest + "/" + fileName, destPath);
         if (result.getReturnCode().wasSuccessful()) {
             LOGGER.info("Successful generation and deploy of {} to {}", fileName, jvmName);
         } else {

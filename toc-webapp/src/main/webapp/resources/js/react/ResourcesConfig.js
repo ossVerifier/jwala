@@ -84,7 +84,7 @@ var ResourcesConfig = React.createClass({
         this.refs.xmlTabs.refreshTemplateDisplay(template);
     },
     selectEntityCallback: function(data, resourceName) {
-        if (this.refs.xmlTabs.refs.xmlEditor !== undefined && this.refs.xmlTabs.refs.xmlEditor.isContentChanged()) {
+        if (this.refs.xmlTabs.refs.codeMirrorComponent !== undefined && this.refs.xmlTabs.refs.codeMirrorComponent.isContentChanged()) {
             var ans = confirm("All your changes won't be saved if you view another resource. Are you sure you want to proceed ?");
             if (!ans) {
                 return false;
@@ -100,7 +100,7 @@ var ResourcesConfig = React.createClass({
         return true;
     },
     selectResourceTemplateCallback: function(entity, resourceName, groupJvmEntityType) {
-        if (this.refs.xmlTabs.refs.xmlEditor !== undefined && this.refs.xmlTabs.refs.xmlEditor.isContentChanged()) {
+        if (this.refs.xmlTabs.refs.codeMirrorComponent !== undefined && this.refs.xmlTabs.refs.codeMirrorComponent.isContentChanged()) {
             var ans = confirm("All your changes won't be saved if you view another resource. Are you sure you want to proceed ?");
             if (!ans) {
                 return false;
@@ -246,8 +246,8 @@ var ResourcesConfig = React.createClass({
      },
      verticalSplitterDidUpdateCallback: function() {
 
-         if (this.refs.xmlTabs.refs.xmlEditor !== undefined) {
-            this.refs.xmlTabs.refs.xmlEditor.resize();
+         if (this.refs.xmlTabs.refs.codeMirrorComponent !== undefined) {
+            this.refs.xmlTabs.refs.codeMirrorComponent.resize();
          }
 
          if (this.refs.xmlTabs.refs.xmlPreview !== undefined) {
@@ -321,23 +321,20 @@ var XmlTabs = React.createClass({
         return {entityType: null, entity: null, entityParent: null, resourceTemplateName: null, template: "", entityGroupName: "", groupJvmEntityType: null}
     },
     render: function() {
-        var xmlEditor;
+        var codeMirrorComponent;
         var xmlPreview;
 
-        if (this.state.template === "") {
-            xmlEditor = <div style={{padding: "5px 5px"}}>Please select a JVM, Web Server or Web Application and a resource</div>;
+        if (this.state.resourceTemplateName === null) {
+            codeMirrorComponent = <div style={{padding: "5px 5px"}}>Please select a JVM, Web Server or Web Application and a resource</div>;
             xmlPreview = <div style={{padding: "5px 5px"}}>Please select a JVM, Web Server or Web Application and a resource</div>;
         } else {
-            xmlEditor = <XmlEditor ref="xmlEditor"
-                                   className="xml-editor-container"
-                                   content={this.state.template}
-                                   saveCallback={this.saveResource}
-				                   uploadDialogCallback={this.props.uploadDialogCallback}
-				                   onChange={this.onChangeCallback}/>;
+            codeMirrorComponent = <CodeMirrorComponent ref="codeMirrorComponent" content={this.state.template}
+                                   className="xml-editor-container" saveCallback={this.saveResource}
+                                   onChange={this.onChangeCallback}/>
             xmlPreview = <XmlPreview ref="xmlPreview" deployCallback={this.deployResource}/>
         }
 
-        var xmlTabItems = [{title: "Template", content:xmlEditor},
+        var xmlTabItems = [{title: "Template", content:codeMirrorComponent},
                            {title: "Preview", content:xmlPreview}];
 
         return <RTabs ref="tabs" items={xmlTabItems} depth={2} onSelectTab={this.onSelectTab}
@@ -349,7 +346,7 @@ var XmlTabs = React.createClass({
             entityGroupName: nextState.entityParent.name});
     },
     onChangeCallback: function() {
-        if (this.refs.xmlEditor !== undefined && this.refs.xmlEditor.isContentChanged()) {
+        if (this.refs.codeMirrorComponent !== undefined && this.refs.codeMirrorComponent.isContentChanged()) {
             MainArea.unsavedChanges = true;
         } else {
             MainArea.unsavedChanges = false;
@@ -408,7 +405,7 @@ var XmlTabs = React.createClass({
         if (response.message === "SUCCESS") {
             console.log("Save success!");
             MainArea.unsavedChanges = false;
-            this.showFadingStatus("Saved", this.refs.xmlEditor.getDOMNode());
+            this.showFadingStatus("Saved", this.refs.codeMirrorComponent.getDOMNode());
             this.setState({template:response.applicationResponseContent});
         } else {
             throw response;
@@ -462,7 +459,7 @@ var XmlTabs = React.createClass({
     deployResource: function(ajaxProcessDoneCallback) {
         var saveAndDeploy = function(response, self, type) {
                         if (response.applicationResponseContent.allStopped === "true") {
-                            self.saveResourcePromise(self.refs.xmlEditor.getText())
+                            self.saveResourcePromise(self.refs.codeMirrorComponent.getText())
                             .then(function(response){
                                 self.savedResourceCallback(response);
                                 return self.deployResourcePromise();
@@ -475,7 +472,7 @@ var XmlTabs = React.createClass({
                         }
         };
 
-        if (this.refs.xmlEditor !== undefined && this.refs.xmlEditor.isContentChanged()) {
+        if (this.refs.codeMirrorComponent !== undefined && this.refs.codeMirrorComponent.isContentChanged()) {
             var ans = confirm("Changes to the resource template will be saved before deployment. Are you sure you want to proceed ?");
             if (ans) {
                 var self = this;
@@ -490,7 +487,7 @@ var XmlTabs = React.createClass({
                         saveAndDeploy(response, self, "Web Server");
                     });
                 } else {
-                    this.saveResourcePromise(self.refs.xmlEditor.getText())
+                    this.saveResourcePromise(self.refs.codeMirrorComponent.getText())
                     .then(function(response){
                         self.savedResourceCallback(response);
                         return self.deployResourcePromise();
@@ -571,37 +568,37 @@ var XmlTabs = React.createClass({
                 if (this.state.entityType === "jvms") {
                     this.props.jvmService.previewResourceFile(this.state.entity.jvmName,
                                                               this.state.entityParent.name,
-                                                              this.refs.xmlEditor.getText(),
+                                                              this.refs.codeMirrorComponent.getText(),
                                                               this.previewSuccessCallback,
                                                               this.previewErrorCallback);
                 } else if (this.state.entityType === "webServers") {
                     this.props.wsService.previewResourceFile(this.state.entity.name,
                                                              this.state.entityParent.name,
-                                                             this.refs.xmlEditor.getText(),
+                                                             this.refs.codeMirrorComponent.getText(),
                                                              this.previewSuccessCallback,
                                                              this.previewErrorCallback);
                 } else if (this.state.entityType === "webApps") {
                     this.props.webAppService.previewResourceFile(this.state.entity.name,
                                                                  this.state.entity.group.name,
                                                                  this.state.entityParent.jvmName,
-                                                                 this.refs.xmlEditor.getText(),
+                                                                 this.refs.codeMirrorComponent.getText(),
                                                                  this.previewSuccessCallback,
                                                                  this.previewErrorCallback);
                 } else if (this.state.entityType === "webServerSection") {
                     this.props.groupService.previewGroupWebServerResourceFile(this.state.entityGroupName,
-                                                                 this.refs.xmlEditor.getText(),
+                                                                 this.refs.codeMirrorComponent.getText(),
                                                                  this.previewSuccessCallback,
                                                                  this.previewErrorCallback);
                 } else if (this.state.entityType === "jvmSection") {
                     if (this.state.groupJvmEntityType && this.state.groupJvmEntityType === "webApp") {
                         this.props.groupService.previewGroupAppResourceFile(this.state.entityGroupName,
                                                                                      this.state.resourceTemplateName,
-                                                                                     this.refs.xmlEditor.getText(),
+                                                                                     this.refs.codeMirrorComponent.getText(),
                                                                                      this.previewSuccessCallback,
                                                                                      this.previewErrorCallback);
                     } else {
                         this.props.groupService.previewGroupJvmResourceFile(this.state.entityGroupName,
-                                                                 this.refs.xmlEditor.getText(),
+                                                                 this.refs.codeMirrorComponent.getText(),
                                                                  this.previewSuccessCallback,
                                                                  this.previewErrorCallback);
                     }

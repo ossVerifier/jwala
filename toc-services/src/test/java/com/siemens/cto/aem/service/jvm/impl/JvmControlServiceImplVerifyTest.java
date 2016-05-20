@@ -245,6 +245,7 @@ public class JvmControlServiceImplVerifyTest extends VerificationBehaviorSupport
         when(mockControlJvmRequest.getJvmId()).thenReturn(new Identifier<Jvm>(11L));
         when(jvmService.getJpaJvm(any(Identifier.class), anyBoolean())).thenReturn(mockJpaJvm);
         when(commandExecutor.executeRemoteCommand(anyString(), anyString(), any(ControlJvmRequest.class), any(WindowsJvmPlatformCommandProvider.class), anyString(), anyString())).thenReturn(mockCommandOutput);
+        when(commandExecutor.executeRemoteCommand(anyString(), anyString(), eq(JvmControlOperation.CHECK_FILE_EXISTS), any(WindowsJvmPlatformCommandProvider.class), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(1), "File doesn't exist", ""));
         jvmControlService.secureCopyFile(mockControlJvmRequest, "src path", "dest path");
     }
 

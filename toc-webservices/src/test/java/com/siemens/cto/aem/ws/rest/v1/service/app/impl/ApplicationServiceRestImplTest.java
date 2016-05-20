@@ -501,7 +501,7 @@ public class ApplicationServiceRestImplTest {
     @Test
     public void testDeployConf() {
         CommandOutput mockExecData = mock(CommandOutput.class);
-        when(service.deployConf(anyString(), anyString(), anyString(), anyString(), anyBoolean(), any(ResourceGroup.class), any(User.class))).thenReturn(mockExecData);
+        when(service.deployConf(anyString(), anyString(), anyString(), anyString(), any(ResourceGroup.class), any(User.class))).thenReturn(mockExecData);
         when(mockExecData.getReturnCode()).thenReturn(new ExecReturnCode(0));
         Response response = cut.deployConf(application.getName(), group1.getName(), "jvmName", "ServerXMLTemplate.tpl", authenticatedUser);
         assertNotNull(response.getEntity());
@@ -510,7 +510,7 @@ public class ApplicationServiceRestImplTest {
         response = cut.deployConf(application.getName(), group1.getName(), "jvmName", "ServerXMLTemplate.tpl", authenticatedUser);
         assertNotNull(response.getEntity());
 
-        when(service.deployConf(anyString(), anyString(), anyString(), anyString(), anyBoolean(), any(ResourceGroup.class), any(User.class))).thenThrow(new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Target JVM must be stopped"));
+        when(service.deployConf(anyString(), anyString(), anyString(), anyString(), any(ResourceGroup.class), any(User.class))).thenThrow(new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Target JVM must be stopped"));
         boolean exceptionThrown = false;
         try {
             cut.deployConf(application.getName(), group1.getName(), "jvmName", "ServerXMLTemplate.tpl", authenticatedUser);

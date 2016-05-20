@@ -17,6 +17,8 @@
 <script src="public-resources/ext/js/fileupload/jquery.fileupload.js"></script>
 <script src="public-resources/ext/js/moment.js"></script>
 <script src="public-resources/ext/js/jquery/jquery-linedtextarea.js"></script>
+<script src="public-resources/ext/js/codemirror/codemirror.js"></script>
+<script src="public-resources/ext/js/codemirror/mode/groovy.js"></script>
 
 <!--  Services -->
 <script src="public-resources/ext/js/bluebird/bluebird-2.1.3.js"></script>
@@ -53,6 +55,7 @@
 <script type="text/jsx" src="public-resources/js/react/RToolbar.js"></script>
 <script type="text/jsx" src="public-resources/js/react/RTextPreview.js"></script>
 <script type="text/jsx" src="public-resources/js/react/XmlEditor.js"></script>
+<script type="text/jsx" src="public-resources/js/react/CodeMirrorComponent.js"></script>
 <script type="text/jsx" src="public-resources/js/react/modal-button.js"></script>
 <script src="public-resources/js/react/generic-components/RStaticDialog.js"></script>
 <script src="public-resources/js/react/generic-components/RListBox.js"></script>

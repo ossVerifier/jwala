@@ -339,15 +339,15 @@ public class ApplicationServiceImplTest {
 
         when(jvmPersistenceService.findJvm(eq("jvm-1"), eq("hct-group"))).thenReturn(jvm);
 
-        CommandOutput retExecData = applicationService.deployConf("hct", "hct-group", "jvm-1", "hct.xml", false, mock(ResourceGroup.class), testUser);
+        CommandOutput retExecData = applicationService.deployConf("hct", "hct-group", "jvm-1", "hct.xml", mock(ResourceGroup.class), testUser);
         assertTrue(retExecData.getReturnCode().wasSuccessful());
 
         when(mockApplication.isSecure()).thenReturn(false);
-        retExecData = applicationService.deployConf("hct", "hct-group", "jvm-1", "hct.xml", false, mock(ResourceGroup.class), testUser);
+        retExecData = applicationService.deployConf("hct", "hct-group", "jvm-1", "hct.xml", mock(ResourceGroup.class), testUser);
         assertTrue(retExecData.getReturnCode().wasSuccessful());
 
         when(mockApplication.isSecure()).thenReturn(true);
-        retExecData = applicationService.deployConf("hct", "hct-group", "jvm-1", "hct.xml", true, mock(ResourceGroup.class), testUser);
+        retExecData = applicationService.deployConf("hct", "hct-group", "jvm-1", "hct.xml", mock(ResourceGroup.class), testUser);
         assertTrue(retExecData.getReturnCode().wasSuccessful());
 
         // test errors
@@ -357,7 +357,7 @@ public class ApplicationServiceImplTest {
                 anyString(), anyString(), eq(ApplicationControlOperation.SECURE_COPY), any(WindowsApplicationPlatformCommandProvider.class), anyString(), anyString())).thenReturn(execData);
         when(remoteCommandExecutor.executeRemoteCommand(anyString(), anyString(), eq(ApplicationControlOperation.CHECK_FILE_EXISTS), any(WindowsApplicationPlatformCommandProvider.class), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(1), "", ""));
         try {
-            applicationService.deployConf("hct", "hct-group", "jvm-1", "hct.xml", true, mock(ResourceGroup.class), testUser);
+            applicationService.deployConf("hct", "hct-group", "jvm-1", "hct.xml", mock(ResourceGroup.class), testUser);
         } catch (DeployApplicationConfException ee) {
             assertEquals("REMOTE COMMAND FAILURE", ee.getMessage());
         }
@@ -366,7 +366,7 @@ public class ApplicationServiceImplTest {
                 anyString(), anyString(), eq(ApplicationControlOperation.SECURE_COPY), any(WindowsApplicationPlatformCommandProvider.class), anyString(), anyString())).thenThrow(new CommandFailureException(new ExecCommand("fail me"), new Throwable("should fail")));
         when(remoteCommandExecutor.executeRemoteCommand(anyString(), anyString(), eq(ApplicationControlOperation.CHECK_FILE_EXISTS), any(WindowsApplicationPlatformCommandProvider.class), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(1), "", ""));
         try {
-            applicationService.deployConf("hct", "hct-group", "jvm-1", "hct.xml", true, mock(ResourceGroup.class), testUser);
+            applicationService.deployConf("hct", "hct-group", "jvm-1", "hct.xml", mock(ResourceGroup.class), testUser);
         } catch (DeployApplicationConfException ee) {
             assertTrue(ee.getCause() instanceof CommandFailureException);
         }
@@ -389,7 +389,7 @@ public class ApplicationServiceImplTest {
         when(applicationPersistenceService.findApplication(eq("hct"), eq("hct-group"), eq("jvm-1"))).thenReturn(mockApplication);
         when(applicationPersistenceService.getMetaData(anyString(), anyString(), anyString(), anyString())).thenReturn(META_DATA_TEST_VALUES);
         when(jvmPersistenceService.findJvm(eq("jvm-1"), eq("hct-group"))).thenReturn(jvm);
-        final CommandOutput retExecData = applicationService.deployConf("hct", "hct-group", "jvm-1", "hct.xml", false, mock(ResourceGroup.class), testUser);
+        final CommandOutput retExecData = applicationService.deployConf("hct", "hct-group", "jvm-1", "hct.xml", mock(ResourceGroup.class), testUser);
     }
 
     @Test(expected = DeployApplicationConfException.class)
@@ -408,7 +408,7 @@ public class ApplicationServiceImplTest {
         when(applicationPersistenceService.findApplication(eq("hct"), eq("hct-group"), eq("jvm-1"))).thenReturn(mockApplication);
         when(applicationPersistenceService.getMetaData(anyString(), anyString(), anyString(), anyString())).thenReturn(META_DATA_TEST_VALUES);
         when(jvmPersistenceService.findJvm(eq("jvm-1"), eq("hct-group"))).thenReturn(jvm);
-        final CommandOutput retExecData = applicationService.deployConf("hct", "hct-group", "jvm-1", "hct.xml", false, mock(ResourceGroup.class), testUser);
+        final CommandOutput retExecData = applicationService.deployConf("hct", "hct-group", "jvm-1", "hct.xml", mock(ResourceGroup.class), testUser);
     }
 
     @Test(expected = DeployApplicationConfException.class)
@@ -427,7 +427,7 @@ public class ApplicationServiceImplTest {
         when(applicationPersistenceService.findApplication(eq("hct"), eq("hct-group"), eq("jvm-1"))).thenReturn(mockApplication);
         when(applicationPersistenceService.getMetaData(anyString(), anyString(), anyString(), anyString())).thenReturn(META_DATA_TEST_VALUES);
         when(jvmPersistenceService.findJvm(eq("jvm-1"), eq("hct-group"))).thenReturn(jvm);
-        final CommandOutput retExecData = applicationService.deployConf("hct", "hct-group", "jvm-1", "hct.xml", false, mock(ResourceGroup.class), testUser);
+        final CommandOutput retExecData = applicationService.deployConf("hct", "hct-group", "jvm-1", "hct.xml", mock(ResourceGroup.class), testUser);
     }
 
     @Test(expected = InternalErrorException.class)
@@ -438,7 +438,7 @@ public class ApplicationServiceImplTest {
         when(jvmPersistenceService.findJvm(anyString(), anyString())).thenReturn(mockJvm);
         when(applicationPersistenceService.findApplication(anyString(), anyString(), anyString())).thenReturn(mockApplication);
         when(applicationPersistenceService.getResourceTemplate(anyString(), anyString(), anyString(), anyString())).thenReturn("IGNORED CONTENT");
-        applicationService.deployConf("testApp", "testGroup", "testJvm", "HttpSslConfTemplate.tpl", false, mock(ResourceGroup.class), testUser);
+        applicationService.deployConf("testApp", "testGroup", "testJvm", "HttpSslConfTemplate.tpl", mock(ResourceGroup.class), testUser);
     }
 
     @Test

@@ -70,21 +70,24 @@ public enum WindowsWebServerNetOperation implements ServiceCommandBuilder {
             );
         }
     },
-    CREATE_DIRECTORY(WebServerControlOperation.CREATE_DIRECTORY){
+    CREATE_DIRECTORY(WebServerControlOperation.CREATE_DIRECTORY) {
         @Override
         public ExecCommand buildCommandForService(String aServiceName, String... aParams) {
             return new ExecCommand("if [ ! -e \"" + aParams[0] + "\" ]; then /usr/bin/mkdir -p " + aParams[0] + "; fi;");
         }
     },
-    CHANGE_FILE_MODE(WebServerControlOperation.CHANGE_FILE_MODE){
+    CHANGE_FILE_MODE(WebServerControlOperation.CHANGE_FILE_MODE) {
         @Override
         public ExecCommand buildCommandForService(String aServiceName, String... aParams) {
             return new ExecCommand("/usr/bin/chmod " + aParams[0] + " " + aParams[1] + "/" + aParams[2]);
         }
+    },
+    CHECK_FILE_EXISTS(WebServerControlOperation.CHECK_FILE_EXISTS) {
+        @Override
+        public ExecCommand buildCommandForService(String aServiceName, String... aParams) {
+            return new ExecCommand("/usr/bin/test -e " + aParams[0]);
+        }
     };
-    ;
-
-
 
     private static String cygpathWrapper(AemControl.Properties scriptName, String scriptPath) {
         return "`" + CYGPATH.toString() + " " + scriptPath + scriptName + "`";
