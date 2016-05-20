@@ -15,6 +15,8 @@
 <script src="public-resources/ext/js/fileupload/jquery.iframe-transport.js"></script>
 <script src="public-resources/ext/js/fileupload/jquery.fileupload.js"></script>
 <script src="public-resources/ext/js/jquery/jquery-linedtextarea.js"></script>
+<script src="public-resources/ext/js/codemirror/codemirror.js"></script>
+<script src="public-resources/ext/js/codemirror/mode/groovy.js"></script>
 
 <!-- TODO: Get non beta then minify  -->
 <script src="public-resources/ext/js/moment.js"></script>
@@ -54,6 +56,7 @@
 <script src="gen-public-resources/js/react/generic-components/RToolbar.js"></script>
 <script src="gen-public-resources/js/react/RTextPreview.js"></script>
 <script src="gen-public-resources/js/react/XmlEditor.js"></script>
+<script src="gen-public-resources/js/react/CodeMirrorComponent.js"></script>
 <script src="gen-public-resources/js/react/modal-button.js"></script>
 <script src="gen-public-resources/js/react/generic-components/RStaticDialog.js"></script>
 <script src="gen-public-resources/js/react/generic-components/RListBox.js"></script>
