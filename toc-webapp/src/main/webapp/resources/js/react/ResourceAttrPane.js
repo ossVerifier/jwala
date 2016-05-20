@@ -50,36 +50,35 @@ var ResourceAttrPane = React.createClass({
 
             // we need to clone data since we need to mutate it (e.g. add parent data)
             var newData = ResourceAttrPane.sanitizeAndCloneData(data);
-            var newParentData = ResourceAttrPane.sanitizeAndCloneData(parent);
             switch (entityName) {
                 case "jvmSection":
                     newAttributes["jvms"] = newData.jvms;
                     newAttributes["jvms"].forEach(function(item) {
-                        item["parentGroup"] = newParentData;
+                        item["parentGroup"] = ResourceAttrPane.sanitizeAndCloneData(parent);
                     });
                     break;
                 case "webServerSection":
                     newAttributes["webServers"] = newData.webServers;
                     newAttributes["webServers"].forEach(function(item) {
-                        item["parentGroup"] = newParentData;
+                        item["parentGroup"] = ResourceAttrPane.sanitizeAndCloneData(parent);
                     });
                     break;
                 case "webAppSection":
                     newAttributes["webApps"] = newData.webApps;
                     newAttributes["webApps"].forEach(function(item) {
-                        item["parentGroup"] = newParentData;
+                        item["parentGroup"] = ResourceAttrPane.sanitizeAndCloneData(parent);
                     });
                     break;
                 case "webApps":
-                     newData["parentJvm"] = newParentData;
+                     newData["parentJvm"] = ResourceAttrPane.sanitizeAndCloneData(parent);
                      newAttributes["webApp"] = newData;
                     break;
                 case "jvms":
-                     newData["parentGroup"] = newParentData;
+                     newData["parentGroup"] = ResourceAttrPane.sanitizeAndCloneData(parent.rtreeListMetaData.parent);
                      newAttributes["jvm"] = newData;
                     break;
                 case "webServers":
-                     newData["parentGroup"] = newParentData;
+                     newData["parentGroup"] = ResourceAttrPane.sanitizeAndCloneData(parent.rtreeListMetaData.parent);
                      newAttributes["webServer"] = newData;
                     break;
             }
