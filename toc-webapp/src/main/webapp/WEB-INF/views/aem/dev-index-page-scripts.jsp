@@ -19,6 +19,7 @@
 <script src="public-resources/ext/js/jquery/jquery-linedtextarea.js"></script>
 <script src="public-resources/ext/js/codemirror/codemirror.js"></script>
 <script src="public-resources/ext/js/codemirror/mode/groovy.js"></script>
+<script src="public-resources/ext/js/codemirror/mode/xml.js"></script>
 
 <!--  Services -->
 <script src="public-resources/ext/js/bluebird/bluebird-2.1.3.js"></script>
