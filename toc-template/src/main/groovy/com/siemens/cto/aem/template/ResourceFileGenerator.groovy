@@ -62,7 +62,7 @@ class ResourceFileGenerator {
                        webApp       : webApp,
                        groups       : groups,
                        group        : group,
-                       varsProperties: map]
+                       vars         : map]
 
         final engine = new GStringTemplateEngine()
 
