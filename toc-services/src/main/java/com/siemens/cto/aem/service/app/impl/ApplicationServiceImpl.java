@@ -257,7 +257,7 @@ public class ApplicationServiceImpl implements ApplicationService {
             String metaData = applicationPersistenceService.getMetaData(appName, jvmName, groupName, resourceTemplateName);
             ObjectMapper mapper = new ObjectMapper();
             ResourceTemplateMetaData templateMetaData = mapper.readValue(metaData, ResourceTemplateMetaData.class);
-            String metaDataPath = templateMetaData.getPath();
+            String metaDataPath = templateMetaData.getDeployPath();
 
             app.setParentJvm(jvm);
             final String destPath = ResourceFileGenerator.generateResourceConfig(metaDataPath, resourceGroup, app) + '/' + resourceTemplateName;

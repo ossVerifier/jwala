@@ -429,7 +429,7 @@ public class GroupServiceImpl implements GroupService {
             metaData = new ObjectMapper().readValue(metaDataStr, ResourceTemplateMetaData.class);
             File confFile = createConfFile(metaData.getEntity().getTarget(), groupName, fileName, resourceGroup);
 
-            final String destPath = ResourceFileGenerator.generateResourceConfig(metaData.getPath(), resourceGroup, application) + '/' + fileName;
+            final String destPath = ResourceFileGenerator.generateResourceConfig(metaData.getDeployPath(), resourceGroup, application) + '/' + fileName;
             final String srcPath = confFile.getAbsolutePath().replace("\\", "/");
             final String jvmName = jvm.getJvmName();
             final String hostName = jvm.getHostName();

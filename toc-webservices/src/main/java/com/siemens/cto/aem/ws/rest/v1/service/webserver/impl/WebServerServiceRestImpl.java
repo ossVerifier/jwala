@@ -239,7 +239,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
 
             String metaDataStr = webServerService.getResourceTemplateMetaData(aWebServerName, resourceFileName);
             ResourceTemplateMetaData metaData = new ObjectMapper().readValue(metaDataStr, ResourceTemplateMetaData.class);
-            String metaDataPath = ResourceFileGenerator.generateResourceConfig(metaData.getPath(), resourceService.generateResourceGroup(), webServerService.getWebServer(aWebServerName));
+            String metaDataPath = ResourceFileGenerator.generateResourceConfig(metaData.getDeployPath(), resourceService.generateResourceGroup(), webServerService.getWebServer(aWebServerName));
             execData = webServerControlService.secureCopyFileWithBackup(aWebServerName, httpdUnixPath, metaDataPath + "/" + resourceFileName, doBackup);
             if (execData.getReturnCode().wasSuccessful()) {
                 LOGGER.info("Copy of httpd.conf successful: {}", httpdUnixPath);

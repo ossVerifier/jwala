@@ -1,9 +1,8 @@
 {
-  "name": "Application Context",
   "templateName": "app.xml.tpl",
   "contentType": "text/xml",
-  "configFileName":"app.xml",
-  "path":"/conf",
+  "deployFileName":"app.xml",
+  "deployPath":"/conf",
   "entity": {
     "type": "APPLICATION",
     "group": "HEALTH CHECK 4.0",

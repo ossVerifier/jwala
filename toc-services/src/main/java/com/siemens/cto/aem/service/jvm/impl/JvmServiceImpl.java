@@ -123,7 +123,7 @@ public class JvmServiceImpl implements JvmService {
                 ResourceTemplateMetaData metaData = new ObjectMapper().readValue(metaDataStr, ResourceTemplateMetaData.class);
                 final UploadJvmConfigTemplateRequest uploadJvmTemplateRequest = new UploadJvmConfigTemplateRequest(jvm, metaData.getTemplateName(),
                         IOUtils.toInputStream(templateContent), metaDataStr);
-                uploadJvmTemplateRequest.setConfFileName(metaData.getConfigFileName());
+                uploadJvmTemplateRequest.setConfFileName(metaData.getDeployFileName());
                 jvmPersistenceService.uploadJvmTemplateXml(uploadJvmTemplateRequest);
             } catch (IOException e) {
                 LOGGER.error("Failed to map meta data for JVM {} in group {}", jvmName, groupName, e);
@@ -141,7 +141,7 @@ public class JvmServiceImpl implements JvmService {
                     String appTemplate = groupService.getGroupAppResourceTemplate(groupName, templateName, false, new ResourceGroup());
                     final Application application = applicationService.getApplication(metaData.getEntity().getTarget());
                     UploadAppTemplateRequest uploadAppTemplateRequest = new UploadAppTemplateRequest(application, metaData.getTemplateName(),
-                            metaData.getConfigFileName(), jvmName, metaDataStr, new ByteArrayInputStream(appTemplate.getBytes()));
+                            metaData.getDeployFileName(), jvmName, metaDataStr, new ByteArrayInputStream(appTemplate.getBytes()));
                     applicationService.uploadAppTemplate(uploadAppTemplateRequest);
                 }
             } catch (IOException e) {
@@ -419,8 +419,8 @@ public class JvmServiceImpl implements JvmService {
             if (generatedFiles == null) {
                 generatedFiles = new HashMap<>();
             }
-            generatedFiles.put(createConfigFile(resourceTemplateMetaData.getConfigFileName(), generatedResourceStr),
-                    resourceTemplateMetaData.getPath() + "/" + resourceTemplateMetaData.getConfigFileName());
+            generatedFiles.put(createConfigFile(resourceTemplateMetaData.getDeployFileName(), generatedResourceStr),
+                    resourceTemplateMetaData.getDeployPath() + "/" + resourceTemplateMetaData.getDeployFileName());
         }
         return generatedFiles;
     }

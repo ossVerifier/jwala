@@ -530,9 +530,8 @@ public class JvmServiceRestImplTest {
         ResourceTemplateMetaData mockResourceTemplateMetaData = mock(ResourceTemplateMetaData.class);
         CommandOutput mockExecData = mock(CommandOutput.class);
         when(mockExecData.getReturnCode()).thenReturn(new ExecReturnCode(0));
-        when(mockResourceTemplateMetaData.getName()).thenReturn("ServerXMLTemplate.tpl");
-        when(mockResourceTemplateMetaData.getConfigFileName()).thenReturn("server.xml");
-        when(mockResourceTemplateMetaData.getPath()).thenReturn("/");
+        when(mockResourceTemplateMetaData.getDeployFileName()).thenReturn("server.xml");
+        when(mockResourceTemplateMetaData.getDeployPath()).thenReturn("/");
         when(jvmService.getJvm(jvm.getJvmName())).thenReturn(jvm);
         when(jvmService.generateConfigFile(anyString(), anyString())).thenReturn("<server>xml</server>");
         when(jvmService.getResourceTemplateMetaData(anyString())).thenReturn(mockResourceTemplateMetaData);

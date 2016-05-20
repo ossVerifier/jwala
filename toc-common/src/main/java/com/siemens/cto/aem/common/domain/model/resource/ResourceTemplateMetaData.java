@@ -1,28 +1,16 @@
 package com.siemens.cto.aem.common.domain.model.resource;
 
-import java.util.Arrays;
-
 /**
  * Resource template meta data.
  *
  * Created by JC043760 on 3/30/2016.
  */
 public class ResourceTemplateMetaData {
-    private String name;
     private String templateName;
     private String contentType;
-    private String configFileName;
-    private String path;
+    private String deployFileName;
+    private String deployPath;
     private Entity entity;
-    private ResourceProperty [] properties;
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
 
     public String getTemplateName() {
         return templateName;
@@ -44,44 +32,34 @@ public class ResourceTemplateMetaData {
         return entity;
     }
 
-    public String getConfigFileName() {
-        return configFileName;
+    public String getDeployFileName() {
+        return deployFileName;
     }
 
-    public void setConfigFileName(String configFileName) {
-        this.configFileName = configFileName;
+    public void setDeployFileName(String deployFileName) {
+        this.deployFileName = deployFileName;
     }
 
-    public String getPath() {
-        return path;
+    public String getDeployPath() {
+        return deployPath;
     }
 
-    public void setPath(String path) {
-        this.path = path;
+    public void setDeployPath(String deployPath) {
+        this.deployPath = deployPath;
     }
 
     public void setEntity(Entity entity) {
         this.entity = entity;
     }
 
-    public ResourceProperty [] getProperties() {
-        return properties;
-    }
-
-    public void setProperties(ResourceProperty [] properties) {
-        this.properties = properties;
-    }
-
     @Override
     public String toString() {
         return "ResourceTemplateMetaData{" +
-                "name='" + name + '\'' +
-                ", templateName='" + templateName + '\'' +
+                "templateName='" + templateName + '\'' +
                 ", contentType='" + contentType + '\'' +
-                ", configFileName='" + configFileName + '\'' +
-                ", path='" + path + '\'' +
+                ", deployFileName='" + deployFileName + '\'' +
+                ", deployPath='" + deployPath + '\'' +
                 ", entity=" + entity +
-                ", properties=" + Arrays.toString(properties) +
                 '}';
     }
 }
