@@ -37,8 +37,6 @@ public interface WebServerService {
 
     String generateHttpdConfig(final String aWebServerName, ResourceGroup resourceGroup);
 
-    String generateWorkerProperties(final String aWebServerName);
-
     List<String> getResourceTemplateNames(final String webServerName);
 
     String getResourceTemplate(final String webServerName, final String resourceTemplateName, final boolean tokensReplaced, ResourceGroup resourceGroup);

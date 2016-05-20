@@ -211,7 +211,10 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
                 "EXAMPLE_OPTS=%someEnv%/someVal", JvmState.JVM_STOPPED, null, null);
 
         when(mockJvmPersistenceService.findJvmByExactName(eq(jvm.getJvmName()))).thenReturn(jvm);
-        when(mockJvmPersistenceService.getJvmTemplate(eq("server.xml"), eq(jvm.getId()))).thenReturn("<server>test</server>");
+        final String templateContent = "<server>test</server>";
+        when(mockJvmPersistenceService.getJvmTemplate(eq("server.xml"), eq(jvm.getId()))).thenReturn(templateContent);
+        when(mockResourceService.generateResourceGroup()).thenReturn(new ResourceGroup());
+        when(mockResourceService.generateResourceFile(anyString(), any(ResourceGroup.class), any(Jvm.class))).thenReturn(templateContent);
         String generatedXml = jvmService.generateConfigFile(jvm.getJvmName(), "server.xml");
 
         assert !generatedXml.isEmpty();
@@ -251,6 +254,8 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
         final Jvm testJvm = new Jvm(new Identifier<Jvm>(99L), testJvmName, new HashSet<Group>());
         when(mockJvmPersistenceService.findJvmByExactName(testJvmName)).thenReturn(testJvm);
         String expectedValue = "<server>xml-content</server>";
+        when(mockResourceService.generateResourceGroup()).thenReturn(new ResourceGroup());
+        when(mockResourceService.generateResourceFile(eq(expectedValue), any(ResourceGroup.class), eq(testJvm))).thenReturn(expectedValue);
         when(mockJvmPersistenceService.getJvmTemplate(anyString(), any(Identifier.class))).thenReturn(expectedValue);
 
         // happy case
@@ -266,6 +271,8 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
         when(mockJvmPersistenceService.findJvmByExactName(testJvmName)).thenReturn(jvm);
         String expectedValue = "<server>xml-content</server>";
         when(mockJvmPersistenceService.getJvmTemplate(anyString(), any(Identifier.class))).thenReturn(expectedValue);
+        when(mockResourceService.generateResourceGroup()).thenReturn(new ResourceGroup());
+        when(mockResourceService.generateResourceFile(eq(expectedValue), any(ResourceGroup.class), eq(jvm))).thenReturn(expectedValue);
 
         // happy case
         String serverXml = jvmService.generateConfigFile(testJvmName, "server.xml");
@@ -280,6 +287,8 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
         when(mockJvmPersistenceService.findJvmByExactName(testJvmName)).thenReturn(testJvm);
         String expectedValue = "<server>xml-content</server>";
         when(mockJvmPersistenceService.getJvmTemplate(anyString(), any(Identifier.class))).thenReturn(expectedValue);
+        when(mockResourceService.generateResourceGroup()).thenReturn(new ResourceGroup());
+        when(mockResourceService.generateResourceFile(eq(expectedValue), any(ResourceGroup.class), eq(testJvm))).thenReturn(expectedValue);
 
         // happy case
         String serverXml = jvmService.generateConfigFile(testJvmName, "server.xml");
@@ -351,7 +360,9 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
         when(mockJvmPersistenceService.getResourceTemplate(testJvmName, resourceTemplateName)).thenReturn(expectedValue);
         List<Jvm> jvmList = new ArrayList<>();
         jvmList.add(jvm);
-        when(mockJvmPersistenceService.findJvms(testJvmName)).thenReturn(jvmList);
+        when(mockJvmPersistenceService.findJvmByExactName(anyString())).thenReturn(jvm);
+        when(mockResourceService.generateResourceGroup()).thenReturn(new ResourceGroup());
+        when(mockResourceService.generateResourceFile(eq(expectedValue), any(ResourceGroup.class), eq(jvm))).thenReturn(expectedValue);
         String result = jvmService.getResourceTemplate(testJvmName, resourceTemplateName, true);
         assertEquals(expectedValue, result);
 
@@ -374,11 +385,13 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
         final Jvm jvm = mock(Jvm.class);
         final List<Jvm> jvms = new ArrayList<>();
         jvms.add(jvm);
-        when(mockJvmPersistenceService.findJvms(anyString())).thenReturn(jvms);
-        when(mockJvmPersistenceService.getJvms()).thenReturn(jvms);
-        when(mockFileManager.getResourceTypeTemplate(anyString())).thenReturn("template contents");
+        when(mockJvmPersistenceService.findJvmByExactName(anyString())).thenReturn(jvm);
+        final String expectedValue = "template contents";
+        when(mockFileManager.getResourceTypeTemplate(anyString())).thenReturn(expectedValue);
+        when(mockResourceService.generateResourceGroup()).thenReturn(new ResourceGroup());
+        when(mockResourceService.generateResourceFile(anyString(), any(ResourceGroup.class), eq(jvm))).thenReturn(expectedValue);
         final String result = jvmService.generateInvokeBat(anyString());
-        assertEquals("template contents", result);
+        assertEquals(expectedValue, result);
     }
 
     @Test
@@ -399,8 +412,9 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
         Jvm testJvm = new Jvm(new Identifier<Jvm>(111L), jvmName, "testHost", new HashSet<Group>(), 9101, 9102, 9103, -1, 9104, new Path("./"), "", JvmState.JVM_STOPPED, "", null);
         List<Jvm> jvmList = new ArrayList<>();
         jvmList.add(testJvm);
-        when(mockJvmPersistenceService.findJvmByExactName(anyString())).thenReturn(testJvm);
-        when(mockJvmPersistenceService.getJvms()).thenReturn(jvmList);
+        when(mockJvmPersistenceService.findJvm(anyString(), anyString())).thenReturn(testJvm);
+        when(mockResourceService.generateResourceGroup()).thenReturn(new ResourceGroup());
+        when(mockResourceService.generateResourceFile(anyString(), any(ResourceGroup.class), eq(testJvm))).thenReturn("TEST jvm-1Test TEST");
 
         String preview = jvmService.previewResourceTemplate(jvmName, "groupTest", "TEST ${jvm.jvmName} TEST");
         assertEquals("TEST jvm-1Test TEST", preview);

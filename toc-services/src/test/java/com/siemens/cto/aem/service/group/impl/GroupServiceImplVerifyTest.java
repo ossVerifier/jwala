@@ -302,7 +302,7 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
 
     @Test
     public void testGetGroupJvmResourceTemplate() {
-        groupService.getGroupJvmResourceTemplate("testGroupName", "server.xml", false);
+        groupService.getGroupJvmResourceTemplate("testGroupName", "server.xml", new ResourceGroup(), false);
         verify(groupPersistenceService, times(1)).getGroupJvmResourceTemplate("testGroupName", "server.xml");
         verify(groupPersistenceService, times(0)).getGroup("testGroupName");
 
@@ -314,7 +314,7 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
         when(mockGroup.getJvms()).thenReturn(jvms);
         when(groupPersistenceService.getGroup(anyString())).thenReturn(mockGroup);
         when(groupPersistenceService.getGroupJvmResourceTemplate(anyString(), anyString())).thenReturn("${jvm.jvmName}");
-        String tokenizedTemplate = groupService.getGroupJvmResourceTemplate("testGroupName", "server.xml", true);
+        String tokenizedTemplate = groupService.getGroupJvmResourceTemplate("testGroupName", "server.xml", new ResourceGroup(), true);
         assertEquals("testJvmName", tokenizedTemplate);
     }
 
@@ -351,21 +351,6 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
     }
 
     @Test
-    public void testPreviewJvmTemplate() {
-        Group mockGroup = mock(Group.class);
-        Set<Jvm> jvmList = new HashSet<>();
-        Jvm jvm = new Jvm(new Identifier<Jvm>(111L), "testJvmName", new HashSet<Group>());
-        when(groupPersistenceService.getGroup(anyString())).thenReturn(mockGroup);
-        when(mockGroup.getJvms()).thenReturn(jvmList);
-        String template = groupService.previewGroupJvmResourceTemplate("testGroupName", "${jvm.jvmName}");
-        assertEquals("${jvm.jvmName}", template);
-
-        jvmList.add(jvm);
-        template = groupService.previewGroupJvmResourceTemplate("testGroupName", "${jvm.jvmName}");
-        assertEquals("testJvmName", template);
-    }
-
-    @Test
     public void testPreviewWebServerTemplate() {
         Group mockGroup = mock(Group.class);
         Set<WebServer> wsList = new HashSet<>();
@@ -373,11 +358,11 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
         when(groupPersistenceService.getGroup(anyString())).thenReturn(mockGroup);
         when(groupPersistenceService.getGroupWithWebServers(any(Identifier.class))).thenReturn(mockGroup);
         when(mockGroup.getWebServers()).thenReturn(wsList);
-        String template = groupService.previewGroupWebServerResourceTemplate("testGroupName", "${webServer.name}");
+        String template = groupService.previewGroupWebServerResourceTemplate("testGroupName", "${webServer.name}", new ResourceGroup());
         assertEquals("${webServer.name}", template);
 
         wsList.add(webServer);
-        template = groupService.previewGroupWebServerResourceTemplate("testGroupName", "${webServer.name}");
+        template = groupService.previewGroupWebServerResourceTemplate("testGroupName", "${webServer.name}", new ResourceGroup());
         assertEquals("testWebServerName", template);
     }
 

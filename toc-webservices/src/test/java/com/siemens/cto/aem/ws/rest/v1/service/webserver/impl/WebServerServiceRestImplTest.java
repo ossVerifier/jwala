@@ -278,14 +278,6 @@ public class WebServerServiceRestImplTest {
     }
 
     @Test
-    public void testGenerateWorkerProperties() {
-        when(impl.generateWorkerProperties(anyString()))
-                .thenReturn("worker properties");
-        Response response = webServerServiceRest.generateLoadBalancerConfig("");
-        assertEquals("worker properties", response.getEntity());
-    }
-
-    @Test
     public void testGetWebServersByGroup() {
         final List<WebServer> webServers = new ArrayList<>();
         webServers.add(new WebServer(null, new ArrayList<Group>(), "test", null, null, null, new Path("/statusPath"),

@@ -151,7 +151,7 @@ public class GroupServiceImplDeployTest {
         when(mockResourceType.getEntityType()).thenReturn("jvm");
         when(mockResourceType.getConfigFileName()).thenReturn("server.xml");
         when(mockGroupService.getGroup(anyString())).thenReturn(mockGroup);
-        when(mockGroupService.getGroupJvmResourceTemplate(anyString(), anyString(), anyBoolean())).thenReturn("new server.xml content");
+        when(mockGroupService.getGroupJvmResourceTemplate(anyString(), anyString(), any(ResourceGroup.class), anyBoolean())).thenReturn("new server.xml content");
         when(mockJvmService.updateResourceTemplate(anyString(), anyString(), anyString())).thenReturn("new server.xml content");
         when(mockJvmService.getJvm(anyString())).thenReturn(mockJvm);
         when(mockJvmService.generateConfigFile(anyString(), anyString())).thenReturn("new server.xml content");

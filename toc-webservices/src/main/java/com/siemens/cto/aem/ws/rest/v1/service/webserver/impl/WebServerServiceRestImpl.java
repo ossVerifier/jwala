@@ -430,11 +430,6 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
     }
 
     @Override
-    public Response generateLoadBalancerConfig(final String aWebServerName) {
-        return Response.ok(webServerService.generateWorkerProperties(aWebServerName)).build();
-    }
-
-    @Override
     public Response getHttpdConfig(Identifier<WebServer> aWebServerId) {
         try {
             return Response.ok(webServerCommandService.getHttpdConf(aWebServerId)).build();

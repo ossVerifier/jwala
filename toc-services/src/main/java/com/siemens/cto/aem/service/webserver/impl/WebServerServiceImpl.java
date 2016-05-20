@@ -206,20 +206,6 @@ public class WebServerServiceImpl implements WebServerService {
 
     @Override
     @Transactional(readOnly = true)
-    public String generateWorkerProperties(final String aWebServerName) {
-        final List<Jvm> jvms = webServerPersistenceService.findJvms(aWebServerName);
-        final List<Application> apps = webServerPersistenceService.findApplications(aWebServerName);
-        try {
-            return ApacheWebServerConfigFileGenerator
-                    .getWorkersProperties(aWebServerName, fileManager.getAbsoluteLocation(WORKERS_PROPS_TEMPLATE), jvms, apps);
-        } catch (IOException e) {
-            LOGGER.error("Template not found", e);
-            throw new InternalErrorException(AemFaultType.TEMPLATE_NOT_FOUND, e.getMessage());
-        }
-    }
-
-    @Override
-    @Transactional(readOnly = true)
     public List<String> getResourceTemplateNames(String webServerName) {
         return webServerPersistenceService.getResourceTemplateNames(webServerName);
     }

@@ -453,7 +453,7 @@ public class GroupServiceRestImplTest {
 
     @Test
     public void testPreviewWebServerTemplateThrowsRuntimeException() {
-        when(mockGroupService.previewGroupWebServerResourceTemplate(anyString(), anyString())).thenThrow(new RuntimeException());
+        when(mockGroupService.previewGroupWebServerResourceTemplate(anyString(), anyString(), any(ResourceGroup.class))).thenThrow(new RuntimeException());
         Response response = groupServiceRest.previewGroupWebServerResourceTemplate(group.getName(), "httpd.conf");
         assertNotNull(response);
         assertTrue(response.getStatus() > 499);
@@ -485,16 +485,6 @@ public class GroupServiceRestImplTest {
     public void testGetJvmResourceNames() {
         Response response = groupServiceRest.getGroupJvmsResourceNames(group.getName());
         assertNotNull(response);
-    }
-
-    @Test
-    public void testPreviewJvmTemplate() {
-        Response response = groupServiceRest.previewGroupJvmResourceTemplate(group.getName(), "server.xml");
-        assertNotNull(response);
-
-        when(mockGroupService.previewGroupJvmResourceTemplate(anyString(), anyString())).thenThrow(new RuntimeException());
-        response = groupServiceRest.previewGroupJvmResourceTemplate(group.getName(), "server.xml");
-        assertTrue(response.getStatus() > 499);
     }
 
     @Test

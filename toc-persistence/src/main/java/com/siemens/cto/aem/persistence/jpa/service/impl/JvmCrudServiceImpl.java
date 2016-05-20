@@ -125,10 +125,12 @@ public class JvmCrudServiceImpl extends AbstractCrudServiceImpl<JpaJvm> implemen
         query.setParameter("tempName", uploadJvmTemplateRequest.getConfFileName());
         List<JpaJvmConfigTemplate> templates = query.getResultList();
         JpaJvmConfigTemplate jpaConfigTemplate;
+        final String metaData = uploadJvmTemplateRequest.getMetaData();
         if (templates.size() == 1) {
             //update
             jpaConfigTemplate = templates.get(0);
             jpaConfigTemplate.setTemplateContent(templateContent);
+            jpaConfigTemplate.setMetaData(metaData);
             entityManager.flush();
         } else if (templates.isEmpty()) {
             //create
@@ -136,7 +138,7 @@ public class JvmCrudServiceImpl extends AbstractCrudServiceImpl<JpaJvm> implemen
             jpaConfigTemplate.setJvm(jpaJvm);
             jpaConfigTemplate.setTemplateName(uploadJvmTemplateRequest.getConfFileName());
             jpaConfigTemplate.setTemplateContent(templateContent);
-            jpaConfigTemplate.setMetaData(uploadJvmTemplateRequest.getMetaData());
+            jpaConfigTemplate.setMetaData(metaData);
             entityManager.persist(jpaConfigTemplate);
             entityManager.flush();
         } else {
