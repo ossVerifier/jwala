@@ -18,7 +18,7 @@ public class ApplicationProperties {
 
     private static final Logger LOG = LoggerFactory.getLogger(ApplicationProperties.class);
 
-    public static final String PROPERTIES_FILE_NAME = "toc.properties";
+    public static final String PROPERTIES_FILE_NAME = "vars.properties";
 
     private ApplicationProperties() {
         properties = new Properties();

@@ -4,7 +4,7 @@
        xmlns:task="http://www.springframework.org/schema/task"
        xsi:schemaLocation="http://www.springframework.org/schema/integration http://www.springframework.org/schema/integration/spring-integration-3.0.xsd http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 
-    <!--  toc-default.propeties, and toc.properties are available, @see com.siemens.cto.aem.service.configuration.service.AemServiceConfiguration -->
+    <!--  toc-default.propeties, and vars.properties are available, @see com.siemens.cto.aem.service.configuration.service.AemServiceConfiguration -->
 
 	<task:executor id="commonCommandExecutor" pool-size="${commands.concurrent.min}-${commands.concurrent.max}"
 		keep-alive="${commands.concurrent.nominal}" queue-capacity="${commands.concurrent.queue-capacity}" rejection-policy="DISCARD" />

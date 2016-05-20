@@ -21,7 +21,7 @@ import static com.siemens.cto.aem.control.AemControl.Properties.*;
  * Windows JVM Net Operations
  * <p/>
  * When calling out to a script located on the disk
- * the path is located from the toc.properties file
+ * the path is located from the vars.properties file
  */
 public enum WindowsJvmNetOperation implements ServiceCommandBuilder {
 

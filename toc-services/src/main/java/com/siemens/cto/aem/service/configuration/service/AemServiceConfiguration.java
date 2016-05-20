@@ -167,8 +167,8 @@ public class AemServiceConfiguration implements SchedulingConfigurer {
     private ClientFactoryHelper clientFactoryHelper;
 
     /**
-     * Make toc.properties available to spring integration configuration
-     * System properties are only used if there is no setting in toc.properties.
+     * Make vars.properties available to spring integration configuration
+     * System properties are only used if there is no setting in vars.properties.
      */
     @Bean(name = "aemServiceConfigurationPropertiesConfigurer")
     public static PropertySourcesPlaceholderConfigurer configurer() {

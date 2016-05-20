@@ -100,7 +100,7 @@ var AdminTab = React.createClass({
                     <br />                    
                     <h3>Properties Management</h3>   
                     <p>
-                    <label>Reload toc.properties and logging configuration.</label><br />  
+                    <label>Reload vars.properties and logging configuration.</label><br />
                     <GenericButton label=">>> Reload >>>" callback={this.doReload} />                   
                     </p>
                     <p><textarea readonly="true" disabled="true" spellcheck='false' cols="100" rows="15" value={this.state.properties}></textarea></p>
