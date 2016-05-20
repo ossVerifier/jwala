@@ -97,16 +97,16 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
     // TODO: Refactor resourceService.createTemplate(inputStreams[0], inputStreams[1]) since it looks ambiguous.
     public Response createTemplate(final List<Attachment> attachments, final String targetName, final AuthenticatedUser user) {
         try {
-            List<Attachment> filteredAttachements = new ArrayList<>();
+            List<Attachment> filteredAttachments = new ArrayList<>();
             for(Attachment attachment:attachments) {
                 if(attachment.getDataHandler().getName() != null) {
-                    filteredAttachements.add(attachment);
+                    filteredAttachments.add(attachment);
                 }
             }
-            if (filteredAttachements.size() == CREATE_TEMPLATE_EXPECTED_NUM_OF_ATTACHMENTS) {
+            if (filteredAttachments.size() == CREATE_TEMPLATE_EXPECTED_NUM_OF_ATTACHMENTS) {
                 InputStream metadataInputStream = null;
                 InputStream templateInputStream = null;
-                for (Attachment attachment:filteredAttachements) {
+                for (Attachment attachment:filteredAttachments) {
                     final DataHandler handler = attachment.getDataHandler();
                     try {
                         LOGGER.debug("filename is {}", handler.getName());

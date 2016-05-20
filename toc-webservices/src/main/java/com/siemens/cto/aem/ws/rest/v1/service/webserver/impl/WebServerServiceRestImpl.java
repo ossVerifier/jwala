@@ -237,9 +237,12 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
                 throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "The target Web Server must be stopped before attempting to update the resource file");
             }
 
-            String metaDataStr = webServerService.getResourceTemplateMetaData(aWebServerName, resourceFileName);
-            ResourceTemplateMetaData metaData = new ObjectMapper().readValue(metaDataStr, ResourceTemplateMetaData.class);
-            String metaDataPath = ResourceFileGenerator.generateResourceConfig(metaData.getPath(), resourceService.generateResourceGroup(), webServerService.getWebServer(aWebServerName));
+            final ResourceGroup resourceGroup = resourceService.generateResourceGroup();
+            final WebServer webServer = webServerService.getWebServer(aWebServerName);
+            final String metaDataStr = webServerService.getResourceTemplateMetaData(aWebServerName, resourceFileName);
+            final String resourceTemplateMetadataString = resourceService.generateResourceFile(metaDataStr, resourceGroup, webServer);
+            ResourceTemplateMetaData metaData = new ObjectMapper().readValue(resourceTemplateMetadataString, ResourceTemplateMetaData.class);
+            String metaDataPath = ResourceFileGenerator.generateResourceConfig(metaData.getPath(),resourceGroup , webServer);
             execData = webServerControlService.secureCopyFileWithBackup(aWebServerName, httpdUnixPath, metaDataPath + "/" + resourceFileName, doBackup);
             if (execData.getReturnCode().wasSuccessful()) {
                 LOGGER.info("Copy of httpd.conf successful: {}", httpdUnixPath);
