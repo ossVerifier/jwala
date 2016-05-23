@@ -122,12 +122,10 @@ public class GroupServiceImplDeployTest {
 
         Group mockGroup = mock(Group.class);
         when(mockGroupService.createGroup(any(CreateGroupRequest.class), any(User.class))).thenReturn(mockGroup);
-        when(mockResourceService.getResourceTypes()).thenReturn(new ArrayList<ResourceType>());
 
         groupServiceRest.createGroup("testGroup", mockAuthUser);
 
         verify(mockGroupService, times(1)).createGroup(any(CreateGroupRequest.class), any(User.class));
-        verify(mockResourceService, times(2)).getResourceTypes();
     }
 
     @Test

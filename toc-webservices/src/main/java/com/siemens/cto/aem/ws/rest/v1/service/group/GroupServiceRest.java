@@ -70,11 +70,6 @@ public interface GroupServiceRest {
                                @BeanParam final AuthenticatedUser aUser,
                                @QueryParam("overwrite") @DefaultValue("false") final boolean overwriteExisting);
 
-    @GET
-    @Path("/{groupName}/groupJvmsConfig")
-    Response populateGroupJvmTemplates(@PathParam("groupName") final String groupName,
-                                       @BeanParam final AuthenticatedUser aUser);
-
     @PUT
     @Path("/{groupName}/jvms/conf/{fileName}")
     Response generateAndDeployGroupJvmFile(@PathParam("groupName") final String groupName,
@@ -114,11 +109,6 @@ public interface GroupServiceRest {
     /****************************
      * ** Web Server Templates ***
      ****************************/
-    @GET
-    @Path("/{groupName}/groupWebServersConfig")
-    Response populateGroupWebServerTemplates(@PathParam("groupName") final String groupName,
-                                             @BeanParam final AuthenticatedUser aUser);
-
     @PUT
     @Path("/{groupName}/webservers/conf/{resourceFileName}")
     Response generateAndDeployGroupWebServersFile(@PathParam("groupName") final String groupName,

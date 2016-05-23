@@ -124,8 +124,6 @@ public class GroupServiceRestImpl implements GroupServiceRest {
                                 final AuthenticatedUser aUser) {
         LOGGER.debug("Create Group requested: {}", aNewGroupName);
         final Group group = groupService.createGroup(new CreateGroupRequest(aNewGroupName), aUser.getUser());
-        populateGroupJvmTemplates(aNewGroupName, aUser);
-        populateGroupWebServerTemplates(aNewGroupName, aUser);
         return ResponseBuilder.created(group);
     }
 
@@ -284,33 +282,6 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     }
 
     @Override
-    public Response populateGroupJvmTemplates(String groupName, AuthenticatedUser aUser) {
-        List<UploadJvmTemplateRequest> uploadJvmTemplateCommands = new ArrayList<>();
-        for (final ResourceType resourceType : resourceService.getResourceTypes()) {
-            final String configFileName = resourceType.getConfigFileName();
-            if ("jvm".equals(resourceType.getEntityType()) && !"invoke.bat".equals(configFileName)) {
-                FileInputStream dataInputStream;
-                try {
-                    final String templateName = resourceType.getTemplateName();
-                    dataInputStream = new FileInputStream(new File(ApplicationProperties.get("paths.resource-types") + "/" + templateName));
-                    final Jvm dummyJvm = new Jvm(new Identifier<Jvm>(0L), configFileName, new HashSet<Group>());
-                    UploadJvmTemplateRequest uploadJvmTemplateCommand = new UploadJvmTemplateRequest(dummyJvm, templateName, dataInputStream) {
-                        @Override
-                        public String getConfFileName() {
-                            return configFileName;
-                        }
-                    };
-                    uploadJvmTemplateCommands.add(uploadJvmTemplateCommand);
-                } catch (FileNotFoundException e) {
-                    LOGGER.error("Invalid Path: Could not find resource template", e);
-                    throw new InternalErrorException(AemFaultType.INVALID_PATH, "Could not find resource template", e);
-                }
-            }
-        }
-        return ResponseBuilder.ok(groupService.populateGroupJvmTemplates(groupName, uploadJvmTemplateCommands, aUser.getUser()));
-    }
-
-    @Override
     public Response generateAndDeployGroupJvmFile(final String groupName, final String fileName, final AuthenticatedUser aUser) {
         Group group = groupService.getGroup(groupName);
         final boolean doNotReplaceTokens = false;
@@ -424,34 +395,6 @@ public class GroupServiceRestImpl implements GroupServiceRest {
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
                     AemFaultType.INVALID_TEMPLATE, e.getMessage(), e));
         }
-    }
-
-
-    @Override
-    public Response populateGroupWebServerTemplates(String groupName, AuthenticatedUser aUser) {
-        List<UploadWebServerTemplateRequest> uploadWebServerTemplateRequests = new ArrayList<>();
-        for (final ResourceType resourceType : resourceService.getResourceTypes()) {
-            final String configFileName = resourceType.getConfigFileName();
-            if ("webServer".equals(resourceType.getEntityType()) && !"invokeWS.bat".equals(configFileName)) {
-                FileInputStream dataInputStream;
-                try {
-                    final String templateName = resourceType.getTemplateName();
-                    dataInputStream = new FileInputStream(new File(ApplicationProperties.get("paths.resource-types") + "/" + templateName));
-                    final WebServer dummyWebServer = new WebServer(new Identifier<WebServer>(0L), new HashSet<Group>(), "");
-                    UploadWebServerTemplateRequest uploadWSTemplateRequest = new UploadWebServerTemplateRequest(dummyWebServer, templateName, dataInputStream) {
-                        @Override
-                        public String getConfFileName() {
-                            return configFileName;
-                        }
-                    };
-                    uploadWebServerTemplateRequests.add(uploadWSTemplateRequest);
-                } catch (FileNotFoundException e) {
-                    LOGGER.error("Invalid Path: Could not find resource template", e);
-                    throw new InternalErrorException(AemFaultType.INVALID_PATH, "Could not find resource template", e);
-                }
-            }
-        }
-        return ResponseBuilder.ok(groupService.populateGroupWebServerTemplates(groupName, uploadWebServerTemplateRequests, aUser.getUser()));
     }
 
     @Override

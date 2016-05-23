@@ -539,56 +539,6 @@ public class GroupServiceRestImplTest {
     }
 
     @Test
-    public void testPopulateGroupJvmTemplate() {
-        Collection<ResourceType> resourceTypesList = new ArrayList<>();
-        ResourceType mockResourceType = mock(ResourceType.class);
-        when(mockResourceType.getEntityType()).thenReturn("jvm");
-        when(mockResourceType.getConfigFileName()).thenReturn("server.xml");
-        when(mockResourceType.getTemplateName()).thenReturn("ServerXMLTemplate.tpl");
-        resourceTypesList.add(mockResourceType);
-        when(mockResourceService.getResourceTypes()).thenReturn(resourceTypesList);
-        Response response = groupServiceRest.populateGroupJvmTemplates(group.getName(), mockAuthenticatedUser);
-        assertNotNull(response);
-    }
-
-    @Test(expected = InternalErrorException.class)
-    public void testPopulateGroupJvmTemplateThrowsExceptionForFileNotFound() {
-        Collection<ResourceType> resourceTypesList = new ArrayList<>();
-        ResourceType mockResourceType = mock(ResourceType.class);
-        when(mockResourceType.getEntityType()).thenReturn("jvm");
-        when(mockResourceType.getConfigFileName()).thenReturn("server.xml");
-        when(mockResourceType.getTemplateName()).thenReturn("ServerXMLTemplate_FILE-NOT-FOUND.tpl");
-        resourceTypesList.add(mockResourceType);
-        when(mockResourceService.getResourceTypes()).thenReturn(resourceTypesList);
-        groupServiceRest.populateGroupJvmTemplates(group.getName(), mockAuthenticatedUser);
-    }
-
-    @Test
-    public void testPopulateGroupWebServerTemplate() {
-        Collection<ResourceType> resourceTypesList = new ArrayList<>();
-        ResourceType mockResourceType = mock(ResourceType.class);
-        when(mockResourceType.getEntityType()).thenReturn("webServer");
-        when(mockResourceType.getConfigFileName()).thenReturn("httpd.conf");
-        when(mockResourceType.getTemplateName()).thenReturn("HttpdSslConfTemplate.tpl");
-        resourceTypesList.add(mockResourceType);
-        when(mockResourceService.getResourceTypes()).thenReturn(resourceTypesList);
-        Response response = groupServiceRest.populateGroupWebServerTemplates(group.getName(), mockAuthenticatedUser);
-        assertNotNull(response);
-    }
-
-    @Test(expected = InternalErrorException.class)
-    public void testPopulateGroupWebServerTemplateThrowsExceptionForFileNotFound() {
-        Collection<ResourceType> resourceTypesList = new ArrayList<>();
-        ResourceType mockResourceType = mock(ResourceType.class);
-        when(mockResourceType.getEntityType()).thenReturn("webServer");
-        when(mockResourceType.getConfigFileName()).thenReturn("httpd.conf");
-        when(mockResourceType.getTemplateName()).thenReturn("HttpdSslConfTemplate_FILE-NOT-FOUND.tpl");
-        resourceTypesList.add(mockResourceType);
-        when(mockResourceService.getResourceTypes()).thenReturn(resourceTypesList);
-        groupServiceRest.populateGroupWebServerTemplates(group.getName(), mockAuthenticatedUser);
-    }
-
-    @Test
     public void testUpdateGroupWebServerTemplateNoWebServers() {
         Group mockGroupNoWebServers = mock(Group.class);
         when(mockGroupNoWebServers.getWebServers()).thenReturn(null);
