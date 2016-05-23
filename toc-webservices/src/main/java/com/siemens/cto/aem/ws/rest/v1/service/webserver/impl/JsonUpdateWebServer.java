@@ -103,18 +103,16 @@ public class JsonUpdateWebServer {
             final JsonNode node = obj.readTree(jp).get(0);
 
             final Set<String> groupIds = deserializeGroupIdentifiers(node);
-            final JsonUpdateWebServer juws =
-                    new JsonUpdateWebServer(node.get("webserverId").getValueAsText(),
-                                            node.get("webserverName").getTextValue(),
-                                            node.get("hostName").getTextValue(),
-                                            node.get("portNumber").getValueAsText(),
-                                            node.get("httpsPort").getValueAsText(),
-                                            groupIds,
-                                            node.get("statusPath").getTextValue(),
-                                            node.get("httpConfigFile").getTextValue(),
-                                            node.get("svrRoot").getTextValue(),
-                                            node.get("docRoot").getTextValue());
-            return juws;
+            return new JsonUpdateWebServer(node.get("webserverId").getValueAsText(),
+                                           node.get("webserverName").getTextValue(),
+                                           node.get("hostName").getTextValue(),
+                                           node.get("portNumber").getValueAsText(),
+                                           node.get("httpsPort").getValueAsText(),
+                                           groupIds,
+                                           node.get("statusPath").getTextValue(),
+                                           "",  /* TODO: Remove when we're sure we don't need this */
+                                           "",  /* TODO: Remove when we're sure we don't need this */
+                                           ""); /* TODO: Remove when we're sure we don't need this */
         }
     }
 }

@@ -10,6 +10,8 @@ import com.siemens.cto.aem.common.rule.Rule;
  *
  * Created by z003bpej on 8/28/14.
  */
+@Deprecated
+// Note: HTTP Config was removed in the UI. Remove this too once nobody looks for HTTP config anymore.
 public class HttpConfigFileRule implements Rule {
 
     private final FileSystemPath fileSystemPath;

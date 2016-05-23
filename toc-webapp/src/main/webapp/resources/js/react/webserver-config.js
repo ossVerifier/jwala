@@ -287,43 +287,6 @@ var WebServerConfigForm = React.createClass({
                                            maxLength="64" className="width-max"/></td>
                             </tr>
                             <tr>
-                                <td>*HTTP Config File</td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <label htmlFor="httpConfigFile" className="error"></label>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td><input name="httpConfigFile" type="text" valueLink={this.linkState("httpConfigFile")}
-                                           maxLength="64" className="width-max"/></td>
-                            </tr>
-                            <tr>
-                                <td>*Server Root</td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <label htmlFor="svrRoot" className="error"></label>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td><input name="svrRoot" type="text" valueLink={this.linkState("svrRoot")}
-                                           maxLength="64" required className="width-max"/></td>
-                            </tr>
-                            <tr>
-                                <td>*Document Root</td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <label htmlFor="docRoot" className="error"></label>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td><input name="docRoot" type="text" valueLink={this.linkState("docRoot")}
-                                           maxLength="64" required className="width-max"/></td>
-                            </tr>
-
-                            <tr>
                                 <td>
                                     *Group
                                 </td>

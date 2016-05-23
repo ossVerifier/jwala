@@ -109,10 +109,7 @@ public class CreateWebServerRequest implements Serializable, Request {
                           new PortNumberRule(port, AemFaultType.INVALID_WEBSERVER_PORT),
                           new PortNumberRule(httpsPort, AemFaultType.INVALID_WEBSERVER_HTTPS_PORT, true),
                           new GroupIdsRule(groupIds),
-                          new StatusPathRule(statusPath),
-                          new HttpConfigFileRule(httpConfigFile),
-                          new PathRule(svrRoot),
-                          new PathRule(docRoot)).validate();
+                          new StatusPathRule(statusPath)).validate();
     }
 
 

@@ -1,22 +1,17 @@
 package com.siemens.cto.aem.common.request.webserver;
 
-import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState;
-import com.siemens.cto.aem.common.exception.BadRequestException;
-import com.siemens.cto.aem.common.request.Request;
 import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.path.FileSystemPath;
 import com.siemens.cto.aem.common.domain.model.path.Path;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
+import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState;
+import com.siemens.cto.aem.common.request.Request;
 import com.siemens.cto.aem.common.rule.*;
 import com.siemens.cto.aem.common.rule.group.GroupIdsRule;
-import com.siemens.cto.aem.common.rule.webserver.HttpConfigFileRule;
 import com.siemens.cto.aem.common.rule.webserver.WebServerIdRule;
 import com.siemens.cto.aem.common.rule.webserver.WebServerNameRule;
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import java.io.Serializable;
 import java.util.Collection;
@@ -123,10 +118,7 @@ public class UpdateWebServerRequest implements Serializable, Request {
                                   new PortNumberRule(newHttpsPort, AemFaultType.INVALID_WEBSERVER_PORT, true),
                                   new WebServerIdRule(id),
                                   new GroupIdsRule(newGroupIds),
-                                  new StatusPathRule(newStatusPath),
-                                  new HttpConfigFileRule(newHttpConfigFile),
-                                  new PathRule(newSvrRoot),
-                                  new PathRule(newDocRoot));
+                                  new StatusPathRule(newStatusPath));
 
         mr.validate();
     }
