@@ -270,7 +270,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     @Override
     public Response previewGroupWebServerResourceTemplate(String groupName, String template) {
         try {
-            return ResponseBuilder.ok(groupService.previewGroupWebServerResourceTemplate(groupName, template));
+            return ResponseBuilder.ok(groupService.previewGroupWebServerResourceTemplate(groupName, template, resourceService.generateResourceGroup()));
         } catch (RuntimeException e) {
             LOGGER.error("Failed to preview the web server template for {}", groupName, e);
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
@@ -314,7 +314,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     public Response generateAndDeployGroupJvmFile(final String groupName, final String fileName, final AuthenticatedUser aUser) {
         Group group = groupService.getGroup(groupName);
         final boolean doNotReplaceTokens = false;
-        final String groupJvmTemplateContent = groupService.getGroupJvmResourceTemplate(groupName, fileName, doNotReplaceTokens);
+        final String groupJvmTemplateContent = groupService.getGroupJvmResourceTemplate(groupName, fileName, resourceService.generateResourceGroup(), doNotReplaceTokens);
         Set<Future<Response>> futures = new HashSet<>();
         final JvmServiceRest jvmServiceRest = JvmServiceRestImpl.get();
         final Set<Jvm> jvms = group.getJvms();
@@ -365,7 +365,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     public Response getGroupJvmResourceTemplate(final String groupName,
                                                 final String resourceTemplateName,
                                                 final boolean tokensReplaced) {
-        return ResponseBuilder.ok(groupService.getGroupJvmResourceTemplate(groupName, resourceTemplateName, tokensReplaced));
+        return ResponseBuilder.ok(groupService.getGroupJvmResourceTemplate(groupName, resourceTemplateName, resourceService.generateResourceGroup(), tokensReplaced));
     }
 
     @Override
@@ -415,7 +415,10 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     @Override
     public Response previewGroupJvmResourceTemplate(String groupName, String template) {
         try {
-            return ResponseBuilder.ok(groupService.previewGroupJvmResourceTemplate(groupName, template));
+            final Group group = groupService.getGroup(groupName);
+            final ResourceGroup resourceGroup = resourceService.generateResourceGroup();
+            final Set<Jvm> jvms = group.getJvms();
+            return ResponseBuilder.ok(resourceService.generateResourceFile(template, resourceGroup, (null != jvms && jvms.size() > 0 ? jvms.iterator().next() : null)));
         } catch (RuntimeException e) {
             LOGGER.error("Failed to preview the JVM template for {}", groupName, e);
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(

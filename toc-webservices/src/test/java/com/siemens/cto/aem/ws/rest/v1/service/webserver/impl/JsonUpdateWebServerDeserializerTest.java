@@ -39,9 +39,9 @@ public class JsonUpdateWebServerDeserializerTest {
         final String firstGroupId = "1";
         final String secondGroupId = "2";
         final String statusPath = "/statusPath";
-        final String httpConfigFile = "d:/some-dir/http.conf";
-        final String svrRoot = "./";
-        final String docRoot = "htdocs";
+        final String httpConfigFile = null;
+        final String svrRoot = null;
+        final String docRoot = null;
 
         final String json = array(object(keyTextValue("webserverId", webServerId),
                                          keyTextValue("webserverName", webServerName),
@@ -291,11 +291,10 @@ public class JsonUpdateWebServerDeserializerTest {
                      updateCommand.getNewHost());
         assertEquals(Integer.valueOf(aPortNumber),
                      updateCommand.getNewPort());
+
         assertEquals(Integer.valueOf(aHttpsPort),
                      updateCommand.getNewHttpsPort());
-        assertEquals(aStatusPath,
-                     updateCommand.getNewStatusPath().getUriPath());
-        assertEquals(aHttpConfigFile, updateCommand.getNewHttpConfigFile().getUriPath());
+
         assertCollectionEquals(new IdentifierSetBuilder(Arrays.asList(groupIds)).<Group>build(),
                                updateCommand.getNewGroupIds());
 

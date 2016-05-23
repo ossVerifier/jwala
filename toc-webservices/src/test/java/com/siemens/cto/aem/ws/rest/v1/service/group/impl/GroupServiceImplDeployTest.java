@@ -151,7 +151,7 @@ public class GroupServiceImplDeployTest {
         when(mockResourceType.getEntityType()).thenReturn("jvm");
         when(mockResourceType.getConfigFileName()).thenReturn("server.xml");
         when(mockGroupService.getGroup(anyString())).thenReturn(mockGroup);
-        when(mockGroupService.getGroupJvmResourceTemplate(anyString(), anyString(), anyBoolean())).thenReturn("new server.xml content");
+        when(mockGroupService.getGroupJvmResourceTemplate(anyString(), anyString(), any(ResourceGroup.class), anyBoolean())).thenReturn("new server.xml content");
         when(mockJvmService.updateResourceTemplate(anyString(), anyString(), anyString())).thenReturn("new server.xml content");
         when(mockJvmService.getJvm(anyString())).thenReturn(mockJvm);
         when(mockJvmService.generateConfigFile(anyString(), anyString())).thenReturn("new server.xml content");
@@ -196,7 +196,7 @@ public class GroupServiceImplDeployTest {
         when(mockGroupService.getGroupWithWebServers(any(Identifier.class))).thenReturn(mockGroup);
         when(mockGroupService.getGroupWebServerResourceTemplate(anyString(), anyString(), anyBoolean(), any(ResourceGroup.class))).thenReturn("new httpd.conf context");
         when(mockResourceService.generateResourceGroup()).thenReturn(new ResourceGroup());
-        when(mockWebServerService.getResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"path\":\"./anyPath\"}");
+        when(mockWebServerService.getResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"deployPath\":\"./anyPath\"}");
         when(mockWebServerService.updateResourceTemplate(anyString(), anyString(), anyString())).thenReturn("new httpd.conf context");
         when(mockWebServerService.generateHttpdConfig(anyString(), any(ResourceGroup.class))).thenReturn("new httpd.conf context");
         when(mockWebServerControlService.secureCopyFileWithBackup(anyString(), anyString(), anyString(), anyBoolean())).thenReturn(new CommandOutput(new ExecReturnCode(0), "SUCCESS", ""));
@@ -338,7 +338,7 @@ public class GroupServiceImplDeployTest {
         when(mockGroupService.getGroupWithWebServers(any(Identifier.class))).thenReturn(mockGroup);
         when(mockWebServerService.isStarted(any(WebServer.class))).thenReturn(false);
         when(mockWebServerService.getWebServer(anyString())).thenReturn(mockWebServer);
-        when(mockWebServerService.getResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"path\":./anyPath}");
+        when(mockWebServerService.getResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"deployPath\":./anyPath}");
         when(mockResourceService.generateResourceGroup()).thenReturn(new ResourceGroup());
         when(mockWebServerControlService.controlWebServer(any(ControlWebServerRequest.class), any(User.class))).thenReturn(successCommandOutput);
         when(mockWebServerControlService.createDirectory(any(WebServer.class), anyString())).thenReturn(successCommandOutput);

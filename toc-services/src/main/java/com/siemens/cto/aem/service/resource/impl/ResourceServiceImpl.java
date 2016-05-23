@@ -23,7 +23,6 @@ import com.siemens.cto.aem.template.HarmonyTemplate;
 import com.siemens.cto.aem.template.HarmonyTemplateEngine;
 import com.siemens.cto.aem.template.ResourceFileGenerator;
 import com.siemens.cto.toc.files.FileManager;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
@@ -35,7 +34,6 @@ import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
@@ -235,31 +233,6 @@ public class ResourceServiceImpl implements ResourceService {
     }
 
     /**
-     * Make a local copy of the template file and its meta data in the templates path since they are used in resource generation.
-     *
-     * @param metaData     {@link ResourceTemplateMetaData}
-     * @param templateData the template file content
-     * @param jsonData     the meta data String that describes templateData
-     */
-    protected void createMetaAndTemplateDataLocalCopy(final ResourceTemplateMetaData metaData, final String templateData,
-                                                      final String jsonData) {
-        final ContentType contentType = ContentType.fromContentTypeStr(metaData.getContentType());
-        if (contentType != ContentType.UNDEFINED) {
-            try {
-                final String tmpFileName = templatePath + "/" + metaData.getName() + contentType;
-                final File localCopyMetaDataFile = new File(tmpFileName + "Properties.json");
-                FileUtils.writeStringToFile(localCopyMetaDataFile, jsonData);
-                final File localCopyTemplateFile = new File(tmpFileName + "Template.tpl");
-                FileUtils.writeStringToFile(localCopyTemplateFile, templateData);
-            } catch (final IOException ioe) {
-                throw new ResourceServiceException(ioe);
-            }
-        } else {
-            throw new ResourceServiceException("Invalid content type = \"" + metaData.getContentType() + "\"!");
-        }
-    }
-
-    /**
      * Create the JVM template in the db and in the templates path for a specific JVM entity target.
      * @param metaData the data that describes the template, please see {@link ResourceTemplateMetaData}
      * @param templateData the template content/data
@@ -286,7 +259,7 @@ public class ResourceServiceImpl implements ResourceService {
                 jvm.getErrorStatus());
         final UploadJvmConfigTemplateRequest uploadJvmTemplateRequest = new UploadJvmConfigTemplateRequest(jvmWithParentGroup, metaData.getTemplateName(),
                 templateData, convertResourceTemplateMetaDataToJson(metaData));
-        uploadJvmTemplateRequest.setConfFileName(metaData.getConfigFileName());
+        uploadJvmTemplateRequest.setConfFileName(metaData.getDeployFileName());
         return new CreateResourceTemplateApplicationResponseWrapper(jvmPersistenceService.uploadJvmTemplateXml(uploadJvmTemplateRequest));
     }
 
@@ -315,7 +288,7 @@ public class ResourceServiceImpl implements ResourceService {
         for (final Jvm jvm : jvms) {
             UploadJvmConfigTemplateRequest uploadJvmTemplateRequest = new UploadJvmConfigTemplateRequest(jvm, metaData.getTemplateName(),
                     new ByteArrayInputStream(templateContent.getBytes()), convertResourceTemplateMetaDataToJson(metaData));
-            uploadJvmTemplateRequest.setConfFileName(metaData.getConfigFileName());
+            uploadJvmTemplateRequest.setConfFileName(metaData.getDeployFileName());
 
             // Since we're just creating the same template for all the JVMs, we just keep one copy of the created
             // configuration template.
@@ -324,7 +297,7 @@ public class ResourceServiceImpl implements ResourceService {
         final List<UploadJvmTemplateRequest> uploadJvmTemplateRequestList = new ArrayList<>();
         UploadJvmConfigTemplateRequest uploadJvmTemplateRequest = new UploadJvmConfigTemplateRequest(null, metaData.getTemplateName(),
                 new ByteArrayInputStream(templateContent.getBytes()), convertResourceTemplateMetaDataToJson(metaData));
-        uploadJvmTemplateRequest.setConfFileName(metaData.getConfigFileName());
+        uploadJvmTemplateRequest.setConfFileName(metaData.getDeployFileName());
         uploadJvmTemplateRequestList.add(uploadJvmTemplateRequest);
         groupPersistenceService.populateGroupJvmTemplates(metaData.getEntity().getGroup(), uploadJvmTemplateRequestList);
         return new CreateResourceTemplateApplicationResponseWrapper(createdJpaJvmConfigTemplate);
@@ -344,7 +317,7 @@ public class ResourceServiceImpl implements ResourceService {
                 metaData.getTemplateName(), convertResourceTemplateMetaDataToJson(metaData), templateData) {
             @Override
             public String getConfFileName() {
-                return metaData.getConfigFileName();
+                return metaData.getDeployFileName();
             }
         };
         return new CreateResourceTemplateApplicationResponseWrapper(webServerPersistenceService.uploadWebserverConfigTemplate(uploadWebArchiveRequest));
@@ -368,7 +341,7 @@ public class ResourceServiceImpl implements ResourceService {
                     metaData.getTemplateName(), convertResourceTemplateMetaDataToJson(metaData), new ByteArrayInputStream(templateContent.getBytes())) {
                 @Override
                 public String getConfFileName() {
-                    return metaData.getConfigFileName();
+                    return metaData.getDeployFileName();
                 }
             };
 
@@ -381,7 +354,7 @@ public class ResourceServiceImpl implements ResourceService {
                 metaData.getTemplateName(), convertResourceTemplateMetaDataToJson(metaData), new ByteArrayInputStream(templateContent.getBytes())) {
             @Override
             public String getConfFileName() {
-                return metaData.getConfigFileName();
+                return metaData.getDeployFileName();
             }
         };
         uploadWebServerTemplateRequestList.add(uploadWebServerTemplateRequest);
@@ -399,7 +372,7 @@ public class ResourceServiceImpl implements ResourceService {
     private CreateResourceTemplateApplicationResponseWrapper createApplicationTemplate(final ResourceTemplateMetaData metaData, final InputStream templateData, String targetJvmName) {
         final Application application = applicationPersistenceService.getApplication(metaData.getEntity().getTarget());
         UploadAppTemplateRequest uploadAppTemplateRequest = new UploadAppTemplateRequest(application, metaData.getTemplateName(),
-                metaData.getConfigFileName(), targetJvmName, convertResourceTemplateMetaDataToJson(metaData), templateData);
+                metaData.getDeployFileName(), targetJvmName, convertResourceTemplateMetaDataToJson(metaData), templateData);
         return new CreateResourceTemplateApplicationResponseWrapper(applicationService.uploadAppTemplate(uploadAppTemplateRequest));
     }
 
@@ -423,14 +396,14 @@ public class ResourceServiceImpl implements ResourceService {
                 final byte[] bytes = templateString.getBytes();
                 for (final Jvm jvm : group.getJvms()) {
                     UploadAppTemplateRequest uploadAppTemplateRequest = new UploadAppTemplateRequest(application, metaData.getTemplateName(),
-                            metaData.getConfigFileName(), jvm.getJvmName(), convertResourceTemplateMetaDataToJson(metaData), new ByteArrayInputStream(bytes)
+                            metaData.getDeployFileName(), jvm.getJvmName(), convertResourceTemplateMetaDataToJson(metaData), new ByteArrayInputStream(bytes)
                     );
                     applicationService.uploadAppTemplate(uploadAppTemplateRequest);
                 }
             }
         }
 
-        createdConfigTemplate = groupPersistenceService.populateGroupAppTemplate(group, metaData.getConfigFileName(),
+        createdConfigTemplate = groupPersistenceService.populateGroupAppTemplate(group, metaData.getDeployFileName(),
                 convertResourceTemplateMetaDataToJson(metaData), templateString);
 
         return new CreateResourceTemplateApplicationResponseWrapper(createdConfigTemplate);

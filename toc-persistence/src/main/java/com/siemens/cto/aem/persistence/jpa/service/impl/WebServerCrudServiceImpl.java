@@ -269,10 +269,12 @@ public class WebServerCrudServiceImpl extends AbstractCrudServiceImpl<JpaWebServ
         query.setParameter("templateName", request.getConfFileName());
         List<JpaWebServerConfigTemplate> templates = query.getResultList();
         JpaWebServerConfigTemplate jpaConfigTemplate;
+        final String metaData = request.getMetaData();
         if (templates.size() == 1) {
             //update
             jpaConfigTemplate = templates.get(0);
             jpaConfigTemplate.setTemplateContent(templateContent);
+            jpaConfigTemplate.setMetaData(metaData);
             entityManager.flush();
         } else if (templates.isEmpty()) {
             //create
@@ -280,7 +282,7 @@ public class WebServerCrudServiceImpl extends AbstractCrudServiceImpl<JpaWebServ
             jpaConfigTemplate.setWebServer(jpaWebServer);
             jpaConfigTemplate.setTemplateName(request.getConfFileName());
             jpaConfigTemplate.setTemplateContent(templateContent);
-            jpaConfigTemplate.setMetaData(request.getMetaData());
+            jpaConfigTemplate.setMetaData(metaData);
             entityManager.persist(jpaConfigTemplate);
             entityManager.flush();
         } else {

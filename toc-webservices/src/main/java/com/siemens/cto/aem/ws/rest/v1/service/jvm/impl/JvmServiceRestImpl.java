@@ -489,7 +489,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
 
             final String metaDataPath;
             ResourceTemplateMetaData resourceTemplateMetaData = jvmService.getResourceTemplateMetaData(jvmName);
-            metaDataPath = resourceTemplateMetaData.getPath();
+            metaDataPath = resourceTemplateMetaData.getDeployPath();
             String absolutePath = ResourceFileGenerator.generateResourceConfig(metaDataPath, resourceService.generateResourceGroup(), jvm);
 
             String fileContent = jvmService.generateConfigFile(jvmName, fileName);

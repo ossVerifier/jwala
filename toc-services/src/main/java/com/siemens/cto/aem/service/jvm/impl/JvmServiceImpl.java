@@ -28,7 +28,6 @@ import com.siemens.cto.aem.service.jvm.JvmService;
 import com.siemens.cto.aem.service.resource.ResourceService;
 import com.siemens.cto.aem.service.state.StateNotificationService;
 import com.siemens.cto.aem.service.webserver.component.ClientFactoryHelper;
-import com.siemens.cto.aem.template.jvm.TomcatJvmConfigFileGenerator;
 import com.siemens.cto.toc.files.FileManager;
 import groovy.text.SimpleTemplateEngine;
 import org.apache.commons.io.FileUtils;
@@ -117,13 +116,13 @@ public class JvmServiceImpl implements JvmService {
         List<String> templateNames = groupService.getGroupJvmsResourceTemplateNames(groupName);
         final Jvm jvm = jvmPersistenceService.findJvmByExactName(jvmName);
         for (final String templateName : templateNames) {
-            String templateContent = groupService.getGroupJvmResourceTemplate(groupName, templateName, false);
+            String templateContent = groupService.getGroupJvmResourceTemplate(groupName, templateName, resourceService.generateResourceGroup(), false);
             String metaDataStr = groupService.getGroupJvmResourceTemplateMetaData(groupName, templateName);
             try {
                 ResourceTemplateMetaData metaData = new ObjectMapper().readValue(metaDataStr, ResourceTemplateMetaData.class);
                 final UploadJvmConfigTemplateRequest uploadJvmTemplateRequest = new UploadJvmConfigTemplateRequest(jvm, metaData.getTemplateName(),
                         IOUtils.toInputStream(templateContent), metaDataStr);
-                uploadJvmTemplateRequest.setConfFileName(metaData.getConfigFileName());
+                uploadJvmTemplateRequest.setConfFileName(metaData.getDeployFileName());
                 jvmPersistenceService.uploadJvmTemplateXml(uploadJvmTemplateRequest);
             } catch (IOException e) {
                 LOGGER.error("Failed to map meta data for JVM {} in group {}", jvmName, groupName, e);
@@ -141,7 +140,7 @@ public class JvmServiceImpl implements JvmService {
                     String appTemplate = groupService.getGroupAppResourceTemplate(groupName, templateName, false, new ResourceGroup());
                     final Application application = applicationService.getApplication(metaData.getEntity().getTarget());
                     UploadAppTemplateRequest uploadAppTemplateRequest = new UploadAppTemplateRequest(application, metaData.getTemplateName(),
-                            metaData.getConfigFileName(), jvmName, metaDataStr, new ByteArrayInputStream(appTemplate.getBytes()));
+                            metaData.getDeployFileName(), jvmName, metaDataStr, new ByteArrayInputStream(appTemplate.getBytes()));
                     applicationService.uploadAppTemplate(uploadAppTemplateRequest);
                 }
             } catch (IOException e) {
@@ -224,10 +223,9 @@ public class JvmServiceImpl implements JvmService {
     public String generateConfigFile(String aJvmName, String templateName) {
         Jvm jvm = jvmPersistenceService.findJvmByExactName(aJvmName);
 
-        final String serverXmlTemplateText = jvmPersistenceService.getJvmTemplate(templateName, jvm.getId());
-        if (!serverXmlTemplateText.isEmpty()) {
-            return TomcatJvmConfigFileGenerator
-                    .getJvmConfigFromText(serverXmlTemplateText, jvm, jvmPersistenceService.getJvms());
+        final String templateContent = jvmPersistenceService.getJvmTemplate(templateName, jvm.getId());
+        if (!templateContent.isEmpty()) {
+            return resourceService.generateResourceFile(templateContent, resourceService.generateResourceGroup(), jvmPersistenceService.findJvmByExactName(aJvmName));
         } else {
             throw new BadRequestException(AemFaultType.JVM_TEMPLATE_NOT_FOUND, "Failed to find the template in the database or on the file system");
         }
@@ -268,8 +266,6 @@ public class JvmServiceImpl implements JvmService {
                           final JvmState state,
                           final String msg) {
         jvmPersistenceService.updateState(jvm.getId(), state, msg);
-        // stateNotificationService.notifyStateUpdated(new CurrentState<>(jvm.getId(), state, DateTime.now(), StateType.JVM));
-        // grpStateComputationAndNotificationSvc.computeAndNotify(jvm.getId(), state);
         messagingTemplate.convertAndSend(topicServerStates, new CurrentState<>(jvm.getId(), state, DateTime.now(), StateType.JVM));
         groupStateNotificationService.retrieveStateAndSendToATopic(jvm.getId(), Jvm.class);
     }
@@ -277,10 +273,7 @@ public class JvmServiceImpl implements JvmService {
     @Override
     @Transactional
     public String previewResourceTemplate(String jvmName, String groupName, String template) {
-        // TODO: Jvm name shouldn't be unique therefore we will have to use the groupName parameter in the future.
-        return TomcatJvmConfigFileGenerator.getJvmConfigFromText(template,
-                jvmPersistenceService.findJvmByExactName(jvmName),
-                jvmPersistenceService.getJvms());
+        return resourceService.generateResourceFile(template, resourceService.generateResourceGroup(), jvmPersistenceService.findJvm(jvmName, groupName));
     }
 
     @Override
@@ -303,7 +296,7 @@ public class JvmServiceImpl implements JvmService {
                                       final boolean tokensReplaced) {
         final String template = jvmPersistenceService.getResourceTemplate(jvmName, resourceTemplateName);
         if (tokensReplaced) {
-            return TomcatJvmConfigFileGenerator.getJvmConfigFromText(template, jvmPersistenceService.findJvmByExactName(jvmName), jvmPersistenceService.getJvms());
+            return resourceService.generateResourceFile(template, resourceService.generateResourceGroup(), jvmPersistenceService.findJvmByExactName(jvmName));
         }
         return template;
     }
@@ -317,8 +310,8 @@ public class JvmServiceImpl implements JvmService {
     @Override
     @Transactional
     public String generateInvokeBat(String jvmName) {
-        final Jvm jvm = jvmPersistenceService.findJvmByExactName(jvmName);
-        return TomcatJvmConfigFileGenerator.getJvmConfigFromText(fileManager.getResourceTypeTemplate("InvokeBat"), jvm, jvmPersistenceService.getJvms());
+        final String invokeBatTemplateContent = fileManager.getResourceTypeTemplate("InvokeBat");
+        return resourceService.generateResourceFile(invokeBatTemplateContent, resourceService.generateResourceGroup(), jvmPersistenceService.findJvmByExactName(jvmName));
     }
 
     @Override
@@ -419,8 +412,8 @@ public class JvmServiceImpl implements JvmService {
             if (generatedFiles == null) {
                 generatedFiles = new HashMap<>();
             }
-            generatedFiles.put(createConfigFile(resourceTemplateMetaData.getConfigFileName(), generatedResourceStr),
-                    resourceTemplateMetaData.getPath() + "/" + resourceTemplateMetaData.getConfigFileName());
+            generatedFiles.put(createConfigFile(resourceTemplateMetaData.getDeployFileName(), generatedResourceStr),
+                    resourceTemplateMetaData.getDeployPath() + "/" + resourceTemplateMetaData.getDeployFileName());
         }
         return generatedFiles;
     }

@@ -58,10 +58,6 @@ public interface WebServerServiceRest extends InitializingBean {
     Response generateAndDeployWebServer(@PathParam("webServerName") final String aWebServerName, @QueryParam("backup") @DefaultValue("true") final boolean doBackup, @BeanParam final AuthenticatedUser aUser);
 
     @GET
-    @Path("/{webServerName}/loadbalancer/conf")
-    Response generateLoadBalancerConfig(@PathParam("webServerName") final String aWebServerName);
-
-    @GET
     @Path("/{webServerId}/conf/current")
     Response getHttpdConfig(@PathParam("webServerId") final Identifier<WebServer> aWebServerId);
 

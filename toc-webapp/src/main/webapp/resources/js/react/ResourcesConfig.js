@@ -567,13 +567,13 @@ var XmlTabs = React.createClass({
             if (index === 1 ) {
                 if (this.state.entityType === "jvms") {
                     this.props.jvmService.previewResourceFile(this.state.entity.jvmName,
-                                                              this.state.entityParent.name,
+                                                              this.state.entityParent.rtreeListMetaData.parent.name,
                                                               this.refs.codeMirrorComponent.getText(),
                                                               this.previewSuccessCallback,
                                                               this.previewErrorCallback);
                 } else if (this.state.entityType === "webServers") {
                     this.props.wsService.previewResourceFile(this.state.entity.name,
-                                                             this.state.entityParent.name,
+                                                             this.state.entityParent.rtreeListMetaData.parent.name,
                                                              this.refs.codeMirrorComponent.getText(),
                                                              this.previewSuccessCallback,
                                                              this.previewErrorCallback);

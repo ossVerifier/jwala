@@ -62,11 +62,7 @@ class ResourceFileGenerator {
                        webApp       : webApp,
                        groups       : groups,
                        group        : group,
-                       tocProperties: map] // TODO: Take tocProperties out
-
-        ApplicationProperties.properties.each {key, val ->
-            binding[key] = val
-        }
+                       vars         : map]
 
         final engine = new GStringTemplateEngine()
 

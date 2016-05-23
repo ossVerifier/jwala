@@ -71,13 +71,11 @@ public interface GroupService {
 
     List<String> getGroupWebServersResourceTemplateNames(String groupName);
 
-    String getGroupJvmResourceTemplate(String groupName, String resourceTemplateName, boolean tokensReplaced);
+    String getGroupJvmResourceTemplate(String groupName, String resourceTemplateName, ResourceGroup resourceGroup, boolean tokensReplaced);
 
     String getGroupWebServerResourceTemplate(String groupName, String resourceTemplateName, boolean tokensReplaced, ResourceGroup resourceGroup);
 
-    String previewGroupJvmResourceTemplate(String groupName, String template);
-
-    String previewGroupWebServerResourceTemplate(String groupName, String template);
+    String previewGroupWebServerResourceTemplate(String groupName, String template, ResourceGroup resourceGroup);
 
     String updateGroupJvmResourceTemplate(String groupName, String resourceTemplateName, String content);
 

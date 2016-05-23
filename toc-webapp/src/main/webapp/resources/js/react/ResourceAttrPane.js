@@ -33,7 +33,7 @@ var ResourceAttrPane = React.createClass({
             attributes = response.applicationResponseContent;
             return ServiceFactory.getAdminService().viewProperties();
         }).then(function(response){
-            attributes["tocProperties"] = response.applicationResponseContent;
+            attributes["vars"] = response.applicationResponseContent;
             self.setState({attributes: attributes})
         }).caught(function(e){
             alert(e);
@@ -50,36 +50,35 @@ var ResourceAttrPane = React.createClass({
 
             // we need to clone data since we need to mutate it (e.g. add parent data)
             var newData = ResourceAttrPane.sanitizeAndCloneData(data);
-            var newParentData = ResourceAttrPane.sanitizeAndCloneData(parent);
             switch (entityName) {
                 case "jvmSection":
                     newAttributes["jvms"] = newData.jvms;
                     newAttributes["jvms"].forEach(function(item) {
-                        item["parentGroup"] = newParentData;
+                        item["parentGroup"] = ResourceAttrPane.sanitizeAndCloneData(parent);
                     });
                     break;
                 case "webServerSection":
                     newAttributes["webServers"] = newData.webServers;
                     newAttributes["webServers"].forEach(function(item) {
-                        item["parentGroup"] = newParentData;
+                        item["parentGroup"] = ResourceAttrPane.sanitizeAndCloneData(parent);
                     });
                     break;
                 case "webAppSection":
                     newAttributes["webApps"] = newData.webApps;
                     newAttributes["webApps"].forEach(function(item) {
-                        item["parentGroup"] = newParentData;
+                        item["parentGroup"] = ResourceAttrPane.sanitizeAndCloneData(parent);
                     });
                     break;
                 case "webApps":
-                     newData["parentJvm"] = newParentData;
+                     newData["parentJvm"] = ResourceAttrPane.sanitizeAndCloneData(parent);
                      newAttributes["webApp"] = newData;
                     break;
                 case "jvms":
-                     newData["parentGroup"] = newParentData;
+                     newData["parentGroup"] = ResourceAttrPane.sanitizeAndCloneData(parent.rtreeListMetaData.parent);
                      newAttributes["jvm"] = newData;
                     break;
                 case "webServers":
-                     newData["parentGroup"] = newParentData;
+                     newData["parentGroup"] = ResourceAttrPane.sanitizeAndCloneData(parent.rtreeListMetaData.parent);
                      newAttributes["webServer"] = newData;
                     break;
             }
@@ -231,8 +230,8 @@ ResourceAttrPaneCopyPropValComponent = React.createClass({
                        <span style={{display: "inline-block"}} className="ui-icon ui-icon-clipboard" onMouseEnter={this.onMouseEnter}
                              onMouseOut={this.onMouseOut} title="copy" />
                    </button>
-                   <span className="propValStyle">{"${" + (this.props.hierarchy.indexOf("tocProperties") === 0 ?  "tocProperties['" +
-                                                   this.props.hierarchy.substring("tocProperties".length + 1) + "']" :
+                   <span className="propValStyle">{"${" + (this.props.hierarchy.indexOf("vars") === 0 ?  "vars['" +
+                                                   this.props.hierarchy.substring("vars".length + 1) + "']" :
                                                    this.props.hierarchy) + "}"}</span>
                    <div style={{position: "fixed", top: -9999, left: -9999}}>
                        <textarea ref="textArea" />
@@ -248,9 +247,9 @@ ResourceAttrPaneCopyPropValComponent = React.createClass({
     onClick: function() {
         var self = this;
 
-        if (this.props.hierarchy.indexOf("tocProperties") === 0) {
-            // Property keys with '.' should be written as tocProperties['some.prop']
-            $(this.refs.textArea.getDOMNode()).val("${tocProperties['" + this.props.hierarchy.substring("tocProperties".length + 1) + "']}");
+        if (this.props.hierarchy.indexOf("vars") === 0) {
+            // Property keys with '.' should be written as vars['some.prop']
+            $(this.refs.textArea.getDOMNode()).val("${vars['" + this.props.hierarchy.substring("vars".length + 1) + "']}");
         } else {
             $(this.refs.textArea.getDOMNode()).val("${" + this.props.hierarchy + "}");
         }

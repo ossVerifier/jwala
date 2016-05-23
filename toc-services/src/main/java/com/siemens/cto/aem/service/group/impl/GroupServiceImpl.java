@@ -28,8 +28,6 @@ import com.siemens.cto.aem.persistence.service.WebServerPersistenceService;
 import com.siemens.cto.aem.service.app.impl.DeployApplicationConfException;
 import com.siemens.cto.aem.service.group.GroupService;
 import com.siemens.cto.aem.template.ResourceFileGenerator;
-import com.siemens.cto.aem.template.jvm.TomcatJvmConfigFileGenerator;
-import com.siemens.cto.aem.template.webserver.ApacheWebServerConfigFileGenerator;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -261,6 +259,7 @@ public class GroupServiceImpl implements GroupService {
     @Transactional
     public String getGroupJvmResourceTemplate(final String groupName,
                                               final String resourceTemplateName,
+                                              final ResourceGroup resourceGroup,
                                               final boolean tokensReplaced) {
 
         final String template = groupPersistenceService.getGroupJvmResourceTemplate(groupName, resourceTemplateName);
@@ -268,7 +267,7 @@ public class GroupServiceImpl implements GroupService {
             // TODO returns the tokenized version of a dummy JVM, but make sure that when deployed each instance is tokenized per JVM
             final Set<Jvm> jvms = groupPersistenceService.getGroup(groupName).getJvms();
             if (jvms != null && !jvms.isEmpty()) {
-                return TomcatJvmConfigFileGenerator.getJvmConfigFromText(template, jvms.iterator().next(), new ArrayList<Jvm>(jvms));
+                return ResourceFileGenerator.generateResourceConfig(template, resourceGroup, jvms.iterator().next());
             }
         }
         return template;
@@ -293,22 +292,12 @@ public class GroupServiceImpl implements GroupService {
 
     @Override
     @Transactional
-    public String previewGroupWebServerResourceTemplate(String groupName, String template) {
+    public String previewGroupWebServerResourceTemplate(String groupName, String template, ResourceGroup resourceGroup) {
         final Group group = groupPersistenceService.getGroup(groupName);
         Set<WebServer> webservers = groupPersistenceService.getGroupWithWebServers(group.getId()).getWebServers();
         if (webservers != null && !webservers.isEmpty()) {
             final WebServer webServer = webservers.iterator().next();
-            return ApacheWebServerConfigFileGenerator.getHttpdConfFromText(webServer.getName(), template, webServer, new ArrayList(group.getJvms()), applicationPersistenceService.findApplicationsBelongingTo(group.getId()));
-        }
-        return template;
-    }
-
-    @Override
-    @Transactional
-    public String previewGroupJvmResourceTemplate(String groupName, String template) {
-        final Set<Jvm> jvms = groupPersistenceService.getGroup(groupName).getJvms();
-        if (jvms != null && jvms.size() > 0) {
-            return TomcatJvmConfigFileGenerator.getJvmConfigFromText(template, jvms.iterator().next(), new ArrayList<Jvm>(jvms));
+            return ResourceFileGenerator.generateResourceConfig(template, resourceGroup, webServer);
         }
         return template;
     }
@@ -429,7 +418,7 @@ public class GroupServiceImpl implements GroupService {
             metaData = new ObjectMapper().readValue(metaDataStr, ResourceTemplateMetaData.class);
             File confFile = createConfFile(metaData.getEntity().getTarget(), groupName, fileName, resourceGroup);
 
-            final String destPath = ResourceFileGenerator.generateResourceConfig(metaData.getPath(), resourceGroup, application) + '/' + fileName;
+            final String destPath = ResourceFileGenerator.generateResourceConfig(metaData.getDeployPath(), resourceGroup, application) + '/' + fileName;
             final String srcPath = confFile.getAbsolutePath().replace("\\", "/");
             final String jvmName = jvm.getJvmName();
             final String hostName = jvm.getHostName();

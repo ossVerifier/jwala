@@ -1,9 +1,8 @@
 {
-  "name": "Server XML",
   "templateName": "server.xml.tpl",
   "contentType": "text/xml",
-  "configFileName":"server.xml",
-  "path":"/conf",
+  "deployFileName":"server.xml",
+  "deployPath":"/conf",
   "entity": {
     "type": "GROUPED_JVMS",
     "group": "HEALTH CHECK 4.0",
