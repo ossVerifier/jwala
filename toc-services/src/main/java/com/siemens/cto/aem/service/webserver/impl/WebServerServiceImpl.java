@@ -1,10 +1,8 @@
 package com.siemens.cto.aem.service.webserver.impl;
 
-import com.siemens.cto.aem.common.domain.model.app.Application;
 import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
-import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.resource.ResourceGroup;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
@@ -20,7 +18,6 @@ import com.siemens.cto.aem.service.resource.ResourceService;
 import com.siemens.cto.aem.service.webserver.WebServerService;
 import com.siemens.cto.aem.service.webserver.exception.WebServerServiceException;
 import com.siemens.cto.aem.template.ResourceFileGenerator;
-import com.siemens.cto.aem.template.webserver.ApacheWebServerConfigFileGenerator;
 import com.siemens.cto.toc.files.FileManager;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
@@ -32,8 +29,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
-
-import static com.siemens.cto.aem.service.webserver.impl.ConfigurationTemplate.WORKERS_PROPS_TEMPLATE;
 
 public class WebServerServiceImpl implements WebServerService {
 
