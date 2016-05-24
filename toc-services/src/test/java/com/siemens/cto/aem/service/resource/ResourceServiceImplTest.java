@@ -12,7 +12,6 @@ import com.siemens.cto.aem.common.domain.model.path.FileSystemPath;
 import com.siemens.cto.aem.common.domain.model.resource.EntityType;
 import com.siemens.cto.aem.common.domain.model.resource.ResourceGroup;
 import com.siemens.cto.aem.common.domain.model.resource.ResourceInstance;
-import com.siemens.cto.aem.common.domain.model.resource.ResourceType;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState;
@@ -25,9 +24,7 @@ import com.siemens.cto.aem.persistence.service.*;
 import com.siemens.cto.aem.service.app.ApplicationService;
 import com.siemens.cto.aem.service.exception.ResourceServiceException;
 import com.siemens.cto.aem.service.resource.impl.ResourceServiceImpl;
-import com.siemens.cto.aem.template.HarmonyTemplate;
 import com.siemens.cto.aem.template.HarmonyTemplateEngine;
-import com.siemens.cto.aem.template.webserver.exception.TemplateNotFoundException;
 import com.siemens.cto.toc.files.FileManager;
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.groovy.runtime.ResourceGroovyMethods;
@@ -39,11 +36,12 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.internal.verification.Times;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Path;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
@@ -139,34 +137,6 @@ public class ResourceServiceImplTest {
     @Test
     public void getType() {
         assertNotNull("");
-    }
-
-    @Test
-    public void testGetResourceTypes() throws IOException {
-        Collection<ResourceType> resourceTypes = new ArrayList<>();
-        ResourceType mockResourceType = mock(ResourceType.class);
-        resourceTypes.add(mockResourceType);
-        HarmonyTemplateEngine mockOwner = mock(HarmonyTemplateEngine.class);
-        Path mockPath = mock(Path.class);
-        HarmonyTemplate mockHarmonyTemplate = new HarmonyTemplate(new Object(), mockPath, mockOwner);
-        when(mockResourceType.isValid()).thenReturn(true);
-        when(mockHarmonyTemplateEngine.getTemplate(mockResourceType)).thenReturn(mockHarmonyTemplate);
-        when(mockFileManager.getResourceTypes()).thenReturn(resourceTypes);
-        Collection<ResourceType> types = resourceService.getResourceTypes();
-        assertNotNull(types);
-
-        when(mockOwner.checkOnly(any(Path.class))).thenThrow(new TemplateNotFoundException("Test bad template", new FileNotFoundException("TEST")));
-        types = resourceService.getResourceTypes();
-        assertNotNull(types);
-
-        when(mockFileManager.getResourceTypes()).thenThrow(new IOException("Fail get resources"));
-        boolean exceptionThrown = false;
-        try {
-            resourceService.getResourceTypes();
-        } catch (Exception e){
-            exceptionThrown = true;
-        }
-        assertTrue(exceptionThrown);
     }
 
     @Test

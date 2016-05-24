@@ -7,8 +7,8 @@ package com.siemens.cto.aem.template.webserver.exception
  */
 public class TemplateNotFoundException extends RuntimeException {
 
-    public TemplateNotFoundException(final String file, final FileNotFoundException e) {
+    /*public TemplateNotFoundException(final String file, final FileNotFoundException e) {
         super("Template " + file + " was not found!", e)
-    }
+    }*/
 
 }

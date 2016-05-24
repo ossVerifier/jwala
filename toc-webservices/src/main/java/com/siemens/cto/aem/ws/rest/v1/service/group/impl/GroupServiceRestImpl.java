@@ -9,7 +9,6 @@ import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.jvm.JvmControlOperation;
 import com.siemens.cto.aem.common.domain.model.resource.ResourceGroup;
 import com.siemens.cto.aem.common.domain.model.resource.ResourceTemplateMetaData;
-import com.siemens.cto.aem.common.domain.model.resource.ResourceType;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServerControlOperation;
 import com.siemens.cto.aem.common.exception.FaultCodeException;
@@ -61,7 +60,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.*;
 import java.util.concurrent.*;
 
@@ -183,32 +183,6 @@ public class GroupServiceRestImpl implements GroupServiceRest {
                 JvmControlOperation.convertFrom(command.getExternalValue()));
         groupJvmControlService.controlGroup(grpCommand, aUser.getUser());
         return ResponseBuilder.ok();
-    }
-
-    @Override
-    public Response populateJvmConfig(final Identifier<Group> aGroupId, final AuthenticatedUser aUser, final boolean overwriteExisting) {
-        List<UploadJvmTemplateRequest> uploadJvmTemplateCommands = new ArrayList<>();
-        for (Jvm jvm : groupService.getGroup(aGroupId).getJvms()) {
-            for (final ResourceType resourceType : resourceService.getResourceTypes()) {
-                if ("jvm".equals(resourceType.getEntityType()) && !"invoke.bat".equals(resourceType.getConfigFileName())) {
-                    FileInputStream dataInputStream;
-                    try {
-                        dataInputStream = new FileInputStream(new File(ApplicationProperties.get("paths.resource-types") + "/" + resourceType.getTemplateName()));
-                        UploadJvmTemplateRequest uploadJvmTemplateCommand = new UploadJvmTemplateRequest(jvm, resourceType.getTemplateName(), dataInputStream) {
-                            @Override
-                            public String getConfFileName() {
-                                return resourceType.getConfigFileName();
-                            }
-                        };
-                        uploadJvmTemplateCommands.add(uploadJvmTemplateCommand);
-                    } catch (FileNotFoundException e) {
-                        LOGGER.error("Invalid Path: Could not find resource template", e);
-                        throw new InternalErrorException(AemFaultType.INVALID_PATH, "Could not find resource template", e);
-                    }
-                }
-            }
-        }
-        return ResponseBuilder.ok(groupService.populateJvmConfig(aGroupId, uploadJvmTemplateCommands, aUser.getUser(), overwriteExisting));
     }
 
     @Override

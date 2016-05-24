@@ -252,7 +252,6 @@ public class GroupServiceImplDeployTest {
         when(mockGroupService.getGroupAppResourceTemplate(anyString(), anyString(), anyString(), anyBoolean(), any(ResourceGroup.class))).thenReturn("new hct.xml content");
         when(mockGroupService.getGroupAppResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"entity\":{\"target\": \"testApp\"}}");
         when(mockJvmService.getJvm(anyString())).thenReturn(mockJvm);
-        when(mockResourceService.getResourceTypes()).thenReturn(resourcesList);
         when(mockApplicationService.updateResourceTemplate(anyString(), anyString(), anyString(), anyString(), anyString())).thenReturn("new hct.xml content");
         when(mockApplicationService.deployConf(anyString(), anyString(), anyString(), anyString(), any(ResourceGroup.class), any(User.class))).thenReturn(new CommandOutput(new ExecReturnCode(0), "SUCCESS", ""));
         Response returnResponse = groupServiceRest.generateAndDeployGroupAppFile("testGroup", "hct.xml", mockAuthUser);
@@ -394,7 +393,6 @@ public class GroupServiceImplDeployTest {
         when(mockJvmControlService.controlJvm(any(ControlJvmRequest.class), any(User.class))).thenReturn(successCommandOutput);
         when(mockJvmControlService.createDirectory(any(Jvm.class), anyString())).thenReturn(successCommandOutput);
         when(mockJvmControlService.changeFileMode(any(Jvm.class), anyString(), anyString(), anyString())).thenReturn(successCommandOutput);
-        when(mockResourceService.getResourceTypes()).thenReturn(new ArrayList<ResourceType>());
         when(mockJvmControlService.secureCopyFile(any(ControlJvmRequest.class), anyString(), anyString())).thenReturn(successCommandOutput);
 
         Response response = groupServiceRest.generateGroupJvms(new Identifier<Group>(111L), mockAuthUser);

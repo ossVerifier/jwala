@@ -17,15 +17,6 @@ import java.util.List;
 public interface ResourceServiceRest {
 
     /**
-     * /aem/v1.0/resources/types
-     *
-     * @return a list of resourceTypes from the file system
-     */
-    @GET
-    @Path("/types")
-    Response getTypes();
-
-    /**
      * /aem/v1.0/resources;groupName=[your group name]
      *
      * @param groupName the name of the previously created group

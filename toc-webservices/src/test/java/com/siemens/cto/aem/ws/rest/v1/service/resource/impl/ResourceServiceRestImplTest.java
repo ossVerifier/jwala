@@ -5,7 +5,6 @@ import com.siemens.cto.aem.common.domain.model.group.LiteGroup;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.resource.ResourceGroup;
 import com.siemens.cto.aem.common.domain.model.resource.ResourceInstance;
-import com.siemens.cto.aem.common.domain.model.resource.ResourceType;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.request.resource.ResourceInstanceRequest;
 import com.siemens.cto.aem.persistence.jpa.domain.resource.config.template.ConfigTemplate;
@@ -65,13 +64,6 @@ public class ResourceServiceRestImplTest {
         cut = new ResourceServiceRestImpl(impl);
         when(authenticatedUser.getUser()).thenReturn(new User("Unused"));
         when(jsonResourceInstance.getCommand()).thenReturn(new ResourceInstanceRequest("resourceType", "resourceName", group.getName(), new HashMap<String, String>()));
-    }
-
-    @Test
-    public void testGetTypes() {
-        when(impl.getResourceTypes()).thenReturn(new ArrayList<ResourceType>());
-        Response response = cut.getTypes();
-        assertNotNull(response.getEntity());
     }
 
     @Test

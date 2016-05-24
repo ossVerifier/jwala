@@ -64,12 +64,6 @@ public interface GroupServiceRest {
     /*********************
      * ** JVM Templates ***
      *********************/
-    @GET
-    @Path("/{groupId}/jvms/defaultConfig")
-    Response populateJvmConfig(@PathParam("groupId") final Identifier<Group> aGroupId,
-                               @BeanParam final AuthenticatedUser aUser,
-                               @QueryParam("overwrite") @DefaultValue("false") final boolean overwriteExisting);
-
     @PUT
     @Path("/{groupName}/jvms/conf/{fileName}")
     Response generateAndDeployGroupJvmFile(@PathParam("groupName") final String groupName,

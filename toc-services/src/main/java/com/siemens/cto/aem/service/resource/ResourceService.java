@@ -4,21 +4,16 @@ import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.resource.EntityType;
 import com.siemens.cto.aem.common.domain.model.resource.ResourceGroup;
 import com.siemens.cto.aem.common.domain.model.resource.ResourceInstance;
-import com.siemens.cto.aem.common.domain.model.resource.ResourceType;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.request.resource.ResourceInstanceRequest;
 import com.siemens.cto.aem.service.resource.impl.CreateResourceTemplateApplicationResponseWrapper;
 
 import java.io.InputStream;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
 
 public interface ResourceService {
-
-    @Deprecated
-    Collection<ResourceType> getResourceTypes();
 
     ResourceInstance getResourceInstance(final Identifier<ResourceInstance> aResourceInstanceId);
 

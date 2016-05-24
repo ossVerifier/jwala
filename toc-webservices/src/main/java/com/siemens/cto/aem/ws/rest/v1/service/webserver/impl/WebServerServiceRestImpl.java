@@ -5,7 +5,6 @@ import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.resource.ResourceGroup;
 import com.siemens.cto.aem.common.domain.model.resource.ResourceTemplateMetaData;
-import com.siemens.cto.aem.common.domain.model.resource.ResourceType;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServerControlOperation;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState;
@@ -125,40 +124,6 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
             }
         }
         return ResponseBuilder.created(webServer);
-    }
-
-    /**
-     * Uploads a template. This method is specifically used by WebServerServiceRest.createWebServer.
-     * Note: This method was deprecated in lieu of an approach that also retrieves the template file's meta data.
-     *
-     * @param aUser     the user
-     * @param webServer the web server in which the template's for
-     */
-    @Deprecated
-    protected void uploadWebServerResourceTemplates(AuthenticatedUser aUser, WebServer webServer) {
-        for (final ResourceType resourceType : resourceService.getResourceTypes()) {
-            if ("webServer".equals(resourceType.getEntityType()) && !"invokeWS.bat".equals(resourceType.getConfigFileName())) {
-                FileInputStream dataInputStream = null;
-                try {
-                    dataInputStream =
-                            new FileInputStream(new File(ApplicationProperties.get("paths.resource-types") + "/"
-                                    + resourceType.getTemplateName()));
-                    UploadWebServerTemplateRequest uploadWebServerTemplateRequest =
-                            new UploadWebServerTemplateRequest(webServer, resourceType.getTemplateName(), dataInputStream) {
-                                @Override
-                                public String getConfFileName() {
-                                    return resourceType.getConfigFileName();
-                                }
-                            };
-                    webServerService.uploadWebServerConfig(uploadWebServerTemplateRequest, aUser.getUser());
-                } catch (FileNotFoundException e) {
-                    LOGGER.error("Could not find template {} for new webserver {}", resourceType.getConfigFileName(),
-                            webServer.getName(), e);
-                    throw new InternalErrorException(AemFaultType.WEB_SERVER_HTTPD_CONF_TEMPLATE_NOT_FOUND, "Could not find template "
-                            + resourceType.getTemplateName());
-                }
-            }
-        }
     }
 
     @Override

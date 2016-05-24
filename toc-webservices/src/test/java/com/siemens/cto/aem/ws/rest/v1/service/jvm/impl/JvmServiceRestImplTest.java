@@ -332,7 +332,6 @@ public class JvmServiceRestImplTest {
         when(jvmControlService.controlJvm(new ControlJvmRequest(jvm.getId(), JvmControlOperation.INVOKE_SERVICE), authenticatedUser.getUser())).thenReturn(commandOutput);
 
         when(jvmService.getJvm(anyString())).thenReturn(mockJvm);
-        when(resourceService.getResourceTypes()).thenReturn(mockResourceTypes);
         when(jvmService.generateInvokeBat(anyString())).thenReturn("");
         when(jvmService.generateResourceFiles(anyString())).thenReturn(null);
         Jvm response = jvmServiceRest.generateConfFilesAndDeploy(jvm, authenticatedUser);
@@ -460,28 +459,6 @@ public class JvmServiceRestImplTest {
     }
 
     @Test
-    public void testUploadResourceTemplate() {
-        Collection<ResourceType> resourceList = new ArrayList<>();
-        final ResourceType mockResourceType = mock(ResourceType.class);
-        when(mockResourceType.getConfigFileName()).thenReturn("jvmResource");
-        when(mockResourceType.getEntityType()).thenReturn("jvm");
-        when(mockResourceType.getTemplateName()).thenReturn("ServerXMLTemplate.tpl");
-        resourceList.add(mockResourceType);
-        when(resourceService.getResourceTypes()).thenReturn(resourceList);
-        jvmServiceRest.uploadAllJvmResourceTemplates(authenticatedUser, jvm);
-        verify(jvmService, times(1)).uploadJvmTemplateXml(any(UploadJvmConfigTemplateRequest.class), any(User.class));
-
-        when(mockResourceType.getTemplateName()).thenReturn("ThrowFileNotFoundException.tpl");
-        boolean internalErrExceptionThrown = false;
-        try {
-            jvmServiceRest.uploadAllJvmResourceTemplates(authenticatedUser, jvm);
-        } catch (InternalErrorException ie) {
-            internalErrExceptionThrown = true;
-        }
-        assertTrue(internalErrExceptionThrown);
-    }
-
-    @Test
     public void testUploadConfigTemplateThrowsBadStreamException() {
         MessageContext mockContext = mock(MessageContext.class);
         HttpHeaders mockHttpHeaders = mock(HttpHeaders.class);
@@ -526,7 +503,6 @@ public class JvmServiceRestImplTest {
 
     @Test
     public void testGenerateAndDeployFile() throws CommandFailureException, IOException {
-        Collection<ResourceType> resourceTypes = new ArrayList<>();
         ResourceTemplateMetaData mockResourceTemplateMetaData = mock(ResourceTemplateMetaData.class);
         CommandOutput mockExecData = mock(CommandOutput.class);
         when(mockExecData.getReturnCode()).thenReturn(new ExecReturnCode(0));
@@ -568,7 +544,6 @@ public class JvmServiceRestImplTest {
         }
         assertTrue(exceptionThrown);
 
-        when(resourceService.getResourceTypes()).thenReturn(new ArrayList<ResourceType>());
         exceptionThrown = false;
         try {
             jvmServiceRest.generateAndDeployFile(jvm.getJvmName(), "server.xml", authenticatedUser);

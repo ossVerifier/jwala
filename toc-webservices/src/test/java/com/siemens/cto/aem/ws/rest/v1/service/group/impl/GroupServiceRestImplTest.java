@@ -7,7 +7,6 @@ import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.jvm.JvmControlOperation;
 import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.common.domain.model.resource.ResourceGroup;
-import com.siemens.cto.aem.common.domain.model.resource.ResourceType;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServerControlOperation;
@@ -58,7 +57,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
@@ -353,34 +355,6 @@ public class GroupServiceRestImplTest {
         final List<MembershipDetails> membershipDetailsList = (List) applicationResponse.getApplicationResponseContent();
         assertEquals("webServer1", membershipDetailsList.get(0).getName());
         assertEquals("group2", membershipDetailsList.get(0).getGroupNames().get(0));
-    }
-
-    @Test
-    public void testPopulateJvmConfig() {
-        System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, "./src/test/resources");
-        Set<Jvm> jvmSet = new HashSet<>();
-        jvmSet.add(mockJvm);
-        Collection<ResourceType> resourceTypes = new ArrayList<>();
-        ResourceType mockResource = mock(ResourceType.class);
-        resourceTypes.add(mockResource);
-        when(mockGroup.getJvms()).thenReturn(jvmSet);
-        when(mockResource.getEntityType()).thenReturn("jvm");
-        when(mockResource.getConfigFileName()).thenReturn("server.xml");
-        when(mockResource.getTemplateName()).thenReturn("ServerXMLTemplate.tpl");
-        when(mockGroupService.getGroup(group.getId())).thenReturn(mockGroup);
-        when(mockGroupService.populateJvmConfig(any(Identifier.class), anyList(), any(User.class), anyBoolean())).thenReturn(group);
-        when(mockResourceService.getResourceTypes()).thenReturn(resourceTypes);
-        Response response = groupServiceRest.populateJvmConfig(group.getId(), mockAuthenticatedUser, false);
-        assertNotNull(response.getEntity());
-
-        when(mockResource.getTemplateName()).thenReturn("NoTemplate.tpl");
-        boolean exceptionThrown = false;
-        try {
-            groupServiceRest.populateJvmConfig(group.getId(), mockAuthenticatedUser, false);
-        } catch (Exception e) {
-            exceptionThrown = true;
-        }
-        assertTrue(exceptionThrown);
     }
 
     @Test

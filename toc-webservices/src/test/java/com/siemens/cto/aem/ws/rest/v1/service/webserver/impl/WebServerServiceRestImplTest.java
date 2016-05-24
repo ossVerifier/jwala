@@ -130,7 +130,6 @@ public class WebServerServiceRestImplTest {
         when(mockWsResourceType.getConfigFileName()).thenReturn("httpd.conf");
         when(mockWsResourceType.getEntityType()).thenReturn("webServer");
         when(mockWsResourceType.getTemplateName()).thenReturn("HttpdSslConfTemplate.tpl");
-        when(resourceService.getResourceTypes()).thenReturn(resourceTypes);
         try {
             webServerServiceRest.afterPropertiesSet();
         } catch (Exception e) {
@@ -208,7 +207,6 @@ public class WebServerServiceRestImplTest {
         when(mockWsResourceType.getEntityType()).thenReturn("webServer");
         when(mockWsResourceType.getTemplateName()).thenReturn("HttpdSslConfTemplate_FILE-NOT-FOUND.tpl");
         resourceTypes.add(mockWsResourceType);
-        when(resourceService.getResourceTypes()).thenReturn(resourceTypes);
 
         webServerServiceRest.createWebServer(jsonCreateWebServer, authenticatedUser);
     }

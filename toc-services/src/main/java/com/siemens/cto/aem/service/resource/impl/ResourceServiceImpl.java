@@ -1,14 +1,15 @@
 package com.siemens.cto.aem.service.resource.impl;
 
 import com.siemens.cto.aem.common.domain.model.app.Application;
-import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
-import com.siemens.cto.aem.common.domain.model.resource.*;
+import com.siemens.cto.aem.common.domain.model.resource.EntityType;
+import com.siemens.cto.aem.common.domain.model.resource.ResourceGroup;
+import com.siemens.cto.aem.common.domain.model.resource.ResourceInstance;
+import com.siemens.cto.aem.common.domain.model.resource.ResourceTemplateMetaData;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
-import com.siemens.cto.aem.common.exception.FaultCodeException;
 import com.siemens.cto.aem.common.request.app.UploadAppTemplateRequest;
 import com.siemens.cto.aem.common.request.jvm.UploadJvmConfigTemplateRequest;
 import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
@@ -19,7 +20,6 @@ import com.siemens.cto.aem.persistence.service.*;
 import com.siemens.cto.aem.service.app.ApplicationService;
 import com.siemens.cto.aem.service.exception.ResourceServiceException;
 import com.siemens.cto.aem.service.resource.ResourceService;
-import com.siemens.cto.aem.template.HarmonyTemplate;
 import com.siemens.cto.aem.template.HarmonyTemplateEngine;
 import com.siemens.cto.aem.template.ResourceFileGenerator;
 import com.siemens.cto.toc.files.FileManager;
@@ -81,31 +81,6 @@ public class ResourceServiceImpl implements ResourceService {
         this.applicationService = applicationService;
         this.jvmPersistenceService = jvmPersistenceService;
         this.webServerPersistenceService = webServerPersistenceService;
-    }
-
-    @Override
-    public Collection<ResourceType> getResourceTypes() {
-        try {
-            Collection<ResourceType> resourceTypes = fileManager.getResourceTypes();
-            for (ResourceType rtype : resourceTypes) {
-                if (rtype.isValid()) {
-                    HarmonyTemplate template = templateEngine.getTemplate(rtype);
-                    try {
-                        template.check();
-                    } catch (Exception exception) {
-                        LOGGER.error("Discovered a bad template", exception);
-                        rtype.setValid(false);
-                        rtype.addException(exception);
-                    }
-                }
-            }
-            return resourceTypes;
-        } catch (IOException e) {
-            // This is extremely unlikely since we return ResourceTypes(valid=false) even when files are invalid. 
-            String errorString = "Failed to get resource types from disk.";
-            LOGGER.error(errorString, e);
-            throw new FaultCodeException(AemFaultType.INVALID_PATH, errorString, e);
-        }
     }
 
     @Override

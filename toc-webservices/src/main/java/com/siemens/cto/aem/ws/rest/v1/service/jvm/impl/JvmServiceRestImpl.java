@@ -7,7 +7,6 @@ import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.jvm.JvmControlOperation;
 import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.common.domain.model.resource.ResourceTemplateMetaData;
-import com.siemens.cto.aem.common.domain.model.resource.ResourceType;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.exception.FaultCodeException;
 import com.siemens.cto.aem.common.exception.InternalErrorException;
@@ -124,36 +123,6 @@ public class JvmServiceRestImpl implements JvmServiceRest {
         }
 
         return ResponseBuilder.created(jvm);
-    }
-
-    @Deprecated
-    // TODO: Discuss with the team how to replace this with a generic one or do we still used this ?
-    //       Apparently, this method gets all the resources in a directory (as default templates) then creates
-    //       resources (puts then in the db) based on the said default files.
-    void uploadAllJvmResourceTemplates(AuthenticatedUser aUser, final Jvm jvm) {
-        for (final ResourceType resourceType : resourceService.getResourceTypes()) {
-            if ("jvm".equals(resourceType.getEntityType()) && !CONFIG_FILENAME_INVOKE_BAT.equals(resourceType.getConfigFileName())) {
-                FileInputStream dataInputStream = null;
-                try {
-                    dataInputStream =
-                            new FileInputStream(new File(ApplicationProperties.get("paths.resource-types") + "/"
-                                    + resourceType.getTemplateName()));
-                    UploadJvmTemplateRequest uploadJvmTemplateRequest =
-                            new UploadJvmTemplateRequest(jvm, resourceType.getTemplateName(), dataInputStream) {
-                                @Override
-                                public String getConfFileName() {
-                                    return resourceType.getConfigFileName();
-                                }
-                            };
-                    jvmService.uploadJvmTemplateXml(uploadJvmTemplateRequest, aUser.getUser());
-                } catch (FileNotFoundException e) {
-                    LOGGER.error("Could not find template {} for new JVM {}", resourceType.getConfigFileName(),
-                            jvm.getJvmName(), e);
-                    throw new InternalErrorException(AemFaultType.JVM_TEMPLATE_NOT_FOUND, "Could not find template "
-                            + resourceType.getTemplateName());
-                }
-            }
-        }
     }
 
     @Override
@@ -523,23 +492,6 @@ public class JvmServiceRestImpl implements JvmServiceRest {
             LOGGER.error("Copying config file {} failed :: ERROR: {}", fileName, standardError);
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, CommandOutputReturnCode.fromReturnCode(result.getReturnCode().getReturnCode()).getDesc());
         }
-    }
-
-    @Deprecated
-    protected ResourceType getResourceTypeTemplate(String jvmName, String fileName) {
-        ResourceType deployResource = null;
-        for (ResourceType resourceType : resourceService.getResourceTypes()) {
-            if (ENTITY_TYPE_JVM.equals(resourceType.getEntityType())
-                    && fileName.equals(resourceType.getConfigFileName())) {
-                deployResource = resourceType;
-                break;
-            }
-        }
-        if (deployResource == null) {
-            LOGGER.error("Did not find a template for {} when deploying for JVM {}", fileName, jvmName);
-            throw new InternalErrorException(AemFaultType.JVM_TEMPLATE_NOT_FOUND, "Template not found for " + fileName);
-        }
-        return deployResource;
     }
 
     protected String generateJvmConfigJar(String jvmName) {

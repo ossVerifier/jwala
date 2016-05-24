@@ -1,8 +1,5 @@
 
 var resourceService = {
-    getResourceTypes: function(responseCallback) {
-        return serviceFoundation.get("v1.0/resources/types", "json", responseCallback);
-    },
     getResources: function(groupName, responseCallback) {
         if (groupName === undefined) { return; }
         return serviceFoundation.get("v1.0/resources;groupName=" + groupName.replace(/%20/g, " "), "json", responseCallback);

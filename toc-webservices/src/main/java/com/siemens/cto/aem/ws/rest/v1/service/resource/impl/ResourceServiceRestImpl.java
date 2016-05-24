@@ -12,7 +12,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.activation.DataHandler;
-import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.io.InputStream;
@@ -34,12 +33,6 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
 
     public ResourceServiceRestImpl(final ResourceService resourceService) {
         this.resourceService = resourceService;
-    }
-
-    @Override
-    public Response getTypes() {
-        LOGGER.debug("Get All Resource Types requested." );
-        return ResponseBuilder.ok(resourceService.getResourceTypes());
     }
 
     @Override

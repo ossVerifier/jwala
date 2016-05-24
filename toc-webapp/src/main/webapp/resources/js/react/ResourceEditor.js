@@ -69,7 +69,6 @@ var ResourceEditor = React.createClass({
     },
     componentDidMount: function() {
         this.props.resourceService.getResourceTopology().then(this.getGroupDataCallback);
-        this.props.resourceService.getResourceTypes(this.getResourceTypesCallback);
     },
 
     dataRetrievalCount: 1 /* We can't make this into a state since it's being used by asynchronous callbacks! */,
@@ -101,9 +100,6 @@ var ResourceEditor = React.createClass({
         });
 
         this.setState({groupData:groupData});
-    },
-    getResourceTypesCallback: function(response) {
-        this.setState({resourceTypes:response.applicationResponseContent});
     },
     selectNodeCallback: function(data, entityName, parent) {
         if (this.props.selectEntityCallback(data, null)) {
