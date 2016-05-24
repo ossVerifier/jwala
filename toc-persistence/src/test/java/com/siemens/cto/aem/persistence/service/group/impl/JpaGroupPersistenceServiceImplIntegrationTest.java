@@ -10,8 +10,10 @@ import com.siemens.cto.aem.persistence.jpa.service.GroupJvmRelationshipService;
 import com.siemens.cto.aem.persistence.jpa.service.impl.GroupJvmRelationshipServiceImpl;
 import com.siemens.cto.aem.persistence.jpa.service.JvmCrudService;
 import com.siemens.cto.aem.persistence.jpa.service.impl.JvmCrudServiceImpl;
+import com.siemens.cto.aem.persistence.service.ApplicationPersistenceService;
 import com.siemens.cto.aem.persistence.service.group.AbstractGroupPersistenceServiceIntegrationTest;
 import com.siemens.cto.aem.persistence.service.GroupPersistenceService;
+import com.siemens.cto.aem.persistence.service.impl.JpaApplicationPersistenceServiceImpl;
 import com.siemens.cto.aem.persistence.service.impl.JpaGroupPersistenceServiceImpl;
 import com.siemens.cto.aem.persistence.service.JvmPersistenceService;
 import com.siemens.cto.aem.persistence.service.impl.JpaJvmPersistenceServiceImpl;
@@ -74,6 +76,11 @@ public class JpaGroupPersistenceServiceImplIntegrationTest extends AbstractGroup
         @Bean
         public JvmCrudService getJvmCrudService() {
             return new JvmCrudServiceImpl();
+        }
+
+        @Bean
+        public ApplicationPersistenceService getApplicationPersistenceService() {
+            return new JpaApplicationPersistenceServiceImpl(getApplicationCrudService(), getGroupCrudService());
         }
     }
 }

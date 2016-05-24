@@ -1,5 +1,6 @@
 package com.siemens.cto.aem.persistence.service.group;
 
+import com.siemens.cto.aem.common.domain.model.app.Application;
 import com.siemens.cto.aem.common.domain.model.group.GroupState;
 import com.siemens.cto.aem.common.domain.model.state.CurrentState;
 import com.siemens.cto.aem.common.domain.model.state.StateType;
@@ -11,20 +12,17 @@ import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.path.Path;
+import com.siemens.cto.aem.common.request.app.CreateApplicationRequest;
 import com.siemens.cto.aem.common.request.group.CreateGroupRequest;
 import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
 import com.siemens.cto.aem.common.request.state.SetStateRequest;
 import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateRequest;
 import com.siemens.cto.aem.persistence.jpa.domain.resource.config.template.ConfigTemplate;
-import com.siemens.cto.aem.persistence.service.CommonGroupPersistenceServiceBehavior;
-import com.siemens.cto.aem.persistence.service.CommonJvmPersistenceServiceBehavior;
-import com.siemens.cto.aem.persistence.service.GroupPersistenceService;
-import com.siemens.cto.aem.persistence.service.JvmPersistenceService;
+import com.siemens.cto.aem.persistence.service.*;
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
@@ -49,11 +47,15 @@ public abstract class AbstractGroupPersistenceServiceIntegrationTest {
     @Autowired
     private JvmPersistenceService jvmPersistenceService;
 
+    @Autowired
+    private ApplicationPersistenceService applicationPersistenceService;
+
     private CommonGroupPersistenceServiceBehavior groupHelper;
     private CommonJvmPersistenceServiceBehavior jvmHelper;
     private Group preCreatedGroup;
     private Jvm preCreatedJvm;
     private String userId;
+    private Application application;
 
     @Before
     public void setUp() throws Exception {
@@ -74,6 +76,10 @@ public abstract class AbstractGroupPersistenceServiceIntegrationTest {
                                             userId,
                                             new Path("/abc"),
                                             "EXAMPLE_OPTS=%someEnv%/someVal");
+
+        application = applicationPersistenceService.createApplication(new CreateApplicationRequest(preCreatedGroup.getId(),
+                        "testApp", "", false, false, false), "", "", "");
+
     }
 
     @After
@@ -184,6 +190,7 @@ public abstract class AbstractGroupPersistenceServiceIntegrationTest {
 
         final Identifier<Group> groupId = preCreatedGroup.getId();
 
+        applicationPersistenceService.removeApplication(application.getId());
         groupPersistenceService.removeGroup(groupId);
 
         try {
@@ -303,6 +310,7 @@ public abstract class AbstractGroupPersistenceServiceIntegrationTest {
                              aSecondJvm.getId(),
                              userId);
 
+        applicationPersistenceService.removeApplication(application.getId());
         groupPersistenceService.removeGroup(groupId);
     }
 
@@ -442,10 +450,8 @@ public abstract class AbstractGroupPersistenceServiceIntegrationTest {
     }
 
     @Test
-    @Ignore
-    // TODO: Fix this by adding an application in the db.
     public void testPopulateGroupAppTemplate() {
-        ConfigTemplate template = groupPersistenceService.populateGroupAppTemplate(preCreatedGroup.getName(), "some-app-name",
+        ConfigTemplate template = groupPersistenceService.populateGroupAppTemplate(preCreatedGroup.getName(), "testApp",
                 "app.xml", "some meta data", "app content");
         assertNotNull(template);
     }
