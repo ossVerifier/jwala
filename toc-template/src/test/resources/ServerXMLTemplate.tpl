@@ -95,7 +95,7 @@
             reconnAttemptDelay="1000"
             SSLEnableVerifyHost="true"
             SSLEnableVerifyHostName="false"
-            SSLTrustedCertificate="d:\\stp\\app\\data\\security\\ems\\ctorootca.pem" />
+            SSLTrustedCertificate="d:\stp\app\data\security\ems\ctorootca.pem" />
     </GlobalNamingResources>
 
 
@@ -124,8 +124,8 @@
 
     <Connector
         port="${jvm.httpsPort}"
-        SSLCertificateFile="d:\\stp\\app\\data\\security\\id\\${jvm.hostName}.cer"
-        SSLCertificateKeyFile="d:\\stp\\app\\data\\security\\id\\${jvm.hostName}.key"
+        SSLCertificateFile="d:\stp\app\data\security\id\\${jvm.hostName}.cer"
+        SSLCertificateKeyFile="d:\stp\app\data\security\id\\${jvm.hostName}.key"
         SSLEnabled="true"
         SSLPassword=""
         acceptCount="100"

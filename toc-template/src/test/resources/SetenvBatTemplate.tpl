@@ -4,7 +4,7 @@ ECHO ON
 :: -------------------------
 
 CALL:stpSetHome
-SET STP_HOME_UNIX=%STP_HOME:\\=/%
+SET STP_HOME_UNIX=%STP_HOME:\=/%
 
 :: ------------------------------------------------------------------------------
 :: Use fn stpSet to set any path variables. This allows the 'stp' folder to be 
@@ -14,11 +14,11 @@ SET STP_HOME_UNIX=%STP_HOME:\\=/%
 :: for developer environments. 
 :: ------------------------------------------------------------------------------
 
-CALL:stpSet JAVA_HOME d:\\stp\\jdk1.8.0_66
-SET JRE_HOME=%JAVA_HOME%\\jre
+CALL:stpSet JAVA_HOME d:\stp\jdk1.8.0_66
+SET JRE_HOME=%JAVA_HOME%\jre
 
-CALL:stpSet CATALINA_HOME d:\\stp\\apache-tomcat-7.0.55\\core
-CALL:stpSet CATALINA_BASE d:\\stp\\app\\instances\\${jvm.jvmName}
+CALL:stpSet CATALINA_HOME d:\stp\apache-tomcat-7.0.55\core
+CALL:stpSet CATALINA_BASE d:\stp\app\instances\\${jvm.jvmName}
 
 REM JMX_OPTS port settings deprecated in favor of a lifecycle listener in server.xml
 SET JMX_OPTS=-Dcom.sun.management.jmxremote.ssl=false
@@ -42,7 +42,7 @@ SET ATOMIKOS_OPTS=-Dcom.atomikos.icatch.tm_unique_name=${jvm.jvmName}
 :: Set the location of the property source files.  If not specified as an environment variable, then set to the default location.
 :: -------------------------------------------------------------------------------------------------------------------------------
 IF "%STP_PS_LOC%" == "" (
-   CALL:stpSet STP_PS_LOC d:\\stp\\app\\properties\\propertySource.properties
+   CALL:stpSet STP_PS_LOC d:\stp\app\properties\propertySource.properties
 )
 
 :: --------------------------------------------------------------------------------------------------------------------------------------------------
@@ -50,19 +50,19 @@ IF "%STP_PS_LOC%" == "" (
 :: --------------------------------------------------------------------------------------------------------------------------------------------------
 SET CATALINA_OPTS=-XX:PermSize=512m -XX:MaxPermSize=512m -DSTP_HOME=%STP_HOME% -Dgsm.classloader.url=d:/stp/app/lib/tomcat/gsm -Dcom.siemens.cto.infrastructure.properties.propertySourceLocations=%STP_PS_LOC%
 
-CALL:stpSet PROPERTIES_ROOT_PATH d:\\stp\\app\\properties
+CALL:stpSet PROPERTIES_ROOT_PATH d:\stp\app\properties
 SET STP_OPTS=-DPROPERTIES_ROOT_PATH=%PROPERTIES_ROOT_PATH%
 
-CALL:stpSet STP_PROPERTIES_DIR d:\\stp\\app\\properties
+CALL:stpSet STP_PROPERTIES_DIR d:\stp\app\properties
 SET STP_OPTS=%STP_OPTS% -DSTP_PROPERTIES_DIR=%STP_PROPERTIES_DIR%
 
 CALL:stpSet LOG_ROOT_DIR d:/stp/apache-tomcat-7.0.55/logs
 SET LOG_OPTS=-Dlog.root.dir=%LOG_ROOT_DIR%
 SET LOG_OPTS=%LOG_OPTS% -Dlog4j.configuration=log4j.xml -Dlog4j.debug=true
 
-SET LOGIN_CONFIG=-Djava.security.auth.login.config=%PROPERTIES_PATH%\\jaas.config
+SET LOGIN_CONFIG=-Djava.security.auth.login.config=%PROPERTIES_PATH%\jaas.config
 
-SET APR_OPTS=-Djava.library.path=%CATALINA_HOME%\\bin
+SET APR_OPTS=-Djava.library.path=%CATALINA_HOME%\bin
 
 SET APP_DYNAMICS_OPTS=-javaagent:d:/stp/app-dynamics-3.9.4.0/agent/javaagent.jar -Dappdynamics.controller.hostName=USMLVV1CTO924 -Dappdynamics.controller.port=8090
 SET APP_DYNAMICS_OPTS=%APP_DYNAMICS_OPTS% -Dappdynamics.agent.applicationName=1D0A-Development-Environment-N9SF-LTST -Dappdynamics.agent.tierName=HEALTH-CHECK -Dappdynamics.agent.nodeName=${jvm.jvmName}
@@ -92,14 +92,14 @@ set STP_DRIVE=%~d0
 Setlocal EnableDelayedExpansion
 
 set path=%~p0
-set pathList=%path:\\=,%
+set pathList=%path:\=,%
 set trimmedPathList=%pathList:~1,-1%
 set stpDir=%STP_DRIVE%
 set foundStp=0
 set savedStpDir=!stpDidr!
 
 For %%A in (%trimmedPathList%) do (
-   set stpDir=!stpDir!\\%%A
+   set stpDir=!stpDir!\%%A
    IF %%A==stp (
       set savedStpDir=!stpDir!
       set foundStp=1
@@ -107,7 +107,7 @@ For %%A in (%trimmedPathList%) do (
 )
 :END_FIND_STP_DIR
 
-if %foundStp% EQU 0 (echo stp dir not found so setting to default & set savedStpDir=d:\\stp)
+if %foundStp% EQU 0 (echo stp dir not found so setting to default & set savedStpDir=d:\stp)
 echo stpDir is %savedStpDir%
 
 ENDLOCAL & SET STP_HOME=%savedStpDir%
@@ -121,11 +121,11 @@ goto:eof
 
 :stpSet
 :: arg1 = variable to set (eg CATALINA_HOME)
-:: arg2 = original value of variable (eg d:\\stp\\siemens\\apache-tomcat-7.0.55\\core)
+:: arg2 = original value of variable (eg d:\stp\siemens\apache-tomcat-7.0.55\core)
 ::
-:: if STP_HOME=e:\\view_stores\\stp, then this fn sets CATALINA_HOME to e:\\view_stores\\stp\\siemens\\apache-tomcat-7.0.55\\core 
+:: if STP_HOME=e:\view_stores\stp, then this fn sets CATALINA_HOME to e:\view_stores\stp\siemens\apache-tomcat-7.0.55\core 
  
 SET %~1=%~2
-CALL SET %~1=%%%~1:d:\\stp=%STP_HOME%%%
+CALL SET %~1=%%%~1:d:\stp=%STP_HOME%%%
 
 goto:eof

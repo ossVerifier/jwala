@@ -19,7 +19,7 @@
 # will be interpreted as '/logs/access_log'.
 #
 # NOTE: Where filenames are specified, you must use forward slashes
-# instead of backslashes (e.g., "c:/apache" instead of "c:\\apache").
+# instead of backslashes (e.g., "c:/apache" instead of "c:\apache").
 # If a drive letter is omitted, the drive on which httpd.exe is located
 # will be used by default.  It is recommended that you always supply
 # an explicit drive letter in absolute paths to avoid confusion.
@@ -200,7 +200,7 @@ LoadModule rewrite_module modules/mod_rewrite.so
 
 <VirtualHost *:443>
 DocumentRoot "stpdocs"
-Header edit Location ^http://(.*)\$  https://\$1
+Header edit Location ^http://(.*)$  https://$1
 <Directory "stpdocs">
     Options Indexes FollowSymLinks
     AllowOverride None
@@ -327,7 +327,7 @@ Allow from all
 </Location>
 
 #mod_proxy load balancing - AJP example only. not encrypted, just a ping
-# ProxyPassMatch ^/stp\\.png\$ balancer://PING
+# ProxyPassMatch ^/stp\.png$ balancer://PING
 
 </VirtualHost>
 
@@ -389,7 +389,7 @@ LoadModule deflate_module modules/mod_deflate.so
         BrowserMatch ^Mozilla/4 gzip-only-text/html
 
 # Netscape 4.06-4.08 have some more problems
-        BrowserMatch ^Mozilla/4\\.0[678] no-gzip
+        BrowserMatch ^Mozilla/4\.0[678] no-gzip
 
 # MSIE masquerades as Netscape, but it is fine
         BrowserMatch \bMSIE !no-gzip !gzip-only-text/html
@@ -529,12 +529,12 @@ LogLevel warn
     # The following directives define some format nicknames for use with
     # a CustomLog directive (see below).
     #
-    LogFormat "%h %l %u %t \\"%r\\" %>s %b \\"%{Referer}i\\" \\"%{User-Agent}i\\"" combined
-    LogFormat "%h %l %u %t \\"%r\\" %>s %b" common
+    LogFormat "%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\"" combined
+    LogFormat "%h %l %u %t \"%r\" %>s %b" common
 
     <IfModule logio_module>
       # You need to enable mod_logio.c to use %I and %O
-      LogFormat "%h %l %u %t \\"%r\\" %>s %b \\"%{Referer}i\\" \\"%{User-Agent}i\\" %I %O" combinedio
+      LogFormat "%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\" %I %O" combinedio
     </IfModule>
 
     #

@@ -6,7 +6,7 @@ import com.siemens.cto.aem.common.domain.model.jvm.Jvm
 import com.siemens.cto.aem.common.domain.model.resource.ResourceGroup
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer
 import com.siemens.cto.aem.common.properties.ApplicationProperties
-import groovy.text.GStringTemplateEngine
+import groovy.text.StreamingTemplateEngine
 
 class ResourceFileGenerator {
     static <T> String generateResourceConfig(String templateText, ResourceGroup resourceGroup, T selectedValue) {
@@ -54,18 +54,17 @@ class ResourceFileGenerator {
             }
         }
         final map = new HashMap<String, String>(ApplicationProperties.properties);
-        def binding = [webServers   : webServers,
-                       webServer    : webServer,
-                       jvms         : jvms,
-                       jvm          : jvm,
-                       webApps      : webApps,
-                       webApp       : webApp,
-                       groups       : groups,
-                       group        : group,
-                       vars         : map]
+        def binding = [webServers: webServers,
+                       webServer : webServer,
+                       jvms      : jvms,
+                       jvm       : jvm,
+                       webApps   : webApps,
+                       webApp    : webApp,
+                       groups    : groups,
+                       group     : group,
+                       vars      : map]
 
-        final engine = new GStringTemplateEngine()
-
+        final engine = new StreamingTemplateEngine();
         return engine.createTemplate(templateText).make(binding.withDefault { '' })
     }
 }

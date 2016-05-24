@@ -3,6 +3,8 @@ package com.siemens.cto.aem.common.domain.model.app;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import java.util.List;
 
@@ -136,4 +138,62 @@ public class Application {
     public void setParentJvm(Jvm parentJvm) {
         this.parentJvm = parentJvm;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Application that = (Application) o;
+
+        return new EqualsBuilder()
+                .append(secure, that.secure)
+                .append(loadBalanceAcrossServers, that.loadBalanceAcrossServers)
+                .append(unpackWar, that.unpackWar)
+                .append(id, that.id)
+                .append(group, that.group)
+                .append(webAppContext, that.webAppContext)
+                .append(name, that.name)
+                .append(warPath, that.warPath)
+                .append(warName, that.warName)
+                .append(jvms, that.jvms)
+                .append(parentJvm, that.parentJvm)
+                .isEquals();
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder(17, 37)
+                .append(id)
+                .append(group)
+                .append(webAppContext)
+                .append(name)
+                .append(warPath)
+                .append(secure)
+                .append(loadBalanceAcrossServers)
+                .append(unpackWar)
+                .append(warName)
+                .append(jvms)
+                .append(parentJvm)
+                .toHashCode();
+    }
+
+    @Override
+    public String toString() {
+        return "Application{" +
+                "id=" + id +
+                ", group=" + group +
+                ", webAppContext='" + webAppContext + '\'' +
+                ", name='" + name + '\'' +
+                ", warPath='" + warPath + '\'' +
+                ", secure=" + secure +
+                ", loadBalanceAcrossServers=" + loadBalanceAcrossServers +
+                ", unpackWar=" + unpackWar +
+                ", warName='" + warName + '\'' +
+                ", jvms=" + jvms +
+                ", parentJvm=" + parentJvm +
+                '}';
+    }
+
 }

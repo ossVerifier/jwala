@@ -35,6 +35,7 @@ class TestResourceFileGenerator extends GroovyTestCase{
         def group = new Group(new Identifier<Group>(1111L), "groupName", jvms, webServers, new CurrentGroupState<>(new Identifier<Group>(1111L), GroupState.GRP_STOPPED, DateTime.now()), new HashSet<History>(), apps)
         groupHashSet.add(group);
         app = new Application(new Identifier<Application>(111L), "hello-world-1", "d:/stp/app/archive", "/hello-world-1", group, true, true, false, "testWar.war")
+        app.setParentJvm(jvm);
 
         apps.add(app)
         apps.add(new Application(new Identifier<Application>(222L), "hello-world-2", "d:/stp/app/archive", "/hello-world-2", group, true, true, false, "testWar.war"))
@@ -58,6 +59,7 @@ class TestResourceFileGenerator extends GroovyTestCase{
         jvms.add(jvm)
         jvms.add(new Jvm(new Identifier<Jvm>(22L), "tc2", "usmlvv1ctoGenerateMe", groupHashSet, 11020, 11021, 11022, -1, 11023,
                 new Path("/statusPath"), "EXAMPLE_OPTS=%someEvn%/someVal", JvmState.JVM_STOPPED, "", null))
+
     }
 
     void testGenerateHttpdConfConfigFile(){
@@ -97,6 +99,46 @@ class TestResourceFileGenerator extends GroovyTestCase{
         resourceGroup = new ResourceGroup(new ArrayList<Group>(groupHashSet));
         def generatedText = ResourceFileGenerator.generateResourceConfig(httpdTemplate.text, resourceGroup, jvm);
         def expectedText = new File("./src/test/resources/SetenvBatTemplate-EXPECTED.bat").text
+        assertEquals(removeCarriageReturnsAndNewLines(expectedText), removeCarriageReturnsAndNewLines(generatedText));
+    }
+
+    void testGenerateLargeWebXmlConfigFile() {
+        File httpdTemplate = new File("./src/test/resources/web.xml.tpl");
+        resourceGroup = new ResourceGroup(new ArrayList<Group>(groupHashSet));
+        def generatedText = ResourceFileGenerator.generateResourceConfig(httpdTemplate.text, resourceGroup, jvm);
+        def expectedText = new File("./src/test/resources/web-EXPECTED.xml").text
+        assertEquals(removeCarriageReturnsAndNewLines(expectedText), removeCarriageReturnsAndNewLines(generatedText));
+    }
+
+    void testGenerateHctXmlConfigFile() {
+        File httpdTemplate = new File("./src/test/resources/hct.xml.tpl");
+        resourceGroup = new ResourceGroup(new ArrayList<Group>(groupHashSet));
+        def generatedText = ResourceFileGenerator.generateResourceConfig(httpdTemplate.text, resourceGroup, app);
+        def expectedText = new File("./src/test/resources/hct-EXPECTED.xml").text
+        assertEquals(removeCarriageReturnsAndNewLines(expectedText), removeCarriageReturnsAndNewLines(generatedText));
+    }
+
+    void testGenerateHctPropertiesConfigFile() {
+        File httpdTemplate = new File("./src/test/resources/hct.properties.tpl");
+        resourceGroup = new ResourceGroup(new ArrayList<Group>(groupHashSet));
+        def generatedText = ResourceFileGenerator.generateResourceConfig(httpdTemplate.text, resourceGroup, app);
+        def expectedText = new File("./src/test/resources/hct-EXPECTED.properties").text
+        assertEquals(removeCarriageReturnsAndNewLines(expectedText), removeCarriageReturnsAndNewLines(generatedText));
+    }
+
+    void testGenerateHctRoleMappingPropertiesConfigFile() {
+        File httpdTemplate = new File("./src/test/resources/hctRoleMapping.properties.tpl");
+        resourceGroup = new ResourceGroup(new ArrayList<Group>(groupHashSet));
+        def generatedText = ResourceFileGenerator.generateResourceConfig(httpdTemplate.text, resourceGroup, app);
+        def expectedText = new File("./src/test/resources/hctRoleMapping-EXPECTED.properties").text
+        assertEquals(removeCarriageReturnsAndNewLines(expectedText), removeCarriageReturnsAndNewLines(generatedText));
+    }
+
+    void testGeneratePropertySourcePropertiesConfigFile() {
+        File httpdTemplate = new File("./src/test/resources/propertySource.properties.tpl");
+        resourceGroup = new ResourceGroup(new ArrayList<Group>(groupHashSet));
+        def generatedText = ResourceFileGenerator.generateResourceConfig(httpdTemplate.text, resourceGroup, app);
+        def expectedText = new File("./src/test/resources/propertySource-EXPECTED.properties").text
         assertEquals(removeCarriageReturnsAndNewLines(expectedText), removeCarriageReturnsAndNewLines(generatedText));
     }
 
