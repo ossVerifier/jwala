@@ -33,8 +33,10 @@ var ResourcePane = React.createClass({
                 this.props.jvmService.getResources(data.jvmName, this.getDataCallback);
             } else if (data.rtreeListMetaData.entity === "webServers") {
                 this.props.wsService.getResources(data.name, this.getDataCallback);
-            } else if (data.rtreeListMetaData.entity === "webApps") {
+            } else if (data.rtreeListMetaData.entity === "webApps" && data.rtreeListMetaData.parent.rtreeListMetaData.entity === "jvms") {
                 this.props.webAppService.getResources(data.name, this.getDataCallback);
+            } else if (data.rtreeListMetaData.entity === "webApps" && data.rtreeListMetaData.parent.rtreeListMetaData.entity === "webAppSection") {
+                ServiceFactory.getResourceService().getAppResources(data.group.name, data.name, this.getDataCallback);
             } else if (data.rtreeListMetaData.entity === "webServerSection") {
                 this.props.groupService.getGroupWebServerResources(data.rtreeListMetaData.parent.name, this.getDataCallback);
             } else if (data.rtreeListMetaData.entity === "jvmSection") {

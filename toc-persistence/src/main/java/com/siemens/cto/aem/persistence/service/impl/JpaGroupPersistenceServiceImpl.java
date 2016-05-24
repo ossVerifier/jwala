@@ -242,16 +242,15 @@ public class JpaGroupPersistenceServiceImpl implements GroupPersistenceService {
     }
 
     @Override
-    public ConfigTemplate populateGroupAppTemplate(final Group group, final String templateFileName, final String metaData,
-                                                   final String templateContent) {
-        JpaGroup jpaGroup = groupCrudService.getGroup(group.getName());
-        return groupCrudService.populateGroupAppTemplate(jpaGroup,templateFileName, metaData, templateContent);
+    public ConfigTemplate populateGroupAppTemplate(final String groupName, String appName, final String templateFileName,
+                                                   final String metaData, final String templateContent) {
+        return groupCrudService.populateGroupAppTemplate(groupName, appName, templateFileName, metaData, templateContent);
     }
 
     @Override
-    public String updateGroupAppResourceTemplate(String groupName, String resourceTemplateName, String content) {
-        groupCrudService.updateGroupAppResourceTemplate(groupName, resourceTemplateName, content);
-        return groupCrudService.getGroupAppResourceTemplate(groupName, resourceTemplateName);
+    public String updateGroupAppResourceTemplate(String groupName, String appName, String resourceTemplateName, String content) {
+        groupCrudService.updateGroupAppResourceTemplate(groupName, appName, resourceTemplateName, content);
+        return groupCrudService.getGroupAppResourceTemplate(groupName, appName, resourceTemplateName);
     }
 
     @Override
@@ -260,8 +259,8 @@ public class JpaGroupPersistenceServiceImpl implements GroupPersistenceService {
     }
 
     @Override
-    public String getGroupAppResourceTemplate(String groupName, String resourceTemplateName) {
-        return groupCrudService.getGroupAppResourceTemplate(groupName, resourceTemplateName);
+    public String getGroupAppResourceTemplate(String groupName, String appName, String resourceTemplateName) {
+        return groupCrudService.getGroupAppResourceTemplate(groupName, appName, resourceTemplateName);
     }
 
     @Override

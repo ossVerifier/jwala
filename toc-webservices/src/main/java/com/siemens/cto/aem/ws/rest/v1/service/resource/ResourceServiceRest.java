@@ -134,4 +134,20 @@ public interface ResourceServiceRest {
     @GET
     @Path("/topology")
     Response getResourceTopology();
+
+    @GET
+    @Path("/{groupName}/{appName}/name")
+    Response getApplicationResourceNames(@PathParam("groupName") String groupName, @PathParam("appName") String appName);
+
+    /**
+     * Gets an application's resource template.
+     * @param groupName the group the application belongs to
+     * @param appName the application name
+     * @param templateName the template name
+     * @return {@link Response}
+     */
+    @GET
+    @Path("/{groupName}/{appName}/{templateName}")
+    Response getAppTemplate(@PathParam("groupName") String groupName, @PathParam("appName") String appName,
+                            @PathParam("templateName") String templateName);
 }

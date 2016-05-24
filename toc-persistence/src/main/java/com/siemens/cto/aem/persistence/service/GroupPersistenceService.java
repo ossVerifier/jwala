@@ -65,15 +65,15 @@ public interface GroupPersistenceService extends StatePersistenceService<Group, 
 
     String updateGroupWebServerResourceTemplate(String groupName, String resourceTemplateName, String content);
 
-    ConfigTemplate populateGroupAppTemplate(Group group, String templateFileName, String metaData, String templateContent);
+    ConfigTemplate populateGroupAppTemplate(String groupName, String appName, String templateFileName, String metaData, String templateContent);
 
     List<String> getGroupAppsResourceTemplateNames(String groupName);
 
-    String getGroupAppResourceTemplate(String groupName, String resourceTemplateName);
+    String getGroupAppResourceTemplate(String groupName, String appName, String resourceTemplateName);
 
     String getGroupAppResourceTemplateMetaData(String groupName, String fileName);
 
-    String updateGroupAppResourceTemplate(String groupName, String resourceTemplateName, String content);
+    String updateGroupAppResourceTemplate(String groupName, String appName, String resourceTemplateName, String content);
 
     void updateState(Identifier<Group> id, GroupState state);
 

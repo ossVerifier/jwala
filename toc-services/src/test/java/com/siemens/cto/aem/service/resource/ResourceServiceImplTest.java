@@ -369,7 +369,7 @@ public class ResourceServiceImplTest {
         when(mockGroupPesistenceService.getGroup(eq("HEALTH CHECK 4.0"))).thenReturn(mockGroup);
         resourceService.createTemplate(metaDataIn, templateIn, "test-app-name");
         verify(mockAppService).uploadAppTemplate(any(UploadAppTemplateRequest.class));
-        verify(mockGroupPesistenceService).populateGroupAppTemplate(eq(mockGroup), anyString(), anyString(), anyString());
+        verify(mockGroupPesistenceService).populateGroupAppTemplate(anyString(), anyString(), anyString(), anyString(), anyString());
     }
 
     @Test

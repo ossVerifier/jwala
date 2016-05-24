@@ -20,4 +20,20 @@ public interface ResourcePersistenceService {
     void deleteResourceInstance(final Identifier<ResourceInstance> resourceInstanceId);
     void deleteResources(final String groupName, final List<String> resourceNames);
 
+    /**
+     * Get's an application's resource names.
+     * @param groupName the group where the application belongs to
+     * @param appName the application name
+     * @return list of resource names
+     */
+    List<String> getApplicationResourceNames(String groupName, String appName);
+
+    /**
+     * Gets an application's resource template.
+     * @param groupName the group the application belongs to
+     * @param appName the application name
+     * @param templateName the template name
+     * @return the template
+     */
+    String getAppTemplate(String groupName, String appName, String templateName);
 }

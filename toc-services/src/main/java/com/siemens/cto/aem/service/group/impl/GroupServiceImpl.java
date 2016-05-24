@@ -330,26 +330,26 @@ public class GroupServiceImpl implements GroupService {
     public void populateGroupAppTemplates(final Application application, final String appContextMetaData, final String appContext,
                                           final String roleMappingPropsMetaData, final String roleMappingProperties,
                                           final String appPropsMetaData, final String appProperties) {
-        final Group group = application.getGroup();
         final int idx = application.getWebAppContext().lastIndexOf('/');
         final String resourceName = idx == -1 ? application.getWebAppContext() : application.getWebAppContext().substring(idx + 1);
 
         final String appRoleMappingPropertiesFileName = resourceName + "RoleMapping.properties";
-        groupPersistenceService.populateGroupAppTemplate(group, appRoleMappingPropertiesFileName, roleMappingPropsMetaData,
-                roleMappingProperties);
+        groupPersistenceService.populateGroupAppTemplate(application.getGroup().getName(), application.getName(),
+                appRoleMappingPropertiesFileName, roleMappingPropsMetaData, roleMappingProperties);
         final String appPropertiesFileName = resourceName + ".properties";
-        groupPersistenceService.populateGroupAppTemplate(group, appPropertiesFileName, appPropsMetaData, appProperties);
+        groupPersistenceService.populateGroupAppTemplate(application.getGroup().getName(), application.getName(),
+                appPropertiesFileName, appPropsMetaData, appProperties);
         final String appContextFileName = resourceName + ".xml";
-        groupPersistenceService.populateGroupAppTemplate(group, appContextFileName, appContextMetaData, appContext);
+        groupPersistenceService.populateGroupAppTemplate(application.getGroup().getName(), application.getName(),
+                appContextFileName, appContextMetaData, appContext);
     }
 
     @Override
     @Transactional
-    public String populateGroupAppTemplate(final String groupName, final String templateName, final String metaData,
-                                           final String content) {
-        Group group = groupPersistenceService.getGroup(groupName);
-        groupPersistenceService.populateGroupAppTemplate(group, templateName, metaData, content);
-        return groupPersistenceService.getGroupAppResourceTemplate(groupName, templateName);
+    public String populateGroupAppTemplate(final String groupName, String appName, final String templateName,
+                                           final String metaData, final String content) {
+        groupPersistenceService.populateGroupAppTemplate(groupName, appName, templateName, metaData, content);
+        return groupPersistenceService.getGroupAppResourceTemplate(groupName, appName, templateName);
     }
 
     @Override
@@ -360,8 +360,8 @@ public class GroupServiceImpl implements GroupService {
 
     @Override
     @Transactional
-    public String updateGroupAppResourceTemplate(String groupName, String resourceTemplateName, String content) {
-        return groupPersistenceService.updateGroupAppResourceTemplate(groupName, resourceTemplateName, content);
+    public String updateGroupAppResourceTemplate(String groupName, String appName, String resourceTemplateName, String content) {
+        return groupPersistenceService.updateGroupAppResourceTemplate(groupName, appName, resourceTemplateName, content);
     }
 
     @Override
@@ -388,8 +388,8 @@ public class GroupServiceImpl implements GroupService {
 
     @Override
     @Transactional
-    public String getGroupAppResourceTemplate(String groupName, String resourceTemplateName, boolean tokensReplaced, ResourceGroup resourceGroup) {
-        final String template = groupPersistenceService.getGroupAppResourceTemplate(groupName, resourceTemplateName);
+    public String getGroupAppResourceTemplate(String groupName, String appName, String resourceTemplateName, boolean tokensReplaced, ResourceGroup resourceGroup) {
+        final String template = groupPersistenceService.getGroupAppResourceTemplate(groupName, appName, resourceTemplateName);
         if (tokensReplaced) {
             String metaDataStr = groupPersistenceService.getGroupAppResourceTemplateMetaData(groupName, resourceTemplateName);
             try {
@@ -491,7 +491,7 @@ public class GroupServiceImpl implements GroupService {
         final File appConfFile = new File(fileNameBuilder.toString());
         try {
             out = new PrintWriter(appConfFile.getAbsolutePath());
-            out.println(getGroupAppResourceTemplate(groupName, resourceTemplateName, true, resourceGroup));
+            out.println(getGroupAppResourceTemplate(groupName, appName, resourceTemplateName, true, resourceGroup));
         } finally {
             if (out != null) {
                 out.close();

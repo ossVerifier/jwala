@@ -1,5 +1,7 @@
 package com.siemens.cto.aem.persistence.configuration;
 
+import com.siemens.cto.aem.persistence.jpa.service.ApplicationCrudService;
+import com.siemens.cto.aem.persistence.jpa.service.impl.ApplicationCrudServiceImpl;
 import org.h2.Driver;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -70,5 +72,10 @@ public class TestJpaConfiguration {
         final SharedEntityManagerBean shared = new SharedEntityManagerBean();
         shared.setEntityManagerFactory(getEntityManagerFactory());
         return shared;
+    }
+
+    @Bean
+    public ApplicationCrudService getApplicationCrudService() {
+        return new ApplicationCrudServiceImpl();
     }
 }

@@ -137,8 +137,9 @@ public class JvmServiceImpl implements JvmService {
             try {
                 ResourceTemplateMetaData metaData = new ObjectMapper().readValue(metaDataStr, ResourceTemplateMetaData.class);
                 if (metaData.getEntity().getDeployToJvms()) {
-                    String appTemplate = groupService.getGroupAppResourceTemplate(groupName, templateName, false, new ResourceGroup());
                     final Application application = applicationService.getApplication(metaData.getEntity().getTarget());
+                    String appTemplate = groupService.getGroupAppResourceTemplate(groupName, application.getName(), templateName,
+                            false, new ResourceGroup());
                     UploadAppTemplateRequest uploadAppTemplateRequest = new UploadAppTemplateRequest(application, metaData.getTemplateName(),
                             metaData.getDeployFileName(), jvmName, metaDataStr, new ByteArrayInputStream(appTemplate.getBytes()));
                     applicationService.uploadAppTemplate(uploadAppTemplateRequest);

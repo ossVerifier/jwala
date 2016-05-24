@@ -224,7 +224,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
 
     @Override
     public Response uploadGroupWebServerConfigTemplate(String groupName, AuthenticatedUser aUser, String templateName) {
-        return uploadConfigTemplate(groupName, aUser, templateName, GroupResourceType.WEBSERVER);
+        return uploadConfigTemplate(groupName, null, aUser, templateName, GroupResourceType.WEBSERVER);
     }
 
     @Override
@@ -341,7 +341,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
 
     @Override
     public Response uploadGroupJvmConfigTemplate(String groupName, AuthenticatedUser aUser, String templateName) {
-        return uploadConfigTemplate(groupName, aUser, templateName, GroupResourceType.JVM);
+        return uploadConfigTemplate(groupName, null, aUser, templateName, GroupResourceType.JVM);
     }
 
     @Override
@@ -627,7 +627,8 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         context = testContext;
     }
 
-    protected Response uploadConfigTemplate(final String groupName, final AuthenticatedUser aUser, final String templateName, final GroupResourceType uploadType) {
+    protected Response uploadConfigTemplate(final String groupName, final String targetEntityName, final AuthenticatedUser aUser,
+                                            final String templateName, final GroupResourceType uploadType) {
         LOGGER.debug("Upload Archive requested: {} streaming (no size, count yet)", groupName);
 
         // iframe uploads from IE do not understand application/json
@@ -652,7 +653,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
                     } else if (uploadType.equals(GroupResourceType.WEBSERVER)) {
                         return doGroupWebServerTemplateUpload(groupName, aUser, templateName, data, file1);
                     } else if (uploadType.equals(GroupResourceType.WEBAPP)) {
-                        return doGroupAppTemplateUpload(groupName, aUser, templateName, data, file1);
+                        return doGroupAppTemplateUpload(groupName, targetEntityName, templateName, data);
                     }
                 } finally {
                     assert data != null;
@@ -695,17 +696,19 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         return ResponseBuilder.created(groupService.populateGroupJvmTemplates(groupName, uploadJvmTemplateCommands, aUser.getUser()));
     }
 
-    protected Response doGroupAppTemplateUpload(String groupName, AuthenticatedUser aUser, final String templateName, final InputStream data, FileItemStream file1) {
+    protected Response doGroupAppTemplateUpload(final String groupName, final String appName, final String templateName,
+                                                final InputStream data) {
         Scanner scanner = new Scanner(data).useDelimiter("\\A");
         String content = scanner.hasNext() ? scanner.next() : "";
 
         // meta data can be empty since the method below (I assume based on the usage) updates an existing template rather
         // than creating a new one.
-        return ResponseBuilder.created(groupService.populateGroupAppTemplate(groupName, templateName, StringUtils.EMPTY, content));
+        return ResponseBuilder.created(groupService.populateGroupAppTemplate(groupName, appName, templateName,
+                StringUtils.EMPTY, content));
     }
 
     @Override
-    public Response updateGroupAppResourceTemplate(final String groupName, final String resourceTemplateName, final String content) {
+    public Response updateGroupAppResourceTemplate(final String groupName, final String appName, final String resourceTemplateName, final String content) {
 
         LOGGER.info("Updating the group template {} for {}", resourceTemplateName, groupName);
 
@@ -713,9 +716,8 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         final Group group = groupService.getGroup(groupName);
 
         try {
-            final String updatedContent = groupService.updateGroupAppResourceTemplate(groupName, resourceTemplateName, content);
+            final String updatedContent = groupService.updateGroupAppResourceTemplate(groupName, appName, resourceTemplateName, content);
             ResourceTemplateMetaData metaData = new ObjectMapper().readValue(metaDataStr, ResourceTemplateMetaData.class);
-            final String appName = metaData.getEntity().getTarget();
 
             Set<Jvm> groupJvms = group.getJvms();
             Set<Future<Response>> futureContents = new HashSet<>();
@@ -828,7 +830,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
                     throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "All JVMs in the group must be stopped before continuing. Operation stopped for JVM " + jvm.getJvmName());
                 }
             }
-            final String groupAppTemplateContent = groupService.getGroupAppResourceTemplate(groupName, fileName, false, new ResourceGroup());
+            final String groupAppTemplateContent = groupService.getGroupAppResourceTemplate(groupName, appName, fileName, false, new ResourceGroup());
             for (Jvm jvm : jvms) {
                 final String jvmName = jvm.getJvmName();
                 Future<Response> responseFuture = executorService.submit(new Callable<Response>() {
@@ -846,8 +848,9 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     }
 
     @Override
-    public Response uploadGroupAppConfigTemplate(String groupName, AuthenticatedUser aUser, String templateName) {
-        return uploadConfigTemplate(groupName, aUser, templateName, GroupResourceType.WEBAPP);
+    public Response uploadGroupAppConfigTemplate(final String groupName, final String appName, final AuthenticatedUser aUser,
+                                                 final String templateName) {
+        return uploadConfigTemplate(groupName, appName, aUser, templateName, GroupResourceType.WEBAPP);
     }
 
     @Override
@@ -862,8 +865,8 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     }
 
     @Override
-    public Response getGroupAppResourceTemplate(String groupName, String resourceTemplateName, boolean tokensReplaced) {
-        return ResponseBuilder.ok(groupService.getGroupAppResourceTemplate(groupName, resourceTemplateName, tokensReplaced, tokensReplaced ? resourceService.generateResourceGroup() : new ResourceGroup()));
+    public Response getGroupAppResourceTemplate(String groupName, String appName, String resourceTemplateName, boolean tokensReplaced) {
+        return ResponseBuilder.ok(groupService.getGroupAppResourceTemplate(groupName, appName, resourceTemplateName, tokensReplaced, tokensReplaced ? resourceService.generateResourceGroup() : new ResourceGroup()));
     }
 
     @Override

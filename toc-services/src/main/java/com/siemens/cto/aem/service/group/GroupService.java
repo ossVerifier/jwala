@@ -85,7 +85,7 @@ public interface GroupService {
 
     List<String> getGroupAppsResourceTemplateNames(String groupName);
 
-    String getGroupAppResourceTemplate(String groupName, String resourceTemplateName, boolean tokensReplaced, ResourceGroup resourceGroup);
+    String getGroupAppResourceTemplate(String groupName, String appName, String resourceTemplateName, boolean tokensReplaced, ResourceGroup resourceGroup);
 
     String getGroupAppResourceTemplateMetaData(String groupName, String fileName);
 
@@ -93,11 +93,11 @@ public interface GroupService {
 
     String getGroupWebServerResourceTemplateMetaData(String groupName, String fileName);
 
-    String updateGroupAppResourceTemplate(String groupName, String resourceTemplateName, String content);
+    String updateGroupAppResourceTemplate(String groupName, String appName, String resourceTemplateName, String content);
 
     String previewGroupAppResourceTemplate(String groupName, String resourceTemplateName, String template, ResourceGroup resourceGroup);
 
-    String populateGroupAppTemplate(String groupName, String templateName, String metaData, String content);
+    String populateGroupAppTemplate(String groupName, String appName, String templateName, String metaData, String content);
 
     void updateState(Identifier<Group> id, GroupState state);
 

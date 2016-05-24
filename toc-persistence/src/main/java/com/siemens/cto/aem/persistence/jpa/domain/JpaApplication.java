@@ -62,6 +62,7 @@ public class JpaApplication extends AbstractEntity<JpaApplication> {
     public static final String WEB_SERVER_NAME_PARAM = "wsName";
     public static final String QUERY_BY_GROUP_JVM_AND_APP_NAME = "findApplicationByGroupJvmAndAppName";
     public static final String GROUP_LIST_PARAM = "groups";
+    public static final String APP_NAME_PARAM = "appName";
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -1,6 +1,7 @@
 package com.siemens.cto.aem.persistence.jpa.service.group.impl;
 
 import com.siemens.cto.aem.common.configuration.TestExecutionProfile;
+import com.siemens.cto.aem.common.domain.model.app.Application;
 import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.group.GroupState;
@@ -15,13 +16,16 @@ import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState;
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.common.exception.NotFoundException;
+import com.siemens.cto.aem.common.request.app.CreateApplicationRequest;
 import com.siemens.cto.aem.common.request.group.CreateGroupRequest;
 import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
 import com.siemens.cto.aem.common.request.state.SetStateRequest;
 import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateRequest;
 import com.siemens.cto.aem.persistence.configuration.TestJpaConfiguration;
+import com.siemens.cto.aem.persistence.jpa.domain.JpaApplication;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaWebServer;
+import com.siemens.cto.aem.persistence.jpa.service.ApplicationCrudService;
 import com.siemens.cto.aem.persistence.jpa.service.GroupCrudService;
 import com.siemens.cto.aem.persistence.jpa.service.WebServerCrudService;
 import com.siemens.cto.aem.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
@@ -91,6 +95,11 @@ public class GroupCrudServiceImplTest {
     GroupCrudService groupCrudService;
 
     @Autowired
+    private ApplicationCrudService applicationCrudService;
+
+    private JpaApplication jpaApplication;
+
+    @Autowired
     WebServerCrudService webServerCrudService;
 
     @Before
@@ -100,10 +109,14 @@ public class GroupCrudServiceImplTest {
         CreateGroupRequest createGroupRequest = new CreateGroupRequest(groupName);
         JpaGroup testGroup = groupCrudService.createGroup(createGroupRequest);
         groupId = new Identifier<>(testGroup.getId());
+
+        jpaApplication = applicationCrudService.createApplication(new CreateApplicationRequest(groupId, "some-app-name", "", false, false, false),
+                testGroup);
     }
 
     @After
     public void tearDown() {
+        applicationCrudService.removeApplication(new Identifier<Application>(jpaApplication.getId()));
         groupCrudService.removeGroup(groupId);
         User.getThreadLocalUser().invalidate();
     }
@@ -238,30 +251,29 @@ public class GroupCrudServiceImplTest {
 
     @Test
     public void testPopulateGroupAppTemplate() {
-        final JpaGroup group = groupCrudService.getGroup(groupName);
-        groupCrudService.populateGroupAppTemplate(group, "app.xml", "someMetaData", "content!");
-        groupCrudService.populateGroupAppTemplate(group, "app.xml", "someMetaData", "content new!");
+        groupCrudService.populateGroupAppTemplate(groupName, "some-app-name", "app.xml", "someMetaData", "content!");
+        groupCrudService.populateGroupAppTemplate(groupName, "some-app-name", "app.xml", "someMetaData", "content new!");
     }
 
     @Test(expected = ResourceTemplateUpdateException.class)
     public void testUpdateGroupAppTemplateThrowsException() {
-        groupCrudService.updateGroupAppResourceTemplate(groupName, "hct.xml", "new hct.xml template");
+        groupCrudService.updateGroupAppResourceTemplate(groupName, "some-app-name", "hct.xml", "new hct.xml template");
     }
 
     @Test
     public void testUpdateGroupAppTemplate() {
-        groupCrudService.populateGroupAppTemplate(groupCrudService.getGroup(groupName), "hct.xml", "hct meta data", "old hct.xml template");
-        String appTemplateContent = groupCrudService.getGroupAppResourceTemplate(groupName, "hct.xml");
+        groupCrudService.populateGroupAppTemplate(groupName, "some-app-name", "hct.xml", "hct meta data", "old hct.xml template");
+        String appTemplateContent = groupCrudService.getGroupAppResourceTemplate(groupName, "some-app-name", "hct.xml");
         assertEquals("old hct.xml template", appTemplateContent);
 
-        groupCrudService.updateGroupAppResourceTemplate(groupName, "hct.xml", "new hct.xml template");
-        appTemplateContent = groupCrudService.getGroupAppResourceTemplate(groupName, "hct.xml");
+        groupCrudService.updateGroupAppResourceTemplate(groupName, "some-app-name", "hct.xml", "new hct.xml template");
+        appTemplateContent = groupCrudService.getGroupAppResourceTemplate(groupName, "some-app-name", "hct.xml");
         assertEquals("new hct.xml template", appTemplateContent);
     }
 
     @Test(expected = NonRetrievableResourceTemplateContentException.class)
     public void testGetGroupAppResourceTemplateThrowsException() {
-        groupCrudService.getGroupAppResourceTemplate("noSuchGroup", "noSuchTemplate");
+        groupCrudService.getGroupAppResourceTemplate("noSuchGroup", "noSuchAppName", "noSuchTemplate");
     }
 
     @Test

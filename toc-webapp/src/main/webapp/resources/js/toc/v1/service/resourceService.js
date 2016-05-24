@@ -58,5 +58,13 @@ var resourceService = {
     },
     getResourceTopology: function() {
         return serviceFoundation.promisedGet("v1.0/resources/topology/");
+    },
+    // TODO: All things regarding resources should be in here therefore we have to put resource related methods for JVM and web server here as well in the future.
+    // NOTE: Also make sure to rewrite the REST service calls related to resources (for JVM and web servers) to be in the resource service, not in the group service.
+    getAppResources : function(groupName, appName, responseCallback) {
+        return serviceFoundation.get("v1.0/resources/" + encodeURI(groupName) + "/" + encodeURI(appName) + "/name", "json", responseCallback);
+    },
+    getResourceTemplate: function(groupName, appName, templateName) {
+        return serviceFoundation.promisedGet("v1.0/resources/" + groupName + "/" + appName + "/" + templateName);
     }
 };

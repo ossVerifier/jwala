@@ -163,13 +163,13 @@ public interface GroupServiceRest {
     @GET
     @Path("/{groupName}/apps/resources/template/{resourceTemplateName}")
     Response getGroupAppResourceTemplate(@PathParam("groupName") final String groupName,
-                                         @PathParam("resourceTemplateName") final String resourceTemplateName,
+                                         String appName, @PathParam("resourceTemplateName") final String resourceTemplateName,
                                          @QueryParam("tokensReplaced") final boolean tokensReplaced);
 
     @PUT
-    @Path("/{groupName}/apps/resources/template/{resourceTemplateName}")
+    @Path("/{groupName}/{appName}/apps/resources/template/{resourceTemplateName}")
     @Consumes(MediaType.TEXT_PLAIN)
-    Response updateGroupAppResourceTemplate(@PathParam("groupName") final String groupName,
+    Response updateGroupAppResourceTemplate(@PathParam("groupName") final String groupName, @PathParam("appName") String appName,
                                             @PathParam("resourceTemplateName") final String resourceTemplateName,
                                             final String content);
 
@@ -182,10 +182,10 @@ public interface GroupServiceRest {
 
 
     @POST
-    @Path("/{groupName}/apps/resources/uploadTemplate")
+    @Path("/{groupName}/{appName}/resources/uploadTemplate")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     Response uploadGroupAppConfigTemplate(@PathParam("groupName") final String groupName,
-                                          @BeanParam final AuthenticatedUser aUser,
+                                          @PathParam("appName") String appName, @BeanParam final AuthenticatedUser aUser,
                                           @QueryParam("templateName") final String templateName);
 
     @PUT

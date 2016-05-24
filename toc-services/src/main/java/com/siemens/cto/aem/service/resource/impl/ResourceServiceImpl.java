@@ -403,7 +403,7 @@ public class ResourceServiceImpl implements ResourceService {
             }
         }
 
-        createdConfigTemplate = groupPersistenceService.populateGroupAppTemplate(group, metaData.getDeployFileName(),
+        createdConfigTemplate = groupPersistenceService.populateGroupAppTemplate(groupName, targetAppName, metaData.getDeployFileName(),
                 convertResourceTemplateMetaDataToJson(metaData), templateString);
 
         return new CreateResourceTemplateApplicationResponseWrapper(createdConfigTemplate);
@@ -480,5 +480,15 @@ public class ResourceServiceImpl implements ResourceService {
     @Override
     public <T> String generateResourceFile(final String template, final ResourceGroup resourceGroup, T selectedValue) {
         return ResourceFileGenerator.generateResourceConfig(template, resourceGroup, selectedValue);
+    }
+
+    @Override
+    public List<String> getApplicationResourceNames(final String groupName, final String appName) {
+        return resourcePersistenceService.getApplicationResourceNames(groupName, appName);
+    }
+
+    @Override
+    public String getAppTemplate(final String groupName, final String appName, final String templateName) {
+        return resourcePersistenceService.getAppTemplate(groupName, appName, templateName);
     }
 }

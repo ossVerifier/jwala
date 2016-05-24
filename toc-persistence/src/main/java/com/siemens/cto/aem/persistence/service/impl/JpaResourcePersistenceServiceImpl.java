@@ -5,6 +5,7 @@ import com.siemens.cto.aem.common.domain.model.resource.ResourceInstance;
 import com.siemens.cto.aem.common.request.resource.ResourceInstanceRequest;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaResourceInstance;
 import com.siemens.cto.aem.persistence.jpa.domain.builder.JpaResourceInstanceBuilder;
+import com.siemens.cto.aem.persistence.jpa.domain.resource.config.template.JpaGroupAppConfigTemplate;
 import com.siemens.cto.aem.persistence.jpa.service.ResourceInstanceCrudService;
 import com.siemens.cto.aem.persistence.service.ResourcePersistenceService;
 
@@ -105,5 +106,23 @@ public class JpaResourcePersistenceServiceImpl implements ResourcePersistenceSer
     private final ResourceInstance parseFromJpa(JpaResourceInstance jpaResourceInstance) {
         JpaResourceInstanceBuilder builder = new JpaResourceInstanceBuilder(jpaResourceInstance);
         return builder.build();
+    }
+
+    @Override
+    // NOTE: We're going to use the entity manager here since we are phasing out the CRUD layer soon.
+    public List<String> getApplicationResourceNames(final String groupName, final String appName) {
+        final Query q = em.createNamedQuery(JpaGroupAppConfigTemplate.QUERY_APP_RESOURCE_NAMES);
+        q.setParameter("grpName", groupName);
+        q.setParameter("appName", appName);
+        return q.getResultList();
+    }
+
+    @Override
+    public String getAppTemplate(final String groupName, final String appName, final String templateName) {
+        final Query q = em.createNamedQuery(JpaGroupAppConfigTemplate.GET_GROUP_APP_TEMPLATE_CONTENT);
+        q.setParameter(JpaGroupAppConfigTemplate.QUERY_PARAM_GRP_NAME, groupName);
+        q.setParameter(JpaGroupAppConfigTemplate.QUERY_PARAM_APP_NAME, appName);
+        q.setParameter(JpaGroupAppConfigTemplate.QUERY_PARAM_TEMPLATE_NAME, templateName);
+        return (String) q.getSingleResult();
     }
 }

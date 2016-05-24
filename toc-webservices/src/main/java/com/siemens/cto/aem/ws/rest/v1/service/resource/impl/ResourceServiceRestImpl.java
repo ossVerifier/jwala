@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.activation.DataHandler;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.io.InputStream;
@@ -148,5 +149,15 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
     @Override
     public Response getResourceTopology() {
         return ResponseBuilder.ok(resourceService.generateResourceGroup());
+    }
+
+    @Override
+    public Response getApplicationResourceNames(final String groupName, final String appName) {
+        return ResponseBuilder.ok(resourceService.getApplicationResourceNames(groupName, appName));
+    }
+
+    @Override
+    public Response getAppTemplate(final String groupName, final String appName, final String templateName) {
+        return ResponseBuilder.ok(resourceService.getAppTemplate(groupName, appName, templateName));
     }
 }

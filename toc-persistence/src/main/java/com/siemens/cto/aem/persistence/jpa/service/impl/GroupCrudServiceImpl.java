@@ -12,6 +12,7 @@ import com.siemens.cto.aem.common.request.group.UpdateGroupRequest;
 import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
 import com.siemens.cto.aem.common.request.state.SetStateRequest;
 import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateRequest;
+import com.siemens.cto.aem.persistence.jpa.domain.JpaApplication;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaWebServer;
 import com.siemens.cto.aem.persistence.jpa.domain.resource.config.template.ConfigTemplate;
@@ -224,10 +225,11 @@ public class GroupCrudServiceImpl extends AbstractCrudServiceImpl<JpaGroup> impl
     }
 
     @Override
-    public void updateGroupAppResourceTemplate(String groupName, String resourceTemplateName, String content) {
+    public void updateGroupAppResourceTemplate(String groupName, String appName, String resourceTemplateName, String content) {
         final Query q = entityManager.createNamedQuery(JpaGroupAppConfigTemplate.UPDATE_GROUP_APP_TEMPLATE_CONTENT);
-        q.setParameter("grpName", groupName);
-        q.setParameter("templateName", resourceTemplateName);
+        q.setParameter(JpaGroupAppConfigTemplate.QUERY_PARAM_GRP_NAME, groupName);
+        q.setParameter(JpaGroupAppConfigTemplate.QUERY_PARAM_APP_NAME, appName);
+        q.setParameter(JpaGroupAppConfigTemplate.QUERY_PARAM_TEMPLATE_NAME, resourceTemplateName);
         q.setParameter("templateContent", content);
 
         int numEntities;
@@ -256,10 +258,11 @@ public class GroupCrudServiceImpl extends AbstractCrudServiceImpl<JpaGroup> impl
     }
 
     @Override
-    public String getGroupAppResourceTemplate(String groupName, String resourceTemplateName) {
+    public String getGroupAppResourceTemplate(String groupName, String appName, String resourceTemplateName) {
         final Query q = entityManager.createNamedQuery(JpaGroupAppConfigTemplate.GET_GROUP_APP_TEMPLATE_CONTENT);
-        q.setParameter("grpName", groupName);
-        q.setParameter("templateName", resourceTemplateName);
+        q.setParameter(JpaGroupAppConfigTemplate.QUERY_PARAM_GRP_NAME, groupName);
+        q.setParameter(JpaGroupAppConfigTemplate.QUERY_PARAM_APP_NAME, appName);
+        q.setParameter(JpaGroupAppConfigTemplate.QUERY_PARAM_TEMPLATE_NAME, resourceTemplateName);
         try {
             return (String) q.getSingleResult();
         } catch (RuntimeException re) {
@@ -363,10 +366,10 @@ public class GroupCrudServiceImpl extends AbstractCrudServiceImpl<JpaGroup> impl
     }
 
     @Override
-    public ConfigTemplate populateGroupAppTemplate(final JpaGroup group, final String templateFileName, final String metaData,
-                                         final String templateContent) {
+    public ConfigTemplate populateGroupAppTemplate(final String groupName, String appName, final String templateFileName, final String metaData,
+                                                   final String templateContent) {
         Query query = entityManager.createQuery("SELECT t FROM JpaGroupAppConfigTemplate t where t.templateName = :tempName and t.grp.name = :grpName");
-        query.setParameter("grpName", group.getName());
+        query.setParameter("grpName", groupName);
         query.setParameter("tempName", templateFileName);
         List<JpaGroupAppConfigTemplate> templates = query.getResultList();
         JpaGroupAppConfigTemplate jpaConfigTemplate;
@@ -377,15 +380,20 @@ public class GroupCrudServiceImpl extends AbstractCrudServiceImpl<JpaGroup> impl
             entityManager.flush();
         } else if (templates.isEmpty()) {
             jpaConfigTemplate = new JpaGroupAppConfigTemplate();
-            jpaConfigTemplate.setJpaGroup(group);
+            jpaConfigTemplate.setJpaGroup(getGroup(groupName));
             jpaConfigTemplate.setTemplateName(templateFileName);
             jpaConfigTemplate.setMetaData(metaData);
             jpaConfigTemplate.setTemplateContent(templateContent);
+
+            query = entityManager.createNamedQuery(JpaApplication.QUERY_BY_NAME);
+            query.setParameter(JpaApplication.APP_NAME_PARAM, appName);
+            jpaConfigTemplate.setApp((JpaApplication) query.getSingleResult());
+
             entityManager.persist(jpaConfigTemplate);
             entityManager.flush();
         } else {
             throw new BadRequestException(AemFaultType.APP_TEMPLATE_NOT_FOUND,
-                    "Only expecting one template to be returned for GROUP APP Template [" + group.getName() + "] but returned " + templates.size() + " templates");
+                    "Only expecting one template to be returned for GROUP APP Template [" + groupName + "] but returned " + templates.size() + " templates");
         }
 
         return jpaConfigTemplate;

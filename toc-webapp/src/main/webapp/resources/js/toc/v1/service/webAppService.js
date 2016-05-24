@@ -72,9 +72,13 @@ var webAppService = {
     getWebAppsByJvm : function(jvmId, responseCallback) {
         return serviceFoundation.get("v1.0/applications/jvm/" + jvmId, "json", responseCallback);
     },
+
+    // TODO: Find out if we need to pass the JVM name also.
     getResources : function(appName, responseCallback) {
         return serviceFoundation.get("v1.0/applications/" + encodeURI(appName) + "/resources/name", "json", responseCallback);
     },
+
+
     getResourceTemplate : function(appName, groupName, jvmName, tokensReplaced, resourceTemplateName, responseCallback) {
         return serviceFoundation.get("v1.0/applications/" + encodeURI(appName) + "/resources/template/" +
                                      encodeURI(resourceTemplateName) + ";groupName=" + encodeURI(groupName) +

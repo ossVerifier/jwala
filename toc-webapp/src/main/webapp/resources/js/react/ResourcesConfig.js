@@ -523,13 +523,19 @@ var XmlTabs = React.createClass({
                                                          false,
                                                          resourceName,
                                                          this.reloadTemplateCallback.bind(this, data, resourceName, this.state.entityGroupName));
-            } else if (entityType === "webApps") {
+            } else if (entityType === "webApps" && this.state.entityParent.jvmName) {
                 this.props.webAppService.getResourceTemplate(data.name,
                                                              this.state.entity.group.name,
                                                              this.state.entityParent.jvmName,
                                                              false,
                                                              resourceName,
                                                              this.reloadTemplateCallback.bind(this, data, resourceName, this.state.entityGroupName));
+            } else if (entityType === "webApps" && this.state.entityParent.rtreeListMetaData.parent.name) {
+                var self = this;
+                ServiceFactory.getResourceService().getResourceTemplate(this.state.entity.group.name, data.name,
+                    resourceName).then(function(response){
+                        self.reloadTemplateCallback(data, resourceName, self.state.entity.group.name, response);
+                    }).caught(function(e){console.log(e);});
             } else if (entityType === "webServerSection") {
                              this.props.groupService.getGroupWebServerResourceTemplate(this.state.entityGroupName,
                                                                       false,
@@ -578,13 +584,22 @@ var XmlTabs = React.createClass({
                                                              this.previewSuccessCallback,
                                                              this.previewErrorCallback);
                 } else if (this.state.entityType === "webApps") {
+//                    if (this.state.entityParent.jvmName) {
+//
+//                    } else {
+////                        ServiceFactory.getResourceService().previewResourceFile(this.state.entity.group.name, this.state.entity.name,
+////                            this.refs.codeMirrorComponent.getText()).then(function(response){}).caught(function(e){console.log(e)});
+//                    }
+
                     this.props.webAppService.previewResourceFile(this.state.entity.name,
                                                                  this.state.entity.group.name,
-                                                                 this.state.entityParent.jvmName,
+                                                                 this.state.entityParent.jvmName ? this.state.entityParent.jvmName : "",
                                                                  this.refs.codeMirrorComponent.getText(),
                                                                  this.previewSuccessCallback,
                                                                  this.previewErrorCallback);
-                } else if (this.state.entityType === "webServerSection") {
+
+
+                }  else if (this.state.entityType === "webServerSection") {
                     this.props.groupService.previewGroupWebServerResourceFile(this.state.entityGroupName,
                                                                  this.refs.codeMirrorComponent.getText(),
                                                                  this.previewSuccessCallback,

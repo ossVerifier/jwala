@@ -30,6 +30,7 @@ import com.siemens.cto.toc.files.FileManager;
 import com.siemens.cto.toc.files.RepositoryFileInformation;
 import com.siemens.cto.toc.files.RepositoryFileInformation.Type;
 import com.siemens.cto.toc.files.WebArchiveManager;
+import org.apache.commons.lang3.StringUtils;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -328,8 +329,13 @@ public class ApplicationServiceImpl implements ApplicationService {
     @Override
     @Transactional
     public String previewResourceTemplate(String appName, String groupName, String jvmName, String template, ResourceGroup resourceGroup) {
-        final Application application = applicationPersistenceService.findApplication(appName, groupName, jvmName);
-        application.setParentJvm(jvmPersistenceService.findJvmByExactName(jvmName));
+        final Application application;
+        if (StringUtils.isNotEmpty(jvmName)) {
+            application = applicationPersistenceService.findApplication(appName, groupName, jvmName);
+            application.setParentJvm(jvmPersistenceService.findJvmByExactName(jvmName));
+        } else {
+            application = applicationPersistenceService.getApplication(appName);
+        }
         return ResourceFileGenerator.generateResourceConfig(template, resourceGroup, application);
     }
 
