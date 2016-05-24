@@ -9,7 +9,6 @@ var ResourcesConfig = React.createClass({
                                                 jvmService={this.props.jvmService}
                                                 wsService={this.props.wsService}
                                                 webAppService={this.props.webAppService}
-                                                generateXmlSnippetCallback={this.generateXmlSnippetCallback}
                                                 getTemplateCallback={this.getTemplateCallback}
                                                 selectEntityCallback={this.selectEntityCallback}
                                                 selectResourceTemplateCallback={this.selectResourceTemplateCallback}
@@ -73,9 +72,6 @@ var ResourcesConfig = React.createClass({
     },
     onChildSplitterChangeCallback: function(dimensions) {
         this.refs.resourceEditor.onParentSplitterChange(dimensions);
-    },
-    generateXmlSnippetCallback: function(resourceName, groupName) {
-        this.props.resourceService.getXmlSnippet(resourceName, groupName, this.generateXmlSnippetResponseCallback);
     },
     generateXmlSnippetResponseCallback: function(response) {
         this.refs.xmlTabs.refreshXmlDisplay(response.applicationResponseContent);

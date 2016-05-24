@@ -20,7 +20,6 @@ import com.siemens.cto.aem.persistence.service.*;
 import com.siemens.cto.aem.service.app.ApplicationService;
 import com.siemens.cto.aem.service.exception.ResourceServiceException;
 import com.siemens.cto.aem.service.resource.ResourceService;
-import com.siemens.cto.aem.template.HarmonyTemplateEngine;
 import com.siemens.cto.aem.template.ResourceFileGenerator;
 import com.siemens.cto.toc.files.FileManager;
 import org.apache.commons.io.IOUtils;
@@ -43,7 +42,6 @@ public class ResourceServiceImpl implements ResourceService {
     private static final Logger LOGGER = LoggerFactory.getLogger(ResourceServiceImpl.class);
 
     private final FileManager fileManager;
-    private final HarmonyTemplateEngine templateEngine;
     private final SpelExpressionParser expressionParser;
     private final Expression encryptExpression;
     private final ResourcePersistenceService resourcePersistenceService;
@@ -64,7 +62,6 @@ public class ResourceServiceImpl implements ResourceService {
 
     public ResourceServiceImpl(
             final FileManager theFileManager,
-            final HarmonyTemplateEngine harmonyTemplateEngine,
             final ResourcePersistenceService resourcePersistenceService,
             final GroupPersistenceService groupPersistenceService,
             final ApplicationPersistenceService applicationPersistenceService,
@@ -72,7 +69,6 @@ public class ResourceServiceImpl implements ResourceService {
             final JvmPersistenceService jvmPersistenceService,
             final WebServerPersistenceService webServerPersistenceService) {
         fileManager = theFileManager;
-        templateEngine = harmonyTemplateEngine;
         this.resourcePersistenceService = resourcePersistenceService;
         this.groupPersistenceService = groupPersistenceService;
         expressionParser = new SpelExpressionParser();
@@ -101,21 +97,6 @@ public class ResourceServiceImpl implements ResourceService {
     public ResourceInstance getResourceInstanceByGroupNameAndName(final String groupName, final String name) {
         Group group = this.groupPersistenceService.getGroup(groupName);
         return this.resourcePersistenceService.getResourceInstanceByGroupIdAndName(group.getId().getId(), name);
-    }
-
-    @Override
-    public String generateResourceInstanceFragment(String groupName, String resourceInstanceName) {
-        final Map<String, String> mockedValues = new HashMap<>();
-        mockedValues.put("jvm.id", "[jvm.id of instance]");
-        mockedValues.put("jvm.name", "[jvm.name of instance]");
-        mockedValues.put("app.name", "[app.name of Web App]");
-        return generateResourceInstanceFragment(groupName, resourceInstanceName, mockedValues);
-    }
-
-    @Override
-    public String generateResourceInstanceFragment(String groupName, String resourceInstanceName, Map<String, String> mockedValues) {
-        ResourceInstance resourceInstance = this.getResourceInstanceByGroupNameAndName(groupName, resourceInstanceName);
-        return templateEngine.populateResourceInstanceTemplate(resourceInstance, null, mockedValues);
     }
 
     @Override
@@ -157,11 +138,6 @@ public class ResourceServiceImpl implements ResourceService {
         StandardEvaluationContext context = new StandardEvaluationContext();
         context.setVariable("stringToEncrypt", cleartext);
         return encryptExpression.getValue(context, String.class);
-    }
-
-    @Override
-    public String getTemplate(final String resourceTypeName) {
-        return templateEngine.getTemplate(resourceTypeName);
     }
 
     @Override

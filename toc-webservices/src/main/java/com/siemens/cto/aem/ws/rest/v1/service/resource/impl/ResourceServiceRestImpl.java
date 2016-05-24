@@ -41,10 +41,6 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
     }
 
     @Override
-    public Response generateResourceInstanceByNameGroup(String name, String groupName) {
-        return ResponseBuilder.ok(resourceService.generateResourceInstanceFragment(groupName, name));
-    }
-    @Override
     public Response findResourceInstanceByNameGroup(final String name, final String groupName) {
         return ResponseBuilder.ok(resourceService.getResourceInstancesByGroupName(groupName));
     }
@@ -75,11 +71,6 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR,
                     new FaultCodeException(AemFaultType.PERSISTENCE_ERROR, e.getMessage()));
         }
-    }
-
-    @Override
-    public Response getTemplate(final String resourceTypeName) {
-        return ResponseBuilder.ok(resourceService.getTemplate(resourceTypeName));
     }
 
     @Override

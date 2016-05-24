@@ -24,7 +24,6 @@ import com.siemens.cto.aem.persistence.service.*;
 import com.siemens.cto.aem.service.app.ApplicationService;
 import com.siemens.cto.aem.service.exception.ResourceServiceException;
 import com.siemens.cto.aem.service.resource.impl.ResourceServiceImpl;
-import com.siemens.cto.aem.template.HarmonyTemplateEngine;
 import com.siemens.cto.toc.files.FileManager;
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.groovy.runtime.ResourceGroovyMethods;
@@ -47,7 +46,6 @@ import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyList;
 import static org.mockito.Matchers.anyLong;
-import static org.mockito.Matchers.anyMap;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
@@ -59,9 +57,6 @@ public class ResourceServiceImplTest {
 
     @Mock
     private FileManager mockFileManager;
-
-    @Mock
-    private HarmonyTemplateEngine mockHarmonyTemplateEngine;
 
     @Mock
     private ResourcePersistenceService mockResourcePersistenceService;
@@ -88,7 +83,7 @@ public class ResourceServiceImplTest {
         // It is good practice to start with a clean sheet of paper before each test that is why resourceService is
         // initialized here. This makes sure that unrelated tests don't affect each other.
         MockitoAnnotations.initMocks(this);
-        resourceService = new ResourceServiceImpl(mockFileManager, mockHarmonyTemplateEngine, mockResourcePersistenceService,
+        resourceService = new ResourceServiceImpl(mockFileManager, mockResourcePersistenceService,
                 mockGroupPesistenceService, mockAppPersistenceService, mockAppService, mockJvmPersistenceService,
                 mockWebServerPersistenceService);
     }
@@ -169,20 +164,6 @@ public class ResourceServiceImplTest {
         when(mockResourcePersistenceService.getResourceInstanceByGroupIdAndName(anyLong(), anyString())).thenReturn(mockResourceInstance);
         when(mockGroupPesistenceService.getGroup(groupName)).thenReturn(mockGroup);
         ResourceInstance value = resourceService.getResourceInstanceByGroupNameAndName(groupName, name);
-        assertNotNull(value);
-    }
-
-    @Test
-    public void testGenerateResourceInstanceFragment(){
-        final String groupName = "groupName";
-        String name = "name";
-        Group mockGroup = mock(Group.class);
-        ResourceInstance mockResourceInstance = mock(ResourceInstance.class);
-        when(mockGroup.getId()).thenReturn(new Identifier<Group>(1L));
-        when(mockResourcePersistenceService.getResourceInstanceByGroupIdAndName(anyLong(), anyString())).thenReturn(mockResourceInstance);
-        when(mockGroupPesistenceService.getGroup(groupName)).thenReturn(mockGroup);
-        when(mockHarmonyTemplateEngine.populateResourceInstanceTemplate(any(ResourceInstance.class), anyMap(), anyMap())).thenReturn("populated resource template");
-        String value = resourceService.generateResourceInstanceFragment("groupName", "name");
         assertNotNull(value);
     }
 

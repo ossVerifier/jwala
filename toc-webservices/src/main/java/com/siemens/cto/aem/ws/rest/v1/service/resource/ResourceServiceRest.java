@@ -36,10 +36,6 @@ public interface ResourceServiceRest {
     @Path("/{name}")
     Response findResourceInstanceByNameGroup(@PathParam("name") final String name, @MatrixParam("groupName") final String groupName);
 
-    @GET
-    @Path("/{name}/preview")
-    Response generateResourceInstanceByNameGroup(@PathParam("name") final String name, @MatrixParam("groupName") final String groupName);
-
     /**
      * /aem/v1.0/resources <br/>
      * JSON POST data of JsonResourceInstance
@@ -88,10 +84,6 @@ public interface ResourceServiceRest {
     @Consumes(MediaType.APPLICATION_JSON)
     Response removeResources(@MatrixParam("groupName") final String groupName,
                              @MatrixParam("resourceName") final List<String> resourceNames);
-
-    @GET
-    @Path("/types/{resourceTypeName}/template")
-    Response getTemplate(@PathParam("resourceTypeName") final String resourceTypeName);
 
     /**
      * Creates a template file and it's corresponding JSON meta data file.

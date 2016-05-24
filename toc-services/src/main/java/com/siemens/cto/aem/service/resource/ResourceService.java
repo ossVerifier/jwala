@@ -10,7 +10,6 @@ import com.siemens.cto.aem.service.resource.impl.CreateResourceTemplateApplicati
 
 import java.io.InputStream;
 import java.util.List;
-import java.util.Map;
 
 
 public interface ResourceService {
@@ -20,10 +19,6 @@ public interface ResourceService {
     List<ResourceInstance> getResourceInstancesByGroupName(final String groupName);
 
     ResourceInstance getResourceInstanceByGroupNameAndName(final String groupName, final String name);
-
-    String generateResourceInstanceFragment(final String groupName, final String name);
-
-    String generateResourceInstanceFragment(String groupName, String resourceInstanceName, Map<String, String> mockedValues);
 
     List<ResourceInstance> getResourceInstancesByGroupNameAndResourceTypeName(final String groupName, final String resourceTypeName);
 
@@ -36,8 +31,6 @@ public interface ResourceService {
     void deleteResources(final String groupName, final List<String> resourceNames);
     
     String  encryptUsingPlatformBean(String cleartext);
-
-    String getTemplate(final String resourceTypeName);
 
     /**
      * Creates a template file and it's corresponding JSON meta data file.

@@ -74,14 +74,6 @@ public class ResourceServiceRestImplTest {
     }
 
     @Test
-    public void testGenerateInstanceByNameGroup() {
-        final String testName = "testName";
-        when(impl.generateResourceInstanceFragment(group.getName(), testName)).thenReturn("instance fragment");
-        Response response = cut.generateResourceInstanceByNameGroup(testName, group.getName());
-        assertNotNull(response.getEntity());
-    }
-
-    @Test
     public void testFindResourceInstanceByNameGroup() {
         when(impl.getResourceInstancesByGroupName(group.getName())).thenReturn(new ArrayList<ResourceInstance>());
         Response response = cut.findResourceInstanceByNameGroup("testName", group.getName());
@@ -194,13 +186,6 @@ public class ResourceServiceRestImplTest {
 
         response = cut.getResourceTopology();
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
-    }
-
-    @Test
-    public void testGetTemplate() {
-        when(impl.getTemplate(anyString())).thenReturn("resourceTemplate");
-        Response response = cut.getTemplate("resourceType");
-        assertNotNull(response.getEntity());
     }
 
 }

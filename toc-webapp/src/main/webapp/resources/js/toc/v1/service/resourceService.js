@@ -38,12 +38,6 @@ var resourceService = {
                                      successCallback,
                                      errorCallback);
     },
-    getXmlSnippet: function(resourceName, groupName, responseCallback) {
-        return serviceFoundation.get("v1.0/resources/" + resourceName + "/preview;groupName=" + groupName, "json", responseCallback);
-    },
-    getTemplate: function(resourceTypeName, responseCallback) {
-        return serviceFoundation.get("v1.0/resources/types/" + resourceTypeName + "/template", "json", responseCallback);
-    },
     createResource: function(targetName, formData) {
         return serviceFoundation.promisedPost("v1.0/resources/template/" + targetName, "json", formData, null, true);
     },
