@@ -45,7 +45,6 @@ import com.siemens.cto.aem.ws.rest.v1.service.webserver.impl.WebServerServiceRes
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -101,6 +100,11 @@ public class GroupServiceImplDeployTest {
     private AuthenticatedUser mockAuthUser = mock(AuthenticatedUser.class);
     private User mockUser = mock(User.class);
     private String httpdConfDirPath;
+
+    public GroupServiceImplDeployTest() {
+        System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH,
+                this.getClass().getClassLoader().getResource("vars.properties").getPath().replace("vars.properties", ""));
+    }
 
     @Before
     public void setUp() {
@@ -422,8 +426,6 @@ public class GroupServiceImplDeployTest {
     }
 
     @Test
-    @Ignore
-    // TODO: Fix this!!!
     public void testUpdateGroupAppTemplate() {
         Group mockGroupWithJvms = mock(Group.class);
         Jvm mockJvm = mock(Jvm.class);
@@ -431,21 +433,21 @@ public class GroupServiceImplDeployTest {
         mockJvms.add(mockJvm);
         when(mockJvm.getJvmName()).thenReturn("mockJvmName");
         when(mockGroupWithJvms.getJvms()).thenReturn(mockJvms);
-        when(mockGroupService.updateGroupAppResourceTemplate(anyString(), "some-app-name", anyString(), anyString())).thenReturn("new hct.xml content");
+        when(mockGroupService.updateGroupAppResourceTemplate(anyString(), anyString(), anyString(), anyString())).thenReturn("new hct.xml content");
         when(mockGroupService.getGroup(anyString())).thenReturn(mockGroupWithJvms);
         when(mockGroupService.getGroupAppResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"entity\":{\"target\": \"testApp\"}}");
         when(mockApplicationService.updateResourceTemplate(anyString(), anyString(), anyString(), anyString(), anyString())).thenReturn("new hct.xml content");
 
         Response response = groupServiceRest.updateGroupAppResourceTemplate("testGroup", "testAppName", "hct.xml", "new hct.xml context");
-        verify(mockGroupService).updateGroupAppResourceTemplate(anyString(), "some-app-name", anyString(), anyString());
+        verify(mockGroupService).updateGroupAppResourceTemplate(anyString(), anyString(), anyString(), anyString());
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
 
-        when(mockGroupService.updateGroupAppResourceTemplate(anyString(), "some-app-name", anyString(), anyString())).thenThrow(new ResourceTemplateUpdateException("testApp", "hct.xml"));
+        when(mockGroupService.updateGroupAppResourceTemplate(anyString(), anyString(), anyString(), anyString())).thenThrow(new ResourceTemplateUpdateException("testApp", "hct.xml"));
         response = groupServiceRest.updateGroupAppResourceTemplate("testGroup", "testAppName", "hct.xml", "newer hct.xml content");
         assertEquals(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), response.getStatus());
 
         reset(mockGroupService);
-        when(mockGroupService.updateGroupAppResourceTemplate(anyString(), "some-app-name", anyString(), anyString())).thenReturn("new hct.xml content");
+        when(mockGroupService.updateGroupAppResourceTemplate(anyString(), anyString(), anyString(), anyString())).thenReturn("new hct.xml content");
         when(mockGroupService.getGroupAppResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"entity\":{\"target\": \"testApp\"}}");
         when(mockGroupService.getGroup(anyString())).thenReturn(mockGroupWithJvms);
         when(mockGroupWithJvms.getJvms()).thenReturn(null);
@@ -454,12 +456,10 @@ public class GroupServiceImplDeployTest {
     }
 
     @Test
-    @Ignore
-    // TODO: Fix this!!!
     public void testUpdateGroupAppTemplateJsonParseException() {
         when(mockGroupService.getGroupAppResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"throwParseException\":true}");
         when(mockGroupService.getGroup(anyString())).thenReturn(mock(Group.class));
-        when(mockGroupService.updateGroupAppResourceTemplate(anyString(), "some-app-name", anyString(), anyString())).thenReturn("updated group app resource template content");
+        when(mockGroupService.updateGroupAppResourceTemplate(anyString(), anyString(), anyString(), anyString())).thenReturn("updated group app resource template content");
         Response notOk = groupServiceRest.updateGroupAppResourceTemplate("testGroup", "testAppName", "hct.xml", "newer hct.xml content");
         assertTrue(((ApplicationResponse) notOk.getEntity()).getApplicationResponseContent().toString().contains("Unrecognized field"));
         assertEquals(500, notOk.getStatus());
