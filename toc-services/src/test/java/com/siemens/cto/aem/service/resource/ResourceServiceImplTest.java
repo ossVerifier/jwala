@@ -10,11 +10,13 @@ import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.common.domain.model.path.FileSystemPath;
 import com.siemens.cto.aem.common.domain.model.resource.EntityType;
+import com.siemens.cto.aem.common.domain.model.resource.ResourceGroup;
 import com.siemens.cto.aem.common.domain.model.resource.ResourceInstance;
 import com.siemens.cto.aem.common.domain.model.resource.ResourceType;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState;
+import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.common.request.app.UploadAppTemplateRequest;
 import com.siemens.cto.aem.common.request.jvm.UploadJvmConfigTemplateRequest;
 import com.siemens.cto.aem.common.request.resource.ResourceInstanceRequest;
@@ -31,7 +33,6 @@ import org.apache.commons.lang.StringUtils;
 import org.codehaus.groovy.runtime.ResourceGroovyMethods;
 import org.joda.time.DateTime;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -304,7 +305,6 @@ public class ResourceServiceImplTest {
     }
 
     @Test
-    @Ignore
     public void testCreateWebServerTemplate() {
         final InputStream metaDataIn = this.getClass().getClassLoader()
                 .getResourceAsStream("resource-service-test-files/create-ws-template-test-metadata.json");
@@ -401,7 +401,6 @@ public class ResourceServiceImplTest {
     }
 
     @Test
-    @Ignore
     public void testGenerateResourceFile() {
         File httpdTemplate = new File("../toc-template/src/test/resources/HttpdConfTemplate.tpl");
         try {
@@ -431,10 +430,14 @@ public class ResourceServiceImplTest {
 
             when(mockGroupPesistenceService.getGroups()).thenReturn(groups);
             when(mockAppPersistenceService.findApplicationsBelongingTo(anyString())).thenReturn(applications);
-            when(mockJvmPersistenceService.getJvmsByGroupName(anyString())).thenReturn(jvms);
+            when(mockJvmPersistenceService.getJvmsAndWebAppsByGroupName(anyString())).thenReturn(jvms);
             when(mockWebServerPersistenceService.getWebServersByGroupName(anyString())).thenReturn(webServers);
 
-            String output = resourceService.generateResourceFile(ResourceGroovyMethods.getText(httpdTemplate), resourceService.generateResourceGroup(), webServer);
+            System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH,
+                    this.getClass().getClassLoader().getResource("vars.properties").getPath().replace("vars.properties", ""));
+
+            final ResourceGroup resourceGroup = resourceService.generateResourceGroup();
+            String output = resourceService.generateResourceFile(ResourceGroovyMethods.getText(httpdTemplate), resourceGroup, webServer);
 
             String expected = ResourceGroovyMethods.getText(new File("../toc-template/src/test/resources/HttpdConfTemplate-EXPECTED.conf"));
             expected = expected.replaceAll("\\r", "").replaceAll("\\n", "");
