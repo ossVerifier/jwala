@@ -142,6 +142,11 @@ public class GroupServiceRestImplTest {
         return result;
     }
 
+    public GroupServiceRestImplTest() {
+        System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH,
+                this.getClass().getClassLoader().getResource("vars.properties").getPath().replace("vars.properties", ""));
+    }
+
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
@@ -639,11 +644,9 @@ public class GroupServiceRestImplTest {
     }
 
     @Test
-    @Ignore
-    // TODO: Fix this!!!
     public void testGetGroupAppResourceTemplate() {
         groupServiceRest.getGroupAppResourceTemplate("testGroup", "some-app-name", "hct.xml", false);
-        verify(mockGroupService).getGroupAppResourceTemplate(eq("testGroup"), "some-app-name", eq("hct.xml"), eq(false), any(ResourceGroup.class));
+        verify(mockGroupService).getGroupAppResourceTemplate(eq("testGroup"), eq("some-app-name"), eq("hct.xml"), eq(false), any(ResourceGroup.class));
     }
 
     @Test
