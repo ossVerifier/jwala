@@ -1,6 +1,7 @@
 package com.siemens.cto.aem.service.configuration.service;
 
 import com.jcraft.jsch.Channel;
+import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.siemens.cto.aem.commandprocessor.CommandExecutor;
 import com.siemens.cto.aem.commandprocessor.impl.jsch.JschBuilder;
@@ -266,13 +267,17 @@ public class AemServiceConfiguration implements SchedulingConfigurer {
     }
 
     @Bean(name = "webServerCommandService")
-    public WebServerCommandService getWebServerCommandService(final WebServerService webServerService) {
+    public WebServerCommandService getWebServerCommandService(final WebServerService webServerService,
+                                                              final RemoteCommandExecutorService remoteCommandExecutorService,
+                                                              @Value("${paths.httpd.conf:d:/stp/app/data/httpd}")
+                                                              final String httpdPath) {
         final SshConfiguration sshConfig = aemSshConfig.getSshConfiguration();
 
         final JschBuilder jschBuilder = new JschBuilder().setPrivateKeyFileName(sshConfig.getPrivateKeyFile())
                 .setKnownHostsFileName(sshConfig.getKnownHostsFile());
 
-        return new WebServerCommandServiceImpl(webServerService, commandExecutor, jschBuilder, sshConfig, channelPool);
+        return new WebServerCommandServiceImpl(webServerService, commandExecutor, jschBuilder, sshConfig, channelPool,
+                remoteCommandExecutorService, httpdPath);
     }
 
     @Bean
@@ -385,6 +390,11 @@ public class AemServiceConfiguration implements SchedulingConfigurer {
     @Bean(name = "webServerInMemoryStateManagerService")
     InMemoryStateManagerService<Identifier<WebServer>, WebServerReachableState> getWebServerInMemoryStateManagerService() {
         return new InMemoryStateManagerServiceImpl<>();
+    }
+
+    @Bean
+    public JSch getJSch() {
+        return new JSch();
     }
 
     @Override

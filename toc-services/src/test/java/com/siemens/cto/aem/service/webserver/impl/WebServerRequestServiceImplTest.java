@@ -13,7 +13,11 @@ import com.siemens.cto.aem.common.domain.model.ssh.SshConfiguration;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.common.exec.CommandOutput;
 import com.siemens.cto.aem.common.exec.ExecReturnCode;
+import com.siemens.cto.aem.common.exec.RemoteExecCommand;
+import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.exception.CommandFailureException;
+import com.siemens.cto.aem.service.RemoteCommandExecutorService;
+import com.siemens.cto.aem.service.RemoteCommandReturnInfo;
 import com.siemens.cto.aem.service.ssl.hc.HttpClientRequestFactory;
 import com.siemens.cto.aem.service.webserver.WebServerService;
 import com.siemens.cto.aem.service.webserver.component.ClientFactoryHelper;
@@ -42,6 +46,7 @@ import java.net.URISyntaxException;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Matchers.*;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 /**
@@ -80,6 +85,9 @@ public class WebServerRequestServiceImplTest {
     @Mock
     private GenericKeyedObjectPool<ChannelSessionKey, Channel> channelPool;
 
+    @Mock
+    private RemoteCommandExecutorService mockRemoteCommandExecutorService;
+
     final private Identifier<WebServer> id = new Identifier<>(1L);
 
     private WebServerCommandServiceImpl impl;
@@ -87,6 +95,11 @@ public class WebServerRequestServiceImplTest {
     @Autowired
     @Qualifier("factoryHelper")
     private ClientFactoryHelper factoryHelper;
+
+    public WebServerRequestServiceImplTest() {
+        System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, this.getClass().getClassLoader()
+                .getResource("vars.properties").getPath().replace("vars.properties", ""));
+    }
 
     @Before
     public void setup() throws JSchException, CommandFailureException {
@@ -96,16 +109,23 @@ public class WebServerRequestServiceImplTest {
         when(aWebServer.getHttpConfigFile()).thenReturn(new FileSystemPath("d:/some-dir/httpd.conf"));
         when(webServerService.getWebServer(eq(id))).thenReturn(aWebServer);
         when(jschBuilder.build()).thenReturn(jSch);
+
         when(executor.execute(any(CommandProcessorBuilder.class)))
                 .thenReturn(new CommandOutput(new ExecReturnCode(1), "The content of httpd.conf", ""));
+
+
+        when(mockRemoteCommandExecutorService.executeCommand(any(RemoteExecCommand.class)))
+                .thenReturn(new RemoteCommandReturnInfo(0, "The content of httpd.conf", null));
+
         assertNotNull(factoryHelper);
-        impl = new WebServerCommandServiceImpl(webServerService, executor, jschBuilder, sshConfig, channelPool);
+        impl = new WebServerCommandServiceImpl(webServerService, executor, jschBuilder, sshConfig, channelPool,
+                mockRemoteCommandExecutorService, "d:/stp/app/data/httpd");
     }
 
     @Test
     public void testGetHttpdConf() throws CommandFailureException {
         final CommandOutput execData = impl.getHttpdConf(id);
-        assertEquals(execData.getStandardOutput(), "The content of httpd.conf");
+        assertEquals("The content of httpd.conf", execData.getStandardOutput());
     }
 
     @Test
@@ -147,7 +167,5 @@ public class WebServerRequestServiceImplTest {
         public ClientFactoryHelper getClientFactoryHelper(final ClientFactoryHelper factoryHelper) {
             return factoryHelper;
         }
-
     }
-
 }
