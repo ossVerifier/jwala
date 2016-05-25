@@ -53,7 +53,6 @@
 <script type="text/jsx" src="public-resources/js/react/generic-components/confirm-delete-modal-dialog.js"></script>
 <script type="text/jsx" src="public-resources/js/react/generic-components/data-combobox.js"></script>
 <script type="text/jsx" src="public-resources/js/react/generic-components/data-multi-select-box.js"></script>
-<script type="text/jsx" src="public-resources/js/react/RToolbar.js"></script>
 <script type="text/jsx" src="public-resources/js/react/RTextPreview.js"></script>
 <script type="text/jsx" src="public-resources/js/react/XmlEditor.js"></script>
 <script type="text/jsx" src="public-resources/js/react/CodeMirrorComponent.js"></script>
@@ -73,7 +72,6 @@
 <script type="text/jsx" src="public-resources/js/react/generic-components/generic-button.js"></script>
 <script type="text/jsx" src="public-resources/js/react/flashing-button.js"></script>
 <script type="text/jsx" src="public-resources/js/react/generic-components/datatable-button.js"></script>
-<script type="text/jsx" src="public-resources/js/react/group-operations.js"></script>
 <script type="text/jsx" src="public-resources/js/react/group-operations/GroupOperations.js"></script>
 <script type="text/jsx" src="public-resources/js/react/group-operations/CommandStatusWidget.js"></script>
 <script type="text/jsx" src="public-resources/js/react/group-operations/GroupOperationsDataTable.js"></script>

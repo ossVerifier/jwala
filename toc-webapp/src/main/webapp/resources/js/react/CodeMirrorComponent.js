@@ -16,7 +16,6 @@ var CodeMirrorComponent = React.createClass({
                    React.createElement("div", {ref: "codeMirrorHost"}));
     },
     componentDidMount: function() {
-        console.log("componentDidMount...");
         var val = this.props.content ? this.props.content : "";
         this.codeMirror = CodeMirror(this.refs.codeMirrorHost.getDOMNode(), {value: val, lineNumbers: true,
                                      mode:  "xml"});
@@ -25,7 +24,6 @@ var CodeMirrorComponent = React.createClass({
         this.resize();
     },
     componentWillUpdate: function(nextProps, nextState) {
-        console.log("component will update...");
         this.setData(nextProps.content);
     },
     saveCallback: function() {
@@ -35,7 +33,6 @@ var CodeMirrorComponent = React.createClass({
         return this.codeMirror.getValue();
     },
     isContentChanged: function() {
-        // console.log(this.state.data + " vs " + this.getText());
         return this.state.data !== this.getText()
     },
     resize: function() {

@@ -29,7 +29,7 @@ var ResourceEditor = React.createClass({
                                         children:[{entity: "webApps", propKey: "name", selectable: true}]}]
                             };
 
-        var groupJvmTreeList = <RStaticDialog ref="groupsDlg" title="Topology" defaultContentHeight="283px">
+        var groupJvmTreeList = <RStaticDialog key="groupsDlg"  ref="groupsDlg" title="Topology" defaultContentHeight="283px">
                                    <RTreeList ref="treeList"
                                               data={this.state.groupData}
                                               treeMetaData={treeMetaData}
@@ -39,7 +39,7 @@ var ResourceEditor = React.createClass({
                                               collapsedByDefault={true}/>
                                </RStaticDialog>
 
-        var resourcesPane = <RStaticDialog ref="resourceFileDlg" title="Resources" defaultContentHeight="283px">
+        var resourcesPane = <RStaticDialog key="resourceFileDlg" ref="resourceFileDlg" title="Resources" defaultContentHeight="283px">
                                 <ResourcePane ref="resourcePane"
                                               jvmService={this.props.jvmService}
                                               wsService={this.props.wsService}
@@ -50,7 +50,7 @@ var ResourceEditor = React.createClass({
                                               deleteResourceCallback={this.props.deleteResourceCallback}/>
                             </RStaticDialog>
 
-        var resourceAttrPane = <RStaticDialog ref="resourceAttrDlg" title="Properties and Values" defaultContentHeight="283px">
+        var resourceAttrPane = <RStaticDialog key="resourceAttrPane" ref="resourceAttrDlg" title="Properties and Values" defaultContentHeight="283px">
                                    <ResourceAttrPane ref="resourceAttrPane" />
                                </RStaticDialog>
 
@@ -81,8 +81,6 @@ var ResourceEditor = React.createClass({
         if (response.applicationResponseContent !== undefined) {
             this.groupData = response.applicationResponseContent.groups;
         }
-
-        console.log(this.groupData);
 
         if (this.dataRetrievalCount === 0) {
             // Add the sections e.g. jvmSection

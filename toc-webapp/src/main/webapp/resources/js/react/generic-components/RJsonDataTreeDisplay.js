@@ -16,7 +16,8 @@ var RJsonDataTreeDisplay = React.createClass({
         for (var key in this.state.data) {
             // prop key is required by React internally and if used inside node will result to undefined
             // that is why we need nodeKey
-            nodeArray.push(React.createElement(RJsonTreeNode, {key: key, nodeKey: key, val: this.state.data[key],
+            var domKey = "node_" + (this.props.hierarchy ? this.props.hierarchy + "." + key : key);
+            nodeArray.push(React.createElement(RJsonTreeNode, {key: domKey, nodeKey: key, val: this.state.data[key],
                 displayValueOnly: this.props.displayValueOnly, hierarchy: this.props.hierarchy,
                 onShowToolTipCallback: this.props.onShowToolTipCallback}));
         }
@@ -51,7 +52,9 @@ var RJsonTreeNode = React.createClass({
                 for (var key in this.props.val) {
                     var object = {};
                     object[this.props.nodeKey + "[" + key + "]"] = this.props.val[key];
-                    treeArray.push(React.createElement(RJsonDataTreeDisplay, {data: object,
+                    var treeKey = "tree_" + (this.props.hierarchy ? this.props.hierarchy + "." : "") + this.props.nodeKey + "[" + key + "]";
+                    treeArray.push(React.createElement(RJsonDataTreeDisplay, {key: treeKey,
+                                                                              data: object,
                                                                               displayValueOnly: this.props.displayValueOnly,
                                                                               hierarchy: this.props.hierarchy,
                                                                               onShowToolTipCallback: this.props.onShowToolTipCallback}));
