@@ -49,13 +49,13 @@ import com.siemens.cto.aem.service.jvm.JvmStateService;
 import com.siemens.cto.aem.service.jvm.impl.JvmControlServiceImpl;
 import com.siemens.cto.aem.service.jvm.impl.JvmServiceImpl;
 import com.siemens.cto.aem.service.jvm.state.JvmStateReceiverAdapter;
-import com.siemens.cto.aem.service.state.impl.InMemoryStateManagerServiceImpl;
 import com.siemens.cto.aem.service.resource.ResourceService;
 import com.siemens.cto.aem.service.resource.impl.ResourceServiceImpl;
 import com.siemens.cto.aem.service.ssl.hc.HttpClientRequestFactory;
 import com.siemens.cto.aem.service.state.InMemoryStateManagerService;
 import com.siemens.cto.aem.service.state.StateNotificationConsumerBuilder;
 import com.siemens.cto.aem.service.state.StateNotificationService;
+import com.siemens.cto.aem.service.state.impl.InMemoryStateManagerServiceImpl;
 import com.siemens.cto.aem.service.state.jms.JmsStateNotificationConsumerBuilderImpl;
 import com.siemens.cto.aem.service.state.jms.JmsStateNotificationServiceImpl;
 import com.siemens.cto.aem.service.webserver.WebServerCommandService;
@@ -67,7 +67,6 @@ import com.siemens.cto.aem.service.webserver.component.WebServerStateSetterWorke
 import com.siemens.cto.aem.service.webserver.impl.WebServerCommandServiceImpl;
 import com.siemens.cto.aem.service.webserver.impl.WebServerControlServiceImpl;
 import com.siemens.cto.aem.service.webserver.impl.WebServerServiceImpl;
-import com.siemens.cto.aem.template.HarmonyTemplateEngine;
 import com.siemens.cto.toc.files.FileManager;
 import org.apache.commons.pool2.impl.GenericKeyedObjectPool;
 import org.apache.commons.pool2.impl.GenericKeyedObjectPoolConfig;
@@ -132,9 +131,6 @@ public class AemServiceConfiguration implements SchedulingConfigurer {
 
     @Autowired
     private AemSshConfig aemSshConfig;
-
-    @Autowired
-    private HarmonyTemplateEngine harmonyTemplateEngine;
 
     @Autowired
     private WebServerService webServerPersistenceService;
@@ -301,7 +297,7 @@ public class AemServiceConfiguration implements SchedulingConfigurer {
                                               final JvmPersistenceService jvmPersistenceService,
                                               final WebServerPersistenceService webServerPersistenceService,
                                               final ApplicationService applicationService) {
-        return new ResourceServiceImpl(fileManager, harmonyTemplateEngine, persistenceServiceConfiguration.getResourcePersistenceService(),
+        return new ResourceServiceImpl(fileManager, persistenceServiceConfiguration.getResourcePersistenceService(),
                 persistenceServiceConfiguration.getGroupPersistenceService(), applicationPersistenceService, applicationService,
                 jvmPersistenceService, webServerPersistenceService);
     }
