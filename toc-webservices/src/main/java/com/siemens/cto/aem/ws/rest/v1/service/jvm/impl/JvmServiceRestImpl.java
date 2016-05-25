@@ -336,7 +336,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
         final ControlJvmRequest secureCopyRequest = new ControlJvmRequest(jvm.getId(), JvmControlOperation.SECURE_COPY);
         final String commandsScriptsPath = ApplicationProperties.get("commands.scripts-path");
 
-        final String deployConfigJarPath = commandsScriptsPath + "/" + AemControl.Properties.DEPLOY_CONFIG_TAR_SCRIPT_NAME.getValue();
+        final String deployConfigJarPath = commandsScriptsPath + "/" + AemControl.Properties.DEPLOY_CONFIG_ARCHIVE_SCRIPT_NAME.getValue();
         final String tocScriptsPath = AemControl.Properties.USER_TOC_SCRIPTS_PATH.getValue();
         final String jvmName = jvm.getJvmName();
         if (!jvmControlService.secureCopyFile(secureCopyRequest, deployConfigJarPath, tocScriptsPath).getReturnCode().wasSuccessful()){
@@ -377,7 +377,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
 
     protected void deployJvmConfigJar(Jvm jvm, AuthenticatedUser user, String jvmConfigTar) {
         CommandOutput execData = jvmControlService.controlJvm(
-                new ControlJvmRequest(jvm.getId(), JvmControlOperation.DEPLOY_CONFIG_TAR), user.getUser());
+                new ControlJvmRequest(jvm.getId(), JvmControlOperation.DEPLOY_CONFIG_ARCHIVE), user.getUser());
         if (execData.getReturnCode().wasSuccessful()) {
             LOGGER.info("Deployment of config tar was successful: {}", jvmConfigTar);
         } else {
