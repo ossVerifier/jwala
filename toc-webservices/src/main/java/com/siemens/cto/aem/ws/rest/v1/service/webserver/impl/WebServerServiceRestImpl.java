@@ -273,6 +273,12 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
         } catch (CommandFailureException e) {
             LOGGER.error("Failed to secure copy the invokeWS.bat file for {}", aWebServerName, e);
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to secure copy the invokeWS.bat file for " + aWebServerName, e);
+        } catch (InternalErrorException e) {
+            if (e.getMessageResponseStatus().equals(AemFaultType.TEMPLATE_NOT_FOUND)) {
+                throw new InternalErrorException(AemFaultType.WEB_SERVER_HTTPD_CONF_TEMPLATE_NOT_FOUND, "Failed to generate " + aWebServerName + " because no httpd.conf template has been defined yet.Upload a httpd.conf template for this web server and try again.");
+            } else {
+                throw e;
+            }
         } finally {
             wsWriteLocks.get(aWebServerName).writeLock().unlock();
         }
