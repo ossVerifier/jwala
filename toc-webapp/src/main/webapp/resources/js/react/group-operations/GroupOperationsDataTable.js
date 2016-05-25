@@ -714,11 +714,17 @@ var GroupOperationsDataTable = React.createClass({
                                         var msg;
                                         if (response.applicationResponseContent.standardError === "") {
                                             msg = response.applicationResponseContent.standardOutput;
+                                            if (msg.trim() === "") {
+                                                msg = "Oops! Something went wrong! The JVM might not have been started.";
+                                                $.errorAlert(msg, "Heap Dump", false);
+                                            } else {
+                                                $.alert(msg, "Heap Dump", false);
+                                            }
                                         } else {
                                             msg = response.applicationResponseContent.execData.standardError;
+                                            $.errorAlert(msg, "Heap Dump", false);
                                         }
-                                        $.alert(msg, "Heap Dump", false);
-                                        $(selector).attr('title', "Last heap dump status: " + msg);
+                                        $(selector).attr("title", "Last heap dump status: " + msg);
                                      };
        var heapDumpErrorHandler = function(e){
                                       var errCodeAndMsg;
