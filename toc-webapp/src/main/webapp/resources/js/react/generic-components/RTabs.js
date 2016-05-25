@@ -19,11 +19,12 @@ var RTabs = React.createClass({
 
         var i = 0;
         this.props.items.forEach(function(item) {
+            var keyPostFix = item.title.replace(/ /g , "_"); // replace spaces with '_'
             tabArray.push(React.createElement(Tab, {idx: i, currentIndex: currentIndex,
-                                                    key: item.title,
+                                                    key: "tab_" + keyPostFix,
                                                     title: item.title,
                                                     onSelectTabCallback: self.onSelectTabCallback}));
-            tabContentArray.push(React.createElement(TabContent, {idx: i, currentIndex: currentIndex,
+            tabContentArray.push(React.createElement(TabContent, {idx: i, currentIndex: currentIndex, key: "content_" + keyPostFix,
                                                                   className: self.props.contentClassName}, item.content));
             i++;
         });
