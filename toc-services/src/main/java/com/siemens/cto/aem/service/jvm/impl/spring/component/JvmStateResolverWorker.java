@@ -60,12 +60,12 @@ public class JvmStateResolverWorker {
                 jvmStateService.updateNotInMemOrStaleState(jvm, JvmState.JVM_STARTED, StringUtils.EMPTY);
                 currentState = new CurrentState<>(jvm.getId(), JvmState.JVM_STARTED, DateTime.now(), StateType.JVM);
             } else {
-                currentState = verifyStateRemotelyAndDoAnUpdate(jvm, jvmStateService, "Request for '" + jvm.getStatusUri() +
+                currentState = verifyIfJvmWinServiceIsStoppedAndDoAnUpdate(jvm, jvmStateService, "Request for '" + jvm.getStatusUri() +
                         "' failed with a response code of '" + response.getStatusCode() + "'");
             }
         } catch (final IOException ioe) {
             LOGGER.debug("{} {}", jvm.getJvmName(), ioe.getMessage(), ioe);
-            currentState = verifyStateRemotelyAndDoAnUpdate(jvm, jvmStateService, ioe.getMessage());
+            currentState = verifyIfJvmWinServiceIsStoppedAndDoAnUpdate(jvm, jvmStateService, ioe.getMessage());
         } catch (final RuntimeException rte) {
             // This method is executed asynchronously and we do not want to interrupt the thread's lifecycle.
             LOGGER.error(rte.getMessage(), rte);
@@ -80,13 +80,21 @@ public class JvmStateResolverWorker {
     }
 
     /**
-     * Verify the state in the remote server then do a state update.
+     * Verify if the JVM Window's service is stopped and update the state.
+     * This method was intended to be called after an unsuccessful ping.
+     * It verifies if the Windows service is stopped and if it is, then we can say that the JVM is stopped.
+     * If the Window's service is not stopped and then we set the JVM state to UNKNOWN.
+     * The reason for setting the JVM state to UNKNOWN even if the Window's service is running is because
+     * the Window's service state is NOT THE SAME as the JVM state. There can be a case where the Window's service is
+     * running but the JVM is not running as it should, meaning it's not serving the web applications and it's not
+     * sending state messages.
+     *
      * @param jvm the JVM
      * @param jvmStateService {@link JvmStateService}
      * @param errMsg an error message form the caller which will be included in the state update if it gets verified
      * @return {@link CurrentState}
      */
-    protected CurrentState<Jvm, JvmState> verifyStateRemotelyAndDoAnUpdate(final Jvm jvm, final JvmStateService jvmStateService, String errMsg) {
+    private CurrentState<Jvm, JvmState> verifyIfJvmWinServiceIsStoppedAndDoAnUpdate(final Jvm jvm, final JvmStateService jvmStateService, String errMsg) {
         try {
             final RemoteCommandReturnInfo remoteCommandReturnInfo = jvmStateService.getServiceStatus(jvm);
             LOGGER.debug("RemoteCommandReturnInfo = {}", remoteCommandReturnInfo);

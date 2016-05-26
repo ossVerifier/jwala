@@ -4,13 +4,11 @@ import com.siemens.cto.aem.common.domain.model.app.Application;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
-import com.siemens.cto.aem.common.domain.model.resource.EntityType;
-import com.siemens.cto.aem.common.domain.model.resource.ResourceGroup;
-import com.siemens.cto.aem.common.domain.model.resource.ResourceInstance;
-import com.siemens.cto.aem.common.domain.model.resource.ResourceTemplateMetaData;
+import com.siemens.cto.aem.common.domain.model.resource.*;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.common.request.app.UploadAppTemplateRequest;
+import com.siemens.cto.aem.common.request.app.UploadWebArchiveRequest;
 import com.siemens.cto.aem.common.request.jvm.UploadJvmConfigTemplateRequest;
 import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
 import com.siemens.cto.aem.common.request.resource.ResourceInstanceRequest;
@@ -18,10 +16,12 @@ import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateReque
 import com.siemens.cto.aem.persistence.jpa.domain.resource.config.template.ConfigTemplate;
 import com.siemens.cto.aem.persistence.service.*;
 import com.siemens.cto.aem.service.app.ApplicationService;
+import com.siemens.cto.aem.service.app.PrivateApplicationService;
 import com.siemens.cto.aem.service.exception.ResourceServiceException;
 import com.siemens.cto.aem.service.resource.ResourceService;
 import com.siemens.cto.aem.template.ResourceFileGenerator;
 import com.siemens.cto.toc.files.FileManager;
+import com.siemens.cto.toc.files.RepositoryFileInformation;
 import org.apache.commons.io.IOUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
@@ -46,6 +46,7 @@ public class ResourceServiceImpl implements ResourceService {
     private final Expression encryptExpression;
     private final ResourcePersistenceService resourcePersistenceService;
     private final GroupPersistenceService groupPersistenceService;
+    private PrivateApplicationService privateApplicationService;
 
     private final String encryptExpressionString = "new com.siemens.cto.infrastructure.StpCryptoService().encryptToBase64( #stringToEncrypt )";
 
@@ -67,10 +68,12 @@ public class ResourceServiceImpl implements ResourceService {
             final ApplicationPersistenceService applicationPersistenceService,
             final ApplicationService applicationService,
             final JvmPersistenceService jvmPersistenceService,
-            final WebServerPersistenceService webServerPersistenceService) {
+            final WebServerPersistenceService webServerPersistenceService,
+            final PrivateApplicationService privateApplicationService) {
         fileManager = theFileManager;
         this.resourcePersistenceService = resourcePersistenceService;
         this.groupPersistenceService = groupPersistenceService;
+        this.privateApplicationService = privateApplicationService;
         expressionParser = new SpelExpressionParser();
         encryptExpression = expressionParser.parseExpression(encryptExpressionString);
         this.applicationPersistenceService = applicationPersistenceService;
@@ -143,7 +146,7 @@ public class ResourceServiceImpl implements ResourceService {
     @Override
     @Transactional
     public CreateResourceTemplateApplicationResponseWrapper createTemplate(final InputStream metaData,
-                                                                           final InputStream templateData,
+                                                                           InputStream templateData,
                                                                            final String targetName) {
         final ObjectMapper mapper = new ObjectMapper();
         final ResourceTemplateMetaData resourceTemplateMetaData;
@@ -151,6 +154,14 @@ public class ResourceServiceImpl implements ResourceService {
 
         try {
             resourceTemplateMetaData = mapper.readValue(IOUtils.toString(metaData), ResourceTemplateMetaData.class);
+            if (resourceTemplateMetaData.getContentType().equals(ContentType.APPLICATION_BINARY.contentTypeStr)){
+                // TODO create new API that doesn't use UploadWebArchiveRequest - just do this for now
+                Application fakedApplication = new Application(new Identifier<Application>(0L), resourceTemplateMetaData.getDeployFileName(), resourceTemplateMetaData.getDeployPath(), "", null, true, true, false, resourceTemplateMetaData.getDeployFileName());
+                UploadWebArchiveRequest uploadWebArchiveRequest = new UploadWebArchiveRequest( fakedApplication, resourceTemplateMetaData.getDeployFileName(), -1L, templateData);
+                RepositoryFileInformation fileInfo = privateApplicationService.uploadWebArchiveData(uploadWebArchiveRequest);
+
+                templateData = new ByteArrayInputStream(fileInfo.getPath().toString().getBytes());
+            }
 
             // Let's create the template!
             final EntityType entityType = EntityType.fromValue(resourceTemplateMetaData.getEntity().getType());
