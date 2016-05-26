@@ -17,15 +17,18 @@ import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState;
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.common.request.app.UploadAppTemplateRequest;
+import com.siemens.cto.aem.common.request.app.UploadWebArchiveRequest;
 import com.siemens.cto.aem.common.request.jvm.UploadJvmConfigTemplateRequest;
 import com.siemens.cto.aem.common.request.resource.ResourceInstanceRequest;
 import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateRequest;
+import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
 import com.siemens.cto.aem.persistence.service.*;
 import com.siemens.cto.aem.service.app.ApplicationService;
 import com.siemens.cto.aem.service.app.PrivateApplicationService;
 import com.siemens.cto.aem.service.exception.ResourceServiceException;
 import com.siemens.cto.aem.service.resource.impl.ResourceServiceImpl;
 import com.siemens.cto.toc.files.FileManager;
+import com.siemens.cto.toc.files.RepositoryFileInformation;
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.groovy.runtime.ResourceGroovyMethods;
 import org.joda.time.DateTime;
@@ -38,6 +41,7 @@ import org.mockito.internal.verification.Times;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -295,9 +299,33 @@ public class ResourceServiceImplTest {
                 .getResourceAsStream("resource-service-test-files/create-app-template-test-metadata.json");
         final InputStream templateIn = this.getClass().getClassLoader()
                 .getResourceAsStream("resource-service-test-files/app.xml.tpl");
-        resourceService.createTemplate(metaDataIn, templateIn, "test-app-name");
+        Jvm mockJvm = mock(Jvm.class);
+        JpaJvm mockJpaJvm = mock(JpaJvm.class);
+        when(mockJvmPersistenceService.findJvmByExactName(anyString())).thenReturn(mockJvm);
+        when(mockJvmPersistenceService.getJpaJvm(any(Identifier.class), anyBoolean())).thenReturn(mockJpaJvm);
+        resourceService.createTemplate(metaDataIn, templateIn, "test-jvm-name");
         verify(mockAppPersistenceService).getApplication("some application");
-        verify(mockAppService).uploadAppTemplate(any(UploadAppTemplateRequest.class));
+        verify(mockAppPersistenceService).uploadAppTemplate(any(UploadAppTemplateRequest.class), any(JpaJvm.class));
+    }
+
+    @Test
+    public void testCreateAppTemplateBinary() {
+        final InputStream metaDataIn = this.getClass().getClassLoader()
+                .getResourceAsStream("resource-service-test-files/create-app-template-test-metadata-binary.json");
+        final InputStream templateIn = this.getClass().getClassLoader()
+                .getResourceAsStream("resource-service-test-files/app.xml.tpl");
+        Jvm mockJvm = mock(Jvm.class);
+        JpaJvm mockJpaJvm = mock(JpaJvm.class);
+        RepositoryFileInformation mockRepoFilInfo = mock(RepositoryFileInformation.class);
+        Path mockPath = mock(Path.class);
+        when(mockPath.toString()).thenReturn("./anyPath");
+        when(mockRepoFilInfo.getPath()).thenReturn(mockPath);
+        when(mockJvmPersistenceService.findJvmByExactName(anyString())).thenReturn(mockJvm);
+        when(mockJvmPersistenceService.getJpaJvm(any(Identifier.class), anyBoolean())).thenReturn(mockJpaJvm);
+        when(mockPrivateApplicationService.uploadWebArchiveData(any(UploadWebArchiveRequest.class))).thenReturn(mockRepoFilInfo);
+        resourceService.createTemplate(metaDataIn, templateIn, "test-jvm-name");
+        verify(mockAppPersistenceService).getApplication("some application");
+        verify(mockAppPersistenceService).uploadAppTemplate(any(UploadAppTemplateRequest.class), any(JpaJvm.class));
     }
 
     @Test
