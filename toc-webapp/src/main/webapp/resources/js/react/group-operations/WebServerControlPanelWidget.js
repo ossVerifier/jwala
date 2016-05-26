@@ -72,8 +72,8 @@ var WebServerControlPanelWidget = React.createClass({
 
     generateServiceAndHttpdConfSucccessCallback: function(response) {
         this.doneCallback[response.applicationResponseContent.name]();
-         $.alert("Successfully installed the service, and generated and deployed the httpd.conf",
-                 "Deploy " + this.props.data.name +  "'s httpd.conf", false);
+         $.alert("Successfully installed the service, and generated and deployed configuration file(s).",
+                 "Deploy " + response.applicationResponseContent.name, false);
     },
 
     generateServiceAndHttpdConfErrorCallback: function(applicationResponseContent, doneCallback) {
