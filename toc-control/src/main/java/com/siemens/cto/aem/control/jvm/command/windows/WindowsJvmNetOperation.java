@@ -1,21 +1,32 @@
 package com.siemens.cto.aem.control.jvm.command.windows;
 
-import com.siemens.cto.aem.common.domain.model.jvm.JvmControlOperation;
-import com.siemens.cto.aem.common.exec.ExecCommand;
-import com.siemens.cto.aem.common.exec.ShellCommand;
-import com.siemens.cto.aem.common.properties.ApplicationProperties;
-import com.siemens.cto.aem.control.AemControl;
-import com.siemens.cto.aem.control.command.ServiceCommandBuilder;
-import org.apache.commons.lang.StringUtils;
-import org.joda.time.DateTime;
-import org.joda.time.format.DateTimeFormat;
-import org.joda.time.format.DateTimeFormatter;
+import static com.siemens.cto.aem.control.AemControl.Properties.CYGPATH;
+import static com.siemens.cto.aem.control.AemControl.Properties.DEPLOY_CONFIG_ARCHIVE_SCRIPT_NAME;
+import static com.siemens.cto.aem.control.AemControl.Properties.INVOKE_SERVICE_SCRIPT_NAME;
+import static com.siemens.cto.aem.control.AemControl.Properties.SCP_SCRIPT_NAME;
+import static com.siemens.cto.aem.control.AemControl.Properties.SLEEP_TIME;
+import static com.siemens.cto.aem.control.AemControl.Properties.START_SCRIPT_NAME;
+import static com.siemens.cto.aem.control.AemControl.Properties.STOP_SCRIPT_NAME;
+import static com.siemens.cto.aem.control.AemControl.Properties.USER_TOC_SCRIPTS_PATH;
 
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.Properties;
 
-import static com.siemens.cto.aem.control.AemControl.Properties.*;
+import org.apache.commons.lang.StringUtils;
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.siemens.cto.aem.common.domain.model.jvm.JvmControlOperation;
+import com.siemens.cto.aem.common.domain.model.ssh.DecryptPassword;
+import com.siemens.cto.aem.common.exec.ExecCommand;
+import com.siemens.cto.aem.common.exec.ShellCommand;
+import com.siemens.cto.aem.common.properties.ApplicationProperties;
+import com.siemens.cto.aem.control.AemControl;
+import com.siemens.cto.aem.control.command.ServiceCommandBuilder;
 
 /**
  * Windows JVM Net Operations
@@ -102,11 +113,21 @@ public enum WindowsJvmNetOperation implements ServiceCommandBuilder {
     INVOKE_SERVICE(JvmControlOperation.INVOKE_SERVICE) {
         @Override
         public ExecCommand buildCommandForService(String aServiceName, String... aParams) {
+            final String username = ApplicationProperties.get("remote.jvm.account.username");
+            final String quotedUsername;
+            if (username!=null && username.length()>0){
+                quotedUsername = "\"" + username +"\"";
+            } else {
+                quotedUsername = "";
+            }            
+            final String password = ApplicationProperties.get("remote.jvm.account.password.encrypted");
+            final String password_decrypted = (password!=null && password.length()>0) ? new DecryptPassword().decrypt(password): ""; 
             return new ExecCommand(
                     cygpathWrapper(INVOKE_SERVICE_SCRIPT_NAME, USER_TOC_SCRIPTS_PATH + "/"),
                     aServiceName,
-                    ApplicationProperties.get("paths.instances")
-            );
+                    ApplicationProperties.get("paths.instances"),
+                    quotedUsername,
+                    password_decrypted);
         }
     },
     SECURE_COPY(JvmControlOperation.SECURE_COPY) {
@@ -144,6 +165,7 @@ public enum WindowsJvmNetOperation implements ServiceCommandBuilder {
             JvmControlOperation.class);
 
     public static final String INSTANCES_DIR = ApplicationProperties.get("paths.instances");
+    private static final Logger LOGGER = LoggerFactory.getLogger(WindowsJvmNetOperation.class);
 
     static {
         for (final WindowsJvmNetOperation o : values()) {

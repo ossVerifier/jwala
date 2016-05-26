@@ -1,6 +1,21 @@
 package com.siemens.cto.aem.commandprocessor.impl.jsch;
 
-import com.jcraft.jsch.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PrintStream;
+import java.nio.charset.StandardCharsets;
+
+import org.apache.commons.pool2.impl.GenericKeyedObjectPool;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.jcraft.jsch.Channel;
+import com.jcraft.jsch.ChannelExec;
+import com.jcraft.jsch.ChannelShell;
+import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.JSchException;
+import com.jcraft.jsch.Session;
 import com.siemens.cto.aem.commandprocessor.CommandProcessor;
 import com.siemens.cto.aem.commandprocessor.jsch.impl.ChannelSessionKey;
 import com.siemens.cto.aem.commandprocessor.jsch.impl.ChannelType;
@@ -9,15 +24,6 @@ import com.siemens.cto.aem.common.exec.RemoteExecCommand;
 import com.siemens.cto.aem.common.exec.RemoteSystemConnection;
 import com.siemens.cto.aem.exception.ExitCodeNotAvailableException;
 import com.siemens.cto.aem.exception.RemoteCommandFailureException;
-import org.apache.commons.pool2.impl.GenericKeyedObjectPool;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.PrintStream;
-import java.nio.charset.StandardCharsets;
 
 public class JschCommandProcessorImpl implements CommandProcessor {
 
@@ -101,13 +107,17 @@ public class JschCommandProcessorImpl implements CommandProcessor {
             }
 
             final PrintStream commandStream = new PrintStream(out, true);
-            commandStream.println(remoteExecCommand.getCommand().toCommandString());
+            final String commandString = remoteExecCommand.getCommand().toCommandString();
+            LOGGER.debug("commandString = " + commandString);
+            
+            commandStream.println(commandString);
             commandStream.println("echo 'EXIT_CODE='$?***");
             commandStream.println("echo -n -e '\\xff'");
 
             commandOutputStr = readRemoteOutput(in);
+            LOGGER.debug("commandOutput=" + commandOutputStr);
             returnCode = parseReturnCode(commandOutputStr);
-            LOGGER.debug("return code = {}", returnCode);
+            LOGGER.debug("return code =" + returnCode);
         } catch (final Exception e) {
             LOGGER.error("Error processing shell command!", e);
             returnCode = new ExecReturnCode(-1);
