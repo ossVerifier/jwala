@@ -433,6 +433,9 @@ public class WebServerServiceRestImplTest {
         when(impl.getWebServer(anyString())).thenReturn(webServer);
         when(impl.generateHttpdConfig(anyString(), any(ResourceGroup.class))).thenThrow(new InternalErrorException(AemFaultType.TEMPLATE_NOT_FOUND, "Fail"));
         when(resourceService.generateResourceGroup()).thenReturn(new ResourceGroup());
+        final List<String> templateNames = new ArrayList<String>();
+        templateNames.add("httpd.conf");
+        when(impl.getResourceTemplateNames(eq(webServer.getName()))).thenReturn(templateNames);
 
         Response response = null;
         try {

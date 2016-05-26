@@ -263,7 +263,11 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
 
             // create the httpd.conf
             boolean doNotBackupFilesForNewWebServer = !WebServerReachableState.WS_NEW.equals(webServer.getState()) && doBackup;
-            generateAndDeployConfig(aWebServerName, "httpd.conf", doNotBackupFilesForNewWebServer);
+
+            final List<String> templateNames = webServerService.getResourceTemplateNames(aWebServerName);
+            for (final String templateName: templateNames) {
+                generateAndDeployConfig(aWebServerName, templateName, doNotBackupFilesForNewWebServer);
+            }
 
             // re-install the service
             installWebServerWindowsService(aUser, new ControlWebServerRequest(webServer.getId(), WebServerControlOperation.INVOKE_SERVICE), webServer, doNotBackupFilesForNewWebServer);
