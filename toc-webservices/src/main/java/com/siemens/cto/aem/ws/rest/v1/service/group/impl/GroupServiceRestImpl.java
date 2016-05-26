@@ -381,12 +381,15 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         if (null != webServers && webServers.size() > 0) {
             for (WebServer webServer : webServers) {
                 if (webServerService.isStarted(webServer)) {
-                    LOGGER.info("Failed to deploy httpd.conf for group {}: not all web servers were stopped - {} was started", group.getName(), webServer.getName());
-                    throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "All web servers in the group must be stopped before continuing. Operation stopped for web server " + webServer.getName());
+                    LOGGER.info("Failed to deploy {} for group {}: not all web servers were stopped - {} was started",
+                            resourceFileName, group.getName(), webServer.getName());
+                    throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE,
+                            "All web servers in the group must be stopped before continuing. Operation stopped for web server "
+                            + webServer.getName());
                 }
             }
 
-            Map<String, Future<Response>> futureMap = new HashMap<>();
+            final Map<String, Future<Response>> futureMap = new HashMap<>();
             for (final WebServer webserver : webServers) {
                 final String name = webserver.getName();
                 Future<Response> responseFuture = executorService.submit(new Callable<Response>() {
