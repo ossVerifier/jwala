@@ -8,7 +8,7 @@ package com.siemens.cto.aem.common.domain.model.resource;
  * Created by JC043760 on 3/31/2016.
  */
 public enum ContentType {
-    XML_UTF_8("text/xml"), PLAIN_TEXT_UTF_8("text/plain"), UNDEFINED(null);
+    XML_UTF_8("text/xml"), PLAIN_TEXT_UTF_8("text/plain"), APPLICATION_BINARY("application/binary"), UNDEFINED(null);
 
     public final String contentTypeStr;
 

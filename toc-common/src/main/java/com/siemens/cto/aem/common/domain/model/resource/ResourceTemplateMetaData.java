@@ -7,7 +7,7 @@ package com.siemens.cto.aem.common.domain.model.resource;
  */
 public class ResourceTemplateMetaData {
     private String templateName;
-    private String contentType;
+    private ContentType contentType;
     private String deployFileName;
     private String deployPath;
     private Entity entity;
@@ -21,11 +21,11 @@ public class ResourceTemplateMetaData {
     }
 
     public String getContentType() {
-        return contentType;
+        return contentType.contentTypeStr;
     }
 
     public void setContentType(String contentType) {
-        this.contentType = contentType;
+        this.contentType = ContentType.fromContentTypeStr(contentType);
     }
 
     public Entity getEntity() {

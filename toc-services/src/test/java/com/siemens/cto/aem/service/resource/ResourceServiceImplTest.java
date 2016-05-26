@@ -22,6 +22,7 @@ import com.siemens.cto.aem.common.request.resource.ResourceInstanceRequest;
 import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateRequest;
 import com.siemens.cto.aem.persistence.service.*;
 import com.siemens.cto.aem.service.app.ApplicationService;
+import com.siemens.cto.aem.service.app.PrivateApplicationService;
 import com.siemens.cto.aem.service.exception.ResourceServiceException;
 import com.siemens.cto.aem.service.resource.impl.ResourceServiceImpl;
 import com.siemens.cto.toc.files.FileManager;
@@ -78,6 +79,9 @@ public class ResourceServiceImplTest {
 
     private ResourceService resourceService;
 
+    @Mock
+    private PrivateApplicationService mockPrivateApplicationService;
+
     @Before
     public void setup() {
         // It is good practice to start with a clean sheet of paper before each test that is why resourceService is
@@ -85,7 +89,7 @@ public class ResourceServiceImplTest {
         MockitoAnnotations.initMocks(this);
         resourceService = new ResourceServiceImpl(mockFileManager, mockResourcePersistenceService,
                 mockGroupPesistenceService, mockAppPersistenceService, mockAppService, mockJvmPersistenceService,
-                mockWebServerPersistenceService);
+                mockWebServerPersistenceService, mockPrivateApplicationService);
     }
 
     @Test
