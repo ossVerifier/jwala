@@ -351,7 +351,7 @@ public class ResourceServiceImplTest {
         when(mockAppPersistenceService.findApplicationsBelongingTo(eq("HEALTH CHECK 4.0"))).thenReturn(appList);
         when(mockGroupPesistenceService.getGroup(eq("HEALTH CHECK 4.0"))).thenReturn(mockGroup);
         resourceService.createTemplate(metaDataIn, templateIn, "test-app-name");
-        verify(mockAppService).uploadAppTemplate(any(UploadAppTemplateRequest.class));
+        verify(mockAppPersistenceService).uploadAppTemplate(any(UploadAppTemplateRequest.class), any(JpaJvm.class));
         verify(mockGroupPesistenceService).populateGroupAppTemplate(anyString(), anyString(), anyString(), anyString(), anyString());
     }
 

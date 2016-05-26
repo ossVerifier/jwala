@@ -362,7 +362,8 @@ public class ResourceServiceImpl implements ResourceService {
                     UploadAppTemplateRequest uploadAppTemplateRequest = new UploadAppTemplateRequest(application, metaData.getTemplateName(),
                             metaData.getDeployFileName(), jvm.getJvmName(), convertResourceTemplateMetaDataToJson(metaData), new ByteArrayInputStream(bytes)
                     );
-                    applicationService.uploadAppTemplate(uploadAppTemplateRequest);
+                    JpaJvm jpaJvm = jvmPersistenceService.getJpaJvm(jvm.getId(), false);
+                    applicationPersistenceService.uploadAppTemplate(uploadAppTemplateRequest, jpaJvm);
                 }
             }
         }
