@@ -358,18 +358,6 @@ public class GroupServiceRestImplTest {
     }
 
     @Test
-    public void testPopulateWebServerConfig() {
-        Set<WebServer> wsSet = new HashSet<>();
-        wsSet.add(mockWebServer);
-        when(mockWebServer.getId()).thenReturn(new Identifier<WebServer>(1L));
-        when(mockGroupService.getGroupWithWebServers(group.getId())).thenReturn(mockGroup);
-        when(mockGroup.getWebServers()).thenReturn(wsSet);
-        when(mockGroupService.populateWebServerConfig(any(Identifier.class), anyList(), any(User.class), anyBoolean())).thenReturn(group);
-        Response response = groupServiceRest.populateWebServerConfig(group.getId(), mockAuthenticatedUser, false);
-        assertEquals(response.getStatus(), Response.Status.OK.getStatusCode());
-    }
-
-    @Test
     public void testControlGroupWebServers() {
         JsonControlWebServer mockControlWebServer = mock(JsonControlWebServer.class);
         when(mockControlWebServer.toControlOperation()).thenReturn(WebServerControlOperation.START);
