@@ -35,7 +35,7 @@ var ServerStateWidget = React.createClass({
             newState["showErrorBtn"] = true;
             var errMsg = groupOperationsHelper.splitErrorMsgIntoShortMsgAndStackTrace(errorMsg);
             if (this.state.errorMessages.length === 0 || this.state.errorMessages[this.state.errorMessages.length - 1].msg !== errMsg[0]) {
-                this.state.errorMessages.push({dateTime:groupOperationsHelper.getCurrentDateTime(dateTime),
+                this.state.errorMessages.push({dateTime:moment(dateTime).format("MM/DD/YYYY hh:mm:ss"),
                                                msg:errMsg[0],
                                                pullDown:errMsg[1]});
             }
