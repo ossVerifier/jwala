@@ -304,6 +304,11 @@ public class JvmServiceImpl implements JvmService {
     }
 
     @Override
+    public String getResourceTemplateMetaData(String jvmName, String fileName) {
+        return jvmPersistenceService.getResourceTemplateMetaData(jvmName, fileName);
+    }
+
+    @Override
     @Transactional
     public String updateResourceTemplate(final String jvmName, final String resourceTemplateName, final String template) {
         return jvmPersistenceService.updateResourceTemplate(jvmName, resourceTemplateName, template);
@@ -389,13 +394,6 @@ public class JvmServiceImpl implements JvmService {
     @Override
     public Long getJvmForciblyStoppedCount(final String groupName) {
         return jvmPersistenceService.getJvmForciblyStoppedCount(groupName);
-    }
-
-    @Override
-    public ResourceTemplateMetaData getResourceTemplateMetaData(final String jvmName) throws IOException {
-        JpaJvmConfigTemplate jpaJvmConfigTemplate = jvmPersistenceService.getConfigTemplate(jvmName);
-        final ObjectMapper objectMapper = new ObjectMapper();
-        return objectMapper.readValue(jpaJvmConfigTemplate.getMetaData(), ResourceTemplateMetaData.class);
     }
 
     @Override

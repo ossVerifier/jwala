@@ -72,8 +72,6 @@ public interface JvmPersistenceService {
 
     List<JpaJvmConfigTemplate> getConfigTemplates(String jvmName);
 
-    JpaJvmConfigTemplate getConfigTemplate(String jvmName);
-
     List<JpaJvm> getJpaJvmsByGroupName(String groupName);
 
     /**
@@ -89,4 +87,6 @@ public interface JvmPersistenceService {
      * @return List of {@link Jvm}
      */
     List<Jvm> getJvmsAndWebAppsByGroupName(String groupName);
+
+    String getResourceTemplateMetaData(String jvmName, String fileName);
 }

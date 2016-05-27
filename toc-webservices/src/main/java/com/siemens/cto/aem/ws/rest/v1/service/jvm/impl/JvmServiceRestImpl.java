@@ -36,6 +36,7 @@ import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.io.FileUtils;
 import org.apache.cxf.jaxrs.ext.MessageContext;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -118,7 +119,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
             }
 
             // TODO if the JVM is associated with more than one group on creation only use the templates from the first group - need to discuss with team the correct course of action
-            if (jvm.getGroups().size() > 1){
+            if (jvm.getGroups().size() > 1) {
                 return ResponseBuilder.notOk(Response.Status.EXPECTATION_FAILED, new FaultCodeException(AemFaultType.GROUP_NOT_SPECIFIED, "Multiple groups were associated with the JVM, but the JVM was created using the templates from group " + parentGroup.getName()));
             }
         }
@@ -250,7 +251,8 @@ public class JvmServiceRestImpl implements JvmServiceRest {
 
     /**
      * Generate and deploy a JVM's configuration files.
-     * @param jvm the JVM
+     *
+     * @param jvm  the JVM
      * @param user the user
      * @return {@link Jvm}
      */
@@ -296,7 +298,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
             deployJvmResourceFiles(jvm);
 
             // deploy any application context xml's in the group
-             deployApplicationContextXMLs(jvm);
+            deployApplicationContextXMLs(jvm);
 
             // re-install the service
             installJvmWindowsService(jvm, user);
@@ -315,8 +317,8 @@ public class JvmServiceRestImpl implements JvmServiceRest {
 
     protected void deployJvmResourceFiles(Jvm jvm) throws IOException, CommandFailureException {
         final Map<String, String> generatedFiles = jvmService.generateResourceFiles(jvm.getJvmName());
-        if(generatedFiles != null) {
-            for(Entry<String, String> entry:generatedFiles.entrySet()) {
+        if (generatedFiles != null) {
+            for (Entry<String, String> entry : generatedFiles.entrySet()) {
                 secureCopyFileToJvm(jvm, entry.getKey(), entry.getValue());
             }
         }
@@ -340,19 +342,19 @@ public class JvmServiceRestImpl implements JvmServiceRest {
         final String deployConfigJarPath = commandsScriptsPath + "/" + AemControl.Properties.DEPLOY_CONFIG_ARCHIVE_SCRIPT_NAME.getValue();
         final String tocScriptsPath = AemControl.Properties.USER_TOC_SCRIPTS_PATH.getValue();
         final String jvmName = jvm.getJvmName();
-        if (!jvmControlService.secureCopyFile(secureCopyRequest, deployConfigJarPath, tocScriptsPath).getReturnCode().wasSuccessful()){
+        if (!jvmControlService.secureCopyFile(secureCopyRequest, deployConfigJarPath, tocScriptsPath).getReturnCode().wasSuccessful()) {
             LOGGER.error("Failed to secure copy {} during the creation of {}", deployConfigJarPath, jvmName);
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to secure copy " + deployConfigJarPath + " during the creation of " + jvmName);
         }
 
         final String invokeServicePath = commandsScriptsPath + "/" + AemControl.Properties.INVOKE_SERVICE_SCRIPT_NAME.getValue();
-        if (!jvmControlService.secureCopyFile(secureCopyRequest, invokeServicePath, tocScriptsPath).getReturnCode().wasSuccessful()){
+        if (!jvmControlService.secureCopyFile(secureCopyRequest, invokeServicePath, tocScriptsPath).getReturnCode().wasSuccessful()) {
             LOGGER.error("Failed to secure copy {} during the creation of {}", invokeServicePath, jvmName);
-            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to secure copy " + invokeServicePath+ " during the creation of " + jvmName);
+            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to secure copy " + invokeServicePath + " during the creation of " + jvmName);
         }
 
         // make sure the scripts are executable
-        if (!jvmControlService.changeFileMode(jvm, "a+x", tocScriptsPath, "*.sh").getReturnCode().wasSuccessful()){
+        if (!jvmControlService.changeFileMode(jvm, "a+x", tocScriptsPath, "*.sh").getReturnCode().wasSuccessful()) {
             LOGGER.error("Failed to change the file permissions in {} during the creation of {}", tocScriptsPath, jvmName);
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to change the file permissions in " + tocScriptsPath + " during the creation of " + jvmName);
         }
@@ -400,18 +402,18 @@ public class JvmServiceRestImpl implements JvmServiceRest {
     /**
      * This method copies a given file to the destination location on the remote machine.
      *
-     * @param jvm Jvm which requires the file
-     * @param sourceFile The source file, which needs to be copied.
+     * @param jvm             Jvm which requires the file
+     * @param sourceFile      The source file, which needs to be copied.
      * @param destinationFile The destination file, where the source file should be copied.
      * @throws CommandFailureException If the command fails, this exception contains the details of the failure.
      */
-    protected void  secureCopyFileToJvm(final Jvm jvm, final String sourceFile, final String destinationFile) throws CommandFailureException {
+    protected void secureCopyFileToJvm(final Jvm jvm, final String sourceFile, final String destinationFile) throws CommandFailureException {
         final ControlJvmRequest controlJvmRequest = new ControlJvmRequest(jvm.getId(), JvmControlOperation.SECURE_COPY);
         final CommandOutput commandOutput = jvmControlService.secureCopyFile(controlJvmRequest, sourceFile, destinationFile);
-        if(commandOutput.getReturnCode().wasSuccessful()) {
+        if (commandOutput.getReturnCode().wasSuccessful()) {
             LOGGER.info("Successfully copied {} to destination location {} on {}", sourceFile, destinationFile, jvm.getHostName());
         } else {
-            final String standardError = commandOutput.getStandardError().isEmpty()? commandOutput.getStandardOutput(): commandOutput.getStandardError();
+            final String standardError = commandOutput.getStandardError().isEmpty() ? commandOutput.getStandardOutput() : commandOutput.getStandardError();
             LOGGER.error("Copy command failed with error trying to copy file {} to {} :: ERROR: {}", sourceFile, jvm.getHostName(), standardError);
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, CommandOutputReturnCode.fromReturnCode(commandOutput.getReturnCode().getReturnCode()).getDesc());
         }
@@ -458,20 +460,21 @@ public class JvmServiceRestImpl implements JvmServiceRest {
             }
 
             final String metaDataPath;
-            ResourceTemplateMetaData resourceTemplateMetaData = jvmService.getResourceTemplateMetaData(jvmName);
+            String metaDataStr = jvmService.getResourceTemplateMetaData(jvmName, fileName);
+            ResourceTemplateMetaData resourceTemplateMetaData = new ObjectMapper().readValue(metaDataStr, ResourceTemplateMetaData.class);
             metaDataPath = resourceTemplateMetaData.getDeployPath();
-            String absolutePath;
-            if (resourceTemplateMetaData.getContentType().equals(ContentType.APPLICATION_BINARY.contentTypeStr)){
-                absolutePath = jvmService.getResourceTemplate(jvmName, fileName, false);
+            String resourceSourceCopy;
+            String resourceDestPath = ResourceFileGenerator.generateResourceConfig(metaDataPath, resourceService.generateResourceGroup(), jvm) + "/" + fileName;
+            if (resourceTemplateMetaData.getContentType().equals(ContentType.APPLICATION_BINARY.contentTypeStr)) {
+                resourceSourceCopy = jvmService.getResourceTemplate(jvmName, fileName, false);
             } else {
-                absolutePath = ResourceFileGenerator.generateResourceConfig(metaDataPath, resourceService.generateResourceGroup(), jvm);
+                String fileContent = jvmService.generateConfigFile(jvmName, fileName);
+                String jvmResourcesNameDir = stpJvmResourcesDir + "/" + jvmName;
+                resourceSourceCopy = jvmResourcesNameDir + "/" + fileName;
+                createConfigFile(jvmResourcesNameDir + "/", fileName, fileContent);
             }
-            String fileContent = jvmService.generateConfigFile(jvmName, fileName);
-            String jvmResourcesNameDir = stpJvmResourcesDir + "/" + jvmName;
-            String jvmResourcesDirDest = jvmResourcesNameDir;
-            createConfigFile(jvmResourcesDirDest + "/", fileName, fileContent);
 
-            deployJvmConfigFile(jvmName, fileName, jvm, absolutePath, jvmResourcesDirDest);
+            deployJvmConfigFile(jvmName, fileName, jvm, resourceDestPath, resourceSourceCopy);
         } catch (IOException e) {
             LOGGER.error("Bad Stream: Failed to write file", e);
             throw new InternalErrorException(AemFaultType.BAD_STREAM, "Failed to write file", e);
@@ -484,11 +487,10 @@ public class JvmServiceRestImpl implements JvmServiceRest {
         return ResponseBuilder.ok(jvm);
     }
 
-    protected void deployJvmConfigFile(String jvmName, String fileName, Jvm jvm, String absolutePath, String jvmResourcesDirDest)
+    protected void deployJvmConfigFile(String jvmName, String fileName, Jvm jvm, String destPath, String sourcePath)
             throws CommandFailureException {
-        final String destPath = absolutePath + "/" + fileName;
         CommandOutput result =
-                jvmControlService.secureCopyFile(new ControlJvmRequest(jvm.getId(), JvmControlOperation.SECURE_COPY), jvmResourcesDirDest + "/" + fileName, destPath);
+                jvmControlService.secureCopyFile(new ControlJvmRequest(jvm.getId(), JvmControlOperation.SECURE_COPY), sourcePath, destPath);
         if (result.getReturnCode().wasSuccessful()) {
             LOGGER.info("Successful generation and deploy of {} to {}", fileName, jvmName);
         } else {
@@ -602,9 +604,9 @@ public class JvmServiceRestImpl implements JvmServiceRest {
         }
     }
 
-    protected void createConfigFile(String path, String configFileName, String templateContent) throws IOException{
+    protected void createConfigFile(String path, String configFileName, String templateContent) throws IOException {
         File configFile = new File(path + configFileName);
-        if (configFileName.endsWith(".bat")){
+        if (configFileName.endsWith(".bat")) {
             templateContent = templateContent.replaceAll("\n", "\r\n");
         }
         FileUtils.writeStringToFile(configFile, templateContent);
