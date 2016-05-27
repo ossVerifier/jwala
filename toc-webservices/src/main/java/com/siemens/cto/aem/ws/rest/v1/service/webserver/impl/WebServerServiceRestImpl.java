@@ -3,6 +3,7 @@ package com.siemens.cto.aem.ws.rest.v1.service.webserver.impl;
 import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
+import com.siemens.cto.aem.common.domain.model.resource.ContentType;
 import com.siemens.cto.aem.common.domain.model.resource.ResourceGroup;
 import com.siemens.cto.aem.common.domain.model.resource.ResourceTemplateMetaData;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
@@ -205,8 +206,14 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
 
             String metaDataStr = webServerService.getResourceTemplateMetaData(aWebServerName, resourceFileName);
             ResourceTemplateMetaData metaData = new ObjectMapper().readValue(metaDataStr, ResourceTemplateMetaData.class);
-            String metaDataPath = ResourceFileGenerator.generateResourceConfig(metaData.getDeployPath(), resourceService.generateResourceGroup(), webServerService.getWebServer(aWebServerName));
-            execData = webServerControlService.secureCopyFileWithBackup(aWebServerName, httpdUnixPath, metaDataPath + "/" + resourceFileName, doBackup);
+
+            String metaDataPath;
+            if (metaData.getContentType().equals(ContentType.APPLICATION_BINARY.contentTypeStr)){
+                metaDataPath =  webServerService.getResourceTemplate(aWebServerName, resourceFileName, false, resourceService.generateResourceGroup());
+            } else {
+                metaDataPath = ResourceFileGenerator.generateResourceConfig(metaData.getDeployPath(), resourceService.generateResourceGroup(), webServerService.getWebServer(aWebServerName)) + "/" + resourceFileName;
+            }
+            execData = webServerControlService.secureCopyFileWithBackup(aWebServerName, httpdUnixPath, metaDataPath, doBackup);
             if (execData.getReturnCode().wasSuccessful()) {
                 LOGGER.info("Copy of {} successful: {}", resourceFileName, httpdUnixPath);
             } else {

@@ -488,7 +488,7 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
         final ResourceGroup mockResourceGroup = mock(ResourceGroup.class);
         List<JpaJvmConfigTemplate> jpaJvmConfigTemplates = new ArrayList<>();
         jpaJvmConfigTemplates.add(mockJpaJvmConfigTemplate);
-        final String metadata = "{\"deployPath\":\"D:/stp/app/instances/testJvmName/bin\",\"deployFileName\": \"test.file\"}";
+        final String metadata = "{\"contentType\":\"text/plain\",\"deployPath\":\"D:/stp/app/instances/testJvmName/bin\",\"deployFileName\": \"test.file\"}";
         Map<String, String> expectedMap = new HashMap<>();
         expectedMap.put("C:/Temp/test.file", "D:/stp/app/instances/testJvmName/bin/test.file");
 

@@ -6,6 +6,7 @@ import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.common.domain.model.resource.ContentType;
 import com.siemens.cto.aem.common.domain.model.resource.ResourceGroup;
 import com.siemens.cto.aem.common.domain.model.resource.ResourceTemplateMetaData;
 import com.siemens.cto.aem.common.domain.model.user.User;
@@ -262,7 +263,12 @@ public class ApplicationServiceImpl implements ApplicationService {
 
             app.setParentJvm(jvm);
             final String destPath = ResourceFileGenerator.generateResourceConfig(metaDataPath, resourceGroup, app) + '/' + resourceTemplateName;
-            final String srcPath = confFile.getAbsolutePath().replace("\\", "/");
+            String srcPath;
+            if (templateMetaData.getContentType().equals(ContentType.APPLICATION_BINARY.contentTypeStr)){
+                srcPath = applicationPersistenceService.getResourceTemplate(appName, resourceTemplateName, jvmName, groupName);
+            } else {
+                srcPath = confFile.getAbsolutePath().replace("\\", "/");
+            }
             // back up the original file first only if the war was uploaded
             // if the war wasn't uploaded yet then there is no file to backup
             final String deployJvmName = jvm.getJvmName();

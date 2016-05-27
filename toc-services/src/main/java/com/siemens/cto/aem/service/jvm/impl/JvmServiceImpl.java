@@ -6,6 +6,7 @@ import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
+import com.siemens.cto.aem.common.domain.model.resource.ContentType;
 import com.siemens.cto.aem.common.domain.model.resource.ResourceGroup;
 import com.siemens.cto.aem.common.domain.model.resource.ResourceTemplateMetaData;
 import com.siemens.cto.aem.common.domain.model.state.CurrentState;
@@ -408,13 +409,19 @@ public class JvmServiceImpl implements JvmService {
             final String resourceTemplateMetaDataString = resourceService.generateResourceFile(jpaJvmConfigTemplate.getMetaData(), resourceGroup, jvm);
             final ResourceTemplateMetaData resourceTemplateMetaData =
                     mapper.readValue(resourceTemplateMetaDataString, ResourceTemplateMetaData.class);
-            final String generatedResourceStr = resourceService.generateResourceFile(jpaJvmConfigTemplate.getTemplateContent(),
-                    resourceGroup, jvm);
-            if (generatedFiles == null) {
-                generatedFiles = new HashMap<>();
+
+            if (resourceTemplateMetaData.getContentType().equals(ContentType.APPLICATION_BINARY.contentTypeStr)){
+                generatedFiles.put(jpaJvmConfigTemplate.getTemplateContent(),
+                       resourceTemplateMetaData.getDeployPath() + "/" + resourceTemplateMetaData.getDeployFileName());
+            } else {
+                final String generatedResourceStr = resourceService.generateResourceFile(jpaJvmConfigTemplate.getTemplateContent(),
+                        resourceGroup, jvm);
+                if (generatedFiles == null) {
+                    generatedFiles = new HashMap<>();
+                }
+                generatedFiles.put(createConfigFile(resourceTemplateMetaData.getDeployFileName(), generatedResourceStr),
+                        resourceTemplateMetaData.getDeployPath() + "/" + resourceTemplateMetaData.getDeployFileName());
             }
-            generatedFiles.put(createConfigFile(resourceTemplateMetaData.getDeployFileName(), generatedResourceStr),
-                    resourceTemplateMetaData.getDeployPath() + "/" + resourceTemplateMetaData.getDeployFileName());
         }
         return generatedFiles;
     }

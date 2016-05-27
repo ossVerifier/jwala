@@ -301,7 +301,7 @@ public class WebServerServiceRestImplTest {
         assertTrue(new File(httpdConfDirPath).mkdirs());
         CommandOutput retSuccessExecData = new CommandOutput(new ExecReturnCode(0), "", "");
         when(webServerControlService.secureCopyFileWithBackup(anyString(), anyString(), anyString(), anyBoolean())).thenReturn(retSuccessExecData);
-        when(impl.getResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"deployPath\":\"./anyPath\"}");
+        when(impl.getResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"contentType\":\"text/plain\",\"deployPath\":\"./anyPath\"}");
         when(resourceService.generateResourceGroup()).thenReturn(new ResourceGroup());
         Response response = webServerServiceRest.generateAndDeployConfig(webServer.getName(), "httpd.conf", true);
         assertTrue(response.hasEntity());
@@ -322,7 +322,7 @@ public class WebServerServiceRestImplTest {
         final String httpdConfDirPath = ApplicationProperties.get("paths.httpd.conf");
         assertTrue(new File(httpdConfDirPath).mkdirs());
         when(impl.isStarted(any(WebServer.class))).thenReturn(true);
-        when(impl.getResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"deployPath\":\"./anyPath\"}");
+        when(impl.getResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"contentType\":\"text/plain\",\"deployPath\":\"./anyPath\"}");
         when(resourceService.generateResourceGroup()).thenReturn(new ResourceGroup());
 
         boolean exceptionThrown = false;
@@ -343,7 +343,7 @@ public class WebServerServiceRestImplTest {
         System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, "./src/test/resources");
         final String httpdConfDirPath = ApplicationProperties.get("paths.httpd.conf");
         assertTrue(new File(httpdConfDirPath).mkdirs());
-        when(impl.getResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"deployPath\":\"./anyPath\"}");
+        when(impl.getResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"contentType\":\"text/plain\",\"deployPath\":\"./anyPath\"}");
         when(resourceService.generateResourceGroup()).thenReturn(new ResourceGroup());
         when(webServerControlService.secureCopyFileWithBackup(anyString(), anyString(), anyString(), anyBoolean())).thenReturn(new CommandOutput(new ExecReturnCode(1), "", "FAILED SECURE COPY TEST"));
         boolean failedSecureCopy = false;
@@ -366,7 +366,7 @@ public class WebServerServiceRestImplTest {
         System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, "./src/test/resources");
         final String httpdConfDirPath = ApplicationProperties.get("paths.httpd.conf");
         assertTrue(new File(httpdConfDirPath).mkdirs());
-        when(impl.getResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"deployPath\":\"./anyPath\"}");
+        when(impl.getResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"contentType\":\"text/plain\",\"deployPath\":\"./anyPath\"}");
         when(resourceService.generateResourceGroup()).thenReturn(new ResourceGroup());
         when(webServerControlService.secureCopyFileWithBackup(anyString(), anyString(), anyString(), anyBoolean())).thenThrow(new CommandFailureException(new ExecCommand("Fail secure copy"), new Exception()));
         Response response = null;
@@ -394,7 +394,7 @@ public class WebServerServiceRestImplTest {
         when(impl.getWebServer(anyString())).thenReturn(webServer);
         when(impl.generateHttpdConfig(anyString(), any(ResourceGroup.class))).thenReturn("innocuous content");
         when(impl.generateInvokeWSBat(any(WebServer.class))).thenReturn("invoke me");
-        when(impl.getResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"deployPath\":\"./anyPath\"}");
+        when(impl.getResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"contentType\":\"text/plain\",\"deployPath\":\"./anyPath\"}");
         when(resourceService.generateResourceGroup()).thenReturn(new ResourceGroup());
 
 
