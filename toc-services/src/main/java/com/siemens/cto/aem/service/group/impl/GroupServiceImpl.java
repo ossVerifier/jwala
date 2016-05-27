@@ -7,6 +7,7 @@ import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.group.GroupState;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.common.domain.model.resource.ContentType;
 import com.siemens.cto.aem.common.domain.model.resource.ResourceGroup;
 import com.siemens.cto.aem.common.domain.model.resource.ResourceTemplateMetaData;
 import com.siemens.cto.aem.common.domain.model.user.User;
@@ -416,10 +417,14 @@ public class GroupServiceImpl implements GroupService {
         ResourceTemplateMetaData metaData;
         try {
             metaData = new ObjectMapper().readValue(metaDataStr, ResourceTemplateMetaData.class);
-            File confFile = createConfFile(metaData.getEntity().getTarget(), groupName, fileName, resourceGroup);
-
             final String destPath = ResourceFileGenerator.generateResourceConfig(metaData.getDeployPath(), resourceGroup, application) + '/' + fileName;
-            final String srcPath = confFile.getAbsolutePath().replace("\\", "/");
+            File confFile = createConfFile(metaData.getEntity().getTarget(), groupName, fileName, resourceGroup);
+            String srcPath;
+            if (metaData.getContentType().equals(ContentType.APPLICATION_BINARY.contentTypeStr)){
+                srcPath = getGroupAppResourceTemplate(groupName, application.getName(), fileName, false, resourceGroup);
+            } else {
+                srcPath = confFile.getAbsolutePath().replace("\\", "/");
+            }
             final String jvmName = jvm.getJvmName();
             final String hostName = jvm.getHostName();
             CommandOutput commandOutput = remoteCommandExecutor.executeRemoteCommand(

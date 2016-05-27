@@ -6,6 +6,7 @@ import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.jvm.JvmControlOperation;
 import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
+import com.siemens.cto.aem.common.domain.model.resource.ContentType;
 import com.siemens.cto.aem.common.domain.model.resource.ResourceTemplateMetaData;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.exception.FaultCodeException;
@@ -459,8 +460,12 @@ public class JvmServiceRestImpl implements JvmServiceRest {
             final String metaDataPath;
             ResourceTemplateMetaData resourceTemplateMetaData = jvmService.getResourceTemplateMetaData(jvmName);
             metaDataPath = resourceTemplateMetaData.getDeployPath();
-            String absolutePath = ResourceFileGenerator.generateResourceConfig(metaDataPath, resourceService.generateResourceGroup(), jvm);
-
+            String absolutePath;
+            if (resourceTemplateMetaData.getContentType().equals(ContentType.APPLICATION_BINARY.contentTypeStr)){
+                absolutePath = jvmService.getResourceTemplate(jvmName, fileName, false);
+            } else {
+                absolutePath = ResourceFileGenerator.generateResourceConfig(metaDataPath, resourceService.generateResourceGroup(), jvm);
+            }
             String fileContent = jvmService.generateConfigFile(jvmName, fileName);
             String jvmResourcesNameDir = stpJvmResourcesDir + "/" + jvmName;
             String jvmResourcesDirDest = jvmResourcesNameDir;
