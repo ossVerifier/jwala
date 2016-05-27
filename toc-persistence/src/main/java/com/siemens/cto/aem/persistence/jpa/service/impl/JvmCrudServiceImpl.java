@@ -1,5 +1,15 @@
 package com.siemens.cto.aem.persistence.jpa.service.impl;
 
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Scanner;
+
+import javax.persistence.EntityExistsException;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
+
 import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
@@ -11,17 +21,11 @@ import com.siemens.cto.aem.common.request.jvm.CreateJvmRequest;
 import com.siemens.cto.aem.common.request.jvm.UpdateJvmRequest;
 import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
-import com.siemens.cto.aem.persistence.jpa.domain.resource.config.template.JpaJvmConfigTemplate;
 import com.siemens.cto.aem.persistence.jpa.domain.builder.JvmBuilder;
+import com.siemens.cto.aem.persistence.jpa.domain.resource.config.template.JpaJvmConfigTemplate;
 import com.siemens.cto.aem.persistence.jpa.service.JvmCrudService;
 import com.siemens.cto.aem.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
 import com.siemens.cto.aem.persistence.jpa.service.exception.ResourceTemplateUpdateException;
-
-import javax.persistence.*;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Scanner;
 
 public class JvmCrudServiceImpl extends AbstractCrudServiceImpl<JpaJvm> implements JvmCrudService {
 
@@ -43,6 +47,8 @@ public class JvmCrudServiceImpl extends AbstractCrudServiceImpl<JpaJvm> implemen
             jpaJvm.setAjpPort(createJvmRequest.getAjpPort());
             jpaJvm.setStatusPath(createJvmRequest.getStatusPath().getPath());
             jpaJvm.setSystemProperties(createJvmRequest.getSystemProperties());
+            jpaJvm.setUserName(createJvmRequest.getUserName());
+            jpaJvm.setEncryptedPassword(createJvmRequest.getEncryptedPassword());
 
             return create(jpaJvm);
         } catch (final EntityExistsException eee) {
@@ -68,6 +74,8 @@ public class JvmCrudServiceImpl extends AbstractCrudServiceImpl<JpaJvm> implemen
             jpaJvm.setAjpPort(updateJvmRequest.getNewAjpPort());
             jpaJvm.setStatusPath(updateJvmRequest.getNewStatusPath().getPath());
             jpaJvm.setSystemProperties(updateJvmRequest.getNewSystemProperties());
+            jpaJvm.setUserName(updateJvmRequest.getNewUserName());
+            jpaJvm.setEncryptedPassword(updateJvmRequest.getNewEncryptedPassword());
 
             return update(jpaJvm);
         } catch (final EntityExistsException eee) {

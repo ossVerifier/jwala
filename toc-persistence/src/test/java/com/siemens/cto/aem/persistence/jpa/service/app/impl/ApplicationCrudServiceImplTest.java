@@ -1,37 +1,17 @@
 package com.siemens.cto.aem.persistence.jpa.service.app.impl;
 
-import com.siemens.cto.aem.common.domain.model.app.Application;
-import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
-import com.siemens.cto.aem.common.domain.model.path.Path;
-import com.siemens.cto.aem.common.exception.NotFoundException;
-import com.siemens.cto.aem.common.request.app.CreateApplicationRequest;
-import com.siemens.cto.aem.common.request.app.UploadAppTemplateRequest;
-import com.siemens.cto.aem.common.request.group.CreateGroupRequest;
-import com.siemens.cto.aem.common.configuration.TestExecutionProfile;
-import com.siemens.cto.aem.common.exception.BadRequestException;
-import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
-import com.siemens.cto.aem.common.domain.model.group.Group;
-import com.siemens.cto.aem.common.domain.model.id.Identifier;
-import com.siemens.cto.aem.common.domain.model.user.User;
-import com.siemens.cto.aem.common.request.jvm.CreateJvmRequest;
-import com.siemens.cto.aem.persistence.configuration.TestJpaConfiguration;
-import com.siemens.cto.aem.persistence.jpa.domain.JpaApplication;
-import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
-import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
-import com.siemens.cto.aem.persistence.jpa.service.ApplicationCrudService;
-import com.siemens.cto.aem.persistence.jpa.service.GroupCrudService;
-import com.siemens.cto.aem.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
-import com.siemens.cto.aem.persistence.jpa.service.exception.ResourceTemplateUpdateException;
-import com.siemens.cto.aem.persistence.jpa.service.impl.GroupCrudServiceImpl;
-import com.siemens.cto.aem.persistence.jpa.service.GroupJvmRelationshipService;
-import com.siemens.cto.aem.persistence.jpa.service.impl.GroupJvmRelationshipServiceImpl;
-import com.siemens.cto.aem.persistence.jpa.service.impl.ApplicationCrudServiceImpl;
-import com.siemens.cto.aem.persistence.jpa.service.JvmCrudService;
-import com.siemens.cto.aem.persistence.jpa.service.impl.JvmCrudServiceImpl;
-import com.siemens.cto.aem.persistence.service.GroupPersistenceService;
-import com.siemens.cto.aem.persistence.service.impl.JpaGroupPersistenceServiceImpl;
-import com.siemens.cto.aem.persistence.service.JvmPersistenceService;
-import com.siemens.cto.aem.persistence.service.impl.JpaJvmPersistenceServiceImpl;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.After;
@@ -51,14 +31,38 @@ import org.springframework.test.context.support.AnnotationConfigContextLoader;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.junit.Assert.*;
+import com.siemens.cto.aem.common.configuration.TestExecutionProfile;
+import com.siemens.cto.aem.common.domain.model.app.Application;
+import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
+import com.siemens.cto.aem.common.domain.model.group.Group;
+import com.siemens.cto.aem.common.domain.model.id.Identifier;
+import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.common.domain.model.path.Path;
+import com.siemens.cto.aem.common.domain.model.user.User;
+import com.siemens.cto.aem.common.exception.BadRequestException;
+import com.siemens.cto.aem.common.exception.NotFoundException;
+import com.siemens.cto.aem.common.request.app.CreateApplicationRequest;
+import com.siemens.cto.aem.common.request.app.UploadAppTemplateRequest;
+import com.siemens.cto.aem.common.request.group.CreateGroupRequest;
+import com.siemens.cto.aem.common.request.jvm.CreateJvmRequest;
+import com.siemens.cto.aem.persistence.configuration.TestJpaConfiguration;
+import com.siemens.cto.aem.persistence.jpa.domain.JpaApplication;
+import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
+import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
+import com.siemens.cto.aem.persistence.jpa.service.ApplicationCrudService;
+import com.siemens.cto.aem.persistence.jpa.service.GroupCrudService;
+import com.siemens.cto.aem.persistence.jpa.service.GroupJvmRelationshipService;
+import com.siemens.cto.aem.persistence.jpa.service.JvmCrudService;
+import com.siemens.cto.aem.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
+import com.siemens.cto.aem.persistence.jpa.service.exception.ResourceTemplateUpdateException;
+import com.siemens.cto.aem.persistence.jpa.service.impl.ApplicationCrudServiceImpl;
+import com.siemens.cto.aem.persistence.jpa.service.impl.GroupCrudServiceImpl;
+import com.siemens.cto.aem.persistence.jpa.service.impl.GroupJvmRelationshipServiceImpl;
+import com.siemens.cto.aem.persistence.jpa.service.impl.JvmCrudServiceImpl;
+import com.siemens.cto.aem.persistence.service.GroupPersistenceService;
+import com.siemens.cto.aem.persistence.service.JvmPersistenceService;
+import com.siemens.cto.aem.persistence.service.impl.JpaGroupPersistenceServiceImpl;
+import com.siemens.cto.aem.persistence.service.impl.JpaJvmPersistenceServiceImpl;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @Transactional
@@ -220,7 +224,7 @@ public class ApplicationCrudServiceImplTest {
 
     @Test(expected = NonRetrievableResourceTemplateContentException.class)
     public void testGetResourceTemplateNonExistent() {
-        CreateJvmRequest createJvmRequest = new CreateJvmRequest("testGetResourceTemplateJvm", "testHost", 9100, 9101, 9102, -1, 9103, new Path("./"), "");
+        CreateJvmRequest createJvmRequest = new CreateJvmRequest("testGetResourceTemplateJvm", "testHost", 9100, 9101, 9102, -1, 9103, new Path("./"), "", null, null);
         JpaJvm jvm = jvmCrudService.createJvm(createJvmRequest);
         applicationCrudService.getResourceTemplate("testNoAppExists", "hct.xml", jvm);
     }
@@ -228,7 +232,7 @@ public class ApplicationCrudServiceImplTest {
     @Test
     public void testGetResourceTemplate() throws FileNotFoundException {
         InputStream data = new FileInputStream(new File("./src/test/resources/ServerXMLTemplate.tpl"));
-        CreateJvmRequest createJvmRequest = new CreateJvmRequest("testJvmName", "testHost", 9100, 9101, 9102, -1, 9103, new Path("./"), "");
+        CreateJvmRequest createJvmRequest = new CreateJvmRequest("testJvmName", "testHost", 9100, 9101, 9102, -1, 9103, new Path("./"), "", null, null);
         CreateApplicationRequest createApplicationRequest = new CreateApplicationRequest(new Identifier<Group>(jpaGroup.getId()), "testAppResourceTemplateName", "/hctTest", true, true, false);
         Group group = new Group(new Identifier<Group>(jpaGroup.getId()), jpaGroup.getName());
         JpaJvm jpaJvm = jvmCrudService.createJvm(createJvmRequest);
@@ -261,7 +265,7 @@ public class ApplicationCrudServiceImplTest {
 
     @Test (expected = ResourceTemplateUpdateException.class)
     public void testUpdateResourceTemplate() {
-        CreateJvmRequest createJvmRequest = new CreateJvmRequest("testJvmName", "testHost", 9100, 9101, 9102, -1, 9103, new Path("./"), "");
+        CreateJvmRequest createJvmRequest = new CreateJvmRequest("testJvmName", "testHost", 9100, 9101, 9102, -1, 9103, new Path("./"), "", null, null);
         JpaJvm jpaJvm = jvmCrudService.createJvm(createJvmRequest);
         applicationCrudService.updateResourceTemplate("noApp", "noTemplate", "doesn't matter", jpaJvm);
     }
@@ -292,7 +296,7 @@ public class ApplicationCrudServiceImplTest {
 
     @Test
     public void testFindApplicationBelongingToJvm() {
-        CreateJvmRequest createJvmRequest = new CreateJvmRequest("testAppJvm", "theHost", 9100, 9101, 9102, -1, 9103, new Path("."), "");
+        CreateJvmRequest createJvmRequest = new CreateJvmRequest("testAppJvm", "theHost", 9100, 9101, 9102, -1, 9103, new Path("."), "", null, null);
         JpaJvm jpaJvm = jvmCrudService.createJvm(createJvmRequest);
 
         List<Application> apps = applicationCrudService.findApplicationsBelongingToJvm(new Identifier<Jvm>(jpaJvm.getId()));
@@ -304,7 +308,7 @@ public class ApplicationCrudServiceImplTest {
         CreateApplicationRequest createTestApp = new CreateApplicationRequest(new Identifier<Group>(jpaGroup.getId()), "testAppName", "/testApp", true, true, false);
         JpaApplication jpaApp = applicationCrudService.createApplication(createTestApp, jpaGroup);
 
-        CreateJvmRequest createJvmRequest =new CreateJvmRequest("testJvmName", "hostName", 9100, 9101, 9102, -1, 9103, new Path("./"), "");
+        CreateJvmRequest createJvmRequest =new CreateJvmRequest("testJvmName", "hostName", 9100, 9101, 9102, -1, 9103, new Path("./"), "", null, null);
         JpaJvm jpaJvm = jvmCrudService.createJvm(createJvmRequest);
 
         List<JpaJvm> jvmList = new ArrayList<>();

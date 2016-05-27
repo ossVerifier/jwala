@@ -1,16 +1,20 @@
 package com.siemens.cto.aem.common.request.jvm;
 
-import com.siemens.cto.aem.common.request.Request;
-import com.siemens.cto.aem.common.exception.BadRequestException;
-import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
-import com.siemens.cto.aem.common.domain.model.path.Path;
-import com.siemens.cto.aem.common.rule.*;
-import com.siemens.cto.aem.common.rule.jvm.JvmNameRule;
+import java.io.Serializable;
+
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
-import java.io.Serializable;
+import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
+import com.siemens.cto.aem.common.domain.model.path.Path;
+import com.siemens.cto.aem.common.request.Request;
+import com.siemens.cto.aem.common.rule.HostNameRule;
+import com.siemens.cto.aem.common.rule.MultipleRules;
+import com.siemens.cto.aem.common.rule.PortNumberRule;
+import com.siemens.cto.aem.common.rule.ShutdownPortNumberRule;
+import com.siemens.cto.aem.common.rule.StatusPathRule;
+import com.siemens.cto.aem.common.rule.jvm.JvmNameRule;
 
 public class CreateJvmRequest implements Serializable, Request {
 
@@ -29,7 +33,9 @@ public class CreateJvmRequest implements Serializable, Request {
     private final Path statusPath;
 
     private final String systemsProperties;
-
+    private final String userName;
+    private final String encryptedPassword;
+    
     public CreateJvmRequest(final String theName,
                             final String theHostName,
                             final Integer theHttpPort,
@@ -38,7 +44,9 @@ public class CreateJvmRequest implements Serializable, Request {
                             final Integer theShutdownPort,
                             final Integer theAjpPort,
                             final Path theStatusPath,
-                            final String theSystemProperties) {
+                            final String theSystemProperties,
+                            final String theUserName,
+                            final String theEncryptedPassword) {
         jvmName = theName;
         hostName = theHostName;
         httpPort = theHttpPort;
@@ -48,6 +56,9 @@ public class CreateJvmRequest implements Serializable, Request {
         ajpPort = theAjpPort;
         statusPath = theStatusPath;
         systemsProperties = theSystemProperties;
+        userName = theUserName;
+        encryptedPassword = theEncryptedPassword;
+        
     }
 
     public String getJvmName() {
@@ -86,6 +97,14 @@ public class CreateJvmRequest implements Serializable, Request {
         return systemsProperties;
     }
 
+    public String getUserName() {
+        return userName;
+    }
+
+    public String getEncryptedPassword() {
+        return encryptedPassword;
+    }
+
     @Override
     public void validate() {
         new MultipleRules(new JvmNameRule(jvmName),
@@ -120,6 +139,8 @@ public class CreateJvmRequest implements Serializable, Request {
                 .append(this.shutdownPort, rhs.shutdownPort)
                 .append(this.ajpPort, rhs.ajpPort)
                 .append(this.systemsProperties, rhs.systemsProperties)
+                .append(this.userName,rhs.userName)
+                .append(this.encryptedPassword, rhs.encryptedPassword)
                 .isEquals();
     }
 
@@ -135,6 +156,8 @@ public class CreateJvmRequest implements Serializable, Request {
                 .append(shutdownPort)
                 .append(ajpPort)
                 .append(systemsProperties)
+                .append(userName)
+                .append(encryptedPassword)
                 .toHashCode();
     }
 
@@ -150,6 +173,7 @@ public class CreateJvmRequest implements Serializable, Request {
                 .append("shutdownPort", shutdownPort)
                 .append("ajpPort", ajpPort)
                 .append("systemProperties", systemsProperties)
+                .append("userName",userName)
                 .toString();
     }
 }

@@ -1,21 +1,21 @@
 package com.siemens.cto.aem.common.request.jvm;
 
-import com.siemens.cto.aem.common.request.Request;
-import com.siemens.cto.aem.common.request.group.AddJvmToGroupRequest;
-import com.siemens.cto.aem.common.exception.BadRequestException;
-import com.siemens.cto.aem.common.domain.model.group.Group;
-import com.siemens.cto.aem.common.domain.model.id.Identifier;
-import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
-import com.siemens.cto.aem.common.domain.model.path.Path;
-import com.siemens.cto.aem.common.rule.group.GroupIdsRule;
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ToStringBuilder;
-
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+
+import com.siemens.cto.aem.common.domain.model.group.Group;
+import com.siemens.cto.aem.common.domain.model.id.Identifier;
+import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.common.domain.model.path.Path;
+import com.siemens.cto.aem.common.request.Request;
+import com.siemens.cto.aem.common.request.group.AddJvmToGroupRequest;
+import com.siemens.cto.aem.common.rule.group.GroupIdsRule;
 
 public class CreateJvmAndAddToGroupsRequest implements Serializable, Request {
 
@@ -32,7 +32,9 @@ public class CreateJvmAndAddToGroupsRequest implements Serializable, Request {
                                           final Integer theShutdownPort,
                                           final Integer theAjpPort,
                                           final Path theStatusPath,
-                                          final String theSystemProperties) {
+                                          final String theSystemProperties,
+                                          final String theUserName,
+                                          final String theEncryptedPassword) {
 
         createCommand = new CreateJvmRequest(theName,
                                              theHostName,
@@ -42,7 +44,9 @@ public class CreateJvmAndAddToGroupsRequest implements Serializable, Request {
                                              theShutdownPort,
                                              theAjpPort,
                                              theStatusPath,
-                                             theSystemProperties);
+                                             theSystemProperties,
+                                             theUserName,
+                                             theEncryptedPassword);
         groups = Collections.unmodifiableSet(new HashSet<>(theGroups));
     }
 

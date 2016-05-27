@@ -1,20 +1,16 @@
 package com.siemens.cto.aem.persistence.service.app;
 
-import com.siemens.cto.aem.common.domain.model.app.Application;
-import com.siemens.cto.aem.common.domain.model.group.Group;
-import com.siemens.cto.aem.common.domain.model.id.Identifier;
-import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
-import com.siemens.cto.aem.common.domain.model.path.Path;
-import com.siemens.cto.aem.common.domain.model.user.User;
-import com.siemens.cto.aem.common.exception.NotFoundException;
-import com.siemens.cto.aem.common.request.app.*;
-import com.siemens.cto.aem.common.request.group.AddJvmToGroupRequest;
-import com.siemens.cto.aem.common.request.group.CreateGroupRequest;
-import com.siemens.cto.aem.common.request.jvm.CreateJvmRequest;
-import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
-import com.siemens.cto.aem.persistence.service.ApplicationPersistenceService;
-import com.siemens.cto.aem.persistence.service.GroupPersistenceService;
-import com.siemens.cto.aem.persistence.service.JvmPersistenceService;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
+import java.util.List;
+
 import org.apache.commons.lang.RandomStringUtils;
 import org.junit.After;
 import org.junit.Before;
@@ -24,13 +20,25 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
-import java.util.List;
-
-import static org.junit.Assert.*;
+import com.siemens.cto.aem.common.domain.model.app.Application;
+import com.siemens.cto.aem.common.domain.model.group.Group;
+import com.siemens.cto.aem.common.domain.model.id.Identifier;
+import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.common.domain.model.path.Path;
+import com.siemens.cto.aem.common.domain.model.user.User;
+import com.siemens.cto.aem.common.exception.NotFoundException;
+import com.siemens.cto.aem.common.request.app.CreateApplicationRequest;
+import com.siemens.cto.aem.common.request.app.RemoveWebArchiveRequest;
+import com.siemens.cto.aem.common.request.app.UpdateApplicationRequest;
+import com.siemens.cto.aem.common.request.app.UploadAppTemplateRequest;
+import com.siemens.cto.aem.common.request.app.UploadWebArchiveRequest;
+import com.siemens.cto.aem.common.request.group.AddJvmToGroupRequest;
+import com.siemens.cto.aem.common.request.group.CreateGroupRequest;
+import com.siemens.cto.aem.common.request.jvm.CreateJvmRequest;
+import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
+import com.siemens.cto.aem.persistence.service.ApplicationPersistenceService;
+import com.siemens.cto.aem.persistence.service.GroupPersistenceService;
+import com.siemens.cto.aem.persistence.service.JvmPersistenceService;
 
 @Transactional
 public abstract class AbstractApplicationPersistenceServiceTest {
@@ -198,7 +206,7 @@ public abstract class AbstractApplicationPersistenceServiceTest {
         CreateApplicationRequest request = new CreateApplicationRequest(group.getId(), "testAppName", "/hctTest", true, true, false);
         Application app = applicationPersistenceService.createApplication(request, "app context template", "role mapping properties", "app properties template");
 
-        CreateJvmRequest createJvmRequest = new CreateJvmRequest(jvmName, "testHost", 9101, 9102, 9103, -1, 9104, new Path("./"), "");
+        CreateJvmRequest createJvmRequest = new CreateJvmRequest(jvmName, "testHost", 9101, 9102, 9103, -1, 9104, new Path("./"), "", null, null);
         Jvm jvm = jvmPersistenceService.createJvm(createJvmRequest);
 
         AddJvmToGroupRequest addJvmToGroup = new AddJvmToGroupRequest(group.getId(), jvm.getId());
@@ -220,7 +228,7 @@ public abstract class AbstractApplicationPersistenceServiceTest {
         CreateGroupRequest createGroupReq = new CreateGroupRequest("testGroupName");
         Group group = groupPersistenceService.createGroup(createGroupReq);
 
-        CreateJvmRequest createJvmRequest = new CreateJvmRequest(jvmName, "testHost", 9101, 9102, 9103, -1, 9104, new Path("./"), "");
+        CreateJvmRequest createJvmRequest = new CreateJvmRequest(jvmName, "testHost", 9101, 9102, 9103, -1, 9104, new Path("./"), "", null, null);
         Jvm jvm = jvmPersistenceService.createJvm(createJvmRequest);
 
         AddJvmToGroupRequest addJvmToGroup = new AddJvmToGroupRequest(group.getId(), jvm.getId());
@@ -246,7 +254,7 @@ public abstract class AbstractApplicationPersistenceServiceTest {
 
     @Test
     public void testUploadAppTemplate() throws FileNotFoundException {
-        CreateJvmRequest createJvmRequest = new CreateJvmRequest("testJvmName", "testHostName", 9101, 9102, 9103, -1, 9104, new Path("./"), "");
+        CreateJvmRequest createJvmRequest = new CreateJvmRequest("testJvmName", "testHostName", 9101, 9102, 9103, -1, 9104, new Path("./"), "", null, null);
 
         CreateGroupRequest createGroupReq = new CreateGroupRequest("testGroupName");
         Group group = groupPersistenceService.createGroup(createGroupReq);

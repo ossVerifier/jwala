@@ -1,5 +1,10 @@
 package com.siemens.cto.aem.persistence.service.impl;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.springframework.transaction.annotation.Transactional;
+
 import com.siemens.cto.aem.common.domain.model.app.Application;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
@@ -10,16 +15,12 @@ import com.siemens.cto.aem.common.request.jvm.CreateJvmRequest;
 import com.siemens.cto.aem.common.request.jvm.UpdateJvmRequest;
 import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
-import com.siemens.cto.aem.persistence.jpa.domain.resource.config.template.JpaJvmConfigTemplate;
 import com.siemens.cto.aem.persistence.jpa.domain.builder.JvmBuilder;
+import com.siemens.cto.aem.persistence.jpa.domain.resource.config.template.JpaJvmConfigTemplate;
 import com.siemens.cto.aem.persistence.jpa.service.ApplicationCrudService;
 import com.siemens.cto.aem.persistence.jpa.service.GroupJvmRelationshipService;
 import com.siemens.cto.aem.persistence.jpa.service.JvmCrudService;
 import com.siemens.cto.aem.persistence.service.JvmPersistenceService;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class JpaJvmPersistenceServiceImpl implements JvmPersistenceService {
 
@@ -230,7 +231,10 @@ public class JpaJvmPersistenceServiceImpl implements JvmPersistenceService {
                                                  .setSystemProperties(jvm.getSystemProperties())
                                                  .setState(jvm.getState())
                                                  .setErrorStatus(jvm.getErrorStatus())
-                                                 .setWebApps(webApps).build();
+                                                 .setWebApps(webApps)
+                                                 .setUserName(jvm.getUserName())
+                                                 .setEncryptedPassword(jvm.getEncryptedPassword())
+                                                 .build();
             jvmsWithWebApps.add(jvmWithWebApps);
         }
         return jvmsWithWebApps;

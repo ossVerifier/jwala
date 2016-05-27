@@ -1,10 +1,32 @@
 package com.siemens.cto.aem.service.resource.impl;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
+
+import org.codehaus.jackson.map.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.expression.Expression;
+import org.springframework.expression.spel.standard.SpelExpressionParser;
+import org.springframework.expression.spel.support.StandardEvaluationContext;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.siemens.cto.aem.common.domain.model.app.Application;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
-import com.siemens.cto.aem.common.domain.model.resource.*;
+import com.siemens.cto.aem.common.domain.model.resource.ContentType;
+import com.siemens.cto.aem.common.domain.model.resource.EntityType;
+import com.siemens.cto.aem.common.domain.model.resource.ResourceGroup;
+import com.siemens.cto.aem.common.domain.model.resource.ResourceInstance;
+import com.siemens.cto.aem.common.domain.model.resource.ResourceTemplateMetaData;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.common.request.app.UploadAppTemplateRequest;
@@ -15,28 +37,17 @@ import com.siemens.cto.aem.common.request.resource.ResourceInstanceRequest;
 import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateRequest;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
 import com.siemens.cto.aem.persistence.jpa.domain.resource.config.template.ConfigTemplate;
-import com.siemens.cto.aem.persistence.service.*;
+import com.siemens.cto.aem.persistence.service.ApplicationPersistenceService;
+import com.siemens.cto.aem.persistence.service.GroupPersistenceService;
+import com.siemens.cto.aem.persistence.service.JvmPersistenceService;
+import com.siemens.cto.aem.persistence.service.ResourcePersistenceService;
+import com.siemens.cto.aem.persistence.service.WebServerPersistenceService;
 import com.siemens.cto.aem.service.app.ApplicationService;
 import com.siemens.cto.aem.service.app.PrivateApplicationService;
 import com.siemens.cto.aem.service.exception.ResourceServiceException;
 import com.siemens.cto.aem.service.resource.ResourceService;
-import com.siemens.cto.aem.template.ResourceFileGenerator;
 import com.siemens.cto.toc.files.FileManager;
 import com.siemens.cto.toc.files.RepositoryFileInformation;
-import org.apache.commons.io.IOUtils;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.expression.Expression;
-import org.springframework.expression.spel.standard.SpelExpressionParser;
-import org.springframework.expression.spel.support.StandardEvaluationContext;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.*;
 
 public class ResourceServiceImpl implements ResourceService {
 
@@ -219,7 +230,9 @@ public class ResourceServiceImpl implements ResourceService {
                 jvm.getStatusPath(),
                 jvm.getSystemProperties(),
                 jvm.getState(),
-                jvm.getErrorStatus());
+                jvm.getErrorStatus(),
+                jvm.getUserName(),
+                jvm.getEncryptedPassword());
         final UploadJvmConfigTemplateRequest uploadJvmTemplateRequest = new UploadJvmConfigTemplateRequest(jvmWithParentGroup, metaData.getTemplateName(),
                 templateData, convertResourceTemplateMetaDataToJson(metaData));
         uploadJvmTemplateRequest.setConfFileName(metaData.getDeployFileName());

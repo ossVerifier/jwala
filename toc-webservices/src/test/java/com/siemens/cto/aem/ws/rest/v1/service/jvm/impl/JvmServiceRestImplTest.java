@@ -1,5 +1,52 @@
 package com.siemens.cto.aem.ws.rest.v1.service.jvm.impl;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.Executors;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+
+import javax.servlet.ServletInputStream;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.SecurityContext;
+
+import org.apache.commons.fileupload.FileUploadBase;
+import org.apache.commons.io.FileUtils;
+import org.apache.cxf.jaxrs.ext.MessageContext;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
+
 import com.jcraft.jsch.JSchException;
 import com.siemens.cto.aem.common.domain.model.app.Application;
 import com.siemens.cto.aem.common.domain.model.group.Group;
@@ -18,7 +65,11 @@ import com.siemens.cto.aem.common.exec.CommandOutputReturnCode;
 import com.siemens.cto.aem.common.exec.ExecCommand;
 import com.siemens.cto.aem.common.exec.ExecReturnCode;
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
-import com.siemens.cto.aem.common.request.jvm.*;
+import com.siemens.cto.aem.common.request.jvm.ControlJvmRequest;
+import com.siemens.cto.aem.common.request.jvm.CreateJvmAndAddToGroupsRequest;
+import com.siemens.cto.aem.common.request.jvm.CreateJvmRequest;
+import com.siemens.cto.aem.common.request.jvm.UpdateJvmRequest;
+import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
 import com.siemens.cto.aem.exception.CommandFailureException;
 import com.siemens.cto.aem.persistence.jpa.service.exception.ResourceTemplateUpdateException;
 import com.siemens.cto.aem.service.jvm.JvmControlService;
@@ -27,36 +78,6 @@ import com.siemens.cto.aem.service.jvm.state.JvmStateReceiverAdapter;
 import com.siemens.cto.aem.service.resource.ResourceService;
 import com.siemens.cto.aem.ws.rest.v1.provider.AuthenticatedUser;
 import com.siemens.cto.aem.ws.rest.v1.response.ApplicationResponse;
-import org.apache.commons.fileupload.FileUploadBase;
-import org.apache.commons.io.FileUtils;
-import org.apache.cxf.jaxrs.ext.MessageContext;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
-
-import javax.servlet.ServletInputStream;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.SecurityContext;
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.ByteBuffer;
-import java.nio.charset.Charset;
-import java.util.*;
-import java.util.concurrent.Executors;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-
-import static org.junit.Assert.*;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.*;
 
 /**
  * @author meleje00
@@ -77,7 +98,9 @@ public class JvmServiceRestImplTest {
     private static final String ajpPort = "84";
     private static final Path statusPath = new Path("/statusPath");
     private static final String systemProperties = "EXAMPLE_OPTS=%someEnv%/someVal";
-
+    private static final String userName = "JoeThePlumber";
+    private static final String encryptedPassword = "The Quick Brown Fox";
+    
     @Mock
     private JvmServiceImpl jvmService;
     @Mock
@@ -107,7 +130,7 @@ public class JvmServiceRestImplTest {
                 statusPath,
                 systemProperties,
                 JvmState.JVM_STOPPED,
-                null, null);
+                null, null, userName, encryptedPassword);
         final List<Jvm> result = new ArrayList<>();
         result.add(ws);
         return result;
@@ -167,7 +190,7 @@ public class JvmServiceRestImplTest {
         when(jvmService.createJvm(any(CreateJvmRequest.class), any(User.class))).thenReturn(jvm);
 
         final JsonCreateJvm jsonCreateJvm = new JsonCreateJvm(name, hostName, httpPort, httpsPort, redirectPort,
-                shutdownPort, ajpPort, statusPath.getUriPath(), systemProperties);
+                shutdownPort, ajpPort, statusPath.getUriPath(), systemProperties, userName, encryptedPassword);
         final Response response = jvmServiceRest.createJvm(jsonCreateJvm, authenticatedUser);
         assertEquals(Response.Status.CREATED.getStatusCode(), response.getStatus());
 
@@ -194,7 +217,9 @@ public class JvmServiceRestImplTest {
                 shutdownPort,
                 ajpPort,
                 statusPath.getUriPath(),
-                systemProperties);
+                systemProperties,
+                userName,
+                encryptedPassword);
         final Response response = jvmServiceRest.createJvm(jsonCreateJvm, authenticatedUser);
         assertEquals(Response.Status.CREATED.getStatusCode(), response.getStatus());
 
@@ -210,7 +235,7 @@ public class JvmServiceRestImplTest {
     public void testUpdateJvm() {
         final Set<String> groupIds = new HashSet<>();
         final JsonUpdateJvm jsonUpdateJvm = new JsonUpdateJvm("1", name, hostName, groupIds, "5", "4", "3", "2", "1",
-                statusPath.getUriPath(), systemProperties);
+                statusPath.getUriPath(), systemProperties, userName, encryptedPassword);
         when(jvmService.updateJvm(any(UpdateJvmRequest.class), any(User.class))).thenReturn(jvm);
 
         // Check rules for the JVM

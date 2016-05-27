@@ -1,17 +1,17 @@
 package com.siemens.cto.aem.common.domain.model.jvm;
 
-import com.siemens.cto.aem.common.domain.model.app.Application;
-import com.siemens.cto.aem.common.domain.model.group.Group;
-import com.siemens.cto.aem.common.domain.model.id.Identifier;
-import com.siemens.cto.aem.common.domain.model.path.Path;
-import com.siemens.cto.aem.common.domain.model.uri.UriBuilder;
-
 import java.io.Serializable;
 import java.net.URI;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import com.siemens.cto.aem.common.domain.model.app.Application;
+import com.siemens.cto.aem.common.domain.model.group.Group;
+import com.siemens.cto.aem.common.domain.model.id.Identifier;
+import com.siemens.cto.aem.common.domain.model.path.Path;
+import com.siemens.cto.aem.common.domain.model.uri.UriBuilder;
 
 public class Jvm implements Serializable {
 
@@ -35,6 +35,8 @@ public class Jvm implements Serializable {
     private JvmState state;
     private String errorStatus;
     private List<Application> webApps;
+    private String userName;
+    private String encryptedPassword;
 
     /**
      * Constructor for a bare minimum Jvm with group details.
@@ -61,7 +63,9 @@ public class Jvm implements Serializable {
                final String systemsProperties,
                final JvmState state,
                final String errorStatus,
-               final List<Application> webApps) {
+               final List<Application> webApps,
+               final String userName,
+               final String encryptedPassword) {
         this.id = id;
         this.jvmName = name;
         this.hostName = hostName;
@@ -76,6 +80,8 @@ public class Jvm implements Serializable {
         this.state = state;
         this.errorStatus = errorStatus;
         this.webApps = webApps;
+        this.userName = userName;
+        this.encryptedPassword = encryptedPassword;
     }
 
     public Jvm(Identifier<Jvm> id,
@@ -91,7 +97,9 @@ public class Jvm implements Serializable {
                Path statusPath,
                String systemProperties,
                JvmState state,
-               String errorStatus) {
+               String errorStatus,
+               String userName,
+               String encryptedPassword) {
         this.id = id;
         this.jvmName = jvmName;
         this.hostName = hostName;
@@ -106,6 +114,24 @@ public class Jvm implements Serializable {
         this.systemProperties = systemProperties;
         this.state = state;
         this.errorStatus = errorStatus;
+        this.userName = userName;
+        this.encryptedPassword = encryptedPassword;
+    }
+
+    public String getEncryptedPassword() {
+        return encryptedPassword;
+    }
+
+    public void setEncryptedPassword(String encryptedPassword) {
+        this.encryptedPassword = encryptedPassword;
+    }
+
+    public String getUserName() {
+        return userName;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
     }
 
     public Identifier<Jvm> getId() {

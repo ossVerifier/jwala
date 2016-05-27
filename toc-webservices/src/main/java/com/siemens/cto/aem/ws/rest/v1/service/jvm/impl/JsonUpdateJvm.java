@@ -1,24 +1,25 @@
 package com.siemens.cto.aem.ws.rest.v1.service.jvm.impl;
 
-import com.siemens.cto.aem.common.request.jvm.UpdateJvmRequest;
-import com.siemens.cto.aem.common.exception.BadRequestException;
-import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
-import com.siemens.cto.aem.common.domain.model.group.Group;
-import com.siemens.cto.aem.common.domain.model.id.Identifier;
-import com.siemens.cto.aem.common.domain.model.id.IdentifierSetBuilder;
-import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
-import com.siemens.cto.aem.common.domain.model.path.Path;
-import com.siemens.cto.aem.ws.rest.v1.json.AbstractJsonDeserializer;
+import java.io.IOException;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.JsonParser;
 import org.codehaus.jackson.ObjectCodec;
 import org.codehaus.jackson.map.DeserializationContext;
 import org.codehaus.jackson.map.annotate.JsonDeserialize;
 
-import java.io.IOException;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
+import com.siemens.cto.aem.common.domain.model.group.Group;
+import com.siemens.cto.aem.common.domain.model.id.Identifier;
+import com.siemens.cto.aem.common.domain.model.id.IdentifierSetBuilder;
+import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.common.domain.model.path.Path;
+import com.siemens.cto.aem.common.exception.BadRequestException;
+import com.siemens.cto.aem.common.request.jvm.UpdateJvmRequest;
+import com.siemens.cto.aem.ws.rest.v1.json.AbstractJsonDeserializer;
 
 @JsonDeserialize(using = JsonUpdateJvm.JsonUpdateJvmDeserializer.class)
 public class JsonUpdateJvm {
@@ -34,7 +35,9 @@ public class JsonUpdateJvm {
     private final String shutdownPort;
     private final String ajpPort;
     private final String systemProperties;
-
+    private final String userName;
+    private final String encryptedPassword;
+    
     public JsonUpdateJvm(final String theJvmId,
                          final String theJvmName,
                          final String theHostName,
@@ -45,7 +48,9 @@ public class JsonUpdateJvm {
                          final String theShutdownPort,
                          final String theAjpPort,
                          final String theStatusPath,
-                         final String theSystemProperties) {
+                         final String theSystemProperties,
+                         final String theUserName,
+                         final String theEncryptedPassword) {
         jvmId = theJvmId;
         jvmName = theJvmName;
         hostName = theHostName;
@@ -57,6 +62,8 @@ public class JsonUpdateJvm {
         ajpPort = theAjpPort;
         statusPath = theStatusPath;
         systemProperties = theSystemProperties;
+        userName = theUserName;
+        encryptedPassword = theEncryptedPassword;
     }
 
     public UpdateJvmRequest toUpdateJvmRequest() throws BadRequestException {
@@ -71,7 +78,9 @@ public class JsonUpdateJvm {
                                     JsonUtilJvm.stringToInteger(shutdownPort),
                                     JsonUtilJvm.stringToInteger(ajpPort),
                                     new Path(statusPath),
-                                    systemProperties
+                                    systemProperties,
+                                    userName,
+                                    encryptedPassword
         );
     }
 
@@ -111,7 +120,9 @@ public class JsonUpdateJvm {
                                      node.get("shutdownPort").getValueAsText(),
                                      node.get("ajpPort").getValueAsText(),
                                      node.get("statusPath").getTextValue(),
-                                     node.get("systemProperties").getTextValue());
+                                     node.get("systemProperties").getTextValue(),
+                                     node.get("userName").getTextValue(),
+                                     node.get("encrypedPassword").getTextValue());
         }
     }
 }

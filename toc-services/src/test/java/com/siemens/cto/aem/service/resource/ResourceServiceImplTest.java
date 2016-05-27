@@ -1,5 +1,36 @@
 package com.siemens.cto.aem.service.resource;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyBoolean;
+import static org.mockito.Matchers.anyList;
+import static org.mockito.Matchers.anyLong;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import org.apache.commons.lang.StringUtils;
+import org.codehaus.groovy.runtime.ResourceGroovyMethods;
+import org.joda.time.DateTime;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.mockito.internal.verification.Times;
+
 import com.siemens.cto.aem.common.domain.model.app.Application;
 import com.siemens.cto.aem.common.domain.model.group.CurrentGroupState;
 import com.siemens.cto.aem.common.domain.model.group.Group;
@@ -22,38 +53,17 @@ import com.siemens.cto.aem.common.request.jvm.UploadJvmConfigTemplateRequest;
 import com.siemens.cto.aem.common.request.resource.ResourceInstanceRequest;
 import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateRequest;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
-import com.siemens.cto.aem.persistence.service.*;
+import com.siemens.cto.aem.persistence.service.ApplicationPersistenceService;
+import com.siemens.cto.aem.persistence.service.GroupPersistenceService;
+import com.siemens.cto.aem.persistence.service.JvmPersistenceService;
+import com.siemens.cto.aem.persistence.service.ResourcePersistenceService;
+import com.siemens.cto.aem.persistence.service.WebServerPersistenceService;
 import com.siemens.cto.aem.service.app.ApplicationService;
 import com.siemens.cto.aem.service.app.PrivateApplicationService;
 import com.siemens.cto.aem.service.exception.ResourceServiceException;
 import com.siemens.cto.aem.service.resource.impl.ResourceServiceImpl;
 import com.siemens.cto.toc.files.FileManager;
 import com.siemens.cto.toc.files.RepositoryFileInformation;
-import org.apache.commons.lang.StringUtils;
-import org.codehaus.groovy.runtime.ResourceGroovyMethods;
-import org.joda.time.DateTime;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.mockito.internal.verification.Times;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import static org.junit.Assert.*;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyList;
-import static org.mockito.Matchers.anyLong;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.*;
 
 /**
  * Unit tests for {@link ResourceService}.
@@ -407,9 +417,9 @@ public class ResourceServiceImplTest {
                     new com.siemens.cto.aem.common.domain.model.path.Path("./"), new com.siemens.cto.aem.common.domain.model.path.Path("htdocs"), WebServerReachableState.WS_UNREACHABLE, "");
             webServers.add(webServer);
             jvms.add(new Jvm(new Identifier<Jvm>(11L), "tc1", "usmlvv1ctoGenerateMe", new HashSet<>(groups), 11010, 11011, 11012, -1, 11013,
-                    new com.siemens.cto.aem.common.domain.model.path.Path("/statusPath"), "EXAMPLE_OPTS=%someEvn%/someVal", JvmState.JVM_STOPPED, "", null));
+                    new com.siemens.cto.aem.common.domain.model.path.Path("/statusPath"), "EXAMPLE_OPTS=%someEvn%/someVal", JvmState.JVM_STOPPED, "", null, null, null));
             jvms.add(new Jvm(new Identifier<Jvm>(22L), "tc2", "usmlvv1ctoGenerateMe", new HashSet<>(groups), 11020, 11021, 11022, -1, 11023,
-                    new com.siemens.cto.aem.common.domain.model.path.Path("/statusPath"), "EXAMPLE_OPTS=%someEvn%/someVal", JvmState.JVM_STOPPED, "", null));
+                    new com.siemens.cto.aem.common.domain.model.path.Path("/statusPath"), "EXAMPLE_OPTS=%someEvn%/someVal", JvmState.JVM_STOPPED, "", null, null, null));
 
             when(mockGroupPesistenceService.getGroups()).thenReturn(groups);
             when(mockAppPersistenceService.findApplicationsBelongingTo(anyString())).thenReturn(applications);

@@ -1,23 +1,24 @@
 package com.siemens.cto.aem.ws.rest.v1.service.jvm.impl;
 
-import com.siemens.cto.aem.common.request.jvm.CreateJvmAndAddToGroupsRequest;
-import com.siemens.cto.aem.common.request.jvm.CreateJvmRequest;
-import com.siemens.cto.aem.common.exception.BadRequestException;
-import com.siemens.cto.aem.common.domain.model.group.Group;
-import com.siemens.cto.aem.common.domain.model.id.Identifier;
-import com.siemens.cto.aem.common.domain.model.id.IdentifierSetBuilder;
-import com.siemens.cto.aem.common.domain.model.path.Path;
-import com.siemens.cto.aem.ws.rest.v1.json.AbstractJsonDeserializer;
+import java.io.IOException;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.JsonParser;
 import org.codehaus.jackson.ObjectCodec;
 import org.codehaus.jackson.map.DeserializationContext;
 import org.codehaus.jackson.map.annotate.JsonDeserialize;
 
-import java.io.IOException;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+import com.siemens.cto.aem.common.domain.model.group.Group;
+import com.siemens.cto.aem.common.domain.model.id.Identifier;
+import com.siemens.cto.aem.common.domain.model.id.IdentifierSetBuilder;
+import com.siemens.cto.aem.common.domain.model.path.Path;
+import com.siemens.cto.aem.common.exception.BadRequestException;
+import com.siemens.cto.aem.common.request.jvm.CreateJvmAndAddToGroupsRequest;
+import com.siemens.cto.aem.common.request.jvm.CreateJvmRequest;
+import com.siemens.cto.aem.ws.rest.v1.json.AbstractJsonDeserializer;
 
 @JsonDeserialize(using = JsonCreateJvm.JsonCreateJvmDeserializer.class)
 public class JsonCreateJvm {
@@ -31,7 +32,9 @@ public class JsonCreateJvm {
     private final String ajpPort;
     private final String statusPath;
     private final String systemProperties;
-
+    private final String userName;
+    private final String encryptedPassword;
+    
     private final Set<String> groupIds;
 
     public JsonCreateJvm(final String theJvmName,
@@ -42,7 +45,9 @@ public class JsonCreateJvm {
                          final String theShutdownPort,
                          final String theAjpPort,
                          final String theStatusPath,
-                         final String theSystemProperties) {
+                         final String theSystemProperties,
+                         final String theUsername,
+                         final String theEncryptedPassword) {
         this(theJvmName,
              theHostName,
              Collections.<String>emptySet(),
@@ -52,7 +57,9 @@ public class JsonCreateJvm {
              theShutdownPort,
              theAjpPort,
              theStatusPath,
-             theSystemProperties);
+             theSystemProperties,
+             theUsername,
+             theEncryptedPassword);
     }
 
     public JsonCreateJvm(final String theJvmName,
@@ -64,7 +71,9 @@ public class JsonCreateJvm {
                          final String theShutdownPort,
                          final String theAjpPort,
                          final String theStatusPath,
-                         final String theSystemProperties) {
+                         final String theSystemProperties,
+                         final String theUsername,
+                         final String theEncrypedPassword) {
         jvmName = theJvmName;
         hostName = theHostName;
         httpPort = theHttpPort;
@@ -75,6 +84,8 @@ public class JsonCreateJvm {
         statusPath = theStatusPath;
         systemProperties = theSystemProperties;
         groupIds = Collections.unmodifiableSet(new HashSet<>(someGroupIds));
+        userName = theUsername;
+        encryptedPassword = theEncrypedPassword;
     }
 
     public boolean areGroupsPresent() {
@@ -91,7 +102,9 @@ public class JsonCreateJvm {
                                     JsonUtilJvm.stringToInteger(shutdownPort),
                                     JsonUtilJvm.stringToInteger(ajpPort),
                                     new Path(statusPath),
-                                    systemProperties);
+                                    systemProperties,
+                                    userName,
+                                    encryptedPassword);
     }
 
     public CreateJvmAndAddToGroupsRequest toCreateAndAddRequest() {
@@ -106,7 +119,9 @@ public class JsonCreateJvm {
                                                   JsonUtilJvm.stringToInteger(shutdownPort),
                                                   JsonUtilJvm.stringToInteger(ajpPort),
                                                   new Path(statusPath),
-                                                  systemProperties);
+                                                  systemProperties,
+                                                  userName,
+                                                  encryptedPassword);
     }
 
     protected Set<Identifier<Group>> convertGroupIds() {
@@ -134,7 +149,9 @@ public class JsonCreateJvm {
             final JsonNode ajpPortNode = rootNode.get("ajpPort");
             final JsonNode statusPathNode = rootNode.get("statusPath");
             final JsonNode systemProperties = rootNode.get("systemProperties");
-
+            final JsonNode userName = rootNode.get("userName");
+            final JsonNode encryptedPassword = rootNode.get("encryptedPassword");
+            
             final Set<String> rawGroupIds = deserializeGroupIdentifiers(rootNode);
 
             return new JsonCreateJvm(jvmNode.getTextValue(),
@@ -146,7 +163,9 @@ public class JsonCreateJvm {
                                      shutdownPortNode.getValueAsText(),
                                      ajpPortNode.getValueAsText(),
                                      statusPathNode.getTextValue(),
-                                     systemProperties.getTextValue());
+                                     systemProperties.getTextValue(),
+                                     userName.getTextValue(),
+                                     encryptedPassword.getTextValue());
         }
     }
 }

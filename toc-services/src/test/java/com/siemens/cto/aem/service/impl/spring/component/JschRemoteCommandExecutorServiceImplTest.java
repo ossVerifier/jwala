@@ -1,25 +1,34 @@
 package com.siemens.cto.aem.service.impl.spring.component;
 
-import com.jcraft.jsch.*;
-import com.siemens.cto.aem.commandprocessor.jsch.impl.ChannelSessionKey;
-import com.siemens.cto.aem.commandprocessor.jsch.impl.ChannelType;
-import com.siemens.cto.aem.common.exec.ExecCommand;
-import com.siemens.cto.aem.common.exec.RemoteExecCommand;
-import com.siemens.cto.aem.common.exec.RemoteSystemConnection;
-import com.siemens.cto.aem.service.RemoteCommandReturnInfo;
-import org.apache.commons.io.output.ByteArrayOutputStream;
+import static junit.framework.Assert.assertEquals;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyInt;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+
 import org.apache.commons.pool2.impl.GenericKeyedObjectPool;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-
-import static junit.framework.Assert.assertEquals;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.*;
+import com.jcraft.jsch.Channel;
+import com.jcraft.jsch.ChannelExec;
+import com.jcraft.jsch.ChannelShell;
+import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.Session;
+import com.siemens.cto.aem.commandprocessor.jsch.impl.ChannelSessionKey;
+import com.siemens.cto.aem.commandprocessor.jsch.impl.ChannelType;
+import com.siemens.cto.aem.common.exec.ExecCommand;
+import com.siemens.cto.aem.common.exec.RemoteExecCommand;
+import com.siemens.cto.aem.common.exec.RemoteSystemConnection;
+import com.siemens.cto.aem.service.RemoteCommandReturnInfo;
 
 /**
  * Tests for {@link JschRemoteCommandExecutorServiceImpl}.

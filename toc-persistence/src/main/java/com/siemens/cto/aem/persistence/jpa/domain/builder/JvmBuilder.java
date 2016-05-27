@@ -1,14 +1,14 @@
 package com.siemens.cto.aem.persistence.jpa.domain.builder;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.path.Path;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
-
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * {@link Jvm} builder from a {@link JpaJvm}.
@@ -43,7 +43,9 @@ public class JvmBuilder {
                .setAjpPort(jpaJvm.getAjpPort())
                .setSystemProperties(jpaJvm.getSystemProperties())
                .setState(jpaJvm.getState())
-               .setErrorStatus(jpaJvm.getErrorStatus());
+               .setErrorStatus(jpaJvm.getErrorStatus())
+               .setUserName(jpaJvm.getUserName())
+               .setEncryptedPassword(jpaJvm.getEncryptedPassword());
         return builder.build();
     }
 

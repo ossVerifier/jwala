@@ -1,20 +1,17 @@
 package com.siemens.cto.aem.persistence.jpa.service.jvm.impl;
 
-import com.siemens.cto.aem.common.configuration.TestExecutionProfile;
-import com.siemens.cto.aem.common.domain.model.group.Group;
-import com.siemens.cto.aem.common.domain.model.id.Identifier;
-import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
-import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
-import com.siemens.cto.aem.common.domain.model.path.Path;
-import com.siemens.cto.aem.common.domain.model.user.User;
-import com.siemens.cto.aem.common.request.jvm.CreateJvmRequest;
-import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
-import com.siemens.cto.aem.persistence.configuration.TestJpaConfiguration;
-import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
-import com.siemens.cto.aem.persistence.jpa.domain.resource.config.template.JpaJvmConfigTemplate;
-import com.siemens.cto.aem.persistence.jpa.service.impl.JvmCrudServiceImpl;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.util.HashSet;
+import java.util.List;
+
 import org.apache.commons.lang3.StringUtils;
-import org.joda.time.DateTime;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -28,16 +25,21 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.util.HashSet;
-import java.util.List;
-
-import static org.junit.Assert.*;
+import com.siemens.cto.aem.common.configuration.TestExecutionProfile;
+import com.siemens.cto.aem.common.domain.model.group.Group;
+import com.siemens.cto.aem.common.domain.model.id.Identifier;
+import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
+import com.siemens.cto.aem.common.domain.model.path.Path;
+import com.siemens.cto.aem.common.domain.model.user.User;
+import com.siemens.cto.aem.common.request.jvm.CreateJvmRequest;
+import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
+import com.siemens.cto.aem.persistence.configuration.TestJpaConfiguration;
+import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
+import com.siemens.cto.aem.persistence.jpa.domain.resource.config.template.JpaJvmConfigTemplate;
+import com.siemens.cto.aem.persistence.jpa.service.impl.JvmCrudServiceImpl;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @Transactional
@@ -61,7 +63,7 @@ public class JvmCrudServiceImplTest {
         user.addToThread();
 
         String testJvmName = "testJvmName";
-        CreateJvmRequest createJvmRequest = new CreateJvmRequest(testJvmName, "testHostName", 100, 101, 102, 103, 104, new Path("./stp.png"), "");
+        CreateJvmRequest createJvmRequest = new CreateJvmRequest(testJvmName, "testHostName", 100, 101, 102, 103, 104, new Path("./stp.png"), "", null, null);
         JpaJvm jpaJvm = jvmCrudService.createJvm(createJvmRequest);
         jvm = new Jvm(Identifier.<Jvm>id(jpaJvm.getId()), jpaJvm.getName(), new HashSet<Group>());
     }
@@ -109,8 +111,8 @@ public class JvmCrudServiceImplTest {
 
     @Test
     public void testGetJvmByExactName() {
-        CreateJvmRequest createJvmRequest = new CreateJvmRequest("jvm-1", "testHost", 9101, 9102, 9103, -1, 9104, new Path("./"), "");
-        CreateJvmRequest createJvmWithSimilarNameRequest = new CreateJvmRequest("jvm-11", "testHost", 9111, 9112, 9113, -1, 9114, new Path("./"), "");
+        CreateJvmRequest createJvmRequest = new CreateJvmRequest("jvm-1", "testHost", 9101, 9102, 9103, -1, 9104, new Path("./"), "", null, null);
+        CreateJvmRequest createJvmWithSimilarNameRequest = new CreateJvmRequest("jvm-11", "testHost", 9111, 9112, 9113, -1, 9114, new Path("./"), "", null, null);
         JpaJvm jvmOne = jvmCrudService.createJvm(createJvmRequest);
         JpaJvm jvmOneOne = jvmCrudService.createJvm(createJvmWithSimilarNameRequest);
 
@@ -124,7 +126,7 @@ public class JvmCrudServiceImplTest {
     @Test
     public void testUpdateState() throws InterruptedException {
         final CreateJvmRequest createJvmRequest = new CreateJvmRequest("jvmName", "hostName", 0, 0, 0, 0, 0,
-                new Path("./stp.png"), StringUtils.EMPTY);
+                new Path("./stp.png"), StringUtils.EMPTY, null, null);
         final JpaJvm newJpaJvm = jvmCrudService.createJvm(createJvmRequest);
         final Identifier<Jvm> jpaJvmId = new Identifier<>(newJpaJvm.getId());
         assertEquals(1, jvmCrudService.updateState(jpaJvmId, JvmState.JVM_STOPPED));
@@ -133,7 +135,7 @@ public class JvmCrudServiceImplTest {
     @Test
     public void testUpdateErrorStatus() {
         final CreateJvmRequest createJvmRequest = new CreateJvmRequest("jvmName", "hostName", 0, 0, 0, 0, 0,
-                new Path("./stp.png"), StringUtils.EMPTY);
+                new Path("./stp.png"), StringUtils.EMPTY, null, null);
         final JpaJvm newJpaJvm = jvmCrudService.createJvm(createJvmRequest);
         final Identifier<Jvm> jpaJvmId = new Identifier<>(newJpaJvm.getId());
         assertEquals(1, jvmCrudService.updateErrorStatus(jpaJvmId, "error!"));
@@ -142,7 +144,7 @@ public class JvmCrudServiceImplTest {
     @Test
     public void testUpdateStateAndErrSts() {
         final CreateJvmRequest createJvmRequest = new CreateJvmRequest("jvmName", "hostName", 0, 0, 0, 0, 0,
-                new Path("./stp.png"), StringUtils.EMPTY);
+                new Path("./stp.png"), StringUtils.EMPTY, null, null);
         final JpaJvm newJpaJvm = jvmCrudService.createJvm(createJvmRequest);
         final Identifier<Jvm> jpaJvmId = new Identifier<>(newJpaJvm.getId());
         assertEquals(1, jvmCrudService.updateState(jpaJvmId, JvmState.JVM_FAILED, "error!"));

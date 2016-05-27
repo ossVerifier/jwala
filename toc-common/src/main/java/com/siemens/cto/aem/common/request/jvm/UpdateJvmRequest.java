@@ -1,25 +1,29 @@
 package com.siemens.cto.aem.common.request.jvm;
 
-import com.siemens.cto.aem.common.request.Request;
-import com.siemens.cto.aem.common.exception.BadRequestException;
-import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
-import com.siemens.cto.aem.common.request.group.AddJvmToGroupRequest;
-import com.siemens.cto.aem.common.domain.model.group.Group;
-import com.siemens.cto.aem.common.domain.model.id.Identifier;
-import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
-import com.siemens.cto.aem.common.domain.model.path.Path;
-import com.siemens.cto.aem.common.rule.*;
-import com.siemens.cto.aem.common.rule.group.GroupIdsRule;
-import com.siemens.cto.aem.common.rule.jvm.JvmIdRule;
-import com.siemens.cto.aem.common.rule.jvm.JvmNameRule;
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ToStringBuilder;
-
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+
+import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
+import com.siemens.cto.aem.common.domain.model.group.Group;
+import com.siemens.cto.aem.common.domain.model.id.Identifier;
+import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.common.domain.model.path.Path;
+import com.siemens.cto.aem.common.request.Request;
+import com.siemens.cto.aem.common.request.group.AddJvmToGroupRequest;
+import com.siemens.cto.aem.common.rule.HostNameRule;
+import com.siemens.cto.aem.common.rule.MultipleRules;
+import com.siemens.cto.aem.common.rule.PortNumberRule;
+import com.siemens.cto.aem.common.rule.ShutdownPortNumberRule;
+import com.siemens.cto.aem.common.rule.StatusPathRule;
+import com.siemens.cto.aem.common.rule.group.GroupIdsRule;
+import com.siemens.cto.aem.common.rule.jvm.JvmIdRule;
+import com.siemens.cto.aem.common.rule.jvm.JvmNameRule;
 
 public class UpdateJvmRequest implements Serializable, Request {
 
@@ -35,6 +39,8 @@ public class UpdateJvmRequest implements Serializable, Request {
     private final Integer newAjpPort;
     private final Path newStatusPath;
     private final String newSystemProperties;
+    private final String newUserName;
+    private final String newEncryptedPassword;
 
     private final Set<Identifier<Group>> groupIds;
 
@@ -48,7 +54,9 @@ public class UpdateJvmRequest implements Serializable, Request {
                             final Integer theNewShutdownPort,
                             final Integer theNewAjpPort,
                             final Path theNewStatusPath,
-                            final String theNewSystemProperties) {
+                            final String theNewSystemProperties,
+                            final String theUserName,
+                            final String theEncryptedPassword) {
         id = theId;
         newJvmName = theNewJvmName;
         newHostName = theNewHostName;
@@ -60,6 +68,8 @@ public class UpdateJvmRequest implements Serializable, Request {
         newAjpPort = theNewAjpPort;
         newStatusPath = theNewStatusPath;
         newSystemProperties = theNewSystemProperties;
+        newUserName = theUserName;
+        newEncryptedPassword = theEncryptedPassword;
     }
 
     public Identifier<Jvm> getId() {
@@ -92,6 +102,14 @@ public class UpdateJvmRequest implements Serializable, Request {
 
     public Integer getNewAjpPort() {
         return newAjpPort;
+    }
+
+    public String getNewUserName() {
+        return newUserName;
+    }
+
+    public String getNewEncryptedPassword() {
+        return newEncryptedPassword;
     }
 
     public String getNewSystemProperties() {return newSystemProperties;}
@@ -142,6 +160,8 @@ public class UpdateJvmRequest implements Serializable, Request {
                 .append(this.newAjpPort, rhs.newAjpPort)
                 .append(this.groupIds, rhs.groupIds)
                 .append(this.newSystemProperties, rhs.newSystemProperties)
+                .append(this.newUserName, rhs.newUserName)
+                .append(this.newEncryptedPassword, rhs.newEncryptedPassword)
                 .isEquals();
     }
 
@@ -158,6 +178,8 @@ public class UpdateJvmRequest implements Serializable, Request {
                 .append(newAjpPort)
                 .append(groupIds)
                 .append(newSystemProperties)
+                .append(newUserName)
+                .append(newEncryptedPassword)
                 .toHashCode();
     }
 
@@ -174,6 +196,7 @@ public class UpdateJvmRequest implements Serializable, Request {
                 .append("newAjpPort", newAjpPort)
                 .append("groupIds", groupIds)
                 .append("newSystemProperties", newSystemProperties)
+                .append("newUserNanme", newUserName)
                 .toString();
     }
 }

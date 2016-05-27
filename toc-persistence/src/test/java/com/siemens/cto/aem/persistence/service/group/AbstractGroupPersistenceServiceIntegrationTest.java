@@ -1,31 +1,9 @@
 package com.siemens.cto.aem.persistence.service.group;
 
-import com.siemens.cto.aem.common.domain.model.app.Application;
-import com.siemens.cto.aem.common.domain.model.group.GroupState;
-import com.siemens.cto.aem.common.domain.model.state.CurrentState;
-import com.siemens.cto.aem.common.domain.model.state.StateType;
-import com.siemens.cto.aem.common.domain.model.user.User;
-import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
-import com.siemens.cto.aem.common.exception.BadRequestException;
-import com.siemens.cto.aem.common.exception.NotFoundException;
-import com.siemens.cto.aem.common.domain.model.group.Group;
-import com.siemens.cto.aem.common.domain.model.id.Identifier;
-import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
-import com.siemens.cto.aem.common.domain.model.path.Path;
-import com.siemens.cto.aem.common.request.app.CreateApplicationRequest;
-import com.siemens.cto.aem.common.request.group.CreateGroupRequest;
-import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
-import com.siemens.cto.aem.common.request.state.SetStateRequest;
-import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateRequest;
-import com.siemens.cto.aem.persistence.jpa.domain.resource.config.template.ConfigTemplate;
-import com.siemens.cto.aem.persistence.service.*;
-import org.apache.commons.lang3.StringUtils;
-import org.joda.time.DateTime;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.transaction.annotation.Transactional;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -36,7 +14,37 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import static org.junit.Assert.*;
+import org.apache.commons.lang3.StringUtils;
+import org.joda.time.DateTime;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.siemens.cto.aem.common.domain.model.app.Application;
+import com.siemens.cto.aem.common.domain.model.group.Group;
+import com.siemens.cto.aem.common.domain.model.group.GroupState;
+import com.siemens.cto.aem.common.domain.model.id.Identifier;
+import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.common.domain.model.path.Path;
+import com.siemens.cto.aem.common.domain.model.state.CurrentState;
+import com.siemens.cto.aem.common.domain.model.state.StateType;
+import com.siemens.cto.aem.common.domain.model.user.User;
+import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
+import com.siemens.cto.aem.common.exception.BadRequestException;
+import com.siemens.cto.aem.common.exception.NotFoundException;
+import com.siemens.cto.aem.common.request.app.CreateApplicationRequest;
+import com.siemens.cto.aem.common.request.group.CreateGroupRequest;
+import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
+import com.siemens.cto.aem.common.request.state.SetStateRequest;
+import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateRequest;
+import com.siemens.cto.aem.persistence.jpa.domain.resource.config.template.ConfigTemplate;
+import com.siemens.cto.aem.persistence.service.ApplicationPersistenceService;
+import com.siemens.cto.aem.persistence.service.CommonGroupPersistenceServiceBehavior;
+import com.siemens.cto.aem.persistence.service.CommonJvmPersistenceServiceBehavior;
+import com.siemens.cto.aem.persistence.service.GroupPersistenceService;
+import com.siemens.cto.aem.persistence.service.JvmPersistenceService;
 
 @Transactional
 public abstract class AbstractGroupPersistenceServiceIntegrationTest {
@@ -75,7 +83,7 @@ public abstract class AbstractGroupPersistenceServiceIntegrationTest {
                                             5, 4, 3, 2, 1,
                                             userId,
                                             new Path("/abc"),
-                                            "EXAMPLE_OPTS=%someEnv%/someVal");
+                                            "EXAMPLE_OPTS=%someEnv%/someVal", null, null);
 
         application = applicationPersistenceService.createApplication(new CreateApplicationRequest(preCreatedGroup.getId(),
                         "testApp", "", false, false, false), "", "", "");
@@ -298,7 +306,7 @@ public abstract class AbstractGroupPersistenceServiceIntegrationTest {
                                                    5, 4, 3, 2, 1,
                                                    userId,
                                                    new Path("/abc"),
-                                                   "EXAMPLE_OPTS=%someEnv%/someVal");
+                                                   "EXAMPLE_OPTS=%someEnv%/someVal", null, null);
 
         final Identifier<Group> groupId = preCreatedGroup.getId();
 

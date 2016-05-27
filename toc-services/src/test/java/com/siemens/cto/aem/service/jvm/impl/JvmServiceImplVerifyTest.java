@@ -1,5 +1,38 @@
 package com.siemens.cto.aem.service.jvm.impl;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.initMocks;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.apache.commons.lang3.StringUtils;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Matchers;
+import org.mockito.Mock;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.client.ClientHttpResponse;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
+
 import com.siemens.cto.aem.common.domain.model.app.Application;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
@@ -26,31 +59,6 @@ import com.siemens.cto.aem.service.resource.ResourceService;
 import com.siemens.cto.aem.service.state.StateNotificationService;
 import com.siemens.cto.aem.service.webserver.component.ClientFactoryHelper;
 import com.siemens.cto.toc.files.FileManager;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Matchers;
-import org.mockito.Mock;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.client.ClientHttpResponse;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.*;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.*;
-import static org.mockito.MockitoAnnotations.initMocks;
 
 public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
 
@@ -208,7 +216,7 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
 
         final Jvm jvm = new Jvm(new Identifier<Jvm>(-123456L),
                 "jvm-name", "host-name", new HashSet<Group>(), 80, 443, 443, 8005, 8009, new Path("/"),
-                "EXAMPLE_OPTS=%someEnv%/someVal", JvmState.JVM_STOPPED, null, null);
+                "EXAMPLE_OPTS=%someEnv%/someVal", JvmState.JVM_STOPPED, null, null, null, null);
 
         when(mockJvmPersistenceService.findJvmByExactName(eq(jvm.getJvmName()))).thenReturn(jvm);
         final String templateContent = "<server>test</server>";
@@ -224,7 +232,7 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
     public void testGenerateThrowsExceptionForEmptyTemplate() {
         final Jvm jvm = new Jvm(new Identifier<Jvm>(-123456L),
                 "jvm-name", "host-name", new HashSet<Group>(), 80, 443, 443, 8005, 8009, new Path("/"),
-                "EXAMPLE_OPTS=%someEnv%/someVal", JvmState.JVM_STOPPED, null, null);
+                "EXAMPLE_OPTS=%someEnv%/someVal", JvmState.JVM_STOPPED, null, null, null, null);
 
         when(mockJvmPersistenceService.findJvmByExactName(eq(jvm.getJvmName()))).thenReturn(jvm);
         when(mockJvmPersistenceService.getJvmTemplate(eq("server.xml"), eq(jvm.getId()))).thenReturn("");
@@ -409,7 +417,7 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
     @Test
     public void testPreviewTemplate() {
         final String jvmName = "jvm-1Test";
-        Jvm testJvm = new Jvm(new Identifier<Jvm>(111L), jvmName, "testHost", new HashSet<Group>(), 9101, 9102, 9103, -1, 9104, new Path("./"), "", JvmState.JVM_STOPPED, "", null);
+        Jvm testJvm = new Jvm(new Identifier<Jvm>(111L), jvmName, "testHost", new HashSet<Group>(), 9101, 9102, 9103, -1, 9104, new Path("./"), "", JvmState.JVM_STOPPED, "", null, null, null);
         List<Jvm> jvmList = new ArrayList<>();
         jvmList.add(testJvm);
         when(mockJvmPersistenceService.findJvm(anyString(), anyString())).thenReturn(testJvm);

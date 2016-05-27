@@ -1,17 +1,22 @@
 package com.siemens.cto.aem.service.webserver;
 
+import static com.siemens.cto.aem.common.domain.model.id.Identifier.id;
+import static org.junit.Assert.assertEquals;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import org.junit.Test;
+
 import com.siemens.cto.aem.common.domain.model.app.Application;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.common.domain.model.path.Path;
-import org.junit.Test;
-
-import java.util.*;
-
-import static com.siemens.cto.aem.common.domain.model.id.Identifier.id;
-import static org.junit.Assert.assertEquals;
 
 public class WorkersPropertiesTest {
 
@@ -47,7 +52,7 @@ public class WorkersPropertiesTest {
         List<Application> apps = new ArrayList<>();
         apps.add(app);
         Jvm jvm = new Jvm(id(0L, Jvm.class), "jvm", "localhost", groups, 8080, 8081, 8082, 8083, 8084, new Path("/abc"),
-                "EXAMPLE_OPTS=%someEnv%/someVal", JvmState.JVM_STOPPED, null, null);
+                "EXAMPLE_OPTS=%someEnv%/someVal", JvmState.JVM_STOPPED, null, null, null, null);
         List<Jvm> jvms = new ArrayList<>();
         jvms.add(jvm);
         wb.setApps(apps);

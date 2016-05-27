@@ -1,13 +1,13 @@
 package com.siemens.cto.aem.persistence.service;
 
-import com.siemens.cto.aem.common.request.jvm.CreateJvmRequest;
-import com.siemens.cto.aem.common.request.jvm.UpdateJvmRequest;
+import java.util.Collections;
+
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.path.Path;
-
-import java.util.Collections;
+import com.siemens.cto.aem.common.request.jvm.CreateJvmRequest;
+import com.siemens.cto.aem.common.request.jvm.UpdateJvmRequest;
 
 public class CommonJvmPersistenceServiceBehavior {
 
@@ -26,7 +26,9 @@ public class CommonJvmPersistenceServiceBehavior {
                          final Integer aAjpPort,
                          final String aUserId,
                          final Path aStatusPath,
-                         final String aSystemProperties) {
+                         final String aSystemProperties,
+                         final String aUserName,
+                         final String anEncryptedPassword) {
 
         final CreateJvmRequest createJvmRequest = createCreateJvmRequest(aJvmName,
                 aHostName,
@@ -37,7 +39,9 @@ public class CommonJvmPersistenceServiceBehavior {
                 aAjpPort,
                 aUserId,
                 aStatusPath,
-                aSystemProperties);
+                aSystemProperties,
+                aUserName,
+                anEncryptedPassword);
 
         return jvmPersistenceService.createJvm(createJvmRequest);
     }
@@ -52,7 +56,9 @@ public class CommonJvmPersistenceServiceBehavior {
                          final Integer aNewAjpPort,
                          final String aUserId,
                          final Path aStatusPath,
-                         final String aSystemProperties) {
+                         final String aSystemProperties,
+                         final String aUserName,
+                         final String anEncryptedPassword) {
 
         final UpdateJvmRequest updateJvmRequest = createUpdateJvmRequest(aJvmId,
                 aNewJvmName,
@@ -64,7 +70,9 @@ public class CommonJvmPersistenceServiceBehavior {
                 aNewAjpPort,
                 aUserId,
                 aStatusPath,
-                aSystemProperties);
+                aSystemProperties,
+                aUserName,
+                anEncryptedPassword);
 
         return jvmPersistenceService.updateJvm(updateJvmRequest);
     }
@@ -78,7 +86,9 @@ public class CommonJvmPersistenceServiceBehavior {
                                                       final Integer ajpPort,
                                                       final String aUserId,
                                                       final Path aStatusPath,
-                                                      final String aSystemProperties) {
+                                                      final String aSystemProperties,
+                                                      final String aUserName,
+                                                      final String anEncryptedPassword) {
 
         return new CreateJvmRequest(aJvmName,
                 aJvmHostName,
@@ -88,8 +98,9 @@ public class CommonJvmPersistenceServiceBehavior {
                 shutdownPort,
                 ajpPort,
                 aStatusPath,
-                aSystemProperties
-        );
+                aSystemProperties,
+                aUserName,
+                anEncryptedPassword);
     }
 
     protected UpdateJvmRequest createUpdateJvmRequest(final Identifier<Jvm> aJvmId,
@@ -102,7 +113,9 @@ public class CommonJvmPersistenceServiceBehavior {
                                                       final Integer aNewAjpPort,
                                                       final String aUserId,
                                                       final Path aStatusPath,
-                                                      final String systemProperties) {
+                                                      final String systemProperties,  
+                                                      final String aUserName,
+                                                      final String anEncryptedPassword) {
 
         return new UpdateJvmRequest(aJvmId,
                 aNewJvmName,
@@ -114,6 +127,8 @@ public class CommonJvmPersistenceServiceBehavior {
                 aNewShutdownPort,
                 aNewAjpPort,
                 aStatusPath,
-                systemProperties);
+                systemProperties, 
+                aUserName,
+                anEncryptedPassword);
     }
 }

@@ -1,30 +1,17 @@
 package com.siemens.cto.aem.persistence.jpa.service;
 
-import com.siemens.cto.aem.common.configuration.TestExecutionProfile;
-import com.siemens.cto.aem.common.domain.model.app.Application;
-import com.siemens.cto.aem.common.domain.model.group.Group;
-import com.siemens.cto.aem.common.domain.model.id.Identifier;
-import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
-import com.siemens.cto.aem.common.domain.model.path.FileSystemPath;
-import com.siemens.cto.aem.common.domain.model.path.Path;
-import com.siemens.cto.aem.common.domain.model.user.User;
-import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
-import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState;
-import com.siemens.cto.aem.common.domain.model.webserver.WebServerState;
-import com.siemens.cto.aem.common.exception.BadRequestException;
-import com.siemens.cto.aem.common.request.app.CreateApplicationRequest;
-import com.siemens.cto.aem.common.request.group.CreateGroupRequest;
-import com.siemens.cto.aem.common.request.jvm.CreateJvmRequest;
-import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateRequest;
-import com.siemens.cto.aem.persistence.configuration.TestJpaConfiguration;
-import com.siemens.cto.aem.persistence.jpa.domain.*;
-import com.siemens.cto.aem.persistence.jpa.domain.resource.config.template.JpaWebServerConfigTemplate;
-import com.siemens.cto.aem.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
-import com.siemens.cto.aem.persistence.jpa.service.exception.ResourceTemplateUpdateException;
-import com.siemens.cto.aem.persistence.jpa.service.impl.ApplicationCrudServiceImpl;
-import com.siemens.cto.aem.persistence.jpa.service.impl.GroupCrudServiceImpl;
-import com.siemens.cto.aem.persistence.jpa.service.impl.JvmCrudServiceImpl;
-import com.siemens.cto.aem.persistence.jpa.service.impl.WebServerCrudServiceImpl;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+
 import org.apache.commons.lang3.StringUtils;
 import org.junit.After;
 import org.junit.Before;
@@ -41,15 +28,33 @@ import org.springframework.test.context.support.AnnotationConfigContextLoader;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-
-import static org.junit.Assert.*;
+import com.siemens.cto.aem.common.configuration.TestExecutionProfile;
+import com.siemens.cto.aem.common.domain.model.app.Application;
+import com.siemens.cto.aem.common.domain.model.group.Group;
+import com.siemens.cto.aem.common.domain.model.id.Identifier;
+import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.common.domain.model.path.FileSystemPath;
+import com.siemens.cto.aem.common.domain.model.path.Path;
+import com.siemens.cto.aem.common.domain.model.user.User;
+import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
+import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState;
+import com.siemens.cto.aem.common.exception.BadRequestException;
+import com.siemens.cto.aem.common.request.app.CreateApplicationRequest;
+import com.siemens.cto.aem.common.request.group.CreateGroupRequest;
+import com.siemens.cto.aem.common.request.jvm.CreateJvmRequest;
+import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateRequest;
+import com.siemens.cto.aem.persistence.configuration.TestJpaConfiguration;
+import com.siemens.cto.aem.persistence.jpa.domain.JpaApplication;
+import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
+import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
+import com.siemens.cto.aem.persistence.jpa.domain.JpaWebServer;
+import com.siemens.cto.aem.persistence.jpa.domain.resource.config.template.JpaWebServerConfigTemplate;
+import com.siemens.cto.aem.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
+import com.siemens.cto.aem.persistence.jpa.service.exception.ResourceTemplateUpdateException;
+import com.siemens.cto.aem.persistence.jpa.service.impl.ApplicationCrudServiceImpl;
+import com.siemens.cto.aem.persistence.jpa.service.impl.GroupCrudServiceImpl;
+import com.siemens.cto.aem.persistence.jpa.service.impl.JvmCrudServiceImpl;
+import com.siemens.cto.aem.persistence.jpa.service.impl.WebServerCrudServiceImpl;
 
 /**
  * Integration test for {@link WebServerCrudServiceImpl}
@@ -207,7 +212,7 @@ public class WebServerCrudServiceImplTest {
         List<JpaWebServer> wsList = new ArrayList<>();
         wsList.add(webServerCrudService.findById(webServer.getId().getId()));
         group.setWebServers(wsList);
-        CreateJvmRequest createJvmReq = new CreateJvmRequest("testJvmName", "testHostName", 1212, 1213, 1214, -1, 1215, new Path("./statusPath"), "");
+        CreateJvmRequest createJvmReq = new CreateJvmRequest("testJvmName", "testHostName", 1212, 1213, 1214, -1, 1215, new Path("./statusPath"), "", null, null);
         final JpaJvm jvm = jvmCrudService.createJvm(createJvmReq);
         List<JpaJvm> jvmsList = new ArrayList<>();
         jvmsList.add(jvm);
