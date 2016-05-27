@@ -18,8 +18,6 @@ import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.common.request.group.*;
 import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
 import com.siemens.cto.aem.common.request.webserver.ControlGroupWebServerRequest;
-import com.siemens.cto.aem.common.request.webserver.UploadHttpdConfTemplateRequest;
-import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateCommandBuilder;
 import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateRequest;
 import com.siemens.cto.aem.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
 import com.siemens.cto.aem.persistence.jpa.service.exception.ResourceTemplateUpdateException;
@@ -122,7 +120,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     @Override
     public Response createGroup(final String aNewGroupName,
                                 final AuthenticatedUser aUser) {
-        LOGGER.debug("Create Group requested: {}", aNewGroupName);
+        LOGGER.info("Create Group requested: {}", aNewGroupName);
         final Group group = groupService.createGroup(new CreateGroupRequest(aNewGroupName), aUser.getUser());
         return ResponseBuilder.created(group);
     }
@@ -131,7 +129,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
 
     public Response updateGroup(final JsonUpdateGroup anUpdatedGroup,
                                 final AuthenticatedUser aUser) {
-        LOGGER.debug("Update Group requested: {}", anUpdatedGroup);
+        LOGGER.info("Update Group requested: {}", anUpdatedGroup);
 
         // TODO: Refactor adhoc conversion to process group name instead of Id.
         final Group group = groupService.getGroup(anUpdatedGroup.getId());
@@ -144,7 +142,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
 
     @Override
     public Response removeGroup(final String name, final boolean byName) {
-        LOGGER.debug("Delete Group requested: {} byName={}", name, byName);
+        LOGGER.info("Delete Group requested: {} byName={}", name, byName);
         if (byName) {
             groupService.removeGroup(name);
         } else {
@@ -157,7 +155,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     public Response removeJvmFromGroup(final Identifier<Group> aGroupId,
                                        final Identifier<Jvm> aJvmId,
                                        final AuthenticatedUser aUser) {
-        LOGGER.debug("Remove JVM from Group requested: {}, {}", aGroupId, aJvmId);
+        LOGGER.info("Remove JVM from Group requested: {}, {}", aGroupId, aJvmId);
         return ResponseBuilder.ok(groupService.removeJvmFromGroup(new RemoveJvmFromGroupRequest(aGroupId,
                         aJvmId),
                 aUser.getUser()));
@@ -167,7 +165,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     public Response addJvmsToGroup(final Identifier<Group> aGroupId,
                                    final JsonJvms someJvmsToAdd,
                                    final AuthenticatedUser aUser) {
-        LOGGER.debug("Add JVM to Group requested: {}, {}", aGroupId, someJvmsToAdd);
+        LOGGER.info("Add JVM to Group requested: {}, {}", aGroupId, someJvmsToAdd);
         final AddJvmsToGroupRequest command = someJvmsToAdd.toCommand(aGroupId);
         return ResponseBuilder.ok(groupService.addJvmsToGroup(command,
                 aUser.getUser()));
@@ -177,7 +175,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     public Response controlGroupJvms(final Identifier<Group> aGroupId,
                                      final JsonControlJvm jsonControlJvm,
                                      final AuthenticatedUser aUser) {
-        LOGGER.debug("Control all JVMs in Group requested: {}, {}", aGroupId, jsonControlJvm);
+        LOGGER.info("Control all JVMs in Group requested: {}, {}", aGroupId, jsonControlJvm);
         final JvmControlOperation command = jsonControlJvm.toControlOperation();
         final ControlGroupJvmRequest grpCommand = new ControlGroupJvmRequest(aGroupId,
                 JvmControlOperation.convertFrom(command.getExternalValue()));
@@ -186,25 +184,15 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     }
 
     @Override
-    public Response populateWebServerConfig(final Identifier<Group> aGroupId, final AuthenticatedUser aUser, final boolean overwriteExisting) {
-        List<UploadWebServerTemplateRequest> uploadWSTemplateCommands = new ArrayList<>();
-        UploadWebServerTemplateCommandBuilder uploadCommandBuilder = new UploadWebServerTemplateCommandBuilder();
-        for (WebServer webServer : groupService.getGroupWithWebServers(aGroupId).getWebServers()) {
-            UploadHttpdConfTemplateRequest httpdConfTemplateCommand = uploadCommandBuilder.buildHttpdConfCommand(webServer);
-            uploadWSTemplateCommands.add(httpdConfTemplateCommand);
-        }
-        return ResponseBuilder.ok(groupService.populateWebServerConfig(aGroupId, uploadWSTemplateCommands, aUser.getUser(), overwriteExisting));
-    }
-
-    @Override
     public Response uploadGroupWebServerConfigTemplate(String groupName, AuthenticatedUser aUser, String templateName) {
+        LOGGER.info("Uploading group web server template {} to {}", templateName, groupName);
         return uploadConfigTemplate(groupName, null, aUser, templateName, GroupResourceType.WEBSERVER);
     }
 
     @Override
     public Response updateGroupWebServerResourceTemplate(final String groupName, final String resourceTemplateName, final String content) {
+        LOGGER.info("update group web server resource template {} for group {}", resourceTemplateName, groupName);
         try {
-
             final String updatedContent = groupService.updateGroupWebServerResourceTemplate(groupName, resourceTemplateName, content);
             Group group = groupService.getGroup(groupName);
             group = groupService.getGroupWithWebServers(group.getId());
@@ -257,6 +245,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
 
     @Override
     public Response generateAndDeployGroupJvmFile(final String groupName, final String fileName, final AuthenticatedUser aUser) {
+        LOGGER.info("generate and deploy group JVM file {} to group {}", fileName, groupName);
         Group group = groupService.getGroup(groupName);
         final boolean doNotReplaceTokens = false;
         final String groupJvmTemplateContent = groupService.getGroupJvmResourceTemplate(groupName, fileName, resourceService.generateResourceGroup(), doNotReplaceTokens);
@@ -315,6 +304,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
 
     @Override
     public Response uploadGroupJvmConfigTemplate(String groupName, AuthenticatedUser aUser, String templateName) {
+        LOGGER.info("upload group jvm template {} to group {}", templateName, groupName);
         return uploadConfigTemplate(groupName, null, aUser, templateName, GroupResourceType.JVM);
     }
 
@@ -373,6 +363,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
 
     @Override
     public Response generateAndDeployGroupWebServersFile(final String groupName, final String resourceFileName, final AuthenticatedUser aUser) {
+        LOGGER.info("generate and deploy the web server file {} to group {}", resourceFileName, groupName);
         Group group = groupService.getGroup(groupName);
         group = groupService.getGroupWithWebServers(group.getId());
         final String httpdTemplateContent = groupService.getGroupWebServerResourceTemplate(groupName, resourceFileName, false, resourceService.generateResourceGroup());

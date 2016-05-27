@@ -114,12 +114,6 @@ public interface GroupServiceRest {
     Response getGroupWebServersResourceNames(@PathParam("groupName") final String groupName);
 
     @GET
-    @Path("/{groupId}/webservers/defaultConfig")
-    Response populateWebServerConfig(@PathParam("groupId") final Identifier<Group> aGroupId,
-                                     @BeanParam final AuthenticatedUser aUser,
-                                     @QueryParam("overwrite") @DefaultValue("false") final boolean overwriteExisting);
-
-    @GET
     @Path("/{groupName}/webservers/resources/template/{resourceTemplateName}")
     Response getGroupWebServerResourceTemplate(@PathParam("groupName") final String groupName,
                                                @PathParam("resourceTemplateName") final String resourceTemplateName,
