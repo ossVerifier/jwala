@@ -409,16 +409,15 @@ public class JvmServiceImpl implements JvmService {
             final String resourceTemplateMetaDataString = resourceService.generateResourceFile(jpaJvmConfigTemplate.getMetaData(), resourceGroup, jvm);
             final ResourceTemplateMetaData resourceTemplateMetaData =
                     mapper.readValue(resourceTemplateMetaDataString, ResourceTemplateMetaData.class);
-
+            if (generatedFiles == null) {
+                generatedFiles = new HashMap<>();
+            }
             if (resourceTemplateMetaData.getContentType().equals(ContentType.APPLICATION_BINARY.contentTypeStr)){
                 generatedFiles.put(jpaJvmConfigTemplate.getTemplateContent(),
                        resourceTemplateMetaData.getDeployPath() + "/" + resourceTemplateMetaData.getDeployFileName());
             } else {
                 final String generatedResourceStr = resourceService.generateResourceFile(jpaJvmConfigTemplate.getTemplateContent(),
                         resourceGroup, jvm);
-                if (generatedFiles == null) {
-                    generatedFiles = new HashMap<>();
-                }
                 generatedFiles.put(createConfigFile(resourceTemplateMetaData.getDeployFileName(), generatedResourceStr),
                         resourceTemplateMetaData.getDeployPath() + "/" + resourceTemplateMetaData.getDeployFileName());
             }

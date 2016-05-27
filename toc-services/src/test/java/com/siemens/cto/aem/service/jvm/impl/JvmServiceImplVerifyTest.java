@@ -495,4 +495,23 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
         }
     }
 
+    @Test
+    public void testGenerateBinaryFile() throws IOException {
+        final String jvmName = "testJvmName";
+        //final JpaJvmConfigTemplate mockJpaJvmConfigTemplate = mock(JpaJvmConfigTemplate.class);
+        final ResourceGroup mockResourceGroup = mock(ResourceGroup.class);
+        List<JpaJvmConfigTemplate> jpaJvmConfigTemplates = new ArrayList<>();
+        JpaJvmConfigTemplate jpaJvmConfigTemplate = new JpaJvmConfigTemplate();
+        jpaJvmConfigTemplate.setTemplateContent("C:/Temp/test.file");
+        jpaJvmConfigTemplates.add(jpaJvmConfigTemplate);
+        final String metadata = "{\"contentType\":\"application/binary\",\"deployPath\":\"D:/stp/app/instances/testJvmName/bin\",\"deployFileName\": \"test.file\"}";
+
+        when(mockResourceService.generateResourceGroup()).thenReturn(mockResourceGroup);
+        when(mockResourceService.generateResourceFile(anyString(), any(ResourceGroup.class), any(Jvm.class))).thenReturn(metadata);
+        when(mockJvmPersistenceService.getConfigTemplates(jvmName)).thenReturn(jpaJvmConfigTemplates);
+
+        Map<String, String> result = jvmService.generateResourceFiles(jvmName);
+        assertEquals(result.size(), 1);
+    }
+
 }
