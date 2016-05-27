@@ -34,6 +34,9 @@ public class JvmStateResolverWorker {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JvmStateResolverWorker.class);
     private static final String STOPPED = "STOPPED";
+    private static final String NOT_RECEIVING_JVM_STATE_ERR_MSG = "The JVM state listener is not receiving any state. " +
+            "Possible causes are messaging settings are wrong, messaging server is down, JVM is not functioning correctly " +
+            "(configuration error(s) etc) even though the service is running.";
 
     private final ClientFactoryHelper clientFactoryHelper;
 
@@ -44,6 +47,7 @@ public class JvmStateResolverWorker {
 
     @Async("jvmTaskExecutor")
     public Future<CurrentState<Jvm, JvmState>> pingAndUpdateJvmState(final Jvm jvm, final JvmStateService jvmStateService) {
+        LOGGER.warn("The reverse heartbeat has kicked in! This means that we're not receiving any states from Jvm {}@{}.");
         LOGGER.debug("+++ pingAndUpdateJvmState");
         ClientHttpResponse response = null;
         CurrentState<Jvm, JvmState> currentState = null;
@@ -60,12 +64,11 @@ public class JvmStateResolverWorker {
                 jvmStateService.updateNotInMemOrStaleState(jvm, JvmState.JVM_STARTED, StringUtils.EMPTY);
                 currentState = new CurrentState<>(jvm.getId(), JvmState.JVM_STARTED, DateTime.now(), StateType.JVM);
             } else {
-                currentState = verifyIfJvmWinServiceIsStoppedAndDoAnUpdate(jvm, jvmStateService, "Request for '" + jvm.getStatusUri() +
-                        "' failed with a response code of '" + response.getStatusCode() + "'");
+                currentState = verifyIfJvmWinServiceIsStoppedAndDoAnUpdate(jvm, jvmStateService);
             }
         } catch (final IOException ioe) {
-            LOGGER.debug("{} {}", jvm.getJvmName(), ioe.getMessage(), ioe);
-            currentState = verifyIfJvmWinServiceIsStoppedAndDoAnUpdate(jvm, jvmStateService, ioe.getMessage());
+            LOGGER.error("{} {}", jvm.getJvmName(), ioe.getMessage(), ioe);
+            currentState = verifyIfJvmWinServiceIsStoppedAndDoAnUpdate(jvm, jvmStateService);
         } catch (final RuntimeException rte) {
             // This method is executed asynchronously and we do not want to interrupt the thread's lifecycle.
             LOGGER.error(rte.getMessage(), rte);
@@ -91,10 +94,9 @@ public class JvmStateResolverWorker {
      *
      * @param jvm the JVM
      * @param jvmStateService {@link JvmStateService}
-     * @param errMsg an error message form the caller which will be included in the state update if it gets verified
      * @return {@link CurrentState}
      */
-    private CurrentState<Jvm, JvmState> verifyIfJvmWinServiceIsStoppedAndDoAnUpdate(final Jvm jvm, final JvmStateService jvmStateService, String errMsg) {
+    private CurrentState<Jvm, JvmState> verifyIfJvmWinServiceIsStoppedAndDoAnUpdate(final Jvm jvm, final JvmStateService jvmStateService) {
         try {
             final RemoteCommandReturnInfo remoteCommandReturnInfo = jvmStateService.getServiceStatus(jvm);
             LOGGER.debug("RemoteCommandReturnInfo = {}", remoteCommandReturnInfo);
@@ -103,16 +105,20 @@ public class JvmStateResolverWorker {
                 return new CurrentState<>(jvm.getId(), JvmState.JVM_STOPPED, DateTime.now(), StateType.JVM);
             }
         } catch (final RemoteCommandExecutorServiceException rcese) {
-            LOGGER.error("Verify state in remote server failed!", rcese);
-            errMsg = errMsg + ";" + rcese.getMessage();
+            LOGGER.error("State verification of {}@{} via SSH failed! Please note that this has nothing to do with the " +
+                    "JVM not receiving any state. This is just a redundancy check after an unsuccessful URL ping. " +
+                    "Please check the next error message (JVM state listener is not receiving any state...) for possible " +
+                    "causes.", jvm.getJvmName(), jvm.getHostName(), rcese);
         }
+
+        LOGGER.error(NOT_RECEIVING_JVM_STATE_ERR_MSG);
 
         // The state should be unknown if we can't verify the JVM's state.
         // In addition, if we just leave the state as is and just report an error, if that state is in started,
         // the state resolver (reverse heartbeat) will always end up trying to ping it which will eat CPU resources.
         final JvmState state = JvmState.JVM_UNKNOWN;
-        jvmStateService.updateNotInMemOrStaleState(jvm, state, errMsg);
-        return new CurrentState<>(jvm.getId(), state, DateTime.now(), StateType.JVM, errMsg);
+        jvmStateService.updateNotInMemOrStaleState(jvm, state, NOT_RECEIVING_JVM_STATE_ERR_MSG);
+        return new CurrentState<>(jvm.getId(), state, DateTime.now(), StateType.JVM);
     }
 
 }
