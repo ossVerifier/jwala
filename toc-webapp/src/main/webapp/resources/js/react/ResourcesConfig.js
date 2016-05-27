@@ -289,7 +289,8 @@ var ResourcesConfig = React.createClass({
             formData.append("templateFile", templateFile);
 
             // TODO: If this.refs.xmlTabs.state.entity, the create resource dialog should not even appear. The application will inform the user that an entity needs to be selected.
-            this.props.resourceService.createResource(this.refs.xmlTabs.state.entity.name, formData).then(function(response){
+            this.props.resourceService.createResource(this.refs.xmlTabs.state.entity.name ? this.refs.xmlTabs.state.entity.name :
+                                                      this.refs.xmlTabs.state.entity.jvmName, formData).then(function(response){
                 self.refs.selectMetaDataAndTemplateFilesModalDlg.close();
                 self.refreshResourcePane();
             }).caught(function(e){

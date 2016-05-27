@@ -1,17 +1,15 @@
 package com.siemens.cto.aem.common.domain.model.ssh;
 
-import com.siemens.cto.aem.common.exception.InternalErrorException;
-import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
+import java.io.Serializable;
+
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.expression.Expression;
-import org.springframework.expression.spel.standard.SpelExpressionParser;
-import org.springframework.expression.spel.support.StandardEvaluationContext;
 
-import java.io.Serializable;
+import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
+import com.siemens.cto.aem.common.exception.InternalErrorException;
 
 public class SshConfiguration implements Serializable {
 
@@ -23,9 +21,6 @@ public class SshConfiguration implements Serializable {
     private final String privateKeyFile;
     private final String knownHostsFile;
     private final String iAmNotThePasswordYoureLookingFor;
-    private final Expression decryptExpression;
-    private final String encryptExpressionString = "new com.siemens.cto.infrastructure.StpCryptoService().decryptBase64( #stringToDecrypt )";
-    private final SpelExpressionParser expressionParser;
 
     public SshConfiguration(final String theUserName,
                             final Integer thePort,
@@ -47,17 +42,9 @@ public class SshConfiguration implements Serializable {
         privateKeyFile = thePrivateKeyFile;
         knownHostsFile = theKnownHostsFile;
         if (theEncPassword == null) {
-            decryptExpression = null;
-            expressionParser = null;
             iAmNotThePasswordYoureLookingFor = null;
         } else {
-            expressionParser = new SpelExpressionParser();
-            decryptExpression = expressionParser.parseExpression(encryptExpressionString);
-
-            // crypto bash
-            StandardEvaluationContext context = new StandardEvaluationContext();
-            context.setVariable("stringToDecrypt", theEncPassword);
-            iAmNotThePasswordYoureLookingFor = decryptExpression.getValue(context, String.class);
+            iAmNotThePasswordYoureLookingFor = new DecryptPassword().decrypt(theEncPassword);
         }
     }
 

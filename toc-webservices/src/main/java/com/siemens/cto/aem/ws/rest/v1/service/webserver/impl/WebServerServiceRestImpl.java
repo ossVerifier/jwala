@@ -172,9 +172,9 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
     }
 
     @Override
-    public Response generateConfig(final String aWebServerName) {
-        String httpdConfStr = generateHttpdConfText(aWebServerName, resourceService.generateResourceGroup());
-        return Response.ok(httpdConfStr).build();
+    public Response generateConfig(final String webServerName) {
+        return Response.ok(webServerService.getResourceTemplate(webServerName, "httpd.conf", true,
+                           resourceService.generateResourceGroup())).build();
     }
 
     @Override
@@ -190,7 +190,8 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
         try {
             // create the file
             final String httpdDataDir = ApplicationProperties.get(STP_HTTPD_DATA_DIR);
-            final String generatedHttpdConf = generateHttpdConfText(aWebServerName, resourceService.generateResourceGroup());
+            final String generatedHttpdConf = webServerService.getResourceTemplate(aWebServerName, resourceFileName, true,
+                    resourceService.generateResourceGroup());
             int resourceNameDotIndex = resourceFileName.lastIndexOf(".");
             final File httpdConfFile = createTempWebServerResourceFile(aWebServerName, httpdDataDir, resourceFileName.substring(0, resourceNameDotIndex), resourceFileName.substring(resourceNameDotIndex, resourceFileName.length() - 1), generatedHttpdConf);
 
@@ -214,7 +215,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
             }
             execData = webServerControlService.secureCopyFileWithBackup(aWebServerName, httpdUnixPath, metaDataPath, doBackup);
             if (execData.getReturnCode().wasSuccessful()) {
-                LOGGER.info("Copy of httpd.conf successful: {}", httpdUnixPath);
+                LOGGER.info("Copy of {} successful: {}", resourceFileName, httpdUnixPath);
             } else {
                 String standardError =
                         execData.getStandardError().isEmpty() ? execData.getStandardOutput() : execData
@@ -268,9 +269,10 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
             // delete the service
             deleteWebServerWindowsService(aUser, new ControlWebServerRequest(webServer.getId(), WebServerControlOperation.DELETE_SERVICE), aWebServerName);
 
-            // create the httpd.conf
+
             boolean doNotBackupFilesForNewWebServer = !WebServerReachableState.WS_NEW.equals(webServer.getState()) && doBackup;
 
+            // create the configuration file(s)
             final List<String> templateNames = webServerService.getResourceTemplateNames(aWebServerName);
             for (final String templateName: templateNames) {
                 generateAndDeployConfig(aWebServerName, templateName, doNotBackupFilesForNewWebServer);
@@ -405,10 +407,6 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
             }
         }
         return httpdConfFile;
-    }
-
-    protected String generateHttpdConfText(String aWebServerName, ResourceGroup resourceGroup) {
-        return webServerService.generateHttpdConfig(aWebServerName, resourceGroup);
     }
 
     @Override

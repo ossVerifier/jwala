@@ -271,7 +271,8 @@ public class WebServerServiceRestImplTest {
 
     @Test
     public void testGenerateHttpdConfig() {
-        when(impl.generateHttpdConfig(anyString(), any(ResourceGroup.class))).thenReturn("httpd configuration");
+        when(impl.getResourceTemplate(anyString(), anyString(), eq(true), any(ResourceGroup.class)))
+                .thenReturn("httpd configuration");
         Response response = webServerServiceRest.generateConfig("any-server-name");
         assertEquals("httpd configuration", response.getEntity());
     }
@@ -417,34 +418,6 @@ public class WebServerServiceRestImplTest {
         assertNull(response);
 
         System.clearProperty(ApplicationProperties.PROPERTIES_ROOT_PATH);
-    }
-
-    @Test (expected = InternalErrorException.class)
-    public void testGenerateAndDeployWebServerWithNoHttpdConfTemplate() throws CommandFailureException, IOException {
-        System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, "./src/test/resources");
-        final String httpdConfDirPath = ApplicationProperties.get("paths.httpd.conf");
-        assertTrue(new File(httpdConfDirPath).mkdirs());
-
-        CommandOutput retSuccessExecData = new CommandOutput(new ExecReturnCode(0), "", "");
-        when(webServerControlService.controlWebServer(any(ControlWebServerRequest.class), any(User.class))).thenReturn(retSuccessExecData);
-        when(webServerControlService.secureCopyFileWithBackup(anyString(), anyString(), anyString(), anyBoolean())).thenReturn(retSuccessExecData);
-        when(webServerControlService.createDirectory(any(WebServer.class), anyString())).thenReturn(retSuccessExecData);
-        when(webServerControlService.changeFileMode(any(WebServer.class), anyString(), anyString(), anyString())).thenReturn(retSuccessExecData);
-        when(impl.getWebServer(anyString())).thenReturn(webServer);
-        when(impl.generateHttpdConfig(anyString(), any(ResourceGroup.class))).thenThrow(new InternalErrorException(AemFaultType.TEMPLATE_NOT_FOUND, "Fail"));
-        when(resourceService.generateResourceGroup()).thenReturn(new ResourceGroup());
-        final List<String> templateNames = new ArrayList<String>();
-        templateNames.add("httpd.conf");
-        when(impl.getResourceTemplateNames(eq(webServer.getName()))).thenReturn(templateNames);
-
-        Response response = null;
-        try {
-            response = webServerServiceRest.generateAndDeployWebServer(webServer.getName(), true, authenticatedUser);
-        } finally {
-            FileUtils.deleteDirectory(new File(httpdConfDirPath));
-            System.clearProperty(ApplicationProperties.PROPERTIES_ROOT_PATH);
-        }
-
     }
 
     @Test

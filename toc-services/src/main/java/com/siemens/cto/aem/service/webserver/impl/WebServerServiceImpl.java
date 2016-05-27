@@ -207,9 +207,8 @@ public class WebServerServiceImpl implements WebServerService {
 
     @Override
     @Transactional(readOnly = true)
-    public String getResourceTemplate(final String webServerName,
-                                      final String resourceTemplateName,
-                                      final boolean tokensReplaced, ResourceGroup resourceGroup) {
+    public String getResourceTemplate(final String webServerName, final String resourceTemplateName,
+                                      final boolean tokensReplaced, final ResourceGroup resourceGroup) {
         final String template = webServerPersistenceService.getResourceTemplate(webServerName, resourceTemplateName);
         if (tokensReplaced) {
             WebServer webServer = webServerPersistenceService.findWebServerByName(webServerName);

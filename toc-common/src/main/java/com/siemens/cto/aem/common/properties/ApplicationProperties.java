@@ -1,13 +1,14 @@
 package com.siemens.cto.aem.common.properties;
 
-import com.siemens.cto.aem.common.exception.ApplicationException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Properties;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.siemens.cto.aem.common.exception.ApplicationException;
 
 public class ApplicationProperties {
 
@@ -16,7 +17,7 @@ public class ApplicationProperties {
 
     private static volatile ApplicationProperties SELF;
 
-    private static final Logger LOG = LoggerFactory.getLogger(ApplicationProperties.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ApplicationProperties.class);
 
     public static final String PROPERTIES_FILE_NAME = "vars.properties";
 
@@ -48,7 +49,9 @@ public class ApplicationProperties {
     }
 
     public static String get(String key) {
-        return getProperties().getProperty(key);
+        String propVal = getProperties().getProperty(key);
+        LOGGER.debug("PropertyGet(" + key + ")=(" + propVal + ")");
+        return propVal;
     }
 
     public static Integer getAsInteger(String key) {
@@ -72,14 +75,14 @@ public class ApplicationProperties {
             throw new ApplicationException("Failed to load properties file " + propertiesFile, e);
         }
         properties = tempProperties;
-        LOG.info("Properties loaded from path " + propertiesFile);
+        LOGGER.info("Properties loaded from path " + propertiesFile);
     }
 
     public static String get(String key, String defaultValue) {
         String result = getProperties().getProperty(key);
-        if(result == null) { 
-            return defaultValue; 
-        } else  {
+        if (result == null) {
+            return defaultValue;
+        } else {
             return result;
         }
     }
