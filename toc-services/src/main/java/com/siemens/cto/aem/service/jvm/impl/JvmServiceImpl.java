@@ -413,6 +413,9 @@ public class JvmServiceImpl implements JvmService {
                 generatedFiles = new HashMap<>();
             }
             if (resourceTemplateMetaData.getContentType().equals(ContentType.APPLICATION_BINARY.contentTypeStr)){
+                if (generatedFiles == null) {
+                    generatedFiles = new HashMap<>();
+                }
                 generatedFiles.put(jpaJvmConfigTemplate.getTemplateContent(),
                        resourceTemplateMetaData.getDeployPath() + "/" + resourceTemplateMetaData.getDeployFileName());
             } else {
