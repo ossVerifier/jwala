@@ -355,10 +355,9 @@ var GroupOperationsDataTable = React.createClass({
                                 // Check if there is new state, if there is use it since the jvm state only
                                 // gets updated when GroupOperations is initialized.
                                 if (self.state.currentJvmState[oData.id.id] === undefined) {
-                                    // TODO: Include lastUpdatedDate from REST and replace "new Date()".
-                                    this.setStatus(oData.stateLabel, null, oData.errorStatus);
+                                    this.setStatus(oData.stateLabel, oData.lastUpdatedDate, oData.errorStatus);
                                 } else {
-                                    this.setStatus(self.state.currentJvmState[oData.id.id].stateLabel, null,
+                                    this.setStatus(self.state.currentJvmState[oData.id.id].stateLabel, oData.lastUpdatedDate,
                                                    self.state.currentJvmState[oData.id.id].errorStatus);
                                 }
                         }

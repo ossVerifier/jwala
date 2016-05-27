@@ -50,7 +50,7 @@ class TestResourceFileGenerator extends GroovyTestCase{
                 new Path("/statusPath"), new FileSystemPath("D:/stp/app/data/httpd//httpd.conf"),
                 new Path("./"), new Path("htdocs"), WebServerReachableState.WS_UNREACHABLE, "");
         jvm = new Jvm(new Identifier<Jvm>(11L), "tc1", "usmlvv1ctoGenerateMe", groupHashSet, 11010, 11011, 11012, -1, 11013,
-                new Path("/statusPath"), "EXAMPLE_OPTS=%someEvn%/someVal", JvmState.JVM_STOPPED, "", null)
+                new Path("/statusPath"), "EXAMPLE_OPTS=%someEvn%/someVal", JvmState.JVM_STOPPED, "", null, null)
 
         webServers = new HashSet<>()
         webServers.add(webServer)
@@ -58,7 +58,7 @@ class TestResourceFileGenerator extends GroovyTestCase{
         jvms = new HashSet<>()
         jvms.add(jvm)
         jvms.add(new Jvm(new Identifier<Jvm>(22L), "tc2", "usmlvv1ctoGenerateMe", groupHashSet, 11020, 11021, 11022, -1, 11023,
-                new Path("/statusPath"), "EXAMPLE_OPTS=%someEvn%/someVal", JvmState.JVM_STOPPED, "", null))
+                new Path("/statusPath"), "EXAMPLE_OPTS=%someEvn%/someVal", JvmState.JVM_STOPPED, "", null, null))
 
     }
 

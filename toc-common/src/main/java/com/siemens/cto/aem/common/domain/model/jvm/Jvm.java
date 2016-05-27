@@ -8,10 +8,7 @@ import com.siemens.cto.aem.common.domain.model.uri.UriBuilder;
 
 import java.io.Serializable;
 import java.net.URI;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class Jvm implements Serializable {
 
@@ -35,6 +32,7 @@ public class Jvm implements Serializable {
     private JvmState state;
     private String errorStatus;
     private List<Application> webApps;
+    private Calendar lastUpdatedDate;
 
     /**
      * Constructor for a bare minimum Jvm with group details.
@@ -61,7 +59,8 @@ public class Jvm implements Serializable {
                final String systemsProperties,
                final JvmState state,
                final String errorStatus,
-               final List<Application> webApps) {
+               final List<Application> webApps,
+               final Calendar lastUpdatedDate) {
         this.id = id;
         this.jvmName = name;
         this.hostName = hostName;
@@ -76,6 +75,7 @@ public class Jvm implements Serializable {
         this.state = state;
         this.errorStatus = errorStatus;
         this.webApps = webApps;
+        this.lastUpdatedDate = lastUpdatedDate;
     }
 
     public Jvm(Identifier<Jvm> id,
@@ -91,7 +91,8 @@ public class Jvm implements Serializable {
                Path statusPath,
                String systemProperties,
                JvmState state,
-               String errorStatus) {
+               String errorStatus,
+               Calendar lastUpdatedDate) {
         this.id = id;
         this.jvmName = jvmName;
         this.hostName = hostName;
@@ -106,6 +107,7 @@ public class Jvm implements Serializable {
         this.systemProperties = systemProperties;
         this.state = state;
         this.errorStatus = errorStatus;
+        this.lastUpdatedDate = lastUpdatedDate;
     }
 
     public Identifier<Jvm> getId() {
@@ -154,6 +156,10 @@ public class Jvm implements Serializable {
 
     public JvmState getState() {
         return state;
+    }
+
+    public Calendar getLastUpdatedDate() {
+        return lastUpdatedDate;
     }
 
     /**

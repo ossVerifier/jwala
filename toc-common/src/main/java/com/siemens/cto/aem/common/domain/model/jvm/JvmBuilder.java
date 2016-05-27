@@ -5,6 +5,7 @@ import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.path.Path;
 
+import java.util.Calendar;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -27,6 +28,7 @@ public class JvmBuilder {
     private JvmState state;
     private String errorStatus;
     private List<Application> webApps;
+    private Calendar lastUpdatedDate;
 
     public JvmBuilder setId(final Identifier<Jvm> anId) {
         id = anId;
@@ -106,8 +108,15 @@ public class JvmBuilder {
         return this;
     }
 
+    public JvmBuilder setLastUpdatedDate(Calendar lastUpdatedDate) {
+        this.lastUpdatedDate = lastUpdatedDate;
+        return this;
+    }
+
     public Jvm build() {
         return new Jvm(id, name, hostName, groups, httpPort, httpsPort, redirectPort, shutdownPort, ajpPort, statusPath,
-                       systemProperties, state, errorStatus, webApps);
+                       systemProperties, state, errorStatus, webApps, lastUpdatedDate);
     }
+
+
 }

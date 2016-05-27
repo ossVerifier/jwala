@@ -43,7 +43,8 @@ public class JvmBuilder {
                .setAjpPort(jpaJvm.getAjpPort())
                .setSystemProperties(jpaJvm.getSystemProperties())
                .setState(jpaJvm.getState())
-               .setErrorStatus(jpaJvm.getErrorStatus());
+               .setErrorStatus(jpaJvm.getErrorStatus())
+               .setLastUpdatedDate(jpaJvm.getLastUpdateDate());
         return builder.build();
     }
 

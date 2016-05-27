@@ -47,7 +47,7 @@ public class WorkersPropertiesTest {
         List<Application> apps = new ArrayList<>();
         apps.add(app);
         Jvm jvm = new Jvm(id(0L, Jvm.class), "jvm", "localhost", groups, 8080, 8081, 8082, 8083, 8084, new Path("/abc"),
-                "EXAMPLE_OPTS=%someEnv%/someVal", JvmState.JVM_STOPPED, null, null);
+                "EXAMPLE_OPTS=%someEnv%/someVal", JvmState.JVM_STOPPED, null, null, null);
         List<Jvm> jvms = new ArrayList<>();
         jvms.add(jvm);
         wb.setApps(apps);

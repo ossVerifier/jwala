@@ -207,19 +207,20 @@ public class ResourceServiceImpl implements ResourceService {
         final Jvm jvm = jvmPersistenceService.findJvmByExactName(jvmName);
         final Group parentGroup = groupPersistenceService.getGroup(metaData.getEntity().getGroup());
         final Jvm jvmWithParentGroup = new Jvm(jvm.getId(),
-                jvm.getJvmName(),
-                jvm.getHostName(),
-                jvm.getGroups(),
-                parentGroup,
-                jvm.getHttpPort(),
-                jvm.getHttpsPort(),
-                jvm.getRedirectPort(),
-                jvm.getShutdownPort(),
-                jvm.getAjpPort(),
-                jvm.getStatusPath(),
-                jvm.getSystemProperties(),
-                jvm.getState(),
-                jvm.getErrorStatus());
+                                               jvm.getJvmName(),
+                                               jvm.getHostName(),
+                                               jvm.getGroups(),
+                                               parentGroup,
+                                               jvm.getHttpPort(),
+                                               jvm.getHttpsPort(),
+                                               jvm.getRedirectPort(),
+                                               jvm.getShutdownPort(),
+                                               jvm.getAjpPort(),
+                                               jvm.getStatusPath(),
+                                               jvm.getSystemProperties(),
+                                               jvm.getState(),
+                                               jvm.getErrorStatus(),
+                                               jvm.getLastUpdatedDate());
         final UploadJvmConfigTemplateRequest uploadJvmTemplateRequest = new UploadJvmConfigTemplateRequest(jvmWithParentGroup, metaData.getTemplateName(),
                 templateData, convertResourceTemplateMetaDataToJson(metaData));
         uploadJvmTemplateRequest.setConfFileName(metaData.getDeployFileName());
