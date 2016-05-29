@@ -17,6 +17,9 @@ dependencies {
     compile group: "commons-io", name: "commons-io", version: "$project.versions.jodaTime"
     compile group: "org.jgroups", name: "jgroups", version: "$project.versions.jgroups"
 
+    testRuntime group: "com.cerner.cto.infrastructure", name: "infrastructure-provided", version: "$project.versions.infrastructureProvided", transitive: false
+	testRuntime group: 'org.apache.tomcat', name: 'tomcat-coyote', version: "$project.versions.tomcat"
+
 //    runtime group: "org.apache.cxf", name: "cxf-rt-frontend-jaxws", version: "$project.versions.cxf"
 //    runtime group: "org.apache.cxf", name: "cxf-rt-transports-http", version: "$project.versions.cxf"
 //    runtime group: "org.apache.cxf", name: "cxf-rt-frontend-jaxrs", version: "$project.versions.cxf"
