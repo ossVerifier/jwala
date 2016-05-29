@@ -196,7 +196,7 @@ public class UpdateJvmRequest implements Serializable, Request {
                 .append("newAjpPort", newAjpPort)
                 .append("groupIds", groupIds)
                 .append("newSystemProperties", newSystemProperties)
-                .append("newUserNanme", newUserName)
+                .append("newUserName", newUserName)
                 .toString();
     }
 }

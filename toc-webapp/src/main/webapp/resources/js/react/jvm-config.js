@@ -107,6 +107,8 @@ var JvmConfig = React.createClass({
                                             this.refs.jvmAddForm.state.redirectPort,
                                             this.refs.jvmAddForm.state.shutdownPort,
                                             this.refs.jvmAddForm.state.ajpPort,
+                                            this.refs.jvmAddForm.state.userName,
+                                            this.refs.jvmAddForm.state.encryptedPassword,
                                             function(){
                                                 self.refreshData({showModalFormAddDialog:false});
                                             },
@@ -194,6 +196,8 @@ var JvmConfigForm = React.createClass({
         var redirectPort = "";
         var shutdownPort = "";
         var ajpPort = "";
+        var userName = "";
+        var encryptedPassword = "";
 
         if (this.props.data !== undefined) {
             id = this.props.data.id;
@@ -208,6 +212,8 @@ var JvmConfigForm = React.createClass({
             redirectPort = this.props.data.redirectPort;
             shutdownPort = this.props.data.shutdownPort;
             ajpPort = this.props.data.ajpPort;
+            username = this.props.data.userName;
+            encryptedPassword = this.props.data.encryptedPassword;
         }
 
         return {
@@ -221,7 +227,9 @@ var JvmConfigForm = React.createClass({
             httpsPort: httpsPort,
             redirectPort: redirectPort,
             shutdownPort: shutdownPort,
-            ajpPort: ajpPort
+            ajpPort: ajpPort,
+            userName: userName,
+            encryptedPassword: encryptedPassword
         }
     },
     mixins: [React.addons.LinkedStateMixin],
@@ -326,6 +334,30 @@ var JvmConfigForm = React.createClass({
                                 <td><input name="ajpPort" type="text" valueLink={this.linkState("ajpPort")} required maxLength="5"/></td>
                             </tr>
 
+                            <tr>
+                            	<td>Username</td>
+                            </tr>
+                            <tr>
+                            	<td>
+                                	<label htmlFor="userName" className="error"></label>
+                                </td>
+                            </tr>
+                            <tr>
+                            	<td><input name="userName" type="text" valueLink={this.linkState("userName")} /></td>
+                            </tr>
+                            
+                            <tr>
+                            	<td>Password</td>
+                            </tr>
+                            <tr>
+                        		<td>
+                            		<label htmlFor="encryptedPassword" className="error"></label>
+                            	</td>
+                            </tr>
+                            <tr>
+                        		<td><input name="encryptedPassword" type="password" valueLink={this.linkState("encryptedPassword")} /></td>
+                        	</tr>
+                            
                             <tr>
                                 <td>
                                     *Group
@@ -452,7 +484,8 @@ var JvmConfigDataTable = React.createClass({
                         {sTitle:"HTTPS", mData:"httpsPort"},
                         {sTitle:"Redir", mData:"redirectPort"},
                         {sTitle:"Shutd", mData:"shutdownPort"},
-                        {sTitle:"AJP", mData:"ajpPort"}];
+                        {sTitle:"AJP", mData:"ajpPort"},
+                        {sTitle:"Username", mData: "userName"}];
         return <TocDataTable tableId="jvm-config-datatable"
                              tableDef={tableDef}
                              data={this.props.data}

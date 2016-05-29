@@ -1,5 +1,35 @@
 package com.siemens.cto.aem.ws.rest.v1.service.jvm.impl;
 
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.jar.JarEntry;
+import java.util.jar.JarOutputStream;
+
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+
+import org.apache.commons.fileupload.FileItemIterator;
+import org.apache.commons.fileupload.FileItemStream;
+import org.apache.commons.fileupload.FileUploadException;
+import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.apache.commons.io.FileUtils;
+import org.apache.cxf.jaxrs.ext.MessageContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
@@ -30,27 +60,6 @@ import com.siemens.cto.aem.template.ResourceFileGenerator;
 import com.siemens.cto.aem.ws.rest.v1.provider.AuthenticatedUser;
 import com.siemens.cto.aem.ws.rest.v1.response.ResponseBuilder;
 import com.siemens.cto.aem.ws.rest.v1.service.jvm.JvmServiceRest;
-import org.apache.commons.fileupload.FileItemIterator;
-import org.apache.commons.fileupload.FileItemStream;
-import org.apache.commons.fileupload.FileUploadException;
-import org.apache.commons.fileupload.servlet.ServletFileUpload;
-import org.apache.commons.io.FileUtils;
-import org.apache.cxf.jaxrs.ext.MessageContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import java.io.*;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.jar.JarEntry;
-import java.util.jar.JarOutputStream;
 
 public class JvmServiceRestImpl implements JvmServiceRest {
 
@@ -82,14 +91,18 @@ public class JvmServiceRestImpl implements JvmServiceRest {
     @Override
     public Response getJvms() {
         LOGGER.debug("Get JVMs requested");
-        final List<Jvm> jvms = jvmService.getJvms();
+        final List<Jvm> jvms = new ArrayList<Jvm>();
+        for (Jvm jvm : jvmService.getJvms()) {
+          jvms.add(jvm.toDecrypted());  
+        }
         return ResponseBuilder.ok(jvms);
     }
 
     @Override
     public Response getJvm(final Identifier<Jvm> aJvmId) {
         LOGGER.debug("Get JVM requested: {}", aJvmId);
-        return ResponseBuilder.ok(jvmService.getJvm(aJvmId));
+        Jvm aJvm = jvmService.getJvm(aJvmId).toDecrypted();
+        return ResponseBuilder.ok(aJvm);
     }
 
     @Override

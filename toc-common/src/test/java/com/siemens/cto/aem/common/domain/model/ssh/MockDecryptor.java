@@ -6,4 +6,8 @@ public class MockDecryptor {
         return "DECRYPT:" + enc;
     }
 
+    public String encryptToBase64(String enc) {
+        return "ENCRYPT:" + enc;
+    }
+
 }

@@ -15,6 +15,7 @@ import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.id.IdentifierSetBuilder;
 import com.siemens.cto.aem.common.domain.model.path.Path;
+import com.siemens.cto.aem.common.domain.model.ssh.DecryptPassword;
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.common.request.jvm.CreateJvmAndAddToGroupsRequest;
 import com.siemens.cto.aem.common.request.jvm.CreateJvmRequest;
@@ -85,7 +86,7 @@ public class JsonCreateJvm {
         systemProperties = theSystemProperties;
         groupIds = Collections.unmodifiableSet(new HashSet<>(someGroupIds));
         userName = theUsername;
-        encryptedPassword = theEncrypedPassword;
+        encryptedPassword =theEncrypedPassword;
     }
 
     public boolean areGroupsPresent() {
@@ -153,7 +154,8 @@ public class JsonCreateJvm {
             final JsonNode encryptedPassword = rootNode.get("encryptedPassword");
             
             final Set<String> rawGroupIds = deserializeGroupIdentifiers(rootNode);
-
+            final String pw = new DecryptPassword().encrypt(encryptedPassword.getTextValue());
+            
             return new JsonCreateJvm(jvmNode.getTextValue(),
                                      hostNameNode.getTextValue(),
                                      rawGroupIds,
@@ -165,7 +167,7 @@ public class JsonCreateJvm {
                                      statusPathNode.getTextValue(),
                                      systemProperties.getTextValue(),
                                      userName.getTextValue(),
-                                     encryptedPassword.getTextValue());
+                                     pw);
         }
     }
 }

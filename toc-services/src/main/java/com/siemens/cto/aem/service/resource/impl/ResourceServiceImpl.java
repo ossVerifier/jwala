@@ -48,6 +48,8 @@ import com.siemens.cto.aem.service.exception.ResourceServiceException;
 import com.siemens.cto.aem.service.resource.ResourceService;
 import com.siemens.cto.toc.files.FileManager;
 import com.siemens.cto.toc.files.RepositoryFileInformation;
+import org.apache.commons.io.IOUtils;
+import com.siemens.cto.aem.template.ResourceFileGenerator;
 
 public class ResourceServiceImpl implements ResourceService {
 

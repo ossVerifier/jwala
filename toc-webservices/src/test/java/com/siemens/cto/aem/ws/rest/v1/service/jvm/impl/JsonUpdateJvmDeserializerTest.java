@@ -7,7 +7,9 @@ import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.id.IdentifierSetBuilder;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.common.domain.model.ssh.DecryptPassword;
 import com.siemens.cto.aem.ws.rest.v1.service.JsonDeserializationBehavior;
+
 import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
@@ -31,7 +33,10 @@ public class JsonUpdateJvmDeserializerTest {
     private static final String ajpPort = "1";
     private static final String statusPath = "/statusPath";
     private static final String systemProperties = "EXAMPLE_OPTS=%someEnv%/someVal";
-
+    private static final String userName = "John Doe";
+    private static final String clearTextPassword = "The Quick Brown Fox";
+    private static final String encryptedPassword = new DecryptPassword().encrypt(clearTextPassword);
+    
     @Before
     public void setUp() {
         mapper = new JsonDeserializationBehavior().addMapping(JsonUpdateJvm.class, new JsonUpdateJvm.JsonUpdateJvmDeserializer()).toObjectMapper();
@@ -57,7 +62,9 @@ public class JsonUpdateJvmDeserializerTest {
                                    keyTextValue("shutdownPort", shutdownPort),
                                    keyTextValue("ajpPort", ajpPort),
                                    keyTextValue("statusPath", statusPath),
-                                   keyTextValue("systemProperties", systemProperties));
+                                   keyTextValue("systemProperties", systemProperties),
+                                   keyTextValue("userName", userName),
+                                   keyTextValue("encryptedPassword", clearTextPassword));
 
         final JsonUpdateJvm update = readValue(json);
 
@@ -72,6 +79,8 @@ public class JsonUpdateJvmDeserializerTest {
                          ajpPort,
                          statusPath,
                          systemProperties,
+                         userName,
+                         encryptedPassword,
                          firstGroupId,
                          secondGroupId);
     }
@@ -95,7 +104,10 @@ public class JsonUpdateJvmDeserializerTest {
                                    keyTextValue("shutdownPort", shutdownPort),
                                    keyTextValue("ajpPort", ajpPort),
                                    keyTextValue("statusPath", statusPath),
-                                   keyTextValue("systemProperties", systemProperties));
+                                   keyTextValue("systemProperties", systemProperties),
+                                   keyTextValue("userName", userName),
+                                   keyTextValue("encryptedPassword", clearTextPassword));
+
 
         final JsonUpdateJvm update = readValue(json);
 
@@ -110,6 +122,8 @@ public class JsonUpdateJvmDeserializerTest {
                          ajpPort,
                          statusPath,
                          systemProperties,
+                         userName,
+                         encryptedPassword,
                          firstGroupId);
     }
 
@@ -131,7 +145,9 @@ public class JsonUpdateJvmDeserializerTest {
                                    keyTextValue("shutdownPort", shutdownPort),
                                    keyTextValue("ajpPort", ajpPort),
                                    keyTextValue("statusPath", statusPath),
-                                   keyTextValue("systemProperties", systemProperties));
+                                   keyTextValue("systemProperties", systemProperties),
+                                   keyTextValue("userName", userName),
+                                   keyTextValue("encryptedPassword", clearTextPassword));
 
         final JsonUpdateJvm update = readValue(json);
 
@@ -146,6 +162,8 @@ public class JsonUpdateJvmDeserializerTest {
                          ajpPort,
                          statusPath,
                          systemProperties,
+                         userName,
+                         encryptedPassword,
                          firstGroupId);
     }
 
@@ -165,7 +183,9 @@ public class JsonUpdateJvmDeserializerTest {
                                    keyTextValue("shutdownPort", shutdownPort),
                                    keyTextValue("ajpPort", ajpPort),
                                    keyTextValue("statusPath", statusPath),
-                                   keyTextValue("systemProperties", systemProperties));
+                                   keyTextValue("systemProperties", systemProperties),
+                                   keyTextValue("userName", userName),
+                                   keyTextValue("encryptedPassword", clearTextPassword));
 
         final JsonUpdateJvm update = readValue(json);
 
@@ -179,7 +199,9 @@ public class JsonUpdateJvmDeserializerTest {
                          shutdownPort,
                          ajpPort,
                          statusPath,
-                         systemProperties);
+                         systemProperties,
+                         userName,
+                         encryptedPassword);
     }
 
     @Test(expected = BadRequestException.class)
@@ -200,7 +222,9 @@ public class JsonUpdateJvmDeserializerTest {
                                    keyTextValue("shutdownPort", shutdownPort),
                                    keyTextValue("ajpPort", ajpPort),
                                    keyTextValue("statusPath", statusPath),
-                                   keyTextValue("systemProperties", systemProperties));
+                                   keyTextValue("systemProperties", systemProperties),
+                                   keyTextValue("userName", userName),
+                                   keyTextValue("encryptedPassword", clearTextPassword));
 
         final JsonUpdateJvm update = readValue(json);
 
@@ -215,6 +239,8 @@ public class JsonUpdateJvmDeserializerTest {
                          ajpPort,
                          statusPath,
                          systemProperties,
+                         userName,
+                         encryptedPassword,
                          firstGroupId);
     }
 
@@ -236,7 +262,9 @@ public class JsonUpdateJvmDeserializerTest {
                                    keyTextValue("shutdownPort", shutdownPort),
                                    keyTextValue("ajpPort", ajpPort),
                                    keyTextValue("statusPath", statusPath),
-                                   keyTextValue("systemProperties", systemProperties));
+                                   keyTextValue("systemProperties", systemProperties),
+                                   keyTextValue("userName", userName),
+                                   keyTextValue("encryptedPassword", clearTextPassword));
 
         final JsonUpdateJvm update = readValue(json);
 
@@ -251,6 +279,8 @@ public class JsonUpdateJvmDeserializerTest {
                          ajpPort,
                          statusPath,
                          systemProperties,
+                         userName,
+                         encryptedPassword,
                          firstGroupId);
     }
 
@@ -273,6 +303,8 @@ public class JsonUpdateJvmDeserializerTest {
                                     final String aAjpPort,
                                     final String aStatusPath,
                                     final String aSystemProperties,
+                                    final String aUserName,
+                                    final String anEncryptedPassword,
                                     final String ... someGroupIds) {
 
         final UpdateJvmRequest update = anUpdate.toUpdateJvmRequest();
@@ -299,6 +331,10 @@ public class JsonUpdateJvmDeserializerTest {
                 update.getNewSystemProperties());
         assertEquals(someGroupIds.length,
                      update.getAssignmentCommands().size());
+        assertEquals(aUserName,
+                    update.getNewUserName());
+        assertEquals(anEncryptedPassword,
+                    update.getNewEncryptedPassword());
         final Set<Identifier<Group>> expectedGroupIds = new IdentifierSetBuilder(Arrays.asList(someGroupIds)).build();
         for (final AddJvmToGroupRequest addCommand : update.getAssignmentCommands()) {
             assertTrue(expectedGroupIds.contains(addCommand.getGroupId()));

@@ -27,7 +27,7 @@ dependencies {
     compile group: 'javax.jms', name: 'jms', version: "$project.versions.jms"
     compile group: 'log4j', name: 'log4j', version: "$project.versions.log4j"
     compile group: 'org.apache.openjpa', name: 'openjpa', version: "$project.versions.jpa"
-    compile group: "commons-io", name: "commons-io", version: "$project.versions.commons_io", classifier: "sources"
+    compile group: "commons-io", name: "commons-io", version: "$project.versions.commons_io"
 
     compile group: "de.jkeylockmanager", name: "jkeylockmanager", version: "$project.versions.jkeylockmanager"
 

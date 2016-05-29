@@ -58,6 +58,7 @@ import com.siemens.cto.aem.common.domain.model.path.Path;
 import com.siemens.cto.aem.common.domain.model.resource.ResourceGroup;
 import com.siemens.cto.aem.common.domain.model.resource.ResourceTemplateMetaData;
 import com.siemens.cto.aem.common.domain.model.resource.ResourceType;
+import com.siemens.cto.aem.common.domain.model.ssh.DecryptPassword;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.exception.InternalErrorException;
 import com.siemens.cto.aem.common.exec.CommandOutput;
@@ -89,7 +90,9 @@ public class JvmServiceRestImplTest {
     private final static String hostName = "localhost";
     private static final List<Jvm> jvmList = createJvmList();
     private static final Jvm jvm = jvmList.get(0);
-
+    private static final Jvm decryptedJvm = jvm.toDecrypted();
+    private static final List<Jvm> decryptedJvmList = createDecryptedList(jvmList);
+    
     // JVM ports
     private static final String httpPort = "80";
     private static final String httpsPort = "81";
@@ -99,7 +102,8 @@ public class JvmServiceRestImplTest {
     private static final Path statusPath = new Path("/statusPath");
     private static final String systemProperties = "EXAMPLE_OPTS=%someEnv%/someVal";
     private static final String userName = "JoeThePlumber";
-    private static final String encryptedPassword = "The Quick Brown Fox";
+    private static final String clearTextPassword = "The Quick Brown Fox";
+    private static final String encryptedPassword = new DecryptPassword().encrypt(clearTextPassword);
     
     @Mock
     private JvmServiceImpl jvmService;
@@ -116,6 +120,14 @@ public class JvmServiceRestImplTest {
 
     private JvmServiceRestImpl jvmServiceRest;
 
+    private static List<Jvm> createDecryptedList(List<Jvm> inList) {
+        final List<Jvm> result = new ArrayList<>();
+        for (Jvm jvm : inList) {
+            result.add(jvm.toDecrypted());
+        }
+        return result;        
+    }
+    
     private static List<Jvm> createJvmList() {
         final Set<Group> groups = new HashSet<>();
         final Jvm ws = new Jvm(Identifier.id(1L, Jvm.class),
@@ -167,7 +179,7 @@ public class JvmServiceRestImplTest {
 
         final List<Jvm> receivedList = (List<Jvm>) content;
         final Jvm received = receivedList.get(0);
-        assertEquals(jvm, received);
+        assertEquals(decryptedJvm, received);        
     }
 
     @Test
@@ -182,7 +194,7 @@ public class JvmServiceRestImplTest {
         assertTrue(content instanceof Jvm);
 
         final Jvm received = (Jvm) content;
-        assertEquals(jvm, received);
+        assertEquals(decryptedJvm, received);        
     }
 
     @Test
@@ -190,7 +202,7 @@ public class JvmServiceRestImplTest {
         when(jvmService.createJvm(any(CreateJvmRequest.class), any(User.class))).thenReturn(jvm);
 
         final JsonCreateJvm jsonCreateJvm = new JsonCreateJvm(name, hostName, httpPort, httpsPort, redirectPort,
-                shutdownPort, ajpPort, statusPath.getUriPath(), systemProperties, userName, encryptedPassword);
+                shutdownPort, ajpPort, statusPath.getUriPath(), systemProperties, userName, clearTextPassword);
         final Response response = jvmServiceRest.createJvm(jsonCreateJvm, authenticatedUser);
         assertEquals(Response.Status.CREATED.getStatusCode(), response.getStatus());
 
@@ -219,7 +231,7 @@ public class JvmServiceRestImplTest {
                 statusPath.getUriPath(),
                 systemProperties,
                 userName,
-                encryptedPassword);
+                clearTextPassword);
         final Response response = jvmServiceRest.createJvm(jsonCreateJvm, authenticatedUser);
         assertEquals(Response.Status.CREATED.getStatusCode(), response.getStatus());
 
@@ -235,7 +247,7 @@ public class JvmServiceRestImplTest {
     public void testUpdateJvm() {
         final Set<String> groupIds = new HashSet<>();
         final JsonUpdateJvm jsonUpdateJvm = new JsonUpdateJvm("1", name, hostName, groupIds, "5", "4", "3", "2", "1",
-                statusPath.getUriPath(), systemProperties, userName, encryptedPassword);
+                statusPath.getUriPath(), systemProperties, userName, clearTextPassword);
         when(jvmService.updateJvm(any(UpdateJvmRequest.class), any(User.class))).thenReturn(jvm);
 
         // Check rules for the JVM

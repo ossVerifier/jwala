@@ -17,6 +17,7 @@ import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.id.IdentifierSetBuilder;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.path.Path;
+import com.siemens.cto.aem.common.domain.model.ssh.DecryptPassword;
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.common.request.jvm.UpdateJvmRequest;
 import com.siemens.cto.aem.ws.rest.v1.json.AbstractJsonDeserializer;
@@ -37,7 +38,7 @@ public class JsonUpdateJvm {
     private final String systemProperties;
     private final String userName;
     private final String encryptedPassword;
-    
+
     public JsonUpdateJvm(final String theJvmId,
                          final String theJvmName,
                          final String theHostName,
@@ -80,8 +81,7 @@ public class JsonUpdateJvm {
                                     new Path(statusPath),
                                     systemProperties,
                                     userName,
-                                    encryptedPassword
-        );
+                                    encryptedPassword);
     }
 
     protected Identifier<Jvm> convertJvmId() {
@@ -109,7 +109,8 @@ public class JsonUpdateJvm {
 
             final ObjectCodec obj = jp.getCodec();
             final JsonNode node = obj.readTree(jp);
-
+            final String pw = new DecryptPassword().encrypt(node.get("encryptedPassword").getTextValue());
+            
             return new JsonUpdateJvm(node.get("jvmId").getValueAsText(),
                                      node.get("jvmName").getTextValue(),
                                      node.get("hostName").getTextValue(),
@@ -122,7 +123,7 @@ public class JsonUpdateJvm {
                                      node.get("statusPath").getTextValue(),
                                      node.get("systemProperties").getTextValue(),
                                      node.get("userName").getTextValue(),
-                                     node.get("encrypedPassword").getTextValue());
+                                     pw);
         }
     }
 }

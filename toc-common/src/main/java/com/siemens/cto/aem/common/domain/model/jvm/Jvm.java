@@ -11,6 +11,7 @@ import com.siemens.cto.aem.common.domain.model.app.Application;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.path.Path;
+import com.siemens.cto.aem.common.domain.model.ssh.DecryptPassword;
 import com.siemens.cto.aem.common.domain.model.uri.UriBuilder;
 
 public class Jvm implements Serializable {
@@ -84,6 +85,25 @@ public class Jvm implements Serializable {
         this.encryptedPassword = encryptedPassword;
     }
 
+    public Jvm toDecrypted() {
+        return new Jvm(this.id,
+        this.jvmName,
+        this.hostName,
+        this.groups,
+        this.httpPort,
+        this.httpsPort,
+        this.redirectPort,
+        this.shutdownPort,
+        this.ajpPort,
+        this.statusPath,
+        this.systemProperties,
+        this.state,
+        this.errorStatus,
+        this.webApps,
+        this.userName,
+        (this.encryptedPassword!=null && this.encryptedPassword.length()>0) ?  new DecryptPassword().decrypt(this.encryptedPassword) : "");    
+    }
+    
     public Jvm(Identifier<Jvm> id,
                String jvmName,
                String hostName,
@@ -122,16 +142,8 @@ public class Jvm implements Serializable {
         return encryptedPassword;
     }
 
-    public void setEncryptedPassword(String encryptedPassword) {
-        this.encryptedPassword = encryptedPassword;
-    }
-
     public String getUserName() {
         return userName;
-    }
-
-    public void setUserName(String userName) {
-        this.userName = userName;
     }
 
     public Identifier<Jvm> getId() {
@@ -246,6 +258,7 @@ public class Jvm implements Serializable {
                 ", systemProperties='" + systemProperties + '\'' +
                 ", state=" + state +
                 ", errorStatus='" + errorStatus + '\'' +
+                ", userName='" + userName + '\'' +
                 '}';
     }
 

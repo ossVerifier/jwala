@@ -36,6 +36,8 @@
                            redirectPort,
                            shutdownPort,
                            ajpPort,
+                           userName,
+                           encryptedPassword,
                            successCallback,
                            errorCallback) {
         return serviceFoundation.post("v1.0/jvms",
@@ -49,7 +51,9 @@
                                                       httpsPort: httpsPort,
                                                       redirectPort: redirectPort,
                                                       shutdownPort: shutdownPort,
-                                                      ajpPort: ajpPort}),
+                                                      ajpPort: ajpPort,
+                                                      userName: userName,
+                                                      encryptedPassword: encryptedPassword}),
                                                       successCallback,
                                                       errorCallback);
     },

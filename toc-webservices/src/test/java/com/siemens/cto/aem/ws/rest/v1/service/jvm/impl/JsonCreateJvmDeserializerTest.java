@@ -27,7 +27,9 @@ public class JsonCreateJvmDeserializerTest {
     private static final String ajpPort = "1";
     private static final String statusPath = "/statusPath";
     private static final String systemProperties = "EXAMPLE_OPTS=%someEnv%/someVal";
-
+    private static final String userName = "John Doe";
+    private static final String encryptedPassword = "The Quick Brown Fox";
+    
     @Before
     public void setup() {
         mapper = new JsonDeserializationBehavior().addMapping(JsonCreateJvm.class, new JsonCreateJvm.JsonCreateJvmDeserializer()).toObjectMapper();
@@ -53,7 +55,9 @@ public class JsonCreateJvmDeserializerTest {
                                    keyTextValue("shutdownPort", shutdownPort),
                                    keyTextValue("ajpPort", ajpPort),
                                    keyTextValue("statusPath", statusPath),
-                                   keyTextValue("systemProperties", systemProperties));
+                                   keyTextValue("systemProperties", systemProperties),
+                                   keyTextValue("userName",userName),
+                                   keyTextValue("encryptedPassword",encryptedPassword));
 
         final JsonCreateJvm create = readValue(json);
 
@@ -81,7 +85,9 @@ public class JsonCreateJvmDeserializerTest {
                                    keyTextValue("shutdownPort", shutdownPort),
                                    keyTextValue("ajpPort", ajpPort),
                                    keyTextValue("statusPath", statusPath),
-                                   keyTextValue("systemProperties", systemProperties));
+                                   keyTextValue("systemProperties", systemProperties),
+                                   keyTextValue("userName",userName),
+                                   keyTextValue("encryptedPassword",encryptedPassword));
 
         final JsonCreateJvm create = readValue(json);
 
@@ -107,7 +113,9 @@ public class JsonCreateJvmDeserializerTest {
                                    keyTextValue("shutdownPort", shutdownPort),
                                    keyTextValue("ajpPort", ajpPort),
                                    keyTextValue("statusPath", statusPath),
-                                   keyTextValue("systemProperties", systemProperties));
+                                   keyTextValue("systemProperties", systemProperties),
+                                   keyTextValue("userName",userName),
+                                   keyTextValue("encryptedPassword",encryptedPassword));
 
         final JsonCreateJvm create = readValue(json);
 
@@ -131,7 +139,9 @@ public class JsonCreateJvmDeserializerTest {
                                    keyTextValue("shutdownPort", shutdownPort),
                                    keyTextValue("ajpPort", ajpPort),
                                    keyTextValue("statusPath", statusPath),
-                                   keyTextValue("systemProperties", systemProperties));
+                                   keyTextValue("systemProperties", systemProperties),
+                                   keyTextValue("userName",userName),
+                                   keyTextValue("encryptedPassword",encryptedPassword));
 
         final JsonCreateJvm create = readValue(json);
 
@@ -164,7 +174,9 @@ public class JsonCreateJvmDeserializerTest {
                                    keyTextValue("shutdownPort", shutdownPort),
                                    keyTextValue("ajpPort", ajpPort),
                                    keyTextValue("statusPath", statusPath),
-                                   keyTextValue("systemProperties", systemProperties));
+                                   keyTextValue("systemProperties", systemProperties),
+                                   keyTextValue("userName",userName),
+                                   keyTextValue("encryptedPassword",encryptedPassword));
 
         final JsonCreateJvm create = readValue(json);
         verifyAssertions(create,
