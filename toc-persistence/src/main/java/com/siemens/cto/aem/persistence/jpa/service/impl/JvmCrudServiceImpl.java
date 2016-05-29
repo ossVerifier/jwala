@@ -204,6 +204,18 @@ public class JvmCrudServiceImpl extends AbstractCrudServiceImpl<JpaJvm> implemen
     }
 
     @Override
+    public String getResourceTemplateMetaData(String jvmName, String fileName) {
+        final Query q = entityManager.createNamedQuery(JpaJvmConfigTemplate.GET_JVM_TEMPLATE_META_DATA);
+        q.setParameter("jvmName", jvmName);
+        q.setParameter("templateName", fileName);
+        try {
+            return (String) q.getSingleResult();
+        } catch (RuntimeException re) {
+            throw new NonRetrievableResourceTemplateContentException(jvmName, fileName, re);
+        }
+    }
+
+    @Override
     public void updateResourceTemplate(final String jvmName, final String resourceTemplateName, final String template) {
         final Query q = entityManager.createNamedQuery(JpaJvmConfigTemplate.UPDATE_JVM_TEMPLATE_CONTENT);
         q.setParameter("jvmName", jvmName);
@@ -323,14 +335,6 @@ public class JvmCrudServiceImpl extends AbstractCrudServiceImpl<JpaJvm> implemen
         final Query q = entityManager.createNamedQuery(JpaJvmConfigTemplate.QUERY_GET_JVM_RESOURCE_TEMPLATES);
         q.setParameter(JpaJvmConfigTemplate.QUERY_PARAM_JVM_NAME, jvmName);
         return q.getResultList();
-    }
-
-    @Override
-    public JpaJvmConfigTemplate getConfigTemplate(String jvmName) {
-        final Query q = entityManager.createNamedQuery(JpaJvmConfigTemplate.QUERY_GET_JVM_RESOURCE_TEMPLATES);
-        q.setMaxResults(1);
-        q.setParameter(JpaJvmConfigTemplate.QUERY_PARAM_JVM_NAME, jvmName);
-        return (JpaJvmConfigTemplate) q.getResultList().get(0);
     }
 
     @Override

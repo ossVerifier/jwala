@@ -217,7 +217,7 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
 
         final Jvm jvm = new Jvm(new Identifier<Jvm>(-123456L),
                 "jvm-name", "host-name", new HashSet<Group>(), 80, 443, 443, 8005, 8009, new Path("/"),
-                "EXAMPLE_OPTS=%someEnv%/someVal", JvmState.JVM_STOPPED, null, null, null, null);
+                "EXAMPLE_OPTS=%someEnv%/someVal", JvmState.JVM_STOPPED, null, null, null, null, null);
 
         when(mockJvmPersistenceService.findJvmByExactName(eq(jvm.getJvmName()))).thenReturn(jvm);
         final String templateContent = "<server>test</server>";
@@ -233,7 +233,7 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
     public void testGenerateThrowsExceptionForEmptyTemplate() {
         final Jvm jvm = new Jvm(new Identifier<Jvm>(-123456L),
                 "jvm-name", "host-name", new HashSet<Group>(), 80, 443, 443, 8005, 8009, new Path("/"),
-                "EXAMPLE_OPTS=%someEnv%/someVal", JvmState.JVM_STOPPED, null, null, null, null);
+                "EXAMPLE_OPTS=%someEnv%/someVal", JvmState.JVM_STOPPED, null, null, null, null, null);
 
         when(mockJvmPersistenceService.findJvmByExactName(eq(jvm.getJvmName()))).thenReturn(jvm);
         when(mockJvmPersistenceService.getJvmTemplate(eq("server.xml"), eq(jvm.getId()))).thenReturn("");
@@ -418,7 +418,7 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
     @Test
     public void testPreviewTemplate() {
         final String jvmName = "jvm-1Test";
-        Jvm testJvm = new Jvm(new Identifier<Jvm>(111L), jvmName, "testHost", new HashSet<Group>(), 9101, 9102, 9103, -1, 9104, new Path("./"), "", JvmState.JVM_STOPPED, "", null, null, null);
+        Jvm testJvm = new Jvm(new Identifier<Jvm>(111L), jvmName, "testHost", new HashSet<Group>(), 9101, 9102, 9103, -1, 9104, new Path("./"), "", JvmState.JVM_STOPPED, "", null, null, null, null);
         List<Jvm> jvmList = new ArrayList<>();
         jvmList.add(testJvm);
         when(mockJvmPersistenceService.findJvm(anyString(), anyString())).thenReturn(testJvm);
@@ -502,6 +502,25 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
         for(Map.Entry<String, String> entry:result.entrySet()) {
             FileUtils.forceDelete(new File(entry.getKey()));
         }
+    }
+
+    @Test
+    public void testGenerateBinaryFile() throws IOException {
+        final String jvmName = "testJvmName";
+        //final JpaJvmConfigTemplate mockJpaJvmConfigTemplate = mock(JpaJvmConfigTemplate.class);
+        final ResourceGroup mockResourceGroup = mock(ResourceGroup.class);
+        List<JpaJvmConfigTemplate> jpaJvmConfigTemplates = new ArrayList<>();
+        JpaJvmConfigTemplate jpaJvmConfigTemplate = new JpaJvmConfigTemplate();
+        jpaJvmConfigTemplate.setTemplateContent("C:/Temp/test.file");
+        jpaJvmConfigTemplates.add(jpaJvmConfigTemplate);
+        final String metadata = "{\"contentType\":\"application/binary\",\"deployPath\":\"D:/stp/app/instances/testJvmName/bin\",\"deployFileName\": \"test.file\"}";
+
+        when(mockResourceService.generateResourceGroup()).thenReturn(mockResourceGroup);
+        when(mockResourceService.generateResourceFile(anyString(), any(ResourceGroup.class), any(Jvm.class))).thenReturn(metadata);
+        when(mockJvmPersistenceService.getConfigTemplates(jvmName)).thenReturn(jpaJvmConfigTemplates);
+
+        Map<String, String> result = jvmService.generateResourceFiles(jvmName);
+        assertEquals(result.size(), 1);
     }
 
 }

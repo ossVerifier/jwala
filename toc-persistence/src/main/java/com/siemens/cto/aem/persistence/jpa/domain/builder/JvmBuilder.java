@@ -44,6 +44,7 @@ public class JvmBuilder {
                .setSystemProperties(jpaJvm.getSystemProperties())
                .setState(jpaJvm.getState())
                .setErrorStatus(jpaJvm.getErrorStatus())
+               .setLastUpdatedDate(jpaJvm.getLastUpdateDate());
                .setUserName(jpaJvm.getUserName())
                .setEncryptedPassword(jpaJvm.getEncryptedPassword());
         return builder.build();

@@ -188,31 +188,32 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
         wsWriteLocks.get(aWebServerName).writeLock().lock();
 
         try {
-            // create the file
-            final String httpdDataDir = ApplicationProperties.get(STP_HTTPD_DATA_DIR);
-            final String generatedHttpdConf = webServerService.getResourceTemplate(aWebServerName, resourceFileName, true,
-                    resourceService.generateResourceGroup());
-            int resourceNameDotIndex = resourceFileName.lastIndexOf(".");
-            final File httpdConfFile = createTempWebServerResourceFile(aWebServerName, httpdDataDir, resourceFileName.substring(0, resourceNameDotIndex), resourceFileName.substring(resourceNameDotIndex, resourceFileName.length() - 1), generatedHttpdConf);
-
-            // copy the file
-            final CommandOutput execData;
-            final String httpdUnixPath = httpdConfFile.getAbsolutePath().replace("\\", "/");
-
+            // check the web server state
             if (webServerService.isStarted(webServerService.getWebServer(aWebServerName))) {
                 LOGGER.error("The target Web Server {} must be stopped before attempting to update the resource file", aWebServerName);
                 throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "The target Web Server must be stopped before attempting to update the resource file");
             }
-
+            // get the meta data
             String metaDataStr = webServerService.getResourceTemplateMetaData(aWebServerName, resourceFileName);
             ResourceTemplateMetaData metaData = new ObjectMapper().readValue(metaDataStr, ResourceTemplateMetaData.class);
 
-            String metaDataPath;
-            if (metaData.getContentType().equals(ContentType.APPLICATION_BINARY.contentTypeStr)){
-                metaDataPath =  webServerService.getResourceTemplate(aWebServerName, resourceFileName, false, resourceService.generateResourceGroup());
+            String httpdUnixPath;
+            if (metaData.getContentType().equals(ContentType.APPLICATION_BINARY.contentTypeStr)) {
+                httpdUnixPath = webServerService.getResourceTemplate(aWebServerName, resourceFileName, false, resourceService.generateResourceGroup());
             } else {
-                metaDataPath = ResourceFileGenerator.generateResourceConfig(metaData.getDeployPath(), resourceService.generateResourceGroup(), webServerService.getWebServer(aWebServerName)) + "/" + resourceFileName;
+                // create the file
+                final String httpdDataDir = ApplicationProperties.get(STP_HTTPD_DATA_DIR);
+                final String generatedHttpdConf = webServerService.getResourceTemplate(aWebServerName, resourceFileName, true,
+                        resourceService.generateResourceGroup());
+                int resourceNameDotIndex = resourceFileName.lastIndexOf(".");
+                final File httpdConfFile = createTempWebServerResourceFile(aWebServerName, httpdDataDir, resourceFileName.substring(0, resourceNameDotIndex), resourceFileName.substring(resourceNameDotIndex + 1, resourceFileName.length()), generatedHttpdConf);
+
+                // copy the file
+                httpdUnixPath = httpdConfFile.getAbsolutePath().replace("\\", "/");
             }
+
+            final CommandOutput execData;
+            String metaDataPath = ResourceFileGenerator.generateResourceConfig(metaData.getDeployPath(), resourceService.generateResourceGroup(), webServerService.getWebServer(aWebServerName)) + "/" + resourceFileName;
             execData = webServerControlService.secureCopyFileWithBackup(aWebServerName, httpdUnixPath, metaDataPath, doBackup);
             if (execData.getReturnCode().wasSuccessful()) {
                 LOGGER.info("Copy of {} successful: {}", resourceFileName, httpdUnixPath);

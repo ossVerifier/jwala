@@ -304,6 +304,11 @@ public class JvmServiceImpl implements JvmService {
     }
 
     @Override
+    public String getResourceTemplateMetaData(String jvmName, String fileName) {
+        return jvmPersistenceService.getResourceTemplateMetaData(jvmName, fileName);
+    }
+
+    @Override
     @Transactional
     public String updateResourceTemplate(final String jvmName, final String resourceTemplateName, final String template) {
         return jvmPersistenceService.updateResourceTemplate(jvmName, resourceTemplateName, template);
@@ -392,13 +397,6 @@ public class JvmServiceImpl implements JvmService {
     }
 
     @Override
-    public ResourceTemplateMetaData getResourceTemplateMetaData(final String jvmName) throws IOException {
-        JpaJvmConfigTemplate jpaJvmConfigTemplate = jvmPersistenceService.getConfigTemplate(jvmName);
-        final ObjectMapper objectMapper = new ObjectMapper();
-        return objectMapper.readValue(jpaJvmConfigTemplate.getMetaData(), ResourceTemplateMetaData.class);
-    }
-
-    @Override
     public Map<String, String> generateResourceFiles(final String jvmName) throws IOException {
         Map<String, String> generatedFiles = null;
         final List<JpaJvmConfigTemplate> jpaJvmConfigTemplateList = jvmPersistenceService.getConfigTemplates(jvmName);
@@ -409,16 +407,18 @@ public class JvmServiceImpl implements JvmService {
             final String resourceTemplateMetaDataString = resourceService.generateResourceFile(jpaJvmConfigTemplate.getMetaData(), resourceGroup, jvm);
             final ResourceTemplateMetaData resourceTemplateMetaData =
                     mapper.readValue(resourceTemplateMetaDataString, ResourceTemplateMetaData.class);
-
+            if (generatedFiles == null) {
+                generatedFiles = new HashMap<>();
+            }
             if (resourceTemplateMetaData.getContentType().equals(ContentType.APPLICATION_BINARY.contentTypeStr)){
+                if (generatedFiles == null) {
+                    generatedFiles = new HashMap<>();
+                }
                 generatedFiles.put(jpaJvmConfigTemplate.getTemplateContent(),
                        resourceTemplateMetaData.getDeployPath() + "/" + resourceTemplateMetaData.getDeployFileName());
             } else {
                 final String generatedResourceStr = resourceService.generateResourceFile(jpaJvmConfigTemplate.getTemplateContent(),
                         resourceGroup, jvm);
-                if (generatedFiles == null) {
-                    generatedFiles = new HashMap<>();
-                }
                 generatedFiles.put(createConfigFile(resourceTemplateMetaData.getDeployFileName(), generatedResourceStr),
                         resourceTemplateMetaData.getDeployPath() + "/" + resourceTemplateMetaData.getDeployFileName());
             }

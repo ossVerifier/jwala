@@ -56,7 +56,6 @@ import com.siemens.cto.aem.common.domain.model.jvm.JvmControlOperation;
 import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.common.domain.model.path.Path;
 import com.siemens.cto.aem.common.domain.model.resource.ResourceGroup;
-import com.siemens.cto.aem.common.domain.model.resource.ResourceTemplateMetaData;
 import com.siemens.cto.aem.common.domain.model.resource.ResourceType;
 import com.siemens.cto.aem.common.domain.model.ssh.DecryptPassword;
 import com.siemens.cto.aem.common.domain.model.user.User;
@@ -142,7 +141,7 @@ public class JvmServiceRestImplTest {
                 statusPath,
                 systemProperties,
                 JvmState.JVM_STOPPED,
-                null, null, userName, encryptedPassword);
+                null, null, null, userName, encryptedPassword);
         final List<Jvm> result = new ArrayList<>();
         result.add(ws);
         return result;
@@ -540,15 +539,11 @@ public class JvmServiceRestImplTest {
 
     @Test
     public void testGenerateAndDeployFile() throws CommandFailureException, IOException {
-        ResourceTemplateMetaData mockResourceTemplateMetaData = mock(ResourceTemplateMetaData.class);
         CommandOutput mockExecData = mock(CommandOutput.class);
         when(mockExecData.getReturnCode()).thenReturn(new ExecReturnCode(0));
-        when(mockResourceTemplateMetaData.getDeployFileName()).thenReturn("server.xml");
-        when(mockResourceTemplateMetaData.getDeployPath()).thenReturn("/");
-        when(mockResourceTemplateMetaData.getContentType()).thenReturn("text/plain");
         when(jvmService.getJvm(jvm.getJvmName())).thenReturn(jvm);
         when(jvmService.generateConfigFile(anyString(), anyString())).thenReturn("<server>xml</server>");
-        when(jvmService.getResourceTemplateMetaData(anyString())).thenReturn(mockResourceTemplateMetaData);
+        when(jvmService.getResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"deployFileName\":\"server.xml\", \"deployPath\":\"/\",\"contentType\":\"text/plain\"}");
         when(jvmControlService.secureCopyFile(any(ControlJvmRequest.class), anyString(), anyString())).thenReturn(mockExecData);
         when(resourceService.generateResourceGroup()).thenReturn(new ResourceGroup());
         Response response = jvmServiceRest.generateAndDeployFile(jvm.getJvmName(), "server.xml", authenticatedUser);

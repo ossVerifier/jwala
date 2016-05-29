@@ -63,14 +63,9 @@ public interface JvmCrudService extends CrudService<JpaJvm> {
 
     List<JpaJvmConfigTemplate> getConfigTemplates(String jvmName);
 
-    /**
-     * Gets only one {@link JpaJvmConfigTemplate} from the db.
-     * @param jvmName the jvm name
-     * @return {@link JpaJvmConfigTemplate}
-     */
-    JpaJvmConfigTemplate getConfigTemplate(String jvmName);
-
     List<JpaJvm> getJvmsByGroupId(String groupName);
 
     List<Jvm> getJvmsByGroupName(String groupName);
+
+    String getResourceTemplateMetaData(String jvmName, String fileName);
 }

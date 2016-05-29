@@ -286,7 +286,7 @@ var GroupOperations = React.createClass({
 
                         } else {
                             var stateDetails = groupOperationsHelper.extractStateDetails(newWebServerState);
-                            webServerStatusWidget.setStatus(stateDetails.state, stateDetails.asOf, stateDetails.msg);
+                            webServerStatusWidget.setStatus(stateDetails.state, stateDetails.asOf.millis, stateDetails.msg);
                         }
                     }
                 }
@@ -319,7 +319,7 @@ var GroupOperations = React.createClass({
 
                         } else {
                             var stateDetails = groupOperationsHelper.extractStateDetails(newJvmState);
-                            jvmStatusWidget.setStatus(stateDetails.state, stateDetails.asOf, stateDetails.msg);
+                            jvmStatusWidget.setStatus(stateDetails.state, stateDetails.asOf.millis, stateDetails.msg);
 
                             // Update the state of the jvm that is in a "react state" so that when the
                             // state component is re rendered it is updated. JVMs are loaded together with the
@@ -381,7 +381,6 @@ var GroupOperations = React.createClass({
         getExtDivCompId: function(groupId) {
             return "ext-comp-div-group-operations-table_" + groupId;
         },
-        UNKNOWN_STATE: "",
         POLL_ERR_STATE: "POLLING ERROR!",
         STATE_POLLER_INTERVAL: 1
     }

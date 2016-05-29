@@ -112,6 +112,11 @@ public class JpaJvmPersistenceServiceImpl implements JvmPersistenceService {
     }
 
     @Override
+    public String getResourceTemplateMetaData(String jvmName, String fileName) {
+        return jvmCrudService.getResourceTemplateMetaData(jvmName, fileName);
+    }
+
+    @Override
     public String updateResourceTemplate(final String jvmName, final String resourceTemplateName, final String template) {
         jvmCrudService.updateResourceTemplate(jvmName, resourceTemplateName, template);
         return jvmCrudService.getResourceTemplate(jvmName, resourceTemplateName);
@@ -193,11 +198,6 @@ public class JpaJvmPersistenceServiceImpl implements JvmPersistenceService {
     @Override
     public List<JpaJvmConfigTemplate> getConfigTemplates(final String jvmName) {
         return jvmCrudService.getConfigTemplates(jvmName);
-    }
-
-    @Override
-    public JpaJvmConfigTemplate getConfigTemplate(final String jvmName) {
-        return jvmCrudService.getConfigTemplate(jvmName);
     }
 
     @Override

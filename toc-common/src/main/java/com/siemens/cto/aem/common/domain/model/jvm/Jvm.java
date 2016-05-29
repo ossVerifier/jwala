@@ -2,10 +2,7 @@ package com.siemens.cto.aem.common.domain.model.jvm;
 
 import java.io.Serializable;
 import java.net.URI;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import com.siemens.cto.aem.common.domain.model.app.Application;
 import com.siemens.cto.aem.common.domain.model.group.Group;
@@ -36,6 +33,7 @@ public class Jvm implements Serializable {
     private JvmState state;
     private String errorStatus;
     private List<Application> webApps;
+    private Calendar lastUpdatedDate;
     private String userName;
     private String encryptedPassword;
 
@@ -65,6 +63,7 @@ public class Jvm implements Serializable {
                final JvmState state,
                final String errorStatus,
                final List<Application> webApps,
+               final Calendar lastUpdatedDate,
                final String userName,
                final String encryptedPassword) {
         this.id = id;
@@ -81,6 +80,9 @@ public class Jvm implements Serializable {
         this.state = state;
         this.errorStatus = errorStatus;
         this.webApps = webApps;
+
+
+        this.lastUpdatedDate = lastUpdatedDate;
         this.userName = userName;
         this.encryptedPassword = encryptedPassword;
     }
@@ -100,6 +102,7 @@ public class Jvm implements Serializable {
         this.state,
         this.errorStatus,
         this.webApps,
+		this.lastUpdatedDate,
         this.userName,
         (this.encryptedPassword!=null && this.encryptedPassword.length()>0) ?  new DecryptPassword().decrypt(this.encryptedPassword) : "");    
     }
@@ -118,8 +121,9 @@ public class Jvm implements Serializable {
                String systemProperties,
                JvmState state,
                String errorStatus,
-               String userName,
-               String encryptedPassword) {
+			   Calendar lastUpdatedDate,
+			   String userName,
+			   String encryptedPassword) {
         this.id = id;
         this.jvmName = jvmName;
         this.hostName = hostName;
@@ -134,6 +138,7 @@ public class Jvm implements Serializable {
         this.systemProperties = systemProperties;
         this.state = state;
         this.errorStatus = errorStatus;
+        this.lastUpdatedDate = lastUpdatedDate;
         this.userName = userName;
         this.encryptedPassword = encryptedPassword;
     }
@@ -192,6 +197,10 @@ public class Jvm implements Serializable {
 
     public JvmState getState() {
         return state;
+    }
+
+    public Calendar getLastUpdatedDate() {
+        return lastUpdatedDate;
     }
 
     /**

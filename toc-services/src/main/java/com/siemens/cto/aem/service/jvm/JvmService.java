@@ -4,7 +4,6 @@ import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
-import com.siemens.cto.aem.common.domain.model.resource.ResourceTemplateMetaData;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.request.jvm.CreateJvmAndAddToGroupsRequest;
 import com.siemens.cto.aem.common.request.jvm.CreateJvmRequest;
@@ -74,8 +73,6 @@ public interface JvmService {
 
     Long getJvmForciblyStoppedCount(String groupName);
 
-    ResourceTemplateMetaData getResourceTemplateMetaData(String jvmName) throws IOException;
-
     /**
      * Generates all the required templates for the required jvm, and returns the source location and the destination
      * location.
@@ -93,4 +90,6 @@ public interface JvmService {
      * @param parentGroup
      */
     void createDefaultTemplates(String jvmName, Group parentGroup);
+
+    String getResourceTemplateMetaData(String jvmName, String fileName);
 }
