@@ -26,6 +26,10 @@ public class DecryptPassword {
     }
 
     public String decrypt(String encryptedValue) {
+        if (encryptedValue==null) {
+            return null;
+        }
+        
         final ExpressionParser expressionParser = new SpelExpressionParser();
         final Expression decryptExpression = expressionParser.parseExpression(decryptorImpl);
 
@@ -35,6 +39,11 @@ public class DecryptPassword {
     }
     
     public String encrypt(String unencryptedValue) {
+        
+        if (unencryptedValue==null) {
+            return null;
+        }
+        
         final ExpressionParser expressionParser = new SpelExpressionParser();
         final Expression encryptExpression = expressionParser.parseExpression(encryptorImpl);
 
