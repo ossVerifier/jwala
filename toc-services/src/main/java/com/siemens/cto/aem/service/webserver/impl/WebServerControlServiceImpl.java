@@ -14,9 +14,11 @@ import com.siemens.cto.aem.common.exec.*;
 import com.siemens.cto.aem.common.request.state.SetStateRequest;
 import com.siemens.cto.aem.common.request.state.WebServerSetStateRequest;
 import com.siemens.cto.aem.common.request.webserver.ControlWebServerRequest;
+import com.siemens.cto.aem.control.AemControl;
 import com.siemens.cto.aem.control.command.RemoteCommandExecutor;
 import com.siemens.cto.aem.control.command.ServiceCommandBuilder;
 import com.siemens.cto.aem.control.webserver.command.impl.WindowsWebServerPlatformCommandProvider;
+import com.siemens.cto.aem.control.webserver.command.windows.WindowsWebServerNetOperation;
 import com.siemens.cto.aem.exception.CommandFailureException;
 import com.siemens.cto.aem.persistence.jpa.type.EventType;
 import com.siemens.cto.aem.service.HistoryService;
@@ -151,9 +153,14 @@ public class WebServerControlServiceImpl implements WebServerControlService {
     }
 
     @Override
-    public CommandOutput secureCopyFileWithBackup(final String aWebServerName, final String sourcePath, final String destPath, final boolean doBackup) throws CommandFailureException {
+    public CommandOutput secureCopyFileWithBackup(final String aWebServerName, final String sourcePath, final String destPath, final boolean doBackup, String userId) throws CommandFailureException {
 
         final WebServer aWebServer = webServerService.getWebServer(aWebServerName);
+        final int beginIndex = destPath.lastIndexOf("/");
+        final String fileName = destPath.substring(beginIndex + 1, destPath.length());
+        if (!AemControl.Properties.USER_TOC_SCRIPTS_PATH.getValue().endsWith(fileName)) {
+            historyService.createHistory(getServerName(aWebServer), new ArrayList<>(aWebServer.getGroups()), WindowsWebServerNetOperation.SECURE_COPY.name() + " " + fileName, EventType.USER_ACTION, userId);
+        }
 
         // back up the original file first
         final String host = aWebServer.getHost();
@@ -186,7 +193,7 @@ public class WebServerControlServiceImpl implements WebServerControlService {
         return commandExecutor.executeRemoteCommand(
                 aWebServer.getName(),
                 host,
-                WebServerControlOperation.DEPLOY_HTTP_CONFIG_FILE,
+                WebServerControlOperation.SECURE_COPY,
                 new WindowsWebServerPlatformCommandProvider(),
                 sourcePath,
                 destPath);

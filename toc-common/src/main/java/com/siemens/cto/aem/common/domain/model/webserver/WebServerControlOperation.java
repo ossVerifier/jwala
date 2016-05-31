@@ -11,7 +11,7 @@ public enum WebServerControlOperation {
     START("start", WebServerReachableState.WS_START_SENT),
     STOP("stop", WebServerReachableState.WS_STOP_SENT),
     VIEW_HTTP_CONFIG_FILE("viewHttpConfigFile", null),
-    DEPLOY_HTTP_CONFIG_FILE("deployHttpConfigFile", null),
+    SECURE_COPY("deployHttpConfigFile", null),
     BACK_UP_HTTP_CONFIG_FILE("backUpHttpConfigFile", null),
     DELETE_SERVICE("deleteService", WebServerReachableState.WS_UNREACHABLE),
     INVOKE_SERVICE("invokeWSBat", null),

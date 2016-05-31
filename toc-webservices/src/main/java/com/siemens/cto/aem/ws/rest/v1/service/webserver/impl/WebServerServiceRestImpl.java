@@ -178,7 +178,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
     }
 
     @Override
-    public Response generateAndDeployConfig(final String aWebServerName, final String resourceFileName, final boolean doBackup) {
+    public Response generateAndDeployConfig(final String aWebServerName, final String resourceFileName, final boolean doBackup, final AuthenticatedUser user) {
 
         // only one at a time per web server
         if (!wsWriteLocks.containsKey(aWebServerName)) {
@@ -214,7 +214,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
 
             final CommandOutput execData;
             String metaDataPath = ResourceFileGenerator.generateResourceConfig(metaData.getDeployPath(), resourceService.generateResourceGroup(), webServerService.getWebServer(aWebServerName)) + "/" + resourceFileName;
-            execData = webServerControlService.secureCopyFileWithBackup(aWebServerName, httpdUnixPath, metaDataPath, doBackup);
+            execData = webServerControlService.secureCopyFileWithBackup(aWebServerName, httpdUnixPath, metaDataPath, doBackup, user.getUser().getId());
             if (execData.getReturnCode().wasSuccessful()) {
                 LOGGER.info("Copy of {} successful: {}", resourceFileName, httpdUnixPath);
             } else {
@@ -265,7 +265,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
             createScriptsDirectory(webServer);
 
             // copy the start and stop scripts
-            deployStartStopScripts(webServer);
+            deployStartStopScripts(webServer, aUser.getUser().getId());
 
             // delete the service
             deleteWebServerWindowsService(aUser, new ControlWebServerRequest(webServer.getId(), WebServerControlOperation.DELETE_SERVICE), aWebServerName);
@@ -276,7 +276,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
             // create the configuration file(s)
             final List<String> templateNames = webServerService.getResourceTemplateNames(aWebServerName);
             for (final String templateName: templateNames) {
-                generateAndDeployConfig(aWebServerName, templateName, doNotBackupFilesForNewWebServer);
+                generateAndDeployConfig(aWebServerName, templateName, doNotBackupFilesForNewWebServer, aUser);
             }
 
             // re-install the service
@@ -312,26 +312,26 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
 
     }
 
-    protected void deployStartStopScripts(WebServer webServer) throws CommandFailureException {
+    protected void deployStartStopScripts(WebServer webServer, String userId) throws CommandFailureException {
         final String webServerName = webServer.getName();
         final boolean doNotBackup = false;
         final String destHttpdConfPath = ApplicationProperties.get("paths.webserver.conf", ApplicationProperties.get("paths.httpd.conf")) + "/";
 
         final String sourceStartServicePath = AemControl.Properties.SCRIPTS_PATH + "/" + AemControl.Properties.START_SCRIPT_NAME.getValue();
-        if (!webServerControlService.secureCopyFileWithBackup(webServerName, sourceStartServicePath, destHttpdConfPath, doNotBackup).getReturnCode().wasSuccessful()) {
+        if (!webServerControlService.secureCopyFileWithBackup(webServerName, sourceStartServicePath, destHttpdConfPath, doNotBackup, userId).getReturnCode().wasSuccessful()) {
             LOGGER.error("Failed to secure copy file {} during creation of {}", sourceStartServicePath, webServerName);
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to secure copy file " + sourceStartServicePath + " during the creation of " + webServerName);
         }
 
         final String sourceStopServicePath = AemControl.Properties.SCRIPTS_PATH + "/" + AemControl.Properties.STOP_SCRIPT_NAME.getValue();
-        if (!webServerControlService.secureCopyFileWithBackup(webServerName, sourceStopServicePath, destHttpdConfPath, doNotBackup).getReturnCode().wasSuccessful()) {
+        if (!webServerControlService.secureCopyFileWithBackup(webServerName, sourceStopServicePath, destHttpdConfPath, doNotBackup, userId).getReturnCode().wasSuccessful()) {
             LOGGER.error("Failed to secure copy file {} during creation of {}", sourceStopServicePath, webServerName);
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to secure copy file " + sourceStopServicePath + " during the creation of " + webServerName);
         }
 
         final String sourceInvokeWsServicePath = AemControl.Properties.SCRIPTS_PATH + "/" + AemControl.Properties.INVOKE_WS_SERVICE_SCRIPT_NAME.getValue();
         final String tocScriptsPath = AemControl.Properties.USER_TOC_SCRIPTS_PATH.getValue();
-        if (!webServerControlService.secureCopyFileWithBackup(webServerName, sourceInvokeWsServicePath, tocScriptsPath, doNotBackup).getReturnCode().wasSuccessful()) {
+        if (!webServerControlService.secureCopyFileWithBackup(webServerName, sourceInvokeWsServicePath, tocScriptsPath, doNotBackup, userId).getReturnCode().wasSuccessful()) {
             LOGGER.error("Failed to secure copy file {} during creation of {}", sourceInvokeWsServicePath, webServerName);
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to secure copy file " + sourceInvokeWsServicePath + " during the creation of " + webServerName);
         }
@@ -353,7 +353,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
 
         // copy the invokeWs.bat file
         final String invokeWsBatFileAbsolutePath = invokeWsBatFile.getAbsolutePath();
-        CommandOutput copyResult = webServerControlService.secureCopyFileWithBackup(name, invokeWsBatFileAbsolutePath, httpdDataDir + "/invokeWS.bat", doBackup);
+        CommandOutput copyResult = webServerControlService.secureCopyFileWithBackup(name, invokeWsBatFileAbsolutePath, httpdDataDir + "/invokeWS.bat", doBackup, user.getUser().getId());
         if (copyResult.getReturnCode().wasSuccessful()) {
             LOGGER.info("Successfully copied {} to {}", invokeWsBatFileAbsolutePath, webServer.getHost());
         } else {

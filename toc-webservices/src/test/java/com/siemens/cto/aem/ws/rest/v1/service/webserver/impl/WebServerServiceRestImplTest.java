@@ -1,7 +1,6 @@
 package com.siemens.cto.aem.ws.rest.v1.service.webserver.impl;
 
 import com.siemens.cto.aem.common.domain.model.app.Application;
-import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.path.FileSystemPath;
@@ -300,10 +299,10 @@ public class WebServerServiceRestImplTest {
         final String httpdConfDirPath = ApplicationProperties.get("paths.httpd.conf");
         assertTrue(new File(httpdConfDirPath).mkdirs());
         CommandOutput retSuccessExecData = new CommandOutput(new ExecReturnCode(0), "", "");
-        when(webServerControlService.secureCopyFileWithBackup(anyString(), anyString(), anyString(), anyBoolean())).thenReturn(retSuccessExecData);
+        when(webServerControlService.secureCopyFileWithBackup(anyString(), anyString(), anyString(), anyBoolean(), anyString())).thenReturn(retSuccessExecData);
         when(impl.getResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"contentType\":\"text/plain\",\"deployPath\":\"./anyPath\"}");
         when(resourceService.generateResourceGroup()).thenReturn(new ResourceGroup());
-        Response response = webServerServiceRest.generateAndDeployConfig(webServer.getName(), "httpd.conf", true);
+        Response response = webServerServiceRest.generateAndDeployConfig(webServer.getName(), "httpd.conf", true, authenticatedUser);
         assertTrue(response.hasEntity());
         FileUtils.deleteDirectory(new File(httpdConfDirPath));
         System.clearProperty(ApplicationProperties.PROPERTIES_ROOT_PATH);
@@ -312,7 +311,7 @@ public class WebServerServiceRestImplTest {
     @Test(expected = InternalErrorException.class)
     @Ignore
     public void testGenerateAndDeployConfigThrowsExceptionForFileNotFound() throws CommandFailureException, IOException {
-        webServerServiceRest.generateAndDeployConfig(webServer.getName(), "httpd.conf", true);
+        webServerServiceRest.generateAndDeployConfig(webServer.getName(), "httpd.conf", true, authenticatedUser);
     }
 
     @Test
@@ -327,7 +326,7 @@ public class WebServerServiceRestImplTest {
 
         boolean exceptionThrown = false;
         try {
-            webServerServiceRest.generateAndDeployConfig(webServer.getName(), "httpd.conf", true);
+            webServerServiceRest.generateAndDeployConfig(webServer.getName(), "httpd.conf", true, authenticatedUser);
         } catch (InternalErrorException ie) {
             exceptionThrown = true;
             assertEquals(ie.getMessage(), "The target Web Server must be stopped before attempting to update the resource file");
@@ -345,11 +344,11 @@ public class WebServerServiceRestImplTest {
         assertTrue(new File(httpdConfDirPath).mkdirs());
         when(impl.getResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"contentType\":\"text/plain\",\"deployPath\":\"./anyPath\"}");
         when(resourceService.generateResourceGroup()).thenReturn(new ResourceGroup());
-        when(webServerControlService.secureCopyFileWithBackup(anyString(), anyString(), anyString(), anyBoolean())).thenReturn(new CommandOutput(new ExecReturnCode(1), "", "FAILED SECURE COPY TEST"));
+        when(webServerControlService.secureCopyFileWithBackup(anyString(), anyString(), anyString(), anyBoolean(), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(1), "", "FAILED SECURE COPY TEST"));
         boolean failedSecureCopy = false;
         Response response = null;
         try {
-            response = webServerServiceRest.generateAndDeployConfig(webServer.getName(), "httpd.conf", true);
+            response = webServerServiceRest.generateAndDeployConfig(webServer.getName(), "httpd.conf", true, authenticatedUser);
         } catch (InternalErrorException e) {
             failedSecureCopy = true;
         } finally {
@@ -368,10 +367,10 @@ public class WebServerServiceRestImplTest {
         assertTrue(new File(httpdConfDirPath).mkdirs());
         when(impl.getResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"contentType\":\"text/plain\",\"deployPath\":\"./anyPath\"}");
         when(resourceService.generateResourceGroup()).thenReturn(new ResourceGroup());
-        when(webServerControlService.secureCopyFileWithBackup(anyString(), anyString(), anyString(), anyBoolean())).thenThrow(new CommandFailureException(new ExecCommand("Fail secure copy"), new Exception()));
+        when(webServerControlService.secureCopyFileWithBackup(anyString(), anyString(), anyString(), anyBoolean(), anyString())).thenThrow(new CommandFailureException(new ExecCommand("Fail secure copy"), new Exception()));
         Response response = null;
         try {
-            response = webServerServiceRest.generateAndDeployConfig(webServer.getName(), "httpd.conf", true);
+            response = webServerServiceRest.generateAndDeployConfig(webServer.getName(), "httpd.conf", true, authenticatedUser);
         } finally {
             FileUtils.deleteDirectory(new File(httpdConfDirPath));
         }
@@ -388,7 +387,7 @@ public class WebServerServiceRestImplTest {
 
         CommandOutput retSuccessExecData = new CommandOutput(new ExecReturnCode(0), "", "");
         when(webServerControlService.controlWebServer(any(ControlWebServerRequest.class), any(User.class))).thenReturn(retSuccessExecData);
-        when(webServerControlService.secureCopyFileWithBackup(anyString(), anyString(), anyString(), anyBoolean())).thenReturn(retSuccessExecData);
+        when(webServerControlService.secureCopyFileWithBackup(anyString(), anyString(), anyString(), anyBoolean(), anyString())).thenReturn(retSuccessExecData);
         when(webServerControlService.createDirectory(any(WebServer.class), anyString())).thenReturn(retSuccessExecData);
         when(webServerControlService.changeFileMode(any(WebServer.class), anyString(), anyString(), anyString())).thenReturn(retSuccessExecData);
         when(impl.getWebServer(anyString())).thenReturn(webServer);
@@ -406,7 +405,7 @@ public class WebServerServiceRestImplTest {
         }
         assertNotNull(response);
 
-        when(webServerControlService.secureCopyFileWithBackup(anyString(), anyString(), anyString(), anyBoolean())).thenThrow(new CommandFailureException(new ExecCommand("failed command"), new Throwable()));
+        when(webServerControlService.secureCopyFileWithBackup(anyString(), anyString(), anyString(), anyBoolean(), anyString())).thenThrow(new CommandFailureException(new ExecCommand("failed command"), new Throwable()));
         response = null;
         boolean exceptionThrown = false;
         try {

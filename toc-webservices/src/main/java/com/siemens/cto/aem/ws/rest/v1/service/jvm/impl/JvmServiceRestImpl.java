@@ -1,35 +1,5 @@
 package com.siemens.cto.aem.ws.rest.v1.service.jvm.impl;
 
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.jar.JarEntry;
-import java.util.jar.JarOutputStream;
-
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-
-import org.apache.commons.fileupload.FileItemIterator;
-import org.apache.commons.fileupload.FileItemStream;
-import org.apache.commons.fileupload.FileUploadException;
-import org.apache.commons.fileupload.servlet.ServletFileUpload;
-import org.apache.commons.io.FileUtils;
-import org.apache.cxf.jaxrs.ext.MessageContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
@@ -69,6 +39,20 @@ import org.apache.cxf.jaxrs.ext.MessageContext;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import java.io.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.jar.JarEntry;
+import java.util.jar.JarOutputStream;
 
 public class JvmServiceRestImpl implements JvmServiceRest {
 
@@ -298,7 +282,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
             createScriptsDirectory(jvm);
 
             // copy the invoke and deploy scripts
-            deployScriptsToUserTocScriptsDir(jvm);
+            deployScriptsToUserTocScriptsDir(jvm, user);
 
             // delete the service
             // TODO make generic to support multiple OSs
@@ -309,14 +293,14 @@ public class JvmServiceRestImpl implements JvmServiceRest {
             final String jvmConfigJar = generateJvmConfigJar(jvm.getJvmName());
 
             // copy the tar file
-            secureCopyJvmConfigJar(jvm, jvmConfigJar);
+            secureCopyJvmConfigJar(jvm, jvmConfigJar, user);
 
             // call script to backup and tar the current directory and
             // then untar the new tar
             deployJvmConfigJar(jvm, user, jvmConfigJar);
 
             // copy the individual jvm templates to the destination
-            deployJvmResourceFiles(jvm);
+            deployJvmResourceFiles(jvm, user);
 
             // deploy any application context xml's in the group
             deployApplicationContextXMLs(jvm);
@@ -336,11 +320,11 @@ public class JvmServiceRestImpl implements JvmServiceRest {
         return jvm;
     }
 
-    protected void deployJvmResourceFiles(Jvm jvm) throws IOException, CommandFailureException {
+    protected void deployJvmResourceFiles(Jvm jvm, AuthenticatedUser user) throws IOException, CommandFailureException {
         final Map<String, String> generatedFiles = jvmService.generateResourceFiles(jvm.getJvmName());
         if (generatedFiles != null) {
             for (Entry<String, String> entry : generatedFiles.entrySet()) {
-                secureCopyFileToJvm(jvm, entry.getKey(), entry.getValue());
+                secureCopyFileToJvm(jvm, entry.getKey(), entry.getValue(), user);
             }
         }
     }
@@ -356,20 +340,21 @@ public class JvmServiceRestImpl implements JvmServiceRest {
 
     }
 
-    protected void deployScriptsToUserTocScriptsDir(Jvm jvm) throws CommandFailureException, IOException {
+    protected void deployScriptsToUserTocScriptsDir(Jvm jvm, AuthenticatedUser user) throws CommandFailureException, IOException {
         final ControlJvmRequest secureCopyRequest = new ControlJvmRequest(jvm.getId(), JvmControlOperation.SECURE_COPY);
         final String commandsScriptsPath = ApplicationProperties.get("commands.scripts-path");
 
         final String deployConfigJarPath = commandsScriptsPath + "/" + AemControl.Properties.DEPLOY_CONFIG_ARCHIVE_SCRIPT_NAME.getValue();
         final String tocScriptsPath = AemControl.Properties.USER_TOC_SCRIPTS_PATH.getValue();
         final String jvmName = jvm.getJvmName();
-        if (!jvmControlService.secureCopyFile(secureCopyRequest, deployConfigJarPath, tocScriptsPath).getReturnCode().wasSuccessful()) {
+        final String userId = user.getUser().getId();
+        if (!jvmControlService.secureCopyFile(secureCopyRequest, deployConfigJarPath, tocScriptsPath, userId).getReturnCode().wasSuccessful()) {
             LOGGER.error("Failed to secure copy {} during the creation of {}", deployConfigJarPath, jvmName);
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to secure copy " + deployConfigJarPath + " during the creation of " + jvmName);
         }
 
         final String invokeServicePath = commandsScriptsPath + "/" + AemControl.Properties.INVOKE_SERVICE_SCRIPT_NAME.getValue();
-        if (!jvmControlService.secureCopyFile(secureCopyRequest, invokeServicePath, tocScriptsPath).getReturnCode().wasSuccessful()) {
+        if (!jvmControlService.secureCopyFile(secureCopyRequest, invokeServicePath, tocScriptsPath, userId).getReturnCode().wasSuccessful()) {
             LOGGER.error("Failed to secure copy {} during the creation of {}", invokeServicePath, jvmName);
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to secure copy " + invokeServicePath + " during the creation of " + jvmName);
         }
@@ -414,9 +399,9 @@ public class JvmServiceRestImpl implements JvmServiceRest {
         }
     }
 
-    protected void secureCopyJvmConfigJar(Jvm jvm, String jvmConfigTar) throws CommandFailureException {
+    protected void secureCopyJvmConfigJar(Jvm jvm, String jvmConfigTar, AuthenticatedUser user) throws CommandFailureException {
         String configTarName = jvm.getJvmName() + CONFIG_JAR;
-        secureCopyFileToJvm(jvm, stpJvmResourcesDir + "/" + configTarName, AemControl.Properties.USER_TOC_SCRIPTS_PATH + "/" + configTarName);
+        secureCopyFileToJvm(jvm, stpJvmResourcesDir + "/" + configTarName, AemControl.Properties.USER_TOC_SCRIPTS_PATH + "/" + configTarName, user);
         LOGGER.info("Copy of config tar successful: {}", jvmConfigTar);
     }
 
@@ -426,11 +411,12 @@ public class JvmServiceRestImpl implements JvmServiceRest {
      * @param jvm             Jvm which requires the file
      * @param sourceFile      The source file, which needs to be copied.
      * @param destinationFile The destination file, where the source file should be copied.
+     * @param user
      * @throws CommandFailureException If the command fails, this exception contains the details of the failure.
      */
-    protected void secureCopyFileToJvm(final Jvm jvm, final String sourceFile, final String destinationFile) throws CommandFailureException {
+    protected void secureCopyFileToJvm(final Jvm jvm, final String sourceFile, final String destinationFile, AuthenticatedUser user) throws CommandFailureException {
         final ControlJvmRequest controlJvmRequest = new ControlJvmRequest(jvm.getId(), JvmControlOperation.SECURE_COPY);
-        final CommandOutput commandOutput = jvmControlService.secureCopyFile(controlJvmRequest, sourceFile, destinationFile);
+        final CommandOutput commandOutput = jvmControlService.secureCopyFile(controlJvmRequest, sourceFile, destinationFile, user.getUser().getId());
         if (commandOutput.getReturnCode().wasSuccessful()) {
             LOGGER.info("Successfully copied {} to destination location {} on {}", sourceFile, destinationFile, jvm.getHostName());
         } else {
@@ -495,7 +481,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
                 createConfigFile(jvmResourcesNameDir + "/", fileName, fileContent);
             }
 
-            deployJvmConfigFile(jvmName, fileName, jvm, resourceDestPath, resourceSourceCopy);
+            deployJvmConfigFile(jvmName, fileName, jvm, resourceDestPath, resourceSourceCopy, user);
         } catch (IOException e) {
             LOGGER.error("Bad Stream: Failed to write file", e);
             throw new InternalErrorException(AemFaultType.BAD_STREAM, "Failed to write file", e);
@@ -508,10 +494,10 @@ public class JvmServiceRestImpl implements JvmServiceRest {
         return ResponseBuilder.ok(jvm);
     }
 
-    protected void deployJvmConfigFile(String jvmName, String fileName, Jvm jvm, String destPath, String sourcePath)
+    protected void deployJvmConfigFile(String jvmName, String fileName, Jvm jvm, String destPath, String sourcePath, AuthenticatedUser user)
             throws CommandFailureException {
         CommandOutput result =
-                jvmControlService.secureCopyFile(new ControlJvmRequest(jvm.getId(), JvmControlOperation.SECURE_COPY), sourcePath, destPath);
+                jvmControlService.secureCopyFile(new ControlJvmRequest(jvm.getId(), JvmControlOperation.SECURE_COPY), sourcePath, destPath, user.getUser().getId());
         if (result.getReturnCode().wasSuccessful()) {
             LOGGER.info("Successful generation and deploy of {} to {}", fileName, jvmName);
         } else {

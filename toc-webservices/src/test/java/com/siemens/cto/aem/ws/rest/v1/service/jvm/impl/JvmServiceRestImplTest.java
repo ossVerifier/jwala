@@ -1,52 +1,5 @@
 package com.siemens.cto.aem.ws.rest.v1.service.jvm.impl;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.atLeastOnce;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.ByteBuffer;
-import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.Executors;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-
-import javax.servlet.ServletInputStream;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.SecurityContext;
-
-import org.apache.commons.fileupload.FileUploadBase;
-import org.apache.commons.io.FileUtils;
-import org.apache.cxf.jaxrs.ext.MessageContext;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
-
 import com.jcraft.jsch.JSchException;
 import com.siemens.cto.aem.common.domain.model.app.Application;
 import com.siemens.cto.aem.common.domain.model.group.Group;
@@ -65,11 +18,7 @@ import com.siemens.cto.aem.common.exec.CommandOutputReturnCode;
 import com.siemens.cto.aem.common.exec.ExecCommand;
 import com.siemens.cto.aem.common.exec.ExecReturnCode;
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
-import com.siemens.cto.aem.common.request.jvm.ControlJvmRequest;
-import com.siemens.cto.aem.common.request.jvm.CreateJvmAndAddToGroupsRequest;
-import com.siemens.cto.aem.common.request.jvm.CreateJvmRequest;
-import com.siemens.cto.aem.common.request.jvm.UpdateJvmRequest;
-import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
+import com.siemens.cto.aem.common.request.jvm.*;
 import com.siemens.cto.aem.exception.CommandFailureException;
 import com.siemens.cto.aem.persistence.jpa.service.exception.ResourceTemplateUpdateException;
 import com.siemens.cto.aem.service.jvm.JvmControlService;
@@ -78,6 +27,37 @@ import com.siemens.cto.aem.service.jvm.state.JvmStateReceiverAdapter;
 import com.siemens.cto.aem.service.resource.ResourceService;
 import com.siemens.cto.aem.ws.rest.v1.provider.AuthenticatedUser;
 import com.siemens.cto.aem.ws.rest.v1.response.ApplicationResponse;
+import org.apache.commons.fileupload.FileUploadBase;
+import org.apache.commons.io.FileUtils;
+import org.apache.cxf.jaxrs.ext.MessageContext;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
+
+import javax.servlet.ServletInputStream;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.SecurityContext;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
+import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+
+import static org.junit.Assert.*;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.*;
 
 /**
  * @author meleje00
@@ -333,7 +313,7 @@ public class JvmServiceRestImplTest {
         when(jvmService.generateConfigFile(jvm.getJvmName(), "server.xml")).thenReturn("<server>xml-content</server>");
         when(jvmService.generateConfigFile(jvm.getJvmName(), "context.xml")).thenReturn("<content>xml-content</content>");
         when(jvmService.generateConfigFile(jvm.getJvmName(), "setenv.bat")).thenReturn("SET TEST=xxtestxx");
-        when(jvmControlService.secureCopyFile(any(ControlJvmRequest.class), anyString(), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(0), "", ""));
+        when(jvmControlService.secureCopyFile(any(ControlJvmRequest.class), anyString(), anyString(), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(0), "", ""));
 
         boolean failsScp = false;
         Response response = null;
@@ -359,7 +339,7 @@ public class JvmServiceRestImplTest {
         when(mockResource.getEntityType()).thenReturn("jvm");
         when(mockResource.getTemplateName()).thenReturn("ServerXMLTemplate.tpl");
         when(mockResource.getConfigFileName()).thenReturn("server.xml");
-        when(jvmControlService.secureCopyFile(any(ControlJvmRequest.class), anyString(), anyString())).thenReturn(commandOutput);
+        when(jvmControlService.secureCopyFile(any(ControlJvmRequest.class), anyString(), anyString(), anyString())).thenReturn(commandOutput);
         when(jvmControlService.createDirectory(any(Jvm.class), anyString())).thenReturn(commandOutput);
         when(jvmControlService.changeFileMode(any(Jvm.class), anyString(), anyString(), anyString())).thenReturn(commandOutput);
 
@@ -398,7 +378,7 @@ public class JvmServiceRestImplTest {
         assertTrue(exceptionThrown);
         FileUtils.deleteDirectory(new File("./src/test/resources/jvm-resources_test/" + jvm.getJvmName()));
 
-        when(jvmControlService.secureCopyFile(any(ControlJvmRequest.class), anyString(), anyString())).thenReturn(mockExecDataFail);
+        when(jvmControlService.secureCopyFile(any(ControlJvmRequest.class), anyString(), anyString(), anyString())).thenReturn(mockExecDataFail);
         exceptionThrown = false;
         try {
             jvmServiceRest.generateConfFilesAndDeploy(jvm, authenticatedUser);
@@ -411,7 +391,7 @@ public class JvmServiceRestImplTest {
         ExecCommand execCommand = new ExecCommand("fail command");
         Throwable throwable = new JSchException("Failed scp");
         final CommandFailureException commandFailureException = new CommandFailureException(execCommand, throwable);
-        when(jvmControlService.secureCopyFile(any(ControlJvmRequest.class), anyString(), anyString())).thenThrow(commandFailureException);
+        when(jvmControlService.secureCopyFile(any(ControlJvmRequest.class), anyString(), anyString(), anyString())).thenThrow(commandFailureException);
         exceptionThrown = false;
         try {
             jvmServiceRest.generateConfFilesAndDeploy(jvm, authenticatedUser);
@@ -442,7 +422,7 @@ public class JvmServiceRestImplTest {
         when(jvmService.generateConfigFile(jvm.getJvmName(), "context.xml")).thenReturn("<content>xml-content</content>");
         when(jvmService.generateConfigFile(jvm.getJvmName(), "setenv.bat")).thenReturn("SET TEST=xxtestxx");
         final CommandOutput successCommandOutput = new CommandOutput(new ExecReturnCode(0), "", "");
-        when(jvmControlService.secureCopyFile(any(ControlJvmRequest.class), anyString(), anyString())).thenReturn(successCommandOutput);
+        when(jvmControlService.secureCopyFile(any(ControlJvmRequest.class), anyString(), anyString(), anyString())).thenReturn(successCommandOutput);
         when(jvmControlService.createDirectory(any(Jvm.class), anyString())).thenReturn(successCommandOutput);
         when(jvmControlService.changeFileMode(any(Jvm.class), anyString(), anyString(), anyString())).thenReturn(successCommandOutput);
 
@@ -459,7 +439,7 @@ public class JvmServiceRestImplTest {
         when(jvmService.generateConfigFile(jvm.getJvmName(), "server.xml")).thenReturn("<server>xml-content</server>");
         when(jvmService.generateConfigFile(jvm.getJvmName(), "context.xml")).thenReturn("<content>xml-content</content>");
         when(jvmService.generateConfigFile(jvm.getJvmName(), "setenv.bat")).thenReturn("SET TEST=xxtestxx");
-        when(jvmControlService.secureCopyFile(any(ControlJvmRequest.class), anyString(), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(1), "", "FAIL THE SERVICE SECURE COPY TEST"));
+        when(jvmControlService.secureCopyFile(any(ControlJvmRequest.class), anyString(), anyString(), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(1), "", "FAIL THE SERVICE SECURE COPY TEST"));
         final CommandOutput successCommandOutput = new CommandOutput(new ExecReturnCode(0), "", "");
         when(jvmControlService.createDirectory(any(Jvm.class), anyString())).thenReturn(successCommandOutput);
         when(jvmControlService.changeFileMode(any(Jvm.class), anyString(), anyString(), anyString())).thenReturn(successCommandOutput);
@@ -544,14 +524,14 @@ public class JvmServiceRestImplTest {
         when(jvmService.getJvm(jvm.getJvmName())).thenReturn(jvm);
         when(jvmService.generateConfigFile(anyString(), anyString())).thenReturn("<server>xml</server>");
         when(jvmService.getResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"deployFileName\":\"server.xml\", \"deployPath\":\"/\",\"contentType\":\"text/plain\"}");
-        when(jvmControlService.secureCopyFile(any(ControlJvmRequest.class), anyString(), anyString())).thenReturn(mockExecData);
+        when(jvmControlService.secureCopyFile(any(ControlJvmRequest.class), anyString(), anyString(), anyString())).thenReturn(mockExecData);
         when(resourceService.generateResourceGroup()).thenReturn(new ResourceGroup());
         Response response = jvmServiceRest.generateAndDeployFile(jvm.getJvmName(), "server.xml", authenticatedUser);
         assertNotNull(response.hasEntity());
 
         when(mockExecData.getReturnCode()).thenReturn(new ExecReturnCode(1));
         when(mockExecData.getStandardError()).thenReturn("ERROR");
-        when(jvmControlService.secureCopyFile(any(ControlJvmRequest.class), anyString(), anyString())).thenReturn(mockExecData);
+        when(jvmControlService.secureCopyFile(any(ControlJvmRequest.class), anyString(), anyString(), anyString())).thenReturn(mockExecData);
         boolean exceptionThrown = false;
         try {
             jvmServiceRest.generateAndDeployFile(jvm.getJvmName(), "server.xml", authenticatedUser);
@@ -568,7 +548,7 @@ public class JvmServiceRestImplTest {
         }
         assertTrue(exceptionThrown);
 
-        when(jvmControlService.secureCopyFile(any(ControlJvmRequest.class), anyString(), anyString())).thenThrow(new CommandFailureException(new ExecCommand("fail for secure copy"), new Throwable("test fail")));
+        when(jvmControlService.secureCopyFile(any(ControlJvmRequest.class), anyString(), anyString(), anyString())).thenThrow(new CommandFailureException(new ExecCommand("fail for secure copy"), new Throwable("test fail")));
         exceptionThrown = false;
         try {
             jvmServiceRest.generateAndDeployFile(jvm.getJvmName(), "server.xml", authenticatedUser);

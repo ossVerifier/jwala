@@ -39,7 +39,7 @@ public enum WindowsWebServerNetOperation implements ServiceCommandBuilder {
             return new ExecCommand("cat", aParams[0]);
         }
     },
-    DEPLOY_HTTP_CONFIG_FILE(WebServerControlOperation.DEPLOY_HTTP_CONFIG_FILE) {
+    SECURE_COPY(WebServerControlOperation.SECURE_COPY) {
         @Override
         public ExecCommand buildCommandForService(String aServiceName, String... aParams) {
             return new ExecCommand(SCP_SCRIPT_NAME.getValue(), aParams[0], aParams[1]);

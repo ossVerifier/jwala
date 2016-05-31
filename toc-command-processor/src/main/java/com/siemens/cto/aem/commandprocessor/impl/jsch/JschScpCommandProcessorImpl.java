@@ -39,10 +39,14 @@ public class JschScpCommandProcessorImpl implements CommandProcessor {
         List<String> commandFragments = remoteCommand.getCommand().getCommandFragments();
         Session session = null;
         Channel channel = null;
+
+
         try {
             final RemoteSystemConnection remoteSystemConnection = remoteCommand.getRemoteSystemConnection();
             session = prepareSession(remoteSystemConnection);
             session.connect();
+
+            LOGGER.debug("scp remote command {} source:{} destination:{}", remoteSystemConnection, commandFragments.get(1), commandFragments.get(2));
 
             String target = commandFragments.get(2);
 

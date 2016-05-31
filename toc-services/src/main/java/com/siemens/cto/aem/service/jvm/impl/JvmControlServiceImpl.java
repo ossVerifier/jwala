@@ -12,6 +12,7 @@ import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.exception.InternalErrorException;
 import com.siemens.cto.aem.common.exec.*;
 import com.siemens.cto.aem.common.request.jvm.ControlJvmRequest;
+import com.siemens.cto.aem.control.AemControl;
 import com.siemens.cto.aem.control.command.RemoteCommandExecutor;
 import com.siemens.cto.aem.control.command.ServiceCommandBuilder;
 import com.siemens.cto.aem.control.jvm.command.impl.WindowsJvmPlatformCommandProvider;
@@ -174,12 +175,21 @@ public class JvmControlServiceImpl implements JvmControlService {
 
     @Override
     public CommandOutput secureCopyFile(final ControlJvmRequest secureCopyRequest, final String sourcePath,
-                                        final String destPath) throws CommandFailureException {
+                                        final String destPath, String userId) throws CommandFailureException {
         final Identifier<Jvm> jvmId = secureCopyRequest.getJvmId();
-        final JpaJvm jvm = jvmService.getJpaJvm(jvmId, true);
+        final JpaJvm jpaJvm = jvmService.getJpaJvm(jvmId, true);
+
+        final String event = secureCopyRequest.getControlOperation().name();
+        final Jvm jvm = jvmService.getJvm(jvmId);
+        final int beginIndex = destPath.lastIndexOf("/");
+        final String fileName = destPath.substring(beginIndex + 1, destPath.length());
+        // don't add any usage of the toc user internal directory to the history
+        if (!AemControl.Properties.USER_TOC_SCRIPTS_PATH.getValue().endsWith(fileName)) {
+            historyService.createHistory(getServerName(jvm), new ArrayList<>(jvm.getGroups()), event + " " + fileName, EventType.USER_ACTION, userId);
+        }
         CommandOutput commandOutput = remoteCommandExecutor.executeRemoteCommand(
-                jvm.getName(),
-                jvm.getHostName(),
+                jpaJvm.getName(),
+                jpaJvm.getHostName(),
                 JvmControlOperation.CHECK_FILE_EXISTS,
                 new WindowsJvmPlatformCommandProvider(),
                 destPath
@@ -188,15 +198,15 @@ public class JvmControlServiceImpl implements JvmControlService {
             String currentDateSuffix = new SimpleDateFormat(".yyyyMMdd_HHmmss").format(new Date());
             final String destPathBackup = destPath + currentDateSuffix;
             remoteCommandExecutor.executeRemoteCommand(
-                    jvm.getName(),
-                    jvm.getHostName(),
+                    jpaJvm.getName(),
+                    jpaJvm.getHostName(),
                     JvmControlOperation.BACK_UP_FILE,
                     new WindowsJvmPlatformCommandProvider(),
                     destPath,
                     destPathBackup);
         }
 
-        return remoteCommandExecutor.executeRemoteCommand(jvm.getName(), jvm.getHostName(), secureCopyRequest.getControlOperation(),
+        return remoteCommandExecutor.executeRemoteCommand(jpaJvm.getName(), jpaJvm.getHostName(), secureCopyRequest.getControlOperation(),
                 new WindowsJvmPlatformCommandProvider(), sourcePath, destPath);
     }
 
