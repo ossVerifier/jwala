@@ -47,7 +47,8 @@ public class JvmStateResolverWorker {
 
     @Async("jvmTaskExecutor")
     public Future<CurrentState<Jvm, JvmState>> pingAndUpdateJvmState(final Jvm jvm, final JvmStateService jvmStateService) {
-        LOGGER.warn("The reverse heartbeat has kicked in! This means that we're not receiving any states from Jvm {}@{}.");
+        LOGGER.warn("The reverse heartbeat has kicked in! This means that we're not receiving any states from Jvm {}@{}.",
+                jvm.getJvmName(), jvm.getHostName());
         LOGGER.debug("+++ pingAndUpdateJvmState");
         ClientHttpResponse response = null;
         CurrentState<Jvm, JvmState> currentState = null;
