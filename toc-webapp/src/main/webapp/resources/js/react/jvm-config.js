@@ -212,7 +212,7 @@ var JvmConfigForm = React.createClass({
             redirectPort = this.props.data.redirectPort;
             shutdownPort = this.props.data.shutdownPort;
             ajpPort = this.props.data.ajpPort;
-            username = this.props.data.userName;
+            userName = this.props.data.userName;
             encryptedPassword = this.props.data.encryptedPassword;
         }
 

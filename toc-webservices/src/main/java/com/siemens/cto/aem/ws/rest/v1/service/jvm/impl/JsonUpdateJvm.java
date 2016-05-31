@@ -109,7 +109,10 @@ public class JsonUpdateJvm {
 
             final ObjectCodec obj = jp.getCodec();
             final JsonNode node = obj.readTree(jp);
-            final String pw = new DecryptPassword().encrypt(node.get("encryptedPassword").getTextValue());
+            final JsonNode usernameNode = node.get("userName");
+            final JsonNode passwordNode = node.get("encryptedPassword");
+            
+            final String pw = (passwordNode==null) ? null : new DecryptPassword().encrypt(passwordNode.getTextValue());
             
             return new JsonUpdateJvm(node.get("jvmId").getValueAsText(),
                                      node.get("jvmName").getTextValue(),
@@ -122,7 +125,7 @@ public class JsonUpdateJvm {
                                      node.get("ajpPort").getValueAsText(),
                                      node.get("statusPath").getTextValue(),
                                      node.get("systemProperties").getTextValue(),
-                                     node.get("userName").getTextValue(),
+                                     usernameNode == null ? null : node.get("userName").getTextValue(),
                                      pw);
         }
     }

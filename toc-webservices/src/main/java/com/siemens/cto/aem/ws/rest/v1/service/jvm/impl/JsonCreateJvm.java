@@ -154,7 +154,13 @@ public class JsonCreateJvm {
             final JsonNode encryptedPassword = rootNode.get("encryptedPassword");
             
             final Set<String> rawGroupIds = deserializeGroupIdentifiers(rootNode);
-            final String pw = new DecryptPassword().encrypt(encryptedPassword.getTextValue());
+            final String jsonPassword = encryptedPassword==null ? null : encryptedPassword.getTextValue();
+            final String pw;
+            if (jsonPassword!=null && jsonPassword.length()>0) {
+                pw = new DecryptPassword().encrypt(encryptedPassword.getTextValue());
+            } else {
+                pw = "";
+            }
             
             return new JsonCreateJvm(jvmNode.getTextValue(),
                                      hostNameNode.getTextValue(),
@@ -166,7 +172,7 @@ public class JsonCreateJvm {
                                      ajpPortNode.getValueAsText(),
                                      statusPathNode.getTextValue(),
                                      systemProperties.getTextValue(),
-                                     userName.getTextValue(),
+                                     userName==null? null : userName.getTextValue(),
                                      pw);
         }
     }

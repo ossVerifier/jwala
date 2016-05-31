@@ -113,21 +113,31 @@ public enum WindowsJvmNetOperation implements ServiceCommandBuilder {
     INVOKE_SERVICE(JvmControlOperation.INVOKE_SERVICE) {
         @Override
         public ExecCommand buildCommandForService(String aServiceName, String... aParams) {
-            final String username = ApplicationProperties.get("remote.jvm.account.username");
+            final String userName;
+            final String encryptedPassword;
+                        
+            if (aParams.length>=2) {
+                userName = aParams[0];
+                encryptedPassword = aParams[1];
+            } else {
+                userName = null;
+                encryptedPassword = null;
+            }
+
             final String quotedUsername;
-            if (username!=null && username.length()>0){
-                quotedUsername = "\"" + username +"\"";
+
+            if (userName!=null && userName.length()>0){
+                quotedUsername = "\"" + userName +"\"";
             } else {
                 quotedUsername = "";
             }            
-            final String password = ApplicationProperties.get("remote.jvm.account.password.encrypted");
-            final String password_decrypted = (password!=null && password.length()>0) ? new DecryptPassword().decrypt(password): ""; 
+            final String decryptedPassword = (encryptedPassword!=null && encryptedPassword.length()>0) ? new DecryptPassword().decrypt(encryptedPassword): ""; 
             return new ExecCommand(
                     cygpathWrapper(INVOKE_SERVICE_SCRIPT_NAME, USER_TOC_SCRIPTS_PATH + "/"),
                     aServiceName,
                     ApplicationProperties.get("paths.instances"),
                     quotedUsername,
-                    password_decrypted);
+                    decryptedPassword);
         }
     },
     SECURE_COPY(JvmControlOperation.SECURE_COPY) {
