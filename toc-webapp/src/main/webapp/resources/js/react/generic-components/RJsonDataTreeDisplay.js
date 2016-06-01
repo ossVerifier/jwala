@@ -3,6 +3,24 @@
  *
  * Usages: <RJsonDataTreeDisplay refs="jsonTree" data={someJsonData} />
  *         <RJsonDataTreeDisplay refs="jsonTree" data={someJsonData} displayValueOnly="true" />
+ *         <RJsonDataTreeDisplay refs="jsonTree" data={someJsonData} onShowToolTipCallback={function(hierarchy){return <div>hierarchy</div>}}>
+ *
+ * Parameters:
+ *
+ * 1. data - the tree's data in JSON format
+ * 2. displayValueOnly - displays the node without the attribute name, just the value please see illustration below.
+ *
+ *      - Employees
+ *          - Dept X
+ *               Alice
+ *               John
+ *               Anne
+ *          + Dept Y
+ *          + Dept Z
+ *
+ * 3. onShowToolTipCallback - provides a facility to show a custom tooltip. The callback passes the hierarchy
+ *                            of the current node in case it is needed like displaying it while providing copy/paste
+ *                            functionality.
  *
  * Created by JC043760 on 5/03/2016.
  */
