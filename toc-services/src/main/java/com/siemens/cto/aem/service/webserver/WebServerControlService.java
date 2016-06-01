@@ -10,7 +10,7 @@ public interface WebServerControlService {
 
     CommandOutput controlWebServer(final ControlWebServerRequest controlWebServerRequest, final User aUser);
 
-    CommandOutput secureCopyFileWithBackup(final String aWebServerName, final String sourcePath, final String destPath, final boolean doBackup, String userId) throws CommandFailureException;
+    CommandOutput secureCopyFile(final String aWebServerName, final String sourcePath, final String destPath, String userId) throws CommandFailureException;
 
     CommandOutput createDirectory(WebServer webServer, String dirAbsolutePath) throws CommandFailureException;
 

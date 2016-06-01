@@ -190,9 +190,11 @@ public class JvmControlServiceImpl implements JvmControlService {
             historyService.createHistory(getServerName(jvm), new ArrayList<>(jvm.getGroups()), eventDescription, EventType.USER_ACTION, userId);
             messagingService.send(new JvmHistoryEvent(jvm.getId(), eventDescription, userId, DateTime.now(), JvmControlOperation.SECURE_COPY));
         }
+        final String name = jpaJvm.getName();
+        final String hostName = jpaJvm.getHostName();
         CommandOutput commandOutput = remoteCommandExecutor.executeRemoteCommand(
-                jpaJvm.getName(),
-                jpaJvm.getHostName(),
+                name,
+                hostName,
                 JvmControlOperation.CHECK_FILE_EXISTS,
                 new WindowsJvmPlatformCommandProvider(),
                 destPath
@@ -200,16 +202,22 @@ public class JvmControlServiceImpl implements JvmControlService {
         if (commandOutput.getReturnCode().wasSuccessful()){
             String currentDateSuffix = new SimpleDateFormat(".yyyyMMdd_HHmmss").format(new Date());
             final String destPathBackup = destPath + currentDateSuffix;
-            remoteCommandExecutor.executeRemoteCommand(
-                    jpaJvm.getName(),
-                    jpaJvm.getHostName(),
+            commandOutput = remoteCommandExecutor.executeRemoteCommand(
+                    name,
+                    hostName,
                     JvmControlOperation.BACK_UP_FILE,
                     new WindowsJvmPlatformCommandProvider(),
                     destPath,
                     destPathBackup);
+            if (!commandOutput.getReturnCode().wasSuccessful()) {
+                LOGGER.info("Failed to back up the " + destPath + " for " + name + ". Continuing with secure copy.");
+            } else {
+                LOGGER.info("Successfully backed up " + destPath + " at " + hostName);
+            }
+
         }
 
-        return remoteCommandExecutor.executeRemoteCommand(jpaJvm.getName(), jpaJvm.getHostName(), secureCopyRequest.getControlOperation(),
+        return remoteCommandExecutor.executeRemoteCommand(name, hostName, secureCopyRequest.getControlOperation(),
                 new WindowsJvmPlatformCommandProvider(), sourcePath, destPath);
     }
 

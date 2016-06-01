@@ -171,6 +171,7 @@ public class GroupCrudServiceImpl extends AbstractCrudServiceImpl<JpaGroup> impl
             //update
             jpaConfigTemplate = templates.get(0);
             jpaConfigTemplate.setTemplateContent(templateContent);
+            jpaConfigTemplate.setMetaData(uploadJvmTemplateRequest.getMetaData());
             entityManager.flush();
         } else if (templates.isEmpty()) {
             jpaConfigTemplate = new JpaGroupJvmConfigTemplate();
@@ -198,6 +199,7 @@ public class GroupCrudServiceImpl extends AbstractCrudServiceImpl<JpaGroup> impl
             //update
             jpaConfigTemplate = templates.get(0);
             jpaConfigTemplate.setTemplateContent(templateContent);
+            jpaConfigTemplate.setMetaData(uploadWSTemplateRequest.getMetaData());
             entityManager.flush();
         } else if (templates.isEmpty()) {
             jpaConfigTemplate = new JpaGroupWebServerConfigTemplate();
@@ -368,15 +370,17 @@ public class GroupCrudServiceImpl extends AbstractCrudServiceImpl<JpaGroup> impl
     @Override
     public ConfigTemplate populateGroupAppTemplate(final String groupName, String appName, final String templateFileName, final String metaData,
                                                    final String templateContent) {
-        Query query = entityManager.createQuery("SELECT t FROM JpaGroupAppConfigTemplate t where t.templateName = :tempName and t.grp.name = :grpName");
+        Query query = entityManager.createQuery("SELECT t FROM JpaGroupAppConfigTemplate t where t.templateName = :tempName and t.grp.name = :grpName and t.app.name = :appName");
         query.setParameter("grpName", groupName);
         query.setParameter("tempName", templateFileName);
+        query.setParameter("appName", appName);
         List<JpaGroupAppConfigTemplate> templates = query.getResultList();
         JpaGroupAppConfigTemplate jpaConfigTemplate;
         if (templates.size() == 1) {
             //update
             jpaConfigTemplate = templates.get(0);
             jpaConfigTemplate.setTemplateContent(templateContent);
+            jpaConfigTemplate.setMetaData(metaData);
             entityManager.flush();
         } else if (templates.isEmpty()) {
             jpaConfigTemplate = new JpaGroupAppConfigTemplate();

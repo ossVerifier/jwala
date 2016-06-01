@@ -45,7 +45,7 @@ public enum WindowsWebServerNetOperation implements ServiceCommandBuilder {
             return new ExecCommand(SCP_SCRIPT_NAME.getValue(), aParams[0], aParams[1]);
         }
     },
-    BACK_UP_HTTP_CONFIG_FILE(WebServerControlOperation.BACK_UP_HTTP_CONFIG_FILE) {
+    BACK_UP_HTTP_CONFIG_FILE(WebServerControlOperation.BACK_UP_CONFIG_FILE) {
         @Override
         public ExecCommand buildCommandForService(String aServiceName, String... aParams) {
             return new ExecCommand("/usr/bin/cp", aParams[0], aParams[1]);

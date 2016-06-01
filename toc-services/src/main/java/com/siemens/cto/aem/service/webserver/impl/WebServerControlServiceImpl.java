@@ -85,15 +85,15 @@ public class WebServerControlServiceImpl implements WebServerControlService {
 
             // Send a message to the UI about the control operation.
             if (controlWebServerRequest.getControlOperation().getOperationState() != null) {
-                    messagingService.send(new CurrentState<>(webServer.getId(), controlWebServerRequest.getControlOperation().getOperationState(),
-                                          aUser.getId(), DateTime.now(), StateType.WEB_SERVER));
+                messagingService.send(new CurrentState<>(webServer.getId(), controlWebServerRequest.getControlOperation().getOperationState(),
+                        aUser.getId(), DateTime.now(), StateType.WEB_SERVER));
             }
 
             final WindowsWebServerPlatformCommandProvider windowsJvmPlatformCommandProvider = new WindowsWebServerPlatformCommandProvider();
             final ServiceCommandBuilder serviceCommandBuilder = windowsJvmPlatformCommandProvider.getServiceCommandBuilderFor(controlOperation);
             final ExecCommand execCommand = serviceCommandBuilder.buildCommandForService(webServer.getName());
             final RemoteExecCommand remoteExecCommand = new RemoteExecCommand(new RemoteSystemConnection(sshConfig.getUserName(),
-                    sshConfig.getPassword(), webServer.getHost(), sshConfig.getPort()) , execCommand);
+                    sshConfig.getPassword(), webServer.getHost(), sshConfig.getPort()), execCommand);
 
             RemoteCommandReturnInfo remoteCommandReturnInfo = remoteCommandExecutorService.executeCommand(remoteExecCommand);
 
@@ -154,7 +154,7 @@ public class WebServerControlServiceImpl implements WebServerControlService {
     }
 
     @Override
-    public CommandOutput secureCopyFileWithBackup(final String aWebServerName, final String sourcePath, final String destPath, final boolean doBackup, String userId) throws CommandFailureException {
+    public CommandOutput secureCopyFile(final String aWebServerName, final String sourcePath, final String destPath, String userId) throws CommandFailureException {
 
         final WebServer aWebServer = webServerService.getWebServer(aWebServerName);
         final int beginIndex = destPath.lastIndexOf("/");
@@ -167,28 +167,25 @@ public class WebServerControlServiceImpl implements WebServerControlService {
 
         // back up the original file first
         final String host = aWebServer.getHost();
-        if (doBackup) {
-            CommandOutput commandOutput = commandExecutor.executeRemoteCommand(aWebServerName,
+        CommandOutput commandOutput = commandExecutor.executeRemoteCommand(aWebServerName,
+                host,
+                WebServerControlOperation.CHECK_FILE_EXISTS,
+                new WindowsWebServerPlatformCommandProvider(),
+                destPath);
+        if (commandOutput.getReturnCode().wasSuccessful()) {
+            String currentDateSuffix = new SimpleDateFormat(".yyyyMMdd_HHmmss").format(new Date());
+            final String destPathBackup = destPath + currentDateSuffix;
+            commandOutput = commandExecutor.executeRemoteCommand(
+                    aWebServerName,
                     host,
-                    WebServerControlOperation.CHECK_FILE_EXISTS,
+                    WebServerControlOperation.BACK_UP_CONFIG_FILE,
                     new WindowsWebServerPlatformCommandProvider(),
-                    destPath);
-            if (commandOutput.getReturnCode().wasSuccessful()) {
-                String currentDateSuffix = new SimpleDateFormat(".yyyyMMdd_HHmmss").format(new Date());
-                final String destPathBackup = destPath + currentDateSuffix;
-                commandOutput = commandExecutor.executeRemoteCommand(
-                        aWebServerName,
-                        host,
-                        WebServerControlOperation.BACK_UP_HTTP_CONFIG_FILE,
-                        new WindowsWebServerPlatformCommandProvider(),
-                        destPath,
-                        destPathBackup);
-                if (!commandOutput.getReturnCode().wasSuccessful()) {
-                    LOGGER.error("Failed to back up the " + destPath + " for " + aWebServerName);
-                    throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to back up " + destPath + " for " + aWebServerName);
-                } else {
-                    LOGGER.info("Successfully backed up " + destPath + " at " + host);
-                }
+                    destPath,
+                    destPathBackup);
+            if (!commandOutput.getReturnCode().wasSuccessful()) {
+                LOGGER.info("Failed to back up the " + destPath + " for " + aWebServerName + ". Continuing with secure copy.");
+            } else {
+                LOGGER.info("Successfully backed up " + destPath + " at " + host);
             }
         }
 
