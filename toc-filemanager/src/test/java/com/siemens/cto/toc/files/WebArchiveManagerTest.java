@@ -186,36 +186,6 @@ public class WebArchiveManagerTest {
     }
 
     @Test
-    public void testWriteArchiveTwice() throws IOException { 
-                
-        UploadWebArchiveRequest request = new UploadWebArchiveRequest(app, "filename.war", 1*1024*1024L, uploadedFile);
-        request.validate();
-        RepositoryFileInformation result1 = webArchiveManager.store(request);
-
-        app.setWarPath(result1.getPath().toAbsolutePath().toString());
-        
-        ByteBuffer buf = java.nio.ByteBuffer.allocate(1*1024*1024); // 1 Mb file
-        buf.asShortBuffer().put((short)0xc0de);
-        
-        UploadWebArchiveRequest uploadWebArchiveRequest = new UploadWebArchiveRequest(app, "filename2.war", 1*1024*1024L, new ByteArrayInputStream(buf.array()));
-        uploadWebArchiveRequest.validate();
-        RepositoryFileInformation result2 = webArchiveManager.store(uploadWebArchiveRequest);
-
-        assertNotNull(result2.getCauses());
-        assertEquals(1, result2.getCauses().length);
-        assertEquals(Type.DELETED, result2.getCauses()[0].getType());
-        assertEquals(1, result2.getCauses()[0].getCauses().length);
-        assertEquals(Type.FOUND, result2.getCauses()[0].getCauses()[0].getType());
-        assertEquals(1, result2.getCauses()[0].getCauses()[0].getCauses().length);
-        assertEquals(Type.STORED, result2.getCauses()[0].getCauses()[0].getCauses()[0].getType());
-
-        testResults(
-                1*1024*1024L,
-                result2
-                );  
-}
-
-    @Test
     public void testDeleteArchive() throws IOException {
         
         UploadWebArchiveRequest request = new UploadWebArchiveRequest(app, "filename.war", 1*1024*1024L, uploadedFile);
