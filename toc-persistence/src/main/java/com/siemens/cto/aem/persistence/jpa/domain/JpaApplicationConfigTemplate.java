@@ -22,7 +22,9 @@ import javax.persistence.*;
                 query = "UPDATE JpaApplicationConfigTemplate t SET t.templateContent = :templateContent WHERE t.app.name = :appName AND t.templateName = :templateName and t.jvm = :templateJvm"),
         @NamedQuery(name = JpaApplicationConfigTemplate.GET_APP_TEMPLATE,
                 query = "SELECT t FROM JpaApplicationConfigTemplate t where t.templateName = :tempName and t.app.name = :appName and t.jvm.name = :jvmName"),
-        @NamedQuery(name = JpaApplicationConfigTemplate.QUERY_DELETE_APP_TEMPLATE, query = "DELETE FROM JpaApplicationConfigTemplate t WHERE t.templateName = :templateName")
+        @NamedQuery(name = JpaApplicationConfigTemplate.QUERY_DELETE_APP_TEMPLATE, query = "DELETE FROM JpaApplicationConfigTemplate t WHERE t.templateName = :templateName"),
+        @NamedQuery(name = JpaApplicationConfigTemplate.GET_APP_TEMPLATE_RESOURCE_NAME,
+                query = "SELECT t.templateName FROM JpaApplicationConfigTemplate t WHERE t.app.name = :appName AND t.templateName = :templateName")
 })
 public class JpaApplicationConfigTemplate extends ConfigTemplate {
 
@@ -33,7 +35,10 @@ public class JpaApplicationConfigTemplate extends ConfigTemplate {
     public static final String GET_APP_TEMPLATE_META_DATA = "getAppTemplateMetaData";
     public static final String QUERY_DELETE_APP_TEMPLATE = "deleteAppTemplate";
 
+    public static final String QUERY_PARAM_APP_NAME = "appName";
     public static final String QUERY_PARAM_TEMPLATE_NAME = "templateName";
+
+    public static final String GET_APP_TEMPLATE_RESOURCE_NAME = "getAppTemplateResourceName";
 
     @ManyToOne(fetch = FetchType.EAGER)
     @Column(nullable = true)

@@ -297,5 +297,28 @@ public class ApplicationCrudServiceImpl extends AbstractCrudServiceImpl<JpaAppli
         q.setParameter(JpaApplicationConfigTemplate.QUERY_PARAM_TEMPLATE_NAME, name);
         return q.executeUpdate();
     }
+
+    @Override
+    public Application findApplication(final String groupName, final String appName) {
+        final Query q = entityManager.createNamedQuery(JpaApplication.QUERY_FIND_BY_GROUP_AND_APP_NAME);
+        q.setParameter(JpaApplication.GROUP_NAME_PARAM, groupName);
+        q.setParameter(JpaApplication.APP_NAME_PARAM, appName);
+        return JpaAppBuilder.appFrom((JpaApplication) q.getSingleResult());
+    }
+
+    @Override
+    public boolean checkAppResourceFileName(final String groupName, final String appName, final String fileName) {
+        final Application app = findApplication(groupName, appName);
+        if(app!=null) {
+            final Query q = entityManager.createNamedQuery(JpaApplicationConfigTemplate.GET_APP_TEMPLATE_RESOURCE_NAME);
+            q.setParameter(JpaApplicationConfigTemplate.QUERY_PARAM_APP_NAME, appName);
+            q.setParameter(JpaApplicationConfigTemplate.QUERY_PARAM_TEMPLATE_NAME, fileName);
+            final List<String> result = q.getResultList();
+            if(result!=null && result.size()==1) {
+                return true;
+            }
+        }
+        return false;
+    }
 }
 

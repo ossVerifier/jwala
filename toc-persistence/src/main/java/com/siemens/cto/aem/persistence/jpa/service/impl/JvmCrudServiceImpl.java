@@ -363,4 +363,19 @@ public class JvmCrudServiceImpl extends AbstractCrudServiceImpl<JpaJvm> implemen
         }
         return jvms;
     }
+
+    @Override
+    public boolean checkJvmResourceFileName(final String groupName, final String jvmName, final String fileName) {
+        final Jvm jvm = findJvm(jvmName, groupName);
+        if(jvm!=null) {
+            final Query q = entityManager.createNamedQuery(JpaJvmConfigTemplate.GET_JVM_TEMPLATE_RESOURCE_NAME);
+            q.setParameter(JpaJvmConfigTemplate.QUERY_PARAM_JVM_NAME, jvmName);
+            q.setParameter(JpaJvmConfigTemplate.QUERY_PARAM_TEMPLATE_NAME, fileName);
+            List<String> result = q.getResultList();
+            if (result != null && result.size() == 1) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

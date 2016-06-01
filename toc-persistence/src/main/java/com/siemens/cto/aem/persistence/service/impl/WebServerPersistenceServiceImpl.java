@@ -171,4 +171,9 @@ public class WebServerPersistenceServiceImpl implements WebServerPersistenceServ
     public List<WebServer> getWebServersByGroupName(String groupName) {
         return webServerCrudService.getWebServersByGroupName(groupName);
     }
+
+    @Override
+    public boolean checkWebServerResourceFileName(final String groupName, final String webServerName, final String fileName) {
+        return webServerCrudService.checkWebServerResourceFileName(groupName, webServerName, fileName);
+    }
 }

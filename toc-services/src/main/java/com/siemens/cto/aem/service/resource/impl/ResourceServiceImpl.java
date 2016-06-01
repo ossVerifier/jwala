@@ -473,4 +473,35 @@ public class ResourceServiceImpl implements ResourceService {
     public String getAppTemplate(final String groupName, final String appName, final String templateName) {
         return resourcePersistenceService.getAppTemplate(groupName, appName, templateName);
     }
+
+    @Override
+    public String checkFileExists(final String groupName, final String jvmName, final String webappName, final String webserverName, final String fileName) {
+        String result = null;
+        boolean resultBoolean = false;
+        if(groupName!=null && !groupName.isEmpty() && fileName!=null && !fileName.isEmpty()) {
+            if(jvmName!=null && !jvmName.isEmpty()) {
+                // Search for file in jvms
+                LOGGER.debug("searching for resource {} in group {} and jvm {}", fileName, groupName, jvmName);
+                resultBoolean = groupPersistenceService.checkGroupJvmResourceFileName(groupName, fileName) ||
+                        jvmPersistenceService.checkJvmResourceFileName(groupName, jvmName, fileName);
+            } else if(webappName!=null && !webappName.isEmpty()) {
+                // Search for file in webapps
+                LOGGER.debug("searching for resource {} in group {} and webapp {}", fileName, groupName, webappName);
+                resultBoolean = groupPersistenceService.checkGroupAppResourceFileName(groupName, fileName) ||
+                        applicationPersistenceService.checkAppResourceFileName(groupName, webappName, fileName);
+            } else if(webserverName!=null && !webserverName.isEmpty()) {
+                // Search for file in webservers
+                LOGGER.debug("searching for resource {} in group {} and webserver {}", fileName, groupName, webserverName);
+                resultBoolean = groupPersistenceService.checkGroupWebServerResourceFileName(groupName, fileName) ||
+                        webServerPersistenceService.checkWebServerResourceFileName(groupName, webserverName, fileName);
+            }
+        }
+        if(fileName==null) {
+            result = "{\"fileName\": " + fileName + ",\n\"exists\": " + resultBoolean + "}";
+        } else {
+            result = "{\"fileName\": \"" + fileName + "\",\n\"exists\": " + resultBoolean + "}";
+        }
+        LOGGER.debug("result: {}", result);
+        return result;
+    }
 }

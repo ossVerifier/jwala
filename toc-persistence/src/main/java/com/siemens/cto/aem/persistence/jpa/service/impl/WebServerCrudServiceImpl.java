@@ -410,4 +410,27 @@ public class WebServerCrudServiceImpl extends AbstractCrudServiceImpl<JpaWebServ
         }
         return webServers;
     }
+
+    @Override
+    public JpaWebServer findWebServer(String groupName, String webServerName) {
+        final Query q = entityManager.createNamedQuery(JpaWebServer.FIND_WEBSERVER_BY_GROUP_QUERY);
+        q.setParameter(JpaWebServer.WEB_SERVER_PARAM_NAME, webServerName);
+        q.setParameter(JpaWebServer.QUERY_PARAM_GROUP_NAME, groupName);
+        return (JpaWebServer) q.getSingleResult();
+    }
+
+    @Override
+    public boolean checkWebServerResourceFileName(String groupName, String webServerName, String fileName) {
+        final JpaWebServer jpaWebServer = findWebServer(groupName, webServerName);
+        if(jpaWebServer!=null) {
+            final Query q = entityManager.createNamedQuery(JpaWebServerConfigTemplate.GET_WEBSERVER_TEMPLATE_RESOURCE_NAME);
+            q.setParameter(JpaWebServerConfigTemplate.QUERY_PARAM_WEBSERVER_NAME, webServerName);
+            q.setParameter(JpaWebServerConfigTemplate.QUERY_PARAM_TEMPLATE_NAME, fileName);
+            final List<String> result = q.getResultList();
+            if(result!=null && result.size()==1) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

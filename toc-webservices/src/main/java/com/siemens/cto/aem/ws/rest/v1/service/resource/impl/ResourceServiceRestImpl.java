@@ -144,4 +144,9 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
     public Response getAppTemplate(final String groupName, final String appName, final String templateName) {
         return ResponseBuilder.ok(resourceService.getAppTemplate(groupName, appName, templateName));
     }
+
+    @Override
+    public Response checkFileExists(final String groupName, final String jvmName, final String webappName, final String webserverName, final String fileName) {
+        return ResponseBuilder.ok(resourceService.checkFileExists(groupName, jvmName, webappName, webserverName, fileName));
+    }
 }

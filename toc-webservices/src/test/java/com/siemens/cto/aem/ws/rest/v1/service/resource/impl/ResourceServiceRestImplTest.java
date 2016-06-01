@@ -188,4 +188,11 @@ public class ResourceServiceRestImplTest {
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
     }
 
+    @Test
+    public void testCheckFileExists() {
+        when(impl.checkFileExists(anyString(), anyString(), anyString(), anyString(), anyString())).thenReturn(new String());
+        Response response = cut.checkFileExists("test", "test", null, null, "test");
+        assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
+    }
+
 }

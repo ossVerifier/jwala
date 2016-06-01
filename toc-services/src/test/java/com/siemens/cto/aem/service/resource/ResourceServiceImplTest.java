@@ -441,4 +441,54 @@ public class ResourceServiceImplTest {
             fail(e.getMessage());
         }
     }
+
+    @Test
+    public void testCheckFileExists() throws IOException {
+        final String testGroup = "testGroup";
+        final String testFile = "testFile";
+        final String testJvm = "testJvm";
+        final String testApp = "testApp";
+        final String testWebServer = "testWebServer";
+        String result = resourceService.checkFileExists(null, null, null, null, null);
+        assertEquals("{\"fileName\": null,\n\"exists\": false}", result);
+        result = resourceService.checkFileExists(null, null, null, null, "");
+        assertEquals("{\"fileName\": \"\",\n\"exists\": false}", result);
+        result = resourceService.checkFileExists(testGroup, null, null, null, null);
+        assertEquals("{\"fileName\": null,\n\"exists\": false}", result);
+        result = resourceService.checkFileExists(null, null, null, null, testFile);
+        assertEquals("{\"fileName\": \"" + testFile + "\",\n\"exists\": false}", result);
+        result = resourceService.checkFileExists(testGroup, null, null, null, testFile);
+        assertEquals("{\"fileName\": \"" + testFile + "\",\n\"exists\": false}", result);
+
+        when(mockGroupPesistenceService.checkGroupJvmResourceFileName(testGroup, testFile)).thenReturn(false);
+        when(mockJvmPersistenceService.checkJvmResourceFileName(testGroup, testJvm, testFile)).thenReturn(true);
+        result = resourceService.checkFileExists(testGroup, testJvm, null, null, testFile);
+        assertEquals("{\"fileName\": \"" + testFile + "\",\n\"exists\": true}", result);
+
+        when(mockGroupPesistenceService.checkGroupJvmResourceFileName(testGroup, testFile)).thenReturn(false);
+        when(mockJvmPersistenceService.checkJvmResourceFileName(testGroup, testJvm, testFile)).thenReturn(false);
+        result = resourceService.checkFileExists(testGroup, testJvm, null, null, testFile);
+        assertEquals("{\"fileName\": \"" + testFile + "\",\n\"exists\": false}", result);
+
+        when(mockGroupPesistenceService.checkGroupAppResourceFileName(testGroup, testFile)).thenReturn(false);
+        when(mockAppPersistenceService.checkAppResourceFileName(testGroup, testApp, testFile)).thenReturn(false);
+        result = resourceService.checkFileExists(testGroup, null, testApp, null, testFile);
+        assertEquals("{\"fileName\": \"" + testFile + "\",\n\"exists\": false}", result);
+
+        when(mockGroupPesistenceService.checkGroupAppResourceFileName(testGroup, testFile)).thenReturn(false);
+        when(mockAppPersistenceService.checkAppResourceFileName(testGroup, testApp, testFile)).thenReturn(true);
+        result = resourceService.checkFileExists(testGroup, null, testApp, null, testFile);
+        assertEquals("{\"fileName\": \"" + testFile + "\",\n\"exists\": true}", result);
+
+        when(mockGroupPesistenceService.checkGroupWebServerResourceFileName(testGroup, testFile)).thenReturn(false);
+        when(mockWebServerPersistenceService.checkWebServerResourceFileName(testGroup, testWebServer, testFile)).thenReturn(false);
+        result = resourceService.checkFileExists(testGroup, null, null, testWebServer, testFile);
+        assertEquals("{\"fileName\": \"" + testFile + "\",\n\"exists\": false}", result);
+
+        when(mockGroupPesistenceService.checkGroupWebServerResourceFileName(testGroup, testFile)).thenReturn(false);
+        when(mockWebServerPersistenceService.checkWebServerResourceFileName(testGroup, testWebServer, testFile)).thenReturn(true);
+        result = resourceService.checkFileExists(testGroup, null, null, testWebServer, testFile);
+        assertEquals("{\"fileName\": \"" + testFile + "\",\n\"exists\": true}", result);
+        
+    }
 }

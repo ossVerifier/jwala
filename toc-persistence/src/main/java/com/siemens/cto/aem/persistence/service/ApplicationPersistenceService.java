@@ -52,4 +52,13 @@ public interface ApplicationPersistenceService {
 
     String getMetaData(String appName, String jvmName, String groupName, String templateName);
 
+    /**
+     * Check if the application contains the resource name.
+     * @param groupName the name of the group, which contains the webapp
+     * @param appName the name of the webapp, which contains the resource file
+     * @param fileName the filename of the resource
+     * @return true if the file already exists, else returns false
+     */
+    boolean checkAppResourceFileName(String groupName, String appName, String fileName);
+
 }

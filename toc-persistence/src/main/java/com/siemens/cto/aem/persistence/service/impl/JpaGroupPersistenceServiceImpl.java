@@ -292,4 +292,19 @@ public class JpaGroupPersistenceServiceImpl implements GroupPersistenceService {
     public int removeWeServerTemplate(final String groupName, final String templateName) {
         return groupCrudService.removeWeServerTemplate(groupName, templateName);
     }
+
+    @Override
+    public boolean checkGroupJvmResourceFileName(final String groupName, final String fileName) {
+        return groupCrudService.checkGroupJvmResourceFileName(groupName, fileName);
+    }
+
+    @Override
+    public boolean checkGroupAppResourceFileName(String groupName, String fileName) {
+        return groupCrudService.checkGroupAppResourceFileName(groupName, fileName);
+    }
+
+    @Override
+    public boolean checkGroupWebServerResourceFileName(String groupName, String fileName) {
+        return groupCrudService.checkGroupWebServerResourceFileName(groupName, fileName);
+    }
 }
