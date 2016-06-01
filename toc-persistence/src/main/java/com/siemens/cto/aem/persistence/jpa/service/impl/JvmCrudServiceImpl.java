@@ -1,15 +1,5 @@
 package com.siemens.cto.aem.persistence.jpa.service.impl;
 
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Scanner;
-
-import javax.persistence.EntityExistsException;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
-
 import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
@@ -26,8 +16,17 @@ import com.siemens.cto.aem.persistence.jpa.domain.resource.config.template.JpaJv
 import com.siemens.cto.aem.persistence.jpa.service.JvmCrudService;
 import com.siemens.cto.aem.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
 import com.siemens.cto.aem.persistence.jpa.service.exception.ResourceTemplateUpdateException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.persistence.*;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Scanner;
 
 public class JvmCrudServiceImpl extends AbstractCrudServiceImpl<JpaJvm> implements JvmCrudService {
+    private static final Logger LOGGER = LoggerFactory.getLogger(JvmCrudServiceImpl.class);
 
     @PersistenceContext(unitName = "aem-unit")
     private EntityManager entityManager;
@@ -243,11 +242,17 @@ public class JvmCrudServiceImpl extends AbstractCrudServiceImpl<JpaJvm> implemen
      */
     @Override
     public Jvm findJvm(final String jvmName, final String groupName) {
+        Jvm jvm = null;
         final Query q = entityManager.createNamedQuery(JpaJvm.QUERY_FIND_JVM_BY_GROUP_AND_JVM_NAME);
         q.setParameter("jvmName", jvmName);
         q.setParameter("groupName", groupName);
-        JpaJvm jpaJvm = (JpaJvm) q.getSingleResult();
-        return (new JvmBuilder(jpaJvm)).build();
+        try {
+            JpaJvm jpaJvm = (JpaJvm) q.getSingleResult();
+            jvm = (new JvmBuilder(jpaJvm)).build();
+        } catch(NoResultException e) {
+            LOGGER.warn("error with getting result for jvmName: {} and groupName {}, error: {}", jvmName, groupName, e);
+        }
+        return jvm;
     }
 
     @Override

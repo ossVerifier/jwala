@@ -21,7 +21,7 @@ import javax.persistence.*;
         @NamedQuery(name = JpaGroupJvmConfigTemplate.QUERY_DELETE_GRP_JVM_TEMPLATE, query = "DELETE FROM JpaGroupJvmConfigTemplate t WHERE t.templateName = :templateName"),
         @NamedQuery(name = JpaGroupJvmConfigTemplate.QUERY_DELETE_GROUP_JVM_TEMPLATE_BY_GROUP_NAME, query = "DELETE FROM JpaGroupJvmConfigTemplate t WHERE t.templateName = :templateName AND t.jpaGroup.name = :groupName"),
         @NamedQuery(name = JpaGroupJvmConfigTemplate.GET_GROUP_JVM_TEMPLATE_RESOURCE_NAME,
-                query = "SELECT t.templateName FROM JpaGroupJvmConfigTemplate t WHERE t.grp.name = :grpName AND t.templateName = :templateName")
+                query = "SELECT t.templateName FROM JpaGroupJvmConfigTemplate t WHERE t.grp.name = :groupName AND t.templateName = :templateName")
 })
 
 public class JpaGroupJvmConfigTemplate extends ConfigTemplate {
