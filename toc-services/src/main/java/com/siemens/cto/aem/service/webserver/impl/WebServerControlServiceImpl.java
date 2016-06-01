@@ -9,6 +9,7 @@ import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServerControlOperation;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState;
+import com.siemens.cto.aem.common.domain.model.webserver.message.WebServerHistoryEvent;
 import com.siemens.cto.aem.common.exception.InternalErrorException;
 import com.siemens.cto.aem.common.exec.*;
 import com.siemens.cto.aem.common.request.state.SetStateRequest;
@@ -159,7 +160,9 @@ public class WebServerControlServiceImpl implements WebServerControlService {
         final int beginIndex = destPath.lastIndexOf("/");
         final String fileName = destPath.substring(beginIndex + 1, destPath.length());
         if (!AemControl.Properties.USER_TOC_SCRIPTS_PATH.getValue().endsWith(fileName)) {
-            historyService.createHistory(getServerName(aWebServer), new ArrayList<>(aWebServer.getGroups()), WindowsWebServerNetOperation.SECURE_COPY.name() + " " + fileName, EventType.USER_ACTION, userId);
+            final String eventDescription = WindowsWebServerNetOperation.SECURE_COPY.name() + " " + fileName;
+            historyService.createHistory(getServerName(aWebServer), new ArrayList<>(aWebServer.getGroups()), eventDescription, EventType.USER_ACTION, userId);
+            messagingService.send(new WebServerHistoryEvent(aWebServer.getId(), eventDescription, userId, DateTime.now(), WebServerControlOperation.SECURE_COPY));
         }
 
         // back up the original file first

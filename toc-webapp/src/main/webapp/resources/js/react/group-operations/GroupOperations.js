@@ -284,6 +284,16 @@ var GroupOperations = React.createClass({
                             }
 
 
+                        } else if (newWebServerState.stateString === GroupOperations.SECURE_COPY){
+                              var commandStatusWidget = self.commandStatusWidgetMap[GroupOperations.getExtDivCompId(webServer.groupId.id)];
+                              if (commandStatusWidget !== undefined) {
+                                  commandStatusWidget.push({stateString: newWebServerState.stateString,
+                                                            asOf: newWebServerState.asOf.millis,
+                                                            message: newWebServerState.message,
+                                                            from: "Web Server " + webServer.name,
+                                                            userId: newWebServerState.userId},
+                                                            "action-status-font");
+                              }
                         } else {
                             var stateDetails = groupOperationsHelper.extractStateDetails(newWebServerState);
                             webServerStatusWidget.setStatus(stateDetails.state, stateDetails.asOf.millis, stateDetails.msg);
