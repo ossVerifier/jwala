@@ -5,6 +5,7 @@ import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.jvm.JvmControlOperation;
 import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
+import com.siemens.cto.aem.common.domain.model.jvm.message.JvmHistoryEvent;
 import com.siemens.cto.aem.common.domain.model.ssh.SshConfiguration;
 import com.siemens.cto.aem.common.domain.model.state.CurrentState;
 import com.siemens.cto.aem.common.domain.model.state.StateType;
@@ -185,7 +186,9 @@ public class JvmControlServiceImpl implements JvmControlService {
         final String fileName = destPath.substring(beginIndex + 1, destPath.length());
         // don't add any usage of the toc user internal directory to the history
         if (!AemControl.Properties.USER_TOC_SCRIPTS_PATH.getValue().endsWith(fileName)) {
-            historyService.createHistory(getServerName(jvm), new ArrayList<>(jvm.getGroups()), event + " " + fileName, EventType.USER_ACTION, userId);
+            final String eventDescription = event + " " + fileName;
+            historyService.createHistory(getServerName(jvm), new ArrayList<>(jvm.getGroups()), eventDescription, EventType.USER_ACTION, userId);
+            messagingService.send(new JvmHistoryEvent(jvm.getId(), eventDescription, userId, DateTime.now(), JvmControlOperation.SECURE_COPY));
         }
         CommandOutput commandOutput = remoteCommandExecutor.executeRemoteCommand(
                 jpaJvm.getName(),

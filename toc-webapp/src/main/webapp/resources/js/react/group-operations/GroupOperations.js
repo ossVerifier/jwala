@@ -317,7 +317,18 @@ var GroupOperations = React.createClass({
                                                           "error-status-font" : "action-status-font");
                             }
 
-                        } else {
+                        } else if (newJvmState.stateString === GroupOperations.SECURE_COPY){
+                            var commandStatusWidget = self.commandStatusWidgetMap[GroupOperations.getExtDivCompId(jvm.groupId.id)];
+                            if (commandStatusWidget !== undefined) {
+                                commandStatusWidget.push({stateString: newJvmState.stateString,
+                                                          asOf: newJvmState.asOf.millis,
+                                                          message: newJvmState.message,
+                                                          from: "JVM " + jvm.name,
+                                                          userId: newJvmState.userId},
+                                                          "action-status-font");
+                            }
+                        }
+                        else {
                             var stateDetails = groupOperationsHelper.extractStateDetails(newJvmState);
                             jvmStatusWidget.setStatus(stateDetails.state, stateDetails.asOf.millis, stateDetails.msg);
 
@@ -378,6 +389,7 @@ var GroupOperations = React.createClass({
         FAILED: "FAILED",
         START_SENT: "START SENT",
         STOP_SENT: "STOP SENT",
+        SECURE_COPY: "secureCopy",
         getExtDivCompId: function(groupId) {
             return "ext-comp-div-group-operations-table_" + groupId;
         },
