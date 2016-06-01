@@ -1,3 +1,8 @@
 .jvm-config-table-type-container {
     width:1074px;
 }
+
+.jvmStatusUrl {
+    color: gray;
+    padding: 0 0 3px 0;
+}
