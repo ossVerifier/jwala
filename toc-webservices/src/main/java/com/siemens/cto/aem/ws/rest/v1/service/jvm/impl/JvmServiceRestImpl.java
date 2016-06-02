@@ -100,7 +100,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
 
     @Override
     public Response createJvm(final JsonCreateJvm aJvmToCreate, final AuthenticatedUser aUser) {
-        LOGGER.info("Create JVM requested: {}", aJvmToCreate);
+        LOGGER.info("Create JVM requested: {} by user {}", aJvmToCreate, aUser.getUser().getId());
         final User user = aUser.getUser();
 
         // create the JVM in the database
@@ -134,13 +134,13 @@ public class JvmServiceRestImpl implements JvmServiceRest {
 
     @Override
     public Response updateJvm(final JsonUpdateJvm aJvmToUpdate, final AuthenticatedUser aUser) {
-        LOGGER.debug("Update JVM requested: {}", aJvmToUpdate);
+        LOGGER.info("Update JVM requested: {} by user {}", aJvmToUpdate, aUser.getUser().getId());
         return ResponseBuilder.ok(jvmService.updateJvm(aJvmToUpdate.toUpdateJvmRequest(), aUser.getUser()));
     }
 
     @Override
     public Response removeJvm(final Identifier<Jvm> aJvmId, final AuthenticatedUser user) {
-        LOGGER.info("Delete JVM requested: {}", aJvmId);
+        LOGGER.info("Delete JVM requested: {} by user {}", aJvmId, user.getUser().getId());
         final Jvm jvm = jvmService.getJvm(aJvmId);
         if (!jvm.getState().isStartedState()) {
             LOGGER.info("Removing JVM from the database and deleting the service for id {}", aJvmId.getId());
@@ -158,7 +158,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
 
     @Override
     public Response controlJvm(final Identifier<Jvm> aJvmId, final JsonControlJvm aJvmToControl, final AuthenticatedUser aUser) {
-        LOGGER.debug("Control JVM requested: {} {}", aJvmId, aJvmToControl);
+        LOGGER.debug("Control JVM requested: {} {} by user {}", aJvmId, aJvmToControl, aUser.getUser().getId());
         final CommandOutput commandOutput = jvmControlService.controlJvm(new ControlJvmRequest(aJvmId, aJvmToControl.toControlOperation()), aUser.getUser());
         if (commandOutput.getReturnCode().wasSuccessful()) {
             return ResponseBuilder.ok(commandOutput);
@@ -183,7 +183,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
 
     @Override
     public Response uploadConfigTemplate(final String jvmName, final AuthenticatedUser aUser, final String templateName) {
-        LOGGER.debug("Upload Archive requested: {} streaming (no size, count yet)", jvmName);
+        LOGGER.info("Upload Archive {} requested: {} streaming (no size, count yet) by user {}", templateName, jvmName, aUser.getUser().getId());
 
         // iframe uploads from IE do not understand application/json
         // as a response and will prompt for download. Fix: return
@@ -232,6 +232,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
 
     @Override
     public Response generateAndDeployJvm(final String jvmName, final AuthenticatedUser user) {
+        LOGGER.info("Generate and deploy JVM {} by user {}", jvmName, user.getUser().getId());
         Map<String, String> errorDetails = new HashMap<>();
         errorDetails.put("jvmName", jvmName);
         final Jvm jvm = jvmService.getJvm(jvmName);
@@ -451,6 +452,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
 
     @Override
     public Response generateAndDeployFile(final String jvmName, final String fileName, AuthenticatedUser user) {
+        LOGGER.info("Generate and deploy file {} to JVM {} by user {}", fileName, jvmName, user.getUser().getId());
         Jvm jvm = jvmService.getJvm(jvmName);
 
         // only one at a time per jvm
@@ -559,7 +561,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
                 throw new InternalErrorException(AemFaultType.BAD_STREAM, "Could not create " + stpJvmResourcesDir + " for JVM resources generation " + jvmName);
             }
             target = new JarOutputStream(new FileOutputStream(configJarPath));
-            add(new File("./" + jvmName + "/"), target);
+            addFileToTarget(new File("./" + jvmName + "/"), target);
             target.close();
             LOGGER.debug("created resources at {}, copying to {}", generatedDir.getAbsolutePath(), stpJvmResourcesDir);
             FileUtils.copyDirectoryToDirectory(generatedDir, jvmResourcesDirFile);
@@ -574,7 +576,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
         return jvmResourcesNameDir;
     }
 
-    private void add(File source, JarOutputStream target) throws IOException {
+    protected void addFileToTarget(File source, JarOutputStream target) throws IOException {
         BufferedInputStream in = null;
         try {
             if (source.isDirectory()) {
@@ -588,7 +590,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
                     target.closeEntry();
                 }
                 for (File nestedFile : source.listFiles())
-                    add(nestedFile, target);
+                    addFileToTarget(nestedFile, target);
                 return;
             }
 
@@ -629,7 +631,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
 
     @Override
     public Response diagnoseJvm(Identifier<Jvm> aJvmId) {
-
+        LOGGER.info("Diagnose JVM {}" , aJvmId);
         String diagnosis = jvmService.performDiagnosis(aJvmId);
 
         return Response.ok(diagnosis).build();
@@ -637,19 +639,22 @@ public class JvmServiceRestImpl implements JvmServiceRest {
 
     @Override
     public Response getResourceNames(final String jvmName) {
+        LOGGER.debug("Get resource names {}", jvmName);
         return ResponseBuilder.ok(jvmService.getResourceTemplateNames(jvmName));
     }
 
     @Override
     public Response getResourceTemplate(final String jvmName, final String resourceTemplateName,
                                         final boolean tokensReplaced) {
+        LOGGER.debug("Get resource template {} for JVM {} : tokens replaced={}", resourceTemplateName, jvmName, tokensReplaced);
         return ResponseBuilder.ok(jvmService.getResourceTemplate(jvmName, resourceTemplateName, tokensReplaced));
     }
 
     @Override
     public Response updateResourceTemplate(final String jvmName, final String resourceTemplateName,
                                            final String content) {
-
+        LOGGER.info("Update the resource template {} for JVM {}", resourceTemplateName, jvmName);
+        LOGGER.debug(content);
         try {
             return ResponseBuilder.ok(jvmService.updateResourceTemplate(jvmName, resourceTemplateName, content));
         } catch (ResourceTemplateUpdateException | NonRetrievableResourceTemplateContentException e) {
@@ -662,6 +667,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
 
     @Override
     public Response previewResourceTemplate(final String jvmName, final String groupName, final String template) {
+        LOGGER.debug("Preview resource template for JVM {} in group {} with content {}", jvmName, groupName, template);
         try {
             return ResponseBuilder.ok(jvmService.previewResourceTemplate(jvmName, groupName, template));
         } catch (RuntimeException rte) {

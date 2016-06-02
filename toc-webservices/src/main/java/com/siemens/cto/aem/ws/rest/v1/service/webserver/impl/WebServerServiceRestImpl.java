@@ -79,6 +79,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
 
     @Override
     public Response getWebServers(final Identifier<Group> aGroupId) {
+        LOGGER.debug("Get web servers for group {}", aGroupId);
         final List<WebServer> webServers;
         if (aGroupId == null) {
             webServers = webServerService.getWebServers();
@@ -96,7 +97,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
 
     @Override
     public Response createWebServer(final JsonCreateWebServer aWebServerToCreate, final AuthenticatedUser aUser) {
-        LOGGER.info("Create WS requested: {}", aWebServerToCreate);
+        LOGGER.info("Create WS requested: {} by user {}", aWebServerToCreate, aUser.getUser().getId());
         final WebServer webServer = webServerService.createWebServer(aWebServerToCreate.toCreateWebServerRequest(), aUser.getUser());
         Collection<Group> groups = webServer.getGroups();
         if (null != groups && groups.size() > 0) {
@@ -129,14 +130,14 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
 
     @Override
     public Response updateWebServer(final JsonUpdateWebServer aWebServerToCreate, final AuthenticatedUser aUser) {
-        LOGGER.debug("Update WS requested: {}", aWebServerToCreate);
+        LOGGER.debug("Update WS requested: {} by user {}", aWebServerToCreate, aUser.getUser().getId());
         return ResponseBuilder.ok(webServerService.updateWebServer(aWebServerToCreate.toUpdateWebServerRequest(),
                 aUser.getUser()));
     }
 
     @Override
     public Response removeWebServer(final Identifier<WebServer> aWsId, final AuthenticatedUser user) {
-        LOGGER.debug("Delete WS requested: {}", aWsId);
+        LOGGER.info("Delete WS requested: {} by user {}", aWsId, user.getUser().getId());
         final WebServer webServer = webServerService.getWebServer(aWsId);
         if (!webServerService.isStarted(webServer)) {
             LOGGER.info("Removing web server from the database and deleting the service for id {}", aWsId);
@@ -156,7 +157,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
     @Override
     public Response controlWebServer(final Identifier<WebServer> aWebServerId,
                                      final JsonControlWebServer aWebServerToControl, final AuthenticatedUser aUser) {
-        LOGGER.debug("Control Web Server requested: {} {}", aWebServerId, aWebServerToControl);
+        LOGGER.debug("Control Web Server requested: {} {} by user {}", aWebServerId, aWebServerToControl, aUser.getUser().getId());
         final CommandOutput commandOutput = webServerControlService.controlWebServer(
                 new ControlWebServerRequest(aWebServerId, aWebServerToControl.toControlOperation()),
                 aUser.getUser());
@@ -173,12 +174,14 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
 
     @Override
     public Response generateConfig(final String webServerName) {
+        LOGGER.info("Generate the httpd.conf for {}", webServerName);
         return Response.ok(webServerService.getResourceTemplate(webServerName, "httpd.conf", true,
                            resourceService.generateResourceGroup())).build();
     }
 
     @Override
     public Response generateAndDeployConfig(final String aWebServerName, final String resourceFileName, final AuthenticatedUser user) {
+        LOGGER.info("Generate and deploy config {} for web server {} by user {}", resourceFileName, aWebServerName, user.getUser().getId());
 
         // only one at a time per web server
         if (!wsWriteLocks.containsKey(aWebServerName)) {
@@ -248,6 +251,8 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
 
     @Override
     public Response generateAndDeployWebServer(final String aWebServerName, final AuthenticatedUser aUser) {
+        LOGGER.info("Generate and deploy web server {} by user {}", aWebServerName, aUser.getUser().getId());
+
         // only one at a time per web server
         if (!wsWriteLocks.containsKey(aWebServerName)) {
             wsWriteLocks.put(aWebServerName, new ReentrantReadWriteLock());
@@ -412,6 +417,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
 
     @Override
     public Response getHttpdConfig(Identifier<WebServer> aWebServerId) {
+        LOGGER.debug("Get httpd.conf for {}", aWebServerId);
         try {
             return Response.ok(webServerCommandService.getHttpdConf(aWebServerId)).build();
         } catch (CommandFailureException cmdFailEx) {
@@ -423,6 +429,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
 
     @Override
     public Response getResourceNames(final String wsName) {
+        LOGGER.debug("Get resource names for {}", wsName);
         return ResponseBuilder.ok(webServerService.getResourceTemplateNames(wsName));
     }
 
@@ -438,7 +445,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
 
     @Override
     public Response uploadConfigTemplate(String webServerName, AuthenticatedUser aUser, String templateName) {
-        LOGGER.debug("Upload Archive requested: {} streaming (no size, count yet)", webServerName);
+        LOGGER.info("Upload Archive {} requested: {} streaming (no size, count yet) by user {}", templateName, webServerName, aUser.getUser().getId());
 
         // iframe uploads from IE do not understand application/json
         // as a response and will prompt for download. Fix: return
@@ -488,12 +495,14 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
     @Override
     public Response getResourceTemplate(final String wsName, final String resourceTemplateName,
                                         final boolean tokensReplaced) {
+        LOGGER.debug("Get resource template {} for web server {} : tokens replaced={}", resourceTemplateName, wsName, tokensReplaced);
         return ResponseBuilder.ok(webServerService.getResourceTemplate(wsName, resourceTemplateName, tokensReplaced, resourceService.generateResourceGroup()));
     }
 
     @Override
     public Response updateResourceTemplate(final String wsName, final String resourceTemplateName, final String content) {
-
+        LOGGER.info("Update the resource template {} for web server {}", resourceTemplateName, wsName);
+        LOGGER.debug(content);
         try {
             return ResponseBuilder.ok(webServerService.updateResourceTemplate(wsName, resourceTemplateName, content));
         } catch (ResourceTemplateUpdateException | NonRetrievableResourceTemplateContentException e) {
@@ -506,6 +515,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
 
     @Override
     public Response previewResourceTemplate(final String webServerName, final String groupName, String template) {
+        LOGGER.debug("Preview resource template {} for web server {} in group {}", template, webServerName, groupName);
         try {
             return ResponseBuilder.ok(webServerService.previewResourceTemplate(webServerName, groupName, template));
         } catch (RuntimeException rte) {

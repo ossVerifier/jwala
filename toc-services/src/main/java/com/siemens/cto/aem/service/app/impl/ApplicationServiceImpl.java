@@ -226,17 +226,6 @@ public class ApplicationServiceImpl implements ApplicationService {
         return applicationPersistenceService.updateResourceTemplate(appName, resourceTemplateName, template, jvmName, groupName);
     }
 
-    /**
-     * Returns the extension of the filename.
-     * e.g. roleMapping.properties will return "properties".
-     *
-     * @param fileName
-     * @return extension of the filename.
-     */
-    protected static String getFileExtension(final String fileName) {
-        return fileName.substring(fileName.lastIndexOf(".") + 1);
-    }
-
     @Override
     @Transactional
     // TODO: Have an option to do a hot deploy or not.

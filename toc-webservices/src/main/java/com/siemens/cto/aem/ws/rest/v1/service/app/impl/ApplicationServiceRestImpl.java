@@ -95,7 +95,7 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
 
     @Override
     public Response removeApplication(final Identifier<Application> anAppToRemove, final AuthenticatedUser aUser) {
-        LOGGER.debug("Delete application requested: {}", anAppToRemove);
+        LOGGER.info("Delete application requested: {}", anAppToRemove);
         service.removeApplication(anAppToRemove, aUser.getUser());
         return ResponseBuilder.ok();
     }
@@ -152,7 +152,7 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
 
     @Override
     public Response deleteWebArchive(final Identifier<Application> appToRemoveWAR, final AuthenticatedUser aUser) {
-        LOGGER.debug("Delete Archive requested: {}", appToRemoveWAR);
+        LOGGER.info("Delete Archive requested: {}", appToRemoveWAR);
 
         Application updated = service.deleteWebArchive(appToRemoveWAR, aUser.getUser());
 
@@ -189,12 +189,14 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
 
     @Override
     public Response getResourceNames(final String appName) {
+        LOGGER.debug("get resource names for {}", appName);
         return ResponseBuilder.ok(service.getResourceTemplateNames(appName));
     }
 
     @Override
     public Response getResourceTemplate(final String appName, final String groupName, final String jvmName,
                                         final String resourceTemplateName, final boolean tokensReplaced) {
+        LOGGER.debug("get resource template {} for app {} in group {} associated with JVM {} : tokens replaced={}", resourceTemplateName, appName, groupName, jvmName, tokensReplaced);
         return ResponseBuilder.ok(service.getResourceTemplate(appName, groupName, jvmName, resourceTemplateName, resourceService.generateResourceGroup(), tokensReplaced));
     }
 
@@ -204,6 +206,8 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
                                            final String jvmName,
                                            final String groupName,
                                            final String content) {
+        LOGGER.info("Update resource template {} for app {} associated to JVM {} in group {}", resourceTemplateName, appName, jvmName, groupName);
+        LOGGER.debug(content);
 
         try {
             return ResponseBuilder.ok(service.updateResourceTemplate(appName, resourceTemplateName, content, jvmName, groupName));
@@ -218,6 +222,8 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
     @Override
     public Response deployConf(final String appName, final String groupName, final String jvmName,
                                final String resourceTemplateName, final AuthenticatedUser authUser) {
+
+        LOGGER.info("Deploying the application conf file {} for app {} to JVM {} in group {} by ", resourceTemplateName, appName, jvmName, groupName, authUser.getUser().getId());
 
         final CommandOutput execData =
                 service.deployConf(appName, groupName, jvmName, resourceTemplateName, resourceService.generateResourceGroup(), authUser.getUser());
@@ -234,7 +240,7 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
 
     @Override
     public Response uploadConfigTemplate(String appName, AuthenticatedUser aUser, String appXmlFileName, String jvmName) {
-        LOGGER.debug("Upload Archive requested: {} streaming (no size, count yet)", appName);
+        LOGGER.info("Upload config template {} for app associated with JVM {} requested: {} streaming (no size, count yet)", appName, appXmlFileName, jvmName);
 
         // iframe uploads from IE do not understand application/json
         // as a response and will prompt for download. Fix: return
@@ -290,6 +296,7 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
     @Override
     public Response previewResourceTemplate(final String appName, final String groupName, final String jvmName,
                                             final String template) {
+        LOGGER.debug("Preview resource template for app {} in group {} for JVM {} with content {}", appName, groupName, jvmName, template);
         try {
             return ResponseBuilder.ok(service.previewResourceTemplate(appName, groupName, jvmName, template, resourceService.generateResourceGroup()));
         } catch (RuntimeException rte) {

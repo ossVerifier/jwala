@@ -171,6 +171,17 @@ public class ApplicationServiceImplTest {
     }
 
     @Test
+    public void testGetApplicationByName() {
+        when(applicationPersistenceService.getApplication(anyString())).thenReturn(mockApplication);
+        final Application application = applicationService.getApplication("TOC 1.0");
+        assertEquals(new Identifier<Application>(1L), application.getId());
+        assertEquals(groupId, application.getGroup().getId());
+        assertEquals("TOC 1.0", application.getName());
+        assertEquals("the-ws-group-name", application.getGroup().getName());
+        assertEquals("the-ws-group-name/toc-1.0.war", application.getWarPath());
+    }
+
+    @Test
     public void testAllGet() {
         when(applicationPersistenceService.getApplications()).thenReturn(applications2);
         final List<Application> apps = applicationService.getApplications();
