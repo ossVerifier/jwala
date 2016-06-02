@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 
 public class JschBuilder {
 
@@ -35,11 +36,19 @@ public class JschBuilder {
         LOGGER.debug("Initializing JSch Logger");
         JSch.setLogger(new JschLogger());
         final JSch jsch = new JSch();
-        if (null != knownHostsFileName && new File(knownHostsFileName).exists()) {
-            jsch.setKnownHosts(knownHostsFileName);
-        }
-        if (null != privateKeyFileName && new File(privateKeyFileName).exists()) {
-            jsch.addIdentity(privateKeyFileName);
+        try {
+            if (null != knownHostsFileName && new File(knownHostsFileName).exists()) {
+                jsch.setKnownHosts(knownHostsFileName);
+            }
+            if (null != privateKeyFileName && new File(privateKeyFileName).exists()) {
+                jsch.addIdentity(privateKeyFileName);
+            }
+        } catch(JSchException e){
+            if (e.getCause() instanceof FileNotFoundException){
+                LOGGER.error(e.getMessage());
+            } else {
+                throw new JSchException();
+            }
         }
         return jsch;
     }
