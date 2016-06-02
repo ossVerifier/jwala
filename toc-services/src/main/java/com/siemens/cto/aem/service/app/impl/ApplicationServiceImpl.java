@@ -6,6 +6,8 @@ import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.common.domain.model.jvm.JvmControlOperation;
+import com.siemens.cto.aem.common.domain.model.jvm.message.JvmHistoryEvent;
 import com.siemens.cto.aem.common.domain.model.resource.ContentType;
 import com.siemens.cto.aem.common.domain.model.resource.ResourceGroup;
 import com.siemens.cto.aem.common.domain.model.resource.ResourceTemplateMetaData;
@@ -18,16 +20,19 @@ import com.siemens.cto.aem.common.request.app.*;
 import com.siemens.cto.aem.control.AemControl;
 import com.siemens.cto.aem.control.application.command.impl.WindowsApplicationPlatformCommandProvider;
 import com.siemens.cto.aem.control.command.RemoteCommandExecutor;
+import com.siemens.cto.aem.control.jvm.command.windows.WindowsJvmNetOperation;
 import com.siemens.cto.aem.exception.CommandFailureException;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaApplicationConfigTemplate;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
+import com.siemens.cto.aem.persistence.jpa.type.EventType;
 import com.siemens.cto.aem.persistence.service.ApplicationPersistenceService;
 import com.siemens.cto.aem.persistence.service.JvmPersistenceService;
+import com.siemens.cto.aem.service.HistoryService;
+import com.siemens.cto.aem.service.MessagingService;
 import com.siemens.cto.aem.service.app.ApplicationService;
 import com.siemens.cto.aem.service.app.PrivateApplicationService;
 import com.siemens.cto.aem.service.group.GroupService;
 import com.siemens.cto.aem.template.ResourceFileGenerator;
-import com.siemens.cto.toc.files.FileManager;
 import com.siemens.cto.toc.files.RepositoryFileInformation;
 import com.siemens.cto.toc.files.RepositoryFileInformation.Type;
 import com.siemens.cto.toc.files.WebArchiveManager;
@@ -35,6 +40,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -77,24 +83,25 @@ public class ApplicationServiceImpl implements ApplicationService {
     private Map<String, ReentrantReadWriteLock> writeLock = new HashMap<>();
 
     private GroupService groupService;
-
-    @Autowired
-    private final FileManager fileManager;
+    private final HistoryService historyService;
+    private final MessagingService messagingService;
 
     public ApplicationServiceImpl(final ApplicationPersistenceService applicationPersistenceService,
                                   final JvmPersistenceService jvmPersistenceService,
                                   final RemoteCommandExecutor<ApplicationControlOperation> applicationCommandService,
                                   final GroupService groupService,
-                                  final FileManager fileManager,
                                   final WebArchiveManager webArchiveManager,
-                                  final PrivateApplicationService privateApplicationService) {
+                                  final PrivateApplicationService privateApplicationService,
+                                  final HistoryService historyService,
+                                  final MessagingService messagingService) {
         this.applicationPersistenceService = applicationPersistenceService;
         this.jvmPersistenceService = jvmPersistenceService;
         this.applicationCommandExecutor = applicationCommandService;
         this.groupService = groupService;
-        this.fileManager = fileManager;
         this.webArchiveManager = webArchiveManager;
         this.privateApplicationService = privateApplicationService;
+        this.historyService = historyService;
+        this.messagingService = messagingService;
         executorService = Executors.newFixedThreadPool(Integer.parseInt(ApplicationProperties.get("resources.thread-task-executor.pool.size", "25")));
     }
 
@@ -269,8 +276,13 @@ public class ApplicationServiceImpl implements ApplicationService {
             } else {
                 srcPath = confFile.getAbsolutePath().replace("\\", "/");
             }
-            // back up the original file first only if the war was uploaded
-            // if the war wasn't uploaded yet then there is no file to backup
+
+            final String eventDescription = WindowsJvmNetOperation.SECURE_COPY.name() + " " + resourceTemplateName;
+            final String id = user.getId();
+
+            historyService.createHistory("JVM " + jvm.getJvmName(), new ArrayList<Group>(jvm.getGroups()), eventDescription, EventType.USER_ACTION, id);
+            messagingService.send(new JvmHistoryEvent(jvm.getId(), eventDescription, id, DateTime.now(), JvmControlOperation.SECURE_COPY));
+
             final String deployJvmName = jvm.getJvmName();
             final String hostName = jvm.getHostName();
             CommandOutput commandOutput = applicationCommandExecutor.executeRemoteCommand(
@@ -290,7 +302,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                         destPath,
                         destPathBackup);
                 if (!commandOutput.getReturnCode().wasSuccessful()) {
-                    throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to back up " + destPath + " for " + jvm);
+                    LOGGER.error("Failed to back up file {} for {}. Continuing with secure copy.", destPath, app.getName());
                 }
             }
             final CommandOutput execData = applicationCommandExecutor.executeRemoteCommand(
@@ -393,7 +405,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         }
 
     }
-    
+
     @Override
     @Transactional
     public void copyApplicationWarToHost(Application application, String hostName) {

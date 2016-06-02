@@ -13,8 +13,8 @@ public enum WebServerControlOperation {
     VIEW_HTTP_CONFIG_FILE("viewHttpConfigFile", null),
     SECURE_COPY("secureCopy", null),
     BACK_UP_CONFIG_FILE("backUpConfigFile", null),
-    DELETE_SERVICE("deleteService", WebServerReachableState.WS_UNREACHABLE),
-    INVOKE_SERVICE("invokeWSBat", null),
+    DELETE_SERVICE("deleteService", null),
+    INVOKE_SERVICE("invokeService", null),
     CREATE_DIRECTORY("mkdir", null),
     CHANGE_FILE_MODE("chmod", null),
     CHECK_FILE_EXISTS("test", null);

@@ -284,7 +284,7 @@ var GroupOperations = React.createClass({
                             }
 
 
-                        } else if (newWebServerState.stateString === GroupOperations.SECURE_COPY){
+                        } else if (newWebServerState.stateString === GroupOperations.SECURE_COPY || newWebServerState.stateString === GroupOperations.INVOKE_SERVICE || newWebServerState.stateString === GroupOperations.DELETE_SERVICE){
                               var commandStatusWidget = self.commandStatusWidgetMap[GroupOperations.getExtDivCompId(webServer.groupId.id)];
                               if (commandStatusWidget !== undefined) {
                                   commandStatusWidget.push({stateString: newWebServerState.stateString,
@@ -327,7 +327,7 @@ var GroupOperations = React.createClass({
                                                           "error-status-font" : "action-status-font");
                             }
 
-                        } else if (newJvmState.stateString === GroupOperations.SECURE_COPY){
+                        } else if (newJvmState.stateString === GroupOperations.SECURE_COPY || newJvmState.stateString === GroupOperations.INVOKE_SERVICE || newJvmState.stateString === GroupOperations.DELETE_SERVICE){
                             var commandStatusWidget = self.commandStatusWidgetMap[GroupOperations.getExtDivCompId(jvm.groupId.id)];
                             if (commandStatusWidget !== undefined) {
                                 commandStatusWidget.push({stateString: newJvmState.stateString,
@@ -400,6 +400,8 @@ var GroupOperations = React.createClass({
         START_SENT: "START SENT",
         STOP_SENT: "STOP SENT",
         SECURE_COPY: "secureCopy",
+        INVOKE_SERVICE: "invokeService",
+        DELETE_SERVICE: "deleteService",
         getExtDivCompId: function(groupId) {
             return "ext-comp-div-group-operations-table_" + groupId;
         },

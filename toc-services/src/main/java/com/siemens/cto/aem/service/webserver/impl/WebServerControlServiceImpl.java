@@ -84,9 +84,13 @@ public class WebServerControlServiceImpl implements WebServerControlService {
                     aUser.getId());
 
             // Send a message to the UI about the control operation.
-            if (controlWebServerRequest.getControlOperation().getOperationState() != null) {
+            if (controlOperation.getOperationState() != null) {
                 messagingService.send(new CurrentState<>(webServer.getId(), controlWebServerRequest.getControlOperation().getOperationState(),
                         aUser.getId(), DateTime.now(), StateType.WEB_SERVER));
+            } else if (controlOperation.equals(WebServerControlOperation.DELETE_SERVICE)
+                    || controlOperation.equals(WebServerControlOperation.INVOKE_SERVICE)
+                    || controlOperation.equals(WebServerControlOperation.SECURE_COPY)){
+                messagingService.send(new WebServerHistoryEvent(webServer.getId(), controlOperation.name(), aUser.getId(), DateTime.now(), controlOperation));
             }
 
             final WindowsWebServerPlatformCommandProvider windowsJvmPlatformCommandProvider = new WindowsWebServerPlatformCommandProvider();

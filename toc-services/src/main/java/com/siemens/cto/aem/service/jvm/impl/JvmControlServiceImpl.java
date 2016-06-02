@@ -92,6 +92,10 @@ public class JvmControlServiceImpl implements JvmControlService {
             if (ctrlOp.getOperationState() != null) {
                 messagingService.send(new CurrentState<>(jvm.getId(), ctrlOp.getOperationState(), aUser.getId(), DateTime.now(),
                         StateType.JVM));
+            } else if (controlOperation.equals(JvmControlOperation.DELETE_SERVICE)
+                    || controlOperation.equals(JvmControlOperation.INVOKE_SERVICE)
+                    || controlOperation.equals(JvmControlOperation.SECURE_COPY)){
+                messagingService.send(new JvmHistoryEvent(jvm.getId(), controlOperation.name(), aUser.getId(), DateTime.now(), controlOperation));
             }
 
             final WindowsJvmPlatformCommandProvider windowsJvmPlatformCommandProvider = new WindowsJvmPlatformCommandProvider();

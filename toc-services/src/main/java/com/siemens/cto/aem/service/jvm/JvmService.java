@@ -63,7 +63,7 @@ public interface JvmService {
      */
     void pingAndUpdateJvmState(Jvm jvm);
 
-    void deployApplicationContextXMLs(Jvm jvm);
+    void deployApplicationContextXMLs(Jvm jvm, User user);
 
     Long getJvmStartedCount(String groupName);
 

@@ -303,7 +303,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
             deployJvmResourceFiles(jvm, user);
 
             // deploy any application context xml's in the group
-            deployApplicationContextXMLs(jvm);
+            deployApplicationContextXMLs(jvm, user);
 
             // re-install the service
             installJvmWindowsService(jvm, user);
@@ -366,9 +366,9 @@ public class JvmServiceRestImpl implements JvmServiceRest {
         }
     }
 
-    protected void deployApplicationContextXMLs(Jvm jvm) {
+    protected void deployApplicationContextXMLs(Jvm jvm, AuthenticatedUser user) {
         LOGGER.info("Deploying any application XMLs for applications configured to the group for {}", jvm.getJvmName());
-        jvmService.deployApplicationContextXMLs(jvm);
+        jvmService.deployApplicationContextXMLs(jvm, user.getUser());
     }
 
     protected void installJvmWindowsService(Jvm jvm, AuthenticatedUser user) {
