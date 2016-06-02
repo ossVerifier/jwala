@@ -20,7 +20,9 @@ import javax.persistence.*;
         @NamedQuery(name = JpaGroupAppConfigTemplate.UPDATE_GROUP_APP_TEMPLATE_CONTENT,
                 query = "UPDATE JpaGroupAppConfigTemplate t SET t.templateContent = :templateContent WHERE t.grp.name = :grpName AND t.app.name = :appName AND t.templateName = :templateName"),
         @NamedQuery(name = JpaGroupAppConfigTemplate.QUERY_DELETE_GRP_APP_TEMPLATE, query = "DELETE FROM JpaGroupAppConfigTemplate t WHERE t.templateName = :templateName"),
-        @NamedQuery(name = JpaGroupAppConfigTemplate.QUERY_APP_RESOURCE_NAMES, query = "SELECT t.templateName FROM JpaGroupAppConfigTemplate t WHERE t.grp.name = :grpName AND t.app.name = :appName")
+        @NamedQuery(name = JpaGroupAppConfigTemplate.QUERY_APP_RESOURCE_NAMES, query = "SELECT t.templateName FROM JpaGroupAppConfigTemplate t WHERE t.grp.name = :grpName AND t.app.name = :appName"),
+        @NamedQuery(name = JpaGroupAppConfigTemplate.GET_GROUP_APP_TEMPLATE_RESOURCE_NAME,
+                query = "SELECT t.templateName FROM JpaGroupAppConfigTemplate t WHERE t.grp.name = :grpName AND t.templateName = :templateName")
 })
 public class JpaGroupAppConfigTemplate extends ConfigTemplate {
     public static final String GET_GROUP_APP_TEMPLATE_RESOURCE_NAMES = "getGroupAppTemplateResourceNames";
@@ -33,6 +35,8 @@ public class JpaGroupAppConfigTemplate extends ConfigTemplate {
     public static final String QUERY_PARAM_APP_NAME = "appName";
     public static final String QUERY_PARAM_TEMPLATE_NAME = "templateName";
     public static final java.lang.String QUERY_APP_RESOURCE_NAMES = "getAppResourceNames";
+
+    public static final String GET_GROUP_APP_TEMPLATE_RESOURCE_NAME = "getGroupAppTemplateResourceName";
 
     @ManyToOne(fetch = FetchType.EAGER)
     @Column(nullable = true)

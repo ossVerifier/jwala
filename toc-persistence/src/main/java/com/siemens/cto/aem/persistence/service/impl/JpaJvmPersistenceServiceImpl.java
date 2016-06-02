@@ -239,4 +239,9 @@ public class JpaJvmPersistenceServiceImpl implements JvmPersistenceService {
         }
         return jvmsWithWebApps;
     }
+
+    @Override
+    public boolean checkJvmResourceFileName(final String groupName, final String jvmName, final String fileName) {
+        return jvmCrudService.checkJvmResourceFileName(groupName, jvmName, fileName);
+    }
 }

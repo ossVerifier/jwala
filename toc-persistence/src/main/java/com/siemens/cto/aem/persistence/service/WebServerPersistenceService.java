@@ -74,4 +74,13 @@ public interface WebServerPersistenceService {
     List<WebServer> getWebServersByGroupName(String groupName);
 
     String getResourceTemplateMetaData(String webServerName, String resourceTemplateName);
+
+    /**
+     *
+     * @param groupName
+     * @param webServerName
+     * @param fileName
+     * @return
+     */
+    boolean checkWebServerResourceFileName(String groupName, String webServerName, String fileName);
 }

@@ -293,9 +293,10 @@ var ResourcesConfig = React.createClass({
                                                       this.refs.xmlTabs.state.entity.jvmName, formData).then(function(response){
                 self.refs.selectMetaDataAndTemplateFilesModalDlg.close();
                 self.refreshResourcePane();
-            }).caught(function(e){
-                console.log(e);
-                $.errorAlert("Error creating resource template!", "Error", true);
+            }).caught(function(response){
+                console.log(response);
+                var errMsg = response.responseJSON ? response.responseJSON.applicationResponseContent : "";
+                $.errorAlert("Error creating resource template! " + errMsg, "Error", true);
             });
         }
      },

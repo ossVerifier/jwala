@@ -18,6 +18,8 @@ import com.siemens.cto.aem.persistence.jpa.domain.builder.JpaAppBuilder;
 import com.siemens.cto.aem.persistence.jpa.service.ApplicationCrudService;
 import com.siemens.cto.aem.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
 import com.siemens.cto.aem.persistence.jpa.service.exception.ResourceTemplateUpdateException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.persistence.EntityExistsException;
 import javax.persistence.NoResultException;
@@ -29,6 +31,7 @@ import java.util.List;
 import java.util.Scanner;
 
 public class ApplicationCrudServiceImpl extends AbstractCrudServiceImpl<JpaApplication> implements ApplicationCrudService {
+    private static final Logger LOGGER = LoggerFactory.getLogger(ApplicationCrudServiceImpl.class);
 
     public ApplicationCrudServiceImpl() {
     }
@@ -296,6 +299,35 @@ public class ApplicationCrudServiceImpl extends AbstractCrudServiceImpl<JpaAppli
         final Query q = entityManager.createNamedQuery(JpaApplicationConfigTemplate.QUERY_DELETE_APP_TEMPLATE);
         q.setParameter(JpaApplicationConfigTemplate.QUERY_PARAM_TEMPLATE_NAME, name);
         return q.executeUpdate();
+    }
+
+    @Override
+    public Application findApplication(final String groupName, final String appName) {
+        Application application = null;
+        final Query q = entityManager.createNamedQuery(JpaApplication.QUERY_FIND_BY_GROUP_AND_APP_NAME);
+        q.setParameter(JpaApplication.GROUP_NAME_PARAM, groupName);
+        q.setParameter(JpaApplication.APP_NAME_PARAM, appName);
+        try {
+            application = JpaAppBuilder.appFrom((JpaApplication) q.getSingleResult());
+        } catch (NoResultException e) {
+            LOGGER.warn("error getting data for appName: {} from group: {}, error: {}", appName, groupName, e);
+        }
+        return application;
+    }
+
+    @Override
+    public boolean checkAppResourceFileName(final String groupName, final String appName, final String fileName) {
+        final Application app = findApplication(groupName, appName);
+        if(app!=null) {
+            final Query q = entityManager.createNamedQuery(JpaApplicationConfigTemplate.GET_APP_TEMPLATE_RESOURCE_NAME);
+            q.setParameter(JpaApplicationConfigTemplate.QUERY_PARAM_APP_NAME, appName);
+            q.setParameter(JpaApplicationConfigTemplate.QUERY_PARAM_TEMPLATE_NAME, fileName);
+            final List<String> result = q.getResultList();
+            if(result!=null && result.size()==1) {
+                return true;
+            }
+        }
+        return false;
     }
 }
 

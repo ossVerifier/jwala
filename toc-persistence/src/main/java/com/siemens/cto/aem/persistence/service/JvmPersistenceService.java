@@ -89,4 +89,13 @@ public interface JvmPersistenceService {
     List<Jvm> getJvmsAndWebAppsByGroupName(String groupName);
 
     String getResourceTemplateMetaData(String jvmName, String fileName);
+
+    /**
+     * This method checks if a resource file exists for a jvm.
+     * @param groupName This is the of the group under which the jvm should exist
+     * @param jvmName This is the name of the jvm for which we check if the resource file exists
+     * @param filename This is the name of the resource file that needs to be checked
+     * @return true if the file exists, else returns false
+     */
+    boolean checkJvmResourceFileName(String groupName, String jvmName, String filename);
 }

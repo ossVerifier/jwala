@@ -21,7 +21,8 @@ import java.util.List;
     @NamedQuery(name = JpaWebServer.QUERY_GET_WS_COUNT_BY_STATE_AND_GROUP_NAME, query = "SELECT COUNT(1) FROM JpaWebServer w WHERE w.state = :state AND w.groups.name = :groupName"),
     @NamedQuery(name = JpaWebServer.QUERY_GET_WS_COUNT_BY_GROUP_NAME, query = "SELECT COUNT(1) FROM JpaWebServer w WHERE w.groups.name = :groupName"),
     @NamedQuery(name = JpaWebServer.QUERY_GET_WS_AND_ITS_GROUPS, query = "SELECT w FROM JpaWebServer w LEFT JOIN FETCH w.groups WHERE w.id = :id"),
-    @NamedQuery(name = JpaWebServer.QUERY_GET_WS_BY_GROUP_NAME, query = "SELECT w FROM JpaWebServer w WHERE w.groups.name = :groupName")
+    @NamedQuery(name = JpaWebServer.QUERY_GET_WS_BY_GROUP_NAME, query = "SELECT w FROM JpaWebServer w WHERE w.groups.name = :groupName"),
+    @NamedQuery(name = JpaWebServer.FIND_WEBSERVER_BY_GROUP_QUERY, query = "SELECT w FROM JpaWebServer w WHERE w.name = :wsName AND w.groups.name = :groupName")
 })
 public class JpaWebServer extends AbstractEntity<JpaWebServer> {
 
@@ -29,6 +30,7 @@ public class JpaWebServer extends AbstractEntity<JpaWebServer> {
     public static final String WEB_SERVER_PARAM_NAME = "wsName";
     public static final String FIND_WEB_SERVER_BY_QUERY = "findWebServerByNameQuery";
     public static final String FIND_JVMS_QUERY = "findJvmsQuery";
+    public static final String FIND_WEBSERVER_BY_GROUP_QUERY = "findWebServerByGroupQuery";
 
     public static final String QUERY_UPDATE_STATE_BY_ID = "updateWebServerStateById";
     public static final String QUERY_UPDATE_ERROR_STATUS_BY_ID = "updateWebServerErrorStatusById";

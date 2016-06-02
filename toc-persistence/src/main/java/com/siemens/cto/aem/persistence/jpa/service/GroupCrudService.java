@@ -89,4 +89,28 @@ public interface GroupCrudService extends CrudService<JpaGroup> {
     String getGroupJvmResourceTemplateMetaData(String groupName, String fileName);
 
     String getGroupWebServerResourceTemplateMetaData(String groupName, String resourceTemplateName);
+
+    /**
+     * This method checks if the group jvm template contains a file name/template name.
+     * @param groupName name of the group in which the file needs to be searched in
+     * @param fileName name of the file to be searched
+     * @return true if the file exists else false
+     */
+    boolean checkGroupJvmResourceFileName(String groupName, String fileName);
+
+    /**
+     * This method checks if the group webserver template contains a file name/template name.
+     * @param groupName name of the group in which the file needs to be searched in
+     * @param fileName name of the file to be searched
+     * @return true if the file exists else false
+     */
+    boolean checkGroupAppResourceFileName(String groupName, String fileName);
+
+    /**
+     * This method checks if the group webserver template contains a file name/template name.
+     * @param groupName name of the group in which the file needs to be searched in
+     * @param fileName name of the file to be searched
+     * @return true if the file exists else false
+     */
+    boolean checkGroupWebServerResourceFileName(String groupName, String fileName);
 }

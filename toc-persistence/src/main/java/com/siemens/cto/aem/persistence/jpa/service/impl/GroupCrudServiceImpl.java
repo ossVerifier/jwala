@@ -15,10 +15,7 @@ import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateReque
 import com.siemens.cto.aem.persistence.jpa.domain.JpaApplication;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaWebServer;
-import com.siemens.cto.aem.persistence.jpa.domain.resource.config.template.ConfigTemplate;
-import com.siemens.cto.aem.persistence.jpa.domain.resource.config.template.JpaGroupAppConfigTemplate;
-import com.siemens.cto.aem.persistence.jpa.domain.resource.config.template.JpaGroupJvmConfigTemplate;
-import com.siemens.cto.aem.persistence.jpa.domain.resource.config.template.JpaGroupWebServerConfigTemplate;
+import com.siemens.cto.aem.persistence.jpa.domain.resource.config.template.*;
 import com.siemens.cto.aem.persistence.jpa.service.GroupCrudService;
 import com.siemens.cto.aem.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
 import com.siemens.cto.aem.persistence.jpa.service.exception.ResourceTemplateUpdateException;
@@ -171,6 +168,7 @@ public class GroupCrudServiceImpl extends AbstractCrudServiceImpl<JpaGroup> impl
             //update
             jpaConfigTemplate = templates.get(0);
             jpaConfigTemplate.setTemplateContent(templateContent);
+            jpaConfigTemplate.setMetaData(uploadJvmTemplateRequest.getMetaData());
             entityManager.flush();
         } else if (templates.isEmpty()) {
             jpaConfigTemplate = new JpaGroupJvmConfigTemplate();
@@ -198,6 +196,7 @@ public class GroupCrudServiceImpl extends AbstractCrudServiceImpl<JpaGroup> impl
             //update
             jpaConfigTemplate = templates.get(0);
             jpaConfigTemplate.setTemplateContent(templateContent);
+            jpaConfigTemplate.setMetaData(uploadWSTemplateRequest.getMetaData());
             entityManager.flush();
         } else if (templates.isEmpty()) {
             jpaConfigTemplate = new JpaGroupWebServerConfigTemplate();
@@ -368,15 +367,17 @@ public class GroupCrudServiceImpl extends AbstractCrudServiceImpl<JpaGroup> impl
     @Override
     public ConfigTemplate populateGroupAppTemplate(final String groupName, String appName, final String templateFileName, final String metaData,
                                                    final String templateContent) {
-        Query query = entityManager.createQuery("SELECT t FROM JpaGroupAppConfigTemplate t where t.templateName = :tempName and t.grp.name = :grpName");
+        Query query = entityManager.createQuery("SELECT t FROM JpaGroupAppConfigTemplate t where t.templateName = :tempName and t.grp.name = :grpName and t.app.name = :appName");
         query.setParameter("grpName", groupName);
         query.setParameter("tempName", templateFileName);
+        query.setParameter("appName", appName);
         List<JpaGroupAppConfigTemplate> templates = query.getResultList();
         JpaGroupAppConfigTemplate jpaConfigTemplate;
         if (templates.size() == 1) {
             //update
             jpaConfigTemplate = templates.get(0);
             jpaConfigTemplate.setTemplateContent(templateContent);
+            jpaConfigTemplate.setMetaData(metaData);
             entityManager.flush();
         } else if (templates.isEmpty()) {
             jpaConfigTemplate = new JpaGroupAppConfigTemplate();
@@ -442,6 +443,42 @@ public class GroupCrudServiceImpl extends AbstractCrudServiceImpl<JpaGroup> impl
         q.setParameter(JpaGroupWebServerConfigTemplate.QUERY_PARAM_GROUP_NAME, groupName);
         q.setParameter(JpaGroupWebServerConfigTemplate.QUERY_PARAM_TEMPLATE_NAME, templateName);
         return q.executeUpdate();
+    }
+
+    @Override
+    public boolean checkGroupJvmResourceFileName(final String groupName, final String fileName) {
+        final Query q = entityManager.createNamedQuery(JpaGroupJvmConfigTemplate.GET_GROUP_JVM_TEMPLATE_RESOURCE_NAME);
+        q.setParameter(JpaGroupJvmConfigTemplate.QUERY_PARAM_GROUP_NAME, groupName);
+        q.setParameter(JpaGroupJvmConfigTemplate.QUERY_PARAM_TEMPLATE_NAME, fileName);
+        final List<String> result = q.getResultList();
+        if(result!=null && result.size()==1) {
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public boolean checkGroupWebServerResourceFileName(String groupName, String fileName) {
+        final Query q = entityManager.createNamedQuery(JpaGroupWebServerConfigTemplate.GET_GROUP_WEBSERVER_TEMPLATE_RESOURCE_NAME);
+        q.setParameter(JpaGroupWebServerConfigTemplate.QUERY_PARAM_GROUP_NAME, groupName);
+        q.setParameter(JpaGroupWebServerConfigTemplate.QUERY_PARAM_TEMPLATE_NAME, fileName);
+        final List<String> result = q.getResultList();
+        if(result!=null && result.size()==1) {
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public boolean checkGroupAppResourceFileName(String groupName, String fileName) {
+        final Query q = entityManager.createNamedQuery(JpaGroupAppConfigTemplate.GET_GROUP_APP_TEMPLATE_RESOURCE_NAME);
+        q.setParameter(JpaGroupAppConfigTemplate.QUERY_PARAM_GRP_NAME, groupName);
+        q.setParameter(JpaGroupAppConfigTemplate.QUERY_PARAM_TEMPLATE_NAME, fileName);
+        final List<String> result = q.getResultList();
+        if(result!=null && result.size()==1) {
+            return true;
+        }
+        return false;
     }
 }
 

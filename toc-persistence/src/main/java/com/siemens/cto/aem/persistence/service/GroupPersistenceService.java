@@ -90,4 +90,28 @@ public interface GroupPersistenceService extends StatePersistenceService<Group, 
     String getGroupJvmResourceTemplateMetaData(String groupName, String fileName);
 
     String getGroupWebServerResourceTemplateMetaData(String groupName, String resourceTemplateName);
+
+    /**
+     *
+     * @param groupName
+     * @param fileName
+     * @return
+     */
+    boolean checkGroupJvmResourceFileName(String groupName, String fileName);
+
+    /**
+     *
+     * @param groupName
+     * @param fileName
+     * @return
+     */
+    boolean checkGroupAppResourceFileName(String groupName, String fileName);
+
+    /**
+     *
+     * @param groupName
+     * @param fileName
+     * @return
+     */
+    boolean checkGroupWebServerResourceFileName(String groupName, String fileName);
 }

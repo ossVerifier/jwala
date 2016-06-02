@@ -5,6 +5,7 @@ import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.jvm.JvmControlOperation;
 import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
+import com.siemens.cto.aem.common.domain.model.jvm.message.JvmHistoryEvent;
 import com.siemens.cto.aem.common.domain.model.ssh.SshConfiguration;
 import com.siemens.cto.aem.common.domain.model.state.CurrentState;
 import com.siemens.cto.aem.common.domain.model.state.StateType;
@@ -91,6 +92,10 @@ public class JvmControlServiceImpl implements JvmControlService {
             if (ctrlOp.getOperationState() != null) {
                 messagingService.send(new CurrentState<>(jvm.getId(), ctrlOp.getOperationState(), aUser.getId(), DateTime.now(),
                         StateType.JVM));
+            } else if (controlOperation.equals(JvmControlOperation.DELETE_SERVICE)
+                    || controlOperation.equals(JvmControlOperation.INVOKE_SERVICE)
+                    || controlOperation.equals(JvmControlOperation.SECURE_COPY)){
+                messagingService.send(new JvmHistoryEvent(jvm.getId(), controlOperation.name(), aUser.getId(), DateTime.now(), controlOperation));
             }
 
             final WindowsJvmPlatformCommandProvider windowsJvmPlatformCommandProvider = new WindowsJvmPlatformCommandProvider();
@@ -185,11 +190,15 @@ public class JvmControlServiceImpl implements JvmControlService {
         final String fileName = destPath.substring(beginIndex + 1, destPath.length());
         // don't add any usage of the toc user internal directory to the history
         if (!AemControl.Properties.USER_TOC_SCRIPTS_PATH.getValue().endsWith(fileName)) {
-            historyService.createHistory(getServerName(jvm), new ArrayList<>(jvm.getGroups()), event + " " + fileName, EventType.USER_ACTION, userId);
+            final String eventDescription = event + " " + fileName;
+            historyService.createHistory(getServerName(jvm), new ArrayList<>(jvm.getGroups()), eventDescription, EventType.USER_ACTION, userId);
+            messagingService.send(new JvmHistoryEvent(jvm.getId(), eventDescription, userId, DateTime.now(), JvmControlOperation.SECURE_COPY));
         }
+        final String name = jpaJvm.getName();
+        final String hostName = jpaJvm.getHostName();
         CommandOutput commandOutput = remoteCommandExecutor.executeRemoteCommand(
-                jpaJvm.getName(),
-                jpaJvm.getHostName(),
+                name,
+                hostName,
                 JvmControlOperation.CHECK_FILE_EXISTS,
                 new WindowsJvmPlatformCommandProvider(),
                 destPath
@@ -197,16 +206,22 @@ public class JvmControlServiceImpl implements JvmControlService {
         if (commandOutput.getReturnCode().wasSuccessful()){
             String currentDateSuffix = new SimpleDateFormat(".yyyyMMdd_HHmmss").format(new Date());
             final String destPathBackup = destPath + currentDateSuffix;
-            remoteCommandExecutor.executeRemoteCommand(
-                    jpaJvm.getName(),
-                    jpaJvm.getHostName(),
+            commandOutput = remoteCommandExecutor.executeRemoteCommand(
+                    name,
+                    hostName,
                     JvmControlOperation.BACK_UP_FILE,
                     new WindowsJvmPlatformCommandProvider(),
                     destPath,
                     destPathBackup);
+            if (!commandOutput.getReturnCode().wasSuccessful()) {
+                LOGGER.info("Failed to back up the " + destPath + " for " + name + ". Continuing with secure copy.");
+            } else {
+                LOGGER.info("Successfully backed up " + destPath + " at " + hostName);
+            }
+
         }
 
-        return remoteCommandExecutor.executeRemoteCommand(jpaJvm.getName(), jpaJvm.getHostName(), secureCopyRequest.getControlOperation(),
+        return remoteCommandExecutor.executeRemoteCommand(name, hostName, secureCopyRequest.getControlOperation(),
                 new WindowsJvmPlatformCommandProvider(), sourcePath, destPath);
     }
 

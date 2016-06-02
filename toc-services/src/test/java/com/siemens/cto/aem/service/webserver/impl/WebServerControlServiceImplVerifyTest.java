@@ -167,14 +167,14 @@ public class WebServerControlServiceImplVerifyTest extends VerificationBehaviorS
         CommandOutput successReturnOutput = new CommandOutput(new ExecReturnCode(0), "SUCCESSS", "");
         when(commandExecutor.executeRemoteCommand(anyString(), anyString(), any(WebServerControlOperation.class), any(PlatformCommandProvider.class), anyString(), anyString())).thenReturn(successReturnOutput);
         when(commandExecutor.executeRemoteCommand(anyString(), anyString(), eq(WebServerControlOperation.CHECK_FILE_EXISTS), any(PlatformCommandProvider.class), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(1), "File does not exist", ""));
-        CommandOutput returnOutput = webServerControlService.secureCopyFileWithBackup("testWebServer", "./source", "./dest", true, "user-id");
+        CommandOutput returnOutput = webServerControlService.secureCopyFile("testWebServer", "./source", "./dest", "user-id");
         assertEquals(new ExecReturnCode(0), returnOutput.getReturnCode());
 
         CommandOutput failedReturnOutput = new CommandOutput(new ExecReturnCode(1), "FAILED", "");
         when(commandExecutor.executeRemoteCommand(anyString(), anyString(), any(WebServerControlOperation.class), any(PlatformCommandProvider.class), anyString(), anyString())).thenReturn(failedReturnOutput);
         when(commandExecutor.executeRemoteCommand(anyString(), anyString(), eq(WebServerControlOperation.CHECK_FILE_EXISTS), any(PlatformCommandProvider.class), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(1), "File does not exist", ""));
         try {
-            webServerControlService.secureCopyFileWithBackup("testWebServer", "./source", "./dest", true, "user-id");
+            webServerControlService.secureCopyFile("testWebServer", "./source", "./dest", "user-id");
         } catch(InternalErrorException ie) {
             assertEquals(AemFaultType.REMOTE_COMMAND_FAILURE, ie.getMessageResponseStatus());
         }

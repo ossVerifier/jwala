@@ -133,4 +133,21 @@ public interface ResourceServiceRest {
     @Path("/{groupName}/{appName}/{templateName}")
     Response getAppTemplate(@PathParam("groupName") String groupName, @PathParam("appName") String appName,
                             @PathParam("templateName") String templateName);
+
+    /**
+     *
+     * @param groupName
+     * @param jvmName
+     * @param webappName
+     * @param webserverName
+     * @param fileName
+     * @return
+     */
+    @GET
+    @Path("/exists/{fileName}")
+    Response checkFileExists(@QueryParam("group") String groupName,
+                             @QueryParam("jvm") String jvmName,
+                             @QueryParam("webapp") String webappName,
+                             @QueryParam("webserver") String webserverName,
+                             @PathParam("fileName") String fileName);
 }

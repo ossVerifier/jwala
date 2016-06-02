@@ -68,4 +68,6 @@ public interface JvmCrudService extends CrudService<JpaJvm> {
     List<Jvm> getJvmsByGroupName(String groupName);
 
     String getResourceTemplateMetaData(String jvmName, String fileName);
+
+    boolean checkJvmResourceFileName(String groupName, String jvmName, String fileName);
 }

@@ -178,4 +178,8 @@ public class JpaApplicationPersistenceServiceImpl implements ApplicationPersiste
         return null;
     }
 
+    @Override
+    public boolean checkAppResourceFileName(final String groupName, final String appName, final String fileName) {
+        return applicationCrudService.checkAppResourceFileName(groupName, appName, fileName);
+    }
 }

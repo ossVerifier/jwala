@@ -24,25 +24,8 @@ public class WebArchiveManagerImpl implements WebArchiveManager {
     
     @Override
     public RepositoryFileInformation store(UploadWebArchiveRequest uploadWebArchiveRequest) throws IOException {
- 
-        Application app = uploadWebArchiveRequest.getApplication();
-        String existing = app.getWarPath();
-        
         Path place = synth.unique(platformFileSystem.getPath(uploadWebArchiveRequest.getFilename()));
-        
         RepositoryFileInformation writeResult = fileSystemStorage.writeStream(TocPath.WEB_ARCHIVE, place, uploadWebArchiveRequest.getTransientData());
-
-        if( RepositoryFileInformation.Type.STORED.equals(writeResult.getType())
-            && existing != null 
-            && existing.trim().length() > 0) {
-
-            // attempt to delete since store succeeded and the previous file is no longer needed
-            RepositoryFileInformation deleted = fileSystemStorage.deleteIfExisting(TocPath.WEB_ARCHIVE, platformFileSystem.getPath(existing), writeResult);
-            
-            // Wrap the response, so that the primary action is a STORE
-            return RepositoryFileInformation.stored(writeResult.getPath(), writeResult.getLength(), deleted);
-        }
-        
         return writeResult;        
     }
 

@@ -21,9 +21,10 @@ import javax.persistence.*;
         @NamedQuery(name = JpaJvmConfigTemplate.UPDATE_JVM_TEMPLATE_CONTENT,
                 query = "UPDATE JpaJvmConfigTemplate t SET t.templateContent = :templateContent WHERE t.jvm.name = :jvmName AND t.templateName = :templateName"),
         @NamedQuery(name = JpaJvmConfigTemplate.QUERY_DELETE_JVM_TEMPLATE, query = "DELETE FROM JpaJvmConfigTemplate t WHERE t.templateName = :templateName"),
-        @NamedQuery(name = JpaJvmConfigTemplate.QUERY_DELETE_JVM_TEMPLATE_BY_JVM_NAME, query = "DELETE FROM JpaJvmConfigTemplate t WHERE t.templateName = :templateName AND t.getJvm.name = :jvmName"),
+        @NamedQuery(name = JpaJvmConfigTemplate.QUERY_DELETE_JVM_TEMPLATE_BY_JVM_NAME, query = "DELETE FROM JpaJvmConfigTemplate t WHERE t.templateName = :templateName AND t.getType.name = :jvmName"),
         @NamedQuery(name = JpaJvmConfigTemplate.QUERY_GET_JVM_RESOURCE_TEMPLATES,
                 query = "SELECT t FROM JpaJvmConfigTemplate t WHERE t.jvm.name = :jvmName"),
+        @NamedQuery(name = JpaJvmConfigTemplate.GET_JVM_TEMPLATE_RESOURCE_NAME, query = "SELECT t.templateName FROM JpaJvmConfigTemplate t WHERE t.jvm.name = :jvmName AND t.templateName = :templateName")
 })
 public class JpaJvmConfigTemplate extends ConfigTemplate {
     public static final String GET_JVM_RESOURCE_TEMPLATE_NAMES = "getJvmResourceTemplateNames";
@@ -37,6 +38,7 @@ public class JpaJvmConfigTemplate extends ConfigTemplate {
     public static final String QUERY_PARAM_TEMPLATE_NAME = "templateName";
     public static final String QUERY_PARAM_JVM_NAME = "jvmName";
 
+    public static final String GET_JVM_TEMPLATE_RESOURCE_NAME = "getJvmTemplateResourceName";
 
     @ManyToOne(fetch = FetchType.EAGER)
     @Column(nullable = true)

@@ -387,8 +387,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
                     @Override
                     public Response call() throws Exception {
                         webServerServiceRest.updateResourceTemplate(name, resourceFileName, httpdTemplateContent);
-                        final boolean doBackup = true;
-                        return webServerServiceRest.generateAndDeployConfig(name, resourceFileName, doBackup, aUser);
+                        return webServerServiceRest.generateAndDeployConfig(name, resourceFileName, aUser);
 
                     }
                 });
@@ -453,8 +452,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
                 Future<Response> responseFuture = executorService.submit(new Callable<Response>() {
                     @Override
                     public Response call() throws Exception {
-                        final boolean doBackup = true;
-                        return webServerServiceRest.generateAndDeployWebServer(webServerName, doBackup, aUser);
+                        return webServerServiceRest.generateAndDeployWebServer(webServerName, aUser);
                     }
                 });
                 futuresMap.put(webServerName, responseFuture);

@@ -20,6 +20,8 @@ import com.siemens.cto.aem.persistence.service.ApplicationPersistenceService;
 import com.siemens.cto.aem.persistence.service.JvmPersistenceService;
 import com.siemens.cto.aem.persistence.service.impl.JpaApplicationPersistenceServiceImpl;
 import com.siemens.cto.aem.persistence.service.impl.JpaJvmPersistenceServiceImpl;
+import com.siemens.cto.aem.service.HistoryService;
+import com.siemens.cto.aem.service.MessagingService;
 import com.siemens.cto.aem.service.app.ApplicationCommandService;
 import com.siemens.cto.aem.service.app.ApplicationService;
 import com.siemens.cto.aem.service.configuration.TestJpaConfiguration;
@@ -71,6 +73,12 @@ public class ApplicationServiceImplIntegrationTest {
 
     @Mock
     private GroupService groupService;
+
+    @Mock
+    private HistoryService historyService;
+
+    @Mock
+    private MessagingService messagingService;
 
     @Configuration
     static class CommonConfiguration {
@@ -180,9 +188,15 @@ public class ApplicationServiceImplIntegrationTest {
         groupService = mock(GroupService.class);
         when(mockSshConfig.getUserName()).thenReturn("mockUser");
         when(aemSshConfig.getSshConfiguration()).thenReturn(mockSshConfig);
-        applicationService = new ApplicationServiceImpl(applicationPersistenceService, jvmPersistenceService,
+        applicationService = new ApplicationServiceImpl(
+                applicationPersistenceService,
+                jvmPersistenceService,
                 remoteCommandExecutor,
-                groupService, fileManager, null, null);
+                groupService,
+                null,
+                null,
+                historyService,
+                messagingService);
     }
 
     @After

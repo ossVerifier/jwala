@@ -273,8 +273,12 @@ var JvmConfigForm = React.createClass({
                                 </td>
                             </tr>
                             <tr>
-                                <td><input name="statusPath" type="text" valueLink={this.linkState("statusPath")}
-                                           required maxLength="64" className="width-max"/></td>
+                                <td>
+                                    <div className="jvmStatusUrl">
+                                        {window.location.protocol + "//" + this.state.host + ":" + (window.location.protocol === "https:" ? this.state.httpsPort : this.state.httpPort) + this.state.statusPath}
+                                    </div>
+                                    <input name="statusPath" type="text" valueLink={this.linkState("statusPath")} required maxLength="64" className="width-max"/>
+                                </td>
                             </tr>
                             <tr>
                                 <td>*HTTP Port</td>

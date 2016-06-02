@@ -110,4 +110,6 @@ public interface ResourceService {
      * @return the template
      */
     String getAppTemplate(String groupName, String appName, String templateName);
+
+    String checkFileExists(String groupName, String jvmName, String webappName, String webserverName, String fileName);
 }

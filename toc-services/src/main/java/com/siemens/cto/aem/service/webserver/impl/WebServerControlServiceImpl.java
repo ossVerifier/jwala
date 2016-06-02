@@ -9,6 +9,7 @@ import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServerControlOperation;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState;
+import com.siemens.cto.aem.common.domain.model.webserver.message.WebServerHistoryEvent;
 import com.siemens.cto.aem.common.exception.InternalErrorException;
 import com.siemens.cto.aem.common.exec.*;
 import com.siemens.cto.aem.common.request.state.SetStateRequest;
@@ -83,16 +84,20 @@ public class WebServerControlServiceImpl implements WebServerControlService {
                     aUser.getId());
 
             // Send a message to the UI about the control operation.
-            if (controlWebServerRequest.getControlOperation().getOperationState() != null) {
-                    messagingService.send(new CurrentState<>(webServer.getId(), controlWebServerRequest.getControlOperation().getOperationState(),
-                                          aUser.getId(), DateTime.now(), StateType.WEB_SERVER));
+            if (controlOperation.getOperationState() != null) {
+                messagingService.send(new CurrentState<>(webServer.getId(), controlWebServerRequest.getControlOperation().getOperationState(),
+                        aUser.getId(), DateTime.now(), StateType.WEB_SERVER));
+            } else if (controlOperation.equals(WebServerControlOperation.DELETE_SERVICE)
+                    || controlOperation.equals(WebServerControlOperation.INVOKE_SERVICE)
+                    || controlOperation.equals(WebServerControlOperation.SECURE_COPY)){
+                messagingService.send(new WebServerHistoryEvent(webServer.getId(), controlOperation.name(), aUser.getId(), DateTime.now(), controlOperation));
             }
 
             final WindowsWebServerPlatformCommandProvider windowsJvmPlatformCommandProvider = new WindowsWebServerPlatformCommandProvider();
             final ServiceCommandBuilder serviceCommandBuilder = windowsJvmPlatformCommandProvider.getServiceCommandBuilderFor(controlOperation);
             final ExecCommand execCommand = serviceCommandBuilder.buildCommandForService(webServer.getName());
             final RemoteExecCommand remoteExecCommand = new RemoteExecCommand(new RemoteSystemConnection(sshConfig.getUserName(),
-                    sshConfig.getPassword(), webServer.getHost(), sshConfig.getPort()) , execCommand);
+                    sshConfig.getPassword(), webServer.getHost(), sshConfig.getPort()), execCommand);
 
             RemoteCommandReturnInfo remoteCommandReturnInfo = remoteCommandExecutorService.executeCommand(remoteExecCommand);
 
@@ -153,39 +158,38 @@ public class WebServerControlServiceImpl implements WebServerControlService {
     }
 
     @Override
-    public CommandOutput secureCopyFileWithBackup(final String aWebServerName, final String sourcePath, final String destPath, final boolean doBackup, String userId) throws CommandFailureException {
+    public CommandOutput secureCopyFile(final String aWebServerName, final String sourcePath, final String destPath, String userId) throws CommandFailureException {
 
         final WebServer aWebServer = webServerService.getWebServer(aWebServerName);
         final int beginIndex = destPath.lastIndexOf("/");
         final String fileName = destPath.substring(beginIndex + 1, destPath.length());
         if (!AemControl.Properties.USER_TOC_SCRIPTS_PATH.getValue().endsWith(fileName)) {
-            historyService.createHistory(getServerName(aWebServer), new ArrayList<>(aWebServer.getGroups()), WindowsWebServerNetOperation.SECURE_COPY.name() + " " + fileName, EventType.USER_ACTION, userId);
+            final String eventDescription = WindowsWebServerNetOperation.SECURE_COPY.name() + " " + fileName;
+            historyService.createHistory(getServerName(aWebServer), new ArrayList<>(aWebServer.getGroups()), eventDescription, EventType.USER_ACTION, userId);
+            messagingService.send(new WebServerHistoryEvent(aWebServer.getId(), eventDescription, userId, DateTime.now(), WebServerControlOperation.SECURE_COPY));
         }
 
         // back up the original file first
         final String host = aWebServer.getHost();
-        if (doBackup) {
-            CommandOutput commandOutput = commandExecutor.executeRemoteCommand(aWebServerName,
+        CommandOutput commandOutput = commandExecutor.executeRemoteCommand(aWebServerName,
+                host,
+                WebServerControlOperation.CHECK_FILE_EXISTS,
+                new WindowsWebServerPlatformCommandProvider(),
+                destPath);
+        if (commandOutput.getReturnCode().wasSuccessful()) {
+            String currentDateSuffix = new SimpleDateFormat(".yyyyMMdd_HHmmss").format(new Date());
+            final String destPathBackup = destPath + currentDateSuffix;
+            commandOutput = commandExecutor.executeRemoteCommand(
+                    aWebServerName,
                     host,
-                    WebServerControlOperation.CHECK_FILE_EXISTS,
+                    WebServerControlOperation.BACK_UP_CONFIG_FILE,
                     new WindowsWebServerPlatformCommandProvider(),
-                    destPath);
-            if (commandOutput.getReturnCode().wasSuccessful()) {
-                String currentDateSuffix = new SimpleDateFormat(".yyyyMMdd_HHmmss").format(new Date());
-                final String destPathBackup = destPath + currentDateSuffix;
-                commandOutput = commandExecutor.executeRemoteCommand(
-                        aWebServerName,
-                        host,
-                        WebServerControlOperation.BACK_UP_HTTP_CONFIG_FILE,
-                        new WindowsWebServerPlatformCommandProvider(),
-                        destPath,
-                        destPathBackup);
-                if (!commandOutput.getReturnCode().wasSuccessful()) {
-                    LOGGER.error("Failed to back up the " + destPath + " for " + aWebServerName);
-                    throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to back up " + destPath + " for " + aWebServerName);
-                } else {
-                    LOGGER.info("Successfully backed up " + destPath + " at " + host);
-                }
+                    destPath,
+                    destPathBackup);
+            if (!commandOutput.getReturnCode().wasSuccessful()) {
+                LOGGER.info("Failed to back up the " + destPath + " for " + aWebServerName + ". Continuing with secure copy.");
+            } else {
+                LOGGER.info("Successfully backed up " + destPath + " at " + host);
             }
         }
 

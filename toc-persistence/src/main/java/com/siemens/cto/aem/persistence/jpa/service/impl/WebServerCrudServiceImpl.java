@@ -22,6 +22,8 @@ import com.siemens.cto.aem.persistence.jpa.domain.resource.config.template.JpaWe
 import com.siemens.cto.aem.persistence.jpa.service.WebServerCrudService;
 import com.siemens.cto.aem.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
 import com.siemens.cto.aem.persistence.jpa.service.exception.ResourceTemplateUpdateException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.persistence.EntityExistsException;
 import javax.persistence.NoResultException;
@@ -33,6 +35,7 @@ import java.util.List;
 import java.util.Scanner;
 
 public class WebServerCrudServiceImpl extends AbstractCrudServiceImpl<JpaWebServer> implements WebServerCrudService {
+    private static final Logger LOGGER = LoggerFactory.getLogger(WebServerCrudServiceImpl.class);
 
     public WebServerCrudServiceImpl() {
     }
@@ -409,5 +412,34 @@ public class WebServerCrudServiceImpl extends AbstractCrudServiceImpl<JpaWebServ
             webServers.add(new JpaWebServerBuilder(jpaWebServer).build());
         }
         return webServers;
+    }
+
+    @Override
+    public JpaWebServer findWebServer(String groupName, String webServerName) {
+        JpaWebServer jpaWebServer = null;
+        final Query q = entityManager.createNamedQuery(JpaWebServer.FIND_WEBSERVER_BY_GROUP_QUERY);
+        q.setParameter(JpaWebServer.WEB_SERVER_PARAM_NAME, webServerName);
+        q.setParameter(JpaWebServer.QUERY_PARAM_GROUP_NAME, groupName);
+        try {
+            jpaWebServer = (JpaWebServer) q.getSingleResult();
+        } catch(NoResultException e) {
+            LOGGER.warn("error with getting data for webserverName: {} under group: {}, error: {}", webServerName, groupName, e);
+        }
+        return jpaWebServer;
+    }
+
+    @Override
+    public boolean checkWebServerResourceFileName(String groupName, String webServerName, String fileName) {
+        final JpaWebServer jpaWebServer = findWebServer(groupName, webServerName);
+        if(jpaWebServer!=null) {
+            final Query q = entityManager.createNamedQuery(JpaWebServerConfigTemplate.GET_WEBSERVER_TEMPLATE_RESOURCE_NAME);
+            q.setParameter(JpaWebServerConfigTemplate.QUERY_PARAM_WEBSERVER_NAME, webServerName);
+            q.setParameter(JpaWebServerConfigTemplate.QUERY_PARAM_TEMPLATE_NAME, fileName);
+            final List<String> result = q.getResultList();
+            if(result!=null && result.size()==1) {
+                return true;
+            }
+        }
+        return false;
     }
 }

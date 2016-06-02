@@ -26,6 +26,8 @@ import com.siemens.cto.aem.exception.CommandFailureException;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
 import com.siemens.cto.aem.persistence.service.ApplicationPersistenceService;
 import com.siemens.cto.aem.persistence.service.JvmPersistenceService;
+import com.siemens.cto.aem.service.HistoryService;
+import com.siemens.cto.aem.service.MessagingService;
 import com.siemens.cto.aem.service.app.PrivateApplicationService;
 import com.siemens.cto.aem.service.group.GroupService;
 import com.siemens.cto.toc.files.FileManager;
@@ -90,6 +92,12 @@ public class ApplicationServiceImplTest {
     private Application mockApplication;
     @Mock
     private Application mockApplication2;
+    
+    @Mock
+    private HistoryService mockHistoryService;
+    
+    @Mock
+    private MessagingService mockMessagingService;
 
     private Group group;
     private Group group2;
@@ -508,7 +516,7 @@ public class ApplicationServiceImplTest {
         when(mockJvm.getHostName()).thenReturn("localhost");
         when(mockJvm2.getHostName()).thenReturn("localhost");
 
-        ApplicationServiceImpl mockApplicationService = new ApplicationServiceImpl(applicationPersistenceService, jvmPersistenceService, remoteCommandExecutor, mockGroupService, fileManager, webArchiveManager, privateApplicationService);
+        ApplicationServiceImpl mockApplicationService = new ApplicationServiceImpl(applicationPersistenceService, jvmPersistenceService, remoteCommandExecutor, mockGroupService, webArchiveManager, privateApplicationService, mockHistoryService, mockMessagingService);
 
         try {
             CommandOutput successCommandOutput = new CommandOutput(new ExecReturnCode(0), "SUCCESS", "");
@@ -556,7 +564,7 @@ public class ApplicationServiceImplTest {
         when(mockApplication.getWarPath()).thenReturn("./src/test/resources/archive/test_archive.war");
         when(mockApplication.getWarName()).thenReturn("test.war");
 
-        ApplicationServiceImpl mockApplicationService = new ApplicationServiceImpl(applicationPersistenceService, jvmPersistenceService, remoteCommandExecutor, null, fileManager, webArchiveManager, privateApplicationService);
+        ApplicationServiceImpl mockApplicationService = new ApplicationServiceImpl(applicationPersistenceService, jvmPersistenceService, remoteCommandExecutor, null, webArchiveManager, privateApplicationService, mockHistoryService, mockMessagingService);
 
         try {
             CommandOutput successCommandOutput = new CommandOutput(new ExecReturnCode(0), "SUCCESS", "");
@@ -624,7 +632,7 @@ public class ApplicationServiceImplTest {
         when(applicationPersistenceService.getResourceTemplate(anyString(), anyString(), anyString(), anyString())).thenReturn("template this!");
         when(remoteCommandExecutor.executeRemoteCommand(anyString(), anyString(), any(ApplicationControlOperation.class), any(PlatformCommandProvider.class), anyString(), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(0), "Success!", ""));
 
-        ApplicationServiceImpl mockApplicationService = new ApplicationServiceImpl(applicationPersistenceService, jvmPersistenceService, remoteCommandExecutor, mockGroupService, fileManager, webArchiveManager, privateApplicationService);
+        ApplicationServiceImpl mockApplicationService = new ApplicationServiceImpl(applicationPersistenceService, jvmPersistenceService, remoteCommandExecutor, mockGroupService, webArchiveManager, privateApplicationService, mockHistoryService, mockMessagingService);
         mockApplicationService.copyApplicationConfigToGroupJvms(mockGroup, "testApp", mock(ResourceGroup.class), testUser);
     }
 

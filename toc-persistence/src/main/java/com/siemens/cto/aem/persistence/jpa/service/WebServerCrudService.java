@@ -71,4 +71,21 @@ public interface WebServerCrudService extends CrudService<JpaWebServer> {
 	List<WebServer> getWebServersByGroupName(String groupName);
 
 	String getResourceTemplateMetaData(String webServerName, String resourceTemplateName);
+
+	/**
+	 *
+	 * @param groupName
+	 * @param webServerName
+     * @return
+     */
+	JpaWebServer findWebServer(String groupName, String webServerName);
+
+	/**
+	 *
+	 * @param groupName
+	 * @param webServerName
+	 * @param fileName
+     * @return
+     */
+	boolean checkWebServerResourceFileName(String groupName, String webServerName, String fileName);
 }

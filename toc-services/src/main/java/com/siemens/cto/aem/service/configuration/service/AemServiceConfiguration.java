@@ -104,12 +104,12 @@ import java.util.concurrent.ThreadPoolExecutor;
 @EnableAsync
 @EnableScheduling
 @ComponentScan({"com.siemens.cto.aem.service.webserver.component",
-                "com.siemens.cto.aem.service.state",
-                "com.siemens.cto.aem.service.spring.component",
-                "com.siemens.cto.aem.commandprocessor.jsch.impl.spring.component",
-                "com.siemens.cto.aem.service.group.impl.spring.component",
-                "com.siemens.cto.aem.service.jvm.impl.spring.component",
-                "com.siemens.cto.aem.service.impl.spring.component"})
+        "com.siemens.cto.aem.service.state",
+        "com.siemens.cto.aem.service.spring.component",
+        "com.siemens.cto.aem.commandprocessor.jsch.impl.spring.component",
+        "com.siemens.cto.aem.service.group.impl.spring.component",
+        "com.siemens.cto.aem.service.jvm.impl.spring.component",
+        "com.siemens.cto.aem.service.impl.spring.component"})
 public class AemServiceConfiguration implements SchedulingConfigurer {
 
     @Autowired
@@ -179,7 +179,7 @@ public class AemServiceConfiguration implements SchedulingConfigurer {
     @Bean
     public GroupService getGroupService(final WebServerPersistenceService webServerPersistenceService) {
         return new GroupServiceImpl(persistenceServiceConfiguration.getGroupPersistenceService(), webServerPersistenceService,
-                       persistenceServiceConfiguration.getApplicationPersistenceService(), aemCommandExecutorConfig.getRemoteCommandExecutor());
+                persistenceServiceConfiguration.getApplicationPersistenceService(), aemCommandExecutorConfig.getRemoteCommandExecutor());
     }
 
     @Bean(name = "jvmService")
@@ -198,7 +198,7 @@ public class AemServiceConfiguration implements SchedulingConfigurer {
                                                 @Value("${paths.resource-types:D:/stp/app/data/toc/types}") final String templatePath,
                                                 @Value("${default.webserver.templates:HttpdSslConf}") final String defaultWebServerTemplateNames) {
         return new WebServerServiceImpl(persistenceServiceConfiguration.getWebServerPersistenceService(),
-                                        fileManager, resourceService, templatePath, defaultWebServerTemplateNames);
+                fileManager, resourceService, templatePath, defaultWebServerTemplateNames);
     }
 
     @Bean
@@ -215,10 +215,20 @@ public class AemServiceConfiguration implements SchedulingConfigurer {
     }
 
     @Bean
-    public ApplicationService getApplicationService(final JvmPersistenceService jvmPersistenceService, final GroupService groupService) {
-        return new ApplicationServiceImpl(persistenceServiceConfiguration.getApplicationPersistenceService(),
-                jvmPersistenceService, aemCommandExecutorConfig.getRemoteCommandExecutor(), groupService, fileManager,
-                null, null);
+    public ApplicationService getApplicationService(
+            final JvmPersistenceService jvmPersistenceService,
+            final GroupService groupService,
+            final HistoryCrudService historyCrudService,
+            final MessagingService messagingService) {
+        return new ApplicationServiceImpl(
+                persistenceServiceConfiguration.getApplicationPersistenceService(),
+                jvmPersistenceService,
+                aemCommandExecutorConfig.getRemoteCommandExecutor(),
+                groupService,
+                null,
+                null,
+                getHistoryService(historyCrudService),
+                messagingService);
     }
 
     @Bean
@@ -350,10 +360,10 @@ public class AemServiceConfiguration implements SchedulingConfigurer {
 
     @Bean(name = "jvmTaskExecutor")
     public TaskExecutor getJvmTaskExecutor(@Qualifier("pollingThreadFactory") final ThreadFactory threadFactory,
-                                                 @Value("${jvm.thread-task-executor.pool.size}") final int corePoolSize,
-                                                 @Value("${jvm.thread-task-executor.pool.max-size}") final int maxPoolSize,
-                                                 @Value("${jvm.thread-task-executor.pool.queue-capacity}") final int queueCapacity,
-                                                 @Value("${jvm.thread-task-executor.pool.keep-alive-sec}") final int keepAliveSeconds) {
+                                           @Value("${jvm.thread-task-executor.pool.size}") final int corePoolSize,
+                                           @Value("${jvm.thread-task-executor.pool.max-size}") final int maxPoolSize,
+                                           @Value("${jvm.thread-task-executor.pool.queue-capacity}") final int queueCapacity,
+                                           @Value("${jvm.thread-task-executor.pool.keep-alive-sec}") final int keepAliveSeconds) {
         final ThreadPoolTaskExecutor threadPoolTaskExecutor = new ThreadPoolTaskExecutor();
         threadPoolTaskExecutor.setCorePoolSize(corePoolSize);
         threadPoolTaskExecutor.setMaxPoolSize(maxPoolSize);
