@@ -81,7 +81,7 @@
         return serviceFoundation.get("v1.0/jvms/" + encodeURI(jvmName) + "/resources/name", "json", responseCallback);
     },
     getResourceTemplate : function(jvmName, tokensReplaced, resourceTemplateName, responseCallback) {
-        return serviceFoundation.get("v1.0/jvms/" + encodeURI(jvmName) + "/resources/template/" + encodeURI(resourceTemplateName) + "?tokensReplaced=" + tokensReplaced, "json", responseCallback);
+        return serviceFoundation.get("v1.0/jvms/" + encodeURI(jvmName) + "/resources/template/" + encodeURIComponent(resourceTemplateName) + "?tokensReplaced=" + tokensReplaced, "json", responseCallback);
     },
     previewResourceFile: function(jvmName, groupName, template, successCallback, errorCallback) {
         return serviceFoundation.put("v1.0/jvms/" + encodeURI(jvmName) + "/resources/preview;groupName=" + encodeURI(groupName),
