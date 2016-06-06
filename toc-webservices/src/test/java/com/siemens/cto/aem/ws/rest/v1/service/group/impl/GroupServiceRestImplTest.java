@@ -373,6 +373,14 @@ public class GroupServiceRestImplTest {
     }
 
     @Test
+    public void testControlGroups() {
+        JsonControlGroup mockControlGroup = mock(JsonControlGroup.class);
+        when(mockControlGroup.toControlOperation()).thenReturn(GroupControlOperation.START);
+        Response response = groupServiceRest.controlGroups(mockControlGroup, mockAuthenticatedUser);
+        assertEquals(response.getStatus(), Response.Status.OK.getStatusCode());
+    }
+
+    @Test
     public void testControlGroupJvms() {
         Response response = groupServiceRest.controlGroupJvms(group.getId(), new JsonControlJvm(JvmControlOperation.START.getExternalValue()), mockAuthenticatedUser);
         assertNotNull(response);
@@ -471,6 +479,45 @@ public class GroupServiceRestImplTest {
         response = groupServiceRest.updateGroupJvmResourceTemplate(group.getName(), "server.xml", "server.xml content for testing");
         assertEquals(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), response.getStatus());
 
+    }
+
+    @Test
+    public void testPreviewGroupJvmTemplate() {
+        Set<Jvm> jvmSet = new HashSet<>();
+        Jvm mockPreviewJvm = mock(Jvm.class);
+        when(mockPreviewJvm.getJvmName()).thenReturn("test-jvm");
+        jvmSet.add(mockPreviewJvm);
+
+        Group mockPreviewJvmGroup = mock(Group.class);
+        when(mockPreviewJvmGroup.getJvms()).thenReturn(jvmSet);
+
+        final ResourceGroup resourceGroup = new ResourceGroup();
+        final String templateContent = "preview template ${jvm.jvmName}";
+        when(mockResourceService.generateResourceGroup()).thenReturn(resourceGroup);
+        when(mockGroupService.getGroup(anyString())).thenReturn(mockPreviewJvmGroup);
+        groupServiceRest.previewGroupJvmResourceTemplate("test-group-name", templateContent);
+
+        verify(mockResourceService).generateResourceFile(eq(templateContent), eq(resourceGroup), eq(mockPreviewJvm));
+    }
+
+    @Test
+    public void testPreviewGroupJvmTemplateThrowsRuntimeException() {
+        Set<Jvm> jvmSet = new HashSet<>();
+        Jvm mockPreviewJvm = mock(Jvm.class);
+        when(mockPreviewJvm.getJvmName()).thenReturn("test-jvm");
+        jvmSet.add(mockPreviewJvm);
+
+        Group mockPreviewJvmGroup = mock(Group.class);
+        when(mockPreviewJvmGroup.getJvms()).thenReturn(jvmSet);
+
+        final ResourceGroup resourceGroup = new ResourceGroup();
+        final String templateContent = "preview template ${jvm.jvmName}";
+        when(mockResourceService.generateResourceGroup()).thenReturn(resourceGroup);
+        when(mockGroupService.getGroup(anyString())).thenReturn(mockPreviewJvmGroup);
+        when(mockResourceService.generateResourceFile(templateContent, resourceGroup, mockPreviewJvm)).thenThrow(new RuntimeException("Fail"));
+
+        Response response = groupServiceRest.previewGroupJvmResourceTemplate("test-group-name", templateContent);
+        assertEquals(500, response.getStatus());
     }
 
     @Test(expected = InternalErrorException.class)
