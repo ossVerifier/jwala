@@ -32,7 +32,7 @@ public class JpaGroupWebServerConfigTemplate extends ConfigTemplate {
 
     public static final String QUERY_DELETE_GROUP_LEVEL_WEBSERVER_RESOURCE_BY_TEMPLATE_GROUP_NAME = "deleteGroupLevelWebServerResourceByTemplateGroupName";
     public static final String QUERY_PARAM_TEMPLATE_NAME = "templateName";
-    public static final String QUERY_PARAM_GROUP_NAME = "grName";
+    public static final String QUERY_PARAM_GROUP_NAME = "grpName";
 
     public static final String GET_GROUP_WEBSERVER_TEMPLATE_RESOURCE_NAME = "getGroupWebServerTemplateResourceName";
 
