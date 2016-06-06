@@ -293,12 +293,6 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
         } catch (CommandFailureException e) {
             LOGGER.error("Failed to secure copy the invokeWS.bat file for {}", aWebServerName, e);
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to secure copy the invokeWS.bat file for " + aWebServerName, e);
-        } catch (InternalErrorException e) {
-            if (e.getMessageResponseStatus().equals(AemFaultType.TEMPLATE_NOT_FOUND)) {
-                throw new InternalErrorException(AemFaultType.WEB_SERVER_HTTPD_CONF_TEMPLATE_NOT_FOUND, "Failed to generate " + aWebServerName + " because no httpd.conf template has been defined yet.Upload a httpd.conf template for this web server and try again.");
-            } else {
-                throw e;
-            }
         } finally {
             wsWriteLocks.get(aWebServerName).writeLock().unlock();
         }
@@ -338,14 +332,14 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
 
         final String startScriptName = AemControl.Properties.START_SCRIPT_NAME.getValue();
         final String sourceStartServicePath = AemControl.Properties.SCRIPTS_PATH + "/" + startScriptName;
-        if (!webServerControlService.secureCopyFile(webServerName, sourceStartServicePath, destHttpdConfPath /*+ "/" + startScriptName*/, userId).getReturnCode().wasSuccessful()) {
+        if (!webServerControlService.secureCopyFile(webServerName, sourceStartServicePath, destHttpdConfPath, userId).getReturnCode().wasSuccessful()) {
             LOGGER.error("Failed to secure copy file {} during creation of {}", sourceStartServicePath, webServerName);
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to secure copy file " + sourceStartServicePath + " during the creation of " + webServerName);
         }
 
         final String stopScriptName = AemControl.Properties.STOP_SCRIPT_NAME.getValue();
         final String sourceStopServicePath = AemControl.Properties.SCRIPTS_PATH + "/" + stopScriptName;
-        if (!webServerControlService.secureCopyFile(webServerName, sourceStopServicePath, destHttpdConfPath /*+ "/" + stopScriptName*/, userId).getReturnCode().wasSuccessful()) {
+        if (!webServerControlService.secureCopyFile(webServerName, sourceStopServicePath, destHttpdConfPath, userId).getReturnCode().wasSuccessful()) {
             LOGGER.error("Failed to secure copy file {} during creation of {}", sourceStopServicePath, webServerName);
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to secure copy file " + sourceStopServicePath + " during the creation of " + webServerName);
         }
@@ -353,7 +347,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
         final String invokeWsScriptName = AemControl.Properties.INVOKE_WS_SERVICE_SCRIPT_NAME.getValue();
         final String sourceInvokeWsServicePath = AemControl.Properties.SCRIPTS_PATH + "/" + invokeWsScriptName;
         final String tocScriptsPath = AemControl.Properties.USER_TOC_SCRIPTS_PATH.getValue();
-        if (!webServerControlService.secureCopyFile(webServerName, sourceInvokeWsServicePath, tocScriptsPath /*+ "/" + invokeWsScriptName*/, userId).getReturnCode().wasSuccessful()) {
+        if (!webServerControlService.secureCopyFile(webServerName, sourceInvokeWsServicePath, tocScriptsPath, userId).getReturnCode().wasSuccessful()) {
             LOGGER.error("Failed to secure copy file {} during creation of {}", sourceInvokeWsServicePath, webServerName);
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to secure copy file " + sourceInvokeWsServicePath + " during the creation of " + webServerName);
         }

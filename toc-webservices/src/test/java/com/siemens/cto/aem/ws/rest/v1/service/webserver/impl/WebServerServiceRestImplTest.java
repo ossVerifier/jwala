@@ -9,6 +9,7 @@ import com.siemens.cto.aem.common.domain.model.resource.ResourceGroup;
 import com.siemens.cto.aem.common.domain.model.resource.ResourceType;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
+import com.siemens.cto.aem.common.domain.model.webserver.WebServerControlOperation;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState;
 import com.siemens.cto.aem.common.exception.InternalErrorException;
 import com.siemens.cto.aem.common.exec.CommandOutput;
@@ -19,6 +20,7 @@ import com.siemens.cto.aem.common.request.webserver.ControlWebServerRequest;
 import com.siemens.cto.aem.common.request.webserver.CreateWebServerRequest;
 import com.siemens.cto.aem.common.request.webserver.UpdateWebServerRequest;
 import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateRequest;
+import com.siemens.cto.aem.control.AemControl;
 import com.siemens.cto.aem.exception.CommandFailureException;
 import com.siemens.cto.aem.persistence.jpa.service.exception.ResourceTemplateUpdateException;
 import com.siemens.cto.aem.service.group.GroupService;
@@ -32,7 +34,6 @@ import org.apache.commons.fileupload.FileUploadBase;
 import org.apache.commons.io.FileUtils;
 import org.apache.cxf.jaxrs.ext.MessageContext;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Matchers;
@@ -187,28 +188,18 @@ public class WebServerServiceRestImplTest {
     }
 
     @Test
-    public void testCreateWebServerAndPopulateConfigsFails() {
+    public void testCreateWebServerPopulatesTemplatesFromGroup() {
         final JsonCreateWebServer jsonCreateWebServer = mock(JsonCreateWebServer.class);
         when(impl.createWebServer(any(CreateWebServerRequest.class), any(User.class))).thenReturn(webServer);
 
+        List<String> templateNames = new ArrayList<>();
+        templateNames.add("httpd.conf");
+
+        when(groupService.getGroupWebServersResourceTemplateNames(anyString())).thenReturn(templateNames);
+        when(groupService.getGroupWebServerResourceTemplate(anyString(), anyString(), eq(false), any(ResourceGroup.class))).thenReturn("httpd.conf template");
+        when(groupService.getGroupWebServerResourceTemplateMetaData(anyString(), anyString())).thenReturn("{}");
         final Response response = webServerServiceRest.createWebServer(jsonCreateWebServer, authenticatedUser);
         assertEquals(Response.Status.EXPECTATION_FAILED.getStatusCode(), response.getStatus());
-    }
-
-    @Test(expected = InternalErrorException.class)
-    @Ignore
-    public void testCreateWebServerAndPopulateConfigsThrowsExceptionForFileNotFound() {
-        final JsonCreateWebServer jsonCreateWebServer = mock(JsonCreateWebServer.class);
-        when(impl.createWebServer(any(CreateWebServerRequest.class), any(User.class))).thenReturn(webServer);
-
-        final ArrayList<ResourceType> resourceTypes = new ArrayList<>();
-        ResourceType mockWsResourceType = mock(ResourceType.class);
-        when(mockWsResourceType.getConfigFileName()).thenReturn("httpd.conf");
-        when(mockWsResourceType.getEntityType()).thenReturn("webServer");
-        when(mockWsResourceType.getTemplateName()).thenReturn("HttpdSslConfTemplate_FILE-NOT-FOUND.tpl");
-        resourceTypes.add(mockWsResourceType);
-
-        webServerServiceRest.createWebServer(jsonCreateWebServer, authenticatedUser);
     }
 
     @Test
@@ -239,6 +230,13 @@ public class WebServerServiceRestImplTest {
 
         final ApplicationResponse applicationResponse = (ApplicationResponse) response.getEntity();
         assertNull(applicationResponse);
+    }
+
+    @Test(expected = InternalErrorException.class)
+    public void testRemoveWebServerWhenWebServerNotStopped() {
+        when(impl.getWebServer(any(Identifier.class))).thenReturn(webServer);
+        when(impl.isStarted(any(WebServer.class))).thenReturn(true);
+        webServerServiceRest.removeWebServer(Identifier.id(1l, WebServer.class), authenticatedUser);
     }
 
     @Test
@@ -308,10 +306,19 @@ public class WebServerServiceRestImplTest {
         System.clearProperty(ApplicationProperties.PROPERTIES_ROOT_PATH);
     }
 
-    @Test(expected = InternalErrorException.class)
-    @Ignore
-    public void testGenerateAndDeployConfigThrowsExceptionForFileNotFound() throws CommandFailureException, IOException {
-        webServerServiceRest.generateAndDeployConfig(webServer.getName(), "httpd.conf", authenticatedUser);
+    @Test
+    public void testGenerateAndDeployConfigBinaryFile() throws CommandFailureException, IOException {
+        System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, "./src/test/resources");
+        final String httpdConfDirPath = ApplicationProperties.get("paths.httpd.conf");
+        assertTrue(new File(httpdConfDirPath).mkdirs());
+        CommandOutput retSuccessExecData = new CommandOutput(new ExecReturnCode(0), "", "");
+        when(webServerControlService.secureCopyFile(anyString(), anyString(), anyString(), anyString())).thenReturn(retSuccessExecData);
+        when(impl.getResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"contentType\":\"application/binary\",\"deployPath\":\"./anyPath\"}");
+        when(resourceService.generateResourceGroup()).thenReturn(new ResourceGroup());
+        Response response = webServerServiceRest.generateAndDeployConfig(webServer.getName(), "httpd.exe", authenticatedUser);
+        assertTrue(response.hasEntity());
+        FileUtils.deleteDirectory(new File(httpdConfDirPath));
+        System.clearProperty(ApplicationProperties.PROPERTIES_ROOT_PATH);
     }
 
     @Test
@@ -379,7 +386,7 @@ public class WebServerServiceRestImplTest {
         System.clearProperty(ApplicationProperties.PROPERTIES_ROOT_PATH);
     }
 
-    @Test (expected = InternalErrorException.class)
+    @Test(expected = InternalErrorException.class)
     public void testGenerateAndDeployWebServerWithNoHttpdConfTemplate() {
         when(impl.getWebServer(anyString())).thenReturn(webServer);
         when(impl.isStarted(any(WebServer.class))).thenReturn(false);
@@ -427,6 +434,282 @@ public class WebServerServiceRestImplTest {
         assertNull(response);
 
         System.clearProperty(ApplicationProperties.PROPERTIES_ROOT_PATH);
+    }
+
+    @Test(expected = InternalErrorException.class)
+    public void testGenerateAndDeployWebServerFailsMakeDirectory() throws CommandFailureException, IOException {
+        System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, "./src/test/resources");
+        final String httpdConfDirPath = ApplicationProperties.get("paths.httpd.conf");
+        assertTrue(new File(httpdConfDirPath).mkdirs());
+
+        List<String> resourceTemplateNames = new ArrayList<>();
+        resourceTemplateNames.add("httpd.conf");
+
+        CommandOutput retFailExecData = new CommandOutput(new ExecReturnCode(1), "", "Failed to create the directory");
+        when(webServerControlService.createDirectory(any(WebServer.class), anyString())).thenReturn(retFailExecData);
+        when(impl.getWebServer(anyString())).thenReturn(webServer);
+        when(impl.isStarted(any(WebServer.class))).thenReturn(false);
+        when(impl.getResourceTemplateNames(anyString())).thenReturn(resourceTemplateNames);
+
+        try {
+            webServerServiceRest.generateAndDeployWebServer(webServer.getName(), authenticatedUser);
+        } finally {
+            FileUtils.deleteDirectory(new File(httpdConfDirPath));
+        }
+
+        System.clearProperty(ApplicationProperties.PROPERTIES_ROOT_PATH);
+    }
+
+    @Test (expected = InternalErrorException.class)
+    public void testGenerateAndDeployWebServerFailsSecureCopyScriptsStartScript() throws CommandFailureException, IOException {
+        System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, "./src/test/resources");
+        final String httpdConfDirPath = ApplicationProperties.get("paths.httpd.conf");
+        assertTrue(new File(httpdConfDirPath).mkdirs());
+
+        List<String> resourceTemplateNames = new ArrayList<>();
+        resourceTemplateNames.add("httpd.conf");
+
+        CommandOutput retFailExecData = new CommandOutput(new ExecReturnCode(1), "", "Failed secure copy");
+        CommandOutput retSuccessExecData = new CommandOutput(new ExecReturnCode(0), "", "");
+        when(webServerControlService.createDirectory(any(WebServer.class), anyString())).thenReturn(retSuccessExecData);
+        when(webServerControlService.secureCopyFile(eq(webServer.getName()), eq(AemControl.Properties.SCRIPTS_PATH + "/" + AemControl.Properties.START_SCRIPT_NAME.getValue()), anyString(), anyString())).thenReturn(retFailExecData);
+        when(impl.getWebServer(anyString())).thenReturn(webServer);
+        when(impl.isStarted(any(WebServer.class))).thenReturn(false);
+        when(impl.getResourceTemplateNames(anyString())).thenReturn(resourceTemplateNames);
+
+        try {
+            webServerServiceRest.generateAndDeployWebServer(webServer.getName(), authenticatedUser);
+        } finally {
+            FileUtils.deleteDirectory(new File(httpdConfDirPath));
+        }
+
+        System.clearProperty(ApplicationProperties.PROPERTIES_ROOT_PATH);
+    }
+
+    @Test (expected = InternalErrorException.class)
+    public void testGenerateAndDeployWebServerFailsSecureCopyScriptsStopScript() throws CommandFailureException, IOException {
+        System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, "./src/test/resources");
+        final String httpdConfDirPath = ApplicationProperties.get("paths.httpd.conf");
+        assertTrue(new File(httpdConfDirPath).mkdirs());
+
+        List<String> resourceTemplateNames = new ArrayList<>();
+        resourceTemplateNames.add("httpd.conf");
+
+        CommandOutput retFailExecData = new CommandOutput(new ExecReturnCode(1), "", "Failed secure copy");
+        CommandOutput retSuccessExecData = new CommandOutput(new ExecReturnCode(0), "", "");
+        when(webServerControlService.createDirectory(any(WebServer.class), anyString())).thenReturn(retSuccessExecData);
+        when(webServerControlService.secureCopyFile(eq(webServer.getName()), eq(AemControl.Properties.SCRIPTS_PATH + "/" + AemControl.Properties.START_SCRIPT_NAME.getValue()), anyString(), anyString())).thenReturn(retSuccessExecData);
+        when(webServerControlService.secureCopyFile(eq(webServer.getName()), eq(AemControl.Properties.SCRIPTS_PATH + "/" + AemControl.Properties.STOP_SCRIPT_NAME.getValue()), anyString(), anyString())).thenReturn(retFailExecData);
+        when(impl.getWebServer(anyString())).thenReturn(webServer);
+        when(impl.isStarted(any(WebServer.class))).thenReturn(false);
+        when(impl.getResourceTemplateNames(anyString())).thenReturn(resourceTemplateNames);
+
+        try {
+            webServerServiceRest.generateAndDeployWebServer(webServer.getName(), authenticatedUser);
+        } finally {
+            FileUtils.deleteDirectory(new File(httpdConfDirPath));
+        }
+
+        System.clearProperty(ApplicationProperties.PROPERTIES_ROOT_PATH);
+    }
+
+    @Test (expected = InternalErrorException.class)
+    public void testGenerateAndDeployWebServerFailsSecureCopyScriptsInvokeScript() throws CommandFailureException, IOException {
+        System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, "./src/test/resources");
+        final String httpdConfDirPath = ApplicationProperties.get("paths.httpd.conf");
+        assertTrue(new File(httpdConfDirPath).mkdirs());
+
+        List<String> resourceTemplateNames = new ArrayList<>();
+        resourceTemplateNames.add("httpd.conf");
+
+        CommandOutput retFailExecData = new CommandOutput(new ExecReturnCode(1), "", "Failed secure copy");
+        CommandOutput retSuccessExecData = new CommandOutput(new ExecReturnCode(0), "", "");
+        when(webServerControlService.createDirectory(any(WebServer.class), anyString())).thenReturn(retSuccessExecData);
+        when(webServerControlService.secureCopyFile(eq(webServer.getName()), eq(AemControl.Properties.SCRIPTS_PATH + "/" + AemControl.Properties.START_SCRIPT_NAME.getValue()), anyString(), anyString())).thenReturn(retSuccessExecData);
+        when(webServerControlService.secureCopyFile(eq(webServer.getName()), eq(AemControl.Properties.SCRIPTS_PATH + "/" + AemControl.Properties.STOP_SCRIPT_NAME.getValue()), anyString(), anyString())).thenReturn(retSuccessExecData);
+        when(webServerControlService.secureCopyFile(eq(webServer.getName()), eq(AemControl.Properties.SCRIPTS_PATH + "/" + AemControl.Properties.INVOKE_WS_SERVICE_SCRIPT_NAME.getValue()), anyString(), anyString())).thenReturn(retFailExecData);
+        when(impl.getWebServer(anyString())).thenReturn(webServer);
+        when(impl.isStarted(any(WebServer.class))).thenReturn(false);
+        when(impl.getResourceTemplateNames(anyString())).thenReturn(resourceTemplateNames);
+
+        try {
+            webServerServiceRest.generateAndDeployWebServer(webServer.getName(), authenticatedUser);
+        } finally {
+            FileUtils.deleteDirectory(new File(httpdConfDirPath));
+        }
+
+        System.clearProperty(ApplicationProperties.PROPERTIES_ROOT_PATH);
+    }
+
+    @Test (expected = InternalErrorException.class)
+    public void testGenerateAndDeployWebServerFailsChangeFileMode() throws CommandFailureException, IOException {
+        System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, "./src/test/resources");
+        final String httpdConfDirPath = ApplicationProperties.get("paths.httpd.conf");
+        assertTrue(new File(httpdConfDirPath).mkdirs());
+
+        List<String> resourceTemplateNames = new ArrayList<>();
+        resourceTemplateNames.add("httpd.conf");
+
+        CommandOutput retFailExecData = new CommandOutput(new ExecReturnCode(1), "", "Failed secure copy");
+        CommandOutput retSuccessExecData = new CommandOutput(new ExecReturnCode(0), "", "");
+        when(webServerControlService.createDirectory(any(WebServer.class), anyString())).thenReturn(retSuccessExecData);
+        when(webServerControlService.secureCopyFile(eq(webServer.getName()), eq(AemControl.Properties.SCRIPTS_PATH + "/" + AemControl.Properties.START_SCRIPT_NAME.getValue()), anyString(), anyString())).thenReturn(retSuccessExecData);
+        when(webServerControlService.secureCopyFile(eq(webServer.getName()), eq(AemControl.Properties.SCRIPTS_PATH + "/" + AemControl.Properties.STOP_SCRIPT_NAME.getValue()), anyString(), anyString())).thenReturn(retSuccessExecData);
+        when(webServerControlService.secureCopyFile(eq(webServer.getName()), eq(AemControl.Properties.SCRIPTS_PATH + "/" + AemControl.Properties.INVOKE_WS_SERVICE_SCRIPT_NAME.getValue()), anyString(), anyString())).thenReturn(retSuccessExecData);
+        when(webServerControlService.changeFileMode(any(WebServer.class), anyString(), anyString(), anyString())).thenReturn(retFailExecData);
+        when(impl.getWebServer(anyString())).thenReturn(webServer);
+        when(impl.isStarted(any(WebServer.class))).thenReturn(false);
+        when(impl.getResourceTemplateNames(anyString())).thenReturn(resourceTemplateNames);
+
+        try {
+            webServerServiceRest.generateAndDeployWebServer(webServer.getName(), authenticatedUser);
+        } finally {
+            FileUtils.deleteDirectory(new File(httpdConfDirPath));
+        }
+
+        System.clearProperty(ApplicationProperties.PROPERTIES_ROOT_PATH);
+    }
+
+    @Test (expected = InternalErrorException.class)
+    public void testGenerateAndDeployWebServerSecureCopyInvokeWSServiceFails() throws CommandFailureException, IOException {
+        System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, "./src/test/resources");
+        final String httpdConfDirPath = ApplicationProperties.get("paths.httpd.conf");
+        assertTrue(new File(httpdConfDirPath).mkdirs());
+        List<String> webServerResourceNames = new ArrayList<>();
+        webServerResourceNames.add("httpd.conf");
+
+        CommandOutput retSuccessExecData = new CommandOutput(new ExecReturnCode(0), "", "");
+        CommandOutput retFailExecData = new CommandOutput(new ExecReturnCode(1), "", "Failed secure copy");
+        when(webServerControlService.controlWebServer(any(ControlWebServerRequest.class), any(User.class))).thenReturn(retSuccessExecData);
+        when(webServerControlService.secureCopyFile(anyString(), anyString(), anyString(), anyString())).thenReturn(retSuccessExecData);
+        when(webServerControlService.secureCopyFile(anyString(), contains("invokeWS"), anyString(), anyString())).thenReturn(retFailExecData);
+        when(webServerControlService.createDirectory(any(WebServer.class), anyString())).thenReturn(retSuccessExecData);
+        when(webServerControlService.changeFileMode(any(WebServer.class), anyString(), anyString(), anyString())).thenReturn(retSuccessExecData);
+        when(impl.getWebServer(anyString())).thenReturn(webServer);
+        when(impl.generateHttpdConfig(anyString(), any(ResourceGroup.class))).thenReturn("innocuous content");
+        when(impl.generateInvokeWSBat(any(WebServer.class))).thenReturn("invoke me");
+        when(impl.getResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"contentType\":\"text/plain\",\"deployPath\":\"./anyPath\"}");
+        when(impl.getResourceTemplateNames(anyString())).thenReturn(webServerResourceNames);
+        when(resourceService.generateResourceGroup()).thenReturn(new ResourceGroup());
+
+
+        Response response = null;
+        try {
+            response = webServerServiceRest.generateAndDeployWebServer(webServer.getName(), authenticatedUser);
+        } finally {
+            FileUtils.deleteDirectory(new File(httpdConfDirPath));
+        }
+        assertNotNull(response);
+
+        System.clearProperty(ApplicationProperties.PROPERTIES_ROOT_PATH);
+    }
+
+    @Test (expected = InternalErrorException.class)
+    public void testGenerateAndDeployWebServerCallInvokeWSFails() throws CommandFailureException, IOException {
+        System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, "./src/test/resources");
+        final String httpdConfDirPath = ApplicationProperties.get("paths.httpd.conf");
+        assertTrue(new File(httpdConfDirPath).mkdirs());
+        List<String> webServerResourceNames = new ArrayList<>();
+        webServerResourceNames.add("httpd.conf");
+
+        CommandOutput retSuccessExecData = new CommandOutput(new ExecReturnCode(0), "", "");
+        CommandOutput retFailExecData = new CommandOutput(new ExecReturnCode(1), "", "Failed secure copy");
+        when(webServerControlService.controlWebServer(any(ControlWebServerRequest.class), any(User.class))).thenReturn(retSuccessExecData);
+        when(webServerControlService.secureCopyFile(anyString(), anyString(), anyString(), anyString())).thenReturn(retSuccessExecData);
+        when(webServerControlService.controlWebServer(eq(new ControlWebServerRequest(webServer.getId(), WebServerControlOperation.INVOKE_SERVICE)), any(User.class))).thenReturn(retFailExecData);
+        when(webServerControlService.createDirectory(any(WebServer.class), anyString())).thenReturn(retSuccessExecData);
+        when(webServerControlService.changeFileMode(any(WebServer.class), anyString(), anyString(), anyString())).thenReturn(retSuccessExecData);
+        when(impl.getWebServer(anyString())).thenReturn(webServer);
+        when(impl.generateHttpdConfig(anyString(), any(ResourceGroup.class))).thenReturn("innocuous content");
+        when(impl.generateInvokeWSBat(any(WebServer.class))).thenReturn("invoke me");
+        when(impl.getResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"contentType\":\"text/plain\",\"deployPath\":\"./anyPath\"}");
+        when(impl.getResourceTemplateNames(anyString())).thenReturn(webServerResourceNames);
+        when(resourceService.generateResourceGroup()).thenReturn(new ResourceGroup());
+
+
+        Response response = null;
+        try {
+            response = webServerServiceRest.generateAndDeployWebServer(webServer.getName(), authenticatedUser);
+        } finally {
+            FileUtils.deleteDirectory(new File(httpdConfDirPath));
+        }
+        assertNotNull(response);
+
+        System.clearProperty(ApplicationProperties.PROPERTIES_ROOT_PATH);
+    }
+
+    @Test
+    public void testGenerateAndDeployWebServerDeleteServiceForNonexistentService() throws CommandFailureException, IOException {
+        System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, "./src/test/resources");
+        final String httpdConfDirPath = ApplicationProperties.get("paths.httpd.conf");
+        assertTrue(new File(httpdConfDirPath).mkdirs());
+        List<String> webServerResourceNames = new ArrayList<>();
+        webServerResourceNames.add("httpd.conf");
+
+        CommandOutput retSuccessExecData = new CommandOutput(new ExecReturnCode(0), "", "");
+        CommandOutput retServiceDoesNotExist = new CommandOutput(new ExecReturnCode(36), "", "Service does not exist");
+        when(webServerControlService.controlWebServer(any(ControlWebServerRequest.class), any(User.class))).thenReturn(retSuccessExecData);
+        when(webServerControlService.secureCopyFile(anyString(), anyString(), anyString(), anyString())).thenReturn(retSuccessExecData);
+        when(webServerControlService.controlWebServer(eq(new ControlWebServerRequest(webServer.getId(), WebServerControlOperation.DELETE_SERVICE)), any(User.class))).thenReturn(retServiceDoesNotExist);
+        when(webServerControlService.createDirectory(any(WebServer.class), anyString())).thenReturn(retSuccessExecData);
+        when(webServerControlService.changeFileMode(any(WebServer.class), anyString(), anyString(), anyString())).thenReturn(retSuccessExecData);
+        when(impl.getWebServer(anyString())).thenReturn(webServer);
+        when(impl.generateHttpdConfig(anyString(), any(ResourceGroup.class))).thenReturn("innocuous content");
+        when(impl.generateInvokeWSBat(any(WebServer.class))).thenReturn("invoke me");
+        when(impl.getResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"contentType\":\"text/plain\",\"deployPath\":\"./anyPath\"}");
+        when(impl.getResourceTemplateNames(anyString())).thenReturn(webServerResourceNames);
+        when(resourceService.generateResourceGroup()).thenReturn(new ResourceGroup());
+
+
+        Response response = null;
+        try {
+            response = webServerServiceRest.generateAndDeployWebServer(webServer.getName(), authenticatedUser);
+        } finally {
+            FileUtils.deleteDirectory(new File(httpdConfDirPath));
+        }
+        assertNotNull(response);
+
+        System.clearProperty(ApplicationProperties.PROPERTIES_ROOT_PATH);
+    }
+
+    @Test (expected = InternalErrorException.class)
+    public void testGenerateAndDeployWebServerDeleteServiceFails() throws CommandFailureException, IOException {
+        System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, "./src/test/resources");
+        final String httpdConfDirPath = ApplicationProperties.get("paths.httpd.conf");
+        assertTrue(new File(httpdConfDirPath).mkdirs());
+        List<String> webServerResourceNames = new ArrayList<>();
+        webServerResourceNames.add("httpd.conf");
+
+        CommandOutput retSuccessExecData = new CommandOutput(new ExecReturnCode(0), "", "");
+        CommandOutput retServiceDoesNotExist = new CommandOutput(new ExecReturnCode(1), "", "Fail to delete service");
+        when(webServerControlService.controlWebServer(any(ControlWebServerRequest.class), any(User.class))).thenReturn(retSuccessExecData);
+        when(webServerControlService.secureCopyFile(anyString(), anyString(), anyString(), anyString())).thenReturn(retSuccessExecData);
+        when(webServerControlService.controlWebServer(eq(new ControlWebServerRequest(webServer.getId(), WebServerControlOperation.DELETE_SERVICE)), any(User.class))).thenReturn(retServiceDoesNotExist);
+        when(webServerControlService.createDirectory(any(WebServer.class), anyString())).thenReturn(retSuccessExecData);
+        when(webServerControlService.changeFileMode(any(WebServer.class), anyString(), anyString(), anyString())).thenReturn(retSuccessExecData);
+        when(impl.getWebServer(anyString())).thenReturn(webServer);
+        when(impl.generateHttpdConfig(anyString(), any(ResourceGroup.class))).thenReturn("innocuous content");
+        when(impl.generateInvokeWSBat(any(WebServer.class))).thenReturn("invoke me");
+        when(impl.getResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"contentType\":\"text/plain\",\"deployPath\":\"./anyPath\"}");
+        when(impl.getResourceTemplateNames(anyString())).thenReturn(webServerResourceNames);
+        when(resourceService.generateResourceGroup()).thenReturn(new ResourceGroup());
+
+        Response response = null;
+        try {
+            response = webServerServiceRest.generateAndDeployWebServer(webServer.getName(), authenticatedUser);
+        } finally {
+            FileUtils.deleteDirectory(new File(httpdConfDirPath));
+        }
+        assertNotNull(response);
+
+        System.clearProperty(ApplicationProperties.PROPERTIES_ROOT_PATH);
+    }
+
+    @Test(expected = InternalErrorException.class)
+    public void testGenerateAndDeployWebServerWhenWebServerNotStopped() {
+        when(impl.getWebServer(anyString())).thenReturn(webServer);
+        when(impl.isStarted(any(WebServer.class))).thenReturn(true);
+        webServerServiceRest.generateAndDeployWebServer(webServer.getName(), authenticatedUser);
     }
 
     @Test
