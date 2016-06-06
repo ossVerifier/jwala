@@ -137,8 +137,11 @@ var Node = React.createClass({
     },
     onClickNodeHandler: function() {
         if (this.props.theTree.state.selectedNode !== null) {
-            if ($(this.props.theTree.state.selectedNode.getDOMNode()).attr("data-reactid") === $(this.getDOMNode()).attr("data-reactid")) {
-                return;
+            // Check if node is clicked is the selected node, if it is, do nothing because it's already selected.
+            if (this.props.theTree.state.selectedNode.isMounted() &&
+                $(this.props.theTree.state.selectedNode.getDOMNode()).attr("data-reactid") === $(this.getDOMNode())
+                    .attr("data-reactid")) {
+                        return;
             }
         }
 
