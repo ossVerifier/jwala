@@ -1,22 +1,9 @@
 package com.siemens.cto.aem.persistence.jpa.domain;
 
-import java.util.List;
-
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.ManyToMany;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
-import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
-
 import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
+
+import javax.persistence.*;
+import java.util.List;
 
 @Entity
 @Table(name = "jvm", uniqueConstraints = {@UniqueConstraint(columnNames = {"name"})})
@@ -86,10 +73,10 @@ public class JpaJvm extends AbstractEntity<JpaJvm> {
 
     @Column(nullable = true)
     private String userName;
-    
+
     @Column(nullable = true)
     private String encryptedPassword;
-    
+
     public Long getId() {
         return id;
     }
@@ -204,8 +191,12 @@ public class JpaJvm extends AbstractEntity<JpaJvm> {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
 
         JpaJvm jpaJvm = (JpaJvm) o;
 
@@ -248,7 +239,7 @@ public class JpaJvm extends AbstractEntity<JpaJvm> {
                 ", ajpPort=" + ajpPort +
                 ", statusPath='" + statusPath + '\'' +
                 ", systemProperties='" + systemProperties + '\'' +
-                ", userName='" + (userName==null ? "<null>" : userName) + '\'' +
+                ", userName='" + (userName == null ? "<null>" : userName) + '\'' +
                 '}';
     }
 

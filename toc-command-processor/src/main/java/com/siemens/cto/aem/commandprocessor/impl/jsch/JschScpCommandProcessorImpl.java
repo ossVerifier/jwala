@@ -30,6 +30,7 @@ public class JschScpCommandProcessorImpl implements CommandProcessor {
 
     /**
      * Taken from the Jsch example ScpTo.java
+     *
      * @throws RemoteCommandFailureException
      */
     @Override
@@ -150,8 +151,12 @@ public class JschScpCommandProcessorImpl implements CommandProcessor {
         //          1 for error,
         //          2 for fatal error,
         //          -1
-        if (b == 0) return b;
-        if (b == -1) return b;
+        if (b == 0) {
+            return b;
+        }
+        if (b == -1) {
+            return b;
+        }
 
         if (b == 1 || b == 2) {
             StringBuffer sb = new StringBuffer(); // TODO: Find out if we can use StringBuilder instead.
@@ -159,7 +164,7 @@ public class JschScpCommandProcessorImpl implements CommandProcessor {
             do {
                 c = in.read();
                 sb.append((char) c);
-            }  while (c != '\n');
+            } while (c != '\n');
             if (b == 1) { // error
                 throw new IOException("ERROR in secure copy: " + sb.toString());
             }
@@ -182,11 +187,12 @@ public class JschScpCommandProcessorImpl implements CommandProcessor {
 
     /**
      * Prepare the session by setting session properties.
+     *
      * @param remoteSystemConnection
      * @return {@link Session}
      * @throws JSchException
      */
-    private Session prepareSession(final RemoteSystemConnection remoteSystemConnection)  throws JSchException {
+    private Session prepareSession(final RemoteSystemConnection remoteSystemConnection) throws JSchException {
         final Session session = jsch.getSession(remoteSystemConnection.getUser(), remoteSystemConnection.getHost(),
                 remoteSystemConnection.getPort());
         final String password = remoteSystemConnection.getPassword();

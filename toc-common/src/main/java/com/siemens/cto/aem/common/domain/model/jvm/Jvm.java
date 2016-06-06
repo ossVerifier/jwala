@@ -1,15 +1,15 @@
 package com.siemens.cto.aem.common.domain.model.jvm;
 
-import java.io.Serializable;
-import java.net.URI;
-import java.util.*;
-
 import com.siemens.cto.aem.common.domain.model.app.Application;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.path.Path;
 import com.siemens.cto.aem.common.domain.model.ssh.DecryptPassword;
 import com.siemens.cto.aem.common.domain.model.uri.UriBuilder;
+
+import java.io.Serializable;
+import java.net.URI;
+import java.util.*;
 
 public class Jvm implements Serializable {
 
@@ -39,8 +39,9 @@ public class Jvm implements Serializable {
 
     /**
      * Constructor for a bare minimum Jvm with group details.
-     * @param id the id
-     * @param name the jvm name
+     *
+     * @param id     the id
+     * @param name   the jvm name
      * @param groups the groups in which the web server is assigned to.
      */
     public Jvm(final Identifier<Jvm> id, final String name, final Set<Group> groups) {
@@ -89,24 +90,24 @@ public class Jvm implements Serializable {
 
     public Jvm toDecrypted() {
         return new Jvm(this.id,
-        this.jvmName,
-        this.hostName,
-        this.groups,
-        this.httpPort,
-        this.httpsPort,
-        this.redirectPort,
-        this.shutdownPort,
-        this.ajpPort,
-        this.statusPath,
-        this.systemProperties,
-        this.state,
-        this.errorStatus,
-        this.webApps,
-		this.lastUpdatedDate,
-        this.userName,
-        (this.encryptedPassword!=null && this.encryptedPassword.length()>0) ?  new DecryptPassword().decrypt(this.encryptedPassword) : "");    
+                this.jvmName,
+                this.hostName,
+                this.groups,
+                this.httpPort,
+                this.httpsPort,
+                this.redirectPort,
+                this.shutdownPort,
+                this.ajpPort,
+                this.statusPath,
+                this.systemProperties,
+                this.state,
+                this.errorStatus,
+                this.webApps,
+                this.lastUpdatedDate,
+                this.userName,
+                (this.encryptedPassword != null && this.encryptedPassword.length() > 0) ? new DecryptPassword().decrypt(this.encryptedPassword) : "");
     }
-    
+
     public Jvm(Identifier<Jvm> id,
                String jvmName,
                String hostName,
@@ -121,9 +122,9 @@ public class Jvm implements Serializable {
                String systemProperties,
                JvmState state,
                String errorStatus,
-			   Calendar lastUpdatedDate,
-			   String userName,
-			   String encryptedPassword) {
+               Calendar lastUpdatedDate,
+               String userName,
+               String encryptedPassword) {
         this.id = id;
         this.jvmName = jvmName;
         this.hostName = hostName;
@@ -205,6 +206,7 @@ public class Jvm implements Serializable {
 
     /**
      * The user friendly state wording.
+     *
      * @return the state e.g. STOPPED instead of the state name which is JVM_STOPPED.
      */
     public String getStateLabel() {
@@ -225,9 +227,9 @@ public class Jvm implements Serializable {
 
     public URI getStatusUri() {
         final UriBuilder builder = new UriBuilder().setHost(getHostName())
-                                                   .setHttpsPort(getHttpsPort())
-                                                   .setPort(getHttpPort())
-                                                   .setPath(getStatusPath());
+                .setHttpsPort(getHttpsPort())
+                .setPort(getHttpPort())
+                .setPath(getStatusPath());
         return builder.buildUnchecked();
     }
 
@@ -237,8 +239,12 @@ public class Jvm implements Serializable {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
 
         Jvm jvm = (Jvm) o;
 

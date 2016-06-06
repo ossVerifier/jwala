@@ -9,11 +9,11 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import java.util.List;
 
 public class Application {
-    
+
     private Identifier<Application> id;
-    
+
     private Group group;
-    
+
     private String webAppContext;
 
     private String name;
@@ -141,9 +141,13 @@ public class Application {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
+        if (this == o) {
+            return true;
+        }
 
-        if (o == null || getClass() != o.getClass()) return false;
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
 
         Application that = (Application) o;
 

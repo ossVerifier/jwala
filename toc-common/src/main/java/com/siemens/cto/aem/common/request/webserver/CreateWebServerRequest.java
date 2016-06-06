@@ -96,18 +96,22 @@ public class CreateWebServerRequest implements Serializable, Request {
     @Override
     public void validate() {
         new MultipleRules(new WebServerNameRule(name),
-                          new HostNameRule(host),
-                          new PortNumberRule(port, AemFaultType.INVALID_WEBSERVER_PORT),
-                          new PortNumberRule(httpsPort, AemFaultType.INVALID_WEBSERVER_HTTPS_PORT, true),
-                          new GroupIdsRule(groupIds),
-                          new StatusPathRule(statusPath)).validate();
+                new HostNameRule(host),
+                new PortNumberRule(port, AemFaultType.INVALID_WEBSERVER_PORT),
+                new PortNumberRule(httpsPort, AemFaultType.INVALID_WEBSERVER_HTTPS_PORT, true),
+                new GroupIdsRule(groupIds),
+                new StatusPathRule(statusPath)).validate();
     }
 
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
 
         CreateWebServerRequest that = (CreateWebServerRequest) o;
 

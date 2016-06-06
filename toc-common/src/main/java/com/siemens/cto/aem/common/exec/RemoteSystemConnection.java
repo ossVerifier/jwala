@@ -39,13 +39,21 @@ public class RemoteSystemConnection implements Serializable {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
 
         RemoteSystemConnection that = (RemoteSystemConnection) o;
 
-        if (!user.equals(that.user)) return false;
-        if (!host.equals(that.host)) return false;
+        if (!user.equals(that.user)) {
+            return false;
+        }
+        if (!host.equals(that.host)) {
+            return false;
+        }
         return port.equals(that.port);
 
     }

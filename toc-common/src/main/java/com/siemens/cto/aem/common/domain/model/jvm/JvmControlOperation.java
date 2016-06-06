@@ -46,7 +46,7 @@ public enum JvmControlOperation {
 
     BACK_UP_FILE("backupFile", NO_JVM_IN_PROGRESS_STATE, NO_JVM_COMPLETE_STATE, NO_JVM_FAILURE_STATE, NO_JVM_SUCCESS_KEYWORDS),
 
-    CREATE_DIRECTORY("createDirectory", NO_JVM_IN_PROGRESS_STATE, NO_JVM_COMPLETE_STATE, NO_JVM_FAILURE_STATE ,NO_JVM_SUCCESS_KEYWORDS),
+    CREATE_DIRECTORY("createDirectory", NO_JVM_IN_PROGRESS_STATE, NO_JVM_COMPLETE_STATE, NO_JVM_FAILURE_STATE, NO_JVM_SUCCESS_KEYWORDS),
 
     CHANGE_FILE_MODE("changeFileMode", NO_JVM_IN_PROGRESS_STATE, NO_JVM_COMPLETE_STATE, NO_JVM_FAILURE_STATE, NO_JVM_SUCCESS_KEYWORDS),
 
@@ -122,7 +122,9 @@ public enum JvmControlOperation {
      */
     public boolean checkForSuccess(String output) {
         for (Pattern pattern : successOutputPattern) {
-            if (pattern.matcher(output).find()) return true;
+            if (pattern.matcher(output).find()) {
+                return true;
+            }
         }
         return false;
     }

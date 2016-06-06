@@ -86,7 +86,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
         LOGGER.debug("Get JVMs requested");
         final List<Jvm> jvms = new ArrayList<Jvm>();
         for (Jvm jvm : jvmService.getJvms()) {
-          jvms.add(jvm.toDecrypted());  
+            jvms.add(jvm.toDecrypted());
         }
         return ResponseBuilder.ok(jvms);
     }
@@ -582,8 +582,9 @@ public class JvmServiceRestImpl implements JvmServiceRest {
             if (source.isDirectory()) {
                 String name = source.getPath().replace("\\", "/");
                 if (!name.isEmpty()) {
-                    if (!name.endsWith("/"))
+                    if (!name.endsWith("/")) {
                         name += "/";
+                    }
                     JarEntry entry = new JarEntry(name);
                     entry.setTime(source.lastModified());
                     target.putNextEntry(entry);
@@ -602,14 +603,16 @@ public class JvmServiceRestImpl implements JvmServiceRest {
             byte[] buffer = new byte[1024];
             while (true) {
                 int count = in.read(buffer);
-                if (count == -1)
+                if (count == -1) {
                     break;
+                }
                 target.write(buffer, 0, count);
             }
             target.closeEntry();
         } finally {
-            if (in != null)
+            if (in != null) {
                 in.close();
+            }
         }
     }
 
@@ -631,7 +634,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
 
     @Override
     public Response diagnoseJvm(Identifier<Jvm> aJvmId) {
-        LOGGER.info("Diagnose JVM {}" , aJvmId);
+        LOGGER.info("Diagnose JVM {}", aJvmId);
         String diagnosis = jvmService.performDiagnosis(aJvmId);
 
         return Response.ok(diagnosis).build();

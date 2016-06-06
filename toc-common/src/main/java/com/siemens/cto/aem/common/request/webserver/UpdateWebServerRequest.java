@@ -113,20 +113,24 @@ public class UpdateWebServerRequest implements Serializable, Request {
     public void validate() {
         final MultipleRules mr =
                 new MultipleRules(new WebServerNameRule(newName),
-                                  new HostNameRule(newHost),
-                                  new PortNumberRule(newPort, AemFaultType.INVALID_WEBSERVER_PORT),
-                                  new PortNumberRule(newHttpsPort, AemFaultType.INVALID_WEBSERVER_PORT, true),
-                                  new WebServerIdRule(id),
-                                  new GroupIdsRule(newGroupIds),
-                                  new StatusPathRule(newStatusPath));
+                        new HostNameRule(newHost),
+                        new PortNumberRule(newPort, AemFaultType.INVALID_WEBSERVER_PORT),
+                        new PortNumberRule(newHttpsPort, AemFaultType.INVALID_WEBSERVER_PORT, true),
+                        new WebServerIdRule(id),
+                        new GroupIdsRule(newGroupIds),
+                        new StatusPathRule(newStatusPath));
 
         mr.validate();
     }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
 
         UpdateWebServerRequest that = (UpdateWebServerRequest) o;
 

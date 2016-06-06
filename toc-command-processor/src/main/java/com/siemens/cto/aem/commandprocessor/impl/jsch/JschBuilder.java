@@ -43,10 +43,9 @@ public class JschBuilder {
             if (null != privateKeyFileName && new File(privateKeyFileName).exists()) {
                 jsch.addIdentity(privateKeyFileName);
             }
-        } catch(JSchException e){
-            if (e.getCause() instanceof FileNotFoundException){
-                LOGGER.error(e.getMessage());
-            } else {
+        } catch (JSchException e) {
+            LOGGER.error(e.getMessage());
+            if (!(e.getCause() instanceof FileNotFoundException)) {
                 throw new JSchException();
             }
         }

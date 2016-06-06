@@ -1,13 +1,15 @@
 package com.siemens.cto.aem.persistence.jpa.service.impl;
 
 import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
-import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.exception.NotFoundException;
 import com.siemens.cto.aem.persistence.jpa.domain.AbstractEntity;
 import com.siemens.cto.aem.persistence.jpa.service.CrudService;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.*;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
+import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
@@ -94,8 +96,9 @@ public abstract class AbstractCrudServiceImpl<T extends AbstractEntity<T>> imple
                         final Object... values) {
         final Query queryObject = entityManager.createQuery(queryString);
         if (values != null) {
-            for (int i = 0; i < values.length; i++)
+            for (int i = 0; i < values.length; i++) {
                 queryObject.setParameter(i + 1, values[i]);
+            }
         }
 
         return (T) queryObject.getSingleResult();

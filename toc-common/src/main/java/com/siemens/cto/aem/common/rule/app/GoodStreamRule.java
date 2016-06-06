@@ -11,19 +11,21 @@ import java.io.InputStream;
 
 public class GoodStreamRule implements Rule {
 
-    private final static Logger LOGGER = LoggerFactory.getLogger(GoodStreamRule.class); 
+    private final static Logger LOGGER = LoggerFactory.getLogger(GoodStreamRule.class);
 
-    private InputStream streamToValidate; 
-    
+    private InputStream streamToValidate;
+
     public GoodStreamRule(final InputStream inputStream) {
         this.streamToValidate = inputStream;
     }
 
     @Override
     public boolean isValid() {
-        if(streamToValidate == null) return false;
+        if (streamToValidate == null) {
+            return false;
+        }
         try {
-            if(streamToValidate.markSupported()) {
+            if (streamToValidate.markSupported()) {
                 streamToValidate.mark(1);
                 int val = streamToValidate.read();
                 streamToValidate.reset();
@@ -34,16 +36,16 @@ public class GoodStreamRule implements Rule {
         } catch (IOException e) {
             LOGGER.trace("Passed stream will not validate", e);
             return false;
-        }        
+        }
     }
 
     @Override
     public void validate() throws BadRequestException {
 
-        if(!isValid()) {
+        if (!isValid()) {
             throw new BadRequestException(AemFaultType.BAD_STREAM, "Cannot read uploaded file data");
         }
-        
+
     }
 
 }

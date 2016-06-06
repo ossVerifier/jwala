@@ -32,9 +32,10 @@ public class WebServer implements Serializable {
 
     /**
      * Constructor for a bare minimum web server with group details.
-     * @param theId the id
+     *
+     * @param theId     the id
      * @param theGroups the groups that the web server is assigned to.
-     * @param theName the name of the web server.
+     * @param theName   the name of the web server.
      */
     public WebServer(final Identifier<WebServer> theId,
                      final Collection<Group> theGroups,
@@ -67,7 +68,8 @@ public class WebServer implements Serializable {
                      final Path theSvrRoot,
                      final Path theDocRoot,
                      final WebServerReachableState state,
-                     final String errorStatus) { id = theId;
+                     final String errorStatus) {
+        id = theId;
         host = theHost;
         port = thePort;
         name = theName;
@@ -148,9 +150,9 @@ public class WebServer implements Serializable {
 
     public URI getStatusUri() {
         final UriBuilder builder = new UriBuilder().setHost(getHost())
-                                                   .setPort(getPort())
-                                                   .setHttpsPort(getHttpsPort())
-                                                   .setPath(getStatusPath());
+                .setPort(getPort())
+                .setHttpsPort(getHttpsPort())
+                .setPath(getStatusPath());
         return builder.buildUnchecked();
     }
 
@@ -172,6 +174,7 @@ public class WebServer implements Serializable {
 
     /**
      * The user friendly state wording.
+     *
      * @return the state e.g. STOPPED instead of the state name which is JVM_STOPPED.
      */
     public String getStateLabel() {
@@ -184,8 +187,12 @@ public class WebServer implements Serializable {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
 
         WebServer webServer = (WebServer) o;
 
