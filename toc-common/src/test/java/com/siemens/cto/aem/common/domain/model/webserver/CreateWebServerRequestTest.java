@@ -1,11 +1,10 @@
 package com.siemens.cto.aem.common.domain.model.webserver;
 
-import com.siemens.cto.aem.common.request.webserver.CreateWebServerRequest;
-import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
-import com.siemens.cto.aem.common.domain.model.path.FileSystemPath;
 import com.siemens.cto.aem.common.domain.model.path.Path;
+import com.siemens.cto.aem.common.exception.BadRequestException;
+import com.siemens.cto.aem.common.request.webserver.CreateWebServerRequest;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -21,7 +20,6 @@ public class CreateWebServerRequestTest {
     private static final Path STATUS_PATH = new Path("/statusPath");
     private static final Path SVR_ROOT = new Path("./");
     private static final Path DOC_ROOT = new Path("htdocs");
-    private static final FileSystemPath HTTP_CONFIG_FILE = new FileSystemPath("d:/some-dir/httpd.conf");
     private static final Integer portNumber = 10000;
     private static final Integer httpsPort = 20000;
 
@@ -30,11 +28,11 @@ public class CreateWebServerRequestTest {
     final Collection<Identifier<Group>> groupIdsFour = new ArrayList<>();
 
     final CreateWebServerRequest webServer =
-            new CreateWebServerRequest(groupIds, NAME, HOST, portNumber, httpsPort, STATUS_PATH, HTTP_CONFIG_FILE,
+            new CreateWebServerRequest(groupIds, NAME, HOST, portNumber, httpsPort, STATUS_PATH,
                     SVR_ROOT, DOC_ROOT, WebServerReachableState.WS_UNREACHABLE, null);
     final CreateWebServerRequest webServerTen =
-            new CreateWebServerRequest(groupIdsFour, "otherName", HOST, portNumber, httpsPort, STATUS_PATH,
-                    HTTP_CONFIG_FILE, SVR_ROOT, DOC_ROOT, WebServerReachableState.WS_UNREACHABLE, null);
+            new CreateWebServerRequest(groupIdsFour, "otherName", HOST, portNumber, httpsPort,
+                    STATUS_PATH, SVR_ROOT, DOC_ROOT, WebServerReachableState.WS_UNREACHABLE, null);
 
     @Test
     public void testGetGroups() {
@@ -70,7 +68,7 @@ public class CreateWebServerRequestTest {
     public void testInvalidPath() {
         final CreateWebServerRequest invalidPath =
                 new CreateWebServerRequest(groupIdsFour, "otherName", HOST, 0, 0, new Path("abc"),
-                        new FileSystemPath(""), SVR_ROOT, DOC_ROOT, WebServerReachableState.WS_UNREACHABLE, null);
+                        SVR_ROOT, DOC_ROOT, WebServerReachableState.WS_UNREACHABLE, null);
         invalidPath.validate();
     }
 
@@ -78,7 +76,7 @@ public class CreateWebServerRequestTest {
     public void testInvalidFileSystemPath() {
         final CreateWebServerRequest invalidPath =
                 new CreateWebServerRequest(groupIdsFour, "otherName", HOST, 0, 0, new Path("/abc"),
-                        new FileSystemPath("/some-dir/httpd.conf/"), SVR_ROOT, DOC_ROOT, WebServerReachableState.WS_UNREACHABLE, null);
+                        SVR_ROOT, DOC_ROOT, WebServerReachableState.WS_UNREACHABLE, null);
         invalidPath.validate();
     }
 }

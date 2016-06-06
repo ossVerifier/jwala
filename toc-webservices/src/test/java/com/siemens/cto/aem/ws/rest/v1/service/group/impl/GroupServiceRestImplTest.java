@@ -40,7 +40,6 @@ import org.apache.commons.fileupload.FileUploadBase;
 import org.apache.cxf.jaxrs.ext.MessageContext;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -536,7 +535,7 @@ public class GroupServiceRestImplTest {
         final AuthenticatedUser authenticatedUser = new AuthenticatedUser(securityContextMock);
 
         groupServiceRest.uploadGroupWebServerConfigTemplate("any", authenticatedUser, "any");
-        verify(mockGroupService).populateGroupWebServerTemplates(anyString(), anyList(), any(User.class));
+        verify(mockGroupService).populateGroupWebServerTemplates(anyString(), anyMap(), any(User.class));
     }
 
     @Test

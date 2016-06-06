@@ -14,6 +14,7 @@ import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
 import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateRequest;
 
 import java.util.List;
+import java.util.Map;
 
 public interface GroupService {
 
@@ -65,7 +66,7 @@ public interface GroupService {
 
     Group populateGroupJvmTemplates(String groupName, List<UploadJvmTemplateRequest> uploadJvmTemplateCommands, User user);
 
-    Group populateGroupWebServerTemplates(String groupName, List<UploadWebServerTemplateRequest> uploadWebServerTemplateRequests, User user);
+    Group populateGroupWebServerTemplates(String groupName, Map<String, UploadWebServerTemplateRequest> uploadWebServerTemplateRequests, User user);
 
     List<String> getGroupJvmsResourceTemplateNames(String groupName);
 

@@ -1,19 +1,17 @@
 package com.siemens.cto.aem.common.request.webserver;
 
-import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState;
-import com.siemens.cto.aem.common.request.Request;
 import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
-import com.siemens.cto.aem.common.domain.model.path.FileSystemPath;
 import com.siemens.cto.aem.common.domain.model.path.Path;
-import com.siemens.cto.aem.common.rule.*;
+import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState;
+import com.siemens.cto.aem.common.request.Request;
+import com.siemens.cto.aem.common.rule.HostNameRule;
+import com.siemens.cto.aem.common.rule.MultipleRules;
+import com.siemens.cto.aem.common.rule.PortNumberRule;
+import com.siemens.cto.aem.common.rule.StatusPathRule;
 import com.siemens.cto.aem.common.rule.group.GroupIdsRule;
-import com.siemens.cto.aem.common.rule.webserver.HttpConfigFileRule;
 import com.siemens.cto.aem.common.rule.webserver.WebServerNameRule;
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import java.io.Serializable;
 import java.util.Collection;
@@ -28,7 +26,6 @@ public class CreateWebServerRequest implements Serializable, Request {
     private final Integer port;
     private final Integer httpsPort;
     private final Path statusPath;
-    private final FileSystemPath httpConfigFile;
     private final Path svrRoot;
     private final Path docRoot;
     private final WebServerReachableState state;
@@ -40,7 +37,6 @@ public class CreateWebServerRequest implements Serializable, Request {
                                   final Integer thePort,
                                   final Integer theHttpsPort,
                                   final Path theStatusPath,
-                                  final FileSystemPath theHttpConfigFile,
                                   final Path theSvrRoot,
                                   final Path theDocRoot,
                                   final WebServerReachableState state,
@@ -50,12 +46,11 @@ public class CreateWebServerRequest implements Serializable, Request {
         httpsPort = theHttpsPort;
         name = theName;
         groupIds = theGroupIds;
-        statusPath = theStatusPath;
-        httpConfigFile = theHttpConfigFile;
-        svrRoot = theSvrRoot;
         docRoot = theDocRoot;
         this.state = state;
         this.errorStatus = errorStatus;
+        svrRoot = theSvrRoot;
+        statusPath = theStatusPath;
     }
 
     public Collection<Identifier<Group>> getGroups() {
@@ -80,10 +75,6 @@ public class CreateWebServerRequest implements Serializable, Request {
 
     public Path getStatusPath() {
         return statusPath;
-    }
-
-    public FileSystemPath getHttpConfigFile() {
-        return httpConfigFile;
     }
 
     public Path getSvrRoot() {
@@ -138,7 +129,6 @@ public class CreateWebServerRequest implements Serializable, Request {
                 ", port=" + port +
                 ", httpsPort=" + httpsPort +
                 ", statusPath=" + statusPath +
-                ", httpConfigFile=" + httpConfigFile +
                 ", svrRoot=" + svrRoot +
                 ", docRoot=" + docRoot +
                 ", state=" + state +

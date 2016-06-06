@@ -1,32 +1,10 @@
 package com.siemens.cto.aem.service.resource.impl;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
-
-import org.codehaus.jackson.map.ObjectMapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.expression.Expression;
-import org.springframework.expression.spel.standard.SpelExpressionParser;
-import org.springframework.expression.spel.support.StandardEvaluationContext;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.siemens.cto.aem.common.domain.model.app.Application;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
-import com.siemens.cto.aem.common.domain.model.resource.ContentType;
-import com.siemens.cto.aem.common.domain.model.resource.EntityType;
-import com.siemens.cto.aem.common.domain.model.resource.ResourceGroup;
-import com.siemens.cto.aem.common.domain.model.resource.ResourceInstance;
-import com.siemens.cto.aem.common.domain.model.resource.ResourceTemplateMetaData;
+import com.siemens.cto.aem.common.domain.model.resource.*;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.common.request.app.UploadAppTemplateRequest;
@@ -37,25 +15,33 @@ import com.siemens.cto.aem.common.request.resource.ResourceInstanceRequest;
 import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateRequest;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
 import com.siemens.cto.aem.persistence.jpa.domain.resource.config.template.ConfigTemplate;
-import com.siemens.cto.aem.persistence.service.ApplicationPersistenceService;
-import com.siemens.cto.aem.persistence.service.GroupPersistenceService;
-import com.siemens.cto.aem.persistence.service.JvmPersistenceService;
-import com.siemens.cto.aem.persistence.service.ResourcePersistenceService;
-import com.siemens.cto.aem.persistence.service.WebServerPersistenceService;
+import com.siemens.cto.aem.persistence.service.*;
 import com.siemens.cto.aem.service.app.ApplicationService;
 import com.siemens.cto.aem.service.app.PrivateApplicationService;
 import com.siemens.cto.aem.service.exception.ResourceServiceException;
 import com.siemens.cto.aem.service.resource.ResourceService;
+import com.siemens.cto.aem.template.ResourceFileGenerator;
 import com.siemens.cto.toc.files.FileManager;
 import com.siemens.cto.toc.files.RepositoryFileInformation;
 import org.apache.commons.io.IOUtils;
-import com.siemens.cto.aem.template.ResourceFileGenerator;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.expression.Expression;
+import org.springframework.expression.spel.standard.SpelExpressionParser;
+import org.springframework.expression.spel.support.StandardEvaluationContext;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.*;
 
 public class ResourceServiceImpl implements ResourceService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ResourceServiceImpl.class);
 
-    private final FileManager fileManager;
     private final SpelExpressionParser expressionParser;
     private final Expression encryptExpression;
     private final ResourcePersistenceService resourcePersistenceService;
@@ -63,8 +49,6 @@ public class ResourceServiceImpl implements ResourceService {
     private PrivateApplicationService privateApplicationService;
 
     private final String encryptExpressionString = "new com.siemens.cto.infrastructure.StpCryptoService().encryptToBase64( #stringToEncrypt )";
-
-    private ApplicationService applicationService;
 
     private ApplicationPersistenceService applicationPersistenceService;
 
@@ -84,14 +68,12 @@ public class ResourceServiceImpl implements ResourceService {
             final JvmPersistenceService jvmPersistenceService,
             final WebServerPersistenceService webServerPersistenceService,
             final PrivateApplicationService privateApplicationService) {
-        fileManager = theFileManager;
         this.resourcePersistenceService = resourcePersistenceService;
         this.groupPersistenceService = groupPersistenceService;
         this.privateApplicationService = privateApplicationService;
         expressionParser = new SpelExpressionParser();
         encryptExpression = expressionParser.parseExpression(encryptExpressionString);
         this.applicationPersistenceService = applicationPersistenceService;
-        this.applicationService = applicationService;
         this.jvmPersistenceService = jvmPersistenceService;
         this.webServerPersistenceService = webServerPersistenceService;
     }
@@ -161,7 +143,8 @@ public class ResourceServiceImpl implements ResourceService {
     @Transactional
     public CreateResourceTemplateApplicationResponseWrapper createTemplate(final InputStream metaData,
                                                                            InputStream templateData,
-                                                                           final String targetName) {
+                                                                           final String targetName,
+                                                                           final User user) {
         final ObjectMapper mapper = new ObjectMapper();
         final ResourceTemplateMetaData resourceTemplateMetaData;
         final CreateResourceTemplateApplicationResponseWrapper responseWrapper;
@@ -187,10 +170,10 @@ public class ResourceServiceImpl implements ResourceService {
                     responseWrapper = createGroupedJvmsTemplate(resourceTemplateMetaData, templateData);
                     break;
                 case WEB_SERVER:
-                    responseWrapper = createWebServerTemplate(resourceTemplateMetaData, templateData, targetName);
+                    responseWrapper = createWebServerTemplate(resourceTemplateMetaData, templateData, targetName, user);
                     break;
                 case GROUPED_WEBSERVERS:
-                    responseWrapper = createGroupedWebServersTemplate(resourceTemplateMetaData, templateData);
+                    responseWrapper = createGroupedWebServersTemplate(resourceTemplateMetaData, templateData, user);
                     break;
                 case APP:
                     responseWrapper = createApplicationTemplate(resourceTemplateMetaData, templateData, targetName);
@@ -285,13 +268,15 @@ public class ResourceServiceImpl implements ResourceService {
 
     /**
      * Create the web server template in the db and in the templates path for a specific web server entity target.
-     *  @param metaData the data that describes the template, please see {@link ResourceTemplateMetaData}
+     * @param metaData the data that describes the template, please see {@link ResourceTemplateMetaData}
      * @param templateData the template content/data
      * @param webServerName identifies the web server to which the template belongs to
+     * @param user
      */
     private CreateResourceTemplateApplicationResponseWrapper createWebServerTemplate(final ResourceTemplateMetaData metaData,
                                                                                      final InputStream templateData,
-                                                                                     final String webServerName) {
+                                                                                     final String webServerName,
+                                                                                     final User user) {
         final WebServer webServer = webServerPersistenceService.findWebServerByName(webServerName);
         final UploadWebServerTemplateRequest uploadWebArchiveRequest = new UploadWebServerTemplateRequest(webServer,
                 metaData.getTemplateName(), convertResourceTemplateMetaDataToJson(metaData), templateData) {
@@ -300,23 +285,26 @@ public class ResourceServiceImpl implements ResourceService {
                 return metaData.getDeployFileName();
             }
         };
-        return new CreateResourceTemplateApplicationResponseWrapper(webServerPersistenceService.uploadWebserverConfigTemplate(uploadWebArchiveRequest));
+        String generatedDeployPath = generateResourceFile(metaData.getDeployPath(), generateResourceGroup(), webServer);
+        return new CreateResourceTemplateApplicationResponseWrapper(webServerPersistenceService.uploadWebServerConfigTemplate(uploadWebArchiveRequest, generatedDeployPath + "/" + metaData.getDeployFileName(),user.getId()));
     }
 
     /**
      * Create the web server template in the db and in the templates path for all the web servers.
-     *
-     * @param metaData     the data that describes the template, please see {@link ResourceTemplateMetaData}
+     *  @param metaData     the data that describes the template, please see {@link ResourceTemplateMetaData}
      * @param templateData the template content/data
+     * @param user
      */
     private CreateResourceTemplateApplicationResponseWrapper createGroupedWebServersTemplate(final ResourceTemplateMetaData metaData,
-                                                                                             final InputStream templateData) throws IOException {
+                                                                                             final InputStream templateData,
+                                                                                             final User user) throws IOException {
         final Group group = groupPersistenceService.getGroupWithWebServers(metaData.getEntity().getGroup());
         final Set<WebServer> webServers = group.getWebServers();
-        final List<UploadWebServerTemplateRequest> uploadWebServerTemplateRequestList = new ArrayList<>();
+        final Map<String, UploadWebServerTemplateRequest> uploadWebServerTemplateRequestMap = new HashMap<>();
         ConfigTemplate createdConfigTemplate = null;
         String templateContent = IOUtils.toString(templateData);
         for (final WebServer webServer : webServers) {
+
             UploadWebServerTemplateRequest uploadWebServerTemplateRequest = new UploadWebServerTemplateRequest(webServer,
                     metaData.getTemplateName(), convertResourceTemplateMetaDataToJson(metaData), new ByteArrayInputStream(templateContent.getBytes())) {
                 @Override
@@ -327,7 +315,8 @@ public class ResourceServiceImpl implements ResourceService {
 
             // Since we're just creating the same template for all the JVMs, we just keep one copy of the created
             // configuration template.
-            createdConfigTemplate = webServerPersistenceService.uploadWebserverConfigTemplate(uploadWebServerTemplateRequest);
+            String generatedDeployPath = generateResourceFile(metaData.getDeployPath(), generateResourceGroup(), webServer);
+            createdConfigTemplate = webServerPersistenceService.uploadWebServerConfigTemplate(uploadWebServerTemplateRequest, generatedDeployPath + "/" + metaData.getDeployFileName(), user.getId());
         }
 
         UploadWebServerTemplateRequest uploadWebServerTemplateRequest = new UploadWebServerTemplateRequest(null,
@@ -337,8 +326,8 @@ public class ResourceServiceImpl implements ResourceService {
                 return metaData.getDeployFileName();
             }
         };
-        uploadWebServerTemplateRequestList.add(uploadWebServerTemplateRequest);
-        groupPersistenceService.populateGroupWebServerTemplates(group.getName(), uploadWebServerTemplateRequestList);
+        uploadWebServerTemplateRequestMap.put(metaData.getDeployFileName(), uploadWebServerTemplateRequest);
+        groupPersistenceService.populateGroupWebServerTemplates(group.getName(), uploadWebServerTemplateRequestMap);
         return new CreateResourceTemplateApplicationResponseWrapper(createdConfigTemplate);
     }
 

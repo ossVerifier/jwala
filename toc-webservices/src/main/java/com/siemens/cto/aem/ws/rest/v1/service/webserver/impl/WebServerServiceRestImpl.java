@@ -196,30 +196,31 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
                 LOGGER.error("The target Web Server {} must be stopped before attempting to update the resource file", aWebServerName);
                 throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "The target Web Server must be stopped before attempting to update the resource file");
             }
+
             // get the meta data
             String metaDataStr = webServerService.getResourceTemplateMetaData(aWebServerName, resourceFileName);
             ResourceTemplateMetaData metaData = new ObjectMapper().readValue(metaDataStr, ResourceTemplateMetaData.class);
 
-            String httpdUnixPath;
+            String configFilePath;
             if (metaData.getContentType().equals(ContentType.APPLICATION_BINARY.contentTypeStr)) {
-                httpdUnixPath = webServerService.getResourceTemplate(aWebServerName, resourceFileName, false, resourceService.generateResourceGroup());
+                configFilePath = webServerService.getResourceTemplate(aWebServerName, resourceFileName, false, resourceService.generateResourceGroup());
             } else {
                 // create the file
                 final String httpdDataDir = ApplicationProperties.get(STP_HTTPD_DATA_DIR);
                 final String generatedHttpdConf = webServerService.getResourceTemplate(aWebServerName, resourceFileName, true,
                         resourceService.generateResourceGroup());
                 int resourceNameDotIndex = resourceFileName.lastIndexOf(".");
-                final File httpdConfFile = createTempWebServerResourceFile(aWebServerName, httpdDataDir, resourceFileName.substring(0, resourceNameDotIndex), resourceFileName.substring(resourceNameDotIndex + 1, resourceFileName.length()), generatedHttpdConf);
+                final File configFile = createTempWebServerResourceFile(aWebServerName, httpdDataDir, resourceFileName.substring(0, resourceNameDotIndex), resourceFileName.substring(resourceNameDotIndex + 1, resourceFileName.length()), generatedHttpdConf);
 
                 // copy the file
-                httpdUnixPath = httpdConfFile.getAbsolutePath().replace("\\", "/");
+                configFilePath = configFile.getAbsolutePath().replace("\\", "/");
             }
 
             final CommandOutput execData;
             String metaDataPath = ResourceFileGenerator.generateResourceConfig(metaData.getDeployPath(), resourceService.generateResourceGroup(), webServerService.getWebServer(aWebServerName)) + "/" + resourceFileName;
-            execData = webServerControlService.secureCopyFile(aWebServerName, httpdUnixPath, metaDataPath, user.getUser().getId());
+            execData = webServerControlService.secureCopyFile(aWebServerName, configFilePath, metaDataPath, user.getUser().getId());
             if (execData.getReturnCode().wasSuccessful()) {
-                LOGGER.info("Copy of {} successful: {}", resourceFileName, httpdUnixPath);
+                LOGGER.info("Copy of {} successful: {}", resourceFileName, configFilePath);
             } else {
                 String standardError =
                         execData.getStandardError().isEmpty() ? execData.getStandardOutput() : execData
@@ -266,6 +267,9 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
                 throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "The target Web Server must be stopped before attempting to update the resource file");
             }
 
+            // check for httpd.conf template
+            checkForHttpdConfTemplate(aWebServerName);
+
             // create the remote scripts directory
             createScriptsDirectory(webServer);
 
@@ -274,7 +278,6 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
 
             // delete the service
             deleteWebServerWindowsService(aUser, new ControlWebServerRequest(webServer.getId(), WebServerControlOperation.DELETE_SERVICE), aWebServerName);
-
 
             // create the configuration file(s)
             final List<String> templateNames = webServerService.getResourceTemplateNames(aWebServerName);
@@ -300,6 +303,20 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
             wsWriteLocks.get(aWebServerName).writeLock().unlock();
         }
         return ResponseBuilder.ok(webServerService.getWebServer(aWebServerName));
+    }
+
+    protected void checkForHttpdConfTemplate(String aWebServerName) {
+        boolean foundHttpdConf = false;
+        final List<String> templateNames = webServerService.getResourceTemplateNames(aWebServerName);
+        for (final String templateName : templateNames) {
+            if (templateName.equals("httpd.conf")){
+                foundHttpdConf = true;
+                break;
+            }
+        }
+        if (!foundHttpdConf) {
+            throw new InternalErrorException(AemFaultType.WEB_SERVER_HTTPD_CONF_TEMPLATE_NOT_FOUND, "No template was found for the httpd.conf. Please upload a template for the httpd.conf and try again.");
+        }
     }
 
     protected void createScriptsDirectory(WebServer webServer) throws CommandFailureException {

@@ -1,27 +1,5 @@
 package com.siemens.cto.aem.persistence.service.group;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import org.apache.commons.lang3.StringUtils;
-import org.joda.time.DateTime;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.siemens.cto.aem.common.domain.model.app.Application;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.group.GroupState;
@@ -40,11 +18,22 @@ import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
 import com.siemens.cto.aem.common.request.state.SetStateRequest;
 import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateRequest;
 import com.siemens.cto.aem.persistence.jpa.domain.resource.config.template.ConfigTemplate;
-import com.siemens.cto.aem.persistence.service.ApplicationPersistenceService;
-import com.siemens.cto.aem.persistence.service.CommonGroupPersistenceServiceBehavior;
-import com.siemens.cto.aem.persistence.service.CommonJvmPersistenceServiceBehavior;
-import com.siemens.cto.aem.persistence.service.GroupPersistenceService;
-import com.siemens.cto.aem.persistence.service.JvmPersistenceService;
+import com.siemens.cto.aem.persistence.service.*;
+import org.apache.commons.lang3.StringUtils;
+import org.joda.time.DateTime;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
+import java.util.*;
+
+import static org.junit.Assert.*;
 
 @Transactional
 public abstract class AbstractGroupPersistenceServiceIntegrationTest {
@@ -412,7 +401,7 @@ public abstract class AbstractGroupPersistenceServiceIntegrationTest {
 
     @Test
     public void testPopulateGroupWebServerTemplates() throws FileNotFoundException {
-        List<UploadWebServerTemplateRequest> uploadCommands = new ArrayList<>();
+        Map<String, UploadWebServerTemplateRequest> uploadCommands = new HashMap<>();
         InputStream data = new FileInputStream(new File("./src/test/resources/HttpdSslConfTemplate.tpl"));
         WebServer webServer = new WebServer(new Identifier<WebServer>(1L), new HashSet<Group>(),"testWebServer");
         UploadWebServerTemplateRequest request = new UploadWebServerTemplateRequest(webServer, "HttpdSslConfTemplate.tpl", StringUtils.EMPTY, data) {
@@ -421,7 +410,7 @@ public abstract class AbstractGroupPersistenceServiceIntegrationTest {
                 return "httpd.conf";
             }
         };
-        uploadCommands.add(request);
+        uploadCommands.put("httpd.conf", request);
         groupPersistenceService.populateGroupWebServerTemplates(preCreatedGroup.getName(), uploadCommands);
     }
 

@@ -1,16 +1,18 @@
 package com.siemens.cto.aem.persistence.service;
 
-import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
-import com.siemens.cto.aem.common.exception.NotFoundException;
-import com.siemens.cto.aem.common.request.group.*;
-import com.siemens.cto.aem.common.domain.model.group.*;
+import com.siemens.cto.aem.common.domain.model.group.Group;
+import com.siemens.cto.aem.common.domain.model.group.GroupState;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.state.CurrentState;
 import com.siemens.cto.aem.common.domain.model.user.User;
+import com.siemens.cto.aem.common.exception.NotFoundException;
+import com.siemens.cto.aem.common.request.group.*;
+import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
 import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateRequest;
 import com.siemens.cto.aem.persistence.jpa.domain.resource.config.template.ConfigTemplate;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public interface GroupPersistenceService extends StatePersistenceService<Group, GroupState> {
@@ -51,7 +53,7 @@ public interface GroupPersistenceService extends StatePersistenceService<Group, 
 
     Group populateGroupJvmTemplates(String groupName, List<UploadJvmTemplateRequest> uploadJvmTemplateCommands);
 
-    Group populateGroupWebServerTemplates(String groupName, List<UploadWebServerTemplateRequest> uploadWSTemplateCommands);
+    Group populateGroupWebServerTemplates(String groupName, Map<String, UploadWebServerTemplateRequest> uploadWSTemplateCommands);
 
     List<String> getGroupJvmsResourceTemplateNames(String groupName);
 

@@ -195,10 +195,9 @@ public class AemServiceConfiguration implements SchedulingConfigurer {
 
     @Bean(name = "webServerService")
     public WebServerService getWebServerService(final ResourceService resourceService,
-                                                @Value("${paths.resource-types:D:/stp/app/data/toc/types}") final String templatePath,
-                                                @Value("${default.webserver.templates:HttpdSslConf}") final String defaultWebServerTemplateNames) {
+                                                @Value("${paths.resource-types:D:/stp/app/data/toc/types}") final String templatePath) {
         return new WebServerServiceImpl(persistenceServiceConfiguration.getWebServerPersistenceService(),
-                fileManager, resourceService, templatePath, defaultWebServerTemplateNames);
+                fileManager, resourceService, templatePath);
     }
 
     @Bean

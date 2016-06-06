@@ -49,7 +49,7 @@ public interface WebServerPersistenceService {
     void populateWebServerConfig(List<UploadWebServerTemplateRequest> uploadWSTemplateCommands,
                                  User user, boolean overwriteExisting);
 
-    JpaWebServerConfigTemplate uploadWebserverConfigTemplate(UploadWebServerTemplateRequest uploadWebServerTemplateRequest);
+    JpaWebServerConfigTemplate uploadWebServerConfigTemplate(UploadWebServerTemplateRequest uploadWebServerTemplateRequest, String absoluteDeployPath, String userId);
 
     void updateResourceTemplate(final String wsName, final String resourceTemplateName, final String template);
 

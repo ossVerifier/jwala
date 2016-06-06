@@ -51,8 +51,9 @@ public interface ResourceService {
      *                                      }
      * @param templateData the template data
      * @param targetName
+     * @param user
      */
-    CreateResourceTemplateApplicationResponseWrapper createTemplate(InputStream metaDataInputStream, InputStream templateData, String targetName);
+    CreateResourceTemplateApplicationResponseWrapper createTemplate(InputStream metaDataInputStream, InputStream templateData, String targetName, User user);
 
     /**
      * Deletes a resource template.

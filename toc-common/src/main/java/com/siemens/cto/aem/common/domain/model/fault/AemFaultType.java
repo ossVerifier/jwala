@@ -128,7 +128,9 @@ public enum AemFaultType implements MessageResponseStatus {
 
     INVALID_NUMBER_OF_ATTACHMENTS("AEM61", "InvalidNumberOfAttachments"),
 
-    SERVICE_EXCEPTION("AEM62", "ServiceException");
+    SERVICE_EXCEPTION("AEM62", "ServiceException"),
+
+    HTTPD_CONF_TEMPLATE_ALREADY_EXISTS("AEM63", "HttpdConfTemplateAlreadyExists");
 
 	private final String faultCode;
 	private final String faultMessage;

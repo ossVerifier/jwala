@@ -15,7 +15,6 @@ import com.siemens.cto.aem.service.resource.ResourceService;
 import com.siemens.cto.aem.service.webserver.WebServerService;
 import com.siemens.cto.toc.files.FileManager;
 import com.siemens.cto.toc.files.configuration.TocFileManagerConfigReference;
-import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -72,8 +71,7 @@ public class WebServerServiceImplIntegrationTest {
 
     @Before
     public void setup() {
-        webServerService = new WebServerServiceImpl(webServerPersistenceService, fileManager, resourceService,
-                "d:/stp/app/data/toc/types", "HttpdSslConf");
+        webServerService = new WebServerServiceImpl(webServerPersistenceService, fileManager, resourceService,"d:/stp/app/data/toc/types");
     }
 
     @Test(expected = NotFoundException.class)

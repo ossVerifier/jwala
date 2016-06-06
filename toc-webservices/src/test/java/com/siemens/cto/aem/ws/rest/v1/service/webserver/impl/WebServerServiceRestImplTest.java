@@ -379,11 +379,20 @@ public class WebServerServiceRestImplTest {
         System.clearProperty(ApplicationProperties.PROPERTIES_ROOT_PATH);
     }
 
+    @Test (expected = InternalErrorException.class)
+    public void testGenerateAndDeployWebServerWithNoHttpdConfTemplate() {
+        when(impl.getWebServer(anyString())).thenReturn(webServer);
+        when(impl.isStarted(any(WebServer.class))).thenReturn(false);
+        webServerServiceRest.generateAndDeployWebServer(webServer.getName(), authenticatedUser);
+    }
+
     @Test
     public void testGenerateAndDeployWebServer() throws CommandFailureException, IOException {
         System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, "./src/test/resources");
         final String httpdConfDirPath = ApplicationProperties.get("paths.httpd.conf");
         assertTrue(new File(httpdConfDirPath).mkdirs());
+        List<String> webServerResourceNames = new ArrayList<>();
+        webServerResourceNames.add("httpd.conf");
 
         CommandOutput retSuccessExecData = new CommandOutput(new ExecReturnCode(0), "", "");
         when(webServerControlService.controlWebServer(any(ControlWebServerRequest.class), any(User.class))).thenReturn(retSuccessExecData);
@@ -394,6 +403,7 @@ public class WebServerServiceRestImplTest {
         when(impl.generateHttpdConfig(anyString(), any(ResourceGroup.class))).thenReturn("innocuous content");
         when(impl.generateInvokeWSBat(any(WebServer.class))).thenReturn("invoke me");
         when(impl.getResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"contentType\":\"text/plain\",\"deployPath\":\"./anyPath\"}");
+        when(impl.getResourceTemplateNames(anyString())).thenReturn(webServerResourceNames);
         when(resourceService.generateResourceGroup()).thenReturn(new ResourceGroup());
 
 

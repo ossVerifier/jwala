@@ -235,7 +235,7 @@ public class GroupServiceImpl implements GroupService {
 
     @Override
     @Transactional
-    public Group populateGroupWebServerTemplates(String groupName, List<UploadWebServerTemplateRequest> uploadWSTemplateCommands, User user) {
+    public Group populateGroupWebServerTemplates(String groupName, Map<String, UploadWebServerTemplateRequest> uploadWSTemplateCommands, User user) {
         return groupPersistenceService.populateGroupWebServerTemplates(groupName, uploadWSTemplateCommands);
     }
 

@@ -332,6 +332,8 @@ public class GroupServiceImplDeployTest {
         WebServer mockWebServer = mock(WebServer.class);
         mockWSList.add(mockWebServer);
         CommandOutput successCommandOutput = new CommandOutput(new ExecReturnCode(0), "SUCCESS", "");
+        List<String> resourceTemplateNames = new ArrayList<>();
+        resourceTemplateNames.add("httpd.conf");
 
         when(mockWebServer.getName()).thenReturn("webServerName");
         when(mockGroup.getId()).thenReturn(new Identifier<Group>(111L));
@@ -348,6 +350,7 @@ public class GroupServiceImplDeployTest {
         when(mockWebServerService.generateHttpdConfig(anyString(), any(ResourceGroup.class))).thenReturn("httpd.conf content");
         when(mockWebServerControlService.secureCopyFile(anyString(), anyString(), anyString(), anyString())).thenReturn(successCommandOutput);
         when(mockWebServerService.generateInvokeWSBat(any(WebServer.class))).thenReturn("invokeWS.bat content");
+        when(mockWebServerService.getResourceTemplateNames(anyString())).thenReturn(resourceTemplateNames);
 
         Response response = groupServiceRest.generateGroupWebservers(mockGroup.getId(), mockAuthUser);
         assertNotNull(response);

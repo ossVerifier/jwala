@@ -1,36 +1,5 @@
 package com.siemens.cto.aem.service.resource;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyBoolean;
-import static org.mockito.Matchers.anyList;
-import static org.mockito.Matchers.anyLong;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import org.apache.commons.lang.StringUtils;
-import org.codehaus.groovy.runtime.ResourceGroovyMethods;
-import org.joda.time.DateTime;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.mockito.internal.verification.Times;
-
 import com.siemens.cto.aem.common.domain.model.app.Application;
 import com.siemens.cto.aem.common.domain.model.group.CurrentGroupState;
 import com.siemens.cto.aem.common.domain.model.group.Group;
@@ -53,17 +22,40 @@ import com.siemens.cto.aem.common.request.jvm.UploadJvmConfigTemplateRequest;
 import com.siemens.cto.aem.common.request.resource.ResourceInstanceRequest;
 import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateRequest;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
-import com.siemens.cto.aem.persistence.service.ApplicationPersistenceService;
-import com.siemens.cto.aem.persistence.service.GroupPersistenceService;
-import com.siemens.cto.aem.persistence.service.JvmPersistenceService;
-import com.siemens.cto.aem.persistence.service.ResourcePersistenceService;
-import com.siemens.cto.aem.persistence.service.WebServerPersistenceService;
+import com.siemens.cto.aem.persistence.service.*;
 import com.siemens.cto.aem.service.app.ApplicationService;
 import com.siemens.cto.aem.service.app.PrivateApplicationService;
 import com.siemens.cto.aem.service.exception.ResourceServiceException;
 import com.siemens.cto.aem.service.resource.impl.ResourceServiceImpl;
 import com.siemens.cto.toc.files.FileManager;
 import com.siemens.cto.toc.files.RepositoryFileInformation;
+import org.apache.commons.lang.StringUtils;
+import org.codehaus.groovy.runtime.ResourceGroovyMethods;
+import org.joda.time.DateTime;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.mockito.internal.verification.Times;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import static org.junit.Assert.*;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyBoolean;
+import static org.mockito.Matchers.anyList;
+import static org.mockito.Matchers.anyLong;
+import static org.mockito.Matchers.anyMap;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.*;
 
 /**
  * Unit tests for {@link ResourceService}.
@@ -250,7 +242,9 @@ public class ResourceServiceImplTest {
         when(mockJvm.getSystemProperties()).thenReturn(null);
         when(mockGroupPesistenceService.getGroup(anyString())).thenReturn(mockGroup);
         when(mockJvmPersistenceService.findJvmByExactName(anyString())).thenReturn(mockJvm);
-        resourceService.createTemplate(metaDataIn, templateIn, "some jvm");
+        User mockUser = mock(User.class);
+        when(mockUser.getId()).thenReturn("user-id");
+        resourceService.createTemplate(metaDataIn, templateIn, "some jvm", mockUser);
         verify(mockJvmPersistenceService).findJvmByExactName("some jvm");
         verify(mockJvmPersistenceService).uploadJvmTemplateXml(any(UploadJvmConfigTemplateRequest.class));
     }
@@ -268,7 +262,9 @@ public class ResourceServiceImplTest {
         final Group mockGroup = mock(Group.class);
         when(mockGroup.getJvms()).thenReturn(jvmSet);
         when(mockGroupPesistenceService.getGroup(eq("HEALTH CHECK 4.0"))).thenReturn(mockGroup);
-        resourceService.createTemplate(metaDataIn, templateIn, "test-app-name");
+        User mockUser = mock(User.class);
+        when(mockUser.getId()).thenReturn("user-id");
+        resourceService.createTemplate(metaDataIn, templateIn, "test-app-name", mockUser);
         verify(mockJvmPersistenceService, new Times(2)).uploadJvmTemplateXml(any(UploadJvmConfigTemplateRequest.class));
         verify(mockGroupPesistenceService).populateGroupJvmTemplates(eq("HEALTH CHECK 4.0"), any(List.class));
     }
@@ -279,9 +275,11 @@ public class ResourceServiceImplTest {
                 .getResourceAsStream("resource-service-test-files/create-ws-template-test-metadata.json");
         final InputStream templateIn = this.getClass().getClassLoader()
                 .getResourceAsStream("resource-service-test-files/httpd.conf.tpl");
-        resourceService.createTemplate(metaDataIn, templateIn, "some webserver");
+        User mockUser = mock(User.class);
+        when(mockUser.getId()).thenReturn("user-id");
+        resourceService.createTemplate(metaDataIn, templateIn, "some webserver", mockUser);
         verify(mockWebServerPersistenceService).findWebServerByName("some webserver");
-        verify(mockWebServerPersistenceService).uploadWebserverConfigTemplate(any(UploadWebServerTemplateRequest.class));
+        verify(mockWebServerPersistenceService).uploadWebServerConfigTemplate(any(UploadWebServerTemplateRequest.class), eq("/conf/httpd.conf"), eq("user-id"));
     }
 
     @Test
@@ -298,9 +296,11 @@ public class ResourceServiceImplTest {
         when(mockGroup.getWebServers()).thenReturn(webServerSet);
         when(mockGroup.getName()).thenReturn("HEALTH CHECK 4.0");
         when(mockGroupPesistenceService.getGroupWithWebServers(eq("HEALTH CHECK 4.0"))).thenReturn(mockGroup);
-        resourceService.createTemplate(metaDataIn, templateIn, "test-app-name");
-        verify(mockWebServerPersistenceService, new Times(2)).uploadWebserverConfigTemplate(any(UploadWebServerTemplateRequest.class));
-        verify(mockGroupPesistenceService).populateGroupWebServerTemplates(eq("HEALTH CHECK 4.0"), any(List.class));
+        User mockUser = mock(User.class);
+        when(mockUser.getId()).thenReturn("user-id");
+        resourceService.createTemplate(metaDataIn, templateIn, "test-app-name", mockUser);
+        verify(mockWebServerPersistenceService, new Times(2)).uploadWebServerConfigTemplate(any(UploadWebServerTemplateRequest.class), eq("/conf/httpd.conf"), eq("user-id"));
+        verify(mockGroupPesistenceService).populateGroupWebServerTemplates(eq("HEALTH CHECK 4.0"), anyMap());
     }
 
     @Test
@@ -313,7 +313,9 @@ public class ResourceServiceImplTest {
         JpaJvm mockJpaJvm = mock(JpaJvm.class);
         when(mockJvmPersistenceService.findJvmByExactName(anyString())).thenReturn(mockJvm);
         when(mockJvmPersistenceService.getJpaJvm(any(Identifier.class), anyBoolean())).thenReturn(mockJpaJvm);
-        resourceService.createTemplate(metaDataIn, templateIn, "test-jvm-name");
+        User mockUser = mock(User.class);
+        when(mockUser.getId()).thenReturn("user-id");
+        resourceService.createTemplate(metaDataIn, templateIn, "test-jvm-name", mockUser);
         verify(mockAppPersistenceService).getApplication("some application");
         verify(mockAppPersistenceService).uploadAppTemplate(any(UploadAppTemplateRequest.class), any(JpaJvm.class));
     }
@@ -333,7 +335,9 @@ public class ResourceServiceImplTest {
         when(mockJvmPersistenceService.findJvmByExactName(anyString())).thenReturn(mockJvm);
         when(mockJvmPersistenceService.getJpaJvm(any(Identifier.class), anyBoolean())).thenReturn(mockJpaJvm);
         when(mockPrivateApplicationService.uploadWebArchiveData(any(UploadWebArchiveRequest.class))).thenReturn(mockRepoFilInfo);
-        resourceService.createTemplate(metaDataIn, templateIn, "test-jvm-name");
+        User mockUser = mock(User.class);
+        when(mockUser.getId()).thenReturn("user-id");
+        resourceService.createTemplate(metaDataIn, templateIn, "test-jvm-name", mockUser);
         verify(mockAppPersistenceService).getApplication("some application");
         verify(mockAppPersistenceService).uploadAppTemplate(any(UploadAppTemplateRequest.class), any(JpaJvm.class));
     }
@@ -360,7 +364,9 @@ public class ResourceServiceImplTest {
         when(mockJvm.getJvmName()).thenReturn("test-jvm-name");
         when(mockAppPersistenceService.findApplicationsBelongingTo(eq("HEALTH CHECK 4.0"))).thenReturn(appList);
         when(mockGroupPesistenceService.getGroup(eq("HEALTH CHECK 4.0"))).thenReturn(mockGroup);
-        resourceService.createTemplate(metaDataIn, templateIn, "test-app-name");
+        User mockUser = mock(User.class);
+        when(mockUser.getId()).thenReturn("user-id");
+        resourceService.createTemplate(metaDataIn, templateIn, "test-app-name", mockUser);
         verify(mockAppPersistenceService).uploadAppTemplate(any(UploadAppTemplateRequest.class), any(JpaJvm.class));
         verify(mockGroupPesistenceService).populateGroupAppTemplate(anyString(), anyString(), anyString(), anyString(), anyString());
     }

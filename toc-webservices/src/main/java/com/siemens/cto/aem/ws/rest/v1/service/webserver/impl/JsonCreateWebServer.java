@@ -4,7 +4,6 @@ import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.id.IdentifierSetBuilder;
-import com.siemens.cto.aem.common.domain.model.path.FileSystemPath;
 import com.siemens.cto.aem.common.domain.model.path.Path;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState;
 import com.siemens.cto.aem.common.exception.BadRequestException;
@@ -30,7 +29,6 @@ public class JsonCreateWebServer {
     private final String hostName;
     private final String httpsPort;
     private final String statusPath;
-    private final String httpConfigFile;
     private final String svrRoot;
     private final String docRoot;
 
@@ -40,7 +38,6 @@ public class JsonCreateWebServer {
                                final String theHttpsPort,
                                final Set<String> theGroupIds,
                                final String theStatusPath,
-                               final String theHttpConfigFile,
                                final String theSvrRoot,
                                final String theDocRoot) {
         webserverName = theName;
@@ -49,7 +46,6 @@ public class JsonCreateWebServer {
         httpsPort = theHttpsPort;
         groupIds = Collections.unmodifiableSet(new HashSet<>(theGroupIds));
         statusPath = theStatusPath;
-        httpConfigFile = theHttpConfigFile;
         svrRoot = theSvrRoot;
         docRoot = theDocRoot;
     }
@@ -64,7 +60,7 @@ public class JsonCreateWebServer {
                 null);
 
         return new CreateWebServerRequest(ids, webserverName, hostName, port, securePort, new Path(statusPath),
-                new FileSystemPath(httpConfigFile), new Path(svrRoot), new Path(docRoot),
+                new Path(svrRoot), new Path(docRoot),
                 WebServerReachableState.WS_NEW, null);
     }
 
@@ -99,7 +95,6 @@ public class JsonCreateWebServer {
                 ", hostName='" + hostName + '\'' +
                 ", httpsPort='" + httpsPort + '\'' +
                 ", statusPath='" + statusPath + '\'' +
-                ", httpConfigFile='" + httpConfigFile + '\'' +
                 ", svrRoot='" + svrRoot + '\'' +
                 ", docRoot='" + docRoot + '\'' +
                 '}';
@@ -120,9 +115,8 @@ public class JsonCreateWebServer {
                     node.get("hostName").getTextValue(),
                     node.get("portNumber").getValueAsText(),
                     node.get("httpsPort").getValueAsText(),
-                    deserializeGroupIdentifiers(node),
+                       deserializeGroupIdentifiers(node),
                     node.get("statusPath").getTextValue(),
-                    node.get("httpConfigFile").getTextValue(),
                     node.get("svrRoot").getTextValue(),
                     node.get("docRoot").getTextValue());
             return jcws;

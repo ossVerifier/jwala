@@ -4,6 +4,7 @@ import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.resource.ResourceGroup;
+import com.siemens.cto.aem.common.domain.model.resource.ResourceTemplateMetaData;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState;
@@ -20,6 +21,7 @@ import com.siemens.cto.aem.service.webserver.exception.WebServerServiceException
 import com.siemens.cto.aem.template.ResourceFileGenerator;
 import com.siemens.cto.toc.files.FileManager;
 import org.apache.commons.io.FileUtils;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Propagation;
@@ -45,14 +47,11 @@ public class WebServerServiceImpl implements WebServerService {
 
     private final String templatePath;
 
-    private final String defaultWebServerTemplateNames;
-
     public WebServerServiceImpl(final WebServerPersistenceService webServerPersistenceService, final FileManager fileManager,
-                                final ResourceService resourceService, final String templatePath, final String defaultWebServerTemplateNames) {
+                                final ResourceService resourceService, final String templatePath) {
         this.webServerPersistenceService = webServerPersistenceService;
         this.fileManager = fileManager;
         this.templatePath = templatePath;
-        this.defaultWebServerTemplateNames = defaultWebServerTemplateNames;
         this.resourceService = resourceService;
     }
 
@@ -73,7 +72,7 @@ public class WebServerServiceImpl implements WebServerService {
                 createWebServerRequest.getPort(),
                 createWebServerRequest.getHttpsPort(),
                 createWebServerRequest.getStatusPath(),
-                createWebServerRequest.getHttpConfigFile(),
+                null,
                 createWebServerRequest.getSvrRoot(),
                 createWebServerRequest.getDocRoot(),
                 createWebServerRequest.getState(),
@@ -191,7 +190,7 @@ public class WebServerServiceImpl implements WebServerService {
         final WebServer server = webServerPersistenceService.findWebServerByName(aWebServerName);
 
         try {
-            String httpdConfText = webServerPersistenceService.getResourceTemplate(aWebServerName, "httpd.conf");
+            String httpdConfText = webServerPersistenceService.getResourceTemplate(aWebServerName, HTTPD_CONF);
             return ResourceFileGenerator.generateResourceConfig(httpdConfText, resourceGroup, server);
         } catch (NonRetrievableResourceTemplateContentException nrtce) {
             LOGGER.error("Failed to retrieve resource template from the database", nrtce);
@@ -233,7 +232,16 @@ public class WebServerServiceImpl implements WebServerService {
     @Transactional
     public JpaWebServerConfigTemplate uploadWebServerConfig(UploadWebServerTemplateRequest uploadWebServerTemplateRequest, User user) {
         uploadWebServerTemplateRequest.validate();
-        return webServerPersistenceService.uploadWebserverConfigTemplate(uploadWebServerTemplateRequest);
+        final String metaDataStr = uploadWebServerTemplateRequest.getMetaData();
+        final String absoluteDeployPath;
+        try{
+            ResourceTemplateMetaData metaData = new ObjectMapper().readValue(metaDataStr, ResourceTemplateMetaData.class);
+            absoluteDeployPath = metaData.getDeployPath() + "/" + metaData.getDeployFileName();
+        } catch (IOException e) {
+            LOGGER.error("Failed to map meta data for web server {} while uploading template {}", uploadWebServerTemplateRequest.getWebServer().getName(), uploadWebServerTemplateRequest.getConfFileName(), e);
+            throw new InternalErrorException(AemFaultType.BAD_STREAM, "Unable to map the meta data for template " + uploadWebServerTemplateRequest.getConfFileName(), e);
+        }
+        return webServerPersistenceService.uploadWebServerConfigTemplate(uploadWebServerTemplateRequest, absoluteDeployPath, user.getId());
     }
 
     @Override

@@ -132,7 +132,7 @@ public class WebServerServiceImplTest {
         mockWebServers11.add(mockWebServer);
         mockWebServers12.add(mockWebServer2);
 
-        wsService = new WebServerServiceImpl(webServerPersistenceService, fileManager, resourceService, StringUtils.EMPTY, StringUtils.EMPTY);
+        wsService = new WebServerServiceImpl(webServerPersistenceService, fileManager, resourceService, StringUtils.EMPTY);
 
         when(repositoryFileInformation.getType()).thenReturn(RepositoryFileInformation.Type.NONE);
         when(fileManager.getAbsoluteLocation(any(TocFile.class))).thenAnswer(new Answer<String>() {
@@ -196,7 +196,6 @@ public class WebServerServiceImplTest {
                                                                 mockWebServer.getPort(),
                                                                 mockWebServer.getHttpsPort(),
                                                                 mockWebServer.getStatusPath(),
-                                                                mockWebServer.getHttpConfigFile(),
                                                                 mockWebServer.getSvrRoot(),
                                                                 mockWebServer.getDocRoot(),
                                                                 mockWebServer.getState(),
@@ -402,8 +401,9 @@ public class WebServerServiceImplTest {
     @Test
     public void testUploadWebServerConfig() {
         UploadWebServerTemplateRequest request = mock(UploadWebServerTemplateRequest.class);
+        when(request.getMetaData()).thenReturn("{\"deployPath\":\"d:/httpd-data\",\"deployFileName\":\"httpd.conf\"}");
         wsService.uploadWebServerConfig(request, testUser);
-        verify(webServerPersistenceService).uploadWebserverConfigTemplate(request);
+        verify(webServerPersistenceService).uploadWebServerConfigTemplate(eq(request), anyString(), eq("testUser"));
     }
 
     @Test

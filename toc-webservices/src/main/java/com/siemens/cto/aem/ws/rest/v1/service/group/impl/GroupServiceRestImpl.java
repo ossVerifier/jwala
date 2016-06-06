@@ -655,8 +655,8 @@ public class GroupServiceRestImpl implements GroupServiceRest {
                 return templateName;
             }
         };
-        List<UploadWebServerTemplateRequest> uploadWSTemplateCommands = new ArrayList<>();
-        uploadWSTemplateCommands.add(uploadWSTemplateRequest);
+        Map<String, UploadWebServerTemplateRequest> uploadWSTemplateCommands = new HashMap<>();
+        uploadWSTemplateCommands.put(templateName, uploadWSTemplateRequest);
         return ResponseBuilder.created(groupService.populateGroupWebServerTemplates(groupName, uploadWSTemplateCommands, aUser.getUser()));
     }
 

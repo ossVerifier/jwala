@@ -124,7 +124,7 @@ public class ResourceServiceRestImplTest {
         String tplContent = "template content";
         when(tplDataHandler.getInputStream()).thenReturn(new ByteArrayInputStream(tplContent.getBytes()));
 
-        when(impl.createTemplate(any(InputStream.class), any(InputStream.class), anyString())).thenReturn(new CreateResourceTemplateApplicationResponseWrapper(new ConfigTemplate()));
+        when(impl.createTemplate(any(InputStream.class), any(InputStream.class), anyString(), any(User.class))).thenReturn(new CreateResourceTemplateApplicationResponseWrapper(new ConfigTemplate()));
         Response response = cut.createTemplate(attachmentList, "test-target-name", authenticatedUser);
 
         assertEquals(Response.Status.CREATED.getStatusCode(), response.getStatus());
@@ -146,7 +146,7 @@ public class ResourceServiceRestImplTest {
         when(jsonDataHandler.getInputStream()).thenThrow(new IOException());
         when(tplDataHandler.getInputStream()).thenThrow(new IOException());
 
-        when(impl.createTemplate(any(InputStream.class), any(InputStream.class), anyString())).thenReturn(new CreateResourceTemplateApplicationResponseWrapper(new ConfigTemplate()));
+        when(impl.createTemplate(any(InputStream.class), any(InputStream.class), anyString(), any(User.class))).thenReturn(new CreateResourceTemplateApplicationResponseWrapper(new ConfigTemplate()));
         Response response = cut.createTemplate(attachmentList, "test-target-name", authenticatedUser);
 
         assertEquals(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), response.getStatus());
@@ -161,7 +161,7 @@ public class ResourceServiceRestImplTest {
         when(json.getDataHandler()).thenReturn(jsonDataHandler);
         when(jsonDataHandler.getName()).thenReturn("test-target.json");
 
-        when(impl.createTemplate(any(InputStream.class), any(InputStream.class), anyString())).thenReturn(new CreateResourceTemplateApplicationResponseWrapper(new ConfigTemplate()));
+        when(impl.createTemplate(any(InputStream.class), any(InputStream.class), anyString(), any(User.class))).thenReturn(new CreateResourceTemplateApplicationResponseWrapper(new ConfigTemplate()));
         Response response = cut.createTemplate(attachmentList, "test-target-name", authenticatedUser);
 
         assertEquals(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), response.getStatus());

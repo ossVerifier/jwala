@@ -22,8 +22,6 @@ import com.siemens.cto.aem.persistence.service.WebServerPersistenceService;
 import com.siemens.cto.aem.service.VerificationBehaviorSupport;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.File;
@@ -276,7 +274,7 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
 
     @Test
     public void testPopulateGroupWebServerTemplates() throws FileNotFoundException {
-        List<UploadWebServerTemplateRequest> uploadRequests = new ArrayList<>();
+        Map<String, UploadWebServerTemplateRequest> uploadRequests = new HashMap<>();
         InputStream data = new FileInputStream(new File("./src/test/resources/HttpdSslConfTemplate.tpl"));
         UploadWebServerTemplateRequest uploadWSRequest = new UploadWebServerTemplateRequest(new WebServer(new Identifier<WebServer>(11L),
                 new HashSet<Group>(), "testWebServer"), "HttpdSslConfTemplate.tpl", StringUtils.EMPTY, data) {
@@ -285,7 +283,7 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
                 return "httpd.conf";
             }
         };
-        uploadRequests.add(uploadWSRequest);
+        uploadRequests.put("httpd.conf", uploadWSRequest);
         groupService.populateGroupWebServerTemplates("testGroupName", uploadRequests, user);
         verify(groupPersistenceService, times(1)).populateGroupWebServerTemplates("testGroupName", uploadRequests);
     }
