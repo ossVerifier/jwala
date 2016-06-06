@@ -620,8 +620,20 @@ public class ApplicationServiceRestImplTest {
         applicationServiceRest.deployWebArchive(new Identifier<Application>(111L), authenticatedUser);
 
         verify(service).copyApplicationWarToGroupHosts(any(Application.class));
-//        TODO do not propagate the default application templates since they are healthcheck specific
-//        verify(service).copyApplicationConfigToGroupJvms(any(Group.class), anyString(), any(User.class));
+    }
+
+    @Test
+    public void testDeployWarWithNoJvms() {
+        Application mockApplication = mock(Application.class);
+        Group mockGroup = mock(Group.class);
+        Set<Jvm> jvmSet = new HashSet<>();
+        when(mockApplication.getName()).thenReturn("appName");
+        when(mockApplication.getGroup()).thenReturn(mockGroup);
+        when(mockGroup.getJvms()).thenReturn(jvmSet);
+        when(service.getApplication(any(Identifier.class))).thenReturn(mockApplication);
+
+        Response response = applicationServiceRest.deployWebArchive(new Identifier<Application>(111L), authenticatedUser);
+        assertEquals(200, response.getStatus());
     }
 
     @Test
