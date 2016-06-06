@@ -1,7 +1,6 @@
 package com.siemens.cto.toc.files;
 
 import com.siemens.cto.aem.common.domain.model.app.Application;
-import com.siemens.cto.aem.common.domain.model.resource.ResourceType;
 import com.siemens.cto.toc.files.impl.FileManagerImpl;
 import com.siemens.cto.toc.files.impl.LocalFileSystemRepositoryServiceImpl;
 import com.siemens.cto.toc.files.impl.PropertyFilesConfigurationImpl;
@@ -19,7 +18,6 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.*;
-import java.util.Collection;
 import java.util.Properties;
 
 import static org.junit.Assert.assertEquals;
@@ -79,20 +77,6 @@ public class FileManagerTest {
     ByteArrayInputStream uploadedFile;
     Application app;
 
-    @Test
-    public void testGetResourceTypes() throws IOException { 
-       
-       Path storageFolder = filesConfiguration.getConfiguredPath(TocPath.RESOURCE_TYPES);
-       try(BufferedWriter writer = Files.newBufferedWriter(storageFolder.resolve("MySql XA Database.json"), Charset.defaultCharset(), StandardOpenOption.CREATE)) {
-           writer.write("{\"name\":\"MySql XA Database\",\"contentType\":\"application/xml\", \"properties\":[{\"name\":\"\u0032\", \"meta1\":\"meta1\"},{\"name\":\"name two\", \"meta2\" :\"meta two\"}]}");
-           writer.flush();
-           writer.close();
-           Collection<ResourceType> rtypes = fileManager.getResourceTypes();
-           assertEquals(1, rtypes.size());
-           assertEquals("MySql XA Database", rtypes.iterator().next().getName());
-       }
-       
-    }
     @Test
     public void testGetResourceTypeTemplate() throws IOException {
         Path storageFolder = filesConfiguration.getConfiguredPath(TocPath.RESOURCE_TYPES);

@@ -1,6 +1,5 @@
 package com.siemens.cto.toc.files.impl;
 
-import com.siemens.cto.aem.common.domain.model.resource.ResourceType;
 import com.siemens.cto.toc.files.*;
 import com.siemens.cto.toc.files.RepositoryFileInformation.Type;
 import com.siemens.cto.toc.files.resources.ResourceTypeDeserializer;
@@ -9,11 +8,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.file.*;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 
 public class FileManagerImpl implements FileManager {
 
@@ -30,24 +29,6 @@ public class FileManagerImpl implements FileManager {
     @Override
     public String getAbsoluteLocation(TocFile templateName) throws IOException {
         return fileSystemStorage.find(TocPath.TEMPLATES, FileSystems.getDefault().getPath(templateName.getFileName())).getFoundPath().toString();
-    }
-
-
-    @Override
-    public Collection<ResourceType> getResourceTypes() throws IOException {
-
-        RepositoryFileInformation action = fileSystemStorage.findAll(TocPath.RESOURCE_TYPES, JSON);
-        if (action.getType() == Type.FOUND) {
-            Collection<ResourceType> results = new ArrayList<ResourceType>();
-            for (Path path : action) {
-                results.add(resourceTypeDeserializer.loadResourceType(path));
-            }
-
-            return results;
-        } else {
-            return Collections.<ResourceType>emptyList();
-        }
-
     }
 
     @Override
@@ -75,21 +56,6 @@ public class FileManagerImpl implements FileManager {
             LOGGER.error("Failed to read {}", resourceTypeName, ioe);
         }
         return null;
-    }
-
-    @Override
-    public Path getTemplatePathForResourceType(ResourceType template) throws IOException {
-        RepositoryFileInformation action = fileSystemStorage.findAll(TocPath.RESOURCE_TYPES, "*.json");
-        if (action.getType() == Type.FOUND) {
-            for (Path path : action) {
-                ResourceType type = resourceTypeDeserializer.loadResourceType(path);
-                if (type.isValid() && type.getName().equals(template.getName())) {
-                    String baseName = ResourceTypeDeserializer.parseRootNameFromFile(path);
-                    return path.getParent().resolve(baseName + "Template.tpl");
-                }
-            }
-        }
-        throw new FileNotFoundException("xxxTemplate.tpl file for " + template.getName());
     }
 
     @Override
