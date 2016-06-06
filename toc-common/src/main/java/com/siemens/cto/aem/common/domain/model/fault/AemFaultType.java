@@ -130,7 +130,9 @@ public enum AemFaultType implements MessageResponseStatus {
 
     SERVICE_EXCEPTION("AEM62", "ServiceException"),
 
-    HTTPD_CONF_TEMPLATE_ALREADY_EXISTS("AEM63", "HttpdConfTemplateAlreadyExists");
+    HTTPD_CONF_TEMPLATE_ALREADY_EXISTS("AEM63", "HttpdConfTemplateAlreadyExists"),
+
+    INVALID_REST_SERVICE_PARAMETER("AEM64", "InvalidRestServiceParameter");
 
 	private final String faultCode;
 	private final String faultMessage;

@@ -23,7 +23,8 @@ import javax.persistence.*;
         @NamedQuery(name = JpaWebServerConfigTemplate.GET_WEBSERVER_TEMPLATE,
         query = "SELECT t FROM JpaWebServerConfigTemplate t where t.webServer.name = :webServerName and t.templateName = :templateName"),
         @NamedQuery(name = JpaWebServerConfigTemplate.QUERY_DELETE_WEB_SERVER_TEMPLATE, query="DELETE FROM JpaWebServerConfigTemplate t WHERE t.templateName = :templateName"),
-        @NamedQuery(name = JpaWebServerConfigTemplate.QUERY_DELETE_WEB_SERVER_TEMPLATE_BY_WEBSERVER_NAME, query="DELETE FROM JpaWebServerConfigTemplate t WHERE t.templateName = :templateName AND t.webServer.name = :webServerName"),
+        @NamedQuery(name = JpaWebServerConfigTemplate.QUERY_DELETE_WEBSERVER_RESOURCE_BY_TEMPLATE_WEBSERVER_NAME,
+                    query="DELETE FROM JpaWebServerConfigTemplate t WHERE t.templateName = :templateName AND t.webServer.name = :webServerName"),
         @NamedQuery(name = JpaWebServerConfigTemplate.QUERY_GET_WEBSERVER_RESOURCE_TEMPLATES,
                 query = "SELECT t FROM JpaWebServerConfigTemplate t WHERE t.webServer.name = :webServerName"),
         @NamedQuery(name = JpaWebServerConfigTemplate.GET_WEBSERVER_TEMPLATE_RESOURCE_NAME, query = "SELECT t.templateName WHERE t.templateName = :templateName AND t.webServer.name = :webServerName")
@@ -35,7 +36,7 @@ public class JpaWebServerConfigTemplate extends ConfigTemplate {
     public static final String UPDATE_WEBSERVER_TEMPLATE_CONTENT = "updateWebServerTemplateContent";
     public static final String GET_WEBSERVER_TEMPLATE = "getWebServerTemplate";
     public static final String QUERY_DELETE_WEB_SERVER_TEMPLATE = "deleteWebServerTemplate";
-    public static final String QUERY_DELETE_WEB_SERVER_TEMPLATE_BY_WEBSERVER_NAME = "deleteWebServerTemplateByWebServerName";
+    public static final String QUERY_DELETE_WEBSERVER_RESOURCE_BY_TEMPLATE_WEBSERVER_NAME = "deleteWebServerResourceByTemplateWebServerName";
     public static final String QUERY_GET_WEBSERVER_RESOURCE_TEMPLATES = "getWebServerResourceTemplates";
 
     public static final String QUERY_PARAM_TEMPLATE_NAME = "templateName";

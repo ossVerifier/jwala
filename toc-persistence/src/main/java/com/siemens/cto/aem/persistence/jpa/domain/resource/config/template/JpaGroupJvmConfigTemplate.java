@@ -19,9 +19,9 @@ import javax.persistence.*;
         @NamedQuery(name = JpaGroupJvmConfigTemplate.UPDATE_GROUP_JVM_TEMPLATE_CONTENT,
                 query = "UPDATE JpaGroupJvmConfigTemplate t SET t.templateContent = :templateContent WHERE t.grp.name = :grpName AND t.templateName = :templateName"),
         @NamedQuery(name = JpaGroupJvmConfigTemplate.QUERY_DELETE_GRP_JVM_TEMPLATE, query = "DELETE FROM JpaGroupJvmConfigTemplate t WHERE t.templateName = :templateName"),
-        @NamedQuery(name = JpaGroupJvmConfigTemplate.QUERY_DELETE_GROUP_JVM_TEMPLATE_BY_GROUP_NAME, query = "DELETE FROM JpaGroupJvmConfigTemplate t WHERE t.templateName = :templateName AND t.jpaGroup.name = :groupName"),
         @NamedQuery(name = JpaGroupJvmConfigTemplate.GET_GROUP_JVM_TEMPLATE_RESOURCE_NAME,
-                query = "SELECT t.templateName FROM JpaGroupJvmConfigTemplate t WHERE t.grp.name = :groupName AND t.templateName = :templateName")
+                query = "SELECT t.templateName FROM JpaGroupJvmConfigTemplate t WHERE t.grp.name = :groupName AND t.templateName = :templateName"),
+        @NamedQuery(name = JpaGroupJvmConfigTemplate.QUERY_DELETE_GROUP_LEVEL_JVM_RESOURCE_BY_TEMPLATE_GROUP_NAME, query = "DELETE FROM JpaGroupJvmConfigTemplate t WHERE t.templateName = :templateName AND t.grp.name = :grpName")
 })
 
 public class JpaGroupJvmConfigTemplate extends ConfigTemplate {
@@ -30,10 +30,10 @@ public class JpaGroupJvmConfigTemplate extends ConfigTemplate {
     public static final String UPDATE_GROUP_JVM_TEMPLATE_CONTENT = "updateGroupJvmTemplateContent";
     public static final String GET_GROUP_JVM_TEMPLATE_META_DATA = "getGroupJvmMetaData";
     public static final String QUERY_DELETE_GRP_JVM_TEMPLATE = "deleteGrpJvmTemplate";
-    public static final String QUERY_DELETE_GROUP_JVM_TEMPLATE_BY_GROUP_NAME = "deleteGroupJvmTemplateByGroupName";
+    public static final String QUERY_DELETE_GROUP_LEVEL_JVM_RESOURCE_BY_TEMPLATE_GROUP_NAME = "deleteGroupLevelJvmResourceByTemplateGroupName";
 
     public static final String QUERY_PARAM_TEMPLATE_NAME = "templateName";
-    public static final String QUERY_PARAM_GROUP_NAME = "groupName";
+    public static final String QUERY_PARAM_GROUP_NAME = "grpName";
 
     public static final String GET_GROUP_JVM_TEMPLATE_RESOURCE_NAME = "getGroupJvmTemplateResourceName";
 

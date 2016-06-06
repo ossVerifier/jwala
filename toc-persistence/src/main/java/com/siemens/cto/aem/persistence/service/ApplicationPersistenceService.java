@@ -23,7 +23,7 @@ public interface ApplicationPersistenceService {
 
     void removeApplication(final Identifier<Application> anAppToRemove);
 
-    List<String> getResourceTemplateNames(final String appName);
+    List<String> getResourceTemplateNames(String appName, String jvmName);
 
     String getResourceTemplate(final String appName, final String resourceTemplateName, final String jvmName, final String groupName);
 

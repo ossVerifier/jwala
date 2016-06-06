@@ -218,7 +218,7 @@ public class ApplicationCrudServiceImplTest {
 
     @Test
     public void testGetResourceTemplateNames() {
-        List<String> templateNames = applicationCrudService.getResourceTemplateNames("testNoAppExists");
+        List<String> templateNames = applicationCrudService.getResourceTemplateNames("testNoAppExists", "nada");
         assertEquals(0, templateNames.size());
     }
 

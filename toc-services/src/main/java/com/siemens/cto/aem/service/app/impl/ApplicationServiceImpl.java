@@ -199,8 +199,8 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<String> getResourceTemplateNames(final String appName) {
-        return applicationPersistenceService.getResourceTemplateNames(appName);
+    public List<String> getResourceTemplateNames(final String appName, final String jvmName) {
+        return applicationPersistenceService.getResourceTemplateNames(appName, jvmName);
     }
 
     @Override
@@ -485,10 +485,11 @@ public class ApplicationServiceImpl implements ApplicationService {
     @Transactional
     public void copyApplicationConfigToGroupJvms(Group group, final String appName, final ResourceGroup resourceGroup, final User user) {
         final String groupName = group.getName();
-        final List<String> resourceTemplateNames = applicationPersistenceService.getResourceTemplateNames(appName);
         Set<Future> futures = new HashSet<>();
 
         for (final Jvm jvm : group.getJvms()) {
+            final List<String> resourceTemplateNames = applicationPersistenceService.getResourceTemplateNames(appName,
+                    jvm.getJvmName());
             for (final String templateName : resourceTemplateNames) {
 
                 final String jvmName = jvm.getJvmName();

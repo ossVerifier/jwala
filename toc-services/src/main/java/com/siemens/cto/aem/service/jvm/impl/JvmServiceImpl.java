@@ -366,7 +366,7 @@ public class JvmServiceImpl implements JvmService {
         List<Group> groupList = jvmPersistenceService.findGroupsByJvm(jvm.getId());
         for (Group group : groupList) {
             for (Application app : applicationService.findApplications(group.getId())) {
-                for (String templateName : applicationService.getResourceTemplateNames(app.getName())) {
+                for (String templateName : applicationService.getResourceTemplateNames(app.getName(), jvm.getJvmName())) {
                     LOGGER.info("Deploying application xml {} for JVM {} in group {}", templateName, jvm.getJvmName(), group.getName());
                     applicationService.deployConf(app.getName(), group.getName(), jvm.getJvmName(), templateName, resourceService.generateResourceGroup(), user);
                 }

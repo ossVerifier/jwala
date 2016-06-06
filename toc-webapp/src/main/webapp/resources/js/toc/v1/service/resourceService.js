@@ -57,5 +57,21 @@ var resourceService = {
     },
     getResourceTemplate: function(groupName, appName, templateName) {
         return serviceFoundation.promisedGet("v1.0/resources/" + groupName + "/" + appName + "/" + templateName);
+    },
+    deleteResource: function(resourceName, groupName, webServerName, jvmName, webAppName) {
+        var matrixParam = "";
+        if (groupName) {
+            matrixParam += ";group=" + groupName;
+        }
+        if (webServerName) {
+            matrixParam += ";webServer=" + webServerName;
+        }
+        if (jvmName) {
+            matrixParam += ";jvm=" + jvmName;
+        }
+        if (webAppName) {
+            matrixParam += ";webApp=" + webAppName;
+        }
+        return serviceFoundation.del("v1.0/resources/template/" + resourceName + matrixParam);
     }
 };

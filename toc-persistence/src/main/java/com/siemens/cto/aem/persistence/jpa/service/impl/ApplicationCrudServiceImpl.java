@@ -62,9 +62,10 @@ public class ApplicationCrudServiceImpl extends AbstractCrudServiceImpl<JpaAppli
     }
 
     @Override
-    public List<String> getResourceTemplateNames(final String appName) {
+    public List<String> getResourceTemplateNames(final String appName, final String jvmName) {
         final Query q = entityManager.createNamedQuery(JpaApplicationConfigTemplate.GET_APP_RESOURCE_TEMPLATE_NAMES);
-        q.setParameter("appName", appName);
+        q.setParameter(JpaApplicationConfigTemplate.QUERY_PARAM_APP_NAME, appName);
+        q.setParameter(JpaApplicationConfigTemplate.QUERY_PARAM_JVM_NAME, jvmName);
         return q.getResultList();
     }
 

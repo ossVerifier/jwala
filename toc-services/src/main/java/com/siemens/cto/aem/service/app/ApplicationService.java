@@ -37,7 +37,7 @@ public interface ApplicationService {
 
     Application deleteWebArchive(Identifier<Application> appToRemoveWAR, User user);
 
-    List<String> getResourceTemplateNames(final String appName);
+    List<String> getResourceTemplateNames(final String appName, String jvmName);
 
     String getResourceTemplate(final String appName, String groupName, String jvmName, final String resourceTemplateName,
                                final ResourceGroup resourceGroup, final boolean tokensReplaced);

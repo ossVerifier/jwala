@@ -381,7 +381,7 @@ public class WebServerCrudServiceImpl extends AbstractCrudServiceImpl<JpaWebServ
 
     @Override
     public int removeTemplate(final String webServerName, final String templateName) {
-        final Query q = entityManager.createNamedQuery(JpaWebServerConfigTemplate.QUERY_DELETE_WEB_SERVER_TEMPLATE_BY_WEBSERVER_NAME);
+        final Query q = entityManager.createNamedQuery(JpaWebServerConfigTemplate.QUERY_DELETE_WEBSERVER_RESOURCE_BY_TEMPLATE_WEBSERVER_NAME);
         q.setParameter(JpaWebServerConfigTemplate.QUERY_PARAM_WEBSERVER_NAME, webServerName);
         q.setParameter(JpaWebServerConfigTemplate.QUERY_PARAM_TEMPLATE_NAME, templateName);
         return q.executeUpdate();

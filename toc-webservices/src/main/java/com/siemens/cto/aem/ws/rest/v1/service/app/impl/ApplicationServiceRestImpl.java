@@ -188,9 +188,9 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
     }
 
     @Override
-    public Response getResourceNames(final String appName) {
-        LOGGER.debug("get resource names for {}", appName);
-        return ResponseBuilder.ok(service.getResourceTemplateNames(appName));
+    public Response getResourceNames(final String appName, final String jvmName) {
+        LOGGER.debug("get resource names for {}@{}", appName, jvmName);
+        return ResponseBuilder.ok(service.getResourceTemplateNames(appName, jvmName));
     }
 
     @Override

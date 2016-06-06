@@ -24,8 +24,10 @@ import com.siemens.cto.aem.persistence.jpa.service.*;
 import com.siemens.cto.aem.persistence.jpa.service.impl.GroupJvmRelationshipServiceImpl;
 import com.siemens.cto.aem.persistence.service.ApplicationPersistenceService;
 import com.siemens.cto.aem.persistence.service.JvmPersistenceService;
+import com.siemens.cto.aem.persistence.service.ResourceDao;
 import com.siemens.cto.aem.persistence.service.WebServerPersistenceService;
 import com.siemens.cto.aem.persistence.service.impl.JpaJvmPersistenceServiceImpl;
+import com.siemens.cto.aem.persistence.service.impl.ResourceDaoImpl;
 import com.siemens.cto.aem.service.HistoryService;
 import com.siemens.cto.aem.service.MessagingService;
 import com.siemens.cto.aem.service.RemoteCommandExecutorService;
@@ -310,10 +312,16 @@ public class AemServiceConfiguration implements SchedulingConfigurer {
     public ResourceService getResourceService(final ApplicationPersistenceService applicationPersistenceService,
                                               final JvmPersistenceService jvmPersistenceService,
                                               final WebServerPersistenceService webServerPersistenceService,
-                                              final ApplicationService applicationService) {
+                                              final ApplicationService applicationService,
+                                              final ResourceDao resourceDao) {
         return new ResourceServiceImpl(fileManager, persistenceServiceConfiguration.getResourcePersistenceService(),
                 persistenceServiceConfiguration.getGroupPersistenceService(), applicationPersistenceService, applicationService,
-                jvmPersistenceService, webServerPersistenceService, getPrivateApplicationService());
+                jvmPersistenceService, webServerPersistenceService, getPrivateApplicationService(), resourceDao);
+    }
+
+    @Bean
+    public ResourceDao getResourceDao() {
+        return new ResourceDaoImpl();
     }
 
     @Bean(name = "webServerHttpRequestFactory")

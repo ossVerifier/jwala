@@ -56,6 +56,8 @@ public class ResourceServiceImpl implements ResourceService {
 
     private WebServerPersistenceService webServerPersistenceService;
 
+    private final ResourceDao resourceDao;
+
     @Value("${paths.resource-types}")
     private String templatePath;
 
@@ -67,7 +69,8 @@ public class ResourceServiceImpl implements ResourceService {
             final ApplicationService applicationService,
             final JvmPersistenceService jvmPersistenceService,
             final WebServerPersistenceService webServerPersistenceService,
-            final PrivateApplicationService privateApplicationService) {
+            final PrivateApplicationService privateApplicationService,
+            final ResourceDao resourceDao) {
         this.resourcePersistenceService = resourcePersistenceService;
         this.groupPersistenceService = groupPersistenceService;
         this.privateApplicationService = privateApplicationService;
@@ -76,6 +79,7 @@ public class ResourceServiceImpl implements ResourceService {
         this.applicationPersistenceService = applicationPersistenceService;
         this.jvmPersistenceService = jvmPersistenceService;
         this.webServerPersistenceService = webServerPersistenceService;
+        this.resourceDao = resourceDao;
     }
 
     @Override
@@ -381,14 +385,6 @@ public class ResourceServiceImpl implements ResourceService {
     }
 
     @Override
-    @Transactional
-    public int removeTemplate(final String name) {
-        return applicationPersistenceService.removeTemplate(name) + jvmPersistenceService.removeTemplate(name)
-                + webServerPersistenceService.removeTemplate(name) + groupPersistenceService.removeAppTemplate(name) +
-                groupPersistenceService.removeJvmTemplate(name) + groupPersistenceService.removeWeServerTemplate(name);
-    }
-
-    @Override
     public int removeTemplate(final String groupName, final EntityType entityType, final String templateNames) {
         final List<String> templateNameList = Arrays.asList(templateNames.split(","));
         int totalDeletedRecs = 0;
@@ -399,25 +395,6 @@ public class ResourceServiceImpl implements ResourceService {
                     break;
                 case GROUPED_WEBSERVERS:
                     totalDeletedRecs = groupPersistenceService.removeWeServerTemplate(groupName, templateName);
-                    break;
-                default:
-                    throw new ResourceServiceException("Invalid entity type parameter! Entity type can only be GROUPED_JVMS or GROUPED_WEBSERVERS.");
-            }
-        }
-        return totalDeletedRecs;
-    }
-
-    @Override
-    public int removeTemplate(final EntityType entityType, final String entityName, final String templateNames) {
-        final List<String> templateNameList = Arrays.asList(templateNames.split(","));
-        int totalDeletedRecs = 0;
-        for (final String templateName : templateNameList) {
-            switch (entityType) {
-                case GROUPED_JVMS:
-                    totalDeletedRecs = jvmPersistenceService.removeTemplate(entityName, templateName);
-                    break;
-                case GROUPED_WEBSERVERS:
-                    totalDeletedRecs = webServerPersistenceService.removeTemplate(entityName, templateName);
                     break;
                 default:
                     throw new ResourceServiceException("Invalid entity type parameter! Entity type can only be GROUPED_JVMS or GROUPED_WEBSERVERS.");
@@ -492,5 +469,41 @@ public class ResourceServiceImpl implements ResourceService {
         }
         LOGGER.debug("result: {}", result);
         return result;
+    }
+
+    @Override
+    @Transactional
+    public int deleteWebServerResource(final String templateName, final String webServerName) {
+        return resourceDao.deleteWebServerResource(templateName, webServerName);
+    }
+
+    @Override
+    @Transactional
+    public int deleteGroupLevelWebServerResource(final String templateName, final String groupName) {
+        return resourceDao.deleteGroupLevelWebServerResource(templateName, groupName);
+    }
+
+    @Override
+    @Transactional
+    public int deleteJvmResource(final String templateName, final String jvmName) {
+        return resourceDao.deleteJvmResource(templateName, jvmName);
+    }
+
+    @Override
+    @Transactional
+    public int deleteGroupLevelJvmResource(final String templateName, final String groupName) {
+        return resourceDao.deleteGroupLevelJvmResource(templateName, groupName);
+    }
+
+    @Override
+    @Transactional
+    public int deleteAppResource(final String templateName, final String appName, final String jvmName) {
+        return resourceDao.deleteAppResource(templateName, appName, jvmName);
+    }
+
+    @Override
+    @Transactional
+    public int deleteGroupLevelAppResource(final String templateName, final String groupName) {
+        return resourceDao.deleteGroupLevelAppResource(templateName, groupName);
     }
 }

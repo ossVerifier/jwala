@@ -54,8 +54,8 @@ public class JpaApplicationPersistenceServiceImpl implements ApplicationPersiste
     }
 
     @Override
-    public List<String> getResourceTemplateNames(final String appName) {
-        return applicationCrudService.getResourceTemplateNames(appName);
+    public List<String> getResourceTemplateNames(final String appName, final String jvmName) {
+        return applicationCrudService.getResourceTemplateNames(appName, jvmName);
     }
 
     @Override

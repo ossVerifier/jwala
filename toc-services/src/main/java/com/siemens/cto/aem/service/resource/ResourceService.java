@@ -56,29 +56,14 @@ public interface ResourceService {
     CreateResourceTemplateApplicationResponseWrapper createTemplate(InputStream metaDataInputStream, InputStream templateData, String targetName, User user);
 
     /**
-     * Deletes a resource template.
-     * @param name the template name (the actual name of the resource file when deployed e.g. context.xml)
-     * @return the number of records deleted.
-     */
-    int removeTemplate(String name);
-
-    /**
      * Deletes a resource template of a specific group and entity type (e.g. group = Group1, entity type = GROUPED_JVMS)
      * @param groupName the group name
      * @param entityType the entity type {@link EntityType}
      * @param templateNames comma separated names of templates to delete e.g. server.xml, context.xml (user can specify one template name as well)
      * @return the number of records deleted.
      */
+    @Deprecated
     int removeTemplate(String groupName, EntityType entityType, String templateNames);
-
-    /**
-     * Deletes a resource template of a specific entity type and name (e.g. entity type = jvms, entity name = jvm1).
-     * @param entityType {@link EntityType}
-     * @param entityName the name of the entity
-     * @param templateNames comma separated names of templates to delete e.g. server.xml, context.xml (user can specify one template name as well)
-     * @return the number records deleted.
-     */
-    int removeTemplate(EntityType entityType, String entityName, String templateNames);
 
     /**
      * Generates the ResourceGroup class object, which contains all the jvms, webapps, webservers and groups information.
@@ -113,4 +98,53 @@ public interface ResourceService {
     String getAppTemplate(String groupName, String appName, String templateName);
 
     String checkFileExists(String groupName, String jvmName, String webappName, String webserverName, String fileName);
+
+    /**
+     * Delete a web server resource.
+     * @param templateName the template name
+     * @param webServerName the web server name
+     * @return the number of resources deleted
+     */
+    int deleteWebServerResource(String templateName, String webServerName);
+
+    /**
+     * Delete a group level web server resource.
+     * @param templateName the template name
+     * @param groupName the group name
+     * @return the number of resources deleted
+     */
+    int deleteGroupLevelWebServerResource(String templateName, String groupName);
+
+    /**
+     * Delete a JVM resource.
+     * @param templateName the template name
+     * @param jvmName the JVM name
+     * @return the number of resources deleted
+     */
+    int deleteJvmResource(String templateName, String jvmName);
+
+    /**
+     * Delete a group level JVM resource.
+     * @param templateName the template name
+     * @param groupName the group name
+     * @return the number of resources deleted
+     */
+    int deleteGroupLevelJvmResource(String templateName, String groupName);
+
+    /**
+     * Delete an application resource
+     * @param templateName the template name
+     * @param appName the application name
+     * @param jvmName the jvm name
+     * @return the number of resources deleted
+     */
+    int deleteAppResource(String templateName, String appName, String jvmName);
+
+    /**
+     * Delete a group level application resource.
+     * @param templateName the template name
+     * @param groupName the application name
+     * @return the number of resources deleted
+     */
+    int deleteGroupLevelAppResource(String templateName, String groupName);
 }

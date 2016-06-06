@@ -304,8 +304,8 @@ public class ApplicationServiceImplTest {
     @Test
     public void testGetResourceTemplateNames() {
         final String[] nameArray = {"hct.xml"};
-        when(applicationPersistenceService.getResourceTemplateNames(eq("hct"))).thenReturn(Arrays.asList(nameArray));
-        final List names = applicationService.getResourceTemplateNames("hct");
+        when(applicationPersistenceService.getResourceTemplateNames(eq("hct"), anyString())).thenReturn(Arrays.asList(nameArray));
+        final List names = applicationService.getResourceTemplateNames("hct", "any");
         assertEquals("hct.xml", names.get(0));
     }
 
@@ -638,7 +638,7 @@ public class ApplicationServiceImplTest {
         when(mockGroup.getName()).thenReturn("testGroupName");
         List<String> templateNames = new ArrayList<>();
         templateNames.add("app.xml");
-        when(applicationPersistenceService.getResourceTemplateNames(anyString())).thenReturn(templateNames);
+        when(applicationPersistenceService.getResourceTemplateNames(anyString(), anyString())).thenReturn(templateNames);
         when(applicationPersistenceService.findApplication(anyString(), anyString(), anyString())).thenReturn(new Application(new Identifier<Application>(111L), "appName", "./warPath", "/context", mockGroup, true, true, false, "app.war"));
         when(applicationPersistenceService.getResourceTemplate(anyString(), anyString(), anyString(), anyString())).thenReturn("template this!");
         when(remoteCommandExecutor.executeRemoteCommand(anyString(), anyString(), any(ApplicationControlOperation.class), any(PlatformCommandProvider.class), anyString(), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(0), "Success!", ""));

@@ -59,6 +59,7 @@ public interface JvmCrudService extends CrudService<JpaJvm> {
 
     int removeTemplate(String name);
 
+    @Deprecated
     int removeTemplate(String jvmName, String templateName);
 
     List<JpaJvmConfigTemplate> getConfigTemplates(String jvmName);

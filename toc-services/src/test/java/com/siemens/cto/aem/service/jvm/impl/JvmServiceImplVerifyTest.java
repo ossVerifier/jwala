@@ -466,10 +466,10 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
         List<String> templateNamesList = new ArrayList<>();
         templateNamesList.add("testAppResource.xml");
 
+        when(mockApplicationService.getResourceTemplateNames(anyString(), anyString())).thenReturn(templateNamesList);
         final User mockUser = mock(User.class);
         when(mockUser.getId()).thenReturn("user-id");
 
-        when(mockApplicationService.getResourceTemplateNames(anyString())).thenReturn(templateNamesList);
         when(mockApplicationService.findApplications(any(Identifier.class))).thenReturn(appList);
         when(mockJvmPersistenceService.findGroupsByJvm(any(Identifier.class))).thenReturn(groupsList);
         jvmService.deployApplicationContextXMLs(jvm, mockUser);

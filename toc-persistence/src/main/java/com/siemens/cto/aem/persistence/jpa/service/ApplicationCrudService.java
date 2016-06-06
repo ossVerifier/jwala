@@ -25,7 +25,7 @@ public interface ApplicationCrudService extends CrudService<JpaApplication> {
 
     JpaApplication getExisting(final Identifier<Application> anAppId);
 
-    List<String> getResourceTemplateNames(final String appName);
+    List<String> getResourceTemplateNames(String appName, String jvmName);
 
     String getResourceTemplate(final String appName, final String resourceTemplateName, JpaJvm jvm);
 

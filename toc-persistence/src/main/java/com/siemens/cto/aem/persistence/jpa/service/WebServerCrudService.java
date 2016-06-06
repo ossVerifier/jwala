@@ -64,6 +64,7 @@ public interface WebServerCrudService extends CrudService<JpaWebServer> {
 
 	int removeTemplate(String name);
 
+	@Deprecated
 	int removeTemplate(String webServerName, String templateName);
 
 	List<JpaWebServerConfigTemplate> getJpaWebServerConfigTemplates(String webServerName);

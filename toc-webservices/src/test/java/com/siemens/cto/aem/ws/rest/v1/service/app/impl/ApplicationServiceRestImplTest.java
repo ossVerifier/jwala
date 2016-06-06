@@ -474,8 +474,8 @@ public class ApplicationServiceRestImplTest {
 
     @Test
     public void testGetResourceNames() {
-        when(service.getResourceTemplateNames(anyString())).thenReturn(new ArrayList());
-        Response response = cut.getResourceNames(application.getName());
+        when(service.getResourceTemplateNames(anyString(), anyString())).thenReturn(new ArrayList());
+        Response response = cut.getResourceNames(application.getName(), "any");
         assertNotNull(response.getEntity());
     }
 

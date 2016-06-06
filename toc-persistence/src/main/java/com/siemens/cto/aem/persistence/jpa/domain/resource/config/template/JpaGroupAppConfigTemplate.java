@@ -19,17 +19,17 @@ import javax.persistence.*;
                 query = "SELECT t.metaData FROM JpaGroupAppConfigTemplate t where t.grp.name = :grpName and t.templateName = :templateName"),
         @NamedQuery(name = JpaGroupAppConfigTemplate.UPDATE_GROUP_APP_TEMPLATE_CONTENT,
                 query = "UPDATE JpaGroupAppConfigTemplate t SET t.templateContent = :templateContent WHERE t.grp.name = :grpName AND t.app.name = :appName AND t.templateName = :templateName"),
-        @NamedQuery(name = JpaGroupAppConfigTemplate.QUERY_DELETE_GRP_APP_TEMPLATE, query = "DELETE FROM JpaGroupAppConfigTemplate t WHERE t.templateName = :templateName"),
         @NamedQuery(name = JpaGroupAppConfigTemplate.QUERY_APP_RESOURCE_NAMES, query = "SELECT t.templateName FROM JpaGroupAppConfigTemplate t WHERE t.grp.name = :grpName AND t.app.name = :appName"),
         @NamedQuery(name = JpaGroupAppConfigTemplate.GET_GROUP_APP_TEMPLATE_RESOURCE_NAME,
-                query = "SELECT t.templateName FROM JpaGroupAppConfigTemplate t WHERE t.grp.name = :grpName AND t.templateName = :templateName")
+                query = "SELECT t.templateName FROM JpaGroupAppConfigTemplate t WHERE t.grp.name = :grpName AND t.templateName = :templateName"),
+        @NamedQuery(name = JpaGroupAppConfigTemplate.QUERY_DELETE_GROUP_LEVEL_APP_RESOURCE_BY_TEMPLATE_GROUP_NAME, query = "DELETE FROM JpaGroupAppConfigTemplate t WHERE t.templateName = :templateName AND t.grp.name = :grpName")
 })
 public class JpaGroupAppConfigTemplate extends ConfigTemplate {
     public static final String GET_GROUP_APP_TEMPLATE_RESOURCE_NAMES = "getGroupAppTemplateResourceNames";
     public static final String GET_GROUP_APP_TEMPLATE_CONTENT = "getGroupAppTemplateContent";
     public static final String GET_GROUP_APP_TEMPLATE_META_DATA = "getGroupAppTemplateMetaData";
     public static final String UPDATE_GROUP_APP_TEMPLATE_CONTENT = "updateGroupAppTemplateContent";
-    public static final String QUERY_DELETE_GRP_APP_TEMPLATE = "deleteGrpAppTemplate";
+    public static final String QUERY_DELETE_GROUP_LEVEL_APP_RESOURCE_BY_TEMPLATE_GROUP_NAME = "deleteGroupLevelAppResourceByTemplateGroupName";
 
     public static final String QUERY_PARAM_GRP_NAME = "grpName";
     public static final String QUERY_PARAM_APP_NAME = "appName";

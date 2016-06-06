@@ -97,15 +97,6 @@ public interface ResourceServiceRest {
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     Response createTemplate(List<Attachment> attachments, @PathParam("targetName") final String targetName, @BeanParam AuthenticatedUser user);
 
-    /**
-     * Deletes a resource template.
-     * @param name the template name (the actual name of the resource file when deployed e.g. context.xml)
-     * @return {@link Response} which contains the number of records deleted.
-     */
-    @DELETE
-    @Path("/template/{name}")
-    Response removeTemplate(@PathParam("name") String name);
-
     @GET
     @Path("/data")
     Response getResourceAttrData();
@@ -150,4 +141,9 @@ public interface ResourceServiceRest {
                              @QueryParam("webapp") String webappName,
                              @QueryParam("webserver") String webserverName,
                              @PathParam("fileName") String fileName);
+
+    @DELETE
+    @Path("/template/{name}")
+    Response deleteResource(@PathParam("name") String templateName, @MatrixParam("") ResourceHierarchyParam resourceHierarchyParam);
 }
+

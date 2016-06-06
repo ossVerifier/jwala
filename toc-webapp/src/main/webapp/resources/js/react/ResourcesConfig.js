@@ -79,7 +79,7 @@ var ResourcesConfig = React.createClass({
     getTemplateCallback: function(template) {
         this.refs.xmlTabs.refreshTemplateDisplay(template);
     },
-    selectEntityCallback: function(data, resourceName) {
+    selectEntityCallback: function(data, entity, parent) {
         if (this.refs.xmlTabs.refs.codeMirrorComponent !== undefined && this.refs.xmlTabs.refs.codeMirrorComponent.isContentChanged()) {
             var ans = confirm("All your changes won't be saved if you view another resource. Are you sure you want to proceed ?");
             if (!ans) {
@@ -260,9 +260,35 @@ var ResourcesConfig = React.createClass({
         this.refs.confirmDeleteResourceModalDlg.show(true);
      },
      confirmDeleteResourceCallback: function() {
+        var groupName;
+        var webServerName;
+        var jvmName;
+        var webAppName;
+        var node = this.refs.resourceEditor.refs.treeList.getSelectedNodeData();
+
+        if (node.rtreeListMetaData.entity === "webApps") {
+            webAppName = node.name;
+            if (node.rtreeListMetaData.parent.rtreeListMetaData.entity === "jvms") {
+                jvmName = node.rtreeListMetaData.parent.jvmName;
+            } else {
+                groupName = node.rtreeListMetaData.parent.rtreeListMetaData.parent.name;
+            }
+        } else if (node.rtreeListMetaData.entity === "jvmSection") {
+            groupName = node.rtreeListMetaData.parent.name;
+            jvmName = "*";
+        } else if (node.rtreeListMetaData.entity === "jvms") {
+            jvmName = node.name
+        } else if (node.rtreeListMetaData.entity === "webServerSection") {
+            groupName = node.rtreeListMetaData.parent.name;
+            webServerName = "*";
+        } else if (node.rtreeListMetaData.entity === "webServers") {
+            webServerName = node.name;
+        }
+
         var self = this;
         this.refs.confirmDeleteResourceModalDlg.close();
-        this.props.resourceService.deleteAllResource(this.refs.resourceEditor.refs.resourcePane.getSelectedValue()).then(function(response){
+        this.props.resourceService.deleteResource(this.refs.resourceEditor.refs.resourcePane.getSelectedValue(),
+                                                  groupName, webServerName, jvmName, webAppName).then(function(response){
             self.refreshResourcePane();
         }).caught(function(e){
             console.log(e);

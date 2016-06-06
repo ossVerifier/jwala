@@ -6,6 +6,7 @@ import com.siemens.cto.aem.service.exception.ResourceServiceException;
 import com.siemens.cto.aem.service.resource.ResourceService;
 import com.siemens.cto.aem.ws.rest.v1.provider.AuthenticatedUser;
 import com.siemens.cto.aem.ws.rest.v1.response.ResponseBuilder;
+import com.siemens.cto.aem.ws.rest.v1.service.resource.ResourceHierarchyParam;
 import com.siemens.cto.aem.ws.rest.v1.service.resource.ResourceServiceRest;
 import org.apache.cxf.jaxrs.ext.multipart.Attachment;
 import org.slf4j.Logger;
@@ -115,17 +116,6 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
     }
 
     @Override
-    public Response removeTemplate(final String name) {
-        try {
-            return ResponseBuilder.ok(resourceService.removeTemplate(name));
-        } catch (final ResourceServiceException rse) {
-            LOGGER.error("Remove template failed!", rse);
-            return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR,
-                    new FaultCodeException(AemFaultType.PERSISTENCE_ERROR, rse.getMessage()));
-        }
-    }
-
-    @Override
     public Response getResourceAttrData() {
         return ResponseBuilder.ok(resourceService.generateResourceGroup());
     }
@@ -148,5 +138,72 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
     @Override
     public Response checkFileExists(final String groupName, final String jvmName, final String webappName, final String webserverName, final String fileName) {
         return ResponseBuilder.ok(resourceService.checkFileExists(groupName, jvmName, webappName, webserverName, fileName));
+    }
+
+    @Override
+    // TODO: Re validation, maybe we can use CXF bean validation ?
+    public Response deleteResource(final String templateName, final ResourceHierarchyParam resourceHierarchyParam) {
+        int deletedRecCount = 0;
+
+        // NOTE: We do the parameter checking logic here since the service layer does not know anything about ResourceHierarchyParam.
+        if (ParamValidator.getNewInstance().isNotEmpty(resourceHierarchyParam.getGroup())
+                                           .isEmpty(resourceHierarchyParam.getWebServer())
+                                           .isEmpty(resourceHierarchyParam.getJvm())
+                                           .isNotEmpty(resourceHierarchyParam.getWebApp()).isValid()) {
+
+            // Group Level Web App
+            deletedRecCount = resourceService.deleteGroupLevelAppResource(templateName, resourceHierarchyParam.getGroup());
+
+        }else if (ParamValidator.getNewInstance().isEmpty(resourceHierarchyParam.getGroup())
+                                                 .isEmpty(resourceHierarchyParam.getWebServer())
+                                                 .isNotEmpty(resourceHierarchyParam.getJvm())
+                                                 .isNotEmpty(resourceHierarchyParam.getWebApp()).isValid()) {
+
+            // Web App
+            deletedRecCount = resourceService.deleteAppResource(templateName, resourceHierarchyParam.getWebApp(), resourceHierarchyParam.getJvm());
+
+        } else if (ParamValidator.getNewInstance().isNotEmpty(resourceHierarchyParam.getGroup())
+                                                  .isNotEmpty(resourceHierarchyParam.getWebServer())
+                                                  .isEmpty(resourceHierarchyParam.getJvm())
+                                                  .isEmpty(resourceHierarchyParam.getWebApp()).isValid()) {
+            // Group Level Web Servers
+            if (resourceHierarchyParam.getWebServer().equalsIgnoreCase("*")) {
+                deletedRecCount = resourceService.deleteGroupLevelWebServerResource(templateName, resourceHierarchyParam.getGroup());
+            }
+
+        } else if (ParamValidator.getNewInstance().isEmpty(resourceHierarchyParam.getGroup())
+                                                  .isNotEmpty(resourceHierarchyParam.getWebServer())
+                                                  .isEmpty(resourceHierarchyParam.getJvm())
+                                                  .isEmpty(resourceHierarchyParam.getWebApp()).isValid()) {
+
+            // Web Server
+            deletedRecCount = resourceService.deleteWebServerResource(templateName, resourceHierarchyParam.getWebServer());
+
+        } else if (ParamValidator.getNewInstance().isNotEmpty(resourceHierarchyParam.getGroup())
+                                                  .isEmpty(resourceHierarchyParam.getWebServer())
+                                                  .isNotEmpty(resourceHierarchyParam.getJvm())
+                                                  .isEmpty(resourceHierarchyParam.getWebApp()).isValid()) {
+
+            // Group Level JVMs
+            if (resourceHierarchyParam.getJvm().equalsIgnoreCase("*")) {
+                deletedRecCount = resourceService.deleteGroupLevelJvmResource(templateName, resourceHierarchyParam.getGroup());
+            }
+
+        } else if (ParamValidator.getNewInstance().isEmpty(resourceHierarchyParam.getGroup())
+                                                  .isEmpty(resourceHierarchyParam.getWebServer())
+                                                  .isNotEmpty(resourceHierarchyParam.getJvm())
+                                                  .isEmpty(resourceHierarchyParam.getWebApp()).isValid()) {
+
+            // JVM
+            deletedRecCount = resourceService.deleteJvmResource(templateName, resourceHierarchyParam.getJvm());
+
+        } else {
+
+            return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR,
+                                         new FaultCodeException(AemFaultType.INVALID_REST_SERVICE_PARAMETER,
+                                                                "Parameters passed to the rest service is/are invalid!"));
+
+        }
+        return ResponseBuilder.ok(deletedRecCount);
     }
 }

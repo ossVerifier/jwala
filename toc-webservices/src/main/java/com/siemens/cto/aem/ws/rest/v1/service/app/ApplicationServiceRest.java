@@ -65,8 +65,8 @@ public interface ApplicationServiceRest extends InitializingBean {
     						  @PathParam("hostName") String hostName);
 
     @GET
-    @Path("/{appName}/resources/name")
-    Response getResourceNames(@PathParam("appName") final String appName);
+    @Path("/{jvmName}/{appName}/resources/name")
+    Response getResourceNames(@PathParam("appName") String appName, @PathParam("jvmName") String jvmName);
 
     /**
      * Get resource template content.

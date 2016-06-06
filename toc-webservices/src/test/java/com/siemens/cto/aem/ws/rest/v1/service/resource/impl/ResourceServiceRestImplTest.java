@@ -8,7 +8,6 @@ import com.siemens.cto.aem.common.domain.model.resource.ResourceInstance;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.request.resource.ResourceInstanceRequest;
 import com.siemens.cto.aem.persistence.jpa.domain.resource.config.template.ConfigTemplate;
-import com.siemens.cto.aem.service.exception.ResourceServiceException;
 import com.siemens.cto.aem.service.group.GroupService;
 import com.siemens.cto.aem.service.jvm.JvmService;
 import com.siemens.cto.aem.service.resource.ResourceService;
@@ -168,17 +167,6 @@ public class ResourceServiceRestImplTest {
     }
 
     @Test
-    public void testRemoveTemplate() {
-        when(impl.removeTemplate(anyString())).thenReturn(1);
-        Response response = cut.removeTemplate("template-name");
-        assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
-
-        when(impl.removeTemplate(anyString())).thenThrow(new ResourceServiceException("FAIL"));
-        response = cut.removeTemplate("template-name-fail");
-        assertEquals(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), response.getStatus());
-    }
-
-    @Test
     public void testGetResourceAttributeData() {
         when(impl.generateResourceGroup()).thenReturn(new ResourceGroup());
         Response response = cut.getResourceAttrData();
@@ -194,5 +182,4 @@ public class ResourceServiceRestImplTest {
         Response response = cut.checkFileExists("test", "test", null, null, "test");
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
     }
-
 }
