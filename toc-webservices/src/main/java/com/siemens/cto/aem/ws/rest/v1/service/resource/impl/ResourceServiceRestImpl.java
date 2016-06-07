@@ -249,6 +249,7 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
                                 "Parameters passed to the rest service is/are invalid!"));
             }
         } catch (final IOException ioe) {
+            LOGGER.warn("exception thrown in CreateResource: {}", ioe);
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR,
                     new FaultCodeException(AemFaultType.SERVICE_EXCEPTION, ioe.getMessage()));
         }
