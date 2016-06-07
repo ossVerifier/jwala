@@ -4,10 +4,12 @@ import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.resource.EntityType;
 import com.siemens.cto.aem.common.domain.model.resource.ResourceGroup;
 import com.siemens.cto.aem.common.domain.model.resource.ResourceInstance;
+import com.siemens.cto.aem.common.domain.model.resource.ResourceTemplateMetaData;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.request.resource.ResourceInstanceRequest;
 import com.siemens.cto.aem.service.resource.impl.CreateResourceTemplateApplicationResponseWrapper;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
@@ -53,7 +55,68 @@ public interface ResourceService {
      * @param targetName
      * @param user
      */
+    @Deprecated
     CreateResourceTemplateApplicationResponseWrapper createTemplate(InputStream metaDataInputStream, InputStream templateData, String targetName, User user);
+
+    CreateResourceTemplateApplicationResponseWrapper createJvmResource(ResourceTemplateMetaData metaData,
+                                                                       InputStream templateData,
+                                                                       String jvmName);
+
+    /**
+     * Create the JVM template in the db and in the templates path for all the JVMs.
+     *  @param metaData     the data that describes the template, please see {@link ResourceTemplateMetaData}
+     * @param templateData the template content/data
+     */
+    CreateResourceTemplateApplicationResponseWrapper createGroupLevelJvmResource(ResourceTemplateMetaData metaData,
+                                                                                 InputStream templateData, String groupName) throws IOException;
+
+    /**
+     * Create web server resource.
+     * @param metaData the data that describes the resource, please see {@link ResourceTemplateMetaData}
+     * @param templateData the template content/data
+     * @param webServerName identifies the web server to which the template belongs to
+     * @param user the user responsible for executing this service
+     */
+    CreateResourceTemplateApplicationResponseWrapper createWebServerResource(ResourceTemplateMetaData metaData,
+                                                                             InputStream templateData,
+                                                                             String webServerName,
+                                                                             User user);
+
+    /**
+     * Create the web server template in the db and in the templates path for all the web servers.
+     * @param metaData the data that describes the template, please see {@link ResourceTemplateMetaData}
+     * @param templateData the template content/data
+     * @param user the user
+     */
+    CreateResourceTemplateApplicationResponseWrapper createGroupLevelWebServersResource(ResourceTemplateMetaData metaData,
+                                                                                        InputStream templateData,
+                                                                                        String groupName,
+                                                                                        User user) throws IOException;
+
+    /**
+     * Create application resource.
+     *
+     * @param metaData the data that describes the template, please see {@link ResourceTemplateMetaData}
+     * @param templateData the template content/data
+     * @param jvmName the name of the JVM to associate the resource to
+     * @param appName the name of the application to associate the resource to
+     */
+    CreateResourceTemplateApplicationResponseWrapper createAppResource(ResourceTemplateMetaData metaData,
+                                                                       InputStream templateData,
+                                                                       String jvmName,
+                                                                       String appName);
+
+    /**
+     * Create group level application resource.
+     *
+     * @param metaData the data that describes the template, please see {@link ResourceTemplateMetaData}
+     * @param templateData the template content/data
+     * @param targetAppName the name of the application to associate the resource to
+     */
+    // TODO: Specify the group as well!
+    CreateResourceTemplateApplicationResponseWrapper createGroupedLevelAppResource(ResourceTemplateMetaData metaData,
+                                                                                   InputStream templateData,
+                                                                                   String targetAppName) throws IOException;
 
     /**
      * Deletes a resource template of a specific group and entity type (e.g. group = Group1, entity type = GROUPED_JVMS)

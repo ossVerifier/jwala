@@ -1,14 +1,19 @@
 package com.siemens.cto.aem.ws.rest.v1.service.resource.impl;
 
 import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
+import com.siemens.cto.aem.common.domain.model.resource.ResourceTemplateMetaData;
 import com.siemens.cto.aem.common.exception.FaultCodeException;
 import com.siemens.cto.aem.service.exception.ResourceServiceException;
 import com.siemens.cto.aem.service.resource.ResourceService;
+import com.siemens.cto.aem.service.resource.impl.CreateResourceTemplateApplicationResponseWrapper;
 import com.siemens.cto.aem.ws.rest.v1.provider.AuthenticatedUser;
 import com.siemens.cto.aem.ws.rest.v1.response.ResponseBuilder;
+import com.siemens.cto.aem.ws.rest.v1.service.resource.CreateResourceParam;
 import com.siemens.cto.aem.ws.rest.v1.service.resource.ResourceHierarchyParam;
 import com.siemens.cto.aem.ws.rest.v1.service.resource.ResourceServiceRest;
+import org.apache.commons.io.IOUtils;
 import org.apache.cxf.jaxrs.ext.multipart.Attachment;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -74,7 +79,6 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
         }
     }
 
-    @Override
     // TODO: Refactor resourceService.createTemplate(inputStreams[0], inputStreams[1]) since it looks ambiguous.
     public Response createTemplate(final List<Attachment> attachments, final String targetName, final AuthenticatedUser user) {
         try {
@@ -138,6 +142,117 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
     @Override
     public Response checkFileExists(final String groupName, final String jvmName, final String webappName, final String webserverName, final String fileName) {
         return ResponseBuilder.ok(resourceService.checkFileExists(groupName, jvmName, webappName, webserverName, fileName));
+    }
+
+    @Override
+    // TODO: Re validation, maybe we can use CXF bean validation ?
+    public Response createResource(final List<Attachment> attachments, final CreateResourceParam createResourceParam,
+                                   final AuthenticatedUser user) {
+
+        InputStream metadataIn = null;
+        InputStream resourceDataIn = null;
+
+        final List<Attachment> filteredAttachments = new ArrayList<>();
+        for(Attachment attachment:attachments) {
+            if(attachment.getDataHandler().getName() != null) {
+                filteredAttachments.add(attachment);
+            }
+        }
+
+        if (filteredAttachments.size() == CREATE_TEMPLATE_EXPECTED_NUM_OF_ATTACHMENTS) {
+            for (Attachment attachment : filteredAttachments) {
+                final DataHandler handler = attachment.getDataHandler();
+                try {
+                    LOGGER.debug("filename is {}", handler.getName());
+                    if (handler.getName().toLowerCase().endsWith(JSON_FILE_EXTENSION)) {
+                        metadataIn = attachment.getDataHandler().getInputStream();
+                    } else {
+                        resourceDataIn = attachment.getDataHandler().getInputStream();
+                    }
+                } catch (final IOException ioe) {
+                    LOGGER.error("Create template failed!", ioe);
+                    return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR,
+                            new FaultCodeException(AemFaultType.IO_EXCEPTION, ioe.getMessage()));
+                }
+            }
+        } else {
+            return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
+                                         AemFaultType.INVALID_NUMBER_OF_ATTACHMENTS,
+                                         "Invalid number of attachments! 2 attachments is expected by the service."));
+        }
+
+        CreateResourceTemplateApplicationResponseWrapper responseWrapper = null;
+        try {
+            final ObjectMapper mapper = new ObjectMapper();
+            ResourceTemplateMetaData resourceTemplateMetaData = mapper.readValue(IOUtils.toString(metadataIn), ResourceTemplateMetaData.class);
+
+            // NOTE: We do the parameter checking logic here since the service layer does not know anything about ResourceHierarchyParam.
+            if (ParamValidator.getNewInstance().isNotEmpty(createResourceParam.getGroup())
+                                               .isEmpty(createResourceParam.getWebServer())
+                                               .isEmpty(createResourceParam.getJvm())
+                                               .isNotEmpty(createResourceParam.getWebApp()).isValid()) {
+
+                // Group Level Web App
+                responseWrapper = resourceService.createGroupedLevelAppResource(resourceTemplateMetaData, resourceDataIn,
+                                                                                createResourceParam.getWebApp());
+
+            } else if (ParamValidator.getNewInstance().isEmpty(createResourceParam.getGroup())
+                                                      .isEmpty(createResourceParam.getWebServer())
+                                                      .isNotEmpty(createResourceParam.getJvm())
+                                                      .isNotEmpty(createResourceParam.getWebApp()).isValid()) {
+
+                // Web App
+                responseWrapper = resourceService.createAppResource(resourceTemplateMetaData, resourceDataIn,
+                        createResourceParam.getJvm(), createResourceParam.getWebApp());
+
+            } else if (ParamValidator.getNewInstance().isNotEmpty(createResourceParam.getGroup())
+                                                      .isNotEmpty(createResourceParam.getWebServer())
+                                                      .isEmpty(createResourceParam.getJvm())
+                                                      .isEmpty(createResourceParam.getWebApp()).isValid()) {
+                // Group Level Web Servers
+                if (createResourceParam.getWebServer().equalsIgnoreCase("*")) {
+                    responseWrapper = resourceService.createGroupLevelWebServersResource(resourceTemplateMetaData, resourceDataIn,
+                            createResourceParam.getGroup(), user.getUser());
+                }
+
+            } else if (ParamValidator.getNewInstance().isEmpty(createResourceParam.getGroup())
+                    .isNotEmpty(createResourceParam.getWebServer())
+                    .isEmpty(createResourceParam.getJvm())
+                    .isEmpty(createResourceParam.getWebApp()).isValid()) {
+
+                // Web Server
+                responseWrapper = resourceService.createWebServerResource(resourceTemplateMetaData, resourceDataIn,
+                        createResourceParam.getWebServer(),user.getUser());
+
+            } else if (ParamValidator.getNewInstance().isNotEmpty(createResourceParam.getGroup())
+                    .isEmpty(createResourceParam.getWebServer())
+                    .isNotEmpty(createResourceParam.getJvm())
+                    .isEmpty(createResourceParam.getWebApp()).isValid()) {
+
+                // Group Level JVMs
+                if (createResourceParam.getJvm().equalsIgnoreCase("*")) {
+                    responseWrapper = resourceService.createGroupLevelJvmResource(resourceTemplateMetaData, resourceDataIn,
+                            createResourceParam.getGroup());
+                }
+
+            } else if (ParamValidator.getNewInstance().isEmpty(createResourceParam.getGroup())
+                    .isEmpty(createResourceParam.getWebServer())
+                    .isNotEmpty(createResourceParam.getJvm())
+                    .isEmpty(createResourceParam.getWebApp()).isValid()) {
+
+                // JVM
+                responseWrapper = resourceService.createJvmResource(resourceTemplateMetaData, resourceDataIn, createResourceParam.getJvm());
+
+            } else {
+                return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR,
+                        new FaultCodeException(AemFaultType.INVALID_REST_SERVICE_PARAMETER,
+                                "Parameters passed to the rest service is/are invalid!"));
+            }
+        } catch (final IOException ioe) {
+            return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR,
+                    new FaultCodeException(AemFaultType.SERVICE_EXCEPTION, ioe.getMessage()));
+        }
+        return ResponseBuilder.ok(responseWrapper);
     }
 
     @Override

@@ -142,6 +142,19 @@ public interface ResourceServiceRest {
                              @QueryParam("webserver") String webserverName,
                              @PathParam("fileName") String fileName);
 
+    /**
+     * Creates a resource.
+     * @param attachments contains the template's meta data and content
+     * @param createResourceParam contains information on who owns the resource to be created
+     * @param user a logged in user who's calling this service  @return {@link Response}
+     */
+    @POST
+    @Path("/data")
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    // TODO: Discuss with the team that the file name/resource name should be in the path instead of the the meta data so instead of /data, it will be /{name} which makes more sense REST-wise
+    Response createResource(List<Attachment> attachments, @MatrixParam("") CreateResourceParam createResourceParam,
+                            @BeanParam AuthenticatedUser user);
+
     @DELETE
     @Path("/template/{name}")
     Response deleteResource(@PathParam("name") String templateName, @MatrixParam("") ResourceHierarchyParam resourceHierarchyParam);

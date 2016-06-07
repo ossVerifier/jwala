@@ -195,15 +195,14 @@ public class ResourceServiceImpl implements ResourceService {
         return responseWrapper;
     }
 
-    /**
-     * Create the JVM template in the db and in the templates path for a specific JVM entity target.
-     * @param metaData the data that describes the template, please see {@link ResourceTemplateMetaData}
-     * @param templateData the template content/data
-     * @param jvmName identifies the JVM to which the template is attached to
-     */
-    private CreateResourceTemplateApplicationResponseWrapper createJvmTemplate(final ResourceTemplateMetaData metaData,
-                                                                               final InputStream templateData,
-                                                                               final String jvmName) {
+    @Override
+    @Transactional
+    public CreateResourceTemplateApplicationResponseWrapper createJvmResource(final ResourceTemplateMetaData metaData,
+                                                                              InputStream templateData,
+                                                                              final String jvmName) {
+
+        templateData = uploadIfBinaryData(metaData, templateData);
+
         final Jvm jvm = jvmPersistenceService.findJvmByExactName(jvmName);
         final Group parentGroup = groupPersistenceService.getGroup(metaData.getEntity().getGroup());
         final Jvm jvmWithParentGroup = new Jvm(jvm.getId(),
@@ -237,6 +236,330 @@ public class ResourceServiceImpl implements ResourceService {
         } catch (final IOException ioe) {
             throw new ResourceServiceException(ioe);
         }
+    }
+
+    @Override
+    // TODO: When the resource file is locked, don't overwrite!
+    @Transactional
+    public CreateResourceTemplateApplicationResponseWrapper createGroupLevelJvmResource(final ResourceTemplateMetaData metaData,
+                                                                                        InputStream resourceData,
+                                                                                        final String groupName) throws IOException {
+
+        resourceData = uploadIfBinaryData(metaData, resourceData);
+
+        final Set<Jvm> jvms = groupPersistenceService.getGroup(groupName).getJvms();
+        ConfigTemplate createdJpaJvmConfigTemplate = null;
+        String templateContent = IOUtils.toString(resourceData);
+
+        for (final Jvm jvm : jvms) {
+            UploadJvmConfigTemplateRequest uploadJvmTemplateRequest = new UploadJvmConfigTemplateRequest(jvm, metaData.getTemplateName(),
+                    new ByteArrayInputStream(templateContent.getBytes()), convertResourceTemplateMetaDataToJson(metaData));
+            uploadJvmTemplateRequest.setConfFileName(metaData.getDeployFileName());
+
+            // Since we're just creating the same template for all the JVMs, we just keep one copy of the created
+            // configuration template.
+            createdJpaJvmConfigTemplate = jvmPersistenceService.uploadJvmTemplateXml(uploadJvmTemplateRequest);
+        }
+        final List<UploadJvmTemplateRequest> uploadJvmTemplateRequestList = new ArrayList<>();
+        UploadJvmConfigTemplateRequest uploadJvmTemplateRequest = new UploadJvmConfigTemplateRequest(null, metaData.getTemplateName(),
+                new ByteArrayInputStream(templateContent.getBytes()), convertResourceTemplateMetaDataToJson(metaData));
+        uploadJvmTemplateRequest.setConfFileName(metaData.getDeployFileName());
+        uploadJvmTemplateRequestList.add(uploadJvmTemplateRequest);
+        groupPersistenceService.populateGroupJvmTemplates(metaData.getEntity().getGroup(), uploadJvmTemplateRequestList);
+        return new CreateResourceTemplateApplicationResponseWrapper(createdJpaJvmConfigTemplate);
+    }
+
+    @Override
+    @Transactional
+    public CreateResourceTemplateApplicationResponseWrapper createWebServerResource(final ResourceTemplateMetaData metaData,
+                                                                                    InputStream templateData,
+                                                                                    final String webServerName,
+                                                                                    final User user) {
+
+        templateData = uploadIfBinaryData(metaData, templateData);
+
+        final WebServer webServer = webServerPersistenceService.findWebServerByName(webServerName);
+        final UploadWebServerTemplateRequest uploadWebArchiveRequest = new UploadWebServerTemplateRequest(webServer,
+                metaData.getTemplateName(), convertResourceTemplateMetaDataToJson(metaData), templateData) {
+            @Override
+            public String getConfFileName() {
+                return metaData.getDeployFileName();
+            }
+        };
+        final String generatedDeployPath = generateResourceFile(metaData.getDeployPath(), generateResourceGroup(), webServer);
+        return new CreateResourceTemplateApplicationResponseWrapper(webServerPersistenceService
+                .uploadWebServerConfigTemplate(uploadWebArchiveRequest, generatedDeployPath + "/" + metaData.getDeployFileName(),user.getId()));
+    }
+
+    @Override
+    @Transactional
+    public CreateResourceTemplateApplicationResponseWrapper createGroupLevelWebServersResource(final ResourceTemplateMetaData metaData,
+                                                                                               InputStream templateData,
+                                                                                               final String groupName,
+                                                                                               final User user) throws IOException {
+
+        templateData = uploadIfBinaryData(metaData, templateData);
+
+        final Group group = groupPersistenceService.getGroupWithWebServers(groupName);
+        final Set<WebServer> webServers = group.getWebServers();
+        final Map<String, UploadWebServerTemplateRequest> uploadWebServerTemplateRequestMap = new HashMap<>();
+        ConfigTemplate createdConfigTemplate = null;
+        String templateContent = IOUtils.toString(templateData);
+        for (final WebServer webServer : webServers) {
+
+            UploadWebServerTemplateRequest uploadWebServerTemplateRequest = new UploadWebServerTemplateRequest(webServer,
+                    metaData.getTemplateName(), convertResourceTemplateMetaDataToJson(metaData), new ByteArrayInputStream(templateContent.getBytes())) {
+                @Override
+                public String getConfFileName() {
+                    return metaData.getDeployFileName();
+                }
+            };
+
+            // Since we're just creating the same template for all the JVMs, we just keep one copy of the created
+            // configuration template.
+            String generatedDeployPath = generateResourceFile(metaData.getDeployPath(), generateResourceGroup(), webServer);
+            createdConfigTemplate = webServerPersistenceService.uploadWebServerConfigTemplate(uploadWebServerTemplateRequest, generatedDeployPath + "/" + metaData.getDeployFileName(), user.getId());
+        }
+
+        UploadWebServerTemplateRequest uploadWebServerTemplateRequest = new UploadWebServerTemplateRequest(null,
+                metaData.getTemplateName(), convertResourceTemplateMetaDataToJson(metaData), new ByteArrayInputStream(templateContent.getBytes())) {
+            @Override
+            public String getConfFileName() {
+                return metaData.getDeployFileName();
+            }
+        };
+        uploadWebServerTemplateRequestMap.put(metaData.getDeployFileName(), uploadWebServerTemplateRequest);
+        groupPersistenceService.populateGroupWebServerTemplates(group.getName(), uploadWebServerTemplateRequestMap);
+        return new CreateResourceTemplateApplicationResponseWrapper(createdConfigTemplate);
+    }
+
+    @Override
+    @Transactional
+    public CreateResourceTemplateApplicationResponseWrapper createAppResource(final ResourceTemplateMetaData metaData,
+                                                                              InputStream templateData,
+                                                                              final String jvmName,
+                                                                              final String appName) {
+
+        templateData = uploadIfBinaryData(metaData, templateData);
+
+        final Application application = applicationPersistenceService.getApplication(appName);
+        final UploadAppTemplateRequest uploadAppTemplateRequest = new UploadAppTemplateRequest(application, metaData.getTemplateName(),
+                metaData.getDeployFileName(), jvmName, convertResourceTemplateMetaDataToJson(metaData), templateData);
+        final JpaJvm jpaJvm = jvmPersistenceService.getJpaJvm(jvmPersistenceService.findJvmByExactName(jvmName).getId(), false);
+        return new CreateResourceTemplateApplicationResponseWrapper(applicationPersistenceService.uploadAppTemplate(uploadAppTemplateRequest, jpaJvm));
+    }
+
+    @Override
+    @Transactional
+    public CreateResourceTemplateApplicationResponseWrapper createGroupedLevelAppResource(final ResourceTemplateMetaData metaData,
+                                                                                          InputStream templateData,
+                                                                                          final String targetAppName) throws IOException {
+        templateData = uploadIfBinaryData(metaData, templateData);
+
+        final String groupName = metaData.getEntity().getGroup();
+        Group group = groupPersistenceService.getGroup(groupName);
+        final List<Application> applications = applicationPersistenceService.findApplicationsBelongingTo(groupName);
+        ConfigTemplate createdConfigTemplate = null;
+        String templateString = IOUtils.toString(templateData);
+        for (final Application application : applications) {
+            if (metaData.getEntity().getDeployToJvms() && application.getName().equals(targetAppName)) {
+                final byte[] bytes = templateString.getBytes();
+                for (final Jvm jvm : group.getJvms()) {
+                    UploadAppTemplateRequest uploadAppTemplateRequest = new UploadAppTemplateRequest(application, metaData.getTemplateName(),
+                            metaData.getDeployFileName(), jvm.getJvmName(), convertResourceTemplateMetaDataToJson(metaData), new ByteArrayInputStream(bytes)
+                    );
+                    JpaJvm jpaJvm = jvmPersistenceService.getJpaJvm(jvm.getId(), false);
+                    applicationPersistenceService.uploadAppTemplate(uploadAppTemplateRequest, jpaJvm);
+                }
+            }
+        }
+
+        createdConfigTemplate = groupPersistenceService.populateGroupAppTemplate(groupName, targetAppName, metaData.getDeployFileName(),
+                convertResourceTemplateMetaDataToJson(metaData), templateString);
+
+        return new CreateResourceTemplateApplicationResponseWrapper(createdConfigTemplate);
+    }
+
+    /**
+     * If content type is binary, the binary data (e.g. war) is uploaded and returns the upload path.
+     * @param resourceTemplateMetaData the meta data
+     * @param resourceDataIn the resource data input stream
+     * @return upload path if the file is binary else it just returns the resource data input stream
+     */
+    private InputStream uploadIfBinaryData(final ResourceTemplateMetaData resourceTemplateMetaData, final InputStream resourceDataIn) {
+        if (resourceTemplateMetaData.getContentType().equals(ContentType.APPLICATION_BINARY.contentTypeStr)){
+            // TODO create new API that doesn't use UploadWebArchiveRequest - just do this for now
+            Application fakedApplication = new Application(new Identifier<Application>(0L), resourceTemplateMetaData.getDeployFileName(),
+                    resourceTemplateMetaData.getDeployPath(), "", null, true, true, false, resourceTemplateMetaData.getDeployFileName());
+            UploadWebArchiveRequest uploadWebArchiveRequest = new UploadWebArchiveRequest(fakedApplication,
+                    resourceTemplateMetaData.getDeployFileName(), -1L, resourceDataIn);
+            RepositoryFileInformation fileInfo = privateApplicationService.uploadWebArchiveData(uploadWebArchiveRequest);
+
+            return new ByteArrayInputStream(fileInfo.getPath().toString().getBytes());
+        }
+        return resourceDataIn;
+    }
+
+    @Override
+    public int removeTemplate(final String groupName, final EntityType entityType, final String templateNames) {
+        final List<String> templateNameList = Arrays.asList(templateNames.split(","));
+        int totalDeletedRecs = 0;
+        for (final String templateName : templateNameList) {
+            switch (entityType) {
+                case GROUPED_JVMS:
+                    totalDeletedRecs = groupPersistenceService.removeJvmTemplate(groupName, templateName);
+                    break;
+                case GROUPED_WEBSERVERS:
+                    totalDeletedRecs = groupPersistenceService.removeWeServerTemplate(groupName, templateName);
+                    break;
+                default:
+                    throw new ResourceServiceException("Invalid entity type parameter! Entity type can only be GROUPED_JVMS or GROUPED_WEBSERVERS.");
+            }
+        }
+        return totalDeletedRecs;
+    }
+
+    @Override
+    public ResourceGroup generateResourceGroup() {
+        List<Group> groups = groupPersistenceService.getGroups();
+        List<Group> groupsToBeAdded = null;
+        for (Group group : groups) {
+            if (groupsToBeAdded == null) {
+                groupsToBeAdded = new ArrayList<>(groups.size());
+            }
+            List<Jvm> jvms = jvmPersistenceService.getJvmsAndWebAppsByGroupName(group.getName());
+            List<WebServer> webServers = webServerPersistenceService.getWebServersByGroupName(group.getName());
+            List<Application> applications = applicationPersistenceService.findApplicationsBelongingTo(group.getName());
+            groupsToBeAdded.add(new Group(group.getId(),
+                    group.getName(),
+                    null != jvms ? new LinkedHashSet<>(jvms) : new LinkedHashSet<Jvm>(),
+                    null != webServers ? new LinkedHashSet<>(webServers) : new LinkedHashSet<WebServer>(),
+                    group.getCurrentState(),
+                    group.getHistory(),
+                    null != applications ? new LinkedHashSet<>(applications) : new LinkedHashSet<Application>()));
+        }
+        return new ResourceGroup(groupsToBeAdded);
+    }
+
+    @Override
+    public <T> String generateResourceFile(final String template, final ResourceGroup resourceGroup, T selectedValue) {
+        return ResourceFileGenerator.generateResourceConfig(template, resourceGroup, selectedValue);
+    }
+
+    @Override
+    public List<String> getApplicationResourceNames(final String groupName, final String appName) {
+        return resourcePersistenceService.getApplicationResourceNames(groupName, appName);
+    }
+
+    @Override
+    public String getAppTemplate(final String groupName, final String appName, final String templateName) {
+        return resourcePersistenceService.getAppTemplate(groupName, appName, templateName);
+    }
+
+    @Override
+    public String checkFileExists(final String groupName, final String jvmName, final String webappName, final String webserverName, final String fileName) {
+        String result = null;
+        boolean resultBoolean = false;
+        if(groupName!=null && !groupName.isEmpty() && fileName!=null && !fileName.isEmpty()) {
+            if(jvmName!=null && !jvmName.isEmpty()) {
+                // Search for file in jvms
+                LOGGER.debug("searching for resource {} in group {} and jvm {}", fileName, groupName, jvmName);
+                resultBoolean = groupPersistenceService.checkGroupJvmResourceFileName(groupName, fileName) ||
+                        jvmPersistenceService.checkJvmResourceFileName(groupName, jvmName, fileName);
+            } else if(webappName!=null && !webappName.isEmpty()) {
+                // Search for file in webapps
+                LOGGER.debug("searching for resource {} in group {} and webapp {}", fileName, groupName, webappName);
+                resultBoolean = groupPersistenceService.checkGroupAppResourceFileName(groupName, fileName) ||
+                        applicationPersistenceService.checkAppResourceFileName(groupName, webappName, fileName);
+            } else if(webserverName!=null && !webserverName.isEmpty()) {
+                // Search for file in webservers
+                LOGGER.debug("searching for resource {} in group {} and webserver {}", fileName, groupName, webserverName);
+                resultBoolean = groupPersistenceService.checkGroupWebServerResourceFileName(groupName, fileName) ||
+                        webServerPersistenceService.checkWebServerResourceFileName(groupName, webserverName, fileName);
+            }
+        }
+        if(fileName==null) {
+            result = "{\"fileName\": " + fileName + ",\n\"exists\": " + resultBoolean + "}";
+        } else {
+            result = "{\"fileName\": \"" + fileName + "\",\n\"exists\": " + resultBoolean + "}";
+        }
+        LOGGER.debug("result: {}", result);
+        return result;
+    }
+
+    @Override
+    @Transactional
+    public int deleteWebServerResource(final String templateName, final String webServerName) {
+        return resourceDao.deleteWebServerResource(templateName, webServerName);
+    }
+
+    @Override
+    @Transactional
+    public int deleteGroupLevelWebServerResource(final String templateName, final String groupName) {
+        return resourceDao.deleteGroupLevelWebServerResource(templateName, groupName);
+    }
+
+    @Override
+    @Transactional
+    public int deleteJvmResource(final String templateName, final String jvmName) {
+        return resourceDao.deleteJvmResource(templateName, jvmName);
+    }
+
+    @Override
+    @Transactional
+    public int deleteGroupLevelJvmResource(final String templateName, final String groupName) {
+        return resourceDao.deleteGroupLevelJvmResource(templateName, groupName);
+    }
+
+    @Override
+    @Transactional
+    public int deleteAppResource(final String templateName, final String appName, final String jvmName) {
+        return resourceDao.deleteAppResource(templateName, appName, jvmName);
+    }
+
+    @Override
+    @Transactional
+    // TODO: Include the web app name in the parameters also!
+    public int deleteGroupLevelAppResource(final String templateName, final String groupName) {
+        return resourceDao.deleteGroupLevelAppResource(templateName, groupName);
+    }
+
+
+    /****** OLD CREATE RESOURCE PRIVATE METHODS TO BE REMOVED AFTER THE NEW CREATE RESOURCE HAS BEEN IMPLEMENTED ******/
+
+    /**
+     * Create the JVM template in the db and in the templates path for a specific JVM entity target.
+     * @param metaData the data that describes the template, please see {@link ResourceTemplateMetaData}
+     * @param templateData the template content/data
+     * @param jvmName identifies the JVM to which the template is attached to
+     */
+    private CreateResourceTemplateApplicationResponseWrapper createJvmTemplate(final ResourceTemplateMetaData metaData,
+                                                                               final InputStream templateData,
+                                                                               final String jvmName) {
+        final Jvm jvm = jvmPersistenceService.findJvmByExactName(jvmName);
+        final Group parentGroup = groupPersistenceService.getGroup(metaData.getEntity().getGroup());
+        final Jvm jvmWithParentGroup = new Jvm(jvm.getId(),
+                jvm.getJvmName(),
+                jvm.getHostName(),
+                jvm.getGroups(),
+                parentGroup,
+                jvm.getHttpPort(),
+                jvm.getHttpsPort(),
+                jvm.getRedirectPort(),
+                jvm.getShutdownPort(),
+                jvm.getAjpPort(),
+                jvm.getStatusPath(),
+                jvm.getSystemProperties(),
+                jvm.getState(),
+                jvm.getErrorStatus(),
+                jvm.getLastUpdatedDate(),
+                jvm.getUserName(),
+                jvm.getEncryptedPassword());
+
+        final UploadJvmConfigTemplateRequest uploadJvmTemplateRequest = new UploadJvmConfigTemplateRequest(jvmWithParentGroup, metaData.getTemplateName(),
+                templateData, convertResourceTemplateMetaDataToJson(metaData));
+        uploadJvmTemplateRequest.setConfFileName(metaData.getDeployFileName());
+        return new CreateResourceTemplateApplicationResponseWrapper(jvmPersistenceService.uploadJvmTemplateXml(uploadJvmTemplateRequest));
     }
 
     /**
@@ -382,128 +705,5 @@ public class ResourceServiceImpl implements ResourceService {
                 convertResourceTemplateMetaDataToJson(metaData), templateString);
 
         return new CreateResourceTemplateApplicationResponseWrapper(createdConfigTemplate);
-    }
-
-    @Override
-    public int removeTemplate(final String groupName, final EntityType entityType, final String templateNames) {
-        final List<String> templateNameList = Arrays.asList(templateNames.split(","));
-        int totalDeletedRecs = 0;
-        for (final String templateName : templateNameList) {
-            switch (entityType) {
-                case GROUPED_JVMS:
-                    totalDeletedRecs = groupPersistenceService.removeJvmTemplate(groupName, templateName);
-                    break;
-                case GROUPED_WEBSERVERS:
-                    totalDeletedRecs = groupPersistenceService.removeWeServerTemplate(groupName, templateName);
-                    break;
-                default:
-                    throw new ResourceServiceException("Invalid entity type parameter! Entity type can only be GROUPED_JVMS or GROUPED_WEBSERVERS.");
-            }
-        }
-        return totalDeletedRecs;
-    }
-
-    @Override
-    public ResourceGroup generateResourceGroup() {
-        List<Group> groups = groupPersistenceService.getGroups();
-        List<Group> groupsToBeAdded = null;
-        for (Group group : groups) {
-            if (groupsToBeAdded == null) {
-                groupsToBeAdded = new ArrayList<>(groups.size());
-            }
-            List<Jvm> jvms = jvmPersistenceService.getJvmsAndWebAppsByGroupName(group.getName());
-            List<WebServer> webServers = webServerPersistenceService.getWebServersByGroupName(group.getName());
-            List<Application> applications = applicationPersistenceService.findApplicationsBelongingTo(group.getName());
-            groupsToBeAdded.add(new Group(group.getId(),
-                    group.getName(),
-                    null != jvms ? new LinkedHashSet<>(jvms) : new LinkedHashSet<Jvm>(),
-                    null != webServers ? new LinkedHashSet<>(webServers) : new LinkedHashSet<WebServer>(),
-                    group.getCurrentState(),
-                    group.getHistory(),
-                    null != applications ? new LinkedHashSet<>(applications) : new LinkedHashSet<Application>()));
-        }
-        return new ResourceGroup(groupsToBeAdded);
-    }
-
-    @Override
-    public <T> String generateResourceFile(final String template, final ResourceGroup resourceGroup, T selectedValue) {
-        return ResourceFileGenerator.generateResourceConfig(template, resourceGroup, selectedValue);
-    }
-
-    @Override
-    public List<String> getApplicationResourceNames(final String groupName, final String appName) {
-        return resourcePersistenceService.getApplicationResourceNames(groupName, appName);
-    }
-
-    @Override
-    public String getAppTemplate(final String groupName, final String appName, final String templateName) {
-        return resourcePersistenceService.getAppTemplate(groupName, appName, templateName);
-    }
-
-    @Override
-    public String checkFileExists(final String groupName, final String jvmName, final String webappName, final String webserverName, final String fileName) {
-        String result = null;
-        boolean resultBoolean = false;
-        if(groupName!=null && !groupName.isEmpty() && fileName!=null && !fileName.isEmpty()) {
-            if(jvmName!=null && !jvmName.isEmpty()) {
-                // Search for file in jvms
-                LOGGER.debug("searching for resource {} in group {} and jvm {}", fileName, groupName, jvmName);
-                resultBoolean = groupPersistenceService.checkGroupJvmResourceFileName(groupName, fileName) ||
-                        jvmPersistenceService.checkJvmResourceFileName(groupName, jvmName, fileName);
-            } else if(webappName!=null && !webappName.isEmpty()) {
-                // Search for file in webapps
-                LOGGER.debug("searching for resource {} in group {} and webapp {}", fileName, groupName, webappName);
-                resultBoolean = groupPersistenceService.checkGroupAppResourceFileName(groupName, fileName) ||
-                        applicationPersistenceService.checkAppResourceFileName(groupName, webappName, fileName);
-            } else if(webserverName!=null && !webserverName.isEmpty()) {
-                // Search for file in webservers
-                LOGGER.debug("searching for resource {} in group {} and webserver {}", fileName, groupName, webserverName);
-                resultBoolean = groupPersistenceService.checkGroupWebServerResourceFileName(groupName, fileName) ||
-                        webServerPersistenceService.checkWebServerResourceFileName(groupName, webserverName, fileName);
-            }
-        }
-        if(fileName==null) {
-            result = "{\"fileName\": " + fileName + ",\n\"exists\": " + resultBoolean + "}";
-        } else {
-            result = "{\"fileName\": \"" + fileName + "\",\n\"exists\": " + resultBoolean + "}";
-        }
-        LOGGER.debug("result: {}", result);
-        return result;
-    }
-
-    @Override
-    @Transactional
-    public int deleteWebServerResource(final String templateName, final String webServerName) {
-        return resourceDao.deleteWebServerResource(templateName, webServerName);
-    }
-
-    @Override
-    @Transactional
-    public int deleteGroupLevelWebServerResource(final String templateName, final String groupName) {
-        return resourceDao.deleteGroupLevelWebServerResource(templateName, groupName);
-    }
-
-    @Override
-    @Transactional
-    public int deleteJvmResource(final String templateName, final String jvmName) {
-        return resourceDao.deleteJvmResource(templateName, jvmName);
-    }
-
-    @Override
-    @Transactional
-    public int deleteGroupLevelJvmResource(final String templateName, final String groupName) {
-        return resourceDao.deleteGroupLevelJvmResource(templateName, groupName);
-    }
-
-    @Override
-    @Transactional
-    public int deleteAppResource(final String templateName, final String appName, final String jvmName) {
-        return resourceDao.deleteAppResource(templateName, appName, jvmName);
-    }
-
-    @Override
-    @Transactional
-    public int deleteGroupLevelAppResource(final String templateName, final String groupName) {
-        return resourceDao.deleteGroupLevelAppResource(templateName, groupName);
     }
 }

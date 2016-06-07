@@ -38,8 +38,22 @@ var resourceService = {
                                      successCallback,
                                      errorCallback);
     },
-    createResource: function(targetName, formData) {
-        return serviceFoundation.promisedPost("v1.0/resources/template/" + targetName, "json", formData, null, true);
+
+    createResource: function(groupName, webServerName, jvmName, webAppName, formData) {
+        var matrixParam = "";
+        if (groupName) {
+            matrixParam += ";group=" + groupName;
+        }
+        if (webServerName) {
+            matrixParam += ";webServer=" + webServerName;
+        }
+        if (jvmName) {
+            matrixParam += ";jvm=" + jvmName;
+        }
+        if (webAppName) {
+            matrixParam += ";webApp=" + webAppName;
+        }
+        return serviceFoundation.promisedPost("v1.0/resources/data" + matrixParam, "json", formData, null, true);
     },
     deleteAllResource: function(resourceName) {
         return serviceFoundation.del("v1.0/resources/template/" + resourceName);

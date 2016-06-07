@@ -277,7 +277,7 @@ var ResourcesConfig = React.createClass({
             groupName = node.rtreeListMetaData.parent.name;
             jvmName = "*";
         } else if (node.rtreeListMetaData.entity === "jvms") {
-            jvmName = node.name
+            jvmName = node.jvmName;
         } else if (node.rtreeListMetaData.entity === "webServerSection") {
             groupName = node.rtreeListMetaData.parent.name;
             webServerName = "*";
@@ -314,9 +314,33 @@ var ResourcesConfig = React.createClass({
             formData.append("metaData", metaDataFile);
             formData.append("templateFile", templateFile);
 
-            // TODO: If this.refs.xmlTabs.state.entity, the create resource dialog should not even appear. The application will inform the user that an entity needs to be selected.
-            this.props.resourceService.createResource(this.refs.xmlTabs.state.entity.name ? this.refs.xmlTabs.state.entity.name :
-                                                      this.refs.xmlTabs.state.entity.jvmName, formData).then(function(response){
+            var groupName;
+            var webServerName;
+            var jvmName;
+            var webAppName;
+            var node = this.refs.resourceEditor.refs.treeList.getSelectedNodeData();
+
+            if (node.rtreeListMetaData.entity === "webApps") {
+                webAppName = node.name;
+                if (node.rtreeListMetaData.parent.rtreeListMetaData.entity === "jvms") {
+                    jvmName = node.rtreeListMetaData.parent.jvmName;
+                } else {
+                    groupName = node.rtreeListMetaData.parent.rtreeListMetaData.parent.name;
+                }
+            } else if (node.rtreeListMetaData.entity === "jvmSection") {
+                groupName = node.rtreeListMetaData.parent.name;
+                jvmName = "*";
+            } else if (node.rtreeListMetaData.entity === "jvms") {
+                jvmName = node.jvmName;
+            } else if (node.rtreeListMetaData.entity === "webServerSection") {
+                groupName = node.rtreeListMetaData.parent.name;
+                webServerName = "*";
+            } else if (node.rtreeListMetaData.entity === "webServers") {
+                webServerName = node.name;
+            }
+
+            var self = this;
+            this.props.resourceService.createResource(groupName, webServerName, jvmName, webAppName, formData).then(function(response){
                 self.refs.selectMetaDataAndTemplateFilesModalDlg.close();
                 self.refreshResourcePane();
             }).caught(function(response){
