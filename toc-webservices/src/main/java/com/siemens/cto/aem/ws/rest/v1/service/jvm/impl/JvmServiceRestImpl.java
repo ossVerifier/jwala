@@ -349,22 +349,25 @@ public class JvmServiceRestImpl implements JvmServiceRest {
         final String tocScriptsPath = AemControl.Properties.USER_TOC_SCRIPTS_PATH.getValue();
         final String jvmName = jvm.getJvmName();
         final String userId = user.getUser().getId();
+
+        final String failedToCopyMessage = "Failed to secure copy ";
+        final String duringCreationMessage = " during the creation of ";
         if (!jvmControlService.secureCopyFile(secureCopyRequest, deployConfigJarPath, tocScriptsPath, userId).getReturnCode().wasSuccessful()) {
-            String message = "Failed to secure copy " + deployConfigJarPath + " during the creation of " + jvmName;
+            String message = failedToCopyMessage + deployConfigJarPath + duringCreationMessage + jvmName;
             LOGGER.error(message);
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, message);
         }
 
         final String invokeServicePath = commandsScriptsPath + "/" + AemControl.Properties.INVOKE_SERVICE_SCRIPT_NAME.getValue();
         if (!jvmControlService.secureCopyFile(secureCopyRequest, invokeServicePath, tocScriptsPath, userId).getReturnCode().wasSuccessful()) {
-            String message = "Failed to secure copy " + invokeServicePath + " during the creation of " + jvmName;
+            String message = failedToCopyMessage + invokeServicePath + duringCreationMessage + jvmName;
             LOGGER.error(message);
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, message);
         }
 
         // make sure the scripts are executable
         if (!jvmControlService.changeFileMode(jvm, "a+x", tocScriptsPath, "*.sh").getReturnCode().wasSuccessful()) {
-            String message = "Failed to change the file permissions in " + tocScriptsPath + " during the creation of " + jvmName;
+            String message = "Failed to change the file permissions in " + tocScriptsPath + duringCreationMessage + jvmName;
             LOGGER.error(message);
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, message);
         }
@@ -464,6 +467,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
         }
         jvmWriteLocks.get(jvm.getId().getId().toString()).writeLock().lock();
 
+        final String badStreamMessage = "Bad Stream: ";
         try {
             if (jvm.getState().isStartedState()) {
                 LOGGER.error("The target JVM {} must be stopped before attempting to update the resource files", jvm.getJvmName());
@@ -489,11 +493,11 @@ public class JvmServiceRestImpl implements JvmServiceRest {
             deployJvmConfigFile(jvmName, fileName, jvm, resourceDestPath, resourceSourceCopy, user);
         } catch (IOException e) {
             String message = "Failed to write file";
-            LOGGER.error("Bad Stream: " + message, e);
+            LOGGER.error(badStreamMessage + message, e);
             throw new InternalErrorException(AemFaultType.BAD_STREAM, message, e);
         } catch (CommandFailureException ce) {
             String message = "Failed to copy file";
-            LOGGER.error("Bad Stream: " + message, ce);
+            LOGGER.error(badStreamMessage + message, ce);
             throw new InternalErrorException(AemFaultType.BAD_STREAM, message, ce);
         } finally {
             jvmWriteLocks.get(jvm.getId().getId().toString()).writeLock().unlock();
