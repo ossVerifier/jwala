@@ -106,7 +106,6 @@ public class JvmControlServiceImpl implements JvmControlService {
 
             RemoteCommandReturnInfo remoteCommandReturnInfo = remoteCommandExecutorService.executeCommand(remoteExecCommand);
 
-            // TODO: Decide whether we keep CommandOuput or RemoteCommandReturnInfo!
             CommandOutput commandOutput = new CommandOutput(new ExecReturnCode(remoteCommandReturnInfo.retCode),
                     remoteCommandReturnInfo.standardOuput, remoteCommandReturnInfo.errorOupout);
 

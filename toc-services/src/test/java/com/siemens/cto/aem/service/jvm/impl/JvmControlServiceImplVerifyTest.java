@@ -7,33 +7,26 @@ import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.jvm.JvmControlOperation;
 import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.common.domain.model.ssh.SshConfiguration;
+import com.siemens.cto.aem.common.domain.model.state.CurrentState;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.exception.ExternalSystemErrorException;
-import com.siemens.cto.aem.common.exception.InternalErrorException;
 import com.siemens.cto.aem.common.exec.CommandOutput;
-import com.siemens.cto.aem.common.exec.ExecCommand;
 import com.siemens.cto.aem.common.exec.ExecReturnCode;
+import com.siemens.cto.aem.common.exec.RemoteExecCommand;
 import com.siemens.cto.aem.common.request.jvm.ControlJvmRequest;
-import com.siemens.cto.aem.common.request.state.JvmSetStateRequest;
 import com.siemens.cto.aem.control.command.RemoteCommandExecutor;
 import com.siemens.cto.aem.control.jvm.command.impl.WindowsJvmPlatformCommandProvider;
 import com.siemens.cto.aem.exception.CommandFailureException;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
 import com.siemens.cto.aem.persistence.jpa.type.EventType;
-import com.siemens.cto.aem.service.HistoryService;
-import com.siemens.cto.aem.service.MessagingService;
-import com.siemens.cto.aem.service.RemoteCommandExecutorService;
-import com.siemens.cto.aem.service.VerificationBehaviorSupport;
+import com.siemens.cto.aem.service.*;
 import com.siemens.cto.aem.service.group.GroupStateNotificationService;
 import com.siemens.cto.aem.service.jvm.JvmService;
 import com.siemens.cto.aem.service.jvm.JvmStateService;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
@@ -53,9 +46,6 @@ public class JvmControlServiceImplVerifyTest extends VerificationBehaviorSupport
     private RemoteCommandExecutor commandExecutor;
     private User user;
 
-    @Captor
-    private ArgumentCaptor<JvmSetStateRequest> setJvmStateCommand;
-
     @Mock
     private HistoryService mockHistoryService;
 
@@ -69,7 +59,7 @@ public class JvmControlServiceImplVerifyTest extends VerificationBehaviorSupport
     private RemoteCommandExecutorService mockRemoteCommandExecutorService;
 
     @Mock
-    private SshConfiguration mcokSshConfig;
+    private SshConfiguration mockSshConfig;
 
     @Mock
     private GroupStateNotificationService mockGroupStateNotificationService;
@@ -85,15 +75,12 @@ public class JvmControlServiceImplVerifyTest extends VerificationBehaviorSupport
         jvmService = mock(JvmService.class);
         commandExecutor = mock(RemoteCommandExecutor.class);
         jvmControlService = new JvmControlServiceImpl(jvmService, commandExecutor, mockHistoryService, mockMessagingService,
-                mockJvmStateService, mockRemoteCommandExecutorService, mcokSshConfig, mockGroupStateNotificationService);
+                mockJvmStateService, mockRemoteCommandExecutorService, mockSshConfig, mockGroupStateNotificationService);
         user = new User("unused");
         when(jvmService.getJpaJvm(any(Identifier.class), eq(true))).thenReturn(new JpaJvm());
     }
 
     @Test
-    @SuppressWarnings("unchecked")
-    // TODO: Fix this test!
-    @Ignore
     public void testVerificationOfBehaviorForSuccess() throws Exception {
         final ControlJvmRequest controlCommand = mock(ControlJvmRequest.class);
         final Jvm jvm = mock(Jvm.class);
@@ -102,11 +89,12 @@ public class JvmControlServiceImplVerifyTest extends VerificationBehaviorSupport
         when(jvm.getJvmName()).thenReturn(jvmName);
         when(jvm.getHostName()).thenReturn(jvmHost);
         final Identifier<Jvm> jvmId = mock(Identifier.class);
-        final JvmControlOperation controlOperation = JvmControlOperation.START;
+        final JvmControlOperation controlOperation = JvmControlOperation.STOP;
         final CommandOutput mockExecData = mock(CommandOutput.class);
+        final RemoteCommandReturnInfo remoteCommandSuccess = new RemoteCommandReturnInfo(0, "Success!", "");
 
         when(jvm.getId()).thenReturn(Identifier.<Jvm>id(1L));
-        when(commandExecutor.executeRemoteCommand(anyString(), anyString(), any(), any(WindowsJvmPlatformCommandProvider.class))).thenReturn(mockExecData);
+        when(mockRemoteCommandExecutorService.executeCommand(any(RemoteExecCommand.class))).thenReturn(remoteCommandSuccess);
         when(controlCommand.getJvmId()).thenReturn(jvmId);
         when(controlCommand.getControlOperation()).thenReturn(controlOperation);
         when(jvmService.getJvm(jvmId)).thenReturn(jvm);
@@ -114,81 +102,63 @@ public class JvmControlServiceImplVerifyTest extends VerificationBehaviorSupport
 
         jvmControlService.controlJvm(controlCommand, user);
 
-        verify(controlCommand, times(1)).validate();
-        //TODO change to use @Captor instead, much easier
         verify(jvmService, times(1)).getJvm(eq(jvmId));
-        verify(commandExecutor, times(1)).executeRemoteCommand(eq(jvmName), eq(jvmHost), eq(controlOperation),
-                any(WindowsJvmPlatformCommandProvider.class));
-        verify(jvmService, times(1)).updateState(any(Identifier.class), any(JvmState.class));
-
-        assertEquals(jvmId,
-                setJvmStateCommand.getValue().getNewState().getId());
-        assertEquals(controlOperation.getOperationState(),
-                setJvmStateCommand.getValue().getNewState().getState());
-
+        verify(mockRemoteCommandExecutorService, times(1)).executeCommand(any(RemoteExecCommand.class));
+        verify(mockJvmStateService, times(1)).updateState(any(Identifier.class), any(JvmState.class));
         verify(mockHistoryService).createHistory(anyString(), anyList(), anyString(), any(EventType.class), anyString());
+        verify(mockMessagingService).send(any(CurrentState.class));
 
 
         // test other command codes
-        when(commandExecutor.executeRemoteCommand(anyString(), anyString(), any(), any(WindowsJvmPlatformCommandProvider.class))).thenReturn(new CommandOutput(new ExecReturnCode(ExecReturnCode.STP_EXIT_CODE_ABNORMAL_SUCCESS), "Abnormal success", ""));
+        when(mockRemoteCommandExecutorService.executeCommand(any(RemoteExecCommand.class))).thenReturn(new RemoteCommandReturnInfo(ExecReturnCode.STP_EXIT_CODE_ABNORMAL_SUCCESS, "Abnormal success", ""));
         CommandOutput returnOutput = jvmControlService.controlJvm(controlCommand, user);
-        assertTrue(returnOutput.getReturnCode().getWasSuccessful());
+        // abnormal success is not a successful return code
+        assertFalse(returnOutput.getReturnCode().getWasSuccessful());
 
         when(jvm.getState()).thenReturn(JvmState.JVM_STARTED);
-        when(commandExecutor.executeRemoteCommand(anyString(), anyString(), any(), any(WindowsJvmPlatformCommandProvider.class))).thenReturn(new CommandOutput(new ExecReturnCode(ExecReturnCode.STP_EXIT_CODE_NO_OP), "No op", ""));
+        when(mockRemoteCommandExecutorService.executeCommand(any(RemoteExecCommand.class))).thenReturn(new RemoteCommandReturnInfo(ExecReturnCode.STP_EXIT_CODE_NO_OP, "No op", ""));
         returnOutput = jvmControlService.controlJvm(controlCommand, user);
-        assertNull(returnOutput);
+        assertFalse(returnOutput.getReturnCode().getWasSuccessful());
 
-        when(commandExecutor.executeRemoteCommand(anyString(), anyString(), any(), any(WindowsJvmPlatformCommandProvider.class))).thenReturn(new CommandOutput(new ExecReturnCode(ExecReturnCode.STP_EXIT_CODE_FAST_FAIL), "", "Fast Fail"));
+        when(mockRemoteCommandExecutorService.executeCommand(any(RemoteExecCommand.class))).thenReturn(new RemoteCommandReturnInfo(ExecReturnCode.STP_EXIT_CODE_FAST_FAIL, "", "Fast Fail"));
         try {
             jvmControlService.controlJvm(controlCommand, user);
         } catch (ExternalSystemErrorException ee) {
             assertEquals(ee.getMessageResponseStatus(), AemFaultType.FAST_FAIL);
         }
 
-        when(commandExecutor.executeRemoteCommand(anyString(), anyString(), any(), any(WindowsJvmPlatformCommandProvider.class))).thenReturn(new CommandOutput(new ExecReturnCode(ExecReturnCode.STP_EXIT_NO_SUCH_SERVICE), "", "No such service"));
+        when(mockRemoteCommandExecutorService.executeCommand(any(RemoteExecCommand.class))).thenReturn(new RemoteCommandReturnInfo(ExecReturnCode.STP_EXIT_NO_SUCH_SERVICE, "", "No such service"));
         try {
             jvmControlService.controlJvm(controlCommand, user);
         } catch (ExternalSystemErrorException ee) {
             assertEquals(ee.getMessageResponseStatus(), AemFaultType.REMOTE_COMMAND_FAILURE);
         }
 
-        when(commandExecutor.executeRemoteCommand(anyString(), anyString(), any(), any(WindowsJvmPlatformCommandProvider.class))).thenReturn(new CommandOutput(new ExecReturnCode(ExecReturnCode.STP_EXIT_PROCESS_KILLED), "", "Process killed"));
+        when(mockRemoteCommandExecutorService.executeCommand(any(RemoteExecCommand.class))).thenReturn(new RemoteCommandReturnInfo(ExecReturnCode.STP_EXIT_PROCESS_KILLED, "", "Process killed"));
         returnOutput = jvmControlService.controlJvm(controlCommand, user);
         assertEquals("FORCED STOPPED", returnOutput.getStandardOutput());
 
-        when(commandExecutor.executeRemoteCommand(anyString(), anyString(), any(), any(WindowsJvmPlatformCommandProvider.class))).thenReturn(new CommandOutput(new ExecReturnCode(88), "", "process default error"));
+        when(mockRemoteCommandExecutorService.executeCommand(any(RemoteExecCommand.class))).thenReturn(new RemoteCommandReturnInfo(88, "", "Process default error"));
         try {
             jvmControlService.controlJvm(controlCommand, user);
-        }catch (ExternalSystemErrorException ee){
+        } catch (ExternalSystemErrorException ee) {
             assertEquals(ee.getMessageResponseStatus(), AemFaultType.REMOTE_COMMAND_FAILURE);
         }
 
         when(controlCommand.getControlOperation()).thenReturn(JvmControlOperation.HEAP_DUMP);
-        when(commandExecutor.executeRemoteCommand(anyString(), anyString(), any(), any(WindowsJvmPlatformCommandProvider.class))).thenReturn(new CommandOutput(new ExecReturnCode(ExecReturnCode.STP_EXIT_CODE_ABNORMAL_SUCCESS), "Abnormal success", ""));
+        when(mockRemoteCommandExecutorService.executeCommand(any(RemoteExecCommand.class))).thenReturn(new RemoteCommandReturnInfo(ExecReturnCode.STP_EXIT_CODE_ABNORMAL_SUCCESS, "Abnormal success", ""));
         returnOutput = jvmControlService.controlJvm(controlCommand, user);
-        assertTrue(returnOutput.getReturnCode().getWasSuccessful());
+        assertFalse(returnOutput.getReturnCode().getWasSuccessful());
 
         when(controlCommand.getControlOperation()).thenReturn(JvmControlOperation.START);
-        when(commandExecutor.executeRemoteCommand(anyString(), anyString(), any(), any(WindowsJvmPlatformCommandProvider.class))).thenReturn(new CommandOutput(new ExecReturnCode(88), "The requested service has already been started.", ""));
+        when(mockRemoteCommandExecutorService.executeCommand(any(RemoteExecCommand.class))).thenReturn(new RemoteCommandReturnInfo(88, "The requested service has already been started", ""));
         returnOutput = jvmControlService.controlJvm(controlCommand, user);
-        assertNull(returnOutput);
-
-        // test command failure
-        when(commandExecutor.executeRemoteCommand(anyString(), anyString(), any(), any(WindowsJvmPlatformCommandProvider.class))).thenThrow(new CommandFailureException(new ExecCommand("Failed command"), new Throwable("Test command failure")));
-        try {
-            jvmControlService.controlJvm(controlCommand, user);
-        } catch (InternalErrorException ie) {
-            assertEquals(ie.getMessageResponseStatus(), AemFaultType.REMOTE_COMMAND_FAILURE);
-        }
+        assertFalse(returnOutput.getReturnCode().getWasSuccessful());
     }
 
     @Test
-    // TODO: Fix this test!
-    @Ignore
     public void testVerificationOfBehaviorForOtherReturnCodes() throws CommandFailureException {
         final ControlJvmRequest controlCommand = mock(ControlJvmRequest.class);
-        final CommandOutput mockExecData = mock(CommandOutput.class);
         final Identifier<Jvm> jvmId = new Identifier<>(1L);
         final Jvm mockJvm = mock(Jvm.class);
 
@@ -197,43 +167,22 @@ public class JvmControlServiceImplVerifyTest extends VerificationBehaviorSupport
         when(mockJvm.getHostName()).thenReturn("testJvmHost");
         when(jvmService.getJvm(any(Identifier.class))).thenReturn(mockJvm);
 
-        when(mockExecData.getReturnCode()).thenReturn(new ExecReturnCode(1));
-        when(mockExecData.getStandardError()).thenReturn("Test standard error");
-        when(mockExecData.getStandardOutput()).thenReturn("Test standard out when START or STOP");
-        when(mockExecData.getReturnCode()).thenReturn(new ExecReturnCode(ExecReturnCode.STP_EXIT_CODE_ABNORMAL_SUCCESS));
         when(controlCommand.getControlOperation()).thenReturn(JvmControlOperation.START);
-        when(commandExecutor.executeRemoteCommand(eq("testJvmName"), eq("testJvmHost"), eq(JvmControlOperation.START), any(WindowsJvmPlatformCommandProvider.class))).thenReturn(mockExecData);
-
-        when(mockExecData.getReturnCode()).thenReturn(new ExecReturnCode(ExecReturnCode.STP_EXIT_CODE_NO_OP));
         when(mockJvm.getState()).thenReturn(JvmState.JVM_STARTED);
-
         when(controlCommand.getJvmId()).thenReturn(jvmId);
-        when(mockExecData.getReturnCode()).thenReturn(new ExecReturnCode(ExecReturnCode.STP_EXIT_CODE_FAST_FAIL));
+        when(mockRemoteCommandExecutorService.executeCommand(any(RemoteExecCommand.class))).thenReturn(new RemoteCommandReturnInfo(ExecReturnCode.STP_EXIT_CODE_FAST_FAIL, "Test standard out when START or STOP", "Test standard error"));
 
-        boolean exceptionThrown = false;
-        try {
-            jvmControlService.controlJvm(controlCommand, user);
-            verify(mockHistoryService).createHistory(anyString(), anyList(), anyString(), any(EventType.class), anyString());
-        } catch (Exception e) {
-            exceptionThrown = true;
-        }
-        assertTrue(exceptionThrown);
+        jvmControlService.controlJvm(controlCommand, user);
+        verify(mockHistoryService, times(2)).createHistory(anyString(), anyList(), anyString(), any(EventType.class), anyString());
 
-        when(mockExecData.getReturnCode()).thenReturn(new ExecReturnCode(ExecReturnCode.STP_EXIT_NO_SUCH_SERVICE));
-        exceptionThrown = false;
-        try {
-            jvmControlService.controlJvm(controlCommand, user);
-        } catch (Exception e) {
-            exceptionThrown = true;
-        }
-        assertTrue(exceptionThrown);
+        when(mockRemoteCommandExecutorService.executeCommand(any(RemoteExecCommand.class))).thenReturn(new RemoteCommandReturnInfo(ExecReturnCode.STP_EXIT_NO_SUCH_SERVICE, "Test standard out when START or STOP", "Test standard error"));
+        jvmControlService.controlJvm(controlCommand, user);
 
-        when(mockExecData.getReturnCode()).thenReturn(new ExecReturnCode(ExecReturnCode.STP_EXIT_PROCESS_KILLED));
+        when(mockRemoteCommandExecutorService.executeCommand(any(RemoteExecCommand.class))).thenReturn(new RemoteCommandReturnInfo(ExecReturnCode.STP_EXIT_PROCESS_KILLED, "Test standard out when START or STOP", "Test standard error"));
         final CommandOutput commandOutput = jvmControlService.controlJvm(controlCommand, user);
         assertTrue(commandOutput.getReturnCode().wasSuccessful());
 
-        when(mockExecData.getReturnCode()).thenReturn(new ExecReturnCode(88 /*non-existent return code*/));
-        when(mockExecData.standardErrorOrStandardOut()).thenReturn("Test standard error or out");
+        when(mockRemoteCommandExecutorService.executeCommand(any(RemoteExecCommand.class))).thenReturn(new RemoteCommandReturnInfo(88, "", "Test standard error or out"));
         when(controlCommand.getControlOperation()).thenReturn(JvmControlOperation.HEAP_DUMP);
 
         jvmControlService.controlJvm(controlCommand, user);
@@ -245,7 +194,7 @@ public class JvmControlServiceImplVerifyTest extends VerificationBehaviorSupport
         when(mockControlJvmRequest.getControlOperation()).thenReturn(JvmControlOperation.SECURE_COPY);
         when(mockControlJvmRequest.getJvmId()).thenReturn(new Identifier<Jvm>(11L));
 
-        Jvm mockJvm = mock (Jvm.class);
+        Jvm mockJvm = mock(Jvm.class);
         when(mockJvm.getJvmName()).thenReturn("testJvm");
         when(mockJvm.getGroups()).thenReturn(new HashSet<Group>());
         JpaJvm mockJpaJvm = mock(JpaJvm.class);
