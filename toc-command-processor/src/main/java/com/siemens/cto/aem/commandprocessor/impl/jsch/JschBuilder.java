@@ -44,7 +44,7 @@ public class JschBuilder {
                 jsch.addIdentity(privateKeyFileName);
             }
         } catch (JSchException e) {
-            LOGGER.error(e.getMessage());
+            LOGGER.error("Could not access known hosts or private key file.", e);
             if (!(e.getCause() instanceof FileNotFoundException)) {
                 throw new JSchException();
             }
