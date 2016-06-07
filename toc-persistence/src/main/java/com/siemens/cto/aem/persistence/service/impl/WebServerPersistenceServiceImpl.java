@@ -118,7 +118,7 @@ public class WebServerPersistenceServiceImpl implements WebServerPersistenceServ
             WebServer webServer = uploadWebServerTemplateRequest.getWebServer();
             final String webServerName = webServer.getName();
             for (String resourceTemplateName : getResourceTemplateNames(webServerName)) {
-                if (resourceTemplateName.equals("httpd.conf")) {
+                if ("httpd.conf".equals(resourceTemplateName)) {
 //                            LOGGER.error("Tried to upload httpd.conf template to {} with already existing httpd.conf template", webServerName);
                     // TODO need to log this error
                     throw new InternalErrorException(AemFaultType.HTTPD_CONF_TEMPLATE_ALREADY_EXISTS, webServerName + " already has a template for the httpd.conf. Please delete the existing httpd.conf template and try again.");
