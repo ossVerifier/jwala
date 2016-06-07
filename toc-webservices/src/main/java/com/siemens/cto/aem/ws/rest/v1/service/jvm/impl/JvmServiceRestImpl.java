@@ -71,6 +71,9 @@ public class JvmServiceRestImpl implements JvmServiceRest {
 
     private static final String TEMPLATE_DIR = ApplicationProperties.get("paths.tomcat.instance.template");
 
+    @Context
+    private MessageContext context;
+
     public JvmServiceRestImpl(final JvmService theJvmService, final JvmControlService theJvmControlService,
                               final ResourceService theResourceService, final ExecutorService theExecutorService,
                               final Map<String, ReentrantReadWriteLock> writeLockMap) {
@@ -170,9 +173,6 @@ public class JvmServiceRestImpl implements JvmServiceRest {
             throw new InternalErrorException(AemFaultType.CONTROL_OPERATION_UNSUCCESSFUL, CommandOutputReturnCode.fromReturnCode(commandOutput.getReturnCode().getReturnCode()).getDesc());
         }
     }
-
-    @Context
-    private MessageContext context;
 
     /*
      * for unit testing
@@ -350,20 +350,23 @@ public class JvmServiceRestImpl implements JvmServiceRest {
         final String jvmName = jvm.getJvmName();
         final String userId = user.getUser().getId();
         if (!jvmControlService.secureCopyFile(secureCopyRequest, deployConfigJarPath, tocScriptsPath, userId).getReturnCode().wasSuccessful()) {
-            LOGGER.error("Failed to secure copy {} during the creation of {}", deployConfigJarPath, jvmName);
-            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to secure copy " + deployConfigJarPath + " during the creation of " + jvmName);
+            String message = "Failed to secure copy " + deployConfigJarPath + " during the creation of " + jvmName;
+            LOGGER.error(message);
+            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, message);
         }
 
         final String invokeServicePath = commandsScriptsPath + "/" + AemControl.Properties.INVOKE_SERVICE_SCRIPT_NAME.getValue();
         if (!jvmControlService.secureCopyFile(secureCopyRequest, invokeServicePath, tocScriptsPath, userId).getReturnCode().wasSuccessful()) {
-            LOGGER.error("Failed to secure copy {} during the creation of {}", invokeServicePath, jvmName);
-            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to secure copy " + invokeServicePath + " during the creation of " + jvmName);
+            String message = "Failed to secure copy " + invokeServicePath + " during the creation of " + jvmName;
+            LOGGER.error(message);
+            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, message);
         }
 
         // make sure the scripts are executable
         if (!jvmControlService.changeFileMode(jvm, "a+x", tocScriptsPath, "*.sh").getReturnCode().wasSuccessful()) {
-            LOGGER.error("Failed to change the file permissions in {} during the creation of {}", tocScriptsPath, jvmName);
-            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to change the file permissions in " + tocScriptsPath + " during the creation of " + jvmName);
+            String message = "Failed to change the file permissions in " + tocScriptsPath + " during the creation of " + jvmName;
+            LOGGER.error(message);
+            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, message);
         }
     }
 
@@ -485,11 +488,13 @@ public class JvmServiceRestImpl implements JvmServiceRest {
 
             deployJvmConfigFile(jvmName, fileName, jvm, resourceDestPath, resourceSourceCopy, user);
         } catch (IOException e) {
-            LOGGER.error("Bad Stream: Failed to write file", e);
-            throw new InternalErrorException(AemFaultType.BAD_STREAM, "Failed to write file", e);
+            String message = "Failed to write file";
+            LOGGER.error("Bad Stream: " + message, e);
+            throw new InternalErrorException(AemFaultType.BAD_STREAM, message, e);
         } catch (CommandFailureException ce) {
-            LOGGER.error("Bad Stream: Failed to copy file", ce);
-            throw new InternalErrorException(AemFaultType.BAD_STREAM, "Failed to copy the file", ce);
+            String message = "Failed to copy file";
+            LOGGER.error("Bad Stream: " + message, ce);
+            throw new InternalErrorException(AemFaultType.BAD_STREAM, message, ce);
         } finally {
             jvmWriteLocks.get(jvm.getId().getId().toString()).writeLock().unlock();
         }
@@ -590,8 +595,9 @@ public class JvmServiceRestImpl implements JvmServiceRest {
                     target.putNextEntry(entry);
                     target.closeEntry();
                 }
-                for (File nestedFile : source.listFiles())
+                for (File nestedFile : source.listFiles()) {
                     addFileToTarget(nestedFile, target);
+                }
                 return;
             }
 
