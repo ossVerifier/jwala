@@ -400,24 +400,24 @@ public class ResourceServiceImpl implements ResourceService {
         return resourceDataIn;
     }
 
-    @Override
-    public int removeTemplate(final String groupName, final EntityType entityType, final String templateNames) {
-        final List<String> templateNameList = Arrays.asList(templateNames.split(","));
-        int totalDeletedRecs = 0;
-        for (final String templateName : templateNameList) {
-            switch (entityType) {
-                case GROUPED_JVMS:
-                    totalDeletedRecs = groupPersistenceService.removeJvmTemplate(groupName, templateName);
-                    break;
-                case GROUPED_WEBSERVERS:
-                    totalDeletedRecs = groupPersistenceService.removeWeServerTemplate(groupName, templateName);
-                    break;
-                default:
-                    throw new ResourceServiceException("Invalid entity type parameter! Entity type can only be GROUPED_JVMS or GROUPED_WEBSERVERS.");
-            }
-        }
-        return totalDeletedRecs;
-    }
+//    @Override
+//    public int removeTemplate(final String groupName, final EntityType entityType, final String templateNames) {
+//        final List<String> templateNameList = Arrays.asList(templateNames.split(","));
+//        int totalDeletedRecs = 0;
+//        for (final String templateName : templateNameList) {
+//            switch (entityType) {
+//                case GROUPED_JVMS:
+//                    totalDeletedRecs = groupPersistenceService.removeJvmTemplate(groupName, templateName);
+//                    break;
+//                case GROUPED_WEBSERVERS:
+//                    totalDeletedRecs = groupPersistenceService.removeWeServerTemplate(groupName, templateName);
+//                    break;
+//                default:
+//                    throw new ResourceServiceException("Invalid entity type parameter! Entity type can only be GROUPED_JVMS or GROUPED_WEBSERVERS.");
+//            }
+//        }
+//        return totalDeletedRecs;
+//    }
 
     @Override
     public ResourceGroup generateResourceGroup() {

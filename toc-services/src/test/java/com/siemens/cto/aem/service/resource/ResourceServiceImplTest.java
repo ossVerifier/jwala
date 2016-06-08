@@ -385,22 +385,22 @@ public class ResourceServiceImplTest {
         verify(mockGroupPesistenceService).populateGroupAppTemplate(anyString(), anyString(), anyString(), anyString(), anyString());
     }
 
-    @Test
-    public void testRemoveTemplateGroupedJvms() {
-        resourceService.removeTemplate("HCT GROUP", EntityType.GROUPED_JVMS, "some-template-name");
-        verify(mockGroupPesistenceService).removeJvmTemplate(eq("HCT GROUP"), eq("some-template-name"));
-    }
-
-    @Test
-    public void testRemoveTemplateGroupedWebServers() {
-        resourceService.removeTemplate("HCT GROUP", EntityType.GROUPED_WEBSERVERS, "some-template-name");
-        verify(mockGroupPesistenceService).removeWeServerTemplate(eq("HCT GROUP"), eq("some-template-name"));
-    }
-
-    @Test(expected = ResourceServiceException.class)
-    public void testRemoveTemplateResourceServiceEx() {
-        resourceService.removeTemplate("HCT GROUP", EntityType.WEB_SERVER, "some-template-name");
-    }
+//    @Test
+//    public void testRemoveTemplateGroupedJvms() {
+//        resourceService.removeTemplate("HCT GROUP", EntityType.GROUPED_JVMS, "some-template-name");
+//        verify(mockGroupPesistenceService).removeJvmTemplate(eq("HCT GROUP"), eq("some-template-name"));
+//    }
+//
+//    @Test
+//    public void testRemoveTemplateGroupedWebServers() {
+//        resourceService.removeTemplate("HCT GROUP", EntityType.GROUPED_WEBSERVERS, "some-template-name");
+//        verify(mockGroupPesistenceService).removeWeServerTemplate(eq("HCT GROUP"), eq("some-template-name"));
+//    }
+//
+//    @Test(expected = ResourceServiceException.class)
+//    public void testRemoveTemplateResourceServiceEx() {
+//        resourceService.removeTemplate("HCT GROUP", EntityType.WEB_SERVER, "some-template-name");
+//    }
 
     @Test
     public void testGenerateResourceFile() {

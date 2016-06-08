@@ -79,15 +79,15 @@ public interface GroupPersistenceService extends StatePersistenceService<Group, 
 
     void updateState(Identifier<Group> id, GroupState state);
 
-    int removeAppTemplate(String name);
-
-    int removeJvmTemplate(String name);
-
-    int removeWeServerTemplate(String name);
-
-    int removeJvmTemplate(String groupName, String templateName);
-
-    int removeWeServerTemplate(String groupName, String templateName);
+//    int removeAppTemplate(String name);
+//
+//    int removeJvmTemplate(String name);
+//
+//    int removeWeServerTemplate(String name);
+//
+//    int removeJvmTemplate(String groupName, String templateName);
+//
+//    int removeWeServerTemplate(String groupName, String templateName);
 
     String getGroupJvmResourceTemplateMetaData(String groupName, String fileName);
 

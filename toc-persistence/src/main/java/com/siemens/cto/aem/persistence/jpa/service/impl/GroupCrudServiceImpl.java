@@ -408,42 +408,42 @@ public class GroupCrudServiceImpl extends AbstractCrudServiceImpl<JpaGroup> impl
         query.executeUpdate();
     }
 
-    @Override
-    public int removeAppTemplate(final String name) {
-        final Query q = entityManager.createNamedQuery(JpaGroupAppConfigTemplate.QUERY_DELETE_GROUP_LEVEL_APP_RESOURCE_BY_TEMPLATE_GROUP_NAME);
-        q.setParameter(JpaGroupAppConfigTemplate.QUERY_PARAM_TEMPLATE_NAME, name);
-        return q.executeUpdate();
-    }
-
-    @Override
-    public int removeJvmTemplate(final String name) {
-        final Query q = entityManager.createNamedQuery(JpaGroupJvmConfigTemplate.QUERY_DELETE_GRP_JVM_TEMPLATE);
-        q.setParameter(JpaGroupJvmConfigTemplate.QUERY_PARAM_TEMPLATE_NAME, name);
-        return q.executeUpdate();
-    }
-
-    @Override
-    public int removeWeServerTemplate(final String name) {
-        final Query q = entityManager.createNamedQuery(JpaGroupWebServerConfigTemplate.QUERY_DELETE_GRP_WEBSERVER_TEMPLATE);
-        q.setParameter(JpaGroupWebServerConfigTemplate.QUERY_PARAM_TEMPLATE_NAME, name);
-        return q.executeUpdate();
-    }
-
-    @Override
-    public int removeJvmTemplate(final String groupName, final String templateName) {
-        final Query q = entityManager.createNamedQuery(JpaGroupJvmConfigTemplate.QUERY_DELETE_GROUP_LEVEL_JVM_RESOURCE_BY_TEMPLATE_GROUP_NAME);
-        q.setParameter(JpaGroupJvmConfigTemplate.QUERY_PARAM_GROUP_NAME, groupName);
-        q.setParameter(JpaGroupJvmConfigTemplate.QUERY_PARAM_TEMPLATE_NAME, templateName);
-        return q.executeUpdate();
-    }
-
-    @Override
-    public int removeWeServerTemplate(String groupName, String templateName) {
-        final Query q = entityManager.createNamedQuery(JpaGroupWebServerConfigTemplate.QUERY_DELETE_GROUP_LEVEL_WEBSERVER_RESOURCE_BY_TEMPLATE_GROUP_NAME);
-        q.setParameter(JpaGroupWebServerConfigTemplate.QUERY_PARAM_GROUP_NAME, groupName);
-        q.setParameter(JpaGroupWebServerConfigTemplate.QUERY_PARAM_TEMPLATE_NAME, templateName);
-        return q.executeUpdate();
-    }
+//    @Override
+//    public int removeAppTemplate(final String name) {
+//        final Query q = entityManager.createNamedQuery(JpaGroupAppConfigTemplate.QUERY_DELETE_GROUP_LEVEL_APP_RESOURCE_BY_TEMPLATE_GROUP_NAME);
+//        q.setParameter(JpaGroupAppConfigTemplate.QUERY_PARAM_TEMPLATE_NAME, name);
+//        return q.executeUpdate();
+//    }
+//
+//    @Override
+//    public int removeJvmTemplate(final String name) {
+//        final Query q = entityManager.createNamedQuery(JpaGroupJvmConfigTemplate.QUERY_DELETE_GRP_JVM_TEMPLATE);
+//        q.setParameter(JpaGroupJvmConfigTemplate.QUERY_PARAM_TEMPLATE_NAME, name);
+//        return q.executeUpdate();
+//    }
+//
+//    @Override
+//    public int removeWeServerTemplate(final String name) {
+//        final Query q = entityManager.createNamedQuery(JpaGroupWebServerConfigTemplate.QUERY_DELETE_GRP_WEBSERVER_TEMPLATE);
+//        q.setParameter(JpaGroupWebServerConfigTemplate.QUERY_PARAM_TEMPLATE_NAME, name);
+//        return q.executeUpdate();
+//    }
+//
+//    @Override
+//    public int removeJvmTemplate(final String groupName, final String templateName) {
+//        final Query q = entityManager.createNamedQuery(JpaGroupJvmConfigTemplate.QUERY_DELETE_GROUP_LEVEL_JVM_RESOURCE_BY_TEMPLATE_GROUP_NAME);
+//        q.setParameter(JpaGroupJvmConfigTemplate.QUERY_PARAM_GROUP_NAME, groupName);
+//        q.setParameter(JpaGroupJvmConfigTemplate.QUERY_PARAM_TEMPLATE_NAME, templateName);
+//        return q.executeUpdate();
+//    }
+//
+//    @Override
+//    public int removeWeServerTemplate(String groupName, String templateName) {
+//        final Query q = entityManager.createNamedQuery(JpaGroupWebServerConfigTemplate.QUERY_DELETE_GROUP_LEVEL_WEBSERVER_RESOURCE_BY_TEMPLATE_GROUP_NAME);
+//        q.setParameter(JpaGroupWebServerConfigTemplate.QUERY_PARAM_GROUP_NAME, groupName);
+//        q.setParameter(JpaGroupWebServerConfigTemplate.QUERY_PARAM_TEMPLATE_NAME, templateName);
+//        return q.executeUpdate();
+//    }
 
     @Override
     public boolean checkGroupJvmResourceFileName(final String groupName, final String fileName) {

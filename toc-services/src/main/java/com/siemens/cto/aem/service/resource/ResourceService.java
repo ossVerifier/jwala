@@ -118,15 +118,15 @@ public interface ResourceService {
                                                                                    InputStream templateData,
                                                                                    String targetAppName) throws IOException;
 
-    /**
-     * Deletes a resource template of a specific group and entity type (e.g. group = Group1, entity type = GROUPED_JVMS)
-     * @param groupName the group name
-     * @param entityType the entity type {@link EntityType}
-     * @param templateNames comma separated names of templates to delete e.g. server.xml, context.xml (user can specify one template name as well)
-     * @return the number of records deleted.
-     */
-    @Deprecated
-    int removeTemplate(String groupName, EntityType entityType, String templateNames);
+//    /**
+//     * Deletes a resource template of a specific group and entity type (e.g. group = Group1, entity type = GROUPED_JVMS)
+//     * @param groupName the group name
+//     * @param entityType the entity type {@link EntityType}
+//     * @param templateNames comma separated names of templates to delete e.g. server.xml, context.xml (user can specify one template name as well)
+//     * @return the number of records deleted.
+//     */
+//    @Deprecated
+//    int removeTemplate(String groupName, EntityType entityType, String templateNames);
 
     /**
      * Generates the ResourceGroup class object, which contains all the jvms, webapps, webservers and groups information.
