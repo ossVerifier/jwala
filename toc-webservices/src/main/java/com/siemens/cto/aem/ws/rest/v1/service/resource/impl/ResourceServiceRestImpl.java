@@ -211,7 +211,7 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
                                                       .isEmpty(createResourceParam.getWebApp()).isValid()) {
                 // Group Level Web Servers
                 if (createResourceParam.getWebServer().equalsIgnoreCase("*")) {
-                    responseWrapper = resourceService.createGroupLevelWebServersResource(resourceTemplateMetaData, resourceDataIn,
+                    responseWrapper = resourceService.createGroupLevelWebServerResource(resourceTemplateMetaData, resourceDataIn,
                             createResourceParam.getGroup(), user.getUser());
                 }
 

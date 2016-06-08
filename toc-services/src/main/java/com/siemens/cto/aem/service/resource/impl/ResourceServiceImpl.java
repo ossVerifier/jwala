@@ -293,10 +293,10 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Override
     @Transactional
-    public CreateResourceTemplateApplicationResponseWrapper createGroupLevelWebServersResource(final ResourceTemplateMetaData metaData,
-                                                                                               InputStream templateData,
-                                                                                               final String groupName,
-                                                                                               final User user) throws IOException {
+    public CreateResourceTemplateApplicationResponseWrapper createGroupLevelWebServerResource(final ResourceTemplateMetaData metaData,
+                                                                                              InputStream templateData,
+                                                                                              final String groupName,
+                                                                                              final User user) throws IOException {
 
         templateData = uploadIfBinaryData(metaData, templateData);
 

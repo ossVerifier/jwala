@@ -88,10 +88,10 @@ public interface ResourceService {
      * @param templateData the template content/data
      * @param user the user
      */
-    CreateResourceTemplateApplicationResponseWrapper createGroupLevelWebServersResource(ResourceTemplateMetaData metaData,
-                                                                                        InputStream templateData,
-                                                                                        String groupName,
-                                                                                        User user) throws IOException;
+    CreateResourceTemplateApplicationResponseWrapper createGroupLevelWebServerResource(ResourceTemplateMetaData metaData,
+                                                                                       InputStream templateData,
+                                                                                       String groupName,
+                                                                                       User user) throws IOException;
 
     /**
      * Create application resource.

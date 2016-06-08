@@ -17,7 +17,6 @@ import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.common.request.app.UploadAppTemplateRequest;
 import com.siemens.cto.aem.common.request.app.UploadWebArchiveRequest;
 import com.siemens.cto.aem.common.request.jvm.UploadJvmConfigTemplateRequest;
-import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
 import com.siemens.cto.aem.common.request.resource.ResourceInstanceRequest;
 import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateRequest;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
@@ -25,7 +24,6 @@ import com.siemens.cto.aem.persistence.service.*;
 import com.siemens.cto.aem.service.app.ApplicationService;
 import com.siemens.cto.aem.service.app.PrivateApplicationService;
 import com.siemens.cto.aem.service.exception.ResourceServiceException;
-import com.siemens.cto.aem.service.resource.impl.CreateResourceTemplateApplicationResponseWrapper;
 import com.siemens.cto.aem.service.resource.impl.ResourceServiceImpl;
 import com.siemens.cto.toc.files.FileManager;
 import com.siemens.cto.toc.files.RepositoryFileInformation;
@@ -43,7 +41,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -551,7 +548,7 @@ public class ResourceServiceImplTest {
     }
 
     @Test
-    public void testCreateGroupLevelWebServersResource() throws IOException {
+    public void testCreateGroupLevelWebServerResource() throws IOException {
         ResourceTemplateMetaData metaData = new ResourceTemplateMetaData();
         metaData.setContentType(ContentType.APPLICATION_BINARY.contentTypeStr);
         final Entity entity = new Entity();
@@ -566,7 +563,7 @@ public class ResourceServiceImplTest {
         when(mockGroup.getWebServers()).thenReturn(mockWebServerSet);
         when(mockGroupPesistenceService.getGroupWithWebServers("someGroup")).thenReturn(mockGroup);
 
-        resourceService.createGroupLevelWebServersResource(metaData, new ByteArrayInputStream("someData".getBytes()),
+        resourceService.createGroupLevelWebServerResource(metaData, new ByteArrayInputStream("someData".getBytes()),
                 "someGroup", new User("Jedi"));
 
         verify(mockWebServerPersistenceService).uploadWebServerConfigTemplate(any(UploadWebServerTemplateRequest.class), anyString(), anyString());
