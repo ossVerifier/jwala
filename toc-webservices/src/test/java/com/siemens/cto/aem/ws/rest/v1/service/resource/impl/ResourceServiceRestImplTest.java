@@ -38,9 +38,7 @@ import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 /**
  * Unit test for {@link ResourceServiceRestImpl}.
@@ -399,6 +397,59 @@ public class ResourceServiceRestImplTest {
         final CreateResourceParam createResourceParam = new CreateResourceParam();
         final Response response = cut.createResource(attachmentList, createResourceParam, mock(AuthenticatedUser.class));
         assertEquals("AEM64", ((ApplicationResponse) response.getEntity()).getMsgCode());
+    }
+
+    @Test
+    public void testCreateResourceWithMissingAttachment() throws IOException {
+        final DataHandler mockDataHandler1 = mock(DataHandler.class);
+        when(mockDataHandler1.getName()).thenReturn("sample-resource.json");
+
+        this.getClass().getClassLoader()
+                .getResourceAsStream("sample-resource.json");
+
+        when(mockDataHandler1.getInputStream()).thenReturn(this.getClass().getClassLoader()
+                .getResourceAsStream("sample-resource.json"));
+        final DataHandler mockDataHandler2 = mock(DataHandler.class);
+        when(mockDataHandler2.getName()).thenReturn("sample-resource.tpl");
+        when(mockDataHandler2.getInputStream()).thenReturn(this.getClass().getClassLoader()
+                .getResourceAsStream("sample-resource.tpl"));
+
+        final Attachment mockAttachment1 = mock(Attachment.class);
+        when(mockAttachment1.getDataHandler()).thenReturn(mockDataHandler1);
+        final Attachment mockAttachment2 = mock(Attachment.class);
+        when(mockAttachment2.getDataHandler()).thenReturn(mockDataHandler2);
+        final List<Attachment> attachmentList = new ArrayList<>();
+        attachmentList.add(mockAttachment1);
+
+        final CreateResourceParam createResourceParam = new CreateResourceParam();
+        final Response response = cut.createResource(attachmentList, createResourceParam, mock(AuthenticatedUser.class));
+        assertEquals("AEM61", ((ApplicationResponse) response.getEntity()).getMsgCode());
+    }
+
+    @Test
+    public void testCreateResourceWithIoException() throws IOException {
+        final DataHandler mockDataHandler1 = mock(DataHandler.class);
+        when(mockDataHandler1.getName()).thenReturn("sample-resource.json");
+
+        this.getClass().getClassLoader()
+                .getResourceAsStream("sample-resource.json");
+
+        when(mockDataHandler1.getInputStream()).thenReturn(this.getClass().getClassLoader()
+                .getResourceAsStream("sample-resource.json"));
+        final DataHandler mockDataHandler2 = mock(DataHandler.class);
+        when(mockDataHandler2.getName()).thenReturn("sample-resource.tpl");
+        doThrow(new IOException()).when(mockDataHandler2).getInputStream();
+
+        final Attachment mockAttachment1 = mock(Attachment.class);
+        when(mockAttachment1.getDataHandler()).thenReturn(mockDataHandler1);
+        final Attachment mockAttachment2 = mock(Attachment.class);
+        when(mockAttachment2.getDataHandler()).thenReturn(mockDataHandler2);
+        final List<Attachment> attachmentList = new ArrayList<>();
+        attachmentList.add(mockAttachment1);
+        attachmentList.add(mockAttachment2);
+        final CreateResourceParam createResourceParam = new CreateResourceParam();
+        final Response response = cut.createResource(attachmentList, createResourceParam, mock(AuthenticatedUser.class));
+        assertEquals("AEM60", ((ApplicationResponse) response.getEntity()).getMsgCode());
     }
 
     public void testDeleteResource() {
