@@ -19,7 +19,7 @@ import javax.persistence.*;
         @NamedQuery(name = JpaGroupWebServerConfigTemplate.UPDATE_GROUP_WEBSERVER_TEMPLATE_CONTENT,
                 query = "UPDATE JpaGroupWebServerConfigTemplate t SET t.templateContent = :templateContent WHERE t.grp.name = :grpName AND t.templateName = :templateName"),
         @NamedQuery(name = JpaGroupWebServerConfigTemplate.QUERY_DELETE_GRP_WEBSERVER_TEMPLATE, query = "DELETE FROM JpaGroupWebServerConfigTemplate t WHERE t.templateName = :templateName"),
-        @NamedQuery(name = JpaGroupWebServerConfigTemplate.GET_GROUP_WEBSERVER_TEMPLATE_RESOURCE_NAME, query = "SELECT t.templateName FROM JpaGroupWebServerConfigTemplate t WHERE t.grp.name = :groupName and t.templateName = :templateName"),
+        @NamedQuery(name = JpaGroupWebServerConfigTemplate.GET_GROUP_WEBSERVER_TEMPLATE_RESOURCE_NAME, query = "SELECT t.templateName FROM JpaGroupWebServerConfigTemplate t WHERE t.grp.name = :grpName and t.templateName = :templateName"),
         @NamedQuery(name = JpaGroupWebServerConfigTemplate.QUERY_DELETE_GROUP_LEVEL_WEBSERVER_RESOURCE_BY_TEMPLATE_GROUP_NAME,
                 query = "DELETE FROM JpaGroupWebServerConfigTemplate t WHERE t.templateName = :templateName AND t.grp.name = :grpName")
 })
