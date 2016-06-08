@@ -109,7 +109,6 @@ public class ResourceServiceImplTest {
         when(mockPrivateApplicationService.uploadWebArchiveData(any(UploadWebArchiveRequest.class)))
                 .thenReturn(mockRepositoryFileInformation);
 
-        // System.out.println(this.getClass().getClassLoader().getResource("vars.properties").getPath().toString());
         System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, new File(".").getAbsolutePath() + "/src/test/resources");
     }
 

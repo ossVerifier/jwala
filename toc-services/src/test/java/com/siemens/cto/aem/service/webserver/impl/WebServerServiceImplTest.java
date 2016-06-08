@@ -32,6 +32,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.*;
@@ -283,8 +284,8 @@ public class WebServerServiceImplTest {
     }
 
     @Test
-    @Ignore
     public void testGenerateHttpdConfig() throws IOException {
+        System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, new File(".").getAbsolutePath() + "/src/test/resources");
         Application app1 = new Application(null, "hello-world-1", null, "/hello-world-1", null, true, true, false, "testWar.war");
         Application app2 = new Application(null, "hello-world-2", null, "/hello-world-2", null, true, true, false, "testWar.war");
 
