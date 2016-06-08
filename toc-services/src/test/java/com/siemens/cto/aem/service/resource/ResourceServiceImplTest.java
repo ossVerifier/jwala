@@ -9,9 +9,7 @@ import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.common.domain.model.path.FileSystemPath;
-import com.siemens.cto.aem.common.domain.model.resource.EntityType;
-import com.siemens.cto.aem.common.domain.model.resource.ResourceGroup;
-import com.siemens.cto.aem.common.domain.model.resource.ResourceInstance;
+import com.siemens.cto.aem.common.domain.model.resource.*;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState;
@@ -19,6 +17,7 @@ import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.common.request.app.UploadAppTemplateRequest;
 import com.siemens.cto.aem.common.request.app.UploadWebArchiveRequest;
 import com.siemens.cto.aem.common.request.jvm.UploadJvmConfigTemplateRequest;
+import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
 import com.siemens.cto.aem.common.request.resource.ResourceInstanceRequest;
 import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateRequest;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
@@ -26,6 +25,7 @@ import com.siemens.cto.aem.persistence.service.*;
 import com.siemens.cto.aem.service.app.ApplicationService;
 import com.siemens.cto.aem.service.app.PrivateApplicationService;
 import com.siemens.cto.aem.service.exception.ResourceServiceException;
+import com.siemens.cto.aem.service.resource.impl.CreateResourceTemplateApplicationResponseWrapper;
 import com.siemens.cto.aem.service.resource.impl.ResourceServiceImpl;
 import com.siemens.cto.toc.files.FileManager;
 import com.siemens.cto.toc.files.RepositoryFileInformation;
@@ -38,10 +38,12 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.internal.verification.Times;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -99,6 +101,19 @@ public class ResourceServiceImplTest {
         resourceService = new ResourceServiceImpl(mockFileManager, mockResourcePersistenceService,
                 mockGroupPesistenceService, mockAppPersistenceService, mockAppService, mockJvmPersistenceService,
                 mockWebServerPersistenceService, mockPrivateApplicationService, mockResourceDao);
+
+
+        // emulates uploadIfBinaryData
+        when(mockJvmPersistenceService.findJvmByExactName(eq("someJvm"))).thenReturn(mock(Jvm.class));
+        final RepositoryFileInformation mockRepositoryFileInformation = mock(RepositoryFileInformation.class);
+        final Path mockPath = mock(Path.class);
+        when(mockPath.toString()).thenReturn("thePath");
+        when(mockRepositoryFileInformation.getPath()).thenReturn(mockPath);
+        when(mockPrivateApplicationService.uploadWebArchiveData(any(UploadWebArchiveRequest.class)))
+                .thenReturn(mockRepositoryFileInformation);
+
+        // System.out.println(this.getClass().getClassLoader().getResource("vars.properties").getPath().toString());
+        System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, new File(".").getAbsolutePath() + "/src/test/resources");
     }
 
     @Test
@@ -487,6 +502,84 @@ public class ResourceServiceImplTest {
         when(mockWebServerPersistenceService.checkWebServerResourceFileName(testGroup, testWebServer, testFile)).thenReturn(true);
         result = resourceService.checkFileExists(testGroup, null, null, testWebServer, testFile);
         assertEquals("{\"fileName\": \"" + testFile + "\",\n\"exists\": true}", result);
+    }
 
+    @Test
+    public void testCreateJvmResource() {
+        ResourceTemplateMetaData metaData = new ResourceTemplateMetaData();
+        metaData.setContentType(ContentType.APPLICATION_BINARY.contentTypeStr);
+        metaData.setEntity(new Entity());
+
+        resourceService.createJvmResource(metaData, new ByteArrayInputStream("someData".getBytes()), "someJvm");
+        verify(mockJvmPersistenceService).uploadJvmTemplateXml(any(UploadJvmConfigTemplateRequest.class));
+    }
+
+    @Test
+    public void testCreateGroupLevelJvmResource() throws IOException {
+        ResourceTemplateMetaData metaData = new ResourceTemplateMetaData();
+        metaData.setContentType(ContentType.APPLICATION_BINARY.contentTypeStr);
+        final Entity entity = new Entity();
+        entity.setGroup("someGroup");
+        metaData.setEntity(entity);
+
+        final Group mockGroup = mock(Group.class);
+        final Jvm mockJvm = mock(Jvm.class);
+        final Set<Jvm> mockJvmSet = new HashSet<>();
+        mockJvmSet.add(mockJvm);
+        when(mockGroup.getJvms()).thenReturn(mockJvmSet);
+        when(mockGroupPesistenceService.getGroup(eq("someGroup"))).thenReturn(mockGroup);
+
+        resourceService.createGroupLevelJvmResource(metaData, new ByteArrayInputStream("someData".getBytes()), "someGroup");
+        verify(mockJvmPersistenceService).uploadJvmTemplateXml(any(UploadJvmConfigTemplateRequest.class));
+        verify(mockGroupPesistenceService).populateGroupJvmTemplates(eq("someGroup"), anyList());
+    }
+
+    @Test
+    public void testCreateWebServerResource() {
+        ResourceTemplateMetaData metaData = new ResourceTemplateMetaData();
+        metaData.setContentType(ContentType.APPLICATION_BINARY.contentTypeStr);
+        metaData.setEntity(new Entity());
+        metaData.setDeployPath("c:\\somewhere");
+
+        final WebServer mockWebServer = mock(WebServer.class);
+        when(mockWebServerPersistenceService.findWebServerByName(anyString())).thenReturn(mockWebServer);
+
+        resourceService.createWebServerResource(metaData, new ByteArrayInputStream("someData".getBytes()), "someWebServer",
+                new User("jedi"));
+        verify(mockWebServerPersistenceService).uploadWebServerConfigTemplate(any(UploadWebServerTemplateRequest.class),
+                anyString(), anyString());
+    }
+
+    @Test
+    public void testCreateGroupLevelWebServersResource() throws IOException {
+        ResourceTemplateMetaData metaData = new ResourceTemplateMetaData();
+        metaData.setContentType(ContentType.APPLICATION_BINARY.contentTypeStr);
+        final Entity entity = new Entity();
+        entity.setGroup("someGroup");
+        metaData.setEntity(entity);
+        metaData.setDeployPath("c:\\somewhere");
+
+        final Group mockGroup = mock(Group.class);
+        final WebServer mockWebServer = mock(WebServer.class);
+        final Set<WebServer> mockWebServerSet = new HashSet<>();
+        mockWebServerSet.add(mockWebServer);
+        when(mockGroup.getWebServers()).thenReturn(mockWebServerSet);
+        when(mockGroupPesistenceService.getGroupWithWebServers("someGroup")).thenReturn(mockGroup);
+
+        resourceService.createGroupLevelWebServersResource(metaData, new ByteArrayInputStream("someData".getBytes()),
+                "someGroup", new User("Jedi"));
+
+        verify(mockWebServerPersistenceService).uploadWebServerConfigTemplate(any(UploadWebServerTemplateRequest.class), anyString(), anyString());
+        verify(mockGroupPesistenceService).populateGroupWebServerTemplates(anyString(), anyMap());
+    }
+
+    @Test
+    public void testCreateAppResource() {
+        // TODO: Write test
+    }
+
+    @Test
+    public void testCreateGroupedLevelAppResource() {
+        // TODO: Write test
     }
 }
