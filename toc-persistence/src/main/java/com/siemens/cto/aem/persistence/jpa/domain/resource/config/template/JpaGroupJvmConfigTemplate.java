@@ -20,10 +20,9 @@ import javax.persistence.*;
                 query = "UPDATE JpaGroupJvmConfigTemplate t SET t.templateContent = :templateContent WHERE t.grp.name = :grpName AND t.templateName = :templateName"),
         @NamedQuery(name = JpaGroupJvmConfigTemplate.QUERY_DELETE_GRP_JVM_TEMPLATE, query = "DELETE FROM JpaGroupJvmConfigTemplate t WHERE t.templateName = :templateName"),
         @NamedQuery(name = JpaGroupJvmConfigTemplate.GET_GROUP_JVM_TEMPLATE_RESOURCE_NAME,
-                query = "SELECT t.templateName FROM JpaGroupJvmConfigTemplate t WHERE t.grp.name = :groupName AND t.templateName = :templateName"),
+                query = "SELECT t.templateName FROM JpaGroupJvmConfigTemplate t WHERE t.grp.name = :grpName AND t.templateName = :templateName"),
         @NamedQuery(name = JpaGroupJvmConfigTemplate.QUERY_DELETE_GROUP_LEVEL_JVM_RESOURCE_BY_TEMPLATE_GROUP_NAME, query = "DELETE FROM JpaGroupJvmConfigTemplate t WHERE t.templateName = :templateName AND t.grp.name = :grpName")
 })
-
 public class JpaGroupJvmConfigTemplate extends ConfigTemplate {
     public static final String GET_GROUP_JVM_TEMPLATE_RESOURCE_NAMES = "getGroupJvmTemplateResourceNames";
     public static final String GET_GROUP_JVM_TEMPLATE_CONTENT = "getGroupJvmTemplateContent";

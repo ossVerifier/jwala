@@ -183,6 +183,9 @@ public class GroupCrudServiceImplTest {
         groupCrudService.uploadGroupJvmTemplate(uploadJvmTemplateRequest, groupCrudService.getGroup(groupName));
         // twice is nice :)
         groupCrudService.uploadGroupJvmTemplate(uploadJvmTemplateRequest, groupCrudService.getGroup(groupName));
+
+        // TODO: Assert the code below!
+        groupCrudService.checkGroupJvmResourceFileName(groupName, "ServerXMLTemplate.tpl");
     }
 
     @Test
@@ -197,8 +200,12 @@ public class GroupCrudServiceImplTest {
             }
         };
         groupCrudService.uploadGroupWebServerTemplate(uploadWsTemplateRequest, groupCrudService.getGroup(groupName));
+
         // twice is ... ok I guess
         groupCrudService.uploadGroupWebServerTemplate(uploadWsTemplateRequest, groupCrudService.getGroup(groupName));
+
+        // TODO: Assert the code below!
+        groupCrudService.checkGroupWebServerResourceFileName(groupName, uploadWsTemplateRequest.getConfFileName());
     }
 
     @Test
@@ -253,6 +260,7 @@ public class GroupCrudServiceImplTest {
     public void testPopulateGroupAppTemplate() {
         groupCrudService.populateGroupAppTemplate(groupName, "some-app-name", "app.xml", "someMetaData", "content!");
         groupCrudService.populateGroupAppTemplate(groupName, "some-app-name", "app.xml", "someMetaData", "content new!");
+        assertTrue(groupCrudService.checkGroupAppResourceFileName(groupName, "app.xml"));
     }
 
     @Test(expected = ResourceTemplateUpdateException.class)
