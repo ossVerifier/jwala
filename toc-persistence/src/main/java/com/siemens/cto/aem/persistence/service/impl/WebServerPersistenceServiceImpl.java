@@ -1,15 +1,12 @@
 package com.siemens.cto.aem.persistence.service.impl;
 
 import com.siemens.cto.aem.common.domain.model.app.Application;
-import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
-import com.siemens.cto.aem.common.domain.model.path.FileSystemPath;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState;
-import com.siemens.cto.aem.common.exception.InternalErrorException;
 import com.siemens.cto.aem.common.exception.NotFoundException;
 import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateRequest;
 import com.siemens.cto.aem.persistence.jpa.domain.resource.config.template.JpaWebServerConfigTemplate;
@@ -113,34 +110,34 @@ public class WebServerPersistenceServiceImpl implements WebServerPersistenceServ
     @Override
     public JpaWebServerConfigTemplate uploadWebServerConfigTemplate(UploadWebServerTemplateRequest uploadWebServerTemplateRequest, String absoluteDeployPath, String userId) {
 
-        if (absoluteDeployPath.endsWith("/httpd.conf")) {
+//        if (absoluteDeployPath.endsWith("/httpd.conf")) {
             // check for an existing httpd.conf
-            WebServer webServer = uploadWebServerTemplateRequest.getWebServer();
-            final String webServerName = webServer.getName();
-            for (String resourceTemplateName : getResourceTemplateNames(webServerName)) {
-                if ("httpd.conf".equals(resourceTemplateName)) {
-//                            LOGGER.error("Tried to upload httpd.conf template to {} with already existing httpd.conf template", webServerName);
-                    // TODO need to log this error
-                    throw new InternalErrorException(AemFaultType.HTTPD_CONF_TEMPLATE_ALREADY_EXISTS, webServerName + " already has a template for the httpd.conf. Please delete the existing httpd.conf template and try again.");
-                }
-            }
-
-            // update the web server httpd config path
-            WebServer updateWebServer = new WebServer(
-                    webServer.getId(),
-                    webServer.getGroups(),
-                    webServerName,
-                    webServer.getHost(),
-                    webServer.getPort(),
-                    webServer.getHttpsPort(),
-                    webServer.getStatusPath(),
-                    new FileSystemPath(absoluteDeployPath),
-                    webServer.getSvrRoot(),
-                    webServer.getDocRoot(),
-                    webServer.getState(),
-                    webServer.getErrorStatus());
-            updateWebServer(updateWebServer, userId);
-        }
+//            WebServer webServer = uploadWebServerTemplateRequest.getWebServer();
+//            final String webServerName = webServer.getName();
+//            for (String resourceTemplateName : getResourceTemplateNames(webServerName)) {
+//                if ("httpd.conf".equals(resourceTemplateName)) {
+////                            LOGGER.error("Tried to upload httpd.conf template to {} with already existing httpd.conf template", webServerName);
+//                    // TODO need to log this error
+//                    throw new InternalErrorException(AemFaultType.HTTPD_CONF_TEMPLATE_ALREADY_EXISTS, webServerName + " already has a template for the httpd.conf. Please delete the existing httpd.conf template and try again.");
+//                }
+//            }
+//
+//            // update the web server httpd config path
+//            WebServer updateWebServer = new WebServer(
+//                    webServer.getId(),
+//                    webServer.getGroups(),
+//                    webServerName,
+//                    webServer.getHost(),
+//                    webServer.getPort(),
+//                    webServer.getHttpsPort(),
+//                    webServer.getStatusPath(),
+//                    new FileSystemPath(absoluteDeployPath),
+//                    webServer.getSvrRoot(),
+//                    webServer.getDocRoot(),
+//                    webServer.getState(),
+//                    webServer.getErrorStatus());
+//            updateWebServer(updateWebServer, userId);
+//        }
 
         return webServerCrudService.uploadWebserverConfigTemplate(uploadWebServerTemplateRequest);
     }

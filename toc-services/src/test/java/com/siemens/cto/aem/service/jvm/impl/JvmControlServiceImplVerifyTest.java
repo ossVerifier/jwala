@@ -205,5 +205,69 @@ public class JvmControlServiceImplVerifyTest extends VerificationBehaviorSupport
         when(commandExecutor.executeRemoteCommand(anyString(), anyString(), any(ControlJvmRequest.class), any(WindowsJvmPlatformCommandProvider.class), anyString(), anyString())).thenReturn(mockCommandOutput);
         when(commandExecutor.executeRemoteCommand(anyString(), anyString(), eq(JvmControlOperation.CHECK_FILE_EXISTS), any(WindowsJvmPlatformCommandProvider.class), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(1), "File doesn't exist", ""));
         jvmControlService.secureCopyFile(mockControlJvmRequest, "./source/path", "./dest/path", "user-id");
+
+        verify(commandExecutor).executeRemoteCommand(anyString(), anyString(), eq(JvmControlOperation.SECURE_COPY), any(WindowsJvmPlatformCommandProvider.class), anyString(), anyString());
+    }
+
+    @Test
+    public void testSecureCopyConfFilePerformsBackup() throws CommandFailureException {
+        ControlJvmRequest mockControlJvmRequest = mock(ControlJvmRequest.class);
+        when(mockControlJvmRequest.getControlOperation()).thenReturn(JvmControlOperation.SECURE_COPY);
+        when(mockControlJvmRequest.getJvmId()).thenReturn(new Identifier<Jvm>(11L));
+
+        Jvm mockJvm = mock(Jvm.class);
+        when(mockJvm.getJvmName()).thenReturn("testJvm");
+        when(mockJvm.getGroups()).thenReturn(new HashSet<Group>());
+        JpaJvm mockJpaJvm = mock(JpaJvm.class);
+        CommandOutput mockCommandOutput = mock(CommandOutput.class);
+
+        when(jvmService.getJpaJvm(any(Identifier.class), anyBoolean())).thenReturn(mockJpaJvm);
+        when(jvmService.getJvm(any(Identifier.class))).thenReturn(mockJvm);
+        when(commandExecutor.executeRemoteCommand(anyString(), anyString(), any(ControlJvmRequest.class), any(WindowsJvmPlatformCommandProvider.class), anyString(), anyString())).thenReturn(mockCommandOutput);
+        when(commandExecutor.executeRemoteCommand(anyString(), anyString(), eq(JvmControlOperation.CHECK_FILE_EXISTS), any(WindowsJvmPlatformCommandProvider.class), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(0), "File exists - do backup", ""));
+        when(commandExecutor.executeRemoteCommand(anyString(), anyString(), eq(JvmControlOperation.BACK_UP_FILE), any(WindowsJvmPlatformCommandProvider.class), anyString(), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(0), "Backup succeeded", ""));
+        jvmControlService.secureCopyFile(mockControlJvmRequest, "./source/path", "./dest/path", "user-id");
+
+        verify(commandExecutor).executeRemoteCommand(anyString(), anyString(), eq(JvmControlOperation.SECURE_COPY), any(WindowsJvmPlatformCommandProvider.class), anyString(), anyString());
+    }
+
+    @Test
+    public void testSecureCopyConfFileFailsBackup() throws CommandFailureException {
+        ControlJvmRequest mockControlJvmRequest = mock(ControlJvmRequest.class);
+        when(mockControlJvmRequest.getControlOperation()).thenReturn(JvmControlOperation.SECURE_COPY);
+        when(mockControlJvmRequest.getJvmId()).thenReturn(new Identifier<Jvm>(11L));
+
+        Jvm mockJvm = mock(Jvm.class);
+        when(mockJvm.getJvmName()).thenReturn("testJvm");
+        when(mockJvm.getGroups()).thenReturn(new HashSet<Group>());
+        JpaJvm mockJpaJvm = mock(JpaJvm.class);
+        CommandOutput mockCommandOutput = mock(CommandOutput.class);
+
+        when(jvmService.getJpaJvm(any(Identifier.class), anyBoolean())).thenReturn(mockJpaJvm);
+        when(jvmService.getJvm(any(Identifier.class))).thenReturn(mockJvm);
+        when(commandExecutor.executeRemoteCommand(anyString(), anyString(), any(ControlJvmRequest.class), any(WindowsJvmPlatformCommandProvider.class), anyString(), anyString())).thenReturn(mockCommandOutput);
+        when(commandExecutor.executeRemoteCommand(anyString(), anyString(), eq(JvmControlOperation.CHECK_FILE_EXISTS), any(WindowsJvmPlatformCommandProvider.class), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(0), "File exists - do backup", ""));
+        when(commandExecutor.executeRemoteCommand(anyString(), anyString(), eq(JvmControlOperation.BACK_UP_FILE), any(WindowsJvmPlatformCommandProvider.class), anyString(), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(1), "", "Back up failed"));
+        jvmControlService.secureCopyFile(mockControlJvmRequest, "./source/path", "./dest/path", "user-id");
+
+        verify(commandExecutor).executeRemoteCommand(anyString(), anyString(), eq(JvmControlOperation.SECURE_COPY), any(WindowsJvmPlatformCommandProvider.class), anyString(), anyString());
+    }
+
+    @Test
+    public void testChangeFileMode() throws CommandFailureException {
+        Jvm mockJvm = mock(Jvm.class);
+        when(mockJvm.getJvmName()).thenReturn("test-jvm");
+        when(mockJvm.getHostName()).thenReturn("test-host");
+        jvmControlService.changeFileMode(mockJvm, "777", "./target", "*");
+        verify(commandExecutor).executeRemoteCommand(anyString(), anyString(), eq(JvmControlOperation.CHANGE_FILE_MODE), any(WindowsJvmPlatformCommandProvider.class), anyString(), anyString(), anyString());
+    }
+
+    @Test
+    public void testCreateDirectory() throws CommandFailureException {
+        Jvm mockJvm = mock(Jvm.class);
+        when(mockJvm.getJvmName()).thenReturn("test-jvm");
+        when(mockJvm.getHostName()).thenReturn("test-host");
+        jvmControlService.createDirectory(mockJvm, "./target");
+        verify(commandExecutor).executeRemoteCommand(anyString(), anyString(), eq(JvmControlOperation.CREATE_DIRECTORY), any(WindowsJvmPlatformCommandProvider.class), anyString());
     }
 }

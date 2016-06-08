@@ -1,6 +1,5 @@
 package com.siemens.cto.aem.persistence.service.impl;
 
-import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.common.domain.model.group.CurrentGroupState;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.group.GroupState;
@@ -8,7 +7,6 @@ import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.state.CurrentState;
 import com.siemens.cto.aem.common.domain.model.state.StateType;
 import com.siemens.cto.aem.common.domain.model.user.User;
-import com.siemens.cto.aem.common.exception.InternalErrorException;
 import com.siemens.cto.aem.common.exception.NotFoundException;
 import com.siemens.cto.aem.common.request.group.*;
 import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
@@ -188,17 +186,17 @@ public class JpaGroupPersistenceServiceImpl implements GroupPersistenceService {
     public Group populateGroupWebServerTemplates(String groupName, Map<String, UploadWebServerTemplateRequest> uploadWSTemplateRequests) {
         final JpaGroup group = groupCrudService.getGroup(groupName);
         // check for pre-existing httpd.conf
-        for (String uploadRequestDeployFileName : uploadWSTemplateRequests.keySet()) {
-            if (uploadRequestDeployFileName.equals("httpd.conf"))
-            {
-                for(String resourceTemplateName : getGroupWebServersResourceTemplateNames(groupName)){
-                    if (resourceTemplateName.equals("httpd.conf")){
-                        // TODO log this error
-                        throw new InternalErrorException(AemFaultType.HTTPD_CONF_TEMPLATE_ALREADY_EXISTS, "The group " + groupName + " already has a httpd.conf template for the web servers. Please delete the existing httpd.conf template and try again.");
-                    }
-                }
-            }
-        }
+//        for (String uploadRequestDeployFileName : uploadWSTemplateRequests.keySet()) {
+//            if (uploadRequestDeployFileName.equals("httpd.conf"))
+//            {
+//                for(String resourceTemplateName : getGroupWebServersResourceTemplateNames(groupName)){
+//                    if (resourceTemplateName.equals("httpd.conf")){
+//                        // TODO log this error
+//                        throw new InternalErrorException(AemFaultType.HTTPD_CONF_TEMPLATE_ALREADY_EXISTS, "The group " + groupName + " already has a httpd.conf template for the web servers. Please delete the existing httpd.conf template and try again.");
+//                    }
+//                }
+//            }
+//        }
 
         // upload all of the templates
         for (String uploadRequestDeployFileName : uploadWSTemplateRequests.keySet()) {

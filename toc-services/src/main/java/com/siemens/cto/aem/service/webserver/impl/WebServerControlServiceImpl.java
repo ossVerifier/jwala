@@ -12,8 +12,6 @@ import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState
 import com.siemens.cto.aem.common.domain.model.webserver.message.WebServerHistoryEvent;
 import com.siemens.cto.aem.common.exception.InternalErrorException;
 import com.siemens.cto.aem.common.exec.*;
-import com.siemens.cto.aem.common.request.state.SetStateRequest;
-import com.siemens.cto.aem.common.request.state.WebServerSetStateRequest;
 import com.siemens.cto.aem.common.request.webserver.ControlWebServerRequest;
 import com.siemens.cto.aem.control.AemControl;
 import com.siemens.cto.aem.control.command.RemoteCommandExecutor;
@@ -101,7 +99,6 @@ public class WebServerControlServiceImpl implements WebServerControlService {
 
             RemoteCommandReturnInfo remoteCommandReturnInfo = remoteCommandExecutorService.executeCommand(remoteExecCommand);
 
-            // TODO: Decide whether we keep CommandOuput or RemoteCommandReturnInfo!
             CommandOutput commandOutput = new CommandOutput(new ExecReturnCode(remoteCommandReturnInfo.retCode),
                     remoteCommandReturnInfo.standardOuput, remoteCommandReturnInfo.errorOupout);
 
@@ -225,52 +222,6 @@ public class WebServerControlServiceImpl implements WebServerControlService {
                 targetDirPath,
                 targetFile);
 
-    }
-
-    /**
-     * Sets the web server state.
-     *
-     * @param controlWebServerRequest {@link ControlWebServerRequest}
-     * @return {@link SetStateRequest}
-     */
-    SetStateRequest<WebServer, WebServerReachableState> createStateCommand(final ControlWebServerRequest controlWebServerRequest) {
-        return new WebServerSetStateRequest(new CurrentState<>(controlWebServerRequest.getWebServerId(),
-                controlWebServerRequest.getControlOperation().getOperationState(),
-                DateTime.now(),
-                StateType.WEB_SERVER));
-    }
-
-    /**
-     * Sets the web server state.
-     *
-     * @param anId     the web server id {@link com.siemens.cto.aem.common.domain.model.id.Identifier}
-     * @param aState   the state {@link com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState}
-     * @param aMessage a message e.g. error message etc.
-     * @return {@link SetStateRequest}
-     */
-    SetStateRequest<WebServer, WebServerReachableState> createStateCommand(final Identifier<WebServer> anId,
-                                                                           final WebServerReachableState aState,
-                                                                           final String aMessage) {
-        return new WebServerSetStateRequest(new CurrentState<>(anId,
-                aState,
-                DateTime.now(),
-                StateType.WEB_SERVER,
-                aMessage));
-    }
-
-    /**
-     * Sets the web server state.
-     *
-     * @param anId   the web server id {@link com.siemens.cto.aem.common.domain.model.id.Identifier}
-     * @param aState the state {@link com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState}
-     * @return {@link SetStateRequest}
-     */
-    SetStateRequest<WebServer, WebServerReachableState> createStateCommand(final Identifier<WebServer> anId,
-                                                                           final WebServerReachableState aState) {
-        return new WebServerSetStateRequest(new CurrentState<>(anId,
-                aState,
-                DateTime.now(),
-                StateType.WEB_SERVER));
     }
 
 }
