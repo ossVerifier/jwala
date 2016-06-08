@@ -43,11 +43,7 @@ import org.springframework.test.context.support.AnnotationConfigContextLoader;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.NoResultException;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -95,34 +91,34 @@ public class WebServerCrudServiceImplTest {
     @Test
     public void testCrud() {
         final WebServer newWebServer = new WebServer(null,
-                                                     new ArrayList<Group>(),
-                                                     "zWebServer",
-                                                     "zHost",
-                                                     8080,
-                                                     443,
-                                                     new Path("any"),
-                                                     new FileSystemPath("any"),
-                                                     new Path("any"),
-                                                     new Path("any"),
-                                                     WebServerReachableState.WS_UNREACHABLE,
-                                                     null);
+                new ArrayList<Group>(),
+                "zWebServer",
+                "zHost",
+                8080,
+                443,
+                new Path("any"),
+                new FileSystemPath("any"),
+                new Path("any"),
+                new Path("any"),
+                WebServerReachableState.WS_UNREACHABLE,
+                null);
         final WebServer createdWebServer = webServerCrudService.createWebServer(newWebServer, "me");
         assertTrue(createdWebServer.getId() != null);
         assertTrue(createdWebServer.getId().getId() != null);
         assertEquals(newWebServer.getName(), createdWebServer.getName());
 
         final WebServer editedWebServer = new WebServer(createdWebServer.getId(),
-                                                        new ArrayList<Group>(),
-                                                        "zWebServerx",
-                                                        "zHostx",
-                                                        808,
-                                                        44,
-                                                        new Path("anyx"),
-                                                        new FileSystemPath("anyx"),
-                                                        new Path("anyx"),
-                                                        new Path("anyx"),
-                                                        WebServerReachableState.WS_UNREACHABLE,
-                                                        null);
+                new ArrayList<Group>(),
+                "zWebServerx",
+                "zHostx",
+                808,
+                44,
+                new Path("anyx"),
+                new FileSystemPath("anyx"),
+                new Path("anyx"),
+                new Path("anyx"),
+                WebServerReachableState.WS_UNREACHABLE,
+                null);
         final WebServer updatedWebServer = webServerCrudService.updateWebServer(editedWebServer, "me");
         assertEquals(editedWebServer.getId().getId(), updatedWebServer.getId().getId());
 
@@ -317,7 +313,7 @@ public class WebServerCrudServiceImplTest {
         assertEquals(HTTPD_CONF_META_DATA, metaData);
     }
 
-    @Test (expected = NonRetrievableResourceTemplateContentException.class)
+    @Test(expected = NonRetrievableResourceTemplateContentException.class)
     public void testGetResourceTemplateMetaDataReturnsNoResult() throws FileNotFoundException {
         String metaData = webServerCrudService.getResourceTemplateMetaData("testWebServer", "httpd.conf");
         assertEquals(HTTPD_CONF_META_DATA, metaData);
@@ -405,9 +401,27 @@ public class WebServerCrudServiceImplTest {
         assertEquals(new Long(0), count);
     }
 
-    @Test(expected = NoResultException.class)
+    @Test
     public void testGetWebServerAndItsGroups() {
-        webServerCrudService.getWebServerAndItsGroups(1L);
+        JpaGroup group = new JpaGroup();
+        group.setName("aGroup");
+        group = groupCrudService.create(group);
+
+        final JpaWebServer webServer = new JpaWebServer();
+        webServer.setName("aWebServer");
+        webServer.setDocRoot("aRoot");
+        webServer.setHttpConfigFile("aConfigFile");
+        webServer.setStatusPath("aStatusPath");
+        webServer.setSvrRoot("aSvrRoot");
+        webServer.getGroups().add(group);
+
+        final JpaWebServer jpaWebServer = webServerCrudService.create(webServer);
+
+        group.getWebServers().add(webServer);
+        groupCrudService.update(group);
+
+        JpaWebServer result = webServerCrudService.getWebServerAndItsGroups(jpaWebServer.getId());
+        assertEquals(1, result.getGroups().size());
     }
 
     @Test
@@ -436,20 +450,91 @@ public class WebServerCrudServiceImplTest {
 
     @Test
     public void testGetWebServersByGroupName() {
-        List<WebServer> result = webServerCrudService.getWebServersByGroupName("test-group");
-        assertEquals(0, result.size());
+        JpaGroup group = new JpaGroup();
+        group.setName("aGroup");
+        group = groupCrudService.create(group);
+
+        final JpaWebServer webServer = new JpaWebServer();
+        webServer.setName("aWebServer");
+        webServer.setDocRoot("aRoot");
+        webServer.setHttpConfigFile("aConfigFile");
+        webServer.setStatusPath("aStatusPath");
+        webServer.setSvrRoot("aSvrRoot");
+        webServer.getGroups().add(group);
+
+        webServerCrudService.create(webServer);
+
+        group.getWebServers().add(webServer);
+        groupCrudService.update(group);
+
+        List<WebServer> result = webServerCrudService.getWebServersByGroupName(group.getName());
+        assertEquals(1, result.size());
     }
 
     @Test
     public void testFindWebServer() {
-        JpaWebServer result = webServerCrudService.findWebServer("test-group", "test-ws");
-        assertNull(result);
+        JpaGroup group = new JpaGroup();
+        group.setName("aGroup");
+        group = groupCrudService.create(group);
+
+        final JpaWebServer webServer = new JpaWebServer();
+        webServer.setName("aWebServer");
+        webServer.setDocRoot("aRoot");
+        webServer.setHttpConfigFile("aConfigFile");
+        webServer.setStatusPath("aStatusPath");
+        webServer.setSvrRoot("aSvrRoot");
+        webServer.getGroups().add(group);
+
+        final JpaWebServer jpaWebServer = webServerCrudService.create(webServer);
+
+        group.getWebServers().add(webServer);
+        groupCrudService.update(group);
+
+        JpaWebServer result = webServerCrudService.findWebServer(group.getName(), webServer.getName());
+        assertEquals(jpaWebServer, result);
     }
 
     @Test
     public void testCheckWebServerResourceFileName() {
+
         boolean result = webServerCrudService.checkWebServerResourceFileName("test-group", "test-ws", "httpd.conf");
         assertFalse(result);
+    }
+
+    @Test
+    public void testCheckWebServerResourceFileNameReturnsTrue() {
+        JpaGroup group = new JpaGroup();
+        group.setName("aGroup");
+        group = groupCrudService.create(group);
+
+        final JpaWebServer webServer = new JpaWebServer();
+        webServer.setName("aWebServer");
+        webServer.setDocRoot("aRoot");
+        webServer.setHttpConfigFile("aConfigFile");
+        webServer.setStatusPath("aStatusPath");
+        webServer.setSvrRoot("aSvrRoot");
+        webServer.getGroups().add(group);
+
+        webServerCrudService.create(webServer);
+
+        group.getWebServers().add(webServer);
+        groupCrudService.update(group);
+
+        JpaWebServerConfigTemplate template = webServerCrudService.uploadWebserverConfigTemplate(
+                new UploadWebServerTemplateRequest(
+                        webServerCrudService.getWebServer(new Identifier<WebServer>(webServer.getId())),
+                        "httpd.conf.tpl",
+                        HTTPD_CONF_META_DATA,
+                        new ByteArrayInputStream("httpd template content".getBytes())) {
+                    @Override
+                    public String getConfFileName() {
+                        return "httpd.conf";
+                    }
+                });
+        assertNotNull(template);
+
+        boolean result = webServerCrudService.checkWebServerResourceFileName(group.getName(), webServer.getName(), "httpd.conf");
+        assertTrue(result);
     }
 
     @Configuration

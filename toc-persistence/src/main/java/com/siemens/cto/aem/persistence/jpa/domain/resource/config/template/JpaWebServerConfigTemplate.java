@@ -27,7 +27,7 @@ import javax.persistence.*;
                     query="DELETE FROM JpaWebServerConfigTemplate t WHERE t.templateName = :templateName AND t.webServer.name = :webServerName"),
         @NamedQuery(name = JpaWebServerConfigTemplate.QUERY_GET_WEBSERVER_RESOURCE_TEMPLATES,
                 query = "SELECT t FROM JpaWebServerConfigTemplate t WHERE t.webServer.name = :webServerName"),
-        @NamedQuery(name = JpaWebServerConfigTemplate.GET_WEBSERVER_TEMPLATE_RESOURCE_NAME, query = "SELECT t.templateName WHERE t.templateName = :templateName AND t.webServer.name = :webServerName")
+        @NamedQuery(name = JpaWebServerConfigTemplate.GET_WEBSERVER_TEMPLATE_RESOURCE_NAME, query = "SELECT t FROM JpaWebServerConfigTemplate t WHERE t.templateName = :templateName AND t.webServer.name = :webServerName")
         })
 public class JpaWebServerConfigTemplate extends ConfigTemplate {
     public static final String GET_WEBSERVER_RESOURCE_TEMPLATE_NAMES = "getWebServerResourceTemplateNames";
