@@ -17,6 +17,7 @@ import com.siemens.cto.aem.ws.rest.v1.provider.AuthenticatedUser;
 import com.siemens.cto.aem.ws.rest.v1.response.ApplicationResponse;
 import com.siemens.cto.aem.ws.rest.v1.response.ResponseBuilder;
 import com.siemens.cto.aem.ws.rest.v1.service.resource.CreateResourceParam;
+import com.siemens.cto.aem.ws.rest.v1.service.resource.ResourceHierarchyParam;
 import org.apache.cxf.jaxrs.ext.multipart.Attachment;
 import org.junit.Before;
 import org.junit.Test;
@@ -452,7 +453,62 @@ public class ResourceServiceRestImplTest {
         assertEquals("AEM60", ((ApplicationResponse) response.getEntity()).getMsgCode());
     }
 
-    public void testDeleteResource() {
-        // TODO: Write test
+    @Test
+    public void testDeleteGroupLevelAppResource() {
+        final ResourceHierarchyParam resourceHierarchyParam = new ResourceHierarchyParam();
+        resourceHierarchyParam.setGroup("someGroup");
+        resourceHierarchyParam.setWebApp("someApp");
+        cut.deleteResource("someResource", resourceHierarchyParam);
+        verify(impl).deleteGroupLevelAppResource(anyString(), eq("someGroup"));
+    }
+
+    @Test
+    public void testDeleteAppResource() {
+        final ResourceHierarchyParam resourceHierarchyParam = new ResourceHierarchyParam();
+        resourceHierarchyParam.setJvm("someJvm");
+        resourceHierarchyParam.setWebApp("someApp");
+        cut.deleteResource("someResource", resourceHierarchyParam);
+        verify(impl).deleteAppResource(eq("someResource"), eq("someApp"), eq("someJvm"));
+    }
+
+    @Test
+    public void testDeleteGroupLevelWebServerResource() {
+        final ResourceHierarchyParam resourceHierarchyParam = new ResourceHierarchyParam();
+        resourceHierarchyParam.setGroup("someGroup");
+        resourceHierarchyParam.setWebServer("*");
+        cut.deleteResource("someResource", resourceHierarchyParam);
+        verify(impl).deleteGroupLevelWebServerResource(eq("someResource"), eq("someGroup"));
+    }
+
+    @Test
+    public void testDeleteWebServerResource() {
+        final ResourceHierarchyParam resourceHierarchyParam = new ResourceHierarchyParam();
+        resourceHierarchyParam.setWebServer("someWebServer");
+        cut.deleteResource("someResource", resourceHierarchyParam);
+        verify(impl).deleteWebServerResource(eq("someResource"), eq("someWebServer"));
+    }
+
+    @Test
+    public void testDeleteGroupLevelJvmResource() {
+        final ResourceHierarchyParam resourceHierarchyParam = new ResourceHierarchyParam();
+        resourceHierarchyParam.setGroup("someGroup");
+        resourceHierarchyParam.setJvm("*");
+        cut.deleteResource("someResource", resourceHierarchyParam);
+        verify(impl).deleteGroupLevelJvmResource(eq("someResource"), eq("someGroup"));
+    }
+
+    @Test
+    public void testDeleteJvmResource() {
+        final ResourceHierarchyParam resourceHierarchyParam = new ResourceHierarchyParam();
+        resourceHierarchyParam.setJvm("someJvm");
+        cut.deleteResource("someResource", resourceHierarchyParam);
+        verify(impl).deleteJvmResource(eq("someResource"), eq("someJvm"));
+    }
+
+    @Test
+    public void testDeleteJvmResourceNoParamsSpecified() {
+        final ResourceHierarchyParam resourceHierarchyParam = new ResourceHierarchyParam();
+        final Response response = cut.deleteResource("someResource", resourceHierarchyParam);
+        assertEquals("AEM64", ((ApplicationResponse) response.getEntity()).getMsgCode());
     }
 }
