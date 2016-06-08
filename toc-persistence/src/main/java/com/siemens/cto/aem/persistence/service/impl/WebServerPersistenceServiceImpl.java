@@ -4,6 +4,7 @@ import com.siemens.cto.aem.common.domain.model.app.Application;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.common.domain.model.path.FileSystemPath;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState;
@@ -110,10 +111,10 @@ public class WebServerPersistenceServiceImpl implements WebServerPersistenceServ
     @Override
     public JpaWebServerConfigTemplate uploadWebServerConfigTemplate(UploadWebServerTemplateRequest uploadWebServerTemplateRequest, String absoluteDeployPath, String userId) {
 
-//        if (absoluteDeployPath.endsWith("/httpd.conf")) {
+        if (absoluteDeployPath.endsWith("/httpd.conf")) {
             // check for an existing httpd.conf
-//            WebServer webServer = uploadWebServerTemplateRequest.getWebServer();
-//            final String webServerName = webServer.getName();
+            WebServer webServer = uploadWebServerTemplateRequest.getWebServer();
+            final String webServerName = webServer.getName();
 //            for (String resourceTemplateName : getResourceTemplateNames(webServerName)) {
 //                if ("httpd.conf".equals(resourceTemplateName)) {
 ////                            LOGGER.error("Tried to upload httpd.conf template to {} with already existing httpd.conf template", webServerName);
@@ -123,21 +124,21 @@ public class WebServerPersistenceServiceImpl implements WebServerPersistenceServ
 //            }
 //
 //            // update the web server httpd config path
-//            WebServer updateWebServer = new WebServer(
-//                    webServer.getId(),
-//                    webServer.getGroups(),
-//                    webServerName,
-//                    webServer.getHost(),
-//                    webServer.getPort(),
-//                    webServer.getHttpsPort(),
-//                    webServer.getStatusPath(),
-//                    new FileSystemPath(absoluteDeployPath),
-//                    webServer.getSvrRoot(),
-//                    webServer.getDocRoot(),
-//                    webServer.getState(),
-//                    webServer.getErrorStatus());
-//            updateWebServer(updateWebServer, userId);
-//        }
+            WebServer updateWebServer = new WebServer(
+                    webServer.getId(),
+                    webServer.getGroups(),
+                    webServerName,
+                    webServer.getHost(),
+                    webServer.getPort(),
+                    webServer.getHttpsPort(),
+                    webServer.getStatusPath(),
+                    new FileSystemPath(absoluteDeployPath),
+                    webServer.getSvrRoot(),
+                    webServer.getDocRoot(),
+                    webServer.getState(),
+                    webServer.getErrorStatus());
+            updateWebServer(updateWebServer, userId);
+        }
 
         return webServerCrudService.uploadWebserverConfigTemplate(uploadWebServerTemplateRequest);
     }
