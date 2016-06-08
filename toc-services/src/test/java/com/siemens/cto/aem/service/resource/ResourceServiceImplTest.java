@@ -572,11 +572,46 @@ public class ResourceServiceImplTest {
 
     @Test
     public void testCreateAppResource() {
-        // TODO: Write test
+        ResourceTemplateMetaData metaData = new ResourceTemplateMetaData();
+        metaData.setContentType(ContentType.APPLICATION_BINARY.contentTypeStr);
+
+        resourceService.createAppResource(metaData, new ByteArrayInputStream("someData".getBytes()), "someJvm",
+                "someApp");
+
+        final Jvm mockJvm = mock(Jvm.class);
+        when(mockJvmPersistenceService.findJvmByExactName("someJvm")).thenReturn(mockJvm);
+        verify(mockAppPersistenceService).getApplication(anyString());
+        verify(mockAppPersistenceService).uploadAppTemplate(any(UploadAppTemplateRequest.class), any(JpaJvm.class));
     }
 
     @Test
-    public void testCreateGroupedLevelAppResource() {
-        // TODO: Write test
+    public void testCreateGroupedLevelAppResource() throws IOException {
+        ResourceTemplateMetaData metaData = new ResourceTemplateMetaData();
+        metaData.setContentType(ContentType.APPLICATION_BINARY.contentTypeStr);
+        final Entity entity = new Entity();
+        entity.setGroup("someGroup");
+        entity.setDeployToJvms(true);
+        metaData.setEntity(entity);
+
+        final Group mockGroup = mock(Group.class);
+
+        final Jvm mockJvm = mock(Jvm.class);
+        final Set<Jvm> mockJvmSet = new HashSet<>();
+        mockJvmSet.add(mockJvm);
+
+        when(mockGroup.getJvms()).thenReturn(mockJvmSet);
+
+        final Application mockApplication = mock(Application.class);
+        when(mockApplication.getName()).thenReturn("someApp");
+        final List<Application> mockAppList = new ArrayList<>();
+        mockAppList.add(mockApplication);
+        when(mockAppPersistenceService.findApplicationsBelongingTo(anyString())).thenReturn(mockAppList);
+        when(mockGroupPesistenceService.getGroup(anyString())).thenReturn(mockGroup);
+
+        resourceService.createGroupedLevelAppResource(metaData, new ByteArrayInputStream("someData".getBytes()), "someApp");
+        verify(mockJvmPersistenceService).getJpaJvm(any(Identifier.class), eq(false));
+        verify(mockAppPersistenceService).uploadAppTemplate(any(UploadAppTemplateRequest.class), any(JpaJvm.class));
+        verify(mockGroupPesistenceService).populateGroupAppTemplate(eq("someGroup"), eq("someApp"), anyString(), anyString(),
+                anyString());
     }
 }
