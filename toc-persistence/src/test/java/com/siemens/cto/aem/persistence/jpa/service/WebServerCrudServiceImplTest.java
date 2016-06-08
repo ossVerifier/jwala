@@ -1,33 +1,5 @@
 package com.siemens.cto.aem.persistence.jpa.service;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-
-import org.apache.commons.lang3.StringUtils;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
-import org.springframework.test.annotation.IfProfileValue;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.test.context.support.AnnotationConfigContextLoader;
-import org.springframework.transaction.annotation.EnableTransactionManagement;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.siemens.cto.aem.common.configuration.TestExecutionProfile;
 import com.siemens.cto.aem.common.domain.model.app.Application;
 import com.siemens.cto.aem.common.domain.model.group.Group;
@@ -55,6 +27,32 @@ import com.siemens.cto.aem.persistence.jpa.service.impl.ApplicationCrudServiceIm
 import com.siemens.cto.aem.persistence.jpa.service.impl.GroupCrudServiceImpl;
 import com.siemens.cto.aem.persistence.jpa.service.impl.JvmCrudServiceImpl;
 import com.siemens.cto.aem.persistence.jpa.service.impl.WebServerCrudServiceImpl;
+import org.apache.commons.lang3.StringUtils;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
+import org.springframework.test.annotation.IfProfileValue;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.support.AnnotationConfigContextLoader;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
+import org.springframework.transaction.annotation.Transactional;
+
+import javax.persistence.NoResultException;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+
+import static org.junit.Assert.*;
 
 /**
  * Integration test for {@link WebServerCrudServiceImpl}
@@ -69,6 +67,7 @@ import com.siemens.cto.aem.persistence.jpa.service.impl.WebServerCrudServiceImpl
         classes = {WebServerCrudServiceImplTest.Config.class})
 public class WebServerCrudServiceImplTest {
 
+    public static final String HTTPD_CONF_META_DATA = "{\"deployFileName\":\"httpd.conf\",\"deployPath\":\"./deploy/here\"}";
     @Autowired
     private WebServerCrudService webServerCrudService;
 
@@ -256,7 +255,7 @@ public class WebServerCrudServiceImplTest {
                 new Path("./docRoot"), WebServerReachableState.WS_UNREACHABLE, StringUtils.EMPTY);
         webServer = webServerCrudService.createWebServer(webServer, "testUser");
         UploadWebServerTemplateRequest uploadWsTemplateRequest = new UploadWebServerTemplateRequest(webServer,
-                "HttpdSslConfTemplate.tpl", "HttpdSslConfTemplate meta data", dataInputStream) {
+                "HttpdSslConfTemplate.tpl", HTTPD_CONF_META_DATA, dataInputStream) {
             @Override
             public String getConfFileName() {
                 return "httpd.conf";
@@ -268,7 +267,7 @@ public class WebServerCrudServiceImplTest {
         // again!
         dataInputStream = new FileInputStream(new File("./src/test/resources/HttpdSslConfTemplate.tpl"));
         uploadWsTemplateRequest = new UploadWebServerTemplateRequest(webServer, "HttpdSslConfTemplate.tpl",
-                "HttpdSslConfTemplate meta data", dataInputStream) {
+                HTTPD_CONF_META_DATA, dataInputStream) {
             @Override
             public String getConfFileName() {
                 return "httpd.conf";
@@ -309,6 +308,19 @@ public class WebServerCrudServiceImplTest {
         webServerCrudService.updateResourceTemplate("testWebServer", "httpd.conf", "this is my template");
         final String updatedContent = webServerCrudService.getResourceTemplate("testWebServer", "httpd.conf");
         assertEquals("this is my template", updatedContent);
+    }
+
+    @Test
+    public void testGetResourceTemplateMetaData() throws FileNotFoundException {
+        testUploadWebServerTemplate();
+        String metaData = webServerCrudService.getResourceTemplateMetaData("testWebServer", "httpd.conf");
+        assertEquals(HTTPD_CONF_META_DATA, metaData);
+    }
+
+    @Test (expected = NonRetrievableResourceTemplateContentException.class)
+    public void testGetResourceTemplateMetaDataReturnsNoResult() throws FileNotFoundException {
+        String metaData = webServerCrudService.getResourceTemplateMetaData("testWebServer", "httpd.conf");
+        assertEquals(HTTPD_CONF_META_DATA, metaData);
     }
 
     @Test(expected = ResourceTemplateUpdateException.class)
@@ -379,6 +391,65 @@ public class WebServerCrudServiceImplTest {
         final JpaWebServer jpaWebServer = webServerCrudService.create(jpaWebServerParam);
         assertEquals(1, webServerCrudService.updateState(new Identifier<WebServer>(jpaWebServer.getId()),
                 WebServerReachableState.WS_UNREACHABLE, "error!"));
+    }
+
+    @Test
+    public void testGetWebServerStartedCount() {
+        Long webServerStartedCount = webServerCrudService.getWebServerStartedCount("test-group");
+        assertEquals(new Long(0), webServerStartedCount);
+    }
+
+    @Test
+    public void testGetWebServerCount() {
+        Long count = webServerCrudService.getWebServerCount("test-group");
+        assertEquals(new Long(0), count);
+    }
+
+    @Test(expected = NoResultException.class)
+    public void testGetWebServerAndItsGroups() {
+        webServerCrudService.getWebServerAndItsGroups(1L);
+    }
+
+    @Test
+    public void testGetWebServerStoppedCount() {
+        Long count = webServerCrudService.getWebServerStoppedCount("test-group");
+        assertEquals(new Long(0), count);
+    }
+
+    @Test
+    public void testRemoveTemplate() {
+        int result = webServerCrudService.removeTemplate("httpd.conf");
+        assertEquals(0, result);
+    }
+
+    @Test
+    public void testRemoveTemplateWithWebServerName() {
+        int result = webServerCrudService.removeTemplate("test-ws", "httpd.conf");
+        assertEquals(0, result);
+    }
+
+    @Test
+    public void testGetJpaWebServerConfigTemplates() {
+        List<JpaWebServerConfigTemplate> result = webServerCrudService.getJpaWebServerConfigTemplates("test-ws");
+        assertEquals(0, result.size());
+    }
+
+    @Test
+    public void testGetWebServersByGroupName() {
+        List<WebServer> result = webServerCrudService.getWebServersByGroupName("test-group");
+        assertEquals(0, result.size());
+    }
+
+    @Test
+    public void testFindWebServer() {
+        JpaWebServer result = webServerCrudService.findWebServer("test-group", "test-ws");
+        assertNull(result);
+    }
+
+    @Test
+    public void testCheckWebServerResourceFileName() {
+        boolean result = webServerCrudService.checkWebServerResourceFileName("test-group", "test-ws", "httpd.conf");
+        assertFalse(result);
     }
 
     @Configuration
