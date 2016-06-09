@@ -130,6 +130,7 @@ public class WebServerCrudServiceImpl extends AbstractCrudServiceImpl<JpaWebServ
         query.setParameter("groupId", aGroupId.getId());
 
         final List<JpaWebServer> webservers = query.getResultList();
+        System.err.println("JMJM " + webservers);
         for (final JpaWebServer webserver : webservers) {
             remove(webserver);
         }
@@ -373,9 +374,9 @@ public class WebServerCrudServiceImpl extends AbstractCrudServiceImpl<JpaWebServ
     }
 
     @Override
-    public int removeTemplate(final String name) {
+    public int removeTemplate(final String templateName) {
         final Query q = entityManager.createNamedQuery(JpaWebServerConfigTemplate.QUERY_DELETE_WEB_SERVER_TEMPLATE);
-        q.setParameter(JpaWebServerConfigTemplate.QUERY_PARAM_TEMPLATE_NAME, name);
+        q.setParameter(JpaWebServerConfigTemplate.QUERY_PARAM_TEMPLATE_NAME, templateName);
         return q.executeUpdate();
     }
 

@@ -240,23 +240,6 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
     }
 
     @Test
-    public void testPopulateWebServerConfig() throws FileNotFoundException {
-        List<UploadWebServerTemplateRequest> uploadRequests = new ArrayList<>();
-        InputStream data = new FileInputStream(new File("./src/test/resources/HttpdSslConfTemplate.tpl"));
-        UploadWebServerTemplateRequest uploadWSRequest = new UploadWebServerTemplateRequest(new WebServer(new Identifier<WebServer>(11L),
-                new HashSet<Group>(), "testWebServer"), "HttpdSslConfTemplate.tpl", StringUtils.EMPTY, data) {
-            @Override
-            public String getConfFileName() {
-                return "httpd.conf";
-            }
-        };
-        uploadRequests.add(uploadWSRequest);
-        final Identifier<Group> aGroupId = new Identifier<>(11L);
-        groupService.populateWebServerConfig(aGroupId, uploadRequests, user, false);
-        verify(webServerPersistenceService, times(1)).populateWebServerConfig(uploadRequests, user, false);
-    }
-
-    @Test
     public void testPopulateGroupJvmTemplates() throws FileNotFoundException {
         List<UploadJvmTemplateRequest> uploadRequests = new ArrayList<>();
         InputStream data = new FileInputStream(new File("./src/test/resources/ServerXMLTemplate.tpl"));

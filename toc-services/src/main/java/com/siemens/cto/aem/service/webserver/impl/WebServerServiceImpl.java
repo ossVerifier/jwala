@@ -107,12 +107,6 @@ public class WebServerServiceImpl implements WebServerService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<WebServer> findWebServers(final String aWebServerNameFragment) {
-        return webServerPersistenceService.findWebServers(aWebServerNameFragment);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
     public List<WebServer> findWebServers(final Identifier<Group> aGroupId) {
         return webServerPersistenceService.findWebServersBelongingTo(aGroupId);
     }
@@ -168,12 +162,6 @@ public class WebServerServiceImpl implements WebServerService {
     }
 
     @Override
-    @Transactional
-    public void removeWebServersBelongingTo(final Identifier<Group> aGroupId) {
-        webServerPersistenceService.removeWebServersBelongingTo(aGroupId);
-    }
-
-    @Override
     public String generateInvokeWSBat(WebServer webServer) {
         try {
             // NOTE: invokeWS.bat is internal to TOC that is why the template is not in Db.
@@ -219,13 +207,6 @@ public class WebServerServiceImpl implements WebServerService {
     @Override
     public String getResourceTemplateMetaData(String aWebServerName, String resourceTemplateName) {
         return webServerPersistenceService.getResourceTemplateMetaData(aWebServerName, resourceTemplateName);
-    }
-
-    @Override
-    @Transactional
-    public void populateWebServerConfig(List<UploadWebServerTemplateRequest> uploadWSTemplateCommands, User user,
-                                        boolean overwriteExisting) {
-        webServerPersistenceService.populateWebServerConfig(uploadWSTemplateCommands, user, overwriteExisting);
     }
 
     @Override

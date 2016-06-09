@@ -23,15 +23,11 @@ public interface WebServerService {
 
     List<WebServer> getWebServers();
 
-    List<WebServer> findWebServers(final String aWebServerNameFragment);
-
     List<WebServer> findWebServers(final Identifier<Group> aGroupId);
 
     WebServer updateWebServer(final UpdateWebServerRequest anUpdateWebServerCommand, final User anUpdatingUser);
 
     void removeWebServer(final Identifier<WebServer> aWebServerId);
-
-    void removeWebServersBelongingTo(final Identifier<Group> aGroupId);
 
     String generateInvokeWSBat(WebServer webServer);
 
@@ -40,8 +36,6 @@ public interface WebServerService {
     List<String> getResourceTemplateNames(final String webServerName);
 
     String getResourceTemplate(final String webServerName, final String resourceTemplateName, final boolean tokensReplaced, ResourceGroup resourceGroup);
-
-    void populateWebServerConfig(List<UploadWebServerTemplateRequest> uploadWSTemplateCommands, User user, boolean overwriteExisting);
 
     JpaWebServerConfigTemplate uploadWebServerConfig(UploadWebServerTemplateRequest uploadWebServerTemplateCommand, User user);
 

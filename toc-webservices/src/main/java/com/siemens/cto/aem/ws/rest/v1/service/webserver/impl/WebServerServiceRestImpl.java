@@ -99,6 +99,8 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
     public Response createWebServer(final JsonCreateWebServer aWebServerToCreate, final AuthenticatedUser aUser) {
         LOGGER.info("Create WS requested: {} by user {}", aWebServerToCreate, aUser.getUser().getId());
         final WebServer webServer = webServerService.createWebServer(aWebServerToCreate.toCreateWebServerRequest(), aUser.getUser());
+
+        // Populate the web server templates from the group templates
         Collection<Group> groups = webServer.getGroups();
         if (null != groups && groups.size() > 0) {
             Group group = groups.iterator().next();

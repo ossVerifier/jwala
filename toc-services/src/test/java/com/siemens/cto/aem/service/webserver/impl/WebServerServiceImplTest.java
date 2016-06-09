@@ -23,7 +23,6 @@ import com.siemens.cto.toc.files.RepositoryFileInformation;
 import com.siemens.cto.toc.files.TocFile;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -247,27 +246,6 @@ public class WebServerServiceImplTest {
         assertEquals("d:/some-dir/httpd.conf", webServer.getHttpConfigFile().getUriPath());
     }
 
-    @Test
-    public void testFindWebServersNameFragment() {
-        when(webServerPersistenceService.findWebServers(eq("the-ws-name-2"))).thenReturn(mockWebServers12);
-        when(webServerPersistenceService.findWebServers(eq("the-ws-name"))).thenReturn(mockWebServersAll);
-
-        final List<WebServer> webServers = wsService.findWebServers("the-ws-name-2");
-        final List<WebServer> webServers2 = wsService.findWebServers("the-ws-name");
-
-        assertEquals(1, webServers.size());
-        assertEquals(2, webServers2.size());
-
-        verify(webServerPersistenceService, times(1)).findWebServers(eq("the-ws-name-2"));
-        verify(webServerPersistenceService, times(1)).findWebServers(eq("the-ws-name"));
-    }
-
-    @Test
-    public void testRemoveWebServersBelongingTo() {
-        wsService.removeWebServersBelongingTo(mockWebServer.getGroups().iterator().next().getId());
-        verify(webServerPersistenceService, atLeastOnce()).removeWebServersBelongingTo(group.getId());
-    }
-
     private final String readReferenceFile(String file) throws IOException {
         BufferedReader bufferedReader =
                 new BufferedReader(new InputStreamReader(this.getClass().getResourceAsStream(file)));
@@ -381,15 +359,6 @@ public class WebServerServiceImplTest {
         when(webServerPersistenceService.getResourceTemplate(anyString(), anyString())).thenReturn("<template>${webServer.name}</template>");
         when(webServerPersistenceService.findWebServerByName(anyString())).thenReturn(mockWebServer);
         assertEquals("<template>mockWebServer</template>", wsService.getResourceTemplate("any", "any-except-httpd.conf", true, new ResourceGroup()));
-    }
-
-    @Test
-    public void testPopulateWebServerConfig() {
-        final List<UploadWebServerTemplateRequest> theList = new ArrayList<>();
-        final User user = new User("id");
-        final boolean overwriteExisting = false;
-        wsService.populateWebServerConfig(theList, user, overwriteExisting);
-        verify(webServerPersistenceService).populateWebServerConfig(eq(theList), eq(user), eq(overwriteExisting));
     }
 
     @Test

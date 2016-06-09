@@ -5,7 +5,6 @@ import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.path.FileSystemPath;
-import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState;
 import com.siemens.cto.aem.common.exception.NotFoundException;
@@ -58,11 +57,6 @@ public class WebServerPersistenceServiceImpl implements WebServerPersistenceServ
     }
 
     @Override
-    public List<WebServer> findWebServers(final String aWebServerNameFragment) {
-        return webServerCrudService.findWebServers(aWebServerNameFragment);
-    }
-
-    @Override
     public void removeWebServer(final Identifier<WebServer> aWebServerId) {
         webServerCrudService.removeWebServer(aWebServerId);
     }
@@ -75,11 +69,6 @@ public class WebServerPersistenceServiceImpl implements WebServerPersistenceServ
     @Override
     public List<Application> findApplications(final String aWebServerName) {
         return webServerCrudService.findApplications(aWebServerName);
-    }
-
-    @Override
-    public void removeWebServersBelongingTo(final Identifier<Group> aGroupId) {
-        webServerCrudService.removeWebServersBelongingTo(aGroupId);
     }
 
     @Override
@@ -103,27 +92,12 @@ public class WebServerPersistenceServiceImpl implements WebServerPersistenceServ
     }
 
     @Override
-    public void populateWebServerConfig(final List<UploadWebServerTemplateRequest> uploadWSTemplateCommands,
-                                        final User user, boolean overwriteExisting) {
-        webServerCrudService.populateWebServerConfig(uploadWSTemplateCommands, user, overwriteExisting);
-    }
-
-    @Override
     public JpaWebServerConfigTemplate uploadWebServerConfigTemplate(UploadWebServerTemplateRequest uploadWebServerTemplateRequest, String absoluteDeployPath, String userId) {
 
         if (absoluteDeployPath.endsWith("/httpd.conf")) {
             // check for an existing httpd.conf
             WebServer webServer = uploadWebServerTemplateRequest.getWebServer();
             final String webServerName = webServer.getName();
-//            for (String resourceTemplateName : getResourceTemplateNames(webServerName)) {
-//                if ("httpd.conf".equals(resourceTemplateName)) {
-////                            LOGGER.error("Tried to upload httpd.conf template to {} with already existing httpd.conf template", webServerName);
-//                    // TODO need to log this error
-//                    throw new InternalErrorException(AemFaultType.HTTPD_CONF_TEMPLATE_ALREADY_EXISTS, webServerName + " already has a template for the httpd.conf. Please delete the existing httpd.conf template and try again.");
-//                }
-//            }
-//
-//            // update the web server httpd config path
             WebServer updateWebServer = new WebServer(
                     webServer.getId(),
                     webServer.getGroups(),
@@ -149,18 +123,18 @@ public class WebServerPersistenceServiceImpl implements WebServerPersistenceServ
     }
 
     @Override
-    public void updateState(final Identifier<WebServer> id, final WebServerReachableState state) {
-        webServerCrudService.updateState(id, state);
+    public int updateState(final Identifier<WebServer> id, final WebServerReachableState state) {
+        return webServerCrudService.updateState(id, state);
     }
 
     @Override
-    public void updateErrorStatus(final Identifier<WebServer> id, final String errorStatus) {
-        webServerCrudService.updateErrorStatus(id, errorStatus);
+    public int updateErrorStatus(final Identifier<WebServer> id, final String errorStatus) {
+        return webServerCrudService.updateErrorStatus(id, errorStatus);
     }
 
     @Override
-    public void updateState(final Identifier<WebServer> id, final WebServerReachableState state, final String errorStatus) {
-        webServerCrudService.updateState(id, state, errorStatus);
+    public int updateState(final Identifier<WebServer> id, final WebServerReachableState state, final String errorStatus) {
+        return webServerCrudService.updateState(id, state, errorStatus);
     }
 
     @Override
@@ -176,21 +150,6 @@ public class WebServerPersistenceServiceImpl implements WebServerPersistenceServ
     @Override
     public Long getWebServerStoppedCount(final String groupName) {
         return webServerCrudService.getWebServerStoppedCount(groupName);
-    }
-
-    @Override
-    public int removeTemplate(final String name) {
-        return webServerCrudService.removeTemplate(name);
-    }
-
-    @Override
-    public int removeTemplate(final String webServerName, final String templateName) {
-        return webServerCrudService.removeTemplate(webServerName, templateName);
-    }
-
-    @Override
-    public List<JpaWebServerConfigTemplate> getJpaWebServerConfigTemplates(final String webServerName) {
-        return webServerCrudService.getJpaWebServerConfigTemplates(webServerName);
     }
 
     @Override
