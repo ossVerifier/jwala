@@ -47,8 +47,8 @@ var groupService = {
 	getGroupJvmResources: function(name, responseCallback) {
         return serviceFoundation.get("v1.0/groups/" + encodeURI(name) + "/jvms/resources/name", "json", responseCallback);
 	},
-	getGroupJvmResourceTemplate : function(wsName, tokensReplaced, resourceTemplateName, responseCallback) {
-        return serviceFoundation.get("v1.0/groups/" + encodeURI(wsName) + "/jvms/resources/template/" + encodeURI(resourceTemplateName) + "?tokensReplaced=" + tokensReplaced, "json", responseCallback);
+	getGroupJvmResourceTemplate : function(jvmName, tokensReplaced, resourceTemplateName, responseCallback) {
+        return serviceFoundation.get("v1.0/groups/" + encodeURIComponent(jvmName) + "/jvms/resources/template/" + encodeURIComponent(resourceTemplateName) + "?tokensReplaced=" + tokensReplaced, "json", responseCallback);
     },
     updateGroupJvmResourceTemplate: function(groupName, resourceTemplateName, resourceTemplateContent) {
         return serviceFoundation.promisedPut("v1.0/groups/" + encodeURI(groupName) + "/jvms/resources/template/" + encodeURI(resourceTemplateName),
