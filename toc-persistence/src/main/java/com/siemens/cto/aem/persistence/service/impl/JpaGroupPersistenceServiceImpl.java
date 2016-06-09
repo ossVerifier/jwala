@@ -279,31 +279,6 @@ public class JpaGroupPersistenceServiceImpl implements GroupPersistenceService {
         groupCrudService.updateState(id, state);
     }
 
-//    @Override
-//    public int removeAppTemplate(String name) {
-//        return groupCrudService.removeAppTemplate(name);
-//    }
-//
-//    @Override
-//    public int removeJvmTemplate(String name) {
-//        return groupCrudService.removeJvmTemplate(name);
-//    }
-//
-//    @Override
-//    public int removeWeServerTemplate(String name) {
-//        return groupCrudService.removeWeServerTemplate(name);
-//    }
-//
-//    @Override
-//    public int removeJvmTemplate(final String groupName, final String templateName) {
-//        return groupCrudService.removeJvmTemplate(groupName, templateName);
-//    }
-//
-//    @Override
-//    public int removeWeServerTemplate(final String groupName, final String templateName) {
-//        return groupCrudService.removeWeServerTemplate(groupName, templateName);
-//    }
-
     @Override
     public boolean checkGroupJvmResourceFileName(final String groupName, final String fileName) {
         return groupCrudService.checkGroupJvmResourceFileName(groupName, fileName);

@@ -76,21 +76,6 @@ public interface GroupCrudService extends CrudService<JpaGroup> {
 
     void updateState(Identifier<Group> id, GroupState state);
 
-//    @Deprecated
-//    int removeAppTemplate(String name);
-//
-//    @Deprecated
-//    int removeJvmTemplate(String name);
-//
-//    @Deprecated
-//    int removeWeServerTemplate(String name);
-//
-//    @Deprecated
-//    int removeJvmTemplate(String groupName, String templateName);
-//
-//    @Deprecated
-//    int removeWeServerTemplate(String groupName, String templateName);
-
     String getGroupJvmResourceTemplateMetaData(String groupName, String fileName);
 
     String getGroupWebServerResourceTemplateMetaData(String groupName, String resourceTemplateName);
