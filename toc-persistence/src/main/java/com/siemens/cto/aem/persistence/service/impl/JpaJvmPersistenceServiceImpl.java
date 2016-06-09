@@ -1,10 +1,5 @@
 package com.siemens.cto.aem.persistence.service.impl;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.springframework.transaction.annotation.Transactional;
-
 import com.siemens.cto.aem.common.domain.model.app.Application;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
@@ -21,6 +16,10 @@ import com.siemens.cto.aem.persistence.jpa.service.ApplicationCrudService;
 import com.siemens.cto.aem.persistence.jpa.service.GroupJvmRelationshipService;
 import com.siemens.cto.aem.persistence.jpa.service.JvmCrudService;
 import com.siemens.cto.aem.persistence.service.JvmPersistenceService;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class JpaJvmPersistenceServiceImpl implements JvmPersistenceService {
 
@@ -67,16 +66,6 @@ public class JpaJvmPersistenceServiceImpl implements JvmPersistenceService {
     @Override
     public List<Jvm> getJvms() {
         return jvmsFrom(jvmCrudService.getJvms());
-    }
-
-    @Override
-    public List<Jvm> findJvms(final String aName) {
-        return jvmsFrom(jvmCrudService.findJvms(aName));
-    }
-
-    @Override
-    public List<Jvm> findJvmsBelongingTo(final Identifier<Group> aGroup) {
-        return jvmsFrom(jvmCrudService.findJvmsBelongingTo(aGroup));
     }
 
     @Override

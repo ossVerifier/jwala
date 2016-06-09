@@ -77,7 +77,6 @@ public class JvmControlServiceImplVerifyTest extends VerificationBehaviorSupport
         jvmControlService = new JvmControlServiceImpl(jvmService, commandExecutor, mockHistoryService, mockMessagingService,
                 mockJvmStateService, mockRemoteCommandExecutorService, mockSshConfig, mockGroupStateNotificationService);
         user = new User("unused");
-        when(jvmService.getJpaJvm(any(Identifier.class), eq(true))).thenReturn(new JpaJvm());
     }
 
     @Test
@@ -200,7 +199,6 @@ public class JvmControlServiceImplVerifyTest extends VerificationBehaviorSupport
         JpaJvm mockJpaJvm = mock(JpaJvm.class);
         CommandOutput mockCommandOutput = mock(CommandOutput.class);
 
-        when(jvmService.getJpaJvm(any(Identifier.class), anyBoolean())).thenReturn(mockJpaJvm);
         when(jvmService.getJvm(any(Identifier.class))).thenReturn(mockJvm);
         when(commandExecutor.executeRemoteCommand(anyString(), anyString(), any(ControlJvmRequest.class), any(WindowsJvmPlatformCommandProvider.class), anyString(), anyString())).thenReturn(mockCommandOutput);
         when(commandExecutor.executeRemoteCommand(anyString(), anyString(), eq(JvmControlOperation.CHECK_FILE_EXISTS), any(WindowsJvmPlatformCommandProvider.class), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(1), "File doesn't exist", ""));
@@ -221,7 +219,6 @@ public class JvmControlServiceImplVerifyTest extends VerificationBehaviorSupport
         JpaJvm mockJpaJvm = mock(JpaJvm.class);
         CommandOutput mockCommandOutput = mock(CommandOutput.class);
 
-        when(jvmService.getJpaJvm(any(Identifier.class), anyBoolean())).thenReturn(mockJpaJvm);
         when(jvmService.getJvm(any(Identifier.class))).thenReturn(mockJvm);
         when(commandExecutor.executeRemoteCommand(anyString(), anyString(), any(ControlJvmRequest.class), any(WindowsJvmPlatformCommandProvider.class), anyString(), anyString())).thenReturn(mockCommandOutput);
         when(commandExecutor.executeRemoteCommand(anyString(), anyString(), eq(JvmControlOperation.CHECK_FILE_EXISTS), any(WindowsJvmPlatformCommandProvider.class), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(0), "File exists - do backup", ""));
@@ -243,7 +240,6 @@ public class JvmControlServiceImplVerifyTest extends VerificationBehaviorSupport
         JpaJvm mockJpaJvm = mock(JpaJvm.class);
         CommandOutput mockCommandOutput = mock(CommandOutput.class);
 
-        when(jvmService.getJpaJvm(any(Identifier.class), anyBoolean())).thenReturn(mockJpaJvm);
         when(jvmService.getJvm(any(Identifier.class))).thenReturn(mockJvm);
         when(commandExecutor.executeRemoteCommand(anyString(), anyString(), any(ControlJvmRequest.class), any(WindowsJvmPlatformCommandProvider.class), anyString(), anyString())).thenReturn(mockCommandOutput);
         when(commandExecutor.executeRemoteCommand(anyString(), anyString(), eq(JvmControlOperation.CHECK_FILE_EXISTS), any(WindowsJvmPlatformCommandProvider.class), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(0), "File exists - do backup", ""));

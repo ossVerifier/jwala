@@ -213,7 +213,6 @@ public class DispatchRequestIntegrationTest {
         @Bean(name = "jvmPersistenceService")
         public JvmPersistenceService getJvmPersistenceService() {
             JvmPersistenceService mockJvmPersistenceService = mock(JvmPersistenceService.class);
-            when(mockJvmPersistenceService.findJvmsBelongingTo(any(Identifier.class))).thenReturn(jvmList);
             return mockJvmPersistenceService;
         }
         

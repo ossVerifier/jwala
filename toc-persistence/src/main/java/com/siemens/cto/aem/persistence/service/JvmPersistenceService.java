@@ -26,10 +26,6 @@ public interface JvmPersistenceService {
 
     List<Jvm> getJvms();
 
-    List<Jvm> findJvms(final String aName);
-
-    List<Jvm> findJvmsBelongingTo(final Identifier<Group> aGroup);
-
     void removeJvm(final Identifier<Jvm> aJvmId);
 
     Jvm removeJvmFromGroups(final Identifier<Jvm> aJvmId);

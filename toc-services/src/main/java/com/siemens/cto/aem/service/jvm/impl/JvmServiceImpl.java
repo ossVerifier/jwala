@@ -18,8 +18,6 @@ import com.siemens.cto.aem.common.exception.InternalErrorException;
 import com.siemens.cto.aem.common.request.app.UploadAppTemplateRequest;
 import com.siemens.cto.aem.common.request.group.AddJvmToGroupRequest;
 import com.siemens.cto.aem.common.request.jvm.*;
-import com.siemens.cto.aem.common.rule.jvm.JvmNameRule;
-import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
 import com.siemens.cto.aem.persistence.jpa.domain.resource.config.template.JpaJvmConfigTemplate;
 import com.siemens.cto.aem.persistence.service.JvmPersistenceService;
 import com.siemens.cto.aem.service.app.ApplicationService;
@@ -160,12 +158,6 @@ public class JvmServiceImpl implements JvmService {
 
     @Override
     @Transactional(readOnly = true)
-    public JpaJvm getJpaJvm(final Identifier<Jvm> aJvmId, final boolean fetchGroups) {
-        return jvmPersistenceService.getJpaJvm(aJvmId, fetchGroups);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
     public Jvm getJvm(final String jvmName) {
         return jvmPersistenceService.findJvmByExactName(jvmName);
     }
@@ -175,20 +167,6 @@ public class JvmServiceImpl implements JvmService {
     public List<Jvm> getJvms() {
 
         return jvmPersistenceService.getJvms();
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<Jvm> findJvms(final String aJvmNameFragment) {
-
-        new JvmNameRule(aJvmNameFragment).validate();
-        return jvmPersistenceService.findJvms(aJvmNameFragment);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<Jvm> findJvms(final Identifier<Group> groupId) {
-        return jvmPersistenceService.findJvmsBelongingTo(groupId);
     }
 
     @Override
@@ -326,12 +304,6 @@ public class JvmServiceImpl implements JvmService {
     public void updateState(final Identifier<Jvm> id, final JvmState state) {
         jvmPersistenceService.updateState(id, state, "");
         messagingTemplate.convertAndSend(topicServerStates, new CurrentState<>(id, state, DateTime.now(), StateType.JVM));
-    }
-
-    @Override
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void updateState(final Identifier<Jvm> id, final JvmState state, final String erroStatus) {
-        jvmPersistenceService.updateState(id, state, erroStatus);
     }
 
     @Override

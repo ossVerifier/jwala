@@ -9,7 +9,6 @@ import com.siemens.cto.aem.common.request.jvm.CreateJvmAndAddToGroupsRequest;
 import com.siemens.cto.aem.common.request.jvm.CreateJvmRequest;
 import com.siemens.cto.aem.common.request.jvm.UpdateJvmRequest;
 import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
-import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
 import com.siemens.cto.aem.persistence.jpa.domain.resource.config.template.JpaJvmConfigTemplate;
 
 import java.io.IOException;
@@ -23,15 +22,9 @@ public interface JvmService {
 
     Jvm getJvm(final Identifier<Jvm> aJvmId);
 
-    JpaJvm getJpaJvm(final Identifier<Jvm> aJvmId, boolean fetchGroups);
-
     Jvm getJvm(final String jvmName);
 
     List<Jvm> getJvms();
-
-    List<Jvm> findJvms(final String aJvmNameFragment);
-
-    List<Jvm> findJvms(final Identifier<Group> groupId);
 
     Jvm updateJvm(final UpdateJvmRequest updateJvmRequest, final User anUpdatingUser);
 
@@ -54,8 +47,6 @@ public interface JvmService {
     String previewResourceTemplate(String jvmName, String groupName, String template);
 
     void updateState(Identifier<Jvm> id, JvmState state);
-
-    void updateState(Identifier<Jvm> id, JvmState state, String msg);
 
     /**
      * Ping's the JVM and updates its state.

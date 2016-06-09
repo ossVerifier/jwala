@@ -1,6 +1,5 @@
 package com.siemens.cto.aem.persistence.jpa.service;
 
-import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
@@ -22,10 +21,6 @@ public interface JvmCrudService extends CrudService<JpaJvm> {
     JpaJvm getJvm(final Identifier<Jvm> aJvmId) throws NotFoundException;
 
     List<JpaJvm> getJvms();
-
-    List<JpaJvm> findJvms(final String aName);
-
-    List<JpaJvm> findJvmsBelongingTo(final Identifier<Group> aGroup);
 
     void removeJvm(final Identifier<Jvm> aGroupId);
 

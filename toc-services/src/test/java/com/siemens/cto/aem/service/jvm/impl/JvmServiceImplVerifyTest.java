@@ -167,34 +167,6 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
     }
 
     @Test
-    public void testFindByName() {
-
-        final String fragment = "unused";
-
-        jvmService.findJvms(fragment);
-
-        verify(mockJvmPersistenceService, times(1)).findJvms(eq(fragment));
-    }
-
-    @Test(expected = BadRequestException.class)
-    public void testFindByInvalidName() {
-
-        final String badFragment = "";
-
-        jvmService.findJvms(badFragment);
-    }
-
-    @Test
-    public void testFindByGroup() {
-
-        final Identifier<Group> id = new Identifier<>(-123456L);
-
-        jvmService.findJvms(id);
-
-        verify(mockJvmPersistenceService, times(1)).findJvmsBelongingTo(eq(id));
-    }
-
-    @Test
     public void testGetAll() {
 
         jvmService.getJvms();
@@ -395,12 +367,6 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
     }
 
     @Test
-    public void testGetJpaJvm() {
-        jvmService.getJpaJvm(new Identifier<Jvm>(1L), false);
-        verify(mockJvmPersistenceService).getJpaJvm(new Identifier<Jvm>(1L), false);
-    }
-
-    @Test
     public void testGetJvmByName() {
         jvmService.getJvm("testJvm");
         verify(mockJvmPersistenceService).findJvmByExactName("testJvm");
@@ -440,9 +406,6 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
         Identifier<Jvm> jvmId = new Identifier<Jvm>(999L);
         jvmService.updateState(jvmId, JvmState.JVM_STOPPED);
         verify(mockJvmPersistenceService).updateState(jvmId, JvmState.JVM_STOPPED, "");
-
-        jvmService.updateState(jvmId, JvmState.JVM_STOPPED, "test error status");
-        verify(mockJvmPersistenceService).updateState(jvmId, JvmState.JVM_STOPPED, "test error status");
     }
 
     @Test

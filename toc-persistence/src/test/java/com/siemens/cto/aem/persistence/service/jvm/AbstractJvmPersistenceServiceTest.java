@@ -1,21 +1,5 @@
 package com.siemens.cto.aem.persistence.service.jvm;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
@@ -27,6 +11,17 @@ import com.siemens.cto.aem.persistence.service.CommonGroupPersistenceServiceBeha
 import com.siemens.cto.aem.persistence.service.CommonJvmPersistenceServiceBehavior;
 import com.siemens.cto.aem.persistence.service.GroupPersistenceService;
 import com.siemens.cto.aem.persistence.service.JvmPersistenceService;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import static org.junit.Assert.*;
 
 @Transactional
 public abstract class AbstractJvmPersistenceServiceTest {
@@ -237,75 +232,6 @@ public abstract class AbstractJvmPersistenceServiceTest {
         final List<Jvm> jvms = jvmPersistenceService.getJvms();
 
         assertTrue(jvms.size() >= numberToCreate);
-    }
-
-    @Test
-    public void testFindJvms() {
-
-        final int numberToCreate = 10;
-        final int numberToFind = 5;
-        final String findable = "Findable";
-        final String hidden = "Hidden";
-
-        for (int i = 1; i <= numberToCreate; i++) {
-            final String name;
-            if (i <= numberToFind) {
-                name = findable;
-            } else {
-                name = hidden;
-            }
-            jvmHelper.createJvm("Auto-created JVM " + name + i,
-                    "Auto-created Host Name " + name + i,
-                    5, 4, 3, 2, 1,
-                    userId,
-                    new Path("/abc"),
-                    "EXAMPLE_OPTS=%someEnv%/someVal", null, null);
-        }
-
-        final List<Jvm> jvms = jvmPersistenceService.findJvms(findable);
-
-        assertTrue(jvms.size() >= numberToFind);
-        for (final Jvm jvm : jvms) {
-            assertFalse(jvm.getJvmName().contains(hidden));
-            assertTrue(jvm.getJvmName().contains(findable));
-        }
-    }
-
-    @Test
-    public void testFindJvmsBelongingTo() {
-
-        final Group group = groupHelper.createGroup("Pre-created Group",
-                userId);
-        final Identifier<Group> groupId = group.getId();
-        final int numberToCreate = 10;
-        final Set<Identifier<Jvm>> assignedJvms = new HashSet<>();
-
-        for (int i = 1; i <= numberToCreate; i++) {
-            final Jvm jvm = jvmHelper.createJvm("Auto-created JVM Name " + i,
-                    "Auto-crated Host Name " + i,
-                    5, 4, 3, 2, 1,
-                    userId,
-                    new Path("/abc"),
-                    "EXAMPLE_OPTS=%someEnv%/someVal", null, null);
-            final Identifier<Jvm> jvmId = jvm.getId();
-
-            assignedJvms.add(jvmId);
-            groupHelper.addJvmToGroup(groupId,
-                    jvmId,
-                    userId);
-        }
-
-        final List<Jvm> jvms = jvmPersistenceService.findJvmsBelongingTo(groupId);
-
-        assertTrue(jvms.size() >= numberToCreate);
-
-        final Set<Identifier<Jvm>> foundJvms = new HashSet<>();
-        for (final Jvm jvm : jvms) {
-            foundJvms.add(jvm.getId());
-        }
-        for (final Identifier<Jvm> id : assignedJvms) {
-            assertTrue(foundJvms.contains(id));
-        }
     }
 
     @Test

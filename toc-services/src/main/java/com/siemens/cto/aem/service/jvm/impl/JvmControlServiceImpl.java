@@ -18,7 +18,6 @@ import com.siemens.cto.aem.control.command.RemoteCommandExecutor;
 import com.siemens.cto.aem.control.command.ServiceCommandBuilder;
 import com.siemens.cto.aem.control.jvm.command.impl.WindowsJvmPlatformCommandProvider;
 import com.siemens.cto.aem.exception.CommandFailureException;
-import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
 import com.siemens.cto.aem.persistence.jpa.type.EventType;
 import com.siemens.cto.aem.service.HistoryService;
 import com.siemens.cto.aem.service.MessagingService;
@@ -181,7 +180,6 @@ public class JvmControlServiceImpl implements JvmControlService {
     public CommandOutput secureCopyFile(final ControlJvmRequest secureCopyRequest, final String sourcePath,
                                         final String destPath, String userId) throws CommandFailureException {
         final Identifier<Jvm> jvmId = secureCopyRequest.getJvmId();
-        final JpaJvm jpaJvm = jvmService.getJpaJvm(jvmId, true);
 
         final String event = secureCopyRequest.getControlOperation().name();
         final Jvm jvm = jvmService.getJvm(jvmId);
@@ -193,8 +191,8 @@ public class JvmControlServiceImpl implements JvmControlService {
             historyService.createHistory(getServerName(jvm), new ArrayList<>(jvm.getGroups()), eventDescription, EventType.USER_ACTION, userId);
             messagingService.send(new JvmHistoryEvent(jvm.getId(), eventDescription, userId, DateTime.now(), JvmControlOperation.SECURE_COPY));
         }
-        final String name = jpaJvm.getName();
-        final String hostName = jpaJvm.getHostName();
+        final String name = jvm.getJvmName();
+        final String hostName = jvm.getHostName();
         CommandOutput commandOutput = remoteCommandExecutor.executeRemoteCommand(
                 name,
                 hostName,

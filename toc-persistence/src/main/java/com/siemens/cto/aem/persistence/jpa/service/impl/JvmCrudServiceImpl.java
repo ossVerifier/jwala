@@ -103,14 +103,6 @@ public class JvmCrudServiceImpl extends AbstractCrudServiceImpl<JpaJvm> implemen
     }
 
     @Override
-    @SuppressWarnings("unchecked")
-    public List<JpaJvm> findJvms(final String aName) {
-        final Query query = entityManager.createQuery("SELECT j FROM JpaJvm j WHERE j.name LIKE :jvmName ORDER BY j.name");
-        query.setParameter("jvmName", "%" + aName + "%");
-        return query.getResultList();
-    }
-
-    @Override
     public void removeJvm(final Identifier<Jvm> aJvmId) {
         remove(getJvm(aJvmId));
     }
@@ -171,16 +163,6 @@ public class JvmCrudServiceImpl extends AbstractCrudServiceImpl<JpaJvm> implemen
             throw new BadRequestException(AemFaultType.JVM_TEMPLATE_NOT_FOUND,
                     "Only expecting one " + templateName + " template to be returned for JVM [" + jpaJvm.getName() + "] but returned " + templates.size() + " templates");
         }
-    }
-
-    @Override
-    @SuppressWarnings("unchecked")
-    public List<JpaJvm> findJvmsBelongingTo(final Identifier<Group> aGroup) {
-        final Query query = entityManager.createQuery("SELECT j FROM JpaGroup g join g.jvms j WHERE g.id = :groupId ORDER BY j.name");
-
-        query.setParameter("groupId", aGroup.getId());
-
-        return query.getResultList();
     }
 
     @Override

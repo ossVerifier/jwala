@@ -487,7 +487,6 @@ public class ApplicationServiceImplTest {
         jvmList.add(mockJvm);
         when(mockJvm.getJvmName()).thenReturn("testJvmName");
         when(cmd.getConfFileName()).thenReturn("hct.xml");
-        when(jvmPersistenceService.findJvms(anyString())).thenReturn(jvmList);
         applicationService.uploadAppTemplate(cmd);
         verify(cmd, times(2)).validate();
         verify(applicationPersistenceService, times(2)).uploadAppTemplate(any(UploadAppTemplateRequest.class), any(JpaJvm.class));
