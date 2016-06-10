@@ -102,7 +102,6 @@ var WebServerConfig = React.createClass({
                                                   this.refs.webServerAddForm.state.port,
                                                   this.refs.webServerAddForm.state.httpsPort,
                                                   this.refs.webServerAddForm.state.statusPath,
-                                                  this.refs.webServerAddForm.state.httpConfigFile,
                                                   this.refs.webServerAddForm.state.svrRoot,
                                                   this.refs.webServerAddForm.state.docRoot,
                                                   function(){
@@ -186,7 +185,6 @@ var WebServerConfigForm = React.createClass({
         var port = "";
         var httpsPort = "";
         var statusPath = tocVars.loadBalancerStatusMount;
-        var httpConfigFile = tocVars.webserverHttpdConfPath;
         var svrRoot = "";
         var docRoot = "";
         var groupIds = [];
@@ -198,7 +196,6 @@ var WebServerConfigForm = React.createClass({
             port = this.props.data.port;
             httpsPort = this.props.data.httpsPort;
             statusPath = this.props.data.statusPath.path;
-            httpConfigFile = this.props.data.httpConfigFile.path;
             svrRoot = this.props.data.svrRoot.path;
             docRoot = this.props.data.docRoot.path;
             this.props.data.groups.forEach(function(group) {
@@ -213,7 +210,6 @@ var WebServerConfigForm = React.createClass({
             port: port,
             httpsPort: httpsPort,
             statusPath: statusPath,
-            httpConfigFile: httpConfigFile,
             svrRoot: svrRoot,
             docRoot: docRoot,
             groupIds: groupIds,
@@ -343,9 +339,6 @@ var WebServerConfigForm = React.createClass({
                                     },
                                     "statusPath": {
                                         pathCheck: true
-                                    },
-                                    "httpConfigFile": {
-                                        required: true
                                     }
                                 },
                                 messages: {
@@ -392,7 +385,6 @@ var WebServerDataTable = React.createClass({
                         {sTitle:"Port", mData:"port"},
                         {sTitle:"HTTPS Port", mData:"httpsPort"},
                         {sTitle:"Status Path", mData:"statusPath.path", maxDisplayTextLen:20},
-                        {sTitle:"HTTP Config File", mData:"httpConfigFile.path", maxDisplayTextLen:20},
                         {sTitle:"Group",
                          mData:"groups",
                          tocType:"array",

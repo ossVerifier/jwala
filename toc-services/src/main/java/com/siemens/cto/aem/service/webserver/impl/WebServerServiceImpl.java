@@ -217,7 +217,10 @@ public class WebServerServiceImpl implements WebServerService {
         final String absoluteDeployPath;
         try{
             ResourceTemplateMetaData metaData = new ObjectMapper().readValue(metaDataStr, ResourceTemplateMetaData.class);
-            absoluteDeployPath = metaData.getDeployPath() + "/" + metaData.getDeployFileName();
+            absoluteDeployPath = resourceService.generateResourceFile(
+                    metaData.getDeployPath() + "/" + metaData.getDeployFileName(),
+                    resourceService.generateResourceGroup(),
+                    uploadWebServerTemplateRequest.getWebServer());
         } catch (IOException e) {
             LOGGER.error("Failed to map meta data for web server {} while uploading template {}", uploadWebServerTemplateRequest.getWebServer().getName(), uploadWebServerTemplateRequest.getConfFileName(), e);
             throw new InternalErrorException(AemFaultType.BAD_STREAM, "Unable to map the meta data for template " + uploadWebServerTemplateRequest.getConfFileName(), e);
