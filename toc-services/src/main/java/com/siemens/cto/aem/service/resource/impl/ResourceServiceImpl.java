@@ -58,7 +58,7 @@ public class ResourceServiceImpl implements ResourceService {
 
     private final ResourceDao resourceDao;
 
-    @Value("${paths.resource-types}")
+    @Value("${paths.resource-templates}")
     private String templatePath;
 
     public ResourceServiceImpl(

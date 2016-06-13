@@ -6,7 +6,7 @@ public enum TocPath {
 
     WEB_ARCHIVE("paths.web-archive"),
     TEMPLATES("paths.templates"), 
-    RESOURCE_TYPES("paths.resource-types")
+    RESOURCE_TEMPLATES("paths.resource-templates")
     ;
     
     

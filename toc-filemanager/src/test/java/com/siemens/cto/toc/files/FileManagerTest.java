@@ -50,7 +50,7 @@ public class FileManagerTest {
             
             Properties p = new Properties();
             p.put(TocPath.TEMPLATES.getProperty(), storageFolder.toString());
-            p.put(TocPath.RESOURCE_TYPES.getProperty(), storageFolder.toString());
+            p.put(TocPath.RESOURCE_TEMPLATES.getProperty(), storageFolder.toString());
 
             return new PropertyFilesConfigurationImpl(p);
         }
@@ -79,7 +79,7 @@ public class FileManagerTest {
 
     @Test
     public void testGetResourceTypeTemplate() throws IOException {
-        Path storageFolder = filesConfiguration.getConfiguredPath(TocPath.RESOURCE_TYPES);
+        Path storageFolder = filesConfiguration.getConfiguredPath(TocPath.RESOURCE_TEMPLATES);
         try(BufferedWriter writer = Files.newBufferedWriter(storageFolder.resolve("ResourceInstanceTestTemplate.tpl"), Charset.defaultCharset(), StandardOpenOption.CREATE)) {
 
             writer.write("${replacementTest}");

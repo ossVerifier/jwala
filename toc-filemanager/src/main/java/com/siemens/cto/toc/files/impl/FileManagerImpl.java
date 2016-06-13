@@ -48,7 +48,7 @@ public class FileManagerImpl implements FileManager {
         try {
             // TODO: Figure out if this the best way to derive at the template name (by getting the resource type name and removing the spaces and assuming that the they would be the same as that of the file name).
             String resourceTypeNameNoWS = StringUtils.replace(resourceTypeName, " ", "");
-            RepositoryFileInformation fileInformation = fileSystemStorage.find(TocPath.RESOURCE_TYPES, Paths.get(resourceTypeNameNoWS + TEMPLATE_TPL));
+            RepositoryFileInformation fileInformation = fileSystemStorage.find(TocPath.RESOURCE_TEMPLATES, Paths.get(resourceTypeNameNoWS + TEMPLATE_TPL));
             if (fileInformation.getType().equals(Type.FOUND)) {
                 return this.readFile(fileInformation.getPath());
             }
