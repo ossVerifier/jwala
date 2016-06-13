@@ -126,13 +126,13 @@ public interface ResourceServiceRest {
                             @PathParam("templateName") String templateName);
 
     /**
-     *
-     * @param groupName
-     * @param jvmName
-     * @param webappName
-     * @param webserverName
-     * @param fileName
-     * @return
+     * Checks if a group/jvm/webapp/webserver contains a resource file.
+     * @param groupName name of the group under which the resource file should exist or the jvm/webapp/webvserver should exist
+     * @param jvmName name of the jvm under which the resource file should exist
+     * @param webappName name of the webapp under which the resource file should exist
+     * @param webserverName name of the webserver under which the resource file should exist
+     * @param fileName name of the resource file that is being searched
+     * @return returns a json string with the information about the file {@link Response}
      */
     @GET
     @Path("/exists/{fileName}")

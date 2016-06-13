@@ -65,5 +65,12 @@ public interface JvmCrudService extends CrudService<JpaJvm> {
 
     String getResourceTemplateMetaData(String jvmName, String fileName);
 
+    /**
+     * This method checks if the jvm template contains a file name/template name.
+     * @param groupName name of the group in which the jvm needs to exist in
+     * @param jvmName name of the jvm in which the file needs to be searched in
+     * @param fileName name of the file to be searched
+     * @return true if the file exists else false
+     */
     boolean checkJvmResourceFileName(String groupName, String jvmName, String fileName);
 }

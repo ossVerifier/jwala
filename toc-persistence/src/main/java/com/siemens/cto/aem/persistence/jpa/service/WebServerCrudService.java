@@ -74,19 +74,19 @@ public interface WebServerCrudService extends CrudService<JpaWebServer> {
 	String getResourceTemplateMetaData(String webServerName, String resourceTemplateName);
 
 	/**
-	 *
-	 * @param groupName
-	 * @param webServerName
-     * @return
+	 * Gets JpaWebServer if webserver exists under a group.
+	 * @param groupName name of the group under which webserver should exists
+	 * @param webServerName name of the webserver to search
+     * @return JpaWebServer object if it exists, else returns null
      */
 	JpaWebServer findWebServer(String groupName, String webServerName);
 
 	/**
-	 *
-	 * @param groupName
-	 * @param webServerName
-	 * @param fileName
-     * @return
+	 * Checks if the resource file is present for a webserver
+	 * @param groupName name of the group in which the webserver exists
+	 * @param webServerName name of the webserver we are searching under
+	 * @param fileName name of the resource file to be searched
+     * @return return true if the resource exists, else returns false
      */
 	boolean checkWebServerResourceFileName(String groupName, String webServerName, String fileName);
 }
