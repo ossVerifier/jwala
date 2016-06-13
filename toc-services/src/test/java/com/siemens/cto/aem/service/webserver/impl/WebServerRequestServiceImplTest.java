@@ -119,7 +119,7 @@ public class WebServerRequestServiceImplTest {
 
         assertNotNull(factoryHelper);
         impl = new WebServerCommandServiceImpl(webServerService, executor, jschBuilder, sshConfig, channelPool,
-                mockRemoteCommandExecutorService, "d:/stp/app/data/httpd");
+                mockRemoteCommandExecutorService);
     }
 
     @Test

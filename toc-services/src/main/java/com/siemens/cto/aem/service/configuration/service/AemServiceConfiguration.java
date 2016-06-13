@@ -279,16 +279,19 @@ public class AemServiceConfiguration implements SchedulingConfigurer {
 
     @Bean(name = "webServerCommandService")
     public WebServerCommandService getWebServerCommandService(final WebServerService webServerService,
-                                                              final RemoteCommandExecutorService remoteCommandExecutorService,
-                                                              @Value("${paths.httpd.conf:d:/stp/app/data/httpd}")
-                                                              final String httpdPath) {
+                                                              final RemoteCommandExecutorService remoteCommandExecutorService) {
         final SshConfiguration sshConfig = aemSshConfig.getSshConfiguration();
 
         final JschBuilder jschBuilder = new JschBuilder().setPrivateKeyFileName(sshConfig.getPrivateKeyFile())
                 .setKnownHostsFileName(sshConfig.getKnownHostsFile());
 
-        return new WebServerCommandServiceImpl(webServerService, commandExecutor, jschBuilder, sshConfig, channelPool,
-                remoteCommandExecutorService, httpdPath);
+        return new WebServerCommandServiceImpl(
+                webServerService,
+                commandExecutor,
+                jschBuilder,
+                sshConfig,
+                channelPool,
+                remoteCommandExecutorService);
     }
 
     @Bean

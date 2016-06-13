@@ -330,7 +330,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
 
     protected void deployStartStopScripts(WebServer webServer, String userId) throws CommandFailureException {
         final String webServerName = webServer.getName();
-        final String destHttpdConfPath = ApplicationProperties.get("paths.webserver.conf", ApplicationProperties.get("paths.httpd.conf")) + "/";
+        final String destHttpdConfPath = ApplicationProperties.get("remote.paths.httpd.conf", ApplicationProperties.get("paths.httpd.conf")) + "/";
 
         final String startScriptName = AemControl.Properties.START_SCRIPT_NAME.getValue();
         final String sourceStartServicePath = AemControl.Properties.SCRIPTS_PATH + "/" + startScriptName;
@@ -363,8 +363,8 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
 
     protected void installWebServerWindowsService(final AuthenticatedUser user, final ControlWebServerRequest invokeWSBatRequest, final WebServer webServer) throws CommandFailureException {
 
-        // create the file
-        String invokeWSBatText = webServerService.generateInvokeWSBat(webServer); // TODO: Ask this question "Can we just generate and deploy all the resources attached to the web server rather than having a specific methods for a particular file ?"
+        // create the invokeWs.bat file
+        String invokeWSBatText = webServerService.generateInvokeWSBat(webServer);
         final String httpdDataDir = ApplicationProperties.get(STP_HTTPD_DATA_DIR);
         final String name = webServer.getName();
         final File invokeWsBatFile = createTempWebServerResourceFile(name, httpdDataDir, "invokeWS", "bat", invokeWSBatText);

@@ -9,6 +9,7 @@ import com.siemens.cto.aem.common.domain.model.ssh.SshConfiguration;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServerControlOperation;
 import com.siemens.cto.aem.common.exec.*;
+import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.control.command.DefaultExecCommandBuilderImpl;
 import com.siemens.cto.aem.control.webserver.command.impl.WindowsWebServerPlatformCommandProvider;
 import com.siemens.cto.aem.exception.CommandFailureException;
@@ -17,7 +18,6 @@ import com.siemens.cto.aem.service.RemoteCommandReturnInfo;
 import com.siemens.cto.aem.service.webserver.WebServerCommandService;
 import com.siemens.cto.aem.service.webserver.WebServerService;
 import org.apache.commons.pool2.impl.GenericKeyedObjectPool;
-import org.springframework.beans.factory.annotation.Value;
 
 /**
  * Encapsulates non-state altering commands to a web server.
@@ -33,25 +33,23 @@ public class WebServerCommandServiceImpl implements WebServerCommandService {
     private final GenericKeyedObjectPool<ChannelSessionKey, Channel> channelPool;
 
     private final RemoteCommandExecutorService remoteCommandExecutorService;
-    private final String httpdPath;
-    
+
     public WebServerCommandServiceImpl(final WebServerService webServerService, final CommandExecutor executor,
                                        final JschBuilder jschBuilder, final SshConfiguration sshConfig,
                                        final GenericKeyedObjectPool<ChannelSessionKey, Channel> channelPool,
-                                       final RemoteCommandExecutorService remoteCommandExecutorService,
-                                       final String httpdPath) {
+                                       final RemoteCommandExecutorService remoteCommandExecutorService) {
         this.webServerService = webServerService;
         this.executor = executor;
         this.jschBuilder = jschBuilder;
         this.sshConfig = sshConfig;
         this.channelPool = channelPool;
         this.remoteCommandExecutorService = remoteCommandExecutorService;
-        this.httpdPath = httpdPath;
     }
 
     @Override
     public CommandOutput getHttpdConf(final Identifier<WebServer> webServerId) throws CommandFailureException {
         final WebServer webServer = webServerService.getWebServer(webServerId);
+        String httpdPath = ApplicationProperties.get("remote.paths.httpd.conf", ApplicationProperties.get("paths.httpd.conf"));
         final ExecCommand execCommand = createExecCommand(webServer, WebServerControlOperation.VIEW_HTTP_CONFIG_FILE,
                 httpdPath + "/httpd.conf");
         final RemoteExecCommand remoteExecCommand = new RemoteExecCommand(new RemoteSystemConnection(sshConfig.getUserName(),

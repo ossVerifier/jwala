@@ -79,9 +79,10 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
         }
     }
 
-    // TODO: Refactor resourceService.createTemplate(inputStreams[0], inputStreams[1]) since it looks ambiguous.
     public Response createTemplate(final List<Attachment> attachments, final String targetName, final AuthenticatedUser user) {
+        LOGGER.info("create template for target {} by user {}", targetName, user.getUser().getId());
         try {
+            // TODO check for a max file size
             List<Attachment> filteredAttachments = new ArrayList<>();
             for(Attachment attachment:attachments) {
                 if(attachment.getDataHandler().getName() != null) {

@@ -1,11 +1,10 @@
 package com.siemens.cto.toc.files;
 
-import java.nio.file.FileSystems;
 import java.nio.file.Path;
 
 public enum TocPath {
 
-    WEB_ARCHIVE("paths.web-archive"), 
+    WEB_ARCHIVE("paths.web-archive"),
     TEMPLATES("paths.templates"), 
     RESOURCE_TYPES("paths.resource-types")
     ;
@@ -26,5 +25,5 @@ public enum TocPath {
     public Path getDefaultPath() {
         return defaultPath;
     }
-    
+
 }
