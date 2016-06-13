@@ -1,25 +1,5 @@
 package com.siemens.cto.aem.control.jvm.command.windows;
 
-import static com.siemens.cto.aem.control.AemControl.Properties.CYGPATH;
-import static com.siemens.cto.aem.control.AemControl.Properties.DEPLOY_CONFIG_ARCHIVE_SCRIPT_NAME;
-import static com.siemens.cto.aem.control.AemControl.Properties.INVOKE_SERVICE_SCRIPT_NAME;
-import static com.siemens.cto.aem.control.AemControl.Properties.SCP_SCRIPT_NAME;
-import static com.siemens.cto.aem.control.AemControl.Properties.SLEEP_TIME;
-import static com.siemens.cto.aem.control.AemControl.Properties.START_SCRIPT_NAME;
-import static com.siemens.cto.aem.control.AemControl.Properties.STOP_SCRIPT_NAME;
-import static com.siemens.cto.aem.control.AemControl.Properties.USER_TOC_SCRIPTS_PATH;
-
-import java.util.EnumMap;
-import java.util.Map;
-import java.util.Properties;
-
-import org.apache.commons.lang.StringUtils;
-import org.joda.time.DateTime;
-import org.joda.time.format.DateTimeFormat;
-import org.joda.time.format.DateTimeFormatter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.siemens.cto.aem.common.domain.model.jvm.JvmControlOperation;
 import com.siemens.cto.aem.common.domain.model.ssh.DecryptPassword;
 import com.siemens.cto.aem.common.exec.ExecCommand;
@@ -27,6 +7,18 @@ import com.siemens.cto.aem.common.exec.ShellCommand;
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.control.AemControl;
 import com.siemens.cto.aem.control.command.ServiceCommandBuilder;
+import org.apache.commons.lang.StringUtils;
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.EnumMap;
+import java.util.Map;
+import java.util.Properties;
+
+import static com.siemens.cto.aem.control.AemControl.Properties.*;
 
 /**
  * Windows JVM Net Operations
@@ -39,7 +31,7 @@ public enum WindowsJvmNetOperation implements ServiceCommandBuilder {
     START(JvmControlOperation.START) {
         @Override
         public ExecCommand buildCommandForService(final String aServiceName, final String... aParams) {
-            final String scriptAbsolutePath = ApplicationProperties.get("commands.jvm.start.stop.path.scripts-path", INSTANCES_DIR + "/" + aServiceName + "/bin");
+            final String scriptAbsolutePath = ApplicationProperties.get("commands.jvm.start.stop.scripts-path", INSTANCES_DIR + "/" + aServiceName + "/bin");
             return new ShellCommand(
                     cygpathWrapper(START_SCRIPT_NAME, scriptAbsolutePath),
                     quotedServiceName(aServiceName),
@@ -50,7 +42,7 @@ public enum WindowsJvmNetOperation implements ServiceCommandBuilder {
     STOP(JvmControlOperation.STOP) {
         @Override
         public ExecCommand buildCommandForService(final String aServiceName, final String... aParams) {
-            final String scriptAbsolutePath = ApplicationProperties.get("commands.jvm.start.stop.path.scripts-path", INSTANCES_DIR + "/" + aServiceName + "/bin");
+            final String scriptAbsolutePath = ApplicationProperties.get("commands.jvm.start.stop.scripts-path", INSTANCES_DIR + "/" + aServiceName + "/bin");
             return new ShellCommand(
                     cygpathWrapper(STOP_SCRIPT_NAME, scriptAbsolutePath),
                     quotedServiceName(aServiceName),
