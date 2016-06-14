@@ -30,7 +30,7 @@ dependencies {
 
     providedCompile group: "javax.servlet", name: "javax.servlet-api", version: "$project.versions.javax_servlet_api"
     providedCompile group: "javax.jms", name: "jms", version: "$project.versions.jms"
-    providedCompile group: 'commons-collections', name: 'commons-collections', version: '3.2.1'
+    providedCompile group: 'commons-collections', name: 'commons-collections', version: '3.2.2'
     providedCompile group: 'commons-codec', name: 'commons-codec', version: '1.6'
 
     providedCompile 'com.cerner.cto.infrastructure:infrastructure-provided:' + "$project.versions.infrastructureProvided" + '@jar'
