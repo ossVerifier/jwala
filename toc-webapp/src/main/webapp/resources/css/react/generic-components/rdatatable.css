@@ -7,7 +7,8 @@ div.noDataFoundMsg {
 }
 
 tr.row_selected > td {
-    background:#fbec88 !important;
+    background:#DADADA !important;
+    font-weight:bold
 }
 
 table.dataTable tr.odd { background-color: #F2F2F2; }
@@ -29,6 +30,7 @@ span.col-header-title {
 
 span.col-header-sort-icon {
     display: inline-block;
+    float: right
 }
 
 td.expand-collapse-control {
@@ -38,7 +40,7 @@ td.expand-collapse-control {
 /* Expanded row container style here */
 
 td.expanded-row-container {
-    background-color: #F2F2F2;
+    background-color: lemonchiffon;
 }
 
 div.expanded-row-container {

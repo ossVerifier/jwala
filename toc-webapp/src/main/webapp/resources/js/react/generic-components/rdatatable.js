@@ -92,7 +92,13 @@ var RDataTable = React.createClass({
     componentWillReceiveProps: function(nextProps) {
         if (nextProps.tableIndex === undefined) {
             this.setState({selectedRowIdx:null});
-            nextProps.selectItemCallback(null);
+            if ($.isFunction(nextProps.selectItemCallback)) {
+                nextProps.selectItemCallback(null);
+            }
+        }
+
+        if (this.props.data !== nextProps.data) {
+            this.setState({data: nextProps.data});
         }
     },
     /**
