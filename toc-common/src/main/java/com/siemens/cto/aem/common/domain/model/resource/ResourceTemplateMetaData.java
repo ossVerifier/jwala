@@ -11,6 +11,7 @@ public class ResourceTemplateMetaData {
     private String deployFileName;
     private String deployPath;
     private Entity entity;
+    private boolean unpack = false;
 
     public String getTemplateName() {
         return templateName;
@@ -52,14 +53,23 @@ public class ResourceTemplateMetaData {
         this.entity = entity;
     }
 
+    public boolean isUnpack() {
+        return unpack;
+    }
+
+    public void setUnpack(boolean unpack) {
+        this.unpack = unpack;
+    }
+
     @Override
     public String toString() {
         return "ResourceTemplateMetaData{" +
                 "templateName='" + templateName + '\'' +
-                ", contentType='" + contentType + '\'' +
+                ", contentType=" + contentType +
                 ", deployFileName='" + deployFileName + '\'' +
                 ", deployPath='" + deployPath + '\'' +
                 ", entity=" + entity +
+                ", unpack=" + unpack +
                 '}';
     }
 }

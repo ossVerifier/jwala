@@ -20,6 +20,7 @@ import com.siemens.cto.aem.common.request.group.*;
 import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
 import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateRequest;
 import com.siemens.cto.aem.common.rule.group.GroupNameRule;
+import com.siemens.cto.aem.control.AemControl;
 import com.siemens.cto.aem.control.application.command.impl.WindowsApplicationPlatformCommandProvider;
 import com.siemens.cto.aem.control.command.RemoteCommandExecutorImpl;
 import com.siemens.cto.aem.exception.CommandFailureException;
@@ -412,7 +413,7 @@ public class GroupServiceImpl implements GroupService {
             metaData = new ObjectMapper().readValue(metaDataStr, ResourceTemplateMetaData.class);
             final String destPath = ResourceFileGenerator.generateResourceConfig(metaData.getDeployPath(), resourceGroup, application) + '/' + fileName;
             File confFile = createConfFile(metaData.getEntity().getTarget(), groupName, fileName, resourceGroup);
-            String srcPath;
+            String srcPath, standardError;
             if (metaData.getContentType().equals(ContentType.APPLICATION_BINARY.contentTypeStr)){
                 srcPath = getGroupAppResourceTemplate(groupName, application.getName(), fileName, false, resourceGroup);
             } else {
@@ -420,6 +421,7 @@ public class GroupServiceImpl implements GroupService {
             }
             final String jvmName = jvm.getJvmName();
             final String hostName = jvm.getHostName();
+            LOGGER.debug("checking if file: {} exists on remote location", destPath);
             CommandOutput commandOutput = remoteCommandExecutor.executeRemoteCommand(
                     jvmName,
                     hostName,
@@ -427,6 +429,7 @@ public class GroupServiceImpl implements GroupService {
                     new WindowsApplicationPlatformCommandProvider(),
                     destPath);
             if (commandOutput.getReturnCode().wasSuccessful()) {
+                LOGGER.debug("backing up file: {}", destPath);
                 String currentDateSuffix = new SimpleDateFormat(".yyyyMMdd_HHmmss").format(new Date());
                 final String destPathBackup = destPath + currentDateSuffix;
                 commandOutput = remoteCommandExecutor.executeRemoteCommand(
@@ -437,26 +440,67 @@ public class GroupServiceImpl implements GroupService {
                         destPath,
                         destPathBackup);
                 if (!commandOutput.getReturnCode().wasSuccessful()) {
+                    standardError = commandOutput.getStandardError().isEmpty()? commandOutput.getStandardOutput() : commandOutput.getStandardError();
+                    LOGGER.error("Error in backing up older file {} :: ERROR: {}", destPath, standardError);
                     throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to back up " + destPath + " for " + jvm);
                 }
-
             }
-            final CommandOutput execData = remoteCommandExecutor.executeRemoteCommand(
+            LOGGER.debug("copying file over to location {}", destPath);
+            commandOutput = remoteCommandExecutor.executeRemoteCommand(
                     jvmName,
                     hostName,
                     ApplicationControlOperation.SECURE_COPY,
                     new WindowsApplicationPlatformCommandProvider(),
                     srcPath,
                     destPath);
-            if (execData.getReturnCode().wasSuccessful()) {
-                LOGGER.info("Copy of {} successful: {}", fileName, confFile.getAbsolutePath());
-                return execData;
-            } else {
-                String standardError = execData.getStandardError().isEmpty() ? execData.getStandardOutput() : execData.getStandardError();
+            if(!commandOutput.getReturnCode().wasSuccessful()) {
+                standardError = commandOutput.getStandardError().isEmpty() ? commandOutput.getStandardOutput() : commandOutput.getStandardError();
                 LOGGER.error("Copy command completed with error trying to copy {} to {} :: ERROR: {}",
                         fileName, application.getName(), standardError);
                 throw new DeployApplicationConfException(standardError);
             }
+            if(metaData.isUnpack()) {
+                LOGGER.debug("the file needs to be unpacked at the destination {}", destPath);
+                final String tocScriptsPath = AemControl.Properties.USER_TOC_SCRIPTS_PATH.getValue();
+                commandOutput = remoteCommandExecutor.executeRemoteCommand(
+                        null,
+                        hostName,
+                        ApplicationControlOperation.CREATE_DIRECTORY,
+                        new WindowsApplicationPlatformCommandProvider(),
+                        tocScriptsPath);
+                if(!commandOutput.getReturnCode().wasSuccessful()) {
+                    standardError = commandOutput.getStandardError().isEmpty()? commandOutput.getStandardOutput() : commandOutput.getStandardError();
+                    LOGGER.error("Error in creating new directory for tocScripts path :: ERROR: {}", standardError);
+                    throw new DeployApplicationConfException(standardError);
+                }
+
+                commandOutput = remoteCommandExecutor.executeRemoteCommand(
+                        null,
+                        hostName,
+                        ApplicationControlOperation.CHANGE_FILE_MODE,
+                        new WindowsApplicationPlatformCommandProvider(),
+                        "a+x",
+                        tocScriptsPath,
+                        "*.sh");
+                if (!commandOutput.getReturnCode().wasSuccessful()) {
+                    standardError = commandOutput.getStandardError().isEmpty()? commandOutput.getStandardOutput() : commandOutput.getStandardError();
+                    LOGGER.error("Error in changing file mode for scripts :: ERROR: {}", standardError);
+                    throw new DeployApplicationConfException(standardError);
+                }
+
+                commandOutput = remoteCommandExecutor.executeRemoteCommand(
+                        null,
+                        hostName,
+                        ApplicationControlOperation.UNPACK_WAR,
+                        new WindowsApplicationPlatformCommandProvider(),
+                        fileName);
+                if(!commandOutput.getReturnCode().wasSuccessful()) {
+                    standardError = commandOutput.getStandardError().isEmpty()? commandOutput.getStandardOutput() : commandOutput.getStandardError();
+                    LOGGER.error("Error in unpacking binary {} :: ERROR: {}", fileName, standardError);
+                    throw new DeployApplicationConfException(standardError);
+                }
+            }
+            return commandOutput;
         } catch (IOException e) {
             LOGGER.error("Failed to deploy file {} in group {}", fileName, groupName, e);
             throw new ApplicationException("Failed to deploy " + fileName + " in group " + groupName, e);

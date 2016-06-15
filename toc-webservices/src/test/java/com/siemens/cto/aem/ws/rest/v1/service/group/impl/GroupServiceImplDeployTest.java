@@ -2,6 +2,7 @@ package com.siemens.cto.aem.ws.rest.v1.service.group.impl;
 
 import com.siemens.cto.aem.common.configuration.TestExecutionProfile;
 import com.siemens.cto.aem.common.domain.model.app.Application;
+import com.siemens.cto.aem.common.domain.model.app.ApplicationControlOperation;
 import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
@@ -19,13 +20,19 @@ import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.common.request.group.CreateGroupRequest;
 import com.siemens.cto.aem.common.request.jvm.ControlJvmRequest;
 import com.siemens.cto.aem.common.request.webserver.ControlWebServerRequest;
+import com.siemens.cto.aem.control.application.command.impl.WindowsApplicationPlatformCommandProvider;
+import com.siemens.cto.aem.control.command.RemoteCommandExecutorImpl;
 import com.siemens.cto.aem.exception.CommandFailureException;
 import com.siemens.cto.aem.persistence.jpa.service.exception.ResourceTemplateUpdateException;
+import com.siemens.cto.aem.persistence.service.ApplicationPersistenceService;
+import com.siemens.cto.aem.persistence.service.GroupPersistenceService;
+import com.siemens.cto.aem.persistence.service.WebServerPersistenceService;
 import com.siemens.cto.aem.service.app.ApplicationService;
 import com.siemens.cto.aem.service.group.GroupControlService;
 import com.siemens.cto.aem.service.group.GroupJvmControlService;
 import com.siemens.cto.aem.service.group.GroupService;
 import com.siemens.cto.aem.service.group.GroupWebServerControlService;
+import com.siemens.cto.aem.service.group.impl.GroupServiceImpl;
 import com.siemens.cto.aem.service.jvm.JvmControlService;
 import com.siemens.cto.aem.service.jvm.JvmService;
 import com.siemens.cto.aem.service.jvm.state.JvmStateReceiverAdapter;
@@ -323,6 +330,69 @@ public class GroupServiceImplDeployTest {
             internalErrorExceptionThrown = true;
         }
         assertTrue(internalErrorExceptionThrown);
+    }
+
+    @Test
+    public void testDeployGroupAppTemplateWar() throws CommandFailureException, IOException {
+        String groupName = "testGroup";
+        String fileName = "testFile";
+        Group group = mock(Group.class);
+        List<Group> groups = new ArrayList<>();
+        groups.add(group);
+        ResourceGroup resourceGroup = mock(ResourceGroup.class);
+        Application application = mock(Application.class);
+        Set<Application> applications = new HashSet<>();
+        applications.add(application);
+        Jvm jvm = mock(Jvm.class);
+        Set<Jvm> jvms = new HashSet<>();
+        jvms.add(jvm);
+
+        GroupPersistenceService groupPersistenceService = mock(GroupPersistenceService.class);
+        WebServerPersistenceService webServerPersistenceService = mock(WebServerPersistenceService.class);
+        ApplicationPersistenceService applicationPersistenceService = mock(ApplicationPersistenceService.class);
+        RemoteCommandExecutorImpl remoteCommandExecutorImpl = mock(RemoteCommandExecutorImpl.class);
+        GroupServiceImpl groupServiceImpl = new GroupServiceImpl(groupPersistenceService, webServerPersistenceService, applicationPersistenceService, remoteCommandExecutorImpl);
+        CommandOutput commandOutput = mock(CommandOutput.class);
+
+        String metaData = "{\"templateName\":\"someTemplateName\",\"contentType\":\"application/binary\",\"deployPath\":" +
+                "\"testLocation\",\"deployFileName\":\"someTemplateName\",\"unpack\": true,\"entity\":{\"type\":" +
+                "\"GROUPED_WEBSERVERS\",\"group\":\"testGroup\",\"target\":\"testApp\",\"deployToJvms\": false}}";
+        String jvmName = "testJvm";
+        String appName = "testApp";
+        String hostName = "testHost";
+        ExecReturnCode execReturnCode = mock(ExecReturnCode.class);
+
+        when(groupPersistenceService.getGroupAppResourceTemplateMetaData(anyString(), anyString())).thenReturn(metaData);
+        when(groupPersistenceService.getGroupAppResourceTemplate(anyString(), anyString(), anyString())).thenReturn("");
+        when(applicationPersistenceService.getApplication(anyString())).thenReturn(application);
+        when(application.getName()).thenReturn(appName);
+        when(jvm.getJvmName()).thenReturn(jvmName);
+        when(jvm.getHostName()).thenReturn(hostName);
+        when(group.getName()).thenReturn(groupName);
+        when(application.getParentJvm()).thenReturn(jvm);
+        when(application.getGroup()).thenReturn(group);
+        when(group.getWebServers()).thenReturn(null);
+        when(group.getApplications()).thenReturn(applications);
+        when(group.getJvms()).thenReturn(jvms);
+        when(resourceGroup.getGroups()).thenReturn(groups);
+        when(remoteCommandExecutorImpl.executeRemoteCommand(eq(jvmName), eq(hostName), eq(ApplicationControlOperation.CHECK_FILE_EXISTS),
+                any(WindowsApplicationPlatformCommandProvider.class), anyString())).thenReturn(commandOutput);
+        when(remoteCommandExecutorImpl.executeRemoteCommand(eq(jvmName), eq(hostName), eq(ApplicationControlOperation.BACK_UP_CONFIG_FILE),
+                any(WindowsApplicationPlatformCommandProvider.class), anyString(), anyString())).thenReturn(commandOutput);
+        when(remoteCommandExecutorImpl.executeRemoteCommand(eq(jvmName), eq(hostName), eq(ApplicationControlOperation.SECURE_COPY),
+                any(WindowsApplicationPlatformCommandProvider.class), anyString(), anyString())).thenReturn(commandOutput);
+        when(remoteCommandExecutorImpl.executeRemoteCommand(anyString(), eq(hostName), eq(ApplicationControlOperation.CREATE_DIRECTORY),
+                any(WindowsApplicationPlatformCommandProvider.class), anyString())).thenReturn(commandOutput);
+        when(remoteCommandExecutorImpl.executeRemoteCommand(anyString(), eq(hostName), eq(ApplicationControlOperation.CHANGE_FILE_MODE),
+                any(WindowsApplicationPlatformCommandProvider.class), anyString(), anyString(), anyString())).thenReturn(commandOutput);
+        when(remoteCommandExecutorImpl.executeRemoteCommand(anyString(), eq(hostName), eq(ApplicationControlOperation.UNPACK_WAR),
+                any(WindowsApplicationPlatformCommandProvider.class), anyString())).thenReturn(commandOutput);
+        when(commandOutput.getReturnCode()).thenReturn(execReturnCode);
+        when(execReturnCode.wasSuccessful()).thenReturn(true);
+
+        assertEquals(commandOutput, groupServiceImpl.deployGroupAppTemplate(groupName, fileName, resourceGroup, application, jvm));
+
+        FileUtils.deleteDirectory(new File(ApplicationProperties.get("stp.generated.resource.dir") + System.getProperty("file.separator") + groupName));
     }
 
     @Test

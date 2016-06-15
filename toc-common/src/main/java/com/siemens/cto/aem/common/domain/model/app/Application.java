@@ -24,6 +24,7 @@ public class Application {
 
     private boolean loadBalanceAcrossServers;
 
+    @Deprecated
     private boolean unpackWar;
 
     private String warName;
