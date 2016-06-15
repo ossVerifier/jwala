@@ -66,7 +66,6 @@ public class JvmServiceRestImpl implements JvmServiceRest {
     private final ResourceService resourceService;
     private final ExecutorService executorService;
     private Map<String, ReentrantReadWriteLock> jvmWriteLocks;
-    private final String stpJvmResourcesDir = ApplicationProperties.get("stp.jvm.resources.dir");
     private static JvmServiceRestImpl instance;
 
     private static final String TEMPLATE_DIR = ApplicationProperties.get("paths.tomcat.instance.template");
@@ -408,7 +407,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
 
     protected void secureCopyJvmConfigJar(Jvm jvm, String jvmConfigTar, AuthenticatedUser user) throws CommandFailureException {
         String configTarName = jvm.getJvmName() + CONFIG_JAR;
-        secureCopyFileToJvm(jvm, stpJvmResourcesDir + "/" + configTarName, AemControl.Properties.USER_TOC_SCRIPTS_PATH + "/" + configTarName, user);
+        secureCopyFileToJvm(jvm, ApplicationProperties.get("paths.generated.resource.dir") + "/" + configTarName, AemControl.Properties.USER_TOC_SCRIPTS_PATH + "/" + configTarName, user);
         LOGGER.info("Copy of config tar successful: {}", jvmConfigTar);
     }
 
@@ -485,7 +484,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
                 resourceSourceCopy = jvmService.getResourceTemplate(jvmName, fileName, false);
             } else {
                 String fileContent = jvmService.generateConfigFile(jvmName, fileName);
-                String jvmResourcesNameDir = stpJvmResourcesDir + "/" + jvmName;
+                String jvmResourcesNameDir = ApplicationProperties.get("paths.generated.resource.dir") + "/" + jvmName;
                 resourceSourceCopy = jvmResourcesNameDir + "/" + fileName;
                 createConfigFile(jvmResourcesNameDir + "/", fileName, fileContent);
             }
@@ -521,7 +520,8 @@ public class JvmServiceRestImpl implements JvmServiceRest {
 
     protected String generateJvmConfigJar(String jvmName) {
         LOGGER.info("Generating JVM configuration tar for {}", jvmName);
-        String jvmResourcesNameDir = stpJvmResourcesDir + "/" + jvmName;
+        final String jvmGeneratedResourcesTempDir = ApplicationProperties.get("paths.generated.resource.dir");
+        String jvmResourcesNameDir = jvmGeneratedResourcesTempDir + "/" + jvmName;
 
         final File generatedDir = new File("./" + jvmName);
         try {
@@ -562,17 +562,17 @@ public class JvmServiceRestImpl implements JvmServiceRest {
         // jar up the file
         String jvmConfigTar = jvmName + CONFIG_JAR;
         JarOutputStream target;
-        final String configJarPath = stpJvmResourcesDir + "/" + jvmConfigTar;
+        final String configJarPath = jvmGeneratedResourcesTempDir + "/" + jvmConfigTar;
         try {
-            final File jvmResourcesDirFile = new File(stpJvmResourcesDir);
+            final File jvmResourcesDirFile = new File(jvmGeneratedResourcesTempDir);
             if (!jvmResourcesDirFile.exists() && !jvmResourcesDirFile.mkdir()) {
-                LOGGER.error("Could not create {} for JVM resources generation {}", stpJvmResourcesDir, jvmName);
-                throw new InternalErrorException(AemFaultType.BAD_STREAM, "Could not create " + stpJvmResourcesDir + " for JVM resources generation " + jvmName);
+                LOGGER.error("Could not create {} for JVM resources generation {}", jvmGeneratedResourcesTempDir, jvmName);
+                throw new InternalErrorException(AemFaultType.BAD_STREAM, "Could not create " + jvmGeneratedResourcesTempDir + " for JVM resources generation " + jvmName);
             }
             target = new JarOutputStream(new FileOutputStream(configJarPath));
             addFileToTarget(new File("./" + jvmName + "/"), target);
             target.close();
-            LOGGER.debug("created resources at {}, copying to {}", generatedDir.getAbsolutePath(), stpJvmResourcesDir);
+            LOGGER.debug("created resources at {}, copying to {}", generatedDir.getAbsolutePath(), jvmGeneratedResourcesTempDir);
             FileUtils.copyDirectoryToDirectory(generatedDir, jvmResourcesDirFile);
             FileUtils.deleteDirectory(generatedDir);
         } catch (IOException e) {

@@ -63,7 +63,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ApplicationServiceImpl.class);
 
-    private static final String GENERATED_RESOURCE_DIR = "stp.generated.resource.dir";
+    private static final String GENERATED_RESOURCE_DIR = "paths.generated.resource.dir";
     private final ExecutorService executorService;
 
     @Autowired

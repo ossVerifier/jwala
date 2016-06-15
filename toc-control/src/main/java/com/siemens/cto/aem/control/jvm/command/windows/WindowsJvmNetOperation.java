@@ -81,7 +81,7 @@ public enum WindowsJvmNetOperation implements ServiceCommandBuilder {
         @Override
         public ExecCommand buildCommandForService(String aServiceName, String... aParams) {
 
-            String dataJvmResourcesDir = ApplicationProperties.get("stp.jvm.resources.dir");
+            String dataJvmResourcesDir = ApplicationProperties.get("paths.generated.resource.dir");
             String instancesDir = ApplicationProperties.get("paths.instances");
             return new ExecCommand(
                     cygpathWrapper(DEPLOY_CONFIG_ARCHIVE_SCRIPT_NAME, USER_TOC_SCRIPTS_PATH + "/"),

@@ -50,7 +50,7 @@ public class GroupServiceImpl implements GroupService {
     private final RemoteCommandExecutorImpl remoteCommandExecutor;
     private ApplicationPersistenceService applicationPersistenceService;
 
-    private static final String GENERATED_RESOURCE_DIR = "stp.generated.resource.dir";
+    private static final String GENERATED_RESOURCE_DIR = "paths.generated.resource.dir";
     private static final Logger LOGGER = LoggerFactory.getLogger(GroupServiceImpl.class);
 
     public GroupServiceImpl(final GroupPersistenceService groupPersistenceService,

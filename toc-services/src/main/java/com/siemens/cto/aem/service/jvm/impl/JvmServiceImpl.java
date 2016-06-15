@@ -15,6 +15,7 @@ import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.exception.ApplicationException;
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.common.exception.InternalErrorException;
+import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.common.request.app.UploadAppTemplateRequest;
 import com.siemens.cto.aem.common.request.group.AddJvmToGroupRequest;
 import com.siemens.cto.aem.common.request.jvm.*;
@@ -391,7 +392,7 @@ public class JvmServiceImpl implements JvmService {
             } else {
                 final String generatedResourceStr = resourceService.generateResourceFile(jpaJvmConfigTemplate.getTemplateContent(),
                         resourceGroup, jvm);
-                generatedFiles.put(createConfigFile(resourceTemplateMetaData.getDeployFileName(), generatedResourceStr),
+                generatedFiles.put(createConfigFile(ApplicationProperties.get("paths.generated.resource.dir") + "/" + jvmName, resourceTemplateMetaData.getDeployFileName(), generatedResourceStr),
                         resourceTemplateMetaData.getDeployPath() + "/" + resourceTemplateMetaData.getDeployFileName());
             }
         }
@@ -401,13 +402,15 @@ public class JvmServiceImpl implements JvmService {
     /**
      * This method creates a temp file .tpl file, with the generatedResourceString as the input data for the file.
      *
+     *
+     * @param generatedResourcesTempDir
      * @param configFileName          The file name that apprears at the destination.
      * @param generatedResourceString The contents of the file.
      * @return the location of the newly created temp file
      * @throws IOException
      */
-    protected String createConfigFile(final String configFileName, String generatedResourceString) throws IOException {
-        File templateFile = File.createTempFile(configFileName, ".tpl");
+    protected String createConfigFile(String generatedResourcesTempDir, final String configFileName, String generatedResourceString) throws IOException {
+        File templateFile = new File(generatedResourcesTempDir + "/" + configFileName + ".tpl");
         if (configFileName.endsWith(".bat")) {
             generatedResourceString = generatedResourceString.replaceAll("\n", "\r\n");
         }
