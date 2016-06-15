@@ -1,5 +1,5 @@
 .war-upload-component {
-    width: 621px;
+    width: 100%;
 }
 
 .war-upload-component div.archive-file {
@@ -12,9 +12,13 @@
 
 .war-upload-component div.file-upload {
     padding: 10px 0 0 0;
-    width: 300px;
+    width: 100%;
 }
 
 .webapp-config > table {
     width: 100%;
+}
+
+.war-upload-component .fileUploadContainer {
+    display: inline-block;
 }

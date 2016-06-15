@@ -8,10 +8,6 @@ Application:
 */
 var webAppService = {
     baseUrl: "v1.0/applications",
-    prepareUploadForm: function(id, uploadForm) {
-      uploadForm.action=this.baseUrl + "/" + id + "/war";
-      uploadForm.method="POST";
-    },
     serializedWebAppFormToJson: function(serializedArray, forUpdate) {
         var json = {};
         $.each(serializedArray, function() {

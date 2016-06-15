@@ -35,15 +35,13 @@ var WebAppConfig = React.createClass({
                         <tr>
                             <td>
                                 <div>
-                                    <WebAppDataTable data={this.state.WebAppTableData}
-                                                    service={this.props.service}
-                                                    selectItemCallback={this.selectItemCallback}
-                                                    editCallback={this.editCallback}
-                                                    noUpdateWhen={
-                                                      this.state.showModalFormAddDialog ||
-                                                      this.state.showDeleteConfirmDialog ||
-                                                      this.state.showModalFormEditDialog
-                                                      }/>
+                                    <RDataTable colDefinitions={[{key: "secure", renderCallback: this.renderSecureColumn, sortable: false},
+                                                                 {title: "WebApp Name", key: "name", renderCallback: this.renderWebAppNameCallback},
+                                                                 {title: "Context", key: "webAppContext"},
+                                                                 {title: "Web Archive", key: "warName"},
+                                                                 {key: "id.id", renderCallback: this.renderUploadIcon, sortable: false},
+                                                                 {title: "Group", key:"group.name"}]}
+                                                data={this.state.WebAppTableData}/>
                                 </div>
                             </td>
                         </tr>
@@ -72,10 +70,58 @@ var WebAppConfig = React.createClass({
                                       this.state.showDeleteConfirmDialog
                                   }/>
 
-                   <ConfirmDeleteModalDialog show={this.state.showDeleteConfirmDialog}
-                                             btnClickedCallback={this.confirmDeleteCallback} />
+                  <ConfirmDeleteModalDialog show={this.state.showDeleteConfirmDialog}
+                                            btnClickedCallback={this.confirmDeleteCallback} />
 
+                  <ModalDialogBox title="Upload WAR"
+                                  show={false}
+                                  ref="uploadWarDlg"
+                                  cancelCallback={this.uploadWarDlgCancelCallback}
+                                  cancelLabel="Close"/>
                </div>
+    },
+    renderWebAppNameCallback: function(name) {
+        var self = this;
+        return <button className="button-link" onClick={function(){self.onWebAppNameClick(name)}}>{name}</button>
+    },
+    onWebAppNameClick: function(name) {
+        var self = this;
+        this.state.WebAppTableData.forEach(function(data){
+            if (data.name === name) {
+                console.log(data.id);
+                self.props.service.getWebApp(data.id.id,
+                    function(response){
+                        self.setState({WebAppFormData: response.applicationResponseContent,
+                                       showModalFormEditDialog: true})
+                    }
+                );
+                return;
+            }
+        });
+    },
+    renderSecureColumn: function(secure) {
+        if (secure) {
+            return <span className="ui-icon ui-icon-locked"></span>;
+        }
+        return <span className="ui-icon ui-icon-unlocked"></span>;
+    },
+    renderUploadIcon: function(id) {
+        var self = this;
+        return <RButton title="Upload WAR" className="iconBtn ui-widget ui-state-default ui-corner-all ui-button-text-only ui-button-height"
+                        hoverClassName="ui-state-hover" spanClassName="ui-icon ui-icon-arrowthick-1-n" onClick={function(){self.onUploadWarBtnClicked(id)}} />
+    },
+    onUploadWarBtnClicked: function(id) {
+
+        var self = this;
+        this.state.WebAppTableData.forEach(function(data){
+            if (data.id.id === id) {
+                self.refs.uploadWarDlg.show("Upload WAR", <WARUpload service={self.props.service} war={data.warPath}
+                                                                     full={data} />);
+                return;
+            }
+        });
+
+
     },
     confirmDeleteCallback: function(ans) {
         var self = this;
@@ -453,7 +499,6 @@ var WebAppDataTable = React.createClass({
             return "<span class='ui-icon ui-icon-unlocked'></span>";
         }.bind(this);
     },
-
     renderNameLink:function(dataTable, data, aoColumnDefs, itemIndex) {
         var self = this;
             aoColumnDefs[itemIndex].fnCreatedCell = function ( nTd, sData, oData, iRow, iCol ) {
@@ -474,6 +519,7 @@ var WebAppDataTable = React.createClass({
 
 });
 
+// TODO: Remove stale code.
 var WARUpload = React.createClass({
     stripPathRegEx: /(([A-Z]{1}:)?[/\\]?([^/\\]*))(-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})(.war)/,
     getInitialState: function() {
@@ -486,160 +532,66 @@ var WARUpload = React.createClass({
           hasWar: hasWar,
           noArchive : noArchive,
           warPath: hasWar ? this.props.full.warPath : noArchive,
-          warName: hasWar ? this.stripPathRegEx.exec(this.props.full.warPath)[3] : noArchive,
+          /* warName: hasWar ? this.stripPathRegEx.exec(this.props.full.warPath)[3] : noArchive, */
         }
     },
     componentWillUpdate: function(nextProps, nextState) {
-      nextState.warName = nextState.hasWar ? this.stripPathRegEx.exec(nextState.warPath)[3] : this.state.noArchive;
+      // nextState.warName = nextState.hasWar ? this.stripPathRegEx.exec(nextState.warPath)[3] : this.state.noArchive;
     },
     componentDidMount: function() {
-      if(this.state.editable) {
         this.initFileUpload();
-      }
-    },
-    componentDidUpdate: function() {
-
-      if(this.state.editable) {
-        this.initFileUpload();
-      }
-
     },
     shouldComponentUpdate: function(nextProps, nextState) {
-      if( nextState.showDeleteConfirmDialog === true ) {
-        return true;
-      }
-      if( nextState.uploadData !== undefined &&
-          nextState.uploadData != null) {
-            return false;
-      } else {
-        return true;
-      }
+        return nextState.showDeleteConfirmDialog || !(nextState.uploadData && nextState.uploadData);
     },
     render: function() {
-
-      if(this.props.readOnly ) {
-        return <div>
-                <div className="tocTable">
-                  <div className="tocRowContent">
-                    <span title={this.state.warPath}>{this.state.warName}</span>
-                  </div>
-                </div>
-               </div>
-        ;
-      } else if(!this.state.editable) {
-        return <div>
-                <div className="tocTable">
-                  <div className="tocRowContent">
-                    <span title={this.state.warPath}>{this.state.warName}</span>
-                  </div>
-                  <div className="tocRowIcons">
-                    <img onClick={this.editRequest}
-                         className="btnAppsCfgClose"
-                         src="public-resources/img/icons/eject.png"
-                         title="Upload war file" />
-                    {this.state.hasWar?
-                      <img onClick={this.deployWarFile}
-                           className="btnAppsCfgClose btnAppsDeploy"
-                           src="public-resources/img/icons/start.png"
-                           title="Deploy war file" />
-                      :""}
-                    {this.state.hasWar?
-                      <img onClick={this.handleDelete}
-                           className="btnAppsCfgClose"
-                           src="public-resources/img/icons/delete.png"
-                           title="Remove war file" />
-                      :""}
-                  </div>
-                </div>
-
-                <ModalDialogBox title="Confirmation Dialog Box"
-                                show={this.state.showDeleteConfirmDialog}
-                                okCallback={this.confirmDeleteCallback}
-                                cancelCallback={this.cancelDeleteCallback}
-                                content={<div className="text-align-center"><br/><b>Are you sure you want to delete the selected item ?</b><br/><br/></div>}
-                                okLabel="Yes"
-                                cancelLabel="No" />
-
-              </div>
-        ;
-      } else {
-
-        var progressStyle = {
-           clear: 'left',
-           height: '10px',
-           width: '100%',
-           paddingTop: '0.5em'
-        };
-        var progressStyleInner = {
-           clear: 'left',
-           height: '10px',
-           width: '0%',
-           backgroundColor: 'green'
-        };
+        var progressStyle = {clear: 'left', height: '10px', width: '100%', paddingTop: '0.5em'};
+        var progressStyleInner = {clear: 'left', height: '10px', width: '0%', backgroundColor: 'green'};
 
         return <div className="war-upload-component">
                    <div className="archive-file">
-                       <span title={this.state.warPath}>{this.state.warName}</span>
                        <div className="file-upload">
-                           <form encType='multipart/form-data' method="POST" action={'v1.0/applications/'+this.props.full.id.id+'/war'} >
-                               <input type="file" name="file"></input>
-                               <input type="button" value="Upload" onClick={this.performUpload}></input>
-                               <div style={progressStyle}>
-                                   <div style={progressStyleInner} className="progress" />
+                           <form ref="warUploadForm" encType='multipart/form-data' method="POST" action={'v1.0/applications/' + this.props.full.id.id + '/war'}>
+                               <div className="fileUploadContainer">
+                                   <input ref="fileInput" type="file" name="file"></input>
+                                   <input type="button" value="Upload" onClick={this.performUpload} />
                                </div>
-                               <span className="uploadResult"></span>
+                               <div style={progressStyle}>
+                                   <div ref="progressBar" style={progressStyleInner} className="progress" />
+                               </div>
+                               <span className="uploadResult" />
                            </form>
-                       </div>
+                        </div>
                    </div>
-                   <div className="eject-icon">
-                       <img onClick={this.editRequest} src="public-resources/img/icons/eject.png" title="Hide upload war file facility" />
-                   </div>
-               </div>
-              ;
-      }
+               </div>;
     },
+
     initFileUpload :function() {
-      var self = this;
-      var thisForm = $('form', this.getDOMNode());
-      var fileInput = $('input[type="file"]', thisForm);
-
-      var thisProgress = $('div.progress', thisForm);
-      thisProgress.css({
-          'width' : '0%',
-          'background-color' : 'green'
-      });
-
-      var d = new Date();
-
-      thisForm.fileupload({
-        dataType: 'json',
-        url: this.props.service.baseUrl + "/" + this.props.full.id.id + "/war" + "?_"+d.getTime(),
-        forceIframeTransport: false,
-        replaceFileInput: false,
-        add: function(event, data) {
-          self.setState({
-              uploadData: data
-             });
-          // no submit
-        },
-        progressall: function(event,data) {
-          var progress = parseInt(data.loaded / data.total * 100, 10);
-          thisProgress.css({
-              'width' : progress + '%',
-              'background-color' : 'green'
-          });
-        }
-      });
+        var self = this;
+        var d = new Date();
+        $(this.refs.fileInput.getDOMNode()).fileupload({
+            dataType: "json",
+            url: this.props.service.baseUrl + "/" + this.props.full.id.id + "/war" + "?_"+ d.getTime(),
+            forceIframeTransport: false,
+            replaceFileInput: false,
+            add: function(e, data) {
+                self.setState({uploadData: data});
+            },
+            progressall: function(e, data) {
+                var progress = parseInt(data.loaded / data.total * 100, 10);
+                $(self.refs.progressBar.getDOMNode()).css({'width' : progress + '%', 'background-color' : 'green'});
+            }
+        });
     },
     progressClean: function() {
-      var thisForm = $('form', this.getDOMNode());
+      var thisForm = $(this.refs.warUploadForm.getDOMNode());
       var thisResult = $('span.uploadResult', thisForm);
       thisResult.removeClass('error');
       thisResult.addClass('ok');
       thisResult.text('');
     },
     progressError: function(errorMsg, progress) {
-      var thisForm = $('form', this.getDOMNode());
+      var thisForm = $(this.refs.warUploadForm.getDOMNode());
       var thisProgress = $('div.progress', thisForm);
       thisProgress.css({
           'width' : (progress !== undefined ? progress : 100) + '%',
@@ -651,7 +603,7 @@ var WARUpload = React.createClass({
       thisResult.text(errorMsg);
     },
     progressOk: function(okMsg) {
-      var thisForm = $('form', this.getDOMNode());
+      var thisForm = $(this.refs.warUploadForm.getDOMNode());
       var thisProgress = $('div.progress', thisForm);
       thisProgress.css({
           'background-color' : 'green'
@@ -662,39 +614,24 @@ var WARUpload = React.createClass({
       thisResult.text(okMsg);
     },
     performUpload: function(event) {
-        var thisForm = $('form', this.getDOMNode());
         var self = this;
-        if(this.state.uploadData) {
-          this.props.service.prepareUploadForm(this.props.full.id.id, thisForm);
-          this.state.uploadData.submit().success(function(result, textStatus, jqXHR) {
-            if(result !== undefined && result.applicationResponseContent !== undefined) {
-              if(result.msgCode !== undefined && result.msgCode !== '0' /*success*/) {
-                // actually an error
-                self.progressError((result.msgCode||"AEM")+ ": " + (result.applicationResponseContent||textStatus));
-              } else {
-                $(self.getDOMNode()).parent().parent().find("td").removeClass("vertical-align-top");
-                self.setState({
-                  uploadData: undefined,
-                  editable: false,
-                  hasWar: true,
-                  warPath: result.applicationResponseContent.warPath,
-                });
-              }
-            }
-          }).error(function(result, textStatus, jqXHR) {
-        	if(result.responseJSON !== undefined) {
-        		self.progressError((result.responseJSON.msgCode||"AEM")+ ": " + (result.responseJSON.applicationResponseContent||textStatus));
-        	} else if( textStatus ) {
-        		self.progressError("AEM: " + textStatus.substring(0,100));
-        	} else {
-        		self.progressError("AEM: Please retry your upload. ");
-        	}
-
-          });
+        if (this.state.uploadData !== null) {
+            // Note: Don't confuse with "form" submit. Please see initFileUpload.
+            this.state.uploadData.submit().success(function(result, textStatus, jqXHR) {
+                if (!result || result.msgCode !== "0" || !result.applicationResponseContent) {
+                     self.progressError((result.msgCode||"AEM")+ ": " + (result.applicationResponseContent||textStatus));
+                }
+            }).error (function(result, textStatus, jqXHR) {
+                if (result.responseJSON !== undefined) {
+                    self.progressError((result.responseJSON.msgCode||"AEM")+ ": " + (result.responseJSON.applicationResponseContent||textStatus));
+                } else if ( textStatus ) {
+                    self.progressError("AEM: " + textStatus.substring(0,100));
+                } else {
+                    self.progressError("AEM: Please retry your upload. ");
+                };
+            });
         } else {
-          var fileInput = $('input[type="file"]', thisForm);
-          fileInput.effect("highlight");
-          self.progressError("Choose a file first",0);
+            $(this.refs.fileInput.getDOMNode()).effect("highlight")
         }
 
         event.preventDefault();
@@ -712,24 +649,13 @@ var WARUpload = React.createClass({
 
     },
     postUploadWarForm : function(event, data) {
-      var thisForm = $('form', this.getDOMNode());
+      var thisForm = $(this.refs.warUploadForm.getDOMNode());
       this.props.service.postUploadWarForm(this.props.full.id.id, thisForm);
       event.preventDefault();
       return false;
     },
     handleDelete: function() {
         this.setState({showDeleteConfirmDialog: true});
-    },
-    deployWarFile: function() {
-        this.props.service.deployWarFile(this.props.full.id.id,
-                                           function(respObj){
-                                                $.alert("Successfully deployed " + respObj.applicationResponseContent.warName, false);
-                                           },
-                                           function(errMsg) {
-                                                $.alert(errMsg, "Error", false);
-                                           });
-        event.preventDefault();
-        return false;
     },
     confirmDeleteCallback: function() {
         var self = this;
