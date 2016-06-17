@@ -470,7 +470,7 @@ var UploadWarWidget = React.createClass({
         var rows = [];
         for (var key in this.state.properties) {
             if (UploadWarWidget.isPossiblePath(this.state.properties[key]) && UploadWarWidget.isEncrypted(this.state.properties[key])) {
-                rows.push(<PropertyRow key={key} onAddPropertiesClickCallback={function(){self.onAddPropertiesClick("${" + key + "}")}}
+                rows.push(<PropertyRow key={key} onAddPropertiesClickCallback={self.onAddPropertiesClick}
                                        propertyName={key} propertyValue={this.state.properties[key]} />);
             }
         }
