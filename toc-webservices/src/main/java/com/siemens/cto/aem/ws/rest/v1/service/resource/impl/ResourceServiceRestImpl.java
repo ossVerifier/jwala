@@ -43,32 +43,38 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
 
     @Override
     public Response findResourceInstanceByGroup(String groupName) {
+        LOGGER.debug("Find resource instance by group {}", groupName);
         return ResponseBuilder.ok(resourceService.getResourceInstancesByGroupName(groupName));
     }
 
     @Override
     public Response findResourceInstanceByNameGroup(final String name, final String groupName) {
+        LOGGER.debug("Find resource instance by name {} group {}", name, groupName);
         return ResponseBuilder.ok(resourceService.getResourceInstancesByGroupName(groupName));
     }
 
     @Override
     public Response createResourceInstance(JsonResourceInstance aResourceInstanceToCreate, AuthenticatedUser aUser) {
+        LOGGER.info("Create resource instance {} by user {}", aResourceInstanceToCreate, aUser.getUser().getId());
         return ResponseBuilder.ok(this.resourceService.createResourceInstance(aResourceInstanceToCreate.getCommand(), aUser.getUser()));
     }
 
     @Override
     public Response updateResourceInstanceAttributes(final String name, final String groupName, JsonResourceInstance aResourceInstanceToUpdate, AuthenticatedUser aUser) {
+        LOGGER.info("Update resource instance attributes {} with name {} in group {} by user", aResourceInstanceToUpdate, name, groupName, aUser.getUser().getId());
         return ResponseBuilder.ok(this.resourceService.updateResourceInstance(groupName, name, aResourceInstanceToUpdate.getCommand(), aUser.getUser()));
     }
 
     @Override
-    public Response removeResourceInstance( final String name, final String groupName) {
+    public Response removeResourceInstance( final String name, final String groupName, AuthenticatedUser aUser) {
+        LOGGER.info("Remove resource instance name {} from group {} by user {}", name, groupName, aUser.getUser().getId());
         this.resourceService.deleteResourceInstance(groupName, name);
         return ResponseBuilder.ok();
     }
 
     @Override
-    public Response removeResources(String groupName, List<String> resourceNames) {
+    public Response removeResources(String groupName, List<String> resourceNames, AuthenticatedUser aUser) {
+        LOGGER.info("Remove resources {} from group {} by user {}", resourceNames, groupName, aUser.getUser().getId());
         try {
             resourceService.deleteResources(groupName, resourceNames);
             return ResponseBuilder.ok();
@@ -122,26 +128,31 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
 
     @Override
     public Response getResourceAttrData() {
+        LOGGER.debug("Get resource attribute data");
         return ResponseBuilder.ok(resourceService.generateResourceGroup());
     }
 
     @Override
     public Response getResourceTopology() {
+        LOGGER.debug("Get resource topology");
         return ResponseBuilder.ok(resourceService.generateResourceGroup());
     }
 
     @Override
     public Response getApplicationResourceNames(final String groupName, final String appName) {
+        LOGGER.debug("Get application resource name for group {} and application {}", groupName, appName);
         return ResponseBuilder.ok(resourceService.getApplicationResourceNames(groupName, appName));
     }
 
     @Override
     public Response getAppTemplate(final String groupName, final String appName, final String templateName) {
+        LOGGER.debug("Get application template for group {}, application {}, and template {}", groupName, appName, templateName);
         return ResponseBuilder.ok(resourceService.getAppTemplate(groupName, appName, templateName));
     }
 
     @Override
     public Response checkFileExists(final String groupName, final String jvmName, final String webappName, final String webserverName, final String fileName) {
+        LOGGER.debug("Check file exists for group {}, JVM {}, application {}, web server {}, file {}", groupName, jvmName, webappName, webserverName, fileName);
         return ResponseBuilder.ok(resourceService.checkFileExists(groupName, jvmName, webappName, webserverName, fileName));
     }
 
@@ -149,6 +160,8 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
     // TODO: Re validation, maybe we can use CXF bean validation ?
     public Response createResource(final List<Attachment> attachments, final CreateResourceParam createResourceParam,
                                    final AuthenticatedUser user) {
+
+        LOGGER.info("Create resource with parameters {} by user {} and attachments {}", createResourceParam, user.getUser().getId(), attachments);
 
         InputStream metadataIn = null;
         InputStream resourceDataIn = null;
@@ -259,7 +272,8 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
 
     @Override
     // TODO: Re validation, maybe we can use CXF bean validation ?
-    public Response deleteResource(final String templateName, final ResourceHierarchyParam resourceHierarchyParam) {
+    public Response deleteResource(final String templateName, final ResourceHierarchyParam resourceHierarchyParam, final AuthenticatedUser aUser) {
+        LOGGER.info("Delete resource {} by user {} with details {}", templateName, aUser.getUser().getId(), resourceHierarchyParam);
         int deletedRecCount = 0;
 
         // NOTE: We do the parameter checking logic here since the service layer does not know anything about ResourceHierarchyParam.

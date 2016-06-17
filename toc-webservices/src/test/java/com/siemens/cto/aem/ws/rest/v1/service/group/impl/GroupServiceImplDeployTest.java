@@ -105,6 +105,7 @@ public class GroupServiceImplDeployTest {
     private AuthenticatedUser mockAuthUser = mock(AuthenticatedUser.class);
     private User mockUser = mock(User.class);
     private String httpdConfDirPath;
+    private String generatedResourceDir;
 
     public GroupServiceImplDeployTest() {
         System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH,
@@ -118,11 +119,14 @@ public class GroupServiceImplDeployTest {
         System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, "./src/test/resources");
         httpdConfDirPath = ApplicationProperties.get("paths.httpd.conf");
         assertTrue(new File(httpdConfDirPath).mkdirs());
+        generatedResourceDir = ApplicationProperties.get("paths.generated.resource.dir");
+        assertTrue(new File(generatedResourceDir).mkdirs());
     }
 
     @After
     public void tearDown() throws IOException {
         FileUtils.deleteDirectory(new File(httpdConfDirPath));
+        FileUtils.deleteDirectory(new File(generatedResourceDir));
         System.clearProperty(ApplicationProperties.PROPERTIES_ROOT_PATH);
     }
 
@@ -176,12 +180,10 @@ public class GroupServiceImplDeployTest {
             internalError = true;
         }
         assertTrue(internalError);
-
-        FileUtils.deleteDirectory(new File("./src/test/resources/jvm-resources_test/" + mockJvm.getJvmName()));
     }
 
     @Test
-    public void testGroupWebServerDeploy() throws CommandFailureException {
+    public void testGroupWebServerDeploy() throws CommandFailureException, IOException {
         Group mockGroup = mock(Group.class);
         WebServer mockWebServer = mock(WebServer.class);
         Response mockResponse = mock(Response.class);
@@ -405,12 +407,10 @@ public class GroupServiceImplDeployTest {
         when(execReturnCode.wasSuccessful()).thenReturn(true);
 
         assertEquals(commandOutput, groupServiceImpl.deployGroupAppTemplate(groupName, fileName, resourceGroup, application, jvm));
-
-        FileUtils.deleteDirectory(new File(ApplicationProperties.get("stp.generated.resource.dir") + System.getProperty("file.separator") + groupName));
     }
 
     @Test
-    public void testGenerateAndDeployWebServers() throws CommandFailureException {
+    public void testGenerateAndDeployWebServers() throws CommandFailureException, IOException {
         Set<WebServer> mockWSList = new HashSet<>();
         Group mockGroup = mock(Group.class);
         WebServer mockWebServer = mock(WebServer.class);

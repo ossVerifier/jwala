@@ -514,6 +514,7 @@ public class ResourceServiceImpl implements ResourceService {
      * @param templateData the template content/data
      * @param jvmName identifies the JVM to which the template is attached to
      */
+    @Deprecated
     private CreateResourceTemplateApplicationResponseWrapper createJvmTemplate(final ResourceTemplateMetaData metaData,
                                                                                final InputStream templateData,
                                                                                final String jvmName) {
@@ -550,6 +551,7 @@ public class ResourceServiceImpl implements ResourceService {
      * @param templateData the template content/data
      */
     // TODO: When the resource file is locked, don't overwrite!
+    @Deprecated
     private CreateResourceTemplateApplicationResponseWrapper createGroupedJvmsTemplate(final ResourceTemplateMetaData metaData,
                                                                                        final InputStream templateData) throws IOException {
         final Set<Jvm> jvms = groupPersistenceService.getGroup(metaData.getEntity().getGroup()).getJvms();
@@ -581,6 +583,7 @@ public class ResourceServiceImpl implements ResourceService {
      * @param webServerName identifies the web server to which the template belongs to
      * @param user
      */
+    @Deprecated
     private CreateResourceTemplateApplicationResponseWrapper createWebServerTemplate(final ResourceTemplateMetaData metaData,
                                                                                      final InputStream templateData,
                                                                                      final String webServerName,
@@ -603,6 +606,7 @@ public class ResourceServiceImpl implements ResourceService {
      * @param templateData the template content/data
      * @param user
      */
+    @Deprecated
     private CreateResourceTemplateApplicationResponseWrapper createGroupedWebServersTemplate(final ResourceTemplateMetaData metaData,
                                                                                              final InputStream templateData,
                                                                                              final User user) throws IOException {
@@ -646,6 +650,7 @@ public class ResourceServiceImpl implements ResourceService {
      * @param templateData  the template content/data
      * @param targetJvmName the name of the JVM to associate with the application template
      */
+    @Deprecated
     private CreateResourceTemplateApplicationResponseWrapper createApplicationTemplate(final ResourceTemplateMetaData metaData, final InputStream templateData, String targetJvmName) {
         final Application application = applicationPersistenceService.getApplication(metaData.getEntity().getTarget());
         UploadAppTemplateRequest uploadAppTemplateRequest = new UploadAppTemplateRequest(application, metaData.getTemplateName(),
@@ -661,6 +666,7 @@ public class ResourceServiceImpl implements ResourceService {
      * @param templateData  the template content/data
      * @param targetAppName the application name
      */
+    @Deprecated
     private CreateResourceTemplateApplicationResponseWrapper createGroupedApplicationsTemplate(final ResourceTemplateMetaData metaData,
                                                                                                final InputStream templateData,
                                                                                                final String targetAppName) throws IOException {

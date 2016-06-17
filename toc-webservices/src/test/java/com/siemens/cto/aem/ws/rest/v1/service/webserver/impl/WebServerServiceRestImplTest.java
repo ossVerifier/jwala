@@ -6,7 +6,6 @@ import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.path.FileSystemPath;
 import com.siemens.cto.aem.common.domain.model.path.Path;
 import com.siemens.cto.aem.common.domain.model.resource.ResourceGroup;
-import com.siemens.cto.aem.common.domain.model.resource.ResourceType;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServerControlOperation;
@@ -33,6 +32,7 @@ import com.siemens.cto.aem.ws.rest.v1.response.ApplicationResponse;
 import org.apache.commons.fileupload.FileUploadBase;
 import org.apache.commons.io.FileUtils;
 import org.apache.cxf.jaxrs.ext.MessageContext;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -53,10 +53,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import static org.junit.Assert.*;
@@ -101,6 +98,7 @@ public class WebServerServiceRestImplTest {
 
     private WebServerServiceRestImpl webServerServiceRest;
     private Map<String, ReentrantReadWriteLock> writeLockMap = new HashMap<>();
+    private String generatedResourceDir;
 
     private static List<WebServer> createWebServerList() {
         final Group groupOne = new Group(Identifier.id(1L, Group.class), "ws-groupOne");
@@ -126,16 +124,33 @@ public class WebServerServiceRestImplTest {
     public void setUp() {
         webServerServiceRest = new WebServerServiceRestImpl(impl, webServerControlService, commandImpl, writeLockMap, resourceService, groupService);
         when(authenticatedUser.getUser()).thenReturn(new User("Unused"));
-        final ArrayList<ResourceType> resourceTypes = new ArrayList<>();
-        ResourceType mockWsResourceType = mock(ResourceType.class);
-        when(mockWsResourceType.getConfigFileName()).thenReturn("httpd.conf");
-        when(mockWsResourceType.getEntityType()).thenReturn("webServer");
-        when(mockWsResourceType.getTemplateName()).thenReturn("HttpdSslConfTemplate.tpl");
+
         try {
             webServerServiceRest.afterPropertiesSet();
         } catch (Exception e) {
             assertTrue("This should not fail, but ... " + e.getMessage(), false);
         }
+
+        System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, "./src/test/resources");
+        generatedResourceDir = ApplicationProperties.get("paths.generated.resource.dir");
+
+        ////////////// NO CHECK IN /////////////////////////////
+        final File file = new File(generatedResourceDir);
+        System.err.println("JMJM " + file.getAbsolutePath() + " exists:" + file.exists() + " " + Arrays.toString(file.list()));
+        if (file.exists()){
+            for(String fileName : file.list()){
+                System.err.println("JMJM " + fileName);
+            }
+        }
+        ////////////// NO CHECK IN /////////////////////////////
+
+        assertTrue(new File(generatedResourceDir).mkdirs());
+    }
+
+    @After
+    public void tearDown() throws IOException {
+        FileUtils.deleteDirectory(new File(generatedResourceDir));
+        System.clearProperty(ApplicationProperties.PROPERTIES_ROOT_PATH);
     }
 
     @Test
@@ -293,40 +308,26 @@ public class WebServerServiceRestImplTest {
 
     @Test
     public void testGenerateAndDeployConfig() throws CommandFailureException, IOException {
-        System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, "./src/test/resources");
-        final String httpdConfDirPath = ApplicationProperties.get("paths.httpd.conf");
-        assertTrue(new File(httpdConfDirPath).mkdirs());
         CommandOutput retSuccessExecData = new CommandOutput(new ExecReturnCode(0), "", "");
         when(webServerControlService.secureCopyFile(anyString(), anyString(), anyString(), anyString())).thenReturn(retSuccessExecData);
         when(impl.getResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"contentType\":\"text/plain\",\"deployPath\":\"./anyPath\"}");
         when(resourceService.generateResourceGroup()).thenReturn(new ResourceGroup());
         Response response = webServerServiceRest.generateAndDeployConfig(webServer.getName(), "httpd.conf", authenticatedUser);
         assertTrue(response.hasEntity());
-        FileUtils.deleteDirectory(new File(httpdConfDirPath));
-        System.clearProperty(ApplicationProperties.PROPERTIES_ROOT_PATH);
     }
 
     @Test
     public void testGenerateAndDeployConfigBinaryFile() throws CommandFailureException, IOException {
-        System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, "./src/test/resources");
-        final String httpdConfDirPath = ApplicationProperties.get("paths.httpd.conf");
-        assertTrue(new File(httpdConfDirPath).mkdirs());
         CommandOutput retSuccessExecData = new CommandOutput(new ExecReturnCode(0), "", "");
         when(webServerControlService.secureCopyFile(anyString(), anyString(), anyString(), anyString())).thenReturn(retSuccessExecData);
         when(impl.getResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"contentType\":\"application/binary\",\"deployPath\":\"./anyPath\"}");
         when(resourceService.generateResourceGroup()).thenReturn(new ResourceGroup());
         Response response = webServerServiceRest.generateAndDeployConfig(webServer.getName(), "httpd.exe", authenticatedUser);
         assertTrue(response.hasEntity());
-        FileUtils.deleteDirectory(new File(httpdConfDirPath));
-        System.clearProperty(ApplicationProperties.PROPERTIES_ROOT_PATH);
     }
 
     @Test
     public void testGenerateAndDeployConfigThrowsExceptionForWebServerNotStopped() throws CommandFailureException, IOException {
-        System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, "./src/test/resources");
-
-        final String httpdConfDirPath = ApplicationProperties.get("paths.httpd.conf");
-        assertTrue(new File(httpdConfDirPath).mkdirs());
         when(impl.isStarted(any(WebServer.class))).thenReturn(true);
         when(impl.getResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"contentType\":\"text/plain\",\"deployPath\":\"./anyPath\"}");
         when(resourceService.generateResourceGroup()).thenReturn(new ResourceGroup());
@@ -339,16 +340,11 @@ public class WebServerServiceRestImplTest {
             assertEquals(ie.getMessage(), "The target Web Server must be stopped before attempting to update the resource file");
         } finally {
             assertTrue(exceptionThrown);
-            FileUtils.deleteDirectory(new File(httpdConfDirPath));
-            System.clearProperty(ApplicationProperties.PROPERTIES_ROOT_PATH);
         }
     }
 
     @Test
     public void testGenerateAndDeployConfigFailsSecureCopy() throws CommandFailureException, IOException {
-        System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, "./src/test/resources");
-        final String httpdConfDirPath = ApplicationProperties.get("paths.httpd.conf");
-        assertTrue(new File(httpdConfDirPath).mkdirs());
         when(impl.getResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"contentType\":\"text/plain\",\"deployPath\":\"./anyPath\"}");
         when(resourceService.generateResourceGroup()).thenReturn(new ResourceGroup());
         when(webServerControlService.secureCopyFile(anyString(), anyString(), anyString(), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(1), "", "FAILED SECURE COPY TEST"));
@@ -358,32 +354,21 @@ public class WebServerServiceRestImplTest {
             response = webServerServiceRest.generateAndDeployConfig(webServer.getName(), "httpd.conf", authenticatedUser);
         } catch (InternalErrorException e) {
             failedSecureCopy = true;
-        } finally {
-            FileUtils.deleteDirectory(new File(httpdConfDirPath));
         }
         assertFalse(failedSecureCopy);
         assertNotNull(response);
         assertEquals(webServer.getName(), ((Map) ((ApplicationResponse) response.getEntity()).getApplicationResponseContent()).get("webServerName"));
-        System.clearProperty(ApplicationProperties.PROPERTIES_ROOT_PATH);
     }
 
     @Test
     public void testGenerateAndDeployConfigThrowsException() throws IOException, CommandFailureException {
-        System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, "./src/test/resources");
-        final String httpdConfDirPath = ApplicationProperties.get("paths.httpd.conf");
-        assertTrue(new File(httpdConfDirPath).mkdirs());
         when(impl.getResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"contentType\":\"text/plain\",\"deployPath\":\"./anyPath\"}");
         when(resourceService.generateResourceGroup()).thenReturn(new ResourceGroup());
         when(webServerControlService.secureCopyFile(anyString(), anyString(), anyString(), anyString())).thenThrow(new CommandFailureException(new ExecCommand("Fail secure copy"), new Exception()));
         Response response = null;
-        try {
-            response = webServerServiceRest.generateAndDeployConfig(webServer.getName(), "httpd.conf", authenticatedUser);
-        } finally {
-            FileUtils.deleteDirectory(new File(httpdConfDirPath));
-        }
+        response = webServerServiceRest.generateAndDeployConfig(webServer.getName(), "httpd.conf", authenticatedUser);
         assertNotNull(response);
         assertEquals(webServer.getName(), ((Map) ((ApplicationResponse) response.getEntity()).getApplicationResponseContent()).get("webServerName"));
-        System.clearProperty(ApplicationProperties.PROPERTIES_ROOT_PATH);
     }
 
     @Test(expected = InternalErrorException.class)
@@ -395,9 +380,6 @@ public class WebServerServiceRestImplTest {
 
     @Test
     public void testGenerateAndDeployWebServer() throws CommandFailureException, IOException {
-        System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, "./src/test/resources");
-        final String httpdConfDirPath = ApplicationProperties.get("paths.httpd.conf");
-        assertTrue(new File(httpdConfDirPath).mkdirs());
         List<String> webServerResourceNames = new ArrayList<>();
         webServerResourceNames.add("httpd.conf");
 
@@ -415,11 +397,7 @@ public class WebServerServiceRestImplTest {
 
 
         Response response = null;
-        try {
-            response = webServerServiceRest.generateAndDeployWebServer(webServer.getName(), authenticatedUser);
-        } finally {
-            FileUtils.deleteDirectory(new File(httpdConfDirPath));
-        }
+        response = webServerServiceRest.generateAndDeployWebServer(webServer.getName(), authenticatedUser);
         assertNotNull(response);
 
         when(webServerControlService.secureCopyFile(anyString(), anyString(), anyString(), anyString())).thenThrow(new CommandFailureException(new ExecCommand("failed command"), new Throwable()));
@@ -432,16 +410,10 @@ public class WebServerServiceRestImplTest {
         }
         assertTrue(exceptionThrown);
         assertNull(response);
-
-        System.clearProperty(ApplicationProperties.PROPERTIES_ROOT_PATH);
     }
 
     @Test(expected = InternalErrorException.class)
     public void testGenerateAndDeployWebServerFailsMakeDirectory() throws CommandFailureException, IOException {
-        System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, "./src/test/resources");
-        final String httpdConfDirPath = ApplicationProperties.get("paths.httpd.conf");
-        assertTrue(new File(httpdConfDirPath).mkdirs());
-
         List<String> resourceTemplateNames = new ArrayList<>();
         resourceTemplateNames.add("httpd.conf");
 
@@ -451,21 +423,11 @@ public class WebServerServiceRestImplTest {
         when(impl.isStarted(any(WebServer.class))).thenReturn(false);
         when(impl.getResourceTemplateNames(anyString())).thenReturn(resourceTemplateNames);
 
-        try {
-            webServerServiceRest.generateAndDeployWebServer(webServer.getName(), authenticatedUser);
-        } finally {
-            FileUtils.deleteDirectory(new File(httpdConfDirPath));
-        }
-
-        System.clearProperty(ApplicationProperties.PROPERTIES_ROOT_PATH);
+        webServerServiceRest.generateAndDeployWebServer(webServer.getName(), authenticatedUser);
     }
 
-    @Test (expected = InternalErrorException.class)
+    @Test(expected = InternalErrorException.class)
     public void testGenerateAndDeployWebServerFailsSecureCopyScriptsStartScript() throws CommandFailureException, IOException {
-        System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, "./src/test/resources");
-        final String httpdConfDirPath = ApplicationProperties.get("paths.httpd.conf");
-        assertTrue(new File(httpdConfDirPath).mkdirs());
-
         List<String> resourceTemplateNames = new ArrayList<>();
         resourceTemplateNames.add("httpd.conf");
 
@@ -477,21 +439,11 @@ public class WebServerServiceRestImplTest {
         when(impl.isStarted(any(WebServer.class))).thenReturn(false);
         when(impl.getResourceTemplateNames(anyString())).thenReturn(resourceTemplateNames);
 
-        try {
-            webServerServiceRest.generateAndDeployWebServer(webServer.getName(), authenticatedUser);
-        } finally {
-            FileUtils.deleteDirectory(new File(httpdConfDirPath));
-        }
-
-        System.clearProperty(ApplicationProperties.PROPERTIES_ROOT_PATH);
+        webServerServiceRest.generateAndDeployWebServer(webServer.getName(), authenticatedUser);
     }
 
-    @Test (expected = InternalErrorException.class)
+    @Test(expected = InternalErrorException.class)
     public void testGenerateAndDeployWebServerFailsSecureCopyScriptsStopScript() throws CommandFailureException, IOException {
-        System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, "./src/test/resources");
-        final String httpdConfDirPath = ApplicationProperties.get("paths.httpd.conf");
-        assertTrue(new File(httpdConfDirPath).mkdirs());
-
         List<String> resourceTemplateNames = new ArrayList<>();
         resourceTemplateNames.add("httpd.conf");
 
@@ -504,21 +456,11 @@ public class WebServerServiceRestImplTest {
         when(impl.isStarted(any(WebServer.class))).thenReturn(false);
         when(impl.getResourceTemplateNames(anyString())).thenReturn(resourceTemplateNames);
 
-        try {
-            webServerServiceRest.generateAndDeployWebServer(webServer.getName(), authenticatedUser);
-        } finally {
-            FileUtils.deleteDirectory(new File(httpdConfDirPath));
-        }
-
-        System.clearProperty(ApplicationProperties.PROPERTIES_ROOT_PATH);
+        webServerServiceRest.generateAndDeployWebServer(webServer.getName(), authenticatedUser);
     }
 
-    @Test (expected = InternalErrorException.class)
+    @Test(expected = InternalErrorException.class)
     public void testGenerateAndDeployWebServerFailsSecureCopyScriptsInvokeScript() throws CommandFailureException, IOException {
-        System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, "./src/test/resources");
-        final String httpdConfDirPath = ApplicationProperties.get("paths.httpd.conf");
-        assertTrue(new File(httpdConfDirPath).mkdirs());
-
         List<String> resourceTemplateNames = new ArrayList<>();
         resourceTemplateNames.add("httpd.conf");
 
@@ -532,21 +474,11 @@ public class WebServerServiceRestImplTest {
         when(impl.isStarted(any(WebServer.class))).thenReturn(false);
         when(impl.getResourceTemplateNames(anyString())).thenReturn(resourceTemplateNames);
 
-        try {
-            webServerServiceRest.generateAndDeployWebServer(webServer.getName(), authenticatedUser);
-        } finally {
-            FileUtils.deleteDirectory(new File(httpdConfDirPath));
-        }
-
-        System.clearProperty(ApplicationProperties.PROPERTIES_ROOT_PATH);
+        webServerServiceRest.generateAndDeployWebServer(webServer.getName(), authenticatedUser);
     }
 
-    @Test (expected = InternalErrorException.class)
+    @Test(expected = InternalErrorException.class)
     public void testGenerateAndDeployWebServerFailsChangeFileMode() throws CommandFailureException, IOException {
-        System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, "./src/test/resources");
-        final String httpdConfDirPath = ApplicationProperties.get("paths.httpd.conf");
-        assertTrue(new File(httpdConfDirPath).mkdirs());
-
         List<String> resourceTemplateNames = new ArrayList<>();
         resourceTemplateNames.add("httpd.conf");
 
@@ -561,20 +493,11 @@ public class WebServerServiceRestImplTest {
         when(impl.isStarted(any(WebServer.class))).thenReturn(false);
         when(impl.getResourceTemplateNames(anyString())).thenReturn(resourceTemplateNames);
 
-        try {
-            webServerServiceRest.generateAndDeployWebServer(webServer.getName(), authenticatedUser);
-        } finally {
-            FileUtils.deleteDirectory(new File(httpdConfDirPath));
-        }
-
-        System.clearProperty(ApplicationProperties.PROPERTIES_ROOT_PATH);
+        webServerServiceRest.generateAndDeployWebServer(webServer.getName(), authenticatedUser);
     }
 
-    @Test (expected = InternalErrorException.class)
+    @Test(expected = InternalErrorException.class)
     public void testGenerateAndDeployWebServerSecureCopyInvokeWSServiceFails() throws CommandFailureException, IOException {
-        System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, "./src/test/resources");
-        final String httpdConfDirPath = ApplicationProperties.get("paths.httpd.conf");
-        assertTrue(new File(httpdConfDirPath).mkdirs());
         List<String> webServerResourceNames = new ArrayList<>();
         webServerResourceNames.add("httpd.conf");
 
@@ -593,22 +516,14 @@ public class WebServerServiceRestImplTest {
         when(resourceService.generateResourceGroup()).thenReturn(new ResourceGroup());
 
 
-        Response response = null;
-        try {
-            response = webServerServiceRest.generateAndDeployWebServer(webServer.getName(), authenticatedUser);
-        } finally {
-            FileUtils.deleteDirectory(new File(httpdConfDirPath));
-        }
+        Response response;
+        response = webServerServiceRest.generateAndDeployWebServer(webServer.getName(), authenticatedUser);
         assertNotNull(response);
 
-        System.clearProperty(ApplicationProperties.PROPERTIES_ROOT_PATH);
     }
 
-    @Test (expected = InternalErrorException.class)
+    @Test(expected = InternalErrorException.class)
     public void testGenerateAndDeployWebServerCallInvokeWSFails() throws CommandFailureException, IOException {
-        System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, "./src/test/resources");
-        final String httpdConfDirPath = ApplicationProperties.get("paths.httpd.conf");
-        assertTrue(new File(httpdConfDirPath).mkdirs());
         List<String> webServerResourceNames = new ArrayList<>();
         webServerResourceNames.add("httpd.conf");
 
@@ -627,22 +542,12 @@ public class WebServerServiceRestImplTest {
         when(resourceService.generateResourceGroup()).thenReturn(new ResourceGroup());
 
 
-        Response response = null;
-        try {
-            response = webServerServiceRest.generateAndDeployWebServer(webServer.getName(), authenticatedUser);
-        } finally {
-            FileUtils.deleteDirectory(new File(httpdConfDirPath));
-        }
+        Response response = webServerServiceRest.generateAndDeployWebServer(webServer.getName(), authenticatedUser);
         assertNotNull(response);
-
-        System.clearProperty(ApplicationProperties.PROPERTIES_ROOT_PATH);
     }
 
     @Test
     public void testGenerateAndDeployWebServerDeleteServiceForNonexistentService() throws CommandFailureException, IOException {
-        System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, "./src/test/resources");
-        final String httpdConfDirPath = ApplicationProperties.get("paths.httpd.conf");
-        assertTrue(new File(httpdConfDirPath).mkdirs());
         List<String> webServerResourceNames = new ArrayList<>();
         webServerResourceNames.add("httpd.conf");
 
@@ -661,22 +566,13 @@ public class WebServerServiceRestImplTest {
         when(resourceService.generateResourceGroup()).thenReturn(new ResourceGroup());
 
 
-        Response response = null;
-        try {
-            response = webServerServiceRest.generateAndDeployWebServer(webServer.getName(), authenticatedUser);
-        } finally {
-            FileUtils.deleteDirectory(new File(httpdConfDirPath));
-        }
+        Response response = webServerServiceRest.generateAndDeployWebServer(webServer.getName(), authenticatedUser);
         assertNotNull(response);
 
-        System.clearProperty(ApplicationProperties.PROPERTIES_ROOT_PATH);
     }
 
-    @Test (expected = InternalErrorException.class)
+    @Test(expected = InternalErrorException.class)
     public void testGenerateAndDeployWebServerDeleteServiceFails() throws CommandFailureException, IOException {
-        System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, "./src/test/resources");
-        final String httpdConfDirPath = ApplicationProperties.get("paths.httpd.conf");
-        assertTrue(new File(httpdConfDirPath).mkdirs());
         List<String> webServerResourceNames = new ArrayList<>();
         webServerResourceNames.add("httpd.conf");
 
@@ -694,15 +590,8 @@ public class WebServerServiceRestImplTest {
         when(impl.getResourceTemplateNames(anyString())).thenReturn(webServerResourceNames);
         when(resourceService.generateResourceGroup()).thenReturn(new ResourceGroup());
 
-        Response response = null;
-        try {
-            response = webServerServiceRest.generateAndDeployWebServer(webServer.getName(), authenticatedUser);
-        } finally {
-            FileUtils.deleteDirectory(new File(httpdConfDirPath));
-        }
+        Response response = webServerServiceRest.generateAndDeployWebServer(webServer.getName(), authenticatedUser);
         assertNotNull(response);
-
-        System.clearProperty(ApplicationProperties.PROPERTIES_ROOT_PATH);
     }
 
     @Test(expected = InternalErrorException.class)

@@ -71,7 +71,7 @@ public class JvmServiceRestImplTest {
     private static final Jvm jvm = jvmList.get(0);
     private static final Jvm decryptedJvm = jvm.toDecrypted();
     private static final List<Jvm> decryptedJvmList = createDecryptedList(jvmList);
-    
+
     // JVM ports
     private static final String httpPort = "80";
     private static final String httpsPort = "81";
@@ -83,7 +83,7 @@ public class JvmServiceRestImplTest {
     private static final String userName = "JoeThePlumber";
     private static final String clearTextPassword = "The Quick Brown Fox";
     private static final String encryptedPassword = new DecryptPassword().encrypt(clearTextPassword);
-    
+
     @Mock
     private JvmServiceImpl jvmService;
     @Mock
@@ -98,15 +98,16 @@ public class JvmServiceRestImplTest {
     private Map<String, ReentrantReadWriteLock> writeLockMap;
 
     private JvmServiceRestImpl jvmServiceRest;
+    private String generatedResourceDir;
 
     private static List<Jvm> createDecryptedList(List<Jvm> inList) {
         final List<Jvm> result = new ArrayList<>();
         for (Jvm jvm : inList) {
             result.add(jvm.toDecrypted());
         }
-        return result;        
+        return result;
     }
-    
+
     private static List<Jvm> createJvmList() {
         final Set<Group> groups = new HashSet<>();
         final Jvm ws = new Jvm(Identifier.id(1L, Jvm.class),
@@ -138,10 +139,18 @@ public class JvmServiceRestImplTest {
         } catch (Exception e) {
             assertTrue("This should not fail, but ... " + e.getMessage(), false);
         }
+
+        generatedResourceDir = ApplicationProperties.get("paths.generated.resource.dir");
+        assertTrue(new File(generatedResourceDir).mkdirs());
     }
 
     @After
-    public void cleanUp() {
+    public void cleanUp() throws IOException {
+        generatedResourceDir = ApplicationProperties.get("paths.generated.resource.dir");
+        final File file = new File(generatedResourceDir);
+        System.err.println("JMJM jvm-test-exists:" + file.exists());
+        FileUtils.deleteDirectory(new File(generatedResourceDir));
+        assertFalse(file.exists());
         System.clearProperty(ApplicationProperties.PROPERTIES_ROOT_PATH);
     }
 
@@ -158,7 +167,7 @@ public class JvmServiceRestImplTest {
 
         final List<Jvm> receivedList = (List<Jvm>) content;
         final Jvm received = receivedList.get(0);
-        assertEquals(decryptedJvm, received);        
+        assertEquals(decryptedJvm, received);
     }
 
     @Test
@@ -173,7 +182,7 @@ public class JvmServiceRestImplTest {
         assertTrue(content instanceof Jvm);
 
         final Jvm received = (Jvm) content;
-        assertEquals(decryptedJvm, received);        
+        assertEquals(decryptedJvm, received);
     }
 
     @Test
@@ -324,7 +333,7 @@ public class JvmServiceRestImplTest {
         }
         assertFalse(failsScp);
         assertTrue(response != null && response.hasEntity());
-        FileUtils.deleteDirectory(new File("./" + jvm.getJvmName()));
+//        FileUtils.deleteDirectory(new File("./" + jvm.getJvmName()));
     }
 
     @Test
@@ -352,7 +361,6 @@ public class JvmServiceRestImplTest {
         when(jvmService.generateResourceFiles(anyString())).thenReturn(null);
         Jvm response = jvmServiceRest.generateConfFilesAndDeploy(jvm, authenticatedUser);
         assertEquals(response, jvm);
-        FileUtils.deleteDirectory(new File("./src/test/resources/jvm-resources_test/" + jvm.getJvmName()));
 
         CommandOutput mockExecDataFail = mock(CommandOutput.class);
         when(mockExecDataFail.getReturnCode()).thenReturn(new ExecReturnCode(1));
@@ -367,7 +375,6 @@ public class JvmServiceRestImplTest {
             exceptionThrown = true;
         }
         assertTrue(exceptionThrown);
-        FileUtils.deleteDirectory(new File("./src/test/resources/jvm-resources_test/" + jvm.getJvmName()));
 
         exceptionThrown = false;
         try {
@@ -376,7 +383,6 @@ public class JvmServiceRestImplTest {
             exceptionThrown = true;
         }
         assertTrue(exceptionThrown);
-        FileUtils.deleteDirectory(new File("./src/test/resources/jvm-resources_test/" + jvm.getJvmName()));
 
         when(jvmControlService.secureCopyFile(any(ControlJvmRequest.class), anyString(), anyString(), anyString())).thenReturn(mockExecDataFail);
         exceptionThrown = false;
@@ -386,7 +392,6 @@ public class JvmServiceRestImplTest {
             exceptionThrown = true;
         }
         assertTrue(exceptionThrown);
-        FileUtils.deleteDirectory(new File("./src/test/resources/jvm-resources_test/" + jvm.getJvmName()));
 
         ExecCommand execCommand = new ExecCommand("fail command");
         Throwable throwable = new JSchException("Failed scp");
@@ -399,7 +404,6 @@ public class JvmServiceRestImplTest {
             exceptionThrown = true;
         }
         assertTrue(exceptionThrown);
-        FileUtils.deleteDirectory(new File("./src/test/resources/jvm-resources_test/" + jvm.getJvmName()));
 
         exceptionThrown = false;
         try {
@@ -408,10 +412,8 @@ public class JvmServiceRestImplTest {
             exceptionThrown = true;
         }
         assertTrue(exceptionThrown);
-        FileUtils.deleteDirectory(new File("./" + jvm.getJvmName()));
-        FileUtils.deleteDirectory(new File("./" + jvm.getJvmName() + "null"));
-        FileUtils.deleteDirectory(new File("./src/test/resources/jvm-resources_test/" + jvm.getJvmName()));
-        assertTrue(new File("./src/test/resources/jvm-resources_test/" + jvm.getJvmName() + "_config.jar").delete());
+//        FileUtils.deleteDirectory(new File("./" + jvm.getJvmName()));
+//        FileUtils.deleteDirectory(new File("./" + jvm.getJvmName() + "null"));
     }
 
     @Test
@@ -565,10 +567,10 @@ public class JvmServiceRestImplTest {
         }
         assertTrue(exceptionThrown);
 
-        FileUtils.deleteDirectory(new File("./" + jvm.getJvmName()));
+//        FileUtils.deleteDirectory(new File("./" + jvm.getJvmName()));
     }
 
-    @Test (expected = InternalErrorException.class)
+    @Test(expected = InternalErrorException.class)
     public void testGenerateAndDeployFileJvmStarted() {
         Jvm mockJvm = mock(Jvm.class);
         when(mockJvm.getState()).thenReturn(JvmState.JVM_STARTED);

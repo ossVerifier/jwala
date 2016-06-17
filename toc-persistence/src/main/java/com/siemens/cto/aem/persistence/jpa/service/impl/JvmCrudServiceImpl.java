@@ -1,7 +1,6 @@
 package com.siemens.cto.aem.persistence.jpa.service.impl;
 
 import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
-import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.jvm.JvmState;

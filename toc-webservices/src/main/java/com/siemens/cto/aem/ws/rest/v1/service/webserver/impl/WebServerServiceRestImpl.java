@@ -54,7 +54,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 public class WebServerServiceRestImpl implements WebServerServiceRest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(WebServerServiceRestImpl.class);
-    public static final String STP_HTTPD_DATA_DIR = "paths.httpd.conf";
+    public static final String PATHS_GENERATED_RESOURCE_DIR = "paths.generated.resource.dir";
 
     private final WebServerService webServerService;
     private final WebServerControlService webServerControlService;
@@ -208,11 +208,11 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
                 configFilePath = webServerService.getResourceTemplate(aWebServerName, resourceFileName, false, resourceService.generateResourceGroup());
             } else {
                 // create the file
-                final String httpdDataDir = ApplicationProperties.get(STP_HTTPD_DATA_DIR);
+                final String tocGeneratedResourcesDir = ApplicationProperties.get(PATHS_GENERATED_RESOURCE_DIR);
                 final String generatedHttpdConf = webServerService.getResourceTemplate(aWebServerName, resourceFileName, true,
                         resourceService.generateResourceGroup());
                 int resourceNameDotIndex = resourceFileName.lastIndexOf(".");
-                final File configFile = createTempWebServerResourceFile(aWebServerName, httpdDataDir, resourceFileName.substring(0, resourceNameDotIndex), resourceFileName.substring(resourceNameDotIndex + 1, resourceFileName.length()), generatedHttpdConf);
+                final File configFile = createTempWebServerResourceFile(aWebServerName, tocGeneratedResourcesDir, resourceFileName.substring(0, resourceNameDotIndex), resourceFileName.substring(resourceNameDotIndex + 1, resourceFileName.length()), generatedHttpdConf);
 
                 // copy the file
                 configFilePath = configFile.getAbsolutePath().replace("\\", "/");
@@ -365,9 +365,10 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
 
         // create the invokeWs.bat file
         String invokeWSBatText = webServerService.generateInvokeWSBat(webServer);
-        final String httpdDataDir = ApplicationProperties.get(STP_HTTPD_DATA_DIR);
+        final String tocGeneratedResourcesDir = ApplicationProperties.get(PATHS_GENERATED_RESOURCE_DIR);
+        final String httpdDataDir = ApplicationProperties.get("remote.paths.httpd.conf");
         final String name = webServer.getName();
-        final File invokeWsBatFile = createTempWebServerResourceFile(name, httpdDataDir, "invokeWS", "bat", invokeWSBatText);
+        final File invokeWsBatFile = createTempWebServerResourceFile(name, tocGeneratedResourcesDir, "invokeWS", "bat", invokeWSBatText);
 
         // copy the invokeWs.bat file
         final String invokeWsBatFileAbsolutePath = invokeWsBatFile.getAbsolutePath();
