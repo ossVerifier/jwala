@@ -1,14 +1,13 @@
 /** @jsx React.DOM */
 var WebAppConfig = React.createClass({
     getInitialState: function() {
-        selectedWebApp = null;
         return {
             showModalFormAddDialog: false,
             showModalFormEditDialog: false,
-            showDeleteConfirmDialog: false,
             WebAppFormData: {},
             WebAppTableData: [],
             groupSelectData: [],
+            selectedWebApp: null
         }
     },
     shouldComponentUpdate: function(nextProps, nextState) {
@@ -35,13 +34,15 @@ var WebAppConfig = React.createClass({
                         <tr>
                             <td>
                                 <div>
-                                    <RDataTable colDefinitions={[{key: "secure", renderCallback: this.renderSecureColumn, sortable: false},
+                                    <RDataTable colDefinitions={[{key: "id", isVisible: false},
+                                                                 {key: "secure", renderCallback: this.renderSecureColumn, sortable: false},
                                                                  {title: "WebApp Name", key: "name", renderCallback: this.renderWebAppNameCallback},
                                                                  {title: "Context", key: "webAppContext"},
                                                                  {title: "Web Archive", key: "warName"},
-                                                                 {key: "id.id", renderCallback: this.renderUploadIcon, sortable: false},
+                                                                 {key: "actionIcons", renderCallback: this.renderActionIcons, sortable: false},
                                                                  {title: "Group", key:"group.name"}]}
-                                                data={this.state.WebAppTableData}/>
+                                                data={this.state.WebAppTableData}
+                                                selectItemCallback={this.selectItemCallback} />
                                 </div>
                             </td>
                         </tr>
@@ -54,7 +55,6 @@ var WebAppConfig = React.createClass({
                                     destroyCallback={this.closeModalFormAddDialog}
                                     className="textAlignLeft"
                                     noUpdateWhen={
-                                        this.state.showDeleteConfirmDialog ||
                                         this.state.showModalFormEditDialog
                                     }/>
                   <WebAppConfigForm title="Edit WebApp"
@@ -66,18 +66,24 @@ var WebAppConfig = React.createClass({
                                   destroyCallback={this.closeModalFormEditDialog}
                                   className="textAlignLeft"
                                   noUpdateWhen={
-                                      this.state.showModalFormAddDialog ||
-                                      this.state.showDeleteConfirmDialog
+                                      this.state.showModalFormAddDialog
                                   }/>
 
-                  <ConfirmDeleteModalDialog show={this.state.showDeleteConfirmDialog}
-                                            btnClickedCallback={this.confirmDeleteCallback} />
+                  <ModalDialogBox ref="confirmDeleteWebAppDlg"
+                                  okLabel="Yes"
+                                  okCallback={this.confirmDeleteCallback}
+                                  cancelLabel="No"/>
 
                   <ModalDialogBox title="Upload WAR"
-                                  show={false}
                                   ref="uploadWarDlg"
                                   cancelCallback={this.uploadWarDlgCancelCallback}
                                   cancelLabel="Close"/>
+
+                  <ModalDialogBox ref="confirmDeleteWarDlg"
+                                  okLabel="Yes"
+                                  okCallback={this.deleteWarCallback}
+                                  cancelLabel="No"/>
+
                </div>
     },
     renderWebAppNameCallback: function(name) {
@@ -105,30 +111,37 @@ var WebAppConfig = React.createClass({
         }
         return <span className="ui-icon ui-icon-unlocked"></span>;
     },
-    renderUploadIcon: function(id) {
+    renderActionIcons: function(id, data) {
         var self = this;
-        return <RButton title="Upload WAR" className="iconBtn ui-widget ui-state-default ui-corner-all ui-button-text-only ui-button-height"
-                        hoverClassName="ui-state-hover" spanClassName="ui-icon ui-icon-arrowthick-1-n" onClick={function(){self.onUploadWarBtnClicked(id)}} />
+        var deleteBtn = data.warName ? <RButton title="Delete WAR" className="trashIconBtn ui-widget ui-state-default ui-corner-all ui-button-text-only ui-button-height"
+                                                hoverClassName="ui-state-hover" spanClassName="ui-icon ui-icon-trash" onClick={function(){self.onDeleteWarBtnClicked(data)}} /> : null;
+        return <div>
+                   <RButton title="Upload WAR" className="upArrowIconBtn ui-widget ui-state-default ui-corner-all ui-button-text-only ui-button-height"
+                            hoverClassName="ui-state-hover" spanClassName="ui-icon ui-icon-arrowthick-1-n" onClick={function(){self.onUploadWarBtnClicked(data)}} />
+                   {deleteBtn}
+               </div>
     },
-    onUploadWarBtnClicked: function(id) {
-
+    onUploadWarBtnClicked: function(data) {
+        this.refs.uploadWarDlg.show("Upload WAR", <UploadWarWidget service={this.props.service} data={data} />)
+    },
+    onDeleteWarBtnClicked: function(data) {
         var self = this;
-        this.state.WebAppTableData.forEach(function(data){
-            if (data.id.id === id) {
-                self.refs.uploadWarDlg.show("Upload WAR", <WARUpload service={self.props.service} war={data.warPath}
-                                                                     full={data} />);
-                return;
-            }
+        this.refs.confirmDeleteWarDlg.show("Delete WAR", "Are you sure you want to delete " + data.warName + " ?",
+                                           function(){self.deleteWarCallback(data)});
+    },
+    deleteWarCallback: function(data) {
+        var self = this;
+        this.props.service.deleteWar(data.id.id).then(function(){
+            self.refs.confirmDeleteWarDlg.close();
+            self.retrieveData;
         });
-
-
     },
-    confirmDeleteCallback: function(ans) {
+    confirmDeleteCallback: function() {
         var self = this;
-        this.setState({showDeleteConfirmDialog: false});
-        if (ans === "yes") {
-            this.props.service.deleteWebApp(selectedWebApp.id.id, self.retrieveData);
-        }
+        this.props.service.deleteWebApp(this.state.selectedWebApp.id.id).then(function(){
+            self.refs.confirmDeleteWebAppDlg.close();
+            self.retrieveData();
+        });
     },
     retrieveData: function() {
         var self = this;
@@ -153,12 +166,13 @@ var WebAppConfig = React.createClass({
         this.setState({showModalFormAddDialog: true})
     },
     delBtnCallback: function() {
-        if (selectedWebApp != undefined) {
-            this.setState({showDeleteConfirmDialog: true});
+        if (this.state.selectedWebApp) {
+            this.refs.confirmDeleteWebAppDlg.show("Confirm delete Web App", "Are you sure you want to delete " +
+                                                  this.state.selectedWebApp["str-name"] + " ?");
         }
     },
     selectItemCallback: function(item) {
-        selectedWebApp = item;
+        this.state["selectedWebApp"] = item; // let's not use setState because we don't want to trigger re rendering
     },
     editCallback: function(e) {
         var thisComponent = this;
@@ -433,145 +447,84 @@ var WebAppConfigForm = React.createClass({
     }
 });
 
-var WebAppDataTable = React.createClass({
-   shouldComponentUpdate: function(nextProps, nextState) {
 
-      return !nextProps.noUpdateWhen;
-
-    },
-    render: function() {
-        var tableDef = [
-                         {sTitle:"WebApp ID", mData:"id.id", bVisible:false},
-                         {sTitle:"", mData:"secure", tocType:"custom", tocRenderCfgFn: this.renderSecureCol},
-                         {sTitle:"WebApp Name", mData:"name", tocType:"custom", tocRenderCfgFn:this.renderNameLink},
-                         {sTitle:"Context", mData:"webAppContext"},
-                         {sTitle:"Web Archive", mData:"warPath", tocType:"custom", tocRenderCfgFn: this.renderRowData },
-                         {sTitle:"Group ID", mData:"group.id.id", bVisible:false},
-                         {sTitle:"Group", mData:"group.name"}
-                        ];
-        return <TocDataTable tableId="WebAppDataTable"
-                             className="dataTable"
-                             tableDef={tableDef}
-                             colHeaders={["...", "..."]}
-                             data={this.props.data}
-                             selectItemCallback={this.props.selectItemCallback}
-                             editCallback={this.props.editCallback}
-                             rowSubComponentContainerClassName="row-sub-component-container"
-                             isColResizable={true}/>
-    },
-
-
-    renderRowData:function(dataTable, data, aoColumnDefs, itemIndex) {
-          dataTable.expandCollapseEnabled = true;
-          aoColumnDefs[itemIndex].mDataProp = null;
-          aoColumnDefs[itemIndex].sClass = "control textAlignLeft";
-          aoColumnDefs[itemIndex].bSortable = false;
-          aoColumnDefs[itemIndex].fnCreatedCell = function ( nTd, sData, oData, iRow, iCol ) {
-                  var data = sData;
-                  var full = oData;
-                  var parentItemId = (dataTable.parentItemId === undefined ? full.id.id : dataTable.parentItemId);
-                  var theRootId = (dataTable.rootId === undefined ? full.id.id : dataTable.rootId);
-
-                  if(data != null && full != null) {
-                    return React.renderComponent(
-                      <WARUpload service={this.props.service} war={sData} full={oData} row={iRow} />
-                      ,nTd
-                    );
-                  } else {
-                    return ;
-                  }
-          }.bind(this);
-
-          aoColumnDefs[itemIndex].mRender = function (data, type, full) {
-
-                  return "<div />";
-                }.bind(this);
-    },
-
-    renderSecureCol: function(dataTable, data, aoColumnDefs, itemIndex) {
-        aoColumnDefs[itemIndex].mDataProp = null;
-        aoColumnDefs[itemIndex].sClass = "control textAlignLeft";
-        aoColumnDefs[itemIndex].bSortable = false;
-        aoColumnDefs[itemIndex].mRender = function (data, type, full) {
-            if (data) {
-                return "<span class='ui-icon ui-icon-locked'></span>";
-            }
-            return "<span class='ui-icon ui-icon-unlocked'></span>";
-        }.bind(this);
-    },
-    renderNameLink:function(dataTable, data, aoColumnDefs, itemIndex) {
-        var self = this;
-            aoColumnDefs[itemIndex].fnCreatedCell = function ( nTd, sData, oData, iRow, iCol ) {
-                var MAX_VAL_LEN = 50;
-                var val = sData;
-                var title = "";
-                if (val.length > MAX_VAL_LEN) {
-                    title = sData;
-                    val = val.substring(0, MAX_VAL_LEN) + "...";
-                }
-
-                return React.renderComponent(React.createElement("button", {className:"button-link", title:title}, val), nTd, function() {
-                                $(this.getDOMNode()).click(oData, self.props.editCallback);
-                            });
-
-            };
-    }
-
-});
-
-// TODO: Remove stale code.
-var WARUpload = React.createClass({
-    stripPathRegEx: /(([A-Z]{1}:)?[/\\]?([^/\\]*))(-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})(.war)/,
+/**
+ * Upload WAR widget.
+ */
+var UploadWarWidget = React.createClass({
     getInitialState: function() {
-        var noArchive = "No Web Archive";
-        var hasWar = (this.props.full.warPath !== undefined && this.props.full.warPath !== null && this.props.full.warPath != "" );
         return {
-          editable : false,
-          uploadData: null,
-          showDeleteConfirmDialog: false,
-          hasWar: hasWar,
-          noArchive : noArchive,
-          warPath: hasWar ? this.props.full.warPath : noArchive,
-          /* warName: hasWar ? this.stripPathRegEx.exec(this.props.full.warPath)[3] : noArchive, */
+            properties: {},
+            showProperties: false,
+            deployPath: "",
+            uploadData: null
         }
     },
-    componentWillUpdate: function(nextProps, nextState) {
-      // nextState.warName = nextState.hasWar ? this.stripPathRegEx.exec(nextState.warPath)[3] : this.state.noArchive;
+    render: function() {
+        var self = this;
+
+        var rows = [];
+        for (var key in this.state.properties) {
+            if (UploadWarWidget.isPossiblePath(this.state.properties[key]) && UploadWarWidget.isEncrypted(this.state.properties[key])) {
+                rows.push(<PropertyRow key={key} onAddPropertiesClickCallback={function(){self.onAddPropertiesClick("${" + key + "}")}}
+                                       propertyName={key} propertyValue={this.state.properties[key]} />);
+            }
+        }
+
+        var propertiesTable = <div><table ref="propertiesTable">{rows}</table></div>;
+
+        return <div className="war-upload-component">
+                  <div className="archive-file">
+                      <div className="file-upload">
+                          <form ref="warUploadForm" encType='multipart/form-data' method="POST" action={'v1.0/applications/' + this.props.data.id.id + '/war'}>
+                              <div className="fileUploadContainer">
+                                  <input ref="fileInput" type="file" name="file"></input>
+                                  <input type="button" value="Upload" onClick={this.performUpload} />
+                              </div>
+                              <div className="progressBar">
+                                  <div ref="progressBar" className="inner" />
+                              </div>
+                              <span ref="uploadResult" />
+                              <div>Deploy Path</div>
+                              <div className="deployPath">
+                                  <input ref="deployPathInput" name="deployPath" value={this.state.deployPath} onChange={this.ondeployPathChanged} />
+                                  <div className="openCloseProperties">
+                                      <span ref="openClosePropertiesIcon" className={this.state.showProperties ? "ui-icon ui-icon-triangle-1-s" : "ui-icon ui-icon-triangle-1-e"}
+                                            onClick={this.openClosePropertiesIconCallback} />
+                                      <span>Properties</span>
+                                      {this.state.showProperties ? propertiesTable : null}
+                                  </div>
+                              </div>
+                          </form>
+                       </div>
+                  </div>
+              </div>;
     },
     componentDidMount: function() {
         this.initFileUpload();
     },
-    shouldComponentUpdate: function(nextProps, nextState) {
-        return nextState.showDeleteConfirmDialog || !(nextState.uploadData && nextState.uploadData);
+    openClosePropertiesIconCallback: function() {
+        if (this.state.showProperties) {
+            this.setState({showProperties: false});
+        } else {
+            ServiceFactory.getAdminService().reloadProperties(this.onPropertiesLoad);
+        }
     },
-    render: function() {
-        var progressStyle = {clear: 'left', height: '10px', width: '100%', paddingTop: '0.5em'};
-        var progressStyleInner = {clear: 'left', height: '10px', width: '0%', backgroundColor: 'green'};
-
-        return <div className="war-upload-component">
-                   <div className="archive-file">
-                       <div className="file-upload">
-                           <form ref="warUploadForm" encType='multipart/form-data' method="POST" action={'v1.0/applications/' + this.props.full.id.id + '/war'}>
-                               <div className="fileUploadContainer">
-                                   <input ref="fileInput" type="file" name="file"></input>
-                                   <input type="button" value="Upload" onClick={this.performUpload} />
-                               </div>
-                               <div style={progressStyle}>
-                                   <div ref="progressBar" style={progressStyleInner} className="progress" />
-                               </div>
-                               <span className="uploadResult" />
-                           </form>
-                        </div>
-                   </div>
-               </div>;
+    onPropertiesLoad: function(response) {
+        this.setState({properties: response.applicationResponseContent, showProperties: true});
     },
-
+    ondeployPathChanged: function(e) {
+        this.setState({deployPath: $(this.refs.deployPathInput.getDOMNode()).val()});
+    },
+    onAddPropertiesClick: function(val) {
+        this.setState({deployPath: this.state.deployPath + val});
+    },
     initFileUpload :function() {
         var self = this;
         var d = new Date();
         $(this.refs.fileInput.getDOMNode()).fileupload({
             dataType: "json",
-            url: this.props.service.baseUrl + "/" + this.props.full.id.id + "/war" + "?_"+ d.getTime(),
+            url: "v1.0/applications/" + this.props.data.id.id + "/war" + "?_"+ d.getTime(),
             forceIframeTransport: false,
             replaceFileInput: false,
             add: function(e, data) {
@@ -583,37 +536,7 @@ var WARUpload = React.createClass({
             }
         });
     },
-    progressClean: function() {
-      var thisForm = $(this.refs.warUploadForm.getDOMNode());
-      var thisResult = $('span.uploadResult', thisForm);
-      thisResult.removeClass('error');
-      thisResult.addClass('ok');
-      thisResult.text('');
-    },
-    progressError: function(errorMsg, progress) {
-      var thisForm = $(this.refs.warUploadForm.getDOMNode());
-      var thisProgress = $('div.progress', thisForm);
-      thisProgress.css({
-          'width' : (progress !== undefined ? progress : 100) + '%',
-          'background-color' : 'red'
-      });
-      var thisResult = $('span.uploadResult', thisForm);
-      thisResult.addClass('error');
-      thisResult.removeClass('ok');
-      thisResult.text(errorMsg);
-    },
-    progressOk: function(okMsg) {
-      var thisForm = $(this.refs.warUploadForm.getDOMNode());
-      var thisProgress = $('div.progress', thisForm);
-      thisProgress.css({
-          'background-color' : 'green'
-      });
-      var thisResult = $('span.uploadResult', thisForm);
-      thisResult.addClass('ok');
-      thisResult.removeClass('error');
-      thisResult.text(okMsg);
-    },
-    performUpload: function(event) {
+    performUpload: function(e) {
         var self = this;
         if (this.state.uploadData !== null) {
             // Note: Don't confuse with "form" submit. Please see initFileUpload.
@@ -634,43 +557,37 @@ var WARUpload = React.createClass({
             $(this.refs.fileInput.getDOMNode()).effect("highlight")
         }
 
-        event.preventDefault();
+        e.preventDefault();
         return false;
     },
-    editRequest : function(event) {
-        var td = $(this.getDOMNode()).parent().parent().find("td");
-        if (td.hasClass("vertical-align-top")) {
-            td.removeClass("vertical-align-top");
-        } else {
-            td.addClass("vertical-align-top");
+    progressError: function(errorMsg, progress) {
+
+      $(this.refs.progressBar.getDOMNode()).css({
+          'width' : (progress !== undefined ? progress : 100) + '%',
+          'background-color' : 'red'
+      });
+
+      var uploadResult = $(this.refs.uploadResult.getDOMNode());
+      uploadResult.addClass("error");
+      uploadResult.removeClass("ok");
+      uploadResult.text(errorMsg);
+    },
+    statics: {
+        isPossiblePath: function(path) {
+            return path.indexOf(":") > -1 || path.indexOf("\\") > -1 || path.indexOf("/") > -1;
+        },
+        isEncrypted: function(val) {
+            return val.charAt(val.length - 1) !== '=';
         }
+    }
+});
 
-      this.setState({ editable: !this.state.editable, uploadData: undefined });
-
-    },
-    postUploadWarForm : function(event, data) {
-      var thisForm = $(this.refs.warUploadForm.getDOMNode());
-      this.props.service.postUploadWarForm(this.props.full.id.id, thisForm);
-      event.preventDefault();
-      return false;
-    },
-    handleDelete: function() {
-        this.setState({showDeleteConfirmDialog: true});
-    },
-    confirmDeleteCallback: function() {
+var PropertyRow = React.createClass({
+    render: function() {
         var self = this;
-        try {
-          self.setState({showDeleteConfirmDialog: false});
-          self.props.service.deleteWar(self.props.full.id.id).then( function() {
-              self.setState({
-                hasWar: false,
-                warPath: self.state.noArchive
-            });
-          });
-        } finally {
-        }
-    },
-    cancelDeleteCallback: function() {
-        this.setState({showDeleteConfirmDialog:false});
+        return <tr>
+                   <td><span className="ui-icon ui-icon-plus" onClick={function(){self.props.onAddPropertiesClickCallback("${" + self.props.propertyName + "}")}} /></td>
+                   <td><span className="key">{self.props.propertyName}</span>: {self.props.propertyValue}</td>
+               </tr>;
     }
 });
