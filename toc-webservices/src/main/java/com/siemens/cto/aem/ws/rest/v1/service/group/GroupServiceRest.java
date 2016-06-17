@@ -180,7 +180,8 @@ public interface GroupServiceRest {
     @Path("/{groupName}/apps/conf/{fileName}")
     Response generateAndDeployGroupAppFile(@PathParam("groupName") final String groupName,
                                            @PathParam("fileName") final String fileName,
-                                           @BeanParam final AuthenticatedUser aUser);
+                                           @BeanParam final AuthenticatedUser aUser,
+                                           @QueryParam("hostName") final String hostName);
 
     /************************
      * ** Control Commands ***
