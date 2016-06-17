@@ -122,7 +122,11 @@ var WebAppConfig = React.createClass({
                </div>
     },
     onUploadWarBtnClicked: function(data) {
-        this.refs.uploadWarDlg.show("Upload WAR", <UploadWarWidget service={this.props.service} data={data} />)
+        this.refs.uploadWarDlg.show("Upload WAR", <UploadWarWidget service={this.props.service} data={data}
+                                    uploadCallback={this.uploadCallback} />)
+    },
+    uploadCallback: function() {
+        this.retrieveData();
     },
     onDeleteWarBtnClicked: function(data) {
         var self = this;
@@ -133,7 +137,7 @@ var WebAppConfig = React.createClass({
         var self = this;
         this.props.service.deleteWar(data.id.id).then(function(){
             self.refs.confirmDeleteWarDlg.close();
-            self.retrieveData;
+            self.retrieveData();
         });
     },
     confirmDeleteCallback: function() {
@@ -543,6 +547,8 @@ var UploadWarWidget = React.createClass({
             this.state.uploadData.submit().success(function(result, textStatus, jqXHR) {
                 if (!result || result.msgCode !== "0" || !result.applicationResponseContent) {
                      self.progressError((result.msgCode||"AEM")+ ": " + (result.applicationResponseContent||textStatus));
+                } else {
+                    self.props.uploadCallback();
                 }
             }).error (function(result, textStatus, jqXHR) {
                 if (result.responseJSON !== undefined) {

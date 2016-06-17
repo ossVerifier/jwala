@@ -19,7 +19,7 @@ public interface ApplicationPersistenceService {
 
     Application updateWARPath(UploadWebArchiveRequest uploadWebArchiveRequest, String warPath);
 
-    Application removeWarPath(RemoveWebArchiveRequest removeWebArchiveRequest);
+    Application removeWarPathAndName(RemoveWebArchiveRequest removeWebArchiveRequest);
 
     void removeApplication(final Identifier<Application> anAppToRemove);
 

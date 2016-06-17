@@ -77,9 +77,10 @@ public class JpaApplicationPersistenceServiceImpl implements ApplicationPersiste
     }
 
     @Override
-    public Application removeWarPath(RemoveWebArchiveRequest removeWebArchiveRequest) {
+    public Application removeWarPathAndName(RemoveWebArchiveRequest removeWebArchiveRequest) {
         final JpaApplication jpaOriginal = applicationCrudService.getExisting(removeWebArchiveRequest.getApplication().getId());
         jpaOriginal.setWarPath(null);
+        jpaOriginal.setWarName(null);
         return JpaAppBuilder.appFrom(jpaOriginal);
     }
 

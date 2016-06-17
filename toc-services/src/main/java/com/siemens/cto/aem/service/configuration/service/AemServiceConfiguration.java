@@ -229,7 +229,7 @@ public class AemServiceConfiguration implements SchedulingConfigurer {
                 null,
                 null,
                 getHistoryService(historyCrudService),
-                messagingService);
+                messagingService, getResourceDao());
     }
 
     @Bean

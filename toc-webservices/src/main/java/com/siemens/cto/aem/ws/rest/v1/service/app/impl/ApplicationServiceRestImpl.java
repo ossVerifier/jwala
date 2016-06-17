@@ -186,9 +186,7 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
     @Override
     public Response deleteWebArchive(final Identifier<Application> appToRemoveWAR, final AuthenticatedUser aUser) {
         LOGGER.info("Delete Archive requested: {}", appToRemoveWAR);
-
         Application updated = service.deleteWebArchive(appToRemoveWAR, aUser.getUser());
-
         return ResponseBuilder.ok(updated);
     }
 

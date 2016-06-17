@@ -27,6 +27,7 @@ import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
 import com.siemens.cto.aem.persistence.jpa.type.EventType;
 import com.siemens.cto.aem.persistence.service.ApplicationPersistenceService;
 import com.siemens.cto.aem.persistence.service.JvmPersistenceService;
+import com.siemens.cto.aem.persistence.service.ResourceDao;
 import com.siemens.cto.aem.service.HistoryService;
 import com.siemens.cto.aem.service.MessagingService;
 import com.siemens.cto.aem.service.app.ApplicationService;
@@ -78,6 +79,8 @@ public class ApplicationServiceImpl implements ApplicationService {
     @Autowired
     private JvmPersistenceService jvmPersistenceService;
 
+    private ResourceDao resourceDao;
+
     private RemoteCommandExecutor<ApplicationControlOperation> applicationCommandExecutor;
 
     private Map<String, ReentrantReadWriteLock> writeLock = new HashMap<>();
@@ -93,7 +96,8 @@ public class ApplicationServiceImpl implements ApplicationService {
                                   final WebArchiveManager webArchiveManager,
                                   final PrivateApplicationService privateApplicationService,
                                   final HistoryService historyService,
-                                  final MessagingService messagingService) {
+                                  final MessagingService messagingService,
+                                  final ResourceDao resourceDao) {
         this.applicationPersistenceService = applicationPersistenceService;
         this.jvmPersistenceService = jvmPersistenceService;
         this.applicationCommandExecutor = applicationCommandService;
@@ -102,6 +106,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         this.privateApplicationService = privateApplicationService;
         this.historyService = historyService;
         this.messagingService = messagingService;
+        this.resourceDao = resourceDao;
         executorService = Executors.newFixedThreadPool(Integer.parseInt(ApplicationProperties.get("resources.thread-task-executor.pool.size", "25")));
     }
 
@@ -186,12 +191,20 @@ public class ApplicationServiceImpl implements ApplicationService {
         try {
             result = webArchiveManager.remove(rwac);
             LOGGER.info("Archive Delete: " + result.toString());
+
+            final Set<Jvm> jvmSet = app.getGroup().getJvms();
+            for (final Jvm jvm : jvmSet) {
+                resourceDao.deleteJvmResource(app.getWarName(), jvm.getJvmName());
+                resourceDao.deleteAppResource(app.getWarName(), app.getName(), jvm.getJvmName());
+            }
+            resourceDao.deleteGroupLevelJvmResource(app.getWarName(), app.getGroup().getName());
+            resourceDao.deleteGroupLevelAppResource(app.getWarName(), app.getGroup().getName());
         } catch (IOException e) {
             throw new BadRequestException(AemFaultType.INVALID_APPLICATION_WAR, "Error deleting archive.", e);
         }
 
         if (result.getType() == Type.DELETED) {
-            return applicationPersistenceService.removeWarPath(rwac);
+            return applicationPersistenceService.removeWarPathAndName(rwac);
         } else {
             throw new BadRequestException(AemFaultType.INVALID_APPLICATION_WAR, "Archive not found to delete.");
         }

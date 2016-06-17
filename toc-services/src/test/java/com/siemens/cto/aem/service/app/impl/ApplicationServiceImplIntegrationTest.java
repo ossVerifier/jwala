@@ -18,6 +18,7 @@ import com.siemens.cto.aem.persistence.jpa.service.WebServerCrudService;
 import com.siemens.cto.aem.persistence.jpa.service.impl.*;
 import com.siemens.cto.aem.persistence.service.ApplicationPersistenceService;
 import com.siemens.cto.aem.persistence.service.JvmPersistenceService;
+import com.siemens.cto.aem.persistence.service.ResourceDao;
 import com.siemens.cto.aem.persistence.service.impl.JpaApplicationPersistenceServiceImpl;
 import com.siemens.cto.aem.persistence.service.impl.JpaJvmPersistenceServiceImpl;
 import com.siemens.cto.aem.service.HistoryService;
@@ -79,6 +80,9 @@ public class ApplicationServiceImplIntegrationTest {
 
     @Mock
     private MessagingService messagingService;
+
+    @Mock
+    private ResourceDao mockResourceDao;
 
     @Configuration
     static class CommonConfiguration {
@@ -196,7 +200,7 @@ public class ApplicationServiceImplIntegrationTest {
                 null,
                 null,
                 historyService,
-                messagingService);
+                messagingService, mockResourceDao);
     }
 
     @After
