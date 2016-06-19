@@ -216,20 +216,11 @@ public class AemServiceConfiguration implements SchedulingConfigurer {
     }
 
     @Bean
-    public ApplicationService getApplicationService(
-            final JvmPersistenceService jvmPersistenceService,
-            final GroupService groupService,
-            final HistoryCrudService historyCrudService,
-            final MessagingService messagingService) {
-        return new ApplicationServiceImpl(
-                persistenceServiceConfiguration.getApplicationPersistenceService(),
-                jvmPersistenceService,
-                aemCommandExecutorConfig.getRemoteCommandExecutor(),
-                groupService,
-                null,
-                null,
-                getHistoryService(historyCrudService),
-                messagingService, getResourceDao());
+    public ApplicationService getApplicationService(final JvmPersistenceService jvmPersistenceService, final GroupService groupService,
+            final HistoryCrudService historyCrudService, final MessagingService messagingService, final ResourceService resourceService) {
+        return new ApplicationServiceImpl(persistenceServiceConfiguration.getApplicationPersistenceService(),
+                jvmPersistenceService, aemCommandExecutorConfig.getRemoteCommandExecutor(), groupService, null, null,
+                getHistoryService(historyCrudService), messagingService, resourceService);
     }
 
     @Bean
@@ -315,10 +306,9 @@ public class AemServiceConfiguration implements SchedulingConfigurer {
     public ResourceService getResourceService(final ApplicationPersistenceService applicationPersistenceService,
                                               final JvmPersistenceService jvmPersistenceService,
                                               final WebServerPersistenceService webServerPersistenceService,
-                                              final ApplicationService applicationService,
                                               final ResourceDao resourceDao) {
-        return new ResourceServiceImpl(fileManager, persistenceServiceConfiguration.getResourcePersistenceService(),
-                persistenceServiceConfiguration.getGroupPersistenceService(), applicationPersistenceService, applicationService,
+        return new ResourceServiceImpl(persistenceServiceConfiguration.getResourcePersistenceService(),
+                persistenceServiceConfiguration.getGroupPersistenceService(), applicationPersistenceService,
                 jvmPersistenceService, webServerPersistenceService, getPrivateApplicationService(), resourceDao);
     }
 

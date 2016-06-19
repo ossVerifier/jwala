@@ -27,6 +27,7 @@ import com.siemens.cto.aem.service.app.ApplicationCommandService;
 import com.siemens.cto.aem.service.app.ApplicationService;
 import com.siemens.cto.aem.service.configuration.TestJpaConfiguration;
 import com.siemens.cto.aem.service.group.GroupService;
+import com.siemens.cto.aem.service.resource.ResourceService;
 import com.siemens.cto.aem.service.ssl.hc.HttpClientRequestFactory;
 import com.siemens.cto.aem.service.webserver.component.ClientFactoryHelper;
 import com.siemens.cto.toc.files.FileManager;
@@ -83,6 +84,9 @@ public class ApplicationServiceImplIntegrationTest {
 
     @Mock
     private ResourceDao mockResourceDao;
+
+    @Mock
+    private ResourceService mockResourceService;
 
     @Configuration
     static class CommonConfiguration {
@@ -200,7 +204,7 @@ public class ApplicationServiceImplIntegrationTest {
                 null,
                 null,
                 historyService,
-                messagingService, mockResourceDao);
+                messagingService, mockResourceService);
     }
 
     @After

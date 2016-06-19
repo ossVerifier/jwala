@@ -16,12 +16,10 @@ import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateReque
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
 import com.siemens.cto.aem.persistence.jpa.domain.resource.config.template.ConfigTemplate;
 import com.siemens.cto.aem.persistence.service.*;
-import com.siemens.cto.aem.service.app.ApplicationService;
 import com.siemens.cto.aem.service.app.PrivateApplicationService;
 import com.siemens.cto.aem.service.exception.ResourceServiceException;
 import com.siemens.cto.aem.service.resource.ResourceService;
 import com.siemens.cto.aem.template.ResourceFileGenerator;
-import com.siemens.cto.toc.files.FileManager;
 import com.siemens.cto.toc.files.RepositoryFileInformation;
 import org.apache.commons.io.IOUtils;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -61,16 +59,13 @@ public class ResourceServiceImpl implements ResourceService {
     @Value("${paths.resource-templates}")
     private String templatePath;
 
-    public ResourceServiceImpl(
-            final FileManager theFileManager,
-            final ResourcePersistenceService resourcePersistenceService,
-            final GroupPersistenceService groupPersistenceService,
-            final ApplicationPersistenceService applicationPersistenceService,
-            final ApplicationService applicationService,
-            final JvmPersistenceService jvmPersistenceService,
-            final WebServerPersistenceService webServerPersistenceService,
-            final PrivateApplicationService privateApplicationService,
-            final ResourceDao resourceDao) {
+    public ResourceServiceImpl(final ResourcePersistenceService resourcePersistenceService,
+                               final GroupPersistenceService groupPersistenceService,
+                               final ApplicationPersistenceService applicationPersistenceService,
+                               final JvmPersistenceService jvmPersistenceService,
+                               final WebServerPersistenceService webServerPersistenceService,
+                               final PrivateApplicationService privateApplicationService,
+                               final ResourceDao resourceDao) {
         this.resourcePersistenceService = resourcePersistenceService;
         this.groupPersistenceService = groupPersistenceService;
         this.privateApplicationService = privateApplicationService;
@@ -357,10 +352,11 @@ public class ResourceServiceImpl implements ResourceService {
         templateData = uploadIfBinaryData(metaData, templateData);
 
         final String groupName = metaData.getEntity().getGroup();
-        Group group = groupPersistenceService.getGroup(groupName);
+        final Group group = groupPersistenceService.getGroup(groupName);
         final List<Application> applications = applicationPersistenceService.findApplicationsBelongingTo(groupName);
-        ConfigTemplate createdConfigTemplate = null;
-        String templateString = IOUtils.toString(templateData);
+        final ConfigTemplate createdConfigTemplate;
+        final String templateString = IOUtils.toString(templateData);
+
         for (final Application application : applications) {
             if (metaData.getEntity().getDeployToJvms() && application.getName().equals(targetAppName)) {
                 final byte[] bytes = templateString.getBytes();

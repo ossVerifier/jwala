@@ -109,7 +109,47 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
     private MessageContext context;
 
     @Override
-    public Response uploadWebArchive(final Identifier<Application> anAppToGet, final AuthenticatedUser aUser) {
+    public Response uploadWebArchive(final Identifier<Application> appId, final AuthenticatedUser aUser) {
+        final ServletFileUpload servletFileUpload = new ServletFileUpload();
+
+        InputStream in;
+        String deployPath = null;
+        String warName = null;
+        byte [] war = null;
+
+        try {
+            final FileItemIterator it = servletFileUpload.getItemIterator(context.getHttpServletRequest());
+            while (it.hasNext()) {
+                final FileItemStream fileItemStream = it.next();
+                if ("file".equalsIgnoreCase(fileItemStream.getFieldName())) {
+                    warName = fileItemStream.getName();
+                    in = fileItemStream.openStream();
+                    war = IOUtils.toByteArray(in);
+                    in.close();
+                } else if ("deployPath".equalsIgnoreCase(fileItemStream.getFieldName())) {
+                    in = fileItemStream.openStream();
+                    deployPath = IOUtils.toString(in);
+                    in.close();
+                } else {
+                    return ResponseBuilder.notOk(Status.INTERNAL_SERVER_ERROR, new FaultCodeException(AemFaultType.INVALID_REST_SERVICE_PARAMETER,
+                            "Invalid parameter " + fileItemStream.getFieldName()));
+                }
+            }
+
+            final Application application = service.uploadWebArchive(appId, warName, war, deployPath);
+
+            // Why created ? Because to upload a new WAR means creating one ? Isn't uploading a new war means
+            // "updating an application"
+            // Anyways, I just followed the original implementation.
+            // TODO: Decide if uploading a new war is a CREATE rather than an UPDATE.
+            return ResponseBuilder.created(application);
+        } catch (final FileUploadException | IOException e) {
+            return ResponseBuilder.notOk(Status.INTERNAL_SERVER_ERROR, new FaultCodeException(AemFaultType.IO_EXCEPTION,
+                    e.getMessage()));
+        }
+    }
+
+    public Response uploadWebArchive_oldie(final Identifier<Application> anAppToGet, final AuthenticatedUser aUser) {
         LOGGER.info("Upload Archive requested: {} streaming (no size, count yet)", anAppToGet);
 
         // iframe uploads from IE do not understand application/json
@@ -159,18 +199,12 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
                 resourceTemplateMetaData.setContentType(ContentType.APPLICATION_BINARY.contentTypeStr);
                 final Entity entity = new Entity();
                 entity.setGroup(application.getGroup().getName());
+                entity.setDeployToJvms(false);
                 resourceTemplateMetaData.setEntity(entity);
-                final Set<Jvm> jvmSet = application.getGroup().getJvms();
-                for (final Jvm jvm: jvmSet) {
-                    resourceService.createJvmResource(resourceTemplateMetaData, new ByteArrayInputStream(application.getWarPath().getBytes()),
-                            jvm.getJvmName());
-                    resourceService.createAppResource(resourceTemplateMetaData, new ByteArrayInputStream(application.getWarPath().getBytes()),
-                            jvm.getJvmName(), application.getName());
-                }
-                resourceService.createGroupLevelJvmResource(resourceTemplateMetaData, new ByteArrayInputStream(application.getWarPath().getBytes()),
-                        application.getGroup().getName());
+
                 resourceService.createGroupedLevelAppResource(resourceTemplateMetaData, new ByteArrayInputStream(application.getWarPath().getBytes()),
                         application.getName());
+
                 return ResponseBuilder.created(application); // early out on first attachment
             }
 

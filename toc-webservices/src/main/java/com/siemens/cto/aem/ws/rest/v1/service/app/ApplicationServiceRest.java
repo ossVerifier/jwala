@@ -46,7 +46,7 @@ public interface ApplicationServiceRest extends InitializingBean {
     @POST
     @Path("/{applicationId}/war")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
-    Response uploadWebArchive(@PathParam("applicationId") final Identifier<Application> anAppToGet,
+    Response uploadWebArchive(@PathParam("applicationId") final Identifier<Application> appId,
                               @BeanParam final AuthenticatedUser aUser);
 
     @DELETE
