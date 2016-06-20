@@ -37,7 +37,6 @@ import com.siemens.cto.toc.files.RepositoryFileInformation;
 import com.siemens.cto.toc.files.WebArchiveManager;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -55,6 +54,7 @@ import java.util.*;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
@@ -304,23 +304,29 @@ public class ApplicationServiceImplTest {
         applicationService.deleteWebArchive(mockApplication.getId(), testUser);
     }
 
-    @Test(expected = BadRequestException.class)
-    @Ignore
-    // TODO: Test should throw test error conditions.
-    public void testDeleteWebArchiveDeleteFailed() throws IOException {
-        when(webArchiveManager.remove(any(RemoveWebArchiveRequest.class))).thenReturn(RepositoryFileInformation.none());
+    @Test
+    public void testDeleteWebArchiveDeleteFailedDueToIOException() throws IOException {
+        try {
+            when(webArchiveManager.remove(any(RemoveWebArchiveRequest.class))).thenThrow(IOException.class);
+            applicationService.deleteWebArchive(mockApplication.getId(), testUser);
+            fail("Expecting " + BadRequestException.class.getSimpleName());
+        } catch (final BadRequestException e) {
+            assertEquals(IOException.class.getName(), e.getCause().getClass().getName());
+        }
+    }
 
-        final Group mockGroup = mock(Group.class);
-        final Jvm mockJvm = mock(Jvm.class);
-        final Set jvmSet = new HashSet();
-        jvmSet.add(mockJvm);
-        when(mockGroup.getJvms()).thenReturn(jvmSet);
-        when(mockApplication.getGroup()).thenReturn(mockGroup);
-        when(applicationPersistenceService.getApplication(any(Identifier.class))).thenReturn(mockApplication);
-        applicationService.deleteWebArchive(mockApplication.getId(), testUser);
-
-        verify(webArchiveManager, Mockito.times(1)).remove(any(RemoveWebArchiveRequest.class));
-        verify(applicationPersistenceService, Mockito.times(1)).removeWarPathAndName((any(RemoveWebArchiveRequest.class)));
+    @Test
+    public void testDeleteWebArchiveDeleteFailedDueToArchiveNotFound() throws IOException {
+        try {
+            when(applicationPersistenceService.getApplication(any(Identifier.class))).thenReturn(mockApplication);
+            final RepositoryFileInformation mockRepositoryFileInformation = mock(RepositoryFileInformation.class);
+            when(mockRepositoryFileInformation.getType()).thenReturn(RepositoryFileInformation.Type.NONE);
+            when(webArchiveManager.remove(any(RemoveWebArchiveRequest.class))).thenReturn(mockRepositoryFileInformation);
+            applicationService.deleteWebArchive(mockApplication.getId(), testUser);
+            fail("Expecting " + BadRequestException.class.getSimpleName());
+        } catch (final BadRequestException e) {
+            assertEquals("Archive not found to delete.", e.getMessage());
+        }
     }
 
     @Test
