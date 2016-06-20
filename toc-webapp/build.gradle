@@ -142,7 +142,7 @@ war{
 
     manifest {
         attributes(
-                "Specification-Version": (null ==System.getProperty("ACCUREV_LAST_TRANSACTION") ? "" : System.getProperty("ACCUREV_LAST_TRANSACTION")),
+                "Specification-Version": (null ==System.getProperty("ACCUREV_LATEST_TRANSACTION_ID") ? "" : System.getProperty("ACCUREV_LATEST_TRANSACTION_ID")),
                 "Implementation-Title": project.name,
                 "Implementation-Version": (null ==System.getProperty("IMPLEMENTATION_BUILD_NUMBER") ? project.versions : System.getProperty("IMPLEMENTATION_BUILD_NUMBER")),
                 "Built-By": System.getProperty("user.name"),
