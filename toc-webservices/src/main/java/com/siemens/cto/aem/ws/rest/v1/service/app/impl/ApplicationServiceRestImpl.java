@@ -5,15 +5,11 @@ import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
-import com.siemens.cto.aem.common.domain.model.resource.ContentType;
-import com.siemens.cto.aem.common.domain.model.resource.Entity;
-import com.siemens.cto.aem.common.domain.model.resource.ResourceTemplateMetaData;
 import com.siemens.cto.aem.common.exception.FaultCodeException;
 import com.siemens.cto.aem.common.exception.InternalErrorException;
 import com.siemens.cto.aem.common.exec.CommandOutput;
 import com.siemens.cto.aem.common.exec.CommandOutputReturnCode;
 import com.siemens.cto.aem.common.request.app.UploadAppTemplateRequest;
-import com.siemens.cto.aem.common.request.app.UploadWebArchiveRequest;
 import com.siemens.cto.aem.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
 import com.siemens.cto.aem.persistence.jpa.service.exception.ResourceTemplateUpdateException;
 import com.siemens.cto.aem.service.app.ApplicationService;
@@ -34,7 +30,6 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
@@ -146,74 +141,6 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
         } catch (final FileUploadException | IOException e) {
             return ResponseBuilder.notOk(Status.INTERNAL_SERVER_ERROR, new FaultCodeException(AemFaultType.IO_EXCEPTION,
                     e.getMessage()));
-        }
-    }
-
-    public Response uploadWebArchive_oldie(final Identifier<Application> anAppToGet, final AuthenticatedUser aUser) {
-        LOGGER.info("Upload Archive requested: {} streaming (no size, count yet)", anAppToGet);
-
-        // iframe uploads from IE do not understand application/json
-        // as a response and will prompt for download. Fix: return
-        // text/html
-        if (!context.getHttpHeaders().getAcceptableMediaTypes().contains(MediaType.APPLICATION_JSON_TYPE)) {
-            context.getHttpServletResponse().setContentType(MediaType.TEXT_HTML);
-        }
-
-        Application app = service.getApplication(anAppToGet);
-
-        ServletFileUpload sfu = new ServletFileUpload();
-        InputStream data = null;
-        try {
-            FileItemIterator iter = sfu.getItemIterator(context.getHttpServletRequest());
-            FileItemStream file1;
-
-            final ResourceTemplateMetaData resourceTemplateMetaData = new ResourceTemplateMetaData();
-            Application application = null;
-
-            while (iter.hasNext()) {
-                file1 = iter.next();
-
-                if (file1.getFieldName().equalsIgnoreCase("file")) {
-                    data = file1.openStream();
-                    try {
-                        UploadWebArchiveRequest command = new UploadWebArchiveRequest(app, file1.getName(), -1L, data);
-                        LOGGER.info("Upload file {} to application {}", file1.getName(), app.getName());
-                        application = service.uploadWebArchive(command, aUser.getUser());
-                        LOGGER.info("Upload succeeded");
-                    } catch (InternalErrorException ie) {
-                        LOGGER.error("Caught an internal error exception that would normally get out and converting to a response {}", ie);
-                        return ResponseBuilder.notOk(Status.INTERNAL_SERVER_ERROR, ie);
-                    } finally {
-                        data.close();
-                    }
-                } else if (file1.getFieldName().equalsIgnoreCase("deployPath")) {
-                    final InputStream in = file1.openStream();
-                    resourceTemplateMetaData.setDeployPath(IOUtils.toString(in));
-                    in.close();
-                }
-            }
-
-            if (application != null) {
-                resourceTemplateMetaData.setDeployFileName(application.getWarName());
-                resourceTemplateMetaData.setTemplateName(application.getWarName());
-                resourceTemplateMetaData.setContentType(ContentType.APPLICATION_BINARY.contentTypeStr);
-                final Entity entity = new Entity();
-                entity.setGroup(application.getGroup().getName());
-                entity.setDeployToJvms(false);
-                resourceTemplateMetaData.setEntity(entity);
-
-                resourceService.createGroupedLevelAppResource(resourceTemplateMetaData, new ByteArrayInputStream(application.getWarPath().getBytes()),
-                        application.getName());
-
-                return ResponseBuilder.created(application); // early out on first attachment
-            }
-
-            LOGGER.info("Returning No Data response for application war upload {}", app.getName());
-            return ResponseBuilder.notOk(Status.NO_CONTENT, new FaultCodeException(
-                    AemFaultType.INVALID_APPLICATION_WAR, "No data"));
-        } catch (IOException | FileUploadException e) {
-            LOGGER.error("Bad Stream: Error receiving data", e);
-            throw new InternalErrorException(AemFaultType.BAD_STREAM, "Error receiving data", e);
         }
     }
 
