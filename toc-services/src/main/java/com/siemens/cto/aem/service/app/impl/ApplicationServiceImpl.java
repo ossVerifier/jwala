@@ -8,10 +8,7 @@ import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.jvm.JvmControlOperation;
 import com.siemens.cto.aem.common.domain.model.jvm.message.JvmHistoryEvent;
-import com.siemens.cto.aem.common.domain.model.resource.ContentType;
-import com.siemens.cto.aem.common.domain.model.resource.Entity;
-import com.siemens.cto.aem.common.domain.model.resource.ResourceGroup;
-import com.siemens.cto.aem.common.domain.model.resource.ResourceTemplateMetaData;
+import com.siemens.cto.aem.common.domain.model.resource.*;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.common.exception.InternalErrorException;
@@ -597,6 +594,11 @@ public class ApplicationServiceImpl implements ApplicationService {
         final Entity entity = new Entity();
         entity.setGroup(application.getGroup().getName());
         entity.setDeployToJvms(false);
+        resourceTemplateMetaData.setUnpack(application.isUnpackWar());
+
+        // Note: This is for backward compatibility.
+        entity.setTarget(application.getName());
+        entity.setType(EntityType.GROUPED_APPS.toString());
 
         resourceTemplateMetaData.setEntity(entity);
 
