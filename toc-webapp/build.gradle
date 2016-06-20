@@ -144,8 +144,7 @@ war{
         attributes(
                 "Specification-Version": System.getProperty("ACCUREV_LAST_TRANSACTION"),
                 "Implementation-Title": project.name,
-                "Implementation-Version-1": System.getProperty("IMPLEMENTATION_BUILD_NUMBER"),
-                "Implementation-Version-2": (null ==System.getProperty("IMPLEMENTATION_BUILD_NUMBER") ? project.versions : System.getProperty("IMPLEMENTATION_BUILD_NUMBER")),
+                "Implementation-Version": (null ==System.getProperty("IMPLEMENTATION_BUILD_NUMBER") ? project.versions : System.getProperty("IMPLEMENTATION_BUILD_NUMBER")),
                 "Built-By": System.getProperty("user.name"),
                 "Built-JDK": System.getProperty("java.version"),
                 "Built-Host": InetAddress.getLocalHost(),
