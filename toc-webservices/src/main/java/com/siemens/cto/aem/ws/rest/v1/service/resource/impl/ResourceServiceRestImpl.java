@@ -283,7 +283,7 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
                                            .isNotEmpty(resourceHierarchyParam.getWebApp()).isValid()) {
 
             // Group Level Web App
-            deletedRecCount = resourceService.deleteGroupLevelAppResource(templateName, resourceHierarchyParam.getGroup());
+            deletedRecCount = resourceService.deleteGroupLevelAppResource(resourceHierarchyParam.getWebApp(), templateName);
 
         }else if (ParamValidator.getNewInstance().isEmpty(resourceHierarchyParam.getGroup())
                                                  .isEmpty(resourceHierarchyParam.getWebServer())

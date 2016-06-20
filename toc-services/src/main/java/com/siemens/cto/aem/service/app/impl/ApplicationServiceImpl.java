@@ -187,7 +187,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         try {
             result = webArchiveManager.remove(rwac);
             LOGGER.info("Archive Delete: " + result.toString());
-            resourceService.deleteGroupLevelAppResource(app.getWarName(), app.getGroup().getName());
+            resourceService.deleteGroupLevelAppResource(app.getName(), app.getWarName());
         } catch (IOException e) {
             throw new BadRequestException(AemFaultType.INVALID_APPLICATION_WAR, "Error deleting archive.", e);
         }

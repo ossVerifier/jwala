@@ -22,6 +22,7 @@ import com.siemens.cto.aem.service.resource.ResourceService;
 import com.siemens.cto.aem.template.ResourceFileGenerator;
 import com.siemens.cto.toc.files.RepositoryFileInformation;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -496,9 +497,10 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Override
     @Transactional
-    // TODO: Include the web app name in the parameters also!
-    public int deleteGroupLevelAppResource(final String templateName, final String groupName) {
-        return resourceDao.deleteGroupLevelAppResource(templateName, groupName);
+    public int deleteGroupLevelAppResource(final String appName, final String templateName) {
+        final Application application = applicationPersistenceService.getApplication(appName);
+        applicationPersistenceService.updateWarName(application.getId(), StringUtils.EMPTY, StringUtils.EMPTY);
+        return resourceDao.deleteGroupLevelAppResource(application.getName(), application.getGroup().getName(), templateName);
     }
 
 
