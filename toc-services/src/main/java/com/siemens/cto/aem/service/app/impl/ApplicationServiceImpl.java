@@ -60,8 +60,8 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 public class ApplicationServiceImpl implements ApplicationService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ApplicationServiceImpl.class);
-
     private static final String GENERATED_RESOURCE_DIR = "paths.generated.resource.dir";
+    private static final String STP_WEBAPPS_DIR = "stp.webapps.dir";
     private final ExecutorService executorService;
 
     @Autowired
@@ -589,7 +589,8 @@ public class ApplicationServiceImpl implements ApplicationService {
         final ResourceTemplateMetaData resourceTemplateMetaData = new ResourceTemplateMetaData();
 
         resourceTemplateMetaData.setContentType(ContentType.APPLICATION_BINARY.contentTypeStr);
-        resourceTemplateMetaData.setDeployPath(deployPath);
+        resourceTemplateMetaData.setDeployPath(StringUtils.isEmpty(deployPath) ?
+                                               ApplicationProperties.get(STP_WEBAPPS_DIR) : deployPath);
         resourceTemplateMetaData.setDeployFileName(warName);
         resourceTemplateMetaData.setTemplateName(warName);
 
