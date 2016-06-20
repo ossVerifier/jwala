@@ -109,7 +109,7 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
     private MessageContext context;
 
     @Override
-    public Response uploadWebArchive(final Identifier<Application> appId, final AuthenticatedUser aUser) {
+    public Response uploadWebArchive(final Identifier<Application> appId) {
         final ServletFileUpload servletFileUpload = new ServletFileUpload();
 
         InputStream in;

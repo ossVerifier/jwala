@@ -171,7 +171,7 @@ public class ApplicationServiceRestImplTest {
         when(mockHsr.getContentType()).thenReturn(FileUploadBase.MULTIPART_FORM_DATA + ";boundary=" + boundary);
 
 
-        Response resp = cut.uploadWebArchive(application.getId(), authenticatedUser);
+        Response resp = cut.uploadWebArchive(application.getId());
 
         Application result = getApplicationFromResponse(resp);
 
@@ -218,7 +218,7 @@ public class ApplicationServiceRestImplTest {
         when(mockHsr.getContentType()).thenReturn(FileUploadBase.MULTIPART_FORM_DATA + ";boundary=" + boundary);
 
 
-        Response resp = cut.uploadWebArchive(application.getId(), authenticatedUser);
+        Response resp = cut.uploadWebArchive(application.getId());
 
         Application result = getApplicationFromResponse(resp);
 
@@ -263,7 +263,7 @@ public class ApplicationServiceRestImplTest {
         when(mockHsr.getInputStream()).thenReturn(new MyIS(new ByteArrayInputStream(bbBuffer.array())));
         when(mockHsr.getContentType()).thenReturn(FileUploadBase.MULTIPART_FORM_DATA + ";boundary=" + boundary);
 
-        Response resp = cut.uploadWebArchive(application.getId(), authenticatedUser);
+        Response resp = cut.uploadWebArchive(application.getId());
         assertEquals(Status.INTERNAL_SERVER_ERROR.getStatusCode(), resp.getStatus());
     }
 
@@ -302,7 +302,7 @@ public class ApplicationServiceRestImplTest {
         when(mockHsr.getInputStream()).thenReturn(new MyIS(new ByteArrayInputStream(bbBuffer.array())));
         when(mockHsr.getContentType()).thenReturn(FileUploadBase.MULTIPART_FORM_DATA + ";boundary=" + boundary);
 
-        cut.uploadWebArchive(application.getId(), authenticatedUser);
+        cut.uploadWebArchive(application.getId());
     }
 
     @Test
@@ -327,7 +327,7 @@ public class ApplicationServiceRestImplTest {
         when(mockApp.getName()).thenReturn("NoContentTestApp");
 
 
-        Response resp = cut.uploadWebArchive(application.getId(), authenticatedUser);
+        Response resp = cut.uploadWebArchive(application.getId());
 
         assertEquals(Status.NO_CONTENT.getStatusCode(), resp.getStatus());
     }
