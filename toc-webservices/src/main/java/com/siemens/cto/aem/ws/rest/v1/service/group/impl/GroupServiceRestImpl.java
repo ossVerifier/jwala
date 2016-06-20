@@ -739,9 +739,9 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     }
 
     @Override
-    public Response generateAndDeployGroupAppFile(final String groupName, final String fileName, final AuthenticatedUser aUser) {
+    public Response generateAndDeployGroupAppFile(final String groupName, final String fileName, final AuthenticatedUser aUser, final String hostName) {
 
-        LOGGER.info("Generate and deploy group app file {} for group {} by user {}", fileName, groupName, aUser.getUser().getId());
+        LOGGER.info("Generate and deploy group app file {} for group {} by user {} to host {}", fileName, groupName, aUser.getUser().getId(), hostName);
 
         Group group = groupService.getGroup(groupName);
         final String groupAppMetaData = groupService.getGroupAppResourceTemplateMetaData(groupName, fileName);
@@ -753,10 +753,13 @@ public class GroupServiceRestImpl implements GroupServiceRest {
             final ApplicationServiceRest appServiceRest = ApplicationServiceRestImpl.get();
             if (metaData.getEntity().getDeployToJvms()) {
                 // deploy to all jvms in group
-                performGroupAppDeployToJvms(groupName, fileName, aUser, group, appName, appServiceRest);
+                performGroupAppDeployToJvms(groupName, fileName, aUser, group, appName, appServiceRest, hostName);
+            } else if(hostName!=null && !hostName.isEmpty()) {
+                // deploy to particular host
+                performGroupAppDeployToHost(groupName, fileName, appName, hostName);
             } else {
                 // deploy to all hosts in group
-                performGroupAppDeployToHosts(groupName, fileName, aUser, appName, appServiceRest);
+                performGroupAppDeployToHosts(groupName, fileName, appName);
             }
         } catch (IOException e) {
             LOGGER.error("Failed to map meta data for resource template {} in group {} :: meta data: {} ", fileName, groupName, groupAppMetaData, e);
@@ -765,7 +768,21 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         return ResponseBuilder.ok(group);
     }
 
-    protected void performGroupAppDeployToHosts(final String groupName, final String fileName, final AuthenticatedUser aUser, final String appName, final ApplicationServiceRest appServiceRest) {
+    /**
+     * This method deploys group app config template to only one host
+     * @param groupName name of the group we can find the webapp under
+     * @param fileName name of the file that needs to be deployed to the host
+     * @param appName name of the application which needs to be deployed
+     * @param hostName name of the host to which we want the file to be deployed to
+     */
+    protected void performGroupAppDeployToHost(final String groupName, final String fileName, final String appName, final String hostName) {
+        Map<String, Future<Response>> futureMap = new HashMap<>();
+        futureMap.put(hostName, createFutureResponseForAppDeploy(groupName, fileName, appName, null, hostName));
+        waitForDeployToComplete(new HashSet<>(futureMap.values()));
+        checkResponsesForErrorStatus(futureMap);
+    }
+
+    protected void performGroupAppDeployToHosts(final String groupName, final String fileName, final String appName) {
         Map<String, Future<Response>> futureMap = new HashMap<>();
         Set<Jvm> jvms = groupService.getGroup(groupName).getJvms();
         if (null != jvms && jvms.size() > 0) {
@@ -775,26 +792,12 @@ public class GroupServiceRestImpl implements GroupServiceRest {
                     throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "All JVMs in the group must be stopped before continuing. Operation stopped for JVM " + jvm.getJvmName());
                 }
             }
-
             List<String> deployedHosts = new LinkedList<>();
             for (final Jvm jvm : jvms) {
                 final String hostName = jvm.getHostName();
                 if (!deployedHosts.contains(hostName)) {
                     deployedHosts.add(hostName);
-                    final ResourceGroup resourceGroup = resourceService.generateResourceGroup();
-                    final Application application = applicationService.getApplication(appName);
-                    Future<Response> responseFuture = executorService.submit(new Callable<Response>() {
-                        @Override
-                        public Response call() throws Exception {
-                            final CommandOutput someContent = groupService.deployGroupAppTemplate(groupName, fileName, resourceGroup, application, jvm);
-                            if (someContent.getReturnCode().wasSuccessful()) {
-                                return ResponseBuilder.ok(someContent);
-                            } else {
-                                return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(AemFaultType.REMOTE_COMMAND_FAILURE, someContent.toString()));
-                            }
-                        }
-                    });
-                    futureMap.put(hostName, responseFuture);
+                    futureMap.put(hostName, createFutureResponseForAppDeploy(groupName, fileName, appName, jvm, null));
                 }
             }
             waitForDeployToComplete(new HashSet<>(futureMap.values()));
@@ -802,9 +805,23 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         }
     }
 
-    protected void performGroupAppDeployToJvms(final String groupName, final String fileName, final AuthenticatedUser aUser, Group group, final String appName, final ApplicationServiceRest appServiceRest) {
+    protected void performGroupAppDeployToJvms(final String groupName, final String fileName, final AuthenticatedUser aUser, final Group group,
+                                               final String appName, final ApplicationServiceRest appServiceRest, final String hostName) {
         Map<String, Future<Response>> futureMap = new HashMap<>();
-        final Set<Jvm> jvms = group.getJvms();
+        final Set<Jvm> groupJvms = group.getJvms();
+        Set<Jvm> jvms = null;
+        if (hostName!=null && !hostName.isEmpty()) {
+            LOGGER.debug("got hostname {} deploying template to host jvms only", hostName);
+            jvms = new HashSet<>();
+            for(Jvm jvm : groupJvms) {
+                if(jvm.getHostName().equalsIgnoreCase(hostName)) {
+                    jvms.add(jvm);
+                }
+            }
+        } else {
+            LOGGER.debug("got no hostname deploying to all group jvms");
+            jvms = groupJvms;
+        }
         if (null != jvms && jvms.size() > 0) {
             for (Jvm jvm : jvms) {
                 if (jvm.getState().isStartedState()) {
@@ -827,6 +844,39 @@ public class GroupServiceRestImpl implements GroupServiceRest {
             waitForDeployToComplete(new HashSet<>(futureMap.values()));
             checkResponsesForErrorStatus(futureMap);
         }
+    }
+
+    /**
+     * Creates future object for application template deploy.
+     * @param groupName name of the group under which the app exists
+     * @param fileName name of the file that needs to be deployed
+     * @param appName name of the app which contains the template
+     * @param jvm name of the jvm to which the app needs to deploy the template to
+     * @param hostName name of the host where the resources need to be deployed to
+     * @return returns a Future<Response> object if successful.
+     */
+    protected Future<Response> createFutureResponseForAppDeploy(final String groupName, final String fileName, final String appName, final Jvm jvm, final String hostName) {
+        final ResourceGroup resourceGroup = resourceService.generateResourceGroup();
+        final Application application = applicationService.getApplication(appName);
+        Future<Response> responseFuture = executorService.submit(new Callable<Response>() {
+            @Override
+            public Response call() throws Exception {
+                CommandOutput commandOutput = null;
+                if(jvm!=null) {
+                    LOGGER.debug("got jvm object with id {}, creating command output with jvm", jvm.getId().getId());
+                    commandOutput = groupService.deployGroupAppTemplate(groupName, fileName, resourceGroup, application, jvm);
+                } else {
+                    LOGGER.debug("got jvm as null creating app templates for hostname {}", hostName);
+                    commandOutput = groupService.deployGroupAppTemplate(groupName, fileName, resourceGroup, application, hostName);
+                }
+                if (commandOutput.getReturnCode().wasSuccessful()) {
+                    return ResponseBuilder.ok(commandOutput);
+                } else {
+                    return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(AemFaultType.REMOTE_COMMAND_FAILURE, commandOutput.toString()));
+                }
+            }
+        });
+        return responseFuture;
     }
 
     @Override

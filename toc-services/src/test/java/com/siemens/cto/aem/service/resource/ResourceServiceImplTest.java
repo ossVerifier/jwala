@@ -23,7 +23,6 @@ import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
 import com.siemens.cto.aem.persistence.service.*;
 import com.siemens.cto.aem.service.app.ApplicationService;
 import com.siemens.cto.aem.service.app.PrivateApplicationService;
-import com.siemens.cto.aem.service.exception.ResourceServiceException;
 import com.siemens.cto.aem.service.resource.impl.ResourceServiceImpl;
 import com.siemens.cto.toc.files.FileManager;
 import com.siemens.cto.toc.files.RepositoryFileInformation;
@@ -95,9 +94,9 @@ public class ResourceServiceImplTest {
         // It is good practice to start with a clean sheet of paper before each test that is why resourceService is
         // initialized here. This makes sure that unrelated tests don't affect each other.
         MockitoAnnotations.initMocks(this);
-        resourceService = new ResourceServiceImpl(mockFileManager, mockResourcePersistenceService,
-                mockGroupPesistenceService, mockAppPersistenceService, mockAppService, mockJvmPersistenceService,
-                mockWebServerPersistenceService, mockPrivateApplicationService, mockResourceDao);
+        resourceService = new ResourceServiceImpl(mockResourcePersistenceService, mockGroupPesistenceService,
+                mockAppPersistenceService, mockJvmPersistenceService, mockWebServerPersistenceService,
+                mockPrivateApplicationService, mockResourceDao);
 
 
         // emulates uploadIfBinaryData

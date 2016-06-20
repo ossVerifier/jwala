@@ -68,7 +68,7 @@ public interface ResourceServiceRest {
      */
     @DELETE
     @Path("/{name}")
-    Response removeResourceInstance(@PathParam("name") final String name, @MatrixParam("groupName") final String groupName);
+    Response removeResourceInstance(@PathParam("name") final String name, @MatrixParam("groupName") final String groupName, @BeanParam final AuthenticatedUser aUser);
 
     /**
      * Removes a list of resources.
@@ -83,7 +83,8 @@ public interface ResourceServiceRest {
     @DELETE
     @Consumes(MediaType.APPLICATION_JSON)
     Response removeResources(@MatrixParam("groupName") final String groupName,
-                             @MatrixParam("resourceName") final List<String> resourceNames);
+                             @MatrixParam("resourceName") final List<String> resourceNames,
+                             @BeanParam final AuthenticatedUser aUser);
 
     /**
      * Creates a template file and it's corresponding JSON meta data file.
@@ -157,6 +158,6 @@ public interface ResourceServiceRest {
 
     @DELETE
     @Path("/template/{name}")
-    Response deleteResource(@PathParam("name") String templateName, @MatrixParam("") ResourceHierarchyParam resourceHierarchyParam);
+    Response deleteResource(@PathParam("name") String templateName, @MatrixParam("") ResourceHierarchyParam resourceHierarchyParam, @BeanParam AuthenticatedUser user);
 }
 

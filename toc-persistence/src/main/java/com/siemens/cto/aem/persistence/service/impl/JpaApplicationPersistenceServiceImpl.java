@@ -16,6 +16,9 @@ import com.siemens.cto.aem.persistence.service.ApplicationPersistenceService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
 import java.util.List;
 
 public class JpaApplicationPersistenceServiceImpl implements ApplicationPersistenceService {
@@ -24,6 +27,10 @@ public class JpaApplicationPersistenceServiceImpl implements ApplicationPersiste
 
     private final ApplicationCrudService applicationCrudService;
     private final GroupCrudService groupCrudService;
+
+    @PersistenceContext(unitName = "aem-unit")
+    // Note: We will deprecate the CRUD service soon and make this class a DAO so going forward, we use the entity manager in this class for new methods.
+    private EntityManager em;
 
     public JpaApplicationPersistenceServiceImpl(final ApplicationCrudService theAppCrudService,
                                                 final GroupCrudService theGroupCrudService) {
@@ -77,9 +84,10 @@ public class JpaApplicationPersistenceServiceImpl implements ApplicationPersiste
     }
 
     @Override
-    public Application removeWarPath(RemoveWebArchiveRequest removeWebArchiveRequest) {
+    public Application removeWarPathAndName(RemoveWebArchiveRequest removeWebArchiveRequest) {
         final JpaApplication jpaOriginal = applicationCrudService.getExisting(removeWebArchiveRequest.getApplication().getId());
         jpaOriginal.setWarPath(null);
+        jpaOriginal.setWarName(null);
         return JpaAppBuilder.appFrom(jpaOriginal);
     }
 
@@ -181,5 +189,14 @@ public class JpaApplicationPersistenceServiceImpl implements ApplicationPersiste
     @Override
     public boolean checkAppResourceFileName(final String groupName, final String appName, final String fileName) {
         return applicationCrudService.checkAppResourceFileName(groupName, appName, fileName);
+    }
+
+    @Override
+    public int updateWarName(final Identifier<Application> appId, final String warName, final String warPath) {
+        final Query q = em.createNamedQuery(JpaApplication.QUERY_UPDATE_APP_WAR_NAME_AND_PATH);
+        q.setParameter(JpaApplication.QUERY_PARAM_APP_ID, appId.getId());
+        q.setParameter(JpaApplication.QUERY_PARAM_WAR_NAME, warName);
+        q.setParameter(JpaApplication.QUERY_PARAM_WAR_PATH, warPath);
+        return q.executeUpdate();
     }
 }

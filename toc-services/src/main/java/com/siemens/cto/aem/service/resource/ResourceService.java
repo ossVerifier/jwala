@@ -1,7 +1,6 @@
 package com.siemens.cto.aem.service.resource;
 
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
-import com.siemens.cto.aem.common.domain.model.resource.EntityType;
 import com.siemens.cto.aem.common.domain.model.resource.ResourceGroup;
 import com.siemens.cto.aem.common.domain.model.resource.ResourceInstance;
 import com.siemens.cto.aem.common.domain.model.resource.ResourceTemplateMetaData;
@@ -205,9 +204,9 @@ public interface ResourceService {
 
     /**
      * Delete a group level application resource.
+     * @param appName
      * @param templateName the template name
-     * @param groupName the application name
      * @return the number of resources deleted
      */
-    int deleteGroupLevelAppResource(String templateName, String groupName);
+    int deleteGroupLevelAppResource(String appName, String templateName);
 }

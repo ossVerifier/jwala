@@ -60,10 +60,11 @@ public class ResourceDaoImpl implements ResourceDao {
     }
 
     @Override
-    public int deleteGroupLevelAppResource(final String templateName, final String groupName) {
-        final Query q = em.createNamedQuery(JpaGroupAppConfigTemplate.QUERY_DELETE_GROUP_LEVEL_APP_RESOURCE_BY_TEMPLATE_GROUP_NAME);
-        q.setParameter(JpaGroupAppConfigTemplate.QUERY_PARAM_TEMPLATE_NAME, templateName);
+    public int deleteGroupLevelAppResource(String appName, final String groupName, final String templateName) {
+        final Query q = em.createNamedQuery(JpaGroupAppConfigTemplate.QUERY_DELETE_GROUP_LEVEL_APP_RESOURCE_BY_APP_GROUP_TEMPLATE_NAME);
+        q.setParameter(JpaGroupAppConfigTemplate.QUERY_PARAM_APP_NAME, appName);
         q.setParameter(JpaGroupAppConfigTemplate.QUERY_PARAM_GRP_NAME, groupName);
+        q.setParameter(JpaGroupAppConfigTemplate.QUERY_PARAM_TEMPLATE_NAME, templateName);
         return q.executeUpdate();
     }
 }

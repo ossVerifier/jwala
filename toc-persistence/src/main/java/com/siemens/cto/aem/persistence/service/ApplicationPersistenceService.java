@@ -19,7 +19,7 @@ public interface ApplicationPersistenceService {
 
     Application updateWARPath(UploadWebArchiveRequest uploadWebArchiveRequest, String warPath);
 
-    Application removeWarPath(RemoveWebArchiveRequest removeWebArchiveRequest);
+    Application removeWarPathAndName(RemoveWebArchiveRequest removeWebArchiveRequest);
 
     void removeApplication(final Identifier<Application> anAppToRemove);
 
@@ -61,4 +61,12 @@ public interface ApplicationPersistenceService {
      */
     boolean checkAppResourceFileName(String groupName, String appName, String fileName);
 
+    /**
+     * Update the application's war name and war path.
+     * @param appId the application's id
+     * @param warName the war name
+     * @param warPath the war path
+     * @return number of rows updated
+     */
+    int updateWarName(Identifier<Application> appId, String warName, String warPath);
 }

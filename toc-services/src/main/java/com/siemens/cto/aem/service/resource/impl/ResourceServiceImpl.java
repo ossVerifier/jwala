@@ -16,14 +16,13 @@ import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateReque
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
 import com.siemens.cto.aem.persistence.jpa.domain.resource.config.template.ConfigTemplate;
 import com.siemens.cto.aem.persistence.service.*;
-import com.siemens.cto.aem.service.app.ApplicationService;
 import com.siemens.cto.aem.service.app.PrivateApplicationService;
 import com.siemens.cto.aem.service.exception.ResourceServiceException;
 import com.siemens.cto.aem.service.resource.ResourceService;
 import com.siemens.cto.aem.template.ResourceFileGenerator;
-import com.siemens.cto.toc.files.FileManager;
 import com.siemens.cto.toc.files.RepositoryFileInformation;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,16 +60,13 @@ public class ResourceServiceImpl implements ResourceService {
     @Value("${paths.resource-templates}")
     private String templatePath;
 
-    public ResourceServiceImpl(
-            final FileManager theFileManager,
-            final ResourcePersistenceService resourcePersistenceService,
-            final GroupPersistenceService groupPersistenceService,
-            final ApplicationPersistenceService applicationPersistenceService,
-            final ApplicationService applicationService,
-            final JvmPersistenceService jvmPersistenceService,
-            final WebServerPersistenceService webServerPersistenceService,
-            final PrivateApplicationService privateApplicationService,
-            final ResourceDao resourceDao) {
+    public ResourceServiceImpl(final ResourcePersistenceService resourcePersistenceService,
+                               final GroupPersistenceService groupPersistenceService,
+                               final ApplicationPersistenceService applicationPersistenceService,
+                               final JvmPersistenceService jvmPersistenceService,
+                               final WebServerPersistenceService webServerPersistenceService,
+                               final PrivateApplicationService privateApplicationService,
+                               final ResourceDao resourceDao) {
         this.resourcePersistenceService = resourcePersistenceService;
         this.groupPersistenceService = groupPersistenceService;
         this.privateApplicationService = privateApplicationService;
@@ -357,10 +353,11 @@ public class ResourceServiceImpl implements ResourceService {
         templateData = uploadIfBinaryData(metaData, templateData);
 
         final String groupName = metaData.getEntity().getGroup();
-        Group group = groupPersistenceService.getGroup(groupName);
+        final Group group = groupPersistenceService.getGroup(groupName);
         final List<Application> applications = applicationPersistenceService.findApplicationsBelongingTo(groupName);
-        ConfigTemplate createdConfigTemplate = null;
-        String templateString = IOUtils.toString(templateData);
+        final ConfigTemplate createdConfigTemplate;
+        final String templateString = IOUtils.toString(templateData);
+
         for (final Application application : applications) {
             if (metaData.getEntity().getDeployToJvms() && application.getName().equals(targetAppName)) {
                 final byte[] bytes = templateString.getBytes();
@@ -500,9 +497,10 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Override
     @Transactional
-    // TODO: Include the web app name in the parameters also!
-    public int deleteGroupLevelAppResource(final String templateName, final String groupName) {
-        return resourceDao.deleteGroupLevelAppResource(templateName, groupName);
+    public int deleteGroupLevelAppResource(final String appName, final String templateName) {
+        final Application application = applicationPersistenceService.getApplication(appName);
+        applicationPersistenceService.updateWarName(application.getId(), StringUtils.EMPTY, StringUtils.EMPTY);
+        return resourceDao.deleteGroupLevelAppResource(application.getName(), application.getGroup().getName(), templateName);
     }
 
 
@@ -514,6 +512,7 @@ public class ResourceServiceImpl implements ResourceService {
      * @param templateData the template content/data
      * @param jvmName identifies the JVM to which the template is attached to
      */
+    @Deprecated
     private CreateResourceTemplateApplicationResponseWrapper createJvmTemplate(final ResourceTemplateMetaData metaData,
                                                                                final InputStream templateData,
                                                                                final String jvmName) {
@@ -550,6 +549,7 @@ public class ResourceServiceImpl implements ResourceService {
      * @param templateData the template content/data
      */
     // TODO: When the resource file is locked, don't overwrite!
+    @Deprecated
     private CreateResourceTemplateApplicationResponseWrapper createGroupedJvmsTemplate(final ResourceTemplateMetaData metaData,
                                                                                        final InputStream templateData) throws IOException {
         final Set<Jvm> jvms = groupPersistenceService.getGroup(metaData.getEntity().getGroup()).getJvms();
@@ -581,6 +581,7 @@ public class ResourceServiceImpl implements ResourceService {
      * @param webServerName identifies the web server to which the template belongs to
      * @param user
      */
+    @Deprecated
     private CreateResourceTemplateApplicationResponseWrapper createWebServerTemplate(final ResourceTemplateMetaData metaData,
                                                                                      final InputStream templateData,
                                                                                      final String webServerName,
@@ -603,6 +604,7 @@ public class ResourceServiceImpl implements ResourceService {
      * @param templateData the template content/data
      * @param user
      */
+    @Deprecated
     private CreateResourceTemplateApplicationResponseWrapper createGroupedWebServersTemplate(final ResourceTemplateMetaData metaData,
                                                                                              final InputStream templateData,
                                                                                              final User user) throws IOException {
@@ -646,6 +648,7 @@ public class ResourceServiceImpl implements ResourceService {
      * @param templateData  the template content/data
      * @param targetJvmName the name of the JVM to associate with the application template
      */
+    @Deprecated
     private CreateResourceTemplateApplicationResponseWrapper createApplicationTemplate(final ResourceTemplateMetaData metaData, final InputStream templateData, String targetJvmName) {
         final Application application = applicationPersistenceService.getApplication(metaData.getEntity().getTarget());
         UploadAppTemplateRequest uploadAppTemplateRequest = new UploadAppTemplateRequest(application, metaData.getTemplateName(),
@@ -661,6 +664,7 @@ public class ResourceServiceImpl implements ResourceService {
      * @param templateData  the template content/data
      * @param targetAppName the application name
      */
+    @Deprecated
     private CreateResourceTemplateApplicationResponseWrapper createGroupedApplicationsTemplate(final ResourceTemplateMetaData metaData,
                                                                                                final InputStream templateData,
                                                                                                final String targetAppName) throws IOException {

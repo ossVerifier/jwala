@@ -9,6 +9,7 @@ import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.jvm.JvmControlOperation;
 import com.siemens.cto.aem.common.domain.model.jvm.message.JvmHistoryEvent;
 import com.siemens.cto.aem.common.domain.model.resource.ContentType;
+import com.siemens.cto.aem.common.domain.model.resource.Entity;
 import com.siemens.cto.aem.common.domain.model.resource.ResourceGroup;
 import com.siemens.cto.aem.common.domain.model.resource.ResourceTemplateMetaData;
 import com.siemens.cto.aem.common.domain.model.user.User;
@@ -32,9 +33,9 @@ import com.siemens.cto.aem.service.MessagingService;
 import com.siemens.cto.aem.service.app.ApplicationService;
 import com.siemens.cto.aem.service.app.PrivateApplicationService;
 import com.siemens.cto.aem.service.group.GroupService;
+import com.siemens.cto.aem.service.resource.ResourceService;
 import com.siemens.cto.aem.template.ResourceFileGenerator;
 import com.siemens.cto.toc.files.RepositoryFileInformation;
-import com.siemens.cto.toc.files.RepositoryFileInformation.Type;
 import com.siemens.cto.toc.files.WebArchiveManager;
 import org.apache.commons.lang3.StringUtils;
 import org.codehaus.jackson.JsonParseException;
@@ -47,10 +48,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.FileCopyUtils;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
@@ -78,6 +76,8 @@ public class ApplicationServiceImpl implements ApplicationService {
     @Autowired
     private JvmPersistenceService jvmPersistenceService;
 
+    private final ResourceService resourceService;
+
     private RemoteCommandExecutor<ApplicationControlOperation> applicationCommandExecutor;
 
     private Map<String, ReentrantReadWriteLock> writeLock = new HashMap<>();
@@ -93,7 +93,8 @@ public class ApplicationServiceImpl implements ApplicationService {
                                   final WebArchiveManager webArchiveManager,
                                   final PrivateApplicationService privateApplicationService,
                                   final HistoryService historyService,
-                                  final MessagingService messagingService) {
+                                  final MessagingService messagingService,
+                                  final ResourceService resourceService) {
         this.applicationPersistenceService = applicationPersistenceService;
         this.jvmPersistenceService = jvmPersistenceService;
         this.applicationCommandExecutor = applicationCommandService;
@@ -102,6 +103,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         this.privateApplicationService = privateApplicationService;
         this.historyService = historyService;
         this.messagingService = messagingService;
+        this.resourceService = resourceService;
         executorService = Executors.newFixedThreadPool(Integer.parseInt(ApplicationProperties.get("resources.thread-task-executor.pool.size", "25")));
     }
 
@@ -177,8 +179,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     @Transactional
     @Override
     public Application deleteWebArchive(Identifier<Application> appId, User user) {
-
-        Application app = this.getApplication(appId);
+        Application app = applicationPersistenceService.getApplication(appId);
         RemoveWebArchiveRequest rwac = new RemoveWebArchiveRequest(app);
 
         RepositoryFileInformation result = RepositoryFileInformation.none();
@@ -186,12 +187,13 @@ public class ApplicationServiceImpl implements ApplicationService {
         try {
             result = webArchiveManager.remove(rwac);
             LOGGER.info("Archive Delete: " + result.toString());
+            resourceService.deleteGroupLevelAppResource(app.getName(), app.getWarName());
         } catch (IOException e) {
             throw new BadRequestException(AemFaultType.INVALID_APPLICATION_WAR, "Error deleting archive.", e);
         }
 
-        if (result.getType() == Type.DELETED) {
-            return applicationPersistenceService.removeWarPath(rwac);
+        if (result.getType() == RepositoryFileInformation.Type.DELETED) {
+            return applicationPersistenceService.removeWarPathAndName(rwac);
         } else {
             throw new BadRequestException(AemFaultType.INVALID_APPLICATION_WAR, "Archive not found to delete.");
         }
@@ -577,5 +579,34 @@ public class ApplicationServiceImpl implements ApplicationService {
             }
         }
         return appConfFile;
+    }
+
+    @Override
+    @Transactional
+    public Application uploadWebArchive(final Identifier<Application> appId, final String warName, final byte[] war,
+                                        final String deployPath) throws IOException {
+        final Application application = applicationPersistenceService.getApplication(appId);
+        final ResourceTemplateMetaData resourceTemplateMetaData = new ResourceTemplateMetaData();
+
+        resourceTemplateMetaData.setContentType(ContentType.APPLICATION_BINARY.contentTypeStr);
+        resourceTemplateMetaData.setDeployPath(deployPath);
+        resourceTemplateMetaData.setDeployFileName(warName);
+        resourceTemplateMetaData.setTemplateName(warName);
+
+        final Entity entity = new Entity();
+        entity.setGroup(application.getGroup().getName());
+        entity.setDeployToJvms(false);
+
+        resourceTemplateMetaData.setEntity(entity);
+
+        // Creating a group level app resource is not straightforward, there are business logic involved
+        // that only the resources service knows of so we just reuse it.
+        resourceService.createGroupedLevelAppResource(resourceTemplateMetaData, new ByteArrayInputStream(war), application.getName());
+
+        applicationPersistenceService.updateWarName(appId, warName,
+                resourceService.getAppTemplate(application.getGroup().getName(), application.getName(), warName));
+        application.setWarName(warName);
+
+        return application;
     }
 }

@@ -15,7 +15,6 @@ import com.siemens.cto.aem.service.resource.ResourceService;
 import com.siemens.cto.aem.service.resource.impl.CreateResourceTemplateApplicationResponseWrapper;
 import com.siemens.cto.aem.ws.rest.v1.provider.AuthenticatedUser;
 import com.siemens.cto.aem.ws.rest.v1.response.ApplicationResponse;
-import com.siemens.cto.aem.ws.rest.v1.response.ResponseBuilder;
 import com.siemens.cto.aem.ws.rest.v1.service.resource.CreateResourceParam;
 import com.siemens.cto.aem.ws.rest.v1.service.resource.ResourceHierarchyParam;
 import org.apache.cxf.jaxrs.ext.multipart.Attachment;
@@ -27,7 +26,6 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import javax.activation.DataHandler;
 import javax.ws.rs.core.Response;
-import javax.xml.ws.ResponseWrapper;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -101,13 +99,13 @@ public class ResourceServiceRestImplTest {
 
     @Test
     public void testRemoveResourceInstance() {
-        Response response = cut.removeResourceInstance("resourceName", group.getName());
+        Response response = cut.removeResourceInstance("resourceName", group.getName(), authenticatedUser);
         assertNull(response.getEntity());
     }
 
     @Test
     public void testRemoveResources() {
-        Response response = cut.removeResources(group.getName(), new ArrayList<String>());
+        Response response = cut.removeResources(group.getName(), new ArrayList<String>(), authenticatedUser);
         assertNull(response.getEntity());
     }
 
@@ -215,7 +213,7 @@ public class ResourceServiceRestImplTest {
         final CreateResourceParam createResourceParam = new CreateResourceParam();
         createResourceParam.setGroup("someGroup");
         createResourceParam.setWebApp("someWebApp");
-        cut.createResource(attachmentList, createResourceParam, new AuthenticatedUser());
+        cut.createResource(attachmentList, createResourceParam, authenticatedUser);
         verify(impl).createGroupedLevelAppResource(any(ResourceTemplateMetaData.class), any(InputStream.class), anyString());
     }
 
@@ -245,7 +243,7 @@ public class ResourceServiceRestImplTest {
         final CreateResourceParam createResourceParam = new CreateResourceParam();
         createResourceParam.setJvm("someJvm");
         createResourceParam.setWebApp("someWebApp");
-        cut.createResource(attachmentList, createResourceParam, new AuthenticatedUser());
+        cut.createResource(attachmentList, createResourceParam, authenticatedUser);
         verify(impl).createAppResource(any(ResourceTemplateMetaData.class), any(InputStream.class), eq("someJvm"),
                 eq("someWebApp"));
     }
@@ -276,7 +274,7 @@ public class ResourceServiceRestImplTest {
         final CreateResourceParam createResourceParam = new CreateResourceParam();
         createResourceParam.setGroup("someGroup");
         createResourceParam.setWebServer("*");
-        cut.createResource(attachmentList, createResourceParam, mock(AuthenticatedUser.class));
+        cut.createResource(attachmentList, createResourceParam, authenticatedUser);
         verify(impl).createGroupLevelWebServerResource(any(ResourceTemplateMetaData.class), any(InputStream.class),
                 eq("someGroup"), any(User.class));
     }
@@ -306,7 +304,7 @@ public class ResourceServiceRestImplTest {
 
         final CreateResourceParam createResourceParam = new CreateResourceParam();
         createResourceParam.setWebServer("someWebServer");
-        cut.createResource(attachmentList, createResourceParam, mock(AuthenticatedUser.class));
+        cut.createResource(attachmentList, createResourceParam, authenticatedUser);
         verify(impl).createWebServerResource(any(ResourceTemplateMetaData.class), any(InputStream.class),
                 eq("someWebServer"), any(User.class));
     }
@@ -337,7 +335,7 @@ public class ResourceServiceRestImplTest {
         final CreateResourceParam createResourceParam = new CreateResourceParam();
         createResourceParam.setGroup("someGroup");
         createResourceParam.setJvm("*");
-        cut.createResource(attachmentList, createResourceParam, mock(AuthenticatedUser.class));
+        cut.createResource(attachmentList, createResourceParam, authenticatedUser);
         verify(impl).createGroupLevelJvmResource(any(ResourceTemplateMetaData.class), any(InputStream.class),
                 eq("someGroup"));
     }
@@ -367,7 +365,7 @@ public class ResourceServiceRestImplTest {
 
         final CreateResourceParam createResourceParam = new CreateResourceParam();
         createResourceParam.setJvm("someJvm");
-        cut.createResource(attachmentList, createResourceParam, mock(AuthenticatedUser.class));
+        cut.createResource(attachmentList, createResourceParam, authenticatedUser);
         verify(impl).createJvmResource(any(ResourceTemplateMetaData.class), any(InputStream.class),
                 eq("someJvm"));
     }
@@ -396,7 +394,7 @@ public class ResourceServiceRestImplTest {
         attachmentList.add(mockAttachment2);
 
         final CreateResourceParam createResourceParam = new CreateResourceParam();
-        final Response response = cut.createResource(attachmentList, createResourceParam, mock(AuthenticatedUser.class));
+        final Response response = cut.createResource(attachmentList, createResourceParam, authenticatedUser);
         assertEquals("AEM64", ((ApplicationResponse) response.getEntity()).getMsgCode());
     }
 
@@ -423,7 +421,7 @@ public class ResourceServiceRestImplTest {
         attachmentList.add(mockAttachment1);
 
         final CreateResourceParam createResourceParam = new CreateResourceParam();
-        final Response response = cut.createResource(attachmentList, createResourceParam, mock(AuthenticatedUser.class));
+        final Response response = cut.createResource(attachmentList, createResourceParam, authenticatedUser);
         assertEquals("AEM61", ((ApplicationResponse) response.getEntity()).getMsgCode());
     }
 
@@ -449,7 +447,7 @@ public class ResourceServiceRestImplTest {
         attachmentList.add(mockAttachment1);
         attachmentList.add(mockAttachment2);
         final CreateResourceParam createResourceParam = new CreateResourceParam();
-        final Response response = cut.createResource(attachmentList, createResourceParam, mock(AuthenticatedUser.class));
+        final Response response = cut.createResource(attachmentList, createResourceParam, authenticatedUser);
         assertEquals("AEM60", ((ApplicationResponse) response.getEntity()).getMsgCode());
     }
 
@@ -458,8 +456,8 @@ public class ResourceServiceRestImplTest {
         final ResourceHierarchyParam resourceHierarchyParam = new ResourceHierarchyParam();
         resourceHierarchyParam.setGroup("someGroup");
         resourceHierarchyParam.setWebApp("someApp");
-        cut.deleteResource("someResource", resourceHierarchyParam);
-        verify(impl).deleteGroupLevelAppResource(anyString(), eq("someGroup"));
+        cut.deleteResource("someResource", resourceHierarchyParam, authenticatedUser);
+        verify(impl).deleteGroupLevelAppResource(anyString(), anyString());
     }
 
     @Test
@@ -467,7 +465,7 @@ public class ResourceServiceRestImplTest {
         final ResourceHierarchyParam resourceHierarchyParam = new ResourceHierarchyParam();
         resourceHierarchyParam.setJvm("someJvm");
         resourceHierarchyParam.setWebApp("someApp");
-        cut.deleteResource("someResource", resourceHierarchyParam);
+        cut.deleteResource("someResource", resourceHierarchyParam, authenticatedUser);
         verify(impl).deleteAppResource(eq("someResource"), eq("someApp"), eq("someJvm"));
     }
 
@@ -476,7 +474,7 @@ public class ResourceServiceRestImplTest {
         final ResourceHierarchyParam resourceHierarchyParam = new ResourceHierarchyParam();
         resourceHierarchyParam.setGroup("someGroup");
         resourceHierarchyParam.setWebServer("*");
-        cut.deleteResource("someResource", resourceHierarchyParam);
+        cut.deleteResource("someResource", resourceHierarchyParam, authenticatedUser);
         verify(impl).deleteGroupLevelWebServerResource(eq("someResource"), eq("someGroup"));
     }
 
@@ -484,7 +482,7 @@ public class ResourceServiceRestImplTest {
     public void testDeleteWebServerResource() {
         final ResourceHierarchyParam resourceHierarchyParam = new ResourceHierarchyParam();
         resourceHierarchyParam.setWebServer("someWebServer");
-        cut.deleteResource("someResource", resourceHierarchyParam);
+        cut.deleteResource("someResource", resourceHierarchyParam, authenticatedUser);
         verify(impl).deleteWebServerResource(eq("someResource"), eq("someWebServer"));
     }
 
@@ -493,7 +491,7 @@ public class ResourceServiceRestImplTest {
         final ResourceHierarchyParam resourceHierarchyParam = new ResourceHierarchyParam();
         resourceHierarchyParam.setGroup("someGroup");
         resourceHierarchyParam.setJvm("*");
-        cut.deleteResource("someResource", resourceHierarchyParam);
+        cut.deleteResource("someResource", resourceHierarchyParam, authenticatedUser);
         verify(impl).deleteGroupLevelJvmResource(eq("someResource"), eq("someGroup"));
     }
 
@@ -501,14 +499,14 @@ public class ResourceServiceRestImplTest {
     public void testDeleteJvmResource() {
         final ResourceHierarchyParam resourceHierarchyParam = new ResourceHierarchyParam();
         resourceHierarchyParam.setJvm("someJvm");
-        cut.deleteResource("someResource", resourceHierarchyParam);
+        cut.deleteResource("someResource", resourceHierarchyParam, authenticatedUser);
         verify(impl).deleteJvmResource(eq("someResource"), eq("someJvm"));
     }
 
     @Test
     public void testDeleteJvmResourceNoParamsSpecified() {
         final ResourceHierarchyParam resourceHierarchyParam = new ResourceHierarchyParam();
-        final Response response = cut.deleteResource("someResource", resourceHierarchyParam);
+        final Response response = cut.deleteResource("someResource", resourceHierarchyParam, authenticatedUser);
         assertEquals("AEM64", ((ApplicationResponse) response.getEntity()).getMsgCode());
     }
 }

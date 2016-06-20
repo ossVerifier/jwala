@@ -407,6 +407,26 @@ public class GroupServiceImpl implements GroupService {
 
     @Override
     public CommandOutput deployGroupAppTemplate(String groupName, String fileName, ResourceGroup resourceGroup, Application application, Jvm jvm) {
+        return executeDeployGroupAppTemplate(groupName, fileName, resourceGroup, application, jvm.getJvmName(), jvm.getHostName());
+    }
+
+    @Override
+    public CommandOutput deployGroupAppTemplate(String groupName, String fileName, ResourceGroup resourceGroup, Application application, String hostName) {
+        return executeDeployGroupAppTemplate(groupName, fileName, resourceGroup, application, null, hostName);
+    }
+
+    /**
+     * This method executes all the commands for copying the template over to the destination for a group app config file
+     * @param groupName name of the group in which the application can be found
+     * @param fileName name of the file that needs to deployed
+     * @param resourceGroup the resource group object that contains all the groups, jvms, webservers and webapps
+     * @param application the application object for the application to deploy the config file too
+     * @param jvmName name of the jvm for which the config file needs to be deployed
+     * @param hostName name of the host which needs the application file
+     * @return returns a command output object
+     */
+    protected CommandOutput executeDeployGroupAppTemplate(final String groupName, final String fileName, final ResourceGroup resourceGroup,
+                                                          final Application application, final String jvmName, final String hostName) {
         String metaDataStr = getGroupAppResourceTemplateMetaData(groupName, fileName);
         ResourceTemplateMetaData metaData;
         try {
@@ -419,8 +439,6 @@ public class GroupServiceImpl implements GroupService {
             } else {
                 srcPath = confFile.getAbsolutePath().replace("\\", "/");
             }
-            final String jvmName = jvm.getJvmName();
-            final String hostName = jvm.getHostName();
             LOGGER.debug("checking if file: {} exists on remote location", destPath);
             CommandOutput commandOutput = remoteCommandExecutor.executeRemoteCommand(
                     jvmName,
@@ -442,7 +460,7 @@ public class GroupServiceImpl implements GroupService {
                 if (!commandOutput.getReturnCode().wasSuccessful()) {
                     standardError = commandOutput.getStandardError().isEmpty()? commandOutput.getStandardOutput() : commandOutput.getStandardError();
                     LOGGER.error("Error in backing up older file {} :: ERROR: {}", destPath, standardError);
-                    throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to back up " + destPath + " for " + jvm);
+                    throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to back up " + destPath + " for " + jvmName);
                 }
             }
             LOGGER.debug("copying file over to location {}", destPath);

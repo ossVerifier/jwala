@@ -489,7 +489,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
                 createConfigFile(jvmResourcesNameDir + "/", fileName, fileContent);
             }
 
-            deployJvmConfigFile(jvmName, fileName, jvm, resourceDestPath, resourceSourceCopy, user);
+            deployJvmConfigFile(fileName, jvm, resourceDestPath, resourceSourceCopy, user);
         } catch (IOException e) {
             String message = "Failed to write file";
             LOGGER.error(badStreamMessage + message, e);
@@ -504,12 +504,12 @@ public class JvmServiceRestImpl implements JvmServiceRest {
         return ResponseBuilder.ok(jvm);
     }
 
-    protected void deployJvmConfigFile(String jvmName, String fileName, Jvm jvm, String destPath, String sourcePath, AuthenticatedUser user)
+    protected void deployJvmConfigFile(String fileName, Jvm jvm, String destPath, String sourcePath, AuthenticatedUser user)
             throws CommandFailureException {
         CommandOutput result =
                 jvmControlService.secureCopyFile(new ControlJvmRequest(jvm.getId(), JvmControlOperation.SECURE_COPY), sourcePath, destPath, user.getUser().getId());
         if (result.getReturnCode().wasSuccessful()) {
-            LOGGER.info("Successful generation and deploy of {} to {}", fileName, jvmName);
+            LOGGER.info("Successful generation and deploy of {} to {}", fileName, jvm.getJvmName());
         } else {
             String standardError =
                     result.getStandardError().isEmpty() ? result.getStandardOutput() : result.getStandardError();

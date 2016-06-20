@@ -177,7 +177,7 @@ public abstract class AbstractApplicationPersistenceServiceTest {
 
         RemoveWebArchiveRequest removeWebArchiveRequest = new RemoveWebArchiveRequest(created);
 
-        Application noWarApp = applicationPersistenceService.removeWarPath(removeWebArchiveRequest);
+        Application noWarApp = applicationPersistenceService.removeWarPathAndName(removeWebArchiveRequest);
         assertNull(noWarApp.getWarPath());
     }
 

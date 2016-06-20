@@ -13,6 +13,7 @@ import com.siemens.cto.aem.common.request.app.UploadAppTemplateRequest;
 import com.siemens.cto.aem.common.request.app.UploadWebArchiveRequest;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaApplicationConfigTemplate;
 
+import java.io.IOException;
 import java.util.List;
 
 public interface ApplicationService {
@@ -76,4 +77,13 @@ public interface ApplicationService {
     void copyApplicationConfigToGroupJvms(Group group, String appName, ResourceGroup resourceGroup, User user);
 
     void deployApplicationResourcesToGroupHosts(String groupName, Application app, ResourceGroup resourceGroup);
+
+    /**
+     * Upload a WAR for an application.
+     * @param appId the application id
+     * @param warName the war name
+     * @param war the war byte data
+     * @param deployPath @return {@link Application}
+     */
+    Application uploadWebArchive(final Identifier<Application> appId, String warName, byte[] war, String deployPath) throws IOException;
 }

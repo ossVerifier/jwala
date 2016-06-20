@@ -141,7 +141,7 @@ public class ResourceDaoImplTest {
     public void testDeleteResources() throws Exception {
         assertEquals(1, resourceDao.deleteGroupLevelWebServerResource("httpd.conf", "someGroup"));
         assertEquals(1, resourceDao.deleteGroupLevelJvmResource("someConfName", "someGroup"));
-        assertEquals(1, resourceDao.deleteGroupLevelAppResource("someTemplateFileName", "someGroup"));
+        assertEquals(1, resourceDao.deleteGroupLevelAppResource("someApp", "someGroup", "someTemplateFileName"));
         assertEquals(1, resourceDao.deleteWebServerResource("httpd.conf", "someWebServer"));
         assertEquals(1, resourceDao.deleteJvmResource("someConfName", "someJvm"));
         assertEquals(1, resourceDao.deleteAppResource("someFileName", "someApp", "someJvm"));

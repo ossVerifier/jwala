@@ -5,6 +5,9 @@ import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.common.domain.model.resource.ContentType;
+import com.siemens.cto.aem.common.domain.model.resource.Entity;
+import com.siemens.cto.aem.common.domain.model.resource.ResourceTemplateMetaData;
 import com.siemens.cto.aem.common.exception.FaultCodeException;
 import com.siemens.cto.aem.common.exception.InternalErrorException;
 import com.siemens.cto.aem.common.exec.CommandOutput;
@@ -22,6 +25,7 @@ import org.apache.commons.fileupload.FileItemIterator;
 import org.apache.commons.fileupload.FileItemStream;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.apache.commons.io.IOUtils;
 import org.apache.cxf.jaxrs.ext.MessageContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,6 +34,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
@@ -104,7 +109,47 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
     private MessageContext context;
 
     @Override
-    public Response uploadWebArchive(final Identifier<Application> anAppToGet, final AuthenticatedUser aUser) {
+    public Response uploadWebArchive(final Identifier<Application> appId, final AuthenticatedUser aUser) {
+        final ServletFileUpload servletFileUpload = new ServletFileUpload();
+
+        InputStream in;
+        String deployPath = null;
+        String warName = null;
+        byte [] war = null;
+
+        try {
+            final FileItemIterator it = servletFileUpload.getItemIterator(context.getHttpServletRequest());
+            while (it.hasNext()) {
+                final FileItemStream fileItemStream = it.next();
+                if ("file".equalsIgnoreCase(fileItemStream.getFieldName())) {
+                    warName = fileItemStream.getName();
+                    in = fileItemStream.openStream();
+                    war = IOUtils.toByteArray(in);
+                    in.close();
+                } else if ("deployPath".equalsIgnoreCase(fileItemStream.getFieldName())) {
+                    in = fileItemStream.openStream();
+                    deployPath = IOUtils.toString(in);
+                    in.close();
+                } else {
+                    return ResponseBuilder.notOk(Status.INTERNAL_SERVER_ERROR, new FaultCodeException(AemFaultType.INVALID_REST_SERVICE_PARAMETER,
+                            "Invalid parameter " + fileItemStream.getFieldName()));
+                }
+            }
+
+            final Application application = service.uploadWebArchive(appId, warName, war, deployPath);
+
+            // Why created ? Because to upload a new WAR means creating one ? Isn't uploading a new war means
+            // "updating an application"
+            // Anyways, I just followed the original implementation.
+            // TODO: Decide if uploading a new war is a CREATE rather than an UPDATE.
+            return ResponseBuilder.created(application);
+        } catch (final FileUploadException | IOException e) {
+            return ResponseBuilder.notOk(Status.INTERNAL_SERVER_ERROR, new FaultCodeException(AemFaultType.IO_EXCEPTION,
+                    e.getMessage()));
+        }
+    }
+
+    public Response uploadWebArchive_oldie(final Identifier<Application> anAppToGet, final AuthenticatedUser aUser) {
         LOGGER.info("Upload Archive requested: {} streaming (no size, count yet)", anAppToGet);
 
         // iframe uploads from IE do not understand application/json
@@ -122,25 +167,47 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
             FileItemIterator iter = sfu.getItemIterator(context.getHttpServletRequest());
             FileItemStream file1;
 
+            final ResourceTemplateMetaData resourceTemplateMetaData = new ResourceTemplateMetaData();
+            Application application = null;
+
             while (iter.hasNext()) {
                 file1 = iter.next();
-                try {
+
+                if (file1.getFieldName().equalsIgnoreCase("file")) {
                     data = file1.openStream();
-
-                    UploadWebArchiveRequest command = new UploadWebArchiveRequest(app, file1.getName(), -1L, data);
-
-                    LOGGER.info("Upload file {} to application {}", file1.getName(), app.getName());
-                    final Application application = service.uploadWebArchive(command, aUser.getUser());
-                    LOGGER.info("Upload succeeded");
-
-                    return ResponseBuilder.created(application); // early out on first attachment
-                } catch (InternalErrorException ie) {
-                    LOGGER.error("Caught an internal error exception that would normally get out and converting to a response {}", ie);
-                    return ResponseBuilder.notOk(Status.INTERNAL_SERVER_ERROR, ie);
-                } finally {
-                    data.close();
+                    try {
+                        UploadWebArchiveRequest command = new UploadWebArchiveRequest(app, file1.getName(), -1L, data);
+                        LOGGER.info("Upload file {} to application {}", file1.getName(), app.getName());
+                        application = service.uploadWebArchive(command, aUser.getUser());
+                        LOGGER.info("Upload succeeded");
+                    } catch (InternalErrorException ie) {
+                        LOGGER.error("Caught an internal error exception that would normally get out and converting to a response {}", ie);
+                        return ResponseBuilder.notOk(Status.INTERNAL_SERVER_ERROR, ie);
+                    } finally {
+                        data.close();
+                    }
+                } else if (file1.getFieldName().equalsIgnoreCase("deployPath")) {
+                    final InputStream in = file1.openStream();
+                    resourceTemplateMetaData.setDeployPath(IOUtils.toString(in));
+                    in.close();
                 }
             }
+
+            if (application != null) {
+                resourceTemplateMetaData.setDeployFileName(application.getWarName());
+                resourceTemplateMetaData.setTemplateName(application.getWarName());
+                resourceTemplateMetaData.setContentType(ContentType.APPLICATION_BINARY.contentTypeStr);
+                final Entity entity = new Entity();
+                entity.setGroup(application.getGroup().getName());
+                entity.setDeployToJvms(false);
+                resourceTemplateMetaData.setEntity(entity);
+
+                resourceService.createGroupedLevelAppResource(resourceTemplateMetaData, new ByteArrayInputStream(application.getWarPath().getBytes()),
+                        application.getName());
+
+                return ResponseBuilder.created(application); // early out on first attachment
+            }
+
             LOGGER.info("Returning No Data response for application war upload {}", app.getName());
             return ResponseBuilder.notOk(Status.NO_CONTENT, new FaultCodeException(
                     AemFaultType.INVALID_APPLICATION_WAR, "No data"));
@@ -153,9 +220,7 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
     @Override
     public Response deleteWebArchive(final Identifier<Application> appToRemoveWAR, final AuthenticatedUser aUser) {
         LOGGER.info("Delete Archive requested: {}", appToRemoveWAR);
-
         Application updated = service.deleteWebArchive(appToRemoveWAR, aUser.getUser());
-
         return ResponseBuilder.ok(updated);
     }
 

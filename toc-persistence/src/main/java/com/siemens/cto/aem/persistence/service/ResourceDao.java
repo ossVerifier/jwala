@@ -49,10 +49,11 @@ public interface ResourceDao {
     int deleteAppResource(String templateName, String appName, String jvmName);
 
     /**
-     * Delete a group level application resource.
-     * @param templateName the template name
+     * Delete a group level application resource.*
+     * @param appName
      * @param groupName the application name
+     * @param templateName the template name
      * @return the number of resources deleted
      */
-    int deleteGroupLevelAppResource(String templateName, String groupName);
+    int deleteGroupLevelAppResource(String appName, String groupName, String templateName);
 }
