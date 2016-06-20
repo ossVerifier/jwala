@@ -456,7 +456,7 @@ public class ResourceServiceRestImplTest {
         final ResourceHierarchyParam resourceHierarchyParam = new ResourceHierarchyParam();
         resourceHierarchyParam.setGroup("someGroup");
         resourceHierarchyParam.setWebApp("someApp");
-        cut.deleteResource("someResource", resourceHierarchyParam, any(AuthenticatedUser.class));
+        cut.deleteResource("someResource", resourceHierarchyParam, authenticatedUser);
         verify(impl).deleteGroupLevelAppResource(anyString(), anyString());
     }
 
