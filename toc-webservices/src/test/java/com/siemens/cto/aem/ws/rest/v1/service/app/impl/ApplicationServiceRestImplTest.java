@@ -1,37 +1,39 @@
 package com.siemens.cto.aem.ws.rest.v1.service.app.impl;
 
-import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
-import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
-import com.siemens.cto.aem.common.domain.model.resource.ResourceGroup;
-import com.siemens.cto.aem.common.request.app.UpdateApplicationRequest;
-import com.siemens.cto.aem.common.request.app.UploadAppTemplateRequest;
-import com.siemens.cto.aem.common.request.app.UploadWebArchiveRequest;
-import com.siemens.cto.aem.common.exception.InternalErrorException;
-import com.siemens.cto.aem.common.request.app.CreateApplicationRequest;
 import com.siemens.cto.aem.common.domain.model.app.Application;
-import com.siemens.cto.aem.common.exec.CommandOutput;
-import com.siemens.cto.aem.common.exec.ExecReturnCode;
+import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
+import com.siemens.cto.aem.common.domain.model.resource.ResourceGroup;
 import com.siemens.cto.aem.common.domain.model.user.User;
+import com.siemens.cto.aem.common.exception.InternalErrorException;
+import com.siemens.cto.aem.common.exec.CommandOutput;
+import com.siemens.cto.aem.common.exec.ExecReturnCode;
+import com.siemens.cto.aem.common.request.app.CreateApplicationRequest;
+import com.siemens.cto.aem.common.request.app.UpdateApplicationRequest;
+import com.siemens.cto.aem.common.request.app.UploadAppTemplateRequest;
+import com.siemens.cto.aem.common.request.app.UploadWebArchiveRequest;
 import com.siemens.cto.aem.persistence.jpa.service.exception.ResourceTemplateUpdateException;
 import com.siemens.cto.aem.service.app.ApplicationService;
 import com.siemens.cto.aem.service.resource.ResourceService;
 import com.siemens.cto.aem.ws.rest.v1.provider.AuthenticatedUser;
 import com.siemens.cto.aem.ws.rest.v1.response.ApplicationResponse;
 import com.siemens.cto.aem.ws.rest.v1.service.app.ApplicationServiceRest;
+import org.apache.commons.fileupload.FileItemIterator;
+import org.apache.commons.fileupload.FileItemStream;
 import org.apache.commons.fileupload.FileUploadBase;
+import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
-import org.apache.cxf.common.util.Base64Utility;
 import org.apache.cxf.jaxrs.ext.MessageContext;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.*;
+import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.springframework.util.Assert;
+import org.mockito.stubbing.Answer;
 
 import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
@@ -138,200 +140,244 @@ public class ApplicationServiceRestImplTest {
     }
 
     @Test
-    @Ignore
-    // TODO: Fix this!
-    public void testUploadWebArchive_OLD() throws IOException {
+    public void testUploadWebArchive() throws IOException, FileUploadException {
+        final ServletFileUpload mockServletFileUpload = mock(ServletFileUpload.class);
+        final FileItemIterator mockFileItemIterator = mock(FileItemIterator.class);
 
-        when(service.uploadWebArchive(argThat(new IsValidUploadCommand()), any(User.class))).thenReturn(applicationWithWar);
-        when(service.getApplication(any(Identifier.class))).thenReturn(application);
+        when(mockFileItemIterator.hasNext()).thenAnswer(new Answer<Boolean>() {
+            private int count = 0;
 
-        // ISO8859-1
-        String ls = System.lineSeparator();
-        String boundary = "--WebKitFormBoundarywBZFyEeqG5xW80nx";
+            @Override
+            public Boolean answer(InvocationOnMock invocation) throws Throwable {
+                if (count++ < 2) {
+                    return true;
+                }
+                return false;
+            }
+        });
 
-        @SuppressWarnings("unused")
-        String http = "Accept:text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8" + ls +
-                "Cache-Control:no-cache" + ls +
-                "Content-Type:multipart/form-data; boundary=--" + boundary + ls +
-                "Origin:null" + ls +
-                "Pragma:no-cache" + ls +
-                "Referer:" + ls +
-                "User-Agent:Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.114 Safari/537.36" + ls;
+        when(mockFileItemIterator.next()).thenAnswer(new Answer<FileItemStream>() {
+            private int count = 0;
 
-        String dataText = "abcdef";
-        String contentText = "--" + boundary + ls +
-                "Content-Disposition: form-data; name=\"files\"; filename=\"toc-webapp-1.0-SNAPSHOT.war\"" + ls +
-                "Content-Type: text/plain" + ls + ls +
-                dataText + ls +
-                "--" + boundary + "--" + ls;
+            @Override
+            public FileItemStream answer(InvocationOnMock invocation) throws Throwable {
+                count++;
+                final FileItemStream mockFileItemStream = mock(FileItemStream.class);
+                when(mockFileItemStream.openStream()).thenReturn(new ByteArrayInputStream("test".getBytes()));
+                if (count == 1) {
+                    when(mockFileItemStream.getFieldName()).thenReturn("file");
+                    return mockFileItemStream;
+                } else if (count == 2) {
+                    when(mockFileItemStream.getFieldName()).thenReturn("deployPath");
+                    return mockFileItemStream;
+                }
+                return null;
+            }
+        });
 
-        String charsetText = "UTF-8";
-        ByteBuffer bbBuffer = Charset.forName(charsetText).encode(contentText);
-        when(mockHsr.getCharacterEncoding()).thenReturn(charsetText);
-        when(mockHsr.getInputStream()).thenReturn(new MyIS(new ByteArrayInputStream(bbBuffer.array())));
-        when(mockHsr.getContentType()).thenReturn(FileUploadBase.MULTIPART_FORM_DATA + ";boundary=" + boundary);
-
-
-        Response resp = cut.uploadWebArchive(application.getId());
-
-        Application result = getApplicationFromResponse(resp);
-
-        assertEquals(Status.CREATED.getStatusCode(), resp.getStatus());
-
-        Assert.hasText(result.getWarPath());
+        when(mockServletFileUpload.getItemIterator(any(HttpServletRequest.class))).thenReturn(mockFileItemIterator);
+        final ApplicationService mockApplicationService = mock(ApplicationService.class);
+        ApplicationServiceRestImpl applicationServiceRestImpl = new ApplicationServiceRestImpl(mockApplicationService,
+                mock(ResourceService.class), mockServletFileUpload);
+        applicationServiceRestImpl.uploadWebArchive(new Identifier<Application>(1L), mock(MessageContext.class));
+        verify(mockApplicationService).uploadWebArchive(any(Identifier.class), anyString(), any(byte[].class), anyString());
     }
 
-    @Test
-    @Ignore
-    // TODO: Fix this!
-    public void testUploadWebArchiveBinary() throws IOException {
-
-        when(service.uploadWebArchive(argThat(new IsValidUploadCommand()), any(User.class))).thenReturn(applicationWithWar);
-        when(service.getApplication(any(Identifier.class))).thenReturn(application);
-
-        // ISO8859-1
-        String ls = System.lineSeparator();
-        String boundary = "--WebKitFormBoundarywBZFyEeqG5xW80nx";
-
-        ByteBuffer file = ByteBuffer.allocate(4);
-        file.asShortBuffer().put((short) 0xc0de);
-        String data = Base64Utility.encode(file.array());
-
-        @SuppressWarnings("unused")
-        String http = "Accept:text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8" + ls +
-                "Cache-Control:no-cache" + ls +
-                "Content-Type:multipart/form-data; boundary=--" + boundary + ls +
-                "Origin:null" + ls +
-                "Pragma:no-cache" + ls +
-                "Referer:" + ls +
-                "User-Agent:Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.114 Safari/537.36" + ls;
-
-        String content = "--" + boundary + ls +
-                "Content-Disposition: form-data; name=\"files\"; filename=\"toc-webapp-1.0-SNAPSHOT.war\"" + ls +
-                "Content-Type: application/octet-stream" + ls + ls +
-                data + ls +
-                "--" + boundary + "--" + ls;
-
-        String charsetBin = "ISO-8859-1";
-        ByteBuffer bbBuffer = Charset.forName(charsetBin).encode(content);
-        when(mockHsr.getCharacterEncoding()).thenReturn(charsetBin);
-        when(mockHsr.getInputStream()).thenReturn(new MyIS(new ByteArrayInputStream(bbBuffer.array())));
-        when(mockHsr.getContentType()).thenReturn(FileUploadBase.MULTIPART_FORM_DATA + ";boundary=" + boundary);
-
-
-        Response resp = cut.uploadWebArchive(application.getId());
-
-        Application result = getApplicationFromResponse(resp);
-
-        assertEquals(Status.CREATED.getStatusCode(), resp.getStatus());
-
-        Assert.hasText(result.getWarPath());
-    }
-
-    @Test
-    @Ignore
-    // TODO: Fix this!
-    public void testUploadWebArchiveBinaryThrowsInternalErrorExceptionWhenCopyingToJvm() throws IOException {
-        when(service.uploadWebArchive(argThat(new IsValidUploadCommand()), any(User.class))).thenThrow(new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "test failure"));
-        when(service.getApplication(any(Identifier.class))).thenReturn(application);
-
-        // ISO8859-1
-        String ls = System.lineSeparator();
-        String boundary = "--WebKitFormBoundarywBZFyEeqG5xW80nx";
-
-        ByteBuffer file = ByteBuffer.allocate(4);
-        file.asShortBuffer().put((short) 0xc0de);
-        String data = Base64Utility.encode(file.array());
-
-        @SuppressWarnings("unused")
-        String http = "Accept:text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8" + ls +
-                "Cache-Control:no-cache" + ls +
-                "Content-Type:multipart/form-data; boundary=--" + boundary + ls +
-                "Origin:null" + ls +
-                "Pragma:no-cache" + ls +
-                "Referer:" + ls +
-                "User-Agent:Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.114 Safari/537.36" + ls;
-
-        String content = "--" + boundary + ls +
-                "Content-Disposition: form-data; name=\"files\"; filename=\"toc-webapp-1.0-SNAPSHOT.war\"" + ls +
-                "Content-Type: application/octet-stream" + ls + ls +
-                data + ls +
-                "--" + boundary + "--" + ls;
-
-        String charsetBin = "ISO-8859-1";
-        ByteBuffer bbBuffer = Charset.forName(charsetBin).encode(content);
-        when(mockHsr.getCharacterEncoding()).thenReturn(charsetBin);
-        when(mockHsr.getInputStream()).thenReturn(new MyIS(new ByteArrayInputStream(bbBuffer.array())));
-        when(mockHsr.getContentType()).thenReturn(FileUploadBase.MULTIPART_FORM_DATA + ";boundary=" + boundary);
-
-        Response resp = cut.uploadWebArchive(application.getId());
-        assertEquals(Status.INTERNAL_SERVER_ERROR.getStatusCode(), resp.getStatus());
-    }
-
-    @Test(expected = InternalErrorException.class)
-    @Ignore
-    // TODO: Fix this!
-    public void testUploadWebArchiveBadStream() throws IOException {
-
-        when(service.uploadWebArchive(argThat(new IsValidUploadCommand()), any(User.class))).thenReturn(applicationWithWar);
-        // ISO8859-1
-        String ls = System.lineSeparator();
-        String boundary = "--WebKitFormBoundarywBZFyEeqG5xW80nx";
-
-        ByteBuffer file = ByteBuffer.allocate(4);
-        file.asShortBuffer().put((short) 0xc0de);
-        String data = Base64Utility.encode(file.array());
-
-        @SuppressWarnings("unused")
-        String http = "Accept:text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8" + ls +
-                "Cache-Control:no-cache" + ls +
-                "Content-Type:multipart/form-data; boundary=--" + boundary + ls +
-                "Origin:null" + ls +
-                "Pragma:no-cache" + ls +
-                "Referer:" + ls +
-                "User-Agent:Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.114 Safari/537.36" + ls;
-
-        String content = "--" + boundary + ls +
-                "Content-Disposition: form-data; name=\"files\"; filename=\"toc-webapp-1.0-SNAPSHOT.war\"" + ls +
-                "Content-Type: application/octet-stream" + ls + ls +
-                data + ls +
-                /*"--" + bad stream!*/ boundary + "--" + ls;
-
-        String charsetBin = "ISO-8859-1";
-        ByteBuffer bbBuffer = Charset.forName(charsetBin).encode(content);
-        when(mockHsr.getCharacterEncoding()).thenReturn(charsetBin);
-        when(mockHsr.getInputStream()).thenReturn(new MyIS(new ByteArrayInputStream(bbBuffer.array())));
-        when(mockHsr.getContentType()).thenReturn(FileUploadBase.MULTIPART_FORM_DATA + ";boundary=" + boundary);
-
-        cut.uploadWebArchive(application.getId());
-    }
-
-    @Test
-    @Ignore
-    // TODO: Fix this!
-    public void testUploadWebArchiveNoContent() throws IOException {
-
-        verify(service, never()).uploadWebArchive(argThat(new IsValidUploadCommand()), any(User.class));
-
-        // ISO8859-1
-        String boundary = "--WebKitFormBoundarywBZFyEeqG5xW80nx";
-
-        String content = "";
-
-        String charsetBin = "ISO-8859-1";
-        ByteBuffer bbBuffer = Charset.forName(charsetBin).encode(content);
-        Application mockApp = mock(Application.class);
-        when(mockHsr.getCharacterEncoding()).thenReturn(charsetBin);
-        when(mockHsr.getInputStream()).thenReturn(new MyIS(new ByteArrayInputStream(bbBuffer.array())));
-        when(mockHsr.getContentType()).thenReturn(FileUploadBase.MULTIPART_FORM_DATA + ";boundary=" + boundary);
-        when(service.getApplication(any(Identifier.class))).thenReturn(mockApp);
-        when(mockApp.getName()).thenReturn("NoContentTestApp");
-
-
-        Response resp = cut.uploadWebArchive(application.getId());
-
-        assertEquals(Status.NO_CONTENT.getStatusCode(), resp.getStatus());
-    }
+//    @Test
+//    @Ignore
+//    // TODO: Fix this!
+//    public void testUploadWebArchive_OLD() throws IOException {
+//
+//        when(service.uploadWebArchive(argThat(new IsValidUploadCommand()), any(User.class))).thenReturn(applicationWithWar);
+//        when(service.getApplication(any(Identifier.class))).thenReturn(application);
+//
+//        // ISO8859-1
+//        String ls = System.lineSeparator();
+//        String boundary = "--WebKitFormBoundarywBZFyEeqG5xW80nx";
+//
+//        @SuppressWarnings("unused")
+//        String http = "Accept:text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8" + ls +
+//                "Cache-Control:no-cache" + ls +
+//                "Content-Type:multipart/form-data; boundary=--" + boundary + ls +
+//                "Origin:null" + ls +
+//                "Pragma:no-cache" + ls +
+//                "Referer:" + ls +
+//                "User-Agent:Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.114 Safari/537.36" + ls;
+//
+//        String dataText = "abcdef";
+//        String contentText = "--" + boundary + ls +
+//                "Content-Disposition: form-data; name=\"files\"; filename=\"toc-webapp-1.0-SNAPSHOT.war\"" + ls +
+//                "Content-Type: text/plain" + ls + ls +
+//                dataText + ls +
+//                "--" + boundary + "--" + ls;
+//
+//        String charsetText = "UTF-8";
+//        ByteBuffer bbBuffer = Charset.forName(charsetText).encode(contentText);
+//        when(mockHsr.getCharacterEncoding()).thenReturn(charsetText);
+//        when(mockHsr.getInputStream()).thenReturn(new MyIS(new ByteArrayInputStream(bbBuffer.array())));
+//        when(mockHsr.getContentType()).thenReturn(FileUploadBase.MULTIPART_FORM_DATA + ";boundary=" + boundary);
+//
+//
+//        Response resp = cut.uploadWebArchive(application.getId(), );
+//
+//        Application result = getApplicationFromResponse(resp);
+//
+//        assertEquals(Status.CREATED.getStatusCode(), resp.getStatus());
+//
+//        Assert.hasText(result.getWarPath());
+//    }
+//
+//    @Test
+//    @Ignore
+//    // TODO: Fix this!
+//    public void testUploadWebArchiveBinary() throws IOException {
+//
+//        when(service.uploadWebArchive(argThat(new IsValidUploadCommand()), any(User.class))).thenReturn(applicationWithWar);
+//        when(service.getApplication(any(Identifier.class))).thenReturn(application);
+//
+//        // ISO8859-1
+//        String ls = System.lineSeparator();
+//        String boundary = "--WebKitFormBoundarywBZFyEeqG5xW80nx";
+//
+//        ByteBuffer file = ByteBuffer.allocate(4);
+//        file.asShortBuffer().put((short) 0xc0de);
+//        String data = Base64Utility.encode(file.array());
+//
+//        @SuppressWarnings("unused")
+//        String http = "Accept:text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8" + ls +
+//                "Cache-Control:no-cache" + ls +
+//                "Content-Type:multipart/form-data; boundary=--" + boundary + ls +
+//                "Origin:null" + ls +
+//                "Pragma:no-cache" + ls +
+//                "Referer:" + ls +
+//                "User-Agent:Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.114 Safari/537.36" + ls;
+//
+//        String content = "--" + boundary + ls +
+//                "Content-Disposition: form-data; name=\"files\"; filename=\"toc-webapp-1.0-SNAPSHOT.war\"" + ls +
+//                "Content-Type: application/octet-stream" + ls + ls +
+//                data + ls +
+//                "--" + boundary + "--" + ls;
+//
+//        String charsetBin = "ISO-8859-1";
+//        ByteBuffer bbBuffer = Charset.forName(charsetBin).encode(content);
+//        when(mockHsr.getCharacterEncoding()).thenReturn(charsetBin);
+//        when(mockHsr.getInputStream()).thenReturn(new MyIS(new ByteArrayInputStream(bbBuffer.array())));
+//        when(mockHsr.getContentType()).thenReturn(FileUploadBase.MULTIPART_FORM_DATA + ";boundary=" + boundary);
+//
+//
+//        Response resp = cut.uploadWebArchive(application.getId(), );
+//
+//        Application result = getApplicationFromResponse(resp);
+//
+//        assertEquals(Status.CREATED.getStatusCode(), resp.getStatus());
+//
+//        Assert.hasText(result.getWarPath());
+//    }
+//
+//    @Test
+//    @Ignore
+//    // TODO: Fix this!
+//    public void testUploadWebArchiveBinaryThrowsInternalErrorExceptionWhenCopyingToJvm() throws IOException {
+//        when(service.uploadWebArchive(argThat(new IsValidUploadCommand()), any(User.class))).thenThrow(new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "test failure"));
+//        when(service.getApplication(any(Identifier.class))).thenReturn(application);
+//
+//        // ISO8859-1
+//        String ls = System.lineSeparator();
+//        String boundary = "--WebKitFormBoundarywBZFyEeqG5xW80nx";
+//
+//        ByteBuffer file = ByteBuffer.allocate(4);
+//        file.asShortBuffer().put((short) 0xc0de);
+//        String data = Base64Utility.encode(file.array());
+//
+//        @SuppressWarnings("unused")
+//        String http = "Accept:text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8" + ls +
+//                "Cache-Control:no-cache" + ls +
+//                "Content-Type:multipart/form-data; boundary=--" + boundary + ls +
+//                "Origin:null" + ls +
+//                "Pragma:no-cache" + ls +
+//                "Referer:" + ls +
+//                "User-Agent:Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.114 Safari/537.36" + ls;
+//
+//        String content = "--" + boundary + ls +
+//                "Content-Disposition: form-data; name=\"files\"; filename=\"toc-webapp-1.0-SNAPSHOT.war\"" + ls +
+//                "Content-Type: application/octet-stream" + ls + ls +
+//                data + ls +
+//                "--" + boundary + "--" + ls;
+//
+//        String charsetBin = "ISO-8859-1";
+//        ByteBuffer bbBuffer = Charset.forName(charsetBin).encode(content);
+//        when(mockHsr.getCharacterEncoding()).thenReturn(charsetBin);
+//        when(mockHsr.getInputStream()).thenReturn(new MyIS(new ByteArrayInputStream(bbBuffer.array())));
+//        when(mockHsr.getContentType()).thenReturn(FileUploadBase.MULTIPART_FORM_DATA + ";boundary=" + boundary);
+//
+//        Response resp = cut.uploadWebArchive(application.getId(), );
+//        assertEquals(Status.INTERNAL_SERVER_ERROR.getStatusCode(), resp.getStatus());
+//    }
+//
+//    @Test(expected = InternalErrorException.class)
+//    @Ignore
+//    // TODO: Fix this!
+//    public void testUploadWebArchiveBadStream() throws IOException {
+//
+//        when(service.uploadWebArchive(argThat(new IsValidUploadCommand()), any(User.class))).thenReturn(applicationWithWar);
+//        // ISO8859-1
+//        String ls = System.lineSeparator();
+//        String boundary = "--WebKitFormBoundarywBZFyEeqG5xW80nx";
+//
+//        ByteBuffer file = ByteBuffer.allocate(4);
+//        file.asShortBuffer().put((short) 0xc0de);
+//        String data = Base64Utility.encode(file.array());
+//
+//        @SuppressWarnings("unused")
+//        String http = "Accept:text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8" + ls +
+//                "Cache-Control:no-cache" + ls +
+//                "Content-Type:multipart/form-data; boundary=--" + boundary + ls +
+//                "Origin:null" + ls +
+//                "Pragma:no-cache" + ls +
+//                "Referer:" + ls +
+//                "User-Agent:Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.114 Safari/537.36" + ls;
+//
+//        String content = "--" + boundary + ls +
+//                "Content-Disposition: form-data; name=\"files\"; filename=\"toc-webapp-1.0-SNAPSHOT.war\"" + ls +
+//                "Content-Type: application/octet-stream" + ls + ls +
+//                data + ls +
+//                /*"--" + bad stream!*/ boundary + "--" + ls;
+//
+//        String charsetBin = "ISO-8859-1";
+//        ByteBuffer bbBuffer = Charset.forName(charsetBin).encode(content);
+//        when(mockHsr.getCharacterEncoding()).thenReturn(charsetBin);
+//        when(mockHsr.getInputStream()).thenReturn(new MyIS(new ByteArrayInputStream(bbBuffer.array())));
+//        when(mockHsr.getContentType()).thenReturn(FileUploadBase.MULTIPART_FORM_DATA + ";boundary=" + boundary);
+//
+//        cut.uploadWebArchive(application.getId(), );
+//    }
+//
+//    @Test
+//    @Ignore
+//    // TODO: Fix this!
+//    public void testUploadWebArchiveNoContent() throws IOException {
+//
+//        verify(service, never()).uploadWebArchive(argThat(new IsValidUploadCommand()), any(User.class));
+//
+//        // ISO8859-1
+//        String boundary = "--WebKitFormBoundarywBZFyEeqG5xW80nx";
+//
+//        String content = "";
+//
+//        String charsetBin = "ISO-8859-1";
+//        ByteBuffer bbBuffer = Charset.forName(charsetBin).encode(content);
+//        Application mockApp = mock(Application.class);
+//        when(mockHsr.getCharacterEncoding()).thenReturn(charsetBin);
+//        when(mockHsr.getInputStream()).thenReturn(new MyIS(new ByteArrayInputStream(bbBuffer.array())));
+//        when(mockHsr.getContentType()).thenReturn(FileUploadBase.MULTIPART_FORM_DATA + ";boundary=" + boundary);
+//        when(service.getApplication(any(Identifier.class))).thenReturn(mockApp);
+//        when(mockApp.getName()).thenReturn("NoContentTestApp");
+//
+//
+//        Response resp = cut.uploadWebArchive(application.getId(), );
+//
+//        assertEquals(Status.NO_CONTENT.getStatusCode(), resp.getStatus());
+//    }
 
     @Test
     public void testUploadConfigNoContent() throws IOException {

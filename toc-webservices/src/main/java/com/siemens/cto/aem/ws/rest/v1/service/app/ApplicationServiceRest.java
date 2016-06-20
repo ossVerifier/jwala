@@ -7,9 +7,11 @@ import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.ws.rest.v1.provider.AuthenticatedUser;
 import com.siemens.cto.aem.ws.rest.v1.service.app.impl.JsonCreateApplication;
 import com.siemens.cto.aem.ws.rest.v1.service.app.impl.JsonUpdateApplication;
+import org.apache.cxf.jaxrs.ext.MessageContext;
 import org.springframework.beans.factory.InitializingBean;
 
 import javax.ws.rs.*;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -46,7 +48,8 @@ public interface ApplicationServiceRest extends InitializingBean {
     @POST
     @Path("/{applicationId}/war")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
-    Response uploadWebArchive(@PathParam("applicationId") final Identifier<Application> appId);
+    Response uploadWebArchive(@PathParam("applicationId") final Identifier<Application> appId,
+                              @Context MessageContext messageContext);
 
     @DELETE
     @Path("/{applicationId}/war")

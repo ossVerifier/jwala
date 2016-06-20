@@ -105,17 +105,17 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
     }
 
     @Context
-    private MessageContext context;
+    private MessageContext context; // TODO: Define as a method parameter to make this class more testable!
 
     @Override
-    public Response uploadWebArchive(final Identifier<Application> appId) {
+    public Response uploadWebArchive(final Identifier<Application> appId, final MessageContext messageContext) {
         InputStream in;
         String deployPath = null;
         String warName = null;
         byte [] war = null;
 
         try {
-            final FileItemIterator it = servletFileUpload.getItemIterator(context.getHttpServletRequest());
+            final FileItemIterator it = servletFileUpload.getItemIterator(messageContext.getHttpServletRequest());
             while (it.hasNext()) {
                 final FileItemStream fileItemStream = it.next();
                 if ("file".equalsIgnoreCase(fileItemStream.getFieldName())) {
