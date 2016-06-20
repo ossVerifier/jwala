@@ -285,15 +285,17 @@ public class ApplicationServiceImplTest {
 
     @SuppressWarnings("unchecked")
     @Test
-    @Ignore
-    // TODO: Fix this!
     public void testDeleteWebArchive() throws IOException {
+        when(mockApplication.getName()).thenReturn("hct");
+        when(mockApplication.getWarName()).thenReturn("hct.war");
+        when(applicationPersistenceService.getApplication(any(Identifier.class))).thenReturn(mockApplication);
         when(webArchiveManager.remove(any(RemoveWebArchiveRequest.class))).thenReturn(RepositoryFileInformation.deleted(FileSystems.getDefault().getPath("D:\\fn.war")));
 
         applicationService.deleteWebArchive(mockApplication.getId(), testUser);
 
         verify(webArchiveManager, Mockito.times(1)).remove(any(RemoveWebArchiveRequest.class));
         verify(applicationPersistenceService, Mockito.times(1)).removeWarPathAndName((any(RemoveWebArchiveRequest.class)));
+        verify(mockResourceService).deleteGroupLevelAppResource(eq("hct"), eq("hct.war"));
     }
 
     @Test(expected = BadRequestException.class)
@@ -304,7 +306,7 @@ public class ApplicationServiceImplTest {
 
     @Test(expected = BadRequestException.class)
     @Ignore
-    // TODO: Fix this!
+    // TODO: Test should throw test error conditions.
     public void testDeleteWebArchiveDeleteFailed() throws IOException {
         when(webArchiveManager.remove(any(RemoveWebArchiveRequest.class))).thenReturn(RepositoryFileInformation.none());
 

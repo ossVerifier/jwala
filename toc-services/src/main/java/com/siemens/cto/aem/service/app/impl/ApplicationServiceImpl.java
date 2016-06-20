@@ -179,7 +179,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     @Transactional
     @Override
     public Application deleteWebArchive(Identifier<Application> appId, User user) {
-        Application app = this.getApplication(appId);
+        Application app = applicationPersistenceService.getApplication(appId);
         RemoveWebArchiveRequest rwac = new RemoveWebArchiveRequest(app);
 
         RepositoryFileInformation result = RepositoryFileInformation.none();
