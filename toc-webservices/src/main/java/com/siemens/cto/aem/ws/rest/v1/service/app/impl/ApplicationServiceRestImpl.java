@@ -41,11 +41,15 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
 
     private ApplicationService service;
     private ResourceService resourceService;
+    private ServletFileUpload servletFileUpload;
+
     private static ApplicationServiceRestImpl instance;
 
-    public ApplicationServiceRestImpl(ApplicationService applicationService, ResourceService resourceService) {
+    public ApplicationServiceRestImpl(ApplicationService applicationService, ResourceService resourceService,
+                                      ServletFileUpload servletFileUpload) {
         service = applicationService;
         this.resourceService = resourceService;
+        this.servletFileUpload = servletFileUpload;
     }
 
     @Override
@@ -105,8 +109,6 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
 
     @Override
     public Response uploadWebArchive(final Identifier<Application> appId) {
-        final ServletFileUpload servletFileUpload = new ServletFileUpload();
-
         InputStream in;
         String deployPath = null;
         String warName = null;
@@ -255,10 +257,9 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
                     "Could not find Application with name " + appName);
         }
 
-        ServletFileUpload sfu = new ServletFileUpload();
         InputStream data = null;
         try {
-            FileItemIterator iter = sfu.getItemIterator(context.getHttpServletRequest());
+            FileItemIterator iter = servletFileUpload.getItemIterator(context.getHttpServletRequest());
             FileItemStream file1;
 
             while (iter.hasNext()) {

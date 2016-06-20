@@ -38,6 +38,7 @@ import com.siemens.cto.aem.ws.rest.v1.service.user.impl.UserServiceRestImpl;
 import com.siemens.cto.aem.ws.rest.v1.service.webserver.WebServerServiceRest;
 import com.siemens.cto.aem.ws.rest.v1.service.webserver.impl.WebServerServiceRestImpl;
 import com.siemens.cto.toc.files.FilesConfiguration;
+import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.cxf.endpoint.Server;
 import org.apache.cxf.jaxrs.JAXRSServerFactoryBean;
 import org.codehaus.jackson.jaxrs.JacksonJsonProvider;
@@ -187,7 +188,12 @@ public class AemWebServiceConfiguration {
 
     @Bean
     public ApplicationServiceRest getV1ApplicationServiceRest() {
-        return new ApplicationServiceRestImpl(applicationService, resourceService);
+        return new ApplicationServiceRestImpl(applicationService, resourceService, getServletFileUpload());
+    }
+
+    @Bean
+    public ServletFileUpload getServletFileUpload() {
+        return new ServletFileUpload();
     }
 
     @Bean

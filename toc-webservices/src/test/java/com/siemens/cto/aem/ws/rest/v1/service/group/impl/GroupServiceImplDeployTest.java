@@ -48,6 +48,7 @@ import com.siemens.cto.aem.ws.rest.v1.service.jvm.JvmServiceRest;
 import com.siemens.cto.aem.ws.rest.v1.service.jvm.impl.JvmServiceRestImpl;
 import com.siemens.cto.aem.ws.rest.v1.service.webserver.WebServerServiceRest;
 import com.siemens.cto.aem.ws.rest.v1.service.webserver.impl.WebServerServiceRestImpl;
+import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Before;
@@ -637,7 +638,7 @@ public class GroupServiceImplDeployTest {
 
         @Bean
         ApplicationServiceRest getApplicationServiceRest() {
-            return new ApplicationServiceRestImpl(mockApplicationService, mock(ResourceService.class));
+            return new ApplicationServiceRestImpl(mockApplicationService, mock(ResourceService.class), new ServletFileUpload());
         }
 
         @Bean

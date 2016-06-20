@@ -22,6 +22,7 @@ import com.siemens.cto.aem.ws.rest.v1.provider.AuthenticatedUser;
 import com.siemens.cto.aem.ws.rest.v1.response.ApplicationResponse;
 import com.siemens.cto.aem.ws.rest.v1.service.app.ApplicationServiceRest;
 import org.apache.commons.fileupload.FileUploadBase;
+import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.cxf.common.util.Base64Utility;
 import org.apache.cxf.jaxrs.ext.MessageContext;
 import org.junit.Before;
@@ -70,8 +71,8 @@ public class ApplicationServiceRestImplTest {
     private AuthenticatedUser authenticatedUser;
     @InjectMocks
     @Spy
-    private ApplicationServiceRestImpl applicationServiceRest = new ApplicationServiceRestImpl(service = Mockito.mock(ApplicationService.class), mock(ResourceService.class));
-
+    private ApplicationServiceRestImpl applicationServiceRest = new ApplicationServiceRestImpl(service = Mockito.mock(ApplicationService.class),
+            mock(ResourceService.class), new ServletFileUpload());
 
     private ApplicationServiceRest cut;
 
@@ -139,7 +140,7 @@ public class ApplicationServiceRestImplTest {
     @Test
     @Ignore
     // TODO: Fix this!
-    public void testUploadWebArchive() throws IOException {
+    public void testUploadWebArchive_OLD() throws IOException {
 
         when(service.uploadWebArchive(argThat(new IsValidUploadCommand()), any(User.class))).thenReturn(applicationWithWar);
         when(service.getApplication(any(Identifier.class))).thenReturn(application);
