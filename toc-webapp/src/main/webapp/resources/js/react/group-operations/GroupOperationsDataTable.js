@@ -123,7 +123,7 @@ var GroupOperationsDataTable = React.createClass({
         var webAppOfGrpChildTableDef = [{sTitle:"Web App ID", mData:"id.id", bVisible:false},
                                         {mData:null, colWidth:"10px"},
                                         {sTitle:"Name", mData:"name"},
-                                        {sTitle:"War Path", mData:"warPath", tocType:"custom", tocRenderCfgFn: this.renderWebAppRowData},
+                                        {sTitle:"War Name", mData:"warName"},
                                         {sTitle:"Context", mData:"webAppContext"}];
 
         webAppOfGrpChildTableDetails["tableDef"] = webAppOfGrpChildTableDef;
@@ -363,19 +363,6 @@ var GroupOperationsDataTable = React.createClass({
                         }
                     });
         }.bind(this);
-   },
-   renderWebAppRowData: function(dataTable, data, aoColumnDefs, itemIndex) {
-          dataTable.expandCollapseEnabled = true;
-          aoColumnDefs[itemIndex].mDataProp = null;
-          aoColumnDefs[itemIndex].sClass = "";
-          aoColumnDefs[itemIndex].bSortable = false;
-
-          aoColumnDefs[itemIndex].mRender = function (data, type, full) {
-
-                  return React.renderComponentToStaticMarkup(
-                      <WARUpload war={data} readOnly={true} full={full} row={0} />
-                    );
-                }.bind(this);
    },
    getWebServersOfGrp: function(idObj, responseCallback) {
         var self = this;
