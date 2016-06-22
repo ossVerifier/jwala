@@ -39,7 +39,7 @@ var WebAppConfig = React.createClass({
                                                                  {title: "WebApp Name", key: "name", renderCallback: this.renderWebAppNameCallback},
                                                                  {title: "Context", key: "webAppContext"},
                                                                  {title: "Web Archive", key: "warName"},
-                                                                 {key: "actionIcons", renderCallback: this.renderActionIcons, sortable: false},
+                                                                 /* {key: "actionIcons", renderCallback: this.renderActionIcons, sortable: false}, - Disabled for drop 4 release since the WAR upload is not consistent with that one in the resources tab. Note: We need to address this in drop 5. */
                                                                  {title: "Group", key:"group.name"}]}
                                                 data={this.state.WebAppTableData}
                                                 selectItemCallback={this.selectItemCallback} />
