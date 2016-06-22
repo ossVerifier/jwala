@@ -11,6 +11,7 @@ import com.siemens.cto.aem.service.resource.impl.CreateResourceTemplateApplicati
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
+import java.util.Map;
 
 
 public interface ResourceService {
@@ -159,7 +160,7 @@ public interface ResourceService {
      */
     String getAppTemplate(String groupName, String appName, String templateName);
 
-    String checkFileExists(String groupName, String jvmName, String webappName, String webserverName, String fileName);
+    Map<String, String> checkFileExists(String groupName, String jvmName, String webappName, String webserverName, String fileName);
 
     /**
      * Delete a web server resource.

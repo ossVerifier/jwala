@@ -182,7 +182,7 @@ public class ResourceServiceRestImplTest {
 
     @Test
     public void testCheckFileExists() {
-        when(impl.checkFileExists(anyString(), anyString(), anyString(), anyString(), anyString())).thenReturn(new String());
+        when(impl.checkFileExists(anyString(), anyString(), anyString(), anyString(), anyString())).thenReturn(new HashMap<String, String>());
         Response response = cut.checkFileExists("test", "test", null, null, "test");
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
     }

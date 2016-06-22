@@ -435,8 +435,7 @@ public class ResourceServiceImpl implements ResourceService {
     }
 
     @Override
-    public String checkFileExists(final String groupName, final String jvmName, final String webappName, final String webserverName, final String fileName) {
-        String result = null;
+    public Map<String, String> checkFileExists(final String groupName, final String jvmName, final String webappName, final String webserverName, final String fileName) {
         boolean resultBoolean = false;
         if(groupName!=null && !groupName.isEmpty() && fileName!=null && !fileName.isEmpty()) {
             if(jvmName!=null && !jvmName.isEmpty()) {
@@ -456,12 +455,10 @@ public class ResourceServiceImpl implements ResourceService {
                         webServerPersistenceService.checkWebServerResourceFileName(groupName, webserverName, fileName);
             }
         }
-        if(fileName==null) {
-            result = "{\"fileName\": " + fileName + ",\n\"exists\": " + resultBoolean + "}";
-        } else {
-            result = "{\"fileName\": \"" + fileName + "\",\n\"exists\": " + resultBoolean + "}";
-        }
-        LOGGER.debug("result: {}", result);
+        Map<String, String> result = new HashMap<>();
+        result.put("fileName", fileName);
+        result.put("exists", Boolean.toString(resultBoolean));
+        LOGGER.debug("result: {}", result.toString());
         return result;
     }
 

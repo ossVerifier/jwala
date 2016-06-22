@@ -40,10 +40,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
@@ -440,46 +437,69 @@ public class ResourceServiceImplTest {
         final String testJvm = "testJvm";
         final String testApp = "testApp";
         final String testWebServer = "testWebServer";
-        String result = resourceService.checkFileExists(null, null, null, null, null);
-        assertEquals("{\"fileName\": null,\n\"exists\": false}", result);
+        Map<String, String> expectedMap = new HashMap<>();
+        Map<String, String> result = resourceService.checkFileExists(null, null, null, null, null);
+        expectedMap.put("fileName", null);
+        expectedMap.put("exists", "false");
+        assertEquals(expectedMap, result);
         result = resourceService.checkFileExists(null, null, null, null, "");
-        assertEquals("{\"fileName\": \"\",\n\"exists\": false}", result);
+        expectedMap.put("fileName", new String());
+        expectedMap.put("exists", "false");
+        assertEquals(expectedMap, result);
         result = resourceService.checkFileExists(testGroup, null, null, null, null);
-        assertEquals("{\"fileName\": null,\n\"exists\": false}", result);
+        expectedMap.put("fileName", null);
+        expectedMap.put("exists", "false");
+        assertEquals(expectedMap, result);
         result = resourceService.checkFileExists(null, null, null, null, testFile);
-        assertEquals("{\"fileName\": \"" + testFile + "\",\n\"exists\": false}", result);
+        expectedMap.put("fileName", testFile);
+        expectedMap.put("exists", "false");
+        assertEquals(expectedMap, result);
         result = resourceService.checkFileExists(testGroup, null, null, null, testFile);
-        assertEquals("{\"fileName\": \"" + testFile + "\",\n\"exists\": false}", result);
+        expectedMap.put("fileName", testFile);
+        expectedMap.put("exists", "false");
+        assertEquals(expectedMap, result);
 
         when(mockGroupPesistenceService.checkGroupJvmResourceFileName(testGroup, testFile)).thenReturn(false);
         when(mockJvmPersistenceService.checkJvmResourceFileName(testGroup, testJvm, testFile)).thenReturn(true);
         result = resourceService.checkFileExists(testGroup, testJvm, null, null, testFile);
-        assertEquals("{\"fileName\": \"" + testFile + "\",\n\"exists\": true}", result);
+        expectedMap.put("fileName", testFile);
+        expectedMap.put("exists", "true");
+        assertEquals(expectedMap, result);
 
         when(mockGroupPesistenceService.checkGroupJvmResourceFileName(testGroup, testFile)).thenReturn(false);
         when(mockJvmPersistenceService.checkJvmResourceFileName(testGroup, testJvm, testFile)).thenReturn(false);
         result = resourceService.checkFileExists(testGroup, testJvm, null, null, testFile);
-        assertEquals("{\"fileName\": \"" + testFile + "\",\n\"exists\": false}", result);
+        expectedMap.put("fileName", testFile);
+        expectedMap.put("exists", "false");
+        assertEquals(expectedMap, result);
 
         when(mockGroupPesistenceService.checkGroupAppResourceFileName(testGroup, testFile)).thenReturn(false);
         when(mockAppPersistenceService.checkAppResourceFileName(testGroup, testApp, testFile)).thenReturn(false);
         result = resourceService.checkFileExists(testGroup, null, testApp, null, testFile);
-        assertEquals("{\"fileName\": \"" + testFile + "\",\n\"exists\": false}", result);
+        expectedMap.put("fileName", testFile);
+        expectedMap.put("exists", "false");
+        assertEquals(expectedMap, result);
 
         when(mockGroupPesistenceService.checkGroupAppResourceFileName(testGroup, testFile)).thenReturn(false);
         when(mockAppPersistenceService.checkAppResourceFileName(testGroup, testApp, testFile)).thenReturn(true);
         result = resourceService.checkFileExists(testGroup, null, testApp, null, testFile);
-        assertEquals("{\"fileName\": \"" + testFile + "\",\n\"exists\": true}", result);
+        expectedMap.put("fileName", testFile);
+        expectedMap.put("exists", "true");
+        assertEquals(expectedMap, result);
 
         when(mockGroupPesistenceService.checkGroupWebServerResourceFileName(testGroup, testFile)).thenReturn(false);
         when(mockWebServerPersistenceService.checkWebServerResourceFileName(testGroup, testWebServer, testFile)).thenReturn(false);
         result = resourceService.checkFileExists(testGroup, null, null, testWebServer, testFile);
-        assertEquals("{\"fileName\": \"" + testFile + "\",\n\"exists\": false}", result);
+        expectedMap.put("fileName", testFile);
+        expectedMap.put("exists", "false");
+        assertEquals(expectedMap, result);
 
         when(mockGroupPesistenceService.checkGroupWebServerResourceFileName(testGroup, testFile)).thenReturn(false);
         when(mockWebServerPersistenceService.checkWebServerResourceFileName(testGroup, testWebServer, testFile)).thenReturn(true);
         result = resourceService.checkFileExists(testGroup, null, null, testWebServer, testFile);
-        assertEquals("{\"fileName\": \"" + testFile + "\",\n\"exists\": true}", result);
+        expectedMap.put("fileName", testFile);
+        expectedMap.put("exists", "true");
+        assertEquals(expectedMap, result);
     }
 
     @Test
