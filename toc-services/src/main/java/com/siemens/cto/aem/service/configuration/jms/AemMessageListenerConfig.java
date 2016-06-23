@@ -4,27 +4,22 @@ import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.common.domain.model.state.CurrentState;
-import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.persistence.service.JvmPersistenceService;
 import com.siemens.cto.aem.service.MessagingService;
 import com.siemens.cto.aem.service.configuration.service.AemServiceConfiguration;
 import com.siemens.cto.aem.service.group.GroupStateNotificationService;
 import com.siemens.cto.aem.service.jvm.JvmService;
 import com.siemens.cto.aem.service.jvm.JvmStateService;
-import com.siemens.cto.aem.service.state.impl.InMemoryStateManagerServiceImpl;
 import com.siemens.cto.aem.service.jvm.state.jms.listener.JvmStateMessageListener;
 import com.siemens.cto.aem.service.jvm.state.jms.listener.message.JvmStateMapMessageConverterImpl;
 import com.siemens.cto.aem.service.state.InMemoryStateManagerService;
 import com.siemens.cto.aem.service.state.StateNotificationService;
+import com.siemens.cto.aem.service.state.impl.InMemoryStateManagerServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.jms.listener.DefaultMessageListenerContainer;
-import org.springframework.transaction.PlatformTransactionManager;
 
 import javax.jms.MessageListener;
-import javax.jms.Session;
-import java.util.concurrent.TimeUnit;
 
 @Configuration
 public class AemMessageListenerConfig {
@@ -50,25 +45,29 @@ public class AemMessageListenerConfig {
     @Autowired
     private MessagingService messagingService;
 
+/*
     @Bean
     public DefaultMessageListenerContainer getJvmStateListenerContainer(final PlatformTransactionManager transactionManager,
                                                                         final MessageListener jvmMessageListener) {
-        final DefaultMessageListenerContainer container = new DefaultMessageListenerContainer();
-
-        container.setTransactionManager(transactionManager);
-        container.setConnectionFactory(jmsConfig.getConnectionFactory());
-        container.setReceiveTimeout(TimeUnit.MILLISECONDS.convert(25, TimeUnit.SECONDS));
-        container.setMessageListener(jvmMessageListener);
-        container.setDestination(jmsConfig.getJvmStateDestination());
-        container.setSessionTransacted(true);
-        container.setSessionAcknowledgeMode(Session.SESSION_TRANSACTED);
-        container.setPubSubDomain(true);
-        container.setSubscriptionDurable(true);
-        container.setDurableSubscriptionName(ApplicationProperties.get("toc.jms.heartbeat.durable-name"));
-        container.setConcurrentConsumers(1);
-
+        DefaultMessageListenerContainer container = null;
+        String configureDmlc = ApplicationProperties.get("configure.default.message.listener.container", "false");
+        if (Boolean.valueOf(configureDmlc)) {
+            container = new DefaultMessageListenerContainer();
+            container.setTransactionManager(transactionManager);
+            container.setConnectionFactory(jmsConfig.getConnectionFactory());
+            container.setReceiveTimeout(TimeUnit.MILLISECONDS.convert(25, TimeUnit.SECONDS));
+            container.setMessageListener(jvmMessageListener);
+            container.setDestination(jmsConfig.getJvmStateDestination());
+            container.setSessionTransacted(true);
+            container.setSessionAcknowledgeMode(Session.SESSION_TRANSACTED);
+            container.setPubSubDomain(true);
+            container.setSubscriptionDurable(true);
+            container.setDurableSubscriptionName(ApplicationProperties.get("toc.jms.heartbeat.durable-name"));
+            container.setConcurrentConsumers(1);
+        }
         return container;
     }
+*/
 
     @Bean(name = "jvmInMemoryStateManagerService")
     public InMemoryStateManagerService<Identifier<Jvm>, CurrentState<Jvm, JvmState>> getInMemoryStateManagerService() {
