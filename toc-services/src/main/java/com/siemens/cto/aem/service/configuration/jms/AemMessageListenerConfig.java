@@ -4,6 +4,7 @@ import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.common.domain.model.state.CurrentState;
+import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.persistence.service.JvmPersistenceService;
 import com.siemens.cto.aem.service.MessagingService;
 import com.siemens.cto.aem.service.configuration.service.AemServiceConfiguration;
@@ -18,8 +19,12 @@ import com.siemens.cto.aem.service.state.impl.InMemoryStateManagerServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.jms.listener.DefaultMessageListenerContainer;
+import org.springframework.transaction.PlatformTransactionManager;
 
 import javax.jms.MessageListener;
+import javax.jms.Session;
+import java.util.concurrent.TimeUnit;
 
 @Configuration
 public class AemMessageListenerConfig {
@@ -45,7 +50,6 @@ public class AemMessageListenerConfig {
     @Autowired
     private MessagingService messagingService;
 
-/*
     @Bean
     public DefaultMessageListenerContainer getJvmStateListenerContainer(final PlatformTransactionManager transactionManager,
                                                                         final MessageListener jvmMessageListener) {
@@ -67,7 +71,6 @@ public class AemMessageListenerConfig {
         }
         return container;
     }
-*/
 
     @Bean(name = "jvmInMemoryStateManagerService")
     public InMemoryStateManagerService<Identifier<Jvm>, CurrentState<Jvm, JvmState>> getInMemoryStateManagerService() {

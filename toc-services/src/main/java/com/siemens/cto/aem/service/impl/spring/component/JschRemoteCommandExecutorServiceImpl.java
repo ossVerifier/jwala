@@ -210,7 +210,7 @@ public class JschRemoteCommandExecutorServiceImpl implements RemoteCommandExecut
         boolean timeout = false;
         int readByte = in.read();
         LOGGER.debug("reading remote output...");
-        final StringBuilder inStringBuilder = new StringBuilder();
+        StringBuilder inStringBuilder = new StringBuilder();
 
         final long startTime = System.currentTimeMillis();
         while(readByte != 0xff) {
@@ -219,6 +219,16 @@ public class JschRemoteCommandExecutorServiceImpl implements RemoteCommandExecut
                 break;
             }
             inStringBuilder.append((char)readByte);
+            final int length = inStringBuilder.length();
+            if (length > 32768){
+                LOGGER.error("OOM TEST found large string of length {} :: {}", length, inStringBuilder.toString());
+                inStringBuilder.append(EXIT_CODE_START_MARKER);
+                inStringBuilder.append("1");
+                inStringBuilder.append(EXIT_CODE_END_MARKER);
+                final String cutItOutReturnValue = inStringBuilder.toString();
+                inStringBuilder = null;
+                return cutItOutReturnValue;
+            }
 
             // TODO: Find a way how to timeout from Inputstream read. The timeout mechanism above may not work when read is blocking.
             readByte = in.read();
