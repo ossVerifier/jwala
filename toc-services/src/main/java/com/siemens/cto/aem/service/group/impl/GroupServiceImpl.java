@@ -480,6 +480,7 @@ public class GroupServiceImpl implements GroupService {
             if(metaData.isUnpack()) {
                 LOGGER.debug("the file needs to be unpacked at the destination {}", destPath);
                 final String tocScriptsPath = AemControl.Properties.USER_TOC_SCRIPTS_PATH.getValue();
+                LOGGER.debug("creating the toc scirpts path {}", tocScriptsPath);
                 commandOutput = remoteCommandExecutor.executeRemoteCommand(
                         null,
                         hostName,
@@ -492,6 +493,22 @@ public class GroupServiceImpl implements GroupService {
                     throw new DeployApplicationConfException(standardError);
                 }
 
+                final String unpackWarScriptPath = ApplicationProperties.get("commands.scripts-path") + "/" + AemControl.Properties.UNPACK_WAR_SCRIPT_NAME;
+                LOGGER.debug("copying scripts to unpack war at {}", unpackWarScriptPath);
+                commandOutput = remoteCommandExecutor.executeRemoteCommand(
+                        null,
+                        hostName,
+                        ApplicationControlOperation.SECURE_COPY,
+                        new WindowsApplicationPlatformCommandProvider(),
+                        unpackWarScriptPath,
+                        tocScriptsPath);
+                if (!commandOutput.getReturnCode().wasSuccessful()) {
+                    standardError = commandOutput.getStandardError().isEmpty()? commandOutput.getStandardOutput() : commandOutput.getStandardError();
+                    LOGGER.error("Error in copying scripts to unpack :: ERROR: {}", standardError);
+                    throw new DeployApplicationConfException(standardError);
+                }
+
+                LOGGER.debug("changing the permissions for the toc scripts path {}", tocScriptsPath);
                 commandOutput = remoteCommandExecutor.executeRemoteCommand(
                         null,
                         hostName,
@@ -506,6 +523,7 @@ public class GroupServiceImpl implements GroupService {
                     throw new DeployApplicationConfException(standardError);
                 }
 
+                LOGGER.debug("unpacking the war {}", fileName);
                 commandOutput = remoteCommandExecutor.executeRemoteCommand(
                         null,
                         hostName,

@@ -405,6 +405,8 @@ public class GroupServiceImplDeployTest {
                 any(WindowsApplicationPlatformCommandProvider.class), anyString(), anyString())).thenReturn(commandOutput);
         when(remoteCommandExecutorImpl.executeRemoteCommand(anyString(), eq(hostName), eq(ApplicationControlOperation.CREATE_DIRECTORY),
                 any(WindowsApplicationPlatformCommandProvider.class), anyString())).thenReturn(commandOutput);
+        when(remoteCommandExecutorImpl.executeRemoteCommand(anyString(), eq(hostName), eq(ApplicationControlOperation.SECURE_COPY),
+                any(WindowsApplicationPlatformCommandProvider.class), anyString(), anyString())).thenReturn(commandOutput);
         when(remoteCommandExecutorImpl.executeRemoteCommand(anyString(), eq(hostName), eq(ApplicationControlOperation.CHANGE_FILE_MODE),
                 any(WindowsApplicationPlatformCommandProvider.class), anyString(), anyString(), anyString())).thenReturn(commandOutput);
         when(remoteCommandExecutorImpl.executeRemoteCommand(anyString(), eq(hostName), eq(ApplicationControlOperation.UNPACK_WAR),
