@@ -16,6 +16,7 @@
 <link rel="stylesheet" type="text/css" href="public-resources/css/react/generic-components/rtreelist.css">
 <link rel="stylesheet" type="text/css" href="public-resources/css/react/generic-components/rjson-data-tree-display.css"
 <link rel="stylesheet" type="text/css" href="public-resources/css/react/generic-components/rdatatable.css">
+<link rel="stylesheet" type="text/css" href="public-resources/css/react/generic-components/rmenu.css">
 <link rel="stylesheet" type="text/css" href="public-resources/css/resources-config.css">
 <link rel="stylesheet" type="text/css" href="public-resources/css/react/xmleditor.css">
 <link rel="stylesheet" type="text/css" href="public-resources/css/react/error-msg-list.css">

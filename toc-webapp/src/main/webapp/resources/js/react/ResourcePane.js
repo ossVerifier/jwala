@@ -17,7 +17,12 @@ var ResourcePane = React.createClass({
             return <div className="ResourcePane">
                        {toolbar}
                        <RListBox ref="listBox" options={this.state.resourceOptions} selectCallback={this.selectCallback}
-                                 multiSelect={true} />
+                                 multiSelect={true} onContextMenu={this.onContextMenu} />
+                       <RMenu ref="menu"
+                              menuItems={[{key: "deploy", label: "deploy", menuItems: [{key: "deployToAllHosts", label: "all hosts"},
+                                                                                       {key: "deployToAHosts", label: "a host"}]}]}
+                              onItemClick = {this.onContextMenuItemClick}
+                       />
                    </div>
         }
 
@@ -79,9 +84,14 @@ var ResourcePane = React.createClass({
         if (resourceName !== null) {
             this.props.deleteResourceCallback(resourceName);
         }
+    },
+    // Right click a resource is called onContextMenu event in js.
+    onContextMenu: function(e, val) {
+        this.refs.menu.show((e.clientY - 5) + "px", (e.clientX - 20) + "px");
+    },
+    onContextMenuItemClick: function(val) {
+        console.log(val);
     }
 });
-
-
 
 

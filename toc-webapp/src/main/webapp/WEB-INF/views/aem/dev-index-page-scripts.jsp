@@ -53,6 +53,7 @@
 <script type="text/jsx" src="public-resources/js/react/generic-components/confirm-delete-modal-dialog.js"></script>
 <script type="text/jsx" src="public-resources/js/react/generic-components/data-combobox.js"></script>
 <script type="text/jsx" src="public-resources/js/react/generic-components/data-multi-select-box.js"></script>
+<script type="text/jsx" src="public-resources/js/react/generic-components/RMenu.js"></script>
 <script type="text/jsx" src="public-resources/js/react/RTextPreview.js"></script>
 <script type="text/jsx" src="public-resources/js/react/XmlEditor.js"></script>
 <script type="text/jsx" src="public-resources/js/react/CodeMirrorComponent.js"></script>

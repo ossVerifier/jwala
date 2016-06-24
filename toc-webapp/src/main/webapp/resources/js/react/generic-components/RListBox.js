@@ -21,7 +21,8 @@ var RListBox = React.createClass({
                                                            selectedValue: self.state.selectedValue,
                                                            checkBoxEnabled: self.props.multiSelect,
                                                            label: option.label,
-                                                           onClick: self.onOptionClick}));
+                                                           onClick: self.onOptionClick,
+                                                           onContextMenu: self.props.onContextMenu}));
         });
         return resourceList;
     },
@@ -67,11 +68,18 @@ var Option = React.createClass({
 
         return React.createElement("li", {className: stateClassName,
                                           onClick: this.onClick,
+                                          onContextMenu: this.onContextMenu,
                                           onMouseOver: this.onMouseOver,
                                           onMouseOut: this.onMouseOut}, listItems);
     },
     onClick: function() {
         this.props.onClick(this.props.value);
+    },
+    onContextMenu: function(e) {
+        if ($.isFunction(this.props.onContextMenu)) {
+            this.props.onContextMenu(e, this.props.value);
+        }
+        return false;
     },
     onMouseOver: function() {
         this.setState({mouseOver: true});
