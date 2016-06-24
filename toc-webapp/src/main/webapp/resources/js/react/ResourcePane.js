@@ -18,11 +18,15 @@ var ResourcePane = React.createClass({
                        {toolbar}
                        <RListBox ref="listBox" options={this.state.resourceOptions} selectCallback={this.selectCallback}
                                  multiSelect={true} onContextMenu={this.onContextMenu} />
-                       <RMenu ref="menu"
+
+                       <RMenu ref="groupLevelWebAppsResourceMenu"
                               menuItems={[{key: "deploy", label: "deploy", menuItems: [{key: "deployToAllHosts", label: "all hosts"},
                                                                                        {key: "deployToAHosts", label: "a host"}]}]}
-                              onItemClick = {this.onContextMenuItemClick}
-                       />
+                              onItemClick = {this.onContextMenuItemClick}/>
+
+                       <RMenu ref="deployResourceMenu" menuItems={[{key: "deploy", label: "deploy"}]}
+                              onItemClick ={this.onContextMenuItemClick}/>
+
                    </div>
         }
 
@@ -87,7 +91,11 @@ var ResourcePane = React.createClass({
     },
     // Right click a resource is called onContextMenu event in js.
     onContextMenu: function(e, val) {
-        this.refs.menu.show((e.clientY - 5) + "px", (e.clientX - 20) + "px");
+        if (this.state.data.rtreeListMetaData.entity === "webApps" && this.state.data.rtreeListMetaData.parent.rtreeListMetaData.entity === "webAppSection") {
+            this.refs.groupLevelWebAppsResourceMenu.show((e.clientY - 5) + "px", (e.clientX - 5) + "px");
+        } else {
+            this.refs.deployResourceMenu.show((e.clientY - 5) + "px", (e.clientX - 5) + "px");
+        }
     },
     onContextMenuItemClick: function(val) {
         console.log(val);
