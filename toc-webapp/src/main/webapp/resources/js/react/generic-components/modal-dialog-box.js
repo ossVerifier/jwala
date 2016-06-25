@@ -15,6 +15,7 @@
  * 10. cancelLabel - the "cancel" button label. If undefined the button label shows "Cancel" by default.
  * 11. top - the dialog's top position. If not set top will be computed to position the dialog at the middle of the screen.
  * 12. left - the dialog's left position. If not set left will be computed to position the dialog at the center of the screen.
+ * 13. position - position of the dialog's main div element e.g. absolute, fixed, relative etc...search for "div position"
  *
  * Usage Example (in JSX)
  *
@@ -54,7 +55,9 @@ var ModalDialogBox = React.createClass({
         var height = this.props.height === undefined ? "auto" : this.props.height;
         var width = this.props.width === undefined ? "auto" : this.props.width;
 
-        var theStyle = {overflow:"visible", zIndex:"998", position:"absolute",height:height,width:width,top:this.state.top + "px",left:this.state.left + "px",display:"block"};
+        var theStyle = {overflow: "visible", zIndex: "998", position: this.props.position ? this.props.position : "absolute",
+                        height: height, width: width, top: this.state.top + "px", left: this.state.left + "px", display: "block"};
+
         var contentDivStyle = {display:"block",width:"auto",maxHeight:"none",height:"auto"};
         var contentDivClassName = this.props.contentDivClassName !== undefined ? this.props.contentDivClassName : "";
 
@@ -81,7 +84,7 @@ var ModalDialogBox = React.createClass({
                                        // Text area that would do the resizing for us, the only problem is that we need to resize the content along with it.
                                        // React.createElement("textArea", {style: {width: "100%", height: "100%", position: "absolute", top: 0, left: 0, zIndex: -999}})
 
-        return React.DOM.div({style:this.state.show ? {} : {display:"none"}},
+        return React.DOM.div({style:this.state.show ? {} : {display:"none"}, onMouseMove: function(e){e.stopPropagation()}},
                              React.DOM.div({className:"ui-widget-overlay ui-front"}, ""), theDialog);
 
     },
@@ -105,16 +108,22 @@ var ModalDialogBox = React.createClass({
         // Set the initial position if it is not yet set. Position the dialog at the center of the screen.
         if (this.refs.theDialog !== undefined) {
             if (this.state.top === -10000) {
-                var height = $(this.refs.theDialog.getDOMNode()).height();
-                var width = $(this.refs.theDialog.getDOMNode()).width();
+                if (this.props.position === "fixed") {
+                    var top = Math.floor(window.innerHeight/2) - Math.floor($(this.refs.theDialog.getDOMNode()).height()/2);
+                    var left = Math.floor(window.innerWidth/2) - Math.floor($(this.refs.theDialog.getDOMNode()).width()/2);
+                    this.setState({top: top, left: left});
+                } else {
+                    var height = $(this.refs.theDialog.getDOMNode()).height();
+                    var width = $(this.refs.theDialog.getDOMNode()).width();
 
-                var offsetX = $(window).width()/2 - $(this.getDOMNode()).parent().offset().left;
-                var offsetY = $(document).height()/2 - $(this.getDOMNode()).parent().offset().top;
+                    var offsetX = $(window).width()/2 - $(this.getDOMNode()).parent().offset().left;
+                    var offsetY = $(document).height()/2 - $(this.getDOMNode()).parent().offset().top;
 
-                this.setState({top:offsetY - height/2,left:offsetX - width/2});
+                    this.setState({top:offsetY - height/2,left:offsetX - width/2});
 
-                if (this.props.modal === true) {
-                    $(this.getDOMNode()).parent().append(this.divOverlay);
+                    if (this.props.modal === true) {
+                        $(this.getDOMNode()).parent().append(this.divOverlay);
+                    }
                 }
             }
         }
@@ -136,6 +145,7 @@ var ModalDialogBox = React.createClass({
     mouseDownYDiff: 0,
     mouseDownHandler: function(e) {
         e.preventDefault();
+        e.stopPropagation();
         this.mouseDown = true;
         this.mouseDownXDiff = e.pageX - this.state.left;
         this.mouseDownYDiff = e.pageY - this.state.top;
@@ -143,10 +153,12 @@ var ModalDialogBox = React.createClass({
     },
     mouseUpHandler: function(e) {
         e.preventDefault();
+        e.stopPropagation();
         $(document).off("mousemove", this.mouseMoveHandler);
     },
     mouseMoveHandler: function(e) {
         e.preventDefault();
+        e.stopPropagation();
         this.setState({top:e.pageY - this.mouseDownYDiff, left:e.pageX - this.mouseDownXDiff});
     },
     show: function(title, content, okCallback, cancelCallback) {

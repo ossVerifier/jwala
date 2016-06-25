@@ -7,7 +7,7 @@
  */
 var ResourcePane = React.createClass({
     getInitialState: function() {
-        return {resourceOptions: [], showModalResourceTemplateMetaData: false, data: null}
+        return {resourceOptions: [], showModalResourceTemplateMetaData: false, data: null, rightClickedItem: null}
     },
     render: function() {
         var metaData = [{icon: "ui-icon-plusthick", title: "create", onClickCallback: this.createResource},
@@ -22,10 +22,16 @@ var ResourcePane = React.createClass({
                        <RMenu ref="groupLevelWebAppsResourceMenu"
                               menuItems={[{key: "deploy", label: "deploy", menuItems: [{key: "deployToAllHosts", label: "all hosts"},
                                                                                        {key: "deployToAHosts", label: "a host"}]}]}
-                              onItemClick = {this.onContextMenuItemClick}/>
+                              onItemClick = {this.onGroupLevelWebAppsResourceContextMenuItemClick}/>
 
                        <RMenu ref="deployResourceMenu" menuItems={[{key: "deploy", label: "deploy"}]}
-                              onItemClick ={this.onContextMenuItemClick}/>
+                              onItemClick ={this.onDeployResourceContextMenuItemClick}/>
+
+                       <ModalDialogBox ref="confirmDeployResourceDlg"
+                                       okLabel="Yes"
+                                       okCallback={this.deployResourceCallback}
+                                       cancelLabel="No"
+                                       position="fixed" />
 
                    </div>
         }
@@ -91,14 +97,24 @@ var ResourcePane = React.createClass({
     },
     // Right click a resource is called onContextMenu event in js.
     onContextMenu: function(e, val) {
+        this.state["rightClickedItem"] = val;
         if (this.state.data.rtreeListMetaData.entity === "webApps" && this.state.data.rtreeListMetaData.parent.rtreeListMetaData.entity === "webAppSection") {
             this.refs.groupLevelWebAppsResourceMenu.show((e.clientY - 5) + "px", (e.clientX - 5) + "px");
         } else {
             this.refs.deployResourceMenu.show((e.clientY - 5) + "px", (e.clientX - 5) + "px");
         }
     },
-    onContextMenuItemClick: function(val) {
+    onGroupLevelWebAppsResourceContextMenuItemClick: function(val) {
         console.log(val);
+    },
+    onDeployResourceContextMenuItemClick: function(val) {
+        var name = this.state.data.name ? this.state.data.name : this.state.data.jvmName;
+        var msg = 'Are you sure you want to deploy "' + this.state.rightClickedItem + '" to "' + name + '" ?';
+
+        this.refs.confirmDeployResourceDlg.show("Deploy resource confirmation", msg);
+    },
+    deployResourceCallback: function() {
+        console.log("deploy the resource!");
     }
 });
 
