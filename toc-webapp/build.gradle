@@ -139,12 +139,12 @@ task babel(type:Exec) {
 babel.dependsOn downloadBabel
 
 war{
-
     manifest {
         attributes(
-                "Specification-Version": (null ==System.getProperty("ACCUREV_LATEST_TRANSACTION_ID") ? "" : System.getProperty("ACCUREV_LATEST_TRANSACTION_ID")),
+                "Specification-Version": (null ==System.getProperty("accurevTransactionId") ? "" : System.getProperty("accurevTransactionId")),
                 "Implementation-Title": project.name,
-                "Implementation-Version": (null ==System.getProperty("IMPLEMENTATION_BUILD_NUMBER") ? project.versions : System.getProperty("IMPLEMENTATION_BUILD_NUMBER")),
+                "Implementation-Version": buildVersion,
+                "Build-Number": (null == System.getProperty("buildNumber")) ? "" : System.getProperty("buildNumber"),
                 "Built-By": System.getProperty("user.name"),
                 "Built-JDK": System.getProperty("java.version"),
                 "Built-Host": InetAddress.getLocalHost(),
