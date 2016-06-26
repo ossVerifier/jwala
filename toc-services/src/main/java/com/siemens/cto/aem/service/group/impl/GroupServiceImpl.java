@@ -584,4 +584,8 @@ public class GroupServiceImpl implements GroupService {
         }
     }
 
+    @Override
+    public List<String> getHosts(final String groupName) {
+        return groupPersistenceService.getHosts(groupName);
+    }
 }

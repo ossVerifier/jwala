@@ -112,4 +112,11 @@ public interface GroupService {
      * @return returns a commandoutput object
      */
     CommandOutput deployGroupAppTemplate(String groupName, String fileName, ResourceGroup resourceGroup, Application application, String hostName);
+
+    /**
+     * Get hosts of a group.
+     * @param groupName the group's name
+     * @return all the host names of a group
+     */
+    List<String> getHosts(String groupName);
 }

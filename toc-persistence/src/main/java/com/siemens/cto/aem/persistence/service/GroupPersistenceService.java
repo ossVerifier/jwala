@@ -106,4 +106,11 @@ public interface GroupPersistenceService extends StatePersistenceService<Group, 
      * @return
      */
     boolean checkGroupWebServerResourceFileName(String groupName, String fileName);
+
+    /**
+     * Get hosts of a group.
+     * @param groupName the group's name
+     * @return all the host names of a group
+     */
+    List<String> getHosts(String groupName);
 }

@@ -264,4 +264,13 @@ public interface GroupServiceRest {
     @GET
     @Path("/{groupName}/webservers/allStopped")
     Response areAllWebServersStopped(@PathParam("groupName") String groupName);
+
+    /**
+     * Get hosts of a group.
+     * @param groupName the group's name
+     * @return {@link Response} wrapping all the host names of a group
+     */
+    @GET
+    @Path("/{groupName}/hosts")
+    Response getHosts(@PathParam("groupName") String groupName);
 }

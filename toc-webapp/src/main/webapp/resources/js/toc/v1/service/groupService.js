@@ -157,5 +157,8 @@ var groupService = {
     },
     getAllGroupWebServersAreStopped: function(groupName) {
         return serviceFoundation.promisedGet("v1.0/groups/" + encodeURI(groupName) + "/webservers/allStopped");
+    },
+    getHosts: function(groupName) {
+        return serviceFoundation.promisedGet("v1.0/groups/" + encodeURIComponent(groupName) + "/hosts");
     }
 }

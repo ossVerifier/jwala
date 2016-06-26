@@ -21,6 +21,9 @@ import com.siemens.cto.aem.persistence.service.GroupPersistenceService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
 import java.util.*;
 
 public class JpaGroupPersistenceServiceImpl implements GroupPersistenceService {
@@ -28,6 +31,10 @@ public class JpaGroupPersistenceServiceImpl implements GroupPersistenceService {
     private static final Logger LOGGER = LoggerFactory.getLogger(JpaGroupPersistenceServiceImpl.class);
     private final GroupCrudService groupCrudService;
     private final GroupJvmRelationshipService groupJvmRelationshipService;
+
+
+    @PersistenceContext(unitName = "aem-unit")
+    protected EntityManager entityManager; // We're removing the CRUD layer in the near future so going forward, new methods will be using the entity manager in this class.
 
     public JpaGroupPersistenceServiceImpl(final GroupCrudService theGroupCrudService,
                                           final GroupJvmRelationshipService theGroupJvmRelationshipService) {
@@ -292,5 +299,12 @@ public class JpaGroupPersistenceServiceImpl implements GroupPersistenceService {
     @Override
     public boolean checkGroupWebServerResourceFileName(String groupName, String fileName) {
         return groupCrudService.checkGroupWebServerResourceFileName(groupName, fileName);
+    }
+
+    @Override
+    public List<String> getHosts(final String groupName) {
+        final Query q = entityManager.createNamedQuery(JpaGroup.QUERY_GET_HOSTS_OF_A_GROUP);
+        q.setParameter(JpaGroup.QUERY_PARAM_NAME, groupName);
+        return q.getResultList();
     }
 }

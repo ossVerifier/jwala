@@ -1044,4 +1044,9 @@ public class GroupServiceRestImpl implements GroupServiceRest {
             return ResponseBuilder.ok(resultTrue);
         }
     }
+
+    @Override
+    public Response getHosts(final String groupName) {
+        return ResponseBuilder.ok(groupService.getHosts(groupName));
+    }
 }

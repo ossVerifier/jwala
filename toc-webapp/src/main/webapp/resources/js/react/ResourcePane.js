@@ -21,7 +21,7 @@ var ResourcePane = React.createClass({
 
                        <RMenu ref="groupLevelWebAppsResourceMenu"
                               menuItems={[{key: "deploy", label: "deploy", menuItems: [{key: "deployToAllHosts", label: "all hosts"},
-                                                                                       {key: "deployToAHosts", label: "a host"}]}]}
+                                                                                       {key: "deployToAHost", label: "a host"}]}]}
                               onItemClick = {this.onGroupLevelWebAppsResourceContextMenuItemClick}/>
 
                        <RMenu ref="deployResourceMenu" menuItems={[{key: "deploy", label: "deploy"}]}
@@ -32,6 +32,8 @@ var ResourcePane = React.createClass({
                                        okCallback={this.deployResourceCallback}
                                        cancelLabel="No"
                                        position="fixed" />
+
+                       <ModalDialogBox ref="selectHostDlg" okCallback={this.selectHostCallback} position="fixed" />
 
                    </div>
         }
@@ -105,7 +107,18 @@ var ResourcePane = React.createClass({
         }
     },
     onGroupLevelWebAppsResourceContextMenuItemClick: function(val) {
-        console.log(val);
+        var self = this;
+        if (val === "deployToAHost") {
+            var groupName = this.state.data.rtreeListMetaData.parent.rtreeListMetaData.parent.name;
+            ServiceFactory.getGroupService().getHosts(groupName).then(function(response){
+                self.refs.selectHostDlg.show("Select a host", <SelectHostWidget>{response.applicationResponseContent}</SelectHostWidget>);
+            }).caught(function(e){
+                $.errorAlert(e, "Error");
+            });
+        } else {
+            this.refs.confirmDeployResourceDlg.show("Deploy resource confirmation", 'Are you sure you want to deploy "'
+                                                    + this.state.rightClickedItem + '" to all hosts ?');
+        }
     },
     onDeployResourceContextMenuItemClick: function(val) {
         var name = this.state.data.name ? this.state.data.name : this.state.data.jvmName;
@@ -114,8 +127,36 @@ var ResourcePane = React.createClass({
         this.refs.confirmDeployResourceDlg.show("Deploy resource confirmation", msg);
     },
     deployResourceCallback: function() {
-        console.log("deploy the resource!");
+        var data = this.state.data;
+        if (data !== null) {
+            if (data.rtreeListMetaData.entity === "jvms") {
+                ServiceFactory.getJvmService().deployJvmConf(data.jvmName, this.state.rightClickedItem);
+            } else if (data.rtreeListMetaData.entity === "webServers") {
+
+            } else if (data.rtreeListMetaData.entity === "webApps" && data.rtreeListMetaData.parent.rtreeListMetaData.entity === "jvms") {
+
+            } else if (data.rtreeListMetaData.entity === "webApps" && data.rtreeListMetaData.parent.rtreeListMetaData.entity === "webAppSection") {
+
+            } else if (data.rtreeListMetaData.entity === "webServerSection") {
+
+            } else if (data.rtreeListMetaData.entity === "jvmSection") {
+
+            }
+        }
+        this.refs.confirmDeployResourceDlg.close();
+    },
+    selectHostCallback: function() {
+
     }
 });
 
+SelectHostWidget = React.createClass({
+    render: function() {
+        var options = [];
+        this.props.children.forEach(function(host){
+            options.push(<option value={host}>{host}</option>);
+        });
+        return <select>{options}</select>;
+    }
+});
 
