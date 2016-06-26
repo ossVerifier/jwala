@@ -7,7 +7,7 @@
  */
 var ResourcePane = React.createClass({
     getInitialState: function() {
-        return {resourceOptions: [], showModalResourceTemplateMetaData: false, data: null, rightClickedItem: null}
+        return {resourceOptions: [], showModalResourceTemplateMetaData: false, data: null, rightClickedItem: null, host: null}
     },
     render: function() {
         var metaData = [{icon: "ui-icon-plusthick", title: "create", onClickCallback: this.createResource},
@@ -33,7 +33,7 @@ var ResourcePane = React.createClass({
                                        cancelLabel="No"
                                        position="fixed" />
 
-                       <ModalDialogBox ref="selectHostDlg" okCallback={this.selectHostCallback} position="fixed" />
+                       <ModalDialogBox ref="selectHostDlg" okCallback={this.selectHostDlgOkClickCallback} position="fixed" />
 
                    </div>
         }
@@ -111,7 +111,8 @@ var ResourcePane = React.createClass({
         if (val === "deployToAHost") {
             var groupName = this.state.data.rtreeListMetaData.parent.rtreeListMetaData.parent.name;
             ServiceFactory.getGroupService().getHosts(groupName).then(function(response){
-                self.refs.selectHostDlg.show("Select a host", <SelectHostWidget>{response.applicationResponseContent}</SelectHostWidget>);
+                self.refs.selectHostDlg.show("Select a host",
+                    <SelectHostWidget getSelectedItemCallback={self.getSelectedItemCallback}>{response.applicationResponseContent}</SelectHostWidget>);
             }).caught(function(e){
                 $.errorAlert(e, "Error");
             });
@@ -145,18 +146,43 @@ var ResourcePane = React.createClass({
         }
         this.refs.confirmDeployResourceDlg.close();
     },
-    selectHostCallback: function() {
-
+    getSelectedItemCallback: function(host) {
+        this.state.host = host;
+    },
+    selectHostDlgOkClickCallback: function() {
+        this.refs.selectHostDlg.close();
     }
 });
 
 SelectHostWidget = React.createClass({
+    getInitialState: function() {
+        return {host: ($.isArray(this.props.children) && this.props.children.length > 0) ? this.props.children[0] : null};
+    },
     render: function() {
+        var self = this;
         var options = [];
-        this.props.children.forEach(function(host){
-            options.push(<option value={host}>{host}</option>);
-        });
-        return <select>{options}</select>;
+        if ($.isArray(this.props.children)) {
+            this.props.children.forEach(function(host){
+                if (self.state.host === host) {
+                    options.push(<option value={host} selected>{host}</option>);
+                } else {
+                    options.push(<option value={host}>{host}</option>);
+                }
+            });
+            return <select ref="select" onChange={this.onSelectChange}>{options}</select>;
+        }
+        return null;
+    },
+    componentDidMount: function() {
+        this.props.getSelectedItemCallback(this.state.host);
+    },
+    componentDidUpdate: function() {
+        this.props.getSelectedItemCallback(this.state.host);
+    },
+    onSelectChange: function(e) {
+        var selectBox = this.refs.select.getDOMNode();
+        var host = selectBox.options[selectBox.options.selectedIndex].value;
+        this.setState({host: host});
     }
 });
 
