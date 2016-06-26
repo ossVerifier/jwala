@@ -87,5 +87,9 @@ var resourceService = {
             matrixParam += ";webApp=" + webAppName;
         }
         return serviceFoundation.del("v1.0/resources/template/" + resourceName + matrixParam);
+    },
+    deployGroupAppResourceToHost: function(groupName, fileName, host) {
+        return serviceFoundation.promisedPut("v1.0/groups/" + encodeURIComponent(groupName) + "/apps/conf/" + encodeURIComponent(fileName) +
+                                      "?hostName=" + encodeURIComponent(host));
     }
 };

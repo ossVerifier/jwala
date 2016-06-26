@@ -151,6 +151,14 @@ var ResourcePane = React.createClass({
     },
     selectHostDlgOkClickCallback: function() {
         this.refs.selectHostDlg.close();
+        var groupName = this.state.data.rtreeListMetaData.parent.rtreeListMetaData.parent.name;
+        ServiceFactory.getResourceService().deployGroupAppResourceToHost(groupName, this.state.rightClickedItem, this.state.host)
+            .then(function(response){
+                console.log(response);
+            }).caught(function(e){
+                console.log(e);
+                $.errorAlert(e.statusText);
+            });
     }
 });
 
