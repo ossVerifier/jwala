@@ -3,6 +3,8 @@ package com.siemens.cto.aem.service.impl.spring.component;
 import com.jcraft.jsch.*;
 import com.siemens.cto.aem.commandprocessor.jsch.impl.ChannelSessionKey;
 import com.siemens.cto.aem.commandprocessor.jsch.impl.ChannelType;
+import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
+import com.siemens.cto.aem.common.exception.InternalErrorException;
 import com.siemens.cto.aem.common.exec.ExecReturnCode;
 import com.siemens.cto.aem.common.exec.RemoteExecCommand;
 import com.siemens.cto.aem.common.exec.RemoteSystemConnection;
@@ -25,7 +27,7 @@ import java.nio.charset.StandardCharsets;
 
 /**
  * Implementation of {@link RemoteCommandExecutorService} using JSCH.
- *
+ * <p/>
  * Created by JC043760 on 3/25/2016.
  */
 @Service
@@ -58,6 +60,7 @@ public class JschRemoteCommandExecutorServiceImpl implements RemoteCommandExecut
 
     /**
      * Execute a command via shell.
+     *
      * @param remoteExecCommand wrapper that contains command details
      * @return {@link RemoteCommandReturnInfo}
      */
@@ -73,7 +76,7 @@ public class JschRemoteCommandExecutorServiceImpl implements RemoteCommandExecut
 
         try {
             while ((channel == null || !channel.isConnected()) &&
-                   (System.currentTimeMillis() - startTime) < CHANNEL_BORROW_LOOP_WAIT_TIME) {
+                    (System.currentTimeMillis() - startTime) < CHANNEL_BORROW_LOOP_WAIT_TIME) {
                 LOGGER.debug("borrowing a channel...");
                 channel = (ChannelShell) channelPool.borrowObject(channelSessionKey);
                 if (channel != null) {
@@ -109,7 +112,7 @@ public class JschRemoteCommandExecutorServiceImpl implements RemoteCommandExecut
             commandStream.println("echo 'EXIT_CODE='$?***");
             commandStream.println("echo -n -e '\\xff'");
 
-            String commandOutputStr = readRemoteOutput(in);
+            String commandOutputStr = readRemoteOutput(in, channel, channelSessionKey);
             int retCode = parseReturnCode(commandOutputStr, remoteExecCommand).getReturnCode();
             return new RemoteCommandReturnInfo(retCode, commandOutputStr, StringUtils.EMPTY);
         } catch (final Exception e) {
@@ -124,6 +127,7 @@ public class JschRemoteCommandExecutorServiceImpl implements RemoteCommandExecut
 
     /**
      * Execute a command directly (do not open a shell) then exit immediately.
+     *
      * @param remoteExecCommand wrapper that contains command details
      * @return {@link RemoteCommandReturnInfo}
      */
@@ -203,25 +207,60 @@ public class JschRemoteCommandExecutorServiceImpl implements RemoteCommandExecut
 
     /**
      * Read remote output stream.
-     * @param in the input stream
+     *
+     * @param in      the input stream
+     * @param channel
+     * @param channelSessionKey
      * @throws IOException
      */
-    protected String readRemoteOutput(final InputStream in) throws IOException {
+    protected String readRemoteOutput(InputStream in, final ChannelShell channel, ChannelSessionKey channelSessionKey) throws Exception {
         boolean timeout = false;
         int readByte = in.read();
-        LOGGER.debug("reading remote output...");
+        LOGGER.info("OOM TEST reading remote output...");
         StringBuilder inStringBuilder = new StringBuilder();
 
         final long startTime = System.currentTimeMillis();
-        while(readByte != 0xff) {
+        while (readByte != 0xff) {
             if ((System.currentTimeMillis() - startTime) > REMOTE_OUTPUT_STREAM_MAX_WAIT_TIME) {
                 timeout = true;
                 break;
             }
-            inStringBuilder.append((char)readByte);
+            if (readByte != -1) {
+                inStringBuilder.append((char) readByte);
+            } else {
+                if (channel.isEOF()) {
+                    LOGGER.info("OOM TEST reached the end of file - now what?");
+                }
+                if (channel.isConnected()){
+                    LOGGER.info("OOM TEST channel is connected");
+                }
+                if (channel.isClosed()){
+                    LOGGER.info("OOM TEST channel is closed");
+                }
+                LOGGER.info("OOM TEST channel exit status {}", channel.getExitStatus());
+                LOGGER.info("OOM TEST channel being returned to the pool");
+                channelPool.returnObject(channelSessionKey, channel);
+                throw new InternalErrorException(AemFaultType.CONTROL_OPERATION_UNSUCCESSFUL, "Input stream to channel ended before return value received");
+            }
+            int length = inStringBuilder.length();
+            if (length > 16384) {
+                LOGGER.error("OOM TEST found large string of length {} :: {}", length, inStringBuilder.toString());
+                inStringBuilder.append(EXIT_CODE_START_MARKER);
+                inStringBuilder.append("=1");
+                inStringBuilder.append(EXIT_CODE_END_MARKER);
+                String result = inStringBuilder.toString();
+                inStringBuilder = null;
+                return result;
+            }
 
             // TODO: Find a way how to timeout from Inputstream read. The timeout mechanism above may not work when read is blocking.
             readByte = in.read();
+
+            if (readByte == -1) {
+                LOGGER.info("OOM TEST read -1 from shell stream");
+            } else if (readByte == 255) {
+                LOGGER.info("OOM TEST read 255 from shell stream - kill it");
+            }
         }
 
         if (timeout) {
@@ -237,16 +276,14 @@ public class JschRemoteCommandExecutorServiceImpl implements RemoteCommandExecut
             LOGGER.debug("****** output: end ******");
         }
 
-        final int length = inStringBuilder.length();
-        if (length > 65536){
-            LOGGER.error("OOM TEST found large string of length {} :: {}", length, inStringBuilder.toString());
-        }
-
-        return inStringBuilder.toString();
+        String result = inStringBuilder.toString();
+        inStringBuilder = null;
+        return result;
     }
 
     /**
      * Parse the return code from the output string.
+     *
      * @param outputStr the output string
      * @return {@link ExecReturnCode}
      */
@@ -261,11 +298,12 @@ public class JschRemoteCommandExecutorServiceImpl implements RemoteCommandExecut
 
     /**
      * Prepare the session by setting session properties.
+     *
      * @param remoteSystemConnection {@link RemoteSystemConnection}
      * @return {@link Session}
      * @throws JSchException
      */
-    protected Session prepareSession(final RemoteSystemConnection remoteSystemConnection)  throws JSchException {
+    protected Session prepareSession(final RemoteSystemConnection remoteSystemConnection) throws JSchException {
         final Session session = jSch.getSession(remoteSystemConnection.getUser(), remoteSystemConnection.getHost(),
                 remoteSystemConnection.getPort());
         final String password = remoteSystemConnection.getPassword();
