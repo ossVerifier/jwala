@@ -148,7 +148,13 @@ var ResourcePane = React.createClass({
             } else if (data.rtreeListMetaData.entity === "webApps" && data.rtreeListMetaData.parent.rtreeListMetaData.entity === "jvms") {
                 var groupName = this.state.data.rtreeListMetaData.parent.rtreeListMetaData.parent.rtreeListMetaData.parent.name;
                 var jvmName = this.state.data.rtreeListMetaData.parent.jvmName;
-                ServiceFactory.getWebAppService().deployWebAppsConf(this.state.data.name, groupName, jvmName, this.state.rightClickedItem);
+                ServiceFactory.getResourceService().deployJvmWebAppResource(this.state.data.name, groupName, jvmName, this.state.rightClickedItem)
+                    .then(function(response){
+                        console.log(response)
+                    }).caught(function(response){
+                        console.log(response);
+                        $.errorAlert(response.statusText);
+                    });
             } else if (data.rtreeListMetaData.entity === "webApps" && data.rtreeListMetaData.parent.rtreeListMetaData.entity === "webAppSection") {
                 ServiceFactory.getResourceService().deployGroupAppResourceToHost(groupName, this.state.rightClickedItem, "")
                                                                                 .then(function(response){

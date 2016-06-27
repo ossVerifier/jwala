@@ -83,15 +83,7 @@ var webAppService = {
                                      false,
                                      "text/plain; charset=utf-8");
     },
-    deployWebAppsConf: function(webAppName, groupName, jvmName, resourceTemplateName) {
-        return serviceFoundation.promisedPut("v1.0/applications/" + encodeURI(webAppName) + "/conf/" +
-                                             encodeURI(resourceTemplateName) + ";groupName=" + encodeURI(groupName) +
-                                             ";jvmName=" + encodeURI(jvmName),
-                                             "json",
-                                             null,
-                                             false);
-     },
-     uploadTemplateForm: function(webAppName, jvmName, templateName, templateFile, successCallback, errorCallback) {
+    uploadTemplateForm: function(webAppName, jvmName, templateName, templateFile, successCallback, errorCallback) {
          return serviceFoundation.post("v1.0/applications/" + encodeURI(webAppName) + "/resources/uploadTemplate;templateName=" + encodeURI(templateName) + ";jvmName="+encodeURI(jvmName),
                                          "json",
                                          templateFile,

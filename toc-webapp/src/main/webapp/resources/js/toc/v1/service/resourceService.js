@@ -97,5 +97,13 @@ var resourceService = {
     },
     deployJvmResource: function(jvmName, fileName) {
         return serviceFoundation.promisedPut("v1.0/jvms/" + encodeURIComponent(jvmName) + "/conf/" + encodeURIComponent(fileName), "json", null, false);
+    },
+    deployJvmWebAppResource: function(webAppName, groupName, jvmName, fileName) {
+        return serviceFoundation.promisedPut("v1.0/applications/" + encodeURIComponent(webAppName) + "/conf/" +
+                                             encodeURIComponent(fileName) + ";groupName=" + encodeURIComponent(groupName) +
+                                             ";jvmName=" + encodeURIComponent(jvmName),
+                                             "json",
+                                             null,
+                                             false);
     }
 };
