@@ -379,7 +379,7 @@ var XmlTabs = React.createClass({
             codeMirrorComponent = <CodeMirrorComponent ref="codeMirrorComponent" content={this.state.template}
                                    className="xml-editor-container" saveCallback={this.saveResource}
                                    onChange={this.onChangeCallback}/>
-            xmlPreview = <XmlPreview ref="xmlPreview" deployCallback={this.deployResource}/>
+            xmlPreview = <XmlPreview ref="xmlPreview" />
         }
 
         var xmlTabItems = [{title: "Template", content:codeMirrorComponent},
@@ -459,36 +459,6 @@ var XmlTabs = React.createClass({
             throw response;
         }
     },
-    deployResourcePromise: function(ajaxProcessDoneCallback) {
-        var thePromise;
-        console.log("deploying...");
-        if (this.state.entity !== null && this.state.resourceTemplateName !== null) {
-            if (this.state.entityType === "jvms") {
-                thePromise = this.props.jvmService.deployJvmConf(this.state.entity.jvmName,
-                                                                 this.state.resourceTemplateName);
-            } else if (this.state.entityType === "webServers") {
-                thePromise = this.props.wsService.deployHttpdConf(this.state.entity.name,
-                                                                  this.state.resourceTemplateName);
-            } else if (this.state.entityType === "webApps") {
-                if (this.state.entityParent.jvmName){
-                    thePromise = this.props.webAppService.deployWebAppsConf(this.state.entity.name,
-                                                                        this.state.entity.group.name,
-                                                                        this.state.entityParent.jvmName,
-                                                                        this.state.resourceTemplateName);
-                } else {
-                    thePromise = this.props.groupService.deployGroupAppConf(this.state.entityGroupName,
-                                                                                this.state.resourceTemplateName);
-                }
-            } else if (this.state.entityType === "webServerSection") {
-                thePromise = this.props.groupService.deployGroupWebServerConf(this.state.entityGroupName,
-                                                                              this.state.resourceTemplateName);
-            } else if (this.state.entityType === "jvmSection") {
-                    thePromise = this.props.groupService.deployGroupJvmConf(this.state.entityGroupName,
-                                                                 this.state.resourceTemplateName);
-            }
-        }
-        return thePromise;
-    },
     failed: function(title, response) {
         try {
             // Note: This will do for now. The problem is that the response's responseText is in HTML for save and
@@ -503,58 +473,6 @@ var XmlTabs = React.createClass({
             console.log(e);
             $.errorAlert("Operation was not successful! Please check console logs for details.", title, false);
         }
-    },
-    deployResource: function(ajaxProcessDoneCallback) {
-        var saveAndDeploy = function(response, self, type) {
-                        if (response.applicationResponseContent.allStopped === "true") {
-                            self.saveResourcePromise(self.refs.codeMirrorComponent.getText())
-                            .then(function(response){
-                                self.savedResourceCallback(response);
-                                return self.deployResourcePromise();
-                            })
-                            .then(self.deployResourceCallback).caught(self.failed.bind(this, "Deploy Resource"))
-                            .lastly(ajaxProcessDoneCallback);
-                        } else {
-                            $.errorAlert("All " + type + "s in the group must be stopped before continuing. Operation stopped for " + type + " " + response.applicationResponseContent.entityNotStopped,"Error", false);
-                            ajaxProcessDoneCallback();
-                        }
-        };
-
-        if (this.refs.codeMirrorComponent !== undefined && this.refs.codeMirrorComponent.isContentChanged()) {
-            var ans = confirm("Changes to the resource template will be saved before deployment. Are you sure you want to proceed ?");
-            if (ans) {
-                var self = this;
-                if (this.state.entityType === "jvmSection") {
-                    this.checkGroupJvmsAreStopped(this.state.entityGroupName)
-                    .then(function(response) {
-                        saveAndDeploy(response, self, "JVM");
-                    });
-                } else if (this.state.entityType === "webServerSection") {
-                    this.checkGroupWebServersAreStopped(this.state.entityGroupName)
-                    .then(function(response) {
-                        saveAndDeploy(response, self, "Web Server");
-                    });
-                } else {
-                    this.saveResourcePromise(self.refs.codeMirrorComponent.getText())
-                    .then(function(response){
-                        self.savedResourceCallback(response);
-                        return self.deployResourcePromise();
-                    })
-                    .then(self.deployResourceCallback).caught(self.failed.bind(this, "Deploy Resource"))
-                    .lastly(ajaxProcessDoneCallback);
-                }
-            } else {
-                ajaxProcessDoneCallback();
-            }
-        } else {
-            this.deployResourcePromise().then(this.deployResourceCallback)
-                                        .caught(this.failed.bind(this, "Deploy Resource"))
-                                        .lastly(ajaxProcessDoneCallback);
-        }
-    },
-    deployResourceCallback: function() {
-        console.log("Deploy success!");
-        $.alert("Successfully deployed resource file(s)", false);
     },
     /*** Save and Deploy methods: End ***/
 
