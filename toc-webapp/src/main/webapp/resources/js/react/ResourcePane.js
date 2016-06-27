@@ -131,7 +131,13 @@ var ResourcePane = React.createClass({
         var data = this.state.data;
         if (data !== null) {
             if (data.rtreeListMetaData.entity === "jvms") {
-                ServiceFactory.getJvmService().deployJvmConf(data.jvmName, this.state.rightClickedItem);
+                ServiceFactory.getResourceService().deployJvmResource(data.jvmName, this.state.rightClickedItem)
+                    .then(function(response) {
+                        console.log(response);
+                    }).caught(function(response){
+                        console.log(response);
+                        $.errorAlert(response.statusText);
+                    });
             } else if (data.rtreeListMetaData.entity === "webServers") {
                 ServiceFactory.getResourceService().deployWebServerResource(data.name, this.state.rightClickedItem).then(function(response){
                     console.log(response);

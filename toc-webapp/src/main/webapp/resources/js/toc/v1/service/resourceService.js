@@ -94,5 +94,8 @@ var resourceService = {
     },
     deployWebServerResource: function(webServerName, fileName) {
         return serviceFoundation.promisedPut("v1.0/webservers/" + encodeURIComponent(webServerName) + "/conf/" + encodeURIComponent(fileName));
+    },
+    deployJvmResource: function(jvmName, fileName) {
+        return serviceFoundation.promisedPut("v1.0/jvms/" + encodeURIComponent(jvmName) + "/conf/" + encodeURIComponent(fileName), "json", null, false);
     }
 };
