@@ -139,12 +139,13 @@ var ResourcePane = React.createClass({
                         $.errorAlert(response.statusText);
                     });
             } else if (data.rtreeListMetaData.entity === "webServers") {
-                ServiceFactory.getResourceService().deployWebServerResource(data.name, this.state.rightClickedItem).then(function(response){
-                    console.log(response);
-                }).caught(function(response) {
-                    console.log(response);
-                    $.errorAlert(response.statusText);
-                });
+                ServiceFactory.getResourceService().deployWebServerResource(data.name, this.state.rightClickedItem)
+                    .then(function(response){
+                        console.log(response);
+                    }).caught(function(response) {
+                        console.log(response);
+                        $.errorAlert(response.statusText);
+                    });
             } else if (data.rtreeListMetaData.entity === "webApps" && data.rtreeListMetaData.parent.rtreeListMetaData.entity === "jvms") {
                 var groupName = this.state.data.rtreeListMetaData.parent.rtreeListMetaData.parent.rtreeListMetaData.parent.name;
                 var jvmName = this.state.data.rtreeListMetaData.parent.jvmName;
@@ -157,14 +158,21 @@ var ResourcePane = React.createClass({
                     });
             } else if (data.rtreeListMetaData.entity === "webApps" && data.rtreeListMetaData.parent.rtreeListMetaData.entity === "webAppSection") {
                 ServiceFactory.getResourceService().deployGroupAppResourceToHost(groupName, this.state.rightClickedItem, "")
-                                                                                .then(function(response){
-                                                                                    console.log(response);
-                                                                                }).caught(function(e){
-                                                                                    console.log(e);
-                                                                                    $.errorAlert(e.statusText);
-                                                                                });
+                    .then(function(response){
+                        console.log(response);
+                    }).caught(function(response){
+                        console.log(response);
+                        $.errorAlert(response.statusText);
+                    });
             } else if (data.rtreeListMetaData.entity === "webServerSection") {
-                ServiceFactory.getGroupService().deployGroupWebServerConf(this.state.data.rtreeListMetaData.parent.name, this.state.rightClickedItem);
+                ServiceFactory.getResourceService().deployGroupLevelWebServerResource(this.state.data.rtreeListMetaData.parent.name,
+                    this.state.rightClickedItem)
+                        .then(function(response){
+                            console.log(response);
+                        }).caught(function(response){
+                            console.log(response);
+                            $.errorAlert(response.statusText);
+                        });
             } else if (data.rtreeListMetaData.entity === "jvmSection") {
                 ServiceFactory.getGroupService().deployGroupJvmConf(this.state.data.rtreeListMetaData.parent.name, this.state.rightClickedItem);
             }

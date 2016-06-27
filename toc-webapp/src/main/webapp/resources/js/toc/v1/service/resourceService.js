@@ -105,5 +105,9 @@ var resourceService = {
                                              "json",
                                              null,
                                              false);
+    },
+    deployGroupLevelWebServerResource: function(groupName, fileName) {
+        return serviceFoundation.promisedPut("v1.0/groups/" + encodeURIComponent(groupName) + "/webservers/conf/" +
+                                             encodeURIComponent(fileName), "json", null, false);
     }
 };
