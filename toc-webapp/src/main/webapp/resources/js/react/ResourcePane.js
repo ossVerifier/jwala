@@ -133,15 +133,15 @@ var ResourcePane = React.createClass({
             if (data.rtreeListMetaData.entity === "jvms") {
                 ServiceFactory.getJvmService().deployJvmConf(data.jvmName, this.state.rightClickedItem);
             } else if (data.rtreeListMetaData.entity === "webServers") {
-
+                // TODO: Write REST service to deploy web server resources.
             } else if (data.rtreeListMetaData.entity === "webApps" && data.rtreeListMetaData.parent.rtreeListMetaData.entity === "jvms") {
-
-            } else if (data.rtreeListMetaData.entity === "webApps" && data.rtreeListMetaData.parent.rtreeListMetaData.entity === "webAppSection") {
-
+                var groupName = this.state.data.rtreeListMetaData.parent.rtreeListMetaData.parent.rtreeListMetaData.parent.name;
+                var jvmName = this.state.data.rtreeListMetaData.parent.jvmName;
+                ServiceFactory.getWebAppService().deployWebAppsConf(this.state.data.name, groupName, jvmName, this.state.rightClickedItem);
             } else if (data.rtreeListMetaData.entity === "webServerSection") {
-
+                ServiceFactory.getGroupService().deployGroupWebServerConf(this.state.data.rtreeListMetaData.parent.name, this.state.rightClickedItem);
             } else if (data.rtreeListMetaData.entity === "jvmSection") {
-
+                ServiceFactory.getGroupService().deployGroupJvmConf(this.state.data.rtreeListMetaData.parent.name, this.state.rightClickedItem);
             }
         }
         this.refs.confirmDeployResourceDlg.close();
