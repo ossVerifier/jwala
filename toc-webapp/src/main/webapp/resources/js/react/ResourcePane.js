@@ -157,6 +157,7 @@ var ResourcePane = React.createClass({
                         $.errorAlert(ResourcePane.parseDetailedErrorMsg(response, ResourcePane.DEFAULT_DEPLOY_ERR_MSG));
                     });
             } else if (data.rtreeListMetaData.entity === "webApps" && data.rtreeListMetaData.parent.rtreeListMetaData.entity === "webAppSection") {
+                var groupName = this.state.data.rtreeListMetaData.parent.rtreeListMetaData.parent.name;
                 ServiceFactory.getResourceService().deployGroupAppResourceToHost(groupName, this.state.rightClickedItem, "")
                     .then(function(response){
                         $.alert(errMsg, "Deploy successful!", true);
