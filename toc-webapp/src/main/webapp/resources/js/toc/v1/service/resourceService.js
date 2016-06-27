@@ -91,5 +91,8 @@ var resourceService = {
     deployGroupAppResourceToHost: function(groupName, fileName, host) {
         return serviceFoundation.promisedPut("v1.0/groups/" + encodeURIComponent(groupName) + "/apps/conf/" + encodeURIComponent(fileName) +
                                       "?hostName=" + encodeURIComponent(host));
+    },
+    deployWebServerResource: function(webServerName, fileName) {
+        return serviceFoundation.promisedPut("v1.0/webservers/" + encodeURIComponent(webServerName) + "/conf/" + encodeURIComponent(fileName));
     }
 };

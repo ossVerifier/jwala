@@ -133,7 +133,12 @@ var ResourcePane = React.createClass({
             if (data.rtreeListMetaData.entity === "jvms") {
                 ServiceFactory.getJvmService().deployJvmConf(data.jvmName, this.state.rightClickedItem);
             } else if (data.rtreeListMetaData.entity === "webServers") {
-                // TODO: Write REST service to deploy web server resources.
+                ServiceFactory.getResourceService().deployWebServerResource(data.name, this.state.rightClickedItem).then(function(response){
+                    console.log(response);
+                }).caught(function(response) {
+                    console.log(response);
+                    $.errorAlert(response.statusText);
+                });
             } else if (data.rtreeListMetaData.entity === "webApps" && data.rtreeListMetaData.parent.rtreeListMetaData.entity === "jvms") {
                 var groupName = this.state.data.rtreeListMetaData.parent.rtreeListMetaData.parent.rtreeListMetaData.parent.name;
                 var jvmName = this.state.data.rtreeListMetaData.parent.jvmName;
