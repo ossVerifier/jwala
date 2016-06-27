@@ -133,7 +133,7 @@ var ResourcePane = React.createClass({
             if (data.rtreeListMetaData.entity === "jvms") {
                 ServiceFactory.getResourceService().deployJvmResource(data.jvmName, this.state.rightClickedItem)
                     .then(function(response) {
-                        $.alert(errMsg, "Deploy successful!", true);
+                        $.alert("Deploy successful!", ResourcePane.DEPLOY_RESOURCE_TITLE, true);
                     }).caught(function(response){
                         console.log(response);
                         $.errorAlert(ResourcePane.parseDetailedErrorMsg(response, ResourcePane.DEFAULT_DEPLOY_ERR_MSG));
@@ -141,7 +141,7 @@ var ResourcePane = React.createClass({
             } else if (data.rtreeListMetaData.entity === "webServers") {
                 ServiceFactory.getResourceService().deployWebServerResource(data.name, this.state.rightClickedItem)
                     .then(function(response){
-                        $.alert(errMsg, "Deploy successful!", true);
+                        $.alert("Deploy successful!", ResourcePane.DEPLOY_RESOURCE_TITLE, true);
                     }).caught(function(response) {
                         console.log(response);
                         $.errorAlert(ResourcePane.parseDetailedErrorMsg(response, ResourcePane.DEFAULT_DEPLOY_ERR_MSG));
@@ -151,7 +151,7 @@ var ResourcePane = React.createClass({
                 var jvmName = this.state.data.rtreeListMetaData.parent.jvmName;
                 ServiceFactory.getResourceService().deployJvmWebAppResource(this.state.data.name, groupName, jvmName, this.state.rightClickedItem)
                     .then(function(response){
-                        $.alert(errMsg, "Deploy successful!", true);
+                        $.alert("Deploy successful!", ResourcePane.DEPLOY_RESOURCE_TITLE, true);
                     }).caught(function(response){
                         console.log(response);
                         $.errorAlert(ResourcePane.parseDetailedErrorMsg(response, ResourcePane.DEFAULT_DEPLOY_ERR_MSG));
@@ -160,7 +160,7 @@ var ResourcePane = React.createClass({
                 var groupName = this.state.data.rtreeListMetaData.parent.rtreeListMetaData.parent.name;
                 ServiceFactory.getResourceService().deployGroupAppResourceToHost(groupName, this.state.rightClickedItem, "")
                     .then(function(response){
-                        $.alert(errMsg, "Deploy successful!", true);
+                        $.alert("Deploy successful!", ResourcePane.DEPLOY_RESOURCE_TITLE, true);
                     }).caught(function(response){
                         console.log(response);
                         $.errorAlert(ResourcePane.parseDetailedErrorMsg(response, ResourcePane.DEFAULT_DEPLOY_ERR_MSG));
@@ -169,7 +169,7 @@ var ResourcePane = React.createClass({
                 ServiceFactory.getResourceService().deployGroupLevelWebServerResource(this.state.data.rtreeListMetaData.parent.name,
                     this.state.rightClickedItem)
                         .then(function(response){
-                            $.alert(errMsg, "Deploy successful!", true);
+                            $.alert("Deploy successful!", ResourcePane.DEPLOY_RESOURCE_TITLE, true);
                         }).caught(function(response){
                             console.log(response);
                             $.errorAlert(ResourcePane.parseDetailedErrorMsg(response, ResourcePane.DEFAULT_DEPLOY_ERR_MSG));
@@ -178,7 +178,7 @@ var ResourcePane = React.createClass({
                 ServiceFactory.getResourceService().deployGroupLevelJvmResource(this.state.data.rtreeListMetaData.parent.name,
                     this.state.rightClickedItem)
                         .then(function(response){
-                            $.alert(errMsg, "Deploy successful!", true);
+                            $.alert("Deploy successful!", ResourcePane.DEPLOY_RESOURCE_TITLE, true);
                         }).caught(function(response){
                             console.log(response);
                             $.errorAlert(ResourcePane.parseDetailedErrorMsg(response, ResourcePane.DEFAULT_DEPLOY_ERR_MSG));
@@ -195,7 +195,7 @@ var ResourcePane = React.createClass({
         var groupName = this.state.data.rtreeListMetaData.parent.rtreeListMetaData.parent.name;
         ServiceFactory.getResourceService().deployGroupAppResourceToHost(groupName, this.state.rightClickedItem, this.state.host)
             .then(function(response){
-                $.alert(errMsg, "Deploy successful!", true);
+                $.alert("Deploy successful!", ResourcePane.DEPLOY_RESOURCE_TITLE, true);
             }).caught(function(response){
                 console.log(response);
                 $.errorAlert(ResourcePane.parseDetailedErrorMsg(response, ResourcePane.DEFAULT_DEPLOY_ERR_MSG));
@@ -214,7 +214,8 @@ var ResourcePane = React.createClass({
                 return defaultErrMsg;
             }
         },
-        DEFAULT_DEPLOY_ERR_MSG: "There was an error deploying the resource!"
+        DEFAULT_DEPLOY_ERR_MSG: "There was an error deploying the resource!",
+        DEPLOY_RESOURCE_TITLE: "Deploy Resource"
     }
 });
 
