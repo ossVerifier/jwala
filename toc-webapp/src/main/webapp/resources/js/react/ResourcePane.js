@@ -138,6 +138,14 @@ var ResourcePane = React.createClass({
                 var groupName = this.state.data.rtreeListMetaData.parent.rtreeListMetaData.parent.rtreeListMetaData.parent.name;
                 var jvmName = this.state.data.rtreeListMetaData.parent.jvmName;
                 ServiceFactory.getWebAppService().deployWebAppsConf(this.state.data.name, groupName, jvmName, this.state.rightClickedItem);
+            } else if (data.rtreeListMetaData.entity === "webApps" && data.rtreeListMetaData.parent.rtreeListMetaData.entity === "webAppSection") {
+                ServiceFactory.getResourceService().deployGroupAppResourceToHost(groupName, this.state.rightClickedItem, "")
+                                                                                .then(function(response){
+                                                                                    console.log(response);
+                                                                                }).caught(function(e){
+                                                                                    console.log(e);
+                                                                                    $.errorAlert(e.statusText);
+                                                                                });
             } else if (data.rtreeListMetaData.entity === "webServerSection") {
                 ServiceFactory.getGroupService().deployGroupWebServerConf(this.state.data.rtreeListMetaData.parent.name, this.state.rightClickedItem);
             } else if (data.rtreeListMetaData.entity === "jvmSection") {
