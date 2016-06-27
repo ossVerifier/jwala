@@ -133,7 +133,7 @@ var ResourcePane = React.createClass({
             if (data.rtreeListMetaData.entity === "jvms") {
                 ServiceFactory.getResourceService().deployJvmResource(data.jvmName, this.state.rightClickedItem)
                     .then(function(response) {
-                        console.log(response);
+                        $.alert(errMsg, "Deploy successful!", true);
                     }).caught(function(response){
                         console.log(response);
                         $.errorAlert(response.statusText);
@@ -141,7 +141,7 @@ var ResourcePane = React.createClass({
             } else if (data.rtreeListMetaData.entity === "webServers") {
                 ServiceFactory.getResourceService().deployWebServerResource(data.name, this.state.rightClickedItem)
                     .then(function(response){
-                        console.log(response);
+                        $.alert(errMsg, "Deploy successful!", true);
                     }).caught(function(response) {
                         console.log(response);
                         $.errorAlert(response.statusText);
@@ -151,7 +151,7 @@ var ResourcePane = React.createClass({
                 var jvmName = this.state.data.rtreeListMetaData.parent.jvmName;
                 ServiceFactory.getResourceService().deployJvmWebAppResource(this.state.data.name, groupName, jvmName, this.state.rightClickedItem)
                     .then(function(response){
-                        console.log(response)
+                        $.alert(errMsg, "Deploy successful!", true);
                     }).caught(function(response){
                         console.log(response);
                         $.errorAlert(response.statusText);
@@ -159,7 +159,7 @@ var ResourcePane = React.createClass({
             } else if (data.rtreeListMetaData.entity === "webApps" && data.rtreeListMetaData.parent.rtreeListMetaData.entity === "webAppSection") {
                 ServiceFactory.getResourceService().deployGroupAppResourceToHost(groupName, this.state.rightClickedItem, "")
                     .then(function(response){
-                        console.log(response);
+                        $.alert(errMsg, "Deploy successful!", true);
                     }).caught(function(response){
                         console.log(response);
                         $.errorAlert(response.statusText);
@@ -168,7 +168,7 @@ var ResourcePane = React.createClass({
                 ServiceFactory.getResourceService().deployGroupLevelWebServerResource(this.state.data.rtreeListMetaData.parent.name,
                     this.state.rightClickedItem)
                         .then(function(response){
-                            console.log(response);
+                            $.alert(errMsg, "Deploy successful!", true);
                         }).caught(function(response){
                             console.log(response);
                             $.errorAlert(response.statusText);
@@ -177,7 +177,7 @@ var ResourcePane = React.createClass({
                 ServiceFactory.getResourceService().deployGroupLevelJvmResource(this.state.data.rtreeListMetaData.parent.name,
                     this.state.rightClickedItem)
                         .then(function(response){
-                            console.log(response);
+                            $.alert(errMsg, "Deploy successful!", true);
                         }).caught(function(response){
                             console.log(response);
                             $.errorAlert(response.statusText);
