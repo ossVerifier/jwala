@@ -208,7 +208,7 @@ public class JschRemoteCommandExecutorServiceImpl implements RemoteCommandExecut
     /**
      * Read remote output stream.
      *
-     * @param in      the input stream
+     * @param in                the input stream
      * @param channel
      * @param channelSessionKey
      * @throws IOException
@@ -216,7 +216,7 @@ public class JschRemoteCommandExecutorServiceImpl implements RemoteCommandExecut
     protected String readRemoteOutput(InputStream in, final ChannelShell channel, ChannelSessionKey channelSessionKey) throws Exception {
         boolean timeout = false;
         int readByte = in.read();
-        LOGGER.info("OOM TEST reading remote output...");
+        LOGGER.debug("Reading remote output ...");
         StringBuilder inStringBuilder = new StringBuilder();
 
         final long startTime = System.currentTimeMillis();
@@ -228,23 +228,16 @@ public class JschRemoteCommandExecutorServiceImpl implements RemoteCommandExecut
             if (readByte != -1) {
                 inStringBuilder.append((char) readByte);
             } else {
-                if (channel.isEOF()) {
-                    LOGGER.info("OOM TEST reached the end of file - now what?");
-                }
-                if (channel.isConnected()){
-                    LOGGER.info("OOM TEST channel is connected");
-                }
-                if (channel.isClosed()){
-                    LOGGER.info("OOM TEST channel is closed");
-                }
-                LOGGER.info("OOM TEST channel exit status {}", channel.getExitStatus());
-                LOGGER.info("OOM TEST channel being returned to the pool");
+                LOGGER.debug("Reached the end of file reading the stream");
+                LOGGER.debug("Channel is closed");
+                LOGGER.debug("Channel exit status {}", channel.getExitStatus());
+                LOGGER.debug("Channel being returned to the pool");
                 channelPool.returnObject(channelSessionKey, channel);
                 throw new InternalErrorException(AemFaultType.CONTROL_OPERATION_UNSUCCESSFUL, "Input stream to channel ended before return value received");
             }
             int length = inStringBuilder.length();
             if (length > 16384) {
-                LOGGER.error("OOM TEST found large string of length {} :: {}", length, inStringBuilder.toString());
+                LOGGER.error("OOM found large string of length {} :: {}", length, inStringBuilder.toString());
                 inStringBuilder.append(EXIT_CODE_START_MARKER);
                 inStringBuilder.append("=1");
                 inStringBuilder.append(EXIT_CODE_END_MARKER);
@@ -257,9 +250,9 @@ public class JschRemoteCommandExecutorServiceImpl implements RemoteCommandExecut
             readByte = in.read();
 
             if (readByte == -1) {
-                LOGGER.info("OOM TEST read -1 from shell stream");
+                LOGGER.error("Read -1 from shell stream - closing connection for unexpected output");
             } else if (readByte == 255) {
-                LOGGER.info("OOM TEST read 255 from shell stream - kill it");
+                LOGGER.debug("Received expected value of 0xff (255) from shell stream - done processing command");
             }
         }
 
