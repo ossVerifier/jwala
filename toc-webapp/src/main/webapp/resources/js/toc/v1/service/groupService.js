@@ -101,9 +101,6 @@ var groupService = {
                                      false,
                                      "text/plain; charset=utf-8");
     },
-    deployGroupJvmConf: function(groupName, resourceTemplateName) {
-        return serviceFoundation.promisedPut("v1.0/groups/" + groupName + "/jvms/conf/" + resourceTemplateName, "json", null, false);
-    },
     deployGroupAppConf: function(groupName, resourceTemplateName) {
         return serviceFoundation.promisedPut("v1.0/groups/" + groupName + "/apps/conf/" + resourceTemplateName, "json", null, false);
     },

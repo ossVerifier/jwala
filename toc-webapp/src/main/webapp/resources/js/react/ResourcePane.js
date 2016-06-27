@@ -174,7 +174,14 @@ var ResourcePane = React.createClass({
                             $.errorAlert(response.statusText);
                         });
             } else if (data.rtreeListMetaData.entity === "jvmSection") {
-                ServiceFactory.getGroupService().deployGroupJvmConf(this.state.data.rtreeListMetaData.parent.name, this.state.rightClickedItem);
+                ServiceFactory.getResourceService().deployGroupLevelJvmResource(this.state.data.rtreeListMetaData.parent.name,
+                    this.state.rightClickedItem)
+                        .then(function(response){
+                            console.log(response);
+                        }).caught(function(response){
+                            console.log(response);
+                            $.errorAlert(response.statusText);
+                        });
             }
         }
         this.refs.confirmDeployResourceDlg.close();
