@@ -53,22 +53,18 @@ public class AemMessageListenerConfig {
     @Bean
     public DefaultMessageListenerContainer getJvmStateListenerContainer(final PlatformTransactionManager transactionManager,
                                                                         final MessageListener jvmMessageListener) {
-        DefaultMessageListenerContainer container = null;
-        String configureDmlc = ApplicationProperties.get("configure.default.message.listener.container", "false");
-        if (Boolean.valueOf(configureDmlc)) {
-            container = new DefaultMessageListenerContainer();
-            container.setTransactionManager(transactionManager);
-            container.setConnectionFactory(jmsConfig.getConnectionFactory());
-            container.setReceiveTimeout(TimeUnit.MILLISECONDS.convert(25, TimeUnit.SECONDS));
-            container.setMessageListener(jvmMessageListener);
-            container.setDestination(jmsConfig.getJvmStateDestination());
-            container.setSessionTransacted(true);
-            container.setSessionAcknowledgeMode(Session.SESSION_TRANSACTED);
-            container.setPubSubDomain(true);
-            container.setSubscriptionDurable(true);
-            container.setDurableSubscriptionName(ApplicationProperties.get("toc.jms.heartbeat.durable-name"));
-            container.setConcurrentConsumers(1);
-        }
+        DefaultMessageListenerContainer container = new DefaultMessageListenerContainer();
+        container.setTransactionManager(transactionManager);
+        container.setConnectionFactory(jmsConfig.getConnectionFactory());
+        container.setReceiveTimeout(TimeUnit.MILLISECONDS.convert(25, TimeUnit.SECONDS));
+        container.setMessageListener(jvmMessageListener);
+        container.setDestination(jmsConfig.getJvmStateDestination());
+        container.setSessionTransacted(true);
+        container.setSessionAcknowledgeMode(Session.SESSION_TRANSACTED);
+        container.setPubSubDomain(true);
+        container.setSubscriptionDurable(true);
+        container.setDurableSubscriptionName(ApplicationProperties.get("toc.jms.heartbeat.durable-name"));
+        container.setConcurrentConsumers(1);
         return container;
     }
 
