@@ -26,7 +26,9 @@ import javax.persistence.*;
         @NamedQuery(name = JpaApplicationConfigTemplate.GET_APP_TEMPLATE_RESOURCE_NAME,
                 query = "SELECT t.templateName FROM JpaApplicationConfigTemplate t WHERE t.app.name = :appName AND t.templateName = :templateName"),
         @NamedQuery(name = JpaApplicationConfigTemplate.QUERY_DELETE_APP_RESOURCE_BY_TEMPLATE_APP_JVM_NAME,
-                query = "DELETE FROM JpaApplicationConfigTemplate t WHERE t.templateName = :templateName AND t.app.name = :appName AND t.jvm.name = :jvmName")
+                query = "DELETE FROM JpaApplicationConfigTemplate t WHERE t.templateName = :templateName AND t.app.name = :appName AND t.jvm.name = :jvmName"),
+        @NamedQuery(name = JpaApplicationConfigTemplate.QUERY_DELETE_APP_RESOURCES_BY_TEMPLATE_NAME_LIST_APP_JVM_NAME,
+                query = "DELETE FROM JpaApplicationConfigTemplate t WHERE t.templateName IN :templateNameList AND t.app.name = :appName AND t.jvm.name = :jvmName"),
 })
 public class JpaApplicationConfigTemplate extends ConfigTemplate {
 
@@ -37,8 +39,10 @@ public class JpaApplicationConfigTemplate extends ConfigTemplate {
     public static final String GET_APP_TEMPLATE_META_DATA = "getAppTemplateMetaData";
     public static final String QUERY_DELETE_APP_TEMPLATE = "deleteAppTemplate";
     public static final String QUERY_DELETE_APP_RESOURCE_BY_TEMPLATE_APP_JVM_NAME = "deleteAppResourceByTemplateJvmAppName";
+    public static final String QUERY_DELETE_APP_RESOURCES_BY_TEMPLATE_NAME_LIST_APP_JVM_NAME = "deleteAppResourcesByTemplateNameListAndJvmAppName";
 
     public static final String QUERY_PARAM_TEMPLATE_NAME = "templateName";
+    public static final String QUERY_PARAM_TEMPLATE_NAME_LIST = "templateNameList";
     public static final String QUERY_PARAM_JVM_NAME = "jvmName";
     public static final String QUERY_PARAM_APP_NAME = "appName";
 

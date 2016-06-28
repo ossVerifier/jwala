@@ -21,7 +21,9 @@ import javax.persistence.*;
         @NamedQuery(name = JpaGroupWebServerConfigTemplate.QUERY_DELETE_GRP_WEBSERVER_TEMPLATE, query = "DELETE FROM JpaGroupWebServerConfigTemplate t WHERE t.templateName = :templateName"),
         @NamedQuery(name = JpaGroupWebServerConfigTemplate.GET_GROUP_WEBSERVER_TEMPLATE_RESOURCE_NAME, query = "SELECT t.templateName FROM JpaGroupWebServerConfigTemplate t WHERE t.grp.name = :grpName and t.templateName = :templateName"),
         @NamedQuery(name = JpaGroupWebServerConfigTemplate.QUERY_DELETE_GROUP_LEVEL_WEBSERVER_RESOURCE_BY_TEMPLATE_GROUP_NAME,
-                query = "DELETE FROM JpaGroupWebServerConfigTemplate t WHERE t.templateName = :templateName AND t.grp.name = :grpName")
+                query = "DELETE FROM JpaGroupWebServerConfigTemplate t WHERE t.templateName = :templateName AND t.grp.name = :grpName"),
+        @NamedQuery(name = JpaGroupWebServerConfigTemplate.QUERY_DELETE_GROUP_LEVEL_WEBSERVER_RESOURCES_BY_TEMPLATE_NAME_LIST_GROUP_NAME,
+                query = "DELETE FROM JpaGroupWebServerConfigTemplate t WHERE t.templateName IN :templateNameList AND t.grp.name = :grpName")
 })
 public class JpaGroupWebServerConfigTemplate extends ConfigTemplate {
     public static final String GET_GROUP_WEBSERVER_TEMPLATE_RESOURCE_NAMES = "getGroupWebServerTemplateResourcesName";
@@ -31,7 +33,10 @@ public class JpaGroupWebServerConfigTemplate extends ConfigTemplate {
     public static final String QUERY_DELETE_GRP_WEBSERVER_TEMPLATE = "deleteGrpWebServerTemplate";
 
     public static final String QUERY_DELETE_GROUP_LEVEL_WEBSERVER_RESOURCE_BY_TEMPLATE_GROUP_NAME = "deleteGroupLevelWebServerResourceByTemplateGroupName";
+    public static final String QUERY_DELETE_GROUP_LEVEL_WEBSERVER_RESOURCES_BY_TEMPLATE_NAME_LIST_GROUP_NAME =
+            "deleteGroupLevelWebServerResourcesByTemplateNameListAndGroupName";
     public static final String QUERY_PARAM_TEMPLATE_NAME = "templateName";
+    public static final String QUERY_PARAM_TEMPLATE_NAME_LIST = "templateNameList";
     public static final String QUERY_PARAM_GROUP_NAME = "grpName";
 
     public static final String GET_GROUP_WEBSERVER_TEMPLATE_RESOURCE_NAME = "getGroupWebServerTemplateResourceName";

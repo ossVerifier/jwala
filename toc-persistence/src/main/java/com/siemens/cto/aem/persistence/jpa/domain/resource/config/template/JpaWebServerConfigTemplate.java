@@ -27,7 +27,11 @@ import javax.persistence.*;
                     query="DELETE FROM JpaWebServerConfigTemplate t WHERE t.templateName = :templateName AND t.webServer.name = :webServerName"),
         @NamedQuery(name = JpaWebServerConfigTemplate.QUERY_GET_WEBSERVER_RESOURCE_TEMPLATES,
                 query = "SELECT t FROM JpaWebServerConfigTemplate t WHERE t.webServer.name = :webServerName"),
-        @NamedQuery(name = JpaWebServerConfigTemplate.GET_WEBSERVER_TEMPLATE_RESOURCE_NAME, query = "SELECT t FROM JpaWebServerConfigTemplate t WHERE t.templateName = :templateName AND t.webServer.name = :webServerName")
+        @NamedQuery(name = JpaWebServerConfigTemplate.GET_WEBSERVER_TEMPLATE_RESOURCE_NAME, query = "SELECT t FROM JpaWebServerConfigTemplate t WHERE t.templateName = :templateName AND t.webServer.name = :webServerName"),
+
+        @NamedQuery(name = JpaWebServerConfigTemplate.QUERY_DELETE_WEBSERVER_RESOURCES_BY_TEMPLATE_NAME_LIST_WEBSERVER_NAME,
+                query="DELETE FROM JpaWebServerConfigTemplate t WHERE t.templateName IN :templateNameList AND t.webServer.name = :webServerName")
+
         })
 public class JpaWebServerConfigTemplate extends ConfigTemplate {
     public static final String GET_WEBSERVER_RESOURCE_TEMPLATE_NAMES = "getWebServerResourceTemplateNames";
@@ -37,9 +41,12 @@ public class JpaWebServerConfigTemplate extends ConfigTemplate {
     public static final String GET_WEBSERVER_TEMPLATE = "getWebServerTemplate";
     public static final String QUERY_DELETE_WEB_SERVER_TEMPLATE = "deleteWebServerTemplate";
     public static final String QUERY_DELETE_WEBSERVER_RESOURCE_BY_TEMPLATE_WEBSERVER_NAME = "deleteWebServerResourceByTemplateWebServerName";
+    public static final String QUERY_DELETE_WEBSERVER_RESOURCES_BY_TEMPLATE_NAME_LIST_WEBSERVER_NAME =
+            "deleteWebServerResourcesByTemplateNameListAndWebServerName";
     public static final String QUERY_GET_WEBSERVER_RESOURCE_TEMPLATES = "getWebServerResourceTemplates";
 
     public static final String QUERY_PARAM_TEMPLATE_NAME = "templateName";
+    public static final String QUERY_PARAM_TEMPLATE_NAME_LIST = "templateNameList";
     public static final String QUERY_PARAM_WEBSERVER_NAME = "webServerName";
 
     public static final String GET_WEBSERVER_TEMPLATE_RESOURCE_NAME = "getWebServerTemplateResourceName";

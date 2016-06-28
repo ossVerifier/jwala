@@ -48,7 +48,6 @@ import static org.junit.Assert.assertEquals;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @EnableTransactionManagement
-// @IfProfileValue(name = TestExecutionProfile.RUN_TEST_TYPES, value = TestExecutionProfile.INTEGRATION)
 @ContextConfiguration(loader = AnnotationConfigContextLoader.class,
         classes = {ResourceDaoImplTest.Config.class
         })
@@ -125,7 +124,7 @@ public class ResourceDaoImplTest {
         jpaApplication.setWebAppContext("someContext");
         jpaApplication.setGroup(jpaGroup);
         applicationCrudService.create(jpaApplication);
-        groupCrudService.populateGroupAppTemplate(jpaGroup.getName(), "someApp", "someTemplateFileName", "someMetaData", "someData");
+        groupCrudService.populateGroupAppTemplate(jpaGroup.getName(), "someApp", "someFileName", "someMetaData", "someData");
 
         webServerCrudService.uploadWebserverConfigTemplate(uploadWsTemplateRequest);
 
@@ -141,10 +140,28 @@ public class ResourceDaoImplTest {
     public void testDeleteResources() throws Exception {
         assertEquals(1, resourceDao.deleteGroupLevelWebServerResource("httpd.conf", "someGroup"));
         assertEquals(1, resourceDao.deleteGroupLevelJvmResource("someConfName", "someGroup"));
-        assertEquals(1, resourceDao.deleteGroupLevelAppResource("someApp", "someGroup", "someTemplateFileName"));
+        assertEquals(1, resourceDao.deleteGroupLevelAppResource("someApp", "someGroup", "someFileName"));
         assertEquals(1, resourceDao.deleteWebServerResource("httpd.conf", "someWebServer"));
         assertEquals(1, resourceDao.deleteJvmResource("someConfName", "someJvm"));
         assertEquals(1, resourceDao.deleteAppResource("someFileName", "someApp", "someJvm"));
+    }
+
+    @Test
+    public void testDeleteResourcesByTemplateNameList() throws Exception {
+        final List<String> names = new ArrayList<>();
+        names.add("httpd.conf");
+        assertEquals(1, resourceDao.deleteWebServerResources(names, "someWebServer"));
+        assertEquals(1, resourceDao.deleteGroupLevelWebServerResources(names, "someGroup"));
+
+        names.clear();
+        names.add("someConfName");
+        assertEquals(1, resourceDao.deleteJvmResources(names, "someJvm"));
+        assertEquals(1, resourceDao.deleteGroupLevelJvmResources(names, "someGroup"));
+
+        names.clear();
+        names.add("someFileName");
+        assertEquals(1, resourceDao.deleteAppResources(names, "someApp", "someJvm"));
+        assertEquals(1, resourceDao.deleteGroupLevelAppResources("someApp", "someGroup", names));
     }
 
     @Configuration
