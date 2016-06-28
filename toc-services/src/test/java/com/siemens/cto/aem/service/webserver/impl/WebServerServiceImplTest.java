@@ -222,6 +222,7 @@ public class WebServerServiceImplTest {
     @SuppressWarnings("unchecked")
     @Test
     public void testUpdateWebServers() {
+        when(webServerPersistenceService.getWebServer(any(Identifier.class))).thenReturn(mockWebServer2);
         when(webServerPersistenceService.updateWebServer(any(WebServer.class), anyString())).thenReturn(mockWebServer2);
 
         UpdateWebServerRequest cmd = new UpdateWebServerRequest(mockWebServer2.getId(),

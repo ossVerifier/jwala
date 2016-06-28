@@ -121,14 +121,15 @@ public class WebServerServiceImpl implements WebServerService {
         for (Identifier<Group> id : anUpdateWebServerCommand.getNewGroupIds()) {
             groups.add(new Group(id, null));
         }
-        final WebServer webServer = new WebServer(anUpdateWebServerCommand.getId(),
+        final Identifier<WebServer> id = anUpdateWebServerCommand.getId();
+        final WebServer webServer = new WebServer(id,
                 groups,
                 anUpdateWebServerCommand.getNewName(),
                 anUpdateWebServerCommand.getNewHost(),
                 anUpdateWebServerCommand.getNewPort(),
                 anUpdateWebServerCommand.getNewHttpsPort(),
                 anUpdateWebServerCommand.getNewStatusPath(),
-                anUpdateWebServerCommand.getNewHttpConfigFile(),
+                webServerPersistenceService.getWebServer(id).getHttpConfigFile(),
                 anUpdateWebServerCommand.getNewSvrRoot(),
                 anUpdateWebServerCommand.getNewDocRoot(),
                 anUpdateWebServerCommand.getState(),
