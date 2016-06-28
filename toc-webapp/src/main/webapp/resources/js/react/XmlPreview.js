@@ -12,11 +12,10 @@ var XmlPreview = React.createClass({
         this.setState({content: content});
     },
     resize: function() {
-        var textPreviewHeight = $(this.refs.theContainer.getDOMNode()).height() -
-                                $(this.refs.theToolbar.getDOMNode()).height() - XmlPreview.SPLITTER_DISTANCE_FROM_TOOLBAR;
+        var textPreviewHeight = $(this.refs.theContainer.getDOMNode()).height() - XmlPreview.SPLITTER_DISTANCE_FROM_PREVIEW_COMPONENT;
         $(this.refs.textPreview.getDOMNode()).css("height", textPreviewHeight);
     },
     statics: {
-        SPLITTER_DISTANCE_FROM_TOOLBAR: 19
+        SPLITTER_DISTANCE_FROM_PREVIEW_COMPONENT: 19
     }
 })
