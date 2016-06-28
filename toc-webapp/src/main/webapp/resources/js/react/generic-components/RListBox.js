@@ -6,7 +6,7 @@
  */
 var RListBox = React.createClass({
     getInitialState: function() {
-        return {selectedValue: null};
+        return {selectedValue: null, checkedItems: []};
     },
     render: function() {
         return React.createElement("ul", {className: "RListBox container"}, this.createResourceList());
@@ -22,7 +22,8 @@ var RListBox = React.createClass({
                                                            checkBoxEnabled: self.props.multiSelect,
                                                            label: option.label,
                                                            onClick: self.onOptionClick,
-                                                           onContextMenu: self.props.onContextMenu}));
+                                                           onContextMenu: self.props.onContextMenu,
+                                                           checkCallback: self.optionCheckCallback}));
         });
         return resourceList;
     },
@@ -42,12 +43,28 @@ var RListBox = React.createClass({
     },
     getSelectedValue: function() {
         return this.state.selectedValue;
+    },
+    optionCheckCallback: function(val, checked) {
+        if (checked) {
+            this.state.checkedItems.push(val);
+        } else {
+            var i;
+            for (i = 0; i < this.state.checkedItems.length; i++) {
+                if (this.state.checkedItems[i] === val) {
+                    break;
+                }
+            }
+            this.state.checkedItems.splice(i, 1);
+        }
+    },
+    getCheckedItems: function() {
+        return this.state.checkedItems;
     }
 });
 
 var Option = React.createClass({
     getInitialState: function() {
-        return {mouseOver: false};
+        return {mouseOver: false, checked: false};
     },
     isSelected: function() {
         return this.props.selectedValue === this.props.value;
@@ -62,12 +79,11 @@ var Option = React.createClass({
 
         var listItems = [];
         if (this.props.checkBoxEnabled === true) {
-            listItems.push(React.createElement("input", {key: "checkBox", type: "checkbox", className: "noSelect", onChange: this.onCheckBoxChange}));
+            listItems.push(React.createElement("input", {key: "checkBox", type: "checkbox", className: "noSelect", onChange: this.onCheckBoxChange, checked: this.state.checked}));
         }
-        listItems.push(React.createElement("span", {key: "label"}, this.props.label));
+        listItems.push(React.createElement("span", {key: "label", onClick: this.onClick}, this.props.label));
 
         return React.createElement("li", {className: stateClassName,
-                                          onClick: this.onClick,
                                           onContextMenu: this.onContextMenu,
                                           onMouseOver: this.onMouseOver,
                                           onMouseOut: this.onMouseOut}, listItems);
@@ -88,6 +104,8 @@ var Option = React.createClass({
         this.setState({mouseOver: false});
     },
     onCheckBoxChange: function() {
-        return false;
+        var checked = !this.state.checked;
+        this.setState({checked: checked});
+        this.props.checkCallback(this.props.value, checked);
     }
 });

@@ -688,4 +688,40 @@ public class ResourceServiceImpl implements ResourceService {
 
         return new CreateResourceTemplateApplicationResponseWrapper(createdConfigTemplate);
     }
+
+    @Override
+    @Transactional
+    public int deleteWebServerResources(List<String> templateNameList, String webServerName) {
+        return resourceDao.deleteWebServerResources(templateNameList, webServerName);
+    }
+
+    @Override
+    @Transactional
+    public int deleteGroupLevelWebServerResources(List<String> templateNameList, String groupName) {
+        return resourceDao.deleteGroupLevelWebServerResources(templateNameList, groupName);
+    }
+
+    @Override
+    @Transactional
+    public int deleteJvmResources(List<String> templateNameList, String jvmName) {
+        return resourceDao.deleteJvmResources(templateNameList, jvmName);
+    }
+
+    @Override
+    @Transactional
+    public int deleteGroupLevelJvmResources(List<String> templateNameList, String groupName) {
+        return resourceDao.deleteGroupLevelJvmResources(templateNameList, groupName);
+    }
+
+    @Override
+    @Transactional
+    public int deleteAppResources(List<String> templateNameList, String appName, String jvmName) {
+        return resourceDao.deleteAppResources(templateNameList, appName, jvmName);
+    }
+
+    @Override
+    @Transactional
+    public int deleteGroupLevelAppResources(String appName, String groupName, List<String> templateNameList) {
+        return resourceDao.deleteGroupLevelAppResources(appName, groupName, templateNameList);
+    }
 }

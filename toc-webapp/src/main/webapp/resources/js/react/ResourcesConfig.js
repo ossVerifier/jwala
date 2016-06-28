@@ -287,13 +287,15 @@ var ResourcesConfig = React.createClass({
 
         var self = this;
         this.refs.confirmDeleteResourceModalDlg.close();
-        this.props.resourceService.deleteResource(this.refs.resourceEditor.refs.resourcePane.getSelectedValue(),
+
+        this.props.resourceService.deleteResources(this.refs.resourceEditor.refs.resourcePane.getCheckedItems(),
                                                   groupName, webServerName, jvmName, webAppName).then(function(response){
             self.refreshResourcePane();
         }).caught(function(e){
             console.log(e);
             $.errorAlert("Error deleting resource template(s)!", "Error", true);
         });
+
      },
      onCreateResourceOkClicked: function() {
         var metaDataFile = this.refs.selectMetaDataAndTemplateFilesWidget.refs.metaDataFile.getDOMNode().files[0];
@@ -550,13 +552,6 @@ var XmlTabs = React.createClass({
                                                              this.previewSuccessCallback,
                                                              this.previewErrorCallback);
                 } else if (this.state.entityType === "webApps") {
-//                    if (this.state.entityParent.jvmName) {
-//
-//                    } else {
-////                        ServiceFactory.getResourceService().previewResourceFile(this.state.entity.group.name, this.state.entity.name,
-////                            this.refs.codeMirrorComponent.getText()).then(function(response){}).caught(function(e){console.log(e)});
-//                    }
-
                     this.props.webAppService.previewResourceFile(this.state.entity.name,
                                                                  this.state.entity.group.name,
                                                                  this.state.entityParent.jvmName ? this.state.entityParent.jvmName : "",

@@ -158,6 +158,18 @@ public interface ResourceServiceRest {
 
     @DELETE
     @Path("/template/{name}")
+    @Deprecated
     Response deleteResource(@PathParam("name") String templateName, @MatrixParam("") ResourceHierarchyParam resourceHierarchyParam, @BeanParam AuthenticatedUser user);
+
+    /**
+     * Delete resources.
+     * @param templateNameArray contains the template names of resource to delete
+     * @param resourceHierarchyParam the entity hierarchy that describes where the resource belongs to
+     * @param user the user
+     * @return a wrapper class that contains the number of records that were deleted
+     */
+    @DELETE
+    @Path("/templates")
+    Response deleteResources(@MatrixParam("name") String [] templateNameArray, @MatrixParam("") ResourceHierarchyParam resourceHierarchyParam, @BeanParam AuthenticatedUser user);
 }
 

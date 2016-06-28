@@ -88,6 +88,27 @@ var resourceService = {
         }
         return serviceFoundation.del("v1.0/resources/template/" + resourceName + matrixParam);
     },
+    deleteResources: function(resourceNameArray, groupName, webServerName, jvmName, webAppName) {
+        var matrixParam = "";
+
+        resourceNameArray.forEach(function(name){
+            matrixParam += ";name=" + encodeURIComponent(name);
+        });
+
+        if (groupName) {
+            matrixParam += ";group=" + encodeURIComponent(groupName);
+        }
+        if (webServerName) {
+            matrixParam += ";webServer=" + encodeURIComponent(webServerName);
+        }
+        if (jvmName) {
+            matrixParam += ";jvm=" + encodeURIComponent(jvmName);
+        }
+        if (webAppName) {
+            matrixParam += ";webApp=" + encodeURIComponent(webAppName);
+        }
+        return serviceFoundation.del("v1.0/resources/templates" + matrixParam);
+    },
     deployGroupAppResourceToHost: function(groupName, fileName, host) {
         return serviceFoundation.promisedPut("v1.0/groups/" + encodeURIComponent(groupName) + "/apps/conf/" + encodeURIComponent(fileName) +
                                       "?hostName=" + encodeURIComponent(host));

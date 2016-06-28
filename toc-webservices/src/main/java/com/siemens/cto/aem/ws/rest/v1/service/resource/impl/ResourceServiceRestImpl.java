@@ -22,6 +22,7 @@ import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -333,6 +334,75 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR,
                                          new FaultCodeException(AemFaultType.INVALID_REST_SERVICE_PARAMETER,
                                                                 "Parameters passed to the rest service is/are invalid!"));
+
+        }
+        return ResponseBuilder.ok(deletedRecCount);
+    }
+
+    @Override
+    public Response deleteResources(final String [] templateNameArray, ResourceHierarchyParam resourceHierarchyParam, AuthenticatedUser user) {
+        LOGGER.info("Delete resource {} by user {} with details {}", templateNameArray, user.getUser().getId(), resourceHierarchyParam);
+        int deletedRecCount = 0;
+
+        final List<String> templateNameList = Arrays.asList(templateNameArray);
+
+        // NOTE: We do the parameter checking logic here since the service layer does not know anything about ResourceHierarchyParam.
+        if (ParamValidator.getNewInstance().isNotEmpty(resourceHierarchyParam.getGroup())
+                .isEmpty(resourceHierarchyParam.getWebServer())
+                .isEmpty(resourceHierarchyParam.getJvm())
+                .isNotEmpty(resourceHierarchyParam.getWebApp()).isValid()) {
+
+            // Group Level Web App
+            deletedRecCount = resourceService.deleteGroupLevelAppResources(resourceHierarchyParam.getWebApp(), resourceHierarchyParam.getGroup(), templateNameList);
+
+        }else if (ParamValidator.getNewInstance().isEmpty(resourceHierarchyParam.getGroup())
+                .isEmpty(resourceHierarchyParam.getWebServer())
+                .isNotEmpty(resourceHierarchyParam.getJvm())
+                .isNotEmpty(resourceHierarchyParam.getWebApp()).isValid()) {
+
+            // Web App
+            deletedRecCount = resourceService.deleteAppResources(templateNameList, resourceHierarchyParam.getWebApp(), resourceHierarchyParam.getJvm());
+
+        } else if (ParamValidator.getNewInstance().isNotEmpty(resourceHierarchyParam.getGroup())
+                .isNotEmpty(resourceHierarchyParam.getWebServer())
+                .isEmpty(resourceHierarchyParam.getJvm())
+                .isEmpty(resourceHierarchyParam.getWebApp()).isValid()) {
+            // Group Level Web Servers
+            if (resourceHierarchyParam.getWebServer().equalsIgnoreCase("*")) {
+                deletedRecCount = resourceService.deleteGroupLevelWebServerResources(templateNameList, resourceHierarchyParam.getGroup());
+            }
+
+        } else if (ParamValidator.getNewInstance().isEmpty(resourceHierarchyParam.getGroup())
+                .isNotEmpty(resourceHierarchyParam.getWebServer())
+                .isEmpty(resourceHierarchyParam.getJvm())
+                .isEmpty(resourceHierarchyParam.getWebApp()).isValid()) {
+
+            // Web Server
+            deletedRecCount = resourceService.deleteWebServerResources(templateNameList, resourceHierarchyParam.getWebServer());
+
+        } else if (ParamValidator.getNewInstance().isNotEmpty(resourceHierarchyParam.getGroup())
+                .isEmpty(resourceHierarchyParam.getWebServer())
+                .isNotEmpty(resourceHierarchyParam.getJvm())
+                .isEmpty(resourceHierarchyParam.getWebApp()).isValid()) {
+
+            // Group Level JVMs
+            if (resourceHierarchyParam.getJvm().equalsIgnoreCase("*")) {
+                deletedRecCount = resourceService.deleteGroupLevelJvmResources(templateNameList, resourceHierarchyParam.getGroup());
+            }
+
+        } else if (ParamValidator.getNewInstance().isEmpty(resourceHierarchyParam.getGroup())
+                .isEmpty(resourceHierarchyParam.getWebServer())
+                .isNotEmpty(resourceHierarchyParam.getJvm())
+                .isEmpty(resourceHierarchyParam.getWebApp()).isValid()) {
+
+            // JVM
+            deletedRecCount = resourceService.deleteJvmResources(templateNameList, resourceHierarchyParam.getJvm());
+
+        } else {
+
+            return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR,
+                    new FaultCodeException(AemFaultType.INVALID_REST_SERVICE_PARAMETER,
+                            "Parameters passed to the rest service is/are invalid!"));
 
         }
         return ResponseBuilder.ok(deletedRecCount);

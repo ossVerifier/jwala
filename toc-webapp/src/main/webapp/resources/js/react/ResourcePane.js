@@ -88,13 +88,20 @@ var ResourcePane = React.createClass({
         }
         return null;
     },
+    getCheckedItems: function() {
+        if (this.refs.listBox !== undefined) {
+            return this.refs.listBox.getCheckedItems();
+        }
+        return null;
+    },
     createResource: function() {
         this.props.createResourceCallback(this.state.data);
     },
     deleteResource: function() {
-        var resourceName = this.getSelectedValue();
-        if (resourceName !== null) {
-            this.props.deleteResourceCallback(resourceName);
+        if (this.refs.listBox.getCheckedItems().length > 0) {
+            this.props.deleteResourceCallback();
+        } else {
+            $.alert("Please select resource(s) to delete.", "Info", true);
         }
     },
     // Right click a resource is called onContextMenu event in js.
