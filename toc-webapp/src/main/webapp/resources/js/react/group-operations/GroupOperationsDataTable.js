@@ -225,7 +225,11 @@ var GroupOperationsDataTable = React.createClass({
                              selectItemCallback={this.props.selectItemCallback}
                              initialSortColumn={[[2, "asc"]]}
                              isColResizable={true}
-                             openRowLoadDataDoneCallback={this.openRowLoadDataDoneCallbackHandler}/>
+                             openRowLoadDataDoneCallback={this.openRowLoadDataDoneCallbackHandler}
+                             collapseRowCallback={this.collapseRowCallback}/>
+   },
+   collapseRowCallback: function(data) {
+        this.props.collapseRowCallback(data);
    },
    onSelectWebServerTableRow: function(group, data, isActive) {
         // Why was I calling the method below ? It's causes a bug wherein the action and event logs items are cleared!

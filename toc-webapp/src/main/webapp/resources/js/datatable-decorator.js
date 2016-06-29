@@ -32,7 +32,8 @@ var decorateTableAsDataTable = function(tableId,
                                         initialSortColumn,
                                         parentItemName,
                                         paginationEnabled,
-                                        openRowLoadDataCallback){
+                                        openRowLoadDataCallback,
+                                        collapseCallback){
 
     var self = this;
 
@@ -62,7 +63,8 @@ var decorateTableAsDataTable = function(tableId,
                     aoColumnDefs[itemIndex].sWidth = "20px";
                     aoColumnDefs[itemIndex].fnCreatedCell = function (nTd, sData, oData, iRow, iCol) {
                         var o = renderExpandCollapseControl(tableId, parentItemId, rootId, childTableDetails,
-                                                            sData, item.type, oData, expandIcon, collapseIcon, openRowLoadDataCallback);
+                                                            sData, item.type, oData, expandIcon, collapseIcon, openRowLoadDataCallback,
+                                                            collapseCallback);
                         return React.render(o, nTd);
                     }.bind(this);
 
@@ -338,7 +340,7 @@ var renderLink = function(item, tableId, data, type, full, editCallback) {
     }
 };
 
-var renderExpandCollapseControl = function(tableId, parentItemId, rootId, childTableDetails, data, type, full, expandIcon, collapseIcon, openRowLoadDataDoneCallback) {
+var renderExpandCollapseControl = function(tableId, parentItemId, rootId, childTableDetails, data, type, full, expandIcon, collapseIcon, openRowLoadDataDoneCallback, collapseCallback) {
     var parentItemId = (parentItemId === undefined ? full.id.id : parentItemId);
     var theRootId = (rootId === undefined ? full.id.id : rootId);
     var delimitedId = createDelimitedId([tableId, full.id.id], "_");
@@ -367,7 +369,8 @@ var renderExpandCollapseControl = function(tableId, parentItemId, rootId, childT
                                                        parentItemName:full.name,
                                                        dataTable:$("#" + tableId).dataTable(),
                                                        rootId:theRootId,
-                                                       openRowLoadDataDoneCallback: openRowLoadDataDoneCallback});
+                                                       openRowLoadDataDoneCallback: openRowLoadDataDoneCallback,
+                                                       collapseCallback: collapseCallback});
 };
 
 var renderArray = function(item, data) {

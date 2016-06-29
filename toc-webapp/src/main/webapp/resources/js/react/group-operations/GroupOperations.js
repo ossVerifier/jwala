@@ -14,10 +14,11 @@ var GroupOperations = React.createClass({
             groupTableData: [],
             groups: [],
             groupStates: [],
-            webServers: [],
+            webServers: [] /* Latest web servers retrieved from the backend when a row is opened. */,
             webServerStates: [],
             jvms: [],
-            jvmStates: []
+            jvmStates: [],
+            visibleWebServers: {} /* All the web servers that are visible due to a user opening row(s). */
         };
     },
     render: function() {
@@ -59,6 +60,7 @@ var GroupOperations = React.createClass({
                                                               webServers={this.state.webServers}
                                                               jvms={this.state.jvms}
                                                               updateWebServerDataCallback={this.updateWebServerDataCallback}
+                                                              collapseRowCallback={this.collapseRowCallback}
                                                               stateService={this.props.stateService}
                                                               commandStatusWidgetMap={this.commandStatusWidgetMap}
                                                               parent={this}/>
@@ -259,14 +261,18 @@ var GroupOperations = React.createClass({
     },
     commandStatusWidgetMap: {} /* Since we can't create a React class object reference on mount, we need to save the references in a map for later access. */,
     updateWebServerStateData: function(newWebServerState) {
-        var webServersToUpdate = groupOperationsHelper.getWebServerStatesByGroupIdAndWebServerId(this.state.webServers);
+
+        var visibleWebServerArray = this.getVisibleWebServersAsArray(this.state.visibleWebServers);
+        console.log(">>> Updating the following web servers:");
+        console.log(visibleWebServerArray);
+
         var self = this;
 
         if (newWebServerState !== null) {
-            webServersToUpdate.forEach(function(webServer){
-                var webServerStatusWidget = GroupOperations.webServerStatusWidgetMap["grp" + webServer.groupId.id + "webServer" + webServer.webServerId.id];
+            visibleWebServerArray.forEach(function(webServer){
+                var webServerStatusWidget = GroupOperations.webServerStatusWidgetMap["grp" + webServer.parentItemId + "webServer" + webServer.id.id];
                 if (webServerStatusWidget !== undefined) {
-                    if (newWebServerState.id.id === webServer.webServerId.id) {
+                    if (newWebServerState.id.id === webServer.id.id) {
                         if (newWebServerState.stateString === GroupOperations.FAILED || newWebServerState.stateString === GroupOperations.START_SENT || newWebServerState.stateString === GroupOperations.STOP_SENT) {
                             if (newWebServerState.stateString === GroupOperations.STARTING) {
                                 newWebServerState.stateString = GroupOperations.START_SENT;
@@ -274,7 +280,7 @@ var GroupOperations = React.createClass({
                             if (newWebServerState.stateString === GroupOperations.STOPPING) {
                                 newWebServerState.stateString = GroupOperations.STOP_SENT;
                             }
-                            var commandStatusWidget = self.commandStatusWidgetMap[GroupOperations.getExtDivCompId(webServer.groupId.id)];
+                            var commandStatusWidget = self.commandStatusWidgetMap[GroupOperations.getExtDivCompId(webServer.parentItemId)];
                             if (commandStatusWidget !== undefined) {
                                 commandStatusWidget.push({stateString: newWebServerState.stateString,
                                                           asOf: newWebServerState.asOf.millis,
@@ -285,7 +291,7 @@ var GroupOperations = React.createClass({
 
 
                         } else if (newWebServerState.stateString === GroupOperations.SECURE_COPY || newWebServerState.stateString === GroupOperations.INVOKE_SERVICE || newWebServerState.stateString === GroupOperations.DELETE_SERVICE){
-                              var commandStatusWidget = self.commandStatusWidgetMap[GroupOperations.getExtDivCompId(webServer.groupId.id)];
+                              var commandStatusWidget = self.commandStatusWidgetMap[GroupOperations.getExtDivCompId(webServer.id.id)];
                               if (commandStatusWidget !== undefined) {
                                   commandStatusWidget.push({stateString: newWebServerState.stateString,
                                                             asOf: newWebServerState.asOf.millis,
@@ -302,6 +308,25 @@ var GroupOperations = React.createClass({
                 }
             });
         }
+    },
+
+    /**
+     * Get visible web servers as an array.
+     */
+    getVisibleWebServersAsArray: function() {
+        var webServerMap = {};
+        for (var key in this.state.visibleWebServers) {
+            var webServerArray = this.state.visibleWebServers[key];
+            webServerArray.forEach(function(webServer){
+                webServerMap["ws_" + webServer.id.id] = webServer;
+            });
+        }
+
+        var webServerArray = [];
+        for (var key in webServerMap) {
+            webServerArray.push(webServerMap[key]);
+        }
+        return webServerArray;
     },
     updateJvmStateData: function(newJvmState) {
         var self = this;
@@ -384,11 +409,19 @@ var GroupOperations = React.createClass({
         ServiceFactory.getServerStateWebSocketService().disconnect();
     },
     updateWebServerDataCallback: function(webServerData) {
+
+        if (webServerData && webServerData.length > 0) {
+            this.state.visibleWebServers["grp_" + webServerData[0].parentItemId] = webServerData;
+        }
+
         this.setState(groupOperationsHelper.processWebServerData([],
                                                                  webServerData,
                                                                  this.state.webServerStates,
                                                                  []));
         this.updateWebServerStateData(null);
+    },
+    collapseRowCallback: function(groupId) {
+        delete this.state.visibleWebServers["grp_" + groupId];
     },
     statePoller: null,
     statics: {

@@ -188,6 +188,10 @@ var ExpandCollapseControl = React.createClass({
             $("#" + this.props.id).removeClass("ui-icon-triangle-1-e");
             $("#" + this.props.id).addClass("ui-icon-triangle-1-s");
         } else {
+            if ($.isFunction(this.props.collapseCallback)) {
+                this.props.collapseCallback(this.props.parentItemId);
+            }
+
             $("#" + this.props.id).removeClass("ui-icon-triangle-1-s");
             $("#" + this.props.id).addClass("ui-icon-triangle-1-e");
             dataTable.fnClose(nTr);

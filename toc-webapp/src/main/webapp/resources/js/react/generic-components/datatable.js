@@ -57,7 +57,8 @@ var TocDataTable = React.createClass({
                                                       undefined,
                                                       undefined,
                                                       undefined,
-                                                      this.props.openRowLoadDataDoneCallback);
+                                                      this.props.openRowLoadDataDoneCallback,
+                                                      this.props.collapseRowCallback);
         }
 
         if (this.dataTable !== null) {

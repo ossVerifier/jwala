@@ -234,20 +234,6 @@ var groupOperationsHelper = function(){
             return result;
         },
 
-        getWebServerStatesByGroupIdAndWebServerId: function(webServers) {
-            var result = [];
-            webServers.forEach(function(webServer) {
-                // NOTE: Unlike JVMs, Web Server Data is populated when the row is opened therefore this
-                // code might not be appropriate because it pushes all the web server data regardless
-                // if the group is opened or not. TODO: Check on this!
-                webServer.groups.forEach(
-                    function(group) {
-                        result.push({groupId: group.id, webServerId: webServer.id, state: webServer.state, name: webServer.name})
-                    });
-            });
-            return result;
-        },
-
         getCurrentDateTime: function(time) {
             var currentDate = new Date(time);
             return  ('0' + (currentDate.getMonth() + 1)).slice(-2) + '/' +
