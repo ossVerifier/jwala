@@ -71,7 +71,7 @@ var GroupOperations = React.createClass({
                </div>
     },
     startGroups: function() {
-        this.refs.startGroupsModalDlg.show(true);
+        this.refs.startGroupsModalDlg.show();
     },
     confirmStartGroupsCallback: function() {
         groupControlService.startGroups().caught(function(e){
@@ -80,7 +80,7 @@ var GroupOperations = React.createClass({
         this.refs.startGroupsModalDlg.close();
     },
     stopGroups: function() {
-        this.refs.stopGroupsModalDlg.show(true);
+        this.refs.stopGroupsModalDlg.show();
     },
     confirmStopGroupsCallback: function() {
         groupControlService.stopGroups().caught(function(e){
