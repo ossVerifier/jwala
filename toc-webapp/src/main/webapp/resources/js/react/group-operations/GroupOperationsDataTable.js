@@ -294,10 +294,10 @@ var GroupOperationsDataTable = React.createClass({
                                     + oData.currentState.jvmForciblyStoppedCount;;
 
                       var statusColorCode = "partial";
-                      if (serverStartedCount === serverCount) {
-                          statusColorCode = "started";
-                      } else if (serverStoppedCount === serverCount) {
+                      if ((serverCount === 0) || (serverStoppedCount === serverCount)) {
                           statusColorCode = "stopped";
+                      } else if (serverStartedCount === serverCount)  {
+                          statusColorCode = "started";
                       }
 
                       this.setStatus("Started: " + serverStartedCount + "/" + serverCount, new Date(), "", statusColorCode);

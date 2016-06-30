@@ -232,10 +232,10 @@ var GroupOperations = React.createClass({
                     newGroupState.stateString = "Started: " + serverStartedCount + "/" + serverCount;
 
                     var statusColorCode = "partial";
-                    if (serverStartedCount === serverCount) {
-                        statusColorCode = "started";
-                    } else if (serverStoppedCount === serverCount) {
+                    if ((serverCount === 0) || (serverStoppedCount === serverCount)) {
                         statusColorCode = "stopped";
+                    } else if (serverStartedCount === serverCount)  {
+                        statusColorCode = "started";
                     }
 
                     GroupOperations.groupStatusWidgetMap["grp" + group.groupId.id].setStatus(newGroupState.stateString,
