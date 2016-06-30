@@ -257,7 +257,7 @@ var ResourcesConfig = React.createClass({
         this.refs.selectMetaDataAndTemplateFilesModalDlg.show();
      },
      deleteResourceCallback: function() {
-        this.refs.confirmDeleteResourceModalDlg.show(true);
+        this.refs.confirmDeleteResourceModalDlg.show();
      },
      confirmDeleteResourceCallback: function() {
         var groupName;
