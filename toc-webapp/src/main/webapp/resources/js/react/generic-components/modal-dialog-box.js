@@ -16,6 +16,7 @@
  * 11. top - the dialog's top position. If not set top will be computed to position the dialog at the middle of the screen.
  * 12. left - the dialog's left position. If not set left will be computed to position the dialog at the center of the screen.
  * 13. position - position of the dialog's main div element e.g. absolute, fixed, relative etc...search for "div position"
+ * 14. contentReferenceName - if specified the content can be referenced outside the ModalDialogBox by this property
  *
  * Usage Example (in JSX)
  *
@@ -61,6 +62,8 @@ var ModalDialogBox = React.createClass({
         var contentDivStyle = {display:"block",width:"auto",maxHeight:"none",height:"auto"};
         var contentDivClassName = this.props.contentDivClassName !== undefined ? this.props.contentDivClassName : "";
 
+        var theContent = this.props.contentReferenceName ? React.addons.cloneWithProps(this.state.content, {ref: this.props.contentReferenceName}) : this.state.content;
+
         var theDialog = React.DOM.div({ref:"theDialog",
                                        className:"ui-dialog ui-widget ui-widget-content ui-corner-all ui-front ui-dialog-buttons ui-draggable ui-resizable",
                                        tabIndex:"-1",
@@ -75,7 +78,7 @@ var ModalDialogBox = React.createClass({
                                                               className:"ui-button ui-widget ui-state-default ui-corner-all ui-button-icon-only ui-dialog-titlebar-close",
                                                               onClick:this.xBtnClick,
                                                               spanClassName:"ui-button-icon-primary ui-icon ui-icon-closethick"})),
-                                       React.DOM.div({className:"ui-dialog-content ui-widget-content " + contentDivClassName, style:contentDivStyle}, this.state.content),
+                                       React.DOM.div({className:"ui-dialog-content ui-widget-content " + contentDivClassName, style:contentDivStyle}, theContent),
                                        React.DOM.div({className:"ui-dialog-buttonpane ui-widget-content ui-helper-clearfix"},
                                                      React.DOM.div({className:"ui-dialog-buttonset"},
                                                      this.state.okCallback ? RButton({ref:"okBtn", onClick:this.okCallback, label:this.props.okLabel === undefined ? "Ok" : this.props.okLabel}) : null,

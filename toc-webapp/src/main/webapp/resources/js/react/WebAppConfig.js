@@ -39,7 +39,7 @@ var WebAppConfig = React.createClass({
                                                                  {title: "WebApp Name", key: "name", renderCallback: this.renderWebAppNameCallback},
                                                                  {title: "Context", key: "webAppContext"},
                                                                  {title: "Web Archive", key: "warName"},
-                                                                 /* {key: "actionIcons", renderCallback: this.renderActionIcons, sortable: false}, - Disabled for drop 4 release since the WAR upload is not consistent with that one in the resources tab. Note: We need to address this in drop 5. */
+                                                                 {key: "actionIcons", renderCallback: this.renderActionIcons, sortable: false},
                                                                  {title: "Group", key:"group.name"}]}
                                                 data={this.state.WebAppTableData}
                                                 selectItemCallback={this.selectItemCallback} />
@@ -76,8 +76,11 @@ var WebAppConfig = React.createClass({
 
                   <ModalDialogBox title="Upload WAR"
                                   ref="uploadWarDlg"
+                                  okLabel="Upload"
+                                  okCallback={this.uploadCallback}
                                   cancelCallback={this.uploadWarDlgCancelCallback}
-                                  cancelLabel="Close"/>
+                                  cancelLabel="Close"
+                                  contentReferenceName="uploadWarWidget" />
 
                   <ModalDialogBox ref="confirmDeleteWarDlg"
                                   okLabel="Yes"
@@ -123,9 +126,12 @@ var WebAppConfig = React.createClass({
     },
     onUploadWarBtnClicked: function(data) {
         this.refs.uploadWarDlg.show("Upload WAR", <UploadWarWidget service={this.props.service} data={data}
-                                    uploadCallback={this.uploadCallback} />)
+                                                                   afterUploadCallback={this.afterUploadCallback} />);
     },
     uploadCallback: function() {
+        this.refs.uploadWarDlg.refs.uploadWarWidget.performUpload();
+    },
+    afterUploadCallback: function() {
         this.retrieveData();
     },
     onDeleteWarBtnClicked: function(data) {
@@ -483,15 +489,10 @@ var UploadWarWidget = React.createClass({
                           <form ref="warUploadForm" encType='multipart/form-data' method="POST" action={'v1.0/applications/' + this.props.data.id.id + '/war'}>
                               <div className="fileUploadContainer">
                                   <input ref="fileInput" type="file" name="file"></input>
-                                  <input type="button" value="Upload" onClick={this.performUpload} />
                               </div>
-                              <div className="progressBar">
-                                  <div ref="progressBar" className="inner" />
-                              </div>
-                              <span ref="uploadResult" />
                               <div>Deploy Path</div>
                               <div className="deployPath">
-                                  <input ref="deployPathInput" name="deployPath" value={this.state.deployPath} onChange={this.ondeployPathChanged} />
+                                  <input ref="deployPathInput" name="deployPath" value={this.state.deployPath} onChange={this.onDeployPathChanged} />
                                   <div className="openCloseProperties">
                                       <span ref="openClosePropertiesIcon" className={this.state.showProperties ? "ui-icon ui-icon-triangle-1-s" : "ui-icon ui-icon-triangle-1-e"}
                                             onClick={this.openClosePropertiesIconCallback} />
@@ -500,6 +501,10 @@ var UploadWarWidget = React.createClass({
                                   </div>
                               </div>
                           </form>
+                          <span ref="uploadResult" />
+                          <div className="progressBar">
+                            <div ref="progressBar" className="inner" />
+                          </div>
                        </div>
                   </div>
               </div>;
@@ -517,7 +522,7 @@ var UploadWarWidget = React.createClass({
     onPropertiesLoad: function(response) {
         this.setState({properties: response.applicationResponseContent, showProperties: true});
     },
-    ondeployPathChanged: function(e) {
+    onDeployPathChanged: function(e) {
         this.setState({deployPath: $(this.refs.deployPathInput.getDOMNode()).val()});
     },
     onAddPropertiesClick: function(val) {
@@ -540,7 +545,7 @@ var UploadWarWidget = React.createClass({
             }
         });
     },
-    performUpload: function(e) {
+    performUpload: function() {
         var self = this;
         if (this.state.uploadData !== null) {
             // Note: Don't confuse with "form" submit. Please see initFileUpload.
@@ -548,7 +553,9 @@ var UploadWarWidget = React.createClass({
                 if (!result || result.msgCode !== "0" || !result.applicationResponseContent) {
                      self.progressError((result.msgCode||"AEM")+ ": " + (result.applicationResponseContent||textStatus));
                 } else {
-                    self.props.uploadCallback();
+                    if ($.isFunction(self.props.afterUploadCallback())) {
+                        self.props.afterUploadCallback();
+                    }
                 }
             }).error (function(result, textStatus, jqXHR) {
                 if (result.responseJSON !== undefined) {
@@ -562,9 +569,6 @@ var UploadWarWidget = React.createClass({
         } else {
             $(this.refs.fileInput.getDOMNode()).effect("highlight")
         }
-
-        e.preventDefault();
-        return false;
     },
     progressError: function(errorMsg, progress) {
 

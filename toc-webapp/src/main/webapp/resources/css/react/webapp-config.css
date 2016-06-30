@@ -21,6 +21,7 @@
 
 .war-upload-component .fileUploadContainer {
     display: inline-block;
+    padding-bottom: 5px;
 }
 
 .war-upload-component .deployPath {
