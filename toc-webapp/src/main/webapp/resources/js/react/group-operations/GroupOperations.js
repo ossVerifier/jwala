@@ -314,17 +314,11 @@ var GroupOperations = React.createClass({
      * Get visible web servers as an array.
      */
     getVisibleWebServersAsArray: function() {
-        var webServerMap = {};
-        for (var key in this.state.visibleWebServers) {
-            var webServerArray = this.state.visibleWebServers[key];
-            webServerArray.forEach(function(webServer){
-                webServerMap["ws_" + webServer.id.id] = webServer;
-            });
-        }
-
         var webServerArray = [];
-        for (var key in webServerMap) {
-            webServerArray.push(webServerMap[key]);
+        for (var key in this.state.visibleWebServers) {
+            this.state.visibleWebServers[key].forEach(function(webServer){
+                webServerArray.push(webServer);
+            });
         }
         return webServerArray;
     },
