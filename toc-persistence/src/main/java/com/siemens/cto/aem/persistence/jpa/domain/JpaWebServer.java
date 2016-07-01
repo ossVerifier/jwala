@@ -20,7 +20,10 @@ import java.util.List;
         @NamedQuery(name = JpaWebServer.QUERY_UPDATE_STATE_AND_ERR_STS_BY_ID, query = "UPDATE JpaWebServer w SET w.state = :state, w.errorStatus = :errorStatus, w.lastUpdateDate = CURRENT_TIMESTAMP WHERE w.id = :id"),
         @NamedQuery(name = JpaWebServer.QUERY_GET_WS_COUNT_BY_STATE_AND_GROUP_NAME, query = "SELECT COUNT(1) FROM JpaWebServer w WHERE w.state = :state AND w.groups.name = :groupName"),
         @NamedQuery(name = JpaWebServer.QUERY_GET_WS_COUNT_BY_GROUP_NAME, query = "SELECT COUNT(1) FROM JpaWebServer w WHERE w.groups.name = :groupName"),
-        @NamedQuery(name = JpaWebServer.QUERY_GET_WS_AND_ITS_GROUPS, query = "SELECT w FROM JpaWebServer w LEFT JOIN FETCH w.groups WHERE w.id = :id"),
+        @NamedQuery(name = JpaWebServer.QUERY_GET_WS_AND_ITS_GROUPS,
+                /* Why do we have DISTINCT ? This is to prevent getSingleResult for throwing NonUniqueResultException.
+                   What's weird is that this query always returns 1 result when tested using getResultList! */
+                query = "SELECT DISTINCT w FROM JpaWebServer w LEFT JOIN FETCH w.groups WHERE w.id = :id"),
         @NamedQuery(name = JpaWebServer.QUERY_GET_WS_BY_GROUP_NAME, query = "SELECT w FROM JpaWebServer w WHERE w.groups.name = :groupName"),
         @NamedQuery(name = JpaWebServer.FIND_WEBSERVER_BY_GROUP_QUERY, query = "SELECT w FROM JpaWebServer w WHERE w.name = :wsName AND w.groups.name = :groupName")
 })

@@ -425,6 +425,38 @@ public class WebServerCrudServiceImplTest {
     }
 
     @Test
+    public void testGetWebServerAndItsGroupsForAWebServerAssignedToSeveralGroups() {
+        JpaGroup group1 = new JpaGroup();
+        group1.setName("group1");
+        group1 = groupCrudService.create(group1);
+
+        JpaGroup group2 = new JpaGroup();
+        group2.setName("group2");
+        group2 = groupCrudService.create(group2);
+
+        final JpaWebServer webServer = new JpaWebServer();
+        webServer.setName("aWebServer");
+        webServer.setDocRoot("aRoot");
+        webServer.setHttpConfigFile("aConfigFile");
+        webServer.setStatusPath("aStatusPath");
+        webServer.setSvrRoot("aSvrRoot");
+        webServer.getGroups().add(group1);
+        webServer.getGroups().add(group2);
+
+        final JpaWebServer jpaWebServer = webServerCrudService.create(webServer);
+
+        group1.getWebServers().add(webServer);
+        groupCrudService.update(group1);
+
+        group2.getWebServers().add(webServer);
+        groupCrudService.update(group2);
+
+        JpaWebServer result = webServerCrudService.getWebServerAndItsGroups(jpaWebServer.getId());
+        assertEquals("aWebServer", result.getName());
+        assertEquals(2, result.getGroups().size());
+    }
+
+    @Test
     public void testGetWebServerStoppedCount() {
         Long count = webServerCrudService.getWebServerStoppedCount("test-group");
         assertEquals(new Long(0), count);
