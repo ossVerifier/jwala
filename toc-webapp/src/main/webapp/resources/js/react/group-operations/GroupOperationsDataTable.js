@@ -544,7 +544,6 @@ var GroupOperationsDataTable = React.createClass({
                                   var commandStatusWidget = self.props.commandStatusWidgetMap[GroupOperations.getExtDivCompId(id)];
                                   if (commandStatusWidget) {
                                       var jvms = response.applicationResponseContent.jvms;
-                                      self.writeWebServerActionToCommandStatusWidget(id, "START SENT");
                                   }
                                   self.disableEnable(buttonSelector, function() {return groupControlService.startGroup(id)}, "ui-icon-play");
                               },
@@ -560,7 +559,6 @@ var GroupOperationsDataTable = React.createClass({
                                   var commandStatusWidget = self.props.commandStatusWidgetMap[GroupOperations.getExtDivCompId(id)];
                                   if (commandStatusWidget) {
                                       var jvms = response.applicationResponseContent.jvms;
-                                      self.writeWebServerActionToCommandStatusWidget(id, "STOP SENT");
                                   }
                                   self.disableEnable(buttonSelector, function() {return groupControlService.stopGroup(id)}, "ui-icon-stop");
                               },
@@ -623,8 +621,6 @@ var GroupOperationsDataTable = React.createClass({
         var callback = function(id, buttonSelector) {
                             self.disableEnable(event.data.buttonSelector, function() {return groupControlService.startWebServers(event.data.id)},
                                                "ui-icon-play");
-
-                            self.writeWebServerActionToCommandStatusWidget(event.data.id, "START SENT");
                         }
 
         this.verifyAndConfirmControlOperation(event.data.id, event.data.buttonSelector, event.data.name, "start all Web Servers under",
@@ -635,8 +631,6 @@ var GroupOperationsDataTable = React.createClass({
         var callback = function(id, buttonSelector) {
                             self.disableEnable(event.data.buttonSelector, function() {return groupControlService.stopWebServers(event.data.id)},
                                                "ui-icon-stop");
-
-                                self.writeWebServerActionToCommandStatusWidget(event.data.id, "STOP SENT");
                        }
 
         this.verifyAndConfirmControlOperation(event.data.id, event.data.buttonSelector, event.data.name, "stop all Web Servers under",
