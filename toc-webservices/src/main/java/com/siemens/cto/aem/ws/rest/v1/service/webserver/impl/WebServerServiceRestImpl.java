@@ -132,7 +132,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
 
     @Override
     public Response updateWebServer(final JsonUpdateWebServer aWebServerToCreate, final AuthenticatedUser aUser) {
-        LOGGER.debug("Update WS requested: {} by user {}", aWebServerToCreate, aUser.getUser().getId());
+        LOGGER.info("Update WS requested: {} by user {}", aWebServerToCreate, aUser.getUser().getId());
         return ResponseBuilder.ok(webServerService.updateWebServer(aWebServerToCreate.toUpdateWebServerRequest(),
                 aUser.getUser()));
     }
