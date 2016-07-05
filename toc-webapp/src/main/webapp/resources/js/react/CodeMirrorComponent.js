@@ -42,7 +42,9 @@ var CodeMirrorComponent = React.createClass({
         $(".CodeMirror.cm-s-default").css("height", textAreaHeight);
     },
     setData: function(data) {
+        this.codeMirror.off("change", this.props.onChange);
         this.codeMirror.setValue(data);
+        this.codeMirror.on("change", this.props.onChange);
         this.state.data = this.codeMirror.getValue();
     },
     statics: {
