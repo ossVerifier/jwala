@@ -141,6 +141,7 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
             // TODO: Decide if uploading a new war is a CREATE rather than an UPDATE.
             return ResponseBuilder.created(application);
         } catch (final FileUploadException | IOException e) {
+                LOGGER.error("Error uploading web archive",e);
             return ResponseBuilder.notOk(Status.INTERNAL_SERVER_ERROR, new FaultCodeException(AemFaultType.IO_EXCEPTION,
                     e.getMessage()));
         }
