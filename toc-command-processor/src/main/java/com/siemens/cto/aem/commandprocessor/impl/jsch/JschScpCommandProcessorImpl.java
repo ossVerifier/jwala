@@ -127,10 +127,10 @@ public class JschScpCommandProcessorImpl implements CommandProcessor {
                     LOGGER.error(e.getMessage(), e);
                 }
             }
-            if (channel!=null && channel.isConnected()) {
+            if (channel != null && channel.isConnected()) {
                 channel.disconnect();
             }
-            if (session!= null && session.isConnected()) {
+            if (session != null && session.isConnected()) {
                 session.disconnect();
             }
         }

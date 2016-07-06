@@ -9,6 +9,7 @@ import com.siemens.cto.aem.common.exec.RuntimeCommand;
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.common.request.app.ControlApplicationRequest;
 import com.siemens.cto.aem.exception.CommandFailureException;
+import com.siemens.cto.aem.exception.RemoteCommandFailureException;
 import com.siemens.cto.aem.service.app.ApplicationCommandService;
 import org.junit.After;
 import org.junit.Before;
@@ -42,8 +43,7 @@ public class ApplicationRequestServiceImplTest {
         System.clearProperty(ApplicationProperties.PROPERTIES_ROOT_PATH);
     }
 
-    // TODO fix this - should not expect a NullPointer
-    @Test(expected = NullPointerException.class)
+    @Test(expected = RemoteCommandFailureException.class)
     public void testSecureCopyConfFile() throws CommandFailureException{
 
         final Application mockApp = mock(Application.class);
