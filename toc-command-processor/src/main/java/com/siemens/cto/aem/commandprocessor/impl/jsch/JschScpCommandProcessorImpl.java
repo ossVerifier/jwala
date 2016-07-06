@@ -110,6 +110,7 @@ public class JschScpCommandProcessorImpl implements CommandProcessor {
                 checkAckOk = true;
             }
         } catch (Exception e) {
+            LOGGER.error("Failed to copy file with error: {}", e);
             throw new RemoteCommandFailureException(remoteCommand, e);
         } finally {
             if (fis != null) {
@@ -126,10 +127,10 @@ public class JschScpCommandProcessorImpl implements CommandProcessor {
                     LOGGER.error(e.getMessage(), e);
                 }
             }
-            if (channel.isConnected()) {
+            if (channel!=null && channel.isConnected()) {
                 channel.disconnect();
             }
-            if (session.isConnected()) {
+            if (session!= null && session.isConnected()) {
                 session.disconnect();
             }
         }
