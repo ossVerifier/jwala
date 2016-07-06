@@ -42,9 +42,7 @@ var ResourcesConfig = React.createClass({
                     <ModalDialogBox
                      title="Confirm update"
                      show={false}
-                     okCallback={this.okUpdateGroupTemplateCallback}
                      cancelCallback={this.cancelUpdateGroupTemplateCallback}
-                     content={<ConfirmUpdateGroupDialog componentDidMountCallback={this.confirmUpdateGroupDidMount}/>}
                      ref="templateUpdateGroupModal"
                     />
                     <ModalDialogBox ref="selectMetaDataAndTemplateFilesModalDlg"
@@ -223,8 +221,8 @@ var ResourcesConfig = React.createClass({
      cancelCallback: function() {
          this.refs.templateUploadModal.close();
      },
-     okUpdateGroupTemplateCallback: function() {
-        this.refs.xmlTabs.saveGroupTemplate();
+     okUpdateGroupTemplateCallback: function(template) {
+        this.refs.xmlTabs.saveGroupTemplate(template);
         this.refs.templateUpdateGroupModal.close();
      },
      cancelUpdateGroupTemplateCallback: function() {
@@ -237,8 +235,13 @@ var ResourcesConfig = React.createClass({
          })
          this.refs.templateUploadModal.show();
      },
-     launchUpdateGroupTemplate: function(){
-        this.refs.templateUpdateGroupModal.show();
+     launchUpdateGroupTemplate: function(template){
+        var self = this;
+        this.refs.templateUpdateGroupModal.show("Confirm update",
+            <ConfirmUpdateGroupDialog componentDidMountCallback={this.confirmUpdateGroupDidMount}
+                                      template={template}/>, function() {
+                                        self.okUpdateGroupTemplateCallback(template);
+                                      });
      },
      verticalSplitterDidUpdateCallback: function() {
 
@@ -411,8 +414,7 @@ var XmlTabs = React.createClass({
     /*** Save and Deploy methods: Start ***/
     saveResource: function(template) {
         if (this.state.entityType === "jvmSection" || this.state.entityType === "webServerSection"){
-            this.setState({template:template});
-            this.props.updateGroupTemplateCallback();
+            this.props.updateGroupTemplateCallback(template);
         } else {
             this.saveResourcePromise(template).then(this.savedResourceCallback).caught(this.failed.bind(this, "Save Resource Template"));
         }
@@ -440,14 +442,15 @@ var XmlTabs = React.createClass({
         }
         return thePromise;
     },
-    saveGroupTemplate: function(){
+    saveGroupTemplate: function(template){
         var thePromise;
+        var self = this;
         if (this.state.groupJvmEntityType && this.state.groupJvmEntityType === "webApp") {
-            thePromise = this.props.groupService.updateGroupAppResourceTemplate(this.state.entityGroupName, this.state.resourceTemplateName, this.state.template);
+            thePromise = this.props.groupService.updateGroupAppResourceTemplate(this.state.entityGroupName, this.state.resourceTemplateName, template);
         }  else if (this.state.entityType === "webServerSection") {
-            thePromise = this.props.groupService.updateGroupWebServerResourceTemplate(this.state.entityGroupName, this.state.resourceTemplateName, this.state.template);
+            thePromise = this.props.groupService.updateGroupWebServerResourceTemplate(this.state.entityGroupName, this.state.resourceTemplateName, template);
         } else {
-            thePromise = this.props.groupService.updateGroupJvmResourceTemplate(this.state.entityGroupName, this.state.resourceTemplateName, this.state.template);
+            thePromise = this.props.groupService.updateGroupJvmResourceTemplate(this.state.entityGroupName, this.state.resourceTemplateName, template);
         }
         thePromise.then(this.savedResourceCallback).caught(this.failed.bind(this, "Save Resource Template"));
     },
