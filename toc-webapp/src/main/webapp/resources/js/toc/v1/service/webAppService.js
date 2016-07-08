@@ -77,7 +77,8 @@ var webAppService = {
                                      ";jvmName=" + encodeURI(jvmName) + "?tokensReplaced=" + tokensReplaced, "json", responseCallback);
     },
     updateResourceTemplate: function(appName, resourceTemplateName, resourceTemplateContent, jvmName, groupName) {
-        return serviceFoundation.promisedPut("v1.0/applications/" + encodeURI(appName) + "/resources/template/" + encodeURI(resourceTemplateName) + ";groupName=" + encodeURI(groupName) + ";jvmName=" + encodeURI(jvmName),
+        var jvmMatrix = jvmName ? ";jvmName=" + encodeURI(jvmName) : "";
+        return serviceFoundation.promisedPut("v1.0/applications/" + encodeURI(appName) + "/resources/template/" + encodeURI(resourceTemplateName) + ";groupName=" + encodeURI(groupName) + jvmMatrix,
                                      "json",
                                      resourceTemplateContent,
                                      false,

@@ -188,7 +188,7 @@ public class AemWebServiceConfiguration {
 
     @Bean
     public ApplicationServiceRest getV1ApplicationServiceRest() {
-        return new ApplicationServiceRestImpl(applicationService, resourceService, getServletFileUpload());
+        return new ApplicationServiceRestImpl(applicationService, resourceService, getServletFileUpload(), groupService);
     }
 
     @Bean

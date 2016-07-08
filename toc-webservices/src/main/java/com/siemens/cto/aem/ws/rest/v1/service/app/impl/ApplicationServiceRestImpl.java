@@ -13,6 +13,7 @@ import com.siemens.cto.aem.common.request.app.UploadAppTemplateRequest;
 import com.siemens.cto.aem.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
 import com.siemens.cto.aem.persistence.jpa.service.exception.ResourceTemplateUpdateException;
 import com.siemens.cto.aem.service.app.ApplicationService;
+import com.siemens.cto.aem.service.group.GroupService;
 import com.siemens.cto.aem.service.resource.ResourceService;
 import com.siemens.cto.aem.ws.rest.v1.provider.AuthenticatedUser;
 import com.siemens.cto.aem.ws.rest.v1.response.ResponseBuilder;
@@ -42,14 +43,16 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
     private ApplicationService service;
     private ResourceService resourceService;
     private ServletFileUpload servletFileUpload;
+    private final GroupService groupService;
 
     private static ApplicationServiceRestImpl instance;
 
     public ApplicationServiceRestImpl(ApplicationService applicationService, ResourceService resourceService,
-                                      ServletFileUpload servletFileUpload) {
+                                      ServletFileUpload servletFileUpload, final GroupService groupService) {
         service = applicationService;
         this.resourceService = resourceService;
         this.servletFileUpload = servletFileUpload;
+        this.groupService = groupService;
     }
 
     @Override
@@ -205,13 +208,18 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
         LOGGER.debug(content);
 
         try {
+            if (jvmName == null) {
+                // TODO: Discuss with the team or users if updating a resource if a web app under a group means updating the resource of web apps under the JVMs as well.
+                // Note: my 2 cents with the above comment is that it should be optional, e.g. the application should give the user
+                //       means to indicate if the resource of a web app assigned to JVMs should be updated also.
+                return ResponseBuilder.ok(groupService.updateGroupAppResourceTemplate(groupName, appName, resourceTemplateName, content));
+            }
             return ResponseBuilder.ok(service.updateResourceTemplate(appName, resourceTemplateName, content, jvmName, groupName));
         } catch (ResourceTemplateUpdateException | NonRetrievableResourceTemplateContentException e) {
             LOGGER.debug("Failed to update resource template {}", resourceTemplateName, e);
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
                     AemFaultType.PERSISTENCE_ERROR, e.getMessage()));
         }
-
     }
 
     @Override

@@ -640,7 +640,7 @@ public class GroupServiceImplDeployTest {
 
         @Bean
         ApplicationServiceRest getApplicationServiceRest() {
-            return new ApplicationServiceRestImpl(mockApplicationService, mock(ResourceService.class), new ServletFileUpload());
+            return new ApplicationServiceRestImpl(mockApplicationService, mock(ResourceService.class), new ServletFileUpload(), mockGroupService);
         }
 
         @Bean

@@ -17,6 +17,7 @@ import com.siemens.cto.aem.common.request.app.UploadAppTemplateRequest;
 import com.siemens.cto.aem.common.request.app.UploadWebArchiveRequest;
 import com.siemens.cto.aem.persistence.jpa.service.exception.ResourceTemplateUpdateException;
 import com.siemens.cto.aem.service.app.ApplicationService;
+import com.siemens.cto.aem.service.group.GroupService;
 import com.siemens.cto.aem.service.resource.ResourceService;
 import com.siemens.cto.aem.ws.rest.v1.provider.AuthenticatedUser;
 import com.siemens.cto.aem.ws.rest.v1.response.ApplicationResponse;
@@ -68,13 +69,17 @@ public class ApplicationServiceRestImplTest {
     private HttpServletRequest mockHsr;
     @Mock
     private HttpHeaders mockHh;
+
+    @Mock
+    private GroupService mockGroupService;
+
     /*NoMock*/ private ApplicationService service;
     @Mock
     private AuthenticatedUser authenticatedUser;
     @InjectMocks
     @Spy
     private ApplicationServiceRestImpl applicationServiceRest = new ApplicationServiceRestImpl(service = Mockito.mock(ApplicationService.class),
-            mock(ResourceService.class), new ServletFileUpload());
+            mock(ResourceService.class), new ServletFileUpload(), mockGroupService);
 
     private ApplicationServiceRest cut;
 
@@ -178,7 +183,7 @@ public class ApplicationServiceRestImplTest {
         when(mockServletFileUpload.getItemIterator(any(HttpServletRequest.class))).thenReturn(mockFileItemIterator);
         final ApplicationService mockApplicationService = mock(ApplicationService.class);
         ApplicationServiceRestImpl applicationServiceRestImpl = new ApplicationServiceRestImpl(mockApplicationService,
-                mock(ResourceService.class), mockServletFileUpload);
+                mock(ResourceService.class), mockServletFileUpload, mockGroupService);
         applicationServiceRestImpl.uploadWebArchive(new Identifier<Application>(1L), mock(MessageContext.class));
         verify(mockApplicationService).uploadWebArchive(any(Identifier.class), anyString(), any(byte[].class), anyString());
     }

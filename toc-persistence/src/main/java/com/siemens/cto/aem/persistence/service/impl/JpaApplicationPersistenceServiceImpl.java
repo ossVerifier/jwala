@@ -164,6 +164,7 @@ public class JpaApplicationPersistenceServiceImpl implements ApplicationPersiste
         return applicationCrudService.removeTemplate(name);
     }
 
+    // TODO: Decide if we still need this! This causes an error when saving a resource of a web app under a JVM that does not end with ".xml".
     private JpaJvm getJpaJvmForAppXml(String resourceTemplateName, String jvmName, String groupName) {
         // the application context xml is created for each JVM, unlike the the properties and RoleMapping.properties files
         // so when we retrieve or update the template for the context xml make sure we send in a specific JVM
