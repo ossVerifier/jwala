@@ -7,6 +7,7 @@ import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.resource.*;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
+import com.siemens.cto.aem.common.request.app.RemoveWebArchiveRequest;
 import com.siemens.cto.aem.common.request.app.UploadAppTemplateRequest;
 import com.siemens.cto.aem.common.request.app.UploadWebArchiveRequest;
 import com.siemens.cto.aem.common.request.jvm.UploadJvmConfigTemplateRequest;
@@ -21,8 +22,8 @@ import com.siemens.cto.aem.service.exception.ResourceServiceException;
 import com.siemens.cto.aem.service.resource.ResourceService;
 import com.siemens.cto.aem.template.ResourceFileGenerator;
 import com.siemens.cto.toc.files.RepositoryFileInformation;
+import com.siemens.cto.toc.files.WebArchiveManager;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,6 +41,8 @@ import java.util.*;
 public class ResourceServiceImpl implements ResourceService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ResourceServiceImpl.class);
+    public static final String WAR_FILE_EXTENSION = ".war";
+    public static final String ERR_DELETING_WAR_MSG = "Error deleting WAR file resource!";
 
     private final SpelExpressionParser expressionParser;
     private final Expression encryptExpression;
@@ -57,6 +60,8 @@ public class ResourceServiceImpl implements ResourceService {
 
     private final ResourceDao resourceDao;
 
+    private final WebArchiveManager webArchiveManager;
+
     @Value("${paths.resource-templates}")
     private String templatePath;
 
@@ -66,7 +71,8 @@ public class ResourceServiceImpl implements ResourceService {
                                final JvmPersistenceService jvmPersistenceService,
                                final WebServerPersistenceService webServerPersistenceService,
                                final PrivateApplicationService privateApplicationService,
-                               final ResourceDao resourceDao) {
+                               final ResourceDao resourceDao,
+                               final WebArchiveManager webArchiveManager) {
         this.resourcePersistenceService = resourcePersistenceService;
         this.groupPersistenceService = groupPersistenceService;
         this.privateApplicationService = privateApplicationService;
@@ -76,6 +82,7 @@ public class ResourceServiceImpl implements ResourceService {
         this.jvmPersistenceService = jvmPersistenceService;
         this.webServerPersistenceService = webServerPersistenceService;
         this.resourceDao = resourceDao;
+        this.webArchiveManager = webArchiveManager;
     }
 
     @Override
@@ -354,9 +361,21 @@ public class ResourceServiceImpl implements ResourceService {
 
         final String groupName = metaData.getEntity().getGroup();
         final Group group = groupPersistenceService.getGroup(groupName);
-        final List<Application> applications = applicationPersistenceService.findApplicationsBelongingTo(groupName);
         final ConfigTemplate createdConfigTemplate;
         final String templateString = IOUtils.toString(templateData);
+
+        if (metaData.getContentType().equals(ContentType.APPLICATION_BINARY.contentTypeStr) &&
+                templateString.toLowerCase().endsWith(WAR_FILE_EXTENSION)){
+            applicationPersistenceService.updateWarInfo(targetAppName, metaData.getTemplateName(), templateString);
+        }
+
+        createdConfigTemplate = groupPersistenceService.populateGroupAppTemplate(groupName, targetAppName, metaData.getDeployFileName(),
+                convertResourceTemplateMetaDataToJson(metaData), templateString);
+
+        // Can't we just get the application using the group name and target app name instead of getting all the applications
+        // then iterating it to compare with the target app name ???
+        // If we can do that then TODO: Refactor this to return only one application and remove the iteration!
+        final List<Application> applications = applicationPersistenceService.findApplicationsBelongingTo(groupName);
 
         for (final Application application : applications) {
             if (metaData.getEntity().getDeployToJvms() && application.getName().equals(targetAppName)) {
@@ -370,9 +389,6 @@ public class ResourceServiceImpl implements ResourceService {
                 }
             }
         }
-
-        createdConfigTemplate = groupPersistenceService.populateGroupAppTemplate(groupName, targetAppName, metaData.getDeployFileName(),
-                convertResourceTemplateMetaDataToJson(metaData), templateString);
 
         return new CreateResourceTemplateApplicationResponseWrapper(createdConfigTemplate);
     }
@@ -496,7 +512,6 @@ public class ResourceServiceImpl implements ResourceService {
     @Transactional
     public int deleteGroupLevelAppResource(final String appName, final String templateName) {
         final Application application = applicationPersistenceService.getApplication(appName);
-        applicationPersistenceService.updateWarName(application.getId(), StringUtils.EMPTY, StringUtils.EMPTY);
         return resourceDao.deleteGroupLevelAppResource(application.getName(), application.getGroup().getName(), templateName);
     }
 
@@ -721,7 +736,36 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Override
     @Transactional
-    public int deleteGroupLevelAppResources(String appName, String groupName, List<String> templateNameList) {
-        return resourceDao.deleteGroupLevelAppResources(appName, groupName, templateNameList);
+    public int deleteGroupLevelAppResources(final String appName, final String groupName, final List<String> templateNameList) {
+        final int deletedCount = resourceDao.deleteGroupLevelAppResources(appName, groupName, templateNameList);
+        if (deletedCount > 0) {
+            for (final String templateName : templateNameList) {
+                if (templateName.toLowerCase().endsWith(".war")) {
+                    final Application app = applicationPersistenceService.getApplication(appName);
+                    final RemoveWebArchiveRequest removeWarRequest = new RemoveWebArchiveRequest(app);
+
+                    // An app is only assigned to one group as of July 7, 2016 so we don't need the group to delete the
+                    // war info of an app
+                    applicationPersistenceService.deleteWarInfo(appName);
+
+                    try {
+                        final RepositoryFileInformation result = webArchiveManager.remove(removeWarRequest);
+                        if (result.getType() != RepositoryFileInformation.Type.DELETED) {
+                            // If the physical file can't be deleted for some reason don't throw an exception since
+                            // there's no outright ill effect if the war file is not removed in the file system.
+                            // The said file might not exist anymore also which is the reason for the error.
+                            LOGGER.error("Failed to delete the archive {}! WebArchiveManager remove result type = {}" , app.getWarPath(),
+                                    result.getType());
+                        }
+                    } catch (final IOException ioe) {
+                        // If the physical file can't be deleted for some reason don't throw an exception since
+                        // there's no outright ill effect if the war file is not removed in the file system.
+                        LOGGER.error("Failed to delete the archive {}!" , app.getWarPath(), ioe);
+                    }
+                }
+            }
+        }
+
+        return deletedCount;
     }
 }

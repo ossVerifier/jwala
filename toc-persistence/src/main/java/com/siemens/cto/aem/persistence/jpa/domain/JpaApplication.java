@@ -44,9 +44,7 @@ import javax.persistence.*;
                   "(SELECT g FROM JpaGroup g WHERE g.name = :groupName AND g.jvms.name = :jvmName)"),
     @NamedQuery(
             name=JpaApplication.QUERY_FIND_BY_GROUP_AND_APP_NAME,
-            query="SELECT a FROM JpaApplication a WHERE a.name = :appName AND a.group.name = :groupName"),
-
-        @NamedQuery(name = JpaApplication.QUERY_UPDATE_APP_WAR_NAME_AND_PATH, query = "UPDATE JpaApplication app SET app.warName = :warName, app.warPath = :warPath WHERE app.id = :appId")
+            query="SELECT a FROM JpaApplication a WHERE a.name = :appName AND a.group.name = :groupName")
     })
 public class JpaApplication extends AbstractEntity<JpaApplication> {
 
@@ -68,12 +66,8 @@ public class JpaApplication extends AbstractEntity<JpaApplication> {
     public static final String GROUP_LIST_PARAM = "groups";
     public static final String APP_NAME_PARAM = "appName";
     public static final String QUERY_FIND_BY_GROUP_AND_APP_NAME = "findApplicationByGroupAndAppName";
-    public static final String QUERY_UPDATE_APP_WAR_NAME_AND_PATH = "updateAppWarNameAndPath";
 
-    public static final String QUERY_PARAM_APP_ID = "appId";
-    public static final String QUERY_PARAM_WAR_NAME = "warName";
-    public static final String QUERY_PARAM_WAR_PATH = "warPath";
-
+    public static final String QUERY_PARAM_APP_NAME = "appName";
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

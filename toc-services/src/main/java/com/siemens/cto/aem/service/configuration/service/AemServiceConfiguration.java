@@ -71,6 +71,7 @@ import com.siemens.cto.aem.service.webserver.impl.WebServerCommandServiceImpl;
 import com.siemens.cto.aem.service.webserver.impl.WebServerControlServiceImpl;
 import com.siemens.cto.aem.service.webserver.impl.WebServerServiceImpl;
 import com.siemens.cto.toc.files.FileManager;
+import com.siemens.cto.toc.files.WebArchiveManager;
 import org.apache.commons.pool2.impl.GenericKeyedObjectPool;
 import org.apache.commons.pool2.impl.GenericKeyedObjectPoolConfig;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -306,10 +307,11 @@ public class AemServiceConfiguration implements SchedulingConfigurer {
     public ResourceService getResourceService(final ApplicationPersistenceService applicationPersistenceService,
                                               final JvmPersistenceService jvmPersistenceService,
                                               final WebServerPersistenceService webServerPersistenceService,
-                                              final ResourceDao resourceDao) {
+                                              final ResourceDao resourceDao,
+                                              final WebArchiveManager webArchiveManager) {
         return new ResourceServiceImpl(persistenceServiceConfiguration.getResourcePersistenceService(),
                 persistenceServiceConfiguration.getGroupPersistenceService(), applicationPersistenceService,
-                jvmPersistenceService, webServerPersistenceService, getPrivateApplicationService(), resourceDao);
+                jvmPersistenceService, webServerPersistenceService, getPrivateApplicationService(), resourceDao, webArchiveManager);
     }
 
     @Bean

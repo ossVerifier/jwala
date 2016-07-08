@@ -10,7 +10,6 @@ import com.siemens.cto.aem.common.domain.model.jvm.JvmControlOperation;
 import com.siemens.cto.aem.common.domain.model.jvm.message.JvmHistoryEvent;
 import com.siemens.cto.aem.common.domain.model.resource.*;
 import com.siemens.cto.aem.common.domain.model.user.User;
-import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.common.exception.InternalErrorException;
 import com.siemens.cto.aem.common.exec.CommandOutput;
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
@@ -173,27 +172,32 @@ public class ApplicationServiceImpl implements ApplicationService {
         return privateApplicationService.uploadWebArchiveUpdateDB(uploadWebArchiveRequest, privateApplicationService.uploadWebArchiveData(uploadWebArchiveRequest));
     }
 
-    @Transactional
     @Override
-    public Application deleteWebArchive(Identifier<Application> appId, User user) {
-        Application app = applicationPersistenceService.getApplication(appId);
-        RemoveWebArchiveRequest rwac = new RemoveWebArchiveRequest(app);
+    @Transactional
+    public Application deleteWebArchive(final Identifier<Application> appId, final User user) {
+        final Application app = applicationPersistenceService.getApplication(appId);
 
-        RepositoryFileInformation result = RepositoryFileInformation.none();
+        resourceService.deleteGroupLevelAppResource(app.getName(), app.getWarName());
+        final Application updatedApp = applicationPersistenceService.deleteWarInfo(app.getName());
 
+        final RemoveWebArchiveRequest removeWarRequest = new RemoveWebArchiveRequest(app);
         try {
-            result = webArchiveManager.remove(rwac);
+            final RepositoryFileInformation result = webArchiveManager.remove(removeWarRequest);
             LOGGER.info("Archive Delete: " + result.toString());
-            resourceService.deleteGroupLevelAppResource(app.getName(), app.getWarName());
-        } catch (IOException e) {
-            throw new BadRequestException(AemFaultType.INVALID_APPLICATION_WAR, "Error deleting archive.", e);
+            if (result.getType() != RepositoryFileInformation.Type.DELETED) {
+                // If the physical file can't be deleted for some reason don't throw an exception since there's no
+                // outright ill effect if the war file is not removed in the file system.
+                // The said file might not exist anymore also which is the reason for the error.
+                LOGGER.error("Failed to delete the archive {}! WebArchiveManager remove result type = {}" , app.getWarPath(),
+                        result.getType());
+            }
+        } catch (final IOException ioe) {
+            // If the physical file can't be deleted for some reason don't throw an exception since there's no
+            // outright ill effect if the war file is not removed in the file system.
+            LOGGER.error("Failed to delete the archive {}!" , app.getWarPath(), ioe);
         }
 
-        if (result.getType() == RepositoryFileInformation.Type.DELETED) {
-            return applicationPersistenceService.removeWarPathAndName(rwac);
-        } else {
-            throw new BadRequestException(AemFaultType.INVALID_APPLICATION_WAR, "Archive not found to delete.");
-        }
+        return updatedApp;
     }
 
     @Override
@@ -606,9 +610,8 @@ public class ApplicationServiceImpl implements ApplicationService {
         // that only the resources service knows of so we just reuse it.
         resourceService.createGroupedLevelAppResource(resourceTemplateMetaData, new ByteArrayInputStream(war), application.getName());
 
-        applicationPersistenceService.updateWarName(appId, warName,
-                resourceService.getAppTemplate(application.getGroup().getName(), application.getName(), warName));
         application.setWarName(warName);
+        application.setWarPath(resourceService.getAppTemplate(application.getGroup().getName(), application.getName(), warName));
 
         return application;
     }

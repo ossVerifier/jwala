@@ -192,11 +192,17 @@ public class JpaApplicationPersistenceServiceImpl implements ApplicationPersiste
     }
 
     @Override
-    public int updateWarName(final Identifier<Application> appId, final String warName, final String warPath) {
-        final Query q = em.createNamedQuery(JpaApplication.QUERY_UPDATE_APP_WAR_NAME_AND_PATH);
-        q.setParameter(JpaApplication.QUERY_PARAM_APP_ID, appId.getId());
-        q.setParameter(JpaApplication.QUERY_PARAM_WAR_NAME, warName);
-        q.setParameter(JpaApplication.QUERY_PARAM_WAR_PATH, warPath);
-        return q.executeUpdate();
+    public Application updateWarInfo(final String appName, final String warName, final String warPath) {
+        final Query q = em.createNamedQuery(JpaApplication.QUERY_BY_NAME);
+        q.setParameter(JpaApplication.QUERY_PARAM_APP_NAME, appName);
+        final JpaApplication jpaApplication = (JpaApplication) q.getSingleResult();
+        jpaApplication.setWarName(warName);
+        jpaApplication.setWarPath(warPath);
+        return JpaAppBuilder.appFrom(jpaApplication);
+    }
+
+    @Override
+    public Application deleteWarInfo(final String appName) {
+        return updateWarInfo(appName, null, null);
     }
 }

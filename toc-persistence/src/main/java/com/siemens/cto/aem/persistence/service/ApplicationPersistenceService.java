@@ -19,6 +19,7 @@ public interface ApplicationPersistenceService {
 
     Application updateWARPath(UploadWebArchiveRequest uploadWebArchiveRequest, String warPath);
 
+    @Deprecated
     Application removeWarPathAndName(RemoveWebArchiveRequest removeWebArchiveRequest);
 
     void removeApplication(final Identifier<Application> anAppToRemove);
@@ -63,10 +64,17 @@ public interface ApplicationPersistenceService {
 
     /**
      * Update the application's war name and war path.
-     * @param appId the application's id
+     * @param appName the application name
      * @param warName the war name
      * @param warPath the war path
      * @return number of rows updated
      */
-    int updateWarName(Identifier<Application> appId, String warName, String warPath);
+    Application updateWarInfo(String appName, String warName, String warPath);
+
+    /**
+     * Sets the application's war name and path to null.
+     * @param appName the application name
+     * @return the number of rows updated
+     */
+    Application deleteWarInfo(String appName);
 }

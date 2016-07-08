@@ -26,6 +26,7 @@ import com.siemens.cto.aem.service.app.PrivateApplicationService;
 import com.siemens.cto.aem.service.resource.impl.ResourceServiceImpl;
 import com.siemens.cto.toc.files.FileManager;
 import com.siemens.cto.toc.files.RepositoryFileInformation;
+import com.siemens.cto.toc.files.WebArchiveManager;
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.groovy.runtime.ResourceGroovyMethods;
 import org.joda.time.DateTime;
@@ -86,6 +87,9 @@ public class ResourceServiceImplTest {
     @Mock
     private ResourceDao mockResourceDao;
 
+    @Mock
+    private WebArchiveManager mockWebArchiveManager;
+
     @Before
     public void setup() {
         // It is good practice to start with a clean sheet of paper before each test that is why resourceService is
@@ -93,11 +97,11 @@ public class ResourceServiceImplTest {
         MockitoAnnotations.initMocks(this);
         resourceService = new ResourceServiceImpl(mockResourcePersistenceService, mockGroupPesistenceService,
                 mockAppPersistenceService, mockJvmPersistenceService, mockWebServerPersistenceService,
-                mockPrivateApplicationService, mockResourceDao);
+                mockPrivateApplicationService, mockResourceDao, mockWebArchiveManager);
 
+        when(mockJvmPersistenceService.findJvmByExactName(eq("someJvm"))).thenReturn(mock(Jvm.class));
 
         // emulates uploadIfBinaryData
-        when(mockJvmPersistenceService.findJvmByExactName(eq("someJvm"))).thenReturn(mock(Jvm.class));
         final RepositoryFileInformation mockRepositoryFileInformation = mock(RepositoryFileInformation.class);
         final Path mockPath = mock(Path.class);
         when(mockPath.toString()).thenReturn("thePath");
@@ -614,5 +618,45 @@ public class ResourceServiceImplTest {
         verify(mockAppPersistenceService).uploadAppTemplate(any(UploadAppTemplateRequest.class), any(JpaJvm.class));
         verify(mockGroupPesistenceService).populateGroupAppTemplate(eq("someGroup"), eq("someApp"), anyString(), anyString(),
                 anyString());
+        verify(mockAppPersistenceService, new Times(0)).updateWarInfo(eq("someApp"), anyString(), anyString());
+    }
+
+    @Test
+    public void testCreateGroupedLevelAppWarResource() throws IOException {
+        ResourceTemplateMetaData metaData = new ResourceTemplateMetaData();
+        metaData.setContentType(ContentType.APPLICATION_BINARY.contentTypeStr);
+        final Entity entity = new Entity();
+        entity.setGroup("someGroup");
+        entity.setDeployToJvms(true);
+        metaData.setEntity(entity);
+
+        final Group mockGroup = mock(Group.class);
+
+        final Jvm mockJvm = mock(Jvm.class);
+        final Set<Jvm> mockJvmSet = new HashSet<>();
+        mockJvmSet.add(mockJvm);
+
+        when(mockGroup.getJvms()).thenReturn(mockJvmSet);
+
+        final Application mockApplication = mock(Application.class);
+        when(mockApplication.getName()).thenReturn("someApp");
+        final List<Application> mockAppList = new ArrayList<>();
+        mockAppList.add(mockApplication);
+        when(mockAppPersistenceService.findApplicationsBelongingTo(anyString())).thenReturn(mockAppList);
+        when(mockGroupPesistenceService.getGroup(anyString())).thenReturn(mockGroup);
+
+        final RepositoryFileInformation mockRepositoryFileInformation = mock(RepositoryFileInformation.class);
+        final Path mockPath = mock(Path.class);
+        when(mockPath.toString()).thenReturn("app.war");
+        when(mockRepositoryFileInformation.getPath()).thenReturn(mockPath);
+        when(mockPrivateApplicationService.uploadWebArchiveData(any(UploadWebArchiveRequest.class)))
+                .thenReturn(mockRepositoryFileInformation);
+
+        resourceService.createGroupedLevelAppResource(metaData, new ByteArrayInputStream("someData".getBytes()), "someApp");
+        verify(mockJvmPersistenceService).getJpaJvm(any(Identifier.class), eq(false));
+        verify(mockAppPersistenceService).uploadAppTemplate(any(UploadAppTemplateRequest.class), any(JpaJvm.class));
+        verify(mockGroupPesistenceService).populateGroupAppTemplate(eq("someGroup"), eq("someApp"), anyString(), anyString(),
+                anyString());
+        verify(mockAppPersistenceService).updateWarInfo(eq("someApp"), anyString(), anyString());
     }
 }
