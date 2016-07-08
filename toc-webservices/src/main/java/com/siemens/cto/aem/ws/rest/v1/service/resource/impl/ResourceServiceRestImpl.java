@@ -1,6 +1,7 @@
 package com.siemens.cto.aem.ws.rest.v1.service.resource.impl;
 
 import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
+import com.siemens.cto.aem.common.domain.model.resource.ContentType;
 import com.siemens.cto.aem.common.domain.model.resource.ResourceTemplateMetaData;
 import com.siemens.cto.aem.common.exception.FaultCodeException;
 import com.siemens.cto.aem.service.exception.ResourceServiceException;
@@ -12,6 +13,7 @@ import com.siemens.cto.aem.ws.rest.v1.service.resource.CreateResourceParam;
 import com.siemens.cto.aem.ws.rest.v1.service.resource.ResourceHierarchyParam;
 import com.siemens.cto.aem.ws.rest.v1.service.resource.ResourceServiceRest;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.jaxrs.ext.multipart.Attachment;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
@@ -35,6 +37,9 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
     private final static Logger LOGGER = LoggerFactory.getLogger(ResourceServiceRestImpl.class);
     private static final int CREATE_TEMPLATE_EXPECTED_NUM_OF_ATTACHMENTS = 2;
     private static final String JSON_FILE_EXTENSION = ".json";
+    public static final String UNEXPECTED_CONTENT_TYPE_ERROR_MSG =
+            "File being uploaded is invalid! The expected file type as indicated in the meta data is text based and should have a TPL extension.";
+    public static final String TPL_FILE_EXTENSION = ".tpl";
 
     private final ResourceService resourceService;
 
@@ -167,6 +172,8 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
         InputStream metadataIn = null;
         InputStream resourceDataIn = null;
 
+        String fileName = StringUtils.EMPTY;
+
         final List<Attachment> filteredAttachments = new ArrayList<>();
         for(Attachment attachment:attachments) {
             if(attachment.getDataHandler().getName() != null) {
@@ -182,6 +189,7 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
                     if (handler.getName().toLowerCase().endsWith(JSON_FILE_EXTENSION)) {
                         metadataIn = attachment.getDataHandler().getInputStream();
                     } else {
+                        fileName = attachment.getDataHandler().getName();
                         resourceDataIn = attachment.getDataHandler().getInputStream();
                     }
                 } catch (final IOException ioe) {
@@ -200,6 +208,15 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
         try {
             final ObjectMapper mapper = new ObjectMapper();
             ResourceTemplateMetaData resourceTemplateMetaData = mapper.readValue(IOUtils.toString(metadataIn), ResourceTemplateMetaData.class);
+
+            // We do the file attachment validation here since this is a REST services affair IMHO.
+            // TODO: Use a more sophisticated way of knowing the content type in next releases.
+            if (!ContentType.APPLICATION_BINARY.contentTypeStr.equalsIgnoreCase(resourceTemplateMetaData.getContentType()) &&
+                !(fileName.toLowerCase().endsWith(TPL_FILE_EXTENSION))) {
+                    LOGGER.error(UNEXPECTED_CONTENT_TYPE_ERROR_MSG);
+                    return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR,
+                            new FaultCodeException(AemFaultType.SERVICE_EXCEPTION, UNEXPECTED_CONTENT_TYPE_ERROR_MSG));
+            }
 
             // NOTE: We do the parameter checking logic here since the service layer does not know anything about ResourceHierarchyParam.
             if (ParamValidator.getNewInstance().isNotEmpty(createResourceParam.getGroup())
