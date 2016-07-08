@@ -22,6 +22,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.internal.verification.Times;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import javax.activation.DataHandler;
@@ -508,5 +509,40 @@ public class ResourceServiceRestImplTest {
         final ResourceHierarchyParam resourceHierarchyParam = new ResourceHierarchyParam();
         final Response response = cut.deleteResource("someResource", resourceHierarchyParam, authenticatedUser);
         assertEquals("AEM64", ((ApplicationResponse) response.getEntity()).getMsgCode());
+    }
+
+    @Test
+    public void testUploadIncorrectFile() throws IOException {
+        final DataHandler mockDataHandler1 = mock(DataHandler.class);
+        when(mockDataHandler1.getName()).thenReturn("sample-resource.json");
+
+        this.getClass().getClassLoader()
+                .getResourceAsStream("sample-resource.json");
+
+        when(mockDataHandler1.getInputStream()).thenReturn(this.getClass().getClassLoader()
+                .getResourceAsStream("sample-resource.json"));
+        final DataHandler mockDataHandler2 = mock(DataHandler.class);
+        when(mockDataHandler2.getName()).thenReturn("sample-resource.war");
+        when(mockDataHandler2.getInputStream()).thenReturn(this.getClass().getClassLoader()
+                .getResourceAsStream("sample-resource.tpl"));
+
+        final Attachment mockAttachment1 = mock(Attachment.class);
+        when(mockAttachment1.getDataHandler()).thenReturn(mockDataHandler1);
+        final Attachment mockAttachment2 = mock(Attachment.class);
+        when(mockAttachment2.getDataHandler()).thenReturn(mockDataHandler2);
+
+        final List<Attachment> attachmentList = new ArrayList<>();
+        attachmentList.add(mockAttachment1);
+        attachmentList.add(mockAttachment2);
+
+        final CreateResourceParam createResourceParam = new CreateResourceParam();
+        createResourceParam.setGroup("someGroup");
+        createResourceParam.setJvm("*");
+
+        final Response response = cut.createResource(attachmentList, createResourceParam, authenticatedUser);
+        assertEquals("File being uploaded is invalid! The expected file type as indicated in the meta data is text based and should have a TPL extension.",
+                ((ApplicationResponse) response.getEntity()).getApplicationResponseContent());
+        verify(impl, new Times(0)).createGroupLevelJvmResource(any(ResourceTemplateMetaData.class), any(InputStream.class),
+                eq("someGroup"));
     }
 }
