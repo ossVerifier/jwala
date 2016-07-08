@@ -267,6 +267,10 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
             LOGGER.warn("exception thrown in CreateResource: {}", ioe);
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR,
                     new FaultCodeException(AemFaultType.SERVICE_EXCEPTION, ioe.getMessage()));
+        } catch (final ResourceServiceException rse) {
+            LOGGER.error("exception thrown in CreateResource: {}", rse);
+            return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR,
+                    new FaultCodeException(AemFaultType.SERVICE_EXCEPTION, rse.getMessage()));
         }
         return ResponseBuilder.ok(responseWrapper);
     }

@@ -116,11 +116,12 @@ var WebAppConfig = React.createClass({
     },
     renderActionIcons: function(id, data) {
         var self = this;
+        var uploadBtn = data.warName ? null : <RButton title="Upload WAR" className="upArrowIconBtn ui-widget ui-state-default ui-corner-all ui-button-text-only ui-button-height"
+                                                       hoverClassName="ui-state-hover" spanClassName="ui-icon ui-icon-arrowthick-1-n" onClick={function(){self.onUploadWarBtnClicked(data)}} />
         var deleteBtn = data.warName ? <RButton title="Delete WAR" className="trashIconBtn ui-widget ui-state-default ui-corner-all ui-button-text-only ui-button-height"
                                                 hoverClassName="ui-state-hover" spanClassName="ui-icon ui-icon-trash" onClick={function(){self.onDeleteWarBtnClicked(data)}} /> : null;
         return <div>
-                   <RButton title="Upload WAR" className="upArrowIconBtn ui-widget ui-state-default ui-corner-all ui-button-text-only ui-button-height"
-                            hoverClassName="ui-state-hover" spanClassName="ui-icon ui-icon-arrowthick-1-n" onClick={function(){self.onUploadWarBtnClicked(data)}} />
+                   {uploadBtn}
                    {deleteBtn}
                </div>
     },

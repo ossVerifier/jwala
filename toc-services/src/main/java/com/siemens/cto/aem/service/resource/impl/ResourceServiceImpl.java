@@ -24,6 +24,7 @@ import com.siemens.cto.aem.template.ResourceFileGenerator;
 import com.siemens.cto.toc.files.RepositoryFileInformation;
 import com.siemens.cto.toc.files.WebArchiveManager;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -366,7 +367,12 @@ public class ResourceServiceImpl implements ResourceService {
 
         if (metaData.getContentType().equals(ContentType.APPLICATION_BINARY.contentTypeStr) &&
                 templateString.toLowerCase().endsWith(WAR_FILE_EXTENSION)){
-            applicationPersistenceService.updateWarInfo(targetAppName, metaData.getTemplateName(), templateString);
+            final Application app = applicationPersistenceService.getApplication(targetAppName);
+            if (StringUtils.isEmpty(app.getWarName())) {
+                applicationPersistenceService.updateWarInfo(targetAppName, metaData.getTemplateName(), templateString);
+            } else {
+                throw new ResourceServiceException("A web application can only have 1 war file. To change it, delete the war file first before uploading a new one.");
+            }
         }
 
         createdConfigTemplate = groupPersistenceService.populateGroupAppTemplate(groupName, targetAppName, metaData.getDeployFileName(),

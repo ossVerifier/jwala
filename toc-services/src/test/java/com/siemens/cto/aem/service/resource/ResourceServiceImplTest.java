@@ -651,6 +651,7 @@ public class ResourceServiceImplTest {
         when(mockRepositoryFileInformation.getPath()).thenReturn(mockPath);
         when(mockPrivateApplicationService.uploadWebArchiveData(any(UploadWebArchiveRequest.class)))
                 .thenReturn(mockRepositoryFileInformation);
+        when(mockAppPersistenceService.getApplication(eq("someApp"))).thenReturn(mockApplication);
 
         resourceService.createGroupedLevelAppResource(metaData, new ByteArrayInputStream("someData".getBytes()), "someApp");
         verify(mockJvmPersistenceService).getJpaJvm(any(Identifier.class), eq(false));
