@@ -153,7 +153,8 @@ public class ApplicationCrudServiceImpl extends AbstractCrudServiceImpl<JpaAppli
     }
 
     @Override
-    public void updateResourceTemplate(final String appName, final String resourceTemplateName, final String template, JpaJvm jvm) {
+    public void updateResourceTemplate(final String appName, final String resourceTemplateName, final String template,
+                                       final JpaJvm jvm) {
         final Query q = entityManager.createNamedQuery(JpaApplicationConfigTemplate.UPDATE_APP_TEMPLATE_CONTENT);
         q.setParameter("appName", appName);
         q.setParameter("templateName", resourceTemplateName);
@@ -171,7 +172,6 @@ public class ApplicationCrudServiceImpl extends AbstractCrudServiceImpl<JpaAppli
         if (numEntities == 0) {
             throw new ResourceTemplateUpdateException(appName, resourceTemplateName);
         }
-
     }
 
     @Override

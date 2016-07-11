@@ -30,6 +30,7 @@ public class JpaJvm extends AbstractEntity<JpaJvm> {
     public static final java.lang.String QUERY_GET_JVMS_BY_GROUP_NAME = "getJvmsByGroupName";
 
     public static final String QUERY_PARAM_ID = "id";
+    public static final String QUERY_PARAM_JVM_NAME = "jvmName";
     public static final String QUERY_PARAM_STATE = "state";
     public static final String QUERY_PARAM_ERROR_STATUS = "errorStatus";
     public static final String QUERY_PARAM_GROUP_NAME = "groupName";

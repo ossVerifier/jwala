@@ -93,9 +93,20 @@ public class JpaApplicationPersistenceServiceImpl implements ApplicationPersiste
 
     @Override
     public String updateResourceTemplate(final String appName, final String resourceTemplateName, final String template, final String jvmName, final String groupName) {
-        JpaJvm jvm = getJpaJvmForAppXml(resourceTemplateName, jvmName, groupName);
-        applicationCrudService.updateResourceTemplate(appName, resourceTemplateName, template, jvm);
-        return applicationCrudService.getResourceTemplate(appName, resourceTemplateName, jvm);
+        final JpaJvm jpaJvm = getJpaJvm(jvmName, groupName);
+        applicationCrudService.updateResourceTemplate(appName, resourceTemplateName, template, jpaJvm);
+        return applicationCrudService.getResourceTemplate(appName, resourceTemplateName, jpaJvm);
+    }
+
+    // Why jpaJvm ? The methods updateResourceTemplate and getResourceTemplate
+    // of ApplicationCrudService requires JpaJvm. Those 2 methods were created
+    // in a time where the use of DTOs or just POJOs is vague. We need to
+    // get back to this when the persistence layer is refactored.
+    private JpaJvm getJpaJvm(final String jvmName, final String groupName) {
+        final Query q = em.createNamedQuery(JpaJvm.QUERY_FIND_JVM_BY_GROUP_AND_JVM_NAME);
+        q.setParameter(JpaJvm.QUERY_PARAM_JVM_NAME, jvmName);
+        q.setParameter(JpaJvm.QUERY_PARAM_GROUP_NAME, groupName);
+        return (JpaJvm) q.getSingleResult();
     }
 
     @Override
@@ -162,29 +173,6 @@ public class JpaApplicationPersistenceServiceImpl implements ApplicationPersiste
     @Override
     public int removeTemplate(final String name) {
         return applicationCrudService.removeTemplate(name);
-    }
-
-    // TODO: Decide if we still need this! This causes an error when saving a resource of a web app under a JVM that does not end with ".xml".
-    private JpaJvm getJpaJvmForAppXml(String resourceTemplateName, String jvmName, String groupName) {
-        // the application context xml is created for each JVM, unlike the the properties and RoleMapping.properties files
-        // so when we retrieve or update the template for the context xml make sure we send in a specific JVM
-        JpaJvm jvm = null;
-        if (resourceTemplateName.endsWith(".xml")) {
-            jvm = getJpaJvmByName(groupCrudService.getGroup(groupName), jvmName);
-        }
-        return jvm;
-    }
-
-    private JpaJvm getJpaJvmByName(JpaGroup group, String jvmNameToFind) {
-        List<JpaJvm> jvmList = group.getJvms();
-        if (jvmList != null) {
-            for (JpaJvm jvm : jvmList) {
-                if (jvm.getName().equals(jvmNameToFind)) {
-                    return jvm;
-                }
-            }
-        }
-        return null;
     }
 
     @Override
