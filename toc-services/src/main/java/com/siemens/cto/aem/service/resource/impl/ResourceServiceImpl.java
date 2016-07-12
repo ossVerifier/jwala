@@ -691,6 +691,12 @@ public class ResourceServiceImpl implements ResourceService {
         final List<Application> applications = applicationPersistenceService.findApplicationsBelongingTo(groupName);
         ConfigTemplate createdConfigTemplate = null;
         String templateString = IOUtils.toString(templateData);
+
+        if (ContentType.APPLICATION_BINARY.contentTypeStr.equalsIgnoreCase(metaData.getContentType()) &&
+            metaData.getTemplateName().toLowerCase().endsWith(WAR_FILE_EXTENSION)) {
+                applicationPersistenceService.updateWarInfo(targetAppName, metaData.getTemplateName(), templateString);
+        }
+
         for (final Application application : applications) {
             if (metaData.getEntity().getDeployToJvms() && application.getName().equals(targetAppName)) {
                 final byte[] bytes = templateString.getBytes();
