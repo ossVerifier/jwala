@@ -120,10 +120,7 @@ public class JvmServiceImpl implements JvmService {
             String metaDataStr = groupService.getGroupJvmResourceTemplateMetaData(groupName, templateName);
             try {
                 ResourceTemplateMetaData metaData = new ObjectMapper().readValue(metaDataStr, ResourceTemplateMetaData.class);
-                final UploadJvmConfigTemplateRequest uploadJvmTemplateRequest = new UploadJvmConfigTemplateRequest(jvm, metaData.getTemplateName(),
-                        IOUtils.toInputStream(templateContent), metaDataStr);
-                uploadJvmTemplateRequest.setConfFileName(metaData.getDeployFileName());
-                jvmPersistenceService.uploadJvmTemplateXml(uploadJvmTemplateRequest);
+                resourceService.createJvmResource(metaData, IOUtils.toInputStream(templateContent), jvmName);
             } catch (IOException e) {
                 LOGGER.error("Failed to map meta data for JVM {} in group {}", jvmName, groupName, e);
                 throw new InternalErrorException(AemFaultType.BAD_STREAM, "Failed to map meta data for JVM " + jvmName + " in group " + groupName, e);
@@ -137,12 +134,9 @@ public class JvmServiceImpl implements JvmService {
             try {
                 ResourceTemplateMetaData metaData = new ObjectMapper().readValue(metaDataStr, ResourceTemplateMetaData.class);
                 if (metaData.getEntity().getDeployToJvms()) {
-                    final Application application = applicationService.getApplication(metaData.getEntity().getTarget());
-                    String appTemplate = groupService.getGroupAppResourceTemplate(groupName, application.getName(), templateName,
-                            false, new ResourceGroup());
-                    UploadAppTemplateRequest uploadAppTemplateRequest = new UploadAppTemplateRequest(application, metaData.getTemplateName(),
-                            metaData.getDeployFileName(), jvmName, metaDataStr, new ByteArrayInputStream(appTemplate.getBytes()));
-                    applicationService.uploadAppTemplate(uploadAppTemplateRequest);
+                    final String template = resourceService.getAppTemplate(groupName, metaData.getEntity().getTarget(), templateName);
+                    resourceService.createAppResource(metaData, new ByteArrayInputStream(template.getBytes()), jvmName,
+                                                      metaData.getEntity().getTarget());
                 }
             } catch (IOException e) {
                 LOGGER.error("Failed to map meta data while creating JVM for template {} in group {}", templateName, groupName, e);
