@@ -1,50 +1,61 @@
 package com.siemens.cto.aem.service.group.impl;
 
-import com.siemens.cto.aem.common.dispatch.GroupWebServerDispatchCommand;
-import com.siemens.cto.aem.common.dispatch.WebServerDispatchCommandResult;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.user.User;
+import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
+import com.siemens.cto.aem.common.exec.CommandOutput;
+import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.common.request.webserver.ControlGroupWebServerRequest;
-import com.siemens.cto.aem.service.dispatch.CommandDispatchGateway;
+import com.siemens.cto.aem.common.request.webserver.ControlWebServerRequest;
 import com.siemens.cto.aem.service.group.GroupService;
 import com.siemens.cto.aem.service.group.GroupWebServerControlService;
+import com.siemens.cto.aem.service.webserver.WebServerControlService;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
+import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class GroupWebServerControlServiceImpl implements GroupWebServerControlService {
 
     private final GroupService groupService;
-    private final CommandDispatchGateway commandDispatchGateway;
+    private final WebServerControlService webServerControlService;
+    private final ExecutorService executorService;
 
-    public GroupWebServerControlServiceImpl(final GroupService theGroupService, final CommandDispatchGateway theCommandDispatchGateway) {
+    public GroupWebServerControlServiceImpl(final GroupService theGroupService, WebServerControlService theWebServerControlService) {
         groupService = theGroupService;
-        commandDispatchGateway = theCommandDispatchGateway;
+        webServerControlService = theWebServerControlService;
+        executorService = Executors.newFixedThreadPool(Integer.parseInt(ApplicationProperties.get("thread-task-executor.group-control.pool.size", "25")));
     }
-    
+
     @Transactional
     @Override
-    public void controlGroup(ControlGroupWebServerRequest controlGroupWebServerRequest, User aUser) {
+    public void controlGroup(final ControlGroupWebServerRequest controlGroupWebServerRequest, final User aUser) {
 
         controlGroupWebServerRequest.validate();
 
-        Group group = groupService.getGroup(controlGroupWebServerRequest.getGroupId());
+        Group group = groupService.getGroupWithWebServers(controlGroupWebServerRequest.getGroupId());
 
-        GroupWebServerDispatchCommand dispatchCommand = new GroupWebServerDispatchCommand(group, controlGroupWebServerRequest, aUser);
-        
-        commandDispatchGateway.asyncDispatchCommand(dispatchCommand);
+        final Set<WebServer> webServers = group.getWebServers();
+        if (webServers != null) {
+            for (final WebServer webServer : webServers) {
+                executorService.submit(new Callable<CommandOutput>() {
+                    @Override
+                    public CommandOutput call() throws Exception {
+                        final ControlWebServerRequest controlWebServerRequest = new ControlWebServerRequest(webServer.getId(), controlGroupWebServerRequest.getControlOperation());
+                        return webServerControlService.controlWebServer(controlWebServerRequest, aUser);
+                    }
+                });
+            }
+        }
     }
 
     @Override
     public void controlAllWebSevers(final ControlGroupWebServerRequest controlGroupWebServerRequest, final User user) {
-        commandDispatchGateway.asyncDispatchCommand(new GroupWebServerDispatchCommand(null, controlGroupWebServerRequest,
-                user));
+        for (Group group : groupService.getGroups()) {
+            controlGroup(new ControlGroupWebServerRequest(group.getId(), controlGroupWebServerRequest.getControlOperation()), user);
+        }
     }
 
-    @Transactional
-    @Override
-    public void dispatchCommandComplete(final List<WebServerDispatchCommandResult> results) {
-        // We need to have this or else Spring integration will complain that this service
-        // does not have any eligible methods for handling Messages.
-    }
 }

@@ -27,6 +27,13 @@ public class JsonControlWebServer {
         return WebServerControlOperation.convertFrom(controlOperation);
     }
 
+    @Override
+    public String toString() {
+        return "JsonControlWebServer{" +
+                "controlOperation='" + controlOperation + '\'' +
+                '}';
+    }
+
     static class JsonControlWebServerDeserializer extends AbstractJsonDeserializer<JsonControlWebServer> {
 
         public JsonControlWebServerDeserializer() {

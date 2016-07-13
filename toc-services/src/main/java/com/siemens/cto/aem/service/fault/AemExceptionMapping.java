@@ -2,8 +2,6 @@ package com.siemens.cto.aem.service.fault;
 
 import com.jcraft.jsch.JSchException;
 import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
-import org.springframework.integration.MessageHandlingException;
-import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.ResourceAccessException;
 
 import java.net.ConnectException;
@@ -52,14 +50,7 @@ public class AemExceptionMapping {
                     return AemFaultType.CANNOT_CONNECT;                    
                 }
             }
-        } else if(penultimateRootCause instanceof MessageHandlingException) {
-            MessageHandlingException x = (MessageHandlingException) penultimateRootCause;
-            if(x.getCause() instanceof HttpClientErrorException) {
-                // Could test for specific errors: if("404 Not Found".equals(httpx.getMessage())) {
-               return AemFaultType.INVALID_STATUS_PATH;
-                // Could get the requested URI from the headers: httpx.getResponseHeaders().getLocation();
-            }
-        }  
+        }
         return null;
     }
 }

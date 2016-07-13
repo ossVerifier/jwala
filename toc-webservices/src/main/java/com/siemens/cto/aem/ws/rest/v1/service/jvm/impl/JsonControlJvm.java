@@ -27,6 +27,13 @@ public class JsonControlJvm {
         return JvmControlOperation.convertFrom(controlOperation);
     }
 
+    @Override
+    public String toString() {
+        return "JsonControlJvm{" +
+                "controlOperation='" + controlOperation + '\'' +
+                '}';
+    }
+
     static class JsonControlJvmDeserializer extends AbstractJsonDeserializer<JsonControlJvm> {
 
         public JsonControlJvmDeserializer() {

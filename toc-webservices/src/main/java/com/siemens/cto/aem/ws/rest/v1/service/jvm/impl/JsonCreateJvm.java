@@ -1,16 +1,5 @@
 package com.siemens.cto.aem.ws.rest.v1.service.jvm.impl;
 
-import java.io.IOException;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
-
-import org.codehaus.jackson.JsonNode;
-import org.codehaus.jackson.JsonParser;
-import org.codehaus.jackson.ObjectCodec;
-import org.codehaus.jackson.map.DeserializationContext;
-import org.codehaus.jackson.map.annotate.JsonDeserialize;
-
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.id.IdentifierSetBuilder;
@@ -20,6 +9,16 @@ import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.common.request.jvm.CreateJvmAndAddToGroupsRequest;
 import com.siemens.cto.aem.common.request.jvm.CreateJvmRequest;
 import com.siemens.cto.aem.ws.rest.v1.json.AbstractJsonDeserializer;
+import org.codehaus.jackson.JsonNode;
+import org.codehaus.jackson.JsonParser;
+import org.codehaus.jackson.ObjectCodec;
+import org.codehaus.jackson.map.DeserializationContext;
+import org.codehaus.jackson.map.annotate.JsonDeserialize;
+
+import java.io.IOException;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 @JsonDeserialize(using = JsonCreateJvm.JsonCreateJvmDeserializer.class)
 public class JsonCreateJvm {
@@ -175,5 +174,23 @@ public class JsonCreateJvm {
                                      userName==null? null : userName.getTextValue(),
                                      pw);
         }
+    }
+
+    @Override
+    public String toString() {
+        return "JsonCreateJvm{" +
+                "jvmName='" + jvmName + '\'' +
+                ", hostName='" + hostName + '\'' +
+                ", httpPort='" + httpPort + '\'' +
+                ", httpsPort='" + httpsPort + '\'' +
+                ", redirectPort='" + redirectPort + '\'' +
+                ", shutdownPort='" + shutdownPort + '\'' +
+                ", ajpPort='" + ajpPort + '\'' +
+                ", statusPath='" + statusPath + '\'' +
+                ", systemProperties='" + systemProperties + '\'' +
+                ", userName='" + userName + '\'' +
+                ", encryptedPassword='" + encryptedPassword + '\'' +
+                ", groupIds=" + groupIds +
+                '}';
     }
 }

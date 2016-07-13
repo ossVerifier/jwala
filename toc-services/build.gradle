@@ -16,10 +16,6 @@ dependencies {
     compile group: "org.springframework", name: "spring-messaging", version: "$project.versions.spring"
     compile group: "org.jgroups", name: "jgroups", version: "$project.versions.jgroups"
 
-    compile group: "org.springframework.integration", name: "spring-integration-core", version: "$project.versions.spring_integration"
-    compile group: "org.springframework.integration", name: "spring-integration-http", version: "$project.versions.spring_integration"
-    compile group: "org.springframework.integration", name: "spring-integration-stream", version: "$project.versions.spring_integration"
-    compile group: "org.springframework.integration", name: "spring-integration-jmx", version: "$project.versions.spring_integration"
     compile group: 'commons-logging', name: 'commons-logging', version: "$project.versions.commons_logging"
     compile group: 'org.apache.httpcomponents', name: 'httpcore', version: "$project.versions.httpcomponents_core"
     compile group: 'org.apache.httpcomponents', name: 'httpclient', version: "$project.versions.httpcomponents_client"
@@ -36,7 +32,6 @@ dependencies {
     testCompile group: "org.springframework", name: "spring-orm", version: "$project.versions.spring"
     testCompile group: "org.springframework", name: "spring-test", version: "$project.versions.spring"
     testCompile group: 'org.springframework', name: 'spring-tx', version: "$project.versions.spring"
-    testCompile group: "org.springframework.integration", name: "spring-integration-jmx", version: "$project.versions.spring_integration"
     testCompile group: "org.mockito", name: "mockito-core", version: "$project.versions.mockito"
     testCompile group: 'org.objenesis', name: 'objenesis', version: "$project.versions.objenesis"
     testCompile group: "com.h2database", name: "h2", version: "$project.versions.h2"

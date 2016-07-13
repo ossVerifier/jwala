@@ -38,7 +38,6 @@ import com.siemens.cto.aem.service.app.impl.ApplicationCommandServiceImpl;
 import com.siemens.cto.aem.service.app.impl.ApplicationServiceImpl;
 import com.siemens.cto.aem.service.app.impl.PrivateApplicationServiceImpl;
 import com.siemens.cto.aem.service.configuration.jms.AemJmsConfig;
-import com.siemens.cto.aem.service.dispatch.CommandDispatchGateway;
 import com.siemens.cto.aem.service.group.*;
 import com.siemens.cto.aem.service.group.impl.GroupControlServiceImpl;
 import com.siemens.cto.aem.service.group.impl.GroupJvmControlServiceImpl;
@@ -88,9 +87,8 @@ import org.springframework.core.task.TaskExecutor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
-import org.springframework.scheduling.annotation.SchedulingConfigurer;
+import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
-import org.springframework.scheduling.config.ScheduledTaskRegistrar;
 
 import javax.annotation.Resource;
 import java.security.KeyManagementException;
@@ -99,7 +97,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 
@@ -113,7 +110,7 @@ import java.util.concurrent.ThreadPoolExecutor;
         "com.siemens.cto.aem.service.group.impl.spring.component",
         "com.siemens.cto.aem.service.jvm.impl.spring.component",
         "com.siemens.cto.aem.service.impl.spring.component"})
-public class AemServiceConfiguration implements SchedulingConfigurer {
+public class AemServiceConfiguration {
 
     @Autowired
     private AemPersistenceServiceConfiguration persistenceServiceConfiguration;
@@ -123,9 +120,6 @@ public class AemServiceConfiguration implements SchedulingConfigurer {
 
     @Autowired
     private AemJmsConfig aemJmsConfig;
-
-    @Autowired
-    private CommandDispatchGateway commandDispatchGateway;
 
     @Autowired
     private FileManager fileManager;
@@ -154,9 +148,6 @@ public class AemServiceConfiguration implements SchedulingConfigurer {
     private Environment env;
 
     @Autowired
-    private Executor taskScheduler;
-
-    @Autowired
     private MessagingService messagingService;
 
     @Autowired
@@ -165,6 +156,9 @@ public class AemServiceConfiguration implements SchedulingConfigurer {
 
     @Autowired
     private ClientFactoryHelper clientFactoryHelper;
+
+    public AemServiceConfiguration() {
+    }
 
     /**
      * Make vars.properties available to spring integration configuration
@@ -248,13 +242,13 @@ public class AemServiceConfiguration implements SchedulingConfigurer {
     }
 
     @Bean(name = "groupJvmControlService")
-    public GroupJvmControlService getGroupJvmControlService(final GroupService groupService) {
-        return new GroupJvmControlServiceImpl(groupService, commandDispatchGateway);
+    public GroupJvmControlService getGroupJvmControlService(final GroupService groupService, final JvmControlService jvmControlService) {
+        return new GroupJvmControlServiceImpl(groupService, jvmControlService);
     }
 
     @Bean(name = "groupWebServerControlService")
-    public GroupWebServerControlService getGroupWebServerControlService(final GroupService groupService) {
-        return new GroupWebServerControlServiceImpl(groupService, commandDispatchGateway);
+    public GroupWebServerControlService getGroupWebServerControlService(final GroupService groupService, final WebServerControlService webServerControlService) {
+        return new GroupWebServerControlServiceImpl(groupService, webServerControlService);
     }
 
     @Bean(name = "webServerControlService")
@@ -409,9 +403,16 @@ public class AemServiceConfiguration implements SchedulingConfigurer {
         return new JSch();
     }
 
-    @Override
-    public void configureTasks(ScheduledTaskRegistrar taskRegistrar) {
-        taskRegistrar.setScheduler(taskScheduler);
+    /**
+     * Bean method to create a thread factory that creates daemon threads.
+     * <code>
+     <bean id="pollingThreadFactory" class="org.springframework.scheduling.concurrent.CustomizableThreadFactory">
+     <constructor-arg value="polling-"/>
+     </bean></code> */
+    @Bean(name="pollingThreadFactory") public ThreadFactory getPollingThreadFactory() {
+        CustomizableThreadFactory tf = new CustomizableThreadFactory("polling-");
+        tf.setDaemon(true);
+        return tf;
     }
 
 }

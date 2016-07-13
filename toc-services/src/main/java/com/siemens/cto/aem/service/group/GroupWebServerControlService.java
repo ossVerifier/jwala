@@ -1,10 +1,7 @@
 package com.siemens.cto.aem.service.group;
 
-import com.siemens.cto.aem.common.dispatch.WebServerDispatchCommandResult;
-import com.siemens.cto.aem.common.request.webserver.ControlGroupWebServerRequest;
 import com.siemens.cto.aem.common.domain.model.user.User;
-
-import java.util.List;
+import com.siemens.cto.aem.common.request.webserver.ControlGroupWebServerRequest;
 
 public interface GroupWebServerControlService {
 
@@ -17,5 +14,4 @@ public interface GroupWebServerControlService {
      */
     void controlAllWebSevers(ControlGroupWebServerRequest controlGroupWebServerRequest, User user);
 
-    void dispatchCommandComplete(List<WebServerDispatchCommandResult> results);
 }
