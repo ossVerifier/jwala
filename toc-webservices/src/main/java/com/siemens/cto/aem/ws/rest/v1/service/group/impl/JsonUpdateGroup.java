@@ -60,4 +60,12 @@ public class JsonUpdateGroup {
     public String getName() {
         return name;
     }
+
+    @Override
+    public String toString() {
+        return "JsonUpdateGroup{" +
+                "id='" + id + '\'' +
+                ", name='" + name + '\'' +
+                '}';
+    }
 }
