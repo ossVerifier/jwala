@@ -119,20 +119,20 @@ var webServerService = {
                                      false);
     },
     getResources : function(webServerName, responseCallback) {
-        return serviceFoundation.get("v1.0/webservers/" + encodeURI(webServerName) + "/resources/name", "json", responseCallback);
+        return serviceFoundation.get("v1.0/webservers/" + encodeURIComponent(webServerName) + "/resources/name", "json", responseCallback);
     },
     getResourceTemplate : function(wsName, tokensReplaced, resourceTemplateName, responseCallback) {
-        return serviceFoundation.get("v1.0/webservers/" + encodeURI(wsName) + "/resources/template/" + encodeURI(resourceTemplateName) + "?tokensReplaced=" + tokensReplaced, "json", responseCallback);
+        return serviceFoundation.get("v1.0/webservers/" + encodeURIComponent(wsName) + "/resources/template/" + encodeURIComponent(resourceTemplateName) + "?tokensReplaced=" + tokensReplaced, "json", responseCallback);
     },
     updateResourceTemplate: function(webServerName, resourceTemplateName, resourceTemplateContent) {
-        return serviceFoundation.promisedPut("v1.0/webservers/" + encodeURI(webServerName) + "/resources/template/" + encodeURI(resourceTemplateName),
+        return serviceFoundation.promisedPut("v1.0/webservers/" + encodeURIComponent(webServerName) + "/resources/template/" + encodeURIComponent(resourceTemplateName),
                                              "json",
                                              resourceTemplateContent,
                                              false,
                                              "text/plain; charset=utf-8");
     },
     uploadTemplateForm: function(webServerName, templateName, templateFile, successCallback, errorCallback) {
-         return serviceFoundation.post("v1.0/webservers/" + encodeURI(webServerName) + "/resources/uploadTemplate?templateName=" + encodeURI(templateName),
+         return serviceFoundation.post("v1.0/webservers/" + encodeURIComponent(webServerName) + "/resources/uploadTemplate?templateName=" + encodeURIComponent(templateName),
                                          "json",
                                          templateFile,
                                          successCallback,
@@ -142,7 +142,7 @@ var webServerService = {
                                          true);
      },
      previewResourceFile: function(webServerName, groupName, template, successCallback, errorCallback) {
-        return serviceFoundation.put("v1.0/webservers/" + encodeURI(webServerName) + "/resources/preview;groupName=" + encodeURI(groupName),
+        return serviceFoundation.put("v1.0/webservers/" + encodeURIComponent(webServerName) + "/resources/preview;groupName=" + encodeURIComponent(groupName),
                                      "json",
                                      template,
                                      successCallback,

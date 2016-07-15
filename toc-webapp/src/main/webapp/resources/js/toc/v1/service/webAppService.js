@@ -69,23 +69,23 @@ var webAppService = {
         return serviceFoundation.get("v1.0/applications/jvm/" + jvmId, "json", responseCallback);
     },
     getResources : function(appName, jvmName, responseCallback) {
-        return serviceFoundation.get("v1.0/applications/" + encodeURI(jvmName) + "/" + encodeURI(appName) + "/resources/name", "json", responseCallback);
+        return serviceFoundation.get("v1.0/applications/" + encodeURIComponent(jvmName) + "/" + encodeURIComponent(appName) + "/resources/name", "json", responseCallback);
     },
     getResourceTemplate : function(appName, groupName, jvmName, tokensReplaced, resourceTemplateName, responseCallback) {
-        return serviceFoundation.get("v1.0/applications/" + encodeURI(appName) + "/resources/template/" +
-                                     encodeURI(resourceTemplateName) + ";groupName=" + encodeURI(groupName) +
-                                     ";jvmName=" + encodeURI(jvmName) + "?tokensReplaced=" + tokensReplaced, "json", responseCallback);
+        return serviceFoundation.get("v1.0/applications/" + encodeURIComponent(appName) + "/resources/template/" +
+                                     encodeURIComponent(resourceTemplateName) + ";groupName=" + encodeURIComponent(groupName) +
+                                     ";jvmName=" + encodeURIComponent(jvmName) + "?tokensReplaced=" + tokensReplaced, "json", responseCallback);
     },
     updateResourceTemplate: function(appName, resourceTemplateName, resourceTemplateContent, jvmName, groupName) {
-        var jvmMatrix = jvmName ? ";jvmName=" + encodeURI(jvmName) : "";
-        return serviceFoundation.promisedPut("v1.0/applications/" + encodeURI(appName) + "/resources/template/" + encodeURI(resourceTemplateName) + ";groupName=" + encodeURI(groupName) + jvmMatrix,
+        var jvmMatrix = jvmName ? ";jvmName=" + encodeURIComponent(jvmName) : "";
+        return serviceFoundation.promisedPut("v1.0/applications/" + encodeURIComponent(appName) + "/resources/template/" + encodeURIComponent(resourceTemplateName) + ";groupName=" + encodeURIComponent(groupName) + jvmMatrix,
                                      "json",
                                      resourceTemplateContent,
                                      false,
                                      "text/plain; charset=utf-8");
     },
     uploadTemplateForm: function(webAppName, jvmName, templateName, templateFile, successCallback, errorCallback) {
-         return serviceFoundation.post("v1.0/applications/" + encodeURI(webAppName) + "/resources/uploadTemplate;templateName=" + encodeURI(templateName) + ";jvmName="+encodeURI(jvmName),
+         return serviceFoundation.post("v1.0/applications/" + encodeURIComponent(webAppName) + "/resources/uploadTemplate;templateName=" + encodeURIComponent(templateName) + ";jvmName="+encodeURIComponent(jvmName),
                                          "json",
                                          templateFile,
                                          successCallback,
@@ -95,8 +95,8 @@ var webAppService = {
                                          true);
      },
      previewResourceFile: function(appName, groupName, jvmName, template, successCallback, errorCallback) {
-        return serviceFoundation.put("v1.0/applications/" + encodeURI(appName) + "/resources/preview;groupName=" +
-                                     encodeURI(groupName) + ";jvmName=" + encodeURI(jvmName),
+        return serviceFoundation.put("v1.0/applications/" + encodeURIComponent(appName) + "/resources/preview;groupName=" +
+                                     encodeURIComponent(groupName) + ";jvmName=" + encodeURIComponent(jvmName),
                                      "json",
                                      template,
                                      successCallback,
