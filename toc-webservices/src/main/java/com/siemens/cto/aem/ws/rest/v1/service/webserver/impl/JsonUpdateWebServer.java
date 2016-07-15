@@ -91,6 +91,22 @@ public class JsonUpdateWebServer {
         }
     }
 
+    @Override
+    public String toString() {
+        return "JsonUpdateWebServer{" +
+                "groupIds=" + groupIds +
+                ", webServerId='" + webServerId + '\'' +
+                ", webServerName='" + webServerName + '\'' +
+                ", portNumber='" + portNumber + '\'' +
+                ", httpsPort='" + httpsPort + '\'' +
+                ", hostName='" + hostName + '\'' +
+                ", statusPath='" + statusPath + '\'' +
+                ", httpConfigFile='" + httpConfigFile + '\'' +
+                ", svrRoot='" + svrRoot + '\'' +
+                ", docRoot='" + docRoot + '\'' +
+                '}';
+    }
+
     static class JsonUpdateWebServerDeserializer extends AbstractJsonDeserializer<JsonUpdateWebServer> {
 
         public JsonUpdateWebServerDeserializer() {

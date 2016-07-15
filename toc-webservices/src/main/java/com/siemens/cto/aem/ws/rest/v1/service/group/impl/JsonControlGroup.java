@@ -27,6 +27,13 @@ public class JsonControlGroup {
         return GroupControlOperation.convertFrom(controlOperation);
     }
 
+    @Override
+    public String toString() {
+        return "JsonControlGroup{" +
+                "controlOperation='" + controlOperation + '\'' +
+                '}';
+    }
+
     static class JsonControlGroupDeserializer extends AbstractJsonDeserializer<JsonControlGroup> {
 
         public JsonControlGroupDeserializer() {

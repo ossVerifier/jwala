@@ -35,6 +35,13 @@ public class JsonJvms {
         return new IdentifierSetBuilder(jvmIds).build();
     }
 
+    @Override
+    public String toString() {
+        return "JsonJvms{" +
+                "jvmIds=" + jvmIds +
+                '}';
+    }
+
     static class JsonJvmsDeserializer extends AbstractJsonDeserializer<JsonJvms> {
 
         public JsonJvmsDeserializer() {

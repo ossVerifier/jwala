@@ -1,16 +1,5 @@
 package com.siemens.cto.aem.ws.rest.v1.service.jvm.impl;
 
-import java.io.IOException;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
-
-import org.codehaus.jackson.JsonNode;
-import org.codehaus.jackson.JsonParser;
-import org.codehaus.jackson.ObjectCodec;
-import org.codehaus.jackson.map.DeserializationContext;
-import org.codehaus.jackson.map.annotate.JsonDeserialize;
-
 import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
@@ -21,6 +10,16 @@ import com.siemens.cto.aem.common.domain.model.ssh.DecryptPassword;
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.common.request.jvm.UpdateJvmRequest;
 import com.siemens.cto.aem.ws.rest.v1.json.AbstractJsonDeserializer;
+import org.codehaus.jackson.JsonNode;
+import org.codehaus.jackson.JsonParser;
+import org.codehaus.jackson.ObjectCodec;
+import org.codehaus.jackson.map.DeserializationContext;
+import org.codehaus.jackson.map.annotate.JsonDeserialize;
+
+import java.io.IOException;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 @JsonDeserialize(using = JsonUpdateJvm.JsonUpdateJvmDeserializer.class)
 public class JsonUpdateJvm {
@@ -96,6 +95,25 @@ public class JsonUpdateJvm {
 
     protected Set<Identifier<Group>> convertGroupIds() {
         return new IdentifierSetBuilder(groupIds).build();
+    }
+
+    @Override
+    public String toString() {
+        return "JsonUpdateJvm{" +
+                "jvmId='" + jvmId + '\'' +
+                ", jvmName='" + jvmName + '\'' +
+                ", hostName='" + hostName + '\'' +
+                ", statusPath='" + statusPath + '\'' +
+                ", groupIds=" + groupIds +
+                ", httpPort='" + httpPort + '\'' +
+                ", httpsPort='" + httpsPort + '\'' +
+                ", redirectPort='" + redirectPort + '\'' +
+                ", shutdownPort='" + shutdownPort + '\'' +
+                ", ajpPort='" + ajpPort + '\'' +
+                ", systemProperties='" + systemProperties + '\'' +
+                ", userName='" + userName + '\'' +
+                ", encryptedPassword='" + encryptedPassword + '\'' +
+                '}';
     }
 
     static class JsonUpdateJvmDeserializer extends AbstractJsonDeserializer<JsonUpdateJvm> {

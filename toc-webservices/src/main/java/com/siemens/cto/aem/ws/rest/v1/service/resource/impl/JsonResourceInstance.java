@@ -68,4 +68,14 @@ public class JsonResourceInstance {
     public ResourceInstanceRequest getCommand() {
         return new ResourceInstanceRequest(this.resourceTypeName, this.name, this.groupName, attributes);
     }
+
+    @Override
+    public String toString() {
+        return "JsonResourceInstance{" +
+                "resourceTypeName='" + resourceTypeName + '\'' +
+                ", groupName='" + groupName + '\'' +
+                ", name='" + name + '\'' +
+                ", attributes=" + attributes +
+                '}';
+    }
 }
