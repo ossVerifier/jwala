@@ -751,6 +751,10 @@ public class ResourceServiceImpl implements ResourceService {
     public int deleteGroupLevelAppResources(final String appName, final String groupName, final List<String> templateNameList) {
         final int deletedCount = resourceDao.deleteGroupLevelAppResources(appName, groupName, templateNameList);
         if (deletedCount > 0) {
+            final List<Jvm> jvms = jvmPersistenceService.getJvmsByGroupName(groupName);
+            for(Jvm jvm:jvms) {
+                resourceDao.deleteAppResources(templateNameList, appName, jvm.getJvmName());
+            }
             for (final String templateName : templateNameList) {
                 if (templateName.toLowerCase().endsWith(".war")) {
                     final Application app = applicationPersistenceService.getApplication(appName);
