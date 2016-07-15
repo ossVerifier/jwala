@@ -16,6 +16,6 @@ public class CreateResourceTemplateApplicationResponseWrapper {
     }
 
     public String getMetaData() {
-        return configTemplate.getMetaData();
+        return configTemplate != null ? configTemplate.getMetaData() : "{}";
     }
 }
