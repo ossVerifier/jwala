@@ -32,19 +32,10 @@ var ResourcesConfig = React.createClass({
         return <div className="react-dialog-container resources-div-container">
                     <div className="resource-container">{splitter}</div>
                     <ModalDialogBox
-                        title="Upload template"
-                        show={false}
-                        okCallback={this.okCallback}
-                        cancelCallback={this.cancelCallback}
-                        content={<TemplateUploadForm ref="templateUploadForm" componentDidMountCallback={this.templateComponentDidMount}/>}
-                        ref="templateUploadModal"
-                     />
-                    <ModalDialogBox
                      title="Confirm update"
                      show={false}
                      cancelCallback={this.cancelUpdateGroupTemplateCallback}
-                     ref="templateUpdateGroupModal"
-                    />
+                     ref="templateUpdateGroupModal"/>
                     <ModalDialogBox ref="selectMetaDataAndTemplateFilesModalDlg"
                                     title="Create Resource Template"
                                     show={false}
@@ -123,146 +114,41 @@ var ResourcesConfig = React.createClass({
             entityGroupName: entityGroupName
         });
     },
-     okCallback: function() {
-        if (this.refs.templateUploadForm.isValid()) {
-                     var self = this;
-                     var fileName = this.refs.xmlTabs.state.resourceTemplateName;
-                     var fileData = this.refs.templateUploadForm.refs.templateFile.getDOMNode().files[0];
-                     var formData = new FormData();
-                     formData.append(fileName, fileData);
-                     var entityType = this.refs.xmlTabs.state.entityType;
-                     var entityName = ResourcesConfig.getEntityName(this.refs.xmlTabs.state.entity, this.refs.xmlTabs.state.entityType);
-                     if ("jvms" === entityType){
-                         this.props.jvmService.uploadTemplateForm(
-                                                         entityName,
-                                                         fileName,
-                                                         formData,
-                                                         function(){
-                                                             self.refs.templateUploadModal.close();
-                                                             self.refs.xmlTabs.reloadTemplate({jvmName:entityName}, fileName);
-                                                         },
-                                                         function(errMsg) {
-                                                             $.errorAlert(errMsg, "Error");
-                                                         });
-                     } else if ("webApps" === entityType) {
-                          var parentJvmName = this.refs.xmlTabs.state.entityParent.jvmName;
-                          this.props.webAppService.uploadTemplateForm(
-                                                       entityName,
-                                                       parentJvmName,
-                                                       fileName,
-                                                       formData,
-                                                       function(){
-                                                           self.refs.templateUploadModal.close();
-                                                           self.refs.xmlTabs.reloadTemplate({name:entityName}, fileName);
-                                                       },
-                                                       function(errMsg) {
-                                                           $.errorAlert(errMsg, "Error");
-                                                       }
-                          );
-                     } else if ("webServers" === entityType) {
-                           this.props.wsService.uploadTemplateForm(
-                                                    entityName,
-                                                  fileName,
-                                                  formData,
-                                                  function(){
-                                                      self.refs.templateUploadModal.close();
-                                                      self.refs.xmlTabs.reloadTemplate({name:entityName}, fileName);
-                                                  },
-                                                  function(errMsg) {
-                                                      $.errorAlert(errMsg, "Error");
-                                                  }
-                                               );
-                     } else if ("jvmSection" === entityType) {
-                           if (this.refs.xmlTabs.state.groupJvmEntityType && this.refs.xmlTabs.state.groupJvmEntityType === "webApp"){
-                                    this.props.groupService.uploadGroupAppTemplateForm(
-                                                this.refs.xmlTabs.state.entityGroupName,
-                                                fileName,
-                                                formData,
-                                                     function(){
-                                                         self.refs.templateUploadModal.close();
-                                                         self.refs.xmlTabs.reloadTemplate({name:entityName, groupJvmEntityType: self.refs.xmlTabs.state.groupJvmEntityType}, fileName);
-                                                     },
-                                                     function(errMsg) {
-                                                         $.errorAlert(errMsg, "Error");
-                                                     }
-                                                  );
-                           } else {
-                                this.props.groupService.uploadGroupJvmTemplateForm(
-                                                    this.refs.xmlTabs.state.entityGroupName,
-                                                  fileName,
-                                                  formData,
-                                                  function(){
-                                                      self.refs.templateUploadModal.close();
-                                                      self.refs.xmlTabs.reloadTemplate({name:entityName}, fileName);
-                                                  },
-                                                  function(errMsg) {
-                                                      $.errorAlert(errMsg, "Error");
-                                                  }
-                                               );
-                           }
-                     } else if ("webServerSection" === entityType) {
-                           this.props.groupService.uploadGroupWebServerTemplateForm(
-                                                    this.refs.xmlTabs.state.entityGroupName,
-                                                  fileName,
-                                                  formData,
-                                                  function(){
-                                                      self.refs.templateUploadModal.close();
-                                                      self.refs.xmlTabs.reloadTemplate({name:entityName}, fileName);
-                                                  },
-                                                  function(errMsg) {
-                                                      $.errorAlert(errMsg, "Error");
-                                                  }
-                                               );
-                     }
-         } else {
-            this.refs.templateUploadModal.refs.okBtn.handleClick = this.okCallback;
-         }
-     },
-     cancelCallback: function() {
-         this.refs.templateUploadModal.close();
-     },
-     okUpdateGroupTemplateCallback: function(template) {
+    okUpdateGroupTemplateCallback: function(template) {
         this.refs.xmlTabs.saveGroupTemplate(template);
         this.refs.templateUpdateGroupModal.close();
-     },
-     cancelUpdateGroupTemplateCallback: function() {
+    },
+    cancelUpdateGroupTemplateCallback: function() {
         this.refs.templateUpdateGroupModal.close();
-     },
-     launchUpload: function() {
-         this.refs.templateUploadModal.setState({
-            title: "Upload template for " + this.refs.xmlTabs.state.resourceTemplateName,
-            entityGroupName: this.refs.xmlTabs.state.entityParent.name
-         })
-         this.refs.templateUploadModal.show();
-     },
-     launchUpdateGroupTemplate: function(template){
+    },
+
+    launchUpdateGroupTemplate: function(template){
         var self = this;
         this.refs.templateUpdateGroupModal.show("Confirm update",
             <ConfirmUpdateGroupDialog componentDidMountCallback={this.confirmUpdateGroupDidMount}
                                       template={template}/>, function() {
                                         self.okUpdateGroupTemplateCallback(template);
                                       });
-     },
-     verticalSplitterDidUpdateCallback: function() {
-
-         if (this.refs.xmlTabs.refs.codeMirrorComponent !== undefined) {
+    },
+    verticalSplitterDidUpdateCallback: function() {
+        if (this.refs.xmlTabs.refs.codeMirrorComponent !== undefined) {
             this.refs.xmlTabs.refs.codeMirrorComponent.resize();
-         }
+        }
 
-         if (this.refs.xmlTabs.refs.xmlPreview !== undefined) {
+        if (this.refs.xmlTabs.refs.xmlPreview !== undefined) {
             this.refs.xmlTabs.refs.xmlPreview.resize();
-         }
+        }
 
-         var tabContentHeight = $(".horz-divider.rsplitter.childContainer.vert").height() - 20;
-         $(".xml-editor-preview-tab-component").not(".content").css("cssText", "height:" + tabContentHeight + "px !important;");
-     },
-     createResourceCallback: function(data) {
+        var tabContentHeight = $(".horz-divider.rsplitter.childContainer.vert").height() - 20;
+        $(".xml-editor-preview-tab-component").not(".content").css("cssText", "height:" + tabContentHeight + "px !important;");
+    },
+    createResourceCallback: function(data) {
         this.refs.selectMetaDataAndTemplateFilesModalDlg.show();
-     },
-     deleteResourceCallback: function() {
+    },
+    deleteResourceCallback: function() {
         this.refs.confirmDeleteResourceModalDlg.show();
-     },
-     confirmDeleteResourceCallback: function() {
+    },
+    confirmDeleteResourceCallback: function() {
         var groupName;
         var webServerName;
         var jvmName;
@@ -299,8 +185,8 @@ var ResourcesConfig = React.createClass({
             $.errorAlert("Error deleting resource template(s)!", "Error", true);
         });
 
-     },
-     onCreateResourceOkClicked: function() {
+    },
+    onCreateResourceOkClicked: function() {
         var metaDataFile = this.refs.selectMetaDataAndTemplateFilesWidget.refs.metaDataFile.getDOMNode().files[0];
         var templateFile = this.refs.selectMetaDataAndTemplateFilesWidget.refs.templateFile.getDOMNode().files[0];
 
@@ -354,19 +240,19 @@ var ResourcesConfig = React.createClass({
                 $.errorAlert("Error creating resource template! " + errMsg, "Error", true);
             });
         }
-     },
-     refreshResourcePane: function() {
+    },
+    refreshResourcePane: function() {
         var data = this.refs.resourceEditor.refs.treeList.getSelectedNodeData();
         this.refs.resourceEditor.refs.resourcePane.getData(data);
-     },
-     statics: {
+    },
+    statics: {
         getEntityName: function(entity, type) {
             if (type === "jvms") {
                 return entity.jvmName;
             }
             return entity.name;
         }
-     }
+    }
 })
 
 var XmlTabs = React.createClass({

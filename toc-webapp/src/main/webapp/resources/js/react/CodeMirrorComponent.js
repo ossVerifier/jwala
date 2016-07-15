@@ -8,8 +8,7 @@ var CodeMirrorComponent = React.createClass({
         return {data: null};
     },
     render: function() {
-        var metaData = [{icon: "ui-icon-disk", title: "Save", onClickCallback: this.saveCallback},
-        			            {icon: "ui-icon-circle-arrow-n", title: "Upload", onClickCallback: this.props.uploadDialogCallback}];
+        var metaData = [{icon: "ui-icon-disk", title: "Save", onClickCallback: this.saveCallback}];
         return React.createElement("div", {ref:"theContainer", className: this.props.className},
                    React.createElement(RToolbar, {ref: "theToolbar" , className: "toolbar-container",
                                                   btnClassName:"ui-button-text-only ui-button-height", metaData: metaData}),
