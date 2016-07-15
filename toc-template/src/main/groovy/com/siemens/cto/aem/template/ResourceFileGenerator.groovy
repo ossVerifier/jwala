@@ -6,6 +6,7 @@ import com.siemens.cto.aem.common.domain.model.jvm.Jvm
 import com.siemens.cto.aem.common.domain.model.resource.ResourceGroup
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer
 import com.siemens.cto.aem.common.properties.ApplicationProperties
+import com.siemens.cto.aem.template.exception.ResourceFileGeneratorException
 import groovy.text.StreamingTemplateEngine
 
 class ResourceFileGenerator {
@@ -65,6 +66,13 @@ class ResourceFileGenerator {
                        vars      : map]
 
         final engine = new StreamingTemplateEngine();
-        return engine.createTemplate(templateText).make(binding.withDefault { '' })
+
+        try {
+            return engine.createTemplate(templateText).make(binding.withDefault { '' })
+        } catch (final Exception e) {
+            throw new ResourceFileGeneratorException("Failed to bind data and properties to the template. " +
+                    "Cause(s) of the failure is/are: " + e.getMessage(), e)
+        }
+
     }
 }
