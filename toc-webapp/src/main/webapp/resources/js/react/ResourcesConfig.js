@@ -270,7 +270,12 @@ var XmlTabs = React.createClass({
             codeMirrorComponent = <CodeMirrorComponent ref="codeMirrorComponent" content={this.state.template}
                                    className="xml-editor-container" saveCallback={this.saveResource}
                                    onChange={this.onChangeCallback}/>
-            xmlPreview = <XmlPreview ref="xmlPreview" />
+            console.log(this.state.entityType);
+            if (this.state.entityType === "webServerSection" || this.state.entityType === "jvmSection") {
+                xmlPreview = <div style={{padding: "5px 5px"}}>A group level web server or JVM template cannot be previewed. Please select a specific web server or JVM instead.</div>;
+            } else {
+                xmlPreview = <XmlPreview ref="xmlPreview" />
+            }
         }
 
         var xmlTabItems = [{title: "Template", content:codeMirrorComponent},
@@ -450,10 +455,10 @@ var XmlTabs = React.createClass({
 
 
                 }  else if (this.state.entityType === "webServerSection") {
-                    this.props.groupService.previewGroupWebServerResourceFile(this.state.entityGroupName,
-                                                                 this.refs.codeMirrorComponent.getText(),
-                                                                 this.previewSuccessCallback,
-                                                                 this.previewErrorCallback);
+//                    this.props.groupService.previewGroupWebServerResourceFile(this.state.entityGroupName,
+//                                                                 this.refs.codeMirrorComponent.getText(),
+//                                                                 this.previewSuccessCallback,
+//                                                                 this.previewErrorCallback);
                 } else if (this.state.entityType === "jvmSection") {
                     if (this.state.groupJvmEntityType && this.state.groupJvmEntityType === "webApp") {
                         this.props.groupService.previewGroupAppResourceFile(this.state.entityGroupName,
@@ -462,10 +467,10 @@ var XmlTabs = React.createClass({
                                                                                      this.previewSuccessCallback,
                                                                                      this.previewErrorCallback);
                     } else {
-                        this.props.groupService.previewGroupJvmResourceFile(this.state.entityGroupName,
-                                                                 this.refs.codeMirrorComponent.getText(),
-                                                                 this.previewSuccessCallback,
-                                                                 this.previewErrorCallback);
+//                        this.props.groupService.previewGroupJvmResourceFile(this.state.entityGroupName,
+//                                                                 this.refs.codeMirrorComponent.getText(),
+//                                                                 this.previewSuccessCallback,
+//                                                                 this.previewErrorCallback);
                     }
                 }
             }
