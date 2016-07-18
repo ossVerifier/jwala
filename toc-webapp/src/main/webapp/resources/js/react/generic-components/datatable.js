@@ -1,5 +1,8 @@
 /** @jsx React.DOM */
 var TocDataTable = React.createClass({
+    getInitialState: function() {
+        return {displayLength: null};
+    },
     dataTable: null,
     render: function() {
         if (this.props.className !== undefined) {
@@ -48,7 +51,7 @@ var TocDataTable = React.createClass({
                                                       this.props.applyThemeRoller,
                                                       true,
                                                       this.props.editCallback,
-                                                      this.rowSelectCallback,
+                                                      this.datableDrawCallback,
                                                       this.props.expandIcon,
                                                       this.props.collapseIcon,
                                                       this.props.childTableDetails,
@@ -96,14 +99,26 @@ var TocDataTable = React.createClass({
             $("#" + this.props.tableId).attr("class", this.props.className);
         }
     },
-    rowSelectCallback: function() {
+    datableDrawCallback: function() {
+
+        var self = this;
+        var dataTable = this.dataTable;
+
+        if (dataTable) {
+            if (this.state.displayLength && this.state.displayLength !== dataTable.fnSettings()._iDisplayLength &&
+                this.props.isColResizable) {
+
+                // Make new rows resizable...
+                dataTable.makeColumnsResizable();
+            } else {
+                this.state.displayLength = dataTable.fnSettings()._iDisplayLength;
+            }
+        }
 
         if (this.props.selectItemCallback === undefined) {
             return;
         }
 
-        var self = this;
-        var dataTable = this.dataTable;
         $(dataTable).find("thead > tr, tbody > tr, > tr").off("click").on("click", function(e) {
             if ($(this).hasClass("row_selected") ) {
                 $(this).removeClass("row_selected");
