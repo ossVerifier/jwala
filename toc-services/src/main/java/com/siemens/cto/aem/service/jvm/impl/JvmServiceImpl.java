@@ -16,10 +16,13 @@ import com.siemens.cto.aem.common.exception.ApplicationException;
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.common.exception.InternalErrorException;
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
-import com.siemens.cto.aem.common.request.app.UploadAppTemplateRequest;
 import com.siemens.cto.aem.common.request.group.AddJvmToGroupRequest;
-import com.siemens.cto.aem.common.request.jvm.*;
+import com.siemens.cto.aem.common.request.jvm.CreateJvmAndAddToGroupsRequest;
+import com.siemens.cto.aem.common.request.jvm.CreateJvmRequest;
+import com.siemens.cto.aem.common.request.jvm.UpdateJvmRequest;
+import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
 import com.siemens.cto.aem.persistence.jpa.domain.resource.config.template.JpaJvmConfigTemplate;
+import com.siemens.cto.aem.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
 import com.siemens.cto.aem.persistence.service.JvmPersistenceService;
 import com.siemens.cto.aem.service.app.ApplicationService;
 import com.siemens.cto.aem.service.group.GroupService;
@@ -227,6 +230,18 @@ public class JvmServiceImpl implements JvmService {
             // so just dump out the diagnosis template and the exception so it can be
             // debugged.
         }
+    }
+
+    @Override
+
+    public void checkForSetenvBat(String jvmName) {
+        try {
+            jvmPersistenceService.getResourceTemplate(jvmName, "setenv.bat");
+        } catch (NonRetrievableResourceTemplateContentException e){
+            LOGGER.error("No setenv.bat configure for JVM: {}", jvmName);
+            throw new InternalErrorException(AemFaultType.TEMPLATE_NOT_FOUND, "No setenv.bat template found for " + jvmName + ". Unable to continue processing.");
+        }
+        LOGGER.debug("Found setenv.bat for JVM: {}. Continuing with process. ", jvmName);
     }
 
     /**

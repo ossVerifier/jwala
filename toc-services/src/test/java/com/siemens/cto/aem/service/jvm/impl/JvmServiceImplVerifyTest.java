@@ -9,6 +9,7 @@ import com.siemens.cto.aem.common.domain.model.path.Path;
 import com.siemens.cto.aem.common.domain.model.resource.ResourceGroup;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.exception.BadRequestException;
+import com.siemens.cto.aem.common.exception.InternalErrorException;
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.common.request.group.AddJvmToGroupRequest;
 import com.siemens.cto.aem.common.request.jvm.CreateJvmAndAddToGroupsRequest;
@@ -16,6 +17,7 @@ import com.siemens.cto.aem.common.request.jvm.CreateJvmRequest;
 import com.siemens.cto.aem.common.request.jvm.UpdateJvmRequest;
 import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
 import com.siemens.cto.aem.persistence.jpa.domain.resource.config.template.JpaJvmConfigTemplate;
+import com.siemens.cto.aem.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
 import com.siemens.cto.aem.persistence.service.JvmPersistenceService;
 import com.siemens.cto.aem.service.VerificationBehaviorSupport;
 import com.siemens.cto.aem.service.app.ApplicationService;
@@ -480,4 +482,15 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
         assertEquals(result.size(), 1);
     }
 
+    @Test (expected = InternalErrorException.class)
+    public void testCheckSetenvBat() {
+        final String jvmName = "test-jvm-check-for-setenvbat";
+        when(mockJvmPersistenceService.getResourceTemplate(jvmName, "setenv.bat")).thenReturn("ignore template content, just need to check no exception is thrown");
+        jvmService.checkForSetenvBat(jvmName);
+
+        verify(mockJvmPersistenceService).getResourceTemplate(anyString(), anyString());
+
+        when(mockJvmPersistenceService.getResourceTemplate(jvmName, "setenv.bat")).thenThrow(new NonRetrievableResourceTemplateContentException("JVM", "setenv.bat", new Throwable()));
+        jvmService.checkForSetenvBat(jvmName);
+    }
 }

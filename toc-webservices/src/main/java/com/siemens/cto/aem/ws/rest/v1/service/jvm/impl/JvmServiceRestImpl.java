@@ -278,6 +278,9 @@ public class JvmServiceRestImpl implements JvmServiceRest {
                         "The target JVM must be stopped before attempting to update the resource files");
             }
 
+            // check for setenv.bat
+            jvmService.checkForSetenvBat(jvm.getJvmName());
+
             // create the scripts directory if it doesn't exist
             createScriptsDirectory(jvm);
 

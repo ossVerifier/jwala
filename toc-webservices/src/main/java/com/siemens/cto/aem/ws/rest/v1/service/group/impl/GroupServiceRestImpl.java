@@ -383,7 +383,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
                             resourceFileName, group.getName(), webServer.getName());
                     throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE,
                             "All web servers in the group must be stopped before continuing. Operation stopped for web server "
-                            + webServer.getName());
+                                    + webServer.getName());
                 }
             }
 
@@ -484,6 +484,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
                     LOGGER.info("Failed to start generation of JVMs for group ID {}: not all JVMs were stopped - {} was started", aGroupId, jvm.getJvmName());
                     throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "All JVMs in the group must be stopped before continuing. Operation stopped for JVM " + jvm.getJvmName());
                 }
+                jvmService.checkForSetenvBat(jvm.getJvmName());
             }
 
             final JvmServiceRest jvmServiceRest = JvmServiceRestImpl.get();
@@ -563,7 +564,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     public Response getOtherGroupMembershipDetailsOfTheChildren(final Identifier<Group> id,
                                                                 final GroupChildType groupChildType) {
 
-        LOGGER.debug("Get other group membership details of the children for group {} and child {}",id, groupChildType);
+        LOGGER.debug("Get other group membership details of the children for group {} and child {}", id, groupChildType);
         final List<Jvm> jvmGroupingDetails;
         final List<WebServer> webServerGroupingDetails;
 
@@ -754,7 +755,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
             if (metaData.getEntity().getDeployToJvms()) {
                 // deploy to all jvms in group
                 performGroupAppDeployToJvms(groupName, fileName, aUser, group, appName, appServiceRest, hostName);
-            } else if(hostName!=null && !hostName.isEmpty()) {
+            } else if (hostName != null && !hostName.isEmpty()) {
                 // deploy to particular host
                 performGroupAppDeployToHost(groupName, fileName, appName, hostName);
             } else {
@@ -770,10 +771,11 @@ public class GroupServiceRestImpl implements GroupServiceRest {
 
     /**
      * This method deploys group app config template to only one host
+     *
      * @param groupName name of the group we can find the webapp under
-     * @param fileName name of the file that needs to be deployed to the host
-     * @param appName name of the application which needs to be deployed
-     * @param hostName name of the host to which we want the file to be deployed to
+     * @param fileName  name of the file that needs to be deployed to the host
+     * @param appName   name of the application which needs to be deployed
+     * @param hostName  name of the host to which we want the file to be deployed to
      */
     protected void performGroupAppDeployToHost(final String groupName, final String fileName, final String appName, final String hostName) {
         Map<String, Future<Response>> futureMap = new HashMap<>();
@@ -810,11 +812,11 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         Map<String, Future<Response>> futureMap = new HashMap<>();
         final Set<Jvm> groupJvms = group.getJvms();
         Set<Jvm> jvms = null;
-        if (hostName!=null && !hostName.isEmpty()) {
+        if (hostName != null && !hostName.isEmpty()) {
             LOGGER.debug("got hostname {} deploying template to host jvms only", hostName);
             jvms = new HashSet<>();
-            for(Jvm jvm : groupJvms) {
-                if(jvm.getHostName().equalsIgnoreCase(hostName)) {
+            for (Jvm jvm : groupJvms) {
+                if (jvm.getHostName().equalsIgnoreCase(hostName)) {
                     jvms.add(jvm);
                 }
             }
@@ -848,11 +850,12 @@ public class GroupServiceRestImpl implements GroupServiceRest {
 
     /**
      * Creates future object for application template deploy.
+     *
      * @param groupName name of the group under which the app exists
-     * @param fileName name of the file that needs to be deployed
-     * @param appName name of the app which contains the template
-     * @param jvm name of the jvm to which the app needs to deploy the template to
-     * @param hostName name of the host where the resources need to be deployed to
+     * @param fileName  name of the file that needs to be deployed
+     * @param appName   name of the app which contains the template
+     * @param jvm       name of the jvm to which the app needs to deploy the template to
+     * @param hostName  name of the host where the resources need to be deployed to
      * @return returns a Future<Response> object if successful.
      */
     protected Future<Response> createFutureResponseForAppDeploy(final String groupName, final String fileName, final String appName, final Jvm jvm, final String hostName) {
@@ -862,7 +865,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
             @Override
             public Response call() throws Exception {
                 CommandOutput commandOutput = null;
-                if(jvm!=null) {
+                if (jvm != null) {
                     LOGGER.debug("got jvm object with id {}, creating command output with jvm", jvm.getId().getId());
                     commandOutput = groupService.deployGroupAppTemplate(groupName, fileName, resourceGroup, application, jvm);
                 } else {

@@ -83,4 +83,6 @@ public interface JvmService {
     void createDefaultTemplates(String jvmName, Group parentGroup);
 
     String getResourceTemplateMetaData(String jvmName, String fileName);
+
+    void checkForSetenvBat(String jvmName);
 }
