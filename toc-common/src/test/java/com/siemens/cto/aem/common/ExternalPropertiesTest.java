@@ -16,8 +16,8 @@ public class ExternalPropertiesTest extends TestCase {
     public static final String EXTERNAL_PROPERTIES = "external.properties";
 
     public void testBadPropertiesPath() {
-        ExternalProperties.setPropertiesFilePath(SRC_TEST_RESOURCES_PROPERTIES + "NOPE.properties");
         try {
+            ExternalProperties.setPropertiesFilePath(SRC_TEST_RESOURCES_PROPERTIES + "NOPE.properties");
             ExternalProperties.get("doesn't matter");
         } catch (ApplicationException e) {
             assertTrue(true);
@@ -36,12 +36,15 @@ public class ExternalPropertiesTest extends TestCase {
     }
 
     public void testReadProperties() {
+        ExternalProperties.setPropertiesFilePath(SRC_TEST_RESOURCES_PROPERTIES + EXTERNAL_PROPERTIES);
         assertEquals("string property", ExternalProperties.get("string.property"));
         assertEquals(Integer.valueOf(5), ExternalProperties.getAsInteger("integer.property"));
         assertEquals(Boolean.TRUE, ExternalProperties.getAsBoolean("boolean.property"));
     }
 
     public void testReload() throws IOException {
+        ExternalProperties.setPropertiesFilePath(SRC_TEST_RESOURCES_PROPERTIES + EXTERNAL_PROPERTIES);
+
         final String propertyToAdd = "test.reload=true";
         writeNewPropertyToFile(propertyToAdd, SRC_TEST_RESOURCES_PROPERTIES + EXTERNAL_PROPERTIES);
 
@@ -61,28 +64,30 @@ public class ExternalPropertiesTest extends TestCase {
 
     private void deleteLineFromFile(String lineToDelete, String propertiesFilePath) throws IOException {
         File inputFile = new File(propertiesFilePath);
-        File tempFile = File.createTempFile("tempExternalProperties", ".properties");
 
         BufferedReader reader = new BufferedReader(new FileReader(inputFile));
-        BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile));
 
         String lineToRemove;
         lineToRemove = lineToDelete;
-        String currentLine;
+        String currentLine = reader.readLine();
+        StringBuffer fileContent = new StringBuffer();
 
-        while ((currentLine = reader.readLine()) != null) {
+        while (currentLine != null) {
             // trim newline when comparing with lineToRemove
             String trimmedLine = currentLine.trim();
-            if (trimmedLine.equals(lineToRemove)) continue;
-            writer.write(currentLine + System.getProperty("line.separator"));
+            if (!trimmedLine.equals(lineToRemove)) {
+                fileContent.append(currentLine);
+            }
+
+            currentLine = reader.readLine();
+            if (currentLine != null) {
+                fileContent.append(System.getProperty("line.separator"));
+            }
         }
-        writer.close();
         reader.close();
-        boolean successful = tempFile.renameTo(inputFile);
-        if (successful) {
-            inputFile.delete();
-        } else {
-            assertFalse("Failed to clean up " + propertiesFilePath, true);
+
+        try (PrintWriter printWriter = new PrintWriter(inputFile)) {
+            printWriter.print(fileContent);
         }
     }
 }
