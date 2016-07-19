@@ -19,14 +19,13 @@ import com.siemens.cto.aem.control.command.ServiceCommandBuilder;
 import com.siemens.cto.aem.control.jvm.command.impl.WindowsJvmPlatformCommandProvider;
 import com.siemens.cto.aem.exception.CommandFailureException;
 import com.siemens.cto.aem.persistence.jpa.type.EventType;
+import com.siemens.cto.aem.persistence.service.JvmPersistenceService;
 import com.siemens.cto.aem.service.HistoryService;
 import com.siemens.cto.aem.service.MessagingService;
 import com.siemens.cto.aem.service.RemoteCommandExecutorService;
 import com.siemens.cto.aem.service.RemoteCommandReturnInfo;
 import com.siemens.cto.aem.service.exception.RemoteCommandExecutorServiceException;
-import com.siemens.cto.aem.service.group.GroupStateNotificationService;
 import com.siemens.cto.aem.service.jvm.JvmControlService;
-import com.siemens.cto.aem.service.jvm.JvmService;
 import com.siemens.cto.aem.service.jvm.JvmStateService;
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
@@ -43,41 +42,38 @@ public class JvmControlServiceImpl implements JvmControlService {
     @Value("${spring.messaging.topic.serverStates:/topic/server-states}")
     protected String topicServerStates;
 
+    private final JvmPersistenceService jvmPersistenceService;
     private static final Logger LOGGER = LoggerFactory.getLogger(JvmControlServiceImpl.class);
     private static final String FORCED_STOPPED = "FORCED STOPPED";
     private static final String JVM = "JVM";
-    private final JvmService jvmService;
     private final RemoteCommandExecutor<JvmControlOperation> remoteCommandExecutor;
     private final HistoryService historyService;
     private final MessagingService messagingService;
-    private final JvmStateService jvmStateService;
     private final RemoteCommandExecutorService remoteCommandExecutorService;
     private final SshConfiguration sshConfig;
-    private final GroupStateNotificationService groupStateNotificationService;
+    private final JvmStateService jvmStateService;
 
-    public JvmControlServiceImpl(final JvmService theJvmService,
+    public JvmControlServiceImpl(final JvmPersistenceService jvmPersistenceService,
                                  final RemoteCommandExecutor<JvmControlOperation> theExecutor,
                                  final HistoryService historyService,
                                  final MessagingService messagingService,
                                  final JvmStateService jvmStateService,
                                  final RemoteCommandExecutorService remoteCommandExecutorService,
-                                 final SshConfiguration sshConfig,
-                                 final GroupStateNotificationService groupStateNotificationService) {
-        jvmService = theJvmService;
+                                 final SshConfiguration sshConfig) {
+        this.jvmPersistenceService = jvmPersistenceService;
         remoteCommandExecutor = theExecutor;
         this.historyService = historyService;
         this.messagingService = messagingService;
         this.jvmStateService = jvmStateService;
         this.remoteCommandExecutorService = remoteCommandExecutorService;
         this.sshConfig = sshConfig;
-        this.groupStateNotificationService = groupStateNotificationService;
     }
 
     @Override
     public CommandOutput controlJvm(final ControlJvmRequest controlJvmRequest, final User aUser) {
         final JvmControlOperation controlOperation = controlJvmRequest.getControlOperation();
         LOGGER.debug("Control JVM request operation = {}", controlOperation.toString());
-        final Jvm jvm = jvmService.getJvm(controlJvmRequest.getJvmId());
+        final Jvm jvm = jvmPersistenceService.getJvm(controlJvmRequest.getJvmId());
         try {
             final JvmControlOperation ctrlOp = controlOperation;
             final String event = ctrlOp.getOperationState() == null ? ctrlOp.name() : ctrlOp.getOperationState().toStateLabel();
@@ -182,7 +178,7 @@ public class JvmControlServiceImpl implements JvmControlService {
         final Identifier<Jvm> jvmId = secureCopyRequest.getJvmId();
 
         final String event = secureCopyRequest.getControlOperation().name();
-        final Jvm jvm = jvmService.getJvm(jvmId);
+        final Jvm jvm = jvmPersistenceService.getJvm(jvmId);
         final int beginIndex = destPath.lastIndexOf("/");
         final String fileName = destPath.substring(beginIndex + 1, destPath.length());
         // don't add any usage of the toc user internal directory to the history

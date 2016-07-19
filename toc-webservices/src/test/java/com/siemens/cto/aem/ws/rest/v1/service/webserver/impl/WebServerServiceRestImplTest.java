@@ -134,16 +134,6 @@ public class WebServerServiceRestImplTest {
         System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, "./src/test/resources");
         generatedResourceDir = ApplicationProperties.get("paths.generated.resource.dir");
 
-        ////////////// NO CHECK IN /////////////////////////////
-        final File file = new File(generatedResourceDir);
-        System.err.println("JMJM " + file.getAbsolutePath() + " exists:" + file.exists() + " " + Arrays.toString(file.list()));
-        if (file.exists()){
-            for(String fileName : file.list()){
-                System.err.println("JMJM " + fileName);
-            }
-        }
-        ////////////// NO CHECK IN /////////////////////////////
-
         assertTrue(new File(generatedResourceDir).mkdirs());
     }
 

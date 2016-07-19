@@ -5,6 +5,7 @@ import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.common.domain.model.jvm.JvmControlOperation;
 import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.common.domain.model.resource.ContentType;
 import com.siemens.cto.aem.common.domain.model.resource.ResourceGroup;
@@ -15,21 +16,21 @@ import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.exception.ApplicationException;
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.common.exception.InternalErrorException;
+import com.siemens.cto.aem.common.exec.CommandOutput;
+import com.siemens.cto.aem.common.exec.CommandOutputReturnCode;
+import com.siemens.cto.aem.common.exec.ExecReturnCode;
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.common.request.group.AddJvmToGroupRequest;
-import com.siemens.cto.aem.common.request.jvm.CreateJvmAndAddToGroupsRequest;
-import com.siemens.cto.aem.common.request.jvm.CreateJvmRequest;
-import com.siemens.cto.aem.common.request.jvm.UpdateJvmRequest;
-import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
+import com.siemens.cto.aem.common.request.jvm.*;
 import com.siemens.cto.aem.persistence.jpa.domain.resource.config.template.JpaJvmConfigTemplate;
 import com.siemens.cto.aem.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
 import com.siemens.cto.aem.persistence.service.JvmPersistenceService;
 import com.siemens.cto.aem.service.app.ApplicationService;
 import com.siemens.cto.aem.service.group.GroupService;
 import com.siemens.cto.aem.service.group.GroupStateNotificationService;
+import com.siemens.cto.aem.service.jvm.JvmControlService;
 import com.siemens.cto.aem.service.jvm.JvmService;
 import com.siemens.cto.aem.service.resource.ResourceService;
-import com.siemens.cto.aem.service.state.StateNotificationService;
 import com.siemens.cto.aem.service.webserver.component.ClientFactoryHelper;
 import com.siemens.cto.toc.files.FileManager;
 import groovy.text.SimpleTemplateEngine;
@@ -64,51 +65,70 @@ public class JvmServiceImpl implements JvmService {
     private final GroupService groupService;
     private final ApplicationService applicationService;
     private final FileManager fileManager;
-    private final StateNotificationService stateNotificationService;
     private final SimpMessagingTemplate messagingTemplate;
     private final GroupStateNotificationService groupStateNotificationService;
     private final ResourceService resourceService;
     private final ClientFactoryHelper clientFactoryHelper;
+    private final JvmControlService jvmControlService;
 
     public JvmServiceImpl(final JvmPersistenceService jvmPersistenceService,
                           final GroupService groupService,
                           final ApplicationService applicationService,
                           final FileManager fileManager,
-                          final StateNotificationService stateNotificationService,
                           final SimpMessagingTemplate messagingTemplate,
                           final GroupStateNotificationService groupStateNotificationService,
                           final ResourceService resourceService,
                           final ClientFactoryHelper clientFactoryHelper,
-                          final String topicServerStates) {
+                          final String topicServerStates,
+                          final JvmControlService jvmControlService) {
         this.jvmPersistenceService = jvmPersistenceService;
         this.groupService = groupService;
         this.applicationService = applicationService;
         this.fileManager = fileManager;
-        this.stateNotificationService = stateNotificationService;
         this.messagingTemplate = messagingTemplate;
         this.groupStateNotificationService = groupStateNotificationService;
         this.resourceService = resourceService;
         this.clientFactoryHelper = clientFactoryHelper;
+        this.jvmControlService = jvmControlService;
         this.topicServerStates = topicServerStates;
     }
 
-    @Override
-    @Transactional
-    public Jvm createJvm(final CreateJvmRequest aCreateJvmRequest,
+    protected Jvm createJvm(final CreateJvmRequest aCreateJvmRequest,
                          final User aCreatingUser) {
         aCreateJvmRequest.validate();
         return jvmPersistenceService.createJvm(aCreateJvmRequest);
     }
 
-    @Override
-    @Transactional
-    public Jvm createAndAssignJvm(final CreateJvmAndAddToGroupsRequest aCreateAndAssignRequest,
+    protected Jvm createAndAssignJvm(final CreateJvmAndAddToGroupsRequest aCreateAndAssignRequest,
                                   final User aCreatingUser) {
         // The commands are validated in createJvm() and groupService.addJvmToGroup()
         final Jvm newJvm = createJvm(aCreateAndAssignRequest.getCreateCommand(), aCreatingUser);
         final Set<AddJvmToGroupRequest> addJvmToGroupRequests = aCreateAndAssignRequest.toAddRequestsFor(newJvm.getId());
         addJvmToGroups(addJvmToGroupRequests, aCreatingUser);
         return getJvm(newJvm.getId());
+    }
+
+    @Override
+    @Transactional
+    public Jvm createJvm(CreateJvmRequest createJvmRequest, CreateJvmAndAddToGroupsRequest createJvmAndAddToGroupsRequest, boolean areGroupsPresent, User user) {
+        // create the JVM in the database
+        final Jvm jvm;
+        if (areGroupsPresent) {
+            jvm = createAndAssignJvm(createJvmAndAddToGroupsRequest, user);
+        } else {
+            jvm = createJvm(createJvmRequest, user);
+        }
+
+        // inherit the templates from the group
+        if (null != jvm.getGroups() && jvm.getGroups().size() > 0) {
+            final Group parentGroup = jvm.getGroups().iterator().next();
+            createDefaultTemplates(jvm.getJvmName(), parentGroup);
+            if (jvm.getGroups().size() > 1) {
+                LOGGER.warn("Multiple groups were associated with the JVM, but the JVM was created using the templates from group " + parentGroup.getName());
+            }
+        }
+
+        return jvm;
     }
 
     @Override
@@ -139,7 +159,7 @@ public class JvmServiceImpl implements JvmService {
                 if (metaData.getEntity().getDeployToJvms()) {
                     final String template = resourceService.getAppTemplate(groupName, metaData.getEntity().getTarget(), templateName);
                     resourceService.createAppResource(metaData, new ByteArrayInputStream(template.getBytes()), jvmName,
-                                                      metaData.getEntity().getTarget());
+                            metaData.getEntity().getTarget());
                 }
             } catch (IOException e) {
                 LOGGER.error("Failed to map meta data while creating JVM for template {} in group {}", templateName, groupName, e);
@@ -183,9 +203,42 @@ public class JvmServiceImpl implements JvmService {
 
     @Override
     @Transactional
-    public void removeJvm(final Identifier<Jvm> aJvmId) {
-        jvmPersistenceService.removeJvm(aJvmId);
+    public void removeJvm(final Identifier<Jvm> aJvmId, User user) {
+        final Jvm jvm = getJvm(aJvmId);
+        if (!jvm.getState().isStartedState()) {
+            LOGGER.info("Removing JVM from the database and deleting the service for id {}", aJvmId.getId());
+            if (!jvm.getState().equals(JvmState.JVM_NEW)) {
+                deleteJvmWindowsService(new ControlJvmRequest(aJvmId, JvmControlOperation.DELETE_SERVICE), jvm, user);
+            }
+            jvmPersistenceService.removeJvm(aJvmId);
+        } else {
+            LOGGER.error("The target JVM {} must be stopped before attempting to delete it", jvm.getJvmName());
+            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE,
+                    "The target JVM must be stopped before attempting to delete it");
+        }
+
     }
+
+    @Override
+    public void deleteJvmWindowsService(ControlJvmRequest controlJvmRequest, Jvm jvm, User user) {
+        if (!jvm.getState().equals(JvmState.JVM_NEW)) {
+            CommandOutput commandOutput = jvmControlService.controlJvm(controlJvmRequest, user);
+            final String jvmName = jvm.getJvmName();
+            if (commandOutput.getReturnCode().wasSuccessful()) {
+                LOGGER.info("Delete of windows service {} was successful", jvmName);
+            } else if (ExecReturnCode.STP_EXIT_CODE_SERVICE_DOES_NOT_EXIST == commandOutput.getReturnCode().getReturnCode()) {
+                LOGGER.info("No such service found for {} during delete. Continuing with request.", jvmName);
+            } else {
+                String standardError =
+                        commandOutput.getStandardError().isEmpty() ?
+                                commandOutput.getStandardOutput() : commandOutput.getStandardError();
+                LOGGER.error("Deleting windows service {} failed :: ERROR: {}", jvmName, standardError);
+                throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, CommandOutputReturnCode.fromReturnCode(commandOutput.getReturnCode().getReturnCode()).getDesc());
+            }
+        }
+    }
+
+
 
     protected void addJvmToGroups(final Set<AddJvmToGroupRequest> someAddCommands,
                                   final User anAddingUser) {

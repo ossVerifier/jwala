@@ -148,7 +148,6 @@ public class JvmServiceRestImplTest {
     public void cleanUp() throws IOException {
         generatedResourceDir = ApplicationProperties.get("paths.generated.resource.dir");
         final File file = new File(generatedResourceDir);
-        System.err.println("JMJM jvm-test-exists:" + file.exists());
         FileUtils.deleteDirectory(new File(generatedResourceDir));
         assertFalse(file.exists());
         System.clearProperty(ApplicationProperties.PROPERTIES_ROOT_PATH);
@@ -187,7 +186,7 @@ public class JvmServiceRestImplTest {
 
     @Test
     public void testCreateJvm() {
-        when(jvmService.createJvm(any(CreateJvmRequest.class), any(User.class))).thenReturn(jvm);
+        when(jvmService.createJvm(any(CreateJvmRequest.class), any(CreateJvmAndAddToGroupsRequest.class), anyBoolean(), any(User.class))).thenReturn(jvm);
 
         final JsonCreateJvm jsonCreateJvm = new JsonCreateJvm(name, hostName, httpPort, httpsPort, redirectPort,
                 shutdownPort, ajpPort, statusPath.getUriPath(), systemProperties, userName, clearTextPassword);
@@ -204,7 +203,7 @@ public class JvmServiceRestImplTest {
 
     @Test
     public void testCreateJvmWithGroups() {
-        when(jvmService.createAndAssignJvm(any(CreateJvmAndAddToGroupsRequest.class), any(User.class))).thenReturn(jvm);
+        when(jvmService.createJvm(any(CreateJvmRequest.class), any(CreateJvmAndAddToGroupsRequest.class), anyBoolean(), any(User.class))).thenReturn(jvm);
 
         final Set<String> groupIds = new HashSet<>();
         groupIds.add("1");
@@ -264,23 +263,24 @@ public class JvmServiceRestImplTest {
         when(jvmControlService.controlJvm(any(ControlJvmRequest.class), any(User.class))).thenReturn(new CommandOutput(new ExecReturnCode(0), "", ""));
 
         Response response = jvmServiceRest.removeJvm(jvm.getId(), authenticatedUser);
-        verify(jvmService, atLeastOnce()).removeJvm(jvm.getId());
+        verify(jvmService, atLeastOnce()).removeJvm(eq(jvm.getId()), any(User.class));
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
 
         final ApplicationResponse applicationResponse = (ApplicationResponse) response.getEntity();
         assertNull(applicationResponse);
 
-        Jvm mockJvmStarted = mock(Jvm.class);
-        when(mockJvmStarted.getState()).thenReturn(JvmState.JVM_STARTED);
-        when(jvmService.getJvm(any(Identifier.class))).thenReturn(mockJvmStarted);
-        boolean exceptionThrown = false;
-        try {
-            response = jvmServiceRest.removeJvm(jvm.getId(), authenticatedUser);
-        } catch (Exception e) {
-            assertEquals("The target JVM must be stopped before attempting to delete it", e.getMessage());
-            exceptionThrown = true;
-        }
-        assertTrue(exceptionThrown);
+        // TODO move this test to the JvmServiceImpl tests
+//        Jvm mockJvmStarted = mock(Jvm.class);
+//        when(mockJvmStarted.getState()).thenReturn(JvmState.JVM_STARTED);
+//        when(jvmService.getJvm(any(Identifier.class))).thenReturn(mockJvmStarted);
+//        boolean exceptionThrown = false;
+//        try {
+//            response = jvmServiceRest.removeJvm(jvm.getId(), authenticatedUser);
+//        } catch (Exception e) {
+//            assertEquals("The target JVM must be stopped before attempting to delete it", e.getMessage());
+//            exceptionThrown = true;
+//        }
+//        assertTrue(exceptionThrown);
     }
 
     @Test
@@ -423,12 +423,16 @@ public class JvmServiceRestImplTest {
         when(jvmService.generateConfigFile(jvm.getJvmName(), "server.xml")).thenReturn("<server>xml-content</server>");
         when(jvmService.generateConfigFile(jvm.getJvmName(), "context.xml")).thenReturn("<content>xml-content</content>");
         when(jvmService.generateConfigFile(jvm.getJvmName(), "setenv.bat")).thenReturn("SET TEST=xxtestxx");
+        when(jvmService.generateInvokeBat(jvm.getJvmName())).thenReturn("REM invoke service");
         final CommandOutput successCommandOutput = new CommandOutput(new ExecReturnCode(0), "", "");
         when(jvmControlService.secureCopyFile(any(ControlJvmRequest.class), anyString(), anyString(), anyString())).thenReturn(successCommandOutput);
         when(jvmControlService.createDirectory(any(Jvm.class), anyString())).thenReturn(successCommandOutput);
         when(jvmControlService.changeFileMode(any(Jvm.class), anyString(), anyString(), anyString())).thenReturn(successCommandOutput);
 
         when(jvmControlService.controlJvm(any(ControlJvmRequest.class), any(User.class))).thenReturn(new CommandOutput(new ExecReturnCode(1), "", "FAIL CONTROL SERVICE"));
+
+        ControlJvmRequest deleteServiceRequest = new ControlJvmRequest(jvm.getId(), JvmControlOperation.DELETE_SERVICE);
+        when(jvmControlService.controlJvm(eq(deleteServiceRequest), any(User.class))).thenReturn(new CommandOutput(new ExecReturnCode(0), "DELETE SUCCESS", ""));
 
         final Response response = jvmServiceRest.generateAndDeployJvm(jvm.getJvmName(), authenticatedUser);
         assertEquals(CommandOutputReturnCode.FAILED.getDesc(), ((Map) (((ApplicationResponse) response.getEntity()).getApplicationResponseContent())).get("message"));

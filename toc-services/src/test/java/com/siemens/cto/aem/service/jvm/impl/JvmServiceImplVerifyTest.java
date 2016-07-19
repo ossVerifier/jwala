@@ -10,12 +10,11 @@ import com.siemens.cto.aem.common.domain.model.resource.ResourceGroup;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.exception.BadRequestException;
 import com.siemens.cto.aem.common.exception.InternalErrorException;
+import com.siemens.cto.aem.common.exec.CommandOutput;
+import com.siemens.cto.aem.common.exec.ExecReturnCode;
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.common.request.group.AddJvmToGroupRequest;
-import com.siemens.cto.aem.common.request.jvm.CreateJvmAndAddToGroupsRequest;
-import com.siemens.cto.aem.common.request.jvm.CreateJvmRequest;
-import com.siemens.cto.aem.common.request.jvm.UpdateJvmRequest;
-import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
+import com.siemens.cto.aem.common.request.jvm.*;
 import com.siemens.cto.aem.persistence.jpa.domain.resource.config.template.JpaJvmConfigTemplate;
 import com.siemens.cto.aem.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
 import com.siemens.cto.aem.persistence.service.JvmPersistenceService;
@@ -23,9 +22,9 @@ import com.siemens.cto.aem.service.VerificationBehaviorSupport;
 import com.siemens.cto.aem.service.app.ApplicationService;
 import com.siemens.cto.aem.service.group.GroupService;
 import com.siemens.cto.aem.service.group.GroupStateNotificationService;
+import com.siemens.cto.aem.service.jvm.JvmControlService;
 import com.siemens.cto.aem.service.jvm.JvmService;
 import com.siemens.cto.aem.service.resource.ResourceService;
-import com.siemens.cto.aem.service.state.StateNotificationService;
 import com.siemens.cto.aem.service.webserver.component.ClientFactoryHelper;
 import com.siemens.cto.toc.files.FileManager;
 import org.apache.commons.io.FileUtils;
@@ -69,9 +68,6 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
     private FileManager mockFileManager;
 
     @Mock
-    private StateNotificationService mockStateNotificationService;
-
-    @Mock
     private ApplicationService mockApplicationService;
 
     @Mock
@@ -86,6 +82,9 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
     @Mock
     private ResourceService mockResourceService;
 
+    @Mock
+    private JvmControlService mockJvmControlService;
+
     private JvmService jvmService;
 
     private JvmServiceImpl jvmServiceImpl;
@@ -93,9 +92,9 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
     @Before
     public void setup() {
         initMocks(this);
-        jvmServiceImpl = new JvmServiceImpl(mockJvmPersistenceService, mockGroupService, mockApplicationService, mockFileManager, mockStateNotificationService,
+        jvmServiceImpl = new JvmServiceImpl(mockJvmPersistenceService, mockGroupService, mockApplicationService, mockFileManager,
                 mockMessagingTemplate, mockGroupStateNotificationService, mockResourceService, mockClientFactoryHelper,
-                "/topic/server-states");
+                 "/topic/server-states", mockJvmControlService);
         jvmService = jvmServiceImpl;
     }
 
@@ -105,10 +104,11 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
         System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, "./src/test/resources");
 
         final CreateJvmRequest createJvmRequest = mock(CreateJvmRequest.class);
+        final CreateJvmAndAddToGroupsRequest createJvmAndAddToGroupsRequest = mock(CreateJvmAndAddToGroupsRequest.class);
         final Jvm jvm = new Jvm(new Identifier<Jvm>(99L), "testJvm", new HashSet<Group>());
         when(mockJvmPersistenceService.createJvm(any(CreateJvmRequest.class))).thenReturn(jvm);
 
-        jvmService.createJvm(createJvmRequest, mockUser);
+        jvmService.createJvm(createJvmRequest, createJvmAndAddToGroupsRequest, false, mockUser);
 
         verify(createJvmRequest, times(1)).validate();
         verify(mockJvmPersistenceService, times(1)).createJvm(createJvmRequest);
@@ -127,8 +127,9 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
         when(command.toAddRequestsFor(eq(jvm.getId()))).thenReturn(addCommands);
         when(command.getCreateCommand()).thenReturn(createJvmRequest);
         when(mockJvmPersistenceService.createJvm(createJvmRequest)).thenReturn(jvm);
+        when(mockJvmPersistenceService.getJvm(any(Identifier.class))).thenReturn(jvm);
 
-        jvmService.createAndAssignJvm(command, mockUser);
+        jvmService.createJvm(createJvmRequest, command, true, mockUser);
 
         verify(createJvmRequest, times(1)).validate();
         verify(mockJvmPersistenceService, times(1)).createJvm(createJvmRequest);
@@ -162,8 +163,13 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
     public void testRemoveJvm() {
 
         final Identifier<Jvm> id = new Identifier<>(-123456L);
+        Jvm mockJvm = mockJvmWithId(id);
+        when(mockJvmPersistenceService.getJvm(any(Identifier.class))).thenReturn(mockJvm);
+        when(mockJvm.getState()).thenReturn(JvmState.JVM_STOPPED);
 
-        jvmService.removeJvm(id);
+        when(mockJvmControlService.controlJvm(any(ControlJvmRequest.class), any(User.class))).thenReturn(new CommandOutput(new ExecReturnCode(0), "SUCCESS", ""));
+
+        jvmService.removeJvm(id, mockUser);
 
         verify(mockJvmPersistenceService, times(1)).removeJvm(eq(id));
     }

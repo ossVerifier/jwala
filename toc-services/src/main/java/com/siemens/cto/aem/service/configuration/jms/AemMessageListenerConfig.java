@@ -5,16 +5,10 @@ import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.common.domain.model.state.CurrentState;
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
-import com.siemens.cto.aem.persistence.service.JvmPersistenceService;
-import com.siemens.cto.aem.service.MessagingService;
-import com.siemens.cto.aem.service.configuration.service.AemServiceConfiguration;
-import com.siemens.cto.aem.service.group.GroupStateNotificationService;
-import com.siemens.cto.aem.service.jvm.JvmService;
 import com.siemens.cto.aem.service.jvm.JvmStateService;
 import com.siemens.cto.aem.service.jvm.state.jms.listener.JvmStateMessageListener;
 import com.siemens.cto.aem.service.jvm.state.jms.listener.message.JvmStateMapMessageConverterImpl;
 import com.siemens.cto.aem.service.state.InMemoryStateManagerService;
-import com.siemens.cto.aem.service.state.StateNotificationService;
 import com.siemens.cto.aem.service.state.impl.InMemoryStateManagerServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -31,24 +25,6 @@ public class AemMessageListenerConfig {
 
     @Autowired
     private AemJmsConfig jmsConfig;
-
-    @Autowired
-    private AemServiceConfiguration serviceConfig;
-
-    @Autowired
-    private JvmPersistenceService jvmPersistenceService;
-
-    @Autowired
-    private JvmService jvmService;
-
-    @Autowired
-    private StateNotificationService stateNotificationService;
-
-    @Autowired
-    private GroupStateNotificationService groupStateNotificationService;
-
-    @Autowired
-    private MessagingService messagingService;
 
     @Bean
     public DefaultMessageListenerContainer getJvmStateListenerContainer(final PlatformTransactionManager transactionManager,

@@ -1,7 +1,6 @@
 package com.siemens.cto.aem.service.webserver.impl;
 
 import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
-import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.ssh.SshConfiguration;
 import com.siemens.cto.aem.common.domain.model.state.CurrentState;
 import com.siemens.cto.aem.common.domain.model.state.StateType;
@@ -25,7 +24,6 @@ import com.siemens.cto.aem.service.MessagingService;
 import com.siemens.cto.aem.service.RemoteCommandExecutorService;
 import com.siemens.cto.aem.service.RemoteCommandReturnInfo;
 import com.siemens.cto.aem.service.exception.RemoteCommandExecutorServiceException;
-import com.siemens.cto.aem.service.state.InMemoryStateManagerService;
 import com.siemens.cto.aem.service.webserver.WebServerControlService;
 import com.siemens.cto.aem.service.webserver.WebServerService;
 import org.apache.commons.lang3.StringUtils;
@@ -48,7 +46,6 @@ public class WebServerControlServiceImpl implements WebServerControlService {
     private final WebServerService webServerService;
     private final RemoteCommandExecutor<WebServerControlOperation> commandExecutor;
     private static final Logger LOGGER = LoggerFactory.getLogger(WebServerControlServiceImpl.class);
-    private final InMemoryStateManagerService<Identifier<WebServer>, WebServerReachableState> inMemoryStateManagerService;
     private final HistoryService historyService;
     private final MessagingService messagingService;
     private final RemoteCommandExecutorService remoteCommandExecutorService;
@@ -56,14 +53,12 @@ public class WebServerControlServiceImpl implements WebServerControlService {
 
     public WebServerControlServiceImpl(final WebServerService webServerService,
                                        final RemoteCommandExecutor<WebServerControlOperation> commandExecutor,
-                                       final InMemoryStateManagerService<Identifier<WebServer>, WebServerReachableState> inMemoryStateManagerService,
                                        final HistoryService historyService,
                                        final MessagingService messagingService,
                                        final RemoteCommandExecutorService remoteCommandExecutorService,
                                        final SshConfiguration sshConfig) {
         this.webServerService = webServerService;
         this.commandExecutor = commandExecutor;
-        this.inMemoryStateManagerService = inMemoryStateManagerService;
         this.historyService = historyService;
         this.messagingService = messagingService;
         this.remoteCommandExecutorService = remoteCommandExecutorService;

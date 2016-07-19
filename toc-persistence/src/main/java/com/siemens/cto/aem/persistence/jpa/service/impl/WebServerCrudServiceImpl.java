@@ -130,7 +130,6 @@ public class WebServerCrudServiceImpl extends AbstractCrudServiceImpl<JpaWebServ
         query.setParameter("groupId", aGroupId.getId());
 
         final List<JpaWebServer> webservers = query.getResultList();
-        System.err.println("JMJM " + webservers);
         for (final JpaWebServer webserver : webservers) {
             remove(webserver);
         }

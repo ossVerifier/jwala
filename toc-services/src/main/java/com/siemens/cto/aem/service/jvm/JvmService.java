@@ -5,20 +5,16 @@ import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.common.domain.model.user.User;
-import com.siemens.cto.aem.common.request.jvm.CreateJvmAndAddToGroupsRequest;
-import com.siemens.cto.aem.common.request.jvm.CreateJvmRequest;
-import com.siemens.cto.aem.common.request.jvm.UpdateJvmRequest;
-import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
+import com.siemens.cto.aem.common.request.jvm.*;
 import com.siemens.cto.aem.persistence.jpa.domain.resource.config.template.JpaJvmConfigTemplate;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+
 public interface JvmService {
 
-    Jvm createJvm(final CreateJvmRequest aCreateJvmRequest, final User aCreatingUser);
-
-    Jvm createAndAssignJvm(final CreateJvmAndAddToGroupsRequest createJvmAndAddToGroupsRequest, final User aCreatingUser);
+    Jvm createJvm(CreateJvmRequest createJvmRequest, CreateJvmAndAddToGroupsRequest createJvmAndAddToGroupsRequest, boolean areGroupsPresent, User user);
 
     Jvm getJvm(final Identifier<Jvm> aJvmId);
 
@@ -28,7 +24,9 @@ public interface JvmService {
 
     Jvm updateJvm(final UpdateJvmRequest updateJvmRequest, final User anUpdatingUser);
 
-    void removeJvm(final Identifier<Jvm> aJvmId);
+    void removeJvm(final Identifier<Jvm> aJvmId, User user);
+
+    void deleteJvmWindowsService(ControlJvmRequest controlJvmRequest, Jvm jvm, User user);
 
     String generateConfigFile(String aJvmName, String templateName);
 
@@ -50,6 +48,7 @@ public interface JvmService {
 
     /**
      * Ping's the JVM and updates its state.
+     *
      * @param jvm the JVM
      */
     void pingAndUpdateJvmState(Jvm jvm);
@@ -77,6 +76,7 @@ public interface JvmService {
 
     /**
      * Create JVM default templates.
+     *
      * @param jvmName
      * @param parentGroup
      */

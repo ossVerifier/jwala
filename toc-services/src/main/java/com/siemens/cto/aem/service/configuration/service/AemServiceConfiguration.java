@@ -8,10 +8,7 @@ import com.siemens.cto.aem.commandprocessor.impl.jsch.JschBuilder;
 import com.siemens.cto.aem.commandprocessor.jsch.impl.ChannelSessionKey;
 import com.siemens.cto.aem.commandprocessor.jsch.impl.KeyedPooledJschChannelFactory;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
-import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
-import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.common.domain.model.ssh.SshConfiguration;
-import com.siemens.cto.aem.common.domain.model.state.CurrentState;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServerControlOperation;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState;
@@ -76,10 +73,7 @@ import org.apache.commons.pool2.impl.GenericKeyedObjectPoolConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.DependsOn;
+import org.springframework.context.annotation.*;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.ClassPathResource;
@@ -131,9 +125,6 @@ public class AemServiceConfiguration {
     private AemSshConfig aemSshConfig;
 
     @Autowired
-    private WebServerService webServerPersistenceService;
-
-    @Autowired
     private SimpMessagingTemplate messagingTemplate;
 
     @Autowired
@@ -146,19 +137,6 @@ public class AemServiceConfiguration {
 
     @Resource
     private Environment env;
-
-    @Autowired
-    private MessagingService messagingService;
-
-    @Autowired
-    @Qualifier("jvmInMemoryStateManagerService")
-    private InMemoryStateManagerService<Identifier<Jvm>, CurrentState<Jvm, JvmState>> jvmInMemoryStateManagerService;
-
-    @Autowired
-    private ClientFactoryHelper clientFactoryHelper;
-
-    public AemServiceConfiguration() {
-    }
 
     /**
      * Make vars.properties available to spring integration configuration
@@ -183,11 +161,12 @@ public class AemServiceConfiguration {
     public JvmService getJvmService(final GroupService groupService,
                                     final ApplicationService applicationService,
                                     final ResourceService resourceService, final ClientFactoryHelper clientFactoryHelper,
-                                    @Value("${spring.messaging.topic.serverStates:/topic/server-states}") final String topicServerStates) {
+                                    @Value("${spring.messaging.topic.serverStates:/topic/server-states}") final String topicServerStates,
+                                    final JvmControlService jvmControlService) {
         final JvmPersistenceService jvmPersistenceService = persistenceServiceConfiguration.getJvmPersistenceService();
         return new JvmServiceImpl(jvmPersistenceService, groupService, applicationService,
-                fileManager, getStateNotificationService(), messagingTemplate, groupStateNotificationService, resourceService,
-                clientFactoryHelper, topicServerStates);
+                fileManager, messagingTemplate, groupStateNotificationService, resourceService,
+                clientFactoryHelper, topicServerStates, jvmControlService);
     }
 
     @Bean(name = "webServerService")
@@ -228,11 +207,10 @@ public class AemServiceConfiguration {
                                                   final MessagingService messagingService,
                                                   final JvmStateService jvmStateService,
                                                   final RemoteCommandExecutorService remoteCommandExecutorService,
-                                                  final SshConfiguration sshConfig,
-                                                  final JvmService jvmService) {
-        return new JvmControlServiceImpl(jvmService, aemCommandExecutorConfig.getRemoteCommandExecutor(),
+                                                  final SshConfiguration sshConfig) {
+        return new JvmControlServiceImpl(persistenceServiceConfiguration.getJvmPersistenceService(), aemCommandExecutorConfig.getRemoteCommandExecutor(),
                 getHistoryService(historyCrudService), messagingService, jvmStateService, remoteCommandExecutorService,
-                sshConfig, groupStateNotificationService);
+                sshConfig);
     }
 
     @Bean(name = "groupControlService")
@@ -254,12 +232,11 @@ public class AemServiceConfiguration {
     @Bean(name = "webServerControlService")
     public WebServerControlService getWebServerControlService(final WebServerService webServerService,
                                                               final RemoteCommandExecutor<WebServerControlOperation> commandExecutor,
-                                                              final InMemoryStateManagerService<Identifier<WebServer>, WebServerReachableState> inMemoryStateManagerService,
                                                               final HistoryService historyService,
                                                               final MessagingService messagingService,
                                                               final RemoteCommandExecutorService remoteCommandExecutorService,
                                                               final SshConfiguration sshConfig) {
-        return new WebServerControlServiceImpl(webServerService, commandExecutor, inMemoryStateManagerService, historyService,
+        return new WebServerControlServiceImpl(webServerService, commandExecutor, historyService,
                 messagingService, remoteCommandExecutorService, sshConfig);
     }
 

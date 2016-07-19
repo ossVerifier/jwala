@@ -20,9 +20,8 @@ import com.siemens.cto.aem.exception.CommandFailureException;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
 import com.siemens.cto.aem.persistence.jpa.type.EventType;
+import com.siemens.cto.aem.persistence.service.JvmPersistenceService;
 import com.siemens.cto.aem.service.*;
-import com.siemens.cto.aem.service.group.GroupStateNotificationService;
-import com.siemens.cto.aem.service.jvm.JvmService;
 import com.siemens.cto.aem.service.jvm.JvmStateService;
 import org.junit.Before;
 import org.junit.Test;
@@ -42,7 +41,6 @@ import static org.mockito.Mockito.*;
 public class JvmControlServiceImplVerifyTest extends VerificationBehaviorSupport {
 
     private JvmControlServiceImpl jvmControlService;
-    private JvmService jvmService;
     private RemoteCommandExecutor commandExecutor;
     private User user;
 
@@ -62,7 +60,7 @@ public class JvmControlServiceImplVerifyTest extends VerificationBehaviorSupport
     private SshConfiguration mockSshConfig;
 
     @Mock
-    private GroupStateNotificationService mockGroupStateNotificationService;
+    private JvmPersistenceService mockJvmPersistenceService;
 
     private List<JpaGroup> groups = new ArrayList<>();
 
@@ -72,10 +70,9 @@ public class JvmControlServiceImplVerifyTest extends VerificationBehaviorSupport
 
     @Before
     public void setup() {
-        jvmService = mock(JvmService.class);
         commandExecutor = mock(RemoteCommandExecutor.class);
-        jvmControlService = new JvmControlServiceImpl(jvmService, commandExecutor, mockHistoryService, mockMessagingService,
-                mockJvmStateService, mockRemoteCommandExecutorService, mockSshConfig, mockGroupStateNotificationService);
+        jvmControlService = new JvmControlServiceImpl(mockJvmPersistenceService, commandExecutor, mockHistoryService, mockMessagingService,
+                mockJvmStateService, mockRemoteCommandExecutorService, mockSshConfig);
         user = new User("unused");
     }
 
@@ -96,12 +93,12 @@ public class JvmControlServiceImplVerifyTest extends VerificationBehaviorSupport
         when(mockRemoteCommandExecutorService.executeCommand(any(RemoteExecCommand.class))).thenReturn(remoteCommandSuccess);
         when(controlCommand.getJvmId()).thenReturn(jvmId);
         when(controlCommand.getControlOperation()).thenReturn(controlOperation);
-        when(jvmService.getJvm(jvmId)).thenReturn(jvm);
+        when(mockJvmPersistenceService.getJvm(jvmId)).thenReturn(jvm);
         when(mockExecData.getReturnCode()).thenReturn(new ExecReturnCode(0));
 
         jvmControlService.controlJvm(controlCommand, user);
 
-        verify(jvmService, times(1)).getJvm(eq(jvmId));
+        verify(mockJvmPersistenceService, times(1)).getJvm(eq(jvmId));
         verify(mockRemoteCommandExecutorService, times(1)).executeCommand(any(RemoteExecCommand.class));
         verify(mockJvmStateService, times(1)).updateState(any(Identifier.class), any(JvmState.class));
         verify(mockHistoryService).createHistory(anyString(), anyList(), anyString(), any(EventType.class), anyString());
@@ -164,7 +161,7 @@ public class JvmControlServiceImplVerifyTest extends VerificationBehaviorSupport
         when(mockJvm.getId()).thenReturn(Identifier.<Jvm>id(jvmId.getId()));
         when(mockJvm.getJvmName()).thenReturn("testJvmName");
         when(mockJvm.getHostName()).thenReturn("testJvmHost");
-        when(jvmService.getJvm(any(Identifier.class))).thenReturn(mockJvm);
+        when(mockJvmPersistenceService.getJvm(any(Identifier.class))).thenReturn(mockJvm);
 
         when(controlCommand.getControlOperation()).thenReturn(JvmControlOperation.START);
         when(mockJvm.getState()).thenReturn(JvmState.JVM_STARTED);
@@ -199,7 +196,7 @@ public class JvmControlServiceImplVerifyTest extends VerificationBehaviorSupport
         JpaJvm mockJpaJvm = mock(JpaJvm.class);
         CommandOutput mockCommandOutput = mock(CommandOutput.class);
 
-        when(jvmService.getJvm(any(Identifier.class))).thenReturn(mockJvm);
+        when(mockJvmPersistenceService.getJvm(any(Identifier.class))).thenReturn(mockJvm);
         when(commandExecutor.executeRemoteCommand(anyString(), anyString(), any(ControlJvmRequest.class), any(WindowsJvmPlatformCommandProvider.class), anyString(), anyString())).thenReturn(mockCommandOutput);
         when(commandExecutor.executeRemoteCommand(anyString(), anyString(), eq(JvmControlOperation.CHECK_FILE_EXISTS), any(WindowsJvmPlatformCommandProvider.class), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(1), "File doesn't exist", ""));
         jvmControlService.secureCopyFile(mockControlJvmRequest, "./source/path", "./dest/path", "user-id");
@@ -219,7 +216,7 @@ public class JvmControlServiceImplVerifyTest extends VerificationBehaviorSupport
         JpaJvm mockJpaJvm = mock(JpaJvm.class);
         CommandOutput mockCommandOutput = mock(CommandOutput.class);
 
-        when(jvmService.getJvm(any(Identifier.class))).thenReturn(mockJvm);
+        when(mockJvmPersistenceService.getJvm(any(Identifier.class))).thenReturn(mockJvm);
         when(commandExecutor.executeRemoteCommand(anyString(), anyString(), any(ControlJvmRequest.class), any(WindowsJvmPlatformCommandProvider.class), anyString(), anyString())).thenReturn(mockCommandOutput);
         when(commandExecutor.executeRemoteCommand(anyString(), anyString(), eq(JvmControlOperation.CHECK_FILE_EXISTS), any(WindowsJvmPlatformCommandProvider.class), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(0), "File exists - do backup", ""));
         when(commandExecutor.executeRemoteCommand(anyString(), anyString(), eq(JvmControlOperation.BACK_UP_FILE), any(WindowsJvmPlatformCommandProvider.class), anyString(), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(0), "Backup succeeded", ""));
@@ -240,7 +237,7 @@ public class JvmControlServiceImplVerifyTest extends VerificationBehaviorSupport
         JpaJvm mockJpaJvm = mock(JpaJvm.class);
         CommandOutput mockCommandOutput = mock(CommandOutput.class);
 
-        when(jvmService.getJvm(any(Identifier.class))).thenReturn(mockJvm);
+        when(mockJvmPersistenceService.getJvm(any(Identifier.class))).thenReturn(mockJvm);
         when(commandExecutor.executeRemoteCommand(anyString(), anyString(), any(ControlJvmRequest.class), any(WindowsJvmPlatformCommandProvider.class), anyString(), anyString())).thenReturn(mockCommandOutput);
         when(commandExecutor.executeRemoteCommand(anyString(), anyString(), eq(JvmControlOperation.CHECK_FILE_EXISTS), any(WindowsJvmPlatformCommandProvider.class), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(0), "File exists - do backup", ""));
         when(commandExecutor.executeRemoteCommand(anyString(), anyString(), eq(JvmControlOperation.BACK_UP_FILE), any(WindowsJvmPlatformCommandProvider.class), anyString(), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(1), "", "Back up failed"));

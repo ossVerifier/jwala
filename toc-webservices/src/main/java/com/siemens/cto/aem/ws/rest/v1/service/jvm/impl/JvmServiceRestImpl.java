@@ -1,7 +1,6 @@
 package com.siemens.cto.aem.ws.rest.v1.service.jvm.impl;
 
 import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
-import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.jvm.JvmControlOperation;
@@ -24,7 +23,6 @@ import com.siemens.cto.aem.persistence.jpa.service.exception.NonRetrievableResou
 import com.siemens.cto.aem.persistence.jpa.service.exception.ResourceTemplateUpdateException;
 import com.siemens.cto.aem.service.jvm.JvmControlService;
 import com.siemens.cto.aem.service.jvm.JvmService;
-import com.siemens.cto.aem.service.jvm.exception.JvmServiceException;
 import com.siemens.cto.aem.service.resource.ResourceService;
 import com.siemens.cto.aem.template.ResourceFileGenerator;
 import com.siemens.cto.aem.ws.rest.v1.provider.AuthenticatedUser;
@@ -88,6 +86,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
         LOGGER.debug("Get JVMs requested");
         final List<Jvm> jvms = new ArrayList<Jvm>();
         for (Jvm jvm : jvmService.getJvms()) {
+            // TODO why are we sending the decrypted password back to the browser in the response??
             jvms.add(jvm.toDecrypted());
         }
         return ResponseBuilder.ok(jvms);
@@ -102,35 +101,10 @@ public class JvmServiceRestImpl implements JvmServiceRest {
 
     @Override
     public Response createJvm(final JsonCreateJvm aJvmToCreate, final AuthenticatedUser aUser) {
-        LOGGER.info("Create JVM requested: {} by user {}", aJvmToCreate, aUser.getUser().getId());
         final User user = aUser.getUser();
-
-        // create the JVM in the database
-        final Jvm jvm;
-        if (aJvmToCreate.areGroupsPresent()) {
-            jvm = jvmService.createAndAssignJvm(aJvmToCreate.toCreateAndAddRequest(), user);
-        } else {
-            jvm = jvmService.createJvm(aJvmToCreate.toCreateJvmRequest(), user);
-        }
-
-        if (null != jvm.getGroups() && jvm.getGroups().size() > 0) {
-            final Group parentGroup = jvm.getGroups().iterator().next();
-            try {
-                jvmService.createDefaultTemplates(jvm.getJvmName(), parentGroup);
-            } catch (final JvmServiceException jse) {
-                // TODO: If JVM creation is successful even though the template creation failed, we should have a mechanism to tell the UI.
-                // NOTE: JVM creation and template creation were not placed in a single transaction by design since
-                //       in the real world, a JVM can exist without its resource templates.
-                return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(AemFaultType.PERSISTENCE_ERROR,
-                        jse.getMessage(), jse));
-            }
-
-            // TODO if the JVM is associated with more than one group on creation only use the templates from the first group - need to discuss with team the correct course of action
-            if (jvm.getGroups().size() > 1) {
-                return ResponseBuilder.notOk(Response.Status.EXPECTATION_FAILED, new FaultCodeException(AemFaultType.GROUP_NOT_SPECIFIED, "Multiple groups were associated with the JVM, but the JVM was created using the templates from group " + parentGroup.getName()));
-            }
-        }
-
+        LOGGER.info("Create JVM requested: {} by user {}", aJvmToCreate, user.getId());
+        // TODO merge create jvm requests, and remove areGroupsPresent method by testing group list size
+        Jvm jvm = jvmService.createJvm(aJvmToCreate.toCreateJvmRequest(), aJvmToCreate.toCreateAndAddRequest(), aJvmToCreate.areGroupsPresent(), user);
         return ResponseBuilder.created(jvm);
     }
 
@@ -143,18 +117,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
     @Override
     public Response removeJvm(final Identifier<Jvm> aJvmId, final AuthenticatedUser user) {
         LOGGER.info("Delete JVM requested: {} by user {}", aJvmId, user.getUser().getId());
-        final Jvm jvm = jvmService.getJvm(aJvmId);
-        if (!jvm.getState().isStartedState()) {
-            LOGGER.info("Removing JVM from the database and deleting the service for id {}", aJvmId.getId());
-            if (!jvm.getState().equals(JvmState.JVM_NEW)) {
-                deleteJvmWindowsService(user, new ControlJvmRequest(aJvmId, JvmControlOperation.DELETE_SERVICE), jvm.getJvmName());
-            }
-            jvmService.removeJvm(aJvmId);
-        } else {
-            LOGGER.error("The target JVM {} must be stopped before attempting to delete it", jvm.getJvmName());
-            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE,
-                    "The target JVM must be stopped before attempting to delete it");
-        }
+        jvmService.removeJvm(aJvmId, user.getUser());
         return ResponseBuilder.ok();
     }
 
@@ -289,7 +252,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
 
             // delete the service
             // TODO make generic to support multiple OSs
-            deleteJvmWindowsService(user, new ControlJvmRequest(jvm.getId(), JvmControlOperation.DELETE_SERVICE), jvm.getJvmName());
+            jvmService.deleteJvmWindowsService(new ControlJvmRequest(jvm.getId(), JvmControlOperation.DELETE_SERVICE), jvm, user.getUser());
 
             // create the tar file
             //
@@ -432,24 +395,6 @@ public class JvmServiceRestImpl implements JvmServiceRest {
             final String standardError = commandOutput.getStandardError().isEmpty() ? commandOutput.getStandardOutput() : commandOutput.getStandardError();
             LOGGER.error("Copy command failed with error trying to copy file {} to {} :: ERROR: {}", sourceFile, jvm.getHostName(), standardError);
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, CommandOutputReturnCode.fromReturnCode(commandOutput.getReturnCode().getReturnCode()).getDesc());
-        }
-    }
-
-    protected void deleteJvmWindowsService(AuthenticatedUser user, ControlJvmRequest controlJvmRequest, String jvmName) {
-        Jvm jvm = jvmService.getJvm(jvmName);
-        if (!jvm.getState().equals(JvmState.JVM_NEW)) {
-            CommandOutput commandOutput = jvmControlService.controlJvm(controlJvmRequest, user.getUser());
-            if (commandOutput.getReturnCode().wasSuccessful()) {
-                LOGGER.info("Delete of windows service {} was successful", jvmName);
-            } else if (ExecReturnCode.STP_EXIT_CODE_SERVICE_DOES_NOT_EXIST == commandOutput.getReturnCode().getReturnCode()) {
-                LOGGER.info("No such service found for {} during delete. Continuing with request.", jvmName);
-            } else {
-                String standardError =
-                        commandOutput.getStandardError().isEmpty() ?
-                                commandOutput.getStandardOutput() : commandOutput.getStandardError();
-                LOGGER.error("Deleting windows service {} failed :: ERROR: {}", jvmName, standardError);
-                throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, CommandOutputReturnCode.fromReturnCode(commandOutput.getReturnCode().getReturnCode()).getDesc());
-            }
         }
     }
 

@@ -19,7 +19,6 @@ import com.siemens.cto.aem.control.webserver.command.impl.WindowsWebServerPlatfo
 import com.siemens.cto.aem.exception.CommandFailureException;
 import com.siemens.cto.aem.persistence.jpa.type.EventType;
 import com.siemens.cto.aem.service.*;
-import com.siemens.cto.aem.service.state.InMemoryStateManagerService;
 import com.siemens.cto.aem.service.state.StateNotificationService;
 import com.siemens.cto.aem.service.webserver.WebServerService;
 import org.junit.Before;
@@ -49,9 +48,6 @@ public class WebServerControlServiceImplVerifyTest extends VerificationBehaviorS
     @Mock
     private RemoteCommandExecutor<WebServerControlOperation> commandExecutor;
 
-    @Mock
-    private InMemoryStateManagerService<Identifier<WebServer>, WebServerReachableState> mockInMemoryStateManagerService;
-
     @Captor
     private ArgumentCaptor<SetStateRequest<WebServer, WebServerReachableState>> setStateCommandCaptor;
 
@@ -74,7 +70,7 @@ public class WebServerControlServiceImplVerifyTest extends VerificationBehaviorS
 
     @Before
     public void setup() {
-        webServerControlService = new WebServerControlServiceImpl(webServerService, commandExecutor, mockInMemoryStateManagerService,
+        webServerControlService = new WebServerControlServiceImpl(webServerService, commandExecutor,
                 mockHistoryService, mockMessagingService, remoteCommandExecutorService, mockSshConfig);
 
         user = new User("unused");

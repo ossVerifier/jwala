@@ -374,6 +374,9 @@ var JvmConfigForm = React.createClass({
                             </tr>
                             <tr>
                                 <td>
+                                    <div className="jvmStatusUrl">
+                                    {this.props.data === undefined && this.state.groupIds.length > 1 ? "The JVM templates will only be inherited from a single group" : ""}
+                                    </div>
                                     <DataMultiSelectBox name="groupSelector[]"
                                                         data={this.state.groupMultiSelectData}
                                                         selectedValIds={this.state.groupIds}
