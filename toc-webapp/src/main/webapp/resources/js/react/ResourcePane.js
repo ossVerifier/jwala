@@ -10,9 +10,9 @@ var ResourcePane = React.createClass({
         return {resourceOptions: [], showModalResourceTemplateMetaData: false, data: null, rightClickedItem: null, host: null}
     },
     render: function() {
-        var metaData = [{icon: "ui-icon-plusthick", title: "create", onClickCallback: this.createResource},
-        			     {icon: "ui-icon-trash", title: "delete", onClickCallback: this.deleteResource}];
-        var toolbar = <RToolbar className="resourcePane toolbarContainer" btnClassName="ui-button-text-only ui-button-height" metaData={metaData}/>;
+        var metaData = [{ref: "createBtn", icon: "ui-icon-plusthick", title: "create", onClickCallback: this.createResource},
+        			    {ref: "deleteBtn", icon: "ui-icon-trash", title: "delete", onClickCallback: this.deleteResource}];
+        var toolbar = <RToolbar className="resourcePane toolbarContainer" metaData={metaData}/>;
         if (this.state.resourceOptions.length > 0) {
             return <div className="ResourcePane">
                        {toolbar}

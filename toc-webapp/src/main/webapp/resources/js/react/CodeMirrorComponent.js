@@ -8,10 +8,9 @@ var CodeMirrorComponent = React.createClass({
         return {data: null};
     },
     render: function() {
-        var metaData = [{icon: "ui-icon-disk", title: "Save", onClickCallback: this.saveCallback}];
+        var metaData = [{ref: "saveBtn", icon: "ui-icon-disk", title: "Save", onClickCallback: this.saveCallback}];
         return React.createElement("div", {ref:"theContainer", className: this.props.className},
-                   React.createElement(RToolbar, {ref: "theToolbar" , className: "toolbar-container",
-                                                  btnClassName:"ui-button-text-only ui-button-height", metaData: metaData}),
+                   React.createElement(RToolbar, {ref: "theToolbar" , className: "toolbar-container", metaData: metaData}),
                    React.createElement("div", {ref: "codeMirrorHost"}));
     },
     componentDidMount: function() {
@@ -19,11 +18,13 @@ var CodeMirrorComponent = React.createClass({
         this.codeMirror = CodeMirror(this.refs.codeMirrorHost.getDOMNode(), {value: val, lineNumbers: true,
                                      mode:  "xml"});
         this.state.data = this.codeMirror.getValue();
-        this.codeMirror.on("change", this.props.onChange);
+        this.codeMirror.on("change", this.onChanged);
         this.resize();
+        this.refs.theToolbar.refs.saveBtn.setEnabled(false);
     },
     componentWillUpdate: function(nextProps, nextState) {
         this.setData(nextProps.content);
+        this.refs.theToolbar.refs.saveBtn.setEnabled(this.isContentChanged());
     },
     saveCallback: function() {
         this.props.saveCallback(this.codeMirror.getValue());
@@ -40,10 +41,14 @@ var CodeMirrorComponent = React.createClass({
         console.log(textAreaHeight);
         $(".CodeMirror.cm-s-default").css("height", textAreaHeight);
     },
+    onChanged: function() {
+        this.refs.theToolbar.refs.saveBtn.setEnabled(this.isContentChanged());
+        this.props.onChange();
+    },
     setData: function(data) {
-        this.codeMirror.off("change", this.props.onChange);
+        this.codeMirror.off("change", this.onChanged);
         this.codeMirror.setValue(data);
-        this.codeMirror.on("change", this.props.onChange);
+        this.codeMirror.on("change", this.onChanged);
         this.state.data = this.codeMirror.getValue();
     },
     statics: {

@@ -6,7 +6,7 @@
 }
 
 .ui-state-disabled {
-    opacity: 1;
+    opacity: .55;
     border: 1px solid #D0D0D0;
     background: #E8E8E8 url(images/ui-bg_glass_85_dfeffc_1x400.png) 50% 50% repeat-x;
     font-weight: bold;

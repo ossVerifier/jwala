@@ -57,7 +57,6 @@
 <script src="gen-public-resources/js/react/generic-components/RToolbar.js"></script>
 <script src="gen-public-resources/js/react/generic-components/RMenu.js"></script>
 <script src="gen-public-resources/js/react/RTextPreview.js"></script>
-<script src="gen-public-resources/js/react/XmlEditor.js"></script>
 <script src="gen-public-resources/js/react/CodeMirrorComponent.js"></script>
 <script src="gen-public-resources/js/react/modal-button.js"></script>
 <script src="gen-public-resources/js/react/generic-components/RStaticDialog.js"></script>
