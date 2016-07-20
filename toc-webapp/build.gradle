@@ -50,11 +50,12 @@ dependencies {
 }
 
 war {
-    println 'Adding logging jars to the war that are excluded as transient provided dependencies.'
-    configurations.runtime.files { dep -> dep.name == 'log4j' || dep.name == 'commons-logging' || dep.name == 'slf4j-log4j12' }.each { file ->
-        println "... Adding jar $file.name"
-        classpath file
-    }
+//	  PT 7/20/2016: Removed these following lines: they cause these files to be added twice to the WAR file.
+//    println 'Adding logging jars to the war that are excluded as transient provided dependencies.'
+//    configurations.runtime.files { dep -> dep.name == 'log4j' || dep.name == 'commons-logging' || dep.name == 'slf4j-log4j12' }.each { //		file ->
+//        println "... Adding jar $file.name"
+//        classpath file
+//    }
 }
 
 task generateMyResources {
