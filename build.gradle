@@ -201,6 +201,7 @@ subprojects {
         sonarProperties {
             property "sonar.junit.reportsPath", test.reports.junitXml.destination   // will be fixed in Gradle 1.12
             property "sonar.jacoco.reportPath", project.rootProject.buildDir.path + "/jacoco/" + "accum.exec"
+            property "sonar.jacoco.itReportPath", project.rootProject.buildDir.path + "/jacoco/" + "integration_test_toc.exec"
         }
     }
 }
