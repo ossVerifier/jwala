@@ -260,4 +260,11 @@ public interface ResourceService {
      * @return the number of resources deleted
      */
     int deleteGroupLevelAppResources(String appName, String groupName, List<String> templateNameList);
+
+    /**
+     * Upload the properties file to the archive directory
+     * @param fileName the name of the properties file
+     * @param propertiesFileIn the input stream of the properties file
+     */
+    String uploadExternalProperties(String fileName, InputStream propertiesFileIn);
 }

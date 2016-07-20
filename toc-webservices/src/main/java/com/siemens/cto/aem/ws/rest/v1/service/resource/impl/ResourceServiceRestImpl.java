@@ -4,6 +4,7 @@ import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.common.domain.model.resource.ContentType;
 import com.siemens.cto.aem.common.domain.model.resource.ResourceTemplateMetaData;
 import com.siemens.cto.aem.common.exception.FaultCodeException;
+import com.siemens.cto.aem.common.properties.ExternalProperties;
 import com.siemens.cto.aem.service.exception.ResourceServiceException;
 import com.siemens.cto.aem.service.resource.ResourceService;
 import com.siemens.cto.aem.service.resource.impl.CreateResourceTemplateApplicationResponseWrapper;
@@ -29,13 +30,14 @@ import java.util.List;
 
 /**
  * {@link ResourceServiceRest} implementation.
- *
+ * <p/>
  * Created by z003e5zv on 3/16/2015.
  */
 public class ResourceServiceRestImpl implements ResourceServiceRest {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(ResourceServiceRestImpl.class);
     private static final int CREATE_TEMPLATE_EXPECTED_NUM_OF_ATTACHMENTS = 2;
+    private static final int UPLOAD_EXTERNAL_PROPERTIES_NUM_OF_ATTACHMENTS = 2;
     private static final String JSON_FILE_EXTENSION = ".json";
     public static final String UNEXPECTED_CONTENT_TYPE_ERROR_MSG =
             "File being uploaded is invalid! The expected file type as indicated in the meta data is text based and should have a TPL extension.";
@@ -72,7 +74,7 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
     }
 
     @Override
-    public Response removeResourceInstance( final String name, final String groupName, AuthenticatedUser aUser) {
+    public Response removeResourceInstance(final String name, final String groupName, AuthenticatedUser aUser) {
         LOGGER.info("Remove resource instance name {} from group {} by user {}", name, groupName, aUser.getUser().getId());
         this.resourceService.deleteResourceInstance(groupName, name);
         return ResponseBuilder.ok();
@@ -96,19 +98,19 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
         try {
             // TODO check for a max file size
             List<Attachment> filteredAttachments = new ArrayList<>();
-            for(Attachment attachment:attachments) {
-                if(attachment.getDataHandler().getName() != null) {
+            for (Attachment attachment : attachments) {
+                if (attachment.getDataHandler().getName() != null) {
                     filteredAttachments.add(attachment);
                 }
             }
             if (filteredAttachments.size() == CREATE_TEMPLATE_EXPECTED_NUM_OF_ATTACHMENTS) {
                 InputStream metadataInputStream = null;
                 InputStream templateInputStream = null;
-                for (Attachment attachment:filteredAttachments) {
+                for (Attachment attachment : filteredAttachments) {
                     final DataHandler handler = attachment.getDataHandler();
                     try {
                         LOGGER.debug("filename is {}", handler.getName());
-                        if(handler.getName().toLowerCase().endsWith(JSON_FILE_EXTENSION)) {
+                        if (handler.getName().toLowerCase().endsWith(JSON_FILE_EXTENSION)) {
                             metadataInputStream = attachment.getDataHandler().getInputStream();
                         } else {
                             templateInputStream = attachment.getDataHandler().getInputStream();
@@ -175,8 +177,8 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
         String fileName = StringUtils.EMPTY;
 
         final List<Attachment> filteredAttachments = new ArrayList<>();
-        for(Attachment attachment:attachments) {
-            if(attachment.getDataHandler().getName() != null) {
+        for (Attachment attachment : attachments) {
+            if (attachment.getDataHandler().getName() != null) {
                 filteredAttachments.add(attachment);
             }
         }
@@ -200,8 +202,8 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
             }
         } else {
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
-                                         AemFaultType.INVALID_NUMBER_OF_ATTACHMENTS,
-                                         "Invalid number of attachments! 2 attachments is expected by the service."));
+                    AemFaultType.INVALID_NUMBER_OF_ATTACHMENTS,
+                    "Invalid number of attachments! 2 attachments is expected by the service."));
         }
 
         CreateResourceTemplateApplicationResponseWrapper responseWrapper = null;
@@ -212,35 +214,35 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
             // We do the file attachment validation here since this is a REST services affair IMHO.
             // TODO: Use a more sophisticated way of knowing the content type in next releases.
             if (!ContentType.APPLICATION_BINARY.contentTypeStr.equalsIgnoreCase(resourceTemplateMetaData.getContentType()) &&
-                !(fileName.toLowerCase().endsWith(TPL_FILE_EXTENSION))) {
-                    LOGGER.error(UNEXPECTED_CONTENT_TYPE_ERROR_MSG);
-                    return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR,
-                            new FaultCodeException(AemFaultType.SERVICE_EXCEPTION, UNEXPECTED_CONTENT_TYPE_ERROR_MSG));
+                    !(fileName.toLowerCase().endsWith(TPL_FILE_EXTENSION))) {
+                LOGGER.error(UNEXPECTED_CONTENT_TYPE_ERROR_MSG);
+                return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR,
+                        new FaultCodeException(AemFaultType.SERVICE_EXCEPTION, UNEXPECTED_CONTENT_TYPE_ERROR_MSG));
             }
 
             // NOTE: We do the parameter checking logic here since the service layer does not know anything about ResourceHierarchyParam.
             if (ParamValidator.getNewInstance().isNotEmpty(createResourceParam.getGroup())
-                                               .isEmpty(createResourceParam.getWebServer())
-                                               .isEmpty(createResourceParam.getJvm())
-                                               .isNotEmpty(createResourceParam.getWebApp()).isValid()) {
+                    .isEmpty(createResourceParam.getWebServer())
+                    .isEmpty(createResourceParam.getJvm())
+                    .isNotEmpty(createResourceParam.getWebApp()).isValid()) {
 
                 // Group Level Web App
                 responseWrapper = resourceService.createGroupedLevelAppResource(resourceTemplateMetaData, resourceDataIn,
-                                                                                createResourceParam.getWebApp());
+                        createResourceParam.getWebApp());
 
             } else if (ParamValidator.getNewInstance().isEmpty(createResourceParam.getGroup())
-                                                      .isEmpty(createResourceParam.getWebServer())
-                                                      .isNotEmpty(createResourceParam.getJvm())
-                                                      .isNotEmpty(createResourceParam.getWebApp()).isValid()) {
+                    .isEmpty(createResourceParam.getWebServer())
+                    .isNotEmpty(createResourceParam.getJvm())
+                    .isNotEmpty(createResourceParam.getWebApp()).isValid()) {
 
                 // Web App
                 responseWrapper = resourceService.createAppResource(resourceTemplateMetaData, resourceDataIn,
                         createResourceParam.getJvm(), createResourceParam.getWebApp());
 
             } else if (ParamValidator.getNewInstance().isNotEmpty(createResourceParam.getGroup())
-                                                      .isNotEmpty(createResourceParam.getWebServer())
-                                                      .isEmpty(createResourceParam.getJvm())
-                                                      .isEmpty(createResourceParam.getWebApp()).isValid()) {
+                    .isNotEmpty(createResourceParam.getWebServer())
+                    .isEmpty(createResourceParam.getJvm())
+                    .isEmpty(createResourceParam.getWebApp()).isValid()) {
                 // Group Level Web Servers
                 if (createResourceParam.getWebServer().equalsIgnoreCase("*")) {
                     responseWrapper = resourceService.createGroupLevelWebServerResource(resourceTemplateMetaData, resourceDataIn,
@@ -254,7 +256,7 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
 
                 // Web Server
                 responseWrapper = resourceService.createWebServerResource(resourceTemplateMetaData, resourceDataIn,
-                        createResourceParam.getWebServer(),user.getUser());
+                        createResourceParam.getWebServer(), user.getUser());
 
             } else if (ParamValidator.getNewInstance().isNotEmpty(createResourceParam.getGroup())
                     .isEmpty(createResourceParam.getWebServer())
@@ -300,42 +302,42 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
 
         // NOTE: We do the parameter checking logic here since the service layer does not know anything about ResourceHierarchyParam.
         if (ParamValidator.getNewInstance().isNotEmpty(resourceHierarchyParam.getGroup())
-                                           .isEmpty(resourceHierarchyParam.getWebServer())
-                                           .isEmpty(resourceHierarchyParam.getJvm())
-                                           .isNotEmpty(resourceHierarchyParam.getWebApp()).isValid()) {
+                .isEmpty(resourceHierarchyParam.getWebServer())
+                .isEmpty(resourceHierarchyParam.getJvm())
+                .isNotEmpty(resourceHierarchyParam.getWebApp()).isValid()) {
 
             // Group Level Web App
             deletedRecCount = resourceService.deleteGroupLevelAppResource(resourceHierarchyParam.getWebApp(), templateName);
 
-        }else if (ParamValidator.getNewInstance().isEmpty(resourceHierarchyParam.getGroup())
-                                                 .isEmpty(resourceHierarchyParam.getWebServer())
-                                                 .isNotEmpty(resourceHierarchyParam.getJvm())
-                                                 .isNotEmpty(resourceHierarchyParam.getWebApp()).isValid()) {
+        } else if (ParamValidator.getNewInstance().isEmpty(resourceHierarchyParam.getGroup())
+                .isEmpty(resourceHierarchyParam.getWebServer())
+                .isNotEmpty(resourceHierarchyParam.getJvm())
+                .isNotEmpty(resourceHierarchyParam.getWebApp()).isValid()) {
 
             // Web App
             deletedRecCount = resourceService.deleteAppResource(templateName, resourceHierarchyParam.getWebApp(), resourceHierarchyParam.getJvm());
 
         } else if (ParamValidator.getNewInstance().isNotEmpty(resourceHierarchyParam.getGroup())
-                                                  .isNotEmpty(resourceHierarchyParam.getWebServer())
-                                                  .isEmpty(resourceHierarchyParam.getJvm())
-                                                  .isEmpty(resourceHierarchyParam.getWebApp()).isValid()) {
+                .isNotEmpty(resourceHierarchyParam.getWebServer())
+                .isEmpty(resourceHierarchyParam.getJvm())
+                .isEmpty(resourceHierarchyParam.getWebApp()).isValid()) {
             // Group Level Web Servers
             if (resourceHierarchyParam.getWebServer().equalsIgnoreCase("*")) {
                 deletedRecCount = resourceService.deleteGroupLevelWebServerResource(templateName, resourceHierarchyParam.getGroup());
             }
 
         } else if (ParamValidator.getNewInstance().isEmpty(resourceHierarchyParam.getGroup())
-                                                  .isNotEmpty(resourceHierarchyParam.getWebServer())
-                                                  .isEmpty(resourceHierarchyParam.getJvm())
-                                                  .isEmpty(resourceHierarchyParam.getWebApp()).isValid()) {
+                .isNotEmpty(resourceHierarchyParam.getWebServer())
+                .isEmpty(resourceHierarchyParam.getJvm())
+                .isEmpty(resourceHierarchyParam.getWebApp()).isValid()) {
 
             // Web Server
             deletedRecCount = resourceService.deleteWebServerResource(templateName, resourceHierarchyParam.getWebServer());
 
         } else if (ParamValidator.getNewInstance().isNotEmpty(resourceHierarchyParam.getGroup())
-                                                  .isEmpty(resourceHierarchyParam.getWebServer())
-                                                  .isNotEmpty(resourceHierarchyParam.getJvm())
-                                                  .isEmpty(resourceHierarchyParam.getWebApp()).isValid()) {
+                .isEmpty(resourceHierarchyParam.getWebServer())
+                .isNotEmpty(resourceHierarchyParam.getJvm())
+                .isEmpty(resourceHierarchyParam.getWebApp()).isValid()) {
 
             // Group Level JVMs
             if (resourceHierarchyParam.getJvm().equalsIgnoreCase("*")) {
@@ -343,9 +345,9 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
             }
 
         } else if (ParamValidator.getNewInstance().isEmpty(resourceHierarchyParam.getGroup())
-                                                  .isEmpty(resourceHierarchyParam.getWebServer())
-                                                  .isNotEmpty(resourceHierarchyParam.getJvm())
-                                                  .isEmpty(resourceHierarchyParam.getWebApp()).isValid()) {
+                .isEmpty(resourceHierarchyParam.getWebServer())
+                .isNotEmpty(resourceHierarchyParam.getJvm())
+                .isEmpty(resourceHierarchyParam.getWebApp()).isValid()) {
 
             // JVM
             deletedRecCount = resourceService.deleteJvmResource(templateName, resourceHierarchyParam.getJvm());
@@ -353,15 +355,15 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
         } else {
 
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR,
-                                         new FaultCodeException(AemFaultType.INVALID_REST_SERVICE_PARAMETER,
-                                                                "Parameters passed to the rest service is/are invalid!"));
+                    new FaultCodeException(AemFaultType.INVALID_REST_SERVICE_PARAMETER,
+                            "Parameters passed to the rest service is/are invalid!"));
 
         }
         return ResponseBuilder.ok(deletedRecCount);
     }
 
     @Override
-    public Response deleteResources(final String [] templateNameArray, ResourceHierarchyParam resourceHierarchyParam, AuthenticatedUser user) {
+    public Response deleteResources(final String[] templateNameArray, ResourceHierarchyParam resourceHierarchyParam, AuthenticatedUser user) {
         LOGGER.info("Delete resource {} by user {} with details {}", templateNameArray, user.getUser().getId(), resourceHierarchyParam);
         int deletedRecCount = 0;
 
@@ -376,7 +378,7 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
             // Group Level Web App
             deletedRecCount = resourceService.deleteGroupLevelAppResources(resourceHierarchyParam.getWebApp(), resourceHierarchyParam.getGroup(), templateNameList);
 
-        }else if (ParamValidator.getNewInstance().isEmpty(resourceHierarchyParam.getGroup())
+        } else if (ParamValidator.getNewInstance().isEmpty(resourceHierarchyParam.getGroup())
                 .isEmpty(resourceHierarchyParam.getWebServer())
                 .isNotEmpty(resourceHierarchyParam.getJvm())
                 .isNotEmpty(resourceHierarchyParam.getWebApp()).isValid()) {
@@ -427,5 +429,29 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
 
         }
         return ResponseBuilder.ok(deletedRecCount);
+    }
+
+    @Override
+    public Response uploadExternalProperties(final Attachment attachment, final AuthenticatedUser user) {
+        LOGGER.info("Upload external resource by user {} and attachments {}", user.getUser().getId(), attachment);
+
+        InputStream propertiesFileIn = null;
+        String fileName = StringUtils.EMPTY;
+
+        final DataHandler handler = attachment.getDataHandler();
+        try {
+            LOGGER.debug("filename is {}", handler.getName());
+            fileName = handler.getName();
+            propertiesFileIn = handler.getInputStream();
+        } catch (final IOException ioe) {
+            LOGGER.error("Create external properties failed!", ioe);
+            return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR,
+                    new FaultCodeException(AemFaultType.IO_EXCEPTION, ioe.getMessage()));
+        }
+
+        String uploadFilePath = resourceService.uploadExternalProperties(fileName, propertiesFileIn);
+        ExternalProperties.setPropertiesFilePath(uploadFilePath);
+
+        return ResponseBuilder.ok(ExternalProperties.getProperties());
     }
 }

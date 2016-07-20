@@ -784,4 +784,14 @@ public class ResourceServiceImpl implements ResourceService {
 
         return deletedCount;
     }
+
+    @Override
+    public String uploadExternalProperties(String fileName, InputStream propertiesFileIn) {
+        Application fakedApplication = new Application(new Identifier<Application>(0L), fileName, "", "", null, true, true, false, fileName);
+        UploadWebArchiveRequest uploadWebArchiveRequest = new UploadWebArchiveRequest(fakedApplication,fileName, -1L, propertiesFileIn);
+        RepositoryFileInformation fileInfo = privateApplicationService.uploadWebArchiveData(uploadWebArchiveRequest);
+
+        return fileInfo.getPath().toString();
+
+    }
 }

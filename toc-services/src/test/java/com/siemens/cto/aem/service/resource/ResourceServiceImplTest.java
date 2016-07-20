@@ -660,4 +660,16 @@ public class ResourceServiceImplTest {
                 anyString());
         verify(mockAppPersistenceService).updateWarInfo(eq("someApp"), anyString(), anyString());
     }
+
+    @Test
+    public void testUploadExternalProperties() {
+        InputStream mockInputStream = mock(InputStream.class);
+        RepositoryFileInformation mockFileInfo = mock(RepositoryFileInformation.class);
+        when(mockPrivateApplicationService.uploadWebArchiveData(any(UploadWebArchiveRequest.class))).thenReturn(mockFileInfo);
+        Path mockPath = mock(Path.class);
+        when(mockFileInfo.getPath()).thenReturn(mockPath);
+        when(mockPath.toString()).thenReturn("c:/fake/path");
+        String path = resourceService.uploadExternalProperties("external.properties", mockInputStream);
+        assertEquals("c:/fake/path", path);
+    }
 }

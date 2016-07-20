@@ -3,6 +3,7 @@ package com.siemens.cto.aem.ws.rest.v1.service.resource;
 import com.siemens.cto.aem.ws.rest.v1.provider.AuthenticatedUser;
 import com.siemens.cto.aem.ws.rest.v1.service.resource.impl.JsonResourceInstance;
 import org.apache.cxf.jaxrs.ext.multipart.Attachment;
+import org.apache.cxf.jaxrs.ext.multipart.Multipart;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -171,5 +172,16 @@ public interface ResourceServiceRest {
     @DELETE
     @Path("/templates")
     Response deleteResources(@MatrixParam("name") String [] templateNameArray, @MatrixParam("") ResourceHierarchyParam resourceHierarchyParam, @BeanParam AuthenticatedUser user);
+
+    /**
+     * Upload an external properties file
+     * @param attachment contains the properties file
+     * @param user a logged in user calling the service
+     * @return the external properties
+     */
+    @POST
+    @Path("/properties")
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    Response uploadExternalProperties(@Multipart Attachment attachment, @BeanParam AuthenticatedUser user);
 }
 

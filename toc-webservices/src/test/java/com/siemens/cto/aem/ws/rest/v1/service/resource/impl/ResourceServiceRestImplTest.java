@@ -28,6 +28,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import javax.activation.DataHandler;
 import javax.ws.rs.core.Response;
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -544,5 +545,48 @@ public class ResourceServiceRestImplTest {
                 ((ApplicationResponse) response.getEntity()).getApplicationResponseContent());
         verify(impl, new Times(0)).createGroupLevelJvmResource(any(ResourceTemplateMetaData.class), any(InputStream.class),
                 eq("someGroup"));
+    }
+
+    @Test
+    public void testUploadExternalProperties() throws IOException {
+        AuthenticatedUser mockAuthenticatedUser = mock(AuthenticatedUser.class);
+        User mockUser = mock(User.class);
+        when(mockAuthenticatedUser.getUser()).thenReturn(mockUser);
+        when(mockUser.getId()).thenReturn("mock-resources-user");
+
+        Attachment mockAttachment = mock(Attachment.class);
+        DataHandler mockDataHandler = mock(DataHandler.class);
+        when(mockAttachment.getDataHandler()).thenReturn(mockDataHandler);
+        when(mockDataHandler.getName()).thenReturn("external.properties");
+
+        InputStream mockInputStream = mock(InputStream.class);
+        when(mockDataHandler.getInputStream()).thenReturn(mockInputStream);
+
+        File propertiesFile = new File("./src/test/resources/vars.properties");
+        when(impl.uploadExternalProperties(eq("external.properties"), any(InputStream.class))).thenReturn(propertiesFile.getAbsolutePath());
+
+        Response response = cut.uploadExternalProperties(mockAttachment, mockAuthenticatedUser);
+        assertEquals(200, response.getStatusInfo().getStatusCode());
+    }
+
+    @Test
+    public void testUploadExternalPropertiesThrowsIOException() throws IOException {
+        AuthenticatedUser mockAuthenticatedUser = mock(AuthenticatedUser.class);
+        User mockUser = mock(User.class);
+        when(mockAuthenticatedUser.getUser()).thenReturn(mockUser);
+        when(mockUser.getId()).thenReturn("mock-resources-user");
+
+        Attachment mockAttachment = mock(Attachment.class);
+        DataHandler mockDataHandler = mock(DataHandler.class);
+        when(mockAttachment.getDataHandler()).thenReturn(mockDataHandler);
+        when(mockDataHandler.getName()).thenReturn("external.properties");
+
+        when(mockDataHandler.getInputStream()).thenThrow(new IOException("getInputStream is throwing an IO Exception"));
+
+        File propertiesFile = new File("./src/test/resources/vars.properties");
+        when(impl.uploadExternalProperties(eq("external.properties"), any(InputStream.class))).thenReturn(propertiesFile.getAbsolutePath());
+
+        Response response = cut.uploadExternalProperties(mockAttachment, mockAuthenticatedUser);
+        assertEquals(500, response.getStatusInfo().getStatusCode());
     }
 }
