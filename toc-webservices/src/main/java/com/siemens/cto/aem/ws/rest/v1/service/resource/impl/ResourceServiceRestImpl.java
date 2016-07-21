@@ -23,10 +23,7 @@ import javax.activation.DataHandler;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.TreeMap;
+import java.util.*;
 
 /**
  * {@link ResourceServiceRest} implementation.
@@ -458,6 +455,7 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
     public Response getExternalProperties() {
         LOGGER.debug("Get the external properties");
         // use a TreeMap to put the properties in alphabetical order
-        return ResponseBuilder.ok(new TreeMap<>(resourceService.getExternalProperties()));
+        final Properties externalProperties = resourceService.getExternalProperties();
+        return ResponseBuilder.ok(null == externalProperties ? null : new TreeMap<>(externalProperties));
     }
 }
