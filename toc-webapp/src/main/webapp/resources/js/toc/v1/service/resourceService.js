@@ -134,5 +134,8 @@ var resourceService = {
     deployGroupLevelJvmResource: function(groupName, fileName) {
         return serviceFoundation.promisedPut("v1.0/groups/" + encodeURIComponent(groupName) + "/jvms/conf/" +
                                              encodeURIComponent(fileName), "json", null, false);
+    },
+    getExternalProperties: function(){
+        return serviceFoundation.promisedGet("v1.0/resources/properties", "json");
     }
 };

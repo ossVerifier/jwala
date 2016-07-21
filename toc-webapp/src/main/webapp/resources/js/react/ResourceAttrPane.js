@@ -35,6 +35,10 @@ var ResourceAttrPane = React.createClass({
         }).then(function(response){
             attributes["vars"] = response.applicationResponseContent;
             self.setState({attributes: attributes})
+            return ServiceFactory.getResourceService().getExternalProperties();
+        }).then(function(response){
+            attributes["ext"] = response.applicationResponseContent;
+            self.setState({attributes: attributes})
         }).caught(function(e){
             alert(e);
         });

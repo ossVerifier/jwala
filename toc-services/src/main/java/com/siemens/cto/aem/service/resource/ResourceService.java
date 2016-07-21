@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 
 public interface ResourceService {
@@ -266,5 +267,12 @@ public interface ResourceService {
      * @param fileName the name of the properties file
      * @param propertiesFileIn the input stream of the properties file
      */
-    String uploadExternalProperties(String fileName, InputStream propertiesFileIn);
+    void uploadExternalProperties(String fileName, InputStream propertiesFileIn);
+
+    /**
+     * Get all of the properties that were uploaded by an outside application/user
+     * @return the external properties
+     */
+    Properties getExternalProperties();
+
 }

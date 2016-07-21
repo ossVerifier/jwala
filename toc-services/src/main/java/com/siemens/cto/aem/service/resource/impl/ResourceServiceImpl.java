@@ -7,6 +7,7 @@ import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.resource.*;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
+import com.siemens.cto.aem.common.properties.ExternalProperties;
 import com.siemens.cto.aem.common.request.app.RemoveWebArchiveRequest;
 import com.siemens.cto.aem.common.request.app.UploadAppTemplateRequest;
 import com.siemens.cto.aem.common.request.app.UploadWebArchiveRequest;
@@ -786,12 +787,18 @@ public class ResourceServiceImpl implements ResourceService {
     }
 
     @Override
-    public String uploadExternalProperties(String fileName, InputStream propertiesFileIn) {
+    public void uploadExternalProperties(String fileName, InputStream propertiesFileIn) {
         Application fakedApplication = new Application(new Identifier<Application>(0L), fileName, "", "", null, true, true, false, fileName);
         UploadWebArchiveRequest uploadWebArchiveRequest = new UploadWebArchiveRequest(fakedApplication,fileName, -1L, propertiesFileIn);
         RepositoryFileInformation fileInfo = privateApplicationService.uploadWebArchiveData(uploadWebArchiveRequest);
 
-        return fileInfo.getPath().toString();
+        // TODO wait until properties file is deployed before setting the properties file path?
+        String uploadFilePath = fileInfo.getPath().toString();
+        ExternalProperties.setPropertiesFilePath(uploadFilePath);
+    }
 
+    @Override
+    public Properties getExternalProperties() {
+        return ExternalProperties.getProperties();
     }
 }

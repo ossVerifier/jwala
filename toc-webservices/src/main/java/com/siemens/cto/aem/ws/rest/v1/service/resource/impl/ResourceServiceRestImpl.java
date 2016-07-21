@@ -4,7 +4,6 @@ import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.common.domain.model.resource.ContentType;
 import com.siemens.cto.aem.common.domain.model.resource.ResourceTemplateMetaData;
 import com.siemens.cto.aem.common.exception.FaultCodeException;
-import com.siemens.cto.aem.common.properties.ExternalProperties;
 import com.siemens.cto.aem.service.exception.ResourceServiceException;
 import com.siemens.cto.aem.service.resource.ResourceService;
 import com.siemens.cto.aem.service.resource.impl.CreateResourceTemplateApplicationResponseWrapper;
@@ -27,6 +26,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.TreeMap;
 
 /**
  * {@link ResourceServiceRest} implementation.
@@ -449,9 +449,15 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
                     new FaultCodeException(AemFaultType.IO_EXCEPTION, ioe.getMessage()));
         }
 
-        String uploadFilePath = resourceService.uploadExternalProperties(fileName, propertiesFileIn);
-        ExternalProperties.setPropertiesFilePath(uploadFilePath);
+        resourceService.uploadExternalProperties(fileName, propertiesFileIn);
 
-        return ResponseBuilder.ok(ExternalProperties.getProperties());
+        return ResponseBuilder.ok(resourceService.getExternalProperties());
+    }
+
+    @Override
+    public Response getExternalProperties() {
+        LOGGER.debug("Get the external properties");
+        // use a TreeMap to put the properties in alphabetical order
+        return ResponseBuilder.ok(new TreeMap<>(resourceService.getExternalProperties()));
     }
 }

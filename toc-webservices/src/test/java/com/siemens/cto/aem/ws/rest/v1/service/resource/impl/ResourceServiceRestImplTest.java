@@ -563,7 +563,6 @@ public class ResourceServiceRestImplTest {
         when(mockDataHandler.getInputStream()).thenReturn(mockInputStream);
 
         File propertiesFile = new File("./src/test/resources/vars.properties");
-        when(impl.uploadExternalProperties(eq("external.properties"), any(InputStream.class))).thenReturn(propertiesFile.getAbsolutePath());
 
         Response response = cut.uploadExternalProperties(mockAttachment, mockAuthenticatedUser);
         assertEquals(200, response.getStatusInfo().getStatusCode());
@@ -584,9 +583,14 @@ public class ResourceServiceRestImplTest {
         when(mockDataHandler.getInputStream()).thenThrow(new IOException("getInputStream is throwing an IO Exception"));
 
         File propertiesFile = new File("./src/test/resources/vars.properties");
-        when(impl.uploadExternalProperties(eq("external.properties"), any(InputStream.class))).thenReturn(propertiesFile.getAbsolutePath());
 
         Response response = cut.uploadExternalProperties(mockAttachment, mockAuthenticatedUser);
         assertEquals(500, response.getStatusInfo().getStatusCode());
+    }
+
+    @Test
+    public void testGetExternalProperties() {
+        cut.getExternalProperties();
+        verify(impl).getExternalProperties();
     }
 }

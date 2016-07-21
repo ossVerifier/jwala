@@ -183,5 +183,9 @@ public interface ResourceServiceRest {
     @Path("/properties")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     Response uploadExternalProperties(@Multipart Attachment attachment, @BeanParam AuthenticatedUser user);
+
+    @GET
+    @Path("/properties")
+    Response getExternalProperties();
 }
 

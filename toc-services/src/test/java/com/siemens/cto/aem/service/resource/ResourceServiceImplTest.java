@@ -668,8 +668,17 @@ public class ResourceServiceImplTest {
         when(mockPrivateApplicationService.uploadWebArchiveData(any(UploadWebArchiveRequest.class))).thenReturn(mockFileInfo);
         Path mockPath = mock(Path.class);
         when(mockFileInfo.getPath()).thenReturn(mockPath);
-        when(mockPath.toString()).thenReturn("c:/fake/path");
-        String path = resourceService.uploadExternalProperties("external.properties", mockInputStream);
-        assertEquals("c:/fake/path", path);
+        File propertiesTestFile = new File("./src/test/resources/vars.properties");
+        when(mockPath.toString()).thenReturn(propertiesTestFile.getAbsolutePath());
+
+        resourceService.uploadExternalProperties("external.properties", mockInputStream);
+
+        verify(mockPrivateApplicationService).uploadWebArchiveData(any(UploadWebArchiveRequest.class));
+    }
+
+    @Test
+    public void testGetExternalProperties() {
+        Properties result = resourceService.getExternalProperties();
+        assertTrue(result.isEmpty());
     }
 }
