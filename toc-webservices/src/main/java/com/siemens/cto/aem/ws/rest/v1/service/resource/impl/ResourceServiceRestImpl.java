@@ -2,6 +2,8 @@ package com.siemens.cto.aem.ws.rest.v1.service.resource.impl;
 
 import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.common.domain.model.resource.ContentType;
+import com.siemens.cto.aem.common.domain.model.resource.ResourceContent;
+import com.siemens.cto.aem.common.domain.model.resource.ResourceIdentifier;
 import com.siemens.cto.aem.common.domain.model.resource.ResourceTemplateMetaData;
 import com.siemens.cto.aem.common.exception.FaultCodeException;
 import com.siemens.cto.aem.service.exception.ResourceServiceException;
@@ -426,6 +428,21 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
 
         }
         return ResponseBuilder.ok(deletedRecCount);
+    }
+
+    @Override
+    public Response getResourceContent(final String resourceName, final ResourceHierarchyParam param) {
+        final ResourceIdentifier resourceIdentifier = new ResourceIdentifier.Builder().setResourceName(resourceName)
+                                                                                      .setGroupName(param.getGroup())
+                                                                                      .setWebServerName(param.getWebServer())
+                                                                                      .setJvmName(param.getJvm())
+                                                                                      .setWebAppName(param.getWebApp()).build();
+        final ResourceContent resourceContent = resourceService.getResourceContent(resourceIdentifier);
+        if (resourceContent == null) {
+            ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(AemFaultType.INVALID_REST_SERVICE_PARAMETER,
+                    "The specified request parameters does not identify a valid resource!"));
+        }
+        return ResponseBuilder.ok(resourceContent);
     }
 
     @Override

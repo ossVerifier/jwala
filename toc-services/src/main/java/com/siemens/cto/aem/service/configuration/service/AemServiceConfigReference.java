@@ -10,6 +10,7 @@ import org.springframework.context.annotation.Import;
 @Import({AemServiceConfiguration.class,
          AemPersistenceConfigurationReference.class,
          AemControlConfigReference.class,
-         WebSocketConfig.class})
+         WebSocketConfig.class,
+         ResourceHandlerConfiguration.class})
 public class AemServiceConfigReference {
 }

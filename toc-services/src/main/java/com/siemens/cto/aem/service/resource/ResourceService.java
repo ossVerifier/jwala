@@ -1,9 +1,7 @@
 package com.siemens.cto.aem.service.resource;
 
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
-import com.siemens.cto.aem.common.domain.model.resource.ResourceGroup;
-import com.siemens.cto.aem.common.domain.model.resource.ResourceInstance;
-import com.siemens.cto.aem.common.domain.model.resource.ResourceTemplateMetaData;
+import com.siemens.cto.aem.common.domain.model.resource.*;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.request.resource.ResourceInstanceRequest;
 import com.siemens.cto.aem.service.resource.impl.CreateResourceTemplateApplicationResponseWrapper;
@@ -263,6 +261,13 @@ public interface ResourceService {
     int deleteGroupLevelAppResources(String appName, String groupName, List<String> templateNameList);
 
     /**
+     * Get a resource's content and its meta data
+     * @param resourceIdentifier {@link ResourceIdentifier} which identifies the resource
+     * @return {@link ResourceContent}
+     */
+    ResourceContent getResourceContent(ResourceIdentifier resourceIdentifier);
+
+    /**
      * Upload the properties file to the archive directory
      * @param fileName the name of the properties file
      * @param propertiesFileIn the input stream of the properties file
@@ -274,5 +279,4 @@ public interface ResourceService {
      * @return the external properties
      */
     Properties getExternalProperties();
-
 }

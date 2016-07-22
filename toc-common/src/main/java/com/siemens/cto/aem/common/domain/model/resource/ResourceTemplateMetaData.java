@@ -1,5 +1,7 @@
 package com.siemens.cto.aem.common.domain.model.resource;
 
+import org.apache.commons.lang3.StringUtils;
+
 /**
  * Resource template meta data.
  *
@@ -22,7 +24,10 @@ public class ResourceTemplateMetaData {
     }
 
     public String getContentType() {
-        return contentType.contentTypeStr;
+        if (contentType != null) {
+            return contentType.contentTypeStr;
+        }
+        return StringUtils.EMPTY;
     }
 
     public void setContentType(String contentType) {

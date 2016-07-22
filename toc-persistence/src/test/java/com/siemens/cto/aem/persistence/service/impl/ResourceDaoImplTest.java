@@ -4,13 +4,11 @@ import com.siemens.cto.aem.common.request.app.UploadAppTemplateRequest;
 import com.siemens.cto.aem.common.request.jvm.UploadJvmConfigTemplateRequest;
 import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateRequest;
 import com.siemens.cto.aem.persistence.configuration.TestJpaConfiguration;
-import com.siemens.cto.aem.persistence.jpa.domain.JpaApplication;
-import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
-import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
-import com.siemens.cto.aem.persistence.jpa.domain.JpaWebServer;
+import com.siemens.cto.aem.persistence.jpa.domain.*;
 import com.siemens.cto.aem.persistence.jpa.domain.builder.JpaAppBuilder;
 import com.siemens.cto.aem.persistence.jpa.domain.builder.JpaWebServerBuilder;
 import com.siemens.cto.aem.persistence.jpa.domain.builder.JvmBuilder;
+import com.siemens.cto.aem.persistence.jpa.domain.resource.config.template.*;
 import com.siemens.cto.aem.persistence.jpa.service.ApplicationCrudService;
 import com.siemens.cto.aem.persistence.jpa.service.GroupCrudService;
 import com.siemens.cto.aem.persistence.jpa.service.JvmCrudService;
@@ -20,7 +18,6 @@ import com.siemens.cto.aem.persistence.jpa.service.impl.GroupCrudServiceImpl;
 import com.siemens.cto.aem.persistence.jpa.service.impl.JvmCrudServiceImpl;
 import com.siemens.cto.aem.persistence.jpa.service.impl.WebServerCrudServiceImpl;
 import com.siemens.cto.aem.persistence.service.ResourceDao;
-import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -92,7 +89,7 @@ public class ResourceDaoImplTest {
 
         final JpaWebServerBuilder jpaWebServerBuilder = new JpaWebServerBuilder(jpaWebServer);
         final UploadWebServerTemplateRequest uploadWsTemplateRequest = new UploadWebServerTemplateRequest(jpaWebServerBuilder.build(),
-                "HttpdSslConfTemplate.tpl", StringUtils.EMPTY, new ByteArrayInputStream("someData".getBytes())) {
+                "HttpdSslConfTemplate.tpl", "someMetaData", new ByteArrayInputStream("someData".getBytes())) {
             @Override
             public String getConfFileName() {
                 return "httpd.conf";
@@ -162,6 +159,46 @@ public class ResourceDaoImplTest {
         names.add("someFileName");
         assertEquals(1, resourceDao.deleteAppResources(names, "someApp", "someJvm"));
         assertEquals(1, resourceDao.deleteGroupLevelAppResources("someApp", "someGroup", names));
+    }
+
+    @Test
+    public void testGetWebServerResource() {
+        final JpaWebServerConfigTemplate jpaWebServerConfigTemplate = resourceDao.getWebServerResource("httpd.conf", "someWebServer");
+        assertEquals("someMetaData", jpaWebServerConfigTemplate.getMetaData());
+    }
+
+    @Test
+    public void testGetJvmResource() {
+        final JpaJvmConfigTemplate jpaJvmConfigTemplate = resourceDao.getJvmResource("someConfName", "someJvm");
+        assertEquals("someMetaData", jpaJvmConfigTemplate.getMetaData());
+    }
+
+    @Test
+    public void testGetAppResource() {
+        final JpaApplicationConfigTemplate jpaApplicationConfigTemplate =
+                resourceDao.getAppResource("someFileName", "someApp", "someJvm");
+        assertEquals("someMetaData", jpaApplicationConfigTemplate.getMetaData());
+    }
+
+    @Test
+    public void testGetGroupLevelWebServerResource() {
+        final JpaGroupWebServerConfigTemplate jpaGroupWebServerConfigTemplate
+                = resourceDao.getGroupLevelWebServerResource("httpd.conf", "someGroup");
+        assertEquals("someMetaData", jpaGroupWebServerConfigTemplate.getMetaData());
+    }
+
+    @Test
+    public void testGetGroupLevelJvmResource() {
+        final JpaGroupJvmConfigTemplate jpaGroupJvmConfigTemplate
+                = resourceDao.getGroupLevelJvmResource("someConfName", "someGroup");
+        assertEquals("someMetaData", jpaGroupJvmConfigTemplate.getMetaData());
+    }
+
+    @Test
+    public void testGetGroupLevelAppResource() {
+        final JpaGroupAppConfigTemplate jpaGroupAppConfigTemplate
+                = resourceDao.getGroupLevelAppResource("someFileName", "someApp", "someGroup");
+        assertEquals("someMetaData", jpaGroupAppConfigTemplate.getMetaData());
     }
 
     @Configuration

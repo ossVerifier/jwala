@@ -90,6 +90,9 @@ public class ResourceServiceImplTest {
     @Mock
     private WebArchiveManager mockWebArchiveManager;
 
+    @Mock
+    private ResourceHandler mockResourceHandler;
+
     @Before
     public void setup() {
         // It is good practice to start with a clean sheet of paper before each test that is why resourceService is
@@ -97,7 +100,7 @@ public class ResourceServiceImplTest {
         MockitoAnnotations.initMocks(this);
         resourceService = new ResourceServiceImpl(mockResourcePersistenceService, mockGroupPesistenceService,
                 mockAppPersistenceService, mockJvmPersistenceService, mockWebServerPersistenceService,
-                mockPrivateApplicationService, mockResourceDao, mockWebArchiveManager);
+                mockPrivateApplicationService, mockResourceDao, mockWebArchiveManager, mockResourceHandler);
 
         when(mockJvmPersistenceService.findJvmByExactName(eq("someJvm"))).thenReturn(mock(Jvm.class));
 

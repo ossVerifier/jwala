@@ -120,4 +120,54 @@ public class ResourceDaoImpl implements ResourceDao {
         q.setParameter(JpaGroupAppConfigTemplate.QUERY_PARAM_TEMPLATE_NAME_LIST, templateNameList);
         return q.executeUpdate();
     }
+
+    @Override
+    public JpaWebServerConfigTemplate getWebServerResource(final String resourceName, final String webServerName) {
+        final Query q = em.createNamedQuery(JpaWebServerConfigTemplate.QUERY_GET_WEBSERVER_RESOURCE);
+        q.setParameter(JpaWebServerConfigTemplate.QUERY_PARAM_TEMPLATE_NAME, resourceName);
+        q.setParameter(JpaWebServerConfigTemplate.QUERY_PARAM_WEBSERVER_NAME, webServerName);
+        return (JpaWebServerConfigTemplate) q.getSingleResult();
+    }
+
+    @Override
+    public JpaJvmConfigTemplate getJvmResource(final String resourceName, final String jvmName) {
+        final Query q = em.createNamedQuery(JpaJvmConfigTemplate.QUERY_GET_JVM_RESOURCE);
+        q.setParameter(JpaJvmConfigTemplate.QUERY_PARAM_TEMPLATE_NAME, resourceName);
+        q.setParameter(JpaJvmConfigTemplate.QUERY_PARAM_JVM_NAME,  jvmName);
+        return (JpaJvmConfigTemplate) q.getSingleResult();
+    }
+
+    @Override
+    public JpaApplicationConfigTemplate getAppResource(final String resourceName, final String appName, final String jvmName) {
+        final Query q = em.createNamedQuery(JpaApplicationConfigTemplate.QUERY_GET_APP_RESOURCE);
+        q.setParameter(JpaApplicationConfigTemplate.QUERY_PARAM_TEMPLATE_NAME, resourceName);
+        q.setParameter(JpaApplicationConfigTemplate.QUERY_PARAM_APP_NAME,  appName);
+        q.setParameter(JpaApplicationConfigTemplate.QUERY_PARAM_JVM_NAME,  jvmName);
+        return (JpaApplicationConfigTemplate) q.getSingleResult();
+    }
+
+    @Override
+    public JpaGroupWebServerConfigTemplate getGroupLevelWebServerResource(final String resourceName, final String groupName) {
+        final Query q = em.createNamedQuery(JpaGroupWebServerConfigTemplate.QUERY_GET_GROUP_LEVEL_WEBSERVER_RESOURCE);
+        q.setParameter(JpaGroupWebServerConfigTemplate.QUERY_PARAM_TEMPLATE_NAME, resourceName);
+        q.setParameter(JpaGroupWebServerConfigTemplate.QUERY_PARAM_GROUP_NAME,  groupName);
+        return (JpaGroupWebServerConfigTemplate) q.getSingleResult();
+    }
+
+    @Override
+    public JpaGroupJvmConfigTemplate getGroupLevelJvmResource(final String resourceName, final String groupName) {
+        final Query q = em.createNamedQuery(JpaGroupJvmConfigTemplate.QUERY_GET_GROUP_LEVEL_JVM_RESOURCE);
+        q.setParameter(JpaGroupJvmConfigTemplate.QUERY_PARAM_TEMPLATE_NAME, resourceName);
+        q.setParameter(JpaGroupJvmConfigTemplate.QUERY_PARAM_GROUP_NAME,  groupName);
+        return (JpaGroupJvmConfigTemplate) q.getSingleResult();
+    }
+
+    @Override
+    public JpaGroupAppConfigTemplate getGroupLevelAppResource(final String resourceName, final String appName, final String groupName) {
+        final Query q = em.createNamedQuery(JpaGroupAppConfigTemplate.QUERY_GET_GROUP_LEVEL_APP_RESOURCE);
+        q.setParameter(JpaGroupAppConfigTemplate.QUERY_PARAM_TEMPLATE_NAME, resourceName);
+        q.setParameter(JpaGroupAppConfigTemplate.QUERY_PARAM_APP_NAME,  appName);
+        q.setParameter(JpaGroupAppConfigTemplate.QUERY_PARAM_GRP_NAME,  groupName);
+        return (JpaGroupAppConfigTemplate) q.getSingleResult();
+    }
 }

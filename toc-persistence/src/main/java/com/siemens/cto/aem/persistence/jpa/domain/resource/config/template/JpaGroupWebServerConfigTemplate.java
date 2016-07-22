@@ -23,7 +23,9 @@ import javax.persistence.*;
         @NamedQuery(name = JpaGroupWebServerConfigTemplate.QUERY_DELETE_GROUP_LEVEL_WEBSERVER_RESOURCE_BY_TEMPLATE_GROUP_NAME,
                 query = "DELETE FROM JpaGroupWebServerConfigTemplate t WHERE t.templateName = :templateName AND t.grp.name = :grpName"),
         @NamedQuery(name = JpaGroupWebServerConfigTemplate.QUERY_DELETE_GROUP_LEVEL_WEBSERVER_RESOURCES_BY_TEMPLATE_NAME_LIST_GROUP_NAME,
-                query = "DELETE FROM JpaGroupWebServerConfigTemplate t WHERE t.templateName IN :templateNameList AND t.grp.name = :grpName")
+                query = "DELETE FROM JpaGroupWebServerConfigTemplate t WHERE t.templateName IN :templateNameList AND t.grp.name = :grpName"),
+        @NamedQuery(name = JpaGroupWebServerConfigTemplate.QUERY_GET_GROUP_LEVEL_WEBSERVER_RESOURCE,
+                query = "SELECT t FROM JpaGroupWebServerConfigTemplate t where t.grp.name = :grpName and t.templateName = :templateName"),
 })
 public class JpaGroupWebServerConfigTemplate extends ConfigTemplate {
     public static final String GET_GROUP_WEBSERVER_TEMPLATE_RESOURCE_NAMES = "getGroupWebServerTemplateResourcesName";
@@ -31,6 +33,7 @@ public class JpaGroupWebServerConfigTemplate extends ConfigTemplate {
     public static final String UPDATE_GROUP_WEBSERVER_TEMPLATE_CONTENT = "updateGroupWebServerTemplateContent";
     public static final String GET_GROUP_WEBSERVER_TEMPLATE_META_DATA = "getGroupWebServerTemplateMetaData";
     public static final String QUERY_DELETE_GRP_WEBSERVER_TEMPLATE = "deleteGrpWebServerTemplate";
+    public static final String QUERY_GET_GROUP_LEVEL_WEBSERVER_RESOURCE = "getGroupLevelWebServerResource";
 
     public static final String QUERY_DELETE_GROUP_LEVEL_WEBSERVER_RESOURCE_BY_TEMPLATE_GROUP_NAME = "deleteGroupLevelWebServerResourceByTemplateGroupName";
     public static final String QUERY_DELETE_GROUP_LEVEL_WEBSERVER_RESOURCES_BY_TEMPLATE_NAME_LIST_GROUP_NAME =

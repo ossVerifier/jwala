@@ -20,6 +20,7 @@ import com.siemens.cto.aem.persistence.jpa.domain.resource.config.template.Confi
 import com.siemens.cto.aem.persistence.service.*;
 import com.siemens.cto.aem.service.app.PrivateApplicationService;
 import com.siemens.cto.aem.service.exception.ResourceServiceException;
+import com.siemens.cto.aem.service.resource.ResourceHandler;
 import com.siemens.cto.aem.service.resource.ResourceService;
 import com.siemens.cto.aem.template.ResourceFileGenerator;
 import com.siemens.cto.toc.files.RepositoryFileInformation;
@@ -64,6 +65,8 @@ public class ResourceServiceImpl implements ResourceService {
 
     private final WebArchiveManager webArchiveManager;
 
+    private final ResourceHandler resourceHandler;
+
     @Value("${paths.resource-templates}")
     private String templatePath;
 
@@ -74,7 +77,8 @@ public class ResourceServiceImpl implements ResourceService {
                                final WebServerPersistenceService webServerPersistenceService,
                                final PrivateApplicationService privateApplicationService,
                                final ResourceDao resourceDao,
-                               final WebArchiveManager webArchiveManager) {
+                               final WebArchiveManager webArchiveManager,
+                               final ResourceHandler resourceHandler) {
         this.resourcePersistenceService = resourcePersistenceService;
         this.groupPersistenceService = groupPersistenceService;
         this.privateApplicationService = privateApplicationService;
@@ -85,6 +89,7 @@ public class ResourceServiceImpl implements ResourceService {
         this.webServerPersistenceService = webServerPersistenceService;
         this.resourceDao = resourceDao;
         this.webArchiveManager = webArchiveManager;
+        this.resourceHandler = resourceHandler;
     }
 
     @Override
@@ -784,6 +789,18 @@ public class ResourceServiceImpl implements ResourceService {
         }
 
         return deletedCount;
+    }
+
+    @Override
+    public ResourceContent getResourceContent(final ResourceIdentifier resourceIdentifier) {
+        final ConfigTemplate configTemplate = resourceHandler.fetchResource(resourceIdentifier);
+        try {
+            final ResourceTemplateMetaData metaData = new ObjectMapper().readValue(configTemplate.getMetaData(),
+                    ResourceTemplateMetaData.class);
+            return new ResourceContent(metaData, configTemplate.getTemplateContent());
+        } catch (final IOException ioe) {
+            throw new ResourceServiceException(ioe);
+        }
     }
 
     @Override

@@ -1,5 +1,8 @@
 package com.siemens.cto.aem.persistence.service;
 
+import com.siemens.cto.aem.persistence.jpa.domain.JpaApplicationConfigTemplate;
+import com.siemens.cto.aem.persistence.jpa.domain.resource.config.template.*;
+
 import java.util.List;
 
 /**
@@ -108,4 +111,52 @@ public interface ResourceDao {
      * @return the number of resources deleted
      */
     int deleteGroupLevelAppResources(String appName, String groupName, List<String> templateNameList);
+
+    /**
+     * Get web server resource
+     * @param resourceName the resource name
+     * @param webServerName the web server name
+     * @return {@link JpaWebServerConfigTemplate}
+     */
+    JpaWebServerConfigTemplate getWebServerResource(String resourceName, String webServerName);
+
+    /**
+     * Get a JVM resource
+     * @param resourceName the resource name
+     * @param jvmName the JVM name
+     * @return {@link JpaJvmConfigTemplate}
+     */
+    JpaJvmConfigTemplate getJvmResource(String resourceName, String jvmName);
+
+    /**
+     * Get an application resource
+     * @param resourceName the resource name
+     * @param appName the application name
+     * @return {@link JpaApplicationConfigTemplate}
+     */
+    JpaApplicationConfigTemplate getAppResource(String resourceName, String appName, String jvmName);
+
+    /**
+     * Get a group level web server resource
+     * @param resourceName the resource name
+     * @param groupName the group name
+     * @return {@link JpaGroupWebServerConfigTemplate}
+     */
+    JpaGroupWebServerConfigTemplate getGroupLevelWebServerResource(String resourceName, String groupName);
+
+    /**
+     * Get a group level JVM resource
+     * @param resourceName resource name
+     * @param groupName group name
+     * @return {@link JpaGroupJvmConfigTemplate}
+     */
+    JpaGroupJvmConfigTemplate getGroupLevelJvmResource(String resourceName, String groupName);
+
+    /**
+     * Get a group level web application resource
+     * @param resourceName resource name
+     * @param appName the application name
+     *@param groupName group name  @return {@link JpaGroupAppConfigTemplate}
+     */
+    JpaGroupAppConfigTemplate getGroupLevelAppResource(String resourceName, String appName, String groupName);
 }

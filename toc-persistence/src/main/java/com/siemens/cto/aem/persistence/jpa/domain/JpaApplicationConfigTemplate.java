@@ -29,6 +29,8 @@ import javax.persistence.*;
                 query = "DELETE FROM JpaApplicationConfigTemplate t WHERE t.templateName = :templateName AND t.app.name = :appName AND t.jvm.name = :jvmName"),
         @NamedQuery(name = JpaApplicationConfigTemplate.QUERY_DELETE_APP_RESOURCES_BY_TEMPLATE_NAME_LIST_APP_JVM_NAME,
                 query = "DELETE FROM JpaApplicationConfigTemplate t WHERE t.templateName IN :templateNameList AND t.app.name = :appName AND t.jvm.name = :jvmName"),
+        @NamedQuery(name = JpaApplicationConfigTemplate.QUERY_GET_APP_RESOURCE,
+                query = "SELECT t FROM JpaApplicationConfigTemplate t where t.app.name = :appName and t.templateName = :templateName and t.jvm.name = :jvmName"),
 })
 public class JpaApplicationConfigTemplate extends ConfigTemplate {
 
@@ -40,6 +42,7 @@ public class JpaApplicationConfigTemplate extends ConfigTemplate {
     public static final String QUERY_DELETE_APP_TEMPLATE = "deleteAppTemplate";
     public static final String QUERY_DELETE_APP_RESOURCE_BY_TEMPLATE_APP_JVM_NAME = "deleteAppResourceByTemplateJvmAppName";
     public static final String QUERY_DELETE_APP_RESOURCES_BY_TEMPLATE_NAME_LIST_APP_JVM_NAME = "deleteAppResourcesByTemplateNameListAndJvmAppName";
+    public static final String QUERY_GET_APP_RESOURCE = "getAppResource";
 
     public static final String QUERY_PARAM_TEMPLATE_NAME = "templateName";
     public static final String QUERY_PARAM_TEMPLATE_NAME_LIST = "templateNameList";

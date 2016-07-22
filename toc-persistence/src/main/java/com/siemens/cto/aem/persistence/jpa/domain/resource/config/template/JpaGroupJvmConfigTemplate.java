@@ -23,7 +23,9 @@ import javax.persistence.*;
                 query = "SELECT t.templateName FROM JpaGroupJvmConfigTemplate t WHERE t.grp.name = :grpName AND t.templateName = :templateName"),
         @NamedQuery(name = JpaGroupJvmConfigTemplate.QUERY_DELETE_GROUP_LEVEL_JVM_RESOURCE_BY_TEMPLATE_GROUP_NAME, query = "DELETE FROM JpaGroupJvmConfigTemplate t WHERE t.templateName = :templateName AND t.grp.name = :grpName"),
         @NamedQuery(name = JpaGroupJvmConfigTemplate.QUERY_DELETE_GROUP_LEVEL_JVM_RESOURCES_BY_TEMPLATE_NAME_LIST_GROUP_NAME,
-                    query = "DELETE FROM JpaGroupJvmConfigTemplate t WHERE t.templateName IN :templateNameList AND t.grp.name = :grpName")
+                    query = "DELETE FROM JpaGroupJvmConfigTemplate t WHERE t.templateName IN :templateNameList AND t.grp.name = :grpName"),
+        @NamedQuery(name = JpaGroupJvmConfigTemplate.QUERY_GET_GROUP_LEVEL_JVM_RESOURCE,
+                query = "SELECT t FROM JpaGroupJvmConfigTemplate t where t.grp.name = :grpName and t.templateName = :templateName")
 })
 public class JpaGroupJvmConfigTemplate extends ConfigTemplate {
     public static final String GET_GROUP_JVM_TEMPLATE_RESOURCE_NAMES = "getGroupJvmTemplateResourceNames";
@@ -33,6 +35,7 @@ public class JpaGroupJvmConfigTemplate extends ConfigTemplate {
     public static final String QUERY_DELETE_GRP_JVM_TEMPLATE = "deleteGrpJvmTemplate";
     public static final String QUERY_DELETE_GROUP_LEVEL_JVM_RESOURCE_BY_TEMPLATE_GROUP_NAME = "deleteGroupLevelJvmResourceByTemplateGroupName";
     public static final String QUERY_DELETE_GROUP_LEVEL_JVM_RESOURCES_BY_TEMPLATE_NAME_LIST_GROUP_NAME = "deleteGroupLevelJvmResourcesByTemplateNameListAndGroupName";
+    public static final String QUERY_GET_GROUP_LEVEL_JVM_RESOURCE = "getGroupLevelJvmResource";
 
     public static final String QUERY_PARAM_TEMPLATE_NAME = "templateName";
     public static final String QUERY_PARAM_TEMPLATE_NAME_LIST = "templateNameList";

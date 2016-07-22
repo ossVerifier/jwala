@@ -50,6 +50,7 @@ import com.siemens.cto.aem.service.jvm.impl.JvmServiceImpl;
 import com.siemens.cto.aem.service.jvm.state.JvmStateReceiverAdapter;
 import com.siemens.cto.aem.service.resource.ResourceService;
 import com.siemens.cto.aem.service.resource.impl.ResourceServiceImpl;
+import com.siemens.cto.aem.service.resource.impl.handler.WebServerResourceHandler;
 import com.siemens.cto.aem.service.ssl.hc.HttpClientRequestFactory;
 import com.siemens.cto.aem.service.state.InMemoryStateManagerService;
 import com.siemens.cto.aem.service.state.StateNotificationConsumerBuilder;
@@ -279,10 +280,12 @@ public class AemServiceConfiguration {
                                               final JvmPersistenceService jvmPersistenceService,
                                               final WebServerPersistenceService webServerPersistenceService,
                                               final ResourceDao resourceDao,
-                                              final WebArchiveManager webArchiveManager) {
+                                              final WebArchiveManager webArchiveManager,
+                                              final WebServerResourceHandler webServerResourceHandler) {
         return new ResourceServiceImpl(persistenceServiceConfiguration.getResourcePersistenceService(),
                 persistenceServiceConfiguration.getGroupPersistenceService(), applicationPersistenceService,
-                jvmPersistenceService, webServerPersistenceService, getPrivateApplicationService(), resourceDao, webArchiveManager);
+                jvmPersistenceService, webServerPersistenceService, getPrivateApplicationService(), resourceDao,
+                webArchiveManager, webServerResourceHandler);
     }
 
     @Bean
