@@ -439,8 +439,7 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
                                                                                       .setWebAppName(param.getWebApp()).build();
         final ResourceContent resourceContent = resourceService.getResourceContent(resourceIdentifier);
         if (resourceContent == null) {
-            ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(AemFaultType.INVALID_REST_SERVICE_PARAMETER,
-                    "The specified request parameters does not identify a valid resource!"));
+            return Response.noContent().build();
         }
         return ResponseBuilder.ok(resourceContent);
     }
