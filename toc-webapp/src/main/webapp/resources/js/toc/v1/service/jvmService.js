@@ -80,9 +80,6 @@
     getResources : function(jvmName, responseCallback) {
         return serviceFoundation.get("v1.0/jvms/" + encodeURIComponent(jvmName) + "/resources/name", "json", responseCallback);
     },
-    getResourceTemplate : function(jvmName, tokensReplaced, resourceTemplateName, responseCallback) {
-        return serviceFoundation.get("v1.0/jvms/" + encodeURIComponent(jvmName) + "/resources/template/" + encodeURIComponent(resourceTemplateName) + "?tokensReplaced=" + tokensReplaced, "json", responseCallback);
-    },
     previewResourceFile: function(jvmName, groupName, template, successCallback, errorCallback) {
         return serviceFoundation.put("v1.0/jvms/" + encodeURIComponent(jvmName) + "/resources/preview;groupName=" + encodeURIComponent(groupName),
                                      "json",

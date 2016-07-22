@@ -257,7 +257,8 @@ var ResourcesConfig = React.createClass({
 
 var XmlTabs = React.createClass({
     getInitialState: function() {
-        return {entityType: null, entity: null, entityParent: null, resourceTemplateName: null, template: "", entityGroupName: "", groupJvmEntityType: null}
+        return {entityType: null, entity: null, entityParent: null, resourceTemplateName: null, template: "",
+                entityGroupName: "", groupJvmEntityType: null, readOnly: false}
     },
     render: function() {
         var codeMirrorComponent;
@@ -267,10 +268,10 @@ var XmlTabs = React.createClass({
             codeMirrorComponent = <div style={{padding: "5px 5px"}}>Please select a JVM, Web Server or Web Application and a resource</div>;
             xmlPreview = <div style={{padding: "5px 5px"}}>Please select a JVM, Web Server or Web Application and a resource</div>;
         } else {
+            console.log("readOnly = " + this.state.readOnly);
             codeMirrorComponent = <CodeMirrorComponent ref="codeMirrorComponent" content={this.state.template}
                                    className="xml-editor-container" saveCallback={this.saveResource}
-                                   onChange={this.onChangeCallback}/>
-            console.log(this.state.entityType);
+                                   onChange={this.onChangeCallback} readOnly={this.state.readOnly}/>
             if (this.state.entityType === "webServerSection" || this.state.entityType === "jvmSection") {
                 xmlPreview = <div style={{padding: "5px 5px"}}>A group level web server or JVM template cannot be previewed. Please select a specific web server or JVM instead.</div>;
             } else {
@@ -376,59 +377,44 @@ var XmlTabs = React.createClass({
         var entityType = this.state.entityType;
         if (entityType !== null && resourceName !== null) {
             if (entityType === "jvms") {
-                this.props.jvmService.getResourceTemplate(data.jvmName,
-                                                          false,
-                                                          resourceName,
-                                                          this.reloadTemplateCallback.bind(this, data, resourceName, this.state.entityGroupName));
+                this.getResourceContent(data, resourceName, null, null, data.jvmName);
             } else if (entityType === "webServers") {
-                this.props.wsService.getResourceTemplate(data.name,
-                                                         false,
-                                                         resourceName,
-                                                         this.reloadTemplateCallback.bind(this, data, resourceName, this.state.entityGroupName));
+                this.getResourceContent(data, resourceName, null, data.name);
             } else if (entityType === "webApps" && this.state.entityParent.jvmName) {
-                this.props.webAppService.getResourceTemplate(data.name,
-                                                             this.state.entity.group.name,
-                                                             this.state.entityParent.jvmName,
-                                                             false,
-                                                             resourceName,
-                                                             this.reloadTemplateCallback.bind(this, data, resourceName, this.state.entityGroupName));
+                this.getResourceContent(data, resourceName, null, null, this.state.entityParent.jvmName, data.name);
             } else if (entityType === "webApps" && this.state.entityParent.rtreeListMetaData.parent.name) {
-                var self = this;
-                ServiceFactory.getResourceService().getResourceTemplate(this.state.entity.group.name, data.name,
-                    resourceName).then(function(response){
-                        self.reloadTemplateCallback(data, resourceName, self.state.entity.group.name, response);
-                    }).caught(function(e){console.log(e);});
+                this.getResourceContent(data, resourceName, this.state.entity.group.name, null, null, data.name);
             } else if (entityType === "webServerSection") {
-                             this.props.groupService.getGroupWebServerResourceTemplate(this.state.entityGroupName,
-                                                                      false,
-                                                                      resourceName,
-                                                                      this.reloadTemplateCallback.bind(this, data, resourceName, this.state.entityGroupName));
+                this.getResourceContent(data, resourceName, this.state.entityGroupName, "*");
             } else if (entityType === "jvmSection") {
-                              if ((groupJvmEntityType && groupJvmEntityType === "webApp") || (data.groupJvmEntityType && data.groupJvmEntityType === "webApp")) {
-                                  this.props.groupService.getGroupAppResourceTemplate(this.state.entityGroupName,
-                                                                       false,
-                                                                       resourceName,
-                                                                       this.reloadTemplateCallback.bind(this, data, resourceName, this.state.entityGroupName));
-                              } else {
-                                  this.props.groupService.getGroupJvmResourceTemplate(this.state.entityGroupName,
-                                                                                                     false,
-                                                                                                     resourceName,
-                                                                                                     this.reloadTemplateCallback.bind(this, data, resourceName, this.state.entityGroupName));
-                              }
+                this.getResourceContent(data, resourceName, this.state.entityGroupName, null, "*");
             }
         } else {
-            this.setState({entityType: entityType,
-                           entity: null,
-                           entityParent: null,
-                           resourceTemplateName: null,
+            this.setState({entityType: entityType, entity: null, entityParent: null, resourceTemplateName: null,
                            template: ""});
         }
     },
-    reloadTemplateCallback: function(entity, resourceTemplateName, entityGroupName, response) {
-        this.setState({entity: entity,
-                       resourceTemplateName: resourceTemplateName,
-                       template: response.applicationResponseContent,
-                       entityGroupName: entityGroupName});
+    getResourceContent: function(data, resourceName, groupName, webServerName, jvmName, appName) {
+        var self = this;
+        ServiceFactory.getResourceService().getResourceContent(resourceName, groupName, webServerName, jvmName, appName)
+        .then(function(response){
+            var metaData = response.applicationResponseContent.metaData;
+            var readOnly = false;
+            if (metaData) {
+                var jsonMetaData = JSON.parse(metaData);
+                if (jsonMetaData.contentType === "application/binary") {
+                    readOnly = true;
+                }
+            }
+
+            self.setState({entity: data,
+                           resourceTemplateName: resourceName,
+                           template: response.applicationResponseContent.content,
+                           entityGroupName: self.state.entityGroupName,
+                           readOnly: readOnly});
+        }).caught(function(response) {
+            $.errorAlert("Error loading template!", "Error");
+        });
     },
     onSelectTab: function(index) {
         if (this.state.entity !== null && this.state.resourceTemplateName !== null) {

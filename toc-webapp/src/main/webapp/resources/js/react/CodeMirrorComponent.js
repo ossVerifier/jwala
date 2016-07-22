@@ -16,13 +16,16 @@ var CodeMirrorComponent = React.createClass({
     componentDidMount: function() {
         var val = this.props.content ? this.props.content : "";
         this.codeMirror = CodeMirror(this.refs.codeMirrorHost.getDOMNode(), {value: val, lineNumbers: true,
-                                     mode:  "xml"});
+                                     mode:  "xml", readOnly: this.props.readOnly});
         this.state.data = this.codeMirror.getValue();
         this.codeMirror.on("change", this.onChanged);
         this.resize();
         this.refs.theToolbar.refs.saveBtn.setEnabled(false);
     },
     componentWillUpdate: function(nextProps, nextState) {
+        if (this.props.readOnly !== nextProps.readOnly) {
+            this.codeMirror.setOption("readOnly", nextProps.readOnly)
+        }
         this.setData(nextProps.content);
         this.refs.theToolbar.refs.saveBtn.setEnabled(this.isContentChanged());
     },

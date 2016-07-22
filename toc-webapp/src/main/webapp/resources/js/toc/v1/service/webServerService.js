@@ -121,9 +121,6 @@ var webServerService = {
     getResources : function(webServerName, responseCallback) {
         return serviceFoundation.get("v1.0/webservers/" + encodeURIComponent(webServerName) + "/resources/name", "json", responseCallback);
     },
-    getResourceTemplate : function(wsName, tokensReplaced, resourceTemplateName, responseCallback) {
-        return serviceFoundation.get("v1.0/webservers/" + encodeURIComponent(wsName) + "/resources/template/" + encodeURIComponent(resourceTemplateName) + "?tokensReplaced=" + tokensReplaced, "json", responseCallback);
-    },
     updateResourceTemplate: function(webServerName, resourceTemplateName, resourceTemplateContent) {
         return serviceFoundation.promisedPut("v1.0/webservers/" + encodeURIComponent(webServerName) + "/resources/template/" + encodeURIComponent(resourceTemplateName),
                                              "json",

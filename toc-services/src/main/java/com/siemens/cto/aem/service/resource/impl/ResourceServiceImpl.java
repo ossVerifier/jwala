@@ -794,16 +794,10 @@ public class ResourceServiceImpl implements ResourceService {
     @Override
     public ResourceContent getResourceContent(final ResourceIdentifier resourceIdentifier) {
         final ConfigTemplate configTemplate = resourceHandler.fetchResource(resourceIdentifier);
-        try {
-            if (configTemplate != null) {
-                final ResourceTemplateMetaData metaData = new ObjectMapper().readValue(configTemplate.getMetaData(),
-                        ResourceTemplateMetaData.class);
-                return new ResourceContent(metaData, configTemplate.getTemplateContent());
-            }
-            return null;
-        } catch (final IOException ioe) {
-            throw new ResourceServiceException(ioe);
+        if (configTemplate != null) {
+            return new ResourceContent(configTemplate.getMetaData(), configTemplate.getTemplateContent());
         }
+        return null;
     }
 
     @Override

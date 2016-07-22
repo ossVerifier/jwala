@@ -71,11 +71,6 @@ var webAppService = {
     getResources : function(appName, jvmName, responseCallback) {
         return serviceFoundation.get("v1.0/applications/" + encodeURIComponent(jvmName) + "/" + encodeURIComponent(appName) + "/resources/name", "json", responseCallback);
     },
-    getResourceTemplate : function(appName, groupName, jvmName, tokensReplaced, resourceTemplateName, responseCallback) {
-        return serviceFoundation.get("v1.0/applications/" + encodeURIComponent(appName) + "/resources/template/" +
-                                     encodeURIComponent(resourceTemplateName) + ";groupName=" + encodeURIComponent(groupName) +
-                                     ";jvmName=" + encodeURIComponent(jvmName) + "?tokensReplaced=" + tokensReplaced, "json", responseCallback);
-    },
     updateResourceTemplate: function(appName, resourceTemplateName, resourceTemplateContent, jvmName, groupName) {
         var jvmMatrix = jvmName ? ";jvmName=" + encodeURIComponent(jvmName) : "";
         return serviceFoundation.promisedPut("v1.0/applications/" + encodeURIComponent(appName) + "/resources/template/" + encodeURIComponent(resourceTemplateName) + ";groupName=" + encodeURIComponent(groupName) + jvmMatrix,

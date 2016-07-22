@@ -7,15 +7,15 @@ package com.siemens.cto.aem.common.domain.model.resource;
  */
 public class ResourceContent {
 
-    private final ResourceTemplateMetaData metaData;
+    private final String metaData;
     private final String content;
 
-    public ResourceContent(final ResourceTemplateMetaData metaData, final String content) {
+    public ResourceContent(final String metaData, final String content) {
         this.metaData = metaData;
         this.content = content;
     }
 
-    public ResourceTemplateMetaData getMetaData() {
+    public String getMetaData() {
         return metaData;
     }
 

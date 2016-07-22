@@ -69,9 +69,28 @@ var resourceService = {
     getAppResources : function(groupName, appName, responseCallback) {
         return serviceFoundation.get("v1.0/resources/" + encodeURIComponent(groupName) + "/" + encodeURIComponent(appName) + "/name", "json", responseCallback);
     },
-    getResourceTemplate: function(groupName, appName, templateName) {
-        return serviceFoundation.promisedGet("v1.0/resources/" + groupName + "/" + appName + "/" + templateName);
+    getResourceContent: function(resourceName, groupName, webServerName, jvmName, appName) {
+        var matrix = "";
+
+        if (groupName) {
+            matrix += ";group=" + encodeURIComponent(groupName);
+        }
+
+        if (webServerName) {
+            matrix += ";webServer=" + encodeURIComponent(webServerName);
+        }
+
+        if (jvmName) {
+            matrix += ";jvm=" + encodeURIComponent(jvmName);
+        }
+
+        if (appName) {
+            matrix += ";webApp=" + encodeURIComponent(appName);
+        }
+
+        return serviceFoundation.promisedGet("v1.0/resources/" + encodeURIComponent(resourceName) + "/content" + matrix);
     },
+
     deleteResource: function(resourceName, groupName, webServerName, jvmName, webAppName) {
         var matrixParam = "";
         if (groupName) {
