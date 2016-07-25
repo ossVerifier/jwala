@@ -180,6 +180,9 @@ var ResourcesConfig = React.createClass({
         this.props.resourceService.deleteResources(this.refs.resourceEditor.refs.resourcePane.getCheckedItems(),
                                                   groupName, webServerName, jvmName, webAppName).then(function(response){
             self.refreshResourcePane();
+
+            // clear the editor
+            self.refs.xmlTabs.clearEditor();
         }).caught(function(e){
             console.log(e);
             $.errorAlert("Error deleting resource template(s)!", "Error", true);
@@ -259,6 +262,9 @@ var XmlTabs = React.createClass({
     getInitialState: function() {
         return {entityType: null, entity: null, entityParent: null, resourceTemplateName: null, template: "",
                 entityGroupName: "", groupJvmEntityType: null, readOnly: false}
+    },
+    clearEditor: function() {
+        this.setState({resourceTemplateName: null, template: ""});
     },
     render: function() {
         var codeMirrorComponent;
