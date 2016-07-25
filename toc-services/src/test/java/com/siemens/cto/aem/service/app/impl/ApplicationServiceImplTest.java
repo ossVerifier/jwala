@@ -294,7 +294,7 @@ public class ApplicationServiceImplTest {
         applicationService.deleteWebArchive(mockApplication.getId(), testUser);
 
         verify(webArchiveManager, Mockito.times(1)).remove(any(RemoveWebArchiveRequest.class));
-        verify(mockResourceService).deleteGroupLevelAppResource(eq("hct"), eq("hct.war"));
+        verify(mockResourceService).deleteGroupLevelAppResources(eq("hct"), anyString(), anyList());
     }
 
     @Test

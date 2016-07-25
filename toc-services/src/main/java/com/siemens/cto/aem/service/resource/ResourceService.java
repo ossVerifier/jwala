@@ -208,6 +208,7 @@ public interface ResourceService {
      * @param templateName the template name
      * @return the number of resources deleted
      */
+    @Deprecated
     int deleteGroupLevelAppResource(String appName, String templateName);
 
     /**

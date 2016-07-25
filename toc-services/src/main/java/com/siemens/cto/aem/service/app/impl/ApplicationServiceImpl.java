@@ -178,7 +178,10 @@ public class ApplicationServiceImpl implements ApplicationService {
     public Application deleteWebArchive(final Identifier<Application> appId, final User user) {
         final Application app = applicationPersistenceService.getApplication(appId);
 
-        resourceService.deleteGroupLevelAppResource(app.getName(), app.getWarName());
+        final List<String> resourceNames = new ArrayList<>();
+        resourceNames.add(app.getWarName());
+        resourceService.deleteGroupLevelAppResources(app.getName(), app.getGroup().getName(), resourceNames);
+
         final Application updatedApp = applicationPersistenceService.deleteWarInfo(app.getName());
 
         final RemoveWebArchiveRequest removeWarRequest = new RemoveWebArchiveRequest(app);
