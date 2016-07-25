@@ -1,27 +1,5 @@
 
 var resourceService = {
-    getResources: function(groupName, responseCallback) {
-        if (groupName === undefined) { return; }
-        return serviceFoundation.get("v1.0/resources;groupName=" + groupName.replace(/%20/g, " "), "json", responseCallback);
-    },
-    updateResourceName: function(groupName, resourceTypeName, resourceName, newResourceName, successCallback, errorCallback) {
-        return serviceFoundation.put("v1.0/resources/" + resourceName.replace(/%20/g, " ") + ";groupName=" + groupName.replace(/%20/g, " "),
-                                     "json",
-                                     JSON.stringify({groupName:groupName,
-                                                     resourceTypeName:resourceTypeName,
-                                                     name:newResourceName,
-                                                     attributes:null}),
-                                     successCallback,
-                                     errorCallback);
-    },
-    updateResourceAttributes: function(resourceName, groupName, resource, successCallback, errorCallback) {
-        return serviceFoundation.put("v1.0/resources/" + resourceName.replace(/%20/g, " ") +  ";groupName=" + groupName.replace(/%20/g, " "),
-                                     "json",
-                                     JSON.stringify(resource),
-                                     successCallback,
-                                     errorCallback);
-    },
-
     createResource: function(groupName, webServerName, jvmName, webAppName, formData) {
         var matrixParam = "";
         if (groupName) {

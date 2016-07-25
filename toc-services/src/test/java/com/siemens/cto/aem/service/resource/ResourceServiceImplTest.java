@@ -9,7 +9,10 @@ import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.common.domain.model.path.FileSystemPath;
-import com.siemens.cto.aem.common.domain.model.resource.*;
+import com.siemens.cto.aem.common.domain.model.resource.ContentType;
+import com.siemens.cto.aem.common.domain.model.resource.Entity;
+import com.siemens.cto.aem.common.domain.model.resource.ResourceGroup;
+import com.siemens.cto.aem.common.domain.model.resource.ResourceTemplateMetaData;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState;
@@ -17,7 +20,6 @@ import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.common.request.app.UploadAppTemplateRequest;
 import com.siemens.cto.aem.common.request.app.UploadWebArchiveRequest;
 import com.siemens.cto.aem.common.request.jvm.UploadJvmConfigTemplateRequest;
-import com.siemens.cto.aem.common.request.resource.ResourceInstanceRequest;
 import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateRequest;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
 import com.siemens.cto.aem.persistence.service.*;
@@ -47,7 +49,6 @@ import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anyList;
-import static org.mockito.Matchers.anyLong;
 import static org.mockito.Matchers.anyMap;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
@@ -143,66 +144,6 @@ public class ResourceServiceImplTest {
     @Test
     public void getType() {
         assertNotNull("");
-    }
-
-    @Test
-    public void testGetResourceInstance() {
-        final Identifier<ResourceInstance> aResourceInstanceId = new Identifier<>(1L);
-        ResourceInstance mockResourceInstance = mock(ResourceInstance.class);
-        when(mockResourcePersistenceService.getResourceInstance(aResourceInstanceId)).thenReturn(mockResourceInstance);
-        ResourceInstance value = resourceService.getResourceInstance(aResourceInstanceId);
-        assertNotNull(value);
-    }
-
-    @Test
-    public void testGetResourceInstanceByGroupName(){
-        final String groupName = "groupName";
-        Group mockGroup = mock(Group.class);
-        when(mockGroup.getId()).thenReturn(new Identifier<Group>(1L));
-        when(mockResourcePersistenceService.getResourceInstancesByGroupId(anyLong())).thenReturn(new ArrayList<ResourceInstance>());
-        when(mockGroupPesistenceService.getGroup(groupName)).thenReturn(mockGroup);
-        List<ResourceInstance> value = resourceService.getResourceInstancesByGroupName(groupName);
-        assertNotNull(value);
-    }
-
-    @Test
-    public void testGetResourceInstanceByGroupNameAndName(){
-        final String groupName = "groupName";
-        String name = "name";
-        Group mockGroup = mock(Group.class);
-        ResourceInstance mockResourceInstance = mock(ResourceInstance.class);
-        when(mockGroup.getId()).thenReturn(new Identifier<Group>(1L));
-        when(mockResourcePersistenceService.getResourceInstanceByGroupIdAndName(anyLong(), anyString())).thenReturn(mockResourceInstance);
-        when(mockGroupPesistenceService.getGroup(groupName)).thenReturn(mockGroup);
-        ResourceInstance value = resourceService.getResourceInstanceByGroupNameAndName(groupName, name);
-        assertNotNull(value);
-    }
-
-    @Test
-    public void testGetResourceInstancesByGroupNameAndResourceTypeName(){
-        Group mockGroup = mock(Group.class);
-        when(mockGroup.getId()).thenReturn(new Identifier<Group>(1L));
-        when(mockGroupPesistenceService.getGroup(anyString())).thenReturn(mockGroup);
-        when(mockResourcePersistenceService.getResourceInstancesByGroupIdAndResourceTypeName(anyLong(), anyString())).thenReturn(new ArrayList<ResourceInstance>());
-        List<ResourceInstance> value = resourceService.getResourceInstancesByGroupNameAndResourceTypeName("groupName", "resourceTypeName");
-        assertNotNull(value);
-    }
-
-    @Test
-    public void testUpdateResourceInstance(){
-        User mockUser = mock(User.class);
-        ResourceInstanceRequest resourceInstanceRequest = mock(ResourceInstanceRequest.class);
-        when(mockUser.getId()).thenReturn("userId");
-        final String groupName = "groupName";
-        String name = "name";
-        Group mockGroup = mock(Group.class);
-        ResourceInstance mockResourceInstance = mock(ResourceInstance.class);
-        when(mockGroup.getId()).thenReturn(new Identifier<Group>(1L));
-        when(mockResourcePersistenceService.getResourceInstanceByGroupIdAndName(anyLong(), anyString())).thenReturn(mockResourceInstance);
-        when(mockGroupPesistenceService.getGroup(groupName)).thenReturn(mockGroup);
-        when(mockResourcePersistenceService.updateResourceInstance(any(ResourceInstance.class), any(ResourceInstanceRequest.class))).thenReturn(mockResourceInstance);
-        ResourceInstance value = resourceService.updateResourceInstance("groupName", "name", resourceInstanceRequest, mockUser);
-        assertNotNull(value);
     }
 
     @Test

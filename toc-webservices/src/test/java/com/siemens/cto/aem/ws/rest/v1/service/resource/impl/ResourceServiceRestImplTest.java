@@ -72,27 +72,6 @@ public class ResourceServiceRestImplTest {
     }
 
     @Test
-    public void testFindResourceInstanceByGroup() {
-        when(impl.getResourceInstancesByGroupName(group.getName())).thenReturn(new ArrayList<ResourceInstance>());
-        Response response = cut.findResourceInstanceByGroup(group.getName());
-        assertNotNull(response.getEntity());
-    }
-
-    @Test
-    public void testFindResourceInstanceByNameGroup() {
-        when(impl.getResourceInstancesByGroupName(group.getName())).thenReturn(new ArrayList<ResourceInstance>());
-        Response response = cut.findResourceInstanceByNameGroup("testName", group.getName());
-        assertNotNull(response.getEntity());
-    }
-
-    @Test
-    public void testUpdateResourceInstanceAttributes() {
-        when(impl.updateResourceInstance(anyString(), anyString(), any(ResourceInstanceRequest.class), any(User.class))).thenReturn(resourceInstance);
-        Response response = cut.updateResourceInstanceAttributes("resourceName", group.getName(), jsonResourceInstance, authenticatedUser);
-        assertNotNull(response.getEntity());
-    }
-
-    @Test
     public void testCreateTemplate() throws IOException {
         List<Attachment> attachmentList = new ArrayList<>();
         Attachment json = mock(Attachment.class);

@@ -1,9 +1,10 @@
 package com.siemens.cto.aem.service.resource;
 
-import com.siemens.cto.aem.common.domain.model.id.Identifier;
-import com.siemens.cto.aem.common.domain.model.resource.*;
+import com.siemens.cto.aem.common.domain.model.resource.ResourceContent;
+import com.siemens.cto.aem.common.domain.model.resource.ResourceGroup;
+import com.siemens.cto.aem.common.domain.model.resource.ResourceIdentifier;
+import com.siemens.cto.aem.common.domain.model.resource.ResourceTemplateMetaData;
 import com.siemens.cto.aem.common.domain.model.user.User;
-import com.siemens.cto.aem.common.request.resource.ResourceInstanceRequest;
 import com.siemens.cto.aem.service.resource.impl.CreateResourceTemplateApplicationResponseWrapper;
 
 import java.io.IOException;
@@ -14,16 +15,6 @@ import java.util.Properties;
 
 
 public interface ResourceService {
-
-    ResourceInstance getResourceInstance(final Identifier<ResourceInstance> aResourceInstanceId);
-
-    List<ResourceInstance> getResourceInstancesByGroupName(final String groupName);
-
-    ResourceInstance getResourceInstanceByGroupNameAndName(final String groupName, final String name);
-
-    List<ResourceInstance> getResourceInstancesByGroupNameAndResourceTypeName(final String groupName, final String resourceTypeName);
-
-    ResourceInstance updateResourceInstance(final String groupName, final String name, final ResourceInstanceRequest updateResourceInstanceAttributesCommand, final User updatingUser);
 
     String  encryptUsingPlatformBean(String cleartext);
 
@@ -110,16 +101,6 @@ public interface ResourceService {
     CreateResourceTemplateApplicationResponseWrapper createGroupedLevelAppResource(ResourceTemplateMetaData metaData,
                                                                                    InputStream templateData,
                                                                                    String targetAppName) throws IOException;
-
-//    /**
-//     * Deletes a resource template of a specific group and entity type (e.g. group = Group1, entity type = GROUPED_JVMS)
-//     * @param groupName the group name
-//     * @param entityType the entity type {@link EntityType}
-//     * @param templateNames comma separated names of templates to delete e.g. server.xml, context.xml (user can specify one template name as well)
-//     * @return the number of records deleted.
-//     */
-//    @Deprecated
-//    int removeTemplate(String groupName, EntityType entityType, String templateNames);
 
     /**
      * Generates the ResourceGroup class object, which contains all the jvms, webapps, webservers and groups information.

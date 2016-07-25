@@ -13,7 +13,6 @@ import com.siemens.cto.aem.common.request.app.UploadAppTemplateRequest;
 import com.siemens.cto.aem.common.request.app.UploadWebArchiveRequest;
 import com.siemens.cto.aem.common.request.jvm.UploadJvmConfigTemplateRequest;
 import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
-import com.siemens.cto.aem.common.request.resource.ResourceInstanceRequest;
 import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateRequest;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
 import com.siemens.cto.aem.persistence.jpa.domain.resource.config.template.ConfigTemplate;
@@ -90,40 +89,6 @@ public class ResourceServiceImpl implements ResourceService {
         this.resourceDao = resourceDao;
         this.webArchiveManager = webArchiveManager;
         this.resourceHandler = resourceHandler;
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public ResourceInstance getResourceInstance(final Identifier<ResourceInstance> aResourceInstanceId) {
-        return this.resourcePersistenceService.getResourceInstance(aResourceInstanceId);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<ResourceInstance> getResourceInstancesByGroupName(final String groupName) {
-        Group group = this.groupPersistenceService.getGroup(groupName);
-        return this.resourcePersistenceService.getResourceInstancesByGroupId(group.getId().getId());
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public ResourceInstance getResourceInstanceByGroupNameAndName(final String groupName, final String name) {
-        Group group = this.groupPersistenceService.getGroup(groupName);
-        return this.resourcePersistenceService.getResourceInstanceByGroupIdAndName(group.getId().getId(), name);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<ResourceInstance> getResourceInstancesByGroupNameAndResourceTypeName(final String groupName, final String resourceTypeName) {
-        Group group = this.groupPersistenceService.getGroup(groupName);
-        return this.resourcePersistenceService.getResourceInstancesByGroupIdAndResourceTypeName(group.getId().getId(), resourceTypeName);
-    }
-
-    @Override
-    @Transactional
-    public ResourceInstance updateResourceInstance(final String groupName, final String name, final ResourceInstanceRequest updateResourceInstanceRequest, final User updatingUser) {
-        ResourceInstance resourceInstance = this.getResourceInstanceByGroupNameAndName(groupName, name);
-        return this.resourcePersistenceService.updateResourceInstance(resourceInstance, updateResourceInstanceRequest);
     }
 
     @Override

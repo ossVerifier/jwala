@@ -1,21 +1,11 @@
 package com.siemens.cto.aem.persistence.service;
 
-import com.siemens.cto.aem.common.request.resource.ResourceInstanceRequest;
-import com.siemens.cto.aem.common.domain.model.id.Identifier;
-import com.siemens.cto.aem.common.domain.model.resource.ResourceInstance;
-
 import java.util.List;
 
 /**
  * Created by z003e5zv on 3/25/2015.
  */
 public interface ResourcePersistenceService {
-
-    List<ResourceInstance> getResourceInstancesByGroupId(final Long groupId);
-    ResourceInstance getResourceInstanceByGroupIdAndName(final Long groupId, final String name);
-    List<ResourceInstance> getResourceInstancesByGroupIdAndResourceTypeName(final Long groupId, final String typeName);
-    ResourceInstance getResourceInstance(final Identifier<ResourceInstance> resourceInstanceId);
-    ResourceInstance updateResourceInstance(ResourceInstance resourceInstance, final ResourceInstanceRequest resourceInstanceRequest);
 
     /**
      * Get's an application's resource names.

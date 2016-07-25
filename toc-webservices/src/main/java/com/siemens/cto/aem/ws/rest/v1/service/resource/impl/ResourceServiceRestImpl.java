@@ -36,7 +36,6 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(ResourceServiceRestImpl.class);
     private static final int CREATE_TEMPLATE_EXPECTED_NUM_OF_ATTACHMENTS = 2;
-    private static final int UPLOAD_EXTERNAL_PROPERTIES_NUM_OF_ATTACHMENTS = 2;
     private static final String JSON_FILE_EXTENSION = ".json";
     public static final String UNEXPECTED_CONTENT_TYPE_ERROR_MSG =
             "File being uploaded is invalid! The expected file type as indicated in the meta data is text based and should have a TPL extension.";
@@ -48,23 +47,6 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
         this.resourceService = resourceService;
     }
 
-    @Override
-    public Response findResourceInstanceByGroup(String groupName) {
-        LOGGER.debug("Find resource instance by group {}", groupName);
-        return ResponseBuilder.ok(resourceService.getResourceInstancesByGroupName(groupName));
-    }
-
-    @Override
-    public Response findResourceInstanceByNameGroup(final String name, final String groupName) {
-        LOGGER.debug("Find resource instance by name {} group {}", name, groupName);
-        return ResponseBuilder.ok(resourceService.getResourceInstancesByGroupName(groupName));
-    }
-
-    @Override
-    public Response updateResourceInstanceAttributes(final String name, final String groupName, JsonResourceInstance aResourceInstanceToUpdate, AuthenticatedUser aUser) {
-        LOGGER.info("Update resource instance attributes {} with name {} in group {} by user", aResourceInstanceToUpdate, name, groupName, aUser.getUser().getId());
-        return ResponseBuilder.ok(this.resourceService.updateResourceInstance(groupName, name, aResourceInstanceToUpdate.getCommand(), aUser.getUser()));
-    }
 
     public Response createTemplate(final List<Attachment> attachments, final String targetName, final AuthenticatedUser user) {
         LOGGER.info("create template for target {} by user {}", targetName, user.getUser().getId());

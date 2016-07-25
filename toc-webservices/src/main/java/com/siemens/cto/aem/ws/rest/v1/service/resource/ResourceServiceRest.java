@@ -1,7 +1,6 @@
 package com.siemens.cto.aem.ws.rest.v1.service.resource;
 
 import com.siemens.cto.aem.ws.rest.v1.provider.AuthenticatedUser;
-import com.siemens.cto.aem.ws.rest.v1.service.resource.impl.JsonResourceInstance;
 import org.apache.cxf.jaxrs.ext.multipart.Attachment;
 import org.apache.cxf.jaxrs.ext.multipart.Multipart;
 
@@ -16,39 +15,6 @@ import java.util.List;
 @Path("/resources")
 @Produces(MediaType.APPLICATION_JSON)
 public interface ResourceServiceRest {
-
-    /**
-     * /aem/v1.0/resources;groupName=[your group name]
-     *
-     * @param groupName the name of the previously created group
-     * @return a list of ResourceInstance objects associated with a group
-     */
-    @GET
-    Response findResourceInstanceByGroup(@MatrixParam("groupName") final String groupName);
-
-    /**
-     * /aem/v1.0/resources/[your resource instance name];groupName=[your group name]
-     *
-     * @param name the name of an existing resource instance
-     * @param groupName the name of an existing group
-     * @return a specific resourceInstance object if present
-     */
-    @GET
-    @Path("/{name}")
-    Response findResourceInstanceByNameGroup(@PathParam("name") final String name, @MatrixParam("groupName") final String groupName);
-
-    /**
-     * /aem/v1.0/resources/[resource instance name];groupName=[your group name] <br/>
-     * JSON PUT conttaining the same object as create, but empty attributes will remain the same and it will detect changes in the name within the JsonResourceInstance object
-     * @param name the name of an existing resource instance for updating
-     * @param groupName the name of an existing group which is associcated with the resource instance to be updated.
-     * @param aUser the authenticated user who is updating the resource instance
-     * @return the updated ResourceInstance object
-     */
-    @PUT
-    @Path("/{name}")
-    @Consumes(MediaType.APPLICATION_JSON)
-    Response updateResourceInstanceAttributes(@PathParam("name") final String name, @MatrixParam("groupName") final String groupName, final JsonResourceInstance aResourceInstanceToUpdate, @BeanParam final AuthenticatedUser aUser);
 
     /**
      * Creates a template file and it's corresponding JSON meta data file.
