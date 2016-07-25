@@ -30,6 +30,7 @@ var ResourceEditor = React.createClass({
                             };
 
         var groupJvmTreeList = <RStaticDialog key="groupsDlg"  ref="groupsDlg" title="Topology" defaultContentHeight="283px">
+                                   <div className="root-node-ul rtree-list-item ext-properties-container" onClick={this.handleExtPropertiesClick}><img src="public-resources/img/icons/group.png"/>Ext Properties</div>
                                    <RTreeList ref="treeList"
                                               data={this.state.groupData}
                                               treeMetaData={treeMetaData}
@@ -45,6 +46,7 @@ var ResourceEditor = React.createClass({
                                               wsService={this.props.wsService}
                                               webAppService={this.props.webAppService}
                                               groupService={this.props.groupService}
+                                              resourceService={this.props.resourceService}
                                               selectCallback={this.selectResourceCallback}
                                               createResourceCallback={this.props.createResourceCallback}
                                               deleteResourceCallback={this.props.deleteResourceCallback}/>
@@ -127,5 +129,25 @@ var ResourceEditor = React.createClass({
         if (dimensions[2]) {
             this.refs.resourceAttrDlg.recomputeContentContainerSize(dimensions[2]);
         }
+    },
+    handleExtPropertiesClick: function() {
+        // leverage the resources API's by faking out the ext properties tree node
+        var entity="extProperties"
+        var rtreeListMetaData = {
+            entity: "extProperties",
+            parent:{
+                name:"Ext Properties parent",
+                key:"extPropertiesParent"
+            }
+        };
+        var data = {
+            rtreeListMetaData: rtreeListMetaData
+        };
+        var parent = {
+            key:"extPropertiesParent",
+            name:"Ext Properties parent",
+            rtreeListMetaData: rtreeListMetaData
+        };
+        this.selectNodeCallback(data, entity, parent);
     }
 });

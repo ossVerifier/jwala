@@ -468,6 +468,12 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
     }
 
     @Override
+    public Response getExternalPropertiesFile() {
+        LOGGER.debug("Get the external properties file name");
+        return ResponseBuilder.ok(new String[] {resourceService.getExternalPropertiesFile()});
+    }
+
+    @Override
     public Response getExternalProperties() {
         LOGGER.debug("Get the external properties");
         // use a TreeMap to put the properties in alphabetical order

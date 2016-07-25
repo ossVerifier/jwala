@@ -280,4 +280,6 @@ public interface ResourceService {
      * @return the external properties
      */
     Properties getExternalProperties();
+
+    String getExternalPropertiesFile();
 }

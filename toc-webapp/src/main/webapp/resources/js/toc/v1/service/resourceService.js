@@ -156,5 +156,8 @@ var resourceService = {
     },
     getExternalProperties: function(){
         return serviceFoundation.promisedGet("v1.0/resources/properties", "json");
+    },
+    getExternalPropertiesFile: function(callback){
+        return serviceFoundation.get("v1.0/resources/properties/file", "json", callback);
     }
 };

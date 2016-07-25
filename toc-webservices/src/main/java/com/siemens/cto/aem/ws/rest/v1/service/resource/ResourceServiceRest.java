@@ -191,5 +191,9 @@ public interface ResourceServiceRest {
     @GET
     @Path("/properties")
     Response getExternalProperties();
+
+    @GET
+    @Path("/properties/file")
+    Response getExternalPropertiesFile();
 }
 

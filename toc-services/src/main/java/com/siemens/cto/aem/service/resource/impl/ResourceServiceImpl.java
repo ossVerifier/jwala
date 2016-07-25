@@ -802,6 +802,7 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Override
     public void uploadExternalProperties(String fileName, InputStream propertiesFileIn) {
+        // TODO instead of uploading the file to the archive directory put it in the resource database
         Application fakedApplication = new Application(new Identifier<Application>(0L), fileName, "", "", null, true, true, false, fileName);
         UploadWebArchiveRequest uploadWebArchiveRequest = new UploadWebArchiveRequest(fakedApplication,fileName, -1L, propertiesFileIn);
         RepositoryFileInformation fileInfo = privateApplicationService.uploadWebArchiveData(uploadWebArchiveRequest);
@@ -809,6 +810,12 @@ public class ResourceServiceImpl implements ResourceService {
         // TODO wait until properties file is deployed before setting the properties file path?
         String uploadFilePath = fileInfo.getPath().toString();
         ExternalProperties.setPropertiesFilePath(uploadFilePath);
+    }
+
+    @Override
+    public String getExternalPropertiesFile() {
+        // TODO add external property to a resource table
+        return "external.properties";
     }
 
     @Override
