@@ -1,12 +1,11 @@
 package com.siemens.cto.aem.persistence.jpa.service.impl;
 
-import com.siemens.cto.aem.common.request.resource.ResourceInstanceRequest;
-import com.siemens.cto.aem.common.exception.NotFoundException;
-import com.siemens.cto.aem.common.exception.NotUniqueException;
 import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.resource.ResourceInstance;
-import com.siemens.cto.aem.persistence.jpa.domain.JpaGroup;
+import com.siemens.cto.aem.common.exception.NotFoundException;
+import com.siemens.cto.aem.common.exception.NotUniqueException;
+import com.siemens.cto.aem.common.request.resource.ResourceInstanceRequest;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaResourceInstance;
 import com.siemens.cto.aem.persistence.jpa.service.GroupCrudService;
 import com.siemens.cto.aem.persistence.jpa.service.ResourceInstanceCrudService;
@@ -23,21 +22,6 @@ public class ResourceInstanceCrudServiceImpl extends AbstractCrudServiceImpl<Jpa
 
     public ResourceInstanceCrudServiceImpl(GroupCrudService groupCrudService) {
         this.groupCrudService = groupCrudService;
-    }
-
-    @Override
-    public JpaResourceInstance createResourceInstance(final ResourceInstanceRequest resourceInstanceRequest) throws NotUniqueException {
-
-        JpaResourceInstance jpaResourceInstance = new JpaResourceInstance();
-
-        final JpaGroup group = groupCrudService.getGroup(resourceInstanceRequest.getGroupName());
-
-        jpaResourceInstance.setName(resourceInstanceRequest.getName());
-        jpaResourceInstance.setGroup(group);
-        jpaResourceInstance.setAttributes(resourceInstanceRequest.getAttributes());
-        jpaResourceInstance.setResourceTypeName(resourceInstanceRequest.getResourceTypeName());
-
-        return create(jpaResourceInstance);
     }
 
     @Override

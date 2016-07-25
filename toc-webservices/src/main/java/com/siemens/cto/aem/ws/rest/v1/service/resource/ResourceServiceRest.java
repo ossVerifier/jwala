@@ -38,17 +38,6 @@ public interface ResourceServiceRest {
     Response findResourceInstanceByNameGroup(@PathParam("name") final String name, @MatrixParam("groupName") final String groupName);
 
     /**
-     * /aem/v1.0/resources <br/>
-     * JSON POST data of JsonResourceInstance
-     * @param aResourceInstanceToCreate {@link JsonResourceInstance}
-     * @param aUser the authenticated user who is creating the ResourceInstance
-     * @return the newly created ResourceInstance object
-     */
-    @POST
-    @Consumes(MediaType.APPLICATION_JSON)
-    Response createResourceInstance(final JsonResourceInstance aResourceInstanceToCreate, @BeanParam final AuthenticatedUser aUser);
-
-    /**
      * /aem/v1.0/resources/[resource instance name];groupName=[your group name] <br/>
      * JSON PUT conttaining the same object as create, but empty attributes will remain the same and it will detect changes in the name within the JsonResourceInstance object
      * @param name the name of an existing resource instance for updating

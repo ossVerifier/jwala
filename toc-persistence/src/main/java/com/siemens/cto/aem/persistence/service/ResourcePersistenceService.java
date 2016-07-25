@@ -11,7 +11,6 @@ import java.util.List;
  */
 public interface ResourcePersistenceService {
 
-    ResourceInstance createResourceInstance(ResourceInstanceRequest resourceInstanceRequest);
     List<ResourceInstance> getResourceInstancesByGroupId(final Long groupId);
     ResourceInstance getResourceInstanceByGroupIdAndName(final Long groupId, final String name);
     List<ResourceInstance> getResourceInstancesByGroupIdAndResourceTypeName(final Long groupId, final String typeName);

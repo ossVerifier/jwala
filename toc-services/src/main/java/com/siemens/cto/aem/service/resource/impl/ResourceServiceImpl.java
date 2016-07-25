@@ -121,13 +121,6 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Override
     @Transactional
-    public ResourceInstance createResourceInstance(final ResourceInstanceRequest createResourceInstanceRequest, final User creatingUser) {
-        this.groupPersistenceService.getGroup(createResourceInstanceRequest.getGroupName());
-        return this.resourcePersistenceService.createResourceInstance(createResourceInstanceRequest);
-    }
-
-    @Override
-    @Transactional
     public ResourceInstance updateResourceInstance(final String groupName, final String name, final ResourceInstanceRequest updateResourceInstanceRequest, final User updatingUser) {
         ResourceInstance resourceInstance = this.getResourceInstanceByGroupNameAndName(groupName, name);
         return this.resourcePersistenceService.updateResourceInstance(resourceInstance, updateResourceInstanceRequest);
@@ -795,7 +788,7 @@ public class ResourceServiceImpl implements ResourceService {
         RepositoryFileInformation fileInfo = privateApplicationService.uploadWebArchiveData(uploadWebArchiveRequest);
 
         // upload the external properties file to the database
-//        resourcePersistenceService.
+//        resourcePersistenceService
 
         // TODO wait until properties file is deployed before setting the properties file path?
         String uploadFilePath = fileInfo.getPath().toString();

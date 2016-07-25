@@ -4,16 +4,6 @@ var resourceService = {
         if (groupName === undefined) { return; }
         return serviceFoundation.get("v1.0/resources;groupName=" + groupName.replace(/%20/g, " "), "json", responseCallback);
     },
-    insertNewResource: function(groupName, resourceTypeName, resourceName, attributes, successCallback, errorCallback) {
-        return serviceFoundation.post("v1.0/resources",
-                                      "json",
-                                      JSON.stringify({groupName:groupName,
-                                                      resourceTypeName:resourceTypeName,
-                                                      name:resourceName,
-                                                      attributes:attributes}),
-                                                      successCallback,
-                                                      errorCallback);
-    },
     updateResourceName: function(groupName, resourceTypeName, resourceName, newResourceName, successCallback, errorCallback) {
         return serviceFoundation.put("v1.0/resources/" + resourceName.replace(/%20/g, " ") + ";groupName=" + groupName.replace(/%20/g, " "),
                                      "json",

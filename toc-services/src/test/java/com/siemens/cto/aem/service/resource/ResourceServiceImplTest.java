@@ -189,18 +189,6 @@ public class ResourceServiceImplTest {
     }
 
     @Test
-    public void testCreateResourceInstance(){
-        User mockUser = mock(User.class);
-        ResourceInstance mockResourceInstance = mock(ResourceInstance.class);
-        ResourceInstanceRequest mockResourceInstanceCommand = mock(ResourceInstanceRequest.class);
-        when(mockUser.getId()).thenReturn("userId");
-        when(mockGroupPesistenceService.getGroup(anyString())).thenReturn(mock(Group.class));
-        when(mockResourcePersistenceService.createResourceInstance(any(ResourceInstanceRequest.class))).thenReturn(mockResourceInstance);
-        ResourceInstance value = resourceService.createResourceInstance(mockResourceInstanceCommand, mockUser);
-        assertNotNull(value);
-    }
-
-    @Test
     public void testUpdateResourceInstance(){
         User mockUser = mock(User.class);
         ResourceInstanceRequest resourceInstanceRequest = mock(ResourceInstanceRequest.class);

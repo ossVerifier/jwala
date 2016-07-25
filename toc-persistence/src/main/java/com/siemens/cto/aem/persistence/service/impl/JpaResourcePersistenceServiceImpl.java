@@ -30,11 +30,6 @@ public class JpaResourcePersistenceServiceImpl implements ResourcePersistenceSer
     }
 
     @Override
-    public ResourceInstance createResourceInstance(ResourceInstanceRequest resourceInstanceRequest) {
-        return parseFromJpa(this.resourceInstanceCrudService.createResourceInstance(resourceInstanceRequest));
-    }
-
-    @Override
     public List<ResourceInstance> getResourceInstancesByGroupId(final Long groupId) {
         return this.parseFromJpa(this.resourceInstanceCrudService.getResourceInstancesByGroupId(groupId));
     }

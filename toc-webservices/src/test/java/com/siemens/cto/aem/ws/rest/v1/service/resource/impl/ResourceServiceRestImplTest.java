@@ -86,13 +86,6 @@ public class ResourceServiceRestImplTest {
     }
 
     @Test
-    public void testCreateResourceInstance() {
-        when(impl.createResourceInstance(any(ResourceInstanceRequest.class), any(User.class))).thenReturn(resourceInstance);
-        Response response = cut.createResourceInstance(jsonResourceInstance, authenticatedUser);
-        assertNotNull(response.getEntity());
-    }
-
-    @Test
     public void testUpdateResourceInstanceAttributes() {
         when(impl.updateResourceInstance(anyString(), anyString(), any(ResourceInstanceRequest.class), any(User.class))).thenReturn(resourceInstance);
         Response response = cut.updateResourceInstanceAttributes("resourceName", group.getName(), jsonResourceInstance, authenticatedUser);

@@ -61,12 +61,6 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
     }
 
     @Override
-    public Response createResourceInstance(JsonResourceInstance aResourceInstanceToCreate, AuthenticatedUser aUser) {
-        LOGGER.info("Create resource instance {} by user {}", aResourceInstanceToCreate, aUser.getUser().getId());
-        return ResponseBuilder.ok(this.resourceService.createResourceInstance(aResourceInstanceToCreate.getCommand(), aUser.getUser()));
-    }
-
-    @Override
     public Response updateResourceInstanceAttributes(final String name, final String groupName, JsonResourceInstance aResourceInstanceToUpdate, AuthenticatedUser aUser) {
         LOGGER.info("Update resource instance attributes {} with name {} in group {} by user", aResourceInstanceToUpdate, name, groupName, aUser.getUser().getId());
         return ResponseBuilder.ok(this.resourceService.updateResourceInstance(groupName, name, aResourceInstanceToUpdate.getCommand(), aUser.getUser()));

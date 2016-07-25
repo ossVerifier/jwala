@@ -12,8 +12,6 @@ import java.util.List;
  */
 public interface ResourceInstanceCrudService extends CrudService<JpaResourceInstance> {
 
-    JpaResourceInstance createResourceInstance(final ResourceInstanceRequest resourceInstanceRequest);
-
     JpaResourceInstance updateResourceInstanceAttributes(final Identifier<ResourceInstance> resourceInstanceId, final ResourceInstanceRequest resourceInstanceRequest);
 
     JpaResourceInstance updateResourceInstanceName(final Identifier<ResourceInstance> resourceInstanceId, final ResourceInstanceRequest resourceInstanceRequest);
