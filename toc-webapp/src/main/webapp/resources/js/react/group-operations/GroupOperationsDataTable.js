@@ -304,11 +304,10 @@ var GroupOperationsDataTable = React.createClass({
                   });
       }.bind(this);
    },
-   renderJvmControlPanelWidget: function(parentPrefix, type, dataTable, data, aoColumnDefs, itemIndex, parentId, parentName) {
+   renderJvmControlPanelWidget: function(parentPrefix, type, dataTable, data, aoColumnDefs, itemIndex, parentId) {
        var self= this;
        aoColumnDefs[itemIndex].fnCreatedCell = function (nTd, sData, oData, iRow, iCol) {
            return React.render(<JvmControlPanelWidget data={oData}
-                                                      parentGroup={parentName}
                                                       jvmService={jvmService}
                                                       jvmStartCallback={this.jvmStart}
                                                       jvmStopCallback={this.jvmStop}
@@ -327,7 +326,9 @@ var GroupOperationsDataTable = React.createClass({
    renderWebServerControlPanelWidget: function(parentPrefix, type, dataTable, data, aoColumnDefs, itemIndex, parentId, parentName) {
        var self= this;
        aoColumnDefs[itemIndex].fnCreatedCell = function (nTd, sData, oData, iRow, iCol) {
-            return React.render(<WebServerControlPanelWidget data={oData}
+            var newData = $.extend({}, oData); // do a shallow clone so we don't mutate the source data
+            newData["parentGroup"] = parentName;
+            return React.render(<WebServerControlPanelWidget data={newData}
                                                              parentGroup={parentName}
                                                              webServerService={webServerService}
                                                              webServerStartCallback={this.webServerStart}
