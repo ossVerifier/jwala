@@ -13,6 +13,8 @@ import com.siemens.cto.aem.common.request.app.UploadAppTemplateRequest;
 import com.siemens.cto.aem.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
 import com.siemens.cto.aem.persistence.jpa.service.exception.ResourceTemplateUpdateException;
 import com.siemens.cto.aem.service.app.ApplicationService;
+import com.siemens.cto.aem.service.exception.ApplicationServiceException;
+import com.siemens.cto.aem.service.exception.ResourceServiceException;
 import com.siemens.cto.aem.service.group.GroupService;
 import com.siemens.cto.aem.service.resource.ResourceService;
 import com.siemens.cto.aem.ws.rest.v1.provider.AuthenticatedUser;
@@ -143,7 +145,7 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
             // Anyways, I just followed the original implementation.
             // TODO: Decide if uploading a new war is a CREATE rather than an UPDATE.
             return ResponseBuilder.created(application);
-        } catch (final FileUploadException | IOException e) {
+        } catch (final FileUploadException | ApplicationServiceException | ResourceServiceException | IOException e) {
                 LOGGER.error("Error uploading web archive",e);
             return ResponseBuilder.notOk(Status.INTERNAL_SERVER_ERROR, new FaultCodeException(AemFaultType.IO_EXCEPTION,
                     e.getMessage()));

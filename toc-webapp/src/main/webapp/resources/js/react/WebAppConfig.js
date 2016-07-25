@@ -132,8 +132,10 @@ var WebAppConfig = React.createClass({
     uploadCallback: function() {
         this.refs.uploadWarDlg.refs.uploadWarWidget.performUpload();
     },
-    afterUploadCallback: function() {
+    afterUploadCallback: function(files) {
         this.retrieveData();
+        this.refs.uploadWarDlg.close();
+        $.alert(files[0].name + " upload successful!");
     },
     onDeleteWarBtnClicked: function(data) {
         var self = this;
@@ -551,21 +553,20 @@ var UploadWarWidget = React.createClass({
         if (this.state.uploadData !== null) {
             // Note: Don't confuse with "form" submit. Please see initFileUpload.
             this.state.uploadData.submit().success(function(result, textStatus, jqXHR) {
-                if (!result || result.msgCode !== "0" || !result.applicationResponseContent) {
-                     self.progressError((result.msgCode||"AEM")+ ": " + (result.applicationResponseContent||textStatus));
-                } else {
-                    if ($.isFunction(self.props.afterUploadCallback())) {
-                        self.props.afterUploadCallback();
+
+                if (result && result.msgCode === "0") {
+                    if ($.isFunction(self.props.afterUploadCallback)) {
+                        self.props.afterUploadCallback(self.refs.fileInput.getDOMNode().files);
                     }
-                }
-            }).error (function(result, textStatus, jqXHR) {
-                if (result.responseJSON !== undefined) {
-                    self.progressError((result.responseJSON.msgCode||"AEM")+ ": " + (result.responseJSON.applicationResponseContent||textStatus));
-                } else if ( textStatus ) {
-                    self.progressError("AEM: " + textStatus.substring(0,100));
                 } else {
-                    self.progressError("AEM: Please retry your upload. ");
-                };
+                    self.progressError("Error has occurred! Please check browser console logs for details.");
+                    console.log(result);
+                    console.log(textStatus);
+                }
+
+            }).error (function(result, textStatus, jqXHR) {
+                console.log(result);
+                self.progressError(JSON.parse(result.responseText).applicationResponseContent);
             });
         } else {
             $(this.refs.fileInput.getDOMNode()).effect("highlight")

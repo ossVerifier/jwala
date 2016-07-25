@@ -7,6 +7,10 @@ package com.siemens.cto.aem.service.exception;
  */
 public class ApplicationServiceException extends RuntimeException {
 
+    public ApplicationServiceException(String s) {
+        super(s);
+    }
+
     public ApplicationServiceException(final String msg, final Throwable t) {
         super(msg, t);
     }

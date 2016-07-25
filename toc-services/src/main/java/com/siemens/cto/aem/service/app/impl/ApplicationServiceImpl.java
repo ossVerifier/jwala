@@ -28,6 +28,7 @@ import com.siemens.cto.aem.service.HistoryService;
 import com.siemens.cto.aem.service.MessagingService;
 import com.siemens.cto.aem.service.app.ApplicationService;
 import com.siemens.cto.aem.service.app.PrivateApplicationService;
+import com.siemens.cto.aem.service.exception.ApplicationServiceException;
 import com.siemens.cto.aem.service.group.GroupService;
 import com.siemens.cto.aem.service.resource.ResourceService;
 import com.siemens.cto.aem.template.ResourceFileGenerator;
@@ -586,33 +587,38 @@ public class ApplicationServiceImpl implements ApplicationService {
     @Transactional
     public Application uploadWebArchive(final Identifier<Application> appId, final String warName, final byte[] war,
                                         final String deployPath) throws IOException {
-        final Application application = applicationPersistenceService.getApplication(appId);
-        final ResourceTemplateMetaData resourceTemplateMetaData = new ResourceTemplateMetaData();
+        if (warName != null && warName.toLowerCase().endsWith(".war")) {
 
-        resourceTemplateMetaData.setContentType(ContentType.APPLICATION_BINARY.contentTypeStr);
-        resourceTemplateMetaData.setDeployPath(StringUtils.isEmpty(deployPath) ?
-                                               ApplicationProperties.get(STP_WEBAPPS_DIR) : deployPath);
-        resourceTemplateMetaData.setDeployFileName(warName);
-        resourceTemplateMetaData.setTemplateName(warName);
+            final Application application = applicationPersistenceService.getApplication(appId);
+            final ResourceTemplateMetaData resourceTemplateMetaData = new ResourceTemplateMetaData();
 
-        final Entity entity = new Entity();
-        entity.setGroup(application.getGroup().getName());
-        entity.setDeployToJvms(false);
-        resourceTemplateMetaData.setUnpack(application.isUnpackWar());
+            resourceTemplateMetaData.setContentType(ContentType.APPLICATION_BINARY.contentTypeStr);
+            resourceTemplateMetaData.setDeployPath(StringUtils.isEmpty(deployPath) ?
+                                                   ApplicationProperties.get(STP_WEBAPPS_DIR) : deployPath);
+            resourceTemplateMetaData.setDeployFileName(warName);
+            resourceTemplateMetaData.setTemplateName(warName);
 
-        // Note: This is for backward compatibility.
-        entity.setTarget(application.getName());
-        entity.setType(EntityType.GROUPED_APPS.toString());
+            final Entity entity = new Entity();
+            entity.setGroup(application.getGroup().getName());
+            entity.setDeployToJvms(false);
+            resourceTemplateMetaData.setUnpack(application.isUnpackWar());
 
-        resourceTemplateMetaData.setEntity(entity);
+            // Note: This is for backward compatibility.
+            entity.setTarget(application.getName());
+            entity.setType(EntityType.GROUPED_APPS.toString());
 
-        // Creating a group level app resource is not straightforward, there are business logic involved
-        // that only the resources service knows of so we just reuse it.
-        resourceService.createGroupedLevelAppResource(resourceTemplateMetaData, new ByteArrayInputStream(war), application.getName());
+            resourceTemplateMetaData.setEntity(entity);
 
-        application.setWarName(warName);
-        application.setWarPath(resourceService.getAppTemplate(application.getGroup().getName(), application.getName(), warName));
+            // Creating a group level app resource is not straightforward, there are business logic involved
+            // that only the resources service knows of so we just reuse it.
+            resourceService.createGroupedLevelAppResource(resourceTemplateMetaData, new ByteArrayInputStream(war), application.getName());
 
-        return application;
+            application.setWarName(warName);
+            application.setWarPath(resourceService.getAppTemplate(application.getGroup().getName(), application.getName(), warName));
+
+            return application;
+        } else {
+            throw new ApplicationServiceException("Invalid war file!");
+        }
     }
 }
