@@ -304,10 +304,11 @@ var GroupOperationsDataTable = React.createClass({
                   });
       }.bind(this);
    },
-   renderJvmControlPanelWidget: function(parentPrefix, type, dataTable, data, aoColumnDefs, itemIndex, parentId) {
+   renderJvmControlPanelWidget: function(parentPrefix, type, dataTable, data, aoColumnDefs, itemIndex, parentId, parentName) {
        var self= this;
        aoColumnDefs[itemIndex].fnCreatedCell = function (nTd, sData, oData, iRow, iCol) {
            return React.render(<JvmControlPanelWidget data={oData}
+                                                      parentGroup={parentName}
                                                       jvmService={jvmService}
                                                       jvmStartCallback={this.jvmStart}
                                                       jvmStopCallback={this.jvmStop}
@@ -323,10 +324,11 @@ var GroupOperationsDataTable = React.createClass({
             return React.render(<a>Testing...</a>, nTd);
     }.bind(this);
    },
-   renderWebServerControlPanelWidget: function(parentPrefix, type, dataTable, data, aoColumnDefs, itemIndex, parentId) {
+   renderWebServerControlPanelWidget: function(parentPrefix, type, dataTable, data, aoColumnDefs, itemIndex, parentId, parentName) {
        var self= this;
        aoColumnDefs[itemIndex].fnCreatedCell = function (nTd, sData, oData, iRow, iCol) {
             return React.render(<WebServerControlPanelWidget data={oData}
+                                                             parentGroup={parentName}
                                                              webServerService={webServerService}
                                                              webServerStartCallback={this.webServerStart}
                                                              webServerStopCallback={this.webServerStop} />, nTd, function() {
