@@ -21,7 +21,6 @@
         <class>com.siemens.cto.aem.persistence.jpa.domain.JpaHistory</class>
         <class>com.siemens.cto.aem.persistence.jpa.domain.JpaJvm</class>
         <class>com.siemens.cto.aem.persistence.jpa.domain.resource.config.template.JpaJvmConfigTemplate</class>
-        <class>com.siemens.cto.aem.persistence.jpa.domain.JpaResourceInstance</class>
         <class>com.siemens.cto.aem.persistence.jpa.domain.JpaWebServer</class>
         <class>com.siemens.cto.aem.persistence.jpa.domain.resource.config.template.JpaWebServerConfigTemplate</class>
         <exclude-unlisted-classes>true</exclude-unlisted-classes>
