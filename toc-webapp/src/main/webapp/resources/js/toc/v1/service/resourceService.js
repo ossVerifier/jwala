@@ -24,13 +24,6 @@ var resourceService = {
                                      successCallback,
                                      errorCallback);
     },
-    deleteResources: function(groupName, resourceNames, successCallback, errorCallback) {
-        var resourceNamesMatrix = "";
-        resourceNames.forEach(function(name){
-            resourceNamesMatrix = resourceNamesMatrix + "resourceName=" + name.replace(/%20/g, " ") + ";";
-        });
-        return serviceFoundation.del("v1.0/resources;groupName=" + groupName + ";" + resourceNamesMatrix, "json", errorCallback).then(successCallback);
-    },
     updateResourceAttributes: function(resourceName, groupName, resource, successCallback, errorCallback) {
         return serviceFoundation.put("v1.0/resources/" + resourceName.replace(/%20/g, " ") +  ";groupName=" + groupName.replace(/%20/g, " "),
                                      "json",

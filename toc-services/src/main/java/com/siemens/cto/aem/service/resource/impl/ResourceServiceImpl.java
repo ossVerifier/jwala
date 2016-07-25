@@ -134,19 +134,6 @@ public class ResourceServiceImpl implements ResourceService {
     }
 
     @Override
-    @Transactional
-    public void deleteResourceInstance(final String groupName, final String name) {
-        ResourceInstance resourceInstance = this.getResourceInstanceByGroupNameAndName(groupName, name);
-        this.resourcePersistenceService.deleteResourceInstance(resourceInstance.getResourceInstanceId());
-    }
-
-    @Override
-    @Transactional
-    public void deleteResources(final String groupName, final List<String> resourceNames) {
-        resourcePersistenceService.deleteResources(groupName, resourceNames);
-    }
-
-    @Override
     public String encryptUsingPlatformBean(String cleartext) {
         StandardEvaluationContext context = new StandardEvaluationContext();
         context.setVariable("stringToEncrypt", cleartext);
@@ -806,6 +793,9 @@ public class ResourceServiceImpl implements ResourceService {
         Application fakedApplication = new Application(new Identifier<Application>(0L), fileName, "", "", null, true, true, false, fileName);
         UploadWebArchiveRequest uploadWebArchiveRequest = new UploadWebArchiveRequest(fakedApplication,fileName, -1L, propertiesFileIn);
         RepositoryFileInformation fileInfo = privateApplicationService.uploadWebArchiveData(uploadWebArchiveRequest);
+
+        // upload the external properties file to the database
+//        resourcePersistenceService.
 
         // TODO wait until properties file is deployed before setting the properties file path?
         String uploadFilePath = fileInfo.getPath().toString();

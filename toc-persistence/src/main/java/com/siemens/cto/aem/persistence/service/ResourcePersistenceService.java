@@ -17,8 +17,6 @@ public interface ResourcePersistenceService {
     List<ResourceInstance> getResourceInstancesByGroupIdAndResourceTypeName(final Long groupId, final String typeName);
     ResourceInstance getResourceInstance(final Identifier<ResourceInstance> resourceInstanceId);
     ResourceInstance updateResourceInstance(ResourceInstance resourceInstance, final ResourceInstanceRequest resourceInstanceRequest);
-    void deleteResourceInstance(final Identifier<ResourceInstance> resourceInstanceId);
-    void deleteResources(final String groupName, final List<String> resourceNames);
 
     /**
      * Get's an application's resource names.

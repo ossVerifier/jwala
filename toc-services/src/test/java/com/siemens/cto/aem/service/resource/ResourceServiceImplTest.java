@@ -136,22 +136,6 @@ public class ResourceServiceImplTest {
     }
 
     @Test
-    public void testDelete() {
-        Group mockGroup = mock(Group.class);
-        ResourceInstance mockResourceInstance = mock(ResourceInstance.class);
-        when(mockGroup.getId()).thenReturn(new Identifier<Group>(11L));
-        when(mockGroupPesistenceService.getGroup(anyString())).thenReturn(mockGroup);
-        when(mockResourcePersistenceService.getResourceInstanceByGroupIdAndName(anyLong(), anyString())).thenReturn(mockResourceInstance);
-        when(mockResourceInstance.getResourceInstanceId()).thenReturn(new Identifier<ResourceInstance>(1L));
-        resourceService.deleteResourceInstance("resourceName", "groupName");
-        verify(mockResourcePersistenceService).deleteResourceInstance(any(Identifier.class));
-
-        final ArrayList<String> resourceNames = new ArrayList<>();
-        resourceService.deleteResources("groupName", resourceNames);
-        verify(mockResourcePersistenceService).deleteResources(anyString(), anyList());
-    }
-
-    @Test
     public void testRead() {
         assertNotNull("");
     }

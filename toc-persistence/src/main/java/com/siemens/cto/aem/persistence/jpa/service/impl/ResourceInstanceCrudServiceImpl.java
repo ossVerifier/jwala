@@ -96,11 +96,6 @@ public class ResourceInstanceCrudServiceImpl extends AbstractCrudServiceImpl<Jpa
         return query.getResultList();
     }
 
-    @Override
-    public void deleteResourceInstance(final Identifier<ResourceInstance> aResourceInstanceId) {
-        remove(getJpaResourceInstance(aResourceInstanceId));
-    }
-
     protected JpaResourceInstance getJpaResourceInstance(final Identifier<ResourceInstance> aResourceInstanceId) throws NotFoundException {
 
         final JpaResourceInstance jpaResourceInstance = findById(aResourceInstanceId.getId());

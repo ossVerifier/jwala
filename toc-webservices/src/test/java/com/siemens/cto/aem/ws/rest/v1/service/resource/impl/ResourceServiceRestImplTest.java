@@ -100,18 +100,6 @@ public class ResourceServiceRestImplTest {
     }
 
     @Test
-    public void testRemoveResourceInstance() {
-        Response response = cut.removeResourceInstance("resourceName", group.getName(), authenticatedUser);
-        assertNull(response.getEntity());
-    }
-
-    @Test
-    public void testRemoveResources() {
-        Response response = cut.removeResources(group.getName(), new ArrayList<String>(), authenticatedUser);
-        assertNull(response.getEntity());
-    }
-
-    @Test
     public void testCreateTemplate() throws IOException {
         List<Attachment> attachmentList = new ArrayList<>();
         Attachment json = mock(Attachment.class);

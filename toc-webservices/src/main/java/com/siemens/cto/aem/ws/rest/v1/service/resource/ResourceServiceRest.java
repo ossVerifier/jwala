@@ -62,32 +62,6 @@ public interface ResourceServiceRest {
     Response updateResourceInstanceAttributes(@PathParam("name") final String name, @MatrixParam("groupName") final String groupName, final JsonResourceInstance aResourceInstanceToUpdate, @BeanParam final AuthenticatedUser aUser);
 
     /**
-     * /aem/v1.0/resources/[resource instance name];groupName=[your group name]
-     * @param name the name of a the existing ResourceInstance to be deleted
-     * @param groupName the group name of the resource instance to be deleted
-     * @return  If successful nothing.
-     */
-    @DELETE
-    @Path("/{name}")
-    Response removeResourceInstance(@PathParam("name") final String name, @MatrixParam("groupName") final String groupName, @BeanParam final AuthenticatedUser aUser);
-
-    /**
-     * Removes a list of resources.
-     *
-     * usage: /aem/v1.0/resources;groupName=[group name];resourceName=[resourceName1];resourceName=[resourceName2]
-     *
-     * @param groupName the group where the resources to be removed belong to.
-     * @param resourceNames the names of the resources to remove.
-     *
-     * @return {@link Response}
-     */
-    @DELETE
-    @Consumes(MediaType.APPLICATION_JSON)
-    Response removeResources(@MatrixParam("groupName") final String groupName,
-                             @MatrixParam("resourceName") final List<String> resourceNames,
-                             @BeanParam final AuthenticatedUser aUser);
-
-    /**
      * Creates a template file and it's corresponding JSON meta data file.
      * A template file is used when generating the actual resource file what will be deployed to a JVM or web server.
      * @param attachments contains the template's meta data and main content

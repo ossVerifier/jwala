@@ -72,26 +72,6 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
         return ResponseBuilder.ok(this.resourceService.updateResourceInstance(groupName, name, aResourceInstanceToUpdate.getCommand(), aUser.getUser()));
     }
 
-    @Override
-    public Response removeResourceInstance(final String name, final String groupName, AuthenticatedUser aUser) {
-        LOGGER.info("Remove resource instance name {} from group {} by user {}", name, groupName, aUser.getUser().getId());
-        this.resourceService.deleteResourceInstance(groupName, name);
-        return ResponseBuilder.ok();
-    }
-
-    @Override
-    public Response removeResources(String groupName, List<String> resourceNames, AuthenticatedUser aUser) {
-        LOGGER.info("Remove resources {} from group {} by user {}", resourceNames, groupName, aUser.getUser().getId());
-        try {
-            resourceService.deleteResources(groupName, resourceNames);
-            return ResponseBuilder.ok();
-        } catch (RuntimeException e) {
-            LOGGER.error("Could not remove resources {}", resourceNames, e);
-            return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR,
-                    new FaultCodeException(AemFaultType.PERSISTENCE_ERROR, e.getMessage()));
-        }
-    }
-
     public Response createTemplate(final List<Attachment> attachments, final String targetName, final AuthenticatedUser user) {
         LOGGER.info("create template for target {} by user {}", targetName, user.getUser().getId());
         try {
@@ -363,7 +343,7 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
 
     @Override
     public Response deleteResources(final String[] templateNameArray, ResourceHierarchyParam resourceHierarchyParam, AuthenticatedUser user) {
-        LOGGER.info("Delete resource {} by user {} with details {}", templateNameArray, user.getUser().getId(), resourceHierarchyParam);
+        LOGGER.info("Delete resources {} by user {} with details {}", templateNameArray, user.getUser().getId(), resourceHierarchyParam);
         int deletedRecCount = 0;
 
         final List<String> templateNameList = Arrays.asList(templateNameArray);

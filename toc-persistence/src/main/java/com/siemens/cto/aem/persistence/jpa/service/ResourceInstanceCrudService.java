@@ -25,6 +25,4 @@ public interface ResourceInstanceCrudService extends CrudService<JpaResourceInst
     JpaResourceInstance getResourceInstanceByGroupIdAndName(final Long groupId, String name);
 
     List<JpaResourceInstance> getResourceInstancesByGroupIdAndResourceTypeName(final Long groupId, final String typeName);
-
-    void deleteResourceInstance(final Identifier<ResourceInstance> resourceInstanceId);
 }

@@ -27,10 +27,6 @@ public interface ResourceService {
 
     ResourceInstance updateResourceInstance(final String groupName, final String name, final ResourceInstanceRequest updateResourceInstanceAttributesCommand, final User updatingUser);
 
-    void deleteResourceInstance(final String name, final String groupName);
-
-    void deleteResources(final String groupName, final List<String> resourceNames);
-    
     String  encryptUsingPlatformBean(String cleartext);
 
     /**

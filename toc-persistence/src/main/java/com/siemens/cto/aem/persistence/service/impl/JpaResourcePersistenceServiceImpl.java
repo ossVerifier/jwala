@@ -65,36 +65,6 @@ public class JpaResourcePersistenceServiceImpl implements ResourcePersistenceSer
         return parseFromJpa(this.resourceInstanceCrudService.getResourceInstance(resourceInstanceId));
     }
 
-    @Override
-    public void deleteResourceInstance(final Identifier<ResourceInstance> resourceInstanceId) {
-        this.resourceInstanceCrudService.deleteResourceInstance(resourceInstanceId);
-    }
-
-    @Override
-    public void deleteResources(String groupName, List<String> resourceNames) {
-        // We have to manually delete the attributes table to prevent constraint violation exceptions.
-        // The attributes were defined with @ElementCollection and as such cascade deletion doesn't seem to
-        // include related entities. Please see:
-        // http://stackoverflow.com/questions/3903202/how-to-do-bulk-delete-in-jpa-when-using-element-collections
-        final StringBuilder sb = new StringBuilder();
-        for (String resourceName: resourceNames) {
-            if (sb.length() > 0) {
-                sb.append(",");
-            }
-            sb.append("'").append(resourceName).append("'");
-        }
-        Query nativeQry = em.createNativeQuery("DELETE FROM RESOURCE_INSTANCE_ATTRIBUTES WHERE RESOURCE_INSTANCE_ID IN " +
-                "(SELECT r.RESOURCE_INSTANCE_ID FROM RESOURCE_INSTANCE r WHERE r.RESOURCE_INSTANCE_NAME IN (" + sb.toString() + "))");
-        nativeQry.executeUpdate();
-        em.flush();
-
-        final Query qry = em.createNamedQuery(JpaResourceInstance.DELETE_RESOURCES_QUERY);
-        qry.setParameter("groupName", groupName);
-        qry.setParameter("resourceNames", resourceNames);
-        qry.executeUpdate();
-        em.flush();
-    }
-
     private final List<ResourceInstance> parseFromJpa(List<JpaResourceInstance> jpaResourceInstances) {
         List<ResourceInstance> resourceInstances = new ArrayList<>();
         for (JpaResourceInstance resourceInstance: jpaResourceInstances) {
