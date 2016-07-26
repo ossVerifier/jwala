@@ -11,7 +11,7 @@ public class CreateResourceResponseWrapper {
 
     private final ConfigTemplate configTemplate;
 
-    public CreateResourceResponseWrapper(ConfigTemplate configTemplate) {
+    public CreateResourceResponseWrapper(final ConfigTemplate configTemplate) {
         this.configTemplate = configTemplate;
     }
 
