@@ -72,7 +72,17 @@ var GroupOperationsDataTable = React.createClass({
                                                title:"Web Servers",
                                                isCollapsible:true,
                                                headerComponents:[
-                                                    {id:"generateWebServers",
+                                                    {id:"drainWebServers",
+                                                     sTitle:"Draining all web servers",
+                                                     mData:null,
+                                                     tocType:"button",
+                                                     btnLabel:"Drain Web Servers",
+                                                     btnCallback:this.drainGroupWebServers,
+                                                     className:"inline-block",
+                                                     buttonClassName: tocVars["resourcesEnabled"] === "false" ? "display-none" : "ui-button-height",
+                                                     onClickMessage:"Draining web server configurations ..."},
+                                                     {id:"space1", tocType:"space"},
+                                                     {id:"generateWebServers",
                                                      sTitle:"Generate the httpd.conf and deploy all web servers",
                                                      mData:null,
                                                      tocType:"button",
@@ -653,6 +663,24 @@ var GroupOperationsDataTable = React.createClass({
                             self.writeWebServerActionToCommandStatusWidget(event.data.id, "INVOKE");
                        };
         this.verifyAndConfirmControlOperation(event.data.id, event.data.buttonSelector, event.data.name, "generate all Web Servers under", callback, "webServer");
+    },
+    drainGroupWebServers: function(event) {
+        //TODO: Uncomment below code for drain
+        /*changed code here*/
+                /*var self = this;
+                var callback = function(id, buttonSelector) {
+                                 self.disableEnable(event.data.buttonSelector, function() {return groupControlService.drainWebServers(event.data.name,
+                                      function(resp) {
+                                          $.alert("Successfully drained the web servers for " + resp.applicationResponseContent.name, false)
+                                      },
+                                      function(errMsg) {
+                                        $.alert(errMsg, "Draining Web Servers Failed", false);
+                                      }
+                            )},"ui-icon-stop");
+                            self.writeWebServerActionToCommandStatusWidget(event.data.id, "INVOKE");
+                };
+        this.verifyAndConfirmControlOperation(event.data.id, event.data.buttonSelector, event.data.name, "drain all Web Servers under", callback, "webServer");*/
+        console.log("clicked drain all");
     },
     generateGroupJvms: function(event) {
         var self = this;
