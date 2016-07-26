@@ -5,7 +5,7 @@ import com.siemens.cto.aem.common.domain.model.resource.ResourceGroup;
 import com.siemens.cto.aem.common.domain.model.resource.ResourceIdentifier;
 import com.siemens.cto.aem.common.domain.model.resource.ResourceTemplateMetaData;
 import com.siemens.cto.aem.common.domain.model.user.User;
-import com.siemens.cto.aem.service.resource.impl.CreateResourceTemplateApplicationResponseWrapper;
+import com.siemens.cto.aem.service.resource.impl.CreateResourceResponseWrapper;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -40,19 +40,19 @@ public interface ResourceService {
      * @param user
      */
     @Deprecated
-    CreateResourceTemplateApplicationResponseWrapper createTemplate(InputStream metaDataInputStream, InputStream templateData, String targetName, User user);
+    CreateResourceResponseWrapper createTemplate(InputStream metaDataInputStream, InputStream templateData, String targetName, User user);
 
-    CreateResourceTemplateApplicationResponseWrapper createJvmResource(ResourceTemplateMetaData metaData,
-                                                                       InputStream templateData,
-                                                                       String jvmName);
+    CreateResourceResponseWrapper createJvmResource(ResourceTemplateMetaData metaData,
+                                                    InputStream templateData,
+                                                    String jvmName);
 
     /**
      * Create the JVM template in the db and in the templates path for all the JVMs.
      *  @param metaData     the data that describes the template, please see {@link ResourceTemplateMetaData}
      * @param templateData the template content/data
      */
-    CreateResourceTemplateApplicationResponseWrapper createGroupLevelJvmResource(ResourceTemplateMetaData metaData,
-                                                                                 InputStream templateData, String groupName) throws IOException;
+    CreateResourceResponseWrapper createGroupLevelJvmResource(ResourceTemplateMetaData metaData,
+                                                              InputStream templateData, String groupName) throws IOException;
 
     /**
      * Create web server resource.
@@ -61,10 +61,10 @@ public interface ResourceService {
      * @param webServerName identifies the web server to which the template belongs to
      * @param user the user responsible for executing this service
      */
-    CreateResourceTemplateApplicationResponseWrapper createWebServerResource(ResourceTemplateMetaData metaData,
-                                                                             InputStream templateData,
-                                                                             String webServerName,
-                                                                             User user);
+    CreateResourceResponseWrapper createWebServerResource(ResourceTemplateMetaData metaData,
+                                                          InputStream templateData,
+                                                          String webServerName,
+                                                          User user);
 
     /**
      * Create the web server template in the db and in the templates path for all the web servers.
@@ -72,10 +72,10 @@ public interface ResourceService {
      * @param templateData the template content/data
      * @param user the user
      */
-    CreateResourceTemplateApplicationResponseWrapper createGroupLevelWebServerResource(ResourceTemplateMetaData metaData,
-                                                                                       InputStream templateData,
-                                                                                       String groupName,
-                                                                                       User user) throws IOException;
+    CreateResourceResponseWrapper createGroupLevelWebServerResource(ResourceTemplateMetaData metaData,
+                                                                    InputStream templateData,
+                                                                    String groupName,
+                                                                    User user) throws IOException;
 
     /**
      * Create application resource.
@@ -85,10 +85,10 @@ public interface ResourceService {
      * @param jvmName the name of the JVM to associate the resource to
      * @param appName the name of the application to associate the resource to
      */
-    CreateResourceTemplateApplicationResponseWrapper createAppResource(ResourceTemplateMetaData metaData,
-                                                                       InputStream templateData,
-                                                                       String jvmName,
-                                                                       String appName);
+    CreateResourceResponseWrapper createAppResource(ResourceTemplateMetaData metaData,
+                                                    InputStream templateData,
+                                                    String jvmName,
+                                                    String appName);
 
     /**
      * Create group level application resource.
@@ -98,9 +98,9 @@ public interface ResourceService {
      * @param targetAppName the name of the application to associate the resource to
      */
     // TODO: Specify the group as well!
-    CreateResourceTemplateApplicationResponseWrapper createGroupedLevelAppResource(ResourceTemplateMetaData metaData,
-                                                                                   InputStream templateData,
-                                                                                   String targetAppName) throws IOException;
+    CreateResourceResponseWrapper createGroupedLevelAppResource(ResourceTemplateMetaData metaData,
+                                                                InputStream templateData,
+                                                                String targetAppName) throws IOException;
 
     /**
      * Generates the ResourceGroup class object, which contains all the jvms, webapps, webservers and groups information.

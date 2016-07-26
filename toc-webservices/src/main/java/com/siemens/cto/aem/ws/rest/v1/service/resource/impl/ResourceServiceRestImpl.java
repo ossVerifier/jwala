@@ -8,7 +8,7 @@ import com.siemens.cto.aem.common.domain.model.resource.ResourceTemplateMetaData
 import com.siemens.cto.aem.common.exception.FaultCodeException;
 import com.siemens.cto.aem.service.exception.ResourceServiceException;
 import com.siemens.cto.aem.service.resource.ResourceService;
-import com.siemens.cto.aem.service.resource.impl.CreateResourceTemplateApplicationResponseWrapper;
+import com.siemens.cto.aem.service.resource.impl.CreateResourceResponseWrapper;
 import com.siemens.cto.aem.ws.rest.v1.provider.AuthenticatedUser;
 import com.siemens.cto.aem.ws.rest.v1.response.ResponseBuilder;
 import com.siemens.cto.aem.ws.rest.v1.service.resource.CreateResourceParam;
@@ -161,7 +161,7 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
                     "Invalid number of attachments! 2 attachments is expected by the service."));
         }
 
-        CreateResourceTemplateApplicationResponseWrapper responseWrapper = null;
+        CreateResourceResponseWrapper responseWrapper = null;
         try {
             final ObjectMapper mapper = new ObjectMapper();
             ResourceTemplateMetaData resourceTemplateMetaData = mapper.readValue(IOUtils.toString(metadataIn), ResourceTemplateMetaData.class);
