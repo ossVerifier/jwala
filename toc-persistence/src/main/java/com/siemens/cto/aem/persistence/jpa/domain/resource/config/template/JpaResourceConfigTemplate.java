@@ -10,7 +10,7 @@ import javax.persistence.*;
         @NamedQuery(name = JpaResourceConfigTemplate.GET_RESOURCE_TEMPLATE_NAMES,
                 query = "SELECT t.templateName FROM JpaResourceConfigTemplate t WHERE t.jvm.name = :jvmName"),
         @NamedQuery(name = JpaResourceConfigTemplate.GET_RESOURCE_TEMPLATE_CONTENT,
-                query = "SELECT t.templateContent FROM JpaResourceConfigTemplate t where t.jvm.name = :jvmName and t.templateName = :templateName"),
+                query = "SELECT t FROM JpaResourceConfigTemplate t where t.entityId = :entityId and t.appId = :appId and t.grpId = :grpId and t.entityType = :entityType and t.templateName = :templateName"),
         @NamedQuery(name = JpaResourceConfigTemplate.GET_RESOURCE_TEMPLATE_META_DATA,
                 query = "SELECT t.metaData FROM JpaResourceConfigTemplate t where t.jvm.name = :jvmName and t.templateName = :templateName"),
         @NamedQuery(name = JpaResourceConfigTemplate.UPDATE_RESOURCE_TEMPLATE_CONTENT,
@@ -36,6 +36,12 @@ public class JpaResourceConfigTemplate extends ConfigTemplate{
     public static final String QUERY_GET_RESOURCE_TEMPLATES = "queryGetResourceTemplates";
     public static final String GET_TEMPLATE_RESOURCE_NAME = "getTemplateResourceName";
     public static final String QUERY_GET_RESOURCE = "queryGetResource";
+
+    public static final String QUERY_PARAM_ENTITY_ID = "entityId";
+    public static final String QUERY_PARAM_APP_ID = "appId";
+    public static final String QUERY_PARAM_GRP_ID = "grpId";
+    public static final String QUERY_PARAM_ENTITY_TYPE = "entityType";
+    public static final String QUERY_PARAM_TEMPLATE_NAME= "templateName";
 
     @Column(name = "ENTITY_ID", nullable = true)
     private Long entityId;

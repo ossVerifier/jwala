@@ -1,5 +1,6 @@
 package com.siemens.cto.aem.persistence.service.impl;
 
+import com.siemens.cto.aem.common.domain.model.resource.EntityType;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaApplicationConfigTemplate;
 import com.siemens.cto.aem.persistence.jpa.domain.resource.config.template.*;
 import com.siemens.cto.aem.persistence.service.ResourceDao;
@@ -169,5 +170,17 @@ public class ResourceDaoImpl implements ResourceDao {
         q.setParameter(JpaGroupAppConfigTemplate.QUERY_PARAM_APP_NAME,  appName);
         q.setParameter(JpaGroupAppConfigTemplate.QUERY_PARAM_GRP_NAME,  groupName);
         return (JpaGroupAppConfigTemplate) q.getSingleResult();
+    }
+
+    @Override
+    public JpaResourceConfigTemplate getExternalPropertiesResource(String resourceName) {
+        final Query q = em.createNamedQuery(JpaResourceConfigTemplate.GET_RESOURCE_TEMPLATE_CONTENT);
+        q.setParameter(JpaResourceConfigTemplate.QUERY_PARAM_TEMPLATE_NAME, resourceName);
+        q.setParameter(JpaResourceConfigTemplate.QUERY_PARAM_ENTITY_ID, null);
+        q.setParameter(JpaResourceConfigTemplate.QUERY_PARAM_APP_ID, null);
+        q.setParameter(JpaResourceConfigTemplate.QUERY_PARAM_GRP_ID, null);
+        q.setParameter(JpaResourceConfigTemplate.QUERY_PARAM_ENTITY_TYPE, EntityType.EXT_PROPERTIES);
+
+        return (JpaResourceConfigTemplate) q.getSingleResult();
     }
 }

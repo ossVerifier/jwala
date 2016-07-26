@@ -103,8 +103,8 @@ public interface ResourceServiceRest {
     Response deleteResources(@MatrixParam("name") String [] templateNameArray, @MatrixParam("") ResourceHierarchyParam resourceHierarchyParam, @BeanParam AuthenticatedUser user);
 
     @GET
-    @Path("/{name}/content")
-    Response getResourceContent(@PathParam("name") String name, @MatrixParam("") ResourceHierarchyParam resourceHierarchyParam);
+    @Path("/{resourceName}/content")
+    Response getResourceContent(@PathParam("resourceName") String resourceName, @MatrixParam("") ResourceHierarchyParam resourceHierarchyParam);
 
     /**
      * Upload an external properties file

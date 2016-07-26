@@ -9,7 +9,8 @@ var ResourceEditor = React.createClass({
     getInitialState: function() {
         return {
             groupData: null,
-            resourceAttrData: null
+            resourceAttrData: null,
+            entity: null
         }
     },
     render: function() {
@@ -102,6 +103,7 @@ var ResourceEditor = React.createClass({
         this.setState({groupData:groupData});
     },
     selectNodeCallback: function(data, entity, parent) {
+        this.setState({entity: entity});
         if (this.props.selectEntityCallback(data, entity, parent)) {
             this.refs.resourcePane.getData(data);
             this.refs.resourceAttrPane.setCurrentlySelectedEntityData(data, entity, parent);
@@ -110,7 +112,8 @@ var ResourceEditor = React.createClass({
         return false;
     },
     selectResourceCallback: function(value, groupJvmEntityType) {
-        return this.props.selectResourceTemplateCallback(this.refs.treeList.getSelectedNodeData(), value, groupJvmEntityType);
+        // extProperties isn't part of the resources tree, so we have to fake that it was selected since it won't ever be returned in getSelectedNodeData
+        return this.props.selectResourceTemplateCallback(this.state.entity === "extProperties" ? this.state.entity : this.refs.treeList.getSelectedNodeData(), value, groupJvmEntityType);
     },
     onParentSplitterChange: function(dimensions) {
         this.refs.groupsDlg.recomputeContentContainerSize(dimensions[0]);

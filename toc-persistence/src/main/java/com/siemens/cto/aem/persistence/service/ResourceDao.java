@@ -159,4 +159,6 @@ public interface ResourceDao {
      *@param groupName group name  @return {@link JpaGroupAppConfigTemplate}
      */
     JpaGroupAppConfigTemplate getGroupLevelAppResource(String resourceName, String appName, String groupName);
+
+    JpaResourceConfigTemplate getExternalPropertiesResource(String resourceName);
 }
