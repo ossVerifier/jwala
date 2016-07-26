@@ -418,9 +418,7 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
                     new FaultCodeException(AemFaultType.IO_EXCEPTION, ioe.getMessage()));
         }
 
-        resourceService.uploadExternalProperties(fileName, propertiesFileIn);
-
-        return ResponseBuilder.ok(resourceService.getExternalProperties());
+        return ResponseBuilder.ok(resourceService.uploadExternalProperties(fileName, propertiesFileIn));
     }
 
     @Override

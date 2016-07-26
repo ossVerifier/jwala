@@ -54,7 +54,6 @@ import java.util.*;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
@@ -230,7 +229,7 @@ public class ApplicationServiceImplTest {
     @SuppressWarnings("unchecked")
     @Test(expected = BadRequestException.class)
     public void testCreateBadRequest() {
-        when(applicationPersistenceService.createApplication(any(CreateApplicationRequest.class), anyString(), anyString(), anyString())).thenReturn(mockApplication2);
+        when(applicationPersistenceService.createApplication(any(CreateApplicationRequest.class))).thenReturn(mockApplication2);
 
         CreateApplicationRequest cac = new CreateApplicationRequest(Identifier.id(1L, Group.class), "", "", true, true, false);
         Application created = applicationService.createApplication(cac, new User("user"));
@@ -241,7 +240,7 @@ public class ApplicationServiceImplTest {
     @SuppressWarnings("unchecked")
     @Test
     public void testCreate() {
-        when(applicationPersistenceService.createApplication(any(CreateApplicationRequest.class), anyString(), anyString(), anyString())).thenReturn(mockApplication2);
+        when(applicationPersistenceService.createApplication(any(CreateApplicationRequest.class))).thenReturn(mockApplication2);
 
         CreateApplicationRequest cac = new CreateApplicationRequest(Identifier.id(1L, Group.class), "wan", "/wan", true, true, false);
         Application created = applicationService.createApplication(cac, new User("user"));

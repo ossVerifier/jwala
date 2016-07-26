@@ -1,5 +1,9 @@
 package com.siemens.cto.aem.persistence.service;
 
+import com.siemens.cto.aem.common.domain.model.resource.EntityType;
+import com.siemens.cto.aem.persistence.jpa.domain.resource.config.template.JpaResourceConfigTemplate;
+
+import java.io.InputStream;
 import java.util.List;
 
 /**
@@ -23,4 +27,6 @@ public interface ResourcePersistenceService {
      * @return the template
      */
     String getAppTemplate(String groupName, String appName, String templateName);
+
+    JpaResourceConfigTemplate createResource(Long entityId, Long groupId, Long appId, EntityType extProperties, String fileName, InputStream propertiesFileIn);
 }
