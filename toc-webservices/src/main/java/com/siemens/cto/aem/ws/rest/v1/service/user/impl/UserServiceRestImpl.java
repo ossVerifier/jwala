@@ -1,45 +1,52 @@
 package com.siemens.cto.aem.ws.rest.v1.service.user.impl;
 
-import com.siemens.cto.aem.common.exception.FaultCodeException;
-import com.siemens.cto.aem.common.properties.ApplicationProperties;
-import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
-import com.siemens.cto.aem.ws.rest.v1.response.ResponseBuilder;
-import com.siemens.cto.aem.ws.rest.v1.service.user.UserServiceRest;
-import com.sun.jndi.ldap.LdapCtxFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.Collection;
 
-import javax.naming.NamingException;
+import javax.naming.AuthenticationException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.core.Response;
-import java.util.Hashtable;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+
+import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
+import com.siemens.cto.aem.common.exception.FaultCodeException;
+import com.siemens.cto.aem.common.properties.ApplicationProperties;
+import com.siemens.cto.aem.ws.rest.v1.response.ResponseBuilder;
+import com.siemens.cto.aem.ws.rest.v1.service.user.UserServiceRest;
 
 public class UserServiceRestImpl implements UserServiceRest {
 
+    @Autowired
+    AuthenticationConfiguration authenticationConfiguration;
+    
     private static final Logger LOGGER = LoggerFactory.getLogger(UserServiceRestImpl.class);
 
     public static final String JSON_RESPONSE_OK = "{'response':'ok'}";
+    public static final String JSON_RESPONSE_TRUE = "{'response':'true'}";
+    public static final String JSON_RESPONSE_FALSE = "{'response':'false'}";
+
+    private static final String TOC_AUTHORIZATION= "toc.authorization";
+    private static final String PROP_TOC_ROLE_ADMIN = "toc.role.admin";
+    
     private static final String USER = "user";
-    private static final String ACTIVE_DIRECTORY_DOMAIN = "active.directory.domain";
-    private static final String ACTIVE_DIRECTORY_SERVER_NAME = "active.directory.server.name";
-    private static final String ACTIVE_DIRECTORY_SERVER_PORT = "active.directory.server.port";
 
     @Override
-    @SuppressWarnings("all")
     public Response login(HttpServletRequest request, String userName, String password) {
-        final String domain = ApplicationProperties.get(ACTIVE_DIRECTORY_DOMAIN);
-        final String host = ApplicationProperties.get(ACTIVE_DIRECTORY_SERVER_NAME);
-        final String port = ApplicationProperties.get(ACTIVE_DIRECTORY_SERVER_PORT);
-
-        final Hashtable<String, String> props = new Hashtable<>();
-        props.put(javax.naming.Context.SECURITY_PRINCIPAL, userName + "@" + domain);
-        props.put(javax.naming.Context.SECURITY_CREDENTIALS, password);
-
         try {
-            LdapCtxFactory.getLdapCtxInstance("ldap://" + host + ":" + port, props);
-        } catch (NamingException e) {
-            LOGGER.error("Unable to connect to Ldap",
+            Authentication authRequest = new UsernamePasswordAuthenticationToken( userName, password );
+            Authentication result = authenticationConfiguration.getAuthenticationManager().authenticate( authRequest );
+            SecurityContextHolder.getContext().setAuthentication( result );
+        } catch (Exception e) {
+            LOGGER.error("Error Login",
                          e);
             // TODO: Check with Siemens's Health Care REST standards
             return ResponseBuilder.notOk(Response.Status.UNAUTHORIZED,
@@ -56,5 +63,28 @@ public class UserServiceRestImpl implements UserServiceRest {
         LOGGER.debug("Entered logout for user: {}", request.getUserPrincipal());
         request.getSession().invalidate();
         return ResponseBuilder.ok(JSON_RESPONSE_OK);
+    }
+
+    @Override
+    public Response isUserAdmin(HttpServletRequest request, HttpServletResponse response) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Collection<GrantedAuthority> authorities = (Collection<GrantedAuthority>) auth.getAuthorities();
+        if(authorities.contains(new SimpleGrantedAuthority( ApplicationProperties.get(PROP_TOC_ROLE_ADMIN)))){
+            return ResponseBuilder.ok(JSON_RESPONSE_TRUE);
+        }
+        return ResponseBuilder.ok(JSON_RESPONSE_FALSE);
+    }
+
+    /* (non-Javadoc)
+     * @see com.siemens.cto.aem.ws.rest.v1.service.user.UserServiceRest#isTOCAuthorizationEnabled(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
+     */
+    @Override
+    public Response isTOCAuthorizationEnabled(HttpServletRequest request, HttpServletResponse response) {
+        String auth = ApplicationProperties.get(TOC_AUTHORIZATION);
+        if(LOGGER.isDebugEnabled())
+            LOGGER.debug("Authorization : {}", auth);
+        if("true".equals(auth))
+            return ResponseBuilder.ok(JSON_RESPONSE_TRUE);
+        return ResponseBuilder.ok(JSON_RESPONSE_FALSE);
     }
 }

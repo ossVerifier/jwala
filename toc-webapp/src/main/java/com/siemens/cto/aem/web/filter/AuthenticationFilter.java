@@ -16,8 +16,9 @@ import java.util.regex.Pattern;
  * Modified by: z003bpej
  * Comments: Modified to fit TOC, this filter was originally used in EPM.
  */
-@WebFilter(urlPatterns = "/*", asyncSupported = true)
-public class AuthenticationFilter implements Filter {
+//@WebFilter(urlPatterns = "/*", asyncSupported = true)
+
+public class AuthenticationFilter /*implements Filter */{
 
     private static final Pattern LOGIN_PAGE = Pattern.compile("/login");
     private static final Pattern GEN_PUBLIC_RESOURCES = Pattern.compile("/gen-public-resources");
@@ -27,11 +28,11 @@ public class AuthenticationFilter implements Filter {
 
     private static final Logger LOG = Logger.getLogger(AuthenticationFilter.class);
 
-    @Override
+    //@Override
     public void init(final FilterConfig filterConfig) throws ServletException {
     }
 
-    @Override
+    //@Override
     public void doFilter(ServletRequest request,
                          final ServletResponse response,
                          final FilterChain chain) throws IOException, ServletException {
@@ -68,7 +69,7 @@ public class AuthenticationFilter implements Filter {
         return httpReq.getSession().getAttribute("user") != null;
     }
 
-    @Override
+    //@Override
     public void destroy() {
     }
 
