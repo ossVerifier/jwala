@@ -248,7 +248,7 @@ public interface ResourceService {
      * @param fileName the name of the properties file
      * @param propertiesFileIn the input stream of the properties file
      */
-    void uploadExternalProperties(String fileName, InputStream propertiesFileIn);
+    Object uploadExternalProperties(String fileName, InputStream propertiesFileIn);
 
     /**
      * Get all of the properties that were uploaded by an outside application/user

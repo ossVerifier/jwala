@@ -150,12 +150,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 
         createApplicationRequest.validate();
 
-        String appContext = "";
-        String roleMappingProperties = "";
-        String appProperties = "";
-        final Application application = applicationPersistenceService.createApplication(createApplicationRequest, appContext, roleMappingProperties, appProperties);
-
-        return application;
+        return applicationPersistenceService.createApplication(createApplicationRequest);
     }
 
     @Transactional

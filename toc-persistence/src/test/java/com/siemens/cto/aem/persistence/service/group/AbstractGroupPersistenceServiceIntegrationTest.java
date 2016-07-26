@@ -75,7 +75,7 @@ public abstract class AbstractGroupPersistenceServiceIntegrationTest {
                                             "EXAMPLE_OPTS=%someEnv%/someVal", null, null);
 
         application = applicationPersistenceService.createApplication(new CreateApplicationRequest(preCreatedGroup.getId(),
-                        "testApp", "", false, false, false), "", "", "");
+                        "testApp", "", false, false, false));
 
     }
 

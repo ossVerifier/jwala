@@ -1,16 +1,20 @@
 package com.siemens.cto.aem.persistence.service.app;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
-import java.util.List;
-
+import com.siemens.cto.aem.common.domain.model.app.Application;
+import com.siemens.cto.aem.common.domain.model.group.Group;
+import com.siemens.cto.aem.common.domain.model.id.Identifier;
+import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
+import com.siemens.cto.aem.common.domain.model.path.Path;
+import com.siemens.cto.aem.common.domain.model.user.User;
+import com.siemens.cto.aem.common.exception.NotFoundException;
+import com.siemens.cto.aem.common.request.app.*;
+import com.siemens.cto.aem.common.request.group.AddJvmToGroupRequest;
+import com.siemens.cto.aem.common.request.group.CreateGroupRequest;
+import com.siemens.cto.aem.common.request.jvm.CreateJvmRequest;
+import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
+import com.siemens.cto.aem.persistence.service.ApplicationPersistenceService;
+import com.siemens.cto.aem.persistence.service.GroupPersistenceService;
+import com.siemens.cto.aem.persistence.service.JvmPersistenceService;
 import org.apache.commons.lang.RandomStringUtils;
 import org.junit.After;
 import org.junit.Before;
@@ -20,25 +24,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.siemens.cto.aem.common.domain.model.app.Application;
-import com.siemens.cto.aem.common.domain.model.group.Group;
-import com.siemens.cto.aem.common.domain.model.id.Identifier;
-import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
-import com.siemens.cto.aem.common.domain.model.path.Path;
-import com.siemens.cto.aem.common.domain.model.user.User;
-import com.siemens.cto.aem.common.exception.NotFoundException;
-import com.siemens.cto.aem.common.request.app.CreateApplicationRequest;
-import com.siemens.cto.aem.common.request.app.RemoveWebArchiveRequest;
-import com.siemens.cto.aem.common.request.app.UpdateApplicationRequest;
-import com.siemens.cto.aem.common.request.app.UploadAppTemplateRequest;
-import com.siemens.cto.aem.common.request.app.UploadWebArchiveRequest;
-import com.siemens.cto.aem.common.request.group.AddJvmToGroupRequest;
-import com.siemens.cto.aem.common.request.group.CreateGroupRequest;
-import com.siemens.cto.aem.common.request.jvm.CreateJvmRequest;
-import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
-import com.siemens.cto.aem.persistence.service.ApplicationPersistenceService;
-import com.siemens.cto.aem.persistence.service.GroupPersistenceService;
-import com.siemens.cto.aem.persistence.service.JvmPersistenceService;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
+import java.util.List;
+
+import static org.junit.Assert.*;
 
 @Transactional
 public abstract class AbstractApplicationPersistenceServiceTest {
@@ -103,7 +95,7 @@ public abstract class AbstractApplicationPersistenceServiceTest {
     @Test
     public void testCreateApp() {
         CreateApplicationRequest request = new CreateApplicationRequest(expGroupId,  textName, textContext, true, true, false);
-        Application created = applicationPersistenceService.createApplication(request, "", "", "");
+        Application created = applicationPersistenceService.createApplication(request);
         assertNotNull(created.getGroup());
         assertEquals(expGroupId, created.getGroup().getId());
         assertEquals(textName, created.getName());
@@ -116,7 +108,7 @@ public abstract class AbstractApplicationPersistenceServiceTest {
     @Test
     public void testCreateNonSecureApp() {
         CreateApplicationRequest request = new CreateApplicationRequest(expGroupId,  textName, textContext, false, true, false);
-        Application created = applicationPersistenceService.createApplication(request, "", "", "");
+        Application created = applicationPersistenceService.createApplication(request);
         assertNotNull(created.getGroup());
         assertEquals(expGroupId, created.getGroup().getId());
         assertEquals(textName, created.getName());
@@ -157,7 +149,7 @@ public abstract class AbstractApplicationPersistenceServiceTest {
     @Test
     public void testUpdateWARPath() { 
         CreateApplicationRequest request = new CreateApplicationRequest(expGroupId,  textName, textContext, true, true, false);
-        Application created = applicationPersistenceService.createApplication(request, "", "", "");
+        Application created = applicationPersistenceService.createApplication(request);
         
         UploadWebArchiveRequest uploadWebArchiveRequest = new UploadWebArchiveRequest(created, "filename-uuid.war", 0L, null);
 
@@ -168,7 +160,7 @@ public abstract class AbstractApplicationPersistenceServiceTest {
     @Test
     public void testRemoveWARPath() {        
         CreateApplicationRequest request = new CreateApplicationRequest(expGroupId,  textName, textContext, true, true, false);
-        Application created = applicationPersistenceService.createApplication(request, "", "", "");
+        Application created = applicationPersistenceService.createApplication(request);
         
         UploadWebArchiveRequest uploadWebArchiveRequest = new UploadWebArchiveRequest(created, "filename-uuid.war", 0L, null);
 
@@ -184,7 +176,7 @@ public abstract class AbstractApplicationPersistenceServiceTest {
     @Test
     public void testUpdateSecureFlag() {
         CreateApplicationRequest request = new CreateApplicationRequest(expGroupId,  textName, textContext, true, true, false);
-        Application created = applicationPersistenceService.createApplication(request, "", "", "");
+        Application created = applicationPersistenceService.createApplication(request);
         assertTrue(created.isSecure());
 
         final UpdateApplicationRequest updateApplicationRequest =
@@ -204,7 +196,7 @@ public abstract class AbstractApplicationPersistenceServiceTest {
         Group group = groupPersistenceService.createGroup(createGroupReq);
 
         CreateApplicationRequest request = new CreateApplicationRequest(group.getId(), "testAppName", "/hctTest", true, true, false);
-        Application app = applicationPersistenceService.createApplication(request, "app context template", "role mapping properties", "app properties template");
+        Application app = applicationPersistenceService.createApplication(request);
 
         CreateJvmRequest createJvmRequest = new CreateJvmRequest(jvmName, "testHost", 9101, 9102, 9103, -1, 9104, new Path("./"), "", null, null);
         Jvm jvm = jvmPersistenceService.createJvm(createJvmRequest);
@@ -235,18 +227,8 @@ public abstract class AbstractApplicationPersistenceServiceTest {
         group = groupPersistenceService.addJvmToGroup(addJvmToGroup);
 
         CreateApplicationRequest request = new CreateApplicationRequest(group.getId(), "testAppName", "/hctTest", true, true, false);
-        Application app = applicationPersistenceService.createApplication(request, "app context template", "role mapping properties", "app properties template");
+        Application app = applicationPersistenceService.createApplication(request);
 
-// NOTE: The codes below fails because create hct resource files have been commented out on application creation.
-//       In the near future the codes below should be removed since the consensus is to generate generic resources
-//       when an application is created.
-
-//        String oldContent = applicationPersistenceService.getResourceTemplate(app.getName(), "hctTest.xml", jvmName, group.getName());
-//        assertEquals("app context template", oldContent);
-//
-//        String newContent = applicationPersistenceService.updateResourceTemplate(app.getName(), "hctTest.xml", "new app context template", jvm.getJvmName(), group.getName());
-//        assertEquals("new app context template", newContent);
-//
         applicationPersistenceService.removeApplication(app.getId());
         jvmPersistenceService.removeJvm(jvm.getId());
         groupPersistenceService.removeGroup(group.getId());
@@ -266,7 +248,7 @@ public abstract class AbstractApplicationPersistenceServiceTest {
         group = groupPersistenceService.addJvmToGroup(addJvmGrpRequest);
 
         CreateApplicationRequest request = new CreateApplicationRequest(group.getId(), "testAppName", "/hctTest", true, true, false);
-        Application app = applicationPersistenceService.createApplication(request, "app context template", "role mapping properties", "app properties template");
+        Application app = applicationPersistenceService.createApplication(request);
 
         Application sameApp = applicationPersistenceService.getApplication(app.getId());
         assertEquals(app.getName(), sameApp.getName());

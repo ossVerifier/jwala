@@ -39,8 +39,7 @@ public class JpaApplicationPersistenceServiceImpl implements ApplicationPersiste
     }
 
     @Override
-    public Application createApplication(CreateApplicationRequest createApplicationRequest, final String appContextTemplate,
-                                         final String roleMappingPropertiesTemplate, String appPropertiesTemplate) {
+    public Application createApplication(CreateApplicationRequest createApplicationRequest) {
         JpaGroup jpaGroup = groupCrudService.getGroup(createApplicationRequest.getGroupId());
         final JpaApplication jpaApp = applicationCrudService.createApplication(createApplicationRequest, jpaGroup);
 

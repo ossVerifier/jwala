@@ -9,10 +9,7 @@ import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.common.domain.model.path.FileSystemPath;
-import com.siemens.cto.aem.common.domain.model.resource.ContentType;
-import com.siemens.cto.aem.common.domain.model.resource.Entity;
-import com.siemens.cto.aem.common.domain.model.resource.ResourceGroup;
-import com.siemens.cto.aem.common.domain.model.resource.ResourceTemplateMetaData;
+import com.siemens.cto.aem.common.domain.model.resource.*;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState;
@@ -580,16 +577,10 @@ public class ResourceServiceImplTest {
     @Test
     public void testUploadExternalProperties() {
         InputStream mockInputStream = mock(InputStream.class);
-        RepositoryFileInformation mockFileInfo = mock(RepositoryFileInformation.class);
-        when(mockPrivateApplicationService.uploadWebArchiveData(any(UploadWebArchiveRequest.class))).thenReturn(mockFileInfo);
-        Path mockPath = mock(Path.class);
-        when(mockFileInfo.getPath()).thenReturn(mockPath);
-        File propertiesTestFile = new File("./src/test/resources/vars.properties");
-        when(mockPath.toString()).thenReturn(propertiesTestFile.getAbsolutePath());
 
         resourceService.uploadExternalProperties("external.properties", mockInputStream);
 
-        verify(mockPrivateApplicationService).uploadWebArchiveData(any(UploadWebArchiveRequest.class));
+        verify(mockResourcePersistenceService).createResource(anyLong(), anyLong(), anyLong(), eq(EntityType.EXT_PROPERTIES), eq("external.properties"), eq(mockInputStream));
     }
 
     @Test

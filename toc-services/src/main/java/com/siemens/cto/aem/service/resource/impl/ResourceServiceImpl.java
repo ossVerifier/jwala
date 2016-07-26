@@ -746,18 +746,16 @@ public class ResourceServiceImpl implements ResourceService {
     }
 
     @Override
-    public void uploadExternalProperties(String fileName, InputStream propertiesFileIn) {
-        // TODO instead of uploading the file to the archive directory put it in the resource database
-        Application fakedApplication = new Application(new Identifier<Application>(0L), fileName, "", "", null, true, true, false, fileName);
-        UploadWebArchiveRequest uploadWebArchiveRequest = new UploadWebArchiveRequest(fakedApplication,fileName, -1L, propertiesFileIn);
-        RepositoryFileInformation fileInfo = privateApplicationService.uploadWebArchiveData(uploadWebArchiveRequest);
-
-        // upload the external properties file to the database
-//        resourcePersistenceService
+    @Transactional
+    public Object uploadExternalProperties(String fileName, InputStream propertiesFileIn) {
+        Long entityId = null;
+        Long groupId = null;
+        Long appId = null;
+        return resourcePersistenceService.createResource(entityId, groupId, appId, EntityType.EXT_PROPERTIES, fileName, propertiesFileIn);
 
         // TODO wait until properties file is deployed before setting the properties file path?
-        String uploadFilePath = fileInfo.getPath().toString();
-        ExternalProperties.setPropertiesFilePath(uploadFilePath);
+//        String uploadFilePath = fileInfo.getPath().toString();
+//        ExternalProperties.setPropertiesFilePath(uploadFilePath);
     }
 
     @Override

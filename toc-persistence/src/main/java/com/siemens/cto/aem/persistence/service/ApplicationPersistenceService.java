@@ -12,8 +12,7 @@ import java.util.List;
 
 public interface ApplicationPersistenceService {
 
-    Application createApplication(CreateApplicationRequest createApplicationRequest, String appContextTemplate,
-                                  String roleMappingPropertiesTemplate, String appPropertiesTemplate);
+    Application createApplication(CreateApplicationRequest createApplicationRequest);
 
     Application updateApplication(final UpdateApplicationRequest updateApplicationRequest);
 
