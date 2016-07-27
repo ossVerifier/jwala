@@ -3,6 +3,7 @@ package com.siemens.cto.aem.ws.rest.v1.configuration;
 import com.siemens.cto.aem.persistence.jpa.service.HistoryCrudService;
 import com.siemens.cto.aem.service.HistoryService;
 import com.siemens.cto.aem.service.app.ApplicationService;
+import com.siemens.cto.aem.service.balancermanager.BalancermanagerService;
 import com.siemens.cto.aem.service.group.GroupControlService;
 import com.siemens.cto.aem.service.group.GroupJvmControlService;
 import com.siemens.cto.aem.service.group.GroupService;
@@ -24,6 +25,8 @@ import com.siemens.cto.aem.ws.rest.v1.service.admin.AdminServiceRest;
 import com.siemens.cto.aem.ws.rest.v1.service.admin.impl.AdminServiceRestImpl;
 import com.siemens.cto.aem.ws.rest.v1.service.app.ApplicationServiceRest;
 import com.siemens.cto.aem.ws.rest.v1.service.app.impl.ApplicationServiceRestImpl;
+import com.siemens.cto.aem.ws.rest.v1.service.balancermanager.BalancermanagerServiceRest;
+import com.siemens.cto.aem.ws.rest.v1.service.balancermanager.impl.BalancermanagerServiceRestImpl;
 import com.siemens.cto.aem.ws.rest.v1.service.group.GroupServiceRest;
 import com.siemens.cto.aem.ws.rest.v1.service.group.impl.GroupServiceRestImpl;
 import com.siemens.cto.aem.ws.rest.v1.service.jvm.JvmServiceRest;
@@ -108,6 +111,9 @@ public class AemWebServiceConfiguration {
     @Autowired
     private JvmStateService jvmStateService;
 
+    @Autowired
+    private BalancermanagerService balancermanagerService;
+
     private final Map<String, ReentrantReadWriteLock> jvmWriteLockMap = new HashMap<>();
     private final Map<String, ReentrantReadWriteLock> wsWriteLockMap = new HashMap<>();
 
@@ -133,6 +139,7 @@ public class AemWebServiceConfiguration {
         serviceBeans.add(getV1StateServiceRest());
         serviceBeans.add(getV1ResourceServiceRest());
         serviceBeans.add(getV1HistoryServiceRest());
+        serviceBeans.add(getV1BalancermanagerServiceRest());
 
         return serviceBeans;
     }
@@ -151,6 +158,11 @@ public class AemWebServiceConfiguration {
     public GroupServiceRest getV1GroupServiceRest() {
         return new GroupServiceRestImpl(groupService, resourceService, groupControlService, groupJvmControlService,
                 groupWebServerControlService, jvmService, webServerService, applicationService);
+    }
+
+    @Bean
+    public BalancermanagerServiceRest getV1BalancermanagerServiceRest(){
+        return new BalancermanagerServiceRestImpl(balancermanagerService);
     }
 
     @Bean
