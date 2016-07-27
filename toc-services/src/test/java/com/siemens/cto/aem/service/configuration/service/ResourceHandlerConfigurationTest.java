@@ -1,7 +1,7 @@
 package com.siemens.cto.aem.service.configuration.service;
 
 import com.siemens.cto.aem.common.domain.model.resource.ResourceIdentifier;
-import com.siemens.cto.aem.persistence.service.ResourceDao;
+import com.siemens.cto.aem.persistence.service.*;
 import com.siemens.cto.aem.service.resource.impl.handler.WebServerResourceHandler;
 import org.junit.Before;
 import org.junit.Test;
@@ -32,18 +32,18 @@ public class ResourceHandlerConfigurationTest {
 
     @Before
     public void setup() {
-        Mockito.reset(MockConfig.mockResourceDao);
+        Mockito.reset(MockConfig.MOCK_RESOURCE_DAO);
     }
 
     @Test
     public void testFetchWebServerResourceHandler() {
         resourceHandler.fetchResource(getWebServerResourceIdentifier());
-        verify(MockConfig.mockResourceDao).getWebServerResource(eq("sample.xml"), eq("sampleWebServer"));
-        verify(MockConfig.mockResourceDao, never()).getJvmResource(anyString(), anyString());
-        verify(MockConfig.mockResourceDao, never()).getAppResource(anyString(), anyString(), anyString());
-        verify(MockConfig.mockResourceDao, never()).getGroupLevelWebServerResource(anyString(), anyString());
-        verify(MockConfig.mockResourceDao, never()).getGroupLevelJvmResource(anyString(), anyString());
-        verify(MockConfig.mockResourceDao, never()).getGroupLevelAppResource(anyString(), anyString(), anyString());
+        verify(MockConfig.MOCK_RESOURCE_DAO).getWebServerResource(eq("sample.xml"), eq("sampleWebServer"));
+        verify(MockConfig.MOCK_RESOURCE_DAO, never()).getJvmResource(anyString(), anyString());
+        verify(MockConfig.MOCK_RESOURCE_DAO, never()).getAppResource(anyString(), anyString(), anyString());
+        verify(MockConfig.MOCK_RESOURCE_DAO, never()).getGroupLevelWebServerResource(anyString(), anyString());
+        verify(MockConfig.MOCK_RESOURCE_DAO, never()).getGroupLevelJvmResource(anyString(), anyString());
+        verify(MockConfig.MOCK_RESOURCE_DAO, never()).getGroupLevelAppResource(anyString(), anyString(), anyString());
     }
 
     // TODO: Complete all test cases...
@@ -56,11 +56,39 @@ public class ResourceHandlerConfigurationTest {
     @Configuration
     static class MockConfig {
 
-        public static final ResourceDao mockResourceDao = mock(ResourceDao.class);
+        public static final ResourceDao MOCK_RESOURCE_DAO = mock(ResourceDao.class);
+        public static final GroupPersistenceService MOCK_GROUP_PERSISTENCE_SERVICE = mock(GroupPersistenceService.class);
+        public static final WebServerPersistenceService MOCK_WEB_SERVER_PERSISTENCE_SERVICE = mock(WebServerPersistenceService.class);
+        public static final JvmPersistenceService MOCK_JVM_PERSISTENCE_SERVICE = mock(JvmPersistenceService.class);
+        public static final ApplicationPersistenceService MOCK_APPLICATION_PERSISTENCE_SERVICE = mock(ApplicationPersistenceService.class);
 
         @Bean
         public ResourceDao resourceDao() {
-            return mockResourceDao;
+            return MOCK_RESOURCE_DAO;
+        }
+
+        public static ResourceDao getMockResourceDao() {
+            return MOCK_RESOURCE_DAO;
+        }
+
+        @Bean
+        public static GroupPersistenceService getMockGroupPersistenceService() {
+            return MOCK_GROUP_PERSISTENCE_SERVICE;
+        }
+
+        @Bean
+        public static WebServerPersistenceService getMockWebServerPersistenceService() {
+            return MOCK_WEB_SERVER_PERSISTENCE_SERVICE;
+        }
+
+        @Bean
+        public static JvmPersistenceService getMockJvmPersistenceService() {
+            return MOCK_JVM_PERSISTENCE_SERVICE;
+        }
+
+        @Bean
+        public static ApplicationPersistenceService getMockApplicationPersistenceService() {
+            return MOCK_APPLICATION_PERSISTENCE_SERVICE;
         }
     }
 }

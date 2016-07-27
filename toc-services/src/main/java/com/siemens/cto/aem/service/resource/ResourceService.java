@@ -42,6 +42,7 @@ public interface ResourceService {
     @Deprecated
     CreateResourceResponseWrapper createTemplate(InputStream metaDataInputStream, InputStream templateData, String targetName, User user);
 
+    @Deprecated
     CreateResourceResponseWrapper createJvmResource(ResourceTemplateMetaData metaData,
                                                     InputStream templateData,
                                                     String jvmName);
@@ -51,6 +52,7 @@ public interface ResourceService {
      *  @param metaData     the data that describes the template, please see {@link ResourceTemplateMetaData}
      * @param templateData the template content/data
      */
+    @Deprecated
     CreateResourceResponseWrapper createGroupLevelJvmResource(ResourceTemplateMetaData metaData,
                                                               InputStream templateData, String groupName) throws IOException;
 
@@ -61,6 +63,7 @@ public interface ResourceService {
      * @param webServerName identifies the web server to which the template belongs to
      * @param user the user responsible for executing this service
      */
+    @Deprecated
     CreateResourceResponseWrapper createWebServerResource(ResourceTemplateMetaData metaData,
                                                           InputStream templateData,
                                                           String webServerName,
@@ -72,6 +75,7 @@ public interface ResourceService {
      * @param templateData the template content/data
      * @param user the user
      */
+    @Deprecated
     CreateResourceResponseWrapper createGroupLevelWebServerResource(ResourceTemplateMetaData metaData,
                                                                     InputStream templateData,
                                                                     String groupName,
@@ -85,6 +89,7 @@ public interface ResourceService {
      * @param jvmName the name of the JVM to associate the resource to
      * @param appName the name of the application to associate the resource to
      */
+    @Deprecated
     CreateResourceResponseWrapper createAppResource(ResourceTemplateMetaData metaData,
                                                     InputStream templateData,
                                                     String jvmName,
@@ -98,6 +103,7 @@ public interface ResourceService {
      * @param targetAppName the name of the application to associate the resource to
      */
     // TODO: Specify the group as well!
+    @Deprecated
     CreateResourceResponseWrapper createGroupedLevelAppResource(ResourceTemplateMetaData metaData,
                                                                 InputStream templateData,
                                                                 String targetAppName) throws IOException;
@@ -257,4 +263,21 @@ public interface ResourceService {
     Properties getExternalProperties();
 
     String getExternalPropertiesFile();
+
+    /**
+     * Create a resource
+     * @param metaData the meta data {@link ResourceTemplateMetaData}
+     * @param templateData the template
+     * @return {@link CreateResourceResponseWrapper}
+     */
+    CreateResourceResponseWrapper createResource(ResourceIdentifier resourceIdentifier, ResourceTemplateMetaData metaData,
+                                                 InputStream templateData);
+
+    /**
+     * Upload a resource file
+     * @param resourceTemplateMetaData the meta data {@link ResourceTemplateMetaData}
+     * @param resourceDataIn the resource data input stream
+     * @return the path where the file was uploaded to
+     */
+    String uploadResource(ResourceTemplateMetaData resourceTemplateMetaData, InputStream resourceDataIn);
 }

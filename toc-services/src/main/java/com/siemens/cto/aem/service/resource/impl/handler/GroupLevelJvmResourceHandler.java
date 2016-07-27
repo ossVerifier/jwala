@@ -1,10 +1,26 @@
 package com.siemens.cto.aem.service.resource.impl.handler;
 
+import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.resource.ResourceIdentifier;
+import com.siemens.cto.aem.common.domain.model.resource.ResourceTemplateMetaData;
+import com.siemens.cto.aem.common.request.jvm.UploadJvmConfigTemplateRequest;
+import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
 import com.siemens.cto.aem.persistence.jpa.domain.resource.config.template.ConfigTemplate;
+import com.siemens.cto.aem.persistence.service.GroupPersistenceService;
+import com.siemens.cto.aem.persistence.service.JvmPersistenceService;
 import com.siemens.cto.aem.persistence.service.ResourceDao;
 import com.siemens.cto.aem.service.resource.ResourceHandler;
+import com.siemens.cto.aem.service.resource.impl.CreateResourceResponseWrapper;
+import com.siemens.cto.aem.service.resource.impl.handler.exception.ResourceHandlerException;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Handler for a group level JVM resource identified by a "resource identifier" {@link ResourceIdentifier}
@@ -13,8 +29,15 @@ import org.apache.commons.lang3.StringUtils;
  */
 public class GroupLevelJvmResourceHandler extends ResourceHandler {
 
-    public GroupLevelJvmResourceHandler(final ResourceDao resourceDao, final ResourceHandler successor) {
+    private static final String MSG_ERR_CONVERTING_DATA_INPUTSTREAM_TO_STR = "Error converting data input stream to string!";
+    private final GroupPersistenceService groupPersistenceService;
+    private final JvmPersistenceService jvmPersistenceService;
+
+    public GroupLevelJvmResourceHandler(final ResourceDao resourceDao, final GroupPersistenceService groupPersistenceService,
+                                        final JvmPersistenceService jvmPersistenceService, final ResourceHandler successor) {
         this.resourceDao = resourceDao;
+        this.groupPersistenceService = groupPersistenceService;
+        this.jvmPersistenceService = jvmPersistenceService;
         this.successor = successor;
     }
 
@@ -27,6 +50,45 @@ public class GroupLevelJvmResourceHandler extends ResourceHandler {
             configTemplate = successor.fetchResource(resourceIdentifier);
         }
         return configTemplate;
+    }
+
+    @Override
+    public CreateResourceResponseWrapper createResource(final ResourceIdentifier resourceIdentifier,
+                                                        final ResourceTemplateMetaData metaData,
+                                                        final InputStream data) {
+
+        CreateResourceResponseWrapper createResourceResponseWrapper = null;
+        if (canHandle(resourceIdentifier)) {
+            final Set<Jvm> jvms = groupPersistenceService.getGroup(resourceIdentifier.groupName).getJvms();
+            ConfigTemplate createdJpaJvmConfigTemplate = null;
+            final String resourceContent;
+
+            try {
+                resourceContent = IOUtils.toString(data);
+            } catch (final IOException ioe) {
+                throw new ResourceHandlerException(MSG_ERR_CONVERTING_DATA_INPUTSTREAM_TO_STR, ioe);
+            }
+
+            for (final Jvm jvm : jvms) {
+                UploadJvmConfigTemplateRequest uploadJvmTemplateRequest = new UploadJvmConfigTemplateRequest(jvm, metaData.getTemplateName(),
+                        new ByteArrayInputStream(resourceContent.getBytes()), convertResourceTemplateMetaDataToJson(metaData));
+                uploadJvmTemplateRequest.setConfFileName(metaData.getDeployFileName());
+
+                // Since we're just creating the same template for all the JVMs, we just keep one copy of the created
+                // configuration template.
+                createdJpaJvmConfigTemplate = jvmPersistenceService.uploadJvmTemplateXml(uploadJvmTemplateRequest);
+            }
+            final List<UploadJvmTemplateRequest> uploadJvmTemplateRequestList = new ArrayList<>();
+            UploadJvmConfigTemplateRequest uploadJvmTemplateRequest = new UploadJvmConfigTemplateRequest(null, metaData.getTemplateName(),
+                    new ByteArrayInputStream(resourceContent.getBytes()), convertResourceTemplateMetaDataToJson(metaData));
+            uploadJvmTemplateRequest.setConfFileName(metaData.getDeployFileName());
+            uploadJvmTemplateRequestList.add(uploadJvmTemplateRequest);
+            groupPersistenceService.populateGroupJvmTemplates(metaData.getEntity().getGroup(), uploadJvmTemplateRequestList);
+            createResourceResponseWrapper = new CreateResourceResponseWrapper(createdJpaJvmConfigTemplate);
+        } else if (successor != null) {
+            createResourceResponseWrapper = successor.createResource(resourceIdentifier, metaData, data);
+        }
+        return createResourceResponseWrapper;
     }
 
     @Override

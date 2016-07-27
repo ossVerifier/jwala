@@ -1,10 +1,18 @@
 package com.siemens.cto.aem.service.resource.impl.handler;
 
 import com.siemens.cto.aem.common.domain.model.resource.ResourceIdentifier;
+import com.siemens.cto.aem.common.domain.model.resource.ResourceTemplateMetaData;
+import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
+import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateRequest;
 import com.siemens.cto.aem.persistence.jpa.domain.resource.config.template.ConfigTemplate;
 import com.siemens.cto.aem.persistence.service.ResourceDao;
+import com.siemens.cto.aem.persistence.service.WebServerPersistenceService;
+import com.siemens.cto.aem.service.resource.ResourceContentGeneratorService;
 import com.siemens.cto.aem.service.resource.ResourceHandler;
+import com.siemens.cto.aem.service.resource.impl.CreateResourceResponseWrapper;
 import org.apache.commons.lang3.StringUtils;
+
+import java.io.InputStream;
 
 /**
  * Handler for a web server resource identified by a "resource identifier" {@link ResourceIdentifier}
@@ -13,9 +21,17 @@ import org.apache.commons.lang3.StringUtils;
  */
 public class WebServerResourceHandler extends ResourceHandler {
 
-    public WebServerResourceHandler(final ResourceDao resourceDao, final ResourceHandler successor) {
+    private final WebServerPersistenceService webServerPersistenceService;
+    private final ResourceContentGeneratorService resourceContentGeneratorService;
+
+    public WebServerResourceHandler(final ResourceDao resourceDao,
+                                    final WebServerPersistenceService webServerPersistenceService,
+                                    final ResourceContentGeneratorService resourceContentGeneratorService,
+                                    final ResourceHandler successor) {
         this.resourceDao = resourceDao;
+        this.webServerPersistenceService = webServerPersistenceService;
         this.successor = successor;
+        this.resourceContentGeneratorService = resourceContentGeneratorService;
     }
 
     @Override
@@ -27,6 +43,29 @@ public class WebServerResourceHandler extends ResourceHandler {
             configTemplate = successor.fetchResource(resourceIdentifier);
         }
         return configTemplate;
+    }
+
+    @Override
+    public CreateResourceResponseWrapper createResource(final ResourceIdentifier resourceIdentifier,
+                                                        final ResourceTemplateMetaData metaData,
+                                                        final InputStream data) {
+        CreateResourceResponseWrapper createResourceResponseWrapper = null;
+        if (canHandle(resourceIdentifier)) {
+            final WebServer webServer = webServerPersistenceService.findWebServerByName(resourceIdentifier.webServerName);
+            final UploadWebServerTemplateRequest uploadWebArchiveRequest = new UploadWebServerTemplateRequest(webServer,
+                    metaData.getTemplateName(), convertResourceTemplateMetaDataToJson(metaData), data) {
+                @Override
+                public String getConfFileName() {
+                    return metaData.getDeployFileName();
+                }
+            };
+            final String generatedDeployPath = resourceContentGeneratorService.generateContent(metaData.getDeployPath(), webServer);
+            createResourceResponseWrapper = new CreateResourceResponseWrapper(webServerPersistenceService
+                    .uploadWebServerConfigTemplate(uploadWebArchiveRequest, generatedDeployPath + "/" + metaData.getDeployFileName(), null));
+        } else if (successor != null) {
+            createResourceResponseWrapper = successor.createResource(resourceIdentifier, metaData, data);
+        }
+        return createResourceResponseWrapper;
     }
 
     @Override

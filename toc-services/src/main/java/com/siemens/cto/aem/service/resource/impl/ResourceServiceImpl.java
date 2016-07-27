@@ -21,6 +21,7 @@ import com.siemens.cto.aem.service.app.PrivateApplicationService;
 import com.siemens.cto.aem.service.exception.ResourceServiceException;
 import com.siemens.cto.aem.service.resource.ResourceHandler;
 import com.siemens.cto.aem.service.resource.ResourceService;
+import com.siemens.cto.aem.service.resource.impl.handler.exception.ResourceHandlerException;
 import com.siemens.cto.aem.template.ResourceFileGenerator;
 import com.siemens.cto.toc.files.RepositoryFileInformation;
 import com.siemens.cto.toc.files.WebArchiveManager;
@@ -356,6 +357,7 @@ public class ResourceServiceImpl implements ResourceService {
      * @param resourceDataIn the resource data input stream
      * @return upload path if the file is binary else it just returns the resource data input stream
      */
+    @Deprecated
     private InputStream uploadIfBinaryData(final ResourceTemplateMetaData resourceTemplateMetaData, final InputStream resourceDataIn) {
         if (resourceTemplateMetaData.getContentType().equals(ContentType.APPLICATION_BINARY.contentTypeStr)){
             // TODO create new API that doesn't use UploadWebArchiveRequest - just do this for now
@@ -767,5 +769,28 @@ public class ResourceServiceImpl implements ResourceService {
     @Override
     public Properties getExternalProperties() {
         return ExternalProperties.getProperties();
+    }
+
+    @Override
+    @Transactional
+    public CreateResourceResponseWrapper createResource(final ResourceIdentifier resourceIdentifier,
+                                                        final ResourceTemplateMetaData metaData,
+                                                        final InputStream templateData) {
+        try {
+            return resourceHandler.createResource(resourceIdentifier, metaData, templateData);
+        } catch (final ResourceHandlerException rhe) {
+            throw new ResourceServiceException(rhe);
+        }
+    }
+
+    @Override
+    public String uploadResource(final ResourceTemplateMetaData resourceTemplateMetaData, final InputStream resourceDataIn) {
+        final Application fakedApplication = new Application(new Identifier<Application>(0L), resourceTemplateMetaData.getDeployFileName(),
+                resourceTemplateMetaData.getDeployPath(), "", null, true, true, false, resourceTemplateMetaData.getDeployFileName());
+        final UploadWebArchiveRequest uploadWebArchiveRequest = new UploadWebArchiveRequest(fakedApplication,
+                resourceTemplateMetaData.getDeployFileName(), -1L, resourceDataIn);
+        final RepositoryFileInformation fileInfo = privateApplicationService.uploadWebArchiveData(uploadWebArchiveRequest);
+
+        return fileInfo.getPath().toString();
     }
 }

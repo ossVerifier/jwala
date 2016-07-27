@@ -9,6 +9,7 @@ import com.siemens.cto.aem.common.domain.model.jvm.JvmControlOperation;
 import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.common.domain.model.resource.ContentType;
 import com.siemens.cto.aem.common.domain.model.resource.ResourceGroup;
+import com.siemens.cto.aem.common.domain.model.resource.ResourceIdentifier;
 import com.siemens.cto.aem.common.domain.model.resource.ResourceTemplateMetaData;
 import com.siemens.cto.aem.common.domain.model.state.CurrentState;
 import com.siemens.cto.aem.common.domain.model.state.StateType;
@@ -143,7 +144,10 @@ public class JvmServiceImpl implements JvmService {
             String metaDataStr = groupService.getGroupJvmResourceTemplateMetaData(groupName, templateName);
             try {
                 ResourceTemplateMetaData metaData = new ObjectMapper().readValue(metaDataStr, ResourceTemplateMetaData.class);
-                resourceService.createJvmResource(metaData, IOUtils.toInputStream(templateContent), jvmName);
+                final ResourceIdentifier resourceIdentifier = new ResourceIdentifier.Builder()
+                        .setResourceName(metaData.getTemplateName()).setJvmName(jvmName).build();
+                resourceService.createResource(resourceIdentifier, metaData, IOUtils.toInputStream(templateContent));
+
             } catch (IOException e) {
                 LOGGER.error("Failed to map meta data for JVM {} in group {}", jvmName, groupName, e);
                 throw new InternalErrorException(AemFaultType.BAD_STREAM, "Failed to map meta data for JVM " + jvmName + " in group " + groupName, e);
@@ -158,8 +162,10 @@ public class JvmServiceImpl implements JvmService {
                 ResourceTemplateMetaData metaData = new ObjectMapper().readValue(metaDataStr, ResourceTemplateMetaData.class);
                 if (metaData.getEntity().getDeployToJvms()) {
                     final String template = resourceService.getAppTemplate(groupName, metaData.getEntity().getTarget(), templateName);
-                    resourceService.createAppResource(metaData, new ByteArrayInputStream(template.getBytes()), jvmName,
-                            metaData.getEntity().getTarget());
+                    final ResourceIdentifier resourceIdentifier = new ResourceIdentifier.Builder()
+                            .setResourceName(metaData.getTemplateName()).setJvmName(jvmName)
+                            .setWebAppName(metaData.getEntity().getTarget()).build();
+                    resourceService.createResource(resourceIdentifier, metaData, new ByteArrayInputStream(template.getBytes()));
                 }
             } catch (IOException e) {
                 LOGGER.error("Failed to map meta data while creating JVM for template {} in group {}", templateName, groupName, e);

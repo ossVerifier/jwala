@@ -23,6 +23,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.activation.DataHandler;
 import javax.ws.rs.core.Response;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
@@ -164,78 +165,35 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
         CreateResourceResponseWrapper responseWrapper = null;
         try {
             final ObjectMapper mapper = new ObjectMapper();
-            ResourceTemplateMetaData resourceTemplateMetaData = mapper.readValue(IOUtils.toString(metadataIn), ResourceTemplateMetaData.class);
+            final ResourceTemplateMetaData metaData =  mapper.readValue(IOUtils.toString(metadataIn),
+                                                                        ResourceTemplateMetaData.class);
 
             // We do the file attachment validation here since this is a REST services affair IMHO.
             // TODO: Use a more sophisticated way of knowing the content type in next releases.
-            if (!ContentType.APPLICATION_BINARY.contentTypeStr.equalsIgnoreCase(resourceTemplateMetaData.getContentType()) &&
+            if (!ContentType.APPLICATION_BINARY.contentTypeStr.equalsIgnoreCase(metaData.getContentType()) &&
                     !(fileName.toLowerCase().endsWith(TPL_FILE_EXTENSION))) {
                 LOGGER.error(UNEXPECTED_CONTENT_TYPE_ERROR_MSG);
                 return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR,
                         new FaultCodeException(AemFaultType.SERVICE_EXCEPTION, UNEXPECTED_CONTENT_TYPE_ERROR_MSG));
             }
 
-            // NOTE: We do the parameter checking logic here since the service layer does not know anything about ResourceHierarchyParam.
-            if (ParamValidator.getNewInstance().isNotEmpty(createResourceParam.getGroup())
-                    .isEmpty(createResourceParam.getWebServer())
-                    .isEmpty(createResourceParam.getJvm())
-                    .isNotEmpty(createResourceParam.getWebApp()).isValid()) {
+            final ResourceIdentifier resourceIdentifier = new ResourceIdentifier.Builder().setResourceName(metaData.getTemplateName())
+                                                                                          .setGroupName(createResourceParam.getGroup())
+                                                                                          .setWebServerName(createResourceParam.getWebServer())
+                                                                                          .setJvmName(createResourceParam.getJvm())
+                                                                                          .setWebAppName(createResourceParam.getWebApp()).build();
 
-                // Group Level Web App
-                responseWrapper = resourceService.createGroupedLevelAppResource(resourceTemplateMetaData, resourceDataIn,
-                        createResourceParam.getWebApp());
+            // Upload the attached file if the resource is binary to the archive location
+            if (metaData.getContentType().equals(ContentType.APPLICATION_BINARY.contentTypeStr)){
+                resourceDataIn = new ByteArrayInputStream(resourceService.uploadResource(metaData, resourceDataIn).getBytes());
+            }
 
-            } else if (ParamValidator.getNewInstance().isEmpty(createResourceParam.getGroup())
-                    .isEmpty(createResourceParam.getWebServer())
-                    .isNotEmpty(createResourceParam.getJvm())
-                    .isNotEmpty(createResourceParam.getWebApp()).isValid()) {
-
-                // Web App
-                responseWrapper = resourceService.createAppResource(resourceTemplateMetaData, resourceDataIn,
-                        createResourceParam.getJvm(), createResourceParam.getWebApp());
-
-            } else if (ParamValidator.getNewInstance().isNotEmpty(createResourceParam.getGroup())
-                    .isNotEmpty(createResourceParam.getWebServer())
-                    .isEmpty(createResourceParam.getJvm())
-                    .isEmpty(createResourceParam.getWebApp()).isValid()) {
-                // Group Level Web Servers
-                if (createResourceParam.getWebServer().equalsIgnoreCase("*")) {
-                    responseWrapper = resourceService.createGroupLevelWebServerResource(resourceTemplateMetaData, resourceDataIn,
-                            createResourceParam.getGroup(), user.getUser());
-                }
-
-            } else if (ParamValidator.getNewInstance().isEmpty(createResourceParam.getGroup())
-                    .isNotEmpty(createResourceParam.getWebServer())
-                    .isEmpty(createResourceParam.getJvm())
-                    .isEmpty(createResourceParam.getWebApp()).isValid()) {
-
-                // Web Server
-                responseWrapper = resourceService.createWebServerResource(resourceTemplateMetaData, resourceDataIn,
-                        createResourceParam.getWebServer(), user.getUser());
-
-            } else if (ParamValidator.getNewInstance().isNotEmpty(createResourceParam.getGroup())
-                    .isEmpty(createResourceParam.getWebServer())
-                    .isNotEmpty(createResourceParam.getJvm())
-                    .isEmpty(createResourceParam.getWebApp()).isValid()) {
-
-                // Group Level JVMs
-                if (createResourceParam.getJvm().equalsIgnoreCase("*")) {
-                    responseWrapper = resourceService.createGroupLevelJvmResource(resourceTemplateMetaData, resourceDataIn,
-                            createResourceParam.getGroup());
-                }
-
-            } else if (ParamValidator.getNewInstance().isEmpty(createResourceParam.getGroup())
-                    .isEmpty(createResourceParam.getWebServer())
-                    .isNotEmpty(createResourceParam.getJvm())
-                    .isEmpty(createResourceParam.getWebApp()).isValid()) {
-
-                // JVM
-                responseWrapper = resourceService.createJvmResource(resourceTemplateMetaData, resourceDataIn, createResourceParam.getJvm());
-
-            } else {
+            responseWrapper = resourceService.createResource(resourceIdentifier, metaData, resourceDataIn);
+            if (responseWrapper == null) {
+                // TODO: Review response...
                 return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR,
                         new FaultCodeException(AemFaultType.INVALID_REST_SERVICE_PARAMETER,
-                                "Parameters passed to the rest service is/are invalid!"));
+                                "There was no resource handler to process the request!"));
             }
         } catch (final IOException ioe) {
             LOGGER.warn("exception thrown in CreateResource: {}", ioe);
