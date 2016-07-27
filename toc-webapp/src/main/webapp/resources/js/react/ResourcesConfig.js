@@ -451,24 +451,23 @@ var XmlTabs = React.createClass({
                                                                  this.previewErrorCallback);
 
 
-                }  else if (this.state.entityType === "webServerSection") {
-//                    this.props.groupService.previewGroupWebServerResourceFile(this.state.entityGroupName,
-//                                                                 this.refs.codeMirrorComponent.getText(),
-//                                                                 this.previewSuccessCallback,
-//                                                                 this.previewErrorCallback);
-                } else if (this.state.entityType === "jvmSection") {
+                }  else if (this.state.entityType === "jvmSection") {
                     if (this.state.groupJvmEntityType && this.state.groupJvmEntityType === "webApp") {
                         this.props.groupService.previewGroupAppResourceFile(this.state.entityGroupName,
                                                                                      this.state.resourceTemplateName,
                                                                                      this.refs.codeMirrorComponent.getText(),
                                                                                      this.previewSuccessCallback,
                                                                                      this.previewErrorCallback);
-                    } else {
-//                        this.props.groupService.previewGroupJvmResourceFile(this.state.entityGroupName,
-//                                                                 this.refs.codeMirrorComponent.getText(),
-//                                                                 this.previewSuccessCallback,
-//                                                                 this.previewErrorCallback);
                     }
+                } else if (this.state.entityType === "extProperties"){
+                    this.props.resourceService.previewResourceFile(this.refs.codeMirrorComponent.getText(),
+                                                                   null,
+                                                                   null,
+                                                                   null,
+                                                                   null,
+                                                                   this.previewSuccessCallback,
+                                                                   this.previewErrorCallback);
+
                 }
             }
         }

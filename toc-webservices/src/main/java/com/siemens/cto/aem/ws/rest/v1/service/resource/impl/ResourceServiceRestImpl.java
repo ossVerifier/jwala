@@ -374,6 +374,17 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
     }
 
     @Override
+    public Response previewResourceContent(final ResourceHierarchyParam resourceHierarchyParam, String content) {
+        LOGGER.debug("Preview the template for {}", resourceHierarchyParam);
+        final ResourceIdentifier resourceIdentifier = new ResourceIdentifier.Builder()
+                .setGroupName(resourceHierarchyParam.getGroup())
+                .setWebServerName(resourceHierarchyParam.getWebServer())
+                .setJvmName(resourceHierarchyParam.getJvm())
+                .setWebAppName(resourceHierarchyParam.getWebApp()).build();
+        return ResponseBuilder.ok(resourceService.previewResourceContent(resourceIdentifier, content));
+    }
+
+    @Override
     public Response uploadExternalProperties(final Attachment attachment, final AuthenticatedUser user) {
         LOGGER.info("Upload external resource by user {} and attachments {}", user.getUser().getId(), attachment);
 

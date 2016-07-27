@@ -623,4 +623,10 @@ public class ResourceServiceImplTest {
         assertEquals("newkey=newvalue", result);
         verify(mockResourcePersistenceService).updateResource(eq(identifier), eq(EntityType.EXT_PROPERTIES), eq("newkey=newvalue"));
     }
+
+    @Test
+    public void testPreviewResourceContent() {
+        String result = resourceService.previewResourceContent(null, "key=value");
+        assertEquals("key=value", result);
+    }
 }

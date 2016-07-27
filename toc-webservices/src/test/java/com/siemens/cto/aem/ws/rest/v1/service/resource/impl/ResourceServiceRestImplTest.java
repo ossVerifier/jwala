@@ -3,10 +3,7 @@ package com.siemens.cto.aem.ws.rest.v1.service.resource.impl;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.group.LiteGroup;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
-import com.siemens.cto.aem.common.domain.model.resource.ResourceGroup;
-import com.siemens.cto.aem.common.domain.model.resource.ResourceIdentifier;
-import com.siemens.cto.aem.common.domain.model.resource.ResourceInstance;
-import com.siemens.cto.aem.common.domain.model.resource.ResourceTemplateMetaData;
+import com.siemens.cto.aem.common.domain.model.resource.*;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.request.resource.ResourceInstanceRequest;
 import com.siemens.cto.aem.persistence.jpa.domain.resource.config.template.ConfigTemplate;
@@ -588,5 +585,17 @@ public class ResourceServiceRestImplTest {
     public void testGetExternalProperties() {
         cut.getExternalProperties();
         verify(impl).getExternalProperties();
+    }
+
+    @Test
+    public void testPreviewResourceContent() {
+        ResourceHierarchyParam param = new ResourceHierarchyParam();
+        param.setGroup("test-group");
+        param.setJvm("test-jvm");
+        param.setWebApp("test-app");
+        param.setWebServer("test-webserver");
+        when(impl.previewResourceContent(any(ResourceIdentifier.class), anyString())).thenReturn("key=value");
+        Response result = cut.previewResourceContent(param, "key=value");
+        assertEquals(200, result.getStatus());
     }
 }

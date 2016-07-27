@@ -124,6 +124,16 @@ public interface ResourceServiceRest {
     Response updateResourceContent(@PathParam("resourceName") String resourceName, @MatrixParam("") ResourceHierarchyParam resourceHierarchyParam, final String content);
 
     /**
+     * Preview the template content
+     * @param resourceHierarchyParam the group, JVM, web server, web app hierarchy info
+     * @return the saved content
+     */
+    @PUT
+    @Path("/template/preview")
+    @Consumes(MediaType.TEXT_PLAIN)
+    Response previewResourceContent(@MatrixParam("") ResourceHierarchyParam resourceHierarchyParam, final String content);
+
+    /**
      * Upload an external properties file
      * @param attachment contains the properties file
      * @param user a logged in user calling the service

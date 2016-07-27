@@ -257,6 +257,14 @@ public interface ResourceService {
     Object uploadExternalProperties(String fileName, InputStream propertiesFileIn);
 
     /**
+     * Update the resource content
+     * @param resourceIdentifier the resource identifier
+     * @param templateContent the template content
+     * @return return the updated content
+     */
+    String updateResourceContent(ResourceIdentifier resourceIdentifier, String templateContent);
+
+    /**
      * Get all of the properties that were uploaded by an outside application/user
      * @return the external properties
      */
@@ -280,4 +288,6 @@ public interface ResourceService {
      * @return the path where the file was uploaded to
      */
     String uploadResource(ResourceTemplateMetaData resourceTemplateMetaData, InputStream resourceDataIn);
+
+    String previewResourceContent(ResourceIdentifier resourceHierarchyParam, String content);
 }

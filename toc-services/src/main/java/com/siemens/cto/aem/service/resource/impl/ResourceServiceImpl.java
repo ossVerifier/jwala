@@ -566,7 +566,7 @@ public class ResourceServiceImpl implements ResourceService {
             }
         };
         String generatedDeployPath = generateResourceFile(metaData.getDeployPath(), generateResourceGroup(), webServer);
-        return new CreateResourceResponseWrapper(webServerPersistenceService.uploadWebServerConfigTemplate(uploadWebArchiveRequest, generatedDeployPath + "/" + metaData.getDeployFileName(),user.getId()));
+        return new CreateResourceResponseWrapper(webServerPersistenceService.uploadWebServerConfigTemplate(uploadWebArchiveRequest, generatedDeployPath + "/" + metaData.getDeployFileName(), user.getId()));
     }
 
     /**
@@ -771,6 +771,12 @@ public class ResourceServiceImpl implements ResourceService {
         // TODO wait until properties file is deployed before setting the properties file path?
 //        String uploadFilePath = fileInfo.getPath().toString();
 //        ExternalProperties.setPropertiesFilePath(uploadFilePath);
+    }
+
+    @Override
+    public String previewResourceContent(ResourceIdentifier resourceIdentifier, String content) {
+        // TODO make the selected value object non-null based on the resource identifier
+        return generateResourceFile(content, generateResourceGroup(), null);
     }
 
     @Override
