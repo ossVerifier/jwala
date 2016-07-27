@@ -36,3 +36,8 @@ img.expand-collapse-padding {
     margin: 0 !important;
     font-weight: normal !important;
 }
+
+.ext-properties-container {
+    margin: 5px 0px -10px 16px;
+    cursor: pointer;
+}

@@ -394,6 +394,8 @@ var XmlTabs = React.createClass({
                 this.getResourceContent(data, resourceName, this.state.entityGroupName, "*");
             } else if (entityType === "jvmSection") {
                 this.getResourceContent(data, resourceName, this.state.entityGroupName, null, "*");
+            } else if (entityType === "extProperties") {
+                this.getResourceContent(data, resourceName, null, null, null, null);
             }
         } else {
             this.setState({entityType: entityType, entity: null, entityParent: null, resourceTemplateName: null,

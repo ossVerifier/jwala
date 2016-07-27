@@ -118,6 +118,22 @@ var webServerService = {
                                      errorCallback,
                                      false);
     },
+    //TODO: Uncomment below code for drain
+    drainWebServer: function(groupName, webserverName) {
+            /*if (successCallback === undefined) {
+                return serviceFoundation.promisedPut("v1.0/balancermanager/" + encodeURIComponent(groupName) + "/" + encodeURIComponent(webserverName) + "/",
+                                                     "json",
+                                                     null,
+                                                     false);
+            }
+            return serviceFoundation.put("v1.0/balancermanager/" + encodeURIComponent(groupName) + "/" + encodeURIComponent(webserverName) + "/",
+                                         "json",
+                                         null,
+                                         successCallback,
+                                         errorCallback,
+                                         false);*/
+            return serviceFoundation.promisedPut("v1.0/balancermanager/" + encodeURIComponent(groupName) + "/" + encodeURIComponent(webserverName) + "/");
+    },
     getResources : function(webServerName, responseCallback) {
         return serviceFoundation.get("v1.0/webservers/" + encodeURIComponent(webServerName) + "/resources/name", "json", responseCallback);
     },

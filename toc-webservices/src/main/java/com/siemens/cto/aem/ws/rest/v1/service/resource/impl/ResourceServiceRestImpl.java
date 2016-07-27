@@ -8,7 +8,7 @@ import com.siemens.cto.aem.common.domain.model.resource.ResourceTemplateMetaData
 import com.siemens.cto.aem.common.exception.FaultCodeException;
 import com.siemens.cto.aem.service.exception.ResourceServiceException;
 import com.siemens.cto.aem.service.resource.ResourceService;
-import com.siemens.cto.aem.service.resource.impl.CreateResourceTemplateApplicationResponseWrapper;
+import com.siemens.cto.aem.service.resource.impl.CreateResourceResponseWrapper;
 import com.siemens.cto.aem.ws.rest.v1.provider.AuthenticatedUser;
 import com.siemens.cto.aem.ws.rest.v1.response.ResponseBuilder;
 import com.siemens.cto.aem.ws.rest.v1.service.resource.CreateResourceParam;
@@ -36,7 +36,6 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(ResourceServiceRestImpl.class);
     private static final int CREATE_TEMPLATE_EXPECTED_NUM_OF_ATTACHMENTS = 2;
-    private static final int UPLOAD_EXTERNAL_PROPERTIES_NUM_OF_ATTACHMENTS = 2;
     private static final String JSON_FILE_EXTENSION = ".json";
     public static final String UNEXPECTED_CONTENT_TYPE_ERROR_MSG =
             "File being uploaded is invalid! The expected file type as indicated in the meta data is text based and should have a TPL extension.";
@@ -48,49 +47,6 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
         this.resourceService = resourceService;
     }
 
-    @Override
-    public Response findResourceInstanceByGroup(String groupName) {
-        LOGGER.debug("Find resource instance by group {}", groupName);
-        return ResponseBuilder.ok(resourceService.getResourceInstancesByGroupName(groupName));
-    }
-
-    @Override
-    public Response findResourceInstanceByNameGroup(final String name, final String groupName) {
-        LOGGER.debug("Find resource instance by name {} group {}", name, groupName);
-        return ResponseBuilder.ok(resourceService.getResourceInstancesByGroupName(groupName));
-    }
-
-    @Override
-    public Response createResourceInstance(JsonResourceInstance aResourceInstanceToCreate, AuthenticatedUser aUser) {
-        LOGGER.info("Create resource instance {} by user {}", aResourceInstanceToCreate, aUser.getUser().getId());
-        return ResponseBuilder.ok(this.resourceService.createResourceInstance(aResourceInstanceToCreate.getCommand(), aUser.getUser()));
-    }
-
-    @Override
-    public Response updateResourceInstanceAttributes(final String name, final String groupName, JsonResourceInstance aResourceInstanceToUpdate, AuthenticatedUser aUser) {
-        LOGGER.info("Update resource instance attributes {} with name {} in group {} by user", aResourceInstanceToUpdate, name, groupName, aUser.getUser().getId());
-        return ResponseBuilder.ok(this.resourceService.updateResourceInstance(groupName, name, aResourceInstanceToUpdate.getCommand(), aUser.getUser()));
-    }
-
-    @Override
-    public Response removeResourceInstance(final String name, final String groupName, AuthenticatedUser aUser) {
-        LOGGER.info("Remove resource instance name {} from group {} by user {}", name, groupName, aUser.getUser().getId());
-        this.resourceService.deleteResourceInstance(groupName, name);
-        return ResponseBuilder.ok();
-    }
-
-    @Override
-    public Response removeResources(String groupName, List<String> resourceNames, AuthenticatedUser aUser) {
-        LOGGER.info("Remove resources {} from group {} by user {}", resourceNames, groupName, aUser.getUser().getId());
-        try {
-            resourceService.deleteResources(groupName, resourceNames);
-            return ResponseBuilder.ok();
-        } catch (RuntimeException e) {
-            LOGGER.error("Could not remove resources {}", resourceNames, e);
-            return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR,
-                    new FaultCodeException(AemFaultType.PERSISTENCE_ERROR, e.getMessage()));
-        }
-    }
 
     public Response createTemplate(final List<Attachment> attachments, final String targetName, final AuthenticatedUser user) {
         LOGGER.info("create template for target {} by user {}", targetName, user.getUser().getId());
@@ -205,7 +161,7 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
                     "Invalid number of attachments! 2 attachments is expected by the service."));
         }
 
-        CreateResourceTemplateApplicationResponseWrapper responseWrapper = null;
+        CreateResourceResponseWrapper responseWrapper = null;
         try {
             final ObjectMapper mapper = new ObjectMapper();
             ResourceTemplateMetaData resourceTemplateMetaData = mapper.readValue(IOUtils.toString(metadataIn), ResourceTemplateMetaData.class);
@@ -363,7 +319,7 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
 
     @Override
     public Response deleteResources(final String[] templateNameArray, ResourceHierarchyParam resourceHierarchyParam, AuthenticatedUser user) {
-        LOGGER.info("Delete resource {} by user {} with details {}", templateNameArray, user.getUser().getId(), resourceHierarchyParam);
+        LOGGER.info("Delete resources {} by user {} with details {}", templateNameArray, user.getUser().getId(), resourceHierarchyParam);
         int deletedRecCount = 0;
 
         final List<String> templateNameList = Arrays.asList(templateNameArray);
@@ -462,9 +418,13 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
                     new FaultCodeException(AemFaultType.IO_EXCEPTION, ioe.getMessage()));
         }
 
-        resourceService.uploadExternalProperties(fileName, propertiesFileIn);
+        return ResponseBuilder.ok(resourceService.uploadExternalProperties(fileName, propertiesFileIn));
+    }
 
-        return ResponseBuilder.ok(resourceService.getExternalProperties());
+    @Override
+    public Response getExternalPropertiesFile() {
+        LOGGER.debug("Get the external properties file name");
+        return ResponseBuilder.ok(new String[] {resourceService.getExternalPropertiesFile()});
     }
 
     @Override

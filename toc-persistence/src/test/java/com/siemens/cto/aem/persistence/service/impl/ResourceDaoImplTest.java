@@ -1,5 +1,6 @@
 package com.siemens.cto.aem.persistence.service.impl;
 
+import com.siemens.cto.aem.common.domain.model.resource.EntityType;
 import com.siemens.cto.aem.common.request.app.UploadAppTemplateRequest;
 import com.siemens.cto.aem.common.request.jvm.UploadJvmConfigTemplateRequest;
 import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateRequest;
@@ -18,6 +19,7 @@ import com.siemens.cto.aem.persistence.jpa.service.impl.GroupCrudServiceImpl;
 import com.siemens.cto.aem.persistence.jpa.service.impl.JvmCrudServiceImpl;
 import com.siemens.cto.aem.persistence.jpa.service.impl.WebServerCrudServiceImpl;
 import com.siemens.cto.aem.persistence.service.ResourceDao;
+import com.siemens.cto.aem.persistence.service.ResourcePersistenceService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -65,6 +67,9 @@ public class ResourceDaoImplTest {
 
     @Autowired
     private ResourceDao resourceDao;
+
+    @Autowired
+    private ResourcePersistenceService resourcePersistenceService;
 
     @Before
     public void setUp() throws Exception {
@@ -131,6 +136,8 @@ public class ResourceDaoImplTest {
                 "someResource", "someFileName",
         "someJvm", "someMetaData", new ByteArrayInputStream("someData".getBytes()));
         applicationCrudService.uploadAppTemplate(uploadAppTemplateRequest, jpaJvm);
+
+        resourcePersistenceService.createResource(null, null, null, EntityType.EXT_PROPERTIES, "external.properties", new ByteArrayInputStream("property=test".getBytes()));
     }
 
     @Test
@@ -201,6 +208,12 @@ public class ResourceDaoImplTest {
         assertEquals("someMetaData", jpaGroupAppConfigTemplate.getMetaData());
     }
 
+    @Test
+    public void testGetExternalPropertiesResource() {
+        JpaResourceConfigTemplate result = resourceDao.getExternalPropertiesResource("external.properties");
+        assertEquals("property=test", result.getTemplateContent());
+    }
+
     @Configuration
     @Import(TestJpaConfiguration.class)
     static class Config {
@@ -228,6 +241,11 @@ public class ResourceDaoImplTest {
         @Bean
         public ResourceDao getResourceDao() {
             return new ResourceDaoImpl();
+        }
+
+        @Bean
+        public ResourcePersistenceService getResourcePersistenceService() {
+            return new JpaResourcePersistenceServiceImpl();
         }
     }
 }

@@ -7,11 +7,11 @@ import com.siemens.cto.aem.persistence.jpa.domain.resource.config.template.Confi
  *
  * Created by JC043760 on 4/13/2016.
  */
-public class CreateResourceTemplateApplicationResponseWrapper {
+public class CreateResourceResponseWrapper {
 
     private final ConfigTemplate configTemplate;
 
-    public CreateResourceTemplateApplicationResponseWrapper(ConfigTemplate configTemplate) {
+    public CreateResourceResponseWrapper(final ConfigTemplate configTemplate) {
         this.configTemplate = configTemplate;
     }
 

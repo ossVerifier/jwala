@@ -1,7 +1,6 @@
 package com.siemens.cto.aem.ws.rest.v1.service.resource;
 
 import com.siemens.cto.aem.ws.rest.v1.provider.AuthenticatedUser;
-import com.siemens.cto.aem.ws.rest.v1.service.resource.impl.JsonResourceInstance;
 import org.apache.cxf.jaxrs.ext.multipart.Attachment;
 import org.apache.cxf.jaxrs.ext.multipart.Multipart;
 
@@ -16,76 +15,6 @@ import java.util.List;
 @Path("/resources")
 @Produces(MediaType.APPLICATION_JSON)
 public interface ResourceServiceRest {
-
-    /**
-     * /aem/v1.0/resources;groupName=[your group name]
-     *
-     * @param groupName the name of the previously created group
-     * @return a list of ResourceInstance objects associated with a group
-     */
-    @GET
-    Response findResourceInstanceByGroup(@MatrixParam("groupName") final String groupName);
-
-    /**
-     * /aem/v1.0/resources/[your resource instance name];groupName=[your group name]
-     *
-     * @param name the name of an existing resource instance
-     * @param groupName the name of an existing group
-     * @return a specific resourceInstance object if present
-     */
-    @GET
-    @Path("/{name}")
-    Response findResourceInstanceByNameGroup(@PathParam("name") final String name, @MatrixParam("groupName") final String groupName);
-
-    /**
-     * /aem/v1.0/resources <br/>
-     * JSON POST data of JsonResourceInstance
-     * @param aResourceInstanceToCreate {@link JsonResourceInstance}
-     * @param aUser the authenticated user who is creating the ResourceInstance
-     * @return the newly created ResourceInstance object
-     */
-    @POST
-    @Consumes(MediaType.APPLICATION_JSON)
-    Response createResourceInstance(final JsonResourceInstance aResourceInstanceToCreate, @BeanParam final AuthenticatedUser aUser);
-
-    /**
-     * /aem/v1.0/resources/[resource instance name];groupName=[your group name] <br/>
-     * JSON PUT conttaining the same object as create, but empty attributes will remain the same and it will detect changes in the name within the JsonResourceInstance object
-     * @param name the name of an existing resource instance for updating
-     * @param groupName the name of an existing group which is associcated with the resource instance to be updated.
-     * @param aUser the authenticated user who is updating the resource instance
-     * @return the updated ResourceInstance object
-     */
-    @PUT
-    @Path("/{name}")
-    @Consumes(MediaType.APPLICATION_JSON)
-    Response updateResourceInstanceAttributes(@PathParam("name") final String name, @MatrixParam("groupName") final String groupName, final JsonResourceInstance aResourceInstanceToUpdate, @BeanParam final AuthenticatedUser aUser);
-
-    /**
-     * /aem/v1.0/resources/[resource instance name];groupName=[your group name]
-     * @param name the name of a the existing ResourceInstance to be deleted
-     * @param groupName the group name of the resource instance to be deleted
-     * @return  If successful nothing.
-     */
-    @DELETE
-    @Path("/{name}")
-    Response removeResourceInstance(@PathParam("name") final String name, @MatrixParam("groupName") final String groupName, @BeanParam final AuthenticatedUser aUser);
-
-    /**
-     * Removes a list of resources.
-     *
-     * usage: /aem/v1.0/resources;groupName=[group name];resourceName=[resourceName1];resourceName=[resourceName2]
-     *
-     * @param groupName the group where the resources to be removed belong to.
-     * @param resourceNames the names of the resources to remove.
-     *
-     * @return {@link Response}
-     */
-    @DELETE
-    @Consumes(MediaType.APPLICATION_JSON)
-    Response removeResources(@MatrixParam("groupName") final String groupName,
-                             @MatrixParam("resourceName") final List<String> resourceNames,
-                             @BeanParam final AuthenticatedUser aUser);
 
     /**
      * Creates a template file and it's corresponding JSON meta data file.
@@ -174,8 +103,8 @@ public interface ResourceServiceRest {
     Response deleteResources(@MatrixParam("name") String [] templateNameArray, @MatrixParam("") ResourceHierarchyParam resourceHierarchyParam, @BeanParam AuthenticatedUser user);
 
     @GET
-    @Path("/{name}/content")
-    Response getResourceContent(@PathParam("name") String name, @MatrixParam("") ResourceHierarchyParam resourceHierarchyParam);
+    @Path("/{resourceName}/content")
+    Response getResourceContent(@PathParam("resourceName") String resourceName, @MatrixParam("") ResourceHierarchyParam resourceHierarchyParam);
 
     /**
      * Upload an external properties file
@@ -191,5 +120,9 @@ public interface ResourceServiceRest {
     @GET
     @Path("/properties")
     Response getExternalProperties();
+
+    @GET
+    @Path("/properties/file")
+    Response getExternalPropertiesFile();
 }
 

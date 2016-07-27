@@ -9,7 +9,8 @@ var ResourceEditor = React.createClass({
     getInitialState: function() {
         return {
             groupData: null,
-            resourceAttrData: null
+            resourceAttrData: null,
+            entity: null
         }
     },
     render: function() {
@@ -30,6 +31,7 @@ var ResourceEditor = React.createClass({
                             };
 
         var groupJvmTreeList = <RStaticDialog key="groupsDlg"  ref="groupsDlg" title="Topology" defaultContentHeight="283px">
+                                   <div className="root-node-ul rtree-list-item ext-properties-container" onClick={this.handleExtPropertiesClick}><img src="public-resources/img/icons/group.png"/>Ext Properties</div>
                                    <RTreeList ref="treeList"
                                               data={this.state.groupData}
                                               treeMetaData={treeMetaData}
@@ -45,6 +47,7 @@ var ResourceEditor = React.createClass({
                                               wsService={this.props.wsService}
                                               webAppService={this.props.webAppService}
                                               groupService={this.props.groupService}
+                                              resourceService={this.props.resourceService}
                                               selectCallback={this.selectResourceCallback}
                                               createResourceCallback={this.props.createResourceCallback}
                                               deleteResourceCallback={this.props.deleteResourceCallback}/>
@@ -100,6 +103,7 @@ var ResourceEditor = React.createClass({
         this.setState({groupData:groupData});
     },
     selectNodeCallback: function(data, entity, parent) {
+        this.setState({entity: entity});
         if (this.props.selectEntityCallback(data, entity, parent)) {
             this.refs.resourcePane.getData(data);
             this.refs.resourceAttrPane.setCurrentlySelectedEntityData(data, entity, parent);
@@ -108,7 +112,8 @@ var ResourceEditor = React.createClass({
         return false;
     },
     selectResourceCallback: function(value, groupJvmEntityType) {
-        return this.props.selectResourceTemplateCallback(this.refs.treeList.getSelectedNodeData(), value, groupJvmEntityType);
+        // extProperties isn't part of the resources tree, so we have to fake that it was selected since it won't ever be returned in getSelectedNodeData
+        return this.props.selectResourceTemplateCallback(this.state.entity === "extProperties" ? this.state.entity : this.refs.treeList.getSelectedNodeData(), value, groupJvmEntityType);
     },
     onParentSplitterChange: function(dimensions) {
         this.refs.groupsDlg.recomputeContentContainerSize(dimensions[0]);
@@ -127,5 +132,25 @@ var ResourceEditor = React.createClass({
         if (dimensions[2]) {
             this.refs.resourceAttrDlg.recomputeContentContainerSize(dimensions[2]);
         }
+    },
+    handleExtPropertiesClick: function() {
+        // leverage the resources API's by faking out the ext properties tree node
+        var entity="extProperties"
+        var rtreeListMetaData = {
+            entity: "extProperties",
+            parent:{
+                name:"Ext Properties parent",
+                key:"extPropertiesParent"
+            }
+        };
+        var data = {
+            rtreeListMetaData: rtreeListMetaData
+        };
+        var parent = {
+            key:"extPropertiesParent",
+            name:"Ext Properties parent",
+            rtreeListMetaData: rtreeListMetaData
+        };
+        this.selectNodeCallback(data, entity, parent);
     }
 });

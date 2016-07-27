@@ -13,7 +13,6 @@ import com.siemens.cto.aem.common.request.app.UploadAppTemplateRequest;
 import com.siemens.cto.aem.common.request.app.UploadWebArchiveRequest;
 import com.siemens.cto.aem.common.request.jvm.UploadJvmConfigTemplateRequest;
 import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
-import com.siemens.cto.aem.common.request.resource.ResourceInstanceRequest;
 import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateRequest;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
 import com.siemens.cto.aem.persistence.jpa.domain.resource.config.template.ConfigTemplate;
@@ -93,60 +92,6 @@ public class ResourceServiceImpl implements ResourceService {
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public ResourceInstance getResourceInstance(final Identifier<ResourceInstance> aResourceInstanceId) {
-        return this.resourcePersistenceService.getResourceInstance(aResourceInstanceId);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<ResourceInstance> getResourceInstancesByGroupName(final String groupName) {
-        Group group = this.groupPersistenceService.getGroup(groupName);
-        return this.resourcePersistenceService.getResourceInstancesByGroupId(group.getId().getId());
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public ResourceInstance getResourceInstanceByGroupNameAndName(final String groupName, final String name) {
-        Group group = this.groupPersistenceService.getGroup(groupName);
-        return this.resourcePersistenceService.getResourceInstanceByGroupIdAndName(group.getId().getId(), name);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<ResourceInstance> getResourceInstancesByGroupNameAndResourceTypeName(final String groupName, final String resourceTypeName) {
-        Group group = this.groupPersistenceService.getGroup(groupName);
-        return this.resourcePersistenceService.getResourceInstancesByGroupIdAndResourceTypeName(group.getId().getId(), resourceTypeName);
-    }
-
-    @Override
-    @Transactional
-    public ResourceInstance createResourceInstance(final ResourceInstanceRequest createResourceInstanceRequest, final User creatingUser) {
-        this.groupPersistenceService.getGroup(createResourceInstanceRequest.getGroupName());
-        return this.resourcePersistenceService.createResourceInstance(createResourceInstanceRequest);
-    }
-
-    @Override
-    @Transactional
-    public ResourceInstance updateResourceInstance(final String groupName, final String name, final ResourceInstanceRequest updateResourceInstanceRequest, final User updatingUser) {
-        ResourceInstance resourceInstance = this.getResourceInstanceByGroupNameAndName(groupName, name);
-        return this.resourcePersistenceService.updateResourceInstance(resourceInstance, updateResourceInstanceRequest);
-    }
-
-    @Override
-    @Transactional
-    public void deleteResourceInstance(final String groupName, final String name) {
-        ResourceInstance resourceInstance = this.getResourceInstanceByGroupNameAndName(groupName, name);
-        this.resourcePersistenceService.deleteResourceInstance(resourceInstance.getResourceInstanceId());
-    }
-
-    @Override
-    @Transactional
-    public void deleteResources(final String groupName, final List<String> resourceNames) {
-        resourcePersistenceService.deleteResources(groupName, resourceNames);
-    }
-
-    @Override
     public String encryptUsingPlatformBean(String cleartext) {
         StandardEvaluationContext context = new StandardEvaluationContext();
         context.setVariable("stringToEncrypt", cleartext);
@@ -155,13 +100,13 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Override
     @Transactional
-    public CreateResourceTemplateApplicationResponseWrapper createTemplate(final InputStream metaData,
-                                                                           InputStream templateData,
-                                                                           final String targetName,
-                                                                           final User user) {
+    public CreateResourceResponseWrapper createTemplate(final InputStream metaData,
+                                                        InputStream templateData,
+                                                        final String targetName,
+                                                        final User user) {
         final ObjectMapper mapper = new ObjectMapper();
         final ResourceTemplateMetaData resourceTemplateMetaData;
-        final CreateResourceTemplateApplicationResponseWrapper responseWrapper;
+        final CreateResourceResponseWrapper responseWrapper;
 
         try {
             resourceTemplateMetaData = mapper.readValue(IOUtils.toString(metaData), ResourceTemplateMetaData.class);
@@ -207,9 +152,9 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Override
     @Transactional
-    public CreateResourceTemplateApplicationResponseWrapper createJvmResource(final ResourceTemplateMetaData metaData,
-                                                                              InputStream templateData,
-                                                                              final String jvmName) {
+    public CreateResourceResponseWrapper createJvmResource(final ResourceTemplateMetaData metaData,
+                                                           InputStream templateData,
+                                                           final String jvmName) {
 
         templateData = uploadIfBinaryData(metaData, templateData);
 
@@ -236,7 +181,7 @@ public class ResourceServiceImpl implements ResourceService {
         final UploadJvmConfigTemplateRequest uploadJvmTemplateRequest = new UploadJvmConfigTemplateRequest(jvmWithParentGroup, metaData.getTemplateName(),
                 templateData, convertResourceTemplateMetaDataToJson(metaData));
         uploadJvmTemplateRequest.setConfFileName(metaData.getDeployFileName());
-        return new CreateResourceTemplateApplicationResponseWrapper(jvmPersistenceService.uploadJvmTemplateXml(uploadJvmTemplateRequest));
+        return new CreateResourceResponseWrapper(jvmPersistenceService.uploadJvmTemplateXml(uploadJvmTemplateRequest));
     }
 
     protected String convertResourceTemplateMetaDataToJson(final ResourceTemplateMetaData resourceTemplateMetaData) {
@@ -251,9 +196,9 @@ public class ResourceServiceImpl implements ResourceService {
     @Override
     // TODO: When the resource file is locked, don't overwrite!
     @Transactional
-    public CreateResourceTemplateApplicationResponseWrapper createGroupLevelJvmResource(final ResourceTemplateMetaData metaData,
-                                                                                        InputStream resourceData,
-                                                                                        final String groupName) throws IOException {
+    public CreateResourceResponseWrapper createGroupLevelJvmResource(final ResourceTemplateMetaData metaData,
+                                                                     InputStream resourceData,
+                                                                     final String groupName) throws IOException {
 
         resourceData = uploadIfBinaryData(metaData, resourceData);
 
@@ -276,15 +221,15 @@ public class ResourceServiceImpl implements ResourceService {
         uploadJvmTemplateRequest.setConfFileName(metaData.getDeployFileName());
         uploadJvmTemplateRequestList.add(uploadJvmTemplateRequest);
         groupPersistenceService.populateGroupJvmTemplates(metaData.getEntity().getGroup(), uploadJvmTemplateRequestList);
-        return new CreateResourceTemplateApplicationResponseWrapper(createdJpaJvmConfigTemplate);
+        return new CreateResourceResponseWrapper(createdJpaJvmConfigTemplate);
     }
 
     @Override
     @Transactional
-    public CreateResourceTemplateApplicationResponseWrapper createWebServerResource(final ResourceTemplateMetaData metaData,
-                                                                                    InputStream templateData,
-                                                                                    final String webServerName,
-                                                                                    final User user) {
+    public CreateResourceResponseWrapper createWebServerResource(final ResourceTemplateMetaData metaData,
+                                                                 InputStream templateData,
+                                                                 final String webServerName,
+                                                                 final User user) {
 
         templateData = uploadIfBinaryData(metaData, templateData);
 
@@ -297,16 +242,16 @@ public class ResourceServiceImpl implements ResourceService {
             }
         };
         final String generatedDeployPath = generateResourceFile(metaData.getDeployPath(), generateResourceGroup(), webServer);
-        return new CreateResourceTemplateApplicationResponseWrapper(webServerPersistenceService
+        return new CreateResourceResponseWrapper(webServerPersistenceService
                 .uploadWebServerConfigTemplate(uploadWebArchiveRequest, generatedDeployPath + "/" + metaData.getDeployFileName(),user.getId()));
     }
 
     @Override
     @Transactional
-    public CreateResourceTemplateApplicationResponseWrapper createGroupLevelWebServerResource(final ResourceTemplateMetaData metaData,
-                                                                                              InputStream templateData,
-                                                                                              final String groupName,
-                                                                                              final User user) throws IOException {
+    public CreateResourceResponseWrapper createGroupLevelWebServerResource(final ResourceTemplateMetaData metaData,
+                                                                           InputStream templateData,
+                                                                           final String groupName,
+                                                                           final User user) throws IOException {
 
         templateData = uploadIfBinaryData(metaData, templateData);
 
@@ -340,15 +285,15 @@ public class ResourceServiceImpl implements ResourceService {
         };
         uploadWebServerTemplateRequestMap.put(metaData.getDeployFileName(), uploadWebServerTemplateRequest);
         groupPersistenceService.populateGroupWebServerTemplates(group.getName(), uploadWebServerTemplateRequestMap);
-        return new CreateResourceTemplateApplicationResponseWrapper(createdConfigTemplate);
+        return new CreateResourceResponseWrapper(createdConfigTemplate);
     }
 
     @Override
     @Transactional
-    public CreateResourceTemplateApplicationResponseWrapper createAppResource(final ResourceTemplateMetaData metaData,
-                                                                              InputStream templateData,
-                                                                              final String jvmName,
-                                                                              final String appName) {
+    public CreateResourceResponseWrapper createAppResource(final ResourceTemplateMetaData metaData,
+                                                           InputStream templateData,
+                                                           final String jvmName,
+                                                           final String appName) {
 
         templateData = uploadIfBinaryData(metaData, templateData);
 
@@ -356,14 +301,14 @@ public class ResourceServiceImpl implements ResourceService {
         final UploadAppTemplateRequest uploadAppTemplateRequest = new UploadAppTemplateRequest(application, metaData.getTemplateName(),
                 metaData.getDeployFileName(), jvmName, convertResourceTemplateMetaDataToJson(metaData), templateData);
         final JpaJvm jpaJvm = jvmPersistenceService.getJpaJvm(jvmPersistenceService.findJvmByExactName(jvmName).getId(), false);
-        return new CreateResourceTemplateApplicationResponseWrapper(applicationPersistenceService.uploadAppTemplate(uploadAppTemplateRequest, jpaJvm));
+        return new CreateResourceResponseWrapper(applicationPersistenceService.uploadAppTemplate(uploadAppTemplateRequest, jpaJvm));
     }
 
     @Override
     @Transactional
-    public CreateResourceTemplateApplicationResponseWrapper createGroupedLevelAppResource(final ResourceTemplateMetaData metaData,
-                                                                                          InputStream templateData,
-                                                                                          final String targetAppName) throws IOException {
+    public CreateResourceResponseWrapper createGroupedLevelAppResource(final ResourceTemplateMetaData metaData,
+                                                                       InputStream templateData,
+                                                                       final String targetAppName) throws IOException {
         templateData = uploadIfBinaryData(metaData, templateData);
 
         final String groupName = metaData.getEntity().getGroup();
@@ -402,7 +347,7 @@ public class ResourceServiceImpl implements ResourceService {
             }
         }
 
-        return new CreateResourceTemplateApplicationResponseWrapper(createdConfigTemplate);
+        return new CreateResourceResponseWrapper(createdConfigTemplate);
     }
 
     /**
@@ -537,9 +482,9 @@ public class ResourceServiceImpl implements ResourceService {
      * @param jvmName identifies the JVM to which the template is attached to
      */
     @Deprecated
-    private CreateResourceTemplateApplicationResponseWrapper createJvmTemplate(final ResourceTemplateMetaData metaData,
-                                                                               final InputStream templateData,
-                                                                               final String jvmName) {
+    private CreateResourceResponseWrapper createJvmTemplate(final ResourceTemplateMetaData metaData,
+                                                            final InputStream templateData,
+                                                            final String jvmName) {
         final Jvm jvm = jvmPersistenceService.findJvmByExactName(jvmName);
         final Group parentGroup = groupPersistenceService.getGroup(metaData.getEntity().getGroup());
         final Jvm jvmWithParentGroup = new Jvm(jvm.getId(),
@@ -563,7 +508,7 @@ public class ResourceServiceImpl implements ResourceService {
         final UploadJvmConfigTemplateRequest uploadJvmTemplateRequest = new UploadJvmConfigTemplateRequest(jvmWithParentGroup, metaData.getTemplateName(),
                 templateData, convertResourceTemplateMetaDataToJson(metaData));
         uploadJvmTemplateRequest.setConfFileName(metaData.getDeployFileName());
-        return new CreateResourceTemplateApplicationResponseWrapper(jvmPersistenceService.uploadJvmTemplateXml(uploadJvmTemplateRequest));
+        return new CreateResourceResponseWrapper(jvmPersistenceService.uploadJvmTemplateXml(uploadJvmTemplateRequest));
     }
 
     /**
@@ -574,8 +519,8 @@ public class ResourceServiceImpl implements ResourceService {
      */
     // TODO: When the resource file is locked, don't overwrite!
     @Deprecated
-    private CreateResourceTemplateApplicationResponseWrapper createGroupedJvmsTemplate(final ResourceTemplateMetaData metaData,
-                                                                                       final InputStream templateData) throws IOException {
+    private CreateResourceResponseWrapper createGroupedJvmsTemplate(final ResourceTemplateMetaData metaData,
+                                                                    final InputStream templateData) throws IOException {
         final Set<Jvm> jvms = groupPersistenceService.getGroup(metaData.getEntity().getGroup()).getJvms();
         ConfigTemplate createdJpaJvmConfigTemplate = null;
         String templateContent = IOUtils.toString(templateData);
@@ -595,7 +540,7 @@ public class ResourceServiceImpl implements ResourceService {
         uploadJvmTemplateRequest.setConfFileName(metaData.getDeployFileName());
         uploadJvmTemplateRequestList.add(uploadJvmTemplateRequest);
         groupPersistenceService.populateGroupJvmTemplates(metaData.getEntity().getGroup(), uploadJvmTemplateRequestList);
-        return new CreateResourceTemplateApplicationResponseWrapper(createdJpaJvmConfigTemplate);
+        return new CreateResourceResponseWrapper(createdJpaJvmConfigTemplate);
     }
 
     /**
@@ -606,10 +551,10 @@ public class ResourceServiceImpl implements ResourceService {
      * @param user
      */
     @Deprecated
-    private CreateResourceTemplateApplicationResponseWrapper createWebServerTemplate(final ResourceTemplateMetaData metaData,
-                                                                                     final InputStream templateData,
-                                                                                     final String webServerName,
-                                                                                     final User user) {
+    private CreateResourceResponseWrapper createWebServerTemplate(final ResourceTemplateMetaData metaData,
+                                                                  final InputStream templateData,
+                                                                  final String webServerName,
+                                                                  final User user) {
         final WebServer webServer = webServerPersistenceService.findWebServerByName(webServerName);
         final UploadWebServerTemplateRequest uploadWebArchiveRequest = new UploadWebServerTemplateRequest(webServer,
                 metaData.getTemplateName(), convertResourceTemplateMetaDataToJson(metaData), templateData) {
@@ -619,7 +564,7 @@ public class ResourceServiceImpl implements ResourceService {
             }
         };
         String generatedDeployPath = generateResourceFile(metaData.getDeployPath(), generateResourceGroup(), webServer);
-        return new CreateResourceTemplateApplicationResponseWrapper(webServerPersistenceService.uploadWebServerConfigTemplate(uploadWebArchiveRequest, generatedDeployPath + "/" + metaData.getDeployFileName(),user.getId()));
+        return new CreateResourceResponseWrapper(webServerPersistenceService.uploadWebServerConfigTemplate(uploadWebArchiveRequest, generatedDeployPath + "/" + metaData.getDeployFileName(),user.getId()));
     }
 
     /**
@@ -629,9 +574,9 @@ public class ResourceServiceImpl implements ResourceService {
      * @param user
      */
     @Deprecated
-    private CreateResourceTemplateApplicationResponseWrapper createGroupedWebServersTemplate(final ResourceTemplateMetaData metaData,
-                                                                                             final InputStream templateData,
-                                                                                             final User user) throws IOException {
+    private CreateResourceResponseWrapper createGroupedWebServersTemplate(final ResourceTemplateMetaData metaData,
+                                                                          final InputStream templateData,
+                                                                          final User user) throws IOException {
         final Group group = groupPersistenceService.getGroupWithWebServers(metaData.getEntity().getGroup());
         final Set<WebServer> webServers = group.getWebServers();
         final Map<String, UploadWebServerTemplateRequest> uploadWebServerTemplateRequestMap = new HashMap<>();
@@ -662,7 +607,7 @@ public class ResourceServiceImpl implements ResourceService {
         };
         uploadWebServerTemplateRequestMap.put(metaData.getDeployFileName(), uploadWebServerTemplateRequest);
         groupPersistenceService.populateGroupWebServerTemplates(group.getName(), uploadWebServerTemplateRequestMap);
-        return new CreateResourceTemplateApplicationResponseWrapper(createdConfigTemplate);
+        return new CreateResourceResponseWrapper(createdConfigTemplate);
     }
 
     /**
@@ -673,12 +618,12 @@ public class ResourceServiceImpl implements ResourceService {
      * @param targetJvmName the name of the JVM to associate with the application template
      */
     @Deprecated
-    private CreateResourceTemplateApplicationResponseWrapper createApplicationTemplate(final ResourceTemplateMetaData metaData, final InputStream templateData, String targetJvmName) {
+    private CreateResourceResponseWrapper createApplicationTemplate(final ResourceTemplateMetaData metaData, final InputStream templateData, String targetJvmName) {
         final Application application = applicationPersistenceService.getApplication(metaData.getEntity().getTarget());
         UploadAppTemplateRequest uploadAppTemplateRequest = new UploadAppTemplateRequest(application, metaData.getTemplateName(),
                 metaData.getDeployFileName(), targetJvmName, convertResourceTemplateMetaDataToJson(metaData), templateData);
         JpaJvm jpaJvm = jvmPersistenceService.getJpaJvm(jvmPersistenceService.findJvmByExactName(targetJvmName).getId(), false);
-        return new CreateResourceTemplateApplicationResponseWrapper(applicationPersistenceService.uploadAppTemplate(uploadAppTemplateRequest, jpaJvm));
+        return new CreateResourceResponseWrapper(applicationPersistenceService.uploadAppTemplate(uploadAppTemplateRequest, jpaJvm));
     }
 
     /**
@@ -689,9 +634,9 @@ public class ResourceServiceImpl implements ResourceService {
      * @param targetAppName the application name
      */
     @Deprecated
-    private CreateResourceTemplateApplicationResponseWrapper createGroupedApplicationsTemplate(final ResourceTemplateMetaData metaData,
-                                                                                               final InputStream templateData,
-                                                                                               final String targetAppName) throws IOException {
+    private CreateResourceResponseWrapper createGroupedApplicationsTemplate(final ResourceTemplateMetaData metaData,
+                                                                            final InputStream templateData,
+                                                                            final String targetAppName) throws IOException {
         final String groupName = metaData.getEntity().getGroup();
         Group group = groupPersistenceService.getGroup(groupName);
         final List<Application> applications = applicationPersistenceService.findApplicationsBelongingTo(groupName);
@@ -719,7 +664,7 @@ public class ResourceServiceImpl implements ResourceService {
         createdConfigTemplate = groupPersistenceService.populateGroupAppTemplate(groupName, targetAppName, metaData.getDeployFileName(),
                 convertResourceTemplateMetaDataToJson(metaData), templateString);
 
-        return new CreateResourceTemplateApplicationResponseWrapper(createdConfigTemplate);
+        return new CreateResourceResponseWrapper(createdConfigTemplate);
     }
 
     @Override
@@ -801,14 +746,22 @@ public class ResourceServiceImpl implements ResourceService {
     }
 
     @Override
-    public void uploadExternalProperties(String fileName, InputStream propertiesFileIn) {
-        Application fakedApplication = new Application(new Identifier<Application>(0L), fileName, "", "", null, true, true, false, fileName);
-        UploadWebArchiveRequest uploadWebArchiveRequest = new UploadWebArchiveRequest(fakedApplication,fileName, -1L, propertiesFileIn);
-        RepositoryFileInformation fileInfo = privateApplicationService.uploadWebArchiveData(uploadWebArchiveRequest);
+    @Transactional
+    public Object uploadExternalProperties(String fileName, InputStream propertiesFileIn) {
+        Long entityId = null;
+        Long groupId = null;
+        Long appId = null;
+        return resourcePersistenceService.createResource(entityId, groupId, appId, EntityType.EXT_PROPERTIES, fileName, propertiesFileIn);
 
         // TODO wait until properties file is deployed before setting the properties file path?
-        String uploadFilePath = fileInfo.getPath().toString();
-        ExternalProperties.setPropertiesFilePath(uploadFilePath);
+//        String uploadFilePath = fileInfo.getPath().toString();
+//        ExternalProperties.setPropertiesFilePath(uploadFilePath);
+    }
+
+    @Override
+    public String getExternalPropertiesFile() {
+        // TODO add external property to a resource table
+        return "external.properties";
     }
 
     @Override

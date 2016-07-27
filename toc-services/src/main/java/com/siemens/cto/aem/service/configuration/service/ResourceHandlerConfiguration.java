@@ -43,7 +43,12 @@ public class ResourceHandlerConfiguration {
     }
 
     @Bean
-    public GroupLevelAppResourceHandler getGroupLevelAppResourceHandler(final ResourceDao resourceDao) {
-        return new GroupLevelAppResourceHandler(resourceDao, null);
+    public GroupLevelAppResourceHandler getGroupLevelAppResourceHandler(final ResourceDao resourceDao, final ExternalPropertiesResourceHandler extPropertiesResourceHandler) {
+        return new GroupLevelAppResourceHandler(resourceDao, extPropertiesResourceHandler);
+    }
+
+    @Bean
+    public ExternalPropertiesResourceHandler getExternalPropertiesResourceHandler(final ResourceDao resourceDao){
+        return new ExternalPropertiesResourceHandler(resourceDao, null);
     }
 }

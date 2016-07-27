@@ -12,7 +12,7 @@ public class AemPersistenceServiceConfiguration {
 
     @Bean
     public ResourcePersistenceService getResourcePersistenceService() {
-        return new JpaResourcePersistenceServiceImpl(getResourceInstanceCrudService());
+        return new JpaResourcePersistenceServiceImpl();
     }
 
     @Bean(name="jvmPersistenceService")
@@ -40,11 +40,6 @@ public class AemPersistenceServiceConfiguration {
     @Bean
     protected JvmCrudService getJvmCrudService() {
         return new JvmCrudServiceImpl();
-    }
-
-    @Bean
-    protected ResourceInstanceCrudService getResourceInstanceCrudService() {
-        return new ResourceInstanceCrudServiceImpl(getGroupCrudService());
     }
 
     @Bean

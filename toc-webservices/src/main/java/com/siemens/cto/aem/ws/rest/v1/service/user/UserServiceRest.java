@@ -3,6 +3,7 @@ package com.siemens.cto.aem.ws.rest.v1.service.user;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.FormParam;
+import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -22,6 +23,16 @@ public interface UserServiceRest {
 
     @POST
     @Path("/logout")
-    Response logout(@Context HttpServletRequest request, @Context HttpServletResponse response);
-
+    Response logout(@Context HttpServletRequest request, 
+                    @Context HttpServletResponse response);
+    
+    @GET
+    @Path("/isUserAdmin")
+    Response isUserAdmin(@Context HttpServletRequest request, 
+                         @Context HttpServletResponse response);
+    
+    @GET
+    @Path("/isTOCAuthorizationEnabled")
+    Response isTOCAuthorizationEnabled(@Context HttpServletRequest request, 
+                                       @Context HttpServletResponse response);
 }

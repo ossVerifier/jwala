@@ -12,7 +12,7 @@ import com.siemens.cto.aem.persistence.jpa.domain.resource.config.template.Confi
 import com.siemens.cto.aem.service.group.GroupService;
 import com.siemens.cto.aem.service.jvm.JvmService;
 import com.siemens.cto.aem.service.resource.ResourceService;
-import com.siemens.cto.aem.service.resource.impl.CreateResourceTemplateApplicationResponseWrapper;
+import com.siemens.cto.aem.service.resource.impl.CreateResourceResponseWrapper;
 import com.siemens.cto.aem.ws.rest.v1.provider.AuthenticatedUser;
 import com.siemens.cto.aem.ws.rest.v1.response.ApplicationResponse;
 import com.siemens.cto.aem.ws.rest.v1.service.resource.CreateResourceParam;
@@ -72,46 +72,6 @@ public class ResourceServiceRestImplTest {
     }
 
     @Test
-    public void testFindResourceInstanceByGroup() {
-        when(impl.getResourceInstancesByGroupName(group.getName())).thenReturn(new ArrayList<ResourceInstance>());
-        Response response = cut.findResourceInstanceByGroup(group.getName());
-        assertNotNull(response.getEntity());
-    }
-
-    @Test
-    public void testFindResourceInstanceByNameGroup() {
-        when(impl.getResourceInstancesByGroupName(group.getName())).thenReturn(new ArrayList<ResourceInstance>());
-        Response response = cut.findResourceInstanceByNameGroup("testName", group.getName());
-        assertNotNull(response.getEntity());
-    }
-
-    @Test
-    public void testCreateResourceInstance() {
-        when(impl.createResourceInstance(any(ResourceInstanceRequest.class), any(User.class))).thenReturn(resourceInstance);
-        Response response = cut.createResourceInstance(jsonResourceInstance, authenticatedUser);
-        assertNotNull(response.getEntity());
-    }
-
-    @Test
-    public void testUpdateResourceInstanceAttributes() {
-        when(impl.updateResourceInstance(anyString(), anyString(), any(ResourceInstanceRequest.class), any(User.class))).thenReturn(resourceInstance);
-        Response response = cut.updateResourceInstanceAttributes("resourceName", group.getName(), jsonResourceInstance, authenticatedUser);
-        assertNotNull(response.getEntity());
-    }
-
-    @Test
-    public void testRemoveResourceInstance() {
-        Response response = cut.removeResourceInstance("resourceName", group.getName(), authenticatedUser);
-        assertNull(response.getEntity());
-    }
-
-    @Test
-    public void testRemoveResources() {
-        Response response = cut.removeResources(group.getName(), new ArrayList<String>(), authenticatedUser);
-        assertNull(response.getEntity());
-    }
-
-    @Test
     public void testCreateTemplate() throws IOException {
         List<Attachment> attachmentList = new ArrayList<>();
         Attachment json = mock(Attachment.class);
@@ -129,7 +89,7 @@ public class ResourceServiceRestImplTest {
         String tplContent = "template content";
         when(tplDataHandler.getInputStream()).thenReturn(new ByteArrayInputStream(tplContent.getBytes()));
 
-        when(impl.createTemplate(any(InputStream.class), any(InputStream.class), anyString(), any(User.class))).thenReturn(new CreateResourceTemplateApplicationResponseWrapper(new ConfigTemplate()));
+        when(impl.createTemplate(any(InputStream.class), any(InputStream.class), anyString(), any(User.class))).thenReturn(new CreateResourceResponseWrapper(new ConfigTemplate()));
         Response response = cut.createTemplate(attachmentList, "test-target-name", authenticatedUser);
 
         assertEquals(Response.Status.CREATED.getStatusCode(), response.getStatus());
@@ -151,7 +111,7 @@ public class ResourceServiceRestImplTest {
         when(jsonDataHandler.getInputStream()).thenThrow(new IOException());
         when(tplDataHandler.getInputStream()).thenThrow(new IOException());
 
-        when(impl.createTemplate(any(InputStream.class), any(InputStream.class), anyString(), any(User.class))).thenReturn(new CreateResourceTemplateApplicationResponseWrapper(new ConfigTemplate()));
+        when(impl.createTemplate(any(InputStream.class), any(InputStream.class), anyString(), any(User.class))).thenReturn(new CreateResourceResponseWrapper(new ConfigTemplate()));
         Response response = cut.createTemplate(attachmentList, "test-target-name", authenticatedUser);
 
         assertEquals(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), response.getStatus());
@@ -166,7 +126,7 @@ public class ResourceServiceRestImplTest {
         when(json.getDataHandler()).thenReturn(jsonDataHandler);
         when(jsonDataHandler.getName()).thenReturn("test-target.json");
 
-        when(impl.createTemplate(any(InputStream.class), any(InputStream.class), anyString(), any(User.class))).thenReturn(new CreateResourceTemplateApplicationResponseWrapper(new ConfigTemplate()));
+        when(impl.createTemplate(any(InputStream.class), any(InputStream.class), anyString(), any(User.class))).thenReturn(new CreateResourceResponseWrapper(new ConfigTemplate()));
         Response response = cut.createTemplate(attachmentList, "test-target-name", authenticatedUser);
 
         assertEquals(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), response.getStatus());

@@ -1,10 +1,11 @@
 package com.siemens.cto.aem.service.resource;
 
-import com.siemens.cto.aem.common.domain.model.id.Identifier;
-import com.siemens.cto.aem.common.domain.model.resource.*;
+import com.siemens.cto.aem.common.domain.model.resource.ResourceContent;
+import com.siemens.cto.aem.common.domain.model.resource.ResourceGroup;
+import com.siemens.cto.aem.common.domain.model.resource.ResourceIdentifier;
+import com.siemens.cto.aem.common.domain.model.resource.ResourceTemplateMetaData;
 import com.siemens.cto.aem.common.domain.model.user.User;
-import com.siemens.cto.aem.common.request.resource.ResourceInstanceRequest;
-import com.siemens.cto.aem.service.resource.impl.CreateResourceTemplateApplicationResponseWrapper;
+import com.siemens.cto.aem.service.resource.impl.CreateResourceResponseWrapper;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -15,22 +16,6 @@ import java.util.Properties;
 
 public interface ResourceService {
 
-    ResourceInstance getResourceInstance(final Identifier<ResourceInstance> aResourceInstanceId);
-
-    List<ResourceInstance> getResourceInstancesByGroupName(final String groupName);
-
-    ResourceInstance getResourceInstanceByGroupNameAndName(final String groupName, final String name);
-
-    List<ResourceInstance> getResourceInstancesByGroupNameAndResourceTypeName(final String groupName, final String resourceTypeName);
-
-    ResourceInstance createResourceInstance(final ResourceInstanceRequest createResourceInstanceCommand, final User creatingUser);
-
-    ResourceInstance updateResourceInstance(final String groupName, final String name, final ResourceInstanceRequest updateResourceInstanceAttributesCommand, final User updatingUser);
-
-    void deleteResourceInstance(final String name, final String groupName);
-
-    void deleteResources(final String groupName, final List<String> resourceNames);
-    
     String  encryptUsingPlatformBean(String cleartext);
 
     /**
@@ -55,19 +40,19 @@ public interface ResourceService {
      * @param user
      */
     @Deprecated
-    CreateResourceTemplateApplicationResponseWrapper createTemplate(InputStream metaDataInputStream, InputStream templateData, String targetName, User user);
+    CreateResourceResponseWrapper createTemplate(InputStream metaDataInputStream, InputStream templateData, String targetName, User user);
 
-    CreateResourceTemplateApplicationResponseWrapper createJvmResource(ResourceTemplateMetaData metaData,
-                                                                       InputStream templateData,
-                                                                       String jvmName);
+    CreateResourceResponseWrapper createJvmResource(ResourceTemplateMetaData metaData,
+                                                    InputStream templateData,
+                                                    String jvmName);
 
     /**
      * Create the JVM template in the db and in the templates path for all the JVMs.
      *  @param metaData     the data that describes the template, please see {@link ResourceTemplateMetaData}
      * @param templateData the template content/data
      */
-    CreateResourceTemplateApplicationResponseWrapper createGroupLevelJvmResource(ResourceTemplateMetaData metaData,
-                                                                                 InputStream templateData, String groupName) throws IOException;
+    CreateResourceResponseWrapper createGroupLevelJvmResource(ResourceTemplateMetaData metaData,
+                                                              InputStream templateData, String groupName) throws IOException;
 
     /**
      * Create web server resource.
@@ -76,10 +61,10 @@ public interface ResourceService {
      * @param webServerName identifies the web server to which the template belongs to
      * @param user the user responsible for executing this service
      */
-    CreateResourceTemplateApplicationResponseWrapper createWebServerResource(ResourceTemplateMetaData metaData,
-                                                                             InputStream templateData,
-                                                                             String webServerName,
-                                                                             User user);
+    CreateResourceResponseWrapper createWebServerResource(ResourceTemplateMetaData metaData,
+                                                          InputStream templateData,
+                                                          String webServerName,
+                                                          User user);
 
     /**
      * Create the web server template in the db and in the templates path for all the web servers.
@@ -87,10 +72,10 @@ public interface ResourceService {
      * @param templateData the template content/data
      * @param user the user
      */
-    CreateResourceTemplateApplicationResponseWrapper createGroupLevelWebServerResource(ResourceTemplateMetaData metaData,
-                                                                                       InputStream templateData,
-                                                                                       String groupName,
-                                                                                       User user) throws IOException;
+    CreateResourceResponseWrapper createGroupLevelWebServerResource(ResourceTemplateMetaData metaData,
+                                                                    InputStream templateData,
+                                                                    String groupName,
+                                                                    User user) throws IOException;
 
     /**
      * Create application resource.
@@ -100,10 +85,10 @@ public interface ResourceService {
      * @param jvmName the name of the JVM to associate the resource to
      * @param appName the name of the application to associate the resource to
      */
-    CreateResourceTemplateApplicationResponseWrapper createAppResource(ResourceTemplateMetaData metaData,
-                                                                       InputStream templateData,
-                                                                       String jvmName,
-                                                                       String appName);
+    CreateResourceResponseWrapper createAppResource(ResourceTemplateMetaData metaData,
+                                                    InputStream templateData,
+                                                    String jvmName,
+                                                    String appName);
 
     /**
      * Create group level application resource.
@@ -113,19 +98,9 @@ public interface ResourceService {
      * @param targetAppName the name of the application to associate the resource to
      */
     // TODO: Specify the group as well!
-    CreateResourceTemplateApplicationResponseWrapper createGroupedLevelAppResource(ResourceTemplateMetaData metaData,
-                                                                                   InputStream templateData,
-                                                                                   String targetAppName) throws IOException;
-
-//    /**
-//     * Deletes a resource template of a specific group and entity type (e.g. group = Group1, entity type = GROUPED_JVMS)
-//     * @param groupName the group name
-//     * @param entityType the entity type {@link EntityType}
-//     * @param templateNames comma separated names of templates to delete e.g. server.xml, context.xml (user can specify one template name as well)
-//     * @return the number of records deleted.
-//     */
-//    @Deprecated
-//    int removeTemplate(String groupName, EntityType entityType, String templateNames);
+    CreateResourceResponseWrapper createGroupedLevelAppResource(ResourceTemplateMetaData metaData,
+                                                                InputStream templateData,
+                                                                String targetAppName) throws IOException;
 
     /**
      * Generates the ResourceGroup class object, which contains all the jvms, webapps, webservers and groups information.
@@ -273,11 +248,13 @@ public interface ResourceService {
      * @param fileName the name of the properties file
      * @param propertiesFileIn the input stream of the properties file
      */
-    void uploadExternalProperties(String fileName, InputStream propertiesFileIn);
+    Object uploadExternalProperties(String fileName, InputStream propertiesFileIn);
 
     /**
      * Get all of the properties that were uploaded by an outside application/user
      * @return the external properties
      */
     Properties getExternalProperties();
+
+    String getExternalPropertiesFile();
 }
