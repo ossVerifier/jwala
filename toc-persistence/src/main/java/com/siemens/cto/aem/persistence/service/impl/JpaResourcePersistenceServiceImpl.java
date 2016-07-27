@@ -1,8 +1,10 @@
 package com.siemens.cto.aem.persistence.service.impl;
 
 import com.siemens.cto.aem.common.domain.model.resource.EntityType;
+import com.siemens.cto.aem.common.domain.model.resource.ResourceIdentifier;
 import com.siemens.cto.aem.persistence.jpa.domain.resource.config.template.JpaGroupAppConfigTemplate;
 import com.siemens.cto.aem.persistence.jpa.domain.resource.config.template.JpaResourceConfigTemplate;
+import com.siemens.cto.aem.persistence.jpa.service.exception.ResourceTemplateUpdateException;
 import com.siemens.cto.aem.persistence.service.ResourcePersistenceService;
 
 import javax.persistence.EntityManager;
@@ -56,5 +58,29 @@ public class JpaResourcePersistenceServiceImpl implements ResourcePersistenceSer
         entityManager.flush();
 
         return resourceTemplate;
+    }
+
+    @Override
+    public void updateResource(ResourceIdentifier resourceIdentifier, EntityType entityType, String templateContent) {
+        final Query q = entityManager.createNamedQuery(JpaResourceConfigTemplate.UPDATE_RESOURCE_TEMPLATE_CONTENT);
+        q.setParameter(JpaResourceConfigTemplate.QUERY_PARAM_ENTITY_TYPE, entityType);
+        // TODO make this more generic and actually use the resource identifier
+        q.setParameter(JpaResourceConfigTemplate.QUERY_PARAM_GRP_ID, null);
+        q.setParameter(JpaResourceConfigTemplate.QUERY_PARAM_APP_ID, null);
+        q.setParameter(JpaResourceConfigTemplate.QUERY_PARAM_ENTITY_ID, null);
+        q.setParameter(JpaResourceConfigTemplate.QUERY_PARAM_TEMPLATE_NAME, resourceIdentifier.resourceName);
+        q.setParameter(JpaResourceConfigTemplate.QUERY_PARAM_TEMPLATE_CONTENT, templateContent);
+
+        int numEntities;
+
+        try {
+            numEntities = q.executeUpdate();
+        } catch (RuntimeException re) {
+            throw new ResourceTemplateUpdateException(resourceIdentifier.toString(), resourceIdentifier.resourceName, re);
+        }
+
+        if (numEntities == 0) {
+            throw new ResourceTemplateUpdateException(resourceIdentifier.toString(), resourceIdentifier.resourceName);
+        }
     }
 }

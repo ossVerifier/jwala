@@ -120,5 +120,26 @@ var resourceService = {
     },
     getExternalPropertiesFile: function(callback){
         return serviceFoundation.get("v1.0/resources/properties/file", "json", callback);
+    },
+    updateResourceContent: function(resourceTemplateName, template, groupName, webServerName, jvmName, webAppName) {
+        var matrixParam = "";
+
+        if (groupName) {
+            matrixParam += ";group=" + encodeURIComponent(groupName);
+        }
+        if (webServerName) {
+            matrixParam += ";webServer=" + encodeURIComponent(webServerName);
+        }
+        if (jvmName) {
+            matrixParam += ";jvm=" + encodeURIComponent(jvmName);
+        }
+        if (webAppName) {
+            matrixParam += ";webApp=" + encodeURIComponent(webAppName);
+        }
+        return serviceFoundation.promisedPut("v1.0/resources/template/" + encodeURIComponent(resourceTemplateName) + matrixParam,
+                                                    "json",
+                                                     template,
+                                                     false,
+                                                     "text/plain; charset=utf-8")
     }
 };

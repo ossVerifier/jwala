@@ -19,6 +19,7 @@ import com.siemens.cto.aem.common.request.app.UploadWebArchiveRequest;
 import com.siemens.cto.aem.common.request.jvm.UploadJvmConfigTemplateRequest;
 import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateRequest;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
+import com.siemens.cto.aem.persistence.jpa.domain.resource.config.template.ConfigTemplate;
 import com.siemens.cto.aem.persistence.service.*;
 import com.siemens.cto.aem.service.app.ApplicationService;
 import com.siemens.cto.aem.service.app.PrivateApplicationService;
@@ -587,5 +588,39 @@ public class ResourceServiceImplTest {
     public void testGetExternalProperties() {
         Properties result = resourceService.getExternalProperties();
         assertTrue(result.isEmpty());
+    }
+
+    @Test
+    public void testGetResourcesContent() {
+        ResourceIdentifier identifier = mock(ResourceIdentifier.class);
+        ConfigTemplate mockConfigTemplate = mock(ConfigTemplate.class);
+        when(mockConfigTemplate.getMetaData()).thenReturn("{}");
+        when(mockConfigTemplate.getTemplateContent()).thenReturn("key=value");
+        when(mockResourceHandler.fetchResource(any(ResourceIdentifier.class))).thenReturn(mockConfigTemplate);
+
+        ResourceContent result = resourceService.getResourceContent(identifier);
+        assertEquals("{}", result.getMetaData());
+        assertEquals("key=value", result.getContent());
+    }
+
+    @Test
+    public void testGetResourceContentWhenNull() {
+        ResourceIdentifier identifier = mock(ResourceIdentifier.class);
+        when(mockResourceHandler.fetchResource(any(ResourceIdentifier.class))).thenReturn(null);
+
+        ResourceContent result = resourceService.getResourceContent(identifier);
+        assertNull(result);
+    }
+
+    @Test
+    public void testUpdateResourceContent() {
+        ResourceIdentifier identifier = mock(ResourceIdentifier.class);
+        ConfigTemplate mockConfigTemplate = mock(ConfigTemplate.class);
+        when(mockConfigTemplate.getTemplateContent()).thenReturn("newkey=newvalue");
+        when(mockResourceHandler.fetchResource(any(ResourceIdentifier.class))).thenReturn(mockConfigTemplate);
+
+        String result = resourceService.updateResourceContent(identifier, "newkey=newvalue");
+        assertEquals("newkey=newvalue", result);
+        verify(mockResourcePersistenceService).updateResource(eq(identifier), eq(EntityType.EXT_PROPERTIES), eq("newkey=newvalue"));
     }
 }

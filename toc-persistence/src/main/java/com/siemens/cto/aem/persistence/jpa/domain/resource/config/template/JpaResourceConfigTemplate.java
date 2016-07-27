@@ -14,7 +14,7 @@ import javax.persistence.*;
         @NamedQuery(name = JpaResourceConfigTemplate.GET_RESOURCE_TEMPLATE_META_DATA,
                 query = "SELECT t.metaData FROM JpaResourceConfigTemplate t where t.jvm.name = :jvmName and t.templateName = :templateName"),
         @NamedQuery(name = JpaResourceConfigTemplate.UPDATE_RESOURCE_TEMPLATE_CONTENT,
-                query = "UPDATE JpaResourceConfigTemplate t SET t.templateContent = :templateContent WHERE t.jvm.name = :jvmName AND t.templateName = :templateName"),
+                query = "UPDATE JpaResourceConfigTemplate t SET t.templateContent = :templateContent WHERE t.entityId = :entityId and t.appId = :appId and t.grpId = :grpId and t.entityType = :entityType and t.templateName = :templateName"),
         @NamedQuery(name = JpaResourceConfigTemplate.QUERY_DELETE_RESOURCE_TEMPLATE, query = "DELETE FROM JpaResourceConfigTemplate t WHERE t.templateName = :templateName"),
         @NamedQuery(name = JpaResourceConfigTemplate.QUERY_DELETE_RESOURCE_BY_TEMPLATE_NAME, query = "DELETE FROM JpaResourceConfigTemplate t WHERE t.templateName = :templateName AND t.jvm.name = :jvmName"),
         @NamedQuery(name = JpaResourceConfigTemplate.QUERY_DELETE_RESOURCES_BY_TEMPLATE_NAME_LIST_ENTITY_NAME, query = "DELETE FROM JpaResourceConfigTemplate t WHERE t.templateName IN :templateNameList AND t.jvm.name = :jvmName"),
@@ -42,6 +42,7 @@ public class JpaResourceConfigTemplate extends ConfigTemplate{
     public static final String QUERY_PARAM_GRP_ID = "grpId";
     public static final String QUERY_PARAM_ENTITY_TYPE = "entityType";
     public static final String QUERY_PARAM_TEMPLATE_NAME= "templateName";
+    public static final String QUERY_PARAM_TEMPLATE_CONTENT= "templateContent";
 
     @Column(name = "ENTITY_ID", nullable = true)
     private Long entityId;

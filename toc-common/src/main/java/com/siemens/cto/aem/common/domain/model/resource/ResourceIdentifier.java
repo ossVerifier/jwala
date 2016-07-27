@@ -57,4 +57,15 @@ public class ResourceIdentifier {
             return new ResourceIdentifier(this);
         }
     }
+
+    @Override
+    public String toString() {
+        return "ResourceIdentifier{" +
+                "resourceName='" + resourceName + '\'' +
+                ", groupName='" + groupName + '\'' +
+                ", webServerName='" + webServerName + '\'' +
+                ", jvmName='" + jvmName + '\'' +
+                ", webAppName='" + webAppName + '\'' +
+                '}';
+    }
 }

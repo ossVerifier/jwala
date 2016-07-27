@@ -35,7 +35,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
@@ -540,6 +540,48 @@ public class ResourceServiceRestImplTest {
 
         Response response = cut.uploadExternalProperties(mockAttachment, mockAuthenticatedUser);
         assertEquals(500, response.getStatusInfo().getStatusCode());
+    }
+
+    @Test
+    public void testGetResourceContent() {
+        ResourceHierarchyParam param = new ResourceHierarchyParam();
+        param.setGroup("test-group");
+        param.setJvm("test-jvm");
+        param.setWebApp("test-app");
+        param.setWebServer("test-webserver");
+
+        when(impl.getResourceContent(any(ResourceIdentifier.class))).thenReturn(new ResourceContent("{}", "key=value"));
+
+        Response response = cut.getResourceContent("external.properties", param);
+        assertEquals(200, response.getStatus());
+    }
+
+    @Test
+    public void testGetResourceContentReturnsNull() {
+        ResourceHierarchyParam param = new ResourceHierarchyParam();
+        param.setGroup("test-group");
+        param.setJvm("test-jvm");
+        param.setWebApp("test-app");
+        param.setWebServer("test-webserver");
+
+        when(impl.getResourceContent(any(ResourceIdentifier.class))).thenReturn(null);
+
+        Response response = cut.getResourceContent("external.properties", param);
+        assertEquals(204, response.getStatus());
+    }
+
+    @Test
+    public void testUpdateResourceContent() {
+        ResourceHierarchyParam param = new ResourceHierarchyParam();
+        param.setGroup("test-group");
+        param.setJvm("test-jvm");
+        param.setWebApp("test-app");
+        param.setWebServer("test-webserver");
+
+        when(impl.updateResourceContent(any(ResourceIdentifier.class), anyString())).thenReturn("newkey=newvalue");
+
+        Response response = cut.updateResourceContent("external.properties", param, "newkey=newvalue");
+        assertEquals(200, response.getStatus());
     }
 
     @Test

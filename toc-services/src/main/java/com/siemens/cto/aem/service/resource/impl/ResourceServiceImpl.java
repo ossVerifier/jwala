@@ -739,6 +739,7 @@ public class ResourceServiceImpl implements ResourceService {
     }
 
     @Override
+    @Transactional
     public ResourceContent getResourceContent(final ResourceIdentifier resourceIdentifier) {
         final ConfigTemplate configTemplate = resourceHandler.fetchResource(resourceIdentifier);
         if (configTemplate != null) {
@@ -749,10 +750,22 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Override
     @Transactional
+    public String updateResourceContent(ResourceIdentifier resourceIdentifier, String templateContent) {
+        // TODO make this more generic for updating other resources
+        // TODO user resource dao - not persistence
+        resourcePersistenceService.updateResource(resourceIdentifier, EntityType.EXT_PROPERTIES, templateContent);
+        final ConfigTemplate configTemplate = resourceHandler.fetchResource(resourceIdentifier);
+        return configTemplate.getTemplateContent();
+    }
+
+    @Override
+    @Transactional
+    // TODO make this more generic to use the new resources identifier
     public Object uploadExternalProperties(String fileName, InputStream propertiesFileIn) {
         Long entityId = null;
         Long groupId = null;
         Long appId = null;
+        // TODO user resource dao - not persistence
         return resourcePersistenceService.createResource(entityId, groupId, appId, EntityType.EXT_PROPERTIES, fileName, propertiesFileIn);
 
         // TODO wait until properties file is deployed before setting the properties file path?

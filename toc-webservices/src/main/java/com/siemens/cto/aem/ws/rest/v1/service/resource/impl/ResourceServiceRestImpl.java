@@ -346,6 +346,7 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
 
     @Override
     public Response getResourceContent(final String resourceName, final ResourceHierarchyParam param) {
+        LOGGER.debug("Get the resource content for {} with hierarchy {}", resourceName, param);
         final ResourceIdentifier resourceIdentifier = new ResourceIdentifier.Builder().setResourceName(resourceName)
                                                                                       .setGroupName(param.getGroup())
                                                                                       .setWebServerName(param.getWebServer())
@@ -356,6 +357,20 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
             return Response.noContent().build();
         }
         return ResponseBuilder.ok(resourceContent);
+    }
+
+    @Override
+    public Response updateResourceContent(String resourceName, ResourceHierarchyParam resourceHierarchyParam, String templateContent) {
+        LOGGER.info("Update the resource {} with hierarchy {}", resourceName, resourceHierarchyParam);
+        LOGGER.debug("Updated content: {}", templateContent);
+
+        final ResourceIdentifier resourceIdentifier = new ResourceIdentifier.Builder().setResourceName(resourceName)
+                .setGroupName(resourceHierarchyParam.getGroup())
+                .setWebServerName(resourceHierarchyParam.getWebServer())
+                .setJvmName(resourceHierarchyParam.getJvm())
+                .setWebAppName(resourceHierarchyParam.getWebApp()).build();
+
+        return ResponseBuilder.ok(resourceService.updateResourceContent(resourceIdentifier, templateContent));
     }
 
     @Override

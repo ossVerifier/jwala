@@ -18,6 +18,7 @@ var ResourcesConfig = React.createClass({
                                          wsService={this.props.wsService}
                                          webAppService={this.props.webAppService}
                                          groupService={this.props.groupService}
+                                         resourceService={this.props.resourceService}
                                          ref="xmlTabs"
                                          uploadDialogCallback={this.launchUpload}
                                          updateGroupTemplateCallback={this.launchUpdateGroupTemplate}
@@ -334,6 +335,8 @@ var XmlTabs = React.createClass({
                 thePromise = this.props.groupService.updateGroupAppResourceTemplate(this.state.entityGroupName, this.state.resourceTemplateName, template);
             }  else if (this.state.entityType === "webServerSection") {
                 thePromise = this.props.groupService.updateGroupWebServerResourceTemplate(this.state.entityGroupName, this.state.resourceTemplateName, template);
+            } else if (this.state.entityType === "extProperties"){
+                thePromise = this.props.resourceService.updateResourceContent(this.state.resourceTemplateName, template, null, null, null, null);
             } else {
                 thePromise = this.props.groupService.updateGroupJvmResourceTemplate(this.state.entityGroupName, this.state.resourceTemplateName, template);
             }

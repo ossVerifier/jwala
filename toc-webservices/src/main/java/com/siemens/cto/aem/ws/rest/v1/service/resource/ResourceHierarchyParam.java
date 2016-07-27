@@ -2,7 +2,7 @@ package com.siemens.cto.aem.ws.rest.v1.service.resource;
 
 /**
  * POJO that contains resource related hierarchy parameters.
- *
+ * <p/>
  * Created by JC043760 on 6/2/2016.
  */
 public class ResourceHierarchyParam {
@@ -42,5 +42,15 @@ public class ResourceHierarchyParam {
 
     public void setWebApp(String webApp) {
         this.webApp = webApp;
+    }
+
+    @Override
+    public String toString() {
+        return "ResourceHierarchyParam{" +
+                "group='" + group + '\'' +
+                ", webServer='" + webServer + '\'' +
+                ", jvm='" + jvm + '\'' +
+                ", webApp='" + webApp + '\'' +
+                '}';
     }
 }

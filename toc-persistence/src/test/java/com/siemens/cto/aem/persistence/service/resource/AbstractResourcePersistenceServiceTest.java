@@ -3,6 +3,7 @@ package com.siemens.cto.aem.persistence.service.resource;
 import com.siemens.cto.aem.common.domain.model.app.Application;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.resource.EntityType;
+import com.siemens.cto.aem.common.domain.model.resource.ResourceIdentifier;
 import com.siemens.cto.aem.common.request.app.CreateApplicationRequest;
 import com.siemens.cto.aem.common.request.group.CreateGroupRequest;
 import com.siemens.cto.aem.persistence.jpa.domain.resource.config.template.JpaResourceConfigTemplate;
@@ -58,7 +59,8 @@ public abstract class AbstractResourcePersistenceServiceTest {
     }
     
     @Test
-    public void testCreateResource() {
+    public void testCreateResourceAndUpdate() {
+        // create the resource
         JpaResourceConfigTemplate result = resourcePersistenceService.createResource(null, null, null, EntityType.EXT_PROPERTIES, "external.properties", new ByteArrayInputStream("property1=one".getBytes()));
         assertEquals("property1=one", result.getTemplateContent());
         assertEquals(EntityType.EXT_PROPERTIES, result.getEntityType());
@@ -67,5 +69,12 @@ public abstract class AbstractResourcePersistenceServiceTest {
         assertEquals(null, result.getAppId());
         assertEquals(null, result.getGroupId());
         assertEquals("{}", result.getMetaData());
+
+        // update the resource
+        ResourceIdentifier.Builder idBuilder = new ResourceIdentifier.Builder();
+        ResourceIdentifier identifier = idBuilder.setResourceName("external.properties").build();
+
+        resourcePersistenceService.updateResource(identifier, EntityType.EXT_PROPERTIES, "property1=one11");
+
     }
 }
