@@ -588,28 +588,34 @@ public class ApplicationServiceImpl implements ApplicationService {
         if (warName != null && warName.toLowerCase().endsWith(".war")) {
 
             final Application application = applicationPersistenceService.getApplication(appId);
-            final ResourceTemplateMetaData resourceTemplateMetaData = new ResourceTemplateMetaData();
+            final ResourceTemplateMetaData metaData = new ResourceTemplateMetaData();
 
-            resourceTemplateMetaData.setContentType(ContentType.APPLICATION_BINARY.contentTypeStr);
-            resourceTemplateMetaData.setDeployPath(StringUtils.isEmpty(deployPath) ?
+            metaData.setContentType(ContentType.APPLICATION_BINARY.contentTypeStr);
+            metaData.setDeployPath(StringUtils.isEmpty(deployPath) ?
                                                    ApplicationProperties.get(STP_WEBAPPS_DIR) : deployPath);
-            resourceTemplateMetaData.setDeployFileName(warName);
-            resourceTemplateMetaData.setTemplateName(warName);
+            metaData.setDeployFileName(warName);
+            metaData.setTemplateName(warName);
 
             final Entity entity = new Entity();
             entity.setGroup(application.getGroup().getName());
             entity.setDeployToJvms(false);
-            resourceTemplateMetaData.setUnpack(application.isUnpackWar());
+            metaData.setUnpack(application.isUnpackWar());
 
             // Note: This is for backward compatibility.
             entity.setTarget(application.getName());
             entity.setType(EntityType.GROUPED_APPS.toString());
 
-            resourceTemplateMetaData.setEntity(entity);
+            metaData.setEntity(entity);
+
+            InputStream resourceDataIn = new ByteArrayInputStream(war);
+            resourceDataIn = new ByteArrayInputStream(resourceService.uploadResource(metaData, resourceDataIn).getBytes());
 
             // Creating a group level app resource is not straightforward, there are business logic involved
             // that only the resources service knows of so we just reuse it.
-            resourceService.createGroupedLevelAppResource(resourceTemplateMetaData, new ByteArrayInputStream(war), application.getName());
+            final ResourceIdentifier resourceIdentifier = new ResourceIdentifier.Builder()
+                    .setResourceName(metaData.getTemplateName()).setGroupName(application.getGroup().getName())
+                    .setWebAppName(application.getName()).build();
+            resourceService.createResource(resourceIdentifier, metaData, resourceDataIn);
 
             application.setWarName(warName);
             application.setWarPath(resourceService.getAppTemplate(application.getGroup().getName(), application.getName(), warName));
