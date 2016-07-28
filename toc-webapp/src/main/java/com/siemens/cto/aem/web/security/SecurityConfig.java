@@ -27,7 +27,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     GrantedAuthoritiesMapperImpl  grantedAuthoritiesMapper;
     
     private static Logger LOGGER = Logger.getLogger(SecurityConfig.class);
-    private static final String ACTIVE_DIRECTORY_DOMAIN = "active.directory.domain";
+    private static final String ACTIVE_DIRECTORY_DOMAIN = "active.directory.fqdn";
     private static final String ACTIVE_DIRECTORY_SERVER_NAME = "active.directory.server.name";
     private static final String ACTIVE_DIRECTORY_SERVER_PORT = "active.directory.server.port";
     

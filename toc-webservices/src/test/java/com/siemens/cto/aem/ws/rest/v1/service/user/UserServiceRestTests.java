@@ -56,27 +56,7 @@ public class UserServiceRestTests {
         System.clearProperty(ApplicationProperties.PROPERTIES_ROOT_PATH);
     }
 
-    @Test
-    public void testIsTOCAuthorizationEnabled() throws Exception {
-        HttpServletRequest mockRequest = mock(HttpServletRequest.class);
-        HttpServletResponse mockResponse = mock(HttpServletResponse.class);
-        when(impl.isTOCAuthorizationEnabled(mockRequest, mockResponse))
-                .thenReturn(ResponseBuilder.ok(UserServiceRestImpl.JSON_RESPONSE_FALSE));
-        Response response = impl.isTOCAuthorizationEnabled(mockRequest, mockResponse);
-        ApplicationResponse applicationResponse = (ApplicationResponse) response.getEntity();
-        Object content = applicationResponse.getApplicationResponseContent();
-        assertEquals(content, UserServiceRestImpl.JSON_RESPONSE_FALSE);
-        System.setProperty("toc.authorization", "false");
 
-        assertNotNull(response.getEntity());
-        when(impl.isTOCAuthorizationEnabled(mockRequest, mockResponse))
-                .thenReturn(ResponseBuilder.ok(UserServiceRestImpl.JSON_RESPONSE_TRUE));
-        response = impl.isTOCAuthorizationEnabled(mockRequest, mockResponse);
-        applicationResponse = (ApplicationResponse) response.getEntity();
-        content = applicationResponse.getApplicationResponseContent();
-        assertEquals(content, UserServiceRestImpl.JSON_RESPONSE_TRUE);
-
-    }
 
     @Test
     public void testIsUserAdmin() throws Exception {
