@@ -9,7 +9,9 @@ import com.siemens.cto.aem.persistence.service.ResourceDao;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
+import java.io.InputStream;
 import java.util.List;
+import java.util.Scanner;
 
 /**
  * Implements {@link ResourceDao}
@@ -191,6 +193,26 @@ public class ResourceDaoImpl implements ResourceDao {
         q.setParameter(JpaResourceConfigTemplate.QUERY_PARAM_ENTITY_TYPE, EntityType.EXT_PROPERTIES);
 
         return (JpaResourceConfigTemplate) q.getSingleResult();
+    }
+
+    @Override
+    public JpaResourceConfigTemplate createResource(Long entityId, Long groupId, Long appId, EntityType entityType, String resourceFileName, InputStream data, String metaData) {
+        Scanner scanner = new Scanner(data).useDelimiter("\\A");
+        String templateContent = scanner.hasNext() ? scanner.next() : "";
+
+        JpaResourceConfigTemplate resourceTemplate = new JpaResourceConfigTemplate();
+        resourceTemplate.setEntityId(entityId);
+        resourceTemplate.setGrpId(groupId);
+        resourceTemplate.setAppId(appId);
+        resourceTemplate.setTemplateContent(templateContent);
+        resourceTemplate.setTemplateName(resourceFileName);
+        resourceTemplate.setEntityType(entityType);
+        resourceTemplate.setMetaData(metaData);
+
+        em.persist(resourceTemplate);
+        em.flush();
+
+        return resourceTemplate;
     }
 
     @Override

@@ -39,7 +39,9 @@ public class JpaResourcePersistenceServiceImpl implements ResourcePersistenceSer
     }
 
     @Override
+    @Deprecated
     // TODO map return type to non-JPA POJO?
+    // TODO remove this method and use the ResourceDAO
     public JpaResourceConfigTemplate createResource(Long entityId, Long groupId, Long appId, EntityType extProperties, String fileName, InputStream fileInputStream) {
         Scanner scanner = new Scanner(fileInputStream).useDelimiter("\\A");
         String templateContent = scanner.hasNext() ? scanner.next() : "";

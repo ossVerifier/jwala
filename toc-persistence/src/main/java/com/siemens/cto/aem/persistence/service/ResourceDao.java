@@ -5,6 +5,7 @@ import com.siemens.cto.aem.common.domain.model.resource.ResourceIdentifier;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaApplicationConfigTemplate;
 import com.siemens.cto.aem.persistence.jpa.domain.resource.config.template.*;
 
+import java.io.InputStream;
 import java.util.List;
 
 /**
@@ -168,6 +169,11 @@ public interface ResourceDao {
      */
     JpaGroupAppConfigTemplate getGroupLevelAppResource(String resourceName, String appName, String groupName);
 
+    /**
+     * Get the content of the external properties resource
+     * @param resourceName the name of the file that was uploaded with the external properties
+     * @return the external properties template
+     */
     JpaResourceConfigTemplate getExternalPropertiesResource(String resourceName);
 
     /**
@@ -177,4 +183,17 @@ public interface ResourceDao {
      * @return a list of the template names
      */
     List<String> getResourceNames(ResourceIdentifier identifier, EntityType entityType);
+
+    /**
+     * Create a new resource template
+     * @param entityId the ID of the JVM, Web Server, Application, etc.
+     * @param groupId the group ID of the entity
+     * @param appId the application ID of the entity
+     * @param entityType the enumerated type of the entity
+     * @param resourceFileName the name of the resource
+     * @param data the input stream of the resource to be created
+     * @param metaData the meta data of the resource
+     * @return the saved resource
+     */
+    JpaResourceConfigTemplate createResource(Long entityId, Long groupId, Long appId, EntityType entityType, String resourceFileName, InputStream data, String metaData);
 }
