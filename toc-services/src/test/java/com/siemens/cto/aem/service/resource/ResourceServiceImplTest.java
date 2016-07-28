@@ -9,7 +9,10 @@ import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.common.domain.model.path.FileSystemPath;
-import com.siemens.cto.aem.common.domain.model.resource.*;
+import com.siemens.cto.aem.common.domain.model.resource.EntityType;
+import com.siemens.cto.aem.common.domain.model.resource.ResourceContent;
+import com.siemens.cto.aem.common.domain.model.resource.ResourceGroup;
+import com.siemens.cto.aem.common.domain.model.resource.ResourceIdentifier;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState;
@@ -36,7 +39,6 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.internal.verification.Times;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -46,10 +48,10 @@ import java.util.*;
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
-import static org.mockito.Matchers.anyList;
 import static org.mockito.Matchers.anyMap;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.anyLong;
 import static org.mockito.Mockito.*;
 
 /**
@@ -629,5 +631,16 @@ public class ResourceServiceImplTest {
     public void testPreviewResourceContent() {
         String result = resourceService.previewResourceContent(null, "key=value");
         assertEquals("key=value", result);
+    }
+
+    @Test
+    public void testGetExternalPropertiesFile() {
+        List<String> resultList = new ArrayList<>();
+        resultList.add("external.properties");
+        when(mockResourceDao.getResourceNames(any(ResourceIdentifier.class), any(EntityType.class))).thenReturn(resultList);
+
+        String result = resourceService.getExternalPropertiesFile();
+        verify(mockResourceDao).getResourceNames((ResourceIdentifier) isNull(), eq(EntityType.EXT_PROPERTIES));
+        assertEquals("external.properties", resultList.get(0));
     }
 }

@@ -16,6 +16,16 @@ public class WebServerHistoryEvent implements Serializable {
     private final StateType type;
     private final String stateString;
 
+    public WebServerHistoryEvent(Identifier<WebServer> id, String eventType, String userId, String message) {
+
+        this.id = id;
+        this.message = message;
+        this.userId = userId;
+        this.asOf = DateTime.now();
+        this.stateString = eventType;
+        this.type = StateType.WEB_SERVER;
+    }
+
     public WebServerHistoryEvent(Identifier<WebServer> id, String eventDescription, String userId, DateTime now, WebServerControlOperation operation) {
 
         this.id = id;

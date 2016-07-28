@@ -1,6 +1,7 @@
 package com.siemens.cto.aem.persistence.service.impl;
 
 import com.siemens.cto.aem.common.domain.model.resource.EntityType;
+import com.siemens.cto.aem.common.domain.model.resource.ResourceIdentifier;
 import com.siemens.cto.aem.common.request.app.UploadAppTemplateRequest;
 import com.siemens.cto.aem.common.request.jvm.UploadJvmConfigTemplateRequest;
 import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateRequest;
@@ -34,6 +35,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -212,6 +214,36 @@ public class ResourceDaoImplTest {
     public void testGetExternalPropertiesResource() {
         JpaResourceConfigTemplate result = resourceDao.getExternalPropertiesResource("external.properties");
         assertEquals("property=test", result.getTemplateContent());
+    }
+
+    @Test
+    public void testCreateResource() {
+        InputStream data = new ByteArrayInputStream("key=value".getBytes());
+        String metaData = "{deployFileName:'external.properties'}";
+
+        JpaResourceConfigTemplate result = resourceDao.createResource(1L, 1L, 1L, EntityType.EXT_PROPERTIES, "external.properties", data, metaData);
+
+        assertEquals(new Long(1), result.getEntityId());
+        assertEquals(new Long(1), result.getGroupId());
+        assertEquals(new Long(1), result.getAppId());
+        assertEquals(EntityType.EXT_PROPERTIES, result.getEntityType());
+        assertEquals("external.properties", result.getTemplateName());
+        assertEquals("key=value", result.getTemplateContent());
+        assertEquals(metaData, result.getMetaData());
+    }
+
+    @Test
+    public void testGetResourceNames() {
+        ResourceIdentifier.Builder idBuilder = new ResourceIdentifier.Builder();
+        List<String> result = resourceDao.getResourceNames(idBuilder.build(), EntityType.EXT_PROPERTIES);
+        assertEquals(1, result.size());
+        assertEquals("external.properties", result.get(0));
+    }
+
+    @Test
+    public void testDeleteExternalProperties() {
+        int result = resourceDao.deleteExternalProperties();
+        assertEquals(1, result);
     }
 
     @Configuration

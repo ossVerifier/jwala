@@ -193,6 +193,7 @@ public class WebServerServiceImpl implements WebServerService {
         return webServerPersistenceService.getResourceTemplateNames(webServerName);
     }
 
+    //TODO: remove ResourceGroup class, we can use resourceService.generateResourceGroup()
     @Override
     @Transactional(readOnly = true)
     public String getResourceTemplate(final String webServerName, final String resourceTemplateName,
@@ -200,7 +201,7 @@ public class WebServerServiceImpl implements WebServerService {
         final String template = webServerPersistenceService.getResourceTemplate(webServerName, resourceTemplateName);
         if (tokensReplaced) {
             WebServer webServer = webServerPersistenceService.findWebServerByName(webServerName);
-            return ResourceFileGenerator.generateResourceConfig(template, resourceGroup, webServer);
+            return ResourceFileGenerator.generateResourceConfig(template, resourceService.generateResourceGroup(), webServer);
         }
         return template;
     }

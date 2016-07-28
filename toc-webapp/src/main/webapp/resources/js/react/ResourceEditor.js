@@ -137,7 +137,7 @@ var ResourceEditor = React.createClass({
         // leverage the resources API's by faking out the ext properties tree node
         var entity="extProperties"
         var rtreeListMetaData = {
-            entity: "extProperties",
+            entity: entity,
             parent:{
                 name:"Ext Properties parent",
                 key:"extPropertiesParent"

@@ -34,6 +34,8 @@ import com.siemens.cto.aem.service.app.PrivateApplicationService;
 import com.siemens.cto.aem.service.app.impl.ApplicationCommandServiceImpl;
 import com.siemens.cto.aem.service.app.impl.ApplicationServiceImpl;
 import com.siemens.cto.aem.service.app.impl.PrivateApplicationServiceImpl;
+import com.siemens.cto.aem.service.balancermanager.BalancermanagerService;
+import com.siemens.cto.aem.service.balancermanager.impl.BalancermanagerServiceImpl;
 import com.siemens.cto.aem.service.configuration.jms.AemJmsConfig;
 import com.siemens.cto.aem.service.group.*;
 import com.siemens.cto.aem.service.group.impl.GroupControlServiceImpl;
@@ -168,6 +170,14 @@ public class AemServiceConfiguration {
         return new JvmServiceImpl(jvmPersistenceService, groupService, applicationService,
                 fileManager, messagingTemplate, groupStateNotificationService, resourceService,
                 clientFactoryHelper, topicServerStates, jvmControlService);
+    }
+
+    @Bean(name = "balancermanagerService")
+    public BalancermanagerService getBalancermanagerService(final GroupService groupService,
+                                                            final ApplicationService applicationService,
+                                                            final WebServerService webServerService,
+                                                            final MessagingService messagingService){
+        return new BalancermanagerServiceImpl(groupService, applicationService, webServerService, messagingService);
     }
 
     @Bean(name = "webServerService")

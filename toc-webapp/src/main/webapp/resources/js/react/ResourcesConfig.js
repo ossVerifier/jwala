@@ -156,23 +156,25 @@ var ResourcesConfig = React.createClass({
         var webAppName;
         var node = this.refs.resourceEditor.refs.treeList.getSelectedNodeData();
 
-        if (node.rtreeListMetaData.entity === "webApps") {
-            webAppName = node.name;
-            if (node.rtreeListMetaData.parent.rtreeListMetaData.entity === "jvms") {
-                jvmName = node.rtreeListMetaData.parent.jvmName;
-            } else {
-                groupName = node.rtreeListMetaData.parent.rtreeListMetaData.parent.name;
+        if (this.refs.xmlTabs.state.entityType !== "extProperties") {
+            if (node.rtreeListMetaData.entity === "webApps") {
+                webAppName = node.name;
+                if (node.rtreeListMetaData.parent.rtreeListMetaData.entity === "jvms") {
+                    jvmName = node.rtreeListMetaData.parent.jvmName;
+                } else {
+                    groupName = node.rtreeListMetaData.parent.rtreeListMetaData.parent.name;
+                }
+            } else if (node.rtreeListMetaData.entity === "jvmSection") {
+                groupName = node.rtreeListMetaData.parent.name;
+                jvmName = "*";
+            } else if (node.rtreeListMetaData.entity === "jvms") {
+                jvmName = node.jvmName;
+            } else if (node.rtreeListMetaData.entity === "webServerSection") {
+                groupName = node.rtreeListMetaData.parent.name;
+                webServerName = "*";
+            } else if (node.rtreeListMetaData.entity === "webServers") {
+                webServerName = node.name;
             }
-        } else if (node.rtreeListMetaData.entity === "jvmSection") {
-            groupName = node.rtreeListMetaData.parent.name;
-            jvmName = "*";
-        } else if (node.rtreeListMetaData.entity === "jvms") {
-            jvmName = node.jvmName;
-        } else if (node.rtreeListMetaData.entity === "webServerSection") {
-            groupName = node.rtreeListMetaData.parent.name;
-            webServerName = "*";
-        } else if (node.rtreeListMetaData.entity === "webServers") {
-            webServerName = node.name;
         }
 
         var self = this;
@@ -215,23 +217,25 @@ var ResourcesConfig = React.createClass({
             var webAppName;
             var node = this.refs.resourceEditor.refs.treeList.getSelectedNodeData();
 
-            if (node.rtreeListMetaData.entity === "webApps") {
-                webAppName = node.name;
-                if (node.rtreeListMetaData.parent.rtreeListMetaData.entity === "jvms") {
-                    jvmName = node.rtreeListMetaData.parent.jvmName;
-                } else {
-                    groupName = node.rtreeListMetaData.parent.rtreeListMetaData.parent.name;
+            if (this.refs.xmlTabs.state.entityType !== "extProperties") {
+                if (node.rtreeListMetaData.entity === "webApps") {
+                    webAppName = node.name;
+                    if (node.rtreeListMetaData.parent.rtreeListMetaData.entity === "jvms") {
+                        jvmName = node.rtreeListMetaData.parent.jvmName;
+                    } else {
+                        groupName = node.rtreeListMetaData.parent.rtreeListMetaData.parent.name;
+                    }
+                } else if (node.rtreeListMetaData.entity === "jvmSection") {
+                    groupName = node.rtreeListMetaData.parent.name;
+                    jvmName = "*";
+                } else if (node.rtreeListMetaData.entity === "jvms") {
+                    jvmName = node.jvmName;
+                } else if (node.rtreeListMetaData.entity === "webServerSection") {
+                    groupName = node.rtreeListMetaData.parent.name;
+                    webServerName = "*";
+                } else if (node.rtreeListMetaData.entity === "webServers") {
+                    webServerName = node.name;
                 }
-            } else if (node.rtreeListMetaData.entity === "jvmSection") {
-                groupName = node.rtreeListMetaData.parent.name;
-                jvmName = "*";
-            } else if (node.rtreeListMetaData.entity === "jvms") {
-                jvmName = node.jvmName;
-            } else if (node.rtreeListMetaData.entity === "webServerSection") {
-                groupName = node.rtreeListMetaData.parent.name;
-                webServerName = "*";
-            } else if (node.rtreeListMetaData.entity === "webServers") {
-                webServerName = node.name;
             }
 
             var self = this;
@@ -247,6 +251,20 @@ var ResourcesConfig = React.createClass({
     },
     refreshResourcePane: function() {
         var data = this.refs.resourceEditor.refs.treeList.getSelectedNodeData();
+        if (data === null && this.refs.xmlTabs.state.entityType === "extProperties"){
+            // External Properties was the last node selected
+            var rtreeListMetaData = {
+                entity: "extProperties",
+                parent:{
+                    name:"Ext Properties parent",
+                    key:"extPropertiesParent"
+                }
+            };
+            data = {
+                rtreeListMetaData: rtreeListMetaData
+            };
+
+        }
         this.refs.resourceEditor.refs.resourcePane.getData(data);
     },
     statics: {

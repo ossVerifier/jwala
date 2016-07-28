@@ -15,6 +15,7 @@ import com.siemens.cto.aem.ws.rest.v1.provider.AuthenticatedUser;
 import com.siemens.cto.aem.ws.rest.v1.response.ApplicationResponse;
 import com.siemens.cto.aem.ws.rest.v1.service.resource.CreateResourceParam;
 import com.siemens.cto.aem.ws.rest.v1.service.resource.ResourceHierarchyParam;
+import junit.framework.Assert;
 import org.apache.cxf.jaxrs.ext.multipart.Attachment;
 import org.junit.Before;
 import org.junit.Test;
@@ -32,6 +33,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import static junit.framework.Assert.assertTrue;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
@@ -597,5 +599,46 @@ public class ResourceServiceRestImplTest {
         when(impl.previewResourceContent(any(ResourceIdentifier.class), anyString())).thenReturn("key=value");
         Response result = cut.previewResourceContent(param, "key=value");
         assertEquals(200, result.getStatus());
+    }
+
+    @Test
+    public void testGetExternalPropertiesFile() {
+        // test file is uploaded
+        when(impl.getExternalPropertiesFile()).thenReturn("external.properties");
+
+        Response result = cut.getExternalPropertiesFile();
+
+        assertEquals(200, result.getStatus());
+        verify(impl).getExternalPropertiesFile();
+        ApplicationResponse entity = (ApplicationResponse) result.getEntity();
+        List<String> fileList = (List<String>) entity.getApplicationResponseContent();
+        assertTrue(!fileList.isEmpty());
+
+        // test file is not uploaded
+        reset(impl);
+        when(impl.getExternalPropertiesFile()).thenReturn("");
+
+        result = cut.getExternalPropertiesFile();
+
+        assertEquals(200, result.getStatus());
+        verify(impl).getExternalPropertiesFile();
+        entity = (ApplicationResponse) result.getEntity();
+        fileList = (List<String>) entity.getApplicationResponseContent();
+        assertTrue(fileList.isEmpty());
+    }
+
+    @Test
+    public void testDeleteExternalProperties() {
+        String[] externalPropertiesArray = new String[]{"external.properties"};
+        ResourceHierarchyParam param = new ResourceHierarchyParam();
+
+        when(impl.deleteExternalProperties()).thenReturn(1);
+
+        Response result = cut.deleteResources(externalPropertiesArray, param, authenticatedUser);
+        Assert.assertEquals(200, result.getStatus());
+        verify(impl).deleteExternalProperties();
+        ApplicationResponse entity = (ApplicationResponse) result.getEntity();
+        int recCount = (int) entity.getApplicationResponseContent();
+        Assert.assertEquals(1, recCount);
     }
 }

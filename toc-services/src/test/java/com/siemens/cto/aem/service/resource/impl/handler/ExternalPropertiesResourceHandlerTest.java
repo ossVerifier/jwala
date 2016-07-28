@@ -1,20 +1,28 @@
 package com.siemens.cto.aem.service.resource.impl.handler;
 
+import com.siemens.cto.aem.common.domain.model.resource.EntityType;
 import com.siemens.cto.aem.common.domain.model.resource.ResourceIdentifier;
+import com.siemens.cto.aem.common.domain.model.resource.ResourceTemplateMetaData;
 import com.siemens.cto.aem.persistence.jpa.domain.resource.config.template.ConfigTemplate;
 import com.siemens.cto.aem.persistence.jpa.domain.resource.config.template.JpaResourceConfigTemplate;
 import com.siemens.cto.aem.persistence.service.ResourceDao;
 import com.siemens.cto.aem.service.resource.ResourceHandler;
+import com.siemens.cto.aem.service.resource.impl.CreateResourceResponseWrapper;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+
+import static junit.framework.Assert.assertNotNull;
 import static junit.framework.Assert.assertTrue;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyLong;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Matchers.isNull;
+import static org.mockito.Mockito.*;
 
 public class ExternalPropertiesResourceHandlerTest {
 
@@ -85,5 +93,48 @@ public class ExternalPropertiesResourceHandlerTest {
         externalPropertiesResourceHandler.fetchResource(resourceId);
 
         verify(mockSuccessor).fetchResource(eq(resourceId));
+    }
+
+    @Test
+    public void testCreateResource() {
+        ResourceIdentifier.Builder resourceIdentifierBuilder = new ResourceIdentifier.Builder();
+        resourceIdentifierBuilder.setGroupName(null);
+        resourceIdentifierBuilder.setWebAppName(null);
+        resourceIdentifierBuilder.setJvmName(null);
+        resourceIdentifierBuilder.setWebServerName(null);
+        resourceIdentifierBuilder.setResourceName("external.properties");
+
+        ResourceIdentifier identifier = resourceIdentifierBuilder.build();
+        ResourceTemplateMetaData metaData = new ResourceTemplateMetaData();
+        metaData.setDeployFileName("external.properties");
+        InputStream data = new ByteArrayInputStream("key=value".getBytes());
+        JpaResourceConfigTemplate mockJpaResourceConfigTemplate = mock(JpaResourceConfigTemplate.class);
+
+        when(mockResourceDao.createResource(anyLong(), anyLong(), anyLong(), eq(EntityType.EXT_PROPERTIES), eq("external.properties"), any(InputStream.class), anyString())).thenReturn(mockJpaResourceConfigTemplate);
+
+        CreateResourceResponseWrapper result = externalPropertiesResourceHandler.createResource(identifier, metaData, data);
+        assertNotNull(result);
+        verify(mockResourceDao).createResource((Long)isNull(), (Long)isNull(), (Long)isNull(), eq(EntityType.EXT_PROPERTIES), eq("external.properties"), eq(data), anyString());
+    }
+
+    @Test
+    public void testCreateResourceCallsSuccessor() {
+        ResourceIdentifier.Builder resourceIdentifierBuilder = new ResourceIdentifier.Builder();
+        resourceIdentifierBuilder.setGroupName("test-group-name");
+        resourceIdentifierBuilder.setWebAppName("test-app-name");
+        resourceIdentifierBuilder.setJvmName(null);
+        resourceIdentifierBuilder.setWebServerName(null);
+        resourceIdentifierBuilder.setResourceName("external.properties");
+
+        ResourceTemplateMetaData metaData = new ResourceTemplateMetaData();
+        metaData.setDeployFileName("external.properties");
+        InputStream data = new ByteArrayInputStream("key=value".getBytes());
+
+        CreateResourceResponseWrapper mockCreateResourceResponseWrapper = mock(CreateResourceResponseWrapper.class);
+
+        when(mockSuccessor.createResource(any(ResourceIdentifier.class), any(ResourceTemplateMetaData.class), any(InputStream.class))).thenReturn(mockCreateResourceResponseWrapper);
+        CreateResourceResponseWrapper result = externalPropertiesResourceHandler.createResource(resourceIdentifierBuilder.build(), metaData, data);
+        assertNotNull(result);
+        verify(mockSuccessor).createResource(any(ResourceIdentifier.class), any(ResourceTemplateMetaData.class), any(InputStream.class));
     }
 }
