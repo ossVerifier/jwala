@@ -2,7 +2,6 @@ package com.siemens.cto.aem.ws.rest.v1.service.user.impl;
 
 import java.util.Collection;
 
-import javax.naming.AuthenticationException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.core.Response;
@@ -23,6 +22,10 @@ import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.ws.rest.v1.response.ResponseBuilder;
 import com.siemens.cto.aem.ws.rest.v1.service.user.UserServiceRest;
 
+/**
+ * @author Cerner
+ *
+ */
 public class UserServiceRestImpl implements UserServiceRest {
 
     @Autowired
@@ -48,7 +51,6 @@ public class UserServiceRestImpl implements UserServiceRest {
         } catch (Exception e) {
             LOGGER.error("Error Login",
                          e);
-            // TODO: Check with Siemens's Health Care REST standards
             return ResponseBuilder.notOk(Response.Status.UNAUTHORIZED,
                                          new FaultCodeException(AemFaultType.USER_AUTHENTICATION_FAILED,
                                                                 e.getMessage()));
@@ -68,9 +70,12 @@ public class UserServiceRestImpl implements UserServiceRest {
     @Override
     public Response isUserAdmin(HttpServletRequest request, HttpServletResponse response) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        Collection<GrantedAuthority> authorities = (Collection<GrantedAuthority>) auth.getAuthorities();
-        if(authorities.contains(new SimpleGrantedAuthority( ApplicationProperties.get(PROP_TOC_ROLE_ADMIN)))){
-            return ResponseBuilder.ok(JSON_RESPONSE_TRUE);
+        if (auth != null) {
+            @SuppressWarnings("unchecked")
+            Collection<GrantedAuthority> authorities = (Collection<GrantedAuthority>) auth.getAuthorities();
+            if (authorities!= null &&  authorities.contains(new SimpleGrantedAuthority(ApplicationProperties.get(PROP_TOC_ROLE_ADMIN)))) {
+                return ResponseBuilder.ok(JSON_RESPONSE_TRUE);
+            }
         }
         return ResponseBuilder.ok(JSON_RESPONSE_FALSE);
     }
@@ -80,11 +85,12 @@ public class UserServiceRestImpl implements UserServiceRest {
      */
     @Override
     public Response isTOCAuthorizationEnabled(HttpServletRequest request, HttpServletResponse response) {
-        String auth = ApplicationProperties.get(TOC_AUTHORIZATION);
-        if(LOGGER.isDebugEnabled())
-            LOGGER.debug("Authorization : {}", auth);
-        if("true".equals(auth))
+        String auth = ApplicationProperties.get(TOC_AUTHORIZATION, "true");
+        if("false".equals(auth))
+            return ResponseBuilder.ok(JSON_RESPONSE_FALSE);
+        else 
             return ResponseBuilder.ok(JSON_RESPONSE_TRUE);
-        return ResponseBuilder.ok(JSON_RESPONSE_FALSE);
     }
+    
+    
 }

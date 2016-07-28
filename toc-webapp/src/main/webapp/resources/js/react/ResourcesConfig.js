@@ -18,6 +18,7 @@ var ResourcesConfig = React.createClass({
                                          wsService={this.props.wsService}
                                          webAppService={this.props.webAppService}
                                          groupService={this.props.groupService}
+                                         resourceService={this.props.resourceService}
                                          ref="xmlTabs"
                                          uploadDialogCallback={this.launchUpload}
                                          updateGroupTemplateCallback={this.launchUpdateGroupTemplate}
@@ -155,23 +156,25 @@ var ResourcesConfig = React.createClass({
         var webAppName;
         var node = this.refs.resourceEditor.refs.treeList.getSelectedNodeData();
 
-        if (node.rtreeListMetaData.entity === "webApps") {
-            webAppName = node.name;
-            if (node.rtreeListMetaData.parent.rtreeListMetaData.entity === "jvms") {
-                jvmName = node.rtreeListMetaData.parent.jvmName;
-            } else {
-                groupName = node.rtreeListMetaData.parent.rtreeListMetaData.parent.name;
+        if (this.refs.xmlTabs.state.entityType !== "extProperties") {
+            if (node.rtreeListMetaData.entity === "webApps") {
+                webAppName = node.name;
+                if (node.rtreeListMetaData.parent.rtreeListMetaData.entity === "jvms") {
+                    jvmName = node.rtreeListMetaData.parent.jvmName;
+                } else {
+                    groupName = node.rtreeListMetaData.parent.rtreeListMetaData.parent.name;
+                }
+            } else if (node.rtreeListMetaData.entity === "jvmSection") {
+                groupName = node.rtreeListMetaData.parent.name;
+                jvmName = "*";
+            } else if (node.rtreeListMetaData.entity === "jvms") {
+                jvmName = node.jvmName;
+            } else if (node.rtreeListMetaData.entity === "webServerSection") {
+                groupName = node.rtreeListMetaData.parent.name;
+                webServerName = "*";
+            } else if (node.rtreeListMetaData.entity === "webServers") {
+                webServerName = node.name;
             }
-        } else if (node.rtreeListMetaData.entity === "jvmSection") {
-            groupName = node.rtreeListMetaData.parent.name;
-            jvmName = "*";
-        } else if (node.rtreeListMetaData.entity === "jvms") {
-            jvmName = node.jvmName;
-        } else if (node.rtreeListMetaData.entity === "webServerSection") {
-            groupName = node.rtreeListMetaData.parent.name;
-            webServerName = "*";
-        } else if (node.rtreeListMetaData.entity === "webServers") {
-            webServerName = node.name;
         }
 
         var self = this;
@@ -214,23 +217,25 @@ var ResourcesConfig = React.createClass({
             var webAppName;
             var node = this.refs.resourceEditor.refs.treeList.getSelectedNodeData();
 
-            if (node.rtreeListMetaData.entity === "webApps") {
-                webAppName = node.name;
-                if (node.rtreeListMetaData.parent.rtreeListMetaData.entity === "jvms") {
-                    jvmName = node.rtreeListMetaData.parent.jvmName;
-                } else {
-                    groupName = node.rtreeListMetaData.parent.rtreeListMetaData.parent.name;
+            if (this.refs.xmlTabs.state.entityType !== "extProperties") {
+                if (node.rtreeListMetaData.entity === "webApps") {
+                    webAppName = node.name;
+                    if (node.rtreeListMetaData.parent.rtreeListMetaData.entity === "jvms") {
+                        jvmName = node.rtreeListMetaData.parent.jvmName;
+                    } else {
+                        groupName = node.rtreeListMetaData.parent.rtreeListMetaData.parent.name;
+                    }
+                } else if (node.rtreeListMetaData.entity === "jvmSection") {
+                    groupName = node.rtreeListMetaData.parent.name;
+                    jvmName = "*";
+                } else if (node.rtreeListMetaData.entity === "jvms") {
+                    jvmName = node.jvmName;
+                } else if (node.rtreeListMetaData.entity === "webServerSection") {
+                    groupName = node.rtreeListMetaData.parent.name;
+                    webServerName = "*";
+                } else if (node.rtreeListMetaData.entity === "webServers") {
+                    webServerName = node.name;
                 }
-            } else if (node.rtreeListMetaData.entity === "jvmSection") {
-                groupName = node.rtreeListMetaData.parent.name;
-                jvmName = "*";
-            } else if (node.rtreeListMetaData.entity === "jvms") {
-                jvmName = node.jvmName;
-            } else if (node.rtreeListMetaData.entity === "webServerSection") {
-                groupName = node.rtreeListMetaData.parent.name;
-                webServerName = "*";
-            } else if (node.rtreeListMetaData.entity === "webServers") {
-                webServerName = node.name;
             }
 
             var self = this;
@@ -246,6 +251,20 @@ var ResourcesConfig = React.createClass({
     },
     refreshResourcePane: function() {
         var data = this.refs.resourceEditor.refs.treeList.getSelectedNodeData();
+        if (data === null && this.refs.xmlTabs.state.entityType === "extProperties"){
+            // External Properties was the last node selected
+            var rtreeListMetaData = {
+                entity: "extProperties",
+                parent:{
+                    name:"Ext Properties parent",
+                    key:"extPropertiesParent"
+                }
+            };
+            data = {
+                rtreeListMetaData: rtreeListMetaData
+            };
+
+        }
         this.refs.resourceEditor.refs.resourcePane.getData(data);
     },
     statics: {
@@ -334,6 +353,8 @@ var XmlTabs = React.createClass({
                 thePromise = this.props.groupService.updateGroupAppResourceTemplate(this.state.entityGroupName, this.state.resourceTemplateName, template);
             }  else if (this.state.entityType === "webServerSection") {
                 thePromise = this.props.groupService.updateGroupWebServerResourceTemplate(this.state.entityGroupName, this.state.resourceTemplateName, template);
+            } else if (this.state.entityType === "extProperties"){
+                thePromise = this.props.resourceService.updateResourceContent(this.state.resourceTemplateName, template, null, null, null, null);
             } else {
                 thePromise = this.props.groupService.updateGroupJvmResourceTemplate(this.state.entityGroupName, this.state.resourceTemplateName, template);
             }
@@ -448,24 +469,23 @@ var XmlTabs = React.createClass({
                                                                  this.previewErrorCallback);
 
 
-                }  else if (this.state.entityType === "webServerSection") {
-//                    this.props.groupService.previewGroupWebServerResourceFile(this.state.entityGroupName,
-//                                                                 this.refs.codeMirrorComponent.getText(),
-//                                                                 this.previewSuccessCallback,
-//                                                                 this.previewErrorCallback);
-                } else if (this.state.entityType === "jvmSection") {
+                }  else if (this.state.entityType === "jvmSection") {
                     if (this.state.groupJvmEntityType && this.state.groupJvmEntityType === "webApp") {
                         this.props.groupService.previewGroupAppResourceFile(this.state.entityGroupName,
                                                                                      this.state.resourceTemplateName,
                                                                                      this.refs.codeMirrorComponent.getText(),
                                                                                      this.previewSuccessCallback,
                                                                                      this.previewErrorCallback);
-                    } else {
-//                        this.props.groupService.previewGroupJvmResourceFile(this.state.entityGroupName,
-//                                                                 this.refs.codeMirrorComponent.getText(),
-//                                                                 this.previewSuccessCallback,
-//                                                                 this.previewErrorCallback);
                     }
+                } else if (this.state.entityType === "extProperties"){
+                    this.props.resourceService.previewResourceFile(this.refs.codeMirrorComponent.getText(),
+                                                                   null,
+                                                                   null,
+                                                                   null,
+                                                                   null,
+                                                                   this.previewSuccessCallback,
+                                                                   this.previewErrorCallback);
+
                 }
             }
         }

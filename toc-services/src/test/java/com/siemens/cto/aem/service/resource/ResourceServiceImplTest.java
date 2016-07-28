@@ -9,7 +9,10 @@ import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.common.domain.model.path.FileSystemPath;
-import com.siemens.cto.aem.common.domain.model.resource.*;
+import com.siemens.cto.aem.common.domain.model.resource.EntityType;
+import com.siemens.cto.aem.common.domain.model.resource.ResourceContent;
+import com.siemens.cto.aem.common.domain.model.resource.ResourceGroup;
+import com.siemens.cto.aem.common.domain.model.resource.ResourceIdentifier;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState;
@@ -19,6 +22,7 @@ import com.siemens.cto.aem.common.request.app.UploadWebArchiveRequest;
 import com.siemens.cto.aem.common.request.jvm.UploadJvmConfigTemplateRequest;
 import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateRequest;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
+import com.siemens.cto.aem.persistence.jpa.domain.resource.config.template.ConfigTemplate;
 import com.siemens.cto.aem.persistence.service.*;
 import com.siemens.cto.aem.service.app.ApplicationService;
 import com.siemens.cto.aem.service.app.PrivateApplicationService;
@@ -35,7 +39,6 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.internal.verification.Times;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -45,10 +48,10 @@ import java.util.*;
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
-import static org.mockito.Matchers.anyList;
 import static org.mockito.Matchers.anyMap;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.anyLong;
 import static org.mockito.Mockito.*;
 
 /**
@@ -419,160 +422,161 @@ public class ResourceServiceImplTest {
         assertEquals(expectedMap, result);
     }
 
-    @Test
-    public void testCreateJvmResource() {
-        ResourceTemplateMetaData metaData = new ResourceTemplateMetaData();
-        metaData.setContentType(ContentType.APPLICATION_BINARY.contentTypeStr);
-        metaData.setEntity(new Entity());
-
-        resourceService.createJvmResource(metaData, new ByteArrayInputStream("someData".getBytes()), "someJvm");
-        verify(mockJvmPersistenceService).uploadJvmTemplateXml(any(UploadJvmConfigTemplateRequest.class));
-    }
-
-    @Test
-    public void testCreateGroupLevelJvmResource() throws IOException {
-        ResourceTemplateMetaData metaData = new ResourceTemplateMetaData();
-        metaData.setContentType(ContentType.APPLICATION_BINARY.contentTypeStr);
-        final Entity entity = new Entity();
-        entity.setGroup("someGroup");
-        metaData.setEntity(entity);
-
-        final Group mockGroup = mock(Group.class);
-        final Jvm mockJvm = mock(Jvm.class);
-        final Set<Jvm> mockJvmSet = new HashSet<>();
-        mockJvmSet.add(mockJvm);
-        when(mockGroup.getJvms()).thenReturn(mockJvmSet);
-        when(mockGroupPesistenceService.getGroup(eq("someGroup"))).thenReturn(mockGroup);
-
-        resourceService.createGroupLevelJvmResource(metaData, new ByteArrayInputStream("someData".getBytes()), "someGroup");
-        verify(mockJvmPersistenceService).uploadJvmTemplateXml(any(UploadJvmConfigTemplateRequest.class));
-        verify(mockGroupPesistenceService).populateGroupJvmTemplates(eq("someGroup"), anyList());
-    }
-
-    @Test
-    public void testCreateWebServerResource() {
-        ResourceTemplateMetaData metaData = new ResourceTemplateMetaData();
-        metaData.setContentType(ContentType.APPLICATION_BINARY.contentTypeStr);
-        metaData.setEntity(new Entity());
-        metaData.setDeployPath("c:\\somewhere");
-
-        final WebServer mockWebServer = mock(WebServer.class);
-        when(mockWebServerPersistenceService.findWebServerByName(anyString())).thenReturn(mockWebServer);
-
-        resourceService.createWebServerResource(metaData, new ByteArrayInputStream("someData".getBytes()), "someWebServer",
-                new User("jedi"));
-        verify(mockWebServerPersistenceService).uploadWebServerConfigTemplate(any(UploadWebServerTemplateRequest.class),
-                anyString(), anyString());
-    }
-
-    @Test
-    public void testCreateGroupLevelWebServerResource() throws IOException {
-        ResourceTemplateMetaData metaData = new ResourceTemplateMetaData();
-        metaData.setContentType(ContentType.APPLICATION_BINARY.contentTypeStr);
-        final Entity entity = new Entity();
-        entity.setGroup("someGroup");
-        metaData.setEntity(entity);
-        metaData.setDeployPath("c:\\somewhere");
-
-        final Group mockGroup = mock(Group.class);
-        final WebServer mockWebServer = mock(WebServer.class);
-        final Set<WebServer> mockWebServerSet = new HashSet<>();
-        mockWebServerSet.add(mockWebServer);
-        when(mockGroup.getWebServers()).thenReturn(mockWebServerSet);
-        when(mockGroupPesistenceService.getGroupWithWebServers("someGroup")).thenReturn(mockGroup);
-
-        resourceService.createGroupLevelWebServerResource(metaData, new ByteArrayInputStream("someData".getBytes()),
-                "someGroup", new User("Jedi"));
-
-        verify(mockWebServerPersistenceService).uploadWebServerConfigTemplate(any(UploadWebServerTemplateRequest.class), anyString(), anyString());
-        verify(mockGroupPesistenceService).populateGroupWebServerTemplates(anyString(), anyMap());
-    }
-
-    @Test
-    public void testCreateAppResource() {
-        ResourceTemplateMetaData metaData = new ResourceTemplateMetaData();
-        metaData.setContentType(ContentType.APPLICATION_BINARY.contentTypeStr);
-
-        resourceService.createAppResource(metaData, new ByteArrayInputStream("someData".getBytes()), "someJvm",
-                "someApp");
-
-        final Jvm mockJvm = mock(Jvm.class);
-        when(mockJvmPersistenceService.findJvmByExactName("someJvm")).thenReturn(mockJvm);
-        verify(mockAppPersistenceService).getApplication(anyString());
-        verify(mockAppPersistenceService).uploadAppTemplate(any(UploadAppTemplateRequest.class), any(JpaJvm.class));
-    }
-
-    @Test
-    public void testCreateGroupedLevelAppResource() throws IOException {
-        ResourceTemplateMetaData metaData = new ResourceTemplateMetaData();
-        metaData.setContentType(ContentType.APPLICATION_BINARY.contentTypeStr);
-        final Entity entity = new Entity();
-        entity.setGroup("someGroup");
-        entity.setDeployToJvms(true);
-        metaData.setEntity(entity);
-
-        final Group mockGroup = mock(Group.class);
-
-        final Jvm mockJvm = mock(Jvm.class);
-        final Set<Jvm> mockJvmSet = new HashSet<>();
-        mockJvmSet.add(mockJvm);
-
-        when(mockGroup.getJvms()).thenReturn(mockJvmSet);
-
-        final Application mockApplication = mock(Application.class);
-        when(mockApplication.getName()).thenReturn("someApp");
-        final List<Application> mockAppList = new ArrayList<>();
-        mockAppList.add(mockApplication);
-        when(mockAppPersistenceService.findApplicationsBelongingTo(anyString())).thenReturn(mockAppList);
-        when(mockGroupPesistenceService.getGroup(anyString())).thenReturn(mockGroup);
-
-        resourceService.createGroupedLevelAppResource(metaData, new ByteArrayInputStream("someData".getBytes()), "someApp");
-        verify(mockJvmPersistenceService).getJpaJvm(any(Identifier.class), eq(false));
-        verify(mockAppPersistenceService).uploadAppTemplate(any(UploadAppTemplateRequest.class), any(JpaJvm.class));
-        verify(mockGroupPesistenceService).populateGroupAppTemplate(eq("someGroup"), eq("someApp"), anyString(), anyString(),
-                anyString());
-        verify(mockAppPersistenceService, new Times(0)).updateWarInfo(eq("someApp"), anyString(), anyString());
-    }
-
-    @Test
-    public void testCreateGroupedLevelAppWarResource() throws IOException {
-        ResourceTemplateMetaData metaData = new ResourceTemplateMetaData();
-        metaData.setContentType(ContentType.APPLICATION_BINARY.contentTypeStr);
-        final Entity entity = new Entity();
-        entity.setGroup("someGroup");
-        entity.setDeployToJvms(true);
-        metaData.setEntity(entity);
-
-        final Group mockGroup = mock(Group.class);
-
-        final Jvm mockJvm = mock(Jvm.class);
-        final Set<Jvm> mockJvmSet = new HashSet<>();
-        mockJvmSet.add(mockJvm);
-
-        when(mockGroup.getJvms()).thenReturn(mockJvmSet);
-
-        final Application mockApplication = mock(Application.class);
-        when(mockApplication.getName()).thenReturn("someApp");
-        final List<Application> mockAppList = new ArrayList<>();
-        mockAppList.add(mockApplication);
-        when(mockAppPersistenceService.findApplicationsBelongingTo(anyString())).thenReturn(mockAppList);
-        when(mockGroupPesistenceService.getGroup(anyString())).thenReturn(mockGroup);
-
-        final RepositoryFileInformation mockRepositoryFileInformation = mock(RepositoryFileInformation.class);
-        final Path mockPath = mock(Path.class);
-        when(mockPath.toString()).thenReturn("app.war");
-        when(mockRepositoryFileInformation.getPath()).thenReturn(mockPath);
-        when(mockPrivateApplicationService.uploadWebArchiveData(any(UploadWebArchiveRequest.class)))
-                .thenReturn(mockRepositoryFileInformation);
-        when(mockAppPersistenceService.getApplication(eq("someApp"))).thenReturn(mockApplication);
-
-        resourceService.createGroupedLevelAppResource(metaData, new ByteArrayInputStream("someData".getBytes()), "someApp");
-        verify(mockJvmPersistenceService).getJpaJvm(any(Identifier.class), eq(false));
-        verify(mockAppPersistenceService).uploadAppTemplate(any(UploadAppTemplateRequest.class), any(JpaJvm.class));
-        verify(mockGroupPesistenceService).populateGroupAppTemplate(eq("someGroup"), eq("someApp"), anyString(), anyString(),
-                anyString());
-        verify(mockAppPersistenceService).updateWarInfo(eq("someApp"), anyString(), anyString());
-    }
+// TODO: Reuse in the resource handler tests
+//    @Test
+//    public void testCreateJvmResource() {
+//        ResourceTemplateMetaData metaData = new ResourceTemplateMetaData();
+//        metaData.setContentType(ContentType.APPLICATION_BINARY.contentTypeStr);
+//        metaData.setEntity(new Entity());
+//
+//        resourceService.createJvmResource(metaData, new ByteArrayInputStream("someData".getBytes()), "someJvm");
+//        verify(mockJvmPersistenceService).uploadJvmTemplateXml(any(UploadJvmConfigTemplateRequest.class));
+//    }
+//
+//    @Test
+//    public void testCreateGroupLevelJvmResource() throws IOException {
+//        ResourceTemplateMetaData metaData = new ResourceTemplateMetaData();
+//        metaData.setContentType(ContentType.APPLICATION_BINARY.contentTypeStr);
+//        final Entity entity = new Entity();
+//        entity.setGroup("someGroup");
+//        metaData.setEntity(entity);
+//
+//        final Group mockGroup = mock(Group.class);
+//        final Jvm mockJvm = mock(Jvm.class);
+//        final Set<Jvm> mockJvmSet = new HashSet<>();
+//        mockJvmSet.add(mockJvm);
+//        when(mockGroup.getJvms()).thenReturn(mockJvmSet);
+//        when(mockGroupPesistenceService.getGroup(eq("someGroup"))).thenReturn(mockGroup);
+//
+//        resourceService.createGroupLevelJvmResource(metaData, new ByteArrayInputStream("someData".getBytes()), "someGroup");
+//        verify(mockJvmPersistenceService).uploadJvmTemplateXml(any(UploadJvmConfigTemplateRequest.class));
+//        verify(mockGroupPesistenceService).populateGroupJvmTemplates(eq("someGroup"), anyList());
+//    }
+//
+//    @Test
+//    public void testCreateWebServerResource() {
+//        ResourceTemplateMetaData metaData = new ResourceTemplateMetaData();
+//        metaData.setContentType(ContentType.APPLICATION_BINARY.contentTypeStr);
+//        metaData.setEntity(new Entity());
+//        metaData.setDeployPath("c:\\somewhere");
+//
+//        final WebServer mockWebServer = mock(WebServer.class);
+//        when(mockWebServerPersistenceService.findWebServerByName(anyString())).thenReturn(mockWebServer);
+//
+//        resourceService.createWebServerResource(metaData, new ByteArrayInputStream("someData".getBytes()), "someWebServer",
+//                new User("jedi"));
+//        verify(mockWebServerPersistenceService).uploadWebServerConfigTemplate(any(UploadWebServerTemplateRequest.class),
+//                anyString(), anyString());
+//    }
+//
+//    @Test
+//    public void testCreateGroupLevelWebServerResource() throws IOException {
+//        ResourceTemplateMetaData metaData = new ResourceTemplateMetaData();
+//        metaData.setContentType(ContentType.APPLICATION_BINARY.contentTypeStr);
+//        final Entity entity = new Entity();
+//        entity.setGroup("someGroup");
+//        metaData.setEntity(entity);
+//        metaData.setDeployPath("c:\\somewhere");
+//
+//        final Group mockGroup = mock(Group.class);
+//        final WebServer mockWebServer = mock(WebServer.class);
+//        final Set<WebServer> mockWebServerSet = new HashSet<>();
+//        mockWebServerSet.add(mockWebServer);
+//        when(mockGroup.getWebServers()).thenReturn(mockWebServerSet);
+//        when(mockGroupPesistenceService.getGroupWithWebServers("someGroup")).thenReturn(mockGroup);
+//
+//        resourceService.createGroupLevelWebServerResource(metaData, new ByteArrayInputStream("someData".getBytes()),
+//                "someGroup", new User("Jedi"));
+//
+//        verify(mockWebServerPersistenceService).uploadWebServerConfigTemplate(any(UploadWebServerTemplateRequest.class), anyString(), anyString());
+//        verify(mockGroupPesistenceService).populateGroupWebServerTemplates(anyString(), anyMap());
+//    }
+//
+//    @Test
+//    public void testCreateAppResource() {
+//        ResourceTemplateMetaData metaData = new ResourceTemplateMetaData();
+//        metaData.setContentType(ContentType.APPLICATION_BINARY.contentTypeStr);
+//
+//        resourceService.createAppResource(metaData, new ByteArrayInputStream("someData".getBytes()), "someJvm",
+//                "someApp");
+//
+//        final Jvm mockJvm = mock(Jvm.class);
+//        when(mockJvmPersistenceService.findJvmByExactName("someJvm")).thenReturn(mockJvm);
+//        verify(mockAppPersistenceService).getApplication(anyString());
+//        verify(mockAppPersistenceService).uploadAppTemplate(any(UploadAppTemplateRequest.class), any(JpaJvm.class));
+//    }
+//
+//    @Test
+//    public void testCreateGroupedLevelAppResource() throws IOException {
+//        ResourceTemplateMetaData metaData = new ResourceTemplateMetaData();
+//        metaData.setContentType(ContentType.APPLICATION_BINARY.contentTypeStr);
+//        final Entity entity = new Entity();
+//        entity.setGroup("someGroup");
+//        entity.setDeployToJvms(true);
+//        metaData.setEntity(entity);
+//
+//        final Group mockGroup = mock(Group.class);
+//
+//        final Jvm mockJvm = mock(Jvm.class);
+//        final Set<Jvm> mockJvmSet = new HashSet<>();
+//        mockJvmSet.add(mockJvm);
+//
+//        when(mockGroup.getJvms()).thenReturn(mockJvmSet);
+//
+//        final Application mockApplication = mock(Application.class);
+//        when(mockApplication.getName()).thenReturn("someApp");
+//        final List<Application> mockAppList = new ArrayList<>();
+//        mockAppList.add(mockApplication);
+//        when(mockAppPersistenceService.findApplicationsBelongingTo(anyString())).thenReturn(mockAppList);
+//        when(mockGroupPesistenceService.getGroup(anyString())).thenReturn(mockGroup);
+//
+//        resourceService.createGroupedLevelAppResource(metaData, new ByteArrayInputStream("someData".getBytes()), "someApp");
+//        verify(mockJvmPersistenceService).getJpaJvm(any(Identifier.class), eq(false));
+//        verify(mockAppPersistenceService).uploadAppTemplate(any(UploadAppTemplateRequest.class), any(JpaJvm.class));
+//        verify(mockGroupPesistenceService).populateGroupAppTemplate(eq("someGroup"), eq("someApp"), anyString(), anyString(),
+//                anyString());
+//        verify(mockAppPersistenceService, new Times(0)).updateWarInfo(eq("someApp"), anyString(), anyString());
+//    }
+//
+//    @Test
+//    public void testCreateGroupedLevelAppWarResource() throws IOException {
+//        ResourceTemplateMetaData metaData = new ResourceTemplateMetaData();
+//        metaData.setContentType(ContentType.APPLICATION_BINARY.contentTypeStr);
+//        final Entity entity = new Entity();
+//        entity.setGroup("someGroup");
+//        entity.setDeployToJvms(true);
+//        metaData.setEntity(entity);
+//
+//        final Group mockGroup = mock(Group.class);
+//
+//        final Jvm mockJvm = mock(Jvm.class);
+//        final Set<Jvm> mockJvmSet = new HashSet<>();
+//        mockJvmSet.add(mockJvm);
+//
+//        when(mockGroup.getJvms()).thenReturn(mockJvmSet);
+//
+//        final Application mockApplication = mock(Application.class);
+//        when(mockApplication.getName()).thenReturn("someApp");
+//        final List<Application> mockAppList = new ArrayList<>();
+//        mockAppList.add(mockApplication);
+//        when(mockAppPersistenceService.findApplicationsBelongingTo(anyString())).thenReturn(mockAppList);
+//        when(mockGroupPesistenceService.getGroup(anyString())).thenReturn(mockGroup);
+//
+//        final RepositoryFileInformation mockRepositoryFileInformation = mock(RepositoryFileInformation.class);
+//        final Path mockPath = mock(Path.class);
+//        when(mockPath.toString()).thenReturn("app.war");
+//        when(mockRepositoryFileInformation.getPath()).thenReturn(mockPath);
+//        when(mockPrivateApplicationService.uploadWebArchiveData(any(UploadWebArchiveRequest.class)))
+//                .thenReturn(mockRepositoryFileInformation);
+//        when(mockAppPersistenceService.getApplication(eq("someApp"))).thenReturn(mockApplication);
+//
+//        resourceService.createGroupedLevelAppResource(metaData, new ByteArrayInputStream("someData".getBytes()), "someApp");
+//        verify(mockJvmPersistenceService).getJpaJvm(any(Identifier.class), eq(false));
+//        verify(mockAppPersistenceService).uploadAppTemplate(any(UploadAppTemplateRequest.class), any(JpaJvm.class));
+//        verify(mockGroupPesistenceService).populateGroupAppTemplate(eq("someGroup"), eq("someApp"), anyString(), anyString(),
+//                anyString());
+//        verify(mockAppPersistenceService).updateWarInfo(eq("someApp"), anyString(), anyString());
+//    }
 
     @Test
     public void testUploadExternalProperties() {
@@ -587,5 +591,56 @@ public class ResourceServiceImplTest {
     public void testGetExternalProperties() {
         Properties result = resourceService.getExternalProperties();
         assertTrue(result.isEmpty());
+    }
+
+    @Test
+    public void testGetResourcesContent() {
+        ResourceIdentifier identifier = mock(ResourceIdentifier.class);
+        ConfigTemplate mockConfigTemplate = mock(ConfigTemplate.class);
+        when(mockConfigTemplate.getMetaData()).thenReturn("{}");
+        when(mockConfigTemplate.getTemplateContent()).thenReturn("key=value");
+        when(mockResourceHandler.fetchResource(any(ResourceIdentifier.class))).thenReturn(mockConfigTemplate);
+
+        ResourceContent result = resourceService.getResourceContent(identifier);
+        assertEquals("{}", result.getMetaData());
+        assertEquals("key=value", result.getContent());
+    }
+
+    @Test
+    public void testGetResourceContentWhenNull() {
+        ResourceIdentifier identifier = mock(ResourceIdentifier.class);
+        when(mockResourceHandler.fetchResource(any(ResourceIdentifier.class))).thenReturn(null);
+
+        ResourceContent result = resourceService.getResourceContent(identifier);
+        assertNull(result);
+    }
+
+    @Test
+    public void testUpdateResourceContent() {
+        ResourceIdentifier identifier = mock(ResourceIdentifier.class);
+        ConfigTemplate mockConfigTemplate = mock(ConfigTemplate.class);
+        when(mockConfigTemplate.getTemplateContent()).thenReturn("newkey=newvalue");
+        when(mockResourceHandler.fetchResource(any(ResourceIdentifier.class))).thenReturn(mockConfigTemplate);
+
+        String result = resourceService.updateResourceContent(identifier, "newkey=newvalue");
+        assertEquals("newkey=newvalue", result);
+        verify(mockResourcePersistenceService).updateResource(eq(identifier), eq(EntityType.EXT_PROPERTIES), eq("newkey=newvalue"));
+    }
+
+    @Test
+    public void testPreviewResourceContent() {
+        String result = resourceService.previewResourceContent(null, "key=value");
+        assertEquals("key=value", result);
+    }
+
+    @Test
+    public void testGetExternalPropertiesFile() {
+        List<String> resultList = new ArrayList<>();
+        resultList.add("external.properties");
+        when(mockResourceDao.getResourceNames(any(ResourceIdentifier.class), any(EntityType.class))).thenReturn(resultList);
+
+        String result = resourceService.getExternalPropertiesFile();
+        verify(mockResourceDao).getResourceNames((ResourceIdentifier) isNull(), eq(EntityType.EXT_PROPERTIES));
+        assertEquals("external.properties", resultList.get(0));
     }
 }

@@ -43,4 +43,14 @@ public class CreateResourceParam {
     public void setWebApp(String webApp) {
         this.webApp = webApp;
     }
+
+    @Override
+    public String toString() {
+        return "CreateResourceParam{" +
+                "group='" + group + '\'' +
+                ", webServer='" + webServer + '\'' +
+                ", jvm='" + jvm + '\'' +
+                ", webApp='" + webApp + '\'' +
+                '}';
+    }
 }

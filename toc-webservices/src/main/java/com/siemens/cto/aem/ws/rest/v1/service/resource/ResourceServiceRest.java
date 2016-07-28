@@ -102,9 +102,36 @@ public interface ResourceServiceRest {
     @Path("/templates")
     Response deleteResources(@MatrixParam("name") String [] templateNameArray, @MatrixParam("") ResourceHierarchyParam resourceHierarchyParam, @BeanParam AuthenticatedUser user);
 
+    /**
+     * Get the template content
+     * @param resourceName the template name
+     * @param resourceHierarchyParam the group, JVM, webserver, web app hierarchy info
+     * @return the content of the template
+     */
     @GET
     @Path("/{resourceName}/content")
     Response getResourceContent(@PathParam("resourceName") String resourceName, @MatrixParam("") ResourceHierarchyParam resourceHierarchyParam);
+
+    /**
+     * Update the template content
+     * @param resourceName the template name
+     * @param resourceHierarchyParam the group, JVM, web server, web app hierarchy info
+     * @return the saved content
+     */
+    @PUT
+    @Path("/template/{resourceName}")
+    @Consumes(MediaType.TEXT_PLAIN)
+    Response updateResourceContent(@PathParam("resourceName") String resourceName, @MatrixParam("") ResourceHierarchyParam resourceHierarchyParam, final String content);
+
+    /**
+     * Preview the template content
+     * @param resourceHierarchyParam the group, JVM, web server, web app hierarchy info
+     * @return the saved content
+     */
+    @PUT
+    @Path("/template/preview")
+    @Consumes(MediaType.TEXT_PLAIN)
+    Response previewResourceContent(@MatrixParam("") ResourceHierarchyParam resourceHierarchyParam, final String content);
 
     /**
      * Upload an external properties file
@@ -117,10 +144,18 @@ public interface ResourceServiceRest {
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     Response uploadExternalProperties(@Multipart Attachment attachment, @BeanParam AuthenticatedUser user);
 
+    /**
+     * Get the key/value pairings for any external properties that were loaded
+     * @return the key/value pairings for any external properties
+     */
     @GET
     @Path("/properties")
     Response getExternalProperties();
 
+    /**
+     * Get the name of any external properties that were loaded
+     * @return the name of the external properties file
+     */
     @GET
     @Path("/properties/file")
     Response getExternalPropertiesFile();

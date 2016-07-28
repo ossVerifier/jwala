@@ -1,5 +1,7 @@
 package com.siemens.cto.aem.web.security;
 
+import java.util.regex.Pattern;
+
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.ComponentScan;
@@ -29,6 +31,14 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private static final String ACTIVE_DIRECTORY_SERVER_NAME = "active.directory.server.name";
     private static final String ACTIVE_DIRECTORY_SERVER_PORT = "active.directory.server.port";
     
+    private static final String LOGIN_PAGE ="/login";
+    private static final String LOGIN_API = "/v1.0/user/login";
+    private static final String LOGOUT_API = "/v1.0/user/logout";
+
+    private static final String GEN_PUBLIC_RESOURCES = "/gen-public-resources/**";
+    private static final String PUBLIC_RESOURCES = "/public-resources/**";
+    private static final String PAGE_CONSTANTS = "/page-constants";
+    
     /*
      * (non-Javadoc)
      * 
@@ -38,10 +48,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
      */
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        //TODO: externalize URL's
         http.authorizeRequests()
-                 .antMatchers("/gen-public-resources/**", "/public-resources/**","/v1.0/user/logout","/login", "/v1.0/user/login" ).permitAll().and()
-                 .formLogin().loginPage("/login").permitAll().and()
+                 .antMatchers(GEN_PUBLIC_RESOURCES, PUBLIC_RESOURCES,LOGIN_PAGE,LOGIN_API, LOGOUT_API).permitAll().and()
+                 .formLogin().loginPage(LOGIN_PAGE).permitAll().and()
                  .authorizeRequests().anyRequest().authenticated();
         http.csrf().disable();
     }
@@ -51,7 +60,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
      */
     @Override
     public void configure(WebSecurity web) throws Exception {
-        web.ignoring().antMatchers("/page-constants");
+        web.ignoring().antMatchers(PAGE_CONSTANTS);
     }
 
     /**

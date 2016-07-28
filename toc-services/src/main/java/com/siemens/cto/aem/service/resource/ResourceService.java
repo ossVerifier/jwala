@@ -42,66 +42,6 @@ public interface ResourceService {
     @Deprecated
     CreateResourceResponseWrapper createTemplate(InputStream metaDataInputStream, InputStream templateData, String targetName, User user);
 
-    CreateResourceResponseWrapper createJvmResource(ResourceTemplateMetaData metaData,
-                                                    InputStream templateData,
-                                                    String jvmName);
-
-    /**
-     * Create the JVM template in the db and in the templates path for all the JVMs.
-     *  @param metaData     the data that describes the template, please see {@link ResourceTemplateMetaData}
-     * @param templateData the template content/data
-     */
-    CreateResourceResponseWrapper createGroupLevelJvmResource(ResourceTemplateMetaData metaData,
-                                                              InputStream templateData, String groupName) throws IOException;
-
-    /**
-     * Create web server resource.
-     * @param metaData the data that describes the resource, please see {@link ResourceTemplateMetaData}
-     * @param templateData the template content/data
-     * @param webServerName identifies the web server to which the template belongs to
-     * @param user the user responsible for executing this service
-     */
-    CreateResourceResponseWrapper createWebServerResource(ResourceTemplateMetaData metaData,
-                                                          InputStream templateData,
-                                                          String webServerName,
-                                                          User user);
-
-    /**
-     * Create the web server template in the db and in the templates path for all the web servers.
-     * @param metaData the data that describes the template, please see {@link ResourceTemplateMetaData}
-     * @param templateData the template content/data
-     * @param user the user
-     */
-    CreateResourceResponseWrapper createGroupLevelWebServerResource(ResourceTemplateMetaData metaData,
-                                                                    InputStream templateData,
-                                                                    String groupName,
-                                                                    User user) throws IOException;
-
-    /**
-     * Create application resource.
-     *
-     * @param metaData the data that describes the template, please see {@link ResourceTemplateMetaData}
-     * @param templateData the template content/data
-     * @param jvmName the name of the JVM to associate the resource to
-     * @param appName the name of the application to associate the resource to
-     */
-    CreateResourceResponseWrapper createAppResource(ResourceTemplateMetaData metaData,
-                                                    InputStream templateData,
-                                                    String jvmName,
-                                                    String appName);
-
-    /**
-     * Create group level application resource.
-     *
-     * @param metaData the data that describes the template, please see {@link ResourceTemplateMetaData}
-     * @param templateData the template content/data
-     * @param targetAppName the name of the application to associate the resource to
-     */
-    // TODO: Specify the group as well!
-    CreateResourceResponseWrapper createGroupedLevelAppResource(ResourceTemplateMetaData metaData,
-                                                                InputStream templateData,
-                                                                String targetAppName) throws IOException;
-
     /**
      * Generates the ResourceGroup class object, which contains all the jvms, webapps, webservers and groups information.
      * @return the ResourceGroup object
@@ -237,6 +177,12 @@ public interface ResourceService {
     int deleteGroupLevelAppResources(String appName, String groupName, List<String> templateNameList);
 
     /**
+     * Delete the external properties resource
+     * @return the number of deleted records
+     */
+    int deleteExternalProperties();
+
+    /**
      * Get a resource's content and its meta data
      * @param resourceIdentifier {@link ResourceIdentifier} which identifies the resource
      * @return {@link ResourceContent}
@@ -251,10 +197,37 @@ public interface ResourceService {
     Object uploadExternalProperties(String fileName, InputStream propertiesFileIn);
 
     /**
+     * Update the resource content
+     * @param resourceIdentifier the resource identifier
+     * @param templateContent the template content
+     * @return return the updated content
+     */
+    String updateResourceContent(ResourceIdentifier resourceIdentifier, String templateContent);
+
+    /**
      * Get all of the properties that were uploaded by an outside application/user
      * @return the external properties
      */
     Properties getExternalProperties();
 
     String getExternalPropertiesFile();
+
+    /**
+     * Create a resource
+     * @param metaData the meta data {@link ResourceTemplateMetaData}
+     * @param templateData the template
+     * @return {@link CreateResourceResponseWrapper}
+     */
+    CreateResourceResponseWrapper createResource(ResourceIdentifier resourceIdentifier, ResourceTemplateMetaData metaData,
+                                                 InputStream templateData);
+
+    /**
+     * Upload a resource file
+     * @param resourceTemplateMetaData the meta data {@link ResourceTemplateMetaData}
+     * @param resourceDataIn the resource data input stream
+     * @return the path where the file was uploaded to
+     */
+    String uploadResource(ResourceTemplateMetaData resourceTemplateMetaData, InputStream resourceDataIn);
+
+    String previewResourceContent(ResourceIdentifier resourceHierarchyParam, String content);
 }
