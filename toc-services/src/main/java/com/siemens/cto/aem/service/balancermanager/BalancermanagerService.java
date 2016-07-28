@@ -7,7 +7,7 @@ import org.springframework.http.HttpStatus;
  */
 public interface BalancermanagerService {
 
-    HttpStatus drainUserGroup(final String groupName);
+    void drainUserGroup(final String groupName);
 
     void drainUserWebServer(final String groupName, final String webserverName);
 

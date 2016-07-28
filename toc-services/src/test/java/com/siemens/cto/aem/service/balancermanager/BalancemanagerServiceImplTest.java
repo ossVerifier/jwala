@@ -1,21 +1,30 @@
 package com.siemens.cto.aem.service.balancermanager;
 
+import com.siemens.cto.aem.common.domain.model.group.Group;
+import com.siemens.cto.aem.common.domain.model.resource.ResourceGroup;
+import com.siemens.cto.aem.common.domain.model.state.CurrentState;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
+import com.siemens.cto.aem.common.domain.model.webserver.WebServerState;
+import com.siemens.cto.aem.common.domain.model.webserver.message.WebServerHistoryEvent;
 import com.siemens.cto.aem.common.exec.CommandOutput;
 import com.siemens.cto.aem.common.exec.ExecReturnCode;
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.exception.CommandFailureException;
+import com.siemens.cto.aem.service.MessagingService;
+import com.siemens.cto.aem.service.app.ApplicationService;
 import com.siemens.cto.aem.service.balancermanager.impl.BalancemanagerHttpClient;
 import com.siemens.cto.aem.service.balancermanager.impl.BalancermanagerServiceImpl;
 import com.siemens.cto.aem.service.group.GroupService;
 import com.siemens.cto.aem.service.webserver.WebServerCommandService;
 
+import com.siemens.cto.aem.service.webserver.WebServerService;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.mockito.internal.verification.Times;
 import org.springframework.http.HttpStatus;
 
 import java.io.*;
@@ -23,7 +32,8 @@ import java.nio.file.Files;
 import java.util.*;
 
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.when;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.*;
 
 public class BalancemanagerServiceImplTest {
 
@@ -33,12 +43,27 @@ public class BalancemanagerServiceImplTest {
     private GroupService mockGroupService;
 
     @Mock
-    private WebServerCommandService mockWebServerCommandService;
+    private ApplicationService mockApplicationService;
+
+    @Mock
+    private WebServerService mockWebServerService;
+
+    @Mock
+    private MessagingService mockMessagingService;
 
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        this.balancermanagerServiceImpl = new BalancermanagerServiceImpl(mockGroupService, mockWebServerCommandService);
+        this.balancermanagerServiceImpl = new BalancermanagerServiceImpl(mockGroupService, mockApplicationService, mockWebServerService, mockMessagingService){
+            @Override
+            public String getHttpdConffromResource(final String webServerName){
+              return getTestHttpConf();
+            }
+            @Override
+            public void sendMessage(final Identifier<WebServer> id, final String message){
+
+            }
+        };
         System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, new File(".").getAbsolutePath() + "/src/test/resources");
     }
 
@@ -117,18 +142,13 @@ public class BalancemanagerServiceImplTest {
     public void testDrainUserGroup() {
         final MockGroup mockGroup = new MockGroup();
         when(mockGroupService.getGroup("mygroupName")).thenReturn(mockGroup.getGroup());
-        Identifier<WebServer> testWebServerId = new Identifier<>((long) 1);
-        try {
-            CommandOutput commandOutput = new CommandOutput(new ExecReturnCode(0), getTestHttpConf(), "");
-            when(mockWebServerCommandService.getHttpdConf(testWebServerId)).thenReturn(commandOutput);
-        } catch (CommandFailureException e) {
-            e.printStackTrace();
-        }
-        Map map = new HashMap<String, String>();
+        when(mockApplicationService.findApplications(new Identifier<Group>(1L))).thenReturn(mockGroup.findApplications());
+        when(mockWebServerService.findWebServers(new Identifier<Group>(1L))).thenReturn(mockGroup.findWebServers());
+        Map map = new HashMap<>();
         map.put("a","1");
         BalancemanagerHttpClient mockBalancemanagerHttpClient = org.mockito.Mockito.mock(BalancemanagerHttpClient.class);
         when(mockBalancemanagerHttpClient.doHttpClientPost("http://localhost", map)).thenReturn(200);
-        assertEquals(HttpStatus.OK, balancermanagerServiceImpl.drainUserGroup("mygroupName"));
+        balancermanagerServiceImpl.drainUserGroup("mygroupName");
     }
 
     private String getTestHttpConf(){

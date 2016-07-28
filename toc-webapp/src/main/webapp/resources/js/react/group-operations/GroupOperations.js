@@ -273,7 +273,9 @@ var GroupOperations = React.createClass({
                 var webServerStatusWidget = GroupOperations.webServerStatusWidgetMap["grp" + webServer.parentItemId + "webServer" + webServer.id.id];
                 if (webServerStatusWidget !== undefined) {
                     if (newWebServerState.id.id === webServer.id.id) {
-                        if (newWebServerState.stateString === GroupOperations.FAILED || newWebServerState.stateString === GroupOperations.START_SENT || newWebServerState.stateString === GroupOperations.STOP_SENT) {
+                        if (newWebServerState.stateString === GroupOperations.FAILED || newWebServerState.stateString === GroupOperations.START_SENT || newWebServerState.stateString === GroupOperations.STOP_SENT ||
+                            newWebServerState.stateString === GroupOperations.MSG_TYPE) {
+
                             if (newWebServerState.stateString === GroupOperations.STARTING) {
                                 newWebServerState.stateString = GroupOperations.START_SENT;
                             }
@@ -429,6 +431,8 @@ var GroupOperations = React.createClass({
         SECURE_COPY: "secureCopy",
         INVOKE_SERVICE: "invokeService",
         DELETE_SERVICE: "deleteService",
+        DRAIN_USER: "drainUser",
+        MSG_TYPE: "history",
         getExtDivCompId: function(groupId) {
             return "ext-comp-div-group-operations-table_" + groupId;
         },

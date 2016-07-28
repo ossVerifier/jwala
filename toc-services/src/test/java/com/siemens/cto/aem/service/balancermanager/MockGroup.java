@@ -92,6 +92,41 @@ public class MockGroup {
         applications.add(application);
     }
 
+    public List<Application> findApplications(){
+        Group myGroup = new Group(groupId, groupName);
+        List<Application> applications = new LinkedList<>();
+        Application application = new Application(id(0L, Application.class),
+                "HEALTH-CHECK-4.0",
+                "myaWarPath",
+                "/hct",
+                myGroup,
+                true,
+                false,
+                false,
+                "myWarName");
+        applications.add(application);
+        return applications;
+    }
+
+    public List<WebServer> findWebServers(){
+        Group myGroup = new Group(groupId, groupName);
+        List<WebServer> webservers = new LinkedList<>();
+        WebServer webServer = new WebServer(id(1L, WebServer.class),
+                "USMLVV1CDS0049",
+                "myWebServerName",
+                80,
+                443,
+                new Path("path"),
+                new FileSystemPath("filesystempath"),
+                new Path("svrRoot"),
+                new Path("docRoot"),
+                WebServerReachableState.WS_REACHABLE,
+                "errorStatus",
+                myGroup);
+        webservers.add(webServer);
+        return webservers;
+    }
+
     private Set<Group> groups = new HashSet<>();
     private Set<Jvm> jvms = new HashSet<>();
     private Set<Application> applications = new HashSet<>();

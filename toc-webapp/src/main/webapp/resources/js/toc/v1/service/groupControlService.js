@@ -37,16 +37,16 @@ var groupControlService = function() {
                                       successCallback,
                                       errorCallback,
                                       false);
-    }/*;
+    };
 //TODO: Uncomment below code for drain
-    var drain = function(groupName, successCallback, errorCallback) {
+    var drain = function(groupName, operation) {
         return serviceFoundation.post("v1.0/balancermanager/" + encodeURIComponent(groupName),
                                       "json",
-                                      JSON.stringify({ controlOperation : "generate"}),
-                                      successCallback,
-                                      errorCallback,
+                                      JSON.stringify({ controlOperation : operation}),
+                                      undefined,
+                                      undefined,
                                       false);
-    }*/
+    }
 
     return {
         startGroups: function() {
@@ -78,10 +78,10 @@ var groupControlService = function() {
         },
         generateJvms : function(groupId, successCallback, errorCallback) {
             return generate(groupId, "jvms", successCallback, errorCallback)
-        }/*,
-        drainWebServers : function(groupName, successCallback, errorCallback) {
-                    return drain(groupName, successCallback, errorCallback);
-        }*/
+        },
+        drainWebServers : function(groupName) {
+                    return drain(groupName, "draining");
+        }
     };
 
 }();

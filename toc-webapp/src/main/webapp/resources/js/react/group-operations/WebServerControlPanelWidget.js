@@ -8,6 +8,7 @@ var WebServerControlPanelWidget = React.createClass({
 
                     <RButton className="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only ui-button-height"
                              spanClassName="ui-icon ui-icon-arrowthick-1-s"
+                             ref="drainBtn"
                              onClick={this.webServerDrain}
                              title="Drain"/>
                     <RButton ref="stopBtn"
@@ -61,17 +62,12 @@ var WebServerControlPanelWidget = React.createClass({
                                          function() { /* cancel callback */ });
     },
      webServerDrain: function(doneCallback) {
-     //TODO: Uncomment below code for drain
-        /*this.doneCallback[this.props.data.name] = doneCallback;
+        this.showFadingStatusClickedLabel("Draining...", this.refs.drainBtn.getDOMNode(), this.props.data.id.id);
+        this.doneCallback[this.props.data.name] = doneCallback;
         this.props.webServerService.drainWebServer(this.props.parentGroup,
                                          this.props.data.name,
                                          this.generateServiceAndHttpdConfSucccessCallback,
-                                         this.generateServiceAndHttpdConfErrorCallback);*/
-
-                                         console.log("clicked drain");
-
-//        this.props.webServerService.drainWebServer(this.props.data.parentGroup, this.props.data.name).then(this.drainServiceAndHttpdConfSucccessCallback).caught(this.drainServiceAndHttpdConfErrorCallback);
-
+                                         this.generateServiceAndHttpdConfErrorCallback);
      },
 
     onClickHttpdConf: function() {
@@ -86,15 +82,6 @@ var WebServerControlPanelWidget = React.createClass({
                                                     this.generateServiceAndHttpdConfSucccessCallback,
                                                     this.generateServiceAndHttpdConfErrorCallback);
     },
-//TODO: Uncomment below code for drain
-    /*drainServiceAndHttpdConfSucccessCallback: function(response) {
-            this.doneCallback[response.applicationResponseContent.name]();
-             $.alert("Successfully drained the service", "Drain " + response.applicationResponseContent.name, false);
-        },
-    drainServiceAndHttpdConfErrorCallback: function(applicationResponseContent, doneCallback) {
-//            this.doneCallback[this.props.data.name]();
-            $.errorAlert("Error couldn't able to call the rest API"*//*applicationResponseContent*//*, "Drain " + this.props.data.name +  "'s httpd.conf", false);
-        },*/
 
     generateServiceAndHttpdConfSucccessCallback: function(response) {
         this.doneCallback[response.applicationResponseContent.name]();

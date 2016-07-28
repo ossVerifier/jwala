@@ -1,6 +1,7 @@
 package com.siemens.cto.aem.ws.rest.v1.service.balancermanager.impl;
 
 import com.siemens.cto.aem.service.balancermanager.BalancermanagerService;
+import com.siemens.cto.aem.ws.rest.v1.response.ResponseBuilder;
 import com.siemens.cto.aem.ws.rest.v1.service.balancermanager.BalancermanagerServiceRest;
 
 import javax.ws.rs.PathParam;
@@ -15,17 +16,15 @@ public class BalancermanagerServiceRestImpl implements BalancermanagerServiceRes
     }
 
     @Override
-    public Response drainUserGroup(@PathParam("groupName") String groupName) {
+    public Response drainUserGroup(final String groupName) {
         balancermanagerService.drainUserGroup(groupName);
-        //TODO: return response
-        return null;
+        return ResponseBuilder.ok();
     }
 
     @Override
-    public Response drainUserWebServer(@PathParam("groupName") String groupName, @PathParam("webserverName") String webserverName) {
-        balancermanagerService.drainUserWebServer(groupName, webserverName);
-        //TODO: return response
-        return null;
+    public Response drainUserWebServer(final String groupName, final String webServerName) {
+        balancermanagerService.drainUserWebServer(groupName, webServerName);
+        return ResponseBuilder.ok();
     }
 
     @Override

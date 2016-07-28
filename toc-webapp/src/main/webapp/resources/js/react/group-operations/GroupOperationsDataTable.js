@@ -664,22 +664,14 @@ var GroupOperationsDataTable = React.createClass({
                        };
         this.verifyAndConfirmControlOperation(event.data.id, event.data.buttonSelector, event.data.name, "generate all Web Servers under", callback, "webServer");
     },
-    drainGroupWebServers: function(event) {
-        //TODO: Uncomment below code for drain
-        /*changed code here*/
-                /*var self = this;
-                var callback = function(id, buttonSelector) {
-                                 self.disableEnable(event.data.buttonSelector, function() {return groupControlService.drainWebServers(event.data.name,
-                                      function(resp) {
-                                          $.alert("Successfully drained the web servers for " + resp.applicationResponseContent.name, false)
-                                      },
-                                      function(errMsg) {
-                                        $.alert(errMsg, "Draining Web Servers Failed", false);
-                                      }
-                            )},"ui-icon-stop");
-                            self.writeWebServerActionToCommandStatusWidget(event.data.id, "INVOKE");
-                };
-        this.verifyAndConfirmControlOperation(event.data.id, event.data.buttonSelector, event.data.name, "drain all Web Servers under", callback, "webServer");*/
+    drainGroupWebServers: function (event) {
+        var self = this;
+        var callback = function (id, buttonSelector) {
+            self.disableEnable(event.data.buttonSelector, function () {
+                return groupControlService.drainWebServers(event.data.name);
+            }, "ui-icon-stop");
+        };
+        this.verifyAndConfirmControlOperation(event.data.id, event.data.buttonSelector, event.data.name, "drain all Web Servers under", callback, "webServer");
         console.log("clicked drain all");
     },
     generateGroupJvms: function(event) {
