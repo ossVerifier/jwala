@@ -26,7 +26,6 @@ import com.siemens.cto.aem.template.ResourceFileGenerator;
 import com.siemens.cto.toc.files.RepositoryFileInformation;
 import com.siemens.cto.toc.files.WebArchiveManager;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -489,6 +488,12 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Override
     @Transactional
+    public int deleteExternalProperties() {
+        return resourceDao.deleteExternalProperties();
+    }
+
+    @Override
+    @Transactional
     public int deleteGroupLevelAppResources(final String appName, final String groupName, final List<String> templateNameList) {
         final int deletedCount = resourceDao.deleteGroupLevelAppResources(appName, groupName, templateNameList);
         if (deletedCount > 0) {
@@ -522,6 +527,8 @@ public class ResourceServiceImpl implements ResourceService {
                 }
             }
         }
+
+
 
         return deletedCount;
     }
@@ -569,8 +576,10 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Override
     public String getExternalPropertiesFile() {
-        // TODO add external property to a resource table
-        return "external.properties";
+        // TODO make generic getResourceNames API
+        ResourceIdentifier identifier = null;
+        final List<String> resourceNames = resourceDao.getResourceNames(identifier, EntityType.EXT_PROPERTIES);
+        return resourceNames.size() > 0 ? resourceNames.get(0) : "";
     }
 
     @Override

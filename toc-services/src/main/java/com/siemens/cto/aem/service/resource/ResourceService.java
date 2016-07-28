@@ -177,6 +177,12 @@ public interface ResourceService {
     int deleteGroupLevelAppResources(String appName, String groupName, List<String> templateNameList);
 
     /**
+     * Delete the external properties resource
+     * @return the number of deleted records
+     */
+    int deleteExternalProperties();
+
+    /**
      * Get a resource's content and its meta data
      * @param resourceIdentifier {@link ResourceIdentifier} which identifies the resource
      * @return {@link ResourceContent}

@@ -334,6 +334,13 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
             // JVM
             deletedRecCount = resourceService.deleteJvmResources(templateNameList, resourceHierarchyParam.getJvm());
 
+        } else if (ParamValidator.getNewInstance().isEmpty(resourceHierarchyParam.getGroup())
+                .isEmpty(resourceHierarchyParam.getWebServer())
+                .isEmpty(resourceHierarchyParam.getJvm())
+                .isEmpty(resourceHierarchyParam.getWebApp()).isValid()){
+            // External Properties
+            deletedRecCount = resourceService.deleteExternalProperties();
+
         } else {
 
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR,
@@ -406,9 +413,15 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
     }
 
     @Override
+    // TODO remove this and replace with generic resource.get()
     public Response getExternalPropertiesFile() {
         LOGGER.debug("Get the external properties file name");
-        return ResponseBuilder.ok(new String[] {resourceService.getExternalPropertiesFile()});
+        final String externalPropertiesFile = resourceService.getExternalPropertiesFile();
+        List<String> propertiesFile = new ArrayList<>();
+        if (!externalPropertiesFile.isEmpty()) {
+            propertiesFile.add(externalPropertiesFile);
+        }
+        return ResponseBuilder.ok(propertiesFile);
     }
 
     @Override

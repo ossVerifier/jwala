@@ -1,6 +1,7 @@
 package com.siemens.cto.aem.persistence.service.impl;
 
 import com.siemens.cto.aem.common.domain.model.resource.EntityType;
+import com.siemens.cto.aem.common.domain.model.resource.ResourceIdentifier;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaApplicationConfigTemplate;
 import com.siemens.cto.aem.persistence.jpa.domain.resource.config.template.*;
 import com.siemens.cto.aem.persistence.service.ResourceDao;
@@ -123,6 +124,13 @@ public class ResourceDaoImpl implements ResourceDao {
     }
 
     @Override
+    public int deleteExternalProperties() {
+        final Query q = em.createNamedQuery(JpaResourceConfigTemplate.QUERY_DELETE_RESOURCE_TEMPLATE_BY_ENTITY_TYPE);
+        q.setParameter(JpaResourceConfigTemplate.QUERY_PARAM_ENTITY_TYPE, EntityType.EXT_PROPERTIES);
+        return q.executeUpdate();
+    }
+
+    @Override
     public JpaWebServerConfigTemplate getWebServerResource(final String resourceName, final String webServerName) {
         final Query q = em.createNamedQuery(JpaWebServerConfigTemplate.QUERY_GET_WEBSERVER_RESOURCE);
         q.setParameter(JpaWebServerConfigTemplate.QUERY_PARAM_TEMPLATE_NAME, resourceName);
@@ -174,6 +182,7 @@ public class ResourceDaoImpl implements ResourceDao {
 
     @Override
     public JpaResourceConfigTemplate getExternalPropertiesResource(String resourceName) {
+        // TODO make generic for all resources
         final Query q = em.createNamedQuery(JpaResourceConfigTemplate.GET_RESOURCE_TEMPLATE_CONTENT);
         q.setParameter(JpaResourceConfigTemplate.QUERY_PARAM_TEMPLATE_NAME, resourceName);
         q.setParameter(JpaResourceConfigTemplate.QUERY_PARAM_ENTITY_ID, null);
@@ -182,5 +191,14 @@ public class ResourceDaoImpl implements ResourceDao {
         q.setParameter(JpaResourceConfigTemplate.QUERY_PARAM_ENTITY_TYPE, EntityType.EXT_PROPERTIES);
 
         return (JpaResourceConfigTemplate) q.getSingleResult();
+    }
+
+    @Override
+    public List<String> getResourceNames(ResourceIdentifier identifier, EntityType entityType) {
+        // TODO make generic for all resources
+        final Query q = em.createNamedQuery(JpaResourceConfigTemplate.GET_RESOURCE_TEMPLATE_NAMES);
+        q.setParameter(JpaResourceConfigTemplate.QUERY_PARAM_ENTITY_TYPE, EntityType.EXT_PROPERTIES);
+
+        return q.getResultList();
     }
 }

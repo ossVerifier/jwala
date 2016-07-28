@@ -1,5 +1,7 @@
 package com.siemens.cto.aem.persistence.service;
 
+import com.siemens.cto.aem.common.domain.model.resource.EntityType;
+import com.siemens.cto.aem.common.domain.model.resource.ResourceIdentifier;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaApplicationConfigTemplate;
 import com.siemens.cto.aem.persistence.jpa.domain.resource.config.template.*;
 
@@ -113,6 +115,12 @@ public interface ResourceDao {
     int deleteGroupLevelAppResources(String appName, String groupName, List<String> templateNameList);
 
     /**
+     * Delete the external properties resource
+     * @return the number of records deleted (should be 0 or 1)
+     */
+    int deleteExternalProperties();
+
+    /**
      * Get web server resource
      * @param resourceName the resource name
      * @param webServerName the web server name
@@ -161,4 +169,12 @@ public interface ResourceDao {
     JpaGroupAppConfigTemplate getGroupLevelAppResource(String resourceName, String appName, String groupName);
 
     JpaResourceConfigTemplate getExternalPropertiesResource(String resourceName);
+
+    /**
+     * Return the list of templates for this entity
+     * @param identifier the entity selected
+     * @param entityType the type of the entity (JVM, Web Server, Application, Group level JVMs, External Properties, etc.)
+     * @return a list of the template names
+     */
+    List<String> getResourceNames(ResourceIdentifier identifier, EntityType entityType);
 }
