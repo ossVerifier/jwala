@@ -73,6 +73,23 @@ public class MockGroup {
         webServers.add(webServer);
     }
 
+    public WebServer getWebServer(final String webServerName) {
+        Group myGroup = new Group(groupId, groupName);
+        WebServer webServer = new WebServer(id(1L, WebServer.class),
+                "USMLVV1CDS0049",
+                "myWebSererName",
+                80,
+                443,
+                new Path("path"),
+                new FileSystemPath("filesystempath"),
+                new Path("svrRoot"),
+                new Path("docRoot"),
+                WebServerReachableState.WS_REACHABLE,
+                "errorStatus",
+                myGroup);
+        return webServer;
+    }
+
     public void getApplications() {
         Group myGroup = new Group(groupId, groupName);
         Application application = new Application(id(0L, Application.class),

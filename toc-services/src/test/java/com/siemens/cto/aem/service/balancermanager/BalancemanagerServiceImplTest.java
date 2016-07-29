@@ -151,6 +151,20 @@ public class BalancemanagerServiceImplTest {
         balancermanagerServiceImpl.drainUserGroup("mygroupName");
     }
 
+    @Test
+    public void testDrainUserWebServer() {
+        final MockGroup mockGroup = new MockGroup();
+        when(mockGroupService.getGroup("mygroupName")).thenReturn(mockGroup.getGroup());
+        when(mockApplicationService.findApplications(new Identifier<Group>(1L))).thenReturn(mockGroup.findApplications());
+        when(mockWebServerService.findWebServers(new Identifier<Group>(1L))).thenReturn(mockGroup.findWebServers());
+        when(mockWebServerService.getWebServer("myWebServerName")).thenReturn(mockGroup.getWebServer("myWebServerName"));
+        Map map = new HashMap<>();
+        map.put("a","1");
+        BalancemanagerHttpClient mockBalancemanagerHttpClient = org.mockito.Mockito.mock(BalancemanagerHttpClient.class);
+        when(mockBalancemanagerHttpClient.doHttpClientPost("http://localhost", map)).thenReturn(200);
+        balancermanagerServiceImpl.drainUserWebServer("mygroupName", "myWebServerName");
+    }
+
     private String getTestHttpConf(){
         File httpdconfFile = new File("./src/test/resources/balancermanager/httpd.conf");
         String contents = "";

@@ -53,38 +53,38 @@ public class BalancermanagerServiceImpl implements BalancermanagerService {
         for (Application application : applicationService.findApplications(group.getId())) {
             Set<String> appPathSet = getAppPathByGroup(group, application.getName());
             for (WebServer webServer : webServerService.findWebServers(group.getId())) {
-                Set<String> balanceMemberSet = getBalanceMembers(getHttpdConffromResource(webServer.getName()), application.getName());
+                String httpdConfString = getHttpdConffromResource(webServer.getName());
+                Set<String> balanceMemberSet = getBalanceMembers(httpdConfString, application.getName());
                 Set<String> drainSet = getMatchJvm(appPathSet, balanceMemberSet);
-                String balancermanagerurl = getBalancerManagerUrl(webServer.getHost());
-                for (String worker : drainSet) {
-                    Map<String, String> postMap = getPostMap(application.getName(), worker);
-                    final String message = "Drain user for webServer: " + balancermanagerurl + " with worker url " + worker;
-                    sendMessage(webServer.getId(), message);
-                    int returnCode = drainUser(balancermanagerurl, postMap);
-                    sendMessage(webServer.getId(), Integer.toString(returnCode));
-                }
+                String balancerManagerurl = getBalancerManagerUrl(webServer.getHost());
+                doDrain(drainSet, application, balancerManagerurl, webServer);
             }
         }
     }
 
     @Override
-    public void drainUserWebServer(final String groupName, final String webserverName) {
-        LOGGER.info("Entering drainUserGroup, groupName: " + groupName + " webserverName: " + webserverName);
+    public void drainUserWebServer(final String groupName, final String webServerName) {
+        LOGGER.info("Entering drainUserGroup, groupName: " + groupName + " webServerName: " + webServerName);
         Group group = groupService.getGroup(groupName);
         for (Application application : applicationService.findApplications(group.getId())) {
             Set<String> appPathSet = getAppPathByGroup(group, application.getName());
-            WebServer webServer = webServerService.getWebServer(webserverName);
-            final String httpdConfString = getHttpdConffromResource(webServer.getName());
+            WebServer webServer = webServerService.getWebServer(webServerName);
+            String httpdConfString = getHttpdConffromResource(webServer.getName());
             Set<String> balanceMemberSet = getBalanceMembers(httpdConfString, application.getName());
             Set<String> drainSet = getMatchJvm(appPathSet, balanceMemberSet);
-            String balancermanagerurl = getBalancerManagerUrl(webServer.getHost());
-            for (String worker : drainSet) {
-                Map<String, String> postMap = getPostMap(application.getName(), worker);
-                final String message = "Drain user for webServer: " + balancermanagerurl + " with worker url " + worker;
-                sendMessage(webServer.getId(), message);
-                int returnCode = drainUser(balancermanagerurl, postMap);
-                sendMessage(webServer.getId(), Integer.toString(returnCode));
-            }
+            String balancerManagerurl = getBalancerManagerUrl(webServer.getHost());
+            doDrain(drainSet, application, balancerManagerurl, webServer);
+        }
+    }
+
+    public void doDrain(final Set<String> workers, final Application application, final String balancerManagerurl, final WebServer webServer){
+        LOGGER.info("Entering doDrain");
+        for (String worker : workers) {
+            Map<String, String> postMap = getPostMap(application.getName(), worker);
+            final String message = "Drain user for webServer: " + balancerManagerurl + " with worker url " + worker;
+            sendMessage(webServer.getId(), message);
+            int returnCode = drainUser(balancerManagerurl, postMap);
+            sendMessage(webServer.getId(), Integer.toString(returnCode));
         }
     }
 
@@ -145,17 +145,15 @@ public class BalancermanagerServiceImpl implements BalancermanagerService {
         InputStream is = new ByteArrayInputStream(httpdConfString.getBytes());
         ApacheConfigParser parser = new ApacheConfigParser();
         Set<String> members = new HashSet<>();
+        final String balancerName = "balancer://lb-" + applicationName;
         try {
             ConfigNode configNode = parser.parse(is);
             for (ConfigNode child : configNode.getChildren()) {
-                if (child.getName().equals("Proxy")) {
-                    final String balancerName = "balancer://lb-" + applicationName;
-                    if (balancerName.equalsIgnoreCase(child.getContent())) {
-                        for (ConfigNode memberChild : child.getChildren()) {
-                            if (memberChild.getName().equalsIgnoreCase("BalancerMember")) {
-                                String member = memberChild.getContent().toString().substring(0, memberChild.getContent().toString().indexOf(" "));
-                                members.add(member);
-                            }
+                if ((child.getName().equals("Proxy")) && (balancerName.equalsIgnoreCase(child.getContent()))) {
+                    for (ConfigNode memberChild : child.getChildren()) {
+                        if (memberChild.getName().equalsIgnoreCase("BalancerMember")) {
+                            String member = memberChild.getContent().toString().substring(0, memberChild.getContent().toString().indexOf(" "));
+                            members.add(member);
                         }
                     }
                 }
