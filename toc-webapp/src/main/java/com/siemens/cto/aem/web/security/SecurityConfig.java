@@ -23,13 +23,23 @@ import com.siemens.cto.aem.common.properties.ApplicationProperties;
 @ComponentScan("com.siemens.cto.aem.web.security")
 @EnableWebSecurity
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
+    
     @Autowired
     GrantedAuthoritiesMapperImpl  grantedAuthoritiesMapper;
+    
+    //for Test Injection
+    /**
+     * @param grantedAuthoritiesMapper
+     */
+    public SecurityConfig(GrantedAuthoritiesMapperImpl  grantedAuthoritiesMapper) {
+        this.grantedAuthoritiesMapper = grantedAuthoritiesMapper;
+    }
     
     private static Logger LOGGER = Logger.getLogger(SecurityConfig.class);
     private static final String ACTIVE_DIRECTORY_DOMAIN = "active.directory.fqdn";
     private static final String ACTIVE_DIRECTORY_SERVER_NAME = "active.directory.server.name";
     private static final String ACTIVE_DIRECTORY_SERVER_PORT = "active.directory.server.port";
+    private static final String ACTIVE_DIRECTORY_PROTOCOL = "active.directory.server.protocol";
     
     private static final String LOGIN_PAGE ="/login";
     private static final String LOGIN_API = "/v1.0/user/login";
@@ -72,11 +82,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         final String domain = ApplicationProperties.get(ACTIVE_DIRECTORY_DOMAIN);
         final String host = ApplicationProperties.get(ACTIVE_DIRECTORY_SERVER_NAME);
         final String port = ApplicationProperties.get(ACTIVE_DIRECTORY_SERVER_PORT);
-
+        final String protocol = ApplicationProperties.get(ACTIVE_DIRECTORY_PROTOCOL);
         if (LOGGER.isDebugEnabled())
             LOGGER.debug("TOC AuthenticationManagerBuilder initialized");
         ActiveDirectoryLdapAuthenticationProvider provider = new ActiveDirectoryLdapAuthenticationProvider(domain,
-                "ldap://" + host + ":" + port);
+                protocol + "://" + host + ":" + port);
         provider.setConvertSubErrorCodesToExceptions(true);
         provider.setUseAuthenticationRequestCredentials(true);
         provider.setAuthoritiesMapper(grantedAuthoritiesMapper);

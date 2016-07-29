@@ -17,9 +17,7 @@ import com.siemens.cto.aem.common.properties.ApplicationProperties;
  */
 @Component
 public class GrantedAuthoritiesMapperImpl implements GrantedAuthoritiesMapper {
-    private static final String PROP_TOC_ROLE_USER = "toc.role.user";
     private static final String PROP_TOC_ROLE_ADMIN = "toc.role.admin";
-    public final static String TOC_ROLE_USER = ApplicationProperties.get(PROP_TOC_ROLE_USER);
     public final static String TOC_ROLE_ADMIN = ApplicationProperties.get(PROP_TOC_ROLE_ADMIN);
 
     /* (non-Javadoc)
@@ -30,9 +28,7 @@ public class GrantedAuthoritiesMapperImpl implements GrantedAuthoritiesMapper {
         Set<GrantedAuthority> roles = new HashSet<GrantedAuthority>();
         //Add only TOC groups as authorities
         for (GrantedAuthority a : authorities) {
-            if (TOC_ROLE_USER.equals(a.getAuthority())) {
-                roles.add(new SimpleGrantedAuthority(TOC_ROLE_USER));
-            } else if (TOC_ROLE_ADMIN.equals(a.getAuthority())) {
+            if (TOC_ROLE_ADMIN.equals(a.getAuthority())) {
                 roles.add(new SimpleGrantedAuthority(TOC_ROLE_ADMIN));
             }
         }

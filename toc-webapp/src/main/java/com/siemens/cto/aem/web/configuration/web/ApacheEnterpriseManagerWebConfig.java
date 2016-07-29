@@ -9,6 +9,7 @@ import com.siemens.cto.aem.web.javascript.variable.JavaScriptVariableSource;
 import com.siemens.cto.aem.web.javascript.variable.dynamic.ContextPathSource;
 import com.siemens.cto.aem.web.javascript.variable.dynamic.LoginStatusSource;
 import com.siemens.cto.aem.web.javascript.variable.property.ApplicationPropertySource;
+import com.siemens.cto.aem.web.security.GrantedAuthoritiesMapperImpl;
 import com.siemens.cto.security.saml.service.SamlIdentityProviderService;
 import com.siemens.cto.security.saml.service.impl.SamlIdentityProviderServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -117,4 +118,8 @@ public class ApacheEnterpriseManagerWebConfig extends WebMvcConfigurerAdapter {
         super.configureMessageConverters(converters);
     }
 
+    @Bean(name = "grantedAuthoritiesMapper")
+    public GrantedAuthoritiesMapperImpl grantedAuthoritiesMapper() {
+        return new GrantedAuthoritiesMapperImpl();
+    }
 }
