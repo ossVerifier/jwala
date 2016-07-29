@@ -2,6 +2,8 @@ package com.siemens.cto.aem.ws.rest.v1.service.admin.impl;
 
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.service.resource.ResourceService;
+import com.siemens.cto.aem.ws.rest.v1.response.ApplicationResponse;
+import com.siemens.cto.aem.ws.rest.v1.response.ResponseBuilder;
 import com.siemens.cto.toc.files.FilesConfiguration;
 import org.junit.After;
 import org.junit.Before;
@@ -29,6 +31,7 @@ import static org.mockito.Mockito.when;
  */
 @RunWith(MockitoJUnitRunner.class)
 public class AdminServiceRestImplTest {
+    String authFlag;
 
     @InjectMocks
     private AdminServiceRestImpl cut;
@@ -49,6 +52,7 @@ public class AdminServiceRestImplTest {
     @Before
     public void setUp() {
         System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, "./src/test/resources");
+            authFlag = ApplicationProperties.get("toc.authorization");
     }
 
     @After
@@ -109,6 +113,15 @@ public class AdminServiceRestImplTest {
     public void testView() {
         Response response = cut.view();
         assertNotNull(response.getEntity());
+    }
+    
+    @Test
+    public void testIsTOCAuthorizationEnabled() throws Exception {
+        Response response = cut.isTOCAuthorizationEnabled();
+        ApplicationResponse applicationResponse = (ApplicationResponse) response.getEntity();
+        Object content = applicationResponse.getApplicationResponseContent();
+        assertEquals(content, AdminServiceRestImpl.JSON_RESPONSE_TRUE);
+        System.setProperty("toc.authorization", "false");
     }
 
 }

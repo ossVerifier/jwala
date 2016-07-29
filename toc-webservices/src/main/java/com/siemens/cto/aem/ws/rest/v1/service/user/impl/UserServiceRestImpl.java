@@ -32,12 +32,10 @@ public class UserServiceRestImpl implements UserServiceRest {
     AuthenticationConfiguration authenticationConfiguration;
     
     private static final Logger LOGGER = LoggerFactory.getLogger(UserServiceRestImpl.class);
-
-    public static final String JSON_RESPONSE_OK = "{'response':'ok'}";
     public static final String JSON_RESPONSE_TRUE = "{'response':'true'}";
     public static final String JSON_RESPONSE_FALSE = "{'response':'false'}";
 
-    private static final String TOC_AUTHORIZATION= "toc.authorization";
+    public static final String JSON_RESPONSE_OK = "{'response':'ok'}";
     private static final String PROP_TOC_ROLE_ADMIN = "toc.role.admin";
     
     private static final String USER = "user";
@@ -78,19 +76,5 @@ public class UserServiceRestImpl implements UserServiceRest {
             }
         }
         return ResponseBuilder.ok(JSON_RESPONSE_FALSE);
-    }
-
-    /* (non-Javadoc)
-     * @see com.siemens.cto.aem.ws.rest.v1.service.user.UserServiceRest#isTOCAuthorizationEnabled(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
-     */
-    @Override
-    public Response isTOCAuthorizationEnabled(HttpServletRequest request, HttpServletResponse response) {
-        String auth = ApplicationProperties.get(TOC_AUTHORIZATION, "true");
-        if("false".equals(auth))
-            return ResponseBuilder.ok(JSON_RESPONSE_FALSE);
-        else 
-            return ResponseBuilder.ok(JSON_RESPONSE_TRUE);
-    }
-    
-    
+    }    
 }

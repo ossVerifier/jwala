@@ -29,4 +29,8 @@ public interface AdminServiceRest {
     @Path("/manifest")
     Response manifest(@Context ServletContext context);
 
+    @GET
+    @Path("/isTOCAuthorizationEnabled")
+    Response isTOCAuthorizationEnabled();
+
 }

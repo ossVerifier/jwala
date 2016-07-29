@@ -11,6 +11,9 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.springframework.security.access.annotation.Secured;
+import org.springframework.security.access.prepost.PreAuthorize;
+
 @Path("/user")
 @Produces(MediaType.APPLICATION_JSON)
 public interface UserServiceRest {
@@ -27,12 +30,8 @@ public interface UserServiceRest {
                     @Context HttpServletResponse response);
     
     @GET
+@Secured("")
     @Path("/isUserAdmin")
     Response isUserAdmin(@Context HttpServletRequest request, 
                          @Context HttpServletResponse response);
-    
-    @GET
-    @Path("/isTOCAuthorizationEnabled")
-    Response isTOCAuthorizationEnabled(@Context HttpServletRequest request, 
-                                       @Context HttpServletResponse response);
 }

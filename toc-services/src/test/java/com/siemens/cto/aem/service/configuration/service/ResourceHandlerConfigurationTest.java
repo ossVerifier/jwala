@@ -46,11 +46,91 @@ public class ResourceHandlerConfigurationTest {
         verify(MockConfig.MOCK_RESOURCE_DAO, never()).getGroupLevelAppResource(anyString(), anyString(), anyString());
     }
 
+    @Test
+    public void testFetchJvmResourceHandler() {
+        resourceHandler.fetchResource(getJvmResourceIdentifier());
+        verify(MockConfig.MOCK_RESOURCE_DAO, never()).getWebServerResource(anyString(), anyString());
+        verify(MockConfig.MOCK_RESOURCE_DAO).getJvmResource(eq("sample.xml"), eq("sampleJvm"));
+        verify(MockConfig.MOCK_RESOURCE_DAO, never()).getAppResource(anyString(), anyString(), anyString());
+        verify(MockConfig.MOCK_RESOURCE_DAO, never()).getGroupLevelWebServerResource(anyString(), anyString());
+        verify(MockConfig.MOCK_RESOURCE_DAO, never()).getGroupLevelJvmResource(anyString(), anyString());
+        verify(MockConfig.MOCK_RESOURCE_DAO, never()).getGroupLevelAppResource(anyString(), anyString(), anyString());
+    }
+
+    @Test
+    public void testFetchAppResourceHandler() {
+        resourceHandler.fetchResource(getAppResourceIdentifier());
+        verify(MockConfig.MOCK_RESOURCE_DAO, never()).getWebServerResource(anyString(), anyString());
+        verify(MockConfig.MOCK_RESOURCE_DAO, never()).getJvmResource(anyString(), anyString());
+        verify(MockConfig.MOCK_RESOURCE_DAO).getAppResource(eq("sample.xml"), eq("sampleApp"), eq("sampleJvm"));
+        verify(MockConfig.MOCK_RESOURCE_DAO, never()).getGroupLevelWebServerResource(anyString(), anyString());
+        verify(MockConfig.MOCK_RESOURCE_DAO, never()).getGroupLevelJvmResource(anyString(), anyString());
+        verify(MockConfig.MOCK_RESOURCE_DAO, never()).getGroupLevelAppResource(anyString(), anyString(), anyString());
+    }
+
+    @Test
+    public void testGroupLevelWebServerResourceHandler() {
+        resourceHandler.fetchResource(getGroupLevelWebServerResourceIdentifier());
+        verify(MockConfig.MOCK_RESOURCE_DAO, never()).getWebServerResource(anyString(), anyString());
+        verify(MockConfig.MOCK_RESOURCE_DAO, never()).getJvmResource(anyString(), anyString());
+        verify(MockConfig.MOCK_RESOURCE_DAO, never()).getAppResource(anyString(), anyString(), anyString());
+        verify(MockConfig.MOCK_RESOURCE_DAO).getGroupLevelWebServerResource(eq("sample.xml"), eq("sampleGroup"));
+        verify(MockConfig.MOCK_RESOURCE_DAO, never()).getGroupLevelJvmResource(anyString(), anyString());
+        verify(MockConfig.MOCK_RESOURCE_DAO, never()).getGroupLevelAppResource(anyString(), anyString(), anyString());
+    }
+
+    @Test
+    public void testGroupLevelJvmResourceHandler() {
+        resourceHandler.fetchResource(getGroupLevelJvmResourceIdentifier());
+        verify(MockConfig.MOCK_RESOURCE_DAO, never()).getWebServerResource(anyString(), anyString());
+        verify(MockConfig.MOCK_RESOURCE_DAO, never()).getJvmResource(anyString(), anyString());
+        verify(MockConfig.MOCK_RESOURCE_DAO, never()).getAppResource(anyString(), anyString(), anyString());
+        verify(MockConfig.MOCK_RESOURCE_DAO, never()).getGroupLevelWebServerResource(anyString(), anyString());
+        verify(MockConfig.MOCK_RESOURCE_DAO).getGroupLevelJvmResource(eq("sample.xml"), eq("sampleGroup"));
+        verify(MockConfig.MOCK_RESOURCE_DAO, never()).getGroupLevelAppResource(anyString(), anyString(), anyString());
+    }
+
+    @Test
+    public void testGroupLevelWebAppResourceHandler() {
+        resourceHandler.fetchResource(getGroupLevelAppResourceIdentifier());
+        verify(MockConfig.MOCK_RESOURCE_DAO, never()).getWebServerResource(anyString(), anyString());
+        verify(MockConfig.MOCK_RESOURCE_DAO, never()).getJvmResource(anyString(), anyString());
+        verify(MockConfig.MOCK_RESOURCE_DAO, never()).getAppResource(anyString(), anyString(), anyString());
+        verify(MockConfig.MOCK_RESOURCE_DAO, never()).getGroupLevelWebServerResource(anyString(), anyString());
+        verify(MockConfig.MOCK_RESOURCE_DAO, never()).getGroupLevelJvmResource(eq("sample.xml"), eq("sampleGroup"));
+        verify(MockConfig.MOCK_RESOURCE_DAO).getGroupLevelAppResource(eq("sample.xml"), eq("sampleApp"), eq("sampleGroup"));
+    }
+
     // TODO: Complete all test cases...
 
     private ResourceIdentifier getWebServerResourceIdentifier() {
         ResourceIdentifier.Builder builder = new ResourceIdentifier.Builder();
         return builder.setResourceName("sample.xml").setWebServerName("sampleWebServer").build();
+    }
+
+    private ResourceIdentifier getJvmResourceIdentifier() {
+        ResourceIdentifier.Builder builder = new ResourceIdentifier.Builder();
+        return builder.setResourceName("sample.xml").setJvmName("sampleJvm").build();
+    }
+
+    private ResourceIdentifier getAppResourceIdentifier() {
+        ResourceIdentifier.Builder builder = new ResourceIdentifier.Builder();
+        return builder.setResourceName("sample.xml").setWebAppName("sampleApp").setJvmName("sampleJvm").build();
+    }
+
+    private ResourceIdentifier getGroupLevelWebServerResourceIdentifier() {
+        ResourceIdentifier.Builder builder = new ResourceIdentifier.Builder();
+        return builder.setResourceName("sample.xml").setGroupName("sampleGroup").setWebServerName("*").build();
+    }
+
+    private ResourceIdentifier getGroupLevelJvmResourceIdentifier() {
+        ResourceIdentifier.Builder builder = new ResourceIdentifier.Builder();
+        return builder.setResourceName("sample.xml").setGroupName("sampleGroup").setJvmName("*").build();
+    }
+
+    private ResourceIdentifier getGroupLevelAppResourceIdentifier() {
+        ResourceIdentifier.Builder builder = new ResourceIdentifier.Builder();
+        return builder.setResourceName("sample.xml").setGroupName("sampleGroup").setWebAppName("sampleApp").build();
     }
 
     @Configuration
