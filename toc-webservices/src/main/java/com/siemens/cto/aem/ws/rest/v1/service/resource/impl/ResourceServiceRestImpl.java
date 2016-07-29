@@ -439,10 +439,12 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
         ResourceIdentifier.Builder idBuilder = new ResourceIdentifier.Builder().setResourceName(
                 resourceService.getExternalPropertiesFile());
         ResourceContent resourceContent = resourceService.getResourceContent(idBuilder.build());
-        final String externalProperties = resourceContent.getContent();
-        if (!externalProperties.isEmpty()){
-            LOGGER.info("Load the external properties from the database on ResourceServiceRest initialization");
-            ExternalProperties.loadFromInputStream(new ByteArrayInputStream(externalProperties.getBytes()));
+        if (resourceContent != null) {
+            final String externalProperties = resourceContent.getContent();
+            if (!externalProperties.isEmpty()) {
+                LOGGER.info("Load the external properties from the database on ResourceServiceRest initialization");
+                ExternalProperties.loadFromInputStream(new ByteArrayInputStream(externalProperties.getBytes()));
+            }
         }
     }
 }
