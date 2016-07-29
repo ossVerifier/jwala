@@ -6,6 +6,7 @@ import com.siemens.cto.aem.common.domain.model.resource.ResourceContent;
 import com.siemens.cto.aem.common.domain.model.resource.ResourceIdentifier;
 import com.siemens.cto.aem.common.domain.model.resource.ResourceTemplateMetaData;
 import com.siemens.cto.aem.common.exception.FaultCodeException;
+import com.siemens.cto.aem.common.properties.ExternalProperties;
 import com.siemens.cto.aem.service.exception.ResourceServiceException;
 import com.siemens.cto.aem.service.resource.ResourceService;
 import com.siemens.cto.aem.service.resource.impl.CreateResourceResponseWrapper;
@@ -165,8 +166,8 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
         CreateResourceResponseWrapper responseWrapper = null;
         try {
             final ObjectMapper mapper = new ObjectMapper();
-            final ResourceTemplateMetaData metaData =  mapper.readValue(IOUtils.toString(metadataIn),
-                                                                        ResourceTemplateMetaData.class);
+            final ResourceTemplateMetaData metaData = mapper.readValue(IOUtils.toString(metadataIn),
+                    ResourceTemplateMetaData.class);
 
             // We do the file attachment validation here since this is a REST services affair IMHO.
             // TODO: Use a more sophisticated way of knowing the content type in next releases.
@@ -178,13 +179,13 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
             }
 
             final ResourceIdentifier resourceIdentifier = new ResourceIdentifier.Builder().setResourceName(metaData.getTemplateName())
-                                                                                          .setGroupName(createResourceParam.getGroup())
-                                                                                          .setWebServerName(createResourceParam.getWebServer())
-                                                                                          .setJvmName(createResourceParam.getJvm())
-                                                                                          .setWebAppName(createResourceParam.getWebApp()).build();
+                    .setGroupName(createResourceParam.getGroup())
+                    .setWebServerName(createResourceParam.getWebServer())
+                    .setJvmName(createResourceParam.getJvm())
+                    .setWebAppName(createResourceParam.getWebApp()).build();
 
             // Upload the attached file if the resource is binary to the archive location
-            if (metaData.getContentType().equals(ContentType.APPLICATION_BINARY.contentTypeStr)){
+            if (metaData.getContentType().equals(ContentType.APPLICATION_BINARY.contentTypeStr)) {
                 resourceDataIn = new ByteArrayInputStream(resourceService.uploadResource(metaData, resourceDataIn).getBytes());
             }
 
@@ -337,7 +338,7 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
         } else if (ParamValidator.getNewInstance().isEmpty(resourceHierarchyParam.getGroup())
                 .isEmpty(resourceHierarchyParam.getWebServer())
                 .isEmpty(resourceHierarchyParam.getJvm())
-                .isEmpty(resourceHierarchyParam.getWebApp()).isValid()){
+                .isEmpty(resourceHierarchyParam.getWebApp()).isValid()) {
             // External Properties
             deletedRecCount = resourceService.deleteExternalProperties();
 
@@ -355,10 +356,10 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
     public Response getResourceContent(final String resourceName, final ResourceHierarchyParam param) {
         LOGGER.debug("Get the resource content for {} with hierarchy {}", resourceName, param);
         final ResourceIdentifier resourceIdentifier = new ResourceIdentifier.Builder().setResourceName(resourceName)
-                                                                                      .setGroupName(param.getGroup())
-                                                                                      .setWebServerName(param.getWebServer())
-                                                                                      .setJvmName(param.getJvm())
-                                                                                      .setWebAppName(param.getWebApp()).build();
+                .setGroupName(param.getGroup())
+                .setWebServerName(param.getWebServer())
+                .setJvmName(param.getJvm())
+                .setWebAppName(param.getWebApp()).build();
         final ResourceContent resourceContent = resourceService.getResourceContent(resourceIdentifier);
         if (resourceContent == null) {
             return Response.noContent().build();
@@ -430,5 +431,18 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
         // use a TreeMap to put the properties in alphabetical order
         final Properties externalProperties = resourceService.getExternalProperties();
         return ResponseBuilder.ok(null == externalProperties ? null : new TreeMap<>(externalProperties));
+    }
+
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        // load the external properties
+        ResourceIdentifier.Builder idBuilder = new ResourceIdentifier.Builder().setResourceName(
+                resourceService.getExternalPropertiesFile());
+        ResourceContent resourceContent = resourceService.getResourceContent(idBuilder.build());
+        final String externalProperties = resourceContent.getContent();
+        if (!externalProperties.isEmpty()){
+            LOGGER.info("Load the external properties from the database on ResourceServiceRest initialization");
+            ExternalProperties.loadFromInputStream(new ByteArrayInputStream(externalProperties.getBytes()));
+        }
     }
 }

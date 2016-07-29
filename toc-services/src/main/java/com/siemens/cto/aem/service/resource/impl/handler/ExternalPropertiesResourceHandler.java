@@ -3,12 +3,14 @@ package com.siemens.cto.aem.service.resource.impl.handler;
 import com.siemens.cto.aem.common.domain.model.resource.EntityType;
 import com.siemens.cto.aem.common.domain.model.resource.ResourceIdentifier;
 import com.siemens.cto.aem.common.domain.model.resource.ResourceTemplateMetaData;
+import com.siemens.cto.aem.common.properties.ExternalProperties;
 import com.siemens.cto.aem.persistence.jpa.domain.resource.config.template.ConfigTemplate;
 import com.siemens.cto.aem.persistence.service.ResourceDao;
 import com.siemens.cto.aem.service.resource.ResourceHandler;
 import com.siemens.cto.aem.service.resource.impl.CreateResourceResponseWrapper;
 import org.apache.commons.lang3.StringUtils;
 
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 
 public class ExternalPropertiesResourceHandler extends ResourceHandler {
@@ -39,7 +41,14 @@ public class ExternalPropertiesResourceHandler extends ResourceHandler {
             Long groupId = null;
             Long appId = null;
             EntityType entityType = EntityType.EXT_PROPERTIES;
-            createResourceResponseWrapper = new CreateResourceResponseWrapper(resourceDao.createResource(entityId, groupId, appId, entityType, metaData.getDeployFileName(), data, convertResourceTemplateMetaDataToJson(metaData)));
+
+            final String deployFileName = metaData.getDeployFileName();
+            createResourceResponseWrapper = new CreateResourceResponseWrapper(resourceDao.createResource(entityId, groupId, appId, entityType, deployFileName, data, convertResourceTemplateMetaDataToJson(metaData)));
+
+            // apply the external properties
+            String propertiesContent = resourceDao.getExternalPropertiesResource(deployFileName).getTemplateContent();
+            ExternalProperties.loadFromInputStream(new ByteArrayInputStream(propertiesContent.getBytes()));
+
         } else if (successor != null) {
             createResourceResponseWrapper = successor.createResource(resourceIdentifier, metaData, data);
         }

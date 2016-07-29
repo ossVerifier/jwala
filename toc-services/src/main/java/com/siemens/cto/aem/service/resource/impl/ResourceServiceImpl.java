@@ -556,6 +556,8 @@ public class ResourceServiceImpl implements ResourceService {
     @Override
     @Transactional
     // TODO make this more generic to use the new resources identifier
+    // TODO move to the Resource DAO
+    @Deprecated
     public Object uploadExternalProperties(String fileName, InputStream propertiesFileIn) {
         Long entityId = null;
         Long groupId = null;

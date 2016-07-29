@@ -3,6 +3,7 @@ package com.siemens.cto.aem.ws.rest.v1.service.resource;
 import com.siemens.cto.aem.ws.rest.v1.provider.AuthenticatedUser;
 import org.apache.cxf.jaxrs.ext.multipart.Attachment;
 import org.apache.cxf.jaxrs.ext.multipart.Multipart;
+import org.springframework.beans.factory.InitializingBean;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -14,7 +15,7 @@ import java.util.List;
  */
 @Path("/resources")
 @Produces(MediaType.APPLICATION_JSON)
-public interface ResourceServiceRest {
+public interface ResourceServiceRest extends InitializingBean{
 
     /**
      * Creates a template file and it's corresponding JSON meta data file.
