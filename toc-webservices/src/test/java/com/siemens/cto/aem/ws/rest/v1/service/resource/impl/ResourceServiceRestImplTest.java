@@ -641,4 +641,15 @@ public class ResourceServiceRestImplTest {
         int recCount = (int) entity.getApplicationResponseContent();
         Assert.assertEquals(1, recCount);
     }
+
+    @Test
+    public void testExternalPropertiesSetAfterInitialization() throws Exception {
+        when(impl.getExternalPropertiesFile()).thenReturn("external.properties");
+        when(impl.getResourceContent(any(ResourceIdentifier.class))).thenReturn(new ResourceContent("{}","key=value"));
+
+        cut.afterPropertiesSet();
+
+        verify(impl).getExternalPropertiesFile();
+        verify(impl).getResourceContent(any(ResourceIdentifier.class));
+    }
 }

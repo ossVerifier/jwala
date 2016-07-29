@@ -4,9 +4,7 @@ import com.siemens.cto.aem.common.exception.ApplicationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.util.Properties;
 
 public class ExternalProperties {
@@ -92,4 +90,18 @@ public class ExternalProperties {
         }
     }
 
+    public static void loadFromInputStream(InputStream inputStream) {
+        getInstance().load(inputStream);
+    }
+
+    private void load(InputStream inputStream) {
+        LOGGER.info("Load the external properties from a stream");
+        Properties tempProperties = new Properties();
+        try {
+            tempProperties.load(inputStream);
+        } catch (IOException e) {
+            throw new ApplicationException("Failed to load properties from stream", e);
+        }
+        properties = tempProperties;
+    }
 }

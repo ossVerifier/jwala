@@ -111,6 +111,8 @@ public class ExternalPropertiesResourceHandlerTest {
         JpaResourceConfigTemplate mockJpaResourceConfigTemplate = mock(JpaResourceConfigTemplate.class);
 
         when(mockResourceDao.createResource(anyLong(), anyLong(), anyLong(), eq(EntityType.EXT_PROPERTIES), eq("external.properties"), any(InputStream.class), anyString())).thenReturn(mockJpaResourceConfigTemplate);
+        when(mockResourceDao.getExternalPropertiesResource(anyString())).thenReturn(mockJpaResourceConfigTemplate);
+        when(mockJpaResourceConfigTemplate.getTemplateContent()).thenReturn("key=value");
 
         CreateResourceResponseWrapper result = externalPropertiesResourceHandler.createResource(identifier, metaData, data);
         assertNotNull(result);
