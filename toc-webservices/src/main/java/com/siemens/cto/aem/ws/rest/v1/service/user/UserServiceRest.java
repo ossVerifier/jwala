@@ -30,7 +30,6 @@ public interface UserServiceRest {
                     @Context HttpServletResponse response);
     
     @GET
-@Secured("")
     @Path("/isUserAdmin")
     Response isUserAdmin(@Context HttpServletRequest request, 
                          @Context HttpServletResponse response);
