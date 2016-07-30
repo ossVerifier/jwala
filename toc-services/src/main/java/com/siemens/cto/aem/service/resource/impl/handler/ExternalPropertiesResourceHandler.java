@@ -12,6 +12,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.util.List;
 
 public class ExternalPropertiesResourceHandler extends ResourceHandler {
 
@@ -42,6 +43,13 @@ public class ExternalPropertiesResourceHandler extends ResourceHandler {
             Long appId = null;
             EntityType entityType = EntityType.EXT_PROPERTIES;
 
+            // remove any existing template
+            List<String> existingTemplateNames = resourceDao.getResourceNames(resourceIdentifier, EntityType.EXT_PROPERTIES);
+            if (existingTemplateNames.size() > 0){
+                resourceDao.deleteExternalProperties();
+            }
+
+            // create the external properties template
             final String deployFileName = metaData.getDeployFileName();
             createResourceResponseWrapper = new CreateResourceResponseWrapper(resourceDao.createResource(entityId, groupId, appId, entityType, deployFileName, data, convertResourceTemplateMetaDataToJson(metaData)));
 
