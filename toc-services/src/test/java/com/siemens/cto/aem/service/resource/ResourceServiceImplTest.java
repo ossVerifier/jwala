@@ -9,10 +9,7 @@ import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.common.domain.model.path.FileSystemPath;
-import com.siemens.cto.aem.common.domain.model.resource.EntityType;
-import com.siemens.cto.aem.common.domain.model.resource.ResourceContent;
-import com.siemens.cto.aem.common.domain.model.resource.ResourceGroup;
-import com.siemens.cto.aem.common.domain.model.resource.ResourceIdentifier;
+import com.siemens.cto.aem.common.domain.model.resource.*;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState;
@@ -46,6 +43,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.internal.verification.Times;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -683,5 +681,16 @@ public class ResourceServiceImplTest {
         when(mockRemoteCommandExector.executeRemoteCommand(anyString(), anyString(), anyObject(), any(PlatformCommandProvider.class), anyString(), anyString())).thenThrow(new CommandFailureException(new ExecCommand("Failed command"), new Throwable()));
 
         resourceService.deployTemplateToHost("external.properties", "test-host", mockResourceIdentifier);
+    }
+
+    @Test
+    public void testUploadResource() {
+        final RepositoryFileInformation mockRepositoryFileInformation = mock(RepositoryFileInformation.class);
+        final Path mockPath = mock(Path.class);
+        when(mockPath.toString()).thenReturn("thePath");
+        when(mockRepositoryFileInformation.getPath()).thenReturn(mockPath);
+        when(mockPrivateApplicationService.uploadWebArchiveData(any(UploadWebArchiveRequest.class)))
+                .thenReturn(mockRepositoryFileInformation);
+        assertEquals("thePath", resourceService.uploadResource(mock(ResourceTemplateMetaData.class), new ByteArrayInputStream("data".getBytes())));
     }
 }
