@@ -216,6 +216,30 @@ public class ResourceHandlerConfigurationTest {
         verify(MockConfig.MOCK_APPLICATION_PERSISTENCE_SERVICE).uploadAppTemplate(any(UploadAppTemplateRequest.class), any(JpaJvm.class));
     }
 
+    @Test
+    public void testCreateGroupLevelWebAppBinaryResourceHandler() {
+        final Group mockGroup = mock(Group.class);
+        final Set<Jvm> jvms = new HashSet<>();
+        jvms.add(mock(Jvm.class));
+        when(mockGroup.getJvms()).thenReturn(jvms);
+        when(MockConfig.MOCK_GROUP_PERSISTENCE_SERVICE.getGroup(anyString())).thenReturn(mockGroup);
+        final List<Application> applications = new ArrayList<>();
+        final Application mockApplication = mock(Application.class);
+        when(mockApplication.getName()).thenReturn("sampleApp");
+        applications.add(mockApplication);
+        when(MockConfig.MOCK_APPLICATION_PERSISTENCE_SERVICE.findApplicationsBelongingTo(anyString())).thenReturn(applications);
+        final Entity entity = new Entity();
+        entity.setDeployToJvms(true);
+        metaData.setEntity(entity);
+        metaData.setContentType("application/binary");
+        when(MockConfig.MOCK_APPLICATION_PERSISTENCE_SERVICE.getApplication(anyString())).thenReturn(mock(Application.class));
+        resourceHandler.createResource(getGroupLevelAppResourceIdentifier(), metaData, new ByteArrayInputStream("some.war".getBytes()));
+        verify(MockConfig.getMockGroupPersistenceService()).populateGroupAppTemplate(anyString(), anyString(), anyString(),
+                anyString(), anyString());
+        verify(MockConfig.MOCK_APPLICATION_PERSISTENCE_SERVICE).uploadAppTemplate(any(UploadAppTemplateRequest.class), any(JpaJvm.class));
+        verify(MockConfig.MOCK_APPLICATION_PERSISTENCE_SERVICE).updateWarInfo(anyString(), anyString(), anyString());
+    }
+
     private ResourceIdentifier getWebServerResourceIdentifier() {
         ResourceIdentifier.Builder builder = new ResourceIdentifier.Builder();
         return builder.setResourceName("sample.xml").setWebServerName("sampleWebServer").build();
