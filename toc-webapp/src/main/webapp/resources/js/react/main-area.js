@@ -1,6 +1,12 @@
 /** @jsx React.DOM */
 var MainArea = React.createClass({
+     getInitialState: function(){
+             return{
+                hasRole: false
+             }
+     },
      render: function() {
+       if(this.state.hasRole){
         return <div className={this.props.className}>
                     <div id="txt"></div>
                     <table className="main-area-table">
@@ -26,9 +32,19 @@ var MainArea = React.createClass({
                         <img src="public-resources/img/blue-and-light-blue-gears.gif"/>
                     </div>
                </div>
+       }
+         return <p>Getting admin details...</p>
     },
+    componentDidMount: function(){
+        var self = this;
+        userService.getIsAdmin().then(function(response){
+            MainArea.isAdminRole = (response.applicationResponseContent === "true");
+            self.setState({hasRole: true});
+        })
+     },
     statics: {
-        unsavedChanges: false
+        unsavedChanges: false,
+        isAdminRole: false
     }
 });
 
@@ -60,8 +76,8 @@ var MainTabs = React.createClass({
                                                                    service={ServiceFactory.getGroupService()}
                                                                    stateService={ServiceFactory.getStateService()}
                                                                    statePollTimeout={tocVars.statePollTimeout}/>},
-                     {title: "Configuration", content:<ConfigureTabs/>},
-                     {title: "Admin", content:<AdminTab/>}]
+                     {title: "Configuration", content:<ConfigureTabs/>,  disabled: !MainArea.isAdminRole},
+                     {title: "Admin", content:<AdminTab/>,  disabled: !MainArea.isAdminRole}]
         this.setState({items: items});
     }
 });

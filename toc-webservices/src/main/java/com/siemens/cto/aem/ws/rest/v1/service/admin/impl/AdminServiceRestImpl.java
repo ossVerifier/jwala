@@ -28,8 +28,8 @@ import java.util.jar.Manifest;
 public class AdminServiceRestImpl implements AdminServiceRest {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(AdminServiceRestImpl.class);
-    public static final String JSON_RESPONSE_TRUE = "{'response':'true'}";
-    public static final String JSON_RESPONSE_FALSE = "{'response':'false'}";
+    public static final String JSON_RESPONSE_TRUE = "true";
+    public static final String JSON_RESPONSE_FALSE = "false";
 
     private static final String TOC_AUTHORIZATION= "toc.authorization";
 

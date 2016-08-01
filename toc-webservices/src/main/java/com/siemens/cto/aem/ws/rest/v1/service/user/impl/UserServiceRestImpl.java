@@ -1,11 +1,10 @@
 package com.siemens.cto.aem.ws.rest.v1.service.user.impl;
 
-import java.util.Collection;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.ws.rs.core.Response;
-
+import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
+import com.siemens.cto.aem.common.exception.FaultCodeException;
+import com.siemens.cto.aem.common.properties.ApplicationProperties;
+import com.siemens.cto.aem.ws.rest.v1.response.ResponseBuilder;
+import com.siemens.cto.aem.ws.rest.v1.service.user.UserServiceRest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,11 +15,10 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 
-import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
-import com.siemens.cto.aem.common.exception.FaultCodeException;
-import com.siemens.cto.aem.common.properties.ApplicationProperties;
-import com.siemens.cto.aem.ws.rest.v1.response.ResponseBuilder;
-import com.siemens.cto.aem.ws.rest.v1.service.user.UserServiceRest;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.core.Response;
+import java.util.Collection;
 
 /**
  * @author Cerner
@@ -32,8 +30,8 @@ public class UserServiceRestImpl implements UserServiceRest {
     AuthenticationConfiguration authenticationConfiguration;
     
     private static final Logger LOGGER = LoggerFactory.getLogger(UserServiceRestImpl.class);
-    public static final String JSON_RESPONSE_TRUE = "{'response':'true'}";
-    public static final String JSON_RESPONSE_FALSE = "{'response':'false'}";
+    public static final String JSON_RESPONSE_TRUE = "true";
+    public static final String JSON_RESPONSE_FALSE = "false";
 
     public static final String JSON_RESPONSE_OK = "{'response':'ok'}";
     private static final String PROP_TOC_ROLE_ADMIN = "toc.role.admin";

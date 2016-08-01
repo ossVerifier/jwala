@@ -669,4 +669,3 @@ var SelectMetaDataAndTemplateFilesWidget = React.createClass({
         }
     }
 });
-

@@ -29,7 +29,7 @@ var DataTableButton = React.createClass({
      */
     toggleStatus: 0,
     busyTimeout: null,
-    render: function() {
+    render: function () {
         DataTableButton.bindEvents(this);
 
         var spanClassName = this.props.customSpanClassName;
@@ -37,51 +37,49 @@ var DataTableButton = React.createClass({
             spanClassName = "ui-button-text";
         }
 
-        var theLabel = this.toggleStatus === 0 ? this.props.label: this.props.label2;
-        var buttonClassName  = this.props.buttonClassName !== undefined ? this.props.buttonClassName : "";
+        var theLabel = this.toggleStatus === 0 ? this.props.label : this.props.label2;
+        var buttonClassName = this.props.buttonClassName !== undefined ? this.props.buttonClassName : "";
 
-        return React.DOM.div({className: this.props.className},
-                             React.DOM.button({id:this.props.id,
-                                               type:"button",
-                                               role:"button",
-                                               ariaDisabled:false,
-                                               className:"ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only "
-                                                         + buttonClassName,
-                                               title: this.props.sTitle},
-                                               React.DOM.span({className:spanClassName}, theLabel)));
+        return React.DOM.div({className: this.props.className },
+                              React.DOM.button({ id: this.props.id,
+                              type: "button",
+                              role: "button",
+                              ariaDisabled: false,
+                              className: "ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only " + buttonClassName,
+                              title: this.props.sTitle },
+                              React.DOM.span({ className: spanClassName }, theLabel)));
     },
-    setToNonBusyState: function() {
-        var buttonClassName  = this.props.buttonClassName !== undefined ? this.props.buttonClassName : "";
-        $("#" + this.props.id).attr("class",
-                                    "ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only "
-                                    + buttonClassName);
+    setToNonBusyState: function () {
+        var buttonClassName = this.props.buttonClassName !== undefined ? this.props.buttonClassName : "";
+        $("#" + this.props.id).attr("class", "ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only " + buttonClassName);
         $("#" + this.props.id).find("span").attr("class", this.props.customSpanClassName);
     },
-    busyTimeoutCallback: function() {
+    busyTimeoutCallback: function () {
         if (this.props.clickedStateClassName !== undefined) {
             this.setToNonBusyState();
         }
     },
-    pollForStateChange: function() {
-        if ($("#" + this.props.id).hasClass(this.props.clickedStateClassName)) { // if still busy check status
+    pollForStateChange: function () {
+        if ($("#" + this.props.id).hasClass(this.props.clickedStateClassName)) {
+            // if still busy check status
             if (!this.props.isBusyCallback(this.props.itemId, this.props.expectedState)) {
                 clearTimeout(this.busyTimeout);
                 this.setToNonBusyState();
             } else {
                 var self = this;
-                setTimeout(function(){self.pollForStateChange()}, 1000);
+                setTimeout(function () {
+                    self.pollForStateChange();
+                }, 1000);
             }
         }
     },
     statics: {
-        handleClick: function(self) {
+        handleClick: function (self) {
             if (self.props.onClickMessage !== undefined && $("#tooltip" + self.props.id).length === 0) {
-                var top = $("#" + self.props.id).parent().position().top - $("#" + self.props.id).height()/2;
-                var left = $("#" + self.props.id).parent().position().left + $("#" + self.props.id).width()/2;
-                $("#" + self.props.id).parent().append("<div id='tooltip" + self.props.id +
-                    "' role='tooltip' class='ui-tooltip ui-widget ui-corner-all ui-widget-content' " +
-                    "style='top:" + top + "px;left:" + left + "px'>" + self.props.onClickMessage + "</div>");
-                $("#tooltip" + self.props.id).fadeOut(3000, function() {
+                var top = $("#" + self.props.id).parent().position().top - $("#" + self.props.id).height() / 2;
+                var left = $("#" + self.props.id).parent().position().left + $("#" + self.props.id).width() / 2;
+                $("#" + self.props.id).parent().append("<div id='tooltip" + self.props.id + "' role='tooltip' class='ui-tooltip ui-widget ui-corner-all ui-widget-content' " + "style='top:" + top + "px;left:" + left + "px'>" + self.props.onClickMessage + "</div>");
+                $("#tooltip" + self.props.id).fadeOut(3000, function () {
                     $("#tooltip" + self.props.id).remove();
                 });
             }
@@ -93,12 +91,16 @@ var DataTableButton = React.createClass({
                 $("#" + self.props.id).find("span").removeClass();
 
                 // Timeout if when the status gets stuck!
-                var timeout = (self.props.clickedStateTimeout === undefined ? self.props.busyStatusTimeout : self.props.clickedStateTimeout);
-                self.busyTimeout = setTimeout(function(){self.busyTimeoutCallback()}, timeout);
+                var timeout = self.props.clickedStateTimeout === undefined ? self.props.busyStatusTimeout : self.props.clickedStateTimeout;
+                self.busyTimeout = setTimeout(function () {
+                    self.busyTimeoutCallback();
+                }, timeout);
 
                 if (self.props.isBusyCallback !== undefined) {
                     // Timeout used for polling status change
-                    setTimeout(function(){self.pollForStateChange()}, 1000);
+                    setTimeout(function () {
+                        self.pollForStateChange();
+                    }, 1000);
                 }
             }
 
@@ -113,18 +115,12 @@ var DataTableButton = React.createClass({
                     }
                 }
 
-                $("#" + self.props.id).val(self.toggleStatus === 1 ?
-                                           self.props.label2 :
-                                           self.props.label);
+                $("#" + self.props.id).val(self.toggleStatus === 1 ? self.props.label2 : self.props.label);
             } else {
-                self.props.callback(self.props.itemId,
-                                    "#" + self.props.id,
-                                    self.props.extraDataToPassOnCallback,
-                                    self.props.parentItemId,
-                                    self.busyTimeoutCallback);
+                self.props.callback(self.props.itemId, "#" + self.props.id, self.props.extraDataToPassOnCallback, self.props.parentItemId, self.busyTimeoutCallback);
             }
         },
-        hoverCallback: function(id, label) {
+        hoverCallback: function (id, label) {
             var MARKER = "jquery-button-applied";
             var theBtn = $("#" + id);
             if (label !== undefined && label !== "" && !theBtn.hasClass(MARKER)) {
@@ -133,12 +129,13 @@ var DataTableButton = React.createClass({
                 theBtn.addClass(MARKER);
             }
         },
-        bindEvents: function(self) {
+        bindEvents: function (self) {
             $("#" + self.props.id).off("click");
             $("#" + self.props.id).on("click", DataTableButton.handleClick.bind(self, self));
 
-            var theLabel = self.toggleStatus === 0 ? self.props.label: self.props.label2;
-            if (theLabel === undefined || theLabel === "") { // This means that this button is graphical e.g. play, stop button
+            var theLabel = self.toggleStatus === 0 ? self.props.label : self.props.label2;
+            if (theLabel === undefined || theLabel === "") {
+                // This means that this button is graphical e.g. play, stop button
                 // We have to handle button highlight on hover ourselves since we don't want
                 // the default button handler to convert this button back to a regular text
                 // button when the user finishes hovering over it!
@@ -151,14 +148,12 @@ var DataTableButton = React.createClass({
                         }
                     },
                     mouseleave: function () {
-                        $("#" + self.props.id).removeClass("ui-state-hover")
+                        $("#" + self.props.id).removeClass("ui-state-hover");
                     }
                 });
             } else {
                 $("#" + self.props.id).off("mouseover");
-                $("#" + self.props.id).on("mouseover", DataTableButton.hoverCallback.bind(self,
-                                                                                          self.props.id,
-                                                                                          theLabel));
+                $("#" + self.props.id).on("mouseover", DataTableButton.hoverCallback.bind(self, self.props.id, theLabel));
             }
         }
     }

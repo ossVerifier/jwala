@@ -6,9 +6,9 @@ var WebServerControlPanelWidget = React.createClass({
     render: function() {
         return <div className="web-server-control-panel-widget">
 
-                    <RButton className="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only ui-button-height"
+                    <RButton ref="drainBtn"
+                             className="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only ui-button-height"
                              spanClassName="ui-icon ui-icon-arrowthick-1-s"
-                             ref="drainBtn"
                              onClick={this.webServerDrain}
                              title="Drain"/>
                     <RButton ref="stopBtn"
@@ -27,7 +27,7 @@ var WebServerControlPanelWidget = React.createClass({
                              spanClassName="ui-icon ui-icon-gear-custom"
                              onClick={this.generateServiceAndHttpdConf}
                              title="Generate the httpd.conf and deploy as a service"
-                             disabled={tocVars["resourcesEnabled"] === "false"}
+                             disabled = {!MainArea.isAdminRole}
                              disabledTitle="Resource generation is disabled for this version"
                              busyClassName="busy-button"/>
 
@@ -61,14 +61,14 @@ var WebServerControlPanelWidget = React.createClass({
                                          WebServerControlPanelWidget.getReactId(this.refs.stopBtn.getDOMNode()).replace(/\./g, "-"),
                                          function() { /* cancel callback */ });
     },
-     webServerDrain: function(doneCallback) {
-        this.showFadingStatusClickedLabel("Draining...", this.refs.drainBtn.getDOMNode(), this.props.data.id.id);
-        this.doneCallback[this.props.data.name] = doneCallback;
-        this.props.webServerService.drainWebServer(this.props.parentGroup,
-                                         this.props.data.name,
-                                         this.generateServiceAndHttpdConfSucccessCallback,
-                                         this.generateServiceAndHttpdConfErrorCallback);
-     },
+    webServerDrain: function(doneCallback) {
+          this.showFadingStatusClickedLabel("Draining...", this.refs.drainBtn.getDOMNode(), this.props.data.id.id);
+          this.doneCallback[this.props.data.name] = doneCallback;
+          this.props.webServerService.drainWebServer(this.props.parentGroup,
+                                           this.props.data.name,
+                                           this.generateServiceAndHttpdConfSucccessCallback,
+                                           this.generateServiceAndHttpdConfErrorCallback);
+    },
 
     onClickHttpdConf: function() {
         var url = "webServerCommand?webServerId=" + this.props.data.id.id + "&operation=viewHttpdConf";
