@@ -181,7 +181,7 @@ public class ResourceHandlerConfigurationTest {
         resourceHandler.createResource(getGroupLevelWebServerResourceIdentifier(), metaData, new ByteArrayInputStream("data".getBytes()));
         verify(MockConfig.MOCK_GROUP_PERSISTENCE_SERVICE).getGroupWithWebServers(anyString());
         verify(MockConfig.MOCK_WEB_SERVER_PERSISTENCE_SERVICE).uploadWebServerConfigTemplate(any(UploadWebServerTemplateRequest.class),
-                anyString(), eq(null));
+                anyString(), anyString());
     }
 
     @Test
