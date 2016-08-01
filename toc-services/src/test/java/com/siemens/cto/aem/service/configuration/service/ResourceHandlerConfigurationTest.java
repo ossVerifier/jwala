@@ -65,6 +65,10 @@ public class ResourceHandlerConfigurationTest {
 
     @Before
     public void setup() {
+        Mockito.reset(MockConfig.MOCK_APPLICATION_PERSISTENCE_SERVICE);
+        Mockito.reset(MockConfig.MOCK_GROUP_PERSISTENCE_SERVICE);
+        Mockito.reset(MockConfig.MOCK_JVM_PERSISTENCE_SERVICE);
+        Mockito.reset(MockConfig.MOCK_WEB_SERVER_PERSISTENCE_SERVICE);
         Mockito.reset(MockConfig.MOCK_RESOURCE_DAO);
 
         metaData = new ResourceTemplateMetaData();
@@ -159,7 +163,6 @@ public class ResourceHandlerConfigurationTest {
     }
 
     @Test
-    @Ignore
     public void testCreateAppResourceHandler() {
         when(MockConfig.MOCK_APPLICATION_PERSISTENCE_SERVICE.getApplication(anyString())).thenReturn(mock(Application.class));
         when(MockConfig.MOCK_JVM_PERSISTENCE_SERVICE.findJvmByExactName(anyString())).thenReturn(mock(Jvm.class));
@@ -169,7 +172,6 @@ public class ResourceHandlerConfigurationTest {
     }
 
     @Test
-    @Ignore
     public void testCreateGroupLevelWebServerResourceHandler() {
         final Group mockGroup = mock(Group.class);
         final Set<WebServer> webServers = new HashSet<>();
@@ -183,7 +185,6 @@ public class ResourceHandlerConfigurationTest {
     }
 
     @Test
-    @Ignore
     public void testCreateGroupLevelJvmResourceHandler() {
         final Group mockGroup = mock(Group.class);
         final Set<Jvm> jvms = new HashSet<>();
