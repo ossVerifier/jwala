@@ -499,4 +499,28 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
         }
     }
 
+    @Test
+    public void testGetAllHosts() {
+        List<Group> mockGroupsList = new ArrayList<>();
+        Group mockGroup1 = mock(Group.class);
+        Group mockGroup2 = mock(Group.class);
+        mockGroupsList.add(mockGroup1);
+        mockGroupsList.add(mockGroup2);
+
+        List<String> group1Hosts = new ArrayList<>();
+        group1Hosts.add("host1");
+        group1Hosts.add("host2");
+        List<String> group2Hosts = new ArrayList<>();
+        group2Hosts.add("host2");
+        group2Hosts.add("host3");
+
+        when(groupPersistenceService.getGroups()).thenReturn(mockGroupsList);
+        when(mockGroup1.getName()).thenReturn("mockGroup1");
+        when(mockGroup2.getName()).thenReturn("mockGroup2");
+        when(groupPersistenceService.getHosts(eq("mockGroup1"))).thenReturn(group1Hosts);
+        when(groupPersistenceService.getHosts(eq("mockGroup2"))).thenReturn(group2Hosts);
+
+        List<String> result = groupService.getAllHosts();
+        assertEquals(3, result.size());
+    }
 }

@@ -96,6 +96,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 @Configuration
 @EnableAsync
@@ -140,6 +141,8 @@ public class AemServiceConfiguration {
 
     @Resource
     private Environment env;
+
+    private final Map<String, ReentrantReadWriteLock> resourceWriteLockMap = new HashMap<>();
 
     /**
      * Make vars.properties available to spring integration configuration
@@ -295,7 +298,7 @@ public class AemServiceConfiguration {
         return new ResourceServiceImpl(persistenceServiceConfiguration.getResourcePersistenceService(),
                 persistenceServiceConfiguration.getGroupPersistenceService(), applicationPersistenceService,
                 jvmPersistenceService, webServerPersistenceService, getPrivateApplicationService(), resourceDao,
-                webArchiveManager, webServerResourceHandler);
+                webArchiveManager, webServerResourceHandler, aemCommandExecutorConfig.getRemoteCommandExecutor(), resourceWriteLockMap);
     }
 
     @Bean

@@ -160,5 +160,9 @@ public interface ResourceServiceRest extends InitializingBean{
     @GET
     @Path("/properties/file")
     Response getExternalPropertiesFile();
+
+    @PUT
+    @Path("/template/{fileName}/deploy/host/{hostName}")
+    Response deployTemplate(@PathParam("fileName") final String fileName, @PathParam("hostName") final String hostName, @MatrixParam("") final ResourceHierarchyParam resourceHierarchyParam, @BeanParam AuthenticatedUser authenticatedUser);
 }
 

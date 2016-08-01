@@ -6,6 +6,7 @@ import com.siemens.cto.aem.common.domain.model.resource.ResourceContent;
 import com.siemens.cto.aem.common.domain.model.resource.ResourceIdentifier;
 import com.siemens.cto.aem.common.domain.model.resource.ResourceTemplateMetaData;
 import com.siemens.cto.aem.common.exception.FaultCodeException;
+import com.siemens.cto.aem.common.exec.CommandOutput;
 import com.siemens.cto.aem.common.properties.ExternalProperties;
 import com.siemens.cto.aem.service.exception.ResourceServiceException;
 import com.siemens.cto.aem.service.resource.ResourceService;
@@ -390,6 +391,23 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
                 .setJvmName(resourceHierarchyParam.getJvm())
                 .setWebAppName(resourceHierarchyParam.getWebApp()).build();
         return ResponseBuilder.ok(resourceService.previewResourceContent(resourceIdentifier, content));
+    }
+
+    @Override
+    public Response deployTemplate(String fileName, String hostName, ResourceHierarchyParam resourceHierarchyParam, AuthenticatedUser user) {
+        LOGGER.info("Deploy the template {} to host {} with resource ID {} by user {}", fileName, hostName, resourceHierarchyParam, user.getUser().getId());
+        final ResourceIdentifier resourceIdentifier = new ResourceIdentifier.Builder()
+                .setResourceName(fileName)
+                .setGroupName(resourceHierarchyParam.getGroup())
+                .setWebServerName(resourceHierarchyParam.getWebServer())
+                .setJvmName(resourceHierarchyParam.getJvm())
+                .setWebAppName(resourceHierarchyParam.getWebApp()).build();
+        CommandOutput commandOutput = resourceService.deployTemplateToHost(fileName, hostName, resourceIdentifier);
+        if (commandOutput.getReturnCode().wasSuccessful()){
+            return ResponseBuilder.ok();
+        } else {
+            return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(AemFaultType.CONTROL_OPERATION_UNSUCCESSFUL, commandOutput.standardErrorOrStandardOut()));
+        }
     }
 
     @Override

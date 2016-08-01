@@ -772,6 +772,21 @@ public class GroupServiceRestImplTest {
         response = groupServiceRest.areAllWebServersStopped("testGroup");
         assertNotNull(response);
     }
+
+    @Test
+    public void testGetHosts() {
+        when(mockGroupService.getHosts(anyString())).thenReturn(new ArrayList<String>());
+        Response result = groupServiceRest.getHosts("test-group");
+        assertEquals(200, result.getStatus());
+    }
+
+    @Test
+    public void testGetAllHosts() {
+        when(mockGroupService.getAllHosts()).thenReturn(new ArrayList<String>());
+        Response result = groupServiceRest.getAllHosts();
+        assertEquals(200, result.getStatus());
+    }
+
     /**
      * Instead of mocking the ServletInputStream, let's extend it instead.
      *

@@ -16,11 +16,18 @@ import com.siemens.cto.aem.common.domain.model.resource.ResourceIdentifier;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState;
+import com.siemens.cto.aem.common.exception.InternalErrorException;
+import com.siemens.cto.aem.common.exec.CommandOutput;
+import com.siemens.cto.aem.common.exec.ExecCommand;
+import com.siemens.cto.aem.common.exec.ExecReturnCode;
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.common.request.app.UploadAppTemplateRequest;
 import com.siemens.cto.aem.common.request.app.UploadWebArchiveRequest;
 import com.siemens.cto.aem.common.request.jvm.UploadJvmConfigTemplateRequest;
 import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateRequest;
+import com.siemens.cto.aem.control.command.PlatformCommandProvider;
+import com.siemens.cto.aem.control.command.RemoteCommandExecutorImpl;
+import com.siemens.cto.aem.exception.CommandFailureException;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
 import com.siemens.cto.aem.persistence.jpa.domain.resource.config.template.ConfigTemplate;
 import com.siemens.cto.aem.persistence.service.*;
@@ -44,6 +51,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
@@ -52,6 +60,7 @@ import static org.mockito.Matchers.anyMap;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.anyLong;
+import static org.mockito.Mockito.isNull;
 import static org.mockito.Mockito.*;
 
 /**
@@ -94,6 +103,11 @@ public class ResourceServiceImplTest {
     @Mock
     private ResourceHandler mockResourceHandler;
 
+    @Mock
+    private RemoteCommandExecutorImpl mockRemoteCommandExector;
+
+    Map<String, ReentrantReadWriteLock> resourceWriteLockMap = new HashMap<>();
+
     @Before
     public void setup() {
         // It is good practice to start with a clean sheet of paper before each test that is why resourceService is
@@ -101,7 +115,7 @@ public class ResourceServiceImplTest {
         MockitoAnnotations.initMocks(this);
         resourceService = new ResourceServiceImpl(mockResourcePersistenceService, mockGroupPesistenceService,
                 mockAppPersistenceService, mockJvmPersistenceService, mockWebServerPersistenceService,
-                mockPrivateApplicationService, mockResourceDao, mockWebArchiveManager, mockResourceHandler);
+                mockPrivateApplicationService, mockResourceDao, mockWebArchiveManager, mockResourceHandler, mockRemoteCommandExector, resourceWriteLockMap);
 
         when(mockJvmPersistenceService.findJvmByExactName(eq("someJvm"))).thenReturn(mock(Jvm.class));
 
@@ -642,5 +656,32 @@ public class ResourceServiceImplTest {
         String result = resourceService.getExternalPropertiesFile();
         verify(mockResourceDao).getResourceNames((ResourceIdentifier) isNull(), eq(EntityType.EXT_PROPERTIES));
         assertEquals("external.properties", resultList.get(0));
+    }
+
+    @Test
+    public void testDeployResourceTemplateToHost() throws CommandFailureException {
+        ResourceIdentifier mockResourceIdentifier = mock(ResourceIdentifier.class);
+        ConfigTemplate mockConfigTemplate = mock(ConfigTemplate.class);
+
+        when(mockResourceHandler.fetchResource(any(ResourceIdentifier.class))).thenReturn(mockConfigTemplate);
+        when(mockConfigTemplate.getMetaData()).thenReturn("{\"deployPath\":\"c:/fake/path\", \"deployFileName\":\"deploy-me.txt\"}");
+        when(mockConfigTemplate.getTemplateContent()).thenReturn("key=value");
+        when(mockRemoteCommandExector.executeRemoteCommand(anyString(), anyString(), anyObject(), any(PlatformCommandProvider.class), anyString(), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(0), "SUCCESS", ""));
+
+        CommandOutput result = resourceService.deployTemplateToHost("external.properties", "test-host", mockResourceIdentifier);
+        assertEquals(new Integer(0), result.getReturnCode().getReturnCode());
+    }
+
+    @Test (expected = InternalErrorException.class)
+    public void testDeployResourceTemplateToHostThrowsCommandFailureException() throws CommandFailureException {
+        ResourceIdentifier mockResourceIdentifier = mock(ResourceIdentifier.class);
+        ConfigTemplate mockConfigTemplate = mock(ConfigTemplate.class);
+
+        when(mockResourceHandler.fetchResource(any(ResourceIdentifier.class))).thenReturn(mockConfigTemplate);
+        when(mockConfigTemplate.getMetaData()).thenReturn("{\"deployPath\":\"c:/fake/path\", \"deployFileName\":\"deploy-me.txt\"}");
+        when(mockConfigTemplate.getTemplateContent()).thenReturn("key=value");
+        when(mockRemoteCommandExector.executeRemoteCommand(anyString(), anyString(), anyObject(), any(PlatformCommandProvider.class), anyString(), anyString())).thenThrow(new CommandFailureException(new ExecCommand("Failed command"), new Throwable()));
+
+        resourceService.deployTemplateToHost("external.properties", "test-host", mockResourceIdentifier);
     }
 }

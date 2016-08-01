@@ -1052,4 +1052,9 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     public Response getHosts(final String groupName) {
         return ResponseBuilder.ok(groupService.getHosts(groupName));
     }
+
+    @Override
+    public Response getAllHosts() {
+        return ResponseBuilder.ok(groupService.getAllHosts());
+    }
 }

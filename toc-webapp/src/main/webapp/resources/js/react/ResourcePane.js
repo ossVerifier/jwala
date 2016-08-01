@@ -24,6 +24,11 @@ var ResourcePane = React.createClass({
                                                                                        {key: "deployToAHost", label: "a host"}]}]}
                               onItemClick = {this.onGroupLevelWebAppsResourceContextMenuItemClick}/>
 
+                       <RMenu ref="externalPropertiesResourceMenu"
+                              menuItems={[{key: "deploy", label: "deploy", menuItems: [{key: "deployToAllHosts", label: "all hosts"},
+                                                                                       {key: "deployToAHost", label: "a host"}]}]}
+                              onItemClick = {this.onExternalPropertiesResourceContextMenuItemClick}/>
+
                        <RMenu ref="deployResourceMenu" menuItems={[{key: "deploy", label: "deploy"}]}
                               onItemClick ={this.onDeployResourceContextMenuItemClick}/>
 
@@ -111,6 +116,8 @@ var ResourcePane = React.createClass({
         this.state["rightClickedItem"] = val;
         if (this.state.data.rtreeListMetaData.entity === "webApps" && this.state.data.rtreeListMetaData.parent.rtreeListMetaData.entity === "webAppSection") {
             this.refs.groupLevelWebAppsResourceMenu.show((e.clientY - 5) + "px", (e.clientX - 5) + "px");
+        } else if (this.state.data.rtreeListMetaData.entity === "extProperties") {
+            this.refs.externalPropertiesResourceMenu.show((e.clientY - 5) + "px", (e.clientX - 5) + "px");
         } else {
             this.refs.deployResourceMenu.show((e.clientY - 5) + "px", (e.clientX - 5) + "px");
         }
@@ -120,6 +127,20 @@ var ResourcePane = React.createClass({
         if (val === "deployToAHost") {
             var groupName = this.state.data.rtreeListMetaData.parent.rtreeListMetaData.parent.name;
             ServiceFactory.getGroupService().getHosts(groupName).then(function(response){
+                self.refs.selectHostDlg.show("Select a host",
+                    <SelectHostWidget getSelectedItemCallback={self.getSelectedItemCallback}>{response.applicationResponseContent}</SelectHostWidget>);
+            }).caught(function(e){
+                $.errorAlert(e, "Error");
+            });
+        } else {
+            this.refs.confirmDeployResourceDlg.show("Deploy resource confirmation", 'Are you sure you want to deploy "'
+                                                    + this.state.rightClickedItem + '" to all hosts ?');
+        }
+    },
+    onExternalPropertiesResourceContextMenuItemClick: function(val) {
+        var self = this;
+        if (val === "deployToAHost") {
+            ServiceFactory.getGroupService().getAllHosts().then(function(response){
                 self.refs.selectHostDlg.show("Select a host",
                     <SelectHostWidget getSelectedItemCallback={self.getSelectedItemCallback}>{response.applicationResponseContent}</SelectHostWidget>);
             }).caught(function(e){
@@ -201,14 +222,24 @@ var ResourcePane = React.createClass({
     },
     selectHostDlgOkClickCallback: function() {
         this.refs.selectHostDlg.close();
-        var groupName = this.state.data.rtreeListMetaData.parent.rtreeListMetaData.parent.name;
-        ServiceFactory.getResourceService().deployGroupAppResourceToHost(groupName, this.state.rightClickedItem, this.state.host)
-            .then(function(response){
-                $.alert("Deploy successful!", ResourcePane.DEPLOY_RESOURCE_TITLE, true);
-            }).caught(function(response){
-                console.log(response);
-                $.errorAlert(ResourcePane.parseDetailedErrorMsg(response, ResourcePane.DEFAULT_DEPLOY_ERR_MSG));
-            });
+        if (this.state.data.rtreeListMetaData.entity === "extProperties"){
+            ServiceFactory.getResourceService().deployResourceToHost(this.state.rightClickedItem, this.state.host)
+                .then(function(response){
+                    $.alert("Deploy successful!", ResourcePane.DEPLOY_RESOURCE_TITLE, true);
+                }).caught(function(response){
+                    console.log(response);
+                    $.errorAlert(ResourcePane.parseDetailedErrorMsg(response, ResourcePane.DEFAULT_DEPLOY_ERR_MSG));
+                });
+        } else {
+            var groupName = this.state.data.rtreeListMetaData.parent.rtreeListMetaData.parent.name;
+            ServiceFactory.getResourceService().deployGroupAppResourceToHost(groupName, this.state.rightClickedItem, this.state.host)
+                .then(function(response){
+                    $.alert("Deploy successful!", ResourcePane.DEPLOY_RESOURCE_TITLE, true);
+                }).caught(function(response){
+                    console.log(response);
+                    $.errorAlert(ResourcePane.parseDetailedErrorMsg(response, ResourcePane.DEFAULT_DEPLOY_ERR_MSG));
+                });
+        }
     },
     statics: {
         parseDetailedErrorMsg: function(response, defaultErrMsg) {

@@ -1,12 +1,17 @@
 package com.siemens.cto.aem.service.resource.impl;
 
 import com.siemens.cto.aem.common.domain.model.app.Application;
+import com.siemens.cto.aem.common.domain.model.app.ApplicationControlOperation;
+import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.resource.*;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
+import com.siemens.cto.aem.common.exception.InternalErrorException;
+import com.siemens.cto.aem.common.exec.CommandOutput;
+import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.common.properties.ExternalProperties;
 import com.siemens.cto.aem.common.request.app.RemoveWebArchiveRequest;
 import com.siemens.cto.aem.common.request.app.UploadAppTemplateRequest;
@@ -14,6 +19,9 @@ import com.siemens.cto.aem.common.request.app.UploadWebArchiveRequest;
 import com.siemens.cto.aem.common.request.jvm.UploadJvmConfigTemplateRequest;
 import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
 import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateRequest;
+import com.siemens.cto.aem.control.application.command.impl.WindowsApplicationPlatformCommandProvider;
+import com.siemens.cto.aem.control.command.RemoteCommandExecutorImpl;
+import com.siemens.cto.aem.exception.CommandFailureException;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
 import com.siemens.cto.aem.persistence.jpa.domain.resource.config.template.ConfigTemplate;
 import com.siemens.cto.aem.persistence.service.*;
@@ -25,6 +33,7 @@ import com.siemens.cto.aem.service.resource.impl.handler.exception.ResourceHandl
 import com.siemens.cto.aem.template.ResourceFileGenerator;
 import com.siemens.cto.toc.files.RepositoryFileInformation;
 import com.siemens.cto.toc.files.WebArchiveManager;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
@@ -36,9 +45,11 @@ import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class ResourceServiceImpl implements ResourceService {
 
@@ -51,6 +62,9 @@ public class ResourceServiceImpl implements ResourceService {
     private final ResourcePersistenceService resourcePersistenceService;
     private final GroupPersistenceService groupPersistenceService;
     private PrivateApplicationService privateApplicationService;
+// TODO replace ApplicationControlOperation (and all operation classes) with ResourceControlOperation
+   private RemoteCommandExecutorImpl<ApplicationControlOperation> remoteCommandExecutor;
+    private Map<String, ReentrantReadWriteLock> resourceWriteLockMap;
 
     private final String encryptExpressionString = "new com.siemens.cto.infrastructure.StpCryptoService().encryptToBase64( #stringToEncrypt )";
 
@@ -77,10 +91,14 @@ public class ResourceServiceImpl implements ResourceService {
                                final PrivateApplicationService privateApplicationService,
                                final ResourceDao resourceDao,
                                final WebArchiveManager webArchiveManager,
-                               final ResourceHandler resourceHandler) {
+                               final ResourceHandler resourceHandler,
+                               final RemoteCommandExecutorImpl remoteCommandExecutor,
+                               final Map<String, ReentrantReadWriteLock> resourceWriteLockMap) {
         this.resourcePersistenceService = resourcePersistenceService;
         this.groupPersistenceService = groupPersistenceService;
         this.privateApplicationService = privateApplicationService;
+        this.remoteCommandExecutor = remoteCommandExecutor;
+        this.resourceWriteLockMap = resourceWriteLockMap;
         expressionParser = new SpelExpressionParser();
         encryptExpression = expressionParser.parseExpression(encryptExpressionString);
         this.applicationPersistenceService = applicationPersistenceService;
@@ -574,6 +592,63 @@ public class ResourceServiceImpl implements ResourceService {
     public String previewResourceContent(ResourceIdentifier resourceIdentifier, String content) {
         // TODO make the selected value object non-null based on the resource identifier
         return generateResourceFile(content, generateResourceGroup(), null);
+    }
+
+    @Override
+    public CommandOutput deployTemplateToHost(String fileName, String hostName, ResourceIdentifier resourceIdentifier) {
+        // only one at a time per jvm
+        if (!resourceWriteLockMap.containsKey(hostName)) {
+            resourceWriteLockMap.put(hostName, new ReentrantReadWriteLock());
+        }
+        resourceWriteLockMap.get(hostName).writeLock().lock();
+
+        final String badStreamMessage = "Bad Stream: ";
+        CommandOutput commandOutput;
+        try {
+            final String metaDataPath;
+            final ResourceContent resourceContent = getResourceContent(resourceIdentifier);
+            String metaDataStr = resourceContent.getMetaData();
+            ResourceTemplateMetaData resourceTemplateMetaData = new ObjectMapper().readValue(metaDataStr, ResourceTemplateMetaData.class);
+            metaDataPath = resourceTemplateMetaData.getDeployPath();
+            String resourceSourceCopy;
+            // TODO set the selected object value, for now make it null for the external properties
+            String resourceDestPath = ResourceFileGenerator.generateResourceConfig(metaDataPath, generateResourceGroup(), null) + "/" + fileName;
+            if (resourceTemplateMetaData.getContentType().equals(ContentType.APPLICATION_BINARY.contentTypeStr)) {
+                resourceSourceCopy = resourceContent.getContent();
+            } else {
+                String fileContent = resourceContent.getContent();
+                // TODO make the copy source generic (not external-properties directory)
+                String jvmResourcesNameDir = ApplicationProperties.get("paths.generated.resource.dir") + "/external-properties";
+                // TODO add timestamp to fileName
+                resourceSourceCopy = jvmResourcesNameDir + "/" + fileName;
+                createConfigFile(jvmResourcesNameDir + "/", fileName, fileContent);
+            }
+
+            LOGGER.info("Copying {} to {} on host {}", resourceSourceCopy, resourceDestPath, hostName);
+            // TODO replace ApplicationControlOperation (and all operation classes) with ResourceControlOperation
+            // TODO replace WindowsApplicationPlatformCommandProvider (and all platform command provider) with WindowsResourcePlatformCommandProvider
+            commandOutput = remoteCommandExecutor.executeRemoteCommand(null, hostName, ApplicationControlOperation.SECURE_COPY, new WindowsApplicationPlatformCommandProvider(), resourceSourceCopy, resourceDestPath);
+
+        } catch (IOException e) {
+            String message = "Failed to write file";
+            LOGGER.error(badStreamMessage + message, e);
+            throw new InternalErrorException(AemFaultType.BAD_STREAM, message, e);
+        } catch (CommandFailureException ce) {
+            String message = "Failed to copy file";
+            LOGGER.error(badStreamMessage + message, ce);
+            throw new InternalErrorException(AemFaultType.BAD_STREAM, message, ce);
+        } finally {
+            resourceWriteLockMap.get(hostName).writeLock().unlock();
+        }
+        return commandOutput;
+    }
+
+    protected void createConfigFile(String path, String configFileName, String templateContent) throws IOException {
+        File configFile = new File(path + configFileName);
+        if (configFileName.endsWith(".bat")) {
+            templateContent = templateContent.replaceAll("\n", "\r\n");
+        }
+        FileUtils.writeStringToFile(configFile, templateContent);
     }
 
     @Override

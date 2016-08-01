@@ -120,4 +120,10 @@ public interface GroupService {
      * @return all the host names of a group
      */
     List<String> getHosts(String groupName);
+
+    /**
+     * Return all the unique host names configured for all the groups
+     * @return a list of all the unique host names
+     */
+    List<String> getAllHosts();
 }
