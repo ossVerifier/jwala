@@ -15,10 +15,10 @@ var Tabs = React.createClass({displayName:"Tabs",
    	    if(this.isMounted()) {
           var newHash = location.hash;
           var newTabIndex = this.lookupIndexFromHash(newHash, this.props.depth /*nesting depth*/);
-          if(newTabIndex !== undefined && newTabIndex != this.state.active) { 
+          if(newTabIndex !== undefined && newTabIndex != this.state.active) {
             this.setState({active: newTabIndex})
           }
-        } else { 
+        } else {
           /* higher level tab managed the state change */
           $(window).off('hashchange', this.handleBack);
         }
@@ -36,7 +36,7 @@ var Tabs = React.createClass({displayName:"Tabs",
     componentWillUnmount: function() {
        $(window).off('hashchange', this.handleBack);
     },
-    componentDidMount: function() { 
+    componentDidMount: function() {
        $(window).on('hashchange', this.handleBack);
        document.title = this.state.titlePrefix + this.props.items[this.state.active].title;
     },
@@ -121,7 +121,11 @@ var TabsSwitcher = React.createClass({
                 var className = self.props.active === index ? "current" : "";
                 className = className + (item.disabled === true ? " ui-state-disabled" : "");
                 items.push(React.createElement("li", {key:"li"+index, className: className},
-                               React.createElement("a", {key:"a"+index, onClick:self.onClick.bind(self, index)}, item.title)));
+                               React.createElement("a", {key:"a"+index, onClick: function(){
+                                   if (!item.disabled) {
+                                     self.onClick(index);
+                                   }
+                               }}, item.title)));
             });
             return React.createElement("div", null, items);
 
