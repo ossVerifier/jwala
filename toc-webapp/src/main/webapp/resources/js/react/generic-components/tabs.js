@@ -42,8 +42,8 @@ var Tabs = React.createClass({displayName:"Tabs",
         var className = "tabs-" + this.props.theme;
         return React.createElement("div", {className: "Tabs"},
                    React.createElement("ol", {className: className},
-                       React.createElement(TabsSwitcher, {items: this.state.tabs, active: this.state.active, onTabClick: this.handleTabClick}),
-                       React.createElement(TabsContent, {theme: className, items: this.state.tabs, active: this.state.active})));
+                       React.createElement(TabsSwitcher, {items: this.state.tabs, active: this.state.active, onTabClick: this.handleTabClick})),
+                   React.createElement(TabsContent, {theme: className, items: this.state.tabs, active: this.state.active}));
     },
     handleTabClick: function(index) {
         this.setState({active: index})
