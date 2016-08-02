@@ -118,11 +118,9 @@ var webServerService = {
                                      errorCallback,
                                      false);
     },
-
     drainWebServer: function(groupName, webserverName) {
-            return serviceFoundation.post("v1.0/balancermanager/" + encodeURIComponent(groupName) + "/" + encodeURIComponent(webserverName) + "/");
+            return serviceFoundation.promisedPut("v1.0/balancermanager/" + encodeURIComponent(groupName) + "/" + encodeURIComponent(webserverName) + "/");
     },
-
     getResources : function(webServerName, responseCallback) {
         return serviceFoundation.get("v1.0/webservers/" + encodeURIComponent(webServerName) + "/resources/name", "json", responseCallback);
     },

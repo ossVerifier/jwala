@@ -588,4 +588,13 @@ public class GroupServiceImpl implements GroupService {
     public List<String> getHosts(final String groupName) {
         return groupPersistenceService.getHosts(groupName);
     }
+
+    @Override
+    public List<String> getAllHosts() {
+        Set<String> allHosts = new TreeSet<>();
+        for (Group group : groupPersistenceService.getGroups()){
+            allHosts.addAll(groupPersistenceService.getHosts(group.getName()));
+        }
+        return new ArrayList<>(allHosts);
+    }
 }

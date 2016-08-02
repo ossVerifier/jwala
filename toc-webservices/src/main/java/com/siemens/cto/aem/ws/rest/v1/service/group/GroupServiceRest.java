@@ -273,4 +273,12 @@ public interface GroupServiceRest {
     @GET
     @Path("/{groupName}/hosts")
     Response getHosts(@PathParam("groupName") String groupName);
+
+    /**
+     * Return all the unique host names configured for all the groups
+     * @return a list of all the unique host names
+     */
+    @GET
+    @Path("/hosts")
+    Response getAllHosts();
 }

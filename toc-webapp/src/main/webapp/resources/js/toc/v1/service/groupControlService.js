@@ -80,7 +80,7 @@ var groupControlService = function() {
             return generate(groupId, "jvms", successCallback, errorCallback)
         },
         drainWebServers : function(groupName) {
-                    return drain(groupName, "draining");
+                    return drain(groupName, "starting to drain");
         }
     };
 

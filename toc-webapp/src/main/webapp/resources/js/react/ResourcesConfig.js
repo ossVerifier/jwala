@@ -275,7 +275,8 @@ var ResourcesConfig = React.createClass({
                 }
             };
             data = {
-                rtreeListMetaData: rtreeListMetaData
+                rtreeListMetaData: rtreeListMetaData,
+                name: "External Properties"
             };
 
         }
@@ -669,4 +670,3 @@ var SelectMetaDataAndTemplateFilesWidget = React.createClass({
         }
     }
 });
-

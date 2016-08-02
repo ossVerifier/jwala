@@ -154,5 +154,8 @@ var groupService = {
     },
     getHosts: function(groupName) {
         return serviceFoundation.promisedGet("v1.0/groups/" + encodeURIComponent(groupName) + "/hosts");
+    },
+    getAllHosts: function() {
+        return serviceFoundation.promisedGet("v1.0/groups/hosts");
     }
 }

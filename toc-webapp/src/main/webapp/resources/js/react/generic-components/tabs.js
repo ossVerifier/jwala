@@ -15,10 +15,10 @@ var Tabs = React.createClass({displayName:"Tabs",
    	    if(this.isMounted()) {
           var newHash = location.hash;
           var newTabIndex = this.lookupIndexFromHash(newHash, this.props.depth /*nesting depth*/);
-          if(newTabIndex !== undefined && newTabIndex != this.state.active) { 
+          if(newTabIndex !== undefined && newTabIndex != this.state.active) {
             this.setState({active: newTabIndex})
           }
-        } else { 
+        } else {
           /* higher level tab managed the state change */
           $(window).off('hashchange', this.handleBack);
         }
@@ -36,21 +36,22 @@ var Tabs = React.createClass({displayName:"Tabs",
     componentWillUnmount: function() {
        $(window).off('hashchange', this.handleBack);
     },
-    componentDidMount: function() { 
+    componentDidMount: function() {
        $(window).on('hashchange', this.handleBack);
        document.title = this.state.titlePrefix + this.props.items[this.state.active].title;
     },
-    render: function() {
-        return React.DOM.div(null,
-                    React.DOM.ol({className:this.state.themeName},
-                        TabsSwitcher({items:this.state.tabs, active:this.state.active,
-                                      onTabClick:this.handleTabClick})
-                    ),
-                    TabsContent({theme:this.state.themeName,
-                                 items:this.state.tabs,
-                                 active:this.state.active})
-               );
-    },
+   render: function() {
+           console.log(MainArea.isAdminRole);
+           return React.DOM.div(null,
+                       React.DOM.ol({className:this.state.themeName},
+                           TabsSwitcher({items:this.state.tabs, active:this.state.active,
+                                         onTabClick: (MainArea.isAdminRole === true ? this.handleTabClick : "")})
+                       ),
+                       TabsContent({theme:this.state.themeName,
+                                    items:this.state.tabs,
+                                    active:this.state.active})
+                  );
+       },
     handleTabClick: function(index) {
         this.setState({active: index})
         var newhash = this.mergeIndexIntoHash(index, window.location.hash, this.props.depth);
@@ -113,16 +114,22 @@ var Tabs = React.createClass({displayName:"Tabs",
 var TabsSwitcher = React.createClass({
     displayName:"TabsSwitcher",
     render: function() {
-        var active = this.props.active;
-        var items = [];
-        var self = this;
-        this.props.items.map(function(item, index) {
-            items.push(React.createElement("li", {key:"li"+index, className:(self.props.active === index ? "current" : "")},
-                           React.createElement("a", {key:"a"+index, onClick:self.onClick.bind(self, index)}, item.title)));
-        });
-        return React.createElement("div", null, items);
+            var active = this.props.active;
+            var items = [];
+            var self = this;
+            this.props.items.map(function(item, index) {
+                var className = self.props.active === index ? "current" : "";
+                className = className + (item.disabled === true ? " ui-state-disabled" : "");
+                items.push(React.createElement("li", {key:"li"+index, className: className},
+                               React.createElement("a", {key:"a"+index, onClick: function(){
+                                   if (!item.disabled) {
+                                     self.onClick(index);
+                                   }
+                               }}, item.title)));
+            });
+            return React.createElement("div", null, items);
 
-    },
+        },
     onClick: function(index) {
         if (this.props.active !== index) {
             // TODO: Find another way of doing this without using an external static variable.

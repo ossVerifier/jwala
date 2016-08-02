@@ -9,18 +9,22 @@ import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.common.domain.model.path.FileSystemPath;
-import com.siemens.cto.aem.common.domain.model.resource.EntityType;
-import com.siemens.cto.aem.common.domain.model.resource.ResourceContent;
-import com.siemens.cto.aem.common.domain.model.resource.ResourceGroup;
-import com.siemens.cto.aem.common.domain.model.resource.ResourceIdentifier;
+import com.siemens.cto.aem.common.domain.model.resource.*;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState;
+import com.siemens.cto.aem.common.exception.InternalErrorException;
+import com.siemens.cto.aem.common.exec.CommandOutput;
+import com.siemens.cto.aem.common.exec.ExecCommand;
+import com.siemens.cto.aem.common.exec.ExecReturnCode;
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.common.request.app.UploadAppTemplateRequest;
 import com.siemens.cto.aem.common.request.app.UploadWebArchiveRequest;
 import com.siemens.cto.aem.common.request.jvm.UploadJvmConfigTemplateRequest;
 import com.siemens.cto.aem.common.request.webserver.UploadWebServerTemplateRequest;
+import com.siemens.cto.aem.control.command.PlatformCommandProvider;
+import com.siemens.cto.aem.control.command.RemoteCommandExecutorImpl;
+import com.siemens.cto.aem.exception.CommandFailureException;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
 import com.siemens.cto.aem.persistence.jpa.domain.resource.config.template.ConfigTemplate;
 import com.siemens.cto.aem.persistence.service.*;
@@ -39,11 +43,13 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.internal.verification.Times;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
@@ -52,6 +58,7 @@ import static org.mockito.Matchers.anyMap;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.anyLong;
+import static org.mockito.Mockito.isNull;
 import static org.mockito.Mockito.*;
 
 /**
@@ -94,6 +101,11 @@ public class ResourceServiceImplTest {
     @Mock
     private ResourceHandler mockResourceHandler;
 
+    @Mock
+    private RemoteCommandExecutorImpl mockRemoteCommandExector;
+
+    Map<String, ReentrantReadWriteLock> resourceWriteLockMap = new HashMap<>();
+
     @Before
     public void setup() {
         // It is good practice to start with a clean sheet of paper before each test that is why resourceService is
@@ -101,7 +113,7 @@ public class ResourceServiceImplTest {
         MockitoAnnotations.initMocks(this);
         resourceService = new ResourceServiceImpl(mockResourcePersistenceService, mockGroupPesistenceService,
                 mockAppPersistenceService, mockJvmPersistenceService, mockWebServerPersistenceService,
-                mockPrivateApplicationService, mockResourceDao, mockWebArchiveManager, mockResourceHandler);
+                mockPrivateApplicationService, mockResourceDao, mockWebArchiveManager, mockResourceHandler, mockRemoteCommandExector, resourceWriteLockMap);
 
         when(mockJvmPersistenceService.findJvmByExactName(eq("someJvm"))).thenReturn(mock(Jvm.class));
 
@@ -422,162 +434,6 @@ public class ResourceServiceImplTest {
         assertEquals(expectedMap, result);
     }
 
-// TODO: Reuse in the resource handler tests
-//    @Test
-//    public void testCreateJvmResource() {
-//        ResourceTemplateMetaData metaData = new ResourceTemplateMetaData();
-//        metaData.setContentType(ContentType.APPLICATION_BINARY.contentTypeStr);
-//        metaData.setEntity(new Entity());
-//
-//        resourceService.createJvmResource(metaData, new ByteArrayInputStream("someData".getBytes()), "someJvm");
-//        verify(mockJvmPersistenceService).uploadJvmTemplateXml(any(UploadJvmConfigTemplateRequest.class));
-//    }
-//
-//    @Test
-//    public void testCreateGroupLevelJvmResource() throws IOException {
-//        ResourceTemplateMetaData metaData = new ResourceTemplateMetaData();
-//        metaData.setContentType(ContentType.APPLICATION_BINARY.contentTypeStr);
-//        final Entity entity = new Entity();
-//        entity.setGroup("someGroup");
-//        metaData.setEntity(entity);
-//
-//        final Group mockGroup = mock(Group.class);
-//        final Jvm mockJvm = mock(Jvm.class);
-//        final Set<Jvm> mockJvmSet = new HashSet<>();
-//        mockJvmSet.add(mockJvm);
-//        when(mockGroup.getJvms()).thenReturn(mockJvmSet);
-//        when(mockGroupPesistenceService.getGroup(eq("someGroup"))).thenReturn(mockGroup);
-//
-//        resourceService.createGroupLevelJvmResource(metaData, new ByteArrayInputStream("someData".getBytes()), "someGroup");
-//        verify(mockJvmPersistenceService).uploadJvmTemplateXml(any(UploadJvmConfigTemplateRequest.class));
-//        verify(mockGroupPesistenceService).populateGroupJvmTemplates(eq("someGroup"), anyList());
-//    }
-//
-//    @Test
-//    public void testCreateWebServerResource() {
-//        ResourceTemplateMetaData metaData = new ResourceTemplateMetaData();
-//        metaData.setContentType(ContentType.APPLICATION_BINARY.contentTypeStr);
-//        metaData.setEntity(new Entity());
-//        metaData.setDeployPath("c:\\somewhere");
-//
-//        final WebServer mockWebServer = mock(WebServer.class);
-//        when(mockWebServerPersistenceService.findWebServerByName(anyString())).thenReturn(mockWebServer);
-//
-//        resourceService.createWebServerResource(metaData, new ByteArrayInputStream("someData".getBytes()), "someWebServer",
-//                new User("jedi"));
-//        verify(mockWebServerPersistenceService).uploadWebServerConfigTemplate(any(UploadWebServerTemplateRequest.class),
-//                anyString(), anyString());
-//    }
-//
-//    @Test
-//    public void testCreateGroupLevelWebServerResource() throws IOException {
-//        ResourceTemplateMetaData metaData = new ResourceTemplateMetaData();
-//        metaData.setContentType(ContentType.APPLICATION_BINARY.contentTypeStr);
-//        final Entity entity = new Entity();
-//        entity.setGroup("someGroup");
-//        metaData.setEntity(entity);
-//        metaData.setDeployPath("c:\\somewhere");
-//
-//        final Group mockGroup = mock(Group.class);
-//        final WebServer mockWebServer = mock(WebServer.class);
-//        final Set<WebServer> mockWebServerSet = new HashSet<>();
-//        mockWebServerSet.add(mockWebServer);
-//        when(mockGroup.getWebServers()).thenReturn(mockWebServerSet);
-//        when(mockGroupPesistenceService.getGroupWithWebServers("someGroup")).thenReturn(mockGroup);
-//
-//        resourceService.createGroupLevelWebServerResource(metaData, new ByteArrayInputStream("someData".getBytes()),
-//                "someGroup", new User("Jedi"));
-//
-//        verify(mockWebServerPersistenceService).uploadWebServerConfigTemplate(any(UploadWebServerTemplateRequest.class), anyString(), anyString());
-//        verify(mockGroupPesistenceService).populateGroupWebServerTemplates(anyString(), anyMap());
-//    }
-//
-//    @Test
-//    public void testCreateAppResource() {
-//        ResourceTemplateMetaData metaData = new ResourceTemplateMetaData();
-//        metaData.setContentType(ContentType.APPLICATION_BINARY.contentTypeStr);
-//
-//        resourceService.createAppResource(metaData, new ByteArrayInputStream("someData".getBytes()), "someJvm",
-//                "someApp");
-//
-//        final Jvm mockJvm = mock(Jvm.class);
-//        when(mockJvmPersistenceService.findJvmByExactName("someJvm")).thenReturn(mockJvm);
-//        verify(mockAppPersistenceService).getApplication(anyString());
-//        verify(mockAppPersistenceService).uploadAppTemplate(any(UploadAppTemplateRequest.class), any(JpaJvm.class));
-//    }
-//
-//    @Test
-//    public void testCreateGroupedLevelAppResource() throws IOException {
-//        ResourceTemplateMetaData metaData = new ResourceTemplateMetaData();
-//        metaData.setContentType(ContentType.APPLICATION_BINARY.contentTypeStr);
-//        final Entity entity = new Entity();
-//        entity.setGroup("someGroup");
-//        entity.setDeployToJvms(true);
-//        metaData.setEntity(entity);
-//
-//        final Group mockGroup = mock(Group.class);
-//
-//        final Jvm mockJvm = mock(Jvm.class);
-//        final Set<Jvm> mockJvmSet = new HashSet<>();
-//        mockJvmSet.add(mockJvm);
-//
-//        when(mockGroup.getJvms()).thenReturn(mockJvmSet);
-//
-//        final Application mockApplication = mock(Application.class);
-//        when(mockApplication.getName()).thenReturn("someApp");
-//        final List<Application> mockAppList = new ArrayList<>();
-//        mockAppList.add(mockApplication);
-//        when(mockAppPersistenceService.findApplicationsBelongingTo(anyString())).thenReturn(mockAppList);
-//        when(mockGroupPesistenceService.getGroup(anyString())).thenReturn(mockGroup);
-//
-//        resourceService.createGroupedLevelAppResource(metaData, new ByteArrayInputStream("someData".getBytes()), "someApp");
-//        verify(mockJvmPersistenceService).getJpaJvm(any(Identifier.class), eq(false));
-//        verify(mockAppPersistenceService).uploadAppTemplate(any(UploadAppTemplateRequest.class), any(JpaJvm.class));
-//        verify(mockGroupPesistenceService).populateGroupAppTemplate(eq("someGroup"), eq("someApp"), anyString(), anyString(),
-//                anyString());
-//        verify(mockAppPersistenceService, new Times(0)).updateWarInfo(eq("someApp"), anyString(), anyString());
-//    }
-//
-//    @Test
-//    public void testCreateGroupedLevelAppWarResource() throws IOException {
-//        ResourceTemplateMetaData metaData = new ResourceTemplateMetaData();
-//        metaData.setContentType(ContentType.APPLICATION_BINARY.contentTypeStr);
-//        final Entity entity = new Entity();
-//        entity.setGroup("someGroup");
-//        entity.setDeployToJvms(true);
-//        metaData.setEntity(entity);
-//
-//        final Group mockGroup = mock(Group.class);
-//
-//        final Jvm mockJvm = mock(Jvm.class);
-//        final Set<Jvm> mockJvmSet = new HashSet<>();
-//        mockJvmSet.add(mockJvm);
-//
-//        when(mockGroup.getJvms()).thenReturn(mockJvmSet);
-//
-//        final Application mockApplication = mock(Application.class);
-//        when(mockApplication.getName()).thenReturn("someApp");
-//        final List<Application> mockAppList = new ArrayList<>();
-//        mockAppList.add(mockApplication);
-//        when(mockAppPersistenceService.findApplicationsBelongingTo(anyString())).thenReturn(mockAppList);
-//        when(mockGroupPesistenceService.getGroup(anyString())).thenReturn(mockGroup);
-//
-//        final RepositoryFileInformation mockRepositoryFileInformation = mock(RepositoryFileInformation.class);
-//        final Path mockPath = mock(Path.class);
-//        when(mockPath.toString()).thenReturn("app.war");
-//        when(mockRepositoryFileInformation.getPath()).thenReturn(mockPath);
-//        when(mockPrivateApplicationService.uploadWebArchiveData(any(UploadWebArchiveRequest.class)))
-//                .thenReturn(mockRepositoryFileInformation);
-//        when(mockAppPersistenceService.getApplication(eq("someApp"))).thenReturn(mockApplication);
-//
-//        resourceService.createGroupedLevelAppResource(metaData, new ByteArrayInputStream("someData".getBytes()), "someApp");
-//        verify(mockJvmPersistenceService).getJpaJvm(any(Identifier.class), eq(false));
-//        verify(mockAppPersistenceService).uploadAppTemplate(any(UploadAppTemplateRequest.class), any(JpaJvm.class));
-//        verify(mockGroupPesistenceService).populateGroupAppTemplate(eq("someGroup"), eq("someApp"), anyString(), anyString(),
-//                anyString());
-//        verify(mockAppPersistenceService).updateWarInfo(eq("someApp"), anyString(), anyString());
-//    }
-
     @Test
     public void testUploadExternalProperties() {
         InputStream mockInputStream = mock(InputStream.class);
@@ -642,5 +498,89 @@ public class ResourceServiceImplTest {
         String result = resourceService.getExternalPropertiesFile();
         verify(mockResourceDao).getResourceNames((ResourceIdentifier) isNull(), eq(EntityType.EXT_PROPERTIES));
         assertEquals("external.properties", resultList.get(0));
+    }
+
+    @Test
+    public void testDeployResourceTemplateToHost() throws CommandFailureException {
+        ResourceIdentifier mockResourceIdentifier = mock(ResourceIdentifier.class);
+        ConfigTemplate mockConfigTemplate = mock(ConfigTemplate.class);
+
+        when(mockResourceHandler.fetchResource(any(ResourceIdentifier.class))).thenReturn(mockConfigTemplate);
+        when(mockConfigTemplate.getMetaData()).thenReturn("{\"deployPath\":\"c:/fake/path\", \"deployFileName\":\"deploy-me.txt\"}");
+        when(mockConfigTemplate.getTemplateContent()).thenReturn("key=value");
+        when(mockRemoteCommandExector.executeRemoteCommand(anyString(), anyString(), anyObject(), any(PlatformCommandProvider.class), anyString(), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(0), "SUCCESS", ""));
+
+        CommandOutput result = resourceService.deployTemplateToHost("external.properties", "test-host", mockResourceIdentifier);
+        assertEquals(new Integer(0), result.getReturnCode().getReturnCode());
+    }
+
+
+    @Test
+    public void testDeployResourceTemplateToAllHosts() throws CommandFailureException {
+        ResourceIdentifier mockResourceIdentifier = mock(ResourceIdentifier.class);
+        ConfigTemplate mockConfigTemplate = mock(ConfigTemplate.class);
+        List<Group> groupList = new ArrayList<>();
+        Group mockGroup = mock(Group.class);
+        groupList.add(mockGroup);
+        List<String> hostsList = new ArrayList<>();
+        hostsList.add("test-host-1");
+        hostsList.add("test-host-2");
+
+        when(mockResourceHandler.fetchResource(any(ResourceIdentifier.class))).thenReturn(mockConfigTemplate);
+        when(mockConfigTemplate.getMetaData()).thenReturn("{\"deployPath\":\"c:/fake/path\", \"deployFileName\":\"deploy-me.txt\"}");
+        when(mockConfigTemplate.getTemplateContent()).thenReturn("key=value");
+        when(mockRemoteCommandExector.executeRemoteCommand(anyString(), anyString(), anyObject(), any(PlatformCommandProvider.class), anyString(), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(0), "SUCCESS", ""));
+        when(mockGroupPesistenceService.getGroups()).thenReturn(groupList);
+        when(mockGroupPesistenceService.getHosts(anyString())).thenReturn(hostsList);
+        when(mockGroup.getName()).thenReturn("test-group");
+
+        resourceService.deployTemplateToAllHosts("external.properties", mockResourceIdentifier);
+        verify(mockRemoteCommandExector, times(2)).executeRemoteCommand(anyString(), anyString(), anyObject(), any(PlatformCommandProvider.class), anyString(), anyString());
+    }
+
+    @Test (expected = InternalErrorException.class)
+    public void testDeployResourceTemplateToAllHostsFails() throws CommandFailureException {
+        ResourceIdentifier mockResourceIdentifier = mock(ResourceIdentifier.class);
+        ConfigTemplate mockConfigTemplate = mock(ConfigTemplate.class);
+        List<Group> groupList = new ArrayList<>();
+        Group mockGroup = mock(Group.class);
+        groupList.add(mockGroup);
+        List<String> hostsList = new ArrayList<>();
+        hostsList.add("test-host-1");
+        hostsList.add("test-host-2");
+
+        when(mockResourceHandler.fetchResource(any(ResourceIdentifier.class))).thenReturn(mockConfigTemplate);
+        when(mockConfigTemplate.getMetaData()).thenReturn("{\"deployPath\":\"c:/fake/path\", \"deployFileName\":\"deploy-me.txt\"}");
+        when(mockConfigTemplate.getTemplateContent()).thenReturn("key=value");
+        when(mockRemoteCommandExector.executeRemoteCommand(anyString(), anyString(), anyObject(), any(PlatformCommandProvider.class), anyString(), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(1), "", "Command failed"));
+        when(mockGroupPesistenceService.getGroups()).thenReturn(groupList);
+        when(mockGroupPesistenceService.getHosts(anyString())).thenReturn(hostsList);
+        when(mockGroup.getName()).thenReturn("test-group");
+
+        resourceService.deployTemplateToAllHosts("external.properties", mockResourceIdentifier);
+    }
+
+    @Test (expected = InternalErrorException.class)
+    public void testDeployResourceTemplateToHostThrowsCommandFailureException() throws CommandFailureException {
+        ResourceIdentifier mockResourceIdentifier = mock(ResourceIdentifier.class);
+        ConfigTemplate mockConfigTemplate = mock(ConfigTemplate.class);
+
+        when(mockResourceHandler.fetchResource(any(ResourceIdentifier.class))).thenReturn(mockConfigTemplate);
+        when(mockConfigTemplate.getMetaData()).thenReturn("{\"deployPath\":\"c:/fake/path\", \"deployFileName\":\"deploy-me.txt\"}");
+        when(mockConfigTemplate.getTemplateContent()).thenReturn("key=value");
+        when(mockRemoteCommandExector.executeRemoteCommand(anyString(), anyString(), anyObject(), any(PlatformCommandProvider.class), anyString(), anyString())).thenThrow(new CommandFailureException(new ExecCommand("Failed command"), new Throwable()));
+
+        resourceService.deployTemplateToHost("external.properties", "test-host", mockResourceIdentifier);
+    }
+
+    @Test
+    public void testUploadResource() {
+        final RepositoryFileInformation mockRepositoryFileInformation = mock(RepositoryFileInformation.class);
+        final Path mockPath = mock(Path.class);
+        when(mockPath.toString()).thenReturn("thePath");
+        when(mockRepositoryFileInformation.getPath()).thenReturn(mockPath);
+        when(mockPrivateApplicationService.uploadWebArchiveData(any(UploadWebArchiveRequest.class)))
+                .thenReturn(mockRepositoryFileInformation);
+        assertEquals("thePath", resourceService.uploadResource(mock(ResourceTemplateMetaData.class), new ByteArrayInputStream("data".getBytes())));
     }
 }

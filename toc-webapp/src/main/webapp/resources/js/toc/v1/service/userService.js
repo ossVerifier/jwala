@@ -13,5 +13,13 @@ var userService = {
         return serviceFoundation.post("v1.0/user/logout", "json", "", function(){
             window.location = tocVars.contextPath;
         });
+    },
+
+    getAuthorization: function(){
+      return serviceFoundation.promisedGet("v1.0/admin/isTOCAuthorizationEnabled?" + "", "json");
+    },
+
+    getIsAdmin: function(){
+      return serviceFoundation.promisedGet("v1.0/user/isUserAdmin?" + "", "json");
     }
 };

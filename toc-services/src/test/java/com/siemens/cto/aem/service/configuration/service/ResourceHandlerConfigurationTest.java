@@ -16,8 +16,10 @@ import com.siemens.cto.aem.persistence.service.*;
 import com.siemens.cto.aem.service.resource.impl.handler.WebServerResourceHandler;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -63,6 +65,10 @@ public class ResourceHandlerConfigurationTest {
 
     @Before
     public void setup() {
+        Mockito.reset(MockConfig.MOCK_APPLICATION_PERSISTENCE_SERVICE);
+        Mockito.reset(MockConfig.MOCK_GROUP_PERSISTENCE_SERVICE);
+        Mockito.reset(MockConfig.MOCK_JVM_PERSISTENCE_SERVICE);
+        Mockito.reset(MockConfig.MOCK_WEB_SERVER_PERSISTENCE_SERVICE);
         Mockito.reset(MockConfig.MOCK_RESOURCE_DAO);
 
         metaData = new ResourceTemplateMetaData();
@@ -173,6 +179,7 @@ public class ResourceHandlerConfigurationTest {
         when(mockGroup.getWebServers()).thenReturn(webServers);
         when(MockConfig.MOCK_GROUP_PERSISTENCE_SERVICE.getGroupWithWebServers(anyString())).thenReturn(mockGroup);
         resourceHandler.createResource(getGroupLevelWebServerResourceIdentifier(), metaData, new ByteArrayInputStream("data".getBytes()));
+        verify(MockConfig.MOCK_GROUP_PERSISTENCE_SERVICE).getGroupWithWebServers(anyString());
         verify(MockConfig.MOCK_WEB_SERVER_PERSISTENCE_SERVICE).uploadWebServerConfigTemplate(any(UploadWebServerTemplateRequest.class),
                 anyString(), anyString());
     }
@@ -207,6 +214,30 @@ public class ResourceHandlerConfigurationTest {
         verify(MockConfig.getMockGroupPersistenceService()).populateGroupAppTemplate(anyString(), anyString(), anyString(),
                 anyString(), anyString());
         verify(MockConfig.MOCK_APPLICATION_PERSISTENCE_SERVICE).uploadAppTemplate(any(UploadAppTemplateRequest.class), any(JpaJvm.class));
+    }
+
+    @Test
+    public void testCreateGroupLevelWebAppBinaryResourceHandler() {
+        final Group mockGroup = mock(Group.class);
+        final Set<Jvm> jvms = new HashSet<>();
+        jvms.add(mock(Jvm.class));
+        when(mockGroup.getJvms()).thenReturn(jvms);
+        when(MockConfig.MOCK_GROUP_PERSISTENCE_SERVICE.getGroup(anyString())).thenReturn(mockGroup);
+        final List<Application> applications = new ArrayList<>();
+        final Application mockApplication = mock(Application.class);
+        when(mockApplication.getName()).thenReturn("sampleApp");
+        applications.add(mockApplication);
+        when(MockConfig.MOCK_APPLICATION_PERSISTENCE_SERVICE.findApplicationsBelongingTo(anyString())).thenReturn(applications);
+        final Entity entity = new Entity();
+        entity.setDeployToJvms(true);
+        metaData.setEntity(entity);
+        metaData.setContentType("application/binary");
+        when(MockConfig.MOCK_APPLICATION_PERSISTENCE_SERVICE.getApplication(anyString())).thenReturn(mock(Application.class));
+        resourceHandler.createResource(getGroupLevelAppResourceIdentifier(), metaData, new ByteArrayInputStream("some.war".getBytes()));
+        verify(MockConfig.getMockGroupPersistenceService()).populateGroupAppTemplate(anyString(), anyString(), anyString(),
+                anyString(), anyString());
+        verify(MockConfig.MOCK_APPLICATION_PERSISTENCE_SERVICE).uploadAppTemplate(any(UploadAppTemplateRequest.class), any(JpaJvm.class));
+        verify(MockConfig.MOCK_APPLICATION_PERSISTENCE_SERVICE).updateWarInfo(anyString(), anyString(), anyString());
     }
 
     private ResourceIdentifier getWebServerResourceIdentifier() {

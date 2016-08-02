@@ -144,7 +144,8 @@ var ResourceEditor = React.createClass({
             }
         };
         var data = {
-            rtreeListMetaData: rtreeListMetaData
+            rtreeListMetaData: rtreeListMetaData,
+            name: "External Properties"
         };
         var parent = {
             key:"extPropertiesParent",

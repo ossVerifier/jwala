@@ -5,9 +5,9 @@ import com.siemens.cto.aem.common.domain.model.resource.ResourceGroup;
 import com.siemens.cto.aem.common.domain.model.resource.ResourceIdentifier;
 import com.siemens.cto.aem.common.domain.model.resource.ResourceTemplateMetaData;
 import com.siemens.cto.aem.common.domain.model.user.User;
+import com.siemens.cto.aem.common.exec.CommandOutput;
 import com.siemens.cto.aem.service.resource.impl.CreateResourceResponseWrapper;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
@@ -229,5 +229,26 @@ public interface ResourceService {
      */
     String uploadResource(ResourceTemplateMetaData resourceTemplateMetaData, InputStream resourceDataIn);
 
+    /**
+     * Preview the resource content
+     * @param resourceHierarchyParam the group, JVM, web server, and web application names that identify the resource
+     * @param content the untokenized template content
+     * @return the tokenized template content
+     */
     String previewResourceContent(ResourceIdentifier resourceHierarchyParam, String content);
+
+    /**
+     * Deploy the resource to a host
+     * @param fileName the name of the template to be deployed
+     * @param hostName the name of the host where the template will be deployed
+     * @param resourceIdentifier the group, JVM, web server, and web application names that identify the resource
+     */
+    CommandOutput deployTemplateToHost(String fileName, String hostName, ResourceIdentifier resourceIdentifier);
+
+    /**
+     * Deploy the resource to all the hosts configured in TOC
+     * @param fileName the name of the template to be deployed
+     * @param resourceIdentifier the group, JVM, web server, and web application names that identify the resource
+     */
+    void deployTemplateToAllHosts(String fileName, ResourceIdentifier resourceIdentifier);
 }

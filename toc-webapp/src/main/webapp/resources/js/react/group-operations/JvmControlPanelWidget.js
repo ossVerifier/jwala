@@ -28,7 +28,7 @@ var JvmControlPanelWidget = React.createClass({
                              spanClassName="ui-icon ui-icon-gear-custom"
                              onClick={this.generateConfig}
                              title="Generate JVM resources files and deploy as a service"
-                             disabled={tocVars["resourcesEnabled"] === "false"}
+                             disabled = {!MainArea.isAdminRole}
                              disabledTitle="Resource generation is disabled for this version"/>
 
                    <RButton ref="heapDumpBtn"

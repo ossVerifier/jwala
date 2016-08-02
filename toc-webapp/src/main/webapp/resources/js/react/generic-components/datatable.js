@@ -1,14 +1,14 @@
 /** @jsx React.DOM */
 var TocDataTable = React.createClass({
-    getInitialState: function() {
-        return {displayLength: null};
+    getInitialState: function () {
+        return { displayLength: null };
     },
     dataTable: null,
-    render: function() {
+    render: function () {
         if (this.props.className !== undefined) {
-            $.fn.dataTableExt.oStdClasses = {sTable:this.props.className /* This will not be set if applyThemeRoller is true */,
-                                             sSortAsc:$.fn.dataTableExt.oStdClasses.sSortAsc,
-                                             sSortDesc:$.fn.dataTableExt.oStdClasses.sSortDesc};
+            $.fn.dataTableExt.oStdClasses = { sTable: this.props.className /* This will not be set if applyThemeRoller is true */
+                , sSortAsc: $.fn.dataTableExt.oStdClasses.sSortAsc,
+                sSortDesc: $.fn.dataTableExt.oStdClasses.sSortDesc };
         }
 
         var headerComponents = [];
@@ -17,51 +17,33 @@ var TocDataTable = React.createClass({
             for (var i = 0; i < this.props.headerComponents.length; i++) {
                 var obj = this.props.headerComponents[i];
                 if (obj.tocType === "button") {
-                    headerComponents.push(new DataTableButton({id:this.props.tableId + "_" + obj.id,
-                                                               itemId:"whatever",
-                                                               label:obj.btnLabel,
-                                                               className:"inline-block",
-                                                               callback:obj.btnCallback}));
+                    headerComponents.push(new DataTableButton({ id: this.props.tableId + "_" + obj.id,
+                        itemId: "whatever",
+                        label: obj.btnLabel,
+                        className: "inline-block",
+                        callback: obj.btnCallback }));
                 } else if (obj.tocType === "label") {
                     var labelId = null;
                     if (obj.id !== undefined) {
                         // Generate an id if obj has an id
                         labelId = this.props.tableId + "_" + obj.id;
                     }
-                    headerComponents.push(React.DOM.div({id:labelId, className:obj.className}, obj.text));
+                    headerComponents.push(React.DOM.div({ id: labelId, className: obj.className }, obj.text));
                 } else if (obj.tocType === "space") {
                     headerComponents.push(" ");
                 }
             }
-            headerComponents.push(React.DOM.span({className:"accordion-title-text-position"}, this.props.title));
-            header = React.DOM.div({className:"accordion-title nowrap text-align-right", style: this.props.title !== undefined  ? {} : {display:'none'}},
-                                                                  headerComponents)
+            headerComponents.push(React.DOM.span({ className: "accordion-title-text-position" }, this.props.title));
+            header = React.DOM.div({ className: "accordion-title nowrap text-align-right", style: this.props.title !== undefined ? {} : { display: 'none' } }, headerComponents);
         } else {
             header = this.props.title === undefined ? "" : new React.DOM.h3(null, this.props.title);
         }
 
-        return React.DOM.div({style:this.props.hide === true ? {display:"none"} : {}, className:this.props.divTypeContainerClassName},
-                             header,
-                             React.DOM.table({id: this.props.tableId}))
+        return React.DOM.div({ style: this.props.hide === true ? { display: "none" } : {}, className: this.props.divTypeContainerClassName }, header, React.DOM.table({ id: this.props.tableId }));
     },
-    componentDidUpdate: function() {
+    componentDidUpdate: function () {
         if (this.dataTable === null) {
-            this.dataTable = decorateTableAsDataTable(this.props.tableId,
-                                                      this.props.tableDef,
-                                                      this.props.applyThemeRoller,
-                                                      true,
-                                                      this.props.editCallback,
-                                                      this.datableDrawCallback,
-                                                      this.props.expandIcon,
-                                                      this.props.collapseIcon,
-                                                      this.props.childTableDetails,
-                                                      this.props.initialSortColumn,
-                                                      undefined,
-                                                      undefined,
-                                                      undefined,
-                                                      undefined,
-                                                      this.props.openRowLoadDataDoneCallback,
-                                                      this.props.collapseRowCallback);
+            this.dataTable = decorateTableAsDataTable(this.props.tableId, this.props.tableDef, this.props.applyThemeRoller, true, this.props.editCallback, this.datableDrawCallback, this.props.expandIcon, this.props.collapseIcon, this.props.childTableDetails, this.props.initialSortColumn, undefined, undefined, undefined, undefined, this.props.openRowLoadDataDoneCallback, this.props.collapseRowCallback);
         }
 
         if (this.dataTable !== null) {
@@ -88,7 +70,7 @@ var TocDataTable = React.createClass({
              * if this.props.initialSortColumn is used directly as a parameter to fnSort. This is because
              * the datatable will try to sort the 8th column which does not exists in the group configuration table.
              */
-            this.props.initialSortColumn.forEach(function(col) {
+            this.props.initialSortColumn.forEach(function (col) {
                 sortColumns.push(col);
             });
 
@@ -99,14 +81,13 @@ var TocDataTable = React.createClass({
             $("#" + this.props.tableId).attr("class", this.props.className);
         }
     },
-    datableDrawCallback: function() {
+    datableDrawCallback: function () {
 
         var self = this;
         var dataTable = this.dataTable;
 
         if (dataTable) {
-            if (this.state.displayLength && this.state.displayLength !== dataTable.fnSettings()._iDisplayLength &&
-                this.props.isColResizable) {
+            if (this.state.displayLength && this.state.displayLength !== dataTable.fnSettings()._iDisplayLength && this.props.isColResizable) {
 
                 // Make new rows resizable...
                 dataTable.makeColumnsResizable();
@@ -119,8 +100,8 @@ var TocDataTable = React.createClass({
             return;
         }
 
-        $(dataTable).find("thead > tr, tbody > tr, > tr").off("click").on("click", function(e) {
-            if ($(this).hasClass("row_selected") ) {
+        $(dataTable).find("thead > tr, tbody > tr, > tr").off("click").on("click", function (e) {
+            if ($(this).hasClass("row_selected")) {
                 $(this).removeClass("row_selected");
             } else {
                 $(dataTable).find("thead > tr, tbody > tr, > tr").removeClass("row_selected");
@@ -134,11 +115,10 @@ var TocDataTable = React.createClass({
                 }
             }
         });
-
     },
-    getDefaultProps: function() {
+    getDefaultProps: function () {
         return {
-            initialSortColumn : []
+            initialSortColumn: []
         };
     }
 });
