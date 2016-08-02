@@ -1,10 +1,9 @@
 package com.siemens.cto.aem.service.balancermanager.impl;
 
 import com.siemens.cto.aem.common.domain.model.app.Application;
+import com.siemens.cto.aem.common.domain.model.balancermanager.DrainStatus;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
-import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
-import com.siemens.cto.aem.common.domain.model.resource.ResourceGroup;
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.common.domain.model.webserver.message.WebServerHistoryEvent;
@@ -17,18 +16,14 @@ import com.siemens.cto.aem.service.group.GroupService;
 import com.siemens.cto.aem.service.webserver.WebServerService;
 import com.siemens.cto.aem.service.webserver.component.ClientFactoryHelper;
 
-import javax.xml.bind.Unmarshaller;
-
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.client.ClientHttpResponse;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
-import java.io.ByteArrayInputStream;
+import javax.xml.bind.Unmarshaller;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
@@ -39,14 +34,15 @@ public class BalancermanagerServiceImpl implements BalancermanagerService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BalancermanagerServiceImpl.class);
 
-    private final String balancer_prefix = "lb-";
-
     private GroupService groupService;
     private ApplicationService applicationService;
     private WebServerService webServerService;
     private BalancemanagerHttpClient balancemanagerHttpClient = new BalancemanagerHttpClient();
     private MessagingService messagingService;
     private ClientFactoryHelper clientFactoryHelper;
+
+    private final String balancer_prefix = "lb-";
+    private String nonce = "";
 
     public BalancermanagerServiceImpl(final GroupService groupService,
                                       final ApplicationService applicationService,
@@ -61,7 +57,7 @@ public class BalancermanagerServiceImpl implements BalancermanagerService {
     }
 
     public int drainUser(final String managerurl, final Map<String, String> postMap) {
-        System.out.println("Entering drainUser: " + managerurl);
+        LOGGER.info("Entering drainUser: " + managerurl);
         return balancemanagerHttpClient.doHttpClientPost(managerurl, postMap);
     }
 
@@ -71,7 +67,7 @@ public class BalancermanagerServiceImpl implements BalancermanagerService {
         Group group = groupService.getGroup(groupName);
         for (Application application : applicationService.findApplications(group.getId())) {
             for (WebServer webServer : webServerService.findWebServers(group.getId())) {
-                executeDrain(webServer, application);
+                prepareDrainWork(webServer, application, true);
             }
         }
     }
@@ -82,35 +78,59 @@ public class BalancermanagerServiceImpl implements BalancermanagerService {
         Group group = groupService.getGroup(groupName);
         for (Application application : applicationService.findApplications(group.getId())) {
             WebServer webServer = webServerService.getWebServer(webServerName);
-            executeDrain(webServer, application);
+            prepareDrainWork(webServer, application, true);
         }
     }
 
-    public void executeDrain(final WebServer webServer, final Application application) {
-        String balancerManagerXmlurl = getBalancerManagerUrlPath(webServer.getHost(), application.getName(), true);
-        String balancerManagerurl = getBalancerManagerUrlPath(webServer.getHost(), application.getName(), false);
-        ClientHttpResponse response = getBalancerManagerResponse(balancerManagerXmlurl);
-        final String responseString = getResponseBodyString(response);
-        LOGGER.info(responseString);
-        Manager manager = getWorkerXml(responseString);
-        Set<String> workers = getWorkers(manager, application.getName());
-        doDrain(workers, application, balancerManagerurl, webServer);
+    @Override
+    public DrainStatus getGroupDrainStatus(String groupName) {
+        LOGGER.info("Entering getGroupDrainStatus: " + groupName);
+        List<DrainStatus.WebServerDrainStatus> webServerDrainStatusList = new ArrayList<>();
+        Group group = groupService.getGroup(groupName);
+        for (Application application : applicationService.findApplications(group.getId())) {
+            for (WebServer webServer : webServerService.findWebServers(group.getId())) {
+                List<DrainStatus.WebServerDrainStatus.JvmDrainStatus> jvmDrainStatusList = prepareDrainWork(webServer, application, false);
+                DrainStatus.WebServerDrainStatus webServerDrainStatus = new DrainStatus.WebServerDrainStatus(webServer.getName(), jvmDrainStatusList);
+                webServerDrainStatusList.add(webServerDrainStatus);
+             }
+        }
+        return new DrainStatus(groupName, webServerDrainStatusList);
     }
 
-    public String getResponseBodyString(final ClientHttpResponse response) {
+    public List<DrainStatus.WebServerDrainStatus.JvmDrainStatus> prepareDrainWork(final WebServer webServer, final Application application, final Boolean post) {
+        String balancerManagerHtmlurl = getBalancerManagerUrlPath(webServer.getHost(), application.getName(), false);
+        final String responseStringHtml = getBalancerManagerResponse(balancerManagerHtmlurl);
+        findNonce(responseStringHtml, application.getName());
+        String balancerManagerXmlurl = getBalancerManagerUrlPath(webServer.getHost(), application.getName(), true);
+        final String responseStringXml = getBalancerManagerResponse(balancerManagerXmlurl);
+        Manager manager = getWorkerXml(responseStringXml);
+        Map<String, String> workers = getWorkers(manager, application.getName());
+        if (post){
+            doDrain(workers, application, balancerManagerHtmlurl, webServer);
+            return null;
+        } else {
+            return getWorkerStatus(responseStringHtml, application.getName(), workers);
+        }
+    }
+
+    public String getBalancerManagerResponse(final String statusUri) {
+        LOGGER.info("Entering getBalancerManagerResponse: " + statusUri);
         try {
-            return IOUtils.toString(response.getBody(), "UTF-8");
+            return IOUtils.toString(clientFactoryHelper.requestGet(new URI(statusUri)).getBody(), "UTF-8");
         } catch (IOException e) {
             LOGGER.error(e.toString());
-            throw new ApplicationException("Failed convert inputStream to String ", e);
+            throw new ApplicationException("Failed to get the response for Balancer Manager ", e);
+        } catch (URISyntaxException e) {
+            LOGGER.error(e.toString());
+            throw new ApplicationException("Failed to cannot convert this path to URI ", e);
         }
     }
 
-    public void doDrain(final Set<String> workers, final Application application, final String balancerManagerurl, final WebServer webServer) {
-        System.out.println("Entering doDrain");
-        for (String worker : workers) {
-            Map<String, String> postMap = getPostMap(application.getName(), worker);
-            final String message = "Drain user for webServer: " + balancerManagerurl + " with worker url " + worker;
+    public void doDrain(final Map<String, String> workers, final Application application, final String balancerManagerurl, final WebServer webServer) {
+        LOGGER.info("Entering doDrain");
+        for (String workerUrl : workers.keySet()) {
+            Map<String, String> postMap = getPostMap(application.getName(), workerUrl);
+            final String message = "Drain user for webServer: " + balancerManagerurl + " with worker url " + workerUrl;
             sendMessage(webServer.getId(), message);
             int returnCode = drainUser(balancerManagerurl, postMap);
             sendMessage(webServer.getId(), Integer.toString(returnCode));
@@ -118,14 +138,14 @@ public class BalancermanagerServiceImpl implements BalancermanagerService {
     }
 
     public void sendMessage(final Identifier<WebServer> id, final String message) {
-        System.out.println(message);
+        LOGGER.info(message);
         messagingService.send(new WebServerHistoryEvent(id, "history", User.getThreadLocalUser().getId(), message));
     }
 
     public String getBalancerManagerUrlPath(final String host, final String appName, boolean isXml) {
         final String url = "https://" + host + "/balancer-manager";
         if (isXml) {
-            return url + "/?" + balancer_prefix + appName + "/&xml=1";
+            return url + "?b=" + balancer_prefix + appName + "&xml=1&nonce=" + getNonce();
         } else {
             return url;
         }
@@ -136,33 +156,40 @@ public class BalancermanagerServiceImpl implements BalancermanagerService {
         maps.put("w_status_N", "1");
         maps.put("b", balancer_prefix + appName);
         maps.put("w", worker);
+        maps.put("nonce", getNonce());
         return maps;
     }
 
-    public boolean getWorkerStatus(final String balancerManagerContent, final String appName, Set<String> workers) {
-        boolean drain = false;
-        for (String worker : workers) {
-            final String matchPattern = balancer_prefix + appName + "\\&w=" + worker + "\\&nonce=\">.*</a></td><td>.*</td><td></td><td>1</td><td>0</td><td>Init.*Ok </td>";
+    public List<DrainStatus.WebServerDrainStatus.JvmDrainStatus> getWorkerStatus(final String balancerManagerContent, final String appName, Map<String, String> workers) {
+        List<DrainStatus.WebServerDrainStatus.JvmDrainStatus> jvmDrainStatusList = new ArrayList<>();
+        DrainStatus.WebServerDrainStatus.JvmDrainStatus jvmDrainStatus;
+        for (String workerUrl : workers.keySet()) {
+            final String route = workers.get(workerUrl);
+            final String matchPattern = balancer_prefix + appName.toLowerCase() + "\\&w=" + workerUrl + "\\&nonce=.*\">.*</a></td><td>.*</td><td></td><td>1</td><td>0</td><td>Init.*Ok </td>";
             Pattern pattern = Pattern.compile(matchPattern);
             Matcher matcher = pattern.matcher(balancerManagerContent);
             while (matcher.find()) {
-                drain = isDrain(matcher.group());
+                if (isDrain(matcher.group())) {
+                    jvmDrainStatus = new DrainStatus.WebServerDrainStatus.JvmDrainStatus(route, "drain", appName);
+                } else {
+                    jvmDrainStatus = new DrainStatus.WebServerDrainStatus.JvmDrainStatus(route, "active", appName);
+                }
+                jvmDrainStatusList.add(jvmDrainStatus);
             }
-            LOGGER.info("worker: " + worker + " drain: " + drain);
         }
-        return drain;
+        return jvmDrainStatusList;
     }
 
     public boolean isDrain(final String status) {
         return (status.indexOf("Init Drn Ok") == -1) ? false : true;
     }
 
-    public Set<String> getWorkers(final Manager manager, final String appName) {
-        Set<String> workers = new HashSet<>();
+    public Map<String, String> getWorkers(final Manager manager, final String appName) {
+        Map<String, String> workers = new HashMap<>();
         for (Manager.Balancer balancers : manager.getBalancers()) {
             if (balancers.getName().equalsIgnoreCase("balancer://" + balancer_prefix + appName)) {
                 for (Manager.Balancer.Worker worker : balancers.getWorkers()) {
-                    workers.add(worker.getName());
+                    workers.put(worker.getName(), worker.getRoute());
                 }
             }
         }
@@ -175,17 +202,16 @@ public class BalancermanagerServiceImpl implements BalancermanagerService {
             JAXBContext jaxbContext = JAXBContext.newInstance(Manager.class);
             Unmarshaller unmarshal = jaxbContext.createUnmarshaller();
             manager = (Manager) unmarshal.unmarshal(IOUtils.toInputStream(balancerManagerContent));
-            System.out.println("manager.getBalancers().size(): " + manager.getBalancers().size());
+            LOGGER.info("manager.getBalancers().size(): " + manager.getBalancers().size());
             List<Manager.Balancer> balancers = manager.getBalancers();
             for (Manager.Balancer balancer : balancers) {
-                System.out.println(balancer.getName());
+                LOGGER.info(balancer.getName());
                 List<Manager.Balancer.Worker> balancer_workers = balancer.getWorkers();
-                System.out.println("balancer_workers.size(): " + balancer_workers.size());
+                LOGGER.info("balancer_workers.size(): " + balancer_workers.size());
                 for (Manager.Balancer.Worker worker : balancer_workers) {
-                    System.out.println(worker.getName() + " " + worker.getRoute());
+                    LOGGER.info(worker.getName() + " " + worker.getRoute());
                 }
             }
-            //LOGGER.info(manager);
         } catch (JAXBException e) {
             LOGGER.error(e.toString());
             throw new ApplicationException("Failed to Parsing the Balancer Manager XML ", e);
@@ -193,92 +219,25 @@ public class BalancermanagerServiceImpl implements BalancermanagerService {
         return manager;
     }
 
-     /*public Set<String> getAppPathByGroup(final Group group, final String applicationName) {
-        LOGGER.info("Entering getAppPathByGroup");
-        Set<String> jvmPathSet = new HashSet<>();
-        for (Application application : applicationService.findApplications(group.getId())) {
-            if (application.getName().equalsIgnoreCase(applicationName)) {
-                Set<Jvm> jvms = group.getJvms();
-                String jvmPath;
-                for (Jvm jvm : jvms) {
-                    if (application.isSecure()) {
-                        jvmPath = "https://" + jvm.getHostName() + ":" + jvm.getHttpsPort() + application.getWebAppContext();
-                    } else {
-                        jvmPath = "http://" + jvm.getHostName() + ":" + jvm.getHttpPort() + application.getWebAppContext();
-                    }
-                    jvmPathSet.add(jvmPath);
-                }
-            }
+    public void findNonce(final String content, final String appName) {
+        LOGGER.info("content: " + content + " appName: " + appName);
+        final String matchPattern = "<h3>LoadBalancer Status for <a href=\"/balancer-manager\\?b=" + balancer_prefix + appName.toLowerCase() + "\\&nonce=.*";
+        Pattern pattern = Pattern.compile(matchPattern);
+        Matcher matcher = pattern.matcher(content);
+        String matchString;
+        while (matcher.find()) {
+            LOGGER.info(matcher.group());
+            matchString = matcher.group();
+            setNonce(matchString.substring(matchString.indexOf("nonce=") + 6, matchString.indexOf("\">balancer:")));
         }
-        return jvmPathSet;
-    }*/
-
-    /*public Set<String> getMatchJvm(final Set<String> groupJvmSet, final Set<String> balanceMemberSet) {
-        Set<String> returnSet = new HashSet<>();
-        for (String jvm : groupJvmSet) {
-            if (balanceMemberSet.contains(jvm)) {
-                returnSet.add(jvm);
-            }
-        }
-        return returnSet;
-    }*/
-
-    /*
-    public String getHttpdConffromResource(final String webServerName) {
-        return webServerService.getResourceTemplate(webServerName, "httpd.conf", true, new ResourceGroup());
-    }*/
-
-    /*public Set<String> getBalanceMembers(final String httpdConfString, final String applicationName) {
-        LOGGER.info("Entering getBalanceMembers, httpdConfString.length(): " + httpdConfString.length() + " , applicationName: " + applicationName);
-        InputStream is = new ByteArrayInputStream(httpdConfString.getBytes());
-        ApacheConfigParser parser = new ApacheConfigParser();
-        Set<String> members = new HashSet<>();
-        final String balancerName = "balancer://lb-" + applicationName;
-        try {
-            ConfigNode configNode = parser.parse(is);
-            for (ConfigNode child : configNode.getChildren()) {
-                if ((child.getName().equals("Proxy")) && (balancerName.equalsIgnoreCase(child.getContent()))) {
-                    for (ConfigNode memberChild : child.getChildren()) {
-                        if (memberChild.getName().equalsIgnoreCase("BalancerMember")) {
-                            String member = memberChild.getContent().toString().substring(0, memberChild.getContent().toString().indexOf(" "));
-                            members.add(member);
-                        }
-                    }
-                }
-            }
-        } catch (IOException e) {
-            LOGGER.error(e.toString());
-            throw new ApplicationException("Failed to parsing the httpdConfString ", e);
-        }
-        LOGGER.info("member.size: " + members.size());
-        return members;
-    }*/
-
-    public ClientHttpResponse getBalancerManagerResponse(final String statusUri) {
-        try {
-            return clientFactoryHelper.requestGet(new URI(statusUri));
-        } catch (IOException e) {
-            LOGGER.error(e.toString());
-            throw new ApplicationException("Failed to get the response for Balancer Manager ", e);
-        } catch (URISyntaxException e) {
-            LOGGER.error(e.toString());
-            throw new ApplicationException("Failed to cannot convert this path to URI ", e);
-        }
+        LOGGER.info("nonce: " + getNonce());
     }
 
-    @Override
-    public void getGroupDrainStatus(String groupName) {
-        /*LOGGER.info("Entering getGroupDrainStatus: " + groupName);
-        Group group = groupService.getGroup(groupName);
-        for (Application application : applicationService.findApplications(group.getId())) {
-            Set<String> appPathSet = getAppPathByGroup(group, application.getName());
-            for (WebServer webServer : webServerService.findWebServers(group.getId())) {
-                String httpdConfString = getHttpdConffromResource(webServer.getName());
-                Set<String> balanceMemberSet = getBalanceMembers(httpdConfString, application.getName());
-                Set<String> drainSet = getMatchJvm(appPathSet, balanceMemberSet);
-                String balancerManagerurl = getBalancerManagerUrl(webServer.getHost());
-                //TODO: next
-            }
-        }*/
+    public String getNonce() {
+        return this.nonce;
+    }
+
+    public void setNonce(String nonce) {
+        this.nonce = nonce;
     }
 }

@@ -140,7 +140,20 @@ public class MockGroup {
                 WebServerReachableState.WS_REACHABLE,
                 "errorStatus",
                 myGroup);
+        WebServer webServer2 = new WebServer(id(1L, WebServer.class),
+                "localhost2",
+                "myWebServerName2",
+                80,
+                443,
+                new Path("path"),
+                new FileSystemPath("filesystempath"),
+                new Path("svrRoot"),
+                new Path("docRoot"),
+                WebServerReachableState.WS_REACHABLE,
+                "errorStatus",
+                myGroup);
         webservers.add(webServer);
+        webservers.add(webServer2);
         return webservers;
     }
 

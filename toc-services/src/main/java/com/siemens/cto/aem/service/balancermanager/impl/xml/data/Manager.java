@@ -9,7 +9,6 @@ public class Manager {
 
     private List<Balancer> balancers = new ArrayList<Balancer>();
 
-
     public List<Manager.Balancer> getBalancers() {
         return this.balancers;
     }

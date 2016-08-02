@@ -1,5 +1,6 @@
 package com.siemens.cto.aem.ws.rest.v1.service.balancermanager.impl;
 
+import com.siemens.cto.aem.common.domain.model.balancermanager.DrainStatus;
 import com.siemens.cto.aem.service.balancermanager.BalancermanagerService;
 import com.siemens.cto.aem.ws.rest.v1.response.ResponseBuilder;
 import com.siemens.cto.aem.ws.rest.v1.service.balancermanager.BalancermanagerServiceRest;
@@ -28,9 +29,9 @@ public class BalancermanagerServiceRestImpl implements BalancermanagerServiceRes
     }
 
     @Override
-    public Response getGroup(@PathParam("groupName") String groupName) {
-
-        return null;
+    public Response getGroup(final String groupName) {
+        DrainStatus drainStatus = balancermanagerService.getGroupDrainStatus(groupName);
+        return ResponseBuilder.ok(drainStatus);
     }
 
     @Override
