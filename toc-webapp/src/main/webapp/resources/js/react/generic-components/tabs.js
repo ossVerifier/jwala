@@ -45,7 +45,7 @@ var Tabs = React.createClass({displayName:"Tabs",
            return React.DOM.div(null,
                        React.DOM.ol({className:this.state.themeName},
                            TabsSwitcher({items:this.state.tabs, active:this.state.active,
-                                         onTabClick: (MainArea.isAdminRole === true ? this.handleTabClick : "")})
+                                         onTabClick: this.handleTabClick})
                        ),
                        TabsContent({theme:this.state.themeName,
                                     items:this.state.tabs,

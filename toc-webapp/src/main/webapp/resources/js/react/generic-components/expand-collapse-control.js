@@ -111,7 +111,9 @@ var ExpandCollapseControl = React.createClass({
                                         $("#tooltip" + theComponent.id).remove();
                                     });
                                 }
-                                theComponent.btnCallback(event);
+                                //Rahul: i added this code to get rid of "Uncaught TypeError: theComponent.btnCallback is not a function" error
+                                if(MainArea.isAdminRole)
+                                    theComponent.btnCallback(event);
                             }.bind(self, component);
 
                             $(buttonSelector).find("span").remove();
@@ -257,7 +259,8 @@ var ExpandCollapseControl = React.createClass({
 
             var parentItemName = this.props.parentItemName;
 
-            this.dataTableRenderParams.subDataTable.forEach(function(subDataTable){
+            this.dataTableRenderParams.subDataTable.forEach(function(subDataTable) {
+
                 self.drawDataTable(subDataTable,
                                    self.dataTableRenderParams.data[i],
                                    self.dataTableRenderParams.defaultSorting[i],

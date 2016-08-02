@@ -77,7 +77,7 @@ var MainTabs = React.createClass({
                                                                    stateService={ServiceFactory.getStateService()}
                                                                    statePollTimeout={tocVars.statePollTimeout}/>},
                      {title: "Configuration", content:<ConfigureTabs/>,  disabled: !MainArea.isAdminRole},
-                     {title: "Admin", content:<AdminTab/>,  disabled: !MainArea.isAdminRole}]
+                     {title: "Admin", content:<AdminTab/>}]
         this.setState({items: items});
     }
 });
