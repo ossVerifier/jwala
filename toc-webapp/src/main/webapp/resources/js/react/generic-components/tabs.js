@@ -39,7 +39,6 @@ var Tabs = React.createClass({displayName:"Tabs",
        document.title = Tabs.TITLE_PREFIX + this.props.items[this.state.active].title;
     },
     render: function() {
-        console.log(MainArea.isAdminRole);
         var className = "tabs-" + this.props.theme;
         return React.createElement("div", {className: "Tabs"},
                    React.createElement("ol", {className: className},
