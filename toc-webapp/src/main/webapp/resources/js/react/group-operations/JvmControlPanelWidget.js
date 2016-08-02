@@ -53,6 +53,8 @@ var JvmControlPanelWidget = React.createClass({
                             className={"zero-padding ui-widget ui-state-default ui-corner-all ui-button-text-only ui-button-height " + diagnoseBtnDisplayClass}
                             spanClassName="ui-icon ui-icon-mgr"
                             onClick={this.showMgr}
+                            disabled = {!MainArea.isAdminRole}
+                            disabledTitle="Manager is disabled for this version"
                             title="Manager"/>
                </div>
     },

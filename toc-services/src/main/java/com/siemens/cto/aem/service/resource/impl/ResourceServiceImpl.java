@@ -35,6 +35,7 @@ import com.siemens.cto.toc.files.RepositoryFileInformation;
 import com.siemens.cto.toc.files.WebArchiveManager;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,8 +63,8 @@ public class ResourceServiceImpl implements ResourceService {
     private final ResourcePersistenceService resourcePersistenceService;
     private final GroupPersistenceService groupPersistenceService;
     private PrivateApplicationService privateApplicationService;
-// TODO replace ApplicationControlOperation (and all operation classes) with ResourceControlOperation
-   private RemoteCommandExecutorImpl<ApplicationControlOperation> remoteCommandExecutor;
+    // TODO replace ApplicationControlOperation (and all operation classes) with ResourceControlOperation
+    private RemoteCommandExecutorImpl<ApplicationControlOperation> remoteCommandExecutor;
     private Map<String, ReentrantReadWriteLock> resourceWriteLockMap;
 
     private final String encryptExpressionString = "new com.siemens.cto.infrastructure.StpCryptoService().encryptToBase64( #stringToEncrypt )";
@@ -128,10 +129,10 @@ public class ResourceServiceImpl implements ResourceService {
 
         try {
             resourceTemplateMetaData = mapper.readValue(IOUtils.toString(metaData), ResourceTemplateMetaData.class);
-            if (resourceTemplateMetaData.getContentType().equals(ContentType.APPLICATION_BINARY.contentTypeStr)){
+            if (resourceTemplateMetaData.getContentType().equals(ContentType.APPLICATION_BINARY.contentTypeStr)) {
                 // TODO create new API that doesn't use UploadWebArchiveRequest - just do this for now
                 Application fakedApplication = new Application(new Identifier<Application>(0L), resourceTemplateMetaData.getDeployFileName(), resourceTemplateMetaData.getDeployPath(), "", null, true, true, false, resourceTemplateMetaData.getDeployFileName());
-                UploadWebArchiveRequest uploadWebArchiveRequest = new UploadWebArchiveRequest( fakedApplication, resourceTemplateMetaData.getDeployFileName(), -1L, templateData);
+                UploadWebArchiveRequest uploadWebArchiveRequest = new UploadWebArchiveRequest(fakedApplication, resourceTemplateMetaData.getDeployFileName(), -1L, templateData);
                 RepositoryFileInformation fileInfo = privateApplicationService.uploadWebArchiveData(uploadWebArchiveRequest);
 
                 templateData = new ByteArrayInputStream(fileInfo.getPath().toString().getBytes());
@@ -217,18 +218,18 @@ public class ResourceServiceImpl implements ResourceService {
     @Override
     public Map<String, String> checkFileExists(final String groupName, final String jvmName, final String webappName, final String webserverName, final String fileName) {
         boolean resultBoolean = false;
-        if(groupName!=null && !groupName.isEmpty() && fileName!=null && !fileName.isEmpty()) {
-            if(jvmName!=null && !jvmName.isEmpty()) {
+        if (groupName != null && !groupName.isEmpty() && fileName != null && !fileName.isEmpty()) {
+            if (jvmName != null && !jvmName.isEmpty()) {
                 // Search for file in jvms
                 LOGGER.debug("searching for resource {} in group {} and jvm {}", fileName, groupName, jvmName);
                 resultBoolean = groupPersistenceService.checkGroupJvmResourceFileName(groupName, fileName) ||
                         jvmPersistenceService.checkJvmResourceFileName(groupName, jvmName, fileName);
-            } else if(webappName!=null && !webappName.isEmpty()) {
+            } else if (webappName != null && !webappName.isEmpty()) {
                 // Search for file in webapps
                 LOGGER.debug("searching for resource {} in group {} and webapp {}", fileName, groupName, webappName);
                 resultBoolean = groupPersistenceService.checkGroupAppResourceFileName(groupName, fileName) ||
                         applicationPersistenceService.checkAppResourceFileName(groupName, webappName, fileName);
-            } else if(webserverName!=null && !webserverName.isEmpty()) {
+            } else if (webserverName != null && !webserverName.isEmpty()) {
                 // Search for file in webservers
                 LOGGER.debug("searching for resource {} in group {} and webserver {}", fileName, groupName, webserverName);
                 resultBoolean = groupPersistenceService.checkGroupWebServerResourceFileName(groupName, fileName) ||
@@ -284,9 +285,10 @@ public class ResourceServiceImpl implements ResourceService {
 
     /**
      * Create the JVM template in the db and in the templates path for a specific JVM entity target.
-     * @param metaData the data that describes the template, please see {@link ResourceTemplateMetaData}
+     *
+     * @param metaData     the data that describes the template, please see {@link ResourceTemplateMetaData}
      * @param templateData the template content/data
-     * @param jvmName identifies the JVM to which the template is attached to
+     * @param jvmName      identifies the JVM to which the template is attached to
      */
     @Deprecated
     private CreateResourceResponseWrapper createJvmTemplate(final ResourceTemplateMetaData metaData,
@@ -352,8 +354,9 @@ public class ResourceServiceImpl implements ResourceService {
 
     /**
      * Create the web server template in the db and in the templates path for a specific web server entity target.
-     * @param metaData the data that describes the template, please see {@link ResourceTemplateMetaData}
-     * @param templateData the template content/data
+     *
+     * @param metaData      the data that describes the template, please see {@link ResourceTemplateMetaData}
+     * @param templateData  the template content/data
      * @param webServerName identifies the web server to which the template belongs to
      * @param user
      */
@@ -376,7 +379,8 @@ public class ResourceServiceImpl implements ResourceService {
 
     /**
      * Create the web server template in the db and in the templates path for all the web servers.
-     *  @param metaData     the data that describes the template, please see {@link ResourceTemplateMetaData}
+     *
+     * @param metaData     the data that describes the template, please see {@link ResourceTemplateMetaData}
      * @param templateData the template content/data
      * @param user
      */
@@ -451,8 +455,8 @@ public class ResourceServiceImpl implements ResourceService {
         String templateString = IOUtils.toString(templateData);
 
         if (ContentType.APPLICATION_BINARY.contentTypeStr.equalsIgnoreCase(metaData.getContentType()) &&
-            metaData.getTemplateName().toLowerCase().endsWith(WAR_FILE_EXTENSION)) {
-                applicationPersistenceService.updateWarInfo(targetAppName, metaData.getTemplateName(), templateString);
+                metaData.getTemplateName().toLowerCase().endsWith(WAR_FILE_EXTENSION)) {
+            applicationPersistenceService.updateWarInfo(targetAppName, metaData.getTemplateName(), templateString);
         }
 
         for (final Application application : applications) {
@@ -507,7 +511,9 @@ public class ResourceServiceImpl implements ResourceService {
     @Override
     @Transactional
     public int deleteExternalProperties() {
-        return resourceDao.deleteExternalProperties();
+        final int deleteResult = resourceDao.deleteExternalProperties();
+        ExternalProperties.reset();
+        return deleteResult;
     }
 
     @Override
@@ -516,7 +522,7 @@ public class ResourceServiceImpl implements ResourceService {
         final int deletedCount = resourceDao.deleteGroupLevelAppResources(appName, groupName, templateNameList);
         if (deletedCount > 0) {
             final List<Jvm> jvms = jvmPersistenceService.getJvmsByGroupName(groupName);
-            for(Jvm jvm:jvms) {
+            for (Jvm jvm : jvms) {
                 resourceDao.deleteAppResources(templateNameList, appName, jvm.getJvmName());
             }
             for (final String templateName : templateNameList) {
@@ -534,18 +540,17 @@ public class ResourceServiceImpl implements ResourceService {
                             // If the physical file can't be deleted for some reason don't throw an exception since
                             // there's no outright ill effect if the war file is not removed in the file system.
                             // The said file might not exist anymore also which is the reason for the error.
-                            LOGGER.error("Failed to delete the archive {}! WebArchiveManager remove result type = {}" , app.getWarPath(),
+                            LOGGER.error("Failed to delete the archive {}! WebArchiveManager remove result type = {}", app.getWarPath(),
                                     result.getType());
                         }
                     } catch (final IOException ioe) {
                         // If the physical file can't be deleted for some reason don't throw an exception since
                         // there's no outright ill effect if the war file is not removed in the file system.
-                        LOGGER.error("Failed to delete the archive {}!" , app.getWarPath(), ioe);
+                        LOGGER.error("Failed to delete the archive {}!", app.getWarPath(), ioe);
                     }
                 }
             }
         }
-
 
 
         return deletedCount;
@@ -564,28 +569,39 @@ public class ResourceServiceImpl implements ResourceService {
     @Override
     @Transactional
     public String updateResourceContent(ResourceIdentifier resourceIdentifier, String templateContent) {
-        // TODO make this more generic for updating other resources
-        // TODO user resource dao - not persistence
-        resourcePersistenceService.updateResource(resourceIdentifier, EntityType.EXT_PROPERTIES, templateContent);
+
+        // TODO either derive or pass in the EntityType
+        resourceDao.updateResource(resourceIdentifier, EntityType.EXT_PROPERTIES, templateContent);
+
+        // if the external properties resource was just saved then update properties
+        checkResourceExternalProperties(resourceIdentifier, templateContent);
+
         final ConfigTemplate configTemplate = resourceHandler.fetchResource(resourceIdentifier);
         return configTemplate.getTemplateContent();
+    }
+
+    protected void checkResourceExternalProperties(ResourceIdentifier resourceIdentifier, String templateContent) {
+        if (StringUtils.isNotEmpty(resourceIdentifier.resourceName) &&
+                StringUtils.isEmpty(resourceIdentifier.webAppName) &&
+                StringUtils.isEmpty(resourceIdentifier.jvmName) &&
+                StringUtils.isEmpty(resourceIdentifier.groupName) &&
+                StringUtils.isEmpty(resourceIdentifier.webServerName)) {
+            ExternalProperties.loadFromInputStream(new ByteArrayInputStream(templateContent.getBytes()));
+        }
+
     }
 
     @Override
     @Transactional
     // TODO make this more generic to use the new resources identifier
-    // TODO move to the Resource DAO
     @Deprecated
     public Object uploadExternalProperties(String fileName, InputStream propertiesFileIn) {
         Long entityId = null;
         Long groupId = null;
         Long appId = null;
-        // TODO user resource dao - not persistence
-        return resourcePersistenceService.createResource(entityId, groupId, appId, EntityType.EXT_PROPERTIES, fileName, propertiesFileIn);
 
-        // TODO wait until properties file is deployed before setting the properties file path?
-//        String uploadFilePath = fileInfo.getPath().toString();
-//        ExternalProperties.setPropertiesFilePath(uploadFilePath);
+        // TODO add meta data
+        return resourceDao.createResource(entityId, groupId, appId, EntityType.EXT_PROPERTIES, fileName, propertiesFileIn, "");
     }
 
     @Override
@@ -597,13 +613,13 @@ public class ResourceServiceImpl implements ResourceService {
     @Override
     public void deployTemplateToAllHosts(String fileName, ResourceIdentifier resourceIdentifier) {
         Set<String> allHosts = new TreeSet<>();
-        for (Group group : groupPersistenceService.getGroups()){
+        for (Group group : groupPersistenceService.getGroups()) {
             allHosts.addAll(groupPersistenceService.getHosts(group.getName()));
         }
-        for (String hostName : new ArrayList<>(allHosts)){
+        for (String hostName : new ArrayList<>(allHosts)) {
             // TODO deploy each template on its own thread
             CommandOutput commandOutput = deployTemplateToHost(fileName, hostName, resourceIdentifier);
-            if (!commandOutput.getReturnCode().wasSuccessful()){
+            if (!commandOutput.getReturnCode().wasSuccessful()) {
                 LOGGER.error("Failed to deploy {} to host {}", fileName, hostName);
                 throw new InternalErrorException(AemFaultType.CONTROL_OPERATION_UNSUCCESSFUL, "Failed to deploy the template " + fileName + " to host " + hostName);
             }
@@ -669,7 +685,28 @@ public class ResourceServiceImpl implements ResourceService {
     }
 
     @Override
-    public String getExternalPropertiesFile() {
+    public File getExternalPropertiesAsFile() throws IOException {
+        final String externalPropertiesFileName = getExternalPropertiesFileName();
+        if (externalPropertiesFileName.isEmpty()) {
+            LOGGER.error("No external properties file has been uploaded. Cannot provide a download at this time.");
+            throw new InternalErrorException(AemFaultType.TEMPLATE_NOT_FOUND, "No external properties file has been uploaded. Cannot provide a download at this time.");
+        }
+
+        ResourceIdentifier.Builder idBuilder = new ResourceIdentifier.Builder().setResourceName(externalPropertiesFileName);
+        ResourceIdentifier resourceIdentifier = idBuilder.build();
+        final ResourceContent resourceContent = getResourceContent(resourceIdentifier);
+        final String content = resourceContent.getContent();
+        final ResourceGroup resourceGroup = generateResourceGroup();
+        String fileContent = ResourceFileGenerator.generateResourceConfig(content, resourceGroup, null);
+        String jvmResourcesNameDir = ApplicationProperties.get("paths.generated.resource.dir") + "/external-properties-download";
+
+        createConfigFile(jvmResourcesNameDir + "/", externalPropertiesFileName, fileContent);
+
+        return new File(jvmResourcesNameDir + "/" + externalPropertiesFileName);
+    }
+
+    @Override
+    public String getExternalPropertiesFileName() {
         // TODO make generic getResourceNames API
         ResourceIdentifier identifier = null;
         final List<String> resourceNames = resourceDao.getResourceNames(identifier, EntityType.EXT_PROPERTIES);

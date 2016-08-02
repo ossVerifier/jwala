@@ -230,6 +230,12 @@ ResourceAttrPaneCopyPropValComponent = React.createClass({
     },
     render: function() {
         var className = "copyPropValBtn ui-state-default ui-corner-all" + (this.state.copyIconHover ? " ui-state-hover" : "");
+        var propsHierarchy = this.props.hierarchy;
+        if (propsHierarchy.indexOf("vars") === 0){
+            propsHierarchy = "vars['" + propsHierarchy.substring("vars".length + 1) + "']";
+        } else if (propsHierarchy.indexOf("ext") === 0){
+            propsHierarchy = "ext['" + propsHierarchy.substring("ext".length + 1) + "']";
+        }
         return <div className="ResourceAttrPaneCopyPropValComponent">
                    <div style={!this.state.showTextCopiedMsg ? {display: "none"} : {}} ref="textCopiedMsg"
                         className="ui-tooltip ui-widget ui-widget-content">Text copied....</div>
@@ -237,9 +243,7 @@ ResourceAttrPaneCopyPropValComponent = React.createClass({
                        <span style={{display: "inline-block"}} className="ui-icon ui-icon-clipboard" onMouseEnter={this.onMouseEnter}
                              onMouseOut={this.onMouseOut} title="copy" />
                    </button>
-                   <span className="propValStyle">{"${" + (this.props.hierarchy.indexOf("vars") === 0 ?  "vars['" +
-                                                   this.props.hierarchy.substring("vars".length + 1) + "']" :
-                                                   this.props.hierarchy) + "}"}</span>
+                   <span className="propValStyle">{"${" + propsHierarchy + "}"}</span>
                    <div style={{position: "fixed", top: -9999, left: -9999}}>
                        <textarea ref="textArea" />
                    </div>
@@ -257,6 +261,9 @@ ResourceAttrPaneCopyPropValComponent = React.createClass({
         if (this.props.hierarchy.indexOf("vars") === 0) {
             // Property keys with '.' should be written as vars['some.prop']
             $(this.refs.textArea.getDOMNode()).val("${vars['" + this.props.hierarchy.substring("vars".length + 1) + "']}");
+        } else if (this.props.hierarchy.indexOf("ext") === 0) {
+            // Property keys with '.' should be written as vars['some.prop']
+            $(this.refs.textArea.getDOMNode()).val("${ext['" + this.props.hierarchy.substring("ext".length + 1) + "']}");
         } else {
             $(this.refs.textArea.getDOMNode()).val("${" + this.props.hierarchy + "}");
         }

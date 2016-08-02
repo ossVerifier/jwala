@@ -9,7 +9,7 @@
     display: inline-block; /* Aligns the tabs side by side and align their bottoms with the top of the content div */
     padding-left: 10px;
     margin-right: 5px; /* li element shows the right side of the tab, this property sees to it that the right side tab does not overlap with the left side tab */
-    margin-bottom: -.5px /* Fixes small gap in between div content and inactive tabs for Chrome */
+    margin-bottom: -3px /* Fixes small gap in between div content and inactive tabs for Chrome */
 }
 
 .tabs-default > div > li > a {
@@ -28,7 +28,7 @@
 
 .tabs-default > div > li.current {
     background-position: 0 -40px;
-    margin-bottom: -1px /* Overlap the content div in such a way as to remove the div's top border which results to a tab & div merge effect just like in a real folder tab */
+    margin-bottom: -4px /* Overlap the content div in such a way as to remove the div's top border which results to a tab & div merge effect just like in a real folder tab */
 }
 
 .tabs-default > div > li.current > a {
@@ -44,4 +44,10 @@
     clear: left;
     min-height: 610px;
     padding: 5px 5px 5px 5px;
+}
+
+.Tabs .disabled {
+    opacity: .55;
+    color: #C0C0C0 !important;
+    margin-bottom: -3px /* Fixes small gap in between div content and inactive tabs for Chrome */
 }

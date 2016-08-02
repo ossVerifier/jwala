@@ -36,7 +36,6 @@ public class ExternalPropertiesResourceHandlerTest {
     @Mock
     private ResourceDao mockResourceDao;
 
-
     @Before
     public void setup(){
         mockResourceDao = mock(ResourceDao.class);

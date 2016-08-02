@@ -104,4 +104,12 @@ public class ExternalProperties {
         }
         properties = tempProperties;
     }
+
+    public static void reset() {
+        getInstance().clearProperties();
+    }
+
+    private void clearProperties() {
+        properties = new Properties();
+    }
 }

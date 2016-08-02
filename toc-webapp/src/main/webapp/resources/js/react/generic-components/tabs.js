@@ -5,10 +5,8 @@ var Tabs = React.createClass({displayName:"Tabs",
         var activeTabIndex = this.lookupIndexFromHash(window.location.hash, this.props.depth /*nesting depth*/) || 0;
 
         return {
-            titlePrefix: "Tomcat Operations Center - ",
             tabs: this.props.items,
-            active: activeTabIndex,
-            themeName: "tabs-" + this.props.theme
+            active: activeTabIndex
         };
     },
     handleBack: function() {
@@ -27,7 +25,7 @@ var Tabs = React.createClass({displayName:"Tabs",
         this.setState({tabs: nextProps.items});
     },
     componentDidUpdate: function(prevProps, prevState) {
-       document.title = this.state.titlePrefix + this.props.items[this.state.active].title;
+       document.title = Tabs.TITLE_PREFIX + this.props.items[this.state.active].title;
 
        if (this.props.onSelectTab !== undefined) {
             this.props.onSelectTab(this.state.active);
@@ -38,24 +36,19 @@ var Tabs = React.createClass({displayName:"Tabs",
     },
     componentDidMount: function() {
        $(window).on('hashchange', this.handleBack);
-       document.title = this.state.titlePrefix + this.props.items[this.state.active].title;
+       document.title = Tabs.TITLE_PREFIX + this.props.items[this.state.active].title;
     },
-   render: function() {
-           console.log(MainArea.isAdminRole);
-           return React.DOM.div(null,
-                       React.DOM.ol({className:this.state.themeName},
-                           TabsSwitcher({items:this.state.tabs, active:this.state.active,
-                                         onTabClick: (MainArea.isAdminRole === true ? this.handleTabClick : "")})
-                       ),
-                       TabsContent({theme:this.state.themeName,
-                                    items:this.state.tabs,
-                                    active:this.state.active})
-                  );
-       },
+    render: function() {
+        var className = "tabs-" + this.props.theme;
+        return React.createElement("div", {className: "Tabs"},
+                   React.createElement("ol", {className: className},
+                       React.createElement(TabsSwitcher, {items: this.state.tabs, active: this.state.active, onTabClick: this.handleTabClick}),
+                       React.createElement(TabsContent, {theme: className, items: this.state.tabs, active: this.state.active})));
+    },
     handleTabClick: function(index) {
         this.setState({active: index})
         var newhash = this.mergeIndexIntoHash(index, window.location.hash, this.props.depth);
-        var title = this.state.titlePrefix + this.props.items[index].title;
+        var title = Tabs.TITLE_PREFIX + this.props.items[index].title;
         if(history.pushState) {
         	history.pushState(null,title, newhash);
         } else {
@@ -107,8 +100,10 @@ var Tabs = React.createClass({displayName:"Tabs",
     		 }
     		 return true; });
    		return localIndex;
+    },
+    statics: {
+        TITLE_PREFIX: "Tomcat Operations Center - "
     }
-
 });
 
 var TabsSwitcher = React.createClass({
@@ -118,8 +113,7 @@ var TabsSwitcher = React.createClass({
             var items = [];
             var self = this;
             this.props.items.map(function(item, index) {
-                var className = self.props.active === index ? "current" : "";
-                className = className + (item.disabled === true ? " ui-state-disabled" : "");
+                var className = self.props.active === index ? "current" : (item.disabled === true ? "disabled" : "");
                 items.push(React.createElement("li", {key:"li"+index, className: className},
                                React.createElement("a", {key:"a"+index, onClick: function(){
                                    if (!item.disabled) {

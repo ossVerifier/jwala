@@ -47,6 +47,7 @@ public class ExternalPropertiesResourceHandler extends ResourceHandler {
             List<String> existingTemplateNames = resourceDao.getResourceNames(resourceIdentifier, EntityType.EXT_PROPERTIES);
             if (existingTemplateNames.size() > 0){
                 resourceDao.deleteExternalProperties();
+                ExternalProperties.reset();
             }
 
             // create the external properties template

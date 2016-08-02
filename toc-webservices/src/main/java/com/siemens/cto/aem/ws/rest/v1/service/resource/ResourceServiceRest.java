@@ -154,12 +154,21 @@ public interface ResourceServiceRest extends InitializingBean{
     Response getExternalProperties();
 
     /**
+     * Return the properties file as a download
+     * @return a link to download the external properties file
+     */
+    @GET
+    @Path("/properties/download")
+    @Produces(MediaType.APPLICATION_OCTET_STREAM)
+    Response getExternalPropertiesDownload();
+
+    /**
      * Get the name of any external properties that were loaded
      * @return the name of the external properties file
      */
     @GET
     @Path("/properties/file")
-    Response getExternalPropertiesFile();
+    Response getExternalPropertiesFileName();
 
     @PUT
     @Path("/template/{fileName}/deploy/host/{hostName}")
