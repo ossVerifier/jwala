@@ -22,6 +22,7 @@ var ResourcesConfig = React.createClass({
                                          ref="xmlTabs"
                                          uploadDialogCallback={this.launchUpload}
                                          updateGroupTemplateCallback={this.launchUpdateGroupTemplate}
+                                         updateExtPropsAttributesCallback={this.updateExtPropsAttributesCallback}
                                          />);
 
         var splitter = <RSplitter disabled={true}
@@ -136,6 +137,14 @@ var ResourcesConfig = React.createClass({
                                       template={template}/>, function() {
                                         self.okUpdateGroupTemplateCallback(template);
                                       });
+    },
+    updateExtPropsAttributesCallback: function(){
+        var self = this;
+        this.props.resourceService.getExternalProperties().then(function(response){
+            var attributes = self.refs.resourceEditor.refs.resourceAttrPane.state.attributes;
+            attributes["ext"] = response.applicationResponseContent;
+            self.refs.resourceEditor.refs.resourceAttrPane.setState({attributes: attributes})
+        });
     },
     verticalSplitterDidUpdateCallback: function() {
         if (this.refs.xmlTabs.refs.codeMirrorComponent !== undefined) {
@@ -256,6 +265,9 @@ var ResourcesConfig = React.createClass({
             this.props.resourceService.createResource(groupName, webServerName, jvmName, webAppName, formData).then(function(response){
                 self.refs.selectMetaDataAndTemplateFilesModalDlg.close();
                 self.refreshResourcePane();
+                if (self.refs.xmlTabs.state.entityType === "extProperties"){
+                    self.updateExtPropsAttributesCallback();
+                }
             }).caught(function(response){
                 console.log(response);
                 var errMsg = response.responseJSON ? response.responseJSON.applicationResponseContent : "";
@@ -394,6 +406,9 @@ var XmlTabs = React.createClass({
             MainArea.unsavedChanges = false;
             this.showFadingStatus("Saved", this.refs.codeMirrorComponent.getDOMNode());
             this.setState({template:response.applicationResponseContent});
+            if (this.state.entity === "extProperties"){
+                this.props.updateExtPropsAttributesCallback();
+            }
         } else {
             throw response;
         }
