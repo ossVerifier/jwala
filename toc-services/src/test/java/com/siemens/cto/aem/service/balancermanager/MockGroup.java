@@ -38,7 +38,7 @@ public class MockGroup {
         groups.add(myGroup);
         Jvm jvm = new Jvm(id(0L, Jvm.class),
                 "jvmname",
-                "USMLVV1CDS0049",
+                "localhost",
                 groups,
                 myGroup,
                 9100,
@@ -59,7 +59,7 @@ public class MockGroup {
     public void getWebServers() {
         Group myGroup = new Group(groupId, groupName);
         WebServer webServer = new WebServer(id(1L, WebServer.class),
-                "USMLVV1CDS0049",
+                "localhost",
                 "myWebServerName",
                 80,
                 443,
@@ -76,7 +76,7 @@ public class MockGroup {
     public WebServer getWebServer(final String webServerName) {
         Group myGroup = new Group(groupId, groupName);
         WebServer webServer = new WebServer(id(1L, WebServer.class),
-                "USMLVV1CDS0049",
+                "localhost",
                 "myWebSererName",
                 80,
                 443,
@@ -129,7 +129,7 @@ public class MockGroup {
         Group myGroup = new Group(groupId, groupName);
         List<WebServer> webservers = new LinkedList<>();
         WebServer webServer = new WebServer(id(1L, WebServer.class),
-                "USMLVV1CDS0049",
+                "localhost",
                 "myWebServerName",
                 80,
                 443,
