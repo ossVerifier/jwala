@@ -216,8 +216,9 @@ public interface ResourceService {
     /**
      * Get the name of the template files for a resource
      * @return a list of the names associated with an entity
+     * @param resourceIdentifier
      */
-    String getExternalPropertiesFileName();
+    List<String> getResourceNames(ResourceIdentifier resourceIdentifier);
 
     /**
      * Get the external properties file as a download

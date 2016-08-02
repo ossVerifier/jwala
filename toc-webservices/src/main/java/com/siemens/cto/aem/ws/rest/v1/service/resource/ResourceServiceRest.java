@@ -163,12 +163,12 @@ public interface ResourceServiceRest extends InitializingBean{
     Response getExternalPropertiesDownload();
 
     /**
-     * Get the name of any external properties that were loaded
-     * @return the name of the external properties file
+     * Get the name of any templates that were loaded for a resource
+     * @return the names of the resource files for a given entity
      */
     @GET
-    @Path("/properties/file")
-    Response getExternalPropertiesFileName();
+    @Path("templates/names")
+    Response getResourcesFileNames(@MatrixParam("") final ResourceHierarchyParam resourceHierarchyParam);
 
     @PUT
     @Path("/template/{fileName}/deploy/host/{hostName}")

@@ -604,26 +604,30 @@ public class ResourceServiceRestImplTest {
     }
 
     @Test
-    public void testGetExternalPropertiesFile() {
+    public void testGetResourceFileNames() {
         // test file is uploaded
-        when(impl.getExternalPropertiesFileName()).thenReturn("external.properties");
+        final List<String> names = new ArrayList<>();
+        names.add("external.properties");
+        ResourceHierarchyParam param = new ResourceHierarchyParam();
 
-        Response result = cut.getExternalPropertiesFileName();
+        when(impl.getResourceNames(any(ResourceIdentifier.class))).thenReturn(names);
+
+        Response result = cut.getResourcesFileNames(param);
 
         assertEquals(200, result.getStatus());
-        verify(impl).getExternalPropertiesFileName();
+        verify(impl).getResourceNames(any(ResourceIdentifier.class));
         ApplicationResponse entity = (ApplicationResponse) result.getEntity();
         List<String> fileList = (List<String>) entity.getApplicationResponseContent();
         assertTrue(!fileList.isEmpty());
 
         // test file is not uploaded
         reset(impl);
-        when(impl.getExternalPropertiesFileName()).thenReturn("");
+        when(impl.getResourceNames(any(ResourceIdentifier.class))).thenReturn(new ArrayList<String>());
 
-        result = cut.getExternalPropertiesFileName();
+        result = cut.getResourcesFileNames(param);
 
         assertEquals(200, result.getStatus());
-        verify(impl).getExternalPropertiesFileName();
+        verify(impl).getResourceNames(any(ResourceIdentifier.class));
         entity = (ApplicationResponse) result.getEntity();
         fileList = (List<String>) entity.getApplicationResponseContent();
         assertTrue(fileList.isEmpty());
@@ -646,12 +650,14 @@ public class ResourceServiceRestImplTest {
 
     @Test
     public void testExternalPropertiesSetAfterInitialization() throws Exception {
-        when(impl.getExternalPropertiesFileName()).thenReturn("external.properties");
+        final List<String> names = new ArrayList<>();
+        names.add("external.properties");
+        when(impl.getResourceNames(any(ResourceIdentifier.class))).thenReturn(names);
         when(impl.getResourceContent(any(ResourceIdentifier.class))).thenReturn(new ResourceContent("{}","key=value"));
 
         cut.afterPropertiesSet();
 
-        verify(impl).getExternalPropertiesFileName();
+        verify(impl).getResourceNames(any(ResourceIdentifier.class));
         verify(impl).getResourceContent(any(ResourceIdentifier.class));
     }
 

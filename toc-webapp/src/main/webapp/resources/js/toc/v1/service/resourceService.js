@@ -155,7 +155,7 @@ var resourceService = {
         return serviceFoundation.promisedGet("v1.0/resources/properties", "json");
     },
     getExternalPropertiesFile: function(callback){
-        return serviceFoundation.get("v1.0/resources/properties/file", "json", callback);
+        return serviceFoundation.get("v1.0/resources/templates/names", "json", callback);
     },
     updateResourceContent: function(resourceTemplateName, template, groupName, webServerName, jvmName, webAppName) {
         var matrixParam = "";

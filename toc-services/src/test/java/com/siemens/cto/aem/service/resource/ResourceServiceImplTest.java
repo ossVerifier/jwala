@@ -59,7 +59,6 @@ import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.anyLong;
 import static org.mockito.Mockito.anyObject;
-import static org.mockito.Mockito.isNull;
 import static org.mockito.Mockito.*;
 
 /**
@@ -495,11 +494,13 @@ public class ResourceServiceImplTest {
     public void testGetExternalPropertiesFile() {
         List<String> resultList = new ArrayList<>();
         resultList.add("external.properties");
+        ResourceIdentifier.Builder idBuilder = new ResourceIdentifier.Builder();
+        ResourceIdentifier resourceId = idBuilder.setResourceName("external.properties").build();
         when(mockResourceDao.getResourceNames(any(ResourceIdentifier.class), any(EntityType.class))).thenReturn(resultList);
 
-        String result = resourceService.getExternalPropertiesFileName();
-        verify(mockResourceDao).getResourceNames((ResourceIdentifier) isNull(), eq(EntityType.EXT_PROPERTIES));
-        assertEquals("external.properties", resultList.get(0));
+        List<String> result = resourceService.getResourceNames(resourceId);
+        verify(mockResourceDao).getResourceNames(eq(resourceId), eq(EntityType.EXT_PROPERTIES));
+        assertEquals("external.properties", result.get(0));
     }
 
     @Test

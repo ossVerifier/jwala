@@ -448,14 +448,14 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
     }
 
     @Override
-    // TODO remove this and replace with generic resource.get()
-    public Response getExternalPropertiesFileName() {
+    public Response getResourcesFileNames(ResourceHierarchyParam resourceHierarchyParam) {
         LOGGER.debug("Get the external properties file name");
-        final String externalPropertiesFile = resourceService.getExternalPropertiesFileName();
-        List<String> propertiesFile = new ArrayList<>();
-        if (!externalPropertiesFile.isEmpty()) {
-            propertiesFile.add(externalPropertiesFile);
-        }
+        final ResourceIdentifier resourceIdentifier = new ResourceIdentifier.Builder()
+                .setGroupName(resourceHierarchyParam.getGroup())
+                .setWebServerName(resourceHierarchyParam.getWebServer())
+                .setJvmName(resourceHierarchyParam.getJvm())
+                .setWebAppName(resourceHierarchyParam.getWebApp()).build();
+        final List<String> propertiesFile = resourceService.getResourceNames(resourceIdentifier);
         return ResponseBuilder.ok(propertiesFile);
     }
 
@@ -485,14 +485,19 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
     @Override
     public void afterPropertiesSet() throws Exception {
         // load the external properties
-        ResourceIdentifier.Builder idBuilder = new ResourceIdentifier.Builder().setResourceName(
-                resourceService.getExternalPropertiesFileName());
-        ResourceContent resourceContent = resourceService.getResourceContent(idBuilder.build());
-        if (resourceContent != null) {
-            final String externalProperties = resourceContent.getContent();
-            if (!externalProperties.isEmpty()) {
-                LOGGER.info("Load the external properties from the database on ResourceServiceRest initialization");
-                ExternalProperties.loadFromInputStream(new ByteArrayInputStream(externalProperties.getBytes()));
+        ResourceIdentifier.Builder idBuilder = new ResourceIdentifier.Builder();
+
+        final ResourceIdentifier resourceId = idBuilder.build();
+        final List<String> resourceNames = resourceService.getResourceNames(resourceId);
+        if (!resourceNames.isEmpty()) {
+            idBuilder.setResourceName(resourceNames.get(0));
+            ResourceContent resourceContent = resourceService.getResourceContent(idBuilder.build());
+            if (resourceContent != null) {
+                final String externalProperties = resourceContent.getContent();
+                if (!externalProperties.isEmpty()) {
+                    LOGGER.info("Load the external properties from the database on ResourceServiceRest initialization");
+                    ExternalProperties.loadFromInputStream(new ByteArrayInputStream(externalProperties.getBytes()));
+                }
             }
         }
     }

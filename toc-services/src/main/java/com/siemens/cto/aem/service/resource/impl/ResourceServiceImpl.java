@@ -686,13 +686,14 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Override
     public File getExternalPropertiesAsFile() throws IOException {
-        final String externalPropertiesFileName = getExternalPropertiesFileName();
-        if (externalPropertiesFileName.isEmpty()) {
+        final List<String> extPropertiesNamesList = getResourceNames(new ResourceIdentifier.Builder().build());
+        if (extPropertiesNamesList.isEmpty()) {
             LOGGER.error("No external properties file has been uploaded. Cannot provide a download at this time.");
             throw new InternalErrorException(AemFaultType.TEMPLATE_NOT_FOUND, "No external properties file has been uploaded. Cannot provide a download at this time.");
         }
 
-        ResourceIdentifier.Builder idBuilder = new ResourceIdentifier.Builder().setResourceName(externalPropertiesFileName);
+        final String extPropertiesResourceName = extPropertiesNamesList.get(0);
+        ResourceIdentifier.Builder idBuilder = new ResourceIdentifier.Builder().setResourceName(extPropertiesResourceName);
         ResourceIdentifier resourceIdentifier = idBuilder.build();
         final ResourceContent resourceContent = getResourceContent(resourceIdentifier);
         final String content = resourceContent.getContent();
@@ -700,17 +701,16 @@ public class ResourceServiceImpl implements ResourceService {
         String fileContent = ResourceFileGenerator.generateResourceConfig(content, resourceGroup, null);
         String jvmResourcesNameDir = ApplicationProperties.get("paths.generated.resource.dir") + "/external-properties-download";
 
-        createConfigFile(jvmResourcesNameDir + "/", externalPropertiesFileName, fileContent);
+        createConfigFile(jvmResourcesNameDir + "/", extPropertiesResourceName, fileContent);
 
-        return new File(jvmResourcesNameDir + "/" + externalPropertiesFileName);
+        return new File(jvmResourcesNameDir + "/" + extPropertiesResourceName);
     }
 
     @Override
-    public String getExternalPropertiesFileName() {
-        // TODO make generic getResourceNames API
-        ResourceIdentifier identifier = null;
-        final List<String> resourceNames = resourceDao.getResourceNames(identifier, EntityType.EXT_PROPERTIES);
-        return resourceNames.size() > 0 ? resourceNames.get(0) : "";
+    public List<String> getResourceNames(ResourceIdentifier resourceIdentifier) {
+        // TODO derive the EntityType based on the resource identifier
+        final List<String> resourceNames = resourceDao.getResourceNames(resourceIdentifier, EntityType.EXT_PROPERTIES);
+        return resourceNames;
     }
 
     @Override
