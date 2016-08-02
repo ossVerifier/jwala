@@ -39,13 +39,14 @@ var DataTableButton = React.createClass({
 
         var theLabel = this.toggleStatus === 0 ? this.props.label : this.props.label2;
         var buttonClassName = this.props.buttonClassName !== undefined ? this.props.buttonClassName : "";
-
+        var className = "ui-button ui-widget ui-corner-all ui-button-text-only " + buttonClassName;
+        className += !this.props.disabled ?  " ui-state-default"  : " ui-state-disabled";
         return React.DOM.div({className: this.props.className },
                               React.DOM.button({ id: this.props.id,
                               type: "button",
                               role: "button",
                               ariaDisabled: false,
-                              className: "ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only " + buttonClassName,
+                              className: className,
                               title: this.props.sTitle },
                               React.DOM.span({ className: spanClassName }, theLabel)));
     },
@@ -75,7 +76,11 @@ var DataTableButton = React.createClass({
     },
     statics: {
         handleClick: function (self) {
-            if (self.props.onClickMessage !== undefined && $("#tooltip" + self.props.id).length === 0) {
+            if (self.props.disabled) {
+                return;
+            }
+
+            if (!self.props.onClickMessage && $("#tooltip" + self.props.id).length === 0) {
                 var top = $("#" + self.props.id).parent().position().top - $("#" + self.props.id).height() / 2;
                 var left = $("#" + self.props.id).parent().position().left + $("#" + self.props.id).width() / 2;
                 $("#" + self.props.id).parent().append("<div id='tooltip" + self.props.id + "' role='tooltip' class='ui-tooltip ui-widget ui-corner-all ui-widget-content' " + "style='top:" + top + "px;left:" + left + "px'>" + self.props.onClickMessage + "</div>");

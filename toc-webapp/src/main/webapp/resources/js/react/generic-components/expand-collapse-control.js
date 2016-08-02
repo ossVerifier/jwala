@@ -88,7 +88,7 @@ var ExpandCollapseControl = React.createClass({
                 });
 
                 var self = this;
-                if (headerComponents !== undefined) {
+                if (headerComponents) {
                     // Accordion button specific codes
                     // attach handlers to the buttons
                     for (var i = 0; i < headerComponents.length; i++) {
@@ -111,9 +111,7 @@ var ExpandCollapseControl = React.createClass({
                                         $("#tooltip" + theComponent.id).remove();
                                     });
                                 }
-                                //Rahul: i added this code to get rid of "Uncaught TypeError: theComponent.btnCallback is not a function" error
-                                if(MainArea.isAdminRole)
-                                    theComponent.btnCallback(event);
+                                theComponent.btnCallback(event);
                             }.bind(self, component);
 
                             $(buttonSelector).find("span").remove();
@@ -121,7 +119,12 @@ var ExpandCollapseControl = React.createClass({
                             $(buttonSelector).attr("title", component.sTitle);
                             $(buttonSelector).button();
 
-                            $(buttonSelector).click({id:self.props.parentItemId, name:self.props.parentItemName, buttonSelector: buttonSelector}, onClickCallback);
+                            if (component.disabled) {
+                                $(buttonSelector).removeClass("ui-state-default");
+                                $(buttonSelector).addClass("ui-state-disabled");
+                            } else {
+                                $(buttonSelector).click({id:self.props.parentItemId, name:self.props.parentItemName, buttonSelector: buttonSelector}, onClickCallback);
+                            }
 
                             $(buttonSelector).find("span").attr("class", component.customSpanClassName);
                             $(buttonSelector).addClass(headerComponents[i].buttonClassName);

@@ -311,7 +311,8 @@ var renderButton = function(tableId, item, data, type, full, parentItemId) {
                                         onClickMessage:item.onClickMessage,
                                         extraDataToPassOnCallback:extraData,
                                         busyStatusTimeout:item.busyStatusTimeout,
-                                        parentItemId:parentItemId});
+                                        parentItemId:parentItemId,
+                                        disabled:item.disabled});
 
     TocPager.allButtons[id] = reactBtn;
 

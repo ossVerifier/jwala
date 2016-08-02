@@ -21,7 +21,8 @@ var TocDataTable = React.createClass({
                         itemId: "whatever",
                         label: obj.btnLabel,
                         className: "inline-block",
-                        callback: obj.btnCallback }));
+                        callback: obj.btnCallback ,
+                        disabled: obj.disabled}));
                 } else if (obj.tocType === "label") {
                     var labelId = null;
                     if (obj.id !== undefined) {
