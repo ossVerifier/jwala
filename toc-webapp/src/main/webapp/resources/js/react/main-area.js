@@ -1,47 +1,45 @@
 /** @jsx React.DOM */
 var MainArea = React.createClass({
-     getInitialState: function(){
-             return{
-                hasRole: false
-             }
-     },
-     render: function() {
-       if(this.state.hasRole){
+    getInitialState: function(){
+        return {
+            hasRole: false
+        }
+    },
+    render: function() {
+        var content = this.state.hasRole ? <MainTabs/> : <p>Retrieving roles...</p>;
         return <div className={this.props.className}>
-                    <div id="txt"></div>
-                    <table className="main-area-table">
-                        <tr>
-                            <td><Banner/><br/><br/></td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <div id="loading" style={{display:"none"}}>
-                                    <br/>
-                                    <img src="public-resources/img/gears-2d.gif"/>
-                                </div>
-                                <MainTabs/>
-                            </td>
-                        </tr>
-                    </table>
-                    <div className="preload">
-                        {/* This fixes icon loading issues when opening a row with many items e.g. jvms, web servers and apps */}
-                        <img src="public-resources/img/react/gear-icon.png" />
-                        <img src="public-resources/img/icons/heap-dump.png" />
-                        <img src="public-resources/img/icons/thread-dump.png" />
-                        <img src="public-resources/img/icons/mgr.png" />
-                        <img src="public-resources/img/blue-and-light-blue-gears.gif"/>
-                    </div>
+                   <div id="txt"/>
+                   <table className="main-area-table">
+                       <tr>
+                           <td><Banner/><br/><br/></td>
+                       </tr>
+                       <tr>
+                           <td>
+                               <div id="loading" style={{display:"none"}}>
+                                   <br/>
+                                   <img src="public-resources/img/gears-2d.gif"/>
+                               </div>
+                               {content}
+                           </td>
+                       </tr>
+                   </table>
+                   <div className="preload">
+                       {/* This fixes icon loading issues when opening a row with many items e.g. jvms, web servers and apps */}
+                       <img src="public-resources/img/react/gear-icon.png"/>
+                       <img src="public-resources/img/icons/heap-dump.png"/>
+                       <img src="public-resources/img/icons/thread-dump.png"/>
+                       <img src="public-resources/img/icons/mgr.png"/>
+                       <img src="public-resources/img/blue-and-light-blue-gears.gif"/>
+                   </div>
                </div>
-       }
-         return <p>Getting admin details...</p>
     },
     componentDidMount: function(){
         var self = this;
         userService.getIsAdmin().then(function(response){
             MainArea.isAdminRole = (response.applicationResponseContent === "true");
             self.setState({hasRole: true});
-        })
-     },
+        });
+    },
     statics: {
         unsavedChanges: false,
         isAdminRole: false
