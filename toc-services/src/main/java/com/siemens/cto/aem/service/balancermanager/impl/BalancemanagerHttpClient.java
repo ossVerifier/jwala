@@ -1,15 +1,5 @@
 package com.siemens.cto.aem.service.balancermanager.impl;
 
-import java.io.IOException;
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
-import java.security.cert.X509Certificate;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
 import org.apache.http.Consts;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.ClientProtocolException;
@@ -24,7 +14,19 @@ import org.apache.http.message.BasicNameValuePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.net.ssl.*;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLException;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
+import java.io.IOException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 public class BalancemanagerHttpClient {
 
@@ -35,7 +37,7 @@ public class BalancemanagerHttpClient {
         try {
             sslContext = SSLContext.getInstance("SSL");
         } catch (NoSuchAlgorithmException e) {
-            LOGGER.error(e.toString());
+            LOGGER.error(e.getMessage(), e);
         }
         try {
             sslContext.init(null, new TrustManager[]{new X509TrustManager() {
@@ -50,7 +52,7 @@ public class BalancemanagerHttpClient {
                 }
             }}, new SecureRandom());
         } catch (KeyManagementException e) {
-            LOGGER.error(e.toString());
+            LOGGER.error(e.getMessage(), e);
         }
         X509HostnameVerifier verifier = new AbstractVerifier() {
             @Override
@@ -77,9 +79,9 @@ public class BalancemanagerHttpClient {
             returnCode = res.getStatusLine().getStatusCode();
             res.close();
         } catch (ClientProtocolException e) {
-            LOGGER.error(e.toString());
+            LOGGER.error(e.getMessage(), e);
         } catch (IOException e) {
-            LOGGER.error(e.toString());
+            LOGGER.error(e.getMessage(), e);
         }
         return returnCode;
     }
