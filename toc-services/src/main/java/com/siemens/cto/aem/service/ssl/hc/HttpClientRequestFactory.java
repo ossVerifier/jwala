@@ -20,7 +20,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 
 /**
- * Use a pooling connection manager for HTTP and HTTPS ping connections
+ * Use a pooling connection Manager for HTTP and HTTPS ping connections
  * <code>
  *   <bean id="webServerHttpRequestFactory" class="HttpClientRequestFactory">
  *     <property name="connectTimeout" value="${ping.jvm.connectTimeout}"/>

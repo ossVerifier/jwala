@@ -28,6 +28,12 @@ public class BalancermanagerServiceRestImpl implements BalancermanagerServiceRes
     }
 
     @Override
+    public Response getGroup(@PathParam("groupName") String groupName) {
+
+        return null;
+    }
+
+    @Override
     public void afterPropertiesSet() throws Exception {
 
     }

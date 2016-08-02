@@ -15,19 +15,28 @@ import com.siemens.cto.aem.service.MessagingService;
 import com.siemens.cto.aem.service.app.ApplicationService;
 import com.siemens.cto.aem.service.balancermanager.impl.BalancemanagerHttpClient;
 import com.siemens.cto.aem.service.balancermanager.impl.BalancermanagerServiceImpl;
+import com.siemens.cto.aem.service.balancermanager.impl.xml.data.Manager;
 import com.siemens.cto.aem.service.group.GroupService;
+import com.siemens.cto.aem.service.ssl.hc.HttpClientRequestFactory;
 import com.siemens.cto.aem.service.webserver.WebServerCommandService;
 
 import com.siemens.cto.aem.service.webserver.WebServerService;
+import com.siemens.cto.aem.service.webserver.component.ClientFactoryHelper;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.internal.verification.Times;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
 
 import java.io.*;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.util.*;
 
@@ -51,20 +60,25 @@ public class BalancemanagerServiceImplTest {
     @Mock
     private MessagingService mockMessagingService;
 
+    private ClientFactoryHelper clientFactoryHelper = new ClientFactoryHelper();
+
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        this.balancermanagerServiceImpl = new BalancermanagerServiceImpl(mockGroupService, mockApplicationService, mockWebServerService, mockMessagingService){
+        this.balancermanagerServiceImpl = new BalancermanagerServiceImpl(mockGroupService, mockApplicationService, mockWebServerService, mockMessagingService,
+                clientFactoryHelper) {
             @Override
-            public String getHttpdConffromResource(final String webServerName){
-              return getTestHttpConf();
+            public String getHttpdConffromResource(final String webServerName) {
+                return getTestHttpConf();
             }
+
             @Override
-            public void sendMessage(final Identifier<WebServer> id, final String message){
+            public void sendMessage(final Identifier<WebServer> id, final String message) {
 
             }
         };
         System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, new File(".").getAbsolutePath() + "/src/test/resources");
+
     }
 
     @After
@@ -145,7 +159,7 @@ public class BalancemanagerServiceImplTest {
         when(mockApplicationService.findApplications(new Identifier<Group>(1L))).thenReturn(mockGroup.findApplications());
         when(mockWebServerService.findWebServers(new Identifier<Group>(1L))).thenReturn(mockGroup.findWebServers());
         Map map = new HashMap<>();
-        map.put("a","1");
+        map.put("a", "1");
         BalancemanagerHttpClient mockBalancemanagerHttpClient = org.mockito.Mockito.mock(BalancemanagerHttpClient.class);
         when(mockBalancemanagerHttpClient.doHttpClientPost("http://localhost", map)).thenReturn(200);
         balancermanagerServiceImpl.drainUserGroup("mygroupName");
@@ -159,13 +173,13 @@ public class BalancemanagerServiceImplTest {
         when(mockWebServerService.findWebServers(new Identifier<Group>(1L))).thenReturn(mockGroup.findWebServers());
         when(mockWebServerService.getWebServer("myWebServerName")).thenReturn(mockGroup.getWebServer("myWebServerName"));
         Map map = new HashMap<>();
-        map.put("a","1");
+        map.put("a", "1");
         BalancemanagerHttpClient mockBalancemanagerHttpClient = org.mockito.Mockito.mock(BalancemanagerHttpClient.class);
         when(mockBalancemanagerHttpClient.doHttpClientPost("http://localhost", map)).thenReturn(200);
         balancermanagerServiceImpl.drainUserWebServer("mygroupName", "myWebServerName");
     }
 
-    private String getTestHttpConf(){
+    private String getTestHttpConf() {
         File httpdconfFile = new File("./src/test/resources/balancermanager/httpd.conf");
         String contents = "";
         try {
@@ -177,4 +191,52 @@ public class BalancemanagerServiceImplTest {
         return contents;
     }
 
+    /*@Test
+    public void testGetBalancerManager() {
+        try {
+            ClientFactoryHelper clientFactoryHelper = new ClientFactoryHelper();
+            System.out.println(clientFactoryHelper.requestGet(new URI("https://usmlvv1cds0057/balancer-manager")).toString());
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+        }
+
+    }*/
+
+    @Test
+    public void testGetWorkerStatus(){
+        final File httpdconfFile = new File("./src/test/resources/balancermanager/balancer-Manager-response.html");
+        String contents = "";
+        try {
+            byte[] bytes = Files.readAllBytes(httpdconfFile.toPath());
+            contents = new String(bytes, "UTF-8");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        final String appName = "health-check-4.0";
+        Set<String> workers = new HashSet<>();
+        workers.add("https://usmlvv1cds0057:9101/hct");
+        workers.add("https://usmlvv1cds0057:9111/hct");
+        workers.add("https://usmlvv1cds0057:9121/hct");
+        workers.add("https://usmlvv1cds0058:9101/hct");
+        workers.add("https://usmlvv1cds0058:9111/hct");
+        workers.add("https://usmlvv1cds0058:9121/hct");
+        balancermanagerServiceImpl.getWorkerStatus(contents, appName, workers);
+    }
+
+    @Test
+    public void testGetWorkerXml(){
+        final File httpdconfFile = new File("./src/test/resources/balancermanager/balancer-Manager-response.xml");
+        String contents = "";
+        try {
+            byte[] bytes = Files.readAllBytes(httpdconfFile.toPath());
+            contents = new String(bytes, "UTF-8");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        final String appName = "health-check-4.0";
+        Manager manager = balancermanagerServiceImpl.getWorkerXml(contents, null, null);
+        assertEquals(2, manager.getBalancers().size());
+    }
 }

@@ -6,7 +6,7 @@ import java.security.Principal;
 
 /**
  * Request wrapper which sole purpose is to pass the currently logged in user via getUserPrincipal which is required
- * when accessing secured Tomcat resources like the the Tomcat manager GUI.
+ * when accessing secured Tomcat resources like the the Tomcat Manager GUI.
  *
  * Created by Z003BPEJ on 8/6/14.
  */

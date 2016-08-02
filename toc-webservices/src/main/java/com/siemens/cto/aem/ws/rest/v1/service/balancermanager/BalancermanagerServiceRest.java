@@ -18,4 +18,8 @@ public interface BalancermanagerServiceRest extends InitializingBean {
     Response drainUserWebServer(@PathParam("groupName") final String groupName,
                                 @PathParam("webserverName") final String webserverName);
 
+    @GET
+    @Path("/{groupName}")
+    Response getGroup(@PathParam("groupName") final String groupName);
+
 }

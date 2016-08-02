@@ -6,4 +6,6 @@ public interface BalancermanagerService {
 
     void drainUserWebServer(final String groupName, final String webserverName);
 
+    void getGroupDrainStatus(final String group);
+
 }
