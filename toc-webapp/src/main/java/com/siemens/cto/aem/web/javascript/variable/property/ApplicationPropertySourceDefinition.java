@@ -7,7 +7,7 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 
 public enum ApplicationPropertySourceDefinition {
 
-    LOAD_BALANCER_STATUS_MOUNT("loadBalancerStatusMount", "mod_jk.load-balancer.status.mount", "/balancer-Manager", VariableStyle.STRING),
+    LOAD_BALANCER_STATUS_MOUNT("loadBalancerStatusMount", "mod_jk.load-balancer.status.mount", "/balancer-manager", VariableStyle.STRING),
     STATE_POLL_TIMEOUT("statePollTimeout", "state.poll.timeout", "1000", VariableStyle.STRING),
     START_STOP_TIMEOUT("startStopTimeout", "start.stop.timeout", "180000", VariableStyle.STRING),
     HEALTH_CHECK_APP("healthCheckApp", "health.check.app", "/hct", VariableStyle.STRING),
