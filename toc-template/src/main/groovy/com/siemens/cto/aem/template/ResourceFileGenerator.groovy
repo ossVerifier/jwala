@@ -56,7 +56,6 @@ class ResourceFileGenerator {
             }
         }
         final map = new HashMap<String, String>(ApplicationProperties.properties);
-        final extMap = new HashMap<String, String>(ExternalProperties.properties);
         def binding = [webServers: webServers,
                        webServer : webServer,
                        jvms      : jvms,
@@ -65,8 +64,13 @@ class ResourceFileGenerator {
                        webApp    : webApp,
                        groups    : groups,
                        group     : group,
-                       vars      : map,
-                       ext       : extMap]
+                       vars      : map];
+
+        def properties = ExternalProperties.properties
+        if (properties.size() > 0) {
+            final extMap = new HashMap<String, String>(properties);
+            binding.ext = extMap;
+        }
 
         final engine = new StreamingTemplateEngine();
 

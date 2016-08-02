@@ -511,7 +511,9 @@ public class ResourceServiceImpl implements ResourceService {
     @Override
     @Transactional
     public int deleteExternalProperties() {
-        return resourceDao.deleteExternalProperties();
+        final int deleteResult = resourceDao.deleteExternalProperties();
+        ExternalProperties.reset();
+        return deleteResult;
     }
 
     @Override

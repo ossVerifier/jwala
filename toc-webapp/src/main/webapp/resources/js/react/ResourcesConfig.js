@@ -209,6 +209,10 @@ var ResourcesConfig = React.createClass({
 
             // clear the editor
             self.refs.xmlTabs.clearEditor();
+
+            if (self.refs.xmlTabs.state.entityType === "extProperties"){
+                self.updateExtPropsAttributesCallback();
+            }
         }).caught(function(e){
             console.log(e);
             $.errorAlert("Error deleting resource template(s)!", "Error", true);
