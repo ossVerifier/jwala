@@ -4,6 +4,7 @@ import com.siemens.cto.aem.common.domain.model.resource.EntityType;
 import com.siemens.cto.aem.common.domain.model.resource.ResourceIdentifier;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaApplicationConfigTemplate;
 import com.siemens.cto.aem.persistence.jpa.domain.resource.config.template.*;
+import com.siemens.cto.aem.persistence.jpa.service.exception.ResourceTemplateUpdateException;
 import com.siemens.cto.aem.persistence.service.ResourceDao;
 
 import javax.persistence.EntityManager;
@@ -213,6 +214,30 @@ public class ResourceDaoImpl implements ResourceDao {
         em.flush();
 
         return resourceTemplate;
+    }
+
+    @Override
+    public void updateResource(ResourceIdentifier resourceIdentifier, EntityType entityType, String templateContent) {
+        final Query q = em.createNamedQuery(JpaResourceConfigTemplate.UPDATE_RESOURCE_TEMPLATE_CONTENT);
+        q.setParameter(JpaResourceConfigTemplate.QUERY_PARAM_ENTITY_TYPE, entityType);
+        // TODO make this more generic and actually use the resource identifier fields
+        q.setParameter(JpaResourceConfigTemplate.QUERY_PARAM_GRP_ID, null);
+        q.setParameter(JpaResourceConfigTemplate.QUERY_PARAM_APP_ID, null);
+        q.setParameter(JpaResourceConfigTemplate.QUERY_PARAM_ENTITY_ID, null);
+        q.setParameter(JpaResourceConfigTemplate.QUERY_PARAM_TEMPLATE_NAME, resourceIdentifier.resourceName);
+        q.setParameter(JpaResourceConfigTemplate.QUERY_PARAM_TEMPLATE_CONTENT, templateContent);
+
+        int numEntities;
+
+        try {
+            numEntities = q.executeUpdate();
+        } catch (RuntimeException re) {
+            throw new ResourceTemplateUpdateException(resourceIdentifier.toString(), resourceIdentifier.resourceName, re);
+        }
+
+        if (numEntities == 0) {
+            throw new ResourceTemplateUpdateException(resourceIdentifier.toString(), resourceIdentifier.resourceName);
+        }
     }
 
     @Override

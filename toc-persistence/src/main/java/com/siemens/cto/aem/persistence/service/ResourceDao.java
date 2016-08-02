@@ -196,4 +196,12 @@ public interface ResourceDao {
      * @return the saved resource
      */
     JpaResourceConfigTemplate createResource(Long entityId, Long groupId, Long appId, EntityType entityType, String resourceFileName, InputStream data, String metaData);
+
+    /**
+     * Update the content of the resource template
+     * @param resourceIdentifier the ID information of the resource
+     * @param entityType the type of the entity (JVM, Web Server, Application, Group level JVMs, External Properties, etc.)
+     * @param templateContent the updated content of the template
+     */
+    void updateResource(ResourceIdentifier resourceIdentifier, EntityType entityType, String templateContent);
 }

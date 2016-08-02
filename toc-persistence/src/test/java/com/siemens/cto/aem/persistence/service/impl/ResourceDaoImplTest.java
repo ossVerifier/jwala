@@ -15,12 +15,14 @@ import com.siemens.cto.aem.persistence.jpa.service.ApplicationCrudService;
 import com.siemens.cto.aem.persistence.jpa.service.GroupCrudService;
 import com.siemens.cto.aem.persistence.jpa.service.JvmCrudService;
 import com.siemens.cto.aem.persistence.jpa.service.WebServerCrudService;
+import com.siemens.cto.aem.persistence.jpa.service.exception.ResourceTemplateUpdateException;
 import com.siemens.cto.aem.persistence.jpa.service.impl.ApplicationCrudServiceImpl;
 import com.siemens.cto.aem.persistence.jpa.service.impl.GroupCrudServiceImpl;
 import com.siemens.cto.aem.persistence.jpa.service.impl.JvmCrudServiceImpl;
 import com.siemens.cto.aem.persistence.jpa.service.impl.WebServerCrudServiceImpl;
 import com.siemens.cto.aem.persistence.service.ResourceDao;
 import com.siemens.cto.aem.persistence.service.ResourcePersistenceService;
+import junit.framework.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -139,7 +141,7 @@ public class ResourceDaoImplTest {
         "someJvm", "someMetaData", new ByteArrayInputStream("someData".getBytes()));
         applicationCrudService.uploadAppTemplate(uploadAppTemplateRequest, jpaJvm);
 
-        resourcePersistenceService.createResource(null, null, null, EntityType.EXT_PROPERTIES, "external.properties", new ByteArrayInputStream("property=test".getBytes()));
+        resourceDao.createResource(null, null, null, EntityType.EXT_PROPERTIES, "external.properties", new ByteArrayInputStream("property=test".getBytes()), "{}");
     }
 
     @Test
@@ -245,6 +247,30 @@ public class ResourceDaoImplTest {
         int result = resourceDao.deleteExternalProperties();
         assertEquals(1, result);
     }
+
+    @Test (expected = ResourceTemplateUpdateException.class)
+    public void testCreateResourceAndUpdate() {
+        // create the resource
+        JpaResourceConfigTemplate result = resourceDao.createResource(null, null, null, EntityType.EXT_PROPERTIES, "external.properties", new ByteArrayInputStream("property1=one".getBytes()), "{}");
+        Assert.assertEquals("property1=one", result.getTemplateContent());
+        Assert.assertEquals(EntityType.EXT_PROPERTIES, result.getEntityType());
+        Assert.assertEquals("external.properties", result.getTemplateName());
+        Assert.assertEquals(null, result.getEntityId());
+        Assert.assertEquals(null, result.getAppId());
+        Assert.assertEquals(null, result.getGroupId());
+        Assert.assertEquals("{}", result.getMetaData());
+
+        // update the resource
+        ResourceIdentifier.Builder idBuilder = new ResourceIdentifier.Builder();
+        ResourceIdentifier identifier = idBuilder.setResourceName("external.properties").build();
+
+        resourceDao.updateResource(identifier, EntityType.EXT_PROPERTIES, "property1=one11");
+
+        // test that the resource template update exception is thrown
+        idBuilder.setResourceName("not-an-existing-resource.properties");
+        resourceDao.updateResource(idBuilder.build(), EntityType.EXT_PROPERTIES, "doesnt=matter");
+    }
+
 
     @Configuration
     @Import(TestJpaConfiguration.class)

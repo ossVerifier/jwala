@@ -2,11 +2,8 @@ package com.siemens.cto.aem.persistence.service.resource;
 
 import com.siemens.cto.aem.common.domain.model.app.Application;
 import com.siemens.cto.aem.common.domain.model.group.Group;
-import com.siemens.cto.aem.common.domain.model.resource.EntityType;
-import com.siemens.cto.aem.common.domain.model.resource.ResourceIdentifier;
 import com.siemens.cto.aem.common.request.app.CreateApplicationRequest;
 import com.siemens.cto.aem.common.request.group.CreateGroupRequest;
-import com.siemens.cto.aem.persistence.jpa.domain.resource.config.template.JpaResourceConfigTemplate;
 import com.siemens.cto.aem.persistence.service.ApplicationPersistenceService;
 import com.siemens.cto.aem.persistence.service.GroupPersistenceService;
 import com.siemens.cto.aem.persistence.service.ResourcePersistenceService;
@@ -14,10 +11,8 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.ByteArrayInputStream;
 import java.util.List;
 
-import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertTrue;
 
 @Transactional
@@ -58,23 +53,4 @@ public abstract class AbstractResourcePersistenceServiceTest {
         assertTrue(!result.isEmpty());
     }
     
-    @Test
-    public void testCreateResourceAndUpdate() {
-        // create the resource
-        JpaResourceConfigTemplate result = resourcePersistenceService.createResource(null, null, null, EntityType.EXT_PROPERTIES, "external.properties", new ByteArrayInputStream("property1=one".getBytes()));
-        assertEquals("property1=one", result.getTemplateContent());
-        assertEquals(EntityType.EXT_PROPERTIES, result.getEntityType());
-        assertEquals("external.properties", result.getTemplateName());
-        assertEquals(null, result.getEntityId());
-        assertEquals(null, result.getAppId());
-        assertEquals(null, result.getGroupId());
-        assertEquals("{}", result.getMetaData());
-
-        // update the resource
-        ResourceIdentifier.Builder idBuilder = new ResourceIdentifier.Builder();
-        ResourceIdentifier identifier = idBuilder.setResourceName("external.properties").build();
-
-        resourcePersistenceService.updateResource(identifier, EntityType.EXT_PROPERTIES, "property1=one11");
-
-    }
 }

@@ -567,12 +567,13 @@ public class ResourceServiceImpl implements ResourceService {
     @Override
     @Transactional
     public String updateResourceContent(ResourceIdentifier resourceIdentifier, String templateContent) {
-        // TODO make this more generic for updating other resources
-        // TODO user resource dao - not persistence
-        resourcePersistenceService.updateResource(resourceIdentifier, EntityType.EXT_PROPERTIES, templateContent);
+
+        // TODO either derive or pass in the EntityType
+        resourceDao.updateResource(resourceIdentifier, EntityType.EXT_PROPERTIES, templateContent);
+
         // if the external properties resource was just saved then update properties
-        // TODO should we be passing the EntityType here instead?
         checkResourceExternalProperties(resourceIdentifier, templateContent);
+
         final ConfigTemplate configTemplate = resourceHandler.fetchResource(resourceIdentifier);
         return configTemplate.getTemplateContent();
     }
@@ -591,18 +592,14 @@ public class ResourceServiceImpl implements ResourceService {
     @Override
     @Transactional
     // TODO make this more generic to use the new resources identifier
-    // TODO move to the Resource DAO
     @Deprecated
     public Object uploadExternalProperties(String fileName, InputStream propertiesFileIn) {
         Long entityId = null;
         Long groupId = null;
         Long appId = null;
-        // TODO user resource dao - not persistence
-        return resourcePersistenceService.createResource(entityId, groupId, appId, EntityType.EXT_PROPERTIES, fileName, propertiesFileIn);
 
-        // TODO wait until properties file is deployed before setting the properties file path?
-//        String uploadFilePath = fileInfo.getPath().toString();
-//        ExternalProperties.setPropertiesFilePath(uploadFilePath);
+        // TODO add meta data
+        return resourceDao.createResource(entityId, groupId, appId, EntityType.EXT_PROPERTIES, fileName, propertiesFileIn, "");
     }
 
     @Override

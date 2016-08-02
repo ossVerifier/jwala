@@ -441,7 +441,7 @@ public class ResourceServiceImplTest {
 
         resourceService.uploadExternalProperties("external.properties", mockInputStream);
 
-        verify(mockResourcePersistenceService).createResource(anyLong(), anyLong(), anyLong(), eq(EntityType.EXT_PROPERTIES), eq("external.properties"), eq(mockInputStream));
+        verify(mockResourceDao).createResource(anyLong(), anyLong(), anyLong(), eq(EntityType.EXT_PROPERTIES), eq("external.properties"), eq(mockInputStream), anyString());
     }
 
     @Test
@@ -482,7 +482,7 @@ public class ResourceServiceImplTest {
 
         String result = resourceService.updateResourceContent(identifier, "newkey=newvalue");
         assertEquals("newkey=newvalue", result);
-        verify(mockResourcePersistenceService).updateResource(eq(identifier), eq(EntityType.EXT_PROPERTIES), eq("newkey=newvalue"));
+        verify(mockResourceDao).updateResource(eq(identifier), eq(EntityType.EXT_PROPERTIES), eq("newkey=newvalue"));
     }
 
     @Test
