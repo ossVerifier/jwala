@@ -595,6 +595,22 @@ public class ResourceServiceImpl implements ResourceService {
     }
 
     @Override
+    public void deployTemplateToAllHosts(String fileName, ResourceIdentifier resourceIdentifier) {
+        Set<String> allHosts = new TreeSet<>();
+        for (Group group : groupPersistenceService.getGroups()){
+            allHosts.addAll(groupPersistenceService.getHosts(group.getName()));
+        }
+        for (String hostName : new ArrayList<>(allHosts)){
+            // TODO deploy each template on its own thread
+            CommandOutput commandOutput = deployTemplateToHost(fileName, hostName, resourceIdentifier);
+            if (!commandOutput.getReturnCode().wasSuccessful()){
+                LOGGER.error("Failed to deploy {} to host {}", fileName, hostName);
+                throw new InternalErrorException(AemFaultType.CONTROL_OPERATION_UNSUCCESSFUL, "Failed to deploy the template " + fileName + " to host " + hostName);
+            }
+        }
+    }
+
+    @Override
     public CommandOutput deployTemplateToHost(String fileName, String hostName, ResourceIdentifier resourceIdentifier) {
         // only one at a time per jvm
         if (!resourceWriteLockMap.containsKey(hostName)) {
@@ -625,6 +641,7 @@ public class ResourceServiceImpl implements ResourceService {
             }
 
             LOGGER.info("Copying {} to {} on host {}", resourceSourceCopy, resourceDestPath, hostName);
+            // TODO backup existing file
             // TODO replace ApplicationControlOperation (and all operation classes) with ResourceControlOperation
             // TODO replace WindowsApplicationPlatformCommandProvider (and all platform command provider) with WindowsResourcePlatformCommandProvider
             commandOutput = remoteCommandExecutor.executeRemoteCommand(null, hostName, ApplicationControlOperation.SECURE_COPY, new WindowsApplicationPlatformCommandProvider(), resourceSourceCopy, resourceDestPath);

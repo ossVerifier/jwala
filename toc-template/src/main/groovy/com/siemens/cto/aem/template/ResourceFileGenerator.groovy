@@ -6,6 +6,7 @@ import com.siemens.cto.aem.common.domain.model.jvm.Jvm
 import com.siemens.cto.aem.common.domain.model.resource.ResourceGroup
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer
 import com.siemens.cto.aem.common.properties.ApplicationProperties
+import com.siemens.cto.aem.common.properties.ExternalProperties
 import com.siemens.cto.aem.template.exception.ResourceFileGeneratorException
 import groovy.text.StreamingTemplateEngine
 
@@ -55,6 +56,7 @@ class ResourceFileGenerator {
             }
         }
         final map = new HashMap<String, String>(ApplicationProperties.properties);
+        final extMap = new HashMap<String, String>(ExternalProperties.properties);
         def binding = [webServers: webServers,
                        webServer : webServer,
                        jvms      : jvms,
@@ -63,7 +65,8 @@ class ResourceFileGenerator {
                        webApp    : webApp,
                        groups    : groups,
                        group     : group,
-                       vars      : map]
+                       vars      : map,
+                       ext       : extMap]
 
         final engine = new StreamingTemplateEngine();
 

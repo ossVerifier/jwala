@@ -111,6 +111,24 @@ var resourceService = {
 
         return serviceFoundation.promisedPut("v1.0/resources/template/" + encodeURIComponent(fileName) + "/deploy/host/" + encodeURIComponent(host) + matrixParam);
     },
+    deployResourceToAllHosts: function(fileName, groupName, webServerName, jvmName, webAppName){
+        var matrixParam = "";
+
+        if (groupName) {
+            matrixParam += ";group=" + encodeURIComponent(groupName);
+        }
+        if (webServerName) {
+            matrixParam += ";webServer=" + encodeURIComponent(webServerName);
+        }
+        if (jvmName) {
+            matrixParam += ";jvm=" + encodeURIComponent(jvmName);
+        }
+        if (webAppName) {
+            matrixParam += ";webApp=" + encodeURIComponent(webAppName);
+        }
+
+        return serviceFoundation.promisedPut("v1.0/resources/template/" + encodeURIComponent(fileName) + "/deploy/hosts" + matrixParam);
+    },
     deployWebServerResource: function(webServerName, fileName) {
         return serviceFoundation.promisedPut("v1.0/webservers/" + encodeURIComponent(webServerName) + "/conf/" + encodeURIComponent(fileName));
     },

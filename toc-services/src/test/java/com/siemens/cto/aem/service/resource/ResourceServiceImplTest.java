@@ -514,6 +514,52 @@ public class ResourceServiceImplTest {
         assertEquals(new Integer(0), result.getReturnCode().getReturnCode());
     }
 
+
+    @Test
+    public void testDeployResourceTemplateToAllHosts() throws CommandFailureException {
+        ResourceIdentifier mockResourceIdentifier = mock(ResourceIdentifier.class);
+        ConfigTemplate mockConfigTemplate = mock(ConfigTemplate.class);
+        List<Group> groupList = new ArrayList<>();
+        Group mockGroup = mock(Group.class);
+        groupList.add(mockGroup);
+        List<String> hostsList = new ArrayList<>();
+        hostsList.add("test-host-1");
+        hostsList.add("test-host-2");
+
+        when(mockResourceHandler.fetchResource(any(ResourceIdentifier.class))).thenReturn(mockConfigTemplate);
+        when(mockConfigTemplate.getMetaData()).thenReturn("{\"deployPath\":\"c:/fake/path\", \"deployFileName\":\"deploy-me.txt\"}");
+        when(mockConfigTemplate.getTemplateContent()).thenReturn("key=value");
+        when(mockRemoteCommandExector.executeRemoteCommand(anyString(), anyString(), anyObject(), any(PlatformCommandProvider.class), anyString(), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(0), "SUCCESS", ""));
+        when(mockGroupPesistenceService.getGroups()).thenReturn(groupList);
+        when(mockGroupPesistenceService.getHosts(anyString())).thenReturn(hostsList);
+        when(mockGroup.getName()).thenReturn("test-group");
+
+        resourceService.deployTemplateToAllHosts("external.properties", mockResourceIdentifier);
+        verify(mockRemoteCommandExector, times(2)).executeRemoteCommand(anyString(), anyString(), anyObject(), any(PlatformCommandProvider.class), anyString(), anyString());
+    }
+
+    @Test (expected = InternalErrorException.class)
+    public void testDeployResourceTemplateToAllHostsFails() throws CommandFailureException {
+        ResourceIdentifier mockResourceIdentifier = mock(ResourceIdentifier.class);
+        ConfigTemplate mockConfigTemplate = mock(ConfigTemplate.class);
+        List<Group> groupList = new ArrayList<>();
+        Group mockGroup = mock(Group.class);
+        groupList.add(mockGroup);
+        List<String> hostsList = new ArrayList<>();
+        hostsList.add("test-host-1");
+        hostsList.add("test-host-2");
+
+        when(mockResourceHandler.fetchResource(any(ResourceIdentifier.class))).thenReturn(mockConfigTemplate);
+        when(mockConfigTemplate.getMetaData()).thenReturn("{\"deployPath\":\"c:/fake/path\", \"deployFileName\":\"deploy-me.txt\"}");
+        when(mockConfigTemplate.getTemplateContent()).thenReturn("key=value");
+        when(mockRemoteCommandExector.executeRemoteCommand(anyString(), anyString(), anyObject(), any(PlatformCommandProvider.class), anyString(), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(1), "", "Command failed"));
+        when(mockGroupPesistenceService.getGroups()).thenReturn(groupList);
+        when(mockGroupPesistenceService.getHosts(anyString())).thenReturn(hostsList);
+        when(mockGroup.getName()).thenReturn("test-group");
+
+        resourceService.deployTemplateToAllHosts("external.properties", mockResourceIdentifier);
+    }
+
     @Test (expected = InternalErrorException.class)
     public void testDeployResourceTemplateToHostThrowsCommandFailureException() throws CommandFailureException {
         ResourceIdentifier mockResourceIdentifier = mock(ResourceIdentifier.class);

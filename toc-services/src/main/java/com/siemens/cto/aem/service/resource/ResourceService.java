@@ -244,4 +244,11 @@ public interface ResourceService {
      * @param resourceIdentifier the group, JVM, web server, and web application names that identify the resource
      */
     CommandOutput deployTemplateToHost(String fileName, String hostName, ResourceIdentifier resourceIdentifier);
+
+    /**
+     * Deploy the resource to all the hosts configured in TOC
+     * @param fileName the name of the template to be deployed
+     * @param resourceIdentifier the group, JVM, web server, and web application names that identify the resource
+     */
+    void deployTemplateToAllHosts(String fileName, ResourceIdentifier resourceIdentifier);
 }

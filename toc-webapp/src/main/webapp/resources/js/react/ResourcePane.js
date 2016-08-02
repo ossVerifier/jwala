@@ -213,6 +213,14 @@ var ResourcePane = React.createClass({
                             console.log(response);
                             $.errorAlert(ResourcePane.parseDetailedErrorMsg(response, ResourcePane.DEFAULT_DEPLOY_ERR_MSG));
                         });
+            } else if (data.rtreeListMetaData.entity === "extProperties") {
+                ServiceFactory.getResourceService().deployResourceToAllHosts(this.state.rightClickedItem)
+                        .then(function(response){
+                            $.alert("Deploy successful!", ResourcePane.DEPLOY_RESOURCE_TITLE, true);
+                        }).caught(function(response){
+                            console.log(response);
+                            $.errorAlert(ResourcePane.parseDetailedErrorMsg(response, ResourcePane.DEFAULT_DEPLOY_ERR_MSG));
+                        });
             }
         }
         this.refs.confirmDeployResourceDlg.close();

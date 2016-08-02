@@ -663,11 +663,22 @@ public class ResourceServiceRestImplTest {
         ResourceHierarchyParam param = new ResourceHierarchyParam();
 
         when(impl.deployTemplateToHost(anyString(), anyString(), any(ResourceIdentifier.class))).thenReturn(new CommandOutput(new ExecReturnCode(0), "SUCCESS", ""));
-        Response result = cut.deployTemplate("external.properties", "test-host", param, mockAuthUser);
+        Response result = cut.deployTemplateToHost("external.properties", "test-host", param, mockAuthUser);
         assertEquals(200, result.getStatus());
 
         when(impl.deployTemplateToHost(anyString(), anyString(), any(ResourceIdentifier.class))).thenReturn(new CommandOutput(new ExecReturnCode(1), "", "FAILED"));
-        result = cut.deployTemplate("external.properties", "test-host", param, mockAuthUser);
+        result = cut.deployTemplateToHost("external.properties", "test-host", param, mockAuthUser);
         assertEquals(500, result.getStatus());
+    }
+
+    @Test
+    public void testDeployTemplateToAllHosts() {
+        AuthenticatedUser mockAuthUser = mock(AuthenticatedUser.class);
+        ResourceHierarchyParam param = new ResourceHierarchyParam();
+
+        when(mockAuthUser.getUser()).thenReturn(new User("test-user"));
+
+        Response result = cut.deployTemplateToAllHosts("external.properties", param, mockAuthUser);
+        assertEquals(200, result.getStatus());
     }
 }
