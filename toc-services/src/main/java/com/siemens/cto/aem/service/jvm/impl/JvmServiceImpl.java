@@ -297,7 +297,7 @@ public class JvmServiceImpl implements JvmService {
         try {
             jvmPersistenceService.getResourceTemplate(jvmName, "setenv.bat");
         } catch (NonRetrievableResourceTemplateContentException e){
-            LOGGER.error("No setenv.bat configure for JVM: {}", jvmName);
+            LOGGER.error("No setenv.bat configure for JVM: {}", jvmName, e);
             throw new InternalErrorException(AemFaultType.TEMPLATE_NOT_FOUND, "No setenv.bat template found for " + jvmName + ". Unable to continue processing.");
         }
         LOGGER.debug("Found setenv.bat for JVM: {}. Continuing with process. ", jvmName);
