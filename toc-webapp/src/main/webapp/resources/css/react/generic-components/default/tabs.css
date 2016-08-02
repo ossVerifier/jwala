@@ -9,7 +9,7 @@
     display: inline-block; /* Aligns the tabs side by side and align their bottoms with the top of the content div */
     padding-left: 10px;
     margin-right: 5px; /* li element shows the right side of the tab, this property sees to it that the right side tab does not overlap with the left side tab */
-    margin-bottom: -3.5px /* Fixes small gap in between div content and inactive tabs for Chrome */
+    margin-bottom: -3px /* Fixes small gap in between div content and inactive tabs for Chrome */
 }
 
 .tabs-default > div > li > a {
@@ -49,5 +49,5 @@
 .Tabs .disabled {
     opacity: .55;
     color: #C0C0C0 !important;
-    margin-bottom: -3.5px /* Fixes small gap in between div content and inactive tabs for Chrome */
+    margin-bottom: -3px /* Fixes small gap in between div content and inactive tabs for Chrome */
 }
