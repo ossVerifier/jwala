@@ -26,6 +26,7 @@ import org.slf4j.LoggerFactory;
 import javax.activation.DataHandler;
 import javax.ws.rs.core.Response;
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
@@ -448,9 +449,9 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
 
     @Override
     // TODO remove this and replace with generic resource.get()
-    public Response getExternalPropertiesFile() {
+    public Response getExternalPropertiesFileName() {
         LOGGER.debug("Get the external properties file name");
-        final String externalPropertiesFile = resourceService.getExternalPropertiesFile();
+        final String externalPropertiesFile = resourceService.getExternalPropertiesFileName();
         List<String> propertiesFile = new ArrayList<>();
         if (!externalPropertiesFile.isEmpty()) {
             propertiesFile.add(externalPropertiesFile);
@@ -467,10 +468,25 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
     }
 
     @Override
+    public Response getExternalPropertiesDownload() {
+        Response response = null;
+        try {
+            final File propertiesAsFile = resourceService.getExternalPropertiesAsFile();
+            Response.ResponseBuilder responseBuilder = Response.ok(propertiesAsFile);
+            responseBuilder.header("Content-Disposition", "attachment; filename=" + propertiesAsFile.getName());
+            response = responseBuilder.build();
+        } catch (IOException e) {
+            LOGGER.error("Error attempting to download the external properties file", e);
+            response = ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(AemFaultType.BAD_STREAM, "Unable to provide the external properties file as a download."));
+        }
+        return response;
+    }
+
+    @Override
     public void afterPropertiesSet() throws Exception {
         // load the external properties
         ResourceIdentifier.Builder idBuilder = new ResourceIdentifier.Builder().setResourceName(
-                resourceService.getExternalPropertiesFile());
+                resourceService.getExternalPropertiesFileName());
         ResourceContent resourceContent = resourceService.getResourceContent(idBuilder.build());
         if (resourceContent != null) {
             final String externalProperties = resourceContent.getContent();

@@ -273,8 +273,10 @@ public class Jvm implements Serializable {
                 ", systemProperties='" + systemProperties + '\'' +
                 ", state=" + state +
                 ", errorStatus='" + errorStatus + '\'' +
+                ", webApps=" + webApps +
+                ", lastUpdatedDate=" + lastUpdatedDate +
                 ", userName='" + userName + '\'' +
+                ", encryptedPassword='" + encryptedPassword + '\'' +
                 '}';
     }
-
 }

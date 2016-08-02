@@ -58,6 +58,7 @@ import static org.mockito.Matchers.anyMap;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.anyLong;
+import static org.mockito.Mockito.anyObject;
 import static org.mockito.Mockito.isNull;
 import static org.mockito.Mockito.*;
 
@@ -496,7 +497,7 @@ public class ResourceServiceImplTest {
         resultList.add("external.properties");
         when(mockResourceDao.getResourceNames(any(ResourceIdentifier.class), any(EntityType.class))).thenReturn(resultList);
 
-        String result = resourceService.getExternalPropertiesFile();
+        String result = resourceService.getExternalPropertiesFileName();
         verify(mockResourceDao).getResourceNames((ResourceIdentifier) isNull(), eq(EntityType.EXT_PROPERTIES));
         assertEquals("external.properties", resultList.get(0));
     }
@@ -583,5 +584,34 @@ public class ResourceServiceImplTest {
         when(mockPrivateApplicationService.uploadWebArchiveData(any(UploadWebArchiveRequest.class)))
                 .thenReturn(mockRepositoryFileInformation);
         assertEquals("thePath", resourceService.uploadResource(mock(ResourceTemplateMetaData.class), new ByteArrayInputStream("data".getBytes())));
+    }
+
+    @Test
+    public void testGetExternalPropertiesAsFile() throws IOException {
+
+        // test for an existing external properties file
+        when(mockResourceDao.getResourceNames(any(ResourceIdentifier.class), any(EntityType.class))).thenReturn(new ArrayList<String>());
+        boolean exceptionThrown = false;
+        try {
+            resourceService.getExternalPropertiesAsFile();
+        } catch (InternalErrorException iee){
+            exceptionThrown = true;
+        }
+        assertTrue(exceptionThrown);
+
+        // now test the success case
+        final ArrayList<String> extPropertiesResourceNames = new ArrayList<>();
+        extPropertiesResourceNames.add("external.properties");
+        final ConfigTemplate extPropertiesConfigTemplate = new ConfigTemplate();
+        extPropertiesConfigTemplate.setMetaData("{\"deployPath\":\"c:/fake/path\", \"deployFileName\":\"external.properties\"}");
+        extPropertiesConfigTemplate.setTemplateContent("key=value");
+
+        when(mockResourceDao.getResourceNames(any(ResourceIdentifier.class), any(EntityType.class))).thenReturn(extPropertiesResourceNames);
+        when(mockResourceHandler.fetchResource(any(ResourceIdentifier.class))).thenReturn(extPropertiesConfigTemplate);
+        when(mockGroupPesistenceService.getGroups()).thenReturn(new ArrayList<Group>());
+
+        File result = resourceService.getExternalPropertiesAsFile();
+        assertTrue(result.length() > 0);
+        assertTrue(result.delete());
     }
 }

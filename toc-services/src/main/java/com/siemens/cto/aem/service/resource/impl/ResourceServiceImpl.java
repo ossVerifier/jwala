@@ -686,7 +686,28 @@ public class ResourceServiceImpl implements ResourceService {
     }
 
     @Override
-    public String getExternalPropertiesFile() {
+    public File getExternalPropertiesAsFile() throws IOException {
+        final String externalPropertiesFileName = getExternalPropertiesFileName();
+        if (externalPropertiesFileName.isEmpty()) {
+            LOGGER.error("No external properties file has been uploaded. Cannot provide a download at this time.");
+            throw new InternalErrorException(AemFaultType.TEMPLATE_NOT_FOUND, "No external properties file has been uploaded. Cannot provide a download at this time.");
+        }
+
+        ResourceIdentifier.Builder idBuilder = new ResourceIdentifier.Builder().setResourceName(externalPropertiesFileName);
+        ResourceIdentifier resourceIdentifier = idBuilder.build();
+        final ResourceContent resourceContent = getResourceContent(resourceIdentifier);
+        final String content = resourceContent.getContent();
+        final ResourceGroup resourceGroup = generateResourceGroup();
+        String fileContent = ResourceFileGenerator.generateResourceConfig(content, resourceGroup, null);
+        String jvmResourcesNameDir = ApplicationProperties.get("paths.generated.resource.dir") + "/external-properties-download";
+
+        createConfigFile(jvmResourcesNameDir + "/", externalPropertiesFileName, fileContent);
+
+        return new File(jvmResourcesNameDir + "/" + externalPropertiesFileName);
+    }
+
+    @Override
+    public String getExternalPropertiesFileName() {
         // TODO make generic getResourceNames API
         ResourceIdentifier identifier = null;
         final List<String> resourceNames = resourceDao.getResourceNames(identifier, EntityType.EXT_PROPERTIES);

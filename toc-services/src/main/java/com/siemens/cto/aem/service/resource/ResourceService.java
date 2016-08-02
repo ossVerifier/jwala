@@ -7,7 +7,10 @@ import com.siemens.cto.aem.common.domain.model.resource.ResourceTemplateMetaData
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.exec.CommandOutput;
 import com.siemens.cto.aem.service.resource.impl.CreateResourceResponseWrapper;
+import org.codehaus.jackson.JsonParseException;
 
+import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
@@ -210,7 +213,17 @@ public interface ResourceService {
      */
     Properties getExternalProperties();
 
-    String getExternalPropertiesFile();
+    /**
+     * Get the name of the template files for a resource
+     * @return a list of the names associated with an entity
+     */
+    String getExternalPropertiesFileName();
+
+    /**
+     * Get the external properties file as a download
+     * @return the external properties as a file
+     */
+    File getExternalPropertiesAsFile() throws IOException;
 
     /**
      * Create a resource
@@ -251,4 +264,5 @@ public interface ResourceService {
      * @param resourceIdentifier the group, JVM, web server, and web application names that identify the resource
      */
     void deployTemplateToAllHosts(String fileName, ResourceIdentifier resourceIdentifier);
+
 }

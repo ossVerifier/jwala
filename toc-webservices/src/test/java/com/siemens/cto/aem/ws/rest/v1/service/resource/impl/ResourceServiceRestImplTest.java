@@ -606,24 +606,24 @@ public class ResourceServiceRestImplTest {
     @Test
     public void testGetExternalPropertiesFile() {
         // test file is uploaded
-        when(impl.getExternalPropertiesFile()).thenReturn("external.properties");
+        when(impl.getExternalPropertiesFileName()).thenReturn("external.properties");
 
-        Response result = cut.getExternalPropertiesFile();
+        Response result = cut.getExternalPropertiesFileName();
 
         assertEquals(200, result.getStatus());
-        verify(impl).getExternalPropertiesFile();
+        verify(impl).getExternalPropertiesFileName();
         ApplicationResponse entity = (ApplicationResponse) result.getEntity();
         List<String> fileList = (List<String>) entity.getApplicationResponseContent();
         assertTrue(!fileList.isEmpty());
 
         // test file is not uploaded
         reset(impl);
-        when(impl.getExternalPropertiesFile()).thenReturn("");
+        when(impl.getExternalPropertiesFileName()).thenReturn("");
 
-        result = cut.getExternalPropertiesFile();
+        result = cut.getExternalPropertiesFileName();
 
         assertEquals(200, result.getStatus());
-        verify(impl).getExternalPropertiesFile();
+        verify(impl).getExternalPropertiesFileName();
         entity = (ApplicationResponse) result.getEntity();
         fileList = (List<String>) entity.getApplicationResponseContent();
         assertTrue(fileList.isEmpty());
@@ -646,12 +646,12 @@ public class ResourceServiceRestImplTest {
 
     @Test
     public void testExternalPropertiesSetAfterInitialization() throws Exception {
-        when(impl.getExternalPropertiesFile()).thenReturn("external.properties");
+        when(impl.getExternalPropertiesFileName()).thenReturn("external.properties");
         when(impl.getResourceContent(any(ResourceIdentifier.class))).thenReturn(new ResourceContent("{}","key=value"));
 
         cut.afterPropertiesSet();
 
-        verify(impl).getExternalPropertiesFile();
+        verify(impl).getExternalPropertiesFileName();
         verify(impl).getResourceContent(any(ResourceIdentifier.class));
     }
 
@@ -680,5 +680,19 @@ public class ResourceServiceRestImplTest {
 
         Response result = cut.deployTemplateToAllHosts("external.properties", param, mockAuthUser);
         assertEquals(200, result.getStatus());
+    }
+
+    @Test
+    public void testGetExternalPropertiesAsFile() throws IOException {
+        when(impl.getExternalPropertiesAsFile()).thenReturn(new File("./src/test/resources/vars.properties"));
+        Response result = cut.getExternalPropertiesDownload();
+        assertEquals(200, result.getStatus());
+    }
+
+    @Test
+    public void testGetExternalPropertiesAsFileFails() throws IOException {
+        when(impl.getExternalPropertiesAsFile()).thenThrow(new IOException("Fail this test"));
+        Response result = cut.getExternalPropertiesDownload();
+        assertEquals(500, result.getStatus());
     }
 }
