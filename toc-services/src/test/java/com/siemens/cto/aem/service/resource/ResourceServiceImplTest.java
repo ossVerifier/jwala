@@ -446,7 +446,7 @@ public class ResourceServiceImplTest {
     @Test
     public void testGetExternalProperties() {
         Properties result = resourceService.getExternalProperties();
-        assertTrue(result.isEmpty());
+        assertEquals(1, result.size());
     }
 
     @Test
@@ -473,7 +473,8 @@ public class ResourceServiceImplTest {
 
     @Test
     public void testUpdateResourceContent() {
-        ResourceIdentifier identifier = mock(ResourceIdentifier.class);
+        ResourceIdentifier.Builder idBuilder = new ResourceIdentifier.Builder();
+        ResourceIdentifier identifier = idBuilder.setResourceName("external.properties").build();
         ConfigTemplate mockConfigTemplate = mock(ConfigTemplate.class);
         when(mockConfigTemplate.getTemplateContent()).thenReturn("newkey=newvalue");
         when(mockResourceHandler.fetchResource(any(ResourceIdentifier.class))).thenReturn(mockConfigTemplate);
