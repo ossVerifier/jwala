@@ -592,19 +592,6 @@ public class ResourceServiceImpl implements ResourceService {
     }
 
     @Override
-    @Transactional
-    // TODO make this more generic to use the new resources identifier
-    @Deprecated
-    public Object uploadExternalProperties(String fileName, InputStream propertiesFileIn) {
-        Long entityId = null;
-        Long groupId = null;
-        Long appId = null;
-
-        // TODO add meta data
-        return resourceDao.createResource(entityId, groupId, appId, EntityType.EXT_PROPERTIES, fileName, propertiesFileIn, "");
-    }
-
-    @Override
     public String previewResourceContent(ResourceIdentifier resourceIdentifier, String content) {
         // TODO make the selected value object non-null based on the resource identifier
         return generateResourceFile(content, generateResourceGroup(), null);
@@ -643,7 +630,7 @@ public class ResourceServiceImpl implements ResourceService {
             ResourceTemplateMetaData resourceTemplateMetaData = new ObjectMapper().readValue(metaDataStr, ResourceTemplateMetaData.class);
             metaDataPath = resourceTemplateMetaData.getDeployPath();
             String resourceSourceCopy;
-            // TODO set the selected object value, for now make it null for the external properties
+            // TODO set the selected entity value, for now make it null for the external properties
             String resourceDestPath = ResourceFileGenerator.generateResourceConfig(metaDataPath, generateResourceGroup(), null) + "/" + fileName;
             if (resourceTemplateMetaData.getContentType().equals(ContentType.APPLICATION_BINARY.contentTypeStr)) {
                 resourceSourceCopy = resourceContent.getContent();

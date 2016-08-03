@@ -7,7 +7,6 @@ import com.siemens.cto.aem.common.domain.model.resource.ResourceTemplateMetaData
 import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.exec.CommandOutput;
 import com.siemens.cto.aem.service.resource.impl.CreateResourceResponseWrapper;
-import org.codehaus.jackson.JsonParseException;
 
 import java.io.File;
 import java.io.IOException;
@@ -191,13 +190,6 @@ public interface ResourceService {
      * @return {@link ResourceContent}
      */
     ResourceContent getResourceContent(ResourceIdentifier resourceIdentifier);
-
-    /**
-     * Upload the properties file to the archive directory
-     * @param fileName the name of the properties file
-     * @param propertiesFileIn the input stream of the properties file
-     */
-    Object uploadExternalProperties(String fileName, InputStream propertiesFileIn);
 
     /**
      * Update the resource content

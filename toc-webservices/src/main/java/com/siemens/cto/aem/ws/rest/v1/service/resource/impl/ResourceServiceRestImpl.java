@@ -427,27 +427,6 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
     }
 
     @Override
-    public Response uploadExternalProperties(final Attachment attachment, final AuthenticatedUser user) {
-        LOGGER.info("Upload external resource by user {} and attachments {}", user.getUser().getId(), attachment);
-
-        InputStream propertiesFileIn = null;
-        String fileName = StringUtils.EMPTY;
-
-        final DataHandler handler = attachment.getDataHandler();
-        try {
-            LOGGER.debug("filename is {}", handler.getName());
-            fileName = handler.getName();
-            propertiesFileIn = handler.getInputStream();
-        } catch (final IOException ioe) {
-            LOGGER.error("Create external properties failed!", ioe);
-            return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR,
-                    new FaultCodeException(AemFaultType.IO_EXCEPTION, ioe.getMessage()));
-        }
-
-        return ResponseBuilder.ok(resourceService.uploadExternalProperties(fileName, propertiesFileIn));
-    }
-
-    @Override
     public Response getResourcesFileNames(ResourceHierarchyParam resourceHierarchyParam) {
         LOGGER.debug("Get the external properties file name");
         final ResourceIdentifier resourceIdentifier = new ResourceIdentifier.Builder()

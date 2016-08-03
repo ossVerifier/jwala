@@ -57,7 +57,6 @@ import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anyMap;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.anyLong;
 import static org.mockito.Mockito.anyObject;
 import static org.mockito.Mockito.*;
 
@@ -432,15 +431,6 @@ public class ResourceServiceImplTest {
         expectedMap.put("fileName", testFile);
         expectedMap.put("exists", "true");
         assertEquals(expectedMap, result);
-    }
-
-    @Test
-    public void testUploadExternalProperties() {
-        InputStream mockInputStream = mock(InputStream.class);
-
-        resourceService.uploadExternalProperties("external.properties", mockInputStream);
-
-        verify(mockResourceDao).createResource(anyLong(), anyLong(), anyLong(), eq(EntityType.EXT_PROPERTIES), eq("external.properties"), eq(mockInputStream), anyString());
     }
 
     @Test
