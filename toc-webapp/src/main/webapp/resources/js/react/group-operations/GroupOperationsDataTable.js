@@ -75,7 +75,7 @@ var GroupOperationsDataTable = React.createClass({
                 buttonClassName: tocVars["resourcesEnabled"] === "false" ? "display-none" : "ui-button-height",
                 onClickMessage: "Draining web server configurations ..." },
                 { id: "space1", tocType: "space" },
-                { id: "generateWebServers",//Rahul: I am checking whether the user is admin or not for onClickMessage, buttonClassName, btnCallback
+                { id: "generateWebServers",
                 sTitle: "Generate the httpd.conf and deploy all web servers",
                 mData: null,
                 tocType: "button",
@@ -151,7 +151,7 @@ var GroupOperationsDataTable = React.createClass({
             className: "simple-data-table",
             title: "JVMs",
             isCollapsible: true,
-            headerComponents: [{ id: "generateJvms", //Rahul: I am checking whether the user is admin or not for onClickMessage, buttonClassName, btnCallback
+            headerComponents: [{ id: "generateJvms",
                 sTitle: "Generate the JVM resources and deploy all the JVMs",
                 mData: null,
                 tocType: "button",

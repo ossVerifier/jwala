@@ -65,9 +65,7 @@ var WebServerControlPanelWidget = React.createClass({
           this.showFadingStatusClickedLabel("Draining...", this.refs.drainBtn.getDOMNode(), this.props.data.id.id);
           this.doneCallback[this.props.data.name] = doneCallback;
           this.props.webServerService.drainWebServer(this.props.parentGroup,
-                                           this.props.data.name,
-                                           this.generateServiceAndHttpdConfSucccessCallback,
-                                           this.generateServiceAndHttpdConfErrorCallback);
+                                           this.props.data.name);
     },
 
     onClickHttpdConf: function() {
