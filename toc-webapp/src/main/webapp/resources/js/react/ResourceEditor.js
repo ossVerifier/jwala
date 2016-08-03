@@ -31,13 +31,13 @@ var ResourceEditor = React.createClass({
                             };
 
         var groupJvmTreeList = <RStaticDialog key="groupsDlg"  ref="groupsDlg" title="Topology" defaultContentHeight="283px">
-                                   <div className="root-node-ul rtree-list-item ext-properties-container" onClick={this.handleExtPropertiesClick}><img src="public-resources/img/icons/group.png"/>Ext Properties</div>
+                                   <ExternalPropertiesNode ref="externalPropertiesNode" onClick={this.handleExtPropertiesClick}/>
                                    <RTreeList ref="treeList"
                                               data={this.state.groupData}
                                               treeMetaData={treeMetaData}
                                               expandIcon="public-resources/img/icons/plus.png"
                                               collapseIcon="public-resources/img/icons/minus.png"
-                                              selectNodeCallback={this.selectNodeCallback}
+                                              selectNodeCallback={this.selectTreeNodeCallback}
                                               collapsedByDefault={true}/>
                                </RStaticDialog>
 
@@ -102,6 +102,10 @@ var ResourceEditor = React.createClass({
 
         this.setState({groupData:groupData});
     },
+    selectTreeNodeCallback: function(data, entity, parent) {
+        this.refs.externalPropertiesNode.setActive(false);
+        return this.selectNodeCallback(data, entity, parent);
+    },
     selectNodeCallback: function(data, entity, parent) {
         this.setState({entity: entity});
         if (this.props.selectEntityCallback(data, entity, parent)) {
@@ -152,6 +156,45 @@ var ResourceEditor = React.createClass({
             name:"Ext Properties parent",
             rtreeListMetaData: rtreeListMetaData
         };
+
+        // Clear any selected node in the tree list since the external properties node has been selected at this point
+        this.refs.treeList.setSelectedNode(null);
+
         this.selectNodeCallback(data, entity, parent);
+    }
+});
+
+/**
+ * A component specifically made to display an "External Properties" node.
+ */
+var ExternalPropertiesNode = React.createClass({
+    getInitialState: function() {
+        return {focus: false, active: false}
+    },
+    render: function() {
+        var spanClassName = this.state.active ? "ui-state-active" : "";
+
+        if (!this.state.active) {
+            spanClassName = this.state.focus ? "ui-state-focus" : "";
+        }
+
+        return <div className="root-node-ul rtree-list-item ext-properties-container"
+                    onClick={this.onClick} onMouseEnter={this.onMouseEnter} onMouseOut={this.onMouseOut}>
+                    <img src="public-resources/img/icons/group.png"/>
+                    <span className={spanClassName}>Ext Properties</span>
+               </div>
+    },
+    onClick: function() {
+        this.setState({active: true}    );
+        this.props.onClick();
+    },
+    onMouseEnter: function() {
+        this.setState({focus: true});
+    },
+    onMouseOut: function() {
+        this.setState({focus: false});
+    },
+    setActive: function(val) {
+        this.setState({active: val});
     }
 });

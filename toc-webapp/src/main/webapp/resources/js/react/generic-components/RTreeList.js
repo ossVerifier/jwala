@@ -71,6 +71,9 @@ var RTreeList = React.createClass({
     },
     getSelectedNodeData: function() {
         return this.state.selectedNode === null ? null : this.state.selectedNode.props.data;
+    },
+    setSelectedNode: function(node) {
+        this.setState({selectedNode: node});
     }
 });
 
