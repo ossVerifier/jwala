@@ -180,7 +180,7 @@ var ExternalPropertiesNode = React.createClass({
 
         return <div className="root-node-ul rtree-list-item ext-properties-container"
                     onClick={this.onClick} onMouseEnter={this.onMouseEnter} onMouseOut={this.onMouseOut}>
-                    <img src="public-resources/img/icons/group.png"/>
+                    <img src="public-resources/img/icons/props.png"/>
                     <span className={spanClassName}>Ext Properties</span>
                </div>
     },
