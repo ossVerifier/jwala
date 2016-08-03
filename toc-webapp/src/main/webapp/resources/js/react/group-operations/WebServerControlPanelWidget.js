@@ -8,7 +8,7 @@ var WebServerControlPanelWidget = React.createClass({
 
                     <RButton ref="drainBtn"
                              className="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only ui-button-height"
-                             spanClassName="ui-icon ui-icon-arrowthick-1-s"
+                             spanClassName="ui-icon ui-icon-drain-custom"
                              onClick={this.webServerDrain}
                              title="Drain"/>
                     <RButton ref="stopBtn"
