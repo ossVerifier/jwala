@@ -4,6 +4,8 @@ import org.springframework.beans.factory.InitializingBean;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.util.List;
+import java.util.Map;
 
 @Path("/balancermanager")
 @Produces(MediaType.APPLICATION_JSON)
@@ -11,7 +13,8 @@ public interface BalancermanagerServiceRest extends InitializingBean {
 
     @POST
     @Path("/{groupName}")
-    Response drainUserGroup(@PathParam("groupName") final String groupName);
+    Response drainUserGroup(@PathParam("groupName") final String groupName,
+                            final String webServerNames);
 
     @POST
     @Path("/{groupName}/{webserverName}")
@@ -21,5 +24,6 @@ public interface BalancermanagerServiceRest extends InitializingBean {
     @GET
     @Path("/{groupName}")
     Response getGroup(@PathParam("groupName") final String groupName);
+
 
 }

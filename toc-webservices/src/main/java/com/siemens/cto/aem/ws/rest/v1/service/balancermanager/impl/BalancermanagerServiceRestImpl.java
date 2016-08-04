@@ -5,8 +5,11 @@ import com.siemens.cto.aem.service.balancermanager.BalancermanagerService;
 import com.siemens.cto.aem.ws.rest.v1.response.ResponseBuilder;
 import com.siemens.cto.aem.ws.rest.v1.service.balancermanager.BalancermanagerServiceRest;
 
+import javax.ws.rs.FormParam;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Response;
+import java.util.List;
+import java.util.Map;
 
 public class BalancermanagerServiceRestImpl implements BalancermanagerServiceRest {
 
@@ -17,15 +20,15 @@ public class BalancermanagerServiceRestImpl implements BalancermanagerServiceRes
     }
 
     @Override
-    public Response drainUserGroup(final String groupName) {
-        balancermanagerService.drainUserGroup(groupName);
-        return ResponseBuilder.ok();
+    public Response drainUserGroup(final String groupName, final String webServers) {
+        DrainStatus drainStatus = balancermanagerService.drainUserGroup(groupName, webServers);
+        return ResponseBuilder.ok(drainStatus);
     }
 
     @Override
     public Response drainUserWebServer(final String groupName, final String webServerName) {
-        balancermanagerService.drainUserWebServer(groupName, webServerName);
-        return ResponseBuilder.ok();
+        DrainStatus drainStatus = balancermanagerService.drainUserWebServer(groupName, webServerName);
+        return ResponseBuilder.ok(drainStatus);
     }
 
     @Override

@@ -179,9 +179,10 @@ public class AemServiceConfiguration {
     public BalancermanagerService getBalancermanagerService(final GroupService groupService,
                                                             final ApplicationService applicationService,
                                                             final WebServerService webServerService,
+                                                            final ClientFactoryHelper clientFactoryHelper,
                                                             final MessagingService messagingService,
-                                                            final ClientFactoryHelper clientFactoryHelper){
-        return new BalancermanagerServiceImpl(groupService, applicationService, webServerService, messagingService, clientFactoryHelper);
+                                                            final HistoryService historyService){
+        return new BalancermanagerServiceImpl(groupService, applicationService, webServerService, clientFactoryHelper, messagingService, historyService);
     }
 
     @Bean(name = "webServerService")

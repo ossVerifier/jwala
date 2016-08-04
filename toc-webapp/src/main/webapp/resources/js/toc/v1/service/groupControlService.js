@@ -38,14 +38,10 @@ var groupControlService = function() {
                                       errorCallback,
                                       false);
     };
-//TODO: Uncomment below code for drain
-    var drain = function(groupName, operation) {
-        return serviceFoundation.post("v1.0/balancermanager/" + encodeURIComponent(groupName),
+    var drain = function(groupName) {
+        return serviceFoundation.promisedPost("v1.0/balancermanager/" + encodeURIComponent(groupName),
                                       "json",
-                                      JSON.stringify({ controlOperation : operation}),
-                                      undefined,
-                                      undefined,
-                                      false);
+                                      "");
     }
 
     return {

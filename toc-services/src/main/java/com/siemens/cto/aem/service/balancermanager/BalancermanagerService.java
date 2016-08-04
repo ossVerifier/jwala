@@ -4,9 +4,9 @@ import com.siemens.cto.aem.common.domain.model.balancermanager.DrainStatus;
 
 public interface BalancermanagerService {
 
-    void drainUserGroup(final String groupName);
+    DrainStatus drainUserGroup(final String groupName, final String webServersNameMap);
 
-    void drainUserWebServer(final String groupName, final String webserverName);
+    DrainStatus drainUserWebServer(final String groupName, final String webServerName);
 
     DrainStatus getGroupDrainStatus(final String group);
 
