@@ -48,6 +48,7 @@ public class ExternalPropertiesResourceHandler extends ResourceHandler {
             if (existingTemplateNames.size() > 0){
                 resourceDao.deleteExternalProperties();
                 ExternalProperties.reset();
+                // TODO clean up any deployed files on desk (don't delete - just rename with timestamp)
             }
 
             // create the external properties template
@@ -55,6 +56,7 @@ public class ExternalPropertiesResourceHandler extends ResourceHandler {
             createResourceResponseWrapper = new CreateResourceResponseWrapper(resourceDao.createResource(entityId, groupId, appId, entityType, deployFileName, data, convertResourceTemplateMetaDataToJson(metaData)));
 
             // apply the external properties
+            // TODO make get template content generic for all resources
             String propertiesContent = resourceDao.getExternalPropertiesResource(deployFileName).getTemplateContent();
             ExternalProperties.loadFromInputStream(new ByteArrayInputStream(propertiesContent.getBytes()));
 

@@ -51,18 +51,19 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.*;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class ResourceServiceImpl implements ResourceService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ResourceServiceImpl.class);
     public static final String WAR_FILE_EXTENSION = ".war";
-    public static final String ERR_DELETING_WAR_MSG = "Error deleting WAR file resource!";
 
     private final SpelExpressionParser expressionParser;
     private final Expression encryptExpression;
     private final ResourcePersistenceService resourcePersistenceService;
     private final GroupPersistenceService groupPersistenceService;
+    private final ExecutorService executorService;
     private PrivateApplicationService privateApplicationService;
     // TODO replace ApplicationControlOperation (and all operation classes) with ResourceControlOperation
     private RemoteCommandExecutorImpl<ApplicationControlOperation> remoteCommandExecutor;
@@ -109,6 +110,7 @@ public class ResourceServiceImpl implements ResourceService {
         this.resourceDao = resourceDao;
         this.webArchiveManager = webArchiveManager;
         this.resourceHandler = resourceHandler;
+        executorService = Executors.newFixedThreadPool(Integer.parseInt(ApplicationProperties.get("resources.thread-task-executor.pool.size", "25")));
     }
 
     @Override
@@ -599,23 +601,62 @@ public class ResourceServiceImpl implements ResourceService {
     }
 
     @Override
-    public void deployTemplateToAllHosts(String fileName, ResourceIdentifier resourceIdentifier) {
+    public void deployTemplateToAllHosts(final String fileName, final ResourceIdentifier resourceIdentifier) {
         Set<String> allHosts = new TreeSet<>();
         for (Group group : groupPersistenceService.getGroups()) {
             allHosts.addAll(groupPersistenceService.getHosts(group.getName()));
         }
-        for (String hostName : new ArrayList<>(allHosts)) {
-            // TODO deploy each template on its own thread
-            CommandOutput commandOutput = deployTemplateToHost(fileName, hostName, resourceIdentifier);
-            if (!commandOutput.getReturnCode().wasSuccessful()) {
+        Map<String, Future<CommandOutput>> deployFutures = new HashMap<>();
+        for (final String hostName : new ArrayList<>(allHosts)) {
+            Future<CommandOutput> futureContent = executorService.submit(new Callable<CommandOutput>() {
+                @Override
+                public CommandOutput call() throws Exception {
+                    return deployTemplateToHost(fileName, hostName, resourceIdentifier);
+
+                }
+            });
+            deployFutures.put(hostName, futureContent);
+        }
+        waitForDeployToComplete(deployFutures);
+        try {
+            checkFuturesResults(deployFutures, fileName);
+        } catch (ExecutionException | InterruptedException e) {
+            LOGGER.error("Failed getting output status after deploying resource {} to all hosts", fileName, e);
+            throw new InternalErrorException(AemFaultType.CONTROL_OPERATION_UNSUCCESSFUL, "Failed getting output status after deploying resource " + fileName + " to all hosts");
+        }
+    }
+
+    protected void checkFuturesResults(Map<String, Future<CommandOutput>> futures, String fileName) throws ExecutionException, InterruptedException {
+        for (String hostName : futures.keySet()) {
+            Future<CommandOutput> deployFuture = futures.get(hostName);
+            if (!deployFuture.get().getReturnCode().wasSuccessful()) {
                 LOGGER.error("Failed to deploy {} to host {}", fileName, hostName);
                 throw new InternalErrorException(AemFaultType.CONTROL_OPERATION_UNSUCCESSFUL, "Failed to deploy the template " + fileName + " to host " + hostName);
             }
         }
+    };
+
+    protected void waitForDeployToComplete(Map<String, Future<CommandOutput>> futures) {
+        final int size = futures.size();
+        if (size > 0) {
+            LOGGER.info("Check to see if all {} tasks completed", size);
+            boolean allDone = false;
+            // TODO think about adding a manual timeout
+            while (!allDone) {
+                boolean isDone = true;
+                for (Future<CommandOutput> isDoneFuture : futures.values()) {
+                    isDone = isDone && isDoneFuture.isDone();
+                }
+                allDone = isDone;
+            }
+            LOGGER.info("Tasks complete: {}", size);
+        }
     }
 
+
     @Override
-    public CommandOutput deployTemplateToHost(String fileName, String hostName, ResourceIdentifier resourceIdentifier) {
+    public CommandOutput deployTemplateToHost(String fileName, String hostName, ResourceIdentifier
+            resourceIdentifier) {
         // only one at a time per jvm
         if (!resourceWriteLockMap.containsKey(hostName)) {
             resourceWriteLockMap.put(hostName, new ReentrantReadWriteLock());
@@ -639,7 +680,6 @@ public class ResourceServiceImpl implements ResourceService {
                 String fileContent = resourceContent.getContent();
                 // TODO make the copy source generic (not external-properties directory)
                 String jvmResourcesNameDir = ApplicationProperties.get("paths.generated.resource.dir") + "/external-properties";
-                // TODO add timestamp to fileName
                 resourceSourceCopy = jvmResourcesNameDir + "/" + fileName;
                 createConfigFile(jvmResourcesNameDir + "/", fileName, fileContent);
             }
