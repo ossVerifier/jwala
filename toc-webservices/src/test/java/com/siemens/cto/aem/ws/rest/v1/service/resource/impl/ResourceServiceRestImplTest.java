@@ -503,47 +503,6 @@ public class ResourceServiceRestImplTest {
     }
 
     @Test
-    public void testUploadExternalProperties() throws IOException {
-        AuthenticatedUser mockAuthenticatedUser = mock(AuthenticatedUser.class);
-        User mockUser = mock(User.class);
-        when(mockAuthenticatedUser.getUser()).thenReturn(mockUser);
-        when(mockUser.getId()).thenReturn("mock-resources-user");
-
-        Attachment mockAttachment = mock(Attachment.class);
-        DataHandler mockDataHandler = mock(DataHandler.class);
-        when(mockAttachment.getDataHandler()).thenReturn(mockDataHandler);
-        when(mockDataHandler.getName()).thenReturn("external.properties");
-
-        InputStream mockInputStream = mock(InputStream.class);
-        when(mockDataHandler.getInputStream()).thenReturn(mockInputStream);
-
-        File propertiesFile = new File("./src/test/resources/vars.properties");
-
-        Response response = cut.uploadExternalProperties(mockAttachment, mockAuthenticatedUser);
-        assertEquals(200, response.getStatusInfo().getStatusCode());
-    }
-
-    @Test
-    public void testUploadExternalPropertiesThrowsIOException() throws IOException {
-        AuthenticatedUser mockAuthenticatedUser = mock(AuthenticatedUser.class);
-        User mockUser = mock(User.class);
-        when(mockAuthenticatedUser.getUser()).thenReturn(mockUser);
-        when(mockUser.getId()).thenReturn("mock-resources-user");
-
-        Attachment mockAttachment = mock(Attachment.class);
-        DataHandler mockDataHandler = mock(DataHandler.class);
-        when(mockAttachment.getDataHandler()).thenReturn(mockDataHandler);
-        when(mockDataHandler.getName()).thenReturn("external.properties");
-
-        when(mockDataHandler.getInputStream()).thenThrow(new IOException("getInputStream is throwing an IO Exception"));
-
-        File propertiesFile = new File("./src/test/resources/vars.properties");
-
-        Response response = cut.uploadExternalProperties(mockAttachment, mockAuthenticatedUser);
-        assertEquals(500, response.getStatusInfo().getStatusCode());
-    }
-
-    @Test
     public void testGetResourceContent() {
         ResourceHierarchyParam param = new ResourceHierarchyParam();
         param.setGroup("test-group");

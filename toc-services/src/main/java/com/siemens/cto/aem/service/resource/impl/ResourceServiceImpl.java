@@ -49,19 +49,21 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.*;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class ResourceServiceImpl implements ResourceService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ResourceServiceImpl.class);
     public static final String WAR_FILE_EXTENSION = ".war";
-    public static final String ERR_DELETING_WAR_MSG = "Error deleting WAR file resource!";
 
     private final SpelExpressionParser expressionParser;
     private final Expression encryptExpression;
     private final ResourcePersistenceService resourcePersistenceService;
     private final GroupPersistenceService groupPersistenceService;
+    private final ExecutorService executorService;
     private PrivateApplicationService privateApplicationService;
     // TODO replace ApplicationControlOperation (and all operation classes) with ResourceControlOperation
     private RemoteCommandExecutorImpl<ApplicationControlOperation> remoteCommandExecutor;
@@ -108,6 +110,7 @@ public class ResourceServiceImpl implements ResourceService {
         this.resourceDao = resourceDao;
         this.webArchiveManager = webArchiveManager;
         this.resourceHandler = resourceHandler;
+        executorService = Executors.newFixedThreadPool(Integer.parseInt(ApplicationProperties.get("resources.thread-task-executor.pool.size", "25")));
     }
 
     @Override
@@ -592,42 +595,68 @@ public class ResourceServiceImpl implements ResourceService {
     }
 
     @Override
-    @Transactional
-    // TODO make this more generic to use the new resources identifier
-    @Deprecated
-    public Object uploadExternalProperties(String fileName, InputStream propertiesFileIn) {
-        Long entityId = null;
-        Long groupId = null;
-        Long appId = null;
-
-        // TODO add meta data
-        return resourceDao.createResource(entityId, groupId, appId, EntityType.EXT_PROPERTIES, fileName, propertiesFileIn, "");
-    }
-
-    @Override
     public String previewResourceContent(ResourceIdentifier resourceIdentifier, String content) {
         // TODO make the selected value object non-null based on the resource identifier
         return generateResourceFile(content, generateResourceGroup(), null);
     }
 
     @Override
-    public void deployTemplateToAllHosts(String fileName, ResourceIdentifier resourceIdentifier) {
+    public void deployTemplateToAllHosts(final String fileName, final ResourceIdentifier resourceIdentifier) {
         Set<String> allHosts = new TreeSet<>();
         for (Group group : groupPersistenceService.getGroups()) {
             allHosts.addAll(groupPersistenceService.getHosts(group.getName()));
         }
-        for (String hostName : new ArrayList<>(allHosts)) {
-            // TODO deploy each template on its own thread
-            CommandOutput commandOutput = deployTemplateToHost(fileName, hostName, resourceIdentifier);
-            if (!commandOutput.getReturnCode().wasSuccessful()) {
+        Map<String, Future<CommandOutput>> deployFutures = new HashMap<>();
+        for (final String hostName : new ArrayList<>(allHosts)) {
+            Future<CommandOutput> futureContent = executorService.submit(new Callable<CommandOutput>() {
+                @Override
+                public CommandOutput call() throws Exception {
+                    return deployTemplateToHost(fileName, hostName, resourceIdentifier);
+
+                }
+            });
+            deployFutures.put(hostName, futureContent);
+        }
+        waitForDeployToComplete(deployFutures);
+        try {
+            checkFuturesResults(deployFutures, fileName);
+        } catch (ExecutionException | InterruptedException e) {
+            LOGGER.error("Failed getting output status after deploying resource {} to all hosts", fileName, e);
+            throw new InternalErrorException(AemFaultType.CONTROL_OPERATION_UNSUCCESSFUL, "Failed getting output status after deploying resource " + fileName + " to all hosts");
+        }
+    }
+
+    protected void checkFuturesResults(Map<String, Future<CommandOutput>> futures, String fileName) throws ExecutionException, InterruptedException {
+        for (String hostName : futures.keySet()) {
+            Future<CommandOutput> deployFuture = futures.get(hostName);
+            if (!deployFuture.get().getReturnCode().wasSuccessful()) {
                 LOGGER.error("Failed to deploy {} to host {}", fileName, hostName);
                 throw new InternalErrorException(AemFaultType.CONTROL_OPERATION_UNSUCCESSFUL, "Failed to deploy the template " + fileName + " to host " + hostName);
             }
         }
+    };
+
+    protected void waitForDeployToComplete(Map<String, Future<CommandOutput>> futures) {
+        final int size = futures.size();
+        if (size > 0) {
+            LOGGER.info("Check to see if all {} tasks completed", size);
+            boolean allDone = false;
+            // TODO think about adding a manual timeout
+            while (!allDone) {
+                boolean isDone = true;
+                for (Future<CommandOutput> isDoneFuture : futures.values()) {
+                    isDone = isDone && isDoneFuture.isDone();
+                }
+                allDone = isDone;
+            }
+            LOGGER.info("Tasks complete: {}", size);
+        }
     }
 
+
     @Override
-    public CommandOutput deployTemplateToHost(String fileName, String hostName, ResourceIdentifier resourceIdentifier) {
+    public CommandOutput deployTemplateToHost(String fileName, String hostName, ResourceIdentifier
+            resourceIdentifier) {
         // only one at a time per jvm
         if (!resourceWriteLockMap.containsKey(hostName)) {
             resourceWriteLockMap.put(hostName, new ReentrantReadWriteLock());
@@ -643,7 +672,7 @@ public class ResourceServiceImpl implements ResourceService {
             ResourceTemplateMetaData resourceTemplateMetaData = new ObjectMapper().readValue(metaDataStr, ResourceTemplateMetaData.class);
             metaDataPath = resourceTemplateMetaData.getDeployPath();
             String resourceSourceCopy;
-            // TODO set the selected object value, for now make it null for the external properties
+            // TODO set the selected entity value, for now make it null for the external properties
             String resourceDestPath = ResourceFileGenerator.generateResourceConfig(metaDataPath, generateResourceGroup(), null) + "/" + fileName;
             if (resourceTemplateMetaData.getContentType().equals(ContentType.APPLICATION_BINARY.contentTypeStr)) {
                 resourceSourceCopy = resourceContent.getContent();
@@ -651,16 +680,14 @@ public class ResourceServiceImpl implements ResourceService {
                 String fileContent = resourceContent.getContent();
                 // TODO make the copy source generic (not external-properties directory)
                 String jvmResourcesNameDir = ApplicationProperties.get("paths.generated.resource.dir") + "/external-properties";
-                // TODO add timestamp to fileName
                 resourceSourceCopy = jvmResourcesNameDir + "/" + fileName;
                 createConfigFile(jvmResourcesNameDir + "/", fileName, fileContent);
             }
 
             LOGGER.info("Copying {} to {} on host {}", resourceSourceCopy, resourceDestPath, hostName);
-            // TODO backup existing file
             // TODO replace ApplicationControlOperation (and all operation classes) with ResourceControlOperation
             // TODO replace WindowsApplicationPlatformCommandProvider (and all platform command provider) with WindowsResourcePlatformCommandProvider
-            commandOutput = remoteCommandExecutor.executeRemoteCommand(null, hostName, ApplicationControlOperation.SECURE_COPY, new WindowsApplicationPlatformCommandProvider(), resourceSourceCopy, resourceDestPath);
+            commandOutput = secureCopyFile(hostName, resourceSourceCopy, resourceDestPath);
 
         } catch (IOException e) {
             String message = "Failed to write file";
@@ -674,6 +701,55 @@ public class ResourceServiceImpl implements ResourceService {
             resourceWriteLockMap.get(hostName).writeLock().unlock();
         }
         return commandOutput;
+    }
+
+    protected CommandOutput secureCopyFile(final String hostName, final String sourcePath, final String destPath) throws CommandFailureException {
+        final int beginIndex = destPath.lastIndexOf("/");
+        final String fileName = destPath.substring(beginIndex + 1, destPath.length());
+
+        // TODO put this back in when we start processing events for JVMs, and then make it generic for Web Servers, Applications, etc.
+        // don't add any usage of the toc user internal directory to the history
+        /*if (!AemControl.Properties.USER_TOC_SCRIPTS_PATH.getValue().endsWith(fileName)) {
+            final String eventDescription = "SECURE COPY " + fileName;
+            historyService.createHistory(hostName, new ArrayList<>(*//*jvm.getGroups()*//*), eventDescription, EventType.USER_ACTION, userId);
+            messagingService.send(new JvmHistoryEvent(jvm.getId(), eventDescription, userId, DateTime.now(), JvmControlOperation.SECURE_COPY));
+        }*/
+
+        // TODO update this to be derived from the resource type being copied
+        final String name = "Ext Properties";
+
+        CommandOutput commandOutput = remoteCommandExecutor.executeRemoteCommand(
+                name,
+                hostName,
+                ApplicationControlOperation.CHECK_FILE_EXISTS,
+                new WindowsApplicationPlatformCommandProvider(),
+                destPath
+        );
+        if (commandOutput.getReturnCode().wasSuccessful()) {
+            String currentDateSuffix = new SimpleDateFormat(".yyyyMMdd_HHmmss").format(new Date());
+            final String destPathBackup = destPath + currentDateSuffix;
+            commandOutput = remoteCommandExecutor.executeRemoteCommand(
+                    name,
+                    hostName,
+                    ApplicationControlOperation.BACK_UP_FILE,
+                    new WindowsApplicationPlatformCommandProvider(),
+                    destPath,
+                    destPathBackup);
+            if (!commandOutput.getReturnCode().wasSuccessful()) {
+                LOGGER.info("Failed to back up the " + destPath + " for " + name + ". Continuing with secure copy.");
+            } else {
+                LOGGER.info("Successfully backed up " + destPath + " at " + hostName);
+            }
+
+        }
+
+        return remoteCommandExecutor.executeRemoteCommand(
+                name,
+                hostName,
+                ApplicationControlOperation.SECURE_COPY,
+                new WindowsApplicationPlatformCommandProvider(),
+                sourcePath,
+                destPath);
     }
 
     protected void createConfigFile(String path, String configFileName, String templateContent) throws IOException {

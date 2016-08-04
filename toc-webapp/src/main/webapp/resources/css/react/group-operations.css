@@ -59,6 +59,11 @@
     background-position: -1px;
 }
 
+.ui-icon-drain-custom {
+    background-image: url("../../img/react/drain-icon.png") !important;
+        background-position: -1px;
+}
+
 .expand-collapse-loading-indicator-container {
     height: 60px;
 }

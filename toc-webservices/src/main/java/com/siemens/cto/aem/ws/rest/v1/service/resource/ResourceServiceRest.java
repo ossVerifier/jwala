@@ -2,7 +2,6 @@ package com.siemens.cto.aem.ws.rest.v1.service.resource;
 
 import com.siemens.cto.aem.ws.rest.v1.provider.AuthenticatedUser;
 import org.apache.cxf.jaxrs.ext.multipart.Attachment;
-import org.apache.cxf.jaxrs.ext.multipart.Multipart;
 import org.springframework.beans.factory.InitializingBean;
 
 import javax.ws.rs.*;
@@ -133,17 +132,6 @@ public interface ResourceServiceRest extends InitializingBean{
     @Path("/template/preview")
     @Consumes(MediaType.TEXT_PLAIN)
     Response previewResourceContent(@MatrixParam("") ResourceHierarchyParam resourceHierarchyParam, final String content);
-
-    /**
-     * Upload an external properties file
-     * @param attachment contains the properties file
-     * @param user a logged in user calling the service
-     * @return the external properties
-     */
-    @POST
-    @Path("/properties")
-    @Consumes(MediaType.MULTIPART_FORM_DATA)
-    Response uploadExternalProperties(@Multipart Attachment attachment, @BeanParam AuthenticatedUser user);
 
     /**
      * Get the key/value pairings for any external properties that were loaded

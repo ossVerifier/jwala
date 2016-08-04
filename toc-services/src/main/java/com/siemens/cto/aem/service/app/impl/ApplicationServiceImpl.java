@@ -288,7 +288,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                 commandOutput = applicationCommandExecutor.executeRemoteCommand(
                         deployJvmName,
                         hostName,
-                        ApplicationControlOperation.BACK_UP_CONFIG_FILE,
+                        ApplicationControlOperation.BACK_UP_FILE,
                         new WindowsApplicationPlatformCommandProvider(),
                         destPath,
                         destPathBackup);

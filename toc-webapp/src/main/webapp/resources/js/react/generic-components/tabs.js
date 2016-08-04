@@ -4,6 +4,18 @@ var Tabs = React.createClass({displayName:"Tabs",
 
         var activeTabIndex = this.lookupIndexFromHash(window.location.hash, this.props.depth /*nesting depth*/) || 0;
 
+        // If the tab of the computed index is disabled, look for a tab that is enabled and set it there
+        if (this.props.items[activeTabIndex].disabled) {
+            this.props.items.every(function(item, itemIndex) {
+                if (!item.disabled) {
+                    activeTabIndex = itemIndex;
+                    return false;
+                }
+                activeTabIndex = -1;
+                return true;
+           });
+        }
+
         return {
             tabs: this.props.items,
             active: activeTabIndex
@@ -13,7 +25,7 @@ var Tabs = React.createClass({displayName:"Tabs",
    	    if(this.isMounted()) {
           var newHash = location.hash;
           var newTabIndex = this.lookupIndexFromHash(newHash, this.props.depth /*nesting depth*/);
-          if(newTabIndex !== undefined && newTabIndex != this.state.active) {
+          if(newTabIndex !== undefined && newTabIndex != this.state.active && !this.props.items[newTabIndex].disabled) {
             this.setState({active: newTabIndex})
           }
         } else {
@@ -40,10 +52,13 @@ var Tabs = React.createClass({displayName:"Tabs",
     },
     render: function() {
         var className = "tabs-" + this.props.theme;
-        return React.createElement("div", {className: "Tabs"},
-                   React.createElement("ol", {className: className},
-                       React.createElement(TabsSwitcher, {items: this.state.tabs, active: this.state.active, onTabClick: this.handleTabClick})),
-                   React.createElement(TabsContent, {theme: className, items: this.state.tabs, active: this.state.active}));
+        if (this.state.active >= 0) {
+            return React.createElement("div", {className: "Tabs"},
+                       React.createElement("ol", {className: className},
+                            React.createElement(TabsSwitcher, {items: this.state.tabs, active: this.state.active, onTabClick: this.handleTabClick})),
+                            React.createElement(TabsContent, {theme: className, items: this.state.tabs, active: this.state.active}));
+        }
+        return React.createElement("div", null, "There are no enabled tabs!");
     },
     handleTabClick: function(index) {
         this.setState({active: index})
@@ -82,24 +97,27 @@ var Tabs = React.createClass({displayName:"Tabs",
   		} else return newList;
 
     },
-		/* Map hashtag fragments into an index for this tab at this depth. */
+	/* Map hashtag fragments into an index for this tab at this depth. */
     lookupIndexFromHash: function(currentHash, depth) {
-			if(!this.hashRegex.test(currentHash)) {
-				return 0;
-			}
-			/* 1+depth*2 is a calculation that looks at the nesting level of the tabs
-			   and converts it to an group index for the regular expression
-			   allowing us to extract the window location hash component corresponding
-			   to this particular tab component.
-			*/
-    	var localHash = this.hashRegex.exec(currentHash)[1+depth*2];
-    	var localIndex = undefined;
-    	this.props.items.every(function(itemName, itemIndex, harray) {
-    		 if(itemName.title == localHash) {
-    		 	localIndex = itemIndex; return false;
-    		 }
-    		 return true; });
-   		return localIndex;
+        if(!this.hashRegex.test(currentHash)) {
+            return 0;
+        }
+        /* 1+depth*2 is a calculation that looks at the nesting level of the tabs
+           and converts it to an group index for the regular expression
+           allowing us to extract the window location hash component corresponding
+           to this particular tab component.
+        */
+        var localHash = this.hashRegex.exec(currentHash)[1 + depth * 2];
+        var localIndex;
+        this.props.items.every(function(itemName, itemIndex, harray) {
+                                   if (itemName.title === localHash) {
+                                        localIndex = itemIndex;
+                                        return false;
+                                   }
+                                   return true;
+                               });
+
+        return localIndex;
     },
     statics: {
         TITLE_PREFIX: "Tomcat Operations Center - "

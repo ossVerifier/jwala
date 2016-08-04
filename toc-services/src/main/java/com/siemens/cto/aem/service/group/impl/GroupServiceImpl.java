@@ -453,7 +453,7 @@ public class GroupServiceImpl implements GroupService {
                 commandOutput = remoteCommandExecutor.executeRemoteCommand(
                         jvmName,
                         hostName,
-                        ApplicationControlOperation.BACK_UP_CONFIG_FILE,
+                        ApplicationControlOperation.BACK_UP_FILE,
                         new WindowsApplicationPlatformCommandProvider(),
                         destPath,
                         destPathBackup);
