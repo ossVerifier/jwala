@@ -16,10 +16,10 @@ var userService = {
     },
 
     getAuthorization: function(){
-      return serviceFoundation.promisedGet("v1.0/admin/isTOCAuthorizationEnabled?" + "", "json");
+      return serviceFoundation.promisedGet("v1.0/admin/isTOCAuthorizationEnabled", "json");
     },
 
     getIsAdmin: function(){
-      return serviceFoundation.promisedGet("v1.0/user/isUserAdmin?" + "", "json");
+      return serviceFoundation.promisedGet("v1.0/user/isUserAdmin", "json");
     }
 };

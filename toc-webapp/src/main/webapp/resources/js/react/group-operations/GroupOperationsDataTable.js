@@ -156,10 +156,10 @@ var GroupOperationsDataTable = React.createClass({
                 mData: null,
                 tocType: "button",
                 btnLabel: "Generate JVMs",
-                className: "inline-block",
-                onClickMessage: (MainArea.isAdminRole === true ? "Deploying JVM configurations ...": ""),
-                btnCallback: (MainArea.isAdminRole === true ? this.generateGroupJvms: ""),
-                buttonClassName:(MainArea.isAdminRole === true ? tocVars["resourcesEnabled"] === "false" ? "display-none" : "ui-button-height" : "ui-state-disabled")
+                className: "inline-block",//TODO: use disabled
+                onClickMessage: "Deploying JVM configurations ...",
+                btnCallback: this.generateGroupJvms,
+                buttonClassName: tocVars["resourcesEnabled"] === "false" ? "display-none" : "ui-button-height"
                 },
                 { id: "space1", tocType: "space" },
                 { id: "startJvms",
