@@ -98,7 +98,6 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
         jvmService = jvmServiceImpl;
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     public void testCreateValidate() {
         System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, "./src/test/resources");
@@ -137,6 +136,130 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
             verify(mockGroupService, times(1)).addJvmToGroup(matchCommand(addCommand),
                     eq(mockUser));
         }
+    }
+
+    @Test
+    public void testCreateValidateInheritsDefaultTemplates() {
+        System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, "./src/test/resources");
+
+        final CreateJvmRequest createJvmRequest = mock(CreateJvmRequest.class);
+        final CreateJvmAndAddToGroupsRequest createJvmAndAddToGroupsRequest = mock(CreateJvmAndAddToGroupsRequest.class);
+        final Group mockGroup = mock(Group.class);
+
+        Set<Group> groupSet = new HashSet<>();
+        groupSet.add(mockGroup);
+        List<String> templateNames = new ArrayList<>();
+        templateNames.add("template-name");
+        List<String> appTemplateNames = new ArrayList<>();
+        appTemplateNames.add("app-template-name");
+        final Jvm jvm = new Jvm(new Identifier<Jvm>(99L), "testJvm", groupSet);
+
+        when(mockJvmPersistenceService.createJvm(any(CreateJvmRequest.class))).thenReturn(jvm);
+        when(mockResourceService.generateResourceGroup()).thenReturn(mock(ResourceGroup.class));
+        when(mockResourceService.getAppTemplate(anyString(), anyString(), anyString())).thenReturn("<context>xml</context>");
+        when(mockGroup.getName()).thenReturn("mock-group-name");
+        when(mockGroupService.getGroupJvmsResourceTemplateNames(anyString())).thenReturn(templateNames);
+        when(mockGroupService.getGroupJvmResourceTemplate(anyString(), anyString(), any(ResourceGroup.class), anyBoolean())).thenReturn("<server>xml</server>");
+        when(mockGroupService.getGroupJvmResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"deployPath\":\"c:/fake/path\", \"deployFileName\":\"server-deploy.xml\"}");
+        when(mockGroupService.getGroupAppsResourceTemplateNames(anyString())).thenReturn(appTemplateNames);
+        when(mockGroupService.getGroupAppResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"deployPath\":\"c:/fake/app/path\", \"deployFileName\":\"app-context.xml\", \"entity\":{\"deployToJvms\":\"true\", \"target\":\"app-target\"}}");
+
+        jvmService.createJvm(createJvmRequest, createJvmAndAddToGroupsRequest, false, mockUser);
+
+        verify(createJvmRequest, times(1)).validate();
+        verify(mockJvmPersistenceService, times(1)).createJvm(createJvmRequest);
+
+        System.clearProperty(ApplicationProperties.PROPERTIES_ROOT_PATH);
+    }
+
+    @Test
+    public void testCreateValidateInheritsDefaultTemplatesFromMultipleGroups() {
+        System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, "./src/test/resources");
+
+        final CreateJvmRequest createJvmRequest = mock(CreateJvmRequest.class);
+        final CreateJvmAndAddToGroupsRequest createJvmAndAddToGroupsRequest = mock(CreateJvmAndAddToGroupsRequest.class);
+        final Group mockGroup = mock(Group.class);
+        final Group mockGroup2 = mock(Group.class);
+
+        Set<Group> groupSet = new HashSet<>();
+        groupSet.add(mockGroup);
+        groupSet.add(mockGroup2);
+        List<String> templateNames = new ArrayList<>();
+        List<String> appTemplateNames = new ArrayList<>();
+        final Jvm jvm = new Jvm(new Identifier<Jvm>(99L), "testJvm", groupSet);
+
+        when(mockJvmPersistenceService.createJvm(any(CreateJvmRequest.class))).thenReturn(jvm);
+        when(mockResourceService.generateResourceGroup()).thenReturn(mock(ResourceGroup.class));
+        when(mockGroup.getName()).thenReturn("mock-group-name");
+        when(mockGroupService.getGroupJvmsResourceTemplateNames(anyString())).thenReturn(templateNames);
+        when(mockGroupService.getGroupAppsResourceTemplateNames(anyString())).thenReturn(appTemplateNames);
+
+        jvmService.createJvm(createJvmRequest, createJvmAndAddToGroupsRequest, false, mockUser);
+
+        verify(createJvmRequest, times(1)).validate();
+        verify(mockJvmPersistenceService, times(1)).createJvm(createJvmRequest);
+
+        System.clearProperty(ApplicationProperties.PROPERTIES_ROOT_PATH);
+    }
+
+    @Test (expected = InternalErrorException.class)
+    public void testCreateValidateInheritsDefaultTemplatesJvmTemplateThrowsIOException() {
+        System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, "./src/test/resources");
+
+        final CreateJvmRequest createJvmRequest = mock(CreateJvmRequest.class);
+        final CreateJvmAndAddToGroupsRequest createJvmAndAddToGroupsRequest = mock(CreateJvmAndAddToGroupsRequest.class);
+        final Group mockGroup = mock(Group.class);
+
+        Set<Group> groupSet = new HashSet<>();
+        groupSet.add(mockGroup);
+        List<String> templateNames = new ArrayList<>();
+        templateNames.add("template-name");
+        final Jvm jvm = new Jvm(new Identifier<Jvm>(99L), "testJvm", groupSet);
+
+        when(mockJvmPersistenceService.createJvm(any(CreateJvmRequest.class))).thenReturn(jvm);
+        when(mockResourceService.generateResourceGroup()).thenReturn(mock(ResourceGroup.class));
+        when(mockGroup.getName()).thenReturn("mock-group-name");
+        when(mockGroupService.getGroupJvmsResourceTemplateNames(anyString())).thenReturn(templateNames);
+        when(mockGroupService.getGroupJvmResourceTemplate(anyString(), anyString(), any(ResourceGroup.class), anyBoolean())).thenReturn("<server>xml</server>");
+        when(mockGroupService.getGroupJvmResourceTemplateMetaData(anyString(), anyString())).thenReturn("{deployPath:c:/fake/path}");
+
+        jvmService.createJvm(createJvmRequest, createJvmAndAddToGroupsRequest, false, mockUser);
+
+        verify(createJvmRequest, times(1)).validate();
+        verify(mockJvmPersistenceService, times(1)).createJvm(createJvmRequest);
+
+        System.clearProperty(ApplicationProperties.PROPERTIES_ROOT_PATH);
+    }
+
+    @Test (expected = InternalErrorException.class)
+    public void testCreateValidateInheritsDefaultTemplatesAppTemplateThrowsIOException() {
+        System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, "./src/test/resources");
+
+        final CreateJvmRequest createJvmRequest = mock(CreateJvmRequest.class);
+        final CreateJvmAndAddToGroupsRequest createJvmAndAddToGroupsRequest = mock(CreateJvmAndAddToGroupsRequest.class);
+        final Group mockGroup = mock(Group.class);
+
+        Set<Group> groupSet = new HashSet<>();
+        groupSet.add(mockGroup);
+        List<String> templateNames = new ArrayList<>();
+        List<String> appTemplateNames = new ArrayList<>();
+        appTemplateNames.add("app-template-name");
+        final Jvm jvm = new Jvm(new Identifier<Jvm>(99L), "testJvm", groupSet);
+
+        when(mockJvmPersistenceService.createJvm(any(CreateJvmRequest.class))).thenReturn(jvm);
+        when(mockResourceService.generateResourceGroup()).thenReturn(mock(ResourceGroup.class));
+        when(mockResourceService.getAppTemplate(anyString(), anyString(), anyString())).thenReturn("<context>xml</context>");
+        when(mockGroup.getName()).thenReturn("mock-group-name");
+        when(mockGroupService.getGroupJvmsResourceTemplateNames(anyString())).thenReturn(templateNames);
+        when(mockGroupService.getGroupAppsResourceTemplateNames(anyString())).thenReturn(appTemplateNames);
+        when(mockGroupService.getGroupAppResourceTemplateMetaData(anyString(), anyString())).thenReturn("{deployPath:c:/fake/app/path}");
+
+        jvmService.createJvm(createJvmRequest, createJvmAndAddToGroupsRequest, false, mockUser);
+
+        verify(createJvmRequest, times(1)).validate();
+        verify(mockJvmPersistenceService, times(1)).createJvm(createJvmRequest);
+
+        System.clearProperty(ApplicationProperties.PROPERTIES_ROOT_PATH);
     }
 
     @Test
