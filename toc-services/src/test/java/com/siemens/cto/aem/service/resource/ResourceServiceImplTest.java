@@ -1,6 +1,7 @@
 package com.siemens.cto.aem.service.resource;
 
 import com.siemens.cto.aem.common.domain.model.app.Application;
+import com.siemens.cto.aem.common.domain.model.app.ApplicationControlOperation;
 import com.siemens.cto.aem.common.domain.model.group.CurrentGroupState;
 import com.siemens.cto.aem.common.domain.model.group.Group;
 import com.siemens.cto.aem.common.domain.model.group.GroupState;
@@ -57,7 +58,6 @@ import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anyMap;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.anyObject;
 import static org.mockito.Mockito.*;
 
 /**
@@ -501,12 +501,29 @@ public class ResourceServiceImplTest {
         when(mockResourceHandler.fetchResource(any(ResourceIdentifier.class))).thenReturn(mockConfigTemplate);
         when(mockConfigTemplate.getMetaData()).thenReturn("{\"deployPath\":\"c:/fake/path\", \"deployFileName\":\"deploy-me.txt\"}");
         when(mockConfigTemplate.getTemplateContent()).thenReturn("key=value");
-        when(mockRemoteCommandExector.executeRemoteCommand(anyString(), anyString(), anyObject(), any(PlatformCommandProvider.class), anyString(), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(0), "SUCCESS", ""));
+        when(mockRemoteCommandExector.executeRemoteCommand(anyString(), anyString(), eq(ApplicationControlOperation.SECURE_COPY), any(PlatformCommandProvider.class), anyString(), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(0), "SUCCESS", ""));
+        when(mockRemoteCommandExector.executeRemoteCommand(anyString(), anyString(), eq(ApplicationControlOperation.CHECK_FILE_EXISTS), any(PlatformCommandProvider.class), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(0), "SUCCESS", ""));
+        when(mockRemoteCommandExector.executeRemoteCommand(anyString(), anyString(), eq(ApplicationControlOperation.BACK_UP_FILE), any(PlatformCommandProvider.class), anyString(), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(0), "SUCCESS", ""));
 
         CommandOutput result = resourceService.deployTemplateToHost("external.properties", "test-host", mockResourceIdentifier);
         assertEquals(new Integer(0), result.getReturnCode().getReturnCode());
     }
 
+    @Test
+    public void testDeployResourceTemplateToHostFailsBackup() throws CommandFailureException {
+        ResourceIdentifier mockResourceIdentifier = mock(ResourceIdentifier.class);
+        ConfigTemplate mockConfigTemplate = mock(ConfigTemplate.class);
+
+        when(mockResourceHandler.fetchResource(any(ResourceIdentifier.class))).thenReturn(mockConfigTemplate);
+        when(mockConfigTemplate.getMetaData()).thenReturn("{\"deployPath\":\"c:/fake/path\", \"deployFileName\":\"deploy-me.txt\"}");
+        when(mockConfigTemplate.getTemplateContent()).thenReturn("key=value");
+        when(mockRemoteCommandExector.executeRemoteCommand(anyString(), anyString(), eq(ApplicationControlOperation.SECURE_COPY), any(PlatformCommandProvider.class), anyString(), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(0), "SUCCESS", ""));
+        when(mockRemoteCommandExector.executeRemoteCommand(anyString(), anyString(), eq(ApplicationControlOperation.CHECK_FILE_EXISTS), any(PlatformCommandProvider.class), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(0), "SUCCESS", ""));
+        when(mockRemoteCommandExector.executeRemoteCommand(anyString(), anyString(), eq(ApplicationControlOperation.BACK_UP_FILE), any(PlatformCommandProvider.class), anyString(), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(1), "", "FAILED BACK UP BUT CONTINUE WITH COPY"));
+
+        CommandOutput result = resourceService.deployTemplateToHost("external.properties", "test-host", mockResourceIdentifier);
+        assertEquals(new Integer(0), result.getReturnCode().getReturnCode());
+    }
 
     @Test
     public void testDeployResourceTemplateToAllHosts() throws CommandFailureException {
@@ -522,13 +539,17 @@ public class ResourceServiceImplTest {
         when(mockResourceHandler.fetchResource(any(ResourceIdentifier.class))).thenReturn(mockConfigTemplate);
         when(mockConfigTemplate.getMetaData()).thenReturn("{\"deployPath\":\"c:/fake/path\", \"deployFileName\":\"deploy-me.txt\"}");
         when(mockConfigTemplate.getTemplateContent()).thenReturn("key=value");
-        when(mockRemoteCommandExector.executeRemoteCommand(anyString(), anyString(), anyObject(), any(PlatformCommandProvider.class), anyString(), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(0), "SUCCESS", ""));
+        when(mockRemoteCommandExector.executeRemoteCommand(anyString(), anyString(), eq(ApplicationControlOperation.SECURE_COPY), any(PlatformCommandProvider.class), anyString(), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(0), "SUCCESS", ""));
+        when(mockRemoteCommandExector.executeRemoteCommand(anyString(), anyString(), eq(ApplicationControlOperation.CHECK_FILE_EXISTS), any(PlatformCommandProvider.class), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(0), "SUCCESS", ""));
+        when(mockRemoteCommandExector.executeRemoteCommand(anyString(), anyString(), eq(ApplicationControlOperation.BACK_UP_FILE), any(PlatformCommandProvider.class), anyString(), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(0), "SUCCESS", ""));
         when(mockGroupPesistenceService.getGroups()).thenReturn(groupList);
         when(mockGroupPesistenceService.getHosts(anyString())).thenReturn(hostsList);
         when(mockGroup.getName()).thenReturn("test-group");
 
         resourceService.deployTemplateToAllHosts("external.properties", mockResourceIdentifier);
-        verify(mockRemoteCommandExector, times(2)).executeRemoteCommand(anyString(), anyString(), anyObject(), any(PlatformCommandProvider.class), anyString(), anyString());
+        verify(mockRemoteCommandExector, times(2)).executeRemoteCommand(anyString(), anyString(), eq(ApplicationControlOperation.SECURE_COPY), any(PlatformCommandProvider.class), anyString(), anyString());
+        verify(mockRemoteCommandExector, times(2)).executeRemoteCommand(anyString(), anyString(), eq(ApplicationControlOperation.CHECK_FILE_EXISTS), any(PlatformCommandProvider.class), anyString());
+        verify(mockRemoteCommandExector, times(2)).executeRemoteCommand(anyString(), anyString(), eq(ApplicationControlOperation.BACK_UP_FILE), any(PlatformCommandProvider.class), anyString(), anyString());
     }
 
     @Test (expected = InternalErrorException.class)
@@ -545,7 +566,9 @@ public class ResourceServiceImplTest {
         when(mockResourceHandler.fetchResource(any(ResourceIdentifier.class))).thenReturn(mockConfigTemplate);
         when(mockConfigTemplate.getMetaData()).thenReturn("{\"deployPath\":\"c:/fake/path\", \"deployFileName\":\"deploy-me.txt\"}");
         when(mockConfigTemplate.getTemplateContent()).thenReturn("key=value");
-        when(mockRemoteCommandExector.executeRemoteCommand(anyString(), anyString(), anyObject(), any(PlatformCommandProvider.class), anyString(), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(1), "", "Command failed"));
+        when(mockRemoteCommandExector.executeRemoteCommand(anyString(), anyString(), eq(ApplicationControlOperation.SECURE_COPY), any(PlatformCommandProvider.class), anyString(), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(1), "", "Command Failed"));
+        when(mockRemoteCommandExector.executeRemoteCommand(anyString(), anyString(), eq(ApplicationControlOperation.CHECK_FILE_EXISTS), any(PlatformCommandProvider.class), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(0), "SUCCESS", ""));
+        when(mockRemoteCommandExector.executeRemoteCommand(anyString(), anyString(), eq(ApplicationControlOperation.BACK_UP_FILE), any(PlatformCommandProvider.class), anyString(), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(0), "SUCCESS", ""));
         when(mockGroupPesistenceService.getGroups()).thenReturn(groupList);
         when(mockGroupPesistenceService.getHosts(anyString())).thenReturn(hostsList);
         when(mockGroup.getName()).thenReturn("test-group");
@@ -561,7 +584,9 @@ public class ResourceServiceImplTest {
         when(mockResourceHandler.fetchResource(any(ResourceIdentifier.class))).thenReturn(mockConfigTemplate);
         when(mockConfigTemplate.getMetaData()).thenReturn("{\"deployPath\":\"c:/fake/path\", \"deployFileName\":\"deploy-me.txt\"}");
         when(mockConfigTemplate.getTemplateContent()).thenReturn("key=value");
-        when(mockRemoteCommandExector.executeRemoteCommand(anyString(), anyString(), anyObject(), any(PlatformCommandProvider.class), anyString(), anyString())).thenThrow(new CommandFailureException(new ExecCommand("Failed command"), new Throwable()));
+        when(mockRemoteCommandExector.executeRemoteCommand(anyString(), anyString(), eq(ApplicationControlOperation.SECURE_COPY), any(PlatformCommandProvider.class), anyString(), anyString())).thenThrow(new CommandFailureException(new ExecCommand("Failed command"), new Throwable()));
+        when(mockRemoteCommandExector.executeRemoteCommand(anyString(), anyString(), eq(ApplicationControlOperation.CHECK_FILE_EXISTS), any(PlatformCommandProvider.class), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(0), "SUCCESS", ""));
+        when(mockRemoteCommandExector.executeRemoteCommand(anyString(), anyString(), eq(ApplicationControlOperation.BACK_UP_FILE), any(PlatformCommandProvider.class), anyString(), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(0), "SUCCESS", ""));
 
         resourceService.deployTemplateToHost("external.properties", "test-host", mockResourceIdentifier);
     }

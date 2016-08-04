@@ -49,6 +49,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -644,10 +645,9 @@ public class ResourceServiceImpl implements ResourceService {
             }
 
             LOGGER.info("Copying {} to {} on host {}", resourceSourceCopy, resourceDestPath, hostName);
-            // TODO backup existing file
             // TODO replace ApplicationControlOperation (and all operation classes) with ResourceControlOperation
             // TODO replace WindowsApplicationPlatformCommandProvider (and all platform command provider) with WindowsResourcePlatformCommandProvider
-            commandOutput = remoteCommandExecutor.executeRemoteCommand(null, hostName, ApplicationControlOperation.SECURE_COPY, new WindowsApplicationPlatformCommandProvider(), resourceSourceCopy, resourceDestPath);
+            commandOutput = secureCopyFile(hostName, resourceSourceCopy, resourceDestPath);
 
         } catch (IOException e) {
             String message = "Failed to write file";
@@ -661,6 +661,55 @@ public class ResourceServiceImpl implements ResourceService {
             resourceWriteLockMap.get(hostName).writeLock().unlock();
         }
         return commandOutput;
+    }
+
+    protected CommandOutput secureCopyFile(final String hostName, final String sourcePath, final String destPath) throws CommandFailureException {
+        final int beginIndex = destPath.lastIndexOf("/");
+        final String fileName = destPath.substring(beginIndex + 1, destPath.length());
+
+        // TODO put this back in when we start processing events for JVMs, and then make it generic for Web Servers, Applications, etc.
+        // don't add any usage of the toc user internal directory to the history
+        /*if (!AemControl.Properties.USER_TOC_SCRIPTS_PATH.getValue().endsWith(fileName)) {
+            final String eventDescription = "SECURE COPY " + fileName;
+            historyService.createHistory(hostName, new ArrayList<>(*//*jvm.getGroups()*//*), eventDescription, EventType.USER_ACTION, userId);
+            messagingService.send(new JvmHistoryEvent(jvm.getId(), eventDescription, userId, DateTime.now(), JvmControlOperation.SECURE_COPY));
+        }*/
+
+        // TODO update this to be derived from the resource type being copied
+        final String name = "Ext Properties";
+
+        CommandOutput commandOutput = remoteCommandExecutor.executeRemoteCommand(
+                name,
+                hostName,
+                ApplicationControlOperation.CHECK_FILE_EXISTS,
+                new WindowsApplicationPlatformCommandProvider(),
+                destPath
+        );
+        if (commandOutput.getReturnCode().wasSuccessful()) {
+            String currentDateSuffix = new SimpleDateFormat(".yyyyMMdd_HHmmss").format(new Date());
+            final String destPathBackup = destPath + currentDateSuffix;
+            commandOutput = remoteCommandExecutor.executeRemoteCommand(
+                    name,
+                    hostName,
+                    ApplicationControlOperation.BACK_UP_FILE,
+                    new WindowsApplicationPlatformCommandProvider(),
+                    destPath,
+                    destPathBackup);
+            if (!commandOutput.getReturnCode().wasSuccessful()) {
+                LOGGER.info("Failed to back up the " + destPath + " for " + name + ". Continuing with secure copy.");
+            } else {
+                LOGGER.info("Successfully backed up " + destPath + " at " + hostName);
+            }
+
+        }
+
+        return remoteCommandExecutor.executeRemoteCommand(
+                name,
+                hostName,
+                ApplicationControlOperation.SECURE_COPY,
+                new WindowsApplicationPlatformCommandProvider(),
+                sourcePath,
+                destPath);
     }
 
     protected void createConfigFile(String path, String configFileName, String templateContent) throws IOException {

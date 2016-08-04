@@ -9,7 +9,7 @@ import java.util.Map;
 public enum ApplicationControlOperation {
 
     SECURE_COPY("scp"),
-    BACK_UP_CONFIG_FILE("backUpConfigFile"),
+    BACK_UP_FILE("backUpFile"),
     UNPACK_WAR("unpackWar"),
     CREATE_DIRECTORY("mkdir"),
     CHANGE_FILE_MODE("chmod"),

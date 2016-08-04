@@ -20,7 +20,7 @@ public enum WindowsApplicationNetOperation implements ServiceCommandBuilder {
             return new ExecCommand(SCP_SCRIPT_NAME.getValue(), configFilePath, destPath);
         }
     },
-    BACK_UP_CONFIG_FILE(ApplicationControlOperation.BACK_UP_CONFIG_FILE) {
+    BACK_UP_FILE(ApplicationControlOperation.BACK_UP_FILE) {
         @Override
         public ExecCommand buildCommandForService(String aServiceName, String... aParams) {
             final String srcPath = aParams[0];
