@@ -35,13 +35,16 @@ var MainArea = React.createClass({
     },
     componentDidMount: function(){
         var self = this;
+
         userService.getAuthorizationDetails().then(function(response){
             if(response.applicationResponseContent.authorizationEnabled === "true"){
-                if(response.applicationResponseContent.userAuthorities[0].authority === "TOC Admin"){
+                if(response.applicationResponseContent.userAuthorities.length !== 0 && response.applicationResponseContent.userAuthorities[0].authority === "TOC Admin"){
                     MainArea.isAdminRole = true;
                     self.setState({hasRole: true});
-                }
-                else{
+                } else if(response.applicationResponseContent.userAuthorities.length !== 0 && response.applicationResponseContent.userAuthorities[0].authority === "TOC User"){
+                    MainArea.isAdminRole = false;
+                    self.setState({hasRole: true});
+                } else {
                     MainArea.isAdminRole = false;
                     self.setState({hasRole: true});
                 }
