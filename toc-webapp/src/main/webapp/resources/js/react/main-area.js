@@ -35,23 +35,24 @@ var MainArea = React.createClass({
     },
     componentDidMount: function(){
         var self = this;
-        userService.getAuthorization().then(function(response){
-            if(response.applicationResponseContent === "false"){
+        userService.getAuthorizationDetails().then(function(response){
+            if(response.applicationResponseContent.authorizationEnabled === "true"){
+                if(response.applicationResponseContent.userAuthorities[0].authority === "TOC Admin"){
+                    MainArea.isAdminRole = true;
+                    self.setState({hasRole: true});
+                }
+                else{
+                    MainArea.isAdminRole = false;
+                    self.setState({hasRole: true});
+                }
+            } else {
                 MainArea.isAdminRole = true;
                 self.setState({hasRole: true});
-            }else{
-                userService.getIsAdmin().then(function(response){
-                    MainArea.isAdminRole = (response.applicationResponseContent === "true");
-                    self.setState({hasRole: true});
-                }).caught(function(response) {
-                    console.log(response);
-                    $.errorAlert("There was an error retrieving user roles! Please check console logs for details.", "Error", false);
-                });
-                }
+            }
         }).caught(function(response) {
-                   console.log(response);
-                   $.errorAlert("There was an error retrieving user roles! Please check console logs for details.", "Error", false);
-           });
+              console.log(response);
+              $.errorAlert("There was an error retrieving user roles! Please check console logs for details.", "Error", false);
+        });
     },
     statics: {
         unsavedChanges: false,

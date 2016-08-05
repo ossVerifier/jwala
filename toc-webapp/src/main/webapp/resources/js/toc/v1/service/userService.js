@@ -21,5 +21,9 @@ var userService = {
 
     getIsAdmin: function(){
       return serviceFoundation.promisedGet("v1.0/user/isUserAdmin", "json");
+    },
+
+    getAuthorizationDetails: function(){
+      return serviceFoundation.promisedGet("v1.0/admin/context/authorization", "json");
     }
 };
