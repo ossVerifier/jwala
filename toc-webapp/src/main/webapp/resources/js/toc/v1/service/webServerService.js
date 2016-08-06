@@ -118,8 +118,16 @@ var webServerService = {
                                      errorCallback,
                                      false);
     },
-    drainWebServer: function(groupName, webserverName) {
-            return serviceFoundation.promisedPost("v1.0/balancermanager/" + encodeURIComponent(groupName) + "/" + encodeURIComponent(webserverName) + "/");
+    drainWebServer: function(groupName, webserverName, errorCallback) {
+            return serviceFoundation.post("v1.0/balancermanager/" + encodeURIComponent(groupName) + "/" + encodeURIComponent(webserverName) + "/",
+            "json",
+            null,
+            null,
+            errorCallback,
+            true,
+            "text/plain",
+            false
+            );
     },
     getResources : function(webServerName, responseCallback) {
         return serviceFoundation.get("v1.0/webservers/" + encodeURIComponent(webServerName) + "/resources/name", "json", responseCallback);

@@ -613,11 +613,12 @@ var GroupOperationsDataTable = React.createClass({
         this.verifyAndConfirmControlOperation(event.data.id, event.data.buttonSelector, event.data.name, "generate all Web Servers under", callback, "webServer");
     },
     drainGroupWebServers: function (event) {
-
         var self = this;
         var callback = function (id, buttonSelector) {
             self.disableEnable(event.data.buttonSelector, function () {
-                return groupControlService.drainWebServers(event.data.name);
+                return groupControlService.drainWebServers(event.data.name, function (errMsg) {
+                   $.alert(errMsg, "Drain user Group Failed", false);
+                });
             }, "ui-icon-stop");
         };
         this.verifyAndConfirmControlOperation(event.data.id, event.data.buttonSelector, event.data.name, "drain all Web Servers under", callback, "webServer");

@@ -38,11 +38,14 @@ var groupControlService = function() {
                                       errorCallback,
                                       false);
     };
-    var drain = function(groupName) {
-        return serviceFoundation.promisedPost("v1.0/balancermanager/" + encodeURIComponent(groupName),
+    var drain = function(groupName, errorCallback) {
+        return serviceFoundation.post("v1.0/balancermanager/" + encodeURIComponent(groupName),
                                       "json",
-                                      "");
-    }
+                                       "",
+                                       undefined,
+                                       errorCallback,
+                                       false);
+    };
 
     return {
         startGroups: function() {
@@ -75,8 +78,8 @@ var groupControlService = function() {
         generateJvms : function(groupId, successCallback, errorCallback) {
             return generate(groupId, "jvms", successCallback, errorCallback)
         },
-        drainWebServers : function(groupName) {
-                    return drain(groupName, "starting to drain");
+        drainWebServers : function(groupName, errorCallback) {
+            return drain(groupName, errorCallback);
         }
     };
 

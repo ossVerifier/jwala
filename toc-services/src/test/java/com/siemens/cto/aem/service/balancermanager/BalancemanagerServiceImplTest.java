@@ -8,6 +8,7 @@ import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServerState;
 import com.siemens.cto.aem.common.domain.model.webserver.message.WebServerHistoryEvent;
+import com.siemens.cto.aem.common.exception.InternalErrorException;
 import com.siemens.cto.aem.common.exec.CommandOutput;
 import com.siemens.cto.aem.common.exec.ExecReturnCode;
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
@@ -108,29 +109,26 @@ public class BalancemanagerServiceImplTest {
         when(mockGroupService.getGroup("mygroupName")).thenReturn(mockGroup.getGroup());
         when(mockApplicationService.findApplications(new Identifier<Group>(1L))).thenReturn(mockGroup.findApplications());
         when(mockWebServerService.findWebServers(new Identifier<Group>(1L))).thenReturn(mockGroup.findWebServers());
+        WebServer webServer = mockGroup.getWebServer("myWebServerName");
+        when(mockWebServerService.isStarted(webServer)).thenReturn(true);
         Map map = new HashMap<>();
         map.put("a", "1");
-
         BalancemanagerHttpClient mockBalancemanagerHttpClient = org.mockito.Mockito.mock(BalancemanagerHttpClient.class);
         when(mockBalancemanagerHttpClient.doHttpClientPost("http://localhost", map)).thenReturn(200);
         ClientHttpResponse mockResponseHtml = mock(ClientHttpResponse.class);
         when(mockResponseHtml.getStatusCode()).thenReturn(HttpStatus.OK);
-
-
         when(mockClientFactoryHelper.requestGet(any(URI.class))).thenReturn(mockResponseHtml);
         when(mockResponseHtml.getBody()).thenReturn(new ByteArrayInputStream(getBalancerManagerResponseHtml().getBytes()));
         ClientHttpResponse mockResponseXml = mock(ClientHttpResponse.class);
         when(mockResponseXml.getStatusCode()).thenReturn(HttpStatus.OK);
-
         when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-HEALTH-CHECK-4.0&xml=1&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357"))).thenReturn(mockResponseXml);
         when(mockResponseXml.getBody()).thenReturn(new ByteArrayInputStream(getBalancerManagerResponseXml().getBytes()));
         ClientHttpResponse mockResponseXml2 = mock(ClientHttpResponse.class);
         when(mockResponseXml2.getStatusCode()).thenReturn(HttpStatus.OK);
-
         when(mockClientFactoryHelper.requestGet(new URI("https://localhost2/balancer-manager?b=lb-HEALTH-CHECK-4.0&xml=1&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357"))).thenReturn(mockResponseXml2);
         when(mockResponseXml2.getBody()).thenReturn(new ByteArrayInputStream(getBalancerManagerResponseXml().getBytes()));
-
-        balancermanagerServiceImpl.drainUserGroup("mygroupName", "");
+        DrainStatus drainStatus = balancermanagerServiceImpl.drainUserGroup("mygroupName", "");
+        assertEquals(2, drainStatus.getWebServerDrainStatusList().size());
     }
 
     @Test
@@ -140,6 +138,8 @@ public class BalancemanagerServiceImplTest {
         when(mockApplicationService.findApplications(new Identifier<Group>(1L))).thenReturn(mockGroup.findApplications());
         when(mockWebServerService.findWebServers(new Identifier<Group>(1L))).thenReturn(mockGroup.findWebServers());
         when(mockWebServerService.getWebServer("myWebServerName")).thenReturn(mockGroup.getWebServer("myWebServerName"));
+        WebServer webServer = mockGroup.getWebServer("myWebServerName");
+        when(mockWebServerService.isStarted(webServer)).thenReturn(true);
         Map map = new HashMap<>();
         map.put("a", "1");
         BalancemanagerHttpClient mockBalancemanagerHttpClient = org.mockito.Mockito.mock(BalancemanagerHttpClient.class);
@@ -152,7 +152,8 @@ public class BalancemanagerServiceImplTest {
         when(mockResponseXml.getStatusCode()).thenReturn(HttpStatus.OK);
         when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-HEALTH-CHECK-4.0&xml=1&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357"))).thenReturn(mockResponseXml);
         when(mockResponseXml.getBody()).thenReturn(new ByteArrayInputStream(getBalancerManagerResponseXml().getBytes()));
-        balancermanagerServiceImpl.drainUserWebServer("mygroupName", "myWebServerName");
+        DrainStatus drainStatus = balancermanagerServiceImpl.drainUserWebServer("mygroupName", "myWebServerName");
+        assertEquals(1, drainStatus.getWebServerDrainStatusList().size());
     }
 
     @Test
@@ -213,27 +214,24 @@ public class BalancemanagerServiceImplTest {
         when(mockGroupService.getGroup("mygroupName")).thenReturn(mockGroup.getGroup());
         when(mockApplicationService.findApplications(new Identifier<Group>(1L))).thenReturn(mockGroup.findApplications());
         when(mockWebServerService.findWebServers(new Identifier<Group>(1L))).thenReturn(mockGroup.findWebServers());
-
+        WebServer webServer = mockGroup.getWebServer("myWebServerName");
+        when(mockWebServerService.isStarted(webServer)).thenReturn(true);
         ClientHttpResponse mockResponseHtml = mock(ClientHttpResponse.class);
         when(mockResponseHtml.getStatusCode()).thenReturn(HttpStatus.OK);
         when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager"))).thenReturn(mockResponseHtml);
         when(mockResponseHtml.getBody()).thenReturn(new ByteArrayInputStream(getBalancerManagerResponseHtml().getBytes()));
-
         ClientHttpResponse mockResponseHtml2 = mock(ClientHttpResponse.class);
         when(mockResponseHtml2.getStatusCode()).thenReturn(HttpStatus.OK);
         when(mockClientFactoryHelper.requestGet(new URI("https://localhost2/balancer-manager"))).thenReturn(mockResponseHtml2);
         when(mockResponseHtml2.getBody()).thenReturn(new ByteArrayInputStream(getBalancerManagerResponseHtml().getBytes()));
-
         ClientHttpResponse mockResponseXml = mock(ClientHttpResponse.class);
         when(mockResponseXml.getStatusCode()).thenReturn(HttpStatus.OK);
         when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-HEALTH-CHECK-4.0&xml=1&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357"))).thenReturn(mockResponseXml);
         when(mockResponseXml.getBody()).thenReturn(new ByteArrayInputStream(getBalancerManagerResponseXml().getBytes()));
-
         ClientHttpResponse mockResponseXml2 = mock(ClientHttpResponse.class);
         when(mockResponseXml2.getStatusCode()).thenReturn(HttpStatus.OK);
         when(mockClientFactoryHelper.requestGet(new URI("https://localhost2/balancer-manager?b=lb-HEALTH-CHECK-4.0&xml=1&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357"))).thenReturn(mockResponseXml2);
         when(mockResponseXml2.getBody()).thenReturn(new ByteArrayInputStream(getBalancerManagerResponseXml().getBytes()));
-
         DrainStatus drainStatus = balancermanagerServiceImpl.getGroupDrainStatus("mygroupName");
         System.out.println(drainStatus);
         assertEquals(2, drainStatus.getWebServerDrainStatusList().size());

@@ -10,7 +10,6 @@ import com.siemens.cto.aem.service.app.ApplicationService;
 import com.siemens.cto.aem.service.balancermanager.BalancermanagerService;
 import com.siemens.cto.aem.service.group.GroupService;
 import com.siemens.cto.aem.service.webserver.WebServerService;
-
 import com.siemens.cto.aem.service.webserver.component.ClientFactoryHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -77,7 +76,7 @@ public class BalancermanagerServiceImpl extends BalancermanagerCommon implements
         List<DrainStatus.WebServerDrainStatus> webServerDrainStatusList = new ArrayList<>();
         Group group = groupService.getGroup(groupName);
         for (Application application : applicationService.findApplications(group.getId())) {
-            for (WebServer webServer : webServerService.findWebServers(group.getId())){
+            for (WebServer webServer : webServerService.findWebServers(group.getId())) {
                 DrainStatus.WebServerDrainStatus webServerDrainStatus = doDrainAndgetDrainStatus(webServer, application, false);
                 webServerDrainStatusList.add(webServerDrainStatus);
             }
