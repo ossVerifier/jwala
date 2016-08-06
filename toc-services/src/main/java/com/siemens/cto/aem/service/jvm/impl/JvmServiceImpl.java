@@ -138,7 +138,6 @@ public class JvmServiceImpl implements JvmService {
         final String groupName = parentGroup.getName();
         // get the group JVM templates
         List<String> templateNames = groupService.getGroupJvmsResourceTemplateNames(groupName);
-        final Jvm jvm = jvmPersistenceService.findJvmByExactName(jvmName);
         for (final String templateName : templateNames) {
             String templateContent = groupService.getGroupJvmResourceTemplate(groupName, templateName, resourceService.generateResourceGroup(), false);
             String metaDataStr = groupService.getGroupJvmResourceTemplateMetaData(groupName, templateName);

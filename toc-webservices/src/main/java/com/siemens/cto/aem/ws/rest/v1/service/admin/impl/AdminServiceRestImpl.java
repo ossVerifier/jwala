@@ -1,5 +1,6 @@
 package com.siemens.cto.aem.ws.rest.v1.service.admin.impl;
 
+import com.cerner.cto.ctp.ws.rest.response.ResponseContent;
 import com.siemens.cto.aem.common.domain.model.fault.AemFaultType;
 import com.siemens.cto.aem.common.exception.InternalErrorException;
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
@@ -14,12 +15,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import javax.servlet.ServletContext;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.Collection;
 import java.util.Properties;
 import java.util.TreeMap;
 import java.util.jar.Attributes;
@@ -32,7 +37,6 @@ public class AdminServiceRestImpl implements AdminServiceRest {
     public static final String JSON_RESPONSE_FALSE = "false";
 
     private static final String TOC_AUTHORIZATION= "toc.authorization";
-
 
     private FilesConfiguration filesConfiguration;
     private ResourceService resourceService;
@@ -120,5 +124,25 @@ public class AdminServiceRestImpl implements AdminServiceRest {
         else 
             return ResponseBuilder.ok(JSON_RESPONSE_TRUE);
     }
-    
+
+    @Override
+    public Response getAuthorizationDetails() {
+        return ResponseBuilder.ok(new ResponseContent() {
+            private static final String TRUE = "true";
+            private final String authEnabled = ApplicationProperties.get(TOC_AUTHORIZATION, TRUE);
+
+            public String getAuthorizationEnabled() {
+                return authEnabled;
+            }
+
+            @SuppressWarnings("unchecked")
+            public Collection<GrantedAuthority> getUserAuthorities() {
+                Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+                if (authEnabled.equalsIgnoreCase(TRUE) && auth != null) {
+                    return (Collection<GrantedAuthority>) auth.getAuthorities();
+                }
+                return null;
+            }
+        });
+    }
 }
