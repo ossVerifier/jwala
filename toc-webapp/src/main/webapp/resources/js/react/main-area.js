@@ -35,26 +35,15 @@ var MainArea = React.createClass({
     },
     componentDidMount: function(){
         var self = this;
-
-        userService.getAuthorizationDetails().then(function(response){
-            if(response.applicationResponseContent.authorizationEnabled === "true"){
-                if(response.applicationResponseContent.userAuthorities.length !== 0 && response.applicationResponseContent.userAuthorities[0].authority === "TOC Admin"){
-                    MainArea.isAdminRole = true;
-                    self.setState({hasRole: true});
-                } else if(response.applicationResponseContent.userAuthorities.length !== 0 && response.applicationResponseContent.userAuthorities[0].authority === "TOC User"){
-                    MainArea.isAdminRole = false;
-                    self.setState({hasRole: true});
-                } else {
-                    MainArea.isAdminRole = false;
-                    self.setState({hasRole: true});
-                }
-            } else {
-                MainArea.isAdminRole = true;
-                self.setState({hasRole: true});
-            }
+        ServiceFactory.getAdminService().getAuthorizationDetails().then(function(response) {
+            MainArea.isAdminRole  = response.applicationResponseContent.authorizationEnabled === "false" ||
+                                    (response.applicationResponseContent.authorizationEnabled === "true" &&
+                                     response.applicationResponseContent.userAuthorities.length !== 0 &&
+                                     response.applicationResponseContent.userAuthorities[0].authority === "TOC Admin")
+            self.setState({hasRole: true});
         }).caught(function(response) {
-              console.log(response);
-              $.errorAlert("There was an error retrieving user roles! Please check console logs for details.", "Error", false);
+                        console.log(response);
+                        $.errorAlert("There was an error retrieving user roles! Please check console logs for details.", "Error", false);
         });
     },
     statics: {
