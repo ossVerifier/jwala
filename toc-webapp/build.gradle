@@ -51,7 +51,7 @@ dependencies {
     testCompile group: "org.mockito", name: "mockito-core", version: "$project.versions.mockito"
     testCompile group: 'org.objenesis', name: 'objenesis', version: "$project.versions.objenesis"
 
-    babel group: 'babel', name: 'babel-node', version: '6.6.4', ext: 'zip'
+    babel group: 'babel-node', name: 'babel-node', version: '6.6.4', ext: 'zip'
 }
 
 war {

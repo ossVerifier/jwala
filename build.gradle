@@ -109,9 +109,9 @@ subprojects {
         }
 
         // Required by Babel until babel node modules are transferred in usmlvv1qmp645
-        maven {
+       /* maven {
             url 'http://usmlvv1srn464.usmlvv1d0a.smshsc.net/artifactory/npm-local/'
-        }
+        }*/
     }
 
     dependencies {
