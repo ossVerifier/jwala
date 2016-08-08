@@ -1,7 +1,5 @@
 package com.siemens.cto.aem.web.security;
 
-import java.util.regex.Pattern;
-
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.ComponentScan;
@@ -40,15 +38,22 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private static final String ACTIVE_DIRECTORY_SERVER_NAME = "active.directory.server.name";
     private static final String ACTIVE_DIRECTORY_SERVER_PORT = "active.directory.server.port";
     private static final String ACTIVE_DIRECTORY_PROTOCOL = "active.directory.server.protocol";
+    private static final String TOC_AUTH_ENABLED = "toc.authorization";
+
     
     private static final String LOGIN_PAGE ="/login";
-    private static final String LOGIN_API = "/v1.0/user/login";
-    private static final String LOGOUT_API = "/v1.0/user/logout";
+    private static final String LOGIN_API = "/**/user/login";
+    private static final String LOGOUT_API = "/**/user/logout";
 
     private static final String GEN_PUBLIC_RESOURCES = "/gen-public-resources/**";
     private static final String PUBLIC_RESOURCES = "/public-resources/**";
     private static final String PAGE_CONSTANTS = "/page-constants";
     
+    private static final String  WEBSERVER_CONF_URL = "/**/webservers/**/conf/deploy";
+    private static final String  WEBSERVER_GENERATE_URL = "/toc/**/groups/**/webservers/conf/deploy";
+    private static final String  JVM_CONF_URL = "/**/jvms/**/conf";
+    private static final String  IDP_URL = "/idp";
+
     /*
      * (non-Javadoc)
      * 
@@ -56,13 +61,25 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
      * WebSecurityConfigurerAdapter#configure(org.springframework.security.
      * config.annotation.web.builders.HttpSecurity)
      */
+     
     @Override
     protected void configure(HttpSecurity http) throws Exception {
+        final String ADMIN = ApplicationProperties.get("toc.role.admin");
+        final String AUTH = ApplicationProperties.get(TOC_AUTH_ENABLED, "true");
+        //ACL check
+        if(!"false".equalsIgnoreCase(AUTH)){
+            http.authorizeRequests().antMatchers(IDP_URL, 
+                                                 WEBSERVER_GENERATE_URL, 
+                                                 WEBSERVER_CONF_URL, 
+                                                 JVM_CONF_URL).hasAnyAuthority(ADMIN);
+        }
         http.authorizeRequests()
                  .antMatchers(GEN_PUBLIC_RESOURCES, PUBLIC_RESOURCES,LOGIN_PAGE,LOGIN_API, LOGOUT_API).permitAll().and()
                  .formLogin().loginPage(LOGIN_PAGE).permitAll().and()
                  .authorizeRequests().anyRequest().authenticated();
         http.csrf().disable();
+
+
     }
 
     /* (non-Javadoc)
