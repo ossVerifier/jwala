@@ -165,4 +165,35 @@ war{
         from reactCompiledOutputPath
         into reactCompiledOutputWarPath
     }
+
+    /**
+     * This task is a tool for developers to deploy their WAR file.
+     * Note: Please check gradle.properties first before using this to set the properties to the correct values as
+     * defined by your particular environment !!!
+     */
+    task deployWar(type: Copy) {
+        from "build/libs"
+        into "${deployPath}"
+    }
+
+    task deleteWar(type: Delete) {
+        delete fileTree("${deployPath}") {
+            include project.name + "*.war"
+        }
+    }
+
+    task deleteExtractedWarPath(type: Delete) {
+        delete "${extractedWarPath}"
+    }
+
+    task deployContext(type: Copy) {
+        from "${templatePath}"
+        into "${appInstanceConfPath}"
+        include "${appContext}.tpl"
+        rename {file -> "${appContext}"}
+        expand(deployPath: "${deployPath}", warName: project.name + "-${buildVersion}.war", jmsStatusAddr: "${jmsStatusAddr}",
+                jmsStateNotificationAddr: "${jmsStateNotificationAddr}")
+    }
+
+    deployWar.dependsOn deployContext, deleteWar, deleteExtractedWarPath
 }
