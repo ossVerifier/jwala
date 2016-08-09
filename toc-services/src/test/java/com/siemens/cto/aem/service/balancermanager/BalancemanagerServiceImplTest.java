@@ -2,17 +2,9 @@ package com.siemens.cto.aem.service.balancermanager;
 
 import com.siemens.cto.aem.common.domain.model.balancermanager.DrainStatus;
 import com.siemens.cto.aem.common.domain.model.group.Group;
-import com.siemens.cto.aem.common.domain.model.resource.ResourceGroup;
-import com.siemens.cto.aem.common.domain.model.state.CurrentState;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
-import com.siemens.cto.aem.common.domain.model.webserver.WebServerState;
-import com.siemens.cto.aem.common.domain.model.webserver.message.WebServerHistoryEvent;
-import com.siemens.cto.aem.common.exception.InternalErrorException;
-import com.siemens.cto.aem.common.exec.CommandOutput;
-import com.siemens.cto.aem.common.exec.ExecReturnCode;
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
-import com.siemens.cto.aem.exception.CommandFailureException;
 import com.siemens.cto.aem.service.HistoryService;
 import com.siemens.cto.aem.service.MessagingService;
 import com.siemens.cto.aem.service.app.ApplicationService;
@@ -20,15 +12,18 @@ import com.siemens.cto.aem.service.balancermanager.impl.BalancemanagerHttpClient
 import com.siemens.cto.aem.service.balancermanager.impl.BalancermanagerServiceImpl;
 import com.siemens.cto.aem.service.balancermanager.impl.xml.data.Manager;
 import com.siemens.cto.aem.service.group.GroupService;
-import com.siemens.cto.aem.service.ssl.hc.HttpClientRequestFactory;
-import com.siemens.cto.aem.service.webserver.WebServerCommandService;
 
 import com.siemens.cto.aem.service.webserver.WebServerService;
 import com.siemens.cto.aem.service.webserver.component.ClientFactoryHelper;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.message.BasicNameValuePair;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Matchers;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.mockito.internal.verification.Times;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,12 +38,12 @@ import java.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 import java.util.*;
 
 import static com.siemens.cto.aem.common.domain.model.id.Identifier.id;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 
@@ -74,11 +69,17 @@ public class BalancemanagerServiceImplTest {
     @Mock
     private HistoryService mockHistoryService;
 
+    @Mock
+    private CloseableHttpResponse mockResponse;
+
+    @Mock
+    private BalancemanagerHttpClient mockBalancemanagerHttpClient;
+
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
         this.balancermanagerServiceImpl = new BalancermanagerServiceImpl(mockGroupService, mockApplicationService, mockWebServerService, mockClientFactoryHelper,
-                mockMessagingService, mockHistoryService) {
+                mockMessagingService, mockHistoryService, mockBalancemanagerHttpClient) {
             public void sendMessage(final WebServer webServer, final String message) {
 
             }
@@ -92,47 +93,38 @@ public class BalancemanagerServiceImplTest {
     }
 
     @Test
-    public void testGetPostMap() {
-        Map<String, String> map = balancermanagerServiceImpl.getPostMap("health-check-4.0", "https://usmlvv1cds0049:9101/hct");
-        assertEquals(4, map.size());
-        Iterator it = map.entrySet().iterator();
-        while (it.hasNext()) {
-            Map.Entry pair = (Map.Entry) it.next();
-            System.out.println(pair.getKey() + " " + pair.getValue());
-            it.remove();
-        }
+    public void testGetNVP() {
+        assertEquals(4, balancermanagerServiceImpl.getNVP("myWorkerUrl").size());
     }
 
     @Test
-    public void testDrainUserGroup() throws IOException, URISyntaxException {
+    public void testDrainUserGroup() throws IOException, URISyntaxException, NoSuchAlgorithmException, KeyManagementException {
         final MockGroup mockGroup = new MockGroup();
         when(mockGroupService.getGroup("mygroupName")).thenReturn(mockGroup.getGroup());
         when(mockApplicationService.findApplications(new Identifier<Group>(1L))).thenReturn(mockGroup.findApplications());
         when(mockWebServerService.findWebServers(new Identifier<Group>(1L))).thenReturn(mockGroup.findWebServers());
         WebServer webServer = mockGroup.getWebServer("myWebServerName");
         when(mockWebServerService.isStarted(webServer)).thenReturn(true);
-        Map map = new HashMap<>();
-        map.put("a", "1");
-        BalancemanagerHttpClient mockBalancemanagerHttpClient = org.mockito.Mockito.mock(BalancemanagerHttpClient.class);
-        when(mockBalancemanagerHttpClient.doHttpClientPost("http://localhost", map)).thenReturn(200);
         ClientHttpResponse mockResponseHtml = mock(ClientHttpResponse.class);
         when(mockResponseHtml.getStatusCode()).thenReturn(HttpStatus.OK);
         when(mockClientFactoryHelper.requestGet(any(URI.class))).thenReturn(mockResponseHtml);
         when(mockResponseHtml.getBody()).thenReturn(new ByteArrayInputStream(getBalancerManagerResponseHtml().getBytes()));
         ClientHttpResponse mockResponseXml = mock(ClientHttpResponse.class);
         when(mockResponseXml.getStatusCode()).thenReturn(HttpStatus.OK);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-HEALTH-CHECK-4.0&xml=1&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357"))).thenReturn(mockResponseXml);
+        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&xml=1&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357"))).thenReturn(mockResponseXml);
         when(mockResponseXml.getBody()).thenReturn(new ByteArrayInputStream(getBalancerManagerResponseXml().getBytes()));
         ClientHttpResponse mockResponseXml2 = mock(ClientHttpResponse.class);
         when(mockResponseXml2.getStatusCode()).thenReturn(HttpStatus.OK);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost2/balancer-manager?b=lb-HEALTH-CHECK-4.0&xml=1&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357"))).thenReturn(mockResponseXml2);
+        when(mockClientFactoryHelper.requestGet(new URI("https://localhost2/balancer-manager?b=lb-health-check-4.0&xml=1&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357"))).thenReturn(mockResponseXml2);
         when(mockResponseXml2.getBody()).thenReturn(new ByteArrayInputStream(getBalancerManagerResponseXml().getBytes()));
+        when(mockBalancemanagerHttpClient.doHttpClientPost(any(String.class), anyListOf(NameValuePair.class))).thenReturn(mockResponse);
         DrainStatus drainStatus = balancermanagerServiceImpl.drainUserGroup("mygroupName", "");
         assertEquals(2, drainStatus.getWebServerDrainStatusList().size());
+
     }
 
     @Test
-    public void testDrainUserWebServer() throws IOException, URISyntaxException {
+    public void testDrainUserWebServer() throws IOException, URISyntaxException, NoSuchAlgorithmException, KeyManagementException {
         final MockGroup mockGroup = new MockGroup();
         when(mockGroupService.getGroup("mygroupName")).thenReturn(mockGroup.getGroup());
         when(mockApplicationService.findApplications(new Identifier<Group>(1L))).thenReturn(mockGroup.findApplications());
@@ -140,18 +132,15 @@ public class BalancemanagerServiceImplTest {
         when(mockWebServerService.getWebServer("myWebServerName")).thenReturn(mockGroup.getWebServer("myWebServerName"));
         WebServer webServer = mockGroup.getWebServer("myWebServerName");
         when(mockWebServerService.isStarted(webServer)).thenReturn(true);
-        Map map = new HashMap<>();
-        map.put("a", "1");
-        BalancemanagerHttpClient mockBalancemanagerHttpClient = org.mockito.Mockito.mock(BalancemanagerHttpClient.class);
-        when(mockBalancemanagerHttpClient.doHttpClientPost("http://localhost", map)).thenReturn(200);
         ClientHttpResponse mockResponseHtml = mock(ClientHttpResponse.class);
         when(mockResponseHtml.getStatusCode()).thenReturn(HttpStatus.OK);
         when(mockClientFactoryHelper.requestGet(any(URI.class))).thenReturn(mockResponseHtml);
         when(mockResponseHtml.getBody()).thenReturn(new ByteArrayInputStream(getBalancerManagerResponseHtml().getBytes()));
         ClientHttpResponse mockResponseXml = mock(ClientHttpResponse.class);
         when(mockResponseXml.getStatusCode()).thenReturn(HttpStatus.OK);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-HEALTH-CHECK-4.0&xml=1&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357"))).thenReturn(mockResponseXml);
+        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&xml=1&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357"))).thenReturn(mockResponseXml);
         when(mockResponseXml.getBody()).thenReturn(new ByteArrayInputStream(getBalancerManagerResponseXml().getBytes()));
+        when(mockBalancemanagerHttpClient.doHttpClientPost(any(String.class), anyListOf(NameValuePair.class))).thenReturn(mockResponse);
         DrainStatus drainStatus = balancermanagerServiceImpl.drainUserWebServer("mygroupName", "myWebServerName");
         assertEquals(1, drainStatus.getWebServerDrainStatusList().size());
     }
@@ -179,32 +168,32 @@ public class BalancemanagerServiceImplTest {
     @Test
     public void testGetWorkers() {
         Manager manager = balancermanagerServiceImpl.getWorkerXml(getBalancerManagerResponseXml());
-        final String appName = "health-check-4.0";
-        Map<String, String> workers = balancermanagerServiceImpl.getWorkers(manager, appName);
+        balancermanagerServiceImpl.setBalancerName("lb-health-check-4.0");
+        Map<String, String> workers = balancermanagerServiceImpl.getWorkers(manager);
         assertEquals(6, workers.size());
     }
 
     @Test
     public void testGetWorkersMulti() {
         Manager manager = balancermanagerServiceImpl.getWorkerXml(getBalancerManagerResponseXmlMulti());
-        final String appName = "slpa-4.0.0800.02";
-        Map<String, String> workers = balancermanagerServiceImpl.getWorkers(manager, appName);
+        balancermanagerServiceImpl.setBalancerName("lb-slpa-4.0.0800.02");
+        Map<String, String> workers = balancermanagerServiceImpl.getWorkers(manager);
         assertEquals(2, workers.size());
     }
 
     @Test
     public void testGetNonce() {
         final String content = getBalancerManagerResponseHtml();
-        final String appName = "health-check-4.0";
-        balancermanagerServiceImpl.findNonce(content, appName);
+        balancermanagerServiceImpl.setBalancerName("lb-health-check-4.0");
+        balancermanagerServiceImpl.findNonce(content);
         assertEquals("7bbf520f-8454-7b47-8edc-d5ade6c31357", balancermanagerServiceImpl.getNonce());
     }
 
     @Test
     public void testGetNonceMulti() {
         final String content = getBalancerManagerResponseHtmlMulti();
-        final String appName = "slpa-4.0.0800.02";
-        balancermanagerServiceImpl.findNonce(content, appName);
+        balancermanagerServiceImpl.setBalancerName("lb-slpa-4.0.0800.02");
+        balancermanagerServiceImpl.findNonce(content);
         assertEquals("6af7e4d6-531d-b343-95d4-99f2127609ad", balancermanagerServiceImpl.getNonce());
     }
 
@@ -226,11 +215,11 @@ public class BalancemanagerServiceImplTest {
         when(mockResponseHtml2.getBody()).thenReturn(new ByteArrayInputStream(getBalancerManagerResponseHtml().getBytes()));
         ClientHttpResponse mockResponseXml = mock(ClientHttpResponse.class);
         when(mockResponseXml.getStatusCode()).thenReturn(HttpStatus.OK);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-HEALTH-CHECK-4.0&xml=1&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357"))).thenReturn(mockResponseXml);
+        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&xml=1&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357"))).thenReturn(mockResponseXml);
         when(mockResponseXml.getBody()).thenReturn(new ByteArrayInputStream(getBalancerManagerResponseXml().getBytes()));
         ClientHttpResponse mockResponseXml2 = mock(ClientHttpResponse.class);
         when(mockResponseXml2.getStatusCode()).thenReturn(HttpStatus.OK);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost2/balancer-manager?b=lb-HEALTH-CHECK-4.0&xml=1&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357"))).thenReturn(mockResponseXml2);
+        when(mockClientFactoryHelper.requestGet(new URI("https://localhost2/balancer-manager?b=lb-health-check-4.0&xml=1&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357"))).thenReturn(mockResponseXml2);
         when(mockResponseXml2.getBody()).thenReturn(new ByteArrayInputStream(getBalancerManagerResponseXml().getBytes()));
         DrainStatus drainStatus = balancermanagerServiceImpl.getGroupDrainStatus("mygroupName");
         System.out.println(drainStatus);
@@ -250,9 +239,9 @@ public class BalancemanagerServiceImplTest {
         System.out.println(manager.getBalancers().size());
         assertEquals(2, manager.getBalancers().size());
         List<Manager.Balancer> balancerList = manager.getBalancers();
-        for(Manager.Balancer balancer : balancerList){
+        for (Manager.Balancer balancer : balancerList) {
             System.out.println(balancer.toString());
-            for(Manager.Balancer.Worker worker : balancer.getWorkers()){
+            for (Manager.Balancer.Worker worker : balancer.getWorkers()) {
                 System.out.println(worker.toString());
             }
         }
@@ -324,6 +313,84 @@ public class BalancemanagerServiceImplTest {
         assertEquals(1, balancermanagerServiceImpl.findMatchWebServers(webServers, webServerArray).size());
     }
 
+    @Test
+    public void testCheckStatus() {
+        final MockGroup mockGroup = new MockGroup();
+        Set<Group> groups = new HashSet<>();
+        groups.add(mockGroup.getGroup());
+        WebServer webServer = mockGroup.getWebServer("myWebServerName");
+        when(mockWebServerService.isStarted(webServer)).thenReturn(true);
+        balancermanagerServiceImpl.checkStatus(webServer);
+    }
+
+    @Test
+    public void testCheckStatusFail() {
+        final MockGroup mockGroup = new MockGroup();
+        Set<Group> groups = new HashSet<>();
+        groups.add(mockGroup.getGroup());
+        WebServer webServer = mockGroup.getWebServer("myWebServerName");
+        when(mockWebServerService.isStarted(webServer)).thenReturn(false);
+        try {
+            balancermanagerServiceImpl.checkStatus(webServer);
+        } catch (Exception e) {
+            System.out.println(e.toString());
+            assertEquals("com.siemens.cto.aem.common.exception.InternalErrorException: The target Web Server myWebSererName must be start before attempting to drain user", e.toString());
+        }
+    }
+
+    @Test
+    public void testCheckGroupStatus() {
+        final MockGroup mockGroup = new MockGroup();
+        when(mockGroupService.getGroup("mygroupName")).thenReturn(mockGroup.getGroup());
+        when(mockWebServerService.findWebServers(new Identifier<Group>(1L))).thenReturn(mockGroup.findWebServers());
+        when(mockWebServerService.isStarted(any(WebServer.class))).thenReturn(true);
+        balancermanagerServiceImpl.checkGroupStatus(mockGroup.getGroup().getName());
+    }
+
+    @Test
+    public void testCheckGroupStatusFail() {
+        final MockGroup mockGroup = new MockGroup();
+        when(mockGroupService.getGroup("mygroupName")).thenReturn(mockGroup.getGroup());
+        when(mockWebServerService.findWebServers(new Identifier<Group>(1L))).thenReturn(mockGroup.findWebServers());
+        when(mockWebServerService.isStarted(any(WebServer.class))).thenReturn(false);
+        try {
+            balancermanagerServiceImpl.checkGroupStatus(mockGroup.getGroup().getName());
+        } catch (Exception e) {
+            assertEquals("com.siemens.cto.aem.common.exception.InternalErrorException: The target Web Server myWebServerName in group mygroupName must be start before attempting to drain user", e.toString());
+        }
+    }
+
+    @Test
+    public void testGetBalancerName() {
+        final String content = getBalancerManagerResponseHtml();
+        final String appName = "health-check-4.0";
+        balancermanagerServiceImpl.findBalancerName(content, appName);
+        assertEquals("lb-health-check-4.0", balancermanagerServiceImpl.getBalancerName());
+    }
+
+    @Test
+    public void testGetBalancerNameMulti() {
+        final String content = getBalancerManagerResponseHtmlMulti();
+        final String appName = "slpa-4.0.0800.02";
+        balancermanagerServiceImpl.findBalancerName(content, appName);
+        assertEquals("lb-slpa-4.0.0800.02", balancermanagerServiceImpl.getBalancerName());
+    }
+
+    @Test
+    public void testDoHttpClientPost()  {
+        BalancemanagerHttpClient balancemanagerHttpClient = new BalancemanagerHttpClient();
+        try {
+            balancemanagerHttpClient.doHttpClientPost("https://localhost", getNvp());
+            fail();
+        } catch (KeyManagementException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            assertEquals("org.apache.http.conn.HttpHostConnectException: Connect to localhost:443 [localhost/127.0.0.1, localhost/0:0:0:0:0:0:0:1] failed: Connection refused: connect", e.toString());
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
+    }
+
     private String getBalancerManagerResponseXml() {
         final File httpdconfFile = new File("./src/test/resources/balancermanager/balancer-manager-response.xml");
         String contents = "";
@@ -370,5 +437,11 @@ public class BalancemanagerServiceImplTest {
             e.printStackTrace();
         }
         return contents;
+    }
+
+    private List<NameValuePair> getNvp() {
+        List<NameValuePair> nvp = new ArrayList<>();
+        nvp.add(new BasicNameValuePair("a", "1"));
+        return nvp;
     }
 }

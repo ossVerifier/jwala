@@ -12,6 +12,8 @@ import com.siemens.cto.aem.service.MessagingService;
 import com.siemens.cto.aem.service.balancermanager.impl.xml.data.Manager;
 import com.siemens.cto.aem.service.webserver.component.ClientFactoryHelper;
 import org.apache.commons.io.IOUtils;
+import org.apache.http.NameValuePair;
+import org.apache.http.message.BasicNameValuePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,6 +23,8 @@ import javax.xml.bind.Unmarshaller;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -33,10 +37,10 @@ public abstract class BalancermanagerCommon {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BalancermanagerCommon.class);
 
-    private BalancemanagerHttpClient balancemanagerHttpClient = new BalancemanagerHttpClient();
+    private BalancemanagerHttpClient balancemanagerHttpClient;
 
-    private final String balancer_prefix = "lb-";
     private String nonce = "";
+    private String balancerName = "";
 
     private final ClientFactoryHelper clientFactoryHelper;
     private MessagingService messagingService;
@@ -47,22 +51,32 @@ public abstract class BalancermanagerCommon {
 
     public BalancermanagerCommon(final ClientFactoryHelper clientFactoryHelper,
                                  final MessagingService messagingService,
-                                 final HistoryService historyService) {
+                                 final HistoryService historyService,
+                                 final BalancemanagerHttpClient balancemanagerHttpClient) {
         this.clientFactoryHelper = clientFactoryHelper;
         this.messagingService = messagingService;
         this.historyService = historyService;
+        this.balancemanagerHttpClient = balancemanagerHttpClient;
     }
-
 
     public DrainStatus.WebServerDrainStatus doDrainAndgetDrainStatus(final WebServer webServer, final Application application, final Boolean post) {
         List<DrainStatus.WebServerDrainStatus.JvmDrainStatus> jvmDrainStatusList = prepareDrainWork(webServer, application, post);
         return new DrainStatus.WebServerDrainStatus(webServer.getName(), jvmDrainStatusList);
     }
 
-    public int drainUser(final String managerurl, final Map<String, String> postMap) {
+   /* public ClientHttpResponse drainUser(final String managerurl, final List<NameValuePair> nvp) {
         LOGGER.info("Entering drainUser: " + managerurl);
-        return balancemanagerHttpClient.doHttpClientPost(managerurl, postMap);
-    }
+        try {
+            return balancemanagerHttpClient.doHttpClientPost(managerurl, nvp);
+        } catch (KeyManagementException e) {
+            LOGGER.error(e.toString());
+        } catch (IOException e) {
+            LOGGER.error(e.toString());
+        } catch (NoSuchAlgorithmException e) {
+            LOGGER.error(e.toString());
+        }
+        return null;
+    }*/
 
     public List<WebServer> findMatchWebServers(final List<WebServer> webServers, final String[] webServerArray) {
         LOGGER.info("Entering findMatchWebServers");
@@ -102,15 +116,16 @@ public abstract class BalancermanagerCommon {
 
     public List<DrainStatus.WebServerDrainStatus.JvmDrainStatus> prepareDrainWork(final WebServer webServer, final Application application, final Boolean post) {
         LOGGER.info("Entering prepareDrainWork");
-        final String balancerManagerUrlHtml = getBalancerManagerUrlPath(webServer.getHost(), application.getName(), false);
+        final String balancerManagerUrlHtml = getBalancerManagerUrlPath(webServer.getHost(), false);
         balancerManagerResponseHtml = getBalancerManagerResponse(balancerManagerUrlHtml);
-        findNonce(balancerManagerResponseHtml, application.getName());
-        final String balancerManagerUrlXml = getBalancerManagerUrlPath(webServer.getHost(), application.getName(), true);
+        findBalancerName(balancerManagerResponseHtml, application.getName());
+        findNonce(balancerManagerResponseHtml);
+        final String balancerManagerUrlXml = getBalancerManagerUrlPath(webServer.getHost(), true);
         balancerManagerResponseXml = getBalancerManagerResponse(balancerManagerUrlXml);
         Manager manager = getWorkerXml(balancerManagerResponseXml);
-        Map<String, String> workers = getWorkers(manager, application.getName());
+        Map<String, String> workers = getWorkers(manager);
         if (post) {
-            doDrain(workers, application, balancerManagerUrlHtml, webServer);
+            doDrain(workers, balancerManagerUrlHtml, webServer);
             balancerManagerResponseHtml = getBalancerManagerResponse(balancerManagerUrlHtml);
         }
         return getJvmsWorkerStatus(balancerManagerResponseHtml, application.getName(), workers);
@@ -121,7 +136,7 @@ public abstract class BalancermanagerCommon {
         DrainStatus.WebServerDrainStatus.JvmDrainStatus jvmDrainStatus;
         for (String workerUrl : workers.keySet()) {
             final String route = workers.get(workerUrl);
-            final String matchPattern = balancer_prefix + appName.toLowerCase() + "\\&w=" + workerUrl + "\\&nonce=.*\">.*</a></td><td>.*</td><td></td><td>1</td><td>0</td><td>Init.*Ok </td>";
+            final String matchPattern = getBalancerName() + "\\&w=" + workerUrl + "\\&nonce=.*\">.*</a></td><td>.*</td><td></td><td>1</td><td>0</td><td>Init.*Ok </td>";
             Pattern pattern = Pattern.compile(matchPattern);
             Matcher matcher = pattern.matcher(balancerManagerContent);
             while (matcher.find()) {
@@ -153,14 +168,20 @@ public abstract class BalancermanagerCommon {
         }
     }
 
-    public void doDrain(final Map<String, String> workers, final Application application, final String balancerManagerurl, final WebServer webServer) {
+    public void doDrain(final Map<String, String> workers, final String balancerManagerurl, final WebServer webServer) {
         LOGGER.info("Entering doDrain");
         for (String workerUrl : workers.keySet()) {
-            Map<String, String> postMap = getPostMap(application.getName(), workerUrl);
-            final String message = "Drain user for this webServer with worker " + workerUrl;
+            final String message = "Drain user with worker " + workerUrl;
             sendMessage(webServer, message);
-            int returnCode = drainUser(balancerManagerurl, postMap);
-            LOGGER.info("returnCode: " + returnCode);
+            try {
+                balancemanagerHttpClient.doHttpClientPost(balancerManagerurl, getNVP(workerUrl));
+            } catch (KeyManagementException e) {
+                LOGGER.error(e.toString());
+            } catch (IOException e) {
+                LOGGER.error(e.toString());
+            } catch (NoSuchAlgorithmException e) {
+                LOGGER.error(e.toString());
+            }
         }
     }
 
@@ -171,29 +192,30 @@ public abstract class BalancermanagerCommon {
         historyService.createHistory(webServer.getName(), new ArrayList<>(webServer.getGroups()), message, EventType.USER_ACTION, user.getId());
     }
 
-    public String getBalancerManagerUrlPath(final String host, final String appName, boolean isXml) {
+    public String getBalancerManagerUrlPath(final String host, boolean isXml) {
         final String url = "https://" + host + "/balancer-manager";
         if (isXml) {
-            return url + "?b=" + balancer_prefix + appName + "&xml=1&nonce=" + getNonce();
+            return url + "?b=" + getBalancerName() + "&xml=1&nonce=" + getNonce();
         } else {
             return url;
         }
     }
 
-    public Map<String, String> getPostMap(final String appName, final String worker) {
-        Map<String, String> maps = new HashMap<>();
-        maps.put("w_status_N", "1");
-        maps.put("b", balancer_prefix + appName);
-        maps.put("w", worker);
-        maps.put("nonce", getNonce());
-        return maps;
+    public List<NameValuePair> getNVP(final String worker) {
+        LOGGER.info("Entering getNVP: " + worker);
+        List<NameValuePair> nvps = new ArrayList<>();
+        nvps.add(new BasicNameValuePair("w_status_N", "1"));
+        nvps.add(new BasicNameValuePair("b", getBalancerName()));
+        nvps.add(new BasicNameValuePair("w", worker));
+        nvps.add(new BasicNameValuePair("nonce", getNonce()));
+        return nvps;
     }
 
-    public Map<String, String> getWorkers(final Manager manager, final String appName) {
-        LOGGER.info("Entering getWorkers for application: " + appName);
+    public Map<String, String> getWorkers(final Manager manager) {
+        LOGGER.info("Entering getWorkers for application: ");
         Map<String, String> workers = new HashMap<>();
         for (Manager.Balancer balancers : manager.getBalancers()) {
-            if (balancers.getName().equalsIgnoreCase("balancer://" + balancer_prefix + appName)) {
+            if (balancers.getName().equalsIgnoreCase("balancer://" + getBalancerName())) {
                 for (Manager.Balancer.Worker worker : balancers.getWorkers()) {
                     workers.put(worker.getName(), worker.getRoute());
                 }
@@ -223,17 +245,37 @@ public abstract class BalancermanagerCommon {
         return manager;
     }
 
-    public void findNonce(final String content, final String appName) {
-        LOGGER.info("content: " + content + " appName: " + appName);
-        final String matchPattern = "<h3>LoadBalancer Status for <a href=\"/balancer-manager\\?b=" + balancer_prefix + appName.toLowerCase() + "\\&nonce=.*";
+    public void findNonce(final String content) {
+        LOGGER.info("Entering findNonce, content: " + content);
+        final String foundStringPrefix = "<h3>LoadBalancer Status for <a href=\"/balancer-manager\\?b=";
+        final String foundStringPost = "\\&nonce=";
+        final String foundString = "nonce=";
+        final String matchPattern = foundStringPrefix + getBalancerName() + foundStringPost + ".*";
+        LOGGER.info("matchPattern: " + matchPattern);
         Pattern pattern = Pattern.compile(matchPattern);
         Matcher matcher = pattern.matcher(content);
         String matchString;
         while (matcher.find()) {
             matchString = matcher.group();
-            setNonce(matchString.substring(matchString.indexOf("nonce=") + 6, matchString.indexOf("\">balancer:")));
+            setNonce(matchString.substring(matchString.indexOf(foundString) + foundString.length(), matchString.indexOf("\">balancer:")));
         }
         LOGGER.info("nonce: " + getNonce());
+    }
+
+    public void findBalancerName(final String content, final String appName) {
+        LOGGER.info("Entering findBalancerName, content: " + content + " appName: " + appName.toLowerCase());
+        final String foundStringPrefix = "<h3>LoadBalancer Status for <a href=\"/balancer-manager\\?b=";
+        final String foundStringPost = "\\&nonce=";
+        final String matchPattern = foundStringPrefix + ".*" + appName.toLowerCase() + foundStringPost + ".*";
+        Pattern pattern = Pattern.compile(matchPattern);
+        Matcher matcher = pattern.matcher(content);
+        String matchString;
+        while (matcher.find()) {
+            matchString = matcher.group();
+            LOGGER.debug(matchString);
+            setBalancerName(matchString.substring(matchString.indexOf(foundStringPrefix.replace("\\", "")) + foundStringPrefix.replace("\\", "").length(),
+                    matchString.indexOf(foundStringPost.replace("\\", ""))));
+        }
     }
 
     public String getNonce() {
@@ -242,5 +284,13 @@ public abstract class BalancermanagerCommon {
 
     public void setNonce(String nonce) {
         this.nonce = nonce;
+    }
+
+    public String getBalancerName() {
+        return this.balancerName;
+    }
+
+    public void setBalancerName(String balancerName) {
+        this.balancerName = balancerName;
     }
 }

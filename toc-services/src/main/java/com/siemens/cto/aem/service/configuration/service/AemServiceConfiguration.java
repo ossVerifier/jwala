@@ -35,6 +35,7 @@ import com.siemens.cto.aem.service.app.impl.ApplicationCommandServiceImpl;
 import com.siemens.cto.aem.service.app.impl.ApplicationServiceImpl;
 import com.siemens.cto.aem.service.app.impl.PrivateApplicationServiceImpl;
 import com.siemens.cto.aem.service.balancermanager.BalancermanagerService;
+import com.siemens.cto.aem.service.balancermanager.impl.BalancemanagerHttpClient;
 import com.siemens.cto.aem.service.balancermanager.impl.BalancermanagerServiceImpl;
 import com.siemens.cto.aem.service.configuration.jms.AemJmsConfig;
 import com.siemens.cto.aem.service.group.*;
@@ -182,7 +183,7 @@ public class AemServiceConfiguration {
                                                             final ClientFactoryHelper clientFactoryHelper,
                                                             final MessagingService messagingService,
                                                             final HistoryService historyService){
-        return new BalancermanagerServiceImpl(groupService, applicationService, webServerService, clientFactoryHelper, messagingService, historyService);
+        return new BalancermanagerServiceImpl(groupService, applicationService, webServerService, clientFactoryHelper, messagingService, historyService, new BalancemanagerHttpClient());
     }
 
     @Bean(name = "webServerService")

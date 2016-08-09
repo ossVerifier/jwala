@@ -162,7 +162,7 @@ public class AemWebServiceConfiguration {
 
     @Bean
     public BalancermanagerServiceRest getV1BalancermanagerServiceRest(){
-        return new BalancermanagerServiceRestImpl(balancermanagerService, webServerService, groupService);
+        return new BalancermanagerServiceRestImpl(balancermanagerService);
     }
 
     @Bean

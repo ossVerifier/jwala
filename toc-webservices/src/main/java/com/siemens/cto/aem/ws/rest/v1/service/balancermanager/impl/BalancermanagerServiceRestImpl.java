@@ -22,30 +22,20 @@ import java.util.Map;
 
 public class BalancermanagerServiceRestImpl implements BalancermanagerServiceRest {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(BalancermanagerServiceRestImpl.class);
-
-    final WebServerService webServerService;
     final BalancermanagerService balancermanagerService;
-    final GroupService groupService;
 
-    public BalancermanagerServiceRestImpl(final BalancermanagerService balancermanagerService,
-                                          final WebServerService webServerService,
-                                          final GroupService groupService) {
+    public BalancermanagerServiceRestImpl(final BalancermanagerService balancermanagerService) {
         this.balancermanagerService = balancermanagerService;
-        this.webServerService = webServerService;
-        this.groupService = groupService;
     }
 
     @Override
     public Response drainUserGroup(final String groupName, final String webServers) {
-        checkGroupStatus(groupName);
         DrainStatus drainStatus = balancermanagerService.drainUserGroup(groupName, webServers);
         return ResponseBuilder.ok(drainStatus);
     }
 
     @Override
     public Response drainUserWebServer(final String groupName, final String webServerName) {
-        checkStatus(webServerService.getWebServer(webServerName));
         DrainStatus drainStatus = balancermanagerService.drainUserWebServer(groupName, webServerName);
         return ResponseBuilder.ok(drainStatus);
     }
@@ -58,26 +48,5 @@ public class BalancermanagerServiceRestImpl implements BalancermanagerServiceRes
 
     @Override
     public void afterPropertiesSet() throws Exception {
-
-    }
-
-    public void checkGroupStatus(final String groupName) {
-        final Group group = groupService.getGroup(groupName);
-        List<WebServer> webServerList = webServerService.findWebServers(group.getId());
-        for (WebServer webServer : webServerList) {
-            if (!webServerService.isStarted(webServer)) {
-                final String message = "The target Web Server " + webServer.getName() + " in group " + groupName + " must be start before attempting to drain user";
-                LOGGER.error(message);
-                throw new InternalErrorException(AemFaultType.INVALID_WEBSERVER_OPERATION, message);
-            }
-        }
-    }
-
-    public void checkStatus(WebServer webServer) {
-        if (!webServerService.isStarted(webServer)) {
-            final String message = "The target Web Server " + webServer.getName() + " must be start before attempting to drain user";
-            LOGGER.error(message);
-            throw new InternalErrorException(AemFaultType.INVALID_WEBSERVER_OPERATION, message);
-        }
     }
 }
