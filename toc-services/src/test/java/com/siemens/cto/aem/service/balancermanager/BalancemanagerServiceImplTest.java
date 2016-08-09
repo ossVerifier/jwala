@@ -2,8 +2,8 @@ package com.siemens.cto.aem.service.balancermanager;
 
 import com.siemens.cto.aem.common.domain.model.balancermanager.DrainStatus;
 import com.siemens.cto.aem.common.domain.model.group.Group;
-import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.common.domain.model.id.Identifier;
+import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.service.HistoryService;
 import com.siemens.cto.aem.service.MessagingService;
@@ -12,29 +12,23 @@ import com.siemens.cto.aem.service.balancermanager.impl.BalancemanagerHttpClient
 import com.siemens.cto.aem.service.balancermanager.impl.BalancermanagerServiceImpl;
 import com.siemens.cto.aem.service.balancermanager.impl.xml.data.Manager;
 import com.siemens.cto.aem.service.group.GroupService;
-
 import com.siemens.cto.aem.service.webserver.WebServerService;
 import com.siemens.cto.aem.service.webserver.component.ClientFactoryHelper;
 import org.apache.http.NameValuePair;
+import org.apache.http.StatusLine;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.message.BasicNameValuePair;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Matchers;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-import org.mockito.internal.verification.Times;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.client.ClientHttpResponse;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
@@ -43,7 +37,8 @@ import java.security.NoSuchAlgorithmException;
 import java.util.*;
 
 import static com.siemens.cto.aem.common.domain.model.id.Identifier.id;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 
@@ -68,9 +63,6 @@ public class BalancemanagerServiceImplTest {
 
     @Mock
     private HistoryService mockHistoryService;
-
-    @Mock
-    private CloseableHttpResponse mockResponse;
 
     @Mock
     private BalancemanagerHttpClient mockBalancemanagerHttpClient;
@@ -117,10 +109,13 @@ public class BalancemanagerServiceImplTest {
         when(mockResponseXml2.getStatusCode()).thenReturn(HttpStatus.OK);
         when(mockClientFactoryHelper.requestGet(new URI("https://localhost2/balancer-manager?b=lb-health-check-4.0&xml=1&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357"))).thenReturn(mockResponseXml2);
         when(mockResponseXml2.getBody()).thenReturn(new ByteArrayInputStream(getBalancerManagerResponseXml().getBytes()));
+        CloseableHttpResponse mockResponse = mock(CloseableHttpResponse.class);
+        StatusLine mockStatusLine = mock(StatusLine.class);
+        when(mockStatusLine.getStatusCode()).thenReturn(HttpStatus.OK.value());
+        when(mockResponse.getStatusLine()).thenReturn(mockStatusLine);
         when(mockBalancemanagerHttpClient.doHttpClientPost(any(String.class), anyListOf(NameValuePair.class))).thenReturn(mockResponse);
         DrainStatus drainStatus = balancermanagerServiceImpl.drainUserGroup("mygroupName", "");
         assertEquals(2, drainStatus.getWebServerDrainStatusList().size());
-
     }
 
     @Test
@@ -140,6 +135,10 @@ public class BalancemanagerServiceImplTest {
         when(mockResponseXml.getStatusCode()).thenReturn(HttpStatus.OK);
         when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&xml=1&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357"))).thenReturn(mockResponseXml);
         when(mockResponseXml.getBody()).thenReturn(new ByteArrayInputStream(getBalancerManagerResponseXml().getBytes()));
+        CloseableHttpResponse mockResponse = mock(CloseableHttpResponse.class);
+        StatusLine mockStatusLine = mock(StatusLine.class);
+        when(mockStatusLine.getStatusCode()).thenReturn(HttpStatus.OK.value());
+        when(mockResponse.getStatusLine()).thenReturn(mockStatusLine);
         when(mockBalancemanagerHttpClient.doHttpClientPost(any(String.class), anyListOf(NameValuePair.class))).thenReturn(mockResponse);
         DrainStatus drainStatus = balancermanagerServiceImpl.drainUserWebServer("mygroupName", "myWebServerName");
         assertEquals(1, drainStatus.getWebServerDrainStatusList().size());

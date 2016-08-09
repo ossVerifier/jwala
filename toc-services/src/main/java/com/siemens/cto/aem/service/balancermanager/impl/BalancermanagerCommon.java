@@ -13,6 +13,7 @@ import com.siemens.cto.aem.service.balancermanager.impl.xml.data.Manager;
 import com.siemens.cto.aem.service.webserver.component.ClientFactoryHelper;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.NameValuePair;
+import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.message.BasicNameValuePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -157,16 +158,21 @@ public abstract class BalancermanagerCommon {
     public void doDrain(final Map<String, String> workers, final String balancerManagerurl, final WebServer webServer) {
         LOGGER.info("Entering doDrain");
         for (String workerUrl : workers.keySet()) {
-            final String message = "Drain user with worker " + workerUrl;
+            final String message = "Set Drain mode for JVM " + workerUrl;
             sendMessage(webServer, message);
             try {
-                balancemanagerHttpClient.doHttpClientPost(balancerManagerurl, getNVP(workerUrl));
+                CloseableHttpResponse response = balancemanagerHttpClient.doHttpClientPost(balancerManagerurl, getNVP(workerUrl));
+                LOGGER.info("response code: " + response.getStatusLine().getStatusCode());
+                response.close();
             } catch (KeyManagementException e) {
                 LOGGER.error(e.toString());
+                throw new ApplicationException(e);
             } catch (IOException e) {
                 LOGGER.error(e.toString());
+                throw new ApplicationException(e);
             } catch (NoSuchAlgorithmException e) {
                 LOGGER.error(e.toString());
+                throw new ApplicationException(e);
             }
         }
     }
@@ -188,7 +194,6 @@ public abstract class BalancermanagerCommon {
     }
 
     public List<NameValuePair> getNVP(final String worker) {
-        LOGGER.info("Entering getNVP: " + worker);
         List<NameValuePair> nvps = new ArrayList<>();
         nvps.add(new BasicNameValuePair("w_status_N", "1"));
         nvps.add(new BasicNameValuePair("b", getBalancerName()));
@@ -232,12 +237,11 @@ public abstract class BalancermanagerCommon {
     }
 
     public void findNonce(final String content) {
-        LOGGER.info("Entering findNonce, content: " + content);
+        LOGGER.info("Entering findNonce: ");
         final String foundStringPrefix = "<h3>LoadBalancer Status for <a href=\"/balancer-manager\\?b=";
         final String foundStringPost = "\\&nonce=";
         final String foundString = "nonce=";
         final String matchPattern = foundStringPrefix + getBalancerName() + foundStringPost + ".*";
-        LOGGER.info("matchPattern: " + matchPattern);
         Pattern pattern = Pattern.compile(matchPattern);
         Matcher matcher = pattern.matcher(content);
         String matchString;
@@ -249,7 +253,7 @@ public abstract class BalancermanagerCommon {
     }
 
     public void findBalancerName(final String content, final String appName) {
-        LOGGER.info("Entering findBalancerName, content: " + content + " appName: " + appName.toLowerCase());
+        LOGGER.info("Entering findBalancerName appName: " + appName.toLowerCase());
         final String foundStringPrefix = "<h3>LoadBalancer Status for <a href=\"/balancer-manager\\?b=";
         final String foundStringPost = "\\&nonce=";
         final String matchPattern = foundStringPrefix + ".*" + appName.toLowerCase() + foundStringPost + ".*";
