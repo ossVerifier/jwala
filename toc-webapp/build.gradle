@@ -147,7 +147,7 @@ babel.dependsOn downloadBabel
 war{
     manifest {
         attributes(
-                "Specification-Version": (null ==System.getProperty("accurevTransactionId") ? "" : System.getProperty("accurevTransactionId")),
+                "Specification-Version": (null ==System.getProperty("gitCommitId") ? "" : System.getProperty("gitCommitId")),
                 "Implementation-Title": project.name,
                 "Implementation-Version": buildVersion,
                 "Build-Number": (null == System.getProperty("buildNumber")) ? "" : System.getProperty("buildNumber"),
