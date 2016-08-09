@@ -22,6 +22,7 @@ import com.siemens.cto.aem.common.request.jvm.ControlJvmRequest;
 import com.siemens.cto.aem.common.request.jvm.CreateJvmAndAddToGroupsRequest;
 import com.siemens.cto.aem.common.request.jvm.CreateJvmRequest;
 import com.siemens.cto.aem.common.request.jvm.UpdateJvmRequest;
+import com.siemens.cto.aem.control.AemControl;
 import com.siemens.cto.aem.exception.CommandFailureException;
 import com.siemens.cto.aem.persistence.jpa.domain.resource.config.template.JpaJvmConfigTemplate;
 import com.siemens.cto.aem.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
@@ -331,19 +332,33 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
         jvmService.removeJvm(id, mockUser);
     }
 
-/*
     @Test
     public void testDeleteJvmWindowsServiceForNonExistentService() {
         Jvm mockJvm = mock(Jvm.class);
         ControlJvmRequest controlJvmRequest = new ControlJvmRequest(new Identifier<Jvm>(123L), JvmControlOperation.DELETE_SERVICE);
+        CommandOutput commandOutput = new CommandOutput(new ExecReturnCode(36), "", "Fail for non-existent service");
 
         when(mockJvm.getState()).thenReturn(JvmState.JVM_STOPPED);
         when(mockJvm.getJvmName()).thenReturn("jvm-name-delete-service");
-        when(mockJvmControlService.controlJvm(eq(controlJvmRequest), any(User.class))).thenReturn(comm)
+        when(mockJvmControlService.controlJvm(eq(controlJvmRequest), any(User.class))).thenReturn(commandOutput);
         
         jvmService.deleteJvmWindowsService(controlJvmRequest, mockJvm, mockUser);
+        verify(mockJvmControlService).controlJvm(eq(controlJvmRequest), eq(mockUser));
     }
-*/
+
+    @Test (expected = InternalErrorException.class)
+    public void testDeleteJvmWindowsServiceFailsForOtherErrorCode() {
+        Jvm mockJvm = mock(Jvm.class);
+        ControlJvmRequest controlJvmRequest = new ControlJvmRequest(new Identifier<Jvm>(123L), JvmControlOperation.DELETE_SERVICE);
+        CommandOutput commandOutput = new CommandOutput(new ExecReturnCode(1111), "", "Fail some other reason than service does not exist");
+
+        when(mockJvm.getState()).thenReturn(JvmState.JVM_STOPPED);
+        when(mockJvm.getJvmName()).thenReturn("jvm-name-delete-service");
+        when(mockJvmControlService.controlJvm(eq(controlJvmRequest), any(User.class))).thenReturn(commandOutput);
+
+        jvmService.deleteJvmWindowsService(controlJvmRequest, mockJvm, mockUser);
+        verify(mockJvmControlService).controlJvm(eq(controlJvmRequest), eq(mockUser));
+    }
 
     @Test
     public void testGetAll() {
@@ -749,7 +764,62 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
     }
 
 
-/*
+    @Test (expected = InternalErrorException.class)
+    public void testGenerateAndDeployJVMFailsJVMStarted() {
+        Jvm mockJvm = mock(Jvm.class);
+
+        when(mockJvmPersistenceService.findJvmByExactName(anyString())).thenReturn(mockJvm);
+        when(mockJvm.getState()).thenReturn(JvmState.JVM_STARTED);
+        when(mockJvm.getId()).thenReturn(new Identifier<Jvm>(111L));
+
+        jvmService.generateAndDeployJvm("test-jvm-fails-started", mockUser);
+    }
+
+    @Test (expected = InternalErrorException.class)
+    public void testGenerateAndDeployJVMFailsCreateDirectory() throws CommandFailureException {
+        Jvm mockJvm = mock(Jvm.class);
+        CommandOutput commandOutputFails = new CommandOutput(new ExecReturnCode(1), "", "Fail creating the directory");
+
+        when(mockJvmPersistenceService.findJvmByExactName(anyString())).thenReturn(mockJvm);
+        when(mockJvmControlService.createDirectory(any(Jvm.class), anyString())).thenReturn(commandOutputFails);
+        when(mockJvm.getId()).thenReturn(new Identifier<Jvm>(111L));
+        when(mockJvm.getState()).thenReturn(JvmState.JVM_STOPPED);
+
+        jvmService.generateAndDeployJvm("test-jvm-fails-started", mockUser);
+    }
+
+    @Test (expected = InternalErrorException.class)
+    public void testGenerateAndDeployJVMFailsDeployingInvokeService() throws CommandFailureException {
+        Jvm mockJvm = mock(Jvm.class);
+        CommandOutput commandOutputFails = new CommandOutput(new ExecReturnCode(1), "", "Fail creating the directory");
+        CommandOutput commandOutputSucceeds = new CommandOutput(new ExecReturnCode(0), "SUCCESS", "");
+
+        when(mockJvmPersistenceService.findJvmByExactName(anyString())).thenReturn(mockJvm);
+        when(mockJvmControlService.createDirectory(any(Jvm.class), anyString())).thenReturn(commandOutputSucceeds);
+        when(mockJvmControlService.secureCopyFile(any(ControlJvmRequest.class), contains(AemControl.Properties.DEPLOY_CONFIG_ARCHIVE_SCRIPT_NAME.getValue()), anyString(), anyString())).thenReturn(commandOutputSucceeds);
+        when(mockJvmControlService.secureCopyFile(any(ControlJvmRequest.class), contains(AemControl.Properties.INVOKE_SERVICE_SCRIPT_NAME.getValue()), anyString(), anyString())).thenReturn(commandOutputFails);
+        when(mockJvm.getId()).thenReturn(new Identifier<Jvm>(111L));
+        when(mockJvm.getState()).thenReturn(JvmState.JVM_STOPPED);
+
+        jvmService.generateAndDeployJvm("test-jvm-fails-started", mockUser);
+    }
+
+    @Test (expected = InternalErrorException.class)
+    public void testGenerateAndDeployJVMFailsChangeFileMode() throws CommandFailureException {
+        Jvm mockJvm = mock(Jvm.class);
+        CommandOutput commandOutputFails = new CommandOutput(new ExecReturnCode(1), "", "Fail creating the directory");
+        CommandOutput commandOutputSucceeds = new CommandOutput(new ExecReturnCode(0), "SUCCESS", "");
+
+        when(mockJvmPersistenceService.findJvmByExactName(anyString())).thenReturn(mockJvm);
+        when(mockJvmControlService.createDirectory(any(Jvm.class), anyString())).thenReturn(commandOutputSucceeds);
+        when(mockJvmControlService.secureCopyFile(any(ControlJvmRequest.class), anyString(), anyString(), anyString())).thenReturn(commandOutputSucceeds);
+        when(mockJvmControlService.changeFileMode(any(Jvm.class), anyString(), anyString(), anyString())).thenReturn(commandOutputFails);
+        when(mockJvm.getId()).thenReturn(new Identifier<Jvm>(111L));
+        when(mockJvm.getState()).thenReturn(JvmState.JVM_STOPPED);
+
+        jvmService.generateAndDeployJvm("test-jvm-fails-started", mockUser);
+    }
+    /*
     @Test
     public void testGenerateAndDeployConfigFailControlService() throws CommandFailureException {
         System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, "./src/test/resources");
