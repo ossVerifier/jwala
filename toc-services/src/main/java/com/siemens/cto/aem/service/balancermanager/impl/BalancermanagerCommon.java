@@ -64,20 +64,6 @@ public abstract class BalancermanagerCommon {
         return new DrainStatus.WebServerDrainStatus(webServer.getName(), jvmDrainStatusList);
     }
 
-   /* public ClientHttpResponse drainUser(final String managerurl, final List<NameValuePair> nvp) {
-        LOGGER.info("Entering drainUser: " + managerurl);
-        try {
-            return balancemanagerHttpClient.doHttpClientPost(managerurl, nvp);
-        } catch (KeyManagementException e) {
-            LOGGER.error(e.toString());
-        } catch (IOException e) {
-            LOGGER.error(e.toString());
-        } catch (NoSuchAlgorithmException e) {
-            LOGGER.error(e.toString());
-        }
-        return null;
-    }*/
-
     public List<WebServer> findMatchWebServers(final List<WebServer> webServers, final String[] webServerArray) {
         LOGGER.info("Entering findMatchWebServers");
         List<WebServer> webServersMatch = new ArrayList<>();
