@@ -47,7 +47,7 @@
 }
 
 .Tabs .disabled {
-    opacity: .55;
+    opacity: .85;
     color: #C0C0C0 !important;
     margin-bottom: -1px /* Fixes small gap in between div content and inactive tabs for Chrome */
 }
