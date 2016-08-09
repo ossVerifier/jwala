@@ -41,15 +41,9 @@ var groupService = {
 	getGroupWebServerResources: function(name, responseCallback) {
         return serviceFoundation.get("v1.0/groups/" + encodeURIComponent(name) + "/webservers/resources/name", "json", responseCallback);
 	},
-    getGroupWebServerResourceTemplate : function(wsName, tokensReplaced, resourceTemplateName, responseCallback) {
-            return serviceFoundation.get("v1.0/groups/" + encodeURIComponent(wsName) + "/webservers/resources/template/" + encodeURIComponent(resourceTemplateName) + "?tokensReplaced=" + tokensReplaced, "json", responseCallback);
-    },
 	getGroupJvmResources: function(name, responseCallback) {
         return serviceFoundation.get("v1.0/groups/" + encodeURIComponent(name) + "/jvms/resources/name", "json", responseCallback);
 	},
-	getGroupJvmResourceTemplate : function(jvmName, tokensReplaced, resourceTemplateName, responseCallback) {
-        return serviceFoundation.get("v1.0/groups/" + encodeURIComponent(jvmName) + "/jvms/resources/template/" + encodeURIComponent(resourceTemplateName) + "?tokensReplaced=" + tokensReplaced, "json", responseCallback);
-    },
     updateGroupJvmResourceTemplate: function(groupName, resourceTemplateName, resourceTemplateContent) {
         return serviceFoundation.promisedPut("v1.0/groups/" + encodeURIComponent(groupName) + "/jvms/resources/template/" + encodeURIComponent(resourceTemplateName),
                                              "json",

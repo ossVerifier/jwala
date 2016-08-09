@@ -9,6 +9,7 @@ import com.siemens.cto.aem.common.request.jvm.UpdateJvmRequest;
 import com.siemens.cto.aem.common.request.jvm.UploadJvmTemplateRequest;
 import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
 import com.siemens.cto.aem.persistence.jpa.domain.resource.config.template.JpaJvmConfigTemplate;
+import com.siemens.cto.aem.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
 
 import java.util.List;
 
@@ -30,7 +31,7 @@ public interface JvmCrudService extends CrudService<JpaJvm> {
 
     List<String> getResourceTemplateNames(final String jvmName);
 
-    String getResourceTemplate(final String jvmName, final String resourceTemplateName);
+    String getResourceTemplate(final String jvmName, final String resourceTemplateName) throws NonRetrievableResourceTemplateContentException;
 
     void updateResourceTemplate(final String jvmName, final String resourceTemplateName, final String template);
 

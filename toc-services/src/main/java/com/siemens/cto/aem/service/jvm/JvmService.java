@@ -5,8 +5,9 @@ import com.siemens.cto.aem.common.domain.model.id.Identifier;
 import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.common.domain.model.jvm.JvmState;
 import com.siemens.cto.aem.common.domain.model.user.User;
-import com.siemens.cto.aem.common.request.jvm.*;
-import com.siemens.cto.aem.persistence.jpa.domain.resource.config.template.JpaJvmConfigTemplate;
+import com.siemens.cto.aem.common.request.jvm.ControlJvmRequest;
+import com.siemens.cto.aem.common.request.jvm.CreateJvmAndAddToGroupsRequest;
+import com.siemens.cto.aem.common.request.jvm.UpdateJvmRequest;
 
 import java.io.IOException;
 import java.util.List;
@@ -14,7 +15,7 @@ import java.util.Map;
 
 public interface JvmService {
 
-    Jvm createJvm(CreateJvmRequest createJvmRequest, CreateJvmAndAddToGroupsRequest createJvmAndAddToGroupsRequest, boolean areGroupsPresent, User user);
+    Jvm createJvm(CreateJvmAndAddToGroupsRequest createJvmAndAddToGroupsRequest, User user);
 
     Jvm getJvm(final Identifier<Jvm> aJvmId);
 
@@ -30,9 +31,11 @@ public interface JvmService {
 
     String generateConfigFile(String aJvmName, String templateName);
 
-    String performDiagnosis(Identifier<Jvm> aJvmId);
+    Jvm generateAndDeployJvm(String jvmName, User user);
 
-    JpaJvmConfigTemplate uploadJvmTemplateXml(UploadJvmTemplateRequest uploadJvmTemplateRequest, User user);
+    Jvm generateAndDeployFile(String jvmName, String fileName, User user);
+
+    String performDiagnosis(Identifier<Jvm> aJvmId);
 
     List<String> getResourceTemplateNames(final String jvmName);
 
@@ -85,4 +88,5 @@ public interface JvmService {
     String getResourceTemplateMetaData(String jvmName, String fileName);
 
     void checkForSetenvBat(String jvmName);
+
 }

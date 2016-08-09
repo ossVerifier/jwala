@@ -172,7 +172,7 @@ public class JvmCrudServiceImpl extends AbstractCrudServiceImpl<JpaJvm> implemen
     }
 
     @Override
-    public String getResourceTemplate(final String jvmName, final String resourceTemplateName) {
+    public String getResourceTemplate(final String jvmName, final String resourceTemplateName) throws NonRetrievableResourceTemplateContentException{
         final Query q = entityManager.createNamedQuery(JpaJvmConfigTemplate.GET_JVM_TEMPLATE_CONTENT);
         q.setParameter("jvmName", jvmName);
         q.setParameter("templateName", resourceTemplateName);

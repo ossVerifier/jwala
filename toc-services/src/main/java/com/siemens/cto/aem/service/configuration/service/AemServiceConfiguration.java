@@ -145,6 +145,8 @@ public class AemServiceConfiguration {
 
     private final Map<String, ReentrantReadWriteLock> resourceWriteLockMap = new HashMap<>();
 
+    private final Map<String, ReentrantReadWriteLock> jvmWriteLockMap = new HashMap<>();
+
     /**
      * Make vars.properties available to spring integration configuration
      * System properties are only used if there is no setting in vars.properties.
@@ -173,7 +175,7 @@ public class AemServiceConfiguration {
         final JvmPersistenceService jvmPersistenceService = persistenceServiceConfiguration.getJvmPersistenceService();
         return new JvmServiceImpl(jvmPersistenceService, groupService, applicationService,
                 fileManager, messagingTemplate, groupStateNotificationService, resourceService,
-                clientFactoryHelper, topicServerStates, jvmControlService);
+                clientFactoryHelper, topicServerStates, jvmControlService, jvmWriteLockMap);
     }
 
     @Bean(name = "balancermanagerService")

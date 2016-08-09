@@ -83,7 +83,7 @@ public class GroupLevelJvmResourceHandler extends ResourceHandler {
                     new ByteArrayInputStream(resourceContent.getBytes()), convertResourceTemplateMetaDataToJson(metaData));
             uploadJvmTemplateRequest.setConfFileName(metaData.getDeployFileName());
             uploadJvmTemplateRequestList.add(uploadJvmTemplateRequest);
-            groupPersistenceService.populateGroupJvmTemplates(metaData.getEntity().getGroup(), uploadJvmTemplateRequestList);
+            groupPersistenceService.populateGroupJvmTemplates(resourceIdentifier.groupName, uploadJvmTemplateRequestList);
             createResourceResponseWrapper = new CreateResourceResponseWrapper(createdJpaJvmConfigTemplate);
         } else if (successor != null) {
             createResourceResponseWrapper = successor.createResource(resourceIdentifier, metaData, data);

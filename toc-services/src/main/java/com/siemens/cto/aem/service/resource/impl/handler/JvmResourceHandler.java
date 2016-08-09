@@ -51,7 +51,7 @@ public class JvmResourceHandler extends ResourceHandler {
         CreateResourceResponseWrapper createResourceResponseWrapper = null;
         if (canHandle(resourceIdentifier)) {
             final Jvm jvm = jvmPersistenceService.findJvmByExactName(resourceIdentifier.jvmName);
-            final Group parentGroup = groupPersistenceService.getGroup(metaData.getEntity().getGroup());
+            final Group parentGroup = groupPersistenceService.getGroup(resourceIdentifier.groupName);
             final Jvm jvmWithParentGroup = new Jvm(jvm.getId(),
                     jvm.getJvmName(),
                     jvm.getHostName(),
@@ -90,7 +90,7 @@ public class JvmResourceHandler extends ResourceHandler {
         return StringUtils.isNotEmpty(resourceIdentifier.resourceName) &&
                StringUtils.isNotEmpty(resourceIdentifier.jvmName) &&
                !"*".equalsIgnoreCase(resourceIdentifier.jvmName) &&
-               StringUtils.isEmpty(resourceIdentifier.groupName) &&
+               /*StringUtils.isEmpty(resourceIdentifier.groupName) &&*/
                StringUtils.isEmpty(resourceIdentifier.webAppName) &&
                StringUtils.isEmpty(resourceIdentifier.webServerName);
     }

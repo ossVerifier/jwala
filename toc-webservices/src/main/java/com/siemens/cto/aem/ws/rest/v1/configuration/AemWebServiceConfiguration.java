@@ -120,7 +120,7 @@ public class AemWebServiceConfiguration {
     @Bean
     public Server getV1JaxResServer() {
         final JAXRSServerFactoryBean factory = new JAXRSServerFactoryBean();
-        factory.setAddress("/");
+        factory.setAddress("/v1.0");
         factory.setServiceBeans(getV1ServiceBeans());
         factory.setProviders(getV1Providers());
         return factory.create();
@@ -167,7 +167,10 @@ public class AemWebServiceConfiguration {
 
     @Bean
     public JvmServiceRest getV1JvmServiceRest() {
-        return new JvmServiceRestImpl(jvmService, jvmControlService, resourceService, getExecutorService(), jvmWriteLockMap
+        return new JvmServiceRestImpl(
+                jvmService,
+                jvmControlService,
+                resourceService
         );
     }
 
@@ -268,4 +271,23 @@ public class AemWebServiceConfiguration {
         return Executors.newFixedThreadPool(12);
     } // TODO: why 12? is this configurable with a property?
 
+
+    @Bean
+    public Server getV2JaxResServer(final com.siemens.cto.aem.ws.rest.v2.service.group.GroupServiceRest groupServiceRest) {
+        final JAXRSServerFactoryBean factory = new JAXRSServerFactoryBean();
+
+        factory.setAddress("/v2.0");
+
+        final List<Object> serviceBeans = new ArrayList<>();
+        serviceBeans.add(groupServiceRest);
+        factory.setServiceBeans(serviceBeans);
+
+        factory.setProviders(getV1Providers());
+        return factory.create();
+    }
+
+    @Bean
+    com.siemens.cto.aem.ws.rest.v2.service.group.GroupServiceRest getGroupServiceRestV2() {
+        return new com.siemens.cto.aem.ws.rest.v2.service.group.impl.GroupServiceRestImpl();
+    }
 }
