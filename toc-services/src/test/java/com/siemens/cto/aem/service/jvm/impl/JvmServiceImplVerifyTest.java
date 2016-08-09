@@ -321,6 +321,30 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
         verify(mockJvmPersistenceService, times(1)).removeJvm(eq(id));
     }
 
+    @Test (expected = InternalErrorException.class)
+    public void testRemoveJvmInStartedState() {
+        final Identifier<Jvm> id = new Identifier<>(-123456L);
+        Jvm mockJvm = mockJvmWithId(id);
+        when(mockJvmPersistenceService.getJvm(any(Identifier.class))).thenReturn(mockJvm);
+        when(mockJvm.getState()).thenReturn(JvmState.JVM_STARTED);
+
+        jvmService.removeJvm(id, mockUser);
+    }
+
+/*
+    @Test
+    public void testDeleteJvmWindowsServiceForNonExistentService() {
+        Jvm mockJvm = mock(Jvm.class);
+        ControlJvmRequest controlJvmRequest = new ControlJvmRequest(new Identifier<Jvm>(123L), JvmControlOperation.DELETE_SERVICE);
+
+        when(mockJvm.getState()).thenReturn(JvmState.JVM_STOPPED);
+        when(mockJvm.getJvmName()).thenReturn("jvm-name-delete-service");
+        when(mockJvmControlService.controlJvm(eq(controlJvmRequest), any(User.class))).thenReturn(comm)
+        
+        jvmService.deleteJvmWindowsService(controlJvmRequest, mockJvm, mockUser);
+    }
+*/
+
     @Test
     public void testGetAll() {
 
@@ -780,8 +804,7 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
         when(mockJvmPersistenceService.findJvmByExactName(anyString())).thenReturn(mockJvm);
         when(mockResourceService.generateResourceFile(anyString(), any(ResourceGroup.class), anyString())).thenReturn("<server>xml</server>");
         when(mockJvmPersistenceService.getResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"deployFileName\":\"server.xml\", \"deployPath\":\"/\",\"contentType\":\"text/plain\"}");
-        when(mockJvmPersistenceService.getJvmTemplate(anyString(), any(Identifier.class))).thenReturn("<server>xml</server>");
-        when(mockJvmControlService.secureCopyFile(any(ControlJvmRequest.class), anyString(), anyString(), anyString())).thenReturn(mockExecData);
+        when(mockJvmPersistenceService.getJvmTemplate(anyString(), any(Identifier.class))).thenReturn("<server>xml</server>");when(mockJvmControlService.secureCopyFile(any(ControlJvmRequest.class), anyString(), anyString(), anyString())).thenReturn(mockExecData);
         when(mockResourceService.generateResourceGroup()).thenReturn(new ResourceGroup());
 
         Jvm jvm = jvmService.generateAndDeployFile("test-jvm-deploy-file", "server.xml", mockUser);
