@@ -129,7 +129,7 @@ subprojects {
             attributes(
                     "Implementation-Title": project.name,
                     "Implementation-Version": project.version,
-                    "Specification-Number": (null == System.getProperty("accurevTransactionId") ? "" : "." + System.getProperty("accurevTransactionId")),
+                    "Specification-Number": (null == System.getProperty("gitCommitId") ? "" : "." + System.getProperty("gitCommitId")),
                     "Build-Number": (null ==System.getProperty("buildNumber") ? "" : "." + System.getProperty("buildNumber")),
                     "Built-By": System.getProperty("user.name"),
                     "Built-JDK": System.getProperty("java.version"),
