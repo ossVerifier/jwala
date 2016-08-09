@@ -17,6 +17,10 @@ var adminService = {
 
     viewManifest: function(successCallback) {
         return serviceFoundation.get("v1.0/admin/manifest", "json", successCallback);
+    },
+
+    getAuthorizationDetails: function(){
+        return serviceFoundation.promisedGet("v1.0/admin/context/authorization", "json");
     }
     
 }
