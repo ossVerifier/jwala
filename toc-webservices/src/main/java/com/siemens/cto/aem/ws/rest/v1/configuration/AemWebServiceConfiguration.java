@@ -167,7 +167,10 @@ public class AemWebServiceConfiguration {
 
     @Bean
     public JvmServiceRest getV1JvmServiceRest() {
-        return new JvmServiceRestImpl(jvmService, jvmControlService, resourceService, getExecutorService(), jvmWriteLockMap
+        return new JvmServiceRestImpl(
+                jvmService,
+                jvmControlService,
+                resourceService
         );
     }
 

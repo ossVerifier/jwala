@@ -110,7 +110,7 @@ public class JschScpCommandProcessorImpl implements CommandProcessor {
                 checkAckOk = true;
             }
         } catch (Exception e) {
-            LOGGER.error("Failed to copy file with error: {}", e);
+            LOGGER.error("Failed to copy file with error: {}", e.getMessage(), e);
             throw new RemoteCommandFailureException(remoteCommand, e);
         } finally {
             if (fis != null) {

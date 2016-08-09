@@ -68,13 +68,6 @@ public interface JvmServiceRest extends InitializingBean{
                                    @PathParam("fileName") final String fileName,
                                    @BeanParam final AuthenticatedUser aUser);
     
-    @POST
-    @Path("/{jvmName}/resources/uploadTemplate")
-    @Consumes(MediaType.MULTIPART_FORM_DATA)
-    Response uploadConfigTemplate(@PathParam("jvmName") final String jvmName,
-                                  @BeanParam final AuthenticatedUser aUser,
-                                  @QueryParam("templateName") final String templateName);
-
     /**
      * Initiate a heartbeat followed by an SSH check
      * @param aJvmId id of the jvm to diagnose

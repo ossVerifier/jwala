@@ -78,7 +78,7 @@ public class WebServerResourceHandler extends ResourceHandler {
         return StringUtils.isNotEmpty(resourceIdentifier.resourceName) &&
                StringUtils.isNotEmpty(resourceIdentifier.webServerName) &&
                !"*".equalsIgnoreCase(resourceIdentifier.webServerName) &&
-               StringUtils.isEmpty(resourceIdentifier.groupName) &&
+               /*StringUtils.isEmpty(resourceIdentifier.groupName) &&*/
                StringUtils.isEmpty(resourceIdentifier.webAppName) &&
                StringUtils.isEmpty(resourceIdentifier.jvmName);
     }

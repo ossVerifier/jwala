@@ -711,7 +711,7 @@ var GroupOperationsDataTable = React.createClass({
 
     generateJvmConfigErrorCallback: function (applicationResponseContent) {
         // TODO: Verify if we need to call done callback here. Eg this.doneCallback[response.applicationResponseContent.jvmName + "__cto" + response.applicationResponseContent.id.id]();
-        $.errorAlert(applicationResponseContent.message, "Error deploying JVM resource files", false);
+        $.errorAlert(applicationResponseContent, "Error deploying JVM resource files", false);
     },
 
     confirmJvmWebServerStopGroupDialogBox: function (id, parentItemId, buttonSelector, msg, callbackOnConfirm, cancelCallback) {

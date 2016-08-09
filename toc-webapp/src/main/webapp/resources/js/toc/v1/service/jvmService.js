@@ -98,16 +98,5 @@
                                              resourceTemplateContent,
                                              false,
                                              "text/plain; charset=utf-8");
-    },
-    uploadTemplateForm: function(jvmName, templateName, templateFile, successCallback, errorCallback) {
-        return serviceFoundation.post("v1.0/jvms/" + encodeURIComponent(jvmName) + "/resources/uploadTemplate?templateName=" + encodeURIComponent(templateName),
-                                        "json",
-                                        templateFile,
-                                        successCallback,
-                                        errorCallback,
-                                        false,
-                                        "multipart/form-data",
-                                        true);
     }
-
 };

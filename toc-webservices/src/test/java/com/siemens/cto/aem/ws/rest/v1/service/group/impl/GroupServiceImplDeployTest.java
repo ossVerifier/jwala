@@ -66,7 +66,6 @@ import javax.ws.rs.core.Response;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import static org.junit.Assert.*;
@@ -630,7 +629,7 @@ public class GroupServiceImplDeployTest {
 
         @Bean
         public JvmServiceRest getJvmServiceRest() {
-            return new JvmServiceRestImplForTesting(mockJvmService, mockJvmControlService, mockResourceService, mock(ExecutorService.class), new HashMap<String, ReentrantReadWriteLock>());
+            return new JvmServiceRestImpl(mockJvmService, mockJvmControlService, mockResourceService);
         }
 
         @Bean
@@ -656,17 +655,6 @@ public class GroupServiceImplDeployTest {
         @Bean
         public GroupWebServerControlService getGroupWebServerControlService() {
             return mockGroupWebServerControlService;
-        }
-
-        private class JvmServiceRestImplForTesting extends JvmServiceRestImpl {
-            public JvmServiceRestImplForTesting(JvmService mockJvmService, JvmControlService mockJvmControlService, ResourceService mockResourceService, ExecutorService mock, HashMap<String, ReentrantReadWriteLock> stringReentrantReadWriteLockHashMap) {
-                super(mockJvmService, mockJvmControlService, mockResourceService, mock, stringReentrantReadWriteLockHashMap);
-            }
-
-            @Override
-            protected String generateJvmConfigJar(String jvmName) {
-                return "./testJvmConfigTar.tar";
-            }
         }
     }
 }

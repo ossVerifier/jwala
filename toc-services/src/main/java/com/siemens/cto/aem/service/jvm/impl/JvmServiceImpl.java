@@ -22,7 +22,12 @@ import com.siemens.cto.aem.common.exec.CommandOutputReturnCode;
 import com.siemens.cto.aem.common.exec.ExecReturnCode;
 import com.siemens.cto.aem.common.properties.ApplicationProperties;
 import com.siemens.cto.aem.common.request.group.AddJvmToGroupRequest;
-import com.siemens.cto.aem.common.request.jvm.*;
+import com.siemens.cto.aem.common.request.jvm.ControlJvmRequest;
+import com.siemens.cto.aem.common.request.jvm.CreateJvmAndAddToGroupsRequest;
+import com.siemens.cto.aem.common.request.jvm.CreateJvmRequest;
+import com.siemens.cto.aem.common.request.jvm.UpdateJvmRequest;
+import com.siemens.cto.aem.control.AemControl;
+import com.siemens.cto.aem.exception.CommandFailureException;
 import com.siemens.cto.aem.persistence.jpa.domain.resource.config.template.JpaJvmConfigTemplate;
 import com.siemens.cto.aem.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
 import com.siemens.cto.aem.persistence.service.JvmPersistenceService;
@@ -33,6 +38,7 @@ import com.siemens.cto.aem.service.jvm.JvmControlService;
 import com.siemens.cto.aem.service.jvm.JvmService;
 import com.siemens.cto.aem.service.resource.ResourceService;
 import com.siemens.cto.aem.service.webserver.component.ClientFactoryHelper;
+import com.siemens.cto.aem.template.ResourceFileGenerator;
 import com.siemens.cto.toc.files.FileManager;
 import groovy.text.SimpleTemplateEngine;
 import org.apache.commons.io.FileUtils;
@@ -49,19 +55,20 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.jar.JarEntry;
+import java.util.jar.JarOutputStream;
 
 public class JvmServiceImpl implements JvmService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JvmServiceImpl.class);
+
     private String topicServerStates;
-    private static final String DIAGNOSIS_INITIATED = "Diagnosis Initiated on JVM ${jvm.jvmName}, host ${jvm.hostName}";
     private final JvmPersistenceService jvmPersistenceService;
     private final GroupService groupService;
     private final ApplicationService applicationService;
@@ -71,6 +78,12 @@ public class JvmServiceImpl implements JvmService {
     private final ResourceService resourceService;
     private final ClientFactoryHelper clientFactoryHelper;
     private final JvmControlService jvmControlService;
+    private final Map<String, ReentrantReadWriteLock> jvmWriteLocks;
+
+    private static final String DIAGNOSIS_INITIATED = "Diagnosis Initiated on JVM ${jvm.jvmName}, host ${jvm.hostName}";
+    private static final String TEMPLATE_DIR = ApplicationProperties.get("paths.tomcat.instance.template");
+    public static final String CONFIG_FILENAME_INVOKE_BAT = "invoke.bat";
+    public static final String CONFIG_JAR = "_config.jar";
 
     public JvmServiceImpl(final JvmPersistenceService jvmPersistenceService,
                           final GroupService groupService,
@@ -81,7 +94,8 @@ public class JvmServiceImpl implements JvmService {
                           final ResourceService resourceService,
                           final ClientFactoryHelper clientFactoryHelper,
                           final String topicServerStates,
-                          final JvmControlService jvmControlService) {
+                          final JvmControlService jvmControlService,
+                          final Map<String, ReentrantReadWriteLock> writeLockMap) {
         this.jvmPersistenceService = jvmPersistenceService;
         this.groupService = groupService;
         this.applicationService = applicationService;
@@ -92,33 +106,32 @@ public class JvmServiceImpl implements JvmService {
         this.clientFactoryHelper = clientFactoryHelper;
         this.jvmControlService = jvmControlService;
         this.topicServerStates = topicServerStates;
+        jvmWriteLocks = writeLockMap;
     }
 
-    protected Jvm createJvm(final CreateJvmRequest aCreateJvmRequest,
-                         final User aCreatingUser) {
+    protected Jvm createJvm(final CreateJvmRequest aCreateJvmRequest) {
         aCreateJvmRequest.validate();
         return jvmPersistenceService.createJvm(aCreateJvmRequest);
     }
 
     protected Jvm createAndAssignJvm(final CreateJvmAndAddToGroupsRequest aCreateAndAssignRequest,
-                                  final User aCreatingUser) {
+                                     final User aCreatingUser) {
         // The commands are validated in createJvm() and groupService.addJvmToGroup()
-        final Jvm newJvm = createJvm(aCreateAndAssignRequest.getCreateCommand(), aCreatingUser);
-        final Set<AddJvmToGroupRequest> addJvmToGroupRequests = aCreateAndAssignRequest.toAddRequestsFor(newJvm.getId());
-        addJvmToGroups(addJvmToGroupRequests, aCreatingUser);
+        final Jvm newJvm = createJvm(aCreateAndAssignRequest.getCreateCommand());
+
+        if (!aCreateAndAssignRequest.getGroups().isEmpty()) {
+            final Set<AddJvmToGroupRequest> addJvmToGroupRequests = aCreateAndAssignRequest.toAddRequestsFor(newJvm.getId());
+            addJvmToGroups(addJvmToGroupRequests, aCreatingUser);
+        }
+
         return getJvm(newJvm.getId());
     }
 
     @Override
     @Transactional
-    public Jvm createJvm(CreateJvmRequest createJvmRequest, CreateJvmAndAddToGroupsRequest createJvmAndAddToGroupsRequest, boolean areGroupsPresent, User user) {
+    public Jvm createJvm(CreateJvmAndAddToGroupsRequest createJvmAndAddToGroupsRequest, User user) {
         // create the JVM in the database
-        final Jvm jvm;
-        if (areGroupsPresent) {
-            jvm = createAndAssignJvm(createJvmAndAddToGroupsRequest, user);
-        } else {
-            jvm = createJvm(createJvmRequest, user);
-        }
+        final Jvm jvm = createAndAssignJvm(createJvmAndAddToGroupsRequest, user);
 
         // inherit the templates from the group
         if (null != jvm.getGroups() && jvm.getGroups().size() > 0) {
@@ -144,7 +157,10 @@ public class JvmServiceImpl implements JvmService {
             try {
                 ResourceTemplateMetaData metaData = new ObjectMapper().readValue(metaDataStr, ResourceTemplateMetaData.class);
                 final ResourceIdentifier resourceIdentifier = new ResourceIdentifier.Builder()
-                        .setResourceName(metaData.getTemplateName()).setJvmName(jvmName).build();
+                        .setResourceName(metaData.getTemplateName())
+                        .setJvmName(jvmName)
+                        .setGroupName(groupName)
+                        .build();
                 resourceService.createResource(resourceIdentifier, metaData, IOUtils.toInputStream(templateContent));
 
             } catch (IOException e) {
@@ -238,11 +254,10 @@ public class JvmServiceImpl implements JvmService {
                         commandOutput.getStandardError().isEmpty() ?
                                 commandOutput.getStandardOutput() : commandOutput.getStandardError();
                 LOGGER.error("Deleting windows service {} failed :: ERROR: {}", jvmName, standardError);
-                throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, CommandOutputReturnCode.fromReturnCode(commandOutput.getReturnCode().getReturnCode()).getDesc());
+                throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, standardError.isEmpty() ? CommandOutputReturnCode.fromReturnCode(commandOutput.getReturnCode().getReturnCode()).getDesc() : standardError);
             }
         }
     }
-
 
 
     protected void addJvmToGroups(final Set<AddJvmToGroupRequest> someAddCommands,
@@ -268,6 +283,359 @@ public class JvmServiceImpl implements JvmService {
     }
 
     @Override
+    public Jvm generateAndDeployJvm(String jvmName, User user) {
+
+        Jvm jvm = getJvm(jvmName);
+
+        // only one at a time per JVM
+        // TODO return error if .toc directory is already being written to
+        // TODO lock on host name (check performance on 125 JVM env)
+        if (!jvmWriteLocks.containsKey(jvm.getId().toString())) {
+            jvmWriteLocks.put(jvm.getId().toString(), new ReentrantReadWriteLock());
+        }
+        jvmWriteLocks.get(jvm.getId().toString()).writeLock().lock();
+
+        try {
+            if (jvm.getState().isStartedState()) {
+                LOGGER.error("The target JVM {} must be stopped before attempting to update the resource files", jvm.getJvmName());
+                throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE,
+                        "The target JVM must be stopped before attempting to update the resource files");
+            }
+
+            // check for setenv.bat
+            checkForSetenvBat(jvm.getJvmName());
+
+            // create the scripts directory if it doesn't exist
+            createScriptsDirectory(jvm);
+
+            // copy the invoke and deploy scripts
+            deployScriptsToUserTocScriptsDir(jvm, user);
+
+            // delete the service
+            // TODO make generic to support multiple OSs
+            deleteJvmWindowsService(new ControlJvmRequest(jvm.getId(), JvmControlOperation.DELETE_SERVICE), jvm, user);
+
+            // create the tar file
+            //
+            final String jvmConfigJar = generateJvmConfigJar(jvm.getJvmName());
+
+            // copy the tar file
+            secureCopyJvmConfigJar(jvm, jvmConfigJar, user);
+
+            // call script to backup and tar the current directory and
+            // then untar the new tar
+            deployJvmConfigJar(jvm, user, jvmConfigJar);
+
+            // copy the individual jvm templates to the destination
+            deployJvmResourceFiles(jvm, user);
+
+            // deploy any application context xml's in the group
+            deployApplicationContextXMLs(jvm, user);
+
+            // re-install the service
+            installJvmWindowsService(jvm, user);
+
+            // set the state to stopped
+            updateState(jvm.getId(), JvmState.JVM_STOPPED);
+
+        } catch (CommandFailureException | IOException e) {
+            LOGGER.error("Failed to generate the JVM config for {} :: ERROR: {}", jvm.getJvmName(), e.getMessage());
+            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to generate the JVM config: " + e.getMessage(), e);
+        } finally {
+            jvmWriteLocks.get(jvm.getId().toString()).writeLock().unlock();
+        }
+        return jvm;
+    }
+
+    protected void createScriptsDirectory(Jvm jvm) throws CommandFailureException {
+        final String scriptsDir = AemControl.Properties.USER_TOC_SCRIPTS_PATH.getValue();
+
+        final CommandOutput commandOutput = jvmControlService.createDirectory(jvm, scriptsDir);
+        ExecReturnCode resultReturnCode = commandOutput.getReturnCode();
+        if (!resultReturnCode.wasSuccessful()) {
+            LOGGER.error("Creating scripts directory {} FAILED ", scriptsDir);
+            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, commandOutput.getStandardError().isEmpty() ? CommandOutputReturnCode.fromReturnCode(resultReturnCode.getReturnCode()).getDesc() : commandOutput.getStandardError());
+        }
+
+    }
+
+    protected void deployScriptsToUserTocScriptsDir(Jvm jvm, User user) throws CommandFailureException, IOException {
+        final ControlJvmRequest secureCopyRequest = new ControlJvmRequest(jvm.getId(), JvmControlOperation.SECURE_COPY);
+        final String commandsScriptsPath = ApplicationProperties.get("commands.scripts-path");
+
+        final String deployConfigJarPath = commandsScriptsPath + "/" + AemControl.Properties.DEPLOY_CONFIG_ARCHIVE_SCRIPT_NAME.getValue();
+        final String tocScriptsPath = AemControl.Properties.USER_TOC_SCRIPTS_PATH.getValue();
+        final String jvmName = jvm.getJvmName();
+        final String userId = user.getId();
+
+        final String failedToCopyMessage = "Failed to secure copy ";
+        final String duringCreationMessage = " during the creation of ";
+        if (!jvmControlService.secureCopyFile(secureCopyRequest, deployConfigJarPath, tocScriptsPath, userId).getReturnCode().wasSuccessful()) {
+            String message = failedToCopyMessage + deployConfigJarPath + duringCreationMessage + jvmName;
+            LOGGER.error(message);
+            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, message);
+        }
+
+        final String invokeServicePath = commandsScriptsPath + "/" + AemControl.Properties.INVOKE_SERVICE_SCRIPT_NAME.getValue();
+        if (!jvmControlService.secureCopyFile(secureCopyRequest, invokeServicePath, tocScriptsPath, userId).getReturnCode().wasSuccessful()) {
+            String message = failedToCopyMessage + invokeServicePath + duringCreationMessage + jvmName;
+            LOGGER.error(message);
+            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, message);
+        }
+
+        // make sure the scripts are executable
+        if (!jvmControlService.changeFileMode(jvm, "a+x", tocScriptsPath, "*.sh").getReturnCode().wasSuccessful()) {
+            String message = "Failed to change the file permissions in " + tocScriptsPath + duringCreationMessage + jvmName;
+            LOGGER.error(message);
+            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, message);
+        }
+    }
+
+    protected String generateJvmConfigJar(String jvmName) {
+        LOGGER.info("Generating JVM configuration tar for {}", jvmName);
+        final String jvmGeneratedResourcesTempDir = ApplicationProperties.get("paths.generated.resource.dir");
+        String jvmResourcesNameDir = jvmGeneratedResourcesTempDir + "/" + jvmName;
+
+        final File generatedDir = new File("./" + jvmName);
+        try {
+            // copy the tomcat instance-template directory
+            final File srcDir = new File(TEMPLATE_DIR);
+            final String destDirPath = generatedDir.getAbsolutePath();
+
+            // Copy the templates that would be included in the JAR file.
+            LOGGER.debug("location of template copy: {}", destDirPath);
+            for (String dirPath : srcDir.list()) {
+                final File srcChild = new File(srcDir + "/" + dirPath);
+                if (srcChild.isDirectory()) {
+                    FileUtils.copyDirectoryToDirectory(srcChild, generatedDir);
+                } else {
+                    FileUtils.copyFileToDirectory(srcChild, generatedDir);
+                }
+            }
+            final String generatedText = generateInvokeBat(jvmName);
+            final String invokeBatDir = generatedDir + "/bin";
+            LOGGER.debug("generating template in location: {}", invokeBatDir + "/" + CONFIG_FILENAME_INVOKE_BAT);
+            createConfigFile(invokeBatDir + "/", CONFIG_FILENAME_INVOKE_BAT, generatedText);
+
+            // copy the start and stop scripts to the instances/jvm/bin directory
+            final String commandsScriptsPath = ApplicationProperties.get("commands.scripts-path");
+            FileUtils.copyFileToDirectory(new File(commandsScriptsPath + "/" + AemControl.Properties.START_SCRIPT_NAME.getValue()), new File(destDirPath + "/bin"));
+            FileUtils.copyFileToDirectory(new File(commandsScriptsPath + "/" + AemControl.Properties.STOP_SCRIPT_NAME.getValue()), new File(destDirPath + "/bin"));
+
+            // create the logs directory
+            createDirectory(destDirPath + "/logs");
+        } catch (FileNotFoundException e) {
+            LOGGER.error("Bad Stream: Failed to create file", e);
+            throw new InternalErrorException(AemFaultType.BAD_STREAM, "Failed to create file", e);
+        } catch (IOException e) {
+            LOGGER.error("Bad Stream: Failed to write file", e);
+            throw new InternalErrorException(AemFaultType.BAD_STREAM, "Failed to write file", e);
+        }
+
+        // jar up the file
+        String jvmConfigTar = jvmName + CONFIG_JAR;
+        JarOutputStream target;
+        final String configJarPath = jvmGeneratedResourcesTempDir + "/" + jvmConfigTar;
+        try {
+            final File jvmResourcesDirFile = new File(jvmGeneratedResourcesTempDir);
+            if (!jvmResourcesDirFile.exists() && !jvmResourcesDirFile.mkdir()) {
+                LOGGER.error("Could not create {} for JVM resources generation {}", jvmGeneratedResourcesTempDir, jvmName);
+                throw new InternalErrorException(AemFaultType.BAD_STREAM, "Could not create " + jvmGeneratedResourcesTempDir + " for JVM resources generation " + jvmName);
+            }
+            target = new JarOutputStream(new FileOutputStream(configJarPath));
+            addFileToTarget(new File("./" + jvmName + "/"), target);
+            target.close();
+            LOGGER.debug("created resources at {}, copying to {}", generatedDir.getAbsolutePath(), jvmGeneratedResourcesTempDir);
+            FileUtils.copyDirectoryToDirectory(generatedDir, jvmResourcesDirFile);
+            FileUtils.deleteDirectory(generatedDir);
+        } catch (IOException e) {
+            LOGGER.error("Failed to generate the config jar for {}", jvmName, e);
+            throw new InternalErrorException(AemFaultType.BAD_STREAM, "Failed to generate the resources jar for " + jvmName, e);
+        }
+
+        LOGGER.info("Generation of configuration tar SUCCEEDED for {}: {}", jvmName, configJarPath);
+
+        return jvmResourcesNameDir;
+    }
+
+    protected void secureCopyJvmConfigJar(Jvm jvm, String jvmConfigTar, User user) throws CommandFailureException {
+        String configTarName = jvm.getJvmName() + CONFIG_JAR;
+        secureCopyFileToJvm(jvm, ApplicationProperties.get("paths.generated.resource.dir") + "/" + configTarName, AemControl.Properties.USER_TOC_SCRIPTS_PATH + "/" + configTarName, user);
+        LOGGER.info("Copy of config tar successful: {}", jvmConfigTar);
+    }
+
+    protected void deployJvmConfigJar(Jvm jvm, User user, String jvmConfigTar) {
+        CommandOutput execData = jvmControlService.controlJvm(
+                new ControlJvmRequest(jvm.getId(), JvmControlOperation.DEPLOY_CONFIG_ARCHIVE), user);
+        if (execData.getReturnCode().wasSuccessful()) {
+            LOGGER.info("Deployment of config tar was successful: {}", jvmConfigTar);
+        } else {
+            String standardError =
+                    execData.getStandardError().isEmpty() ? execData.getStandardOutput() : execData.getStandardError();
+            LOGGER.error(
+                    "Deploy command completed with error trying to extract and back up JVM config {} :: ERROR: {}",
+                    jvm.getJvmName(), standardError);
+            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, standardError.isEmpty() ? CommandOutputReturnCode.fromReturnCode(execData.getReturnCode().getReturnCode()).getDesc() : standardError);
+        }
+    }
+
+    protected void deployJvmResourceFiles(Jvm jvm, User user) throws IOException, CommandFailureException {
+        final Map<String, String> generatedFiles = generateResourceFiles(jvm.getJvmName());
+        if (generatedFiles != null) {
+            for (Map.Entry<String, String> entry : generatedFiles.entrySet()) {
+                secureCopyFileToJvm(jvm, entry.getKey(), entry.getValue(), user);
+            }
+        }
+    }
+
+    protected void installJvmWindowsService(Jvm jvm, User user) {
+        CommandOutput execData = jvmControlService.controlJvm(new ControlJvmRequest(jvm.getId(), JvmControlOperation.INVOKE_SERVICE),
+                user);
+        if (execData.getReturnCode().wasSuccessful()) {
+            LOGGER.info("Invoke of windows service {} was successful", jvm.getJvmName());
+        } else {
+            String standardError =
+                    execData.getStandardError().isEmpty() ? execData.getStandardOutput() : execData.getStandardError();
+            LOGGER.error("Invoking windows service {} failed :: ERROR: {}", jvm.getJvmName(), standardError);
+            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, standardError.isEmpty() ? CommandOutputReturnCode.fromReturnCode(execData.getReturnCode().getReturnCode()).getDesc() : standardError);
+        }
+    }
+
+    protected void createDirectory(String absoluteDirPath) {
+        File targetDir = new File(absoluteDirPath);
+        if (!targetDir.exists() && !targetDir.mkdirs()) {
+            LOGGER.error("Bad Stream: Failed to create directory " + absoluteDirPath);
+            throw new InternalErrorException(AemFaultType.BAD_STREAM, "Failed to create directory" + absoluteDirPath);
+        }
+    }
+
+    /**
+     * This method copies a given file to the destination location on the remote machine.
+     *
+     * @param jvm             Jvm which requires the file
+     * @param sourceFile      The source file, which needs to be copied.
+     * @param destinationFile The destination file, where the source file should be copied.
+     * @param user
+     * @throws CommandFailureException If the command fails, this exception contains the details of the failure.
+     */
+    protected void secureCopyFileToJvm(final Jvm jvm, final String sourceFile, final String destinationFile, User user) throws CommandFailureException {
+        final ControlJvmRequest controlJvmRequest = new ControlJvmRequest(jvm.getId(), JvmControlOperation.SECURE_COPY);
+        final CommandOutput commandOutput = jvmControlService.secureCopyFile(controlJvmRequest, sourceFile, destinationFile, user.getId());
+        if (commandOutput.getReturnCode().wasSuccessful()) {
+            LOGGER.info("Successfully copied {} to destination location {} on {}", sourceFile, destinationFile, jvm.getHostName());
+        } else {
+            final String standardError = commandOutput.getStandardError().isEmpty() ? commandOutput.getStandardOutput() : commandOutput.getStandardError();
+            LOGGER.error("Copy command failed with error trying to copy file {} to {} :: ERROR: {}", sourceFile, jvm.getHostName(), standardError);
+            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, standardError.isEmpty() ? CommandOutputReturnCode.fromReturnCode(commandOutput.getReturnCode().getReturnCode()).getDesc() : standardError);
+        }
+    }
+
+    protected void addFileToTarget(File source, JarOutputStream target) throws IOException {
+        BufferedInputStream in = null;
+        try {
+            if (source.isDirectory()) {
+                String name = source.getPath().replace("\\", "/");
+                if (!name.isEmpty()) {
+                    if (!name.endsWith("/")) {
+                        name += "/";
+                    }
+                    JarEntry entry = new JarEntry(name);
+                    entry.setTime(source.lastModified());
+                    target.putNextEntry(entry);
+                    target.closeEntry();
+                }
+                for (File nestedFile : source.listFiles()) {
+                    addFileToTarget(nestedFile, target);
+                }
+                return;
+            }
+
+            JarEntry entry = new JarEntry(source.getPath().replace("\\", "/"));
+            entry.setTime(source.lastModified());
+            target.putNextEntry(entry);
+            in = new BufferedInputStream(new FileInputStream(source));
+
+            byte[] buffer = new byte[1024];
+            while (true) {
+                int count = in.read(buffer);
+                if (count == -1) {
+                    break;
+                }
+                target.write(buffer, 0, count);
+            }
+            target.closeEntry();
+        } finally {
+            if (in != null) {
+                in.close();
+            }
+        }
+    }
+
+    @Override
+    public Jvm generateAndDeployFile(String jvmName, String fileName, User user) {
+        Jvm jvm = getJvm(jvmName);
+
+        // only one at a time per jvm
+        if (!jvmWriteLocks.containsKey(jvm.getId().getId().toString())) {
+            jvmWriteLocks.put(jvm.getId().getId().toString(), new ReentrantReadWriteLock());
+        }
+        jvmWriteLocks.get(jvm.getId().getId().toString()).writeLock().lock();
+
+        final String badStreamMessage = "Bad Stream: ";
+        try {
+            if (jvm.getState().isStartedState()) {
+                LOGGER.error("The target JVM {} must be stopped before attempting to update the resource files", jvm.getJvmName());
+                throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE,
+                        "The target JVM must be stopped before attempting to update the resource files");
+            }
+
+            final String metaDataPath;
+            String metaDataStr = getResourceTemplateMetaData(jvmName, fileName);
+            ResourceTemplateMetaData resourceTemplateMetaData = new ObjectMapper().readValue(metaDataStr, ResourceTemplateMetaData.class);
+            metaDataPath = resourceTemplateMetaData.getDeployPath();
+            String resourceSourceCopy;
+            String resourceDestPath = ResourceFileGenerator.generateResourceConfig(metaDataPath, resourceService.generateResourceGroup(), jvm) + "/" + fileName;
+            if (resourceTemplateMetaData.getContentType().equals(ContentType.APPLICATION_BINARY.contentTypeStr)) {
+                resourceSourceCopy = getResourceTemplate(jvmName, fileName, false);
+            } else {
+                String fileContent = generateConfigFile(jvmName, fileName);
+                String jvmResourcesNameDir = ApplicationProperties.get("paths.generated.resource.dir") + "/" + jvmName;
+                resourceSourceCopy = jvmResourcesNameDir + "/" + fileName;
+                createConfigFile(jvmResourcesNameDir + "/", fileName, fileContent);
+            }
+
+            deployJvmConfigFile(fileName, jvm, resourceDestPath, resourceSourceCopy, user);
+        } catch (IOException e) {
+            String message = "Failed to write file";
+            LOGGER.error(badStreamMessage + message, e);
+            throw new InternalErrorException(AemFaultType.BAD_STREAM, message, e);
+        } catch (CommandFailureException ce) {
+            String message = "Failed to copy file";
+            LOGGER.error(badStreamMessage + message, ce);
+            throw new InternalErrorException(AemFaultType.BAD_STREAM, message, ce);
+        } finally {
+            jvmWriteLocks.get(jvm.getId().getId().toString()).writeLock().unlock();
+        }
+
+        return jvm;
+    }
+
+    protected void deployJvmConfigFile(String fileName, Jvm jvm, String destPath, String sourcePath, User user)
+            throws CommandFailureException {
+        CommandOutput result =
+                jvmControlService.secureCopyFile(new ControlJvmRequest(jvm.getId(), JvmControlOperation.SECURE_COPY), sourcePath, destPath, user.getId());
+        if (result.getReturnCode().wasSuccessful()) {
+            LOGGER.info("Successful generation and deploy of {} to {}", fileName, jvm.getJvmName());
+        } else {
+            String standardError =
+                    result.getStandardError().isEmpty() ? result.getStandardOutput() : result.getStandardError();
+            LOGGER.error("Copying config file {} failed :: ERROR: {}", fileName, standardError);
+            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, CommandOutputReturnCode.fromReturnCode(result.getReturnCode().getReturnCode()).getDesc());
+        }
+    }
+
+
+    @Override
     @Transactional
     public String performDiagnosis(Identifier<Jvm> aJvmId) {
         // if the Jvm does not exist, we'll get a 404 NotFoundException
@@ -291,12 +659,11 @@ public class JvmServiceImpl implements JvmService {
     }
 
     @Override
-
     public void checkForSetenvBat(String jvmName) {
         try {
             jvmPersistenceService.getResourceTemplate(jvmName, "setenv.bat");
-        } catch (NonRetrievableResourceTemplateContentException e){
-            LOGGER.error("No setenv.bat configure for JVM: {}", jvmName, e);
+        } catch (NonRetrievableResourceTemplateContentException e) {
+            LOGGER.error("No setenv.bat configured for JVM: {}", jvmName, e);
             throw new InternalErrorException(AemFaultType.TEMPLATE_NOT_FOUND, "No setenv.bat template found for " + jvmName + ". Unable to continue processing.");
         }
         LOGGER.debug("Found setenv.bat for JVM: {}. Continuing with process. ", jvmName);
@@ -322,13 +689,6 @@ public class JvmServiceImpl implements JvmService {
     @Transactional
     public String previewResourceTemplate(String jvmName, String groupName, String template) {
         return resourceService.generateResourceFile(template, resourceService.generateResourceGroup(), jvmPersistenceService.findJvm(jvmName, groupName));
-    }
-
-    @Override
-    @Transactional
-    public JpaJvmConfigTemplate uploadJvmTemplateXml(UploadJvmTemplateRequest uploadJvmTemplateRequest, User user) {
-        uploadJvmTemplateRequest.validate();
-        return jvmPersistenceService.uploadJvmTemplateXml(uploadJvmTemplateRequest);
     }
 
     @Override
@@ -450,12 +810,12 @@ public class JvmServiceImpl implements JvmService {
             if (generatedFiles == null) {
                 generatedFiles = new HashMap<>();
             }
-            if (resourceTemplateMetaData.getContentType().equals(ContentType.APPLICATION_BINARY.contentTypeStr)){
+            if (resourceTemplateMetaData.getContentType().equals(ContentType.APPLICATION_BINARY.contentTypeStr)) {
                 if (generatedFiles == null) {
                     generatedFiles = new HashMap<>();
                 }
                 generatedFiles.put(jpaJvmConfigTemplate.getTemplateContent(),
-                       resourceTemplateMetaData.getDeployPath() + "/" + resourceTemplateMetaData.getDeployFileName());
+                        resourceTemplateMetaData.getDeployPath() + "/" + resourceTemplateMetaData.getDeployFileName());
             } else {
                 final String generatedResourceStr = resourceService.generateResourceFile(jpaJvmConfigTemplate.getTemplateContent(),
                         resourceGroup, jvm);
@@ -469,15 +829,14 @@ public class JvmServiceImpl implements JvmService {
     /**
      * This method creates a temp file .tpl file, with the generatedResourceString as the input data for the file.
      *
-     *
      * @param generatedResourcesTempDir
-     * @param configFileName          The file name that apprears at the destination.
-     * @param generatedResourceString The contents of the file.
+     * @param configFileName            The file name that apprears at the destination.
+     * @param generatedResourceString   The contents of the file.
      * @return the location of the newly created temp file
      * @throws IOException
      */
     protected String createConfigFile(String generatedResourcesTempDir, final String configFileName, String generatedResourceString) throws IOException {
-        File templateFile = new File(generatedResourcesTempDir + "/" + configFileName + ".tpl");
+        File templateFile = new File(generatedResourcesTempDir + "/" + configFileName);
         if (configFileName.endsWith(".bat")) {
             generatedResourceString = generatedResourceString.replaceAll("\n", "\r\n");
         }
