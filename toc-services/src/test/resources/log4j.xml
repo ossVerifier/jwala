@@ -157,11 +157,11 @@
    </category>
    -->
    
-   <category name="com.siemens">
+   <category name="com.cerner">
          <priority value="DEBUG"/>
    </category>
    
-   <category name="com.siemens.cto.aem.service.state.impl.GroupStateServiceStateMachineIntegrationTest">
+   <category name="com.cerner.jwala.service.state.impl.GroupStateServiceStateMachineIntegrationTest">
         <priority value="TRACE" />
    </category>
    

@@ -10,14 +10,14 @@
     <persistence-unit name="aem-unit" transaction-type="RESOURCE_LOCAL">
         <provider>org.apache.openjpa.persistence.PersistenceProviderImpl</provider>
 
-        <class>com.siemens.cto.aem.persistence.jpa.domain.AbstractEntity</class>
-        <class>com.siemens.cto.aem.persistence.jpa.domain.JpaGroup</class>
-        <class>com.siemens.cto.aem.persistence.jpa.domain.JpaHistory</class>
-        <class>com.siemens.cto.aem.persistence.jpa.domain.JpaJvm</class>
-        <class>com.siemens.cto.aem.persistence.jpa.domain.JpaWebServer</class>
-        <class>com.siemens.cto.aem.persistence.jpa.domain.JpaApplication</class>
-        <class>com.siemens.cto.aem.persistence.jpa.domain.resource.config.template.ConfigTemplate</class>
-        <class>com.siemens.cto.aem.persistence.jpa.domain.resource.config.template.JpaJvmConfigTemplate</class>
+        <class>com.cerner.jwala.persistence.jpa.domain.AbstractEntity</class>
+        <class>com.cerner.jwala.persistence.jpa.domain.JpaGroup</class>
+        <class>com.cerner.jwala.persistence.jpa.domain.JpaHistory</class>
+        <class>com.cerner.jwala.persistence.jpa.domain.JpaJvm</class>
+        <class>com.cerner.jwala.persistence.jpa.domain.JpaWebServer</class>
+        <class>com.cerner.jwala.persistence.jpa.domain.JpaApplication</class>
+        <class>com.cerner.jwala.persistence.jpa.domain.resource.config.template.ConfigTemplate</class>
+        <class>com.cerner.jwala.persistence.jpa.domain.resource.config.template.JpaJvmConfigTemplate</class>
         <exclude-unlisted-classes>true</exclude-unlisted-classes>
         <properties>
             <!--<property name="openjpa.ConnectionFactoryProperties" value="PrintParameters=true" />-->
