@@ -62,14 +62,10 @@ SET LOGIN_CONFIG=-Djava.security.auth.login.config=%PROPERTIES_PATH%\jaas.config
 
 SET APR_OPTS=-Djava.library.path=%CATALINA_HOME%\bin
 
-SET APP_DYNAMICS_OPTS=-javaagent:d:/stp/app-dynamics-3.9.4.0/agent/javaagent.jar -Dappdynamics.controller.hostName=USMLVV1CTO924 -Dappdynamics.controller.port=8090
-SET APP_DYNAMICS_OPTS=%APP_DYNAMICS_OPTS% -Dappdynamics.agent.applicationName=1D0A-Development-Environment-N9SF-LTST -Dappdynamics.agent.tierName=HEALTH-CHECK -Dappdynamics.agent.nodeName=${jvm.jvmName}
-SET APP_DYNAMICS_OPTS=%APP_DYNAMICS_OPTS% -Dappdynamics.agent.logs.dir=d:/stp/app/data/app-dynamics/logs/
-
 SET PROD_OPTS=%APR_OPTS% %STP_OPTS% %SSL_OPTS% %JMX_OPTS% %CATALINA_OPTS% %LOG_OPTS% %LOGIN_CONFIG%
 
 IF false==true (
-    SET PROD_OPTS=%PROD_OPTS% %APP_DYNAMICS_OPTS%
+    SET PROD_OPTS=%PROD_OPTS%
 )
 
 SET DEBUG_OPTS=%PROD_OPTS%
