@@ -10,7 +10,7 @@ task commonTestSshConfigJar(type: Jar) {
     baseName = 'commonTestSshConfig'
     dependsOn classes
     from sourceSets.test.output
-    include('com/siemens/cto/aem/commandprocessor/impl/CommonSshTestConfiguration*')
+    include('com/cerner/jwala/commandprocessor/impl/CommonSshTestConfiguration*')
 }
 
 artifacts {
