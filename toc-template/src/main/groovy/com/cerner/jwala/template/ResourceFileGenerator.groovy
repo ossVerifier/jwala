@@ -1,13 +1,13 @@
-package com.siemens.cto.aem.template
+package com.cerner.jwala.template
 
-import com.siemens.cto.aem.common.domain.model.app.Application
-import com.siemens.cto.aem.common.domain.model.group.Group
-import com.siemens.cto.aem.common.domain.model.jvm.Jvm
-import com.siemens.cto.aem.common.domain.model.resource.ResourceGroup
-import com.siemens.cto.aem.common.domain.model.webserver.WebServer
-import com.siemens.cto.aem.common.properties.ApplicationProperties
-import com.siemens.cto.aem.common.properties.ExternalProperties
-import com.siemens.cto.aem.template.exception.ResourceFileGeneratorException
+import com.cerner.jwala.common.domain.model.app.Application
+import com.cerner.jwala.common.domain.model.group.Group
+import com.cerner.jwala.common.domain.model.jvm.Jvm
+import com.cerner.jwala.common.domain.model.resource.ResourceGroup
+import com.cerner.jwala.common.domain.model.webserver.WebServer
+import com.cerner.jwala.common.properties.ApplicationProperties
+import com.cerner.jwala.common.properties.ExternalProperties
+import com.cerner.jwala.template.exception.ResourceFileGeneratorException
 import groovy.text.StreamingTemplateEngine
 
 class ResourceFileGenerator {

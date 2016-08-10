@@ -1,6 +1,6 @@
-package com.siemens.cto.aem.template.exception;
+package com.cerner.jwala.template.exception;
 
-import com.siemens.cto.aem.template.ResourceFileGenerator;
+import com.cerner.jwala.template.ResourceFileGenerator;
 
 /**
  * Class wrapper for exceptions thrown from {@link ResourceFileGenerator}.

@@ -1,18 +1,18 @@
-package com.siemens.cto.aem.template
-import com.siemens.cto.aem.common.domain.model.app.Application
-import com.siemens.cto.aem.common.domain.model.group.CurrentGroupState
-import com.siemens.cto.aem.common.domain.model.group.Group
-import com.siemens.cto.aem.common.domain.model.group.GroupState
-import com.siemens.cto.aem.common.domain.model.group.History
-import com.siemens.cto.aem.common.domain.model.id.Identifier
-import com.siemens.cto.aem.common.domain.model.jvm.Jvm
-import com.siemens.cto.aem.common.domain.model.jvm.JvmState
-import com.siemens.cto.aem.common.domain.model.path.FileSystemPath
-import com.siemens.cto.aem.common.domain.model.path.Path
-import com.siemens.cto.aem.common.domain.model.resource.ResourceGroup
-import com.siemens.cto.aem.common.domain.model.webserver.WebServer
-import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState
-import com.siemens.cto.aem.common.properties.ApplicationProperties
+package com.cerner.jwala.template
+import com.cerner.jwala.common.domain.model.app.Application
+import com.cerner.jwala.common.domain.model.group.CurrentGroupState
+import com.cerner.jwala.common.domain.model.group.Group
+import com.cerner.jwala.common.domain.model.group.GroupState
+import com.cerner.jwala.common.domain.model.group.History
+import com.cerner.jwala.common.domain.model.id.Identifier
+import com.cerner.jwala.common.domain.model.jvm.Jvm
+import com.cerner.jwala.common.domain.model.jvm.JvmState
+import com.cerner.jwala.common.domain.model.path.FileSystemPath
+import com.cerner.jwala.common.domain.model.path.Path
+import com.cerner.jwala.common.domain.model.resource.ResourceGroup
+import com.cerner.jwala.common.domain.model.webserver.WebServer
+import com.cerner.jwala.common.domain.model.webserver.WebServerReachableState
+import com.cerner.jwala.common.properties.ApplicationProperties
 import org.joda.time.DateTime
 
 class TestResourceFileGenerator extends GroovyTestCase{
