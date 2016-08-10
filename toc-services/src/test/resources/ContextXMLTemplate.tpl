@@ -33,7 +33,4 @@
     <!--
     <Valve className="org.apache.catalina.valves.CometConnectionManagerValve" />
     -->
-
-    <Valve className="com.siemens.cto.security.tomcat.GsmAuthenticationValve" />
-    <Valve className="com.siemens.cto.security.tomcat.SamlAuthenticationValve" />
 </Context>
