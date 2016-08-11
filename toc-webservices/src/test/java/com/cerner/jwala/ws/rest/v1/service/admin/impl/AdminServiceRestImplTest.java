@@ -1,8 +1,8 @@
 package com.cerner.jwala.ws.rest.v1.service.admin.impl;
 
 import com.cerner.jwala.common.properties.ApplicationProperties;
+import com.cerner.jwala.files.FilesConfiguration;
 import com.cerner.jwala.service.resource.ResourceService;
-import com.cerner.jwala.toc.files.FilesConfiguration;
 import com.cerner.jwala.ws.rest.v1.response.ApplicationResponse;
 import com.cerner.jwala.ws.rest.v1.response.ResponseBuilder;
 import com.cerner.jwala.ws.rest.v1.service.admin.impl.AdminServiceRestImpl;

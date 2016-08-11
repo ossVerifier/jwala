@@ -1,5 +1,6 @@
 package com.cerner.jwala.ws.rest.v1.configuration;
 
+import com.cerner.jwala.files.FilesConfiguration;
 import com.cerner.jwala.persistence.jpa.service.HistoryCrudService;
 import com.cerner.jwala.service.HistoryService;
 import com.cerner.jwala.service.app.ApplicationService;
@@ -16,7 +17,6 @@ import com.cerner.jwala.service.state.StateNotificationService;
 import com.cerner.jwala.service.webserver.WebServerCommandService;
 import com.cerner.jwala.service.webserver.WebServerControlService;
 import com.cerner.jwala.service.webserver.WebServerService;
-import com.cerner.jwala.toc.files.FilesConfiguration;
 import com.cerner.jwala.ws.rest.v1.exceptionmapper.*;
 import com.cerner.jwala.ws.rest.v1.impl.HistoryServiceRestImpl;
 import com.cerner.jwala.ws.rest.v1.response.ApplicationResponse;
