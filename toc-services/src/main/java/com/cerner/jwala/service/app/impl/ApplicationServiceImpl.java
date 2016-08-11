@@ -19,6 +19,8 @@ import com.cerner.jwala.control.application.command.impl.WindowsApplicationPlatf
 import com.cerner.jwala.control.command.RemoteCommandExecutor;
 import com.cerner.jwala.control.jvm.command.windows.WindowsJvmNetOperation;
 import com.cerner.jwala.exception.CommandFailureException;
+import com.cerner.jwala.files.RepositoryFileInformation;
+import com.cerner.jwala.files.WebArchiveManager;
 import com.cerner.jwala.persistence.jpa.domain.JpaApplicationConfigTemplate;
 import com.cerner.jwala.persistence.jpa.domain.JpaJvm;
 import com.cerner.jwala.persistence.jpa.type.EventType;
@@ -32,8 +34,6 @@ import com.cerner.jwala.service.exception.ApplicationServiceException;
 import com.cerner.jwala.service.group.GroupService;
 import com.cerner.jwala.service.resource.ResourceService;
 import com.cerner.jwala.template.ResourceFileGenerator;
-import com.cerner.jwala.toc.files.RepositoryFileInformation;
-import com.cerner.jwala.toc.files.WebArchiveManager;
 
 import org.apache.commons.lang3.StringUtils;
 import org.codehaus.jackson.JsonParseException;

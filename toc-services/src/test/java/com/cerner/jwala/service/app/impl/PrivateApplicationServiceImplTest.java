@@ -5,11 +5,11 @@ import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.user.User;
 import com.cerner.jwala.common.request.app.UploadWebArchiveRequest;
+import com.cerner.jwala.files.RepositoryFileInformation;
+import com.cerner.jwala.files.WebArchiveManager;
 import com.cerner.jwala.persistence.service.ApplicationPersistenceService;
 import com.cerner.jwala.service.app.PrivateApplicationService;
 import com.cerner.jwala.service.app.impl.PrivateApplicationServiceImpl;
-import com.cerner.jwala.toc.files.RepositoryFileInformation;
-import com.cerner.jwala.toc.files.WebArchiveManager;
 
 import org.junit.Before;
 import org.junit.Test;

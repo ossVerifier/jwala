@@ -4,6 +4,8 @@ import com.cerner.jwala.common.configuration.TestExecutionProfile;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.webserver.WebServer;
 import com.cerner.jwala.common.exception.NotFoundException;
+import com.cerner.jwala.files.FileManager;
+import com.cerner.jwala.files.configuration.TocFileManagerConfigReference;
 import com.cerner.jwala.persistence.jpa.service.GroupCrudService;
 import com.cerner.jwala.persistence.jpa.service.WebServerCrudService;
 import com.cerner.jwala.persistence.jpa.service.impl.GroupCrudServiceImpl;
@@ -14,8 +16,6 @@ import com.cerner.jwala.service.configuration.TestJpaConfiguration;
 import com.cerner.jwala.service.resource.ResourceService;
 import com.cerner.jwala.service.webserver.WebServerService;
 import com.cerner.jwala.service.webserver.impl.WebServerServiceImpl;
-import com.cerner.jwala.toc.files.FileManager;
-import com.cerner.jwala.toc.files.configuration.TocFileManagerConfigReference;
 
 import org.junit.Before;
 import org.junit.Ignore;

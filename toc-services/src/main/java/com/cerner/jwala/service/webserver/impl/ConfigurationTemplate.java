@@ -1,6 +1,6 @@
 package com.cerner.jwala.service.webserver.impl;
 
-import com.cerner.jwala.toc.files.TocFile;
+import com.cerner.jwala.files.TocFile;
 
 public enum ConfigurationTemplate implements TocFile {    
     

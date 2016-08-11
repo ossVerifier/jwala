@@ -4,10 +4,10 @@ import com.cerner.jwala.common.domain.model.app.Application;
 import com.cerner.jwala.common.domain.model.fault.AemFaultType;
 import com.cerner.jwala.common.exception.BadRequestException;
 import com.cerner.jwala.common.request.app.UploadWebArchiveRequest;
+import com.cerner.jwala.files.RepositoryFileInformation;
+import com.cerner.jwala.files.WebArchiveManager;
 import com.cerner.jwala.persistence.service.ApplicationPersistenceService;
 import com.cerner.jwala.service.app.PrivateApplicationService;
-import com.cerner.jwala.toc.files.RepositoryFileInformation;
-import com.cerner.jwala.toc.files.WebArchiveManager;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
