@@ -34,7 +34,8 @@ ext {
             objenesis: '1.0',
             jgroups: '3.6.6.Final',
             commons_io: '2.4',
-            jkeylockmanager: '1.2.0'
+            jkeylockmanager: '1.2.0',
+            jackson: '1.9.13'
     ]
 }
 

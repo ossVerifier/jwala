@@ -22,6 +22,8 @@ dependencies {
     compile group: "commons-io", name: "commons-io", version: "$project.versions.jodaTime"
     compile group: "org.jgroups", name: "jgroups", version: "$project.versions.jgroups"
 
+    compile group: "org.codehaus.jackson", name: "jackson-jaxrs", version: "$project.versions.jackson"
+
     testRuntime group: "com.cerner.cto.infrastructure", name: "infrastructure-provided", version: "$project.versions.infrastructureProvided", transitive: false
 	testRuntime group: 'org.apache.tomcat', name: 'tomcat-coyote', version: "$project.versions.tomcat"
 
