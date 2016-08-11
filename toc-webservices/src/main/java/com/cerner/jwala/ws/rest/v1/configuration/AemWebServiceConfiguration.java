@@ -271,24 +271,4 @@ public class AemWebServiceConfiguration {
     protected ExecutorService getExecutorService() {
         return Executors.newFixedThreadPool(12);
     } // TODO: why 12? is this configurable with a property?
-
-
-    @Bean
-    public Server getV2JaxResServer(final com.cerner.jwala.ws.rest.v2.service.group.GroupServiceRest groupServiceRest) {
-        final JAXRSServerFactoryBean factory = new JAXRSServerFactoryBean();
-
-        factory.setAddress("/v2.0");
-
-        final List<Object> serviceBeans = new ArrayList<>();
-        serviceBeans.add(groupServiceRest);
-        factory.setServiceBeans(serviceBeans);
-
-        factory.setProviders(getV1Providers());
-        return factory.create();
-    }
-
-    @Bean
-    com.cerner.jwala.ws.rest.v2.service.group.GroupServiceRest getGroupServiceRestV2() {
-        return new com.cerner.jwala.ws.rest.v2.service.group.impl.GroupServiceRestImpl();
-    }
 }
