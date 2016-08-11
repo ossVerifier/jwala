@@ -1,8 +1,8 @@
-package com.cerner.jwala.toc.files.impl;
+package com.cerner.jwala.files.impl;
 
 import com.cerner.jwala.common.properties.ApplicationProperties;
-import com.cerner.jwala.toc.files.FilesConfiguration;
-import com.cerner.jwala.toc.files.TocPath;
+import com.cerner.jwala.files.FilesConfiguration;
+import com.cerner.jwala.files.TocPath;
 
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;

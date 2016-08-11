@@ -1,14 +1,14 @@
-package com.cerner.jwala.toc.files.impl;
+package com.cerner.jwala.files.impl;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.cerner.jwala.toc.files.FilesConfiguration;
-import com.cerner.jwala.toc.files.RepositoryFileInformation;
-import com.cerner.jwala.toc.files.RepositoryService;
-import com.cerner.jwala.toc.files.TocPath;
-import com.cerner.jwala.toc.files.RepositoryFileInformation.Type;
+import com.cerner.jwala.files.FilesConfiguration;
+import com.cerner.jwala.files.RepositoryFileInformation;
+import com.cerner.jwala.files.RepositoryService;
+import com.cerner.jwala.files.TocPath;
+import com.cerner.jwala.files.RepositoryFileInformation.Type;
 
 import java.io.IOException;
 import java.io.InputStream;

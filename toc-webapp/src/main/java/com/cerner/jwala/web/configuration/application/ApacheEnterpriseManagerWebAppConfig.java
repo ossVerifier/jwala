@@ -11,6 +11,6 @@ import org.springframework.context.annotation.Import;
 @Configuration
 @Import({AemServiceConfigReference.class,
         AemJmsConfigReference.class, SecurityConfig.class})
-@ComponentScan("com.cerner.jwala.toc.files.configuration")
+@ComponentScan("com.cerner.jwala.files.configuration")
 public class ApacheEnterpriseManagerWebAppConfig {
 }

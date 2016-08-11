@@ -1,9 +1,9 @@
-package com.cerner.jwala.toc.files.impl;
+package com.cerner.jwala.files.impl;
 
 import com.cerner.jwala.common.domain.model.app.Application;
 import com.cerner.jwala.common.request.app.RemoveWebArchiveRequest;
 import com.cerner.jwala.common.request.app.UploadWebArchiveRequest;
-import com.cerner.jwala.toc.files.*;
+import com.cerner.jwala.files.*;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;

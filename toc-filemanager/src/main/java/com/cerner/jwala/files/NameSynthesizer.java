@@ -1,4 +1,4 @@
-package com.cerner.jwala.toc.files;
+package com.cerner.jwala.files;
 
 import java.nio.file.Path;
 

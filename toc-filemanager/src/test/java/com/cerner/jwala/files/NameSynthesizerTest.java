@@ -1,12 +1,12 @@
-package com.cerner.jwala.toc.files;
+package com.cerner.jwala.files;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import com.cerner.jwala.toc.files.NameSynthesizer;
-import com.cerner.jwala.toc.files.impl.DefaultNameSynthesizer;
+import com.cerner.jwala.files.NameSynthesizer;
+import com.cerner.jwala.files.impl.DefaultNameSynthesizer;
 
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;

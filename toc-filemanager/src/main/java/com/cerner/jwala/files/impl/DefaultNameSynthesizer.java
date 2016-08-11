@@ -1,9 +1,9 @@
-package com.cerner.jwala.toc.files.impl;
+package com.cerner.jwala.files.impl;
 
 import java.nio.file.Path;
 import java.util.UUID;
 
-import com.cerner.jwala.toc.files.NameSynthesizer;
+import com.cerner.jwala.files.NameSynthesizer;
 
 public class DefaultNameSynthesizer implements NameSynthesizer {
 

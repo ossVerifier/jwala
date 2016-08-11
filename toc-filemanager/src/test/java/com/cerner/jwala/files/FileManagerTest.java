@@ -1,15 +1,15 @@
-package com.cerner.jwala.toc.files;
+package com.cerner.jwala.files;
 
 import com.cerner.jwala.common.domain.model.app.Application;
-import com.cerner.jwala.toc.files.FileManager;
-import com.cerner.jwala.toc.files.FilesConfiguration;
-import com.cerner.jwala.toc.files.RepositoryService;
-import com.cerner.jwala.toc.files.TocFile;
-import com.cerner.jwala.toc.files.TocPath;
-import com.cerner.jwala.toc.files.impl.FileManagerImpl;
-import com.cerner.jwala.toc.files.impl.LocalFileSystemRepositoryServiceImpl;
-import com.cerner.jwala.toc.files.impl.PropertyFilesConfigurationImpl;
-import com.cerner.jwala.toc.files.resources.ResourceTypeDeserializer;
+import com.cerner.jwala.files.FileManager;
+import com.cerner.jwala.files.FilesConfiguration;
+import com.cerner.jwala.files.RepositoryService;
+import com.cerner.jwala.files.TocFile;
+import com.cerner.jwala.files.TocPath;
+import com.cerner.jwala.files.impl.FileManagerImpl;
+import com.cerner.jwala.files.impl.LocalFileSystemRepositoryServiceImpl;
+import com.cerner.jwala.files.impl.PropertyFilesConfigurationImpl;
+import com.cerner.jwala.files.resources.ResourceTypeDeserializer;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;

@@ -1,9 +1,9 @@
-package com.cerner.jwala.toc.files.configuration;
+package com.cerner.jwala.files.configuration;
 
 import com.cerner.jwala.common.properties.ApplicationProperties;
-import com.cerner.jwala.toc.files.*;
-import com.cerner.jwala.toc.files.impl.*;
-import com.cerner.jwala.toc.files.resources.ResourceTypeDeserializer;
+import com.cerner.jwala.files.*;
+import com.cerner.jwala.files.impl.*;
+import com.cerner.jwala.files.resources.ResourceTypeDeserializer;
 
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Bean;

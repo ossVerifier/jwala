@@ -1,4 +1,4 @@
-package com.cerner.jwala.toc.files.resources;
+package com.cerner.jwala.files.resources;
 
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;

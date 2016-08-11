@@ -1,13 +1,13 @@
-package com.cerner.jwala.toc.files;
+package com.cerner.jwala.files;
 
 import org.junit.Test;
 
-import com.cerner.jwala.toc.files.RepositoryFileInformation;
+import com.cerner.jwala.files.RepositoryFileInformation;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import static com.cerner.jwala.toc.files.RepositoryFileInformation.Type.*;
+import static com.cerner.jwala.files.RepositoryFileInformation.Type.*;
 import static org.junit.Assert.*;
 
 public class RepositoryFileInformationTest {

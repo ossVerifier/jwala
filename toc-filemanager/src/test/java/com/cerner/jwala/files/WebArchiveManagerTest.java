@@ -1,19 +1,19 @@
-package com.cerner.jwala.toc.files;
+package com.cerner.jwala.files;
 
 import com.cerner.jwala.common.domain.model.app.Application;
 import com.cerner.jwala.common.domain.model.user.User;
 import com.cerner.jwala.common.request.app.RemoveWebArchiveRequest;
 import com.cerner.jwala.common.request.app.UploadWebArchiveRequest;
-import com.cerner.jwala.toc.files.FilesConfiguration;
-import com.cerner.jwala.toc.files.NameSynthesizer;
-import com.cerner.jwala.toc.files.RepositoryFileInformation;
-import com.cerner.jwala.toc.files.RepositoryService;
-import com.cerner.jwala.toc.files.TocPath;
-import com.cerner.jwala.toc.files.WebArchiveManager;
-import com.cerner.jwala.toc.files.RepositoryFileInformation.Type;
-import com.cerner.jwala.toc.files.impl.LocalFileSystemRepositoryServiceImpl;
-import com.cerner.jwala.toc.files.impl.PropertyFilesConfigurationImpl;
-import com.cerner.jwala.toc.files.impl.WebArchiveManagerImpl;
+import com.cerner.jwala.files.FilesConfiguration;
+import com.cerner.jwala.files.NameSynthesizer;
+import com.cerner.jwala.files.RepositoryFileInformation;
+import com.cerner.jwala.files.RepositoryService;
+import com.cerner.jwala.files.TocPath;
+import com.cerner.jwala.files.WebArchiveManager;
+import com.cerner.jwala.files.RepositoryFileInformation.Type;
+import com.cerner.jwala.files.impl.LocalFileSystemRepositoryServiceImpl;
+import com.cerner.jwala.files.impl.PropertyFilesConfigurationImpl;
+import com.cerner.jwala.files.impl.WebArchiveManagerImpl;
 
 import org.junit.After;
 import org.junit.AfterClass;

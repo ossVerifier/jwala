@@ -1,4 +1,4 @@
-package com.cerner.jwala.toc.files;
+package com.cerner.jwala.files;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -9,13 +9,13 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
 
-import com.cerner.jwala.toc.files.FilesConfiguration;
-import com.cerner.jwala.toc.files.RepositoryFileInformation;
-import com.cerner.jwala.toc.files.RepositoryService;
-import com.cerner.jwala.toc.files.TocPath;
-import com.cerner.jwala.toc.files.impl.LocalFileSystemRepositoryServiceImpl;
-import com.cerner.jwala.toc.files.impl.PropertyFilesConfigurationImpl;
-import com.cerner.jwala.toc.files.resources.ResourceTypeDeserializer;
+import com.cerner.jwala.files.FilesConfiguration;
+import com.cerner.jwala.files.RepositoryFileInformation;
+import com.cerner.jwala.files.RepositoryService;
+import com.cerner.jwala.files.TocPath;
+import com.cerner.jwala.files.impl.LocalFileSystemRepositoryServiceImpl;
+import com.cerner.jwala.files.impl.PropertyFilesConfigurationImpl;
+import com.cerner.jwala.files.resources.ResourceTypeDeserializer;
 
 import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
