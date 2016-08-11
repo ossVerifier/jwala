@@ -43,8 +43,8 @@ sonarRunner {
         property 'sonar.host.url', 'http://usmlvv1cto923.usmlvv1d0a.smshsc.net:9000'
         property 'sonar.jdbc.url', 'jdbc:mysql://usmlvv1cto923.usmlvv1d0a.smshsc.net/sonar'
         property 'sonar.jdbc.driverClassName', 'com.mysql.jdbc.Driver'
-        property 'sonar.jdbc.username', 'sonar'
-        property 'sonar.jdbc.password', 'sonar'
+        property 'sonar.jdbc.username', project.properties['sonarUser']
+        property 'sonar.jdbc.password', project.properties['sonarPassword']
         property 'sonar.dynamicAnalysis', 'reuseReports'
         properties ["sonar.projectKey"] = 'cto.tco.toc'
         properties ["sonar.projectName"] = 'tomcat operations center'
