@@ -319,7 +319,12 @@ public class BalancemanagerServiceImplTest {
         webServers.add(webServer1);
         webServers.add(webServer2);
         String[] webServerArray = "webServer3, webServer4".split(",");
-        assertEquals(0, balancerManagerServiceImpl.findMatchWebServers(webServers, webServerArray).size());
+        try{
+            balancerManagerServiceImpl.findMatchWebServers(webServers, webServerArray);
+            fail();
+        } catch (Exception e){
+            assertEquals("com.cerner.jwala.common.exception.InternalErrorException: webServer3, webServer4 cannot be found in the group", e.toString());
+        }
     }
 
     @Test
@@ -345,7 +350,12 @@ public class BalancemanagerServiceImplTest {
         List<WebServer> webServers = new ArrayList<>();
         webServers.add(webServer1);
         String[] webServerArray = "webServer1, webServer2".split(",");
-        assertEquals(1, balancerManagerServiceImpl.findMatchWebServers(webServers, webServerArray).size());
+        try {
+            balancerManagerServiceImpl.findMatchWebServers(webServers, webServerArray);
+            fail();
+        }catch (Exception e){
+            assertEquals("com.cerner.jwala.common.exception.InternalErrorException: webServer2 cannot be found in the group", e.toString());
+        }
     }
 
     @Test

@@ -77,7 +77,6 @@ public class BalancerManagerServiceImpl implements BalancerManagerService {
     public BalancerManagerState drainUserGroup(final String groupName, final String webServers, final String user) {
         LOGGER.info("Entering drainUserGroup, groupName: " + groupName + " webServers: " + webServers);
         this.setUser(user);
-        checkGroupStatus(groupName);
         String[] webServerArray = getRequireWebServers(webServers);
         List<BalancerManagerState.WebServerDrainStatus> webServerDrainStatusList = new ArrayList<>();
         Group group = groupService.getGroup(groupName);
@@ -87,6 +86,7 @@ public class BalancerManagerServiceImpl implements BalancerManagerService {
         } else {
             webServerList = findMatchWebServers(webServerService.findWebServers(group.getId()), webServerArray);
         }
+        checkGroupStatus(groupName);
         for (WebServer webServer : webServerList) {
             BalancerManagerState.WebServerDrainStatus webServerDrainStatus = doDrainAndgetDrainStatus(webServer, true);
             webServerDrainStatusList.add(webServerDrainStatus);
@@ -168,10 +168,15 @@ public class BalancerManagerServiceImpl implements BalancerManagerService {
                 webServerNameMatch.add(webServers.get(index).getName());
             }
         }
+        String wrongWebServers = "";
         for (String webServerArrayContentName : webServerArray) {
             if (!webServerNameMatch.contains(webServerArrayContentName.trim())) {
-                LOGGER.warn("WebServer Name does not exist: " + webServerArrayContentName.trim());
+                LOGGER.error("WebServer Name does not exist: " + webServerArrayContentName.trim());
+                wrongWebServers += webServerArrayContentName.trim() + ", ";
             }
+        }
+        if (wrongWebServers.length() != 0){
+            throw new InternalErrorException(AemFaultType.WEBSERVER_NOT_FOUND, wrongWebServers.substring(0, wrongWebServers.length()-2) + " cannot be found in the group");
         }
         return webServersMatch;
     }
@@ -181,10 +186,10 @@ public class BalancerManagerServiceImpl implements BalancerManagerService {
         return new BalancerManagerState.WebServerDrainStatus(webServer.getName(), jvmDrainStatusList);
     }
 
-    //TODO: It seems like no mater what balancer name and nonce I pass, it always return the whole xml format for webServer level
-    //TODO: In this case, jwala only needs to do it one time instead of go through all balancer name (multiple times) to find out all workers
-    //TODO: but it still need to pass the balancer name and nonce in order to get xml file
-    //TODO: We believe it is the issue for apache-tomcat httpd balancer manager
+    //It seems like no mater what balancer name and nonce I pass, it always return the whole xml format for webServer level
+    //In this case, jwala only needs to do it one time instead of go through all balancer name (multiple times) to find out all workers
+    //but it still need to pass the balancer name and nonce in order to get xml file
+    //We believe it is the issue for apache-tomcat httpd balancer manager
     public List<BalancerManagerState.WebServerDrainStatus.JvmDrainStatus> prepareDrainWork(final WebServer webServer, final Boolean post) {
         LOGGER.info("Entering prepareDrainWork");
         final String balancerManagerHtmlUrl = balancerManagerHtmlParser.getUrlPath(webServer.getHost());
@@ -201,11 +206,9 @@ public class BalancerManagerServiceImpl implements BalancerManagerService {
         return getBalancerStatus(webServer.getHost(), workers, entry.getKey(), entry.getValue());
     }
 
-    /*
-    In order to get the status from each worker in HTML, need to pass b=lb-health-check-4.0, w=http://usmlvv1cds0057:9101/hct and nonce=xxxx
-    from Manager object, it can find the manager.balancer.getName to find the mapping worker
-    using balancers map to get the balancer.getName to get the associated nonce id
-     */
+    //In order to get the status from each worker in HTML, need to pass b=lb-health-check-4.0, w=http://usmlvv1cds0057:9101/hct and nonce=xxxx
+    //from Manager object, it can find the manager.balancer.getName to find the mapping worker
+    //using balancers map to get the balancer.getName to get the associated nonce id
     public List<BalancerManagerState.WebServerDrainStatus.JvmDrainStatus> getBalancerStatus(final String hostName, final Map<String, String> workers,
                                                                                             final String balancerName, final String nonce) {
         List<BalancerManagerState.WebServerDrainStatus.JvmDrainStatus> jvmDrainStatusList = new ArrayList<>();
@@ -250,13 +253,13 @@ public class BalancerManagerServiceImpl implements BalancerManagerService {
                 LOGGER.info("response code: " + response.getStatusLine().getStatusCode());
                 response.close();
             } catch (KeyManagementException e) {
-                LOGGER.error(e.toString());
+                LOGGER.error(e.getMessage(), e);
                 throw new ApplicationException(e);
             } catch (IOException e) {
-                LOGGER.error(e.toString());
+                LOGGER.error(e.getMessage(), e);
                 throw new ApplicationException(e);
             } catch (NoSuchAlgorithmException e) {
-                LOGGER.error(e.toString());
+                LOGGER.error(e.getMessage(), e);
                 throw new ApplicationException(e);
             }
         }
