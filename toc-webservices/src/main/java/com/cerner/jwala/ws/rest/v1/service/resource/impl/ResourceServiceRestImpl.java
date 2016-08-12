@@ -143,6 +143,7 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
         InputStream resourceDataIn = null;
 
         String fileName = StringUtils.EMPTY;
+        // TODO pass down single param from UI to designate external properties
         final boolean isExternalProperty = createResourceParam.getGroup() == null && createResourceParam.getJvm() == null && createResourceParam.getWebApp() == null && createResourceParam.getWebServer() == null;
 
         final List<Attachment> filteredAttachments = new ArrayList<>();
@@ -512,7 +513,7 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
     @Override
     public Response getExternalProperties() {
         LOGGER.debug("Get the external properties");
-// use a TreeMap to put the properties in alphabetical order
+        // use a TreeMap to put the properties in alphabetical order
         final Properties externalProperties = resourceService.getExternalProperties();
         return ResponseBuilder.ok(null == externalProperties ? null : new TreeMap<>(externalProperties));
     }

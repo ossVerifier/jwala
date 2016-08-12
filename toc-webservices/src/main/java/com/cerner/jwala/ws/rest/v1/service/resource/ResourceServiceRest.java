@@ -140,6 +140,8 @@ public interface ResourceServiceRest extends InitializingBean{
      */
     @GET
     @Path("/properties")
+    // TODO return mime type text/plain
+    @Produces(MediaType.TEXT_PLAIN)
     Response getExternalProperties();
 
     /**

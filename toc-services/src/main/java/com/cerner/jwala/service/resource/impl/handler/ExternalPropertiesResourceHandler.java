@@ -54,6 +54,8 @@ public class ExternalPropertiesResourceHandler extends ResourceHandler {
 
             // create the external properties template
             final String deployFileName = metaData.getDeployFileName();
+            // TODO convert stream to string and log it (debug level) - move conversion from persistence to here
+            // TODO add same logging to all resource handlers (debug level)
             createResourceResponseWrapper = new CreateResourceResponseWrapper(resourceDao.createResource(entityId, groupId, appId, entityType, deployFileName, data, convertResourceTemplateMetaDataToJson(metaData)));
 
             // apply the external properties

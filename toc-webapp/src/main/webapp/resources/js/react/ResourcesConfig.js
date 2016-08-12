@@ -45,7 +45,7 @@ var ResourcesConfig = React.createClass({
                                     cancelLabel="Continue"
                                     content={<div className="text-align-center"><br/>Only one template is allowed to be uploaded for the External Properties.<br/>Any existing template will be overwritten.<br/><br/></div>}/>
                     <ModalDialogBox ref="selectTemplateFilesModalDlg"
-                                                        title="Create Resource Template"
+                                                        title="Upload External Properties"
                                                         show={false}
                                                         okCallback={this.onCreateResourceOkClicked}
                                                         content={<SelectTemplateFilesWidget ref="selectTemplateFileWidget"/>}/>
@@ -245,7 +245,7 @@ var ResourcesConfig = React.createClass({
             }
         }
 
-        if (isExtProperties || (metaDataFile && templateFile)) {
+        if ((isExtProperties && templateFile) || (metaDataFile && templateFile)) {
             // Submit!
             var formData = new FormData();
             var self = this;
@@ -710,11 +710,17 @@ var SelectMetaDataAndTemplateFilesWidget = React.createClass({
 
 
 var SelectTemplateFilesWidget = React.createClass({
+    getInitialState: function() {
+        // Let's not use jQuery form validation since we only need to check if the user has chosen files to use in creating the resource.
+        // Besides, this is doing it the React way. :)
+        return {invalidTemplateFile: false};
+    },
     render: function() {
         return <div className="select-meta-data-and-template-files-widget">
                    <form ref="form">
+                       <div className={(!this.state.invalidTemplateFile ? "hide " : "") + "error"}>Please select a file</div>
                        <div>
-                           <input type="file" ref="templateFile" name="templateFile">Template File</input>
+                           <input type="file" ref="templateFile" onChange={this.onTemplateFileChange} name="templateFile">External Properties</input>
                        </div>
                    </form>
                </div>
@@ -724,5 +730,10 @@ var SelectTemplateFilesWidget = React.createClass({
                                                   console.log("Submit!");
                                                   e.preventDefault();
                                               });
+    },
+    onTemplateFileChange: function(e) {
+        if(this.refs.templateFile.getDOMNode().files[0]) {
+            this.setState({invalidTemplateFile: false});
+        }
     }
 });
