@@ -3,7 +3,7 @@ package com.cerner.jwala.service.balancermanager;
 
 import com.cerner.jwala.common.domain.model.balancermanager.BalancerManagerState;
 
-public interface BalancerManagerServiceX {
+public interface BalancerManagerService {
 
     BalancerManagerState drainUserGroup(final String groupName, final String webServersNameMap, final String user);
 

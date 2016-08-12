@@ -11,7 +11,7 @@ import com.cerner.jwala.service.MessagingService;
 import com.cerner.jwala.service.app.ApplicationService;
 import com.cerner.jwala.service.balancermanager.impl.BalancerManagerHtmlParser;
 import com.cerner.jwala.service.balancermanager.impl.BalancerManagerHttpClient;
-import com.cerner.jwala.service.balancermanager.impl.BalancerManagerServiceXImpl;
+import com.cerner.jwala.service.balancermanager.impl.BalancerManagerServiceImpl;
 import com.cerner.jwala.service.balancermanager.impl.BalancerManagerXmlParser;
 import com.cerner.jwala.service.balancermanager.impl.xml.data.Manager;
 import com.cerner.jwala.service.group.GroupService;
@@ -47,7 +47,7 @@ import static org.mockito.Mockito.*;
 
 public class BalancemanagerServiceImplTest {
 
-    private BalancerManagerServiceXImpl balancerManagerServiceImpl;
+    private BalancerManagerServiceImpl balancerManagerServiceImpl;
 
     @Mock
     private GroupService mockGroupService;
@@ -76,7 +76,7 @@ public class BalancemanagerServiceImplTest {
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        this.balancerManagerServiceImpl = new BalancerManagerServiceXImpl(mockGroupService, mockApplicationService, mockWebServerService, mockClientFactoryHelper,
+        this.balancerManagerServiceImpl = new BalancerManagerServiceImpl(mockGroupService, mockApplicationService, mockWebServerService, mockClientFactoryHelper,
                 mockMessagingService, mockHistoryService, balancerManagerHtmlParser, balancerManagerXmlParser, mockBalancerManagerHttpClient) {
             public void sendMessage(final WebServer webServer, final String message) {
 

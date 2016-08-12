@@ -12,7 +12,7 @@ import com.cerner.jwala.persistence.jpa.type.EventType;
 import com.cerner.jwala.service.HistoryService;
 import com.cerner.jwala.service.MessagingService;
 import com.cerner.jwala.service.app.ApplicationService;
-import com.cerner.jwala.service.balancermanager.BalancerManagerServiceX;
+import com.cerner.jwala.service.balancermanager.BalancerManagerService;
 import com.cerner.jwala.service.balancermanager.impl.xml.data.Manager;
 import com.cerner.jwala.service.group.GroupService;
 import com.cerner.jwala.service.webserver.WebServerService;
@@ -34,9 +34,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class BalancerManagerServiceXImpl implements BalancerManagerServiceX {
+public class BalancerManagerServiceImpl implements BalancerManagerService {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(BalancerManagerServiceXImpl.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(BalancerManagerServiceImpl.class);
 
     private GroupService groupService;
     private ApplicationService applicationService;
@@ -53,15 +53,15 @@ public class BalancerManagerServiceXImpl implements BalancerManagerServiceX {
     private String balancerManagerResponseXml;
     private String user;
 
-    public BalancerManagerServiceXImpl(final GroupService groupService,
-                                       final ApplicationService applicationService,
-                                       final WebServerService webServerService,
-                                       final ClientFactoryHelper clientFactoryHelper,
-                                       final MessagingService messagingService,
-                                       final HistoryService historyService,
-                                       final BalancerManagerHtmlParser balancerManagerHtmlParser,
-                                       final BalancerManagerXmlParser balancerManagerXmlParser,
-                                       final BalancerManagerHttpClient balancerManagerHttpClient) {
+    public BalancerManagerServiceImpl(final GroupService groupService,
+                                      final ApplicationService applicationService,
+                                      final WebServerService webServerService,
+                                      final ClientFactoryHelper clientFactoryHelper,
+                                      final MessagingService messagingService,
+                                      final HistoryService historyService,
+                                      final BalancerManagerHtmlParser balancerManagerHtmlParser,
+                                      final BalancerManagerXmlParser balancerManagerXmlParser,
+                                      final BalancerManagerHttpClient balancerManagerHttpClient) {
         this.groupService = groupService;
         this.applicationService = applicationService;
         this.webServerService = webServerService;
