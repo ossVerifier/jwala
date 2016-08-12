@@ -606,7 +606,7 @@ var GroupOperationsDataTable = React.createClass({
                 return groupControlService.generateWebServers(event.data.id, function (resp) {
                     $.alert("Successfully generated the web servers for " + resp.applicationResponseContent.name, false);
                 }, function (errMsg) {
-                    $.alert(errMsg, "Generate Web Servers Failed", false);
+                    $.errorAlert(errMsg, "Generate Web Servers Failed", false);
                 });
             }, "ui-icon-stop");
             self.writeWebServerActionToCommandStatusWidget(event.data.id, "INVOKE");
@@ -618,7 +618,7 @@ var GroupOperationsDataTable = React.createClass({
         var callback = function (id, buttonSelector) {
             self.disableEnable(event.data.buttonSelector, function () {
                 return groupControlService.drainWebServers(event.data.name, function (errMsg) {
-                   $.alert(errMsg, "Drain user Group Failed", false);
+                   $.errorAlert(errMsg, "Drain user Group Failed", false);
                 });
             }, "ui-icon-stop");
         };

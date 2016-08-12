@@ -1,13 +1,14 @@
 package com.siemens.cto.aem.service.balancermanager;
 
-import com.siemens.cto.aem.common.domain.model.balancermanager.DrainStatus;
+import com.siemens.cto.aem.common.domain.model.balancermanager.BalancerManagerState;
+import com.siemens.cto.aem.common.domain.model.user.User;
 
 public interface BalancermanagerService {
 
-    DrainStatus drainUserGroup(final String groupName, final String webServersNameMap);
+    BalancerManagerState drainUserGroup(final String groupName, final String webServersNameMap, final User user);
 
-    DrainStatus drainUserWebServer(final String groupName, final String webServerName);
+    BalancerManagerState drainUserWebServer(final String groupName, final String webServerName, final User user);
 
-    DrainStatus getGroupDrainStatus(final String group);
+    BalancerManagerState getGroupDrainStatus(final String group, final User user);
 
 }

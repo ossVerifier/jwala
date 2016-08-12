@@ -21,7 +21,7 @@ import java.util.List;
 
 //TODO: Discuss with team to use local trust store to verify the hostname, but in our local trust store,
 //TODO: it has fully qualify domain name, our hostname do not have domain name, and it will not match
-public class BalancemanagerHttpClient {
+public class BalancerManagerHttpClient {
 
     public CloseableHttpResponse doHttpClientPost(final String uri, final List<NameValuePair> nvps) throws KeyManagementException, IOException, NoSuchAlgorithmException {
         SSLContext sslContext;
