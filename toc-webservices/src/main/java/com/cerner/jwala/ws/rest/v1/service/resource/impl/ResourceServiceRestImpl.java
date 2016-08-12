@@ -16,15 +16,21 @@ import com.cerner.jwala.ws.rest.v1.response.ResponseBuilder;
 import com.cerner.jwala.ws.rest.v1.service.resource.CreateResourceParam;
 import com.cerner.jwala.ws.rest.v1.service.resource.ResourceHierarchyParam;
 import com.cerner.jwala.ws.rest.v1.service.resource.ResourceServiceRest;
-
+import org.apache.commons.fileupload.FileItemIterator;
+import org.apache.commons.fileupload.FileItemStream;
+import org.apache.commons.fileupload.FileUploadException;
+import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.cxf.jaxrs.ext.MessageContext;
 import org.apache.cxf.jaxrs.ext.multipart.Attachment;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.activation.DataHandler;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -45,6 +51,8 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
     public static final String UNEXPECTED_CONTENT_TYPE_ERROR_MSG =
             "File being uploaded is invalid! The expected file type as indicated in the meta data is text based and should have a TPL extension.";
     public static final String TPL_FILE_EXTENSION = ".tpl";
+    public static final String EXT_PROPERTIES_RESOURCE_NAME = "ext.properties";
+    public static final String EXT_PROPERTIES_RESOURCE_META_DATA = "{\"contentType\":\"text/plain\", \"templateName\":\"external.properties\", \"deployPath\":\"\", \"deployFileName\":\"" + EXT_PROPERTIES_RESOURCE_NAME + "\"}";
 
     private final ResourceService resourceService;
 
@@ -135,6 +143,7 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
         InputStream resourceDataIn = null;
 
         String fileName = StringUtils.EMPTY;
+        // TODO pass down single param from UI to designate external properties
         final boolean isExternalProperty = createResourceParam.getGroup() == null && createResourceParam.getJvm() == null && createResourceParam.getWebApp() == null && createResourceParam.getWebServer() == null;
 
         final List<Attachment> filteredAttachments = new ArrayList<>();
@@ -157,7 +166,7 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
                     }
 
                     if (isExternalProperty) {
-                        metadataIn = new ByteArrayInputStream("{\"contentType\":\"text/plain\", \"templateName\":\"external.properties\", \"deployPath\":\"\", \"deployFileName\":\"ext.properties\"}".getBytes());
+                        metadataIn = new ByteArrayInputStream(EXT_PROPERTIES_RESOURCE_META_DATA.getBytes());
                     }
 
                 } catch (final IOException ioe) {
@@ -182,7 +191,7 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
             // We do the file attachment validation here since this is a REST services affair IMHO.
             // TODO: Use a more sophisticated way of knowing the content type in next releases.
             if (!ContentType.APPLICATION_BINARY.contentTypeStr.equalsIgnoreCase(metaData.getContentType()) &&
-                    !(fileName.toLowerCase().endsWith(TPL_FILE_EXTENSION))) {
+                    !(fileName.toLowerCase().endsWith(TPL_FILE_EXTENSION)) && !isExternalProperty) {
                 LOGGER.error(UNEXPECTED_CONTENT_TYPE_ERROR_MSG);
                 return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR,
                         new FaultCodeException(AemFaultType.SERVICE_EXCEPTION, UNEXPECTED_CONTENT_TYPE_ERROR_MSG));
@@ -207,20 +216,71 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
                                 "There was no resource handler to process the request!"));
             }
         } catch (final IOException ioe) {
-            LOGGER.warn("exception thrown in CreateResource: {}", ioe);
+            LOGGER.warn("exception thrown in CreateResource", ioe);
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR,
                     new FaultCodeException(AemFaultType.SERVICE_EXCEPTION, ioe.getMessage()));
         } catch (final ResourceServiceException rse) {
-            LOGGER.error("exception thrown in CreateResource: {}", rse);
+            LOGGER.error("exception thrown in CreateResource", rse);
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR,
                     new FaultCodeException(AemFaultType.SERVICE_EXCEPTION, rse.getMessage()));
         }
         return ResponseBuilder.ok(responseWrapper);
     }
 
+    @Context
+    private MessageContext context;
+
     @Override
-    // TODO: Re validation, maybe we can use CXF bean validation ?
-    public Response deleteResource(final String templateName, final ResourceHierarchyParam resourceHierarchyParam, final AuthenticatedUser aUser) {
+    public Response uploadExternalProperties(AuthenticatedUser user) {
+        LOGGER.info("Upload external properties by user {}", user.getUser().getId());
+
+        // iframe uploads from IE do not understand application/json
+        // as a response and will prompt for download. Fix: return
+        // text/html
+        if (!context.getHttpHeaders().getAcceptableMediaTypes().contains(MediaType.APPLICATION_JSON_TYPE)) {
+            context.getHttpServletResponse().setContentType(MediaType.TEXT_HTML);
+        }
+
+        ResourceIdentifier.Builder idBuilder = new ResourceIdentifier.Builder();
+        ResourceIdentifier resourceIdentifier = idBuilder.setResourceName(EXT_PROPERTIES_RESOURCE_NAME).build();
+        final ObjectMapper mapper = new ObjectMapper();
+        final ResourceTemplateMetaData metaData;
+        InputStream data = null;
+        CreateResourceResponseWrapper responseWrapper = null;
+
+        try {
+            metaData = mapper.readValue(EXT_PROPERTIES_RESOURCE_META_DATA, ResourceTemplateMetaData.class);
+
+            ServletFileUpload sfu = new ServletFileUpload();
+            FileItemIterator iter = sfu.getItemIterator(context.getHttpServletRequest());
+            FileItemStream fileItemStream = iter.next();
+            data = fileItemStream.openStream();
+
+            responseWrapper = resourceService.createResource(resourceIdentifier, metaData, data);
+        } catch (IOException ioe) {
+            LOGGER.error("IOException thrown in uploadExternalProperties", ioe);
+            return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR,
+                    new FaultCodeException(AemFaultType.SERVICE_EXCEPTION, ioe.getMessage()));
+        } catch (FileUploadException fue) {
+            LOGGER.error("FileUploadException thrown in uploadExternalProperties", fue);
+            return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR,
+                    new FaultCodeException(AemFaultType.SERVICE_EXCEPTION, fue.getMessage()));
+        } finally {
+            assert data != null;
+            try {
+                data.close();
+            } catch (IOException e) {
+                LOGGER.warn("IOException attempting to close external properties upload stream", e);
+            }
+
+        }
+        return ResponseBuilder.ok(responseWrapper);
+    }
+
+    @Override
+// TODO: Re validation, maybe we can use CXF bean validation ?
+    public Response deleteResource(final String templateName, final ResourceHierarchyParam resourceHierarchyParam,
+                                   final AuthenticatedUser aUser) {
         LOGGER.info("Delete resource {} by user {} with details {}", templateName, aUser.getUser().getId(), resourceHierarchyParam);
         int deletedRecCount = 0;
 
@@ -287,7 +347,8 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
     }
 
     @Override
-    public Response deleteResources(final String[] templateNameArray, ResourceHierarchyParam resourceHierarchyParam, AuthenticatedUser user) {
+    public Response deleteResources(final String[] templateNameArray, ResourceHierarchyParam
+            resourceHierarchyParam, AuthenticatedUser user) {
         LOGGER.info("Delete resources {} by user {} with details {}", templateNameArray, user.getUser().getId(), resourceHierarchyParam);
         int deletedRecCount = 0;
 
@@ -378,7 +439,8 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
     }
 
     @Override
-    public Response updateResourceContent(String resourceName, ResourceHierarchyParam resourceHierarchyParam, String templateContent) {
+    public Response updateResourceContent(String resourceName, ResourceHierarchyParam
+            resourceHierarchyParam, String templateContent) {
         LOGGER.info("Update the resource {} with hierarchy {}", resourceName, resourceHierarchyParam);
         LOGGER.debug("Updated content: {}", templateContent);
 
@@ -403,7 +465,8 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
     }
 
     @Override
-    public Response deployTemplateToAllHosts(String fileName, ResourceHierarchyParam resourceHierarchyParam, AuthenticatedUser authenticatedUser) {
+    public Response deployTemplateToAllHosts(String fileName, ResourceHierarchyParam
+            resourceHierarchyParam, AuthenticatedUser authenticatedUser) {
         LOGGER.info("Deploy the template {} to all hosts with resource ID {} by user {}", fileName, resourceHierarchyParam, authenticatedUser.getUser().getId());
         final ResourceIdentifier resourceIdentifier = new ResourceIdentifier.Builder()
                 .setResourceName(fileName)
@@ -418,7 +481,8 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
     }
 
     @Override
-    public Response deployTemplateToHost(String fileName, String hostName, ResourceHierarchyParam resourceHierarchyParam, AuthenticatedUser user) {
+    public Response deployTemplateToHost(String fileName, String hostName, ResourceHierarchyParam
+            resourceHierarchyParam, AuthenticatedUser user) {
         LOGGER.info("Deploy the template {} to host {} with resource ID {} by user {}", fileName, hostName, resourceHierarchyParam, user.getUser().getId());
         final ResourceIdentifier resourceIdentifier = new ResourceIdentifier.Builder()
                 .setResourceName(fileName)

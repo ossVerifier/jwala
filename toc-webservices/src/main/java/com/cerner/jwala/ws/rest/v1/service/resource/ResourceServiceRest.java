@@ -140,6 +140,8 @@ public interface ResourceServiceRest extends InitializingBean{
      */
     @GET
     @Path("/properties")
+    // TODO return mime type text/plain
+//    @Produces(MediaType.TEXT_PLAIN)
     Response getExternalProperties();
 
     /**
@@ -150,6 +152,15 @@ public interface ResourceServiceRest extends InitializingBean{
     @Path("/properties/download")
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     Response getExternalPropertiesDownload();
+
+    /**
+     * Upload the external properties file
+     * @param user a logged in user who's calling this service  @return {@link Response}
+     */
+    @POST
+    @Path("/properties")
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    Response uploadExternalProperties(@BeanParam AuthenticatedUser user);
 
     /**
      * Get the name of any templates that were loaded for a resource
