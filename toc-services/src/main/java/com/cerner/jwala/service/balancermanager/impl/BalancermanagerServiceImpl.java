@@ -4,7 +4,6 @@ import com.cerner.jwala.common.domain.model.balancermanager.BalancerManagerState
 import com.cerner.jwala.common.domain.model.balancermanager.WorkerStatusType;
 import com.cerner.jwala.common.domain.model.fault.AemFaultType;
 import com.cerner.jwala.common.domain.model.group.Group;
-import com.cerner.jwala.common.domain.model.user.User;
 import com.cerner.jwala.common.domain.model.webserver.WebServer;
 import com.cerner.jwala.common.domain.model.webserver.message.WebServerHistoryEvent;
 import com.cerner.jwala.common.exception.ApplicationException;
