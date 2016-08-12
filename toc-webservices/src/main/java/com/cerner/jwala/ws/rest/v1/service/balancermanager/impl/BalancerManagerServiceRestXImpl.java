@@ -3,17 +3,17 @@ package com.cerner.jwala.ws.rest.v1.service.balancermanager.impl;
 import com.cerner.jwala.common.domain.model.balancermanager.BalancerManagerState;
 import com.cerner.jwala.service.balancermanager.BalancerManagerService;
 import com.cerner.jwala.ws.rest.v1.response.ResponseBuilder;
-import com.cerner.jwala.ws.rest.v1.service.balancermanager.BalancerManagerServiceRest;
+import com.cerner.jwala.ws.rest.v1.service.balancermanager.BalancerManagerServiceRestX;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import javax.ws.rs.core.Response;
 
-public class BalancerManagerServiceRestImpl implements BalancerManagerServiceRest {
+public class BalancerManagerServiceRestXImpl implements BalancerManagerServiceRestX {
 
     final BalancerManagerService balancerManagerService;
 
-    public BalancerManagerServiceRestImpl(final BalancerManagerService balancerManagerService) {
+    public BalancerManagerServiceRestXImpl(final BalancerManagerService balancerManagerService) {
         this.balancerManagerService = balancerManagerService;
     }
 
