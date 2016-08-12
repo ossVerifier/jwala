@@ -720,7 +720,7 @@ var SelectTemplateFilesWidget = React.createClass({
                    <form ref="form">
                        <div className={(!this.state.invalidTemplateFile ? "hide " : "") + "error"}>Please select a resource template file (*.tpl)</div>
                        <div>
-                           <input type="file" ref="templateFile" name="templateFile" accept=".tpl" onChange={this.onTemplateFileChange}>Template File</input>
+                           <input type="file" ref="templateFile" name="templateFile" onChange={this.onTemplateFileChange}>Template File</input>
                        </div>
                    </form>
                </div>
