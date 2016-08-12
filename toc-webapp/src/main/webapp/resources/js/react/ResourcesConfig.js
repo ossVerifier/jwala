@@ -61,6 +61,13 @@ var ResourcesConfig = React.createClass({
                                     content={<div className="text-align-center"><br/><b>Are you sure you want to delete the selected resource template(s) ?</b><br/><br/></div>}
                                     okLabel="Yes"
                                     cancelLabel="No" />
+                    <ModalDialogBox ref="confirmDeletePropertyModalDlg"
+                                    title="Confirm Property file deletion"
+                                    show={false}
+                                    okCallback={this.confirmDeleteResourceCallback}
+                                    content={<div className="text-align-center"><br/><b>Are you sure you want to delete the property file ?</b><br/><br/></div>}
+                                    okLabel="Yes"
+                                    cancelLabel="No" />
                 </div>
     },
     componentDidMount: function() {
@@ -175,7 +182,11 @@ var ResourcesConfig = React.createClass({
         this.refs.selectTemplateFilesModalDlg.show();
     },
     deleteResourceCallback: function() {
+    if (this.refs.xmlTabs.state.entityType !== "extProperties") {
         this.refs.confirmDeleteResourceModalDlg.show();
+    } else {
+        this.refs.confirmDeletePropertyModalDlg.show();
+    }
     },
     confirmDeleteResourceCallback: function() {
         var groupName;
