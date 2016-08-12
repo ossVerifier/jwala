@@ -48,7 +48,7 @@ var ResourcesConfig = React.createClass({
                                                         title="Create Resource Template"
                                                         show={false}
                                                         okCallback={this.onCreateResourceOkClicked}
-                                                        content={<SelectTemplateFilesWidget ref="selectMetaDataAndTemplateFilesWidget"/>}/>
+                                                        content={<SelectTemplateFilesWidget ref="selectTemplateFileWidget"/>}/>
                     <ModalDialogBox ref="selectMetaDataAndTemplateFilesModalDlg"
                                     title="Create Resource Template"
                                     show={false}
@@ -225,18 +225,27 @@ var ResourcesConfig = React.createClass({
 
     },
     onCreateResourceOkClicked: function() {
-        var metaDataFile = this.refs.selectMetaDataAndTemplateFilesWidget.refs.metaDataFile.getDOMNode().files[0];
-        var templateFile = this.refs.selectMetaDataAndTemplateFilesWidget.refs.templateFile.getDOMNode().files[0];
+        var isExtProperties = this.refs.xmlTabs.state.entityType === "extProperties";
+        var metaDataFile,templateFile;
 
-        if (metaDataFile === undefined) {
-            this.refs.selectMetaDataAndTemplateFilesWidget.setState({invalidMetaFile: true});
+        if(!isExtProperties){
+            metaDataFile = this.refs.selectMetaDataAndTemplateFilesWidget.refs.metaDataFile.getDOMNode().files[0];
+            templateFile = this.refs.selectMetaDataAndTemplateFilesWidget.refs.templateFile.getDOMNode().files[0];
+            if (metaDataFile === undefined) {
+                        this.refs.selectMetaDataAndTemplateFilesWidget.setState({invalidMetaFile: true});
+            }
+            if (templateFile === undefined) {
+                        this.refs.selectMetaDataAndTemplateFilesWidget.setState({invalidTemplateFile: true});
+            }
+        } else {
+//            metaDataFile = undefined;
+            templateFile = this.refs.selectTemplateFileWidget.refs.templateFile.getDOMNode().files[0];
+            if (templateFile === undefined) {
+                this.refs.selectTemplateFileWidget.setState({invalidTemplateFile: true});
+            }
         }
 
-        if (templateFile === undefined) {
-            this.refs.selectMetaDataAndTemplateFilesWidget.setState({invalidTemplateFile: true});
-        }
-
-        if (metaDataFile && templateFile) {
+        if (isExtProperties || (metaDataFile && templateFile)) {
             // Submit!
             var formData = new FormData();
             var self = this;
@@ -249,7 +258,7 @@ var ResourcesConfig = React.createClass({
             var webAppName;
             var node = this.refs.resourceEditor.refs.treeList.getSelectedNodeData();
 
-            if (this.refs.xmlTabs.state.entityType !== "extProperties") {
+            if (!isExtProperties) {
                 if (node.rtreeListMetaData.entity === "webApps") {
                     webAppName = node.name;
                     if (node.rtreeListMetaData.parent.rtreeListMetaData.entity === "jvms") {
@@ -272,9 +281,13 @@ var ResourcesConfig = React.createClass({
 
             var self = this;
             this.props.resourceService.createResource(groupName, webServerName, jvmName, webAppName, formData).then(function(response){
-                self.refs.selectMetaDataAndTemplateFilesModalDlg.close();
+                if(!isExtProperties){
+                    self.refs.selectMetaDataAndTemplateFilesModalDlg.close();
+                } else {
+                    self.refs.selectTemplateFilesModalDlg.close();
+                }
                 self.refreshResourcePane();
-                if (self.refs.xmlTabs.state.entityType === "extProperties"){
+                if (isExtProperties){
                     self.updateExtPropsAttributesCallback();
                 }
             }).caught(function(response){
@@ -700,7 +713,7 @@ var SelectTemplateFilesWidget = React.createClass({
     getInitialState: function() {
         // Let's not use jQuery form validation since we only need to check if the user has chosen files to use in creating the resource.
         // Besides, this is doing it the React way. :)
-        return {invalidMetaFile: false, invalidTemplateFile: false};
+        return {invalidTemplateFile: false};
     },
     render: function() {
         return <div className="select-meta-data-and-template-files-widget">
