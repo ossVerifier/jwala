@@ -17,9 +17,6 @@ import com.cerner.jwala.ws.rest.v1.provider.AuthenticatedUser;
 import com.cerner.jwala.ws.rest.v1.response.ApplicationResponse;
 import com.cerner.jwala.ws.rest.v1.service.resource.CreateResourceParam;
 import com.cerner.jwala.ws.rest.v1.service.resource.ResourceHierarchyParam;
-import com.cerner.jwala.ws.rest.v1.service.resource.impl.JsonResourceInstance;
-import com.cerner.jwala.ws.rest.v1.service.resource.impl.ResourceServiceRestImpl;
-
 import junit.framework.Assert;
 import org.apache.cxf.jaxrs.ext.multipart.Attachment;
 import org.junit.Before;
@@ -355,8 +352,8 @@ public class ResourceServiceRestImplTest {
         attachmentList.add(mockAttachment2);
 
         final CreateResourceParam createResourceParam = new CreateResourceParam();
-        final Response response = cut.createResource(attachmentList, createResourceParam, authenticatedUser);
-        // assertEquals("AEM64", ((ApplicationResponse) response.getEntity()).getMsgCode());
+        cut.createResource(attachmentList, createResourceParam, authenticatedUser);
+        verify(impl).createResource(any(ResourceIdentifier.class), any(ResourceTemplateMetaData.class), any(InputStream.class));
     }
 
     @Test

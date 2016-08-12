@@ -125,7 +125,7 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
     }
 
     @Override
-    // TODO: Re validation, maybe we can use CXF bean validation ?
+// TODO: Re validation, maybe we can use CXF bean validation ?
     public Response createResource(final List<Attachment> attachments, final CreateResourceParam createResourceParam,
                                    final AuthenticatedUser user) {
 
@@ -135,6 +135,7 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
         InputStream resourceDataIn = null;
 
         String fileName = StringUtils.EMPTY;
+        final boolean isExternalProperty = createResourceParam.getGroup() == null && createResourceParam.getJvm() == null && createResourceParam.getWebApp() == null && createResourceParam.getWebServer() == null;
 
         final List<Attachment> filteredAttachments = new ArrayList<>();
         for (Attachment attachment : attachments) {
@@ -154,6 +155,11 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
                         fileName = attachment.getDataHandler().getName();
                         resourceDataIn = attachment.getDataHandler().getInputStream();
                     }
+
+                    if (isExternalProperty) {
+                        metadataIn = new ByteArrayInputStream("{\"contentType\":\"text/plain\", \"templateName\":\"external.properties\", \"deployPath\":\"\", \"deployFileName\":\"ext.properties\"}".getBytes());
+                    }
+
                 } catch (final IOException ioe) {
                     LOGGER.error("Create template failed!", ioe);
                     return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR,
@@ -165,6 +171,7 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
                     AemFaultType.INVALID_NUMBER_OF_ATTACHMENTS,
                     "Invalid number of attachments! 2 attachments is expected by the service."));
         }
+
 
         CreateResourceResponseWrapper responseWrapper = null;
         try {
