@@ -26,8 +26,8 @@ import com.cerner.jwala.ws.rest.v1.service.admin.AdminServiceRest;
 import com.cerner.jwala.ws.rest.v1.service.admin.impl.AdminServiceRestImpl;
 import com.cerner.jwala.ws.rest.v1.service.app.ApplicationServiceRest;
 import com.cerner.jwala.ws.rest.v1.service.app.impl.ApplicationServiceRestImpl;
-import com.cerner.jwala.ws.rest.v1.service.balancermanager.BalancerManagerServiceRestX;
-import com.cerner.jwala.ws.rest.v1.service.balancermanager.impl.BalancerManagerServiceRestXImpl;
+import com.cerner.jwala.ws.rest.v1.service.balancermanager.BalancerManagerServiceRest;
+import com.cerner.jwala.ws.rest.v1.service.balancermanager.impl.BalancerManagerServiceRestImpl;
 import com.cerner.jwala.ws.rest.v1.service.group.GroupServiceRest;
 import com.cerner.jwala.ws.rest.v1.service.group.impl.GroupServiceRestImpl;
 import com.cerner.jwala.ws.rest.v1.service.jvm.JvmServiceRest;
@@ -162,8 +162,8 @@ public class AemWebServiceConfiguration {
     }
 
     @Bean
-    public BalancerManagerServiceRestX getV1BalancermanagerServiceRest(){
-        return new BalancerManagerServiceRestXImpl(balancerManagerService);
+    public BalancerManagerServiceRest getV1BalancermanagerServiceRest(){
+        return new BalancerManagerServiceRestImpl(balancerManagerService);
     }
 
     @Bean

@@ -8,7 +8,7 @@ import javax.ws.rs.core.Response;
 
 @Path("/balancermanager")
 @Produces(MediaType.APPLICATION_JSON)
-public interface BalancerManagerServiceRestX extends InitializingBean {
+public interface BalancerManagerServiceRest extends InitializingBean {
 
     @POST
     @Path("/{groupName}")
