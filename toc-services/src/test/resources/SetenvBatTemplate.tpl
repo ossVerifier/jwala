@@ -35,8 +35,6 @@ REM Warning - too many system properties will cause the deployment to fail due t
 
 SET SSL_DEBUG_OPTS=-Djavax.net.debug=ssl
 
-SET ATOMIKOS_OPTS=-Dcom.atomikos.icatch.tm_unique_name=jvm-1
-
 CALL:stpSet SPRING_AGENT d:\stp\siemens\lib\tomcat\ext\spring-instrument-3.2.6.RELEASE.jar
 SET SPRING_OPTS=-javaagent:%SPRING_AGENT%
 
@@ -58,7 +56,7 @@ SET LOGIN_CONFIG=-Djava.security.auth.login.config=%PROPERTIES_PATH%\jaas.config
 
 SET APR_OPTS=-Djava.library.path=%CATALINA_HOME%\bin
 
-SET PROD_OPTS=%APR_OPTS% %STP_OPTS% %SSL_OPTS% %JMX_OPTS% %ATOMIKOS_OPTS% %SPRING_OPTS% %CATALINA_OPTS% %LOG_OPTS% %LOGIN_CONFIG%
+SET PROD_OPTS=%APR_OPTS% %STP_OPTS% %SSL_OPTS% %JMX_OPTS% %SPRING_OPTS% %CATALINA_OPTS% %LOG_OPTS% %LOGIN_CONFIG%
 SET DEBUG_OPTS=%PROD_OPTS%
 
 SET JAVA_SERVICE_OPTS=%PROD_OPTS: =#%

@@ -73,12 +73,12 @@ buildscript {
 
 test {
     jacoco {
-        excludes = ["com.siemens.cto.aem.persistence.configuration.*",
-                    "com.siemens.cto.aem.persistence.domain.*",
-                    "com.siemens.cto.aem.common.domain.model.*",
-                    "com.siemens.cto.aem.common.*",
+        excludes = ["com.cerner.jwala.persistence.configuration.*",
+                    "com.cerner.jwala.persistence.domain.*",
+                    "com.cerner.jwala.common.domain.model.*",
+                    "com.cerner.jwala.common.*",
                     "*.configuration.*",
                     "**.configuration.**",
-                    "com.siemens.cto.aem.service.configuration.service.*"]
+                    "com.cerner.jwala.service.configuration.service.*"]
     }
 }

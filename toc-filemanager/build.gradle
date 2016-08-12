@@ -8,7 +8,6 @@ dependencies {
     compile group: "org.springframework", name: "spring-beans", version: "$project.versions.spring"
     compile group: 'log4j', name: 'log4j', version: "$project.versions.log4j"
 
-    testCompile group: 'com.cerner.cto.cac', name: 'CSA', version: "$project.versions.csa"
     testCompile group: "org.springframework", name: "spring-test", version: "$project.versions.spring"
     testCompile group: "com.h2database", name: "h2", version: "$project.versions.h2"
     testCompile group: 'org.springframework', name: 'spring-tx', version: "$project.versions.spring"

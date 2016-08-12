@@ -1,0 +1,29 @@
+package com.cerner.jwala.common.rule;
+
+import com.cerner.jwala.common.domain.model.fault.AemFaultType;
+import com.cerner.jwala.common.exception.MessageResponseStatus;
+
+/**
+ * Created by z0033r5b on 8/20/2015.
+ */
+public class ValidTemplateNameRule extends ValidNameRule {
+
+    public ValidTemplateNameRule(final String theName) {
+        super(theName);
+    }
+
+    @Override
+    public boolean isValid() {
+        return super.isValid() && name.endsWith(".tpl");
+    }
+
+    @Override
+    protected MessageResponseStatus getMessageResponseStatus() {
+        return AemFaultType.INVALID_TEMPLATE_NAME;
+    }
+
+    @Override
+    protected String getMessage() {
+        return "Not a valid template filename. Must end in .tpl";
+    }
+}

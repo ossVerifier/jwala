@@ -25,8 +25,7 @@ var ResourcePane = React.createClass({
                               onItemClick = {this.onGroupLevelWebAppsResourceContextMenuItemClick}/>
 
                        <RMenu ref="externalPropertiesResourceMenu"
-                              menuItems={[{key: "deploy", label: "deploy", menuItems: [{key: "deployToAllHosts", label: "all hosts"},
-                                                                                       {key: "deployToAHost", label: "a host"}]}]}
+                              menuItems={[]}
                               onItemClick = {this.onExternalPropertiesResourceContextMenuItemClick}/>
 
                        <RMenu ref="deployResourceMenu" menuItems={[{key: "deploy", label: "deploy"}]}

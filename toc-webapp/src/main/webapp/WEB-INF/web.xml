@@ -15,8 +15,8 @@
     <context-param>
         <param-name>contextConfigLocation</param-name>
         <param-value>
-            com.siemens.cto.aem.web.configuration.application.ApacheEnterpriseManagerWebAppConfig,
-            com.siemens.cto.aem.configuration.AemAppConfigReference
+            com.cerner.jwala.web.configuration.application.ApacheEnterpriseManagerWebAppConfig,
+            com.cerner.jwala.configuration.AemAppConfigReference
         </param-value>
     </context-param>
 
@@ -45,7 +45,7 @@
         <!-- Again, config locations must consist of one or more comma- or space-delimited and fully-qualified @Configuration classes -->
         <init-param>
             <param-name>contextConfigLocation</param-name>
-            <param-value>com.siemens.cto.aem.web.configuration.web.ApacheEnterpriseManagerWebConfig</param-value>
+            <param-value>com.cerner.jwala.web.configuration.web.ApacheEnterpriseManagerWebConfig</param-value>
         </init-param>
     </servlet>
 

@@ -35,16 +35,6 @@
               type="com.tibco.tibjms.TibjmsTopic"
               address="tocStateNotification"/>
 
-    <!--<Resource name="jms/toc-cf"-->
-              <!--auth="Container"-->
-              <!--type="com.atomikos.jms.AtomikosConnectionFactoryBean"-->
-              <!--factory="com.siemens.cto.infrastructure.atomikos.EnhancedTomcatAtomikosBeanFactory"-->
-              <!--uniqueResourceName="AtomikosJndiJmsXaConnectionFactory"-->
-              <!--xaConnectionFactoryClassName="com.tibco.tibjms.TibjmsXAConnectionFactory"-->
-              <!--xaProperties.serverUrl="tcp://localhost:7222"-->
-              <!--xaProperties.userName="admin"-->
-              <!--xaProperties.userPassword="Passw0rd"/>-->
-
     <Resource auth="Container"
               name="jms/toc-cf"
               factory="org.apache.naming.factory.BeanFactory"

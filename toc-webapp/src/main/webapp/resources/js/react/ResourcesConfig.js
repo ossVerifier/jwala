@@ -44,6 +44,11 @@ var ResourcesConfig = React.createClass({
                                     cancelCallback={this.warnExternalPropertiesUploadCallback}
                                     cancelLabel="Continue"
                                     content={<div className="text-align-center"><br/>Only one template is allowed to be uploaded for the External Properties.<br/>Any existing template will be overwritten.<br/><br/></div>}/>
+                    <ModalDialogBox ref="selectTemplateFilesModalDlg"
+                                                        title="Create Resource Template"
+                                                        show={false}
+                                                        okCallback={this.onCreateResourceOkClicked}
+                                                        content={<SelectTemplateFilesWidget ref="selectMetaDataAndTemplateFilesWidget"/>}/>
                     <ModalDialogBox ref="selectMetaDataAndTemplateFilesModalDlg"
                                     title="Create Resource Template"
                                     show={false}
@@ -167,7 +172,7 @@ var ResourcesConfig = React.createClass({
     },
     warnExternalPropertiesUploadCallback: function(){
         this.refs.warnExternalPropertiesUploadModalDlg.close();
-        this.refs.selectMetaDataAndTemplateFilesModalDlg.show();
+        this.refs.selectTemplateFilesModalDlg.show();
     },
     deleteResourceCallback: function() {
         this.refs.confirmDeleteResourceModalDlg.show();
@@ -682,6 +687,36 @@ var SelectMetaDataAndTemplateFilesWidget = React.createClass({
         if(this.refs.metaDataFile.getDOMNode().files[0]) {
             this.setState({invalidMetaFile: false});
         }
+    },
+    onTemplateFileChange: function(e) {
+        if(this.refs.templateFile.getDOMNode().files[0]) {
+            this.setState({invalidTemplateFile: false});
+        }
+    }
+});
+
+
+var SelectTemplateFilesWidget = React.createClass({
+    getInitialState: function() {
+        // Let's not use jQuery form validation since we only need to check if the user has chosen files to use in creating the resource.
+        // Besides, this is doing it the React way. :)
+        return {invalidMetaFile: false, invalidTemplateFile: false};
+    },
+    render: function() {
+        return <div className="select-meta-data-and-template-files-widget">
+                   <form ref="form">
+                       <div className={(!this.state.invalidTemplateFile ? "hide " : "") + "error"}>Please select a resource template file (*.tpl)</div>
+                       <div>
+                           <input type="file" ref="templateFile" name="templateFile" accept=".tpl" onChange={this.onTemplateFileChange}>Template File</input>
+                       </div>
+                   </form>
+               </div>
+    },
+    componentDidMount: function() {
+        $(this.refs.form.getDOMNode()).submit(function(e) {
+                                                  console.log("Submit!");
+                                                  e.preventDefault();
+                                              });
     },
     onTemplateFileChange: function(e) {
         if(this.refs.templateFile.getDOMNode().files[0]) {
