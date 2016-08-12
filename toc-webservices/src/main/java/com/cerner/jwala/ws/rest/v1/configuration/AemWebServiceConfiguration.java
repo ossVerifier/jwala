@@ -4,7 +4,7 @@ import com.cerner.jwala.files.FilesConfiguration;
 import com.cerner.jwala.persistence.jpa.service.HistoryCrudService;
 import com.cerner.jwala.service.HistoryService;
 import com.cerner.jwala.service.app.ApplicationService;
-import com.cerner.jwala.service.balancermanager.BalancerManagerService;
+import com.cerner.jwala.service.balancermanager.BalancerManagerServiceX;
 import com.cerner.jwala.service.group.GroupControlService;
 import com.cerner.jwala.service.group.GroupJvmControlService;
 import com.cerner.jwala.service.group.GroupService;
@@ -113,7 +113,7 @@ public class AemWebServiceConfiguration {
     private JvmStateService jvmStateService;
 
     @Autowired
-    private BalancerManagerService balancerManagerService;
+    private BalancerManagerServiceX balancerManagerServiceX;
 
     private final Map<String, ReentrantReadWriteLock> jvmWriteLockMap = new HashMap<>();
     private final Map<String, ReentrantReadWriteLock> wsWriteLockMap = new HashMap<>();
@@ -163,7 +163,7 @@ public class AemWebServiceConfiguration {
 
     @Bean
     public BalancerManagerServiceRest getV1BalancermanagerServiceRest(){
-        return new BalancerManagerServiceRestImpl(balancerManagerService);
+        return new BalancerManagerServiceRestImpl(balancerManagerServiceX);
     }
 
     @Bean

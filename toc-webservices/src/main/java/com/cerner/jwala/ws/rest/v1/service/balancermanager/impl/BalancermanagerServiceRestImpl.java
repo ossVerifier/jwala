@@ -1,7 +1,7 @@
 package com.cerner.jwala.ws.rest.v1.service.balancermanager.impl;
 
 import com.cerner.jwala.common.domain.model.balancermanager.BalancerManagerState;
-import com.cerner.jwala.service.balancermanager.BalancerManagerService;
+import com.cerner.jwala.service.balancermanager.BalancerManagerServiceX;
 import com.cerner.jwala.ws.rest.v1.response.ResponseBuilder;
 import com.cerner.jwala.ws.rest.v1.service.balancermanager.BalancerManagerServiceRest;
 import org.springframework.security.core.Authentication;
@@ -11,27 +11,27 @@ import javax.ws.rs.core.Response;
 
 public class BalancerManagerServiceRestImpl implements BalancerManagerServiceRest {
 
-    final BalancerManagerService balancerManagerService;
+    final BalancerManagerServiceX balancerManagerServiceX;
 
-    public BalancerManagerServiceRestImpl(final BalancerManagerService balancerManagerService) {
-        this.balancerManagerService = balancerManagerService;
+    public BalancerManagerServiceRestImpl(final BalancerManagerServiceX balancerManagerServiceX) {
+        this.balancerManagerServiceX = balancerManagerServiceX;
     }
 
     @Override
     public Response drainUserGroup(final String groupName, final String webServers) {
-        BalancerManagerState balancerManagerState = balancerManagerService.drainUserGroup(groupName, webServers, getUser());
+        BalancerManagerState balancerManagerState = balancerManagerServiceX.drainUserGroup(groupName, webServers, getUser());
         return ResponseBuilder.ok(balancerManagerState);
     }
 
     @Override
     public Response drainUserWebServer(final String groupName, final String webServerName) {
-        BalancerManagerState balancerManagerState = balancerManagerService.drainUserWebServer(groupName, webServerName, getUser());
+        BalancerManagerState balancerManagerState = balancerManagerServiceX.drainUserWebServer(groupName, webServerName, getUser());
         return ResponseBuilder.ok(balancerManagerState);
     }
 
     @Override
     public Response getGroup(final String groupName) {
-        BalancerManagerState balancerManagerState = balancerManagerService.getGroupDrainStatus(groupName, getUser());
+        BalancerManagerState balancerManagerState = balancerManagerServiceX.getGroupDrainStatus(groupName, getUser());
         return ResponseBuilder.ok(balancerManagerState);
     }
 

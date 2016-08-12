@@ -33,8 +33,8 @@ import com.cerner.jwala.service.app.PrivateApplicationService;
 import com.cerner.jwala.service.app.impl.ApplicationCommandServiceImpl;
 import com.cerner.jwala.service.app.impl.ApplicationServiceImpl;
 import com.cerner.jwala.service.app.impl.PrivateApplicationServiceImpl;
-import com.cerner.jwala.service.balancermanager.BalancerManagerService;
-import com.cerner.jwala.service.balancermanager.impl.BalancerManagerServiceImpl;
+import com.cerner.jwala.service.balancermanager.BalancerManagerServiceX;
+import com.cerner.jwala.service.balancermanager.impl.BalancerManagerServiceXImpl;
 import com.cerner.jwala.service.configuration.jms.AemJmsConfig;
 import com.cerner.jwala.service.group.*;
 import com.cerner.jwala.service.group.impl.GroupControlServiceImpl;
@@ -181,13 +181,13 @@ public class AemServiceConfiguration {
     }
 
     @Bean(name = "balancermanagerService")
-    public BalancerManagerService getBalancermanagerService(final GroupService groupService,
-                                                            final ApplicationService applicationService,
-                                                            final WebServerService webServerService,
-                                                            final ClientFactoryHelper clientFactoryHelper,
-                                                            final MessagingService messagingService,
-                                                            final HistoryService historyService){
-        return new BalancerManagerServiceImpl(groupService, applicationService, webServerService, clientFactoryHelper, messagingService,
+    public BalancerManagerServiceX getBalancermanagerService(final GroupService groupService,
+                                                             final ApplicationService applicationService,
+                                                             final WebServerService webServerService,
+                                                             final ClientFactoryHelper clientFactoryHelper,
+                                                             final MessagingService messagingService,
+                                                             final HistoryService historyService){
+        return new BalancerManagerServiceXImpl(groupService, applicationService, webServerService, clientFactoryHelper, messagingService,
                 historyService, new BalancerManagerHtmlParser(), new BalancerManagerXmlParser(), new BalancerManagerHttpClient());
     }
 
