@@ -718,7 +718,7 @@ var SelectTemplateFilesWidget = React.createClass({
     render: function() {
         return <div className="select-meta-data-and-template-files-widget">
                    <form ref="form">
-                       <div className={(!this.state.invalidTemplateFile ? "hide " : "") + "error"}>Please select a resource template file (*.tpl)</div>
+                       /*<div className={(!this.state.invalidTemplateFile ? "hide " : "") + "error"}>Please select a resource template file (*.tpl)</div>*/
                        <div>
                            <input type="file" ref="templateFile" name="templateFile" onChange={this.onTemplateFileChange}>Template File</input>
                        </div>
