@@ -710,17 +710,11 @@ var SelectMetaDataAndTemplateFilesWidget = React.createClass({
 
 
 var SelectTemplateFilesWidget = React.createClass({
-    getInitialState: function() {
-        // Let's not use jQuery form validation since we only need to check if the user has chosen files to use in creating the resource.
-        // Besides, this is doing it the React way. :)
-        return {invalidTemplateFile: false};
-    },
     render: function() {
         return <div className="select-meta-data-and-template-files-widget">
                    <form ref="form">
-                       /*<div className={(!this.state.invalidTemplateFile ? "hide " : "") + "error"}>Please select a resource template file (*.tpl)</div>*/
                        <div>
-                           <input type="file" ref="templateFile" name="templateFile" onChange={this.onTemplateFileChange}>Template File</input>
+                           <input type="file" ref="templateFile" name="templateFile">Template File</input>
                        </div>
                    </form>
                </div>
@@ -730,10 +724,5 @@ var SelectTemplateFilesWidget = React.createClass({
                                                   console.log("Submit!");
                                                   e.preventDefault();
                                               });
-    },
-    onTemplateFileChange: function(e) {
-        if(this.refs.templateFile.getDOMNode().files[0]) {
-            this.setState({invalidTemplateFile: false});
-        }
     }
 });
