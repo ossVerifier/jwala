@@ -24,10 +24,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
     @Override
     public Response getJvm(final String name) {
         LOGGER.debug("Get JVM requested: {}", name);
-        // TODO: Should we do this ? toDecrypted ?
-        // Note: I don't like the current ResponseBuilder specially when returning errors e.g. AEM_xx
-        //       Can we think about this in the new future ?
-        return Response.ok(jvmService.getJvm(name).toDecrypted()).build();
+        return Response.ok(jvmService.getJvm(name)).build();
     }
 
     @Override
