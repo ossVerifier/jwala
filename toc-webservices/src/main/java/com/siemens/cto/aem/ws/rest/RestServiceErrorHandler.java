@@ -11,6 +11,9 @@ import javax.ws.rs.ext.ExceptionMapper;
 /**
  * Handler for internal server errors in the REST layer
  *
+ * Note: This handler's purpose is to intercept uncaught errors so that they won't bubble up to the UI.
+ *       It does not replace proper error handling in the REST layer.
+ *
  * Created by JC043760 on 8/11/2016.
  */
 public class RestServiceErrorHandler implements ExceptionMapper {
@@ -35,11 +38,14 @@ public class RestServiceErrorHandler implements ExceptionMapper {
 
         return Response.status(status).header(CONTENT_TYPE, APPLICATION_JSON).entity(new ResponseContent() {
 
-            public int getMsgCode() {
+            // Note: The response content is just for the benefit of displaying the status in the browser.
+            //       The UI should be able to handle the error by just the response header alone.
+
+            public int getStatus() {
                 return status;
             }
 
-            public String getMsg() {
+            public String getMessage() {
                 return msg;
             }
 
