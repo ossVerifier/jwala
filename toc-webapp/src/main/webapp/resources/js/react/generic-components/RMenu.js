@@ -126,7 +126,7 @@ var ActivityMonitor = React.createClass({
         this.state.active = val;
     },
     intervalCallback: function() {
-        console.log("intervalCallback...");
+//        console.log("intervalCallback...");
         if ($.isFunction(this.props.inactivityCallback)) {
             if (!this.state.active) {
                 this.clearInterval();

@@ -348,7 +348,7 @@ var XmlTabs = React.createClass({
             codeMirrorComponent = <div style={{padding: "5px 5px"}}>Please select a JVM, Web Server or Web Application and a resource</div>;
             xmlPreview = <div style={{padding: "5px 5px"}}>Please select a JVM, Web Server or Web Application and a resource</div>;
         } else {
-            console.log("readOnly = " + this.state.readOnly);
+            // console.log("readOnly = " + this.state.readOnly);
             codeMirrorComponent = <CodeMirrorComponent ref="codeMirrorComponent" content={this.state.template}
                                    className="xml-editor-container" saveCallback={this.saveResource}
                                    onChange={this.onChangeCallback} readOnly={this.state.readOnly}/>

@@ -1,19 +1,7 @@
 
 var resourceService = {
     createResource: function(groupName, webServerName, jvmName, webAppName, formData) {
-        var matrixParam = "";
-        if (groupName) {
-            matrixParam += ";group=" + groupName;
-        }
-        if (webServerName) {
-            matrixParam += ";webServer=" + webServerName;
-        }
-        if (jvmName) {
-            matrixParam += ";jvm=" + jvmName;
-        }
-        if (webAppName) {
-            matrixParam += ";webApp=" + webAppName;
-        }
+        var matrixParam = this.createMatrixParam(groupName, webServerName, jvmName, webAppName);
         return serviceFoundation.promisedPost("v1.0/resources/data" + matrixParam, "json", formData, null, true);
     },
     deleteAllResource: function(resourceName) {
@@ -30,63 +18,22 @@ var resourceService = {
     getAppResources : function(groupName, appName, responseCallback) {
         return serviceFoundation.get("v1.0/resources/" + encodeURIComponent(groupName) + "/" + encodeURIComponent(appName) + "/name", "json", responseCallback);
     },
-    getResourceContent: function(resourceName, groupName, webServerName, jvmName, appName) {
-        var matrix = "";
-
-        if (groupName) {
-            matrix += ";group=" + encodeURIComponent(groupName);
-        }
-
-        if (webServerName) {
-            matrix += ";webServer=" + encodeURIComponent(webServerName);
-        }
-
-        if (jvmName) {
-            matrix += ";jvm=" + encodeURIComponent(jvmName);
-        }
-
-        if (appName) {
-            matrix += ";webApp=" + encodeURIComponent(appName);
-        }
-
-        return serviceFoundation.promisedGet("v1.0/resources/" + encodeURIComponent(resourceName) + "/content" + matrix);
+    getResourceContent: function(resourceName, groupName, webServerName, jvmName, webAppName) {
+        var matrixParam = this.createMatrixParam(groupName, webServerName, jvmName, webAppName);
+        return serviceFoundation.promisedGet("v1.0/resources/" + encodeURIComponent(resourceName) + "/content" + matrixParam);
     },
 
     deleteResource: function(resourceName, groupName, webServerName, jvmName, webAppName) {
-        var matrixParam = "";
-        if (groupName) {
-            matrixParam += ";group=" + groupName;
-        }
-        if (webServerName) {
-            matrixParam += ";webServer=" + webServerName;
-        }
-        if (jvmName) {
-            matrixParam += ";jvm=" + jvmName;
-        }
-        if (webAppName) {
-            matrixParam += ";webApp=" + webAppName;
-        }
+        var matrixParam = this.createMatrixParam(groupName, webServerName, jvmName, webAppName);
         return serviceFoundation.del("v1.0/resources/template/" + resourceName + matrixParam);
     },
     deleteResources: function(resourceNameArray, groupName, webServerName, jvmName, webAppName) {
-        var matrixParam = "";
+        var matrixParam = this.createMatrixParam(groupName, webServerName, jvmName, webAppName);
 
         resourceNameArray.forEach(function(name){
             matrixParam += ";name=" + encodeURIComponent(name);
         });
 
-        if (groupName) {
-            matrixParam += ";group=" + encodeURIComponent(groupName);
-        }
-        if (webServerName) {
-            matrixParam += ";webServer=" + encodeURIComponent(webServerName);
-        }
-        if (jvmName) {
-            matrixParam += ";jvm=" + encodeURIComponent(jvmName);
-        }
-        if (webAppName) {
-            matrixParam += ";webApp=" + encodeURIComponent(webAppName);
-        }
         return serviceFoundation.del("v1.0/resources/templates" + matrixParam);
     },
     deployGroupAppResourceToHost: function(groupName, fileName, host) {
@@ -94,39 +41,11 @@ var resourceService = {
                                       "?hostName=" + encodeURIComponent(host));
     },
     deployResourceToHost: function(fileName, host, groupName, webServerName, jvmName, webAppName){
-        var matrixParam = "";
-
-        if (groupName) {
-            matrixParam += ";group=" + encodeURIComponent(groupName);
-        }
-        if (webServerName) {
-            matrixParam += ";webServer=" + encodeURIComponent(webServerName);
-        }
-        if (jvmName) {
-            matrixParam += ";jvm=" + encodeURIComponent(jvmName);
-        }
-        if (webAppName) {
-            matrixParam += ";webApp=" + encodeURIComponent(webAppName);
-        }
-
+        var matrixParam = this.createMatrixParam(groupName, webServerName, jvmName, webAppName);
         return serviceFoundation.promisedPut("v1.0/resources/template/" + encodeURIComponent(fileName) + "/deploy/host/" + encodeURIComponent(host) + matrixParam);
     },
     deployResourceToAllHosts: function(fileName, groupName, webServerName, jvmName, webAppName){
-        var matrixParam = "";
-
-        if (groupName) {
-            matrixParam += ";group=" + encodeURIComponent(groupName);
-        }
-        if (webServerName) {
-            matrixParam += ";webServer=" + encodeURIComponent(webServerName);
-        }
-        if (jvmName) {
-            matrixParam += ";jvm=" + encodeURIComponent(jvmName);
-        }
-        if (webAppName) {
-            matrixParam += ";webApp=" + encodeURIComponent(webAppName);
-        }
-
+        var matrixParam = this.createMatrixParam(groupName, webServerName, jvmName, webAppName);
         return serviceFoundation.promisedPut("v1.0/resources/template/" + encodeURIComponent(fileName) + "/deploy/hosts" + matrixParam);
     },
     deployWebServerResource: function(webServerName, fileName) {
@@ -158,20 +77,7 @@ var resourceService = {
         return serviceFoundation.get("v1.0/resources/templates/names", "json", callback);
     },
     updateResourceContent: function(resourceTemplateName, template, groupName, webServerName, jvmName, webAppName) {
-        var matrixParam = "";
-
-        if (groupName) {
-            matrixParam += ";group=" + encodeURIComponent(groupName);
-        }
-        if (webServerName) {
-            matrixParam += ";webServer=" + encodeURIComponent(webServerName);
-        }
-        if (jvmName) {
-            matrixParam += ";jvm=" + encodeURIComponent(jvmName);
-        }
-        if (webAppName) {
-            matrixParam += ";webApp=" + encodeURIComponent(webAppName);
-        }
+        var matrixParam = this.createMatrixParam(groupName, webServerName, jvmName, webAppName);
         return serviceFoundation.promisedPut("v1.0/resources/template/" + encodeURIComponent(resourceTemplateName) + matrixParam,
                                                     "json",
                                                      template,
@@ -179,8 +85,17 @@ var resourceService = {
                                                      "text/plain; charset=utf-8")
     },
     previewResourceFile: function(template, groupName, webServerName, jvmName, webAppName, successCallback, errorCallback) {
+        var matrixParam = this.createMatrixParam(groupName, webServerName, jvmName, webAppName);
+        return serviceFoundation.put("v1.0/resources/template/preview" + matrixParam,
+                                     "json",
+                                     template,
+                                     successCallback,
+                                     errorCallback,
+                                     false,
+                                     "text/plain; charset=utf-8");
+    },
+    createMatrixParam:function(groupName, webServerName, jvmName, webAppName){
         var matrixParam = "";
-
         if (groupName) {
             matrixParam += ";group=" + encodeURIComponent(groupName);
         }
@@ -193,12 +108,6 @@ var resourceService = {
         if (webAppName) {
             matrixParam += ";webApp=" + encodeURIComponent(webAppName);
         }
-        return serviceFoundation.put("v1.0/resources/template/preview" + matrixParam,
-                                     "json",
-                                     template,
-                                     successCallback,
-                                     errorCallback,
-                                     false,
-                                     "text/plain; charset=utf-8");
+        return matrixParam;
     }
 };
