@@ -271,4 +271,9 @@ public class AemWebServiceConfiguration {
     protected ExecutorService getExecutorService() {
         return Executors.newFixedThreadPool(12);
     } // TODO: why 12? is this configurable with a property?
+
+    @Bean
+    public RestServiceErrorHandler getInternalServerErrorHandler() {
+        return new RestServiceErrorHandler();
+    }
 }
