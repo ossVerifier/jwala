@@ -38,12 +38,6 @@ var ResourcesConfig = React.createClass({
                      show={false}
                      cancelCallback={this.cancelUpdateGroupTemplateCallback}
                      ref="templateUpdateGroupModal"/>
-                    <ModalDialogBox title="External Properties Template"
-                                    ref="warnExternalPropertiesUploadModalDlg"
-                                    show={false}
-                                    cancelCallback={this.warnExternalPropertiesUploadCallback}
-                                    cancelLabel="Continue"
-                                    content={<div className="text-align-center"><br/>Only one template is allowed to be uploaded for the External Properties.<br/>Any existing template will be overwritten.<br/><br/></div>}/>
                     <ModalDialogBox ref="selectTemplateFilesModalDlg"
                                                         title="Upload External Properties"
                                                         show={false}
@@ -172,14 +166,11 @@ var ResourcesConfig = React.createClass({
     },
     createResourceCallback: function(data) {
         if (data.rtreeListMetaData.entity === "extProperties") {
-            this.refs.warnExternalPropertiesUploadModalDlg.show();
+        $.warningAlert("Only one template is allowed to be uploaded for the External Properties.Any existing template will be overwritten.", "Warning ", false);
+        this.refs.selectTemplateFilesModalDlg.show();
         } else {
             this.refs.selectMetaDataAndTemplateFilesModalDlg.show();
         }
-    },
-    warnExternalPropertiesUploadCallback: function(){
-        this.refs.warnExternalPropertiesUploadModalDlg.close();
-        this.refs.selectTemplateFilesModalDlg.show();
     },
     deleteResourceCallback: function() {
     if (this.refs.xmlTabs.state.entityType !== "extProperties") {
