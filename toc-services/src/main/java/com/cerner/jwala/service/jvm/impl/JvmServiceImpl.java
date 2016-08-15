@@ -844,4 +844,21 @@ public class JvmServiceImpl implements JvmService {
         FileUtils.writeStringToFile(templateFile, generatedResourceString);
         return templateFile.getAbsolutePath();
     }
+
+    @Override
+    @Transactional
+    public void deleteJvm(final String name, final String userName) {
+        final Jvm jvm = getJvm(name);
+        if (!jvm.getState().isStartedState()) {
+            LOGGER.info("Removing JVM from the database and deleting the service for jvm {}", name);
+            if (!jvm.getState().equals(JvmState.JVM_NEW)) {
+                deleteJvmWindowsService(new ControlJvmRequest(jvm.getId(), JvmControlOperation.DELETE_SERVICE), jvm,
+                        new User(userName));
+            }
+            jvmPersistenceService.removeJvm(jvm.getId());
+        } else {
+            LOGGER.error("The target JVM {} must be stopped before attempting to delete it", jvm.getJvmName());
+            throw new JvmServiceException("The target JVM must be stopped before attempting to delete it");
+        }
+    }
 }

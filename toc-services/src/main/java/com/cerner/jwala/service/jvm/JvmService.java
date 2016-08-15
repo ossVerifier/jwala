@@ -89,4 +89,10 @@ public interface JvmService {
 
     void checkForSetenvBat(String jvmName);
 
+    /**
+     * Delete a JVM
+     * @param name the name of the JVM to delete
+     * @param userName
+     */
+    void deleteJvm(String name, String userName);
 }

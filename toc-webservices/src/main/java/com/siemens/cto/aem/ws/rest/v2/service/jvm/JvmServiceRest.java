@@ -47,7 +47,7 @@ public interface JvmServiceRest {
      */
     @DELETE
     @Path("/{name}")
-    Response removeJvm(@PathParam("name") String name);
+    Response deleteJvm(@PathParam("name") String name);
 
     /**
      * Control a JVM e.g start or stop a JVM

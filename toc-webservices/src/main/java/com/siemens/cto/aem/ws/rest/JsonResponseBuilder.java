@@ -34,13 +34,9 @@ public class JsonResponseBuilder<T> {
         return this;
     }
 
-    public JsonResponseBuilder setResponseContent(final T content) {
-        this.content = content;
-        return this;
-    }
-
-    public JsonResponseBuilder setContent(T content) {
-        this.content = content;
+    @SuppressWarnings("unchecked")
+    public JsonResponseBuilder setContent(final Object content) {
+        this.content = (T) content;
         return this;
     }
 

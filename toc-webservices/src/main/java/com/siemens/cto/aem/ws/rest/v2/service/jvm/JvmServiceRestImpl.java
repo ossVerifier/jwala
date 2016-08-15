@@ -1,8 +1,13 @@
 package com.siemens.cto.aem.ws.rest.v2.service.jvm;
 
+import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
 import com.siemens.cto.aem.service.jvm.JvmService;
+import com.siemens.cto.aem.service.jvm.exception.JvmServiceException;
+import com.siemens.cto.aem.ws.rest.JsonResponseBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import javax.ws.rs.core.Response;
 
@@ -24,7 +29,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
     @Override
     public Response getJvm(final String name) {
         LOGGER.debug("Get JVM requested: {}", name);
-        return Response.ok(jvmService.getJvm(name)).build();
+        return new JsonResponseBuilder<Jvm>().setStatus(Response.Status.OK).setContent(jvmService.getJvm(name)).build();
     }
 
     @Override
@@ -38,8 +43,15 @@ public class JvmServiceRestImpl implements JvmServiceRest {
     }
 
     @Override
-    public Response removeJvm(final String name) {
-        throw new UnsupportedOperationException();
+    public Response deleteJvm(final String name) {
+        final Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        try {
+            jvmService.deleteJvm(name, auth.getName());
+            return Response.ok().build();
+        } catch (final JvmServiceException e) {
+            return new JsonResponseBuilder<String>().setStatus(Response.Status.INTERNAL_SERVER_ERROR)
+                    .setContent(e.getMessage()).build();
+        }
     }
 
     @Override
