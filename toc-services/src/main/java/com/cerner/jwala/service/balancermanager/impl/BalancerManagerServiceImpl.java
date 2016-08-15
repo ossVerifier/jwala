@@ -1,9 +1,11 @@
 package com.cerner.jwala.service.balancermanager.impl;
 
+import com.cerner.jwala.common.domain.model.app.Application;
 import com.cerner.jwala.common.domain.model.balancermanager.BalancerManagerState;
 import com.cerner.jwala.common.domain.model.balancermanager.WorkerStatusType;
 import com.cerner.jwala.common.domain.model.fault.AemFaultType;
 import com.cerner.jwala.common.domain.model.group.Group;
+import com.cerner.jwala.common.domain.model.jvm.Jvm;
 import com.cerner.jwala.common.domain.model.webserver.WebServer;
 import com.cerner.jwala.common.domain.model.webserver.message.WebServerHistoryEvent;
 import com.cerner.jwala.common.exception.ApplicationException;
@@ -15,6 +17,7 @@ import com.cerner.jwala.service.app.ApplicationService;
 import com.cerner.jwala.service.balancermanager.BalancerManagerService;
 import com.cerner.jwala.service.balancermanager.impl.xml.data.Manager;
 import com.cerner.jwala.service.group.GroupService;
+import com.cerner.jwala.service.jvm.JvmService;
 import com.cerner.jwala.service.webserver.WebServerService;
 import com.cerner.jwala.service.webserver.component.ClientFactoryHelper;
 import org.apache.commons.io.IOUtils;
@@ -33,6 +36,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class BalancerManagerServiceImpl implements BalancerManagerService {
 
@@ -41,6 +46,7 @@ public class BalancerManagerServiceImpl implements BalancerManagerService {
     private GroupService groupService;
     private ApplicationService applicationService;
     private WebServerService webServerService;
+    private JvmService jvmService;
 
     private ClientFactoryHelper clientFactoryHelper;
     private MessagingService messagingService;
@@ -56,6 +62,7 @@ public class BalancerManagerServiceImpl implements BalancerManagerService {
     public BalancerManagerServiceImpl(final GroupService groupService,
                                       final ApplicationService applicationService,
                                       final WebServerService webServerService,
+                                      final JvmService jvmService,
                                       final ClientFactoryHelper clientFactoryHelper,
                                       final MessagingService messagingService,
                                       final HistoryService historyService,
@@ -65,6 +72,7 @@ public class BalancerManagerServiceImpl implements BalancerManagerService {
         this.groupService = groupService;
         this.applicationService = applicationService;
         this.webServerService = webServerService;
+        this.jvmService = jvmService;
         this.clientFactoryHelper = clientFactoryHelper;
         this.messagingService = messagingService;
         this.historyService = historyService;
@@ -125,7 +133,7 @@ public class BalancerManagerServiceImpl implements BalancerManagerService {
         List<WebServer> webServerList = webServerService.findWebServers(group.getId());
         for (WebServer webServer : webServerList) {
             if (!webServerService.isStarted(webServer)) {
-                final String message = "The target Web Server " + webServer.getName() + " in group " + groupName + " must be STARTED before attempting to drain user";
+                final String message = "The target Web Server " + webServer.getName() + " in group " + groupName + " must be STARTED before attempting to drain users";
                 LOGGER.error(message);
                 throw new InternalErrorException(AemFaultType.INVALID_WEBSERVER_OPERATION, message);
             }
@@ -134,7 +142,7 @@ public class BalancerManagerServiceImpl implements BalancerManagerService {
 
     public void checkStatus(WebServer webServer) {
         if (!webServerService.isStarted(webServer)) {
-            final String message = "The target Web Server " + webServer.getName() + " must be STARTED before attempting to drain user";
+            final String message = "The target Web Server " + webServer.getName() + " must be STARTED before attempting to drain users";
             LOGGER.error(message);
             throw new InternalErrorException(AemFaultType.INVALID_WEBSERVER_OPERATION, message);
         }
@@ -175,8 +183,8 @@ public class BalancerManagerServiceImpl implements BalancerManagerService {
                 wrongWebServers += webServerArrayContentName.trim() + ", ";
             }
         }
-        if (wrongWebServers.length() != 0){
-            throw new InternalErrorException(AemFaultType.WEBSERVER_NOT_FOUND, wrongWebServers.substring(0, wrongWebServers.length()-2) + " cannot be found in the group");
+        if (wrongWebServers.length() != 0) {
+            throw new InternalErrorException(AemFaultType.WEBSERVER_NOT_FOUND, wrongWebServers.substring(0, wrongWebServers.length() - 2) + " cannot be found in the group");
         }
         return webServersMatch;
     }
@@ -192,42 +200,76 @@ public class BalancerManagerServiceImpl implements BalancerManagerService {
     //We believe it is the issue for apache-tomcat httpd balancer manager
     public List<BalancerManagerState.WebServerDrainStatus.JvmDrainStatus> prepareDrainWork(final WebServer webServer, final Boolean post) {
         LOGGER.info("Entering prepareDrainWork");
+        List<BalancerManagerState.WebServerDrainStatus.JvmDrainStatus> jvmDrainStatusList = new ArrayList<>();
         final String balancerManagerHtmlUrl = balancerManagerHtmlParser.getUrlPath(webServer.getHost());
         balancerManagerResponseHtml = getBalancerManagerResponse(balancerManagerHtmlUrl);
         final Map<String, String> balancers = balancerManagerHtmlParser.findBalancers(balancerManagerResponseHtml);
-        Map.Entry<String, String> entry = balancers.entrySet().iterator().next();
-        final String balancerManagerXmlUrl = balancerManagerXmlParser.getUrlPath(webServer.getHost(), entry.getKey(), entry.getValue());
-        balancerManagerResponseXml = getBalancerManagerResponse(balancerManagerXmlUrl);
-        Manager manager = balancerManagerXmlParser.getWorkerXml(balancerManagerResponseXml);
-        Map<String, String> workers = balancerManagerXmlParser.getWorkers(manager, entry.getKey());
-        if (post) {
-            doDrain(workers, balancerManagerHtmlUrl, webServer, entry.getKey(), entry.getValue());
-        }
-        return getBalancerStatus(webServer.getHost(), workers, entry.getKey(), entry.getValue());
-    }
-
-    //In order to get the status from each worker in HTML, need to pass b=lb-health-check-4.0, w=http://usmlvv1cds0057:9101/hct and nonce=xxxx
-    //from Manager object, it can find the manager.balancer.getName to find the mapping worker
-    //using balancers map to get the balancer.getName to get the associated nonce id
-    public List<BalancerManagerState.WebServerDrainStatus.JvmDrainStatus> getBalancerStatus(final String hostName, final Map<String, String> workers,
-                                                                                            final String balancerName, final String nonce) {
-        List<BalancerManagerState.WebServerDrainStatus.JvmDrainStatus> jvmDrainStatusList = new ArrayList<>();
-        for (String worker : workers.keySet()) {
-            String workerUrl = balancerManagerHtmlParser.getWorkerUrlPath(hostName, balancerName, nonce, worker);
-            String workerHtml = getBalancerManagerResponse(workerUrl);
-            Map<String, String> workerStatusMap = balancerManagerHtmlParser.findWorkerStatus(workerHtml);
-            BalancerManagerState.WebServerDrainStatus.JvmDrainStatus jvmDrainStatus = new BalancerManagerState.WebServerDrainStatus.JvmDrainStatus(worker,
-                    workerStatusMap.get(WorkerStatusType.IGNORE_ERRORS.name()),
-                    workerStatusMap.get(WorkerStatusType.DRAINING_MODE.name()),
-                    workerStatusMap.get(WorkerStatusType.DISABLED.name()),
-                    workerStatusMap.get(WorkerStatusType.HOT_STANDBY.name()));
-            jvmDrainStatusList.add(jvmDrainStatus);
+        for(Map.Entry<String, String> entry : balancers.entrySet()){
+            final String balancerName = entry.getKey();
+            final String nonce = entry.getValue();
+            final String balancerManagerXmlUrl = balancerManagerXmlParser.getUrlPath(webServer.getHost(), balancerName, nonce);
+            balancerManagerResponseXml = getBalancerManagerResponse(balancerManagerXmlUrl);
+            Manager manager = balancerManagerXmlParser.getWorkerXml(balancerManagerResponseXml);
+            Map<String, String> workers = balancerManagerXmlParser.getWorkers(manager, balancerName);
+            if (post) {
+                doDrain(workers, balancerManagerHtmlUrl, webServer, balancerName, nonce);
+            }
+            for (String worker : workers.keySet()) {
+                String workerUrl = balancerManagerHtmlParser.getWorkerUrlPath(webServer.getHost(), balancerName, nonce, worker);
+                String workerHtml = getBalancerManagerResponse(workerUrl);
+                Map<String, String> workerStatusMap = balancerManagerHtmlParser.findWorkerStatus(workerHtml);
+                BalancerManagerState.WebServerDrainStatus.JvmDrainStatus jvmDrainStatus = new BalancerManagerState.WebServerDrainStatus.JvmDrainStatus(worker,
+                        findJvmNameByWorker(worker),
+                        findApplicationNameByWorker(worker),
+                        workerStatusMap.get(WorkerStatusType.IGNORE_ERRORS.name()),
+                        workerStatusMap.get(WorkerStatusType.DRAINING_MODE.name()),
+                        workerStatusMap.get(WorkerStatusType.DISABLED.name()),
+                        workerStatusMap.get(WorkerStatusType.HOT_STANDBY.name()));
+                jvmDrainStatusList.add(jvmDrainStatus);
+            }
         }
         return jvmDrainStatusList;
     }
 
+    public String findApplicationNameByWorker(final String worker) {
+        LOGGER.info("Entering findApplicationNameByWorker");
+        String appName = "";
+        int indexOfLastColon = worker.lastIndexOf(":");
+        int firstIndexOfSlashAfterLastColon = worker.substring(indexOfLastColon).indexOf("/");
+        int indexOfSlashAfterPort = indexOfLastColon + firstIndexOfSlashAfterLastColon;
+        final String context = worker.substring(indexOfSlashAfterPort);
+        LOGGER.info("context: " + context);
+        List<Application> applications = applicationService.getApplications();
+        for (Application application : applications) {
+            if (application.getWebAppContext().equalsIgnoreCase(context)) {
+                appName = application.getName();
+                break;
+            }
+        }
+        return appName;
+    }
+
+    public String findJvmNameByWorker(final String worker) {
+        LOGGER.info("Entering findJvmNameByWorker");
+        List<Jvm> jvms = jvmService.getJvms();
+        String jvmName = "";
+        for (Jvm jvm : jvms) {
+            String jvmUrl;
+            if (worker.indexOf("https") != -1) {
+                jvmUrl = "https://" + jvm.getHostName() + ":" + jvm.getHttpsPort();
+            } else {
+                jvmUrl = "http://" + jvm.getHostName() + ":" + jvm.getHttpPort();
+            }
+            if (worker.toLowerCase().indexOf(jvmUrl.toLowerCase()) != -1) {
+                jvmName = jvm.getJvmName();
+                break;
+            }
+        }
+        return jvmName;
+    }
+
     public String getBalancerManagerResponse(final String statusUri) {
-        System.out.println("Entering getBalancerManagerResponse: " + statusUri);
+        LOGGER.info("Entering getBalancerManagerResponse: " + statusUri);
         try {
             return IOUtils.toString(clientFactoryHelper.requestGet(new URI(statusUri)).getBody(), "UTF-8");
         } catch (IOException e) {

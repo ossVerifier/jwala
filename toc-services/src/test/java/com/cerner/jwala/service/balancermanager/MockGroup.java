@@ -33,8 +33,9 @@ public class MockGroup {
         return group;
     }
 
-    public void getJvms() {
+    public List<Jvm> getJvms() {
         Group myGroup = new Group(groupId, groupName);
+        List<Jvm> jvms = new LinkedList<>();
         groups.add(myGroup);
         Jvm jvm = new Jvm(id(0L, Jvm.class),
                 "jvmname",
@@ -53,7 +54,9 @@ public class MockGroup {
                 Calendar.getInstance(),
                 "username",
                 "encryptedpassword");
+        this.jvms.add(jvm);
         jvms.add(jvm);
+        return jvms;
     }
 
     public void getWebServers() {
@@ -90,8 +93,9 @@ public class MockGroup {
         return webServer;
     }
 
-    public void getApplications() {
+    public List<Application> getApplications() {
         Group myGroup = new Group(groupId, groupName);
+        List<Application> applications = new LinkedList<>();
         Application application = new Application(id(0L, Application.class),
                 "HEALTH-CHECK-4.0",
                 "myaWarPath",
@@ -106,7 +110,30 @@ public class MockGroup {
             jvmsList.add(jvm);
         }
         application.setJvms(jvmsList);
+        this.applications.add(application);
         applications.add(application);
+        return applications;
+    }
+
+    public List<Application> getApplicationsMulti(){
+        Group myGroup = new Group(groupId, groupName);
+        List<Application> applications = new LinkedList<>();
+        Application application = new Application(id(0L, Application.class),
+                "SLPA-WS-4.0.0800.02",
+                "myaWarPath",
+                "/slpa-test/slum/ws",
+                myGroup,
+                true,
+                false,
+                false,
+                "myWarName");
+        List<Jvm> jvmsList = new LinkedList<>();
+        for(Jvm jvm: jvms){
+            jvmsList.add(jvm);
+        }
+        application.setJvms(jvmsList);
+        applications.add(application);
+        return applications;
     }
 
     public List<Application> findApplications(){

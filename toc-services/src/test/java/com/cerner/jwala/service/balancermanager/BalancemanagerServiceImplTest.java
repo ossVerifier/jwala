@@ -1,5 +1,6 @@
 package com.cerner.jwala.service.balancermanager;
 
+import com.cerner.jwala.common.domain.model.app.Application;
 import com.cerner.jwala.common.domain.model.balancermanager.BalancerManagerState;
 import com.cerner.jwala.common.domain.model.balancermanager.WorkerStatusType;
 import com.cerner.jwala.common.domain.model.group.Group;
@@ -15,6 +16,7 @@ import com.cerner.jwala.service.balancermanager.impl.BalancerManagerServiceImpl;
 import com.cerner.jwala.service.balancermanager.impl.BalancerManagerXmlParser;
 import com.cerner.jwala.service.balancermanager.impl.xml.data.Manager;
 import com.cerner.jwala.service.group.GroupService;
+import com.cerner.jwala.service.jvm.JvmService;
 import com.cerner.jwala.service.webserver.WebServerService;
 import com.cerner.jwala.service.webserver.component.ClientFactoryHelper;
 import org.apache.http.NameValuePair;
@@ -59,6 +61,9 @@ public class BalancemanagerServiceImplTest {
     private WebServerService mockWebServerService;
 
     @Mock
+    private JvmService mockJvmService;
+
+    @Mock
     private MessagingService mockMessagingService;
 
     @Mock
@@ -76,8 +81,8 @@ public class BalancemanagerServiceImplTest {
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        this.balancerManagerServiceImpl = new BalancerManagerServiceImpl(mockGroupService, mockApplicationService, mockWebServerService, mockClientFactoryHelper,
-                mockMessagingService, mockHistoryService, balancerManagerHtmlParser, balancerManagerXmlParser, mockBalancerManagerHttpClient) {
+        this.balancerManagerServiceImpl = new BalancerManagerServiceImpl(mockGroupService, mockApplicationService, mockWebServerService, mockJvmService,
+                mockClientFactoryHelper, mockMessagingService, mockHistoryService, balancerManagerHtmlParser, balancerManagerXmlParser, mockBalancerManagerHttpClient) {
             public void sendMessage(final WebServer webServer, final String message) {
 
             }
@@ -319,10 +324,10 @@ public class BalancemanagerServiceImplTest {
         webServers.add(webServer1);
         webServers.add(webServer2);
         String[] webServerArray = "webServer3, webServer4".split(",");
-        try{
+        try {
             balancerManagerServiceImpl.findMatchWebServers(webServers, webServerArray);
             fail();
-        } catch (Exception e){
+        } catch (Exception e) {
             assertEquals("com.cerner.jwala.common.exception.InternalErrorException: webServer3, webServer4 cannot be found in the group", e.toString());
         }
     }
@@ -353,7 +358,7 @@ public class BalancemanagerServiceImplTest {
         try {
             balancerManagerServiceImpl.findMatchWebServers(webServers, webServerArray);
             fail();
-        }catch (Exception e){
+        } catch (Exception e) {
             assertEquals("com.cerner.jwala.common.exception.InternalErrorException: webServer2 cannot be found in the group", e.toString());
         }
     }
@@ -379,7 +384,7 @@ public class BalancemanagerServiceImplTest {
             balancerManagerServiceImpl.checkStatus(webServer);
         } catch (Exception e) {
             System.out.println(e.toString());
-            assertEquals("com.cerner.jwala.common.exception.InternalErrorException: The target Web Server myWebSererName must be STARTED before attempting to drain user", e.toString());
+            assertEquals("com.cerner.jwala.common.exception.InternalErrorException: The target Web Server myWebSererName must be STARTED before attempting to drain users", e.toString());
         }
     }
 
@@ -401,7 +406,7 @@ public class BalancemanagerServiceImplTest {
         try {
             balancerManagerServiceImpl.checkGroupStatus(mockGroup.getGroup().getName());
         } catch (Exception e) {
-            assertEquals("com.cerner.jwala.common.exception.InternalErrorException: The target Web Server myWebServerName in group mygroupName must be STARTED before attempting to drain user", e.toString());
+            assertEquals("com.cerner.jwala.common.exception.InternalErrorException: The target Web Server myWebServerName in group mygroupName must be STARTED before attempting to drain users", e.toString());
         }
     }
 
@@ -444,6 +449,33 @@ public class BalancemanagerServiceImplTest {
         assertEquals("On", balancerManagerHtmlParser.getWorkerStatus(getWorkerHtml(), WorkerStatusType.DRAINING_MODE));
         assertEquals("Off", balancerManagerHtmlParser.getWorkerStatus(getWorkerHtml(), WorkerStatusType.DISABLED));
         assertEquals("Off", balancerManagerHtmlParser.getWorkerStatus(getWorkerHtml(), WorkerStatusType.HOT_STANDBY));
+    }
+
+    @Test
+    public void testFindApplicationNameByWorker() {
+        final MockGroup mockGroup = new MockGroup();
+        mockGroup.getGroup();
+        when(mockApplicationService.getApplications()).thenReturn(mockGroup.getApplications());
+        final String worker = "https://hostname:port/hct";
+        assertEquals("HEALTH-CHECK-4.0", balancerManagerServiceImpl.findApplicationNameByWorker(worker));
+    }
+
+    @Test
+    public void testFindApplicationNameByWorkerMulti(){
+        final MockGroup mockGroup = new MockGroup();
+        mockGroup.getGroup();
+        when(mockApplicationService.getApplications()).thenReturn(mockGroup.getApplicationsMulti());
+        final String worker = "https://usmlvv1cds0052:9111/slpa-test/slum/ws";
+        assertEquals("SLPA-WS-4.0.0800.02", balancerManagerServiceImpl.findApplicationNameByWorker(worker));
+    }
+
+    @Test
+    public void testFindJvmNameByWorker() {
+        final MockGroup mockGroup = new MockGroup();
+        mockGroup.getGroup();
+        when(mockJvmService.getJvms()).thenReturn(mockGroup.getJvms());
+        final String worker = "https://localhost:9101/mywebAppContext";
+        assertEquals("jvmname", balancerManagerServiceImpl.findJvmNameByWorker(worker));
     }
 
     private String getBalancerManagerResponseXml() {
