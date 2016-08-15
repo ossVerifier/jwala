@@ -205,10 +205,13 @@ var ResourcesConfig = React.createClass({
             } else if (node.rtreeListMetaData.entity === "webServers") {
                 webServerName = node.name;
             }
+             var self = this;
+             this.refs.confirmDeleteResourceModalDlg.close();
         }
-
-        var self = this;
-        this.refs.confirmDeleteResourceModalDlg.close();
+        else{
+            var self = this;
+            this.refs.confirmDeletePropertyModalDlg.close();
+        }
 
         this.props.resourceService.deleteResources(this.refs.resourceEditor.refs.resourcePane.getCheckedItems(),
                                                   groupName, webServerName, jvmName, webAppName).then(function(response){
