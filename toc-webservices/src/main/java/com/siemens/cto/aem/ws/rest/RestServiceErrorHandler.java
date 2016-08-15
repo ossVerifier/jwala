@@ -1,6 +1,5 @@
 package com.siemens.cto.aem.ws.rest;
 
-import com.cerner.cto.ctp.ws.rest.response.ResponseContent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,8 +18,6 @@ import javax.ws.rs.ext.ExceptionMapper;
 public class RestServiceErrorHandler implements ExceptionMapper {
     private final static Logger LOGGER = LoggerFactory.getLogger(RestServiceErrorHandler.class);
     public static final String INTERNAL_SERVER_ERR_MSG = "An error occurred while processing the request! Please check logs for details.";
-    public static final String CONTENT_TYPE = "Content-Type";
-    public static final String APPLICATION_JSON = "application/json";
 
     @Override
     public Response toResponse(final Throwable t) {
@@ -36,19 +33,6 @@ public class RestServiceErrorHandler implements ExceptionMapper {
             msg = INTERNAL_SERVER_ERR_MSG;
         }
 
-        return Response.status(status).header(CONTENT_TYPE, APPLICATION_JSON).entity(new ResponseContent() {
-
-            // Note: The response content is just for the benefit of displaying the status in the browser.
-            //       The UI should be able to handle the error by just the response header alone.
-
-            public int getStatus() {
-                return status;
-            }
-
-            public String getMessage() {
-                return msg;
-            }
-
-        }).build();
+        return new JsonResponseBuilder().setStatusCode(status).setMessage(msg).build();
     }
 }
