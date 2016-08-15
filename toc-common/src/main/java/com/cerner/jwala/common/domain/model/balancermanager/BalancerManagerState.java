@@ -83,8 +83,10 @@ public class BalancerManagerState {
             private String appName;
             private String workerUrl;
 
-            public JvmDrainStatus(String workerUrl, String ignoreError, String drainingMode, String disabled, String hotStandby) {
+            public JvmDrainStatus(String workerUrl, String jvmName, String appName, String ignoreError, String drainingMode, String disabled, String hotStandby) {
                 this.workerUrl = workerUrl;
+                this.jvmName = jvmName;
+                this.appName = appName;
                 this.ignoreError = ignoreError;
                 this.drainingMode = drainingMode;
                 this.disabled = disabled;

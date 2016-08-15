@@ -618,7 +618,7 @@ var GroupOperationsDataTable = React.createClass({
         var callback = function (id, buttonSelector) {
             self.disableEnable(event.data.buttonSelector, function () {
                 return groupControlService.drainWebServers(event.data.name, function (errMsg) {
-                   $.errorAlert(errMsg, "Drain user Group Failed", false);
+                   $.errorAlert(errMsg, "Drain users Group Failed", false);
                 });
             }, "ui-icon-stop");
         };

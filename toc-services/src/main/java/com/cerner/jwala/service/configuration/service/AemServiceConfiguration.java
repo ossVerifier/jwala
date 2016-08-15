@@ -184,10 +184,11 @@ public class AemServiceConfiguration {
     public BalancerManagerService getBalancermanagerService(final GroupService groupService,
                                                             final ApplicationService applicationService,
                                                             final WebServerService webServerService,
+                                                            final JvmService jvmService,
                                                             final ClientFactoryHelper clientFactoryHelper,
                                                             final MessagingService messagingService,
                                                             final HistoryService historyService){
-        return new BalancerManagerServiceImpl(groupService, applicationService, webServerService, clientFactoryHelper, messagingService,
+        return new BalancerManagerServiceImpl(groupService, applicationService, webServerService, jvmService, clientFactoryHelper, messagingService,
                 historyService, new BalancerManagerHtmlParser(), new BalancerManagerXmlParser(), new BalancerManagerHttpClient());
     }
 
