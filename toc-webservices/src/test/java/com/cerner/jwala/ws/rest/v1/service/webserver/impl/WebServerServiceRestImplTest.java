@@ -1,6 +1,5 @@
 package com.cerner.jwala.ws.rest.v1.service.webserver.impl;
 
-import com.cerner.jwala.common.domain.model.app.Application;
 import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.path.FileSystemPath;
@@ -18,7 +17,6 @@ import com.cerner.jwala.common.properties.ApplicationProperties;
 import com.cerner.jwala.common.request.webserver.ControlWebServerRequest;
 import com.cerner.jwala.common.request.webserver.CreateWebServerRequest;
 import com.cerner.jwala.common.request.webserver.UpdateWebServerRequest;
-import com.cerner.jwala.common.request.webserver.UploadWebServerTemplateRequest;
 import com.cerner.jwala.control.AemControl;
 import com.cerner.jwala.exception.CommandFailureException;
 import com.cerner.jwala.persistence.jpa.service.exception.ResourceTemplateUpdateException;
@@ -29,14 +27,7 @@ import com.cerner.jwala.service.webserver.WebServerControlService;
 import com.cerner.jwala.service.webserver.impl.WebServerServiceImpl;
 import com.cerner.jwala.ws.rest.v1.provider.AuthenticatedUser;
 import com.cerner.jwala.ws.rest.v1.response.ApplicationResponse;
-import com.cerner.jwala.ws.rest.v1.service.webserver.impl.JsonControlWebServer;
-import com.cerner.jwala.ws.rest.v1.service.webserver.impl.JsonCreateWebServer;
-import com.cerner.jwala.ws.rest.v1.service.webserver.impl.JsonUpdateWebServer;
-import com.cerner.jwala.ws.rest.v1.service.webserver.impl.WebServerServiceRestImpl;
-
-import org.apache.commons.fileupload.FileUploadBase;
 import org.apache.commons.io.FileUtils;
-import org.apache.cxf.jaxrs.ext.MessageContext;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -46,19 +37,16 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import javax.servlet.ServletInputStream;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.SecurityContext;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import static org.junit.Assert.*;
@@ -646,25 +634,6 @@ public class WebServerServiceRestImplTest {
     }
 
     @Test
-    public void testUploadConfigTemplateThrowsBadStreamException() {
-        MessageContext mockMessageContext = mock(MessageContext.class);
-        HttpHeaders mockHttpHeaders = mock(HttpHeaders.class);
-        HttpServletRequest mockHttpServletReq = mock(HttpServletRequest.class);
-        List<MediaType> mediaTypeList = new ArrayList<>();
-        mediaTypeList.add(MediaType.APPLICATION_JSON_TYPE);
-        when(mockHttpHeaders.getAcceptableMediaTypes()).thenReturn(mediaTypeList);
-        when(mockMessageContext.getHttpHeaders()).thenReturn(mockHttpHeaders);
-        when(mockMessageContext.getHttpServletRequest()).thenReturn(mockHttpServletReq);
-        when(impl.getWebServer(webServer.getName())).thenReturn(webServer);
-        webServerServiceRest.setMessageContext(mockMessageContext);
-        try {
-            webServerServiceRest.uploadConfigTemplate(webServer.getName(), authenticatedUser, "HttpdSslConfTemplate.tpl");
-        } catch (Exception e) {
-            assertEquals("Error receiving data", e.getMessage());
-        }
-    }
-
-    @Test
     public void testPreviewResourceTemplate() {
         Response response = webServerServiceRest.previewResourceTemplate(webServer.getName(), "groupName", "httpd.conf");
         assertNotNull(response);
@@ -672,85 +641,6 @@ public class WebServerServiceRestImplTest {
         when(impl.previewResourceTemplate(anyString(), anyString(), anyString())).thenThrow(new RuntimeException("test runtime exception"));
         response = webServerServiceRest.previewResourceTemplate(webServer.getName(), "groupName", "httpd.conf");
         assertNotNull(response);
-    }
-
-    @Test(expected = InternalErrorException.class)
-    public void testUploadConfigTemplateThrowsInternalErrorExceptionForNoWebServer() throws IOException {
-        final MessageContext msgContextMock = mock(MessageContext.class);
-        final HttpHeaders httpHeadersMock = mock(HttpHeaders.class);
-        final List<MediaType> mediaTypeList = new ArrayList<>();
-        final HttpServletRequest httpServletRequestMock = mock(HttpServletRequest.class);
-        final HttpServletResponse httpServletResponseMock = mock(HttpServletResponse.class);
-        when(httpHeadersMock.getAcceptableMediaTypes()).thenReturn(mediaTypeList);
-        when(msgContextMock.getHttpHeaders()).thenReturn(httpHeadersMock);
-        when(msgContextMock.getHttpServletRequest()).thenReturn(httpServletRequestMock);
-        when(msgContextMock.getHttpServletResponse()).thenReturn(httpServletResponseMock);
-        when(httpServletRequestMock.getContentType()).thenReturn("multipart/form-data; boundary=----WebKitFormBoundaryXRxegBGqTe4gApI2");
-        when(httpServletRequestMock.getInputStream()).thenReturn(new DelegatingServletInputStream());
-        webServerServiceRest.setMessageContext(msgContextMock);
-
-        final SecurityContext securityContextMock = mock(SecurityContext.class);
-        final AuthenticatedUser authenticatedUser = new AuthenticatedUser(securityContextMock);
-
-        webServerServiceRest.uploadConfigTemplate(webServer.getName(), authenticatedUser, "HttpdSslConfTemplate.tpl");
-        verify(impl).uploadWebServerConfig(any(UploadWebServerTemplateRequest.class), any(User.class));
-    }
-
-    @Test
-    public void testUploadConfigTemplate() throws IOException {
-        final MessageContext msgContextMock = mock(MessageContext.class);
-        final HttpHeaders httpHeadersMock = mock(HttpHeaders.class);
-        final List<MediaType> mediaTypeList = new ArrayList<>();
-        final HttpServletRequest httpServletRequestMock = mock(HttpServletRequest.class);
-        final HttpServletResponse httpServletResponseMock = mock(HttpServletResponse.class);
-        when(httpHeadersMock.getAcceptableMediaTypes()).thenReturn(mediaTypeList);
-        when(msgContextMock.getHttpHeaders()).thenReturn(httpHeadersMock);
-        when(msgContextMock.getHttpServletRequest()).thenReturn(httpServletRequestMock);
-        when(msgContextMock.getHttpServletResponse()).thenReturn(httpServletResponseMock);
-        when(httpServletRequestMock.getContentType()).thenReturn("multipart/form-data; boundary=----WebKitFormBoundaryXRxegBGqTe4gApI2");
-        when(httpServletRequestMock.getInputStream()).thenReturn(new DelegatingServletInputStream());
-        when(impl.getWebServer(webServer.getName())).thenReturn(webServer);
-        webServerServiceRest.setMessageContext(msgContextMock);
-
-        final SecurityContext securityContextMock = mock(SecurityContext.class);
-        final AuthenticatedUser authenticatedUser = new AuthenticatedUser(securityContextMock);
-
-        webServerServiceRest.uploadConfigTemplate(webServer.getName(), authenticatedUser, "HttpdSslConfTemplate.tpl");
-        verify(impl).uploadWebServerConfig(any(UploadWebServerTemplateRequest.class), any(User.class));
-
-    }
-
-    @Test
-    public void testUploadConfigNoContent() throws IOException {
-
-        verify(impl, never()).uploadWebServerConfig(any(UploadWebServerTemplateRequest.class), any(User.class));
-
-        // ISO8859-1
-        String boundary = "--WebKitFormBoundarywBZFyEeqG5xW80nx";
-
-        String content = "";
-
-        String charsetBin = "ISO-8859-1";
-        ByteBuffer bbBuffer = Charset.forName(charsetBin).encode(content);
-        Application mockApp = mock(Application.class);
-        final HttpServletRequest mockHsr = mock(HttpServletRequest.class);
-        final MessageContext msgContextMock = mock(MessageContext.class);
-        final HttpServletResponse httpServletResponseMock = mock(HttpServletResponse.class);
-        final HttpHeaders httpHeadersMock = mock(HttpHeaders.class);
-        final List<MediaType> mediaTypeList = new ArrayList<>();
-        when(httpHeadersMock.getAcceptableMediaTypes()).thenReturn(mediaTypeList);
-        when(msgContextMock.getHttpHeaders()).thenReturn(httpHeadersMock);
-        when(msgContextMock.getHttpServletRequest()).thenReturn(mockHsr);
-        when(msgContextMock.getHttpServletResponse()).thenReturn(httpServletResponseMock);
-        when(mockHsr.getCharacterEncoding()).thenReturn(charsetBin);
-        when(mockHsr.getInputStream()).thenReturn(new MyIS(new ByteArrayInputStream(bbBuffer.array())));
-        when(mockHsr.getContentType()).thenReturn(FileUploadBase.MULTIPART_FORM_DATA + ";boundary=" + boundary);
-        when(impl.getWebServer(webServer.getName())).thenReturn(webServer);
-        when(mockApp.getName()).thenReturn("NoContentTestApp");
-        webServerServiceRest.setMessageContext(msgContextMock);
-
-        Response resp = webServerServiceRest.uploadConfigTemplate(webServer.getName(), authenticatedUser, "HttpdSslConfTemplate.tpl");
-        assertEquals(Response.Status.NO_CONTENT.getStatusCode(), resp.getStatus());
     }
 
     /**

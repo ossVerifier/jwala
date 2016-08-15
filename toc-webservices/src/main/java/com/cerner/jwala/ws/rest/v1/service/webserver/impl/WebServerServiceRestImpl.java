@@ -16,7 +16,6 @@ import com.cerner.jwala.common.exec.CommandOutputReturnCode;
 import com.cerner.jwala.common.exec.ExecReturnCode;
 import com.cerner.jwala.common.properties.ApplicationProperties;
 import com.cerner.jwala.common.request.webserver.ControlWebServerRequest;
-import com.cerner.jwala.common.request.webserver.UploadHttpdConfTemplateRequest;
 import com.cerner.jwala.common.request.webserver.UploadWebServerTemplateRequest;
 import com.cerner.jwala.control.AemControl;
 import com.cerner.jwala.exception.CommandFailureException;
@@ -31,11 +30,6 @@ import com.cerner.jwala.template.ResourceFileGenerator;
 import com.cerner.jwala.ws.rest.v1.provider.AuthenticatedUser;
 import com.cerner.jwala.ws.rest.v1.response.ResponseBuilder;
 import com.cerner.jwala.ws.rest.v1.service.webserver.WebServerServiceRest;
-
-import org.apache.commons.fileupload.FileItemIterator;
-import org.apache.commons.fileupload.FileItemStream;
-import org.apache.commons.fileupload.FileUploadException;
-import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.jaxrs.ext.MessageContext;
 import org.codehaus.jackson.JsonParseException;
@@ -45,9 +39,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.*;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -112,7 +108,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
                 ResourceTemplateMetaData metaData;
                 try {
                     metaData = new ObjectMapper().readValue(metaDataStr, ResourceTemplateMetaData.class);
-                    UploadWebServerTemplateRequest uploadWSRequest = new UploadWebServerTemplateRequest(webServer, metaData.getTemplateName(), metaDataStr, new ByteArrayInputStream(templateContent.getBytes())) {
+                    UploadWebServerTemplateRequest uploadWSRequest = new UploadWebServerTemplateRequest(webServer, metaData.getTemplateName(), metaDataStr, templateContent) {
                         @Override
                         public String getConfFileName() {
                             return templateName;
@@ -456,55 +452,6 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
      */
     void setMessageContext(MessageContext aContextForTesting) {
         context = aContextForTesting;
-    }
-
-    @Override
-    public Response uploadConfigTemplate(String webServerName, AuthenticatedUser aUser, String templateName) {
-        LOGGER.info("Upload Archive {} requested: {} streaming (no size, count yet) by user {}", templateName, webServerName, aUser.getUser().getId());
-
-        // iframe uploads from IE do not understand application/json
-        // as a response and will prompt for download. Fix: return
-        // text/html
-        if (!context.getHttpHeaders().getAcceptableMediaTypes().contains(MediaType.APPLICATION_JSON_TYPE)) {
-            context.getHttpServletResponse().setContentType(MediaType.TEXT_HTML);
-        }
-
-        WebServer webServer = webServerService.getWebServer(webServerName);
-        if (null == webServer) {
-            LOGGER.error("Web Server Not Found: Could not find web server with name " + webServerName);
-            throw new InternalErrorException(AemFaultType.WEBSERVER_NOT_FOUND, "Could not find web server with name " + webServerName);
-        }
-
-        ServletFileUpload sfu = new ServletFileUpload();
-        InputStream data = null;
-        try {
-            FileItemIterator iter = sfu.getItemIterator(context.getHttpServletRequest());
-            FileItemStream file1;
-
-            while (iter.hasNext()) {
-                file1 = iter.next();
-                try {
-                    data = file1.openStream();
-                    UploadWebServerTemplateRequest request =
-                            new UploadHttpdConfTemplateRequest(webServer, file1.getName(), data);
-
-                    return ResponseBuilder.created(webServerService.uploadWebServerConfig(request, aUser.getUser())); // early
-                    // out
-                    // on
-                    // first
-                    // attachment
-                } finally {
-                    assert data != null;
-                    data.close();
-                }
-            }
-            LOGGER.info("Failed to upload config template {} for web server {}: No Data", templateName, webServerName);
-            return ResponseBuilder.notOk(Response.Status.NO_CONTENT, new FaultCodeException(
-                    AemFaultType.INVALID_WEBSERVER_OPERATION, "No data"));
-        } catch (IOException | FileUploadException e) {
-            LOGGER.error("Bad Stream: Error receiving data", e);
-            throw new InternalErrorException(AemFaultType.BAD_STREAM, "Error receiving data", e);
-        }
     }
 
     @Override

@@ -1,36 +1,5 @@
 package com.cerner.jwala.persistence.jpa.service.app.impl;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.apache.commons.lang.RandomStringUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
-import org.springframework.test.annotation.IfProfileValue;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.test.context.support.AnnotationConfigContextLoader;
-import org.springframework.transaction.annotation.EnableTransactionManagement;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.cerner.jwala.common.configuration.TestExecutionProfile;
 import com.cerner.jwala.common.domain.model.app.Application;
 import com.cerner.jwala.common.domain.model.fault.AemFaultType;
@@ -63,6 +32,34 @@ import com.cerner.jwala.persistence.service.GroupPersistenceService;
 import com.cerner.jwala.persistence.service.JvmPersistenceService;
 import com.cerner.jwala.persistence.service.impl.JpaGroupPersistenceServiceImpl;
 import com.cerner.jwala.persistence.service.impl.JpaJvmPersistenceServiceImpl;
+import org.apache.commons.lang.RandomStringUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
+import org.springframework.test.annotation.IfProfileValue;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.support.AnnotationConfigContextLoader;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Scanner;
+
+import static org.junit.Assert.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @Transactional
@@ -232,6 +229,9 @@ public class ApplicationCrudServiceImplTest {
     @Test
     public void testGetResourceTemplate() throws FileNotFoundException {
         InputStream data = new FileInputStream(new File("./src/test/resources/ServerXMLTemplate.tpl"));
+        Scanner scanner = new Scanner(data).useDelimiter("\\A");
+        String templateContent = scanner.hasNext() ? scanner.next() : "";
+
         CreateJvmRequest createJvmRequest = new CreateJvmRequest("testJvmName", "testHost", 9100, 9101, 9102, -1, 9103, new Path("./"), "", null, null);
         CreateApplicationRequest createApplicationRequest = new CreateApplicationRequest(new Identifier<Group>(jpaGroup.getId()), "testAppResourceTemplateName", "/hctTest", true, true, false);
         Group group = new Group(new Identifier<Group>(jpaGroup.getId()), jpaGroup.getName());
@@ -243,16 +243,17 @@ public class ApplicationCrudServiceImplTest {
 
         Application app = new Application(new Identifier<Application>(jpaApp.getId()), jpaApp.getName(), jpaApp.getWarPath(), jpaApp.getWebAppContext(), group, true, true, false, "testApp.war");
         UploadAppTemplateRequest uploadTemplateRequest = new UploadAppTemplateRequest(app, "ServerXMLTemplate.tpl", "hct.xml",
-                "testJvmName", StringUtils.EMPTY, data);
+                "testJvmName", StringUtils.EMPTY, templateContent);
 
         applicationCrudService.uploadAppTemplate(uploadTemplateRequest, jpaJvm);
-        String templateContent = applicationCrudService.getResourceTemplate("testAppResourceTemplateName", "hct.xml", jpaJvm);
+        String templateResult = applicationCrudService.getResourceTemplate("testAppResourceTemplateName", "hct.xml", jpaJvm);
 
-        assertTrue(!templateContent.isEmpty());
+        assertTrue(!templateResult.isEmpty());
 
         data = new FileInputStream(new File("./src/test/resources/ServerXMLTemplate.tpl"));
-        uploadTemplateRequest = new UploadAppTemplateRequest(app, "ServerXMLTemplate.tpl", "hct.xml", "testJvmName", StringUtils.EMPTY, data
-        );
+        scanner = new Scanner(data).useDelimiter("\\A");
+        templateContent = scanner.hasNext() ? scanner.next() : "";
+        uploadTemplateRequest = new UploadAppTemplateRequest(app, "ServerXMLTemplate.tpl", "hct.xml", "testJvmName", StringUtils.EMPTY, templateContent);
         applicationCrudService.uploadAppTemplate(uploadTemplateRequest, jpaJvm);
         String templateContentUpdateWithTheSame = applicationCrudService.getResourceTemplate("testAppResourceTemplateName", "hct.xml", jpaJvm);
 

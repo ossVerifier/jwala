@@ -66,13 +66,6 @@ public interface WebServerServiceRest extends InitializingBean {
     @Path("/{wsName}/resources/name")
     Response getResourceNames(@PathParam("wsName") final String wsName);
 
-    @POST
-    @Path("/{wsName}/resources/uploadTemplate")
-    @Consumes(MediaType.MULTIPART_FORM_DATA)
-    Response uploadConfigTemplate(@PathParam("wsName") final String webServerName,
-                                  @BeanParam final AuthenticatedUser aUser,
-                                  @QueryParam("templateName") final String templateName);
-
     /**
      * Get resource template content.
      *

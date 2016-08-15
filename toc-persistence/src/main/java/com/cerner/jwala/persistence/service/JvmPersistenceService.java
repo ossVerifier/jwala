@@ -30,7 +30,7 @@ public interface JvmPersistenceService {
 
     Jvm removeJvmFromGroups(final Identifier<Jvm> aJvmId);
 
-    JpaJvmConfigTemplate uploadJvmTemplateXml(UploadJvmTemplateRequest uploadJvmTemplateRequest);
+    JpaJvmConfigTemplate uploadJvmConfigTemplate(UploadJvmTemplateRequest uploadJvmTemplateRequest);
 
     String getJvmTemplate(String templateName, Identifier<Jvm> jvmId);
 

@@ -245,60 +245,6 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
     }
 
     @Override
-    public Response uploadConfigTemplate(String appName, AuthenticatedUser aUser, String appXmlFileName, String jvmName) {
-        LOGGER.info("Upload config template {} for app associated with JVM {} requested: {} streaming (no size, count yet)", appName, appXmlFileName, jvmName);
-
-        // iframe uploads from IE do not understand application/json
-        // as a response and will prompt for download. Fix: return
-        // text/html
-        if (!context.getHttpHeaders().getAcceptableMediaTypes().contains(MediaType.APPLICATION_JSON_TYPE)) {
-            context.getHttpServletResponse().setContentType(MediaType.TEXT_HTML);
-        }
-
-        List<Application> applications = service.getApplications();
-        Application app = null;
-        for (Application resultApp : applications) {
-            if (resultApp.getName().equals(appName)) {
-                app = resultApp;
-                break;
-            }
-        }
-        if (null == app) {
-            LOGGER.error("Application Not Found: Could not find Application with name " + appName);
-            throw new InternalErrorException(AemFaultType.APPLICATION_NOT_FOUND,
-                    "Could not find Application with name " + appName);
-        }
-
-        InputStream data = null;
-        try {
-            FileItemIterator iter = servletFileUpload.getItemIterator(context.getHttpServletRequest());
-            FileItemStream file1;
-
-            while (iter.hasNext()) {
-                file1 = iter.next();
-                try {
-                    data = file1.openStream();
-                    UploadAppTemplateRequest command =
-                            new UploadAppTemplateRequest(app, file1.getName(), appXmlFileName, jvmName, data);
-
-                    service.uploadAppTemplate(command);
-                    // return the template after uploading because returning the JpaAppConfigTemplate was returning an unreadable json object - so unreadable that it would actually crash editors when copied from the chrome debugger and pasted
-                    return ResponseBuilder.created(service.getResourceTemplate(appName, app.getGroup().getName(), jvmName, appXmlFileName, resourceService.generateResourceGroup(), false)); // early out on first attachment
-                } finally {
-                    assert data != null;
-                    data.close();
-                }
-            }
-            LOGGER.error("No content in uploaded file {} to JVM: {}", appXmlFileName, jvmName);
-            return ResponseBuilder.notOk(Response.Status.NO_CONTENT, new FaultCodeException(
-                    AemFaultType.INVALID_JVM_OPERATION, "No data"));
-        } catch (IOException | FileUploadException e) {
-            LOGGER.error("Bad Stream: Error receiving data", e);
-            throw new InternalErrorException(AemFaultType.BAD_STREAM, "Error receiving data", e);
-        }
-    }
-
-    @Override
     public Response previewResourceTemplate(final String appName, final String groupName, final String jvmName,
                                             final String template) {
         LOGGER.debug("Preview resource template for app {} in group {} for JVM {} with content {}", appName, groupName, jvmName, template);

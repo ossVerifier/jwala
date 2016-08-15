@@ -16,14 +16,8 @@ import com.cerner.jwala.persistence.service.ResourceDao;
 import com.cerner.jwala.service.exception.ResourceServiceException;
 import com.cerner.jwala.service.resource.ResourceHandler;
 import com.cerner.jwala.service.resource.impl.CreateResourceResponseWrapper;
-import com.cerner.jwala.service.resource.impl.handler.exception.ResourceHandlerException;
-
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.List;
 
 /**
@@ -66,35 +60,28 @@ public class GroupLevelAppResourceHandler extends ResourceHandler {
     }
 
     @Override
-    public CreateResourceResponseWrapper createResource(final ResourceIdentifier resourceIdentifier,
+    public CreateResourceResponseWrapper
+    createResource(final ResourceIdentifier resourceIdentifier,
                                                         final ResourceTemplateMetaData metaData,
-                                                        final InputStream data) {
+                                                        final String templateContent) {
         CreateResourceResponseWrapper createResourceResponseWrapper = null;
         if (canHandle(resourceIdentifier)) {
-            final String groupName = metaData.getEntity().getGroup();
+            final String groupName = resourceIdentifier.groupName;
             final Group group = groupPersistenceService.getGroup(groupName);
             final ConfigTemplate createdConfigTemplate;
-            final String resourceContent;
-
-            try {
-                resourceContent = IOUtils.toString(data);
-            } catch (final IOException ioe) {
-                throw new ResourceHandlerException(MSG_ERR_CONVERTING_DATA_INPUTSTREAM_TO_STR, ioe);
-            }
 
             if (metaData.getContentType().equals(ContentType.APPLICATION_BINARY.contentTypeStr) &&
-                    resourceContent.toLowerCase().endsWith(WAR_FILE_EXTENSION)) {
+                    templateContent.toLowerCase().endsWith(WAR_FILE_EXTENSION)) {
                 final Application app = applicationPersistenceService.getApplication(resourceIdentifier.webAppName);
                 if (StringUtils.isEmpty(app.getWarName())) {
-                    applicationPersistenceService.updateWarInfo(resourceIdentifier.webAppName, metaData.getTemplateName(),
-                            resourceContent);
+                    applicationPersistenceService.updateWarInfo(resourceIdentifier.webAppName, metaData.getTemplateName(), templateContent);
                 } else {
                     throw new ResourceServiceException(MSG_CAN_ONLY_HAVE_ONE_WAR);
                 }
             }
 
             createdConfigTemplate = groupPersistenceService.populateGroupAppTemplate(groupName, resourceIdentifier.webAppName,
-                    metaData.getDeployFileName(), convertResourceTemplateMetaDataToJson(metaData), resourceContent);
+                    metaData.getDeployFileName(), convertResourceTemplateMetaDataToJson(metaData), templateContent);
 
             // Can't we just get the application using the group name and target app name instead of getting all the applications
             // then iterating it to compare with the target app name ???
@@ -103,10 +90,9 @@ public class GroupLevelAppResourceHandler extends ResourceHandler {
 
             for (final Application application : applications) {
                 if (metaData.getEntity().getDeployToJvms() && application.getName().equals(resourceIdentifier.webAppName)) {
-                    final byte[] bytes = resourceContent.getBytes();
                     for (final Jvm jvm : group.getJvms()) {
                         UploadAppTemplateRequest uploadAppTemplateRequest = new UploadAppTemplateRequest(application, metaData.getTemplateName(),
-                                metaData.getDeployFileName(), jvm.getJvmName(), convertResourceTemplateMetaDataToJson(metaData), new ByteArrayInputStream(bytes)
+                                metaData.getDeployFileName(), jvm.getJvmName(), convertResourceTemplateMetaDataToJson(metaData), templateContent
                         );
                         JpaJvm jpaJvm = jvmPersistenceService.getJpaJvm(jvm.getId(), false);
                         applicationPersistenceService.uploadAppTemplate(uploadAppTemplateRequest, jpaJvm);
@@ -116,7 +102,7 @@ public class GroupLevelAppResourceHandler extends ResourceHandler {
 
             createResourceResponseWrapper = new CreateResourceResponseWrapper(createdConfigTemplate);
         } else if (successor != null) {
-            createResourceResponseWrapper = successor.createResource(resourceIdentifier, metaData, data);
+            createResourceResponseWrapper = successor.createResource(resourceIdentifier, metaData, templateContent);
         }
         return createResourceResponseWrapper;
     }

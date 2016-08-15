@@ -12,14 +12,8 @@ import com.cerner.jwala.persistence.service.WebServerPersistenceService;
 import com.cerner.jwala.service.resource.ResourceContentGeneratorService;
 import com.cerner.jwala.service.resource.ResourceHandler;
 import com.cerner.jwala.service.resource.impl.CreateResourceResponseWrapper;
-import com.cerner.jwala.service.resource.impl.handler.exception.ResourceHandlerException;
-
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -62,26 +56,19 @@ public class GroupLevelWebServerResourceHandler extends ResourceHandler {
     @Override
     public CreateResourceResponseWrapper createResource(final ResourceIdentifier resourceIdentifier,
                                                         final ResourceTemplateMetaData metaData,
-                                                        final InputStream data) {
+                                                        final String templateContent) {
         CreateResourceResponseWrapper createResourceResponseWrapper = null;
         if (canHandle(resourceIdentifier)) {
 
-            final Group group = groupPersistenceService.getGroupWithWebServers(metaData.getEntity().getGroup());
+            final Group group = groupPersistenceService.getGroupWithWebServers(resourceIdentifier.groupName);
             final Set<WebServer> webServers = group.getWebServers();
             final Map<String, UploadWebServerTemplateRequest> uploadWebServerTemplateRequestMap = new HashMap<>();
             ConfigTemplate createdConfigTemplate = null;
-            final String templateContent;
-
-            try {
-                templateContent = IOUtils.toString(data);
-            } catch (final IOException ioe) {
-                throw new ResourceHandlerException(MSG_ERR_CONVERTING_DATA_INPUTSTREAM_TO_STR, ioe);
-            }
 
             for (final WebServer webServer : webServers) {
 
                 UploadWebServerTemplateRequest uploadWebServerTemplateRequest = new UploadWebServerTemplateRequest(webServer,
-                        metaData.getTemplateName(), convertResourceTemplateMetaDataToJson(metaData), new ByteArrayInputStream(templateContent.getBytes())) {
+                        metaData.getTemplateName(), convertResourceTemplateMetaDataToJson(metaData), templateContent) {
                     @Override
                     public String getConfFileName() {
                         return metaData.getDeployFileName();
@@ -97,7 +84,7 @@ public class GroupLevelWebServerResourceHandler extends ResourceHandler {
             }
 
             UploadWebServerTemplateRequest uploadWebServerTemplateRequest = new UploadWebServerTemplateRequest(null,
-                    metaData.getTemplateName(), convertResourceTemplateMetaDataToJson(metaData), new ByteArrayInputStream(templateContent.getBytes())) {
+                    metaData.getTemplateName(), convertResourceTemplateMetaDataToJson(metaData), templateContent) {
                 @Override
                 public String getConfFileName() {
                     return metaData.getDeployFileName();
@@ -107,7 +94,7 @@ public class GroupLevelWebServerResourceHandler extends ResourceHandler {
             groupPersistenceService.populateGroupWebServerTemplates(group.getName(), uploadWebServerTemplateRequestMap);
             createResourceResponseWrapper = new CreateResourceResponseWrapper(createdConfigTemplate);
         } else if (successor != null) {
-            createResourceResponseWrapper = successor.createResource(resourceIdentifier, metaData, data);
+            createResourceResponseWrapper = successor.createResource(resourceIdentifier, metaData, templateContent);
         }
         return createResourceResponseWrapper;
     }

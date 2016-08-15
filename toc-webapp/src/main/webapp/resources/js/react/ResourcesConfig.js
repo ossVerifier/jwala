@@ -281,6 +281,7 @@ var ResourcesConfig = React.createClass({
                     groupName = node.rtreeListMetaData.parent.name;
                     jvmName = "*";
                 } else if (node.rtreeListMetaData.entity === "jvms") {
+                    groupName = node.rtreeListMetaData.parent.rtreeListMetaData.parent.name;
                     jvmName = node.jvmName;
                 } else if (node.rtreeListMetaData.entity === "webServerSection") {
                     groupName = node.rtreeListMetaData.parent.name;

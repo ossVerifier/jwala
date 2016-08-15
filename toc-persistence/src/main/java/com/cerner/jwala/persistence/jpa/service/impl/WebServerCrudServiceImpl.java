@@ -22,7 +22,6 @@ import com.cerner.jwala.persistence.jpa.domain.resource.config.template.JpaWebSe
 import com.cerner.jwala.persistence.jpa.service.WebServerCrudService;
 import com.cerner.jwala.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
 import com.cerner.jwala.persistence.jpa.service.exception.ResourceTemplateUpdateException;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,10 +29,8 @@ import javax.persistence.EntityExistsException;
 import javax.persistence.NoResultException;
 import javax.persistence.NonUniqueResultException;
 import javax.persistence.Query;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
 
 public class WebServerCrudServiceImpl extends AbstractCrudServiceImpl<JpaWebServer> implements WebServerCrudService {
     private static final Logger LOGGER = LoggerFactory.getLogger(WebServerCrudServiceImpl.class);
@@ -263,9 +260,7 @@ public class WebServerCrudServiceImpl extends AbstractCrudServiceImpl<JpaWebServ
         Identifier<WebServer> id = webServer.getId();
         final JpaWebServer jpaWebServer = findById(id.getId());
 
-        InputStream inStream = request.getData();
-        Scanner scanner = new Scanner(inStream).useDelimiter("\\A");
-        String templateContent = scanner.hasNext() ? scanner.next() : "";
+        String templateContent = request.getTemplateContent();
 
         // get an instance and then do a create or update
         Query query = entityManager.createNamedQuery(JpaWebServerConfigTemplate.GET_WEBSERVER_TEMPLATE);

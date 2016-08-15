@@ -104,23 +104,6 @@ public interface ApplicationServiceRest extends InitializingBean {
                         @PathParam("resourceTemplateName") String resourceTemplateName,
                         @BeanParam AuthenticatedUser aUser);
 
-    /**
-     * Uploads a template.
-     *
-     * @param appName the application name
-     * @param aUser the user
-     * @param templateName the template name
-     * @param jvmName the JVM name
-     * @return {@link Response}
-     */
-    @POST
-    @Path("/{appName}/resources/uploadTemplate")
-    @Consumes(MediaType.MULTIPART_FORM_DATA)
-    Response uploadConfigTemplate(@PathParam("appName") final String appName,
-                                  @BeanParam final AuthenticatedUser aUser,
-                                  @MatrixParam("templateName") final String templateName,
-                                  @MatrixParam("jvmName") final String jvmName);
-
     @PUT
     @Path("/{appName}/resources/preview")
     @Consumes(MediaType.TEXT_PLAIN)

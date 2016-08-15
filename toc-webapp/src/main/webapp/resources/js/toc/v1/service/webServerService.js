@@ -139,16 +139,6 @@ var webServerService = {
                                              false,
                                              "text/plain; charset=utf-8");
     },
-    uploadTemplateForm: function(webServerName, templateName, templateFile, successCallback, errorCallback) {
-         return serviceFoundation.post("v1.0/webservers/" + encodeURIComponent(webServerName) + "/resources/uploadTemplate?templateName=" + encodeURIComponent(templateName),
-                                         "json",
-                                         templateFile,
-                                         successCallback,
-                                         errorCallback,
-                                         false,
-                                         "multipart/form-data",
-                                         true);
-     },
      previewResourceFile: function(webServerName, groupName, template, successCallback, errorCallback) {
         return serviceFoundation.put("v1.0/webservers/" + encodeURIComponent(webServerName) + "/resources/preview;groupName=" + encodeURIComponent(groupName),
                                      "json",

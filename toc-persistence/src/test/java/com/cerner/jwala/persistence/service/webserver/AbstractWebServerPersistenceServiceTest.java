@@ -13,20 +13,16 @@ import com.cerner.jwala.common.request.webserver.UploadWebServerTemplateRequest;
 import com.cerner.jwala.persistence.jpa.domain.resource.config.template.JpaWebServerConfigTemplate;
 import com.cerner.jwala.persistence.service.GroupPersistenceService;
 import com.cerner.jwala.persistence.service.WebServerPersistenceService;
-
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.ByteArrayInputStream;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertFalse;
-import static junit.framework.Assert.assertTrue;
+import static junit.framework.Assert.*;
 import static junit.framework.TestCase.assertNotNull;
 
 @Transactional
@@ -123,7 +119,7 @@ public abstract class AbstractWebServerPersistenceServiceTest {
                 webServer,
                 fileName,
                 metaData,
-                new ByteArrayInputStream(templateContent.getBytes())) {
+                templateContent) {
 
             @Override
             public String getConfFileName() {
@@ -217,7 +213,7 @@ public abstract class AbstractWebServerPersistenceServiceTest {
                 webServer,
                 "httpd.conf",
                 "{}",
-                new ByteArrayInputStream("meh".getBytes())) {
+                "meh") {
             @Override
             public String getConfFileName() {
                 return "httpd.conf";

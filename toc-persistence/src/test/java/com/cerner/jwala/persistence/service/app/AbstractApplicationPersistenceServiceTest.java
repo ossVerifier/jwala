@@ -30,6 +30,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.List;
+import java.util.Scanner;
 
 import static org.junit.Assert.*;
 
@@ -262,7 +263,10 @@ public abstract class AbstractApplicationPersistenceServiceTest {
         assertEquals(app.getName(), appList.get(0).getName());
 
         InputStream dataStream = new FileInputStream(new File("./src/test/resources/ServerXMLTemplate.tpl"));
-        UploadAppTemplateRequest uploadAppTemplateRequest = new UploadAppTemplateRequest(app, "ServerXMLTemplate.tpl", "hctTest.xml", jvm.getJvmName(), "meta data", dataStream);
+        Scanner scanner = new Scanner(dataStream).useDelimiter("\\A");
+        String templateContent = scanner.hasNext() ? scanner.next() : "";
+
+        UploadAppTemplateRequest uploadAppTemplateRequest = new UploadAppTemplateRequest(app, "ServerXMLTemplate.tpl", "hctTest.xml", jvm.getJvmName(), "meta data", templateContent);
 
         applicationPersistenceService.uploadAppTemplate(uploadAppTemplateRequest, jpaJvm);
 

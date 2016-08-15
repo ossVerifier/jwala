@@ -127,7 +127,7 @@ public class GroupJvmRelationshipServiceImpl extends AbstractCrudServiceImpl<Jpa
     public void populateJvmConfig(List<UploadJvmTemplateRequest> uploadJvmTemplateCommands, User user, boolean overwriteExisting) {
         for (UploadJvmTemplateRequest uploadJvmTemplateRequest: uploadJvmTemplateCommands) {
             if (overwriteExisting || jvmCrudService.getJvmTemplate(uploadJvmTemplateRequest.getConfFileName(), uploadJvmTemplateRequest.getJvm().getId()).isEmpty()){
-                jvmCrudService.uploadJvmTemplateXml(uploadJvmTemplateRequest);
+                jvmCrudService.uploadJvmConfigTemplate(uploadJvmTemplateRequest);
             }
         }
     }

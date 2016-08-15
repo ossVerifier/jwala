@@ -15,15 +15,12 @@ import com.cerner.jwala.persistence.jpa.domain.resource.config.template.JpaJvmCo
 import com.cerner.jwala.persistence.jpa.service.JvmCrudService;
 import com.cerner.jwala.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
 import com.cerner.jwala.persistence.jpa.service.exception.ResourceTemplateUpdateException;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.persistence.*;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
 
 public class JvmCrudServiceImpl extends AbstractCrudServiceImpl<JpaJvm> implements JvmCrudService {
     private static final Logger LOGGER = LoggerFactory.getLogger(JvmCrudServiceImpl.class);
@@ -108,15 +105,13 @@ public class JvmCrudServiceImpl extends AbstractCrudServiceImpl<JpaJvm> implemen
     }
 
     @Override
-    public JpaJvmConfigTemplate uploadJvmTemplateXml(UploadJvmTemplateRequest uploadJvmTemplateRequest) {
+    public JpaJvmConfigTemplate uploadJvmConfigTemplate(UploadJvmTemplateRequest uploadJvmTemplateRequest) {
 
         final Jvm jvm = uploadJvmTemplateRequest.getJvm();
         Identifier<Jvm> id = jvm.getId();
         final JpaJvm jpaJvm = getJvm(id);
 
-        InputStream inStream = uploadJvmTemplateRequest.getData();
-        Scanner scanner = new Scanner(inStream).useDelimiter("\\A");
-        String templateContent = scanner.hasNext() ? scanner.next() : "";
+        String templateContent = uploadJvmTemplateRequest.getTemplateContent();
 
         // get an instance and then do a create or update
         Query query = entityManager.createQuery("SELECT t FROM JpaJvmConfigTemplate t where t.templateName = :tempName and t.jvm = :jpaJvm");

@@ -130,38 +130,39 @@ public class ResourceServiceImpl implements ResourceService {
         final ObjectMapper mapper = new ObjectMapper();
         final ResourceTemplateMetaData resourceTemplateMetaData;
         final CreateResourceResponseWrapper responseWrapper;
+        Scanner scanner = new Scanner(templateData).useDelimiter("\\A");
+        String templateContent = scanner.hasNext() ? scanner.next() : "";
+
 
         try {
             resourceTemplateMetaData = mapper.readValue(IOUtils.toString(metaData), ResourceTemplateMetaData.class);
             if (resourceTemplateMetaData.getContentType().equals(ContentType.APPLICATION_BINARY.contentTypeStr)) {
                 // TODO create new API that doesn't use UploadWebArchiveRequest - just do this for now
                 Application fakedApplication = new Application(new Identifier<Application>(0L), resourceTemplateMetaData.getDeployFileName(), resourceTemplateMetaData.getDeployPath(), "", null, true, true, false, resourceTemplateMetaData.getDeployFileName());
-                UploadWebArchiveRequest uploadWebArchiveRequest = new UploadWebArchiveRequest(fakedApplication, resourceTemplateMetaData.getDeployFileName(), -1L, templateData);
+                UploadWebArchiveRequest uploadWebArchiveRequest = new UploadWebArchiveRequest(fakedApplication, resourceTemplateMetaData.getDeployFileName(), -1L, new ByteArrayInputStream(templateContent.getBytes()));
                 RepositoryFileInformation fileInfo = privateApplicationService.uploadWebArchiveData(uploadWebArchiveRequest);
-
-                templateData = new ByteArrayInputStream(fileInfo.getPath().toString().getBytes());
             }
 
             // Let's create the template!
             final EntityType entityType = EntityType.fromValue(resourceTemplateMetaData.getEntity().getType());
             switch (entityType) {
                 case JVM:
-                    responseWrapper = createJvmTemplate(resourceTemplateMetaData, templateData, targetName);
+                    responseWrapper = createJvmTemplate(resourceTemplateMetaData, templateContent, targetName);
                     break;
                 case GROUPED_JVMS:
-                    responseWrapper = createGroupedJvmsTemplate(resourceTemplateMetaData, templateData);
+                    responseWrapper = createGroupedJvmsTemplate(resourceTemplateMetaData, templateContent);
                     break;
                 case WEB_SERVER:
-                    responseWrapper = createWebServerTemplate(resourceTemplateMetaData, templateData, targetName, user);
+                    responseWrapper = createWebServerTemplate(resourceTemplateMetaData, templateContent, targetName, user);
                     break;
                 case GROUPED_WEBSERVERS:
-                    responseWrapper = createGroupedWebServersTemplate(resourceTemplateMetaData, templateData, user);
+                    responseWrapper = createGroupedWebServersTemplate(resourceTemplateMetaData, templateContent, user);
                     break;
                 case APP:
-                    responseWrapper = createApplicationTemplate(resourceTemplateMetaData, templateData, targetName);
+                    responseWrapper = createApplicationTemplate(resourceTemplateMetaData, templateContent, targetName);
                     break;
                 case GROUPED_APPS:
-                    responseWrapper = createGroupedApplicationsTemplate(resourceTemplateMetaData, templateData, targetName);
+                    responseWrapper = createGroupedApplicationsTemplate(resourceTemplateMetaData, templateContent, targetName);
                     break;
                 default:
                     throw new ResourceServiceException("Invalid entity type '" + resourceTemplateMetaData.getEntity().getType() + "'");
@@ -291,12 +292,12 @@ public class ResourceServiceImpl implements ResourceService {
      * Create the JVM template in the db and in the templates path for a specific JVM entity target.
      *
      * @param metaData     the data that describes the template, please see {@link ResourceTemplateMetaData}
-     * @param templateData the template content/data
+     * @param templateContent the template content/data
      * @param jvmName      identifies the JVM to which the template is attached to
      */
     @Deprecated
     private CreateResourceResponseWrapper createJvmTemplate(final ResourceTemplateMetaData metaData,
-                                                            final InputStream templateData,
+                                                            final String templateContent,
                                                             final String jvmName) {
         final Jvm jvm = jvmPersistenceService.findJvmByExactName(jvmName);
         final Group parentGroup = groupPersistenceService.getGroup(metaData.getEntity().getGroup());
@@ -319,37 +320,36 @@ public class ResourceServiceImpl implements ResourceService {
                 jvm.getEncryptedPassword());
 
         final UploadJvmConfigTemplateRequest uploadJvmTemplateRequest = new UploadJvmConfigTemplateRequest(jvmWithParentGroup, metaData.getTemplateName(),
-                templateData, convertResourceTemplateMetaDataToJson(metaData));
+                templateContent, convertResourceTemplateMetaDataToJson(metaData));
         uploadJvmTemplateRequest.setConfFileName(metaData.getDeployFileName());
-        return new CreateResourceResponseWrapper(jvmPersistenceService.uploadJvmTemplateXml(uploadJvmTemplateRequest));
+        return new CreateResourceResponseWrapper(jvmPersistenceService.uploadJvmConfigTemplate(uploadJvmTemplateRequest));
     }
 
     /**
      * Create the JVM template in the db and in the templates path for all the JVMs.
      *
      * @param metaData     the data that describes the template, please see {@link ResourceTemplateMetaData}
-     * @param templateData the template content/data
+     * @param templateContent the template content/data
      */
     // TODO: When the resource file is locked, don't overwrite!
     @Deprecated
     private CreateResourceResponseWrapper createGroupedJvmsTemplate(final ResourceTemplateMetaData metaData,
-                                                                    final InputStream templateData) throws IOException {
+                                                                    final String templateContent) throws IOException {
         final Set<Jvm> jvms = groupPersistenceService.getGroup(metaData.getEntity().getGroup()).getJvms();
         ConfigTemplate createdJpaJvmConfigTemplate = null;
-        String templateContent = IOUtils.toString(templateData);
 
         for (final Jvm jvm : jvms) {
             UploadJvmConfigTemplateRequest uploadJvmTemplateRequest = new UploadJvmConfigTemplateRequest(jvm, metaData.getTemplateName(),
-                    new ByteArrayInputStream(templateContent.getBytes()), convertResourceTemplateMetaDataToJson(metaData));
+                    templateContent, convertResourceTemplateMetaDataToJson(metaData));
             uploadJvmTemplateRequest.setConfFileName(metaData.getDeployFileName());
 
             // Since we're just creating the same template for all the JVMs, we just keep one copy of the created
             // configuration template.
-            createdJpaJvmConfigTemplate = jvmPersistenceService.uploadJvmTemplateXml(uploadJvmTemplateRequest);
+            createdJpaJvmConfigTemplate = jvmPersistenceService.uploadJvmConfigTemplate(uploadJvmTemplateRequest);
         }
         final List<UploadJvmTemplateRequest> uploadJvmTemplateRequestList = new ArrayList<>();
         UploadJvmConfigTemplateRequest uploadJvmTemplateRequest = new UploadJvmConfigTemplateRequest(null, metaData.getTemplateName(),
-                new ByteArrayInputStream(templateContent.getBytes()), convertResourceTemplateMetaDataToJson(metaData));
+                templateContent, convertResourceTemplateMetaDataToJson(metaData));
         uploadJvmTemplateRequest.setConfFileName(metaData.getDeployFileName());
         uploadJvmTemplateRequestList.add(uploadJvmTemplateRequest);
         groupPersistenceService.populateGroupJvmTemplates(metaData.getEntity().getGroup(), uploadJvmTemplateRequestList);
@@ -360,18 +360,18 @@ public class ResourceServiceImpl implements ResourceService {
      * Create the web server template in the db and in the templates path for a specific web server entity target.
      *
      * @param metaData      the data that describes the template, please see {@link ResourceTemplateMetaData}
-     * @param templateData  the template content/data
+     * @param templateContent  the template content/data
      * @param webServerName identifies the web server to which the template belongs to
      * @param user
      */
     @Deprecated
     private CreateResourceResponseWrapper createWebServerTemplate(final ResourceTemplateMetaData metaData,
-                                                                  final InputStream templateData,
+                                                                  final String templateContent,
                                                                   final String webServerName,
                                                                   final User user) {
         final WebServer webServer = webServerPersistenceService.findWebServerByName(webServerName);
         final UploadWebServerTemplateRequest uploadWebArchiveRequest = new UploadWebServerTemplateRequest(webServer,
-                metaData.getTemplateName(), convertResourceTemplateMetaDataToJson(metaData), templateData) {
+                metaData.getTemplateName(), convertResourceTemplateMetaDataToJson(metaData), templateContent) {
             @Override
             public String getConfFileName() {
                 return metaData.getDeployFileName();
@@ -385,22 +385,21 @@ public class ResourceServiceImpl implements ResourceService {
      * Create the web server template in the db and in the templates path for all the web servers.
      *
      * @param metaData     the data that describes the template, please see {@link ResourceTemplateMetaData}
-     * @param templateData the template content/data
+     * @param templateContent the template content/data
      * @param user
      */
     @Deprecated
     private CreateResourceResponseWrapper createGroupedWebServersTemplate(final ResourceTemplateMetaData metaData,
-                                                                          final InputStream templateData,
+                                                                          final String templateContent,
                                                                           final User user) throws IOException {
         final Group group = groupPersistenceService.getGroupWithWebServers(metaData.getEntity().getGroup());
         final Set<WebServer> webServers = group.getWebServers();
         final Map<String, UploadWebServerTemplateRequest> uploadWebServerTemplateRequestMap = new HashMap<>();
         ConfigTemplate createdConfigTemplate = null;
-        String templateContent = IOUtils.toString(templateData);
         for (final WebServer webServer : webServers) {
 
             UploadWebServerTemplateRequest uploadWebServerTemplateRequest = new UploadWebServerTemplateRequest(webServer,
-                    metaData.getTemplateName(), convertResourceTemplateMetaDataToJson(metaData), new ByteArrayInputStream(templateContent.getBytes())) {
+                    metaData.getTemplateName(), convertResourceTemplateMetaDataToJson(metaData), templateContent) {
                 @Override
                 public String getConfFileName() {
                     return metaData.getDeployFileName();
@@ -414,7 +413,7 @@ public class ResourceServiceImpl implements ResourceService {
         }
 
         UploadWebServerTemplateRequest uploadWebServerTemplateRequest = new UploadWebServerTemplateRequest(null,
-                metaData.getTemplateName(), convertResourceTemplateMetaDataToJson(metaData), new ByteArrayInputStream(templateContent.getBytes())) {
+                metaData.getTemplateName(), convertResourceTemplateMetaDataToJson(metaData), templateContent) {
             @Override
             public String getConfFileName() {
                 return metaData.getDeployFileName();
@@ -429,14 +428,14 @@ public class ResourceServiceImpl implements ResourceService {
      * Create the application template in the db and in the templates path for a specific application entity target.
      *
      * @param metaData      the data that describes the template, please see {@link ResourceTemplateMetaData}
-     * @param templateData  the template content/data
+     * @param templateContent  the template content/data
      * @param targetJvmName the name of the JVM to associate with the application template
      */
     @Deprecated
-    private CreateResourceResponseWrapper createApplicationTemplate(final ResourceTemplateMetaData metaData, final InputStream templateData, String targetJvmName) {
+    private CreateResourceResponseWrapper createApplicationTemplate(final ResourceTemplateMetaData metaData, final String templateContent, String targetJvmName) {
         final Application application = applicationPersistenceService.getApplication(metaData.getEntity().getTarget());
         UploadAppTemplateRequest uploadAppTemplateRequest = new UploadAppTemplateRequest(application, metaData.getTemplateName(),
-                metaData.getDeployFileName(), targetJvmName, convertResourceTemplateMetaDataToJson(metaData), templateData);
+                metaData.getDeployFileName(), targetJvmName, convertResourceTemplateMetaDataToJson(metaData), templateContent);
         JpaJvm jpaJvm = jvmPersistenceService.getJpaJvm(jvmPersistenceService.findJvmByExactName(targetJvmName).getId(), false);
         return new CreateResourceResponseWrapper(applicationPersistenceService.uploadAppTemplate(uploadAppTemplateRequest, jpaJvm));
     }
@@ -445,30 +444,28 @@ public class ResourceServiceImpl implements ResourceService {
      * Create the application template in the db and in the templates path for all the application.
      *
      * @param metaData      the data that describes the template, please see {@link ResourceTemplateMetaData}
-     * @param templateData  the template content/data
+     * @param templateContent  the template content/data
      * @param targetAppName the application name
      */
     @Deprecated
     private CreateResourceResponseWrapper createGroupedApplicationsTemplate(final ResourceTemplateMetaData metaData,
-                                                                            final InputStream templateData,
+                                                                            final String templateContent,
                                                                             final String targetAppName) throws IOException {
         final String groupName = metaData.getEntity().getGroup();
         Group group = groupPersistenceService.getGroup(groupName);
         final List<Application> applications = applicationPersistenceService.findApplicationsBelongingTo(groupName);
         ConfigTemplate createdConfigTemplate = null;
-        String templateString = IOUtils.toString(templateData);
 
         if (ContentType.APPLICATION_BINARY.contentTypeStr.equalsIgnoreCase(metaData.getContentType()) &&
                 metaData.getTemplateName().toLowerCase().endsWith(WAR_FILE_EXTENSION)) {
-            applicationPersistenceService.updateWarInfo(targetAppName, metaData.getTemplateName(), templateString);
+            applicationPersistenceService.updateWarInfo(targetAppName, metaData.getTemplateName(), templateContent);
         }
 
         for (final Application application : applications) {
             if (metaData.getEntity().getDeployToJvms() && application.getName().equals(targetAppName)) {
-                final byte[] bytes = templateString.getBytes();
                 for (final Jvm jvm : group.getJvms()) {
                     UploadAppTemplateRequest uploadAppTemplateRequest = new UploadAppTemplateRequest(application, metaData.getTemplateName(),
-                            metaData.getDeployFileName(), jvm.getJvmName(), convertResourceTemplateMetaDataToJson(metaData), new ByteArrayInputStream(bytes)
+                            metaData.getDeployFileName(), jvm.getJvmName(), convertResourceTemplateMetaDataToJson(metaData), templateContent
                     );
                     JpaJvm jpaJvm = jvmPersistenceService.getJpaJvm(jvm.getId(), false);
                     applicationPersistenceService.uploadAppTemplate(uploadAppTemplateRequest, jpaJvm);
@@ -477,7 +474,7 @@ public class ResourceServiceImpl implements ResourceService {
         }
 
         createdConfigTemplate = groupPersistenceService.populateGroupAppTemplate(groupName, targetAppName, metaData.getDeployFileName(),
-                convertResourceTemplateMetaDataToJson(metaData), templateString);
+                convertResourceTemplateMetaDataToJson(metaData), templateContent);
 
         return new CreateResourceResponseWrapper(createdConfigTemplate);
     }
@@ -573,6 +570,8 @@ public class ResourceServiceImpl implements ResourceService {
     @Override
     @Transactional
     public String updateResourceContent(ResourceIdentifier resourceIdentifier, String templateContent) {
+
+        LOGGER.debug("Update template content for {} :: Updated content={}", resourceIdentifier, templateContent);
 
         // TODO either derive or pass in the EntityType
         resourceDao.updateResource(resourceIdentifier, EntityType.EXT_PROPERTIES, templateContent);
@@ -800,8 +799,13 @@ public class ResourceServiceImpl implements ResourceService {
     public CreateResourceResponseWrapper createResource(final ResourceIdentifier resourceIdentifier,
                                                         final ResourceTemplateMetaData metaData,
                                                         final InputStream templateData) {
+
+        Scanner scanner = new Scanner(templateData).useDelimiter("\\A");
+        String templateContent = scanner.hasNext() ? scanner.next() : "";
+        LOGGER.debug("Creating resource content for {} :: Content={}", resourceIdentifier, templateContent);
+
         try {
-            return resourceHandler.createResource(resourceIdentifier, metaData, templateData);
+            return resourceHandler.createResource(resourceIdentifier, metaData, templateContent);
         } catch (final ResourceHandlerException rhe) {
             throw new ResourceServiceException(rhe);
         }

@@ -13,8 +13,6 @@ import com.cerner.jwala.service.resource.impl.CreateResourceResponseWrapper;
 
 import org.apache.commons.lang3.StringUtils;
 
-import java.io.InputStream;
-
 /**
  * Handler for a web server resource identified by a "resource identifier" {@link ResourceIdentifier}
  *
@@ -49,12 +47,12 @@ public class WebServerResourceHandler extends ResourceHandler {
     @Override
     public CreateResourceResponseWrapper createResource(final ResourceIdentifier resourceIdentifier,
                                                         final ResourceTemplateMetaData metaData,
-                                                        final InputStream data) {
+                                                        final String templateContent) {
         CreateResourceResponseWrapper createResourceResponseWrapper = null;
         if (canHandle(resourceIdentifier)) {
             final WebServer webServer = webServerPersistenceService.findWebServerByName(resourceIdentifier.webServerName);
             final UploadWebServerTemplateRequest uploadWebArchiveRequest = new UploadWebServerTemplateRequest(webServer,
-                    metaData.getTemplateName(), convertResourceTemplateMetaDataToJson(metaData), data) {
+                    metaData.getTemplateName(), convertResourceTemplateMetaDataToJson(metaData), templateContent) {
                 @Override
                 public String getConfFileName() {
                     return metaData.getDeployFileName();
@@ -64,7 +62,7 @@ public class WebServerResourceHandler extends ResourceHandler {
             createResourceResponseWrapper = new CreateResourceResponseWrapper(webServerPersistenceService
                     .uploadWebServerConfigTemplate(uploadWebArchiveRequest, generatedDeployPath + "/" + metaData.getDeployFileName(), null));
         } else if (successor != null) {
-            createResourceResponseWrapper = successor.createResource(resourceIdentifier, metaData, data);
+            createResourceResponseWrapper = successor.createResource(resourceIdentifier, metaData, templateContent);
         }
         return createResourceResponseWrapper;
     }

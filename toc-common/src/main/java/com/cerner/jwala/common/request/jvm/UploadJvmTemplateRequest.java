@@ -1,14 +1,12 @@
 package com.cerner.jwala.common.request.jvm;
 
-import java.io.InputStream;
-import java.io.Serializable;
-
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
 import com.cerner.jwala.common.request.Request;
 import com.cerner.jwala.common.rule.MultipleRules;
 import com.cerner.jwala.common.rule.ValidTemplateNameRule;
-import com.cerner.jwala.common.rule.app.GoodStreamRule;
 import com.cerner.jwala.common.rule.jvm.JvmIdRule;
+
+import java.io.Serializable;
 
 /**
  * Request wrapper to upload JVM resource template.
@@ -18,20 +16,20 @@ import com.cerner.jwala.common.rule.jvm.JvmIdRule;
 public abstract class UploadJvmTemplateRequest implements Serializable, Request {
     private final Jvm jvm;
     private final String fileName;
-    private final InputStream data;
+    private final String templateContent;
     private final String metaData;
 
-    public UploadJvmTemplateRequest(final Jvm jvm, final String fileName, final InputStream data) {
+    public UploadJvmTemplateRequest(final Jvm jvm, final String fileName, final String templateContent) {
         this.jvm = jvm;
         this.fileName = fileName;
-        this.data = data;
+        this.templateContent = templateContent;
         this.metaData = null;
     }
 
-    public UploadJvmTemplateRequest(final Jvm jvm, final String fileName, final InputStream data, final String metaData) {
+    public UploadJvmTemplateRequest(final Jvm jvm, final String fileName, final String templateContent, final String metaData) {
         this.jvm = jvm;
         this.fileName = fileName;
-        this.data = data;
+        this.templateContent = templateContent;
         this.metaData = metaData;
     }
 
@@ -39,7 +37,6 @@ public abstract class UploadJvmTemplateRequest implements Serializable, Request 
     public void validate() {
         new MultipleRules(
                 new ValidTemplateNameRule(this.fileName),
-                new GoodStreamRule(this.data),
                 new JvmIdRule(this.jvm.getId())
         ).validate();
 
@@ -49,8 +46,8 @@ public abstract class UploadJvmTemplateRequest implements Serializable, Request 
         return jvm;
     }
 
-    public InputStream getData(){
-        return data;
+    public String getTemplateContent(){
+        return templateContent;
     }
 
     public abstract String getConfFileName();

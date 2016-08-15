@@ -8,14 +8,10 @@ import com.cerner.jwala.persistence.jpa.domain.resource.config.template.JpaResou
 import com.cerner.jwala.persistence.service.ResourceDao;
 import com.cerner.jwala.service.resource.ResourceHandler;
 import com.cerner.jwala.service.resource.impl.CreateResourceResponseWrapper;
-import com.cerner.jwala.service.resource.impl.handler.ExternalPropertiesResourceHandler;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -110,16 +106,16 @@ public class ExternalPropertiesResourceHandlerTest {
         ResourceIdentifier identifier = resourceIdentifierBuilder.build();
         ResourceTemplateMetaData metaData = new ResourceTemplateMetaData();
         metaData.setDeployFileName("external.properties");
-        InputStream data = new ByteArrayInputStream("key=value".getBytes());
+        String templateContent = "key=value";
         JpaResourceConfigTemplate mockJpaResourceConfigTemplate = mock(JpaResourceConfigTemplate.class);
 
-        when(mockResourceDao.createResource(anyLong(), anyLong(), anyLong(), eq(EntityType.EXT_PROPERTIES), eq("external.properties"), any(InputStream.class), anyString())).thenReturn(mockJpaResourceConfigTemplate);
+        when(mockResourceDao.createResource(anyLong(), anyLong(), anyLong(), eq(EntityType.EXT_PROPERTIES), eq("external.properties"), anyString(), anyString())).thenReturn(mockJpaResourceConfigTemplate);
         when(mockResourceDao.getExternalPropertiesResource(anyString())).thenReturn(mockJpaResourceConfigTemplate);
         when(mockJpaResourceConfigTemplate.getTemplateContent()).thenReturn("key=value");
 
-        CreateResourceResponseWrapper result = externalPropertiesResourceHandler.createResource(identifier, metaData, data);
+        CreateResourceResponseWrapper result = externalPropertiesResourceHandler.createResource(identifier, metaData, templateContent);
         assertNotNull(result);
-        verify(mockResourceDao).createResource((Long)isNull(), (Long)isNull(), (Long)isNull(), eq(EntityType.EXT_PROPERTIES), eq("external.properties"), eq(data), anyString());
+        verify(mockResourceDao).createResource((Long)isNull(), (Long)isNull(), (Long)isNull(), eq(EntityType.EXT_PROPERTIES), eq("external.properties"), eq(templateContent), anyString());
     }
 
     @Test
@@ -134,20 +130,20 @@ public class ExternalPropertiesResourceHandlerTest {
         ResourceIdentifier identifier = resourceIdentifierBuilder.build();
         ResourceTemplateMetaData metaData = new ResourceTemplateMetaData();
         metaData.setDeployFileName("external.properties");
-        InputStream data = new ByteArrayInputStream("key=value".getBytes());
+        String templateContent = "key=value";
         JpaResourceConfigTemplate mockJpaResourceConfigTemplate = mock(JpaResourceConfigTemplate.class);
         List<String> resourceNames = new ArrayList<>();
         resourceNames.add("external.properties");
 
         when(mockResourceDao.getResourceNames(any(ResourceIdentifier.class), eq(EntityType.EXT_PROPERTIES))).thenReturn(resourceNames);
         when(mockResourceDao.deleteExternalProperties()).thenReturn(1);
-        when(mockResourceDao.createResource(anyLong(), anyLong(), anyLong(), eq(EntityType.EXT_PROPERTIES), eq("external.properties"), any(InputStream.class), anyString())).thenReturn(mockJpaResourceConfigTemplate);
+        when(mockResourceDao.createResource(anyLong(), anyLong(), anyLong(), eq(EntityType.EXT_PROPERTIES), eq("external.properties"), anyString(), anyString())).thenReturn(mockJpaResourceConfigTemplate);
         when(mockResourceDao.getExternalPropertiesResource(anyString())).thenReturn(mockJpaResourceConfigTemplate);
         when(mockJpaResourceConfigTemplate.getTemplateContent()).thenReturn("key=value");
 
-        CreateResourceResponseWrapper result = externalPropertiesResourceHandler.createResource(identifier, metaData, data);
+        CreateResourceResponseWrapper result = externalPropertiesResourceHandler.createResource(identifier, metaData, templateContent);
         assertNotNull(result);
-        verify(mockResourceDao).createResource((Long)isNull(), (Long)isNull(), (Long)isNull(), eq(EntityType.EXT_PROPERTIES), eq("external.properties"), eq(data), anyString());
+        verify(mockResourceDao).createResource((Long)isNull(), (Long)isNull(), (Long)isNull(), eq(EntityType.EXT_PROPERTIES), eq("external.properties"), eq(templateContent), anyString());
     }
 
     @Test
@@ -161,13 +157,12 @@ public class ExternalPropertiesResourceHandlerTest {
 
         ResourceTemplateMetaData metaData = new ResourceTemplateMetaData();
         metaData.setDeployFileName("external.properties");
-        InputStream data = new ByteArrayInputStream("key=value".getBytes());
 
         CreateResourceResponseWrapper mockCreateResourceResponseWrapper = mock(CreateResourceResponseWrapper.class);
 
-        when(mockSuccessor.createResource(any(ResourceIdentifier.class), any(ResourceTemplateMetaData.class), any(InputStream.class))).thenReturn(mockCreateResourceResponseWrapper);
-        CreateResourceResponseWrapper result = externalPropertiesResourceHandler.createResource(resourceIdentifierBuilder.build(), metaData, data);
+        when(mockSuccessor.createResource(any(ResourceIdentifier.class), any(ResourceTemplateMetaData.class), anyString())).thenReturn(mockCreateResourceResponseWrapper);
+        CreateResourceResponseWrapper result = externalPropertiesResourceHandler.createResource(resourceIdentifierBuilder.build(), metaData, "key=value");
         assertNotNull(result);
-        verify(mockSuccessor).createResource(any(ResourceIdentifier.class), any(ResourceTemplateMetaData.class), any(InputStream.class));
+        verify(mockSuccessor).createResource(any(ResourceIdentifier.class), any(ResourceTemplateMetaData.class), anyString());
     }
 }

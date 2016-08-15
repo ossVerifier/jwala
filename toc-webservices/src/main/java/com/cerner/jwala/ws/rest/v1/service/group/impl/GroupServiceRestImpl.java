@@ -651,7 +651,10 @@ public class GroupServiceRestImpl implements GroupServiceRest {
 
     protected Response doGroupWebServerTemplateUpload(String groupName, AuthenticatedUser aUser, final String templateName, final InputStream data, FileItemStream file1) {
         final WebServer dummyWebServer = new WebServer(new Identifier<WebServer>(0L), new HashSet<Group>(), "");
-        UploadWebServerTemplateRequest uploadWSTemplateRequest = new UploadWebServerTemplateRequest(dummyWebServer, file1.getName(), data) {
+        Scanner scanner = new Scanner(data).useDelimiter("\\A");
+        String templateContent = scanner.hasNext() ? scanner.next() : "";
+
+        UploadWebServerTemplateRequest uploadWSTemplateRequest = new UploadWebServerTemplateRequest(dummyWebServer, file1.getName(), templateContent) {
             @Override
             public String getConfFileName() {
                 return templateName;
@@ -664,7 +667,10 @@ public class GroupServiceRestImpl implements GroupServiceRest {
 
     protected Response doGroupJvmTemplateUpload(String groupName, AuthenticatedUser aUser, final String templateName, final InputStream data, final FileItemStream file1) {
         Jvm dummyJvm = new Jvm(new Identifier<Jvm>(0L), "", new HashSet());
-        UploadJvmTemplateRequest uploadJvmTemplateRequest = new UploadJvmTemplateRequest(dummyJvm, file1.getName(), data) {
+        Scanner scanner = new Scanner(data).useDelimiter("\\A");
+        String templateContent = scanner.hasNext() ? scanner.next() : "";
+
+        UploadJvmTemplateRequest uploadJvmTemplateRequest = new UploadJvmTemplateRequest(dummyJvm, file1.getName(), templateContent) {
             @Override
             public String getConfFileName() {
                 return templateName;

@@ -34,8 +34,6 @@ import com.cerner.jwala.persistence.jpa.domain.resource.config.template.ConfigTe
 import com.cerner.jwala.persistence.service.*;
 import com.cerner.jwala.service.app.ApplicationService;
 import com.cerner.jwala.service.app.PrivateApplicationService;
-import com.cerner.jwala.service.resource.ResourceHandler;
-import com.cerner.jwala.service.resource.ResourceService;
 import com.cerner.jwala.service.resource.impl.ResourceServiceImpl;
 
 import org.apache.commons.lang.StringUtils;
@@ -190,7 +188,7 @@ public class ResourceServiceImplTest {
         when(mockUser.getId()).thenReturn("user-id");
         resourceService.createTemplate(metaDataIn, templateIn, "some jvm", mockUser);
         verify(mockJvmPersistenceService).findJvmByExactName("some jvm");
-        verify(mockJvmPersistenceService).uploadJvmTemplateXml(any(UploadJvmConfigTemplateRequest.class));
+        verify(mockJvmPersistenceService).uploadJvmConfigTemplate(any(UploadJvmConfigTemplateRequest.class));
     }
 
     @Test
@@ -209,7 +207,7 @@ public class ResourceServiceImplTest {
         User mockUser = mock(User.class);
         when(mockUser.getId()).thenReturn("user-id");
         resourceService.createTemplate(metaDataIn, templateIn, "test-app-name", mockUser);
-        verify(mockJvmPersistenceService, new Times(2)).uploadJvmTemplateXml(any(UploadJvmConfigTemplateRequest.class));
+        verify(mockJvmPersistenceService, new Times(2)).uploadJvmConfigTemplate(any(UploadJvmConfigTemplateRequest.class));
         verify(mockGroupPesistenceService).populateGroupJvmTemplates(eq("HEALTH CHECK 4.0"), any(List.class));
     }
 

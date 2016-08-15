@@ -82,8 +82,8 @@ public class JpaJvmPersistenceServiceImpl implements JvmPersistenceService {
     }
 
     @Override
-    public JpaJvmConfigTemplate uploadJvmTemplateXml(UploadJvmTemplateRequest uploadJvmTemplateRequest) {
-        return jvmCrudService.uploadJvmTemplateXml(uploadJvmTemplateRequest);
+    public JpaJvmConfigTemplate uploadJvmConfigTemplate(UploadJvmTemplateRequest uploadJvmTemplateRequest) {
+        return jvmCrudService.uploadJvmConfigTemplate(uploadJvmTemplateRequest);
     }
 
     @Override

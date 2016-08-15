@@ -15,19 +15,19 @@ import com.cerner.jwala.common.request.webserver.UploadWebServerTemplateRequest;
 import com.cerner.jwala.persistence.jpa.domain.JpaApplication;
 import com.cerner.jwala.persistence.jpa.domain.JpaGroup;
 import com.cerner.jwala.persistence.jpa.domain.JpaWebServer;
-import com.cerner.jwala.persistence.jpa.domain.resource.config.template.*;
+import com.cerner.jwala.persistence.jpa.domain.resource.config.template.ConfigTemplate;
+import com.cerner.jwala.persistence.jpa.domain.resource.config.template.JpaGroupAppConfigTemplate;
+import com.cerner.jwala.persistence.jpa.domain.resource.config.template.JpaGroupJvmConfigTemplate;
+import com.cerner.jwala.persistence.jpa.domain.resource.config.template.JpaGroupWebServerConfigTemplate;
 import com.cerner.jwala.persistence.jpa.service.GroupCrudService;
 import com.cerner.jwala.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
 import com.cerner.jwala.persistence.jpa.service.exception.ResourceTemplateUpdateException;
-
 import org.joda.time.DateTime;
 
 import javax.persistence.EntityExistsException;
 import javax.persistence.Query;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
 
 public class GroupCrudServiceImpl extends AbstractCrudServiceImpl<JpaGroup> implements GroupCrudService {
 
@@ -156,9 +156,7 @@ public class GroupCrudServiceImpl extends AbstractCrudServiceImpl<JpaGroup> impl
 
     @Override
     public void uploadGroupJvmTemplate(UploadJvmTemplateRequest uploadJvmTemplateRequest, JpaGroup group) {
-        InputStream inStream = uploadJvmTemplateRequest.getData();
-        Scanner scanner = new Scanner(inStream).useDelimiter("\\A");
-        String templateContent = scanner.hasNext() ? scanner.next() : "";
+        String templateContent = uploadJvmTemplateRequest.getTemplateContent();
 
         Query query = entityManager.createQuery("SELECT t FROM JpaGroupJvmConfigTemplate t where t.templateName = :tempName and t.grp.name = :grpName");
         query.setParameter("grpName", group.getName());
@@ -184,9 +182,7 @@ public class GroupCrudServiceImpl extends AbstractCrudServiceImpl<JpaGroup> impl
 
     @Override
     public void uploadGroupWebServerTemplate(UploadWebServerTemplateRequest uploadWSTemplateRequest, JpaGroup group) {
-        InputStream inStream = uploadWSTemplateRequest.getData();
-        Scanner scanner = new Scanner(inStream).useDelimiter("\\A");
-        String templateContent = scanner.hasNext() ? scanner.next() : "";
+        String templateContent = uploadWSTemplateRequest.getTemplateContent();
 
         Query query = entityManager.createQuery("SELECT t FROM JpaGroupWebServerConfigTemplate t where t.templateName = :tempName and t.grp.name = :grpName");
         query.setParameter("grpName", group.getName());

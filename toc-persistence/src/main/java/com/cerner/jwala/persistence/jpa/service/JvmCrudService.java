@@ -25,7 +25,7 @@ public interface JvmCrudService extends CrudService<JpaJvm> {
 
     void removeJvm(final Identifier<Jvm> aGroupId);
 
-    JpaJvmConfigTemplate uploadJvmTemplateXml(UploadJvmTemplateRequest uploadJvmTemplateRequest);
+    JpaJvmConfigTemplate uploadJvmConfigTemplate(UploadJvmTemplateRequest uploadJvmTemplateRequest);
 
     String getJvmTemplate(String templateName, Identifier<Jvm> jvmId);
 

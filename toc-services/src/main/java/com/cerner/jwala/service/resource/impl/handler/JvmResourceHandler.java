@@ -14,8 +14,6 @@ import com.cerner.jwala.service.resource.impl.CreateResourceResponseWrapper;
 
 import org.apache.commons.lang3.StringUtils;
 
-import java.io.InputStream;
-
 /**
  * Handler for a jvm resource identified by a "resource identifier" {@link ResourceIdentifier}
  *
@@ -48,7 +46,7 @@ public class JvmResourceHandler extends ResourceHandler {
     @Override
     public CreateResourceResponseWrapper createResource(final ResourceIdentifier resourceIdentifier,
                                                         final ResourceTemplateMetaData metaData,
-                                                        final InputStream data) {
+                                                        final String templateContent) {
         CreateResourceResponseWrapper createResourceResponseWrapper = null;
         if (canHandle(resourceIdentifier)) {
             final Jvm jvm = jvmPersistenceService.findJvmByExactName(resourceIdentifier.jvmName);
@@ -72,11 +70,11 @@ public class JvmResourceHandler extends ResourceHandler {
                     jvm.getEncryptedPassword());
 
             final UploadJvmConfigTemplateRequest uploadJvmTemplateRequest = new UploadJvmConfigTemplateRequest(jvmWithParentGroup, metaData.getTemplateName(),
-                    data, convertResourceTemplateMetaDataToJson(metaData));
+                    templateContent, convertResourceTemplateMetaDataToJson(metaData));
             uploadJvmTemplateRequest.setConfFileName(metaData.getDeployFileName());
-            createResourceResponseWrapper = new CreateResourceResponseWrapper(jvmPersistenceService.uploadJvmTemplateXml(uploadJvmTemplateRequest));
+            createResourceResponseWrapper = new CreateResourceResponseWrapper(jvmPersistenceService.uploadJvmConfigTemplate(uploadJvmTemplateRequest));
         } else if (successor != null) {
-            createResourceResponseWrapper = successor.createResource(resourceIdentifier, metaData, data);
+            createResourceResponseWrapper = successor.createResource(resourceIdentifier, metaData, templateContent);
         }
         return createResourceResponseWrapper;
     }

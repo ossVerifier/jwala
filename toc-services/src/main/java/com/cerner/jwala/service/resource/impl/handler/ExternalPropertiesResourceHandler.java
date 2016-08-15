@@ -8,14 +8,16 @@ import com.cerner.jwala.persistence.jpa.domain.resource.config.template.ConfigTe
 import com.cerner.jwala.persistence.service.ResourceDao;
 import com.cerner.jwala.service.resource.ResourceHandler;
 import com.cerner.jwala.service.resource.impl.CreateResourceResponseWrapper;
-
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayInputStream;
-import java.io.InputStream;
 import java.util.List;
 
 public class ExternalPropertiesResourceHandler extends ResourceHandler {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(ExternalPropertiesResourceHandler.class);
 
     public ExternalPropertiesResourceHandler(final ResourceDao resourceDao, final ResourceHandler successor) {
         this.resourceDao = resourceDao;
@@ -36,7 +38,7 @@ public class ExternalPropertiesResourceHandler extends ResourceHandler {
     @Override
     public CreateResourceResponseWrapper createResource(final ResourceIdentifier resourceIdentifier,
                                                         final ResourceTemplateMetaData metaData,
-                                                        final InputStream data) {
+                                                        final String templateContent) {
         CreateResourceResponseWrapper createResourceResponseWrapper = null;
         if (canHandle(resourceIdentifier)) {
             Long entityId = null;
@@ -54,9 +56,7 @@ public class ExternalPropertiesResourceHandler extends ResourceHandler {
 
             // create the external properties template
             final String deployFileName = metaData.getDeployFileName();
-            // TODO convert stream to string and log it (debug level) - move conversion from persistence to here
-            // TODO add same logging to all resource handlers (debug level)
-            createResourceResponseWrapper = new CreateResourceResponseWrapper(resourceDao.createResource(entityId, groupId, appId, entityType, deployFileName, data, convertResourceTemplateMetaDataToJson(metaData)));
+            createResourceResponseWrapper = new CreateResourceResponseWrapper(resourceDao.createResource(entityId, groupId, appId, entityType, deployFileName, templateContent, convertResourceTemplateMetaDataToJson(metaData)));
 
             // apply the external properties
             // TODO make get template content generic for all resources
@@ -64,7 +64,7 @@ public class ExternalPropertiesResourceHandler extends ResourceHandler {
             ExternalProperties.loadFromInputStream(new ByteArrayInputStream(propertiesContent.getBytes()));
 
         } else if (successor != null) {
-            createResourceResponseWrapper = successor.createResource(resourceIdentifier, metaData, data);
+            createResourceResponseWrapper = successor.createResource(resourceIdentifier, metaData, templateContent);
         }
         return createResourceResponseWrapper;
     }

@@ -60,6 +60,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Scanner;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertTrue;
@@ -173,9 +174,12 @@ public class GroupCrudServiceImplTest {
     @Test
     public void testUploadGroupJvmTemplate() throws FileNotFoundException {
         FileInputStream dataInputStream = new FileInputStream(new File("./src/test/resources/ServerXMLTemplate.tpl"));
+        Scanner scanner = new Scanner(dataInputStream).useDelimiter("\\A");
+        String templateContent = scanner.hasNext() ? scanner.next() : "";
+
         Jvm jvm = new Jvm(new Identifier<Jvm>(1212L), "testJvm", new HashSet<Group>());
         UploadJvmTemplateRequest uploadJvmTemplateRequest = new UploadJvmTemplateRequest(jvm, "ServerXMLTemplate.tpl",
-                dataInputStream, StringUtils.EMPTY) {
+                templateContent, StringUtils.EMPTY) {
             @Override
             public String getConfFileName() {
                 return "server.xml";
@@ -192,9 +196,12 @@ public class GroupCrudServiceImplTest {
     @Test
     public void testUploadGroupWebServerTemplate() throws FileNotFoundException {
         InputStream dataInputStream = new FileInputStream(new File("./src/test/resources/HttpdSslConfTemplate.tpl"));
+        Scanner scanner = new Scanner(dataInputStream).useDelimiter("\\A");
+        String templateContent = scanner.hasNext() ? scanner.next() : "";
+
         WebServer webServer = new WebServer(new Identifier<WebServer>(1313L), new HashSet<Group>(), "testWebServer");
         UploadWebServerTemplateRequest uploadWsTemplateRequest = new UploadWebServerTemplateRequest(webServer,
-                "HttpdSslConfTemplate.tpl", StringUtils.EMPTY, dataInputStream) {
+                "HttpdSslConfTemplate.tpl", StringUtils.EMPTY, templateContent) {
             @Override
             public String getConfFileName() {
                 return "httpd.conf";

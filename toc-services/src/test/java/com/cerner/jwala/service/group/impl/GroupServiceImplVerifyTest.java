@@ -20,8 +20,6 @@ import com.cerner.jwala.persistence.service.ApplicationPersistenceService;
 import com.cerner.jwala.persistence.service.GroupPersistenceService;
 import com.cerner.jwala.persistence.service.WebServerPersistenceService;
 import com.cerner.jwala.service.VerificationBehaviorSupport;
-import com.cerner.jwala.service.group.impl.GroupServiceImpl;
-
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -228,8 +226,11 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
     public void testPopulateJvmConfig() throws FileNotFoundException {
         List<UploadJvmTemplateRequest> uploadRequests = new ArrayList<>();
         InputStream data = new FileInputStream(new File("./src/test/resources/ServerXMLTemplate.tpl"));
+        Scanner scanner = new Scanner(data).useDelimiter("\\A");
+        String templateContent = scanner.hasNext() ? scanner.next() : "";
+
         UploadJvmTemplateRequest uploadJvmRequest = new UploadJvmTemplateRequest(new Jvm(new Identifier<Jvm>(11L), "testJvm",
-                new HashSet<Group>()), "ServerXMLTemplate.tpl", data, StringUtils.EMPTY) {
+                new HashSet<Group>()), "ServerXMLTemplate.tpl", templateContent, StringUtils.EMPTY) {
             @Override
             public String getConfFileName() {
                 return "server.xml";
@@ -245,8 +246,11 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
     public void testPopulateGroupJvmTemplates() throws FileNotFoundException {
         List<UploadJvmTemplateRequest> uploadRequests = new ArrayList<>();
         InputStream data = new FileInputStream(new File("./src/test/resources/ServerXMLTemplate.tpl"));
+        Scanner scanner = new Scanner(data).useDelimiter("\\A");
+        String templateContent = scanner.hasNext() ? scanner.next() : "";
+
         UploadJvmTemplateRequest uploadJvmRequest = new UploadJvmTemplateRequest(new Jvm(new Identifier<Jvm>(11L), "testJvm",
-                new HashSet<Group>()), "ServerXMLTemplate.tpl", data, StringUtils.EMPTY) {
+                new HashSet<Group>()), "ServerXMLTemplate.tpl", templateContent, StringUtils.EMPTY) {
             @Override
             public String getConfFileName() {
                 return "server.xml";
@@ -261,8 +265,11 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
     public void testPopulateGroupWebServerTemplates() throws FileNotFoundException {
         Map<String, UploadWebServerTemplateRequest> uploadRequests = new HashMap<>();
         InputStream data = new FileInputStream(new File("./src/test/resources/HttpdSslConfTemplate.tpl"));
+        Scanner scanner = new Scanner(data).useDelimiter("\\A");
+        String templateContent = scanner.hasNext() ? scanner.next() : "";
+
         UploadWebServerTemplateRequest uploadWSRequest = new UploadWebServerTemplateRequest(new WebServer(new Identifier<WebServer>(11L),
-                new HashSet<Group>(), "testWebServer"), "HttpdSslConfTemplate.tpl", StringUtils.EMPTY, data) {
+                new HashSet<Group>(), "testWebServer"), "HttpdSslConfTemplate.tpl", StringUtils.EMPTY, templateContent) {
             @Override
             public String getConfFileName() {
                 return "httpd.conf";

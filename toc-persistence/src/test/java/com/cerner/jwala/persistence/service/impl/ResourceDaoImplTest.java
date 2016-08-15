@@ -22,9 +22,6 @@ import com.cerner.jwala.persistence.jpa.service.impl.JvmCrudServiceImpl;
 import com.cerner.jwala.persistence.jpa.service.impl.WebServerCrudServiceImpl;
 import com.cerner.jwala.persistence.service.ResourceDao;
 import com.cerner.jwala.persistence.service.ResourcePersistenceService;
-import com.cerner.jwala.persistence.service.impl.JpaResourcePersistenceServiceImpl;
-import com.cerner.jwala.persistence.service.impl.ResourceDaoImpl;
-
 import junit.framework.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -39,8 +36,6 @@ import org.springframework.test.context.support.AnnotationConfigContextLoader;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -101,7 +96,7 @@ public class ResourceDaoImplTest {
 
         final JpaWebServerBuilder jpaWebServerBuilder = new JpaWebServerBuilder(jpaWebServer);
         final UploadWebServerTemplateRequest uploadWsTemplateRequest = new UploadWebServerTemplateRequest(jpaWebServerBuilder.build(),
-                "HttpdSslConfTemplate.tpl", "someMetaData", new ByteArrayInputStream("someData".getBytes())) {
+                "HttpdSslConfTemplate.tpl", "someMetaData", "someData") {
             @Override
             public String getConfFileName() {
                 return "httpd.conf";
@@ -124,7 +119,7 @@ public class ResourceDaoImplTest {
 
         final JvmBuilder jvmBuilder = new JvmBuilder(jpaJvm);
         final UploadJvmConfigTemplateRequest uploadJvmConfigTemplateRequest = new UploadJvmConfigTemplateRequest(jvmBuilder.build(),
-                "someJvmFileName", new ByteArrayInputStream("someData".getBytes()), "someMetaData");
+                "someJvmFileName", "someData", "someMetaData");
         uploadJvmConfigTemplateRequest.setConfFileName("someConfName");
         groupCrudService.uploadGroupJvmTemplate(uploadJvmConfigTemplateRequest, jpaGroup);
 
@@ -137,14 +132,14 @@ public class ResourceDaoImplTest {
 
         webServerCrudService.uploadWebserverConfigTemplate(uploadWsTemplateRequest);
 
-        jvmCrudService.uploadJvmTemplateXml(uploadJvmConfigTemplateRequest);
+        jvmCrudService.uploadJvmConfigTemplate(uploadJvmConfigTemplateRequest);
 
         final UploadAppTemplateRequest uploadAppTemplateRequest = new UploadAppTemplateRequest(JpaAppBuilder.appFrom(jpaApplication),
                 "someResource", "someFileName",
-        "someJvm", "someMetaData", new ByteArrayInputStream("someData".getBytes()));
+        "someJvm", "someMetaData", "someData");
         applicationCrudService.uploadAppTemplate(uploadAppTemplateRequest, jpaJvm);
 
-        resourceDao.createResource(null, null, null, EntityType.EXT_PROPERTIES, "external.properties", new ByteArrayInputStream("property=test".getBytes()), "{}");
+        resourceDao.createResource(null, null, null, EntityType.EXT_PROPERTIES, "external.properties", "property=test", "{}");
     }
 
     @Test
@@ -223,10 +218,9 @@ public class ResourceDaoImplTest {
 
     @Test
     public void testCreateResource() {
-        InputStream data = new ByteArrayInputStream("key=value".getBytes());
         String metaData = "{deployFileName:'external.properties'}";
 
-        JpaResourceConfigTemplate result = resourceDao.createResource(1L, 1L, 1L, EntityType.EXT_PROPERTIES, "external.properties", data, metaData);
+        JpaResourceConfigTemplate result = resourceDao.createResource(1L, 1L, 1L, EntityType.EXT_PROPERTIES, "external.properties", "key=value", metaData);
 
         assertEquals(new Long(1), result.getEntityId());
         assertEquals(new Long(1), result.getGroupId());
@@ -254,7 +248,7 @@ public class ResourceDaoImplTest {
     @Test (expected = ResourceTemplateUpdateException.class)
     public void testCreateResourceAndUpdate() {
         // create the resource
-        JpaResourceConfigTemplate result = resourceDao.createResource(null, null, null, EntityType.EXT_PROPERTIES, "external.properties", new ByteArrayInputStream("property1=one".getBytes()), "{}");
+        JpaResourceConfigTemplate result = resourceDao.createResource(null, null, null, EntityType.EXT_PROPERTIES, "external.properties", "property1=one", "{}");
         Assert.assertEquals("property1=one", result.getTemplateContent());
         Assert.assertEquals(EntityType.EXT_PROPERTIES, result.getEntityType());
         Assert.assertEquals("external.properties", result.getTemplateName());

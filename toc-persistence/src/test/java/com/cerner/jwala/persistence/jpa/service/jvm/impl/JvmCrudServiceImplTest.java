@@ -1,16 +1,18 @@
 package com.cerner.jwala.persistence.jpa.service.jvm.impl;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.util.HashSet;
-import java.util.List;
-
+import com.cerner.jwala.common.configuration.TestExecutionProfile;
+import com.cerner.jwala.common.domain.model.group.Group;
+import com.cerner.jwala.common.domain.model.id.Identifier;
+import com.cerner.jwala.common.domain.model.jvm.Jvm;
+import com.cerner.jwala.common.domain.model.jvm.JvmState;
+import com.cerner.jwala.common.domain.model.path.Path;
+import com.cerner.jwala.common.domain.model.user.User;
+import com.cerner.jwala.common.request.jvm.CreateJvmRequest;
+import com.cerner.jwala.common.request.jvm.UploadJvmTemplateRequest;
+import com.cerner.jwala.persistence.configuration.TestJpaConfiguration;
+import com.cerner.jwala.persistence.jpa.domain.JpaJvm;
+import com.cerner.jwala.persistence.jpa.domain.resource.config.template.JpaJvmConfigTemplate;
+import com.cerner.jwala.persistence.jpa.service.impl.JvmCrudServiceImpl;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.After;
 import org.junit.Before;
@@ -27,19 +29,13 @@ import org.springframework.test.context.support.AnnotationConfigContextLoader;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.cerner.jwala.common.configuration.TestExecutionProfile;
-import com.cerner.jwala.common.domain.model.group.Group;
-import com.cerner.jwala.common.domain.model.id.Identifier;
-import com.cerner.jwala.common.domain.model.jvm.Jvm;
-import com.cerner.jwala.common.domain.model.jvm.JvmState;
-import com.cerner.jwala.common.domain.model.path.Path;
-import com.cerner.jwala.common.domain.model.user.User;
-import com.cerner.jwala.common.request.jvm.CreateJvmRequest;
-import com.cerner.jwala.common.request.jvm.UploadJvmTemplateRequest;
-import com.cerner.jwala.persistence.configuration.TestJpaConfiguration;
-import com.cerner.jwala.persistence.jpa.domain.JpaJvm;
-import com.cerner.jwala.persistence.jpa.domain.resource.config.template.JpaJvmConfigTemplate;
-import com.cerner.jwala.persistence.jpa.service.impl.JvmCrudServiceImpl;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Scanner;
+
+import static org.junit.Assert.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @Transactional
@@ -77,14 +73,17 @@ public class JvmCrudServiceImplTest {
     public void testUploadJvmTemplateXml() throws FileNotFoundException {
         final String expectedTemplateName = SERVER_XML;
         File testTemplate = new File("./src/test/resources/HttpdSslConfTemplate.tpl");
+        Scanner scanner = new Scanner(testTemplate).useDelimiter("\\A");
+        String templateContent = scanner.hasNext() ? scanner.next() : "";
+
         UploadJvmTemplateRequest uploadJvmTemplateRequest = new UploadJvmTemplateRequest(jvm, expectedTemplateName,
-                new FileInputStream(testTemplate), StringUtils.EMPTY) {
+                templateContent, StringUtils.EMPTY) {
             @Override
             public String getConfFileName() {
                 return SERVER_XML;
             }
         };
-        JpaJvmConfigTemplate result = jvmCrudService.uploadJvmTemplateXml(uploadJvmTemplateRequest);
+        JpaJvmConfigTemplate result = jvmCrudService.uploadJvmConfigTemplate(uploadJvmTemplateRequest);
         assertEquals(expectedTemplateName, result.getTemplateName());
 
         // test get resource template names

@@ -390,7 +390,10 @@ public abstract class AbstractGroupPersistenceServiceIntegrationTest {
     public void testPopulateGroupJvmTemplates() throws FileNotFoundException {
         List<UploadJvmTemplateRequest> uploadCommands = new ArrayList<UploadJvmTemplateRequest>();
         InputStream data = new FileInputStream(new File("./src/test/resources/ServerXMLTemplate.tpl"));
-        UploadJvmTemplateRequest request = new UploadJvmTemplateRequest(preCreatedJvm, "ServerXMLTemplate.tpl", data, StringUtils.EMPTY) {
+        Scanner scanner = new Scanner(data).useDelimiter("\\A");
+        String templateContent = scanner.hasNext() ? scanner.next() : "";
+
+        UploadJvmTemplateRequest request = new UploadJvmTemplateRequest(preCreatedJvm, "ServerXMLTemplate.tpl", templateContent, StringUtils.EMPTY) {
             @Override
             public String getConfFileName() {
                 return "server.xml";
@@ -404,8 +407,11 @@ public abstract class AbstractGroupPersistenceServiceIntegrationTest {
     public void testPopulateGroupWebServerTemplates() throws FileNotFoundException {
         Map<String, UploadWebServerTemplateRequest> uploadCommands = new HashMap<>();
         InputStream data = new FileInputStream(new File("./src/test/resources/HttpdSslConfTemplate.tpl"));
+        Scanner scanner = new Scanner(data).useDelimiter("\\A");
+        String templateContent = scanner.hasNext() ? scanner.next() : "";
+
         WebServer webServer = new WebServer(new Identifier<WebServer>(1L), new HashSet<Group>(),"testWebServer");
-        UploadWebServerTemplateRequest request = new UploadWebServerTemplateRequest(webServer, "HttpdSslConfTemplate.tpl", StringUtils.EMPTY, data) {
+        UploadWebServerTemplateRequest request = new UploadWebServerTemplateRequest(webServer, "HttpdSslConfTemplate.tpl", StringUtils.EMPTY, templateContent) {
             @Override
             public String getConfFileName() {
                 return "httpd.conf";

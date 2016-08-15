@@ -5,7 +5,6 @@ import com.cerner.jwala.common.domain.model.resource.ResourceIdentifier;
 import com.cerner.jwala.persistence.jpa.domain.JpaApplicationConfigTemplate;
 import com.cerner.jwala.persistence.jpa.domain.resource.config.template.*;
 
-import java.io.InputStream;
 import java.util.List;
 
 /**
@@ -191,11 +190,11 @@ public interface ResourceDao {
      * @param appId the application ID of the entity
      * @param entityType the enumerated type of the entity
      * @param resourceFileName the name of the resource
-     * @param data the input stream of the resource to be created
+     * @param templateContent the content of the template
      * @param metaData the meta data of the resource
      * @return the saved resource
      */
-    JpaResourceConfigTemplate createResource(Long entityId, Long groupId, Long appId, EntityType entityType, String resourceFileName, InputStream data, String metaData);
+    JpaResourceConfigTemplate createResource(Long entityId, Long groupId, Long appId, EntityType entityType, String resourceFileName, String templateContent, String metaData);
 
     /**
      * Update the content of the resource template

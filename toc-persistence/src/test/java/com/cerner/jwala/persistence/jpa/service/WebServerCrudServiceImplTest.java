@@ -21,17 +21,12 @@ import com.cerner.jwala.persistence.jpa.domain.JpaGroup;
 import com.cerner.jwala.persistence.jpa.domain.JpaJvm;
 import com.cerner.jwala.persistence.jpa.domain.JpaWebServer;
 import com.cerner.jwala.persistence.jpa.domain.resource.config.template.JpaWebServerConfigTemplate;
-import com.cerner.jwala.persistence.jpa.service.ApplicationCrudService;
-import com.cerner.jwala.persistence.jpa.service.GroupCrudService;
-import com.cerner.jwala.persistence.jpa.service.JvmCrudService;
-import com.cerner.jwala.persistence.jpa.service.WebServerCrudService;
 import com.cerner.jwala.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
 import com.cerner.jwala.persistence.jpa.service.exception.ResourceTemplateUpdateException;
 import com.cerner.jwala.persistence.jpa.service.impl.ApplicationCrudServiceImpl;
 import com.cerner.jwala.persistence.jpa.service.impl.GroupCrudServiceImpl;
 import com.cerner.jwala.persistence.jpa.service.impl.JvmCrudServiceImpl;
 import com.cerner.jwala.persistence.jpa.service.impl.WebServerCrudServiceImpl;
-
 import org.apache.commons.lang3.StringUtils;
 import org.junit.After;
 import org.junit.Before;
@@ -48,10 +43,14 @@ import org.springframework.test.context.support.AnnotationConfigContextLoader;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Scanner;
 
 import static org.junit.Assert.*;
 
@@ -251,12 +250,15 @@ public class WebServerCrudServiceImplTest {
     @Test
     public void testUploadWebServerTemplate() throws FileNotFoundException {
         InputStream dataInputStream = new FileInputStream(new File("./src/test/resources/HttpdSslConfTemplate.tpl"));
+        Scanner scanner = new Scanner(dataInputStream).useDelimiter("\\A");
+        String templateContent = scanner.hasNext() ? scanner.next() : "";
+
         WebServer webServer = new WebServer(new Identifier<WebServer>(1111L), new HashSet<Group>(), "testWebServer",
                 "testHost", 101, 102, new Path("./statusPath"), new FileSystemPath("./httpdConfPath"), new Path("./svrRootPath"),
                 new Path("./docRoot"), WebServerReachableState.WS_UNREACHABLE, StringUtils.EMPTY);
         webServer = webServerCrudService.createWebServer(webServer, "testUser");
         UploadWebServerTemplateRequest uploadWsTemplateRequest = new UploadWebServerTemplateRequest(webServer,
-                "HttpdSslConfTemplate.tpl", HTTPD_CONF_META_DATA, dataInputStream) {
+                "HttpdSslConfTemplate.tpl", HTTPD_CONF_META_DATA, templateContent) {
             @Override
             public String getConfFileName() {
                 return "httpd.conf";
@@ -268,7 +270,7 @@ public class WebServerCrudServiceImplTest {
         // again!
         dataInputStream = new FileInputStream(new File("./src/test/resources/HttpdSslConfTemplate.tpl"));
         uploadWsTemplateRequest = new UploadWebServerTemplateRequest(webServer, "HttpdSslConfTemplate.tpl",
-                HTTPD_CONF_META_DATA, dataInputStream) {
+                HTTPD_CONF_META_DATA, templateContent) {
             @Override
             public String getConfFileName() {
                 return "httpd.conf";
@@ -285,12 +287,15 @@ public class WebServerCrudServiceImplTest {
     @Test
     public void testPopulateWebServerConfigTemplate() throws FileNotFoundException {
         InputStream dataInputStream = new FileInputStream(new File("./src/test/resources/HttpdSslConfTemplate.tpl"));
+        Scanner scanner = new Scanner(dataInputStream).useDelimiter("\\A");
+        String templateContent = scanner.hasNext() ? scanner.next() : "";
+
         WebServer webServer = new WebServer(new Identifier<WebServer>(1111L), new HashSet<Group>(), "testWebServer",
                 "testHost", 101, 102, new Path("./statusPath"), new FileSystemPath("./httpdConfPath"), new Path("./svrRootPath"),
                 new Path("./docRoot"), WebServerReachableState.WS_UNREACHABLE, StringUtils.EMPTY);
         webServer = webServerCrudService.createWebServer(webServer, "testUser");
         UploadWebServerTemplateRequest uploadWsTemplateRequest = new UploadWebServerTemplateRequest(webServer,
-                "HttpdSslConfTemplate.tpl", StringUtils.EMPTY, dataInputStream) {
+                "HttpdSslConfTemplate.tpl", StringUtils.EMPTY, templateContent) {
             @Override
             public String getConfFileName() {
                 return "httpd.conf";
@@ -562,7 +567,7 @@ public class WebServerCrudServiceImplTest {
                         webServerCrudService.getWebServer(new Identifier<WebServer>(webServer.getId())),
                         "httpd.conf.tpl",
                         HTTPD_CONF_META_DATA,
-                        new ByteArrayInputStream("httpd template content".getBytes())) {
+                        "httpd template content") {
                     @Override
                     public String getConfFileName() {
                         return "httpd.conf";

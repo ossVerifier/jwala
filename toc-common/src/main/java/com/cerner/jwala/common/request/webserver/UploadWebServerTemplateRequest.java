@@ -1,14 +1,12 @@
 package com.cerner.jwala.common.request.webserver;
 
-import java.io.InputStream;
-import java.io.Serializable;
-
 import com.cerner.jwala.common.domain.model.webserver.WebServer;
 import com.cerner.jwala.common.request.Request;
 import com.cerner.jwala.common.rule.MultipleRules;
 import com.cerner.jwala.common.rule.ValidTemplateNameRule;
-import com.cerner.jwala.common.rule.app.GoodStreamRule;
 import com.cerner.jwala.common.rule.webserver.WebServerIdRule;
+
+import java.io.Serializable;
 
 /**
  * Request wrapper for uploading web server resource templates.
@@ -18,21 +16,21 @@ import com.cerner.jwala.common.rule.webserver.WebServerIdRule;
 public abstract class UploadWebServerTemplateRequest implements Serializable, Request {
     private final WebServer webServer;
     private final String fileName;
-    private final InputStream data;
+    private final String templateContent;
     private final String metaData;
 
-    public UploadWebServerTemplateRequest(final WebServer webServer, final String fileName, final InputStream data) {
+    public UploadWebServerTemplateRequest(final WebServer webServer, final String fileName, final String templateContent) {
         this.webServer = webServer;
         this.fileName = fileName;
-        this.data = data;
+        this.templateContent = templateContent;
         this.metaData = null;
     }
 
     public UploadWebServerTemplateRequest(final WebServer webServer, final String fileName, final String metaData,
-                                          final InputStream data) {
+                                          final String templateContent) {
         this.webServer = webServer;
         this.fileName = fileName;
-        this.data = data;
+        this.templateContent = templateContent;
         this.metaData = metaData;
     }
 
@@ -40,7 +38,6 @@ public abstract class UploadWebServerTemplateRequest implements Serializable, Re
     public void validate() {
         new MultipleRules(
                 new ValidTemplateNameRule(this.fileName),
-                new GoodStreamRule(this.data),
                 new WebServerIdRule(this.webServer.getId())
         ).validate();
 
@@ -50,8 +47,8 @@ public abstract class UploadWebServerTemplateRequest implements Serializable, Re
         return webServer;
     }
 
-    public InputStream getData(){
-        return data;
+    public String getTemplateContent(){
+        return templateContent;
     }
 
     public abstract String getConfFileName();

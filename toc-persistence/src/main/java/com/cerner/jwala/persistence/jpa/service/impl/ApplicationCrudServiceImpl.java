@@ -18,7 +18,6 @@ import com.cerner.jwala.persistence.jpa.domain.builder.JpaAppBuilder;
 import com.cerner.jwala.persistence.jpa.service.ApplicationCrudService;
 import com.cerner.jwala.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
 import com.cerner.jwala.persistence.jpa.service.exception.ResourceTemplateUpdateException;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,10 +25,8 @@ import javax.persistence.EntityExistsException;
 import javax.persistence.NoResultException;
 import javax.persistence.NonUniqueResultException;
 import javax.persistence.Query;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
 
 public class ApplicationCrudServiceImpl extends AbstractCrudServiceImpl<JpaApplication> implements ApplicationCrudService {
     private static final Logger LOGGER = LoggerFactory.getLogger(ApplicationCrudServiceImpl.class);
@@ -196,10 +193,6 @@ public class ApplicationCrudServiceImpl extends AbstractCrudServiceImpl<JpaAppli
         Identifier<Application> id = application.getId();
         JpaApplication jpaApp = getExisting(id);
 
-        InputStream inStream = uploadAppTemplateRequest.getData();
-        Scanner scanner = new Scanner(inStream).useDelimiter("\\A");
-        String templateContent = scanner.hasNext() ? scanner.next() : "";
-
         // get an instance and then do a create or update
         Query query = entityManager.createNamedQuery(JpaApplicationConfigTemplate.GET_APP_TEMPLATE);
         query.setParameter("jvmName", jpaJvm.getName());
@@ -208,6 +201,7 @@ public class ApplicationCrudServiceImpl extends AbstractCrudServiceImpl<JpaAppli
         List<JpaApplicationConfigTemplate> templates = query.getResultList();
         JpaApplicationConfigTemplate jpaConfigTemplate;
         final String medataData = uploadAppTemplateRequest.getMedataData();
+        final String templateContent = uploadAppTemplateRequest.getTemplateContent();
         if (templates.size() == 1) {
             //update
             jpaConfigTemplate = templates.get(0);

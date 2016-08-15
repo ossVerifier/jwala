@@ -10,7 +10,6 @@ import com.cerner.jwala.service.resource.impl.CreateResourceResponseWrapper;
 import org.codehaus.jackson.map.ObjectMapper;
 
 import java.io.IOException;
-import java.io.InputStream;
 
 /**
  * Outlines what a concrete resource handler should look like and what it can do.
@@ -26,7 +25,7 @@ public abstract class ResourceHandler {
     public abstract ConfigTemplate fetchResource(ResourceIdentifier resourceIdentifier);
     public abstract CreateResourceResponseWrapper createResource(ResourceIdentifier resourceIdentifier,
                                                                  ResourceTemplateMetaData metaData,
-                                                                 InputStream data);
+                                                                 String data);
     public abstract void deleteResource(ResourceIdentifier resourceIdentifier);
 
     protected abstract boolean canHandle(ResourceIdentifier resourceIdentifier);

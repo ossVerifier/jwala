@@ -13,9 +13,7 @@ import com.cerner.jwala.common.request.jvm.UploadJvmConfigTemplateRequest;
 import com.cerner.jwala.common.request.webserver.UploadWebServerTemplateRequest;
 import com.cerner.jwala.persistence.jpa.domain.JpaJvm;
 import com.cerner.jwala.persistence.service.*;
-import com.cerner.jwala.service.configuration.service.ResourceHandlerConfiguration;
 import com.cerner.jwala.service.resource.impl.handler.WebServerResourceHandler;
-
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -28,9 +26,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -54,7 +50,7 @@ public class ResourceHandlerConfigurationTest {
 
     private final ResourceTemplateMetaData mockMetaData = mock(ResourceTemplateMetaData.class);
 
-    private final InputStream mockData = mock(InputStream.class);
+    private final String templateContent = "any template content";
 
     private ResourceTemplateMetaData metaData;
 
@@ -150,7 +146,7 @@ public class ResourceHandlerConfigurationTest {
     @Test
     public void testCreateWebServerResourceHandler() {
         when(MockConfig.MOCK_WEB_SERVER_PERSISTENCE_SERVICE.findWebServerByName(anyString())).thenReturn(mock(WebServer.class));
-        resourceHandler.createResource(getWebServerResourceIdentifier(), metaData, mockData);
+        resourceHandler.createResource(getWebServerResourceIdentifier(), metaData, templateContent);
         verify(MockConfig.MOCK_WEB_SERVER_PERSISTENCE_SERVICE).uploadWebServerConfigTemplate(any(UploadWebServerTemplateRequest.class),
                 anyString(), anyString());
     }
@@ -158,15 +154,15 @@ public class ResourceHandlerConfigurationTest {
     @Test
     public void testCreateJvmResourceHandler() {
         when(MockConfig.MOCK_JVM_PERSISTENCE_SERVICE.findJvmByExactName(anyString())).thenReturn(mock(Jvm.class));
-        resourceHandler.createResource(getJvmResourceIdentifier(), metaData, mockData);
-        verify(MockConfig.MOCK_JVM_PERSISTENCE_SERVICE).uploadJvmTemplateXml(any(UploadJvmConfigTemplateRequest.class));
+        resourceHandler.createResource(getJvmResourceIdentifier(), metaData, templateContent);
+        verify(MockConfig.MOCK_JVM_PERSISTENCE_SERVICE).uploadJvmConfigTemplate(any(UploadJvmConfigTemplateRequest.class));
     }
 
     @Test
     public void testCreateAppResourceHandler() {
         when(MockConfig.MOCK_APPLICATION_PERSISTENCE_SERVICE.getApplication(anyString())).thenReturn(mock(Application.class));
         when(MockConfig.MOCK_JVM_PERSISTENCE_SERVICE.findJvmByExactName(anyString())).thenReturn(mock(Jvm.class));
-        resourceHandler.createResource(getAppResourceIdentifier(), metaData, mockData);
+        resourceHandler.createResource(getAppResourceIdentifier(), metaData, templateContent);
         verify(MockConfig.MOCK_APPLICATION_PERSISTENCE_SERVICE).uploadAppTemplate(any(UploadAppTemplateRequest.class),
                 any(JpaJvm.class));
     }
@@ -178,7 +174,7 @@ public class ResourceHandlerConfigurationTest {
         webServers.add(mock(WebServer.class));
         when(mockGroup.getWebServers()).thenReturn(webServers);
         when(MockConfig.MOCK_GROUP_PERSISTENCE_SERVICE.getGroupWithWebServers(anyString())).thenReturn(mockGroup);
-        resourceHandler.createResource(getGroupLevelWebServerResourceIdentifier(), metaData, new ByteArrayInputStream("data".getBytes()));
+        resourceHandler.createResource(getGroupLevelWebServerResourceIdentifier(), metaData, templateContent);
         verify(MockConfig.MOCK_GROUP_PERSISTENCE_SERVICE).getGroupWithWebServers(anyString());
         verify(MockConfig.MOCK_WEB_SERVER_PERSISTENCE_SERVICE).uploadWebServerConfigTemplate(any(UploadWebServerTemplateRequest.class),
                 anyString(), anyString());
@@ -191,8 +187,8 @@ public class ResourceHandlerConfigurationTest {
         jvms.add(mock(Jvm.class));
         when(mockGroup.getJvms()).thenReturn(jvms);
         when(MockConfig.MOCK_GROUP_PERSISTENCE_SERVICE.getGroup(anyString())).thenReturn(mockGroup);
-        resourceHandler.createResource(getGroupLevelJvmResourceIdentifier(), metaData, new ByteArrayInputStream("data".getBytes()));
-        verify(MockConfig.MOCK_JVM_PERSISTENCE_SERVICE).uploadJvmTemplateXml(any(UploadJvmConfigTemplateRequest.class));
+        resourceHandler.createResource(getGroupLevelJvmResourceIdentifier(), metaData, templateContent);
+        verify(MockConfig.MOCK_JVM_PERSISTENCE_SERVICE).uploadJvmConfigTemplate(any(UploadJvmConfigTemplateRequest.class));
     }
 
     @Test
@@ -210,7 +206,7 @@ public class ResourceHandlerConfigurationTest {
         final Entity entity = new Entity();
         entity.setDeployToJvms(true);
         metaData.setEntity(entity);
-        resourceHandler.createResource(getGroupLevelAppResourceIdentifier(), metaData, new ByteArrayInputStream("data".getBytes()));
+        resourceHandler.createResource(getGroupLevelAppResourceIdentifier(), metaData, templateContent);
         verify(MockConfig.getMockGroupPersistenceService()).populateGroupAppTemplate(anyString(), anyString(), anyString(),
                 anyString(), anyString());
         verify(MockConfig.MOCK_APPLICATION_PERSISTENCE_SERVICE).uploadAppTemplate(any(UploadAppTemplateRequest.class), any(JpaJvm.class));
@@ -233,7 +229,7 @@ public class ResourceHandlerConfigurationTest {
         metaData.setEntity(entity);
         metaData.setContentType("application/binary");
         when(MockConfig.MOCK_APPLICATION_PERSISTENCE_SERVICE.getApplication(anyString())).thenReturn(mock(Application.class));
-        resourceHandler.createResource(getGroupLevelAppResourceIdentifier(), metaData, new ByteArrayInputStream("some.war".getBytes()));
+        resourceHandler.createResource(getGroupLevelAppResourceIdentifier(), metaData, "some.war");
         verify(MockConfig.getMockGroupPersistenceService()).populateGroupAppTemplate(anyString(), anyString(), anyString(),
                 anyString(), anyString());
         verify(MockConfig.MOCK_APPLICATION_PERSISTENCE_SERVICE).uploadAppTemplate(any(UploadAppTemplateRequest.class), any(JpaJvm.class));

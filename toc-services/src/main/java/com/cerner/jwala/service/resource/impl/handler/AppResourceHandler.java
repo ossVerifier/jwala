@@ -14,8 +14,6 @@ import com.cerner.jwala.service.resource.impl.CreateResourceResponseWrapper;
 
 import org.apache.commons.lang3.StringUtils;
 
-import java.io.InputStream;
-
 /**
  * Handler for an application resource identified by a "resource identifier" {@link ResourceIdentifier}
  *
@@ -50,16 +48,16 @@ public class AppResourceHandler extends ResourceHandler {
     @Override
     public CreateResourceResponseWrapper createResource(final ResourceIdentifier resourceIdentifier,
                                                         final ResourceTemplateMetaData metaData,
-                                                        final InputStream data) {
+                                                        final String templateContent) {
         CreateResourceResponseWrapper createResourceResponseWrapper = null;
         if (canHandle(resourceIdentifier)) {
             final Application application = applicationPersistenceService.getApplication(resourceIdentifier.webAppName);
             final UploadAppTemplateRequest uploadAppTemplateRequest = new UploadAppTemplateRequest(application, metaData.getTemplateName(),
-                    metaData.getDeployFileName(), resourceIdentifier.jvmName, convertResourceTemplateMetaDataToJson(metaData), data);
+                    metaData.getDeployFileName(), resourceIdentifier.jvmName, convertResourceTemplateMetaDataToJson(metaData), templateContent);
             final JpaJvm jpaJvm = jvmPersistenceService.getJpaJvm(jvmPersistenceService.findJvmByExactName(resourceIdentifier.jvmName).getId(), false);
             createResourceResponseWrapper = new CreateResourceResponseWrapper(applicationPersistenceService.uploadAppTemplate(uploadAppTemplateRequest, jpaJvm));
         } else if (successor != null) {
-            createResourceResponseWrapper = successor.createResource(resourceIdentifier, metaData, data);
+            createResourceResponseWrapper = successor.createResource(resourceIdentifier, metaData, templateContent);
         }
         return createResourceResponseWrapper;
     }
