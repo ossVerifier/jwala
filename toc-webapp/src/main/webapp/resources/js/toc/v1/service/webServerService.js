@@ -129,6 +129,17 @@ var webServerService = {
             false
             );
     },
+    drainJvm: function(groupName, hostName, jvmName, errorCallback) {
+            return serviceFoundation.post("v1.0/balancermanager/" + encodeURIComponent(groupName) + "/" + encodeURIComponent(hostName) + "/" + encodeURIComponent(jvmName) + "/",
+            "json",
+            null,
+            null,
+            errorCallback,
+            true,
+            "text/plain",
+            false
+            );
+    },
     getResources : function(webServerName, responseCallback) {
         return serviceFoundation.get("v1.0/webservers/" + encodeURIComponent(webServerName) + "/resources/name", "json", responseCallback);
     },
