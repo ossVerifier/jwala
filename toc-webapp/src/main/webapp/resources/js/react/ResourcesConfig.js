@@ -166,7 +166,7 @@ var ResourcesConfig = React.createClass({
     },
     createResourceCallback: function(data) {
         if (data.rtreeListMetaData.entity === "extProperties") {
-        $.warningAlert("Only one template is allowed to be uploaded for the External Properties.Any existing template will be overwritten.", "Warning ", false);
+        $.warningAlert("Only one properties file is allowed to be uploaded for the External Properties. Any existing properties file will be overwritten.", "Warning ", false);
         this.refs.selectTemplateFilesModalDlg.show();
         } else {
             this.refs.selectMetaDataAndTemplateFilesModalDlg.show();
