@@ -129,8 +129,8 @@ var webServerService = {
             false
             );
     },
-    drainJvm: function(groupName, hostName, jvmName, errorCallback) {
-            return serviceFoundation.post("v1.0/balancermanager/" + encodeURIComponent(groupName) + "/" + encodeURIComponent(hostName) + "/" + encodeURIComponent(jvmName) + "/",
+    drainJvm: function(jvmName, errorCallback) {
+            return serviceFoundation.post("v1.0/balancermanager/" + encodeURIComponent(jvmName) + "/",
             "json",
             null,
             null,
