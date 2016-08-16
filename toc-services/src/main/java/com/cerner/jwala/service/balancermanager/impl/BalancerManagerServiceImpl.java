@@ -32,10 +32,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -77,7 +74,7 @@ public class BalancerManagerServiceImpl implements BalancerManagerService {
         this.messagingService = messagingService;
         this.historyService = historyService;
         this.balancerManagerHtmlParser = balancerManagerHtmlParser;
-        this.balancerManagerXmlParser = balancerManagerXmlParser;
+        this.balancerManagerXmlParser = new BalancerManagerXmlParser(jvmService);
         this.balancerManagerHttpClient = balancerManagerHttpClient;
     }
 
@@ -96,7 +93,7 @@ public class BalancerManagerServiceImpl implements BalancerManagerService {
         }
         checkGroupStatus(groupName);
         for (WebServer webServer : webServerList) {
-            BalancerManagerState.WebServerDrainStatus webServerDrainStatus = doDrainAndgetDrainStatus(webServer, true);
+            BalancerManagerState.WebServerDrainStatus webServerDrainStatus = doDrainAndgetDrainStatus(webServer, null, true);
             webServerDrainStatusList.add(webServerDrainStatus);
         }
         return new BalancerManagerState(groupName, webServerDrainStatusList);
@@ -109,7 +106,30 @@ public class BalancerManagerServiceImpl implements BalancerManagerService {
         checkStatus(webServerService.getWebServer(webServerName));
         List<BalancerManagerState.WebServerDrainStatus> webServerDrainStatusList = new ArrayList<>();
         WebServer webServer = webServerService.getWebServer(webServerName);
-        BalancerManagerState.WebServerDrainStatus webServerDrainStatus = doDrainAndgetDrainStatus(webServer, true);
+        BalancerManagerState.WebServerDrainStatus webServerDrainStatus = doDrainAndgetDrainStatus(webServer, null, true);
+        webServerDrainStatusList.add(webServerDrainStatus);
+        return new BalancerManagerState(groupName, webServerDrainStatusList);
+    }
+
+    @Override
+    public BalancerManagerState drainUserJvm(String groupName, String hostName, String jvmName, String user) {
+        LOGGER.info("Entering drainUserGroup, groupName: " + groupName + " hostName: " + hostName + " jvmName: " + jvmName);
+        this.setUser(user);
+        List<WebServer> webServers = webServerService.getWebServers();
+        WebServer webServer = null;
+        for (WebServer webServerFromWebServers : webServers) {
+            if (webServerFromWebServers.getHost().equalsIgnoreCase(hostName)) {
+                webServer = webServerFromWebServers;
+            }
+        }
+        if (webServer == null) {
+            throw new InternalErrorException(AemFaultType.INVALID_WEBSERVER_OPERATION, "Cannot find the webServer for this hostName: " + hostName);
+        }
+        checkStatus(webServer);
+        List<BalancerManagerState.WebServerDrainStatus> webServerDrainStatusList = new ArrayList<>();
+        //WebServer webServer = webServerService.getWebServer(webServerName);
+        Jvm jvm = jvmService.getJvm(jvmName);
+        BalancerManagerState.WebServerDrainStatus webServerDrainStatus = doDrainAndgetDrainStatus(webServer, jvm, true);
         webServerDrainStatusList.add(webServerDrainStatus);
         return new BalancerManagerState(groupName, webServerDrainStatusList);
     }
@@ -122,7 +142,7 @@ public class BalancerManagerServiceImpl implements BalancerManagerService {
         List<BalancerManagerState.WebServerDrainStatus> webServerDrainStatusList = new ArrayList<>();
         Group group = groupService.getGroup(groupName);
         for (WebServer webServer : webServerService.findWebServers(group.getId())) {
-            BalancerManagerState.WebServerDrainStatus webServerDrainStatus = doDrainAndgetDrainStatus(webServer, false);
+            BalancerManagerState.WebServerDrainStatus webServerDrainStatus = doDrainAndgetDrainStatus(webServer, null, false);
             webServerDrainStatusList.add(webServerDrainStatus);
         }
         return new BalancerManagerState(groupName, webServerDrainStatusList);
@@ -189,8 +209,8 @@ public class BalancerManagerServiceImpl implements BalancerManagerService {
         return webServersMatch;
     }
 
-    public BalancerManagerState.WebServerDrainStatus doDrainAndgetDrainStatus(final WebServer webServer, final Boolean post) {
-        List<BalancerManagerState.WebServerDrainStatus.JvmDrainStatus> jvmDrainStatusList = prepareDrainWork(webServer, post);
+    public BalancerManagerState.WebServerDrainStatus doDrainAndgetDrainStatus(final WebServer webServer, final Jvm jvm, final Boolean post) {
+        List<BalancerManagerState.WebServerDrainStatus.JvmDrainStatus> jvmDrainStatusList = prepareDrainWork(webServer, jvm, post);
         return new BalancerManagerState.WebServerDrainStatus(webServer.getName(), jvmDrainStatusList);
     }
 
@@ -198,7 +218,7 @@ public class BalancerManagerServiceImpl implements BalancerManagerService {
     //In this case, jwala only needs to do it one time instead of go through all balancer name (multiple times) to find out all workers
     //but it still need to pass the balancer name and nonce in order to get xml file
     //We believe it is the issue for apache-tomcat httpd balancer manager
-    public List<BalancerManagerState.WebServerDrainStatus.JvmDrainStatus> prepareDrainWork(final WebServer webServer, final Boolean post) {
+    public List<BalancerManagerState.WebServerDrainStatus.JvmDrainStatus> prepareDrainWork(final WebServer webServer, final Jvm jvm, final Boolean post) {
         LOGGER.info("Entering prepareDrainWork");
         List<BalancerManagerState.WebServerDrainStatus.JvmDrainStatus> jvmDrainStatusList = new ArrayList<>();
         final String balancerManagerHtmlUrl = balancerManagerHtmlParser.getUrlPath(webServer.getHost());
@@ -210,7 +230,12 @@ public class BalancerManagerServiceImpl implements BalancerManagerService {
             final String balancerManagerXmlUrl = balancerManagerXmlParser.getUrlPath(webServer.getHost(), balancerName, nonce);
             balancerManagerResponseXml = getBalancerManagerResponse(balancerManagerXmlUrl);
             Manager manager = balancerManagerXmlParser.getWorkerXml(balancerManagerResponseXml);
-            Map<String, String> workers = balancerManagerXmlParser.getWorkers(manager, balancerName);
+            Map<String, String> workers;
+            if (jvm == null) {
+                workers = balancerManagerXmlParser.getWorkers(manager, balancerName);
+            } else {
+                workers = balancerManagerXmlParser.getJvmWorker(manager, balancerName, findJvmUrl(jvm));
+            }
             if (post) {
                 doDrain(workers, balancerManagerHtmlUrl, webServer, balancerName, nonce);
             }
@@ -219,7 +244,7 @@ public class BalancerManagerServiceImpl implements BalancerManagerService {
                 String workerHtml = getBalancerManagerResponse(workerUrl);
                 Map<String, String> workerStatusMap = balancerManagerHtmlParser.findWorkerStatus(workerHtml);
                 BalancerManagerState.WebServerDrainStatus.JvmDrainStatus jvmDrainStatus = new BalancerManagerState.WebServerDrainStatus.JvmDrainStatus(worker,
-                        findJvmNameByWorker(worker),
+                        balancerManagerXmlParser.findJvmNameByWorker(worker),
                         findApplicationNameByWorker(worker),
                         workerStatusMap.get(WorkerStatusType.IGNORE_ERRORS.name()),
                         workerStatusMap.get(WorkerStatusType.DRAINING_MODE.name()),
@@ -229,6 +254,36 @@ public class BalancerManagerServiceImpl implements BalancerManagerService {
             }
         }
         return jvmDrainStatusList;
+    }
+
+    /*
+    Using jvm object to find it's application and generate the jvmurl such as
+    https://hostname:httpsport/webAppContext
+    or
+    http://hostname:httpport/webAppContext
+     */
+    public String findJvmUrl(Jvm jvm) {
+        String jvmUrl = "";
+        if (jvm == null) return jvmUrl;
+        List<Application> applications = applicationService.getApplications();
+        for (Application application : applications) {
+            boolean isSecure = application.isSecure();
+            String webAppContext = application.getWebAppContext();
+            Group group = application.getGroup();
+            Set<Jvm> jvms = group.getJvms();
+            for (Jvm groupJvm : jvms) {
+                if (groupJvm.getJvmName().equalsIgnoreCase(jvm.getJvmName())) {
+                    if (isSecure) {
+                        jvmUrl = "https://" + jvm.getHostName() + ":" + jvm.getHttpsPort() + webAppContext;
+                    } else {
+                        jvmUrl = "http://" + jvm.getHostName() + ":" + jvm.getHttpPort() + webAppContext;
+                    }
+                    break;
+                }
+            }
+        }
+        System.out.println(jvmUrl);
+        return jvmUrl;
     }
 
     public String findApplicationNameByWorker(final String worker) {
@@ -249,29 +304,6 @@ public class BalancerManagerServiceImpl implements BalancerManagerService {
         return appName;
     }
 
-    public String findJvmNameByWorker(final String worker) {
-        LOGGER.info("Entering findJvmNameByWorker");
-        List<Jvm> jvms = jvmService.getJvms();
-        String jvmName = "";
-        for (Jvm jvm : jvms) {
-            String jvmUrl;
-            if (worker.indexOf("https") != -1) {
-                jvmUrl = "https://" + jvm.getHostName() + ":" + jvm.getHttpsPort();
-            } else if (worker.indexOf("http") != -1) {
-                jvmUrl = "http://" + jvm.getHostName() + ":" + jvm.getHttpPort();
-            } else if (worker.indexOf("ajp") != -1) {
-                jvmUrl = "ajp://" + jvm.getHostName() + ":" + jvm.getAjpPort();
-            } else {
-                return "";
-            }
-            if (worker.toLowerCase().indexOf(jvmUrl.toLowerCase()) != -1) {
-                jvmName = jvm.getJvmName();
-                break;
-            }
-        }
-        System.out.println(jvmName);
-        return jvmName;
-    }
 
     public String getBalancerManagerResponse(final String statusUri) {
         LOGGER.info("Entering getBalancerManagerResponse: " + statusUri);

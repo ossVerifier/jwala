@@ -9,6 +9,8 @@ public interface BalancerManagerService {
 
     BalancerManagerState drainUserWebServer(final String groupName, final String webServerName, final String user);
 
+    BalancerManagerState drainUserJvm(final String groupName, final String hostName, final String jvmName, final String user);
+
     BalancerManagerState getGroupDrainStatus(final String group, final String user);
 
 }

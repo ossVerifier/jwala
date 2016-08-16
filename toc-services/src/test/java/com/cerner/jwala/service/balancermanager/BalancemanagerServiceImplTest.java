@@ -5,6 +5,9 @@ import com.cerner.jwala.common.domain.model.balancermanager.BalancerManagerState
 import com.cerner.jwala.common.domain.model.balancermanager.WorkerStatusType;
 import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.id.Identifier;
+import com.cerner.jwala.common.domain.model.jvm.Jvm;
+import com.cerner.jwala.common.domain.model.jvm.JvmState;
+import com.cerner.jwala.common.domain.model.path.Path;
 import com.cerner.jwala.common.domain.model.webserver.WebServer;
 import com.cerner.jwala.common.properties.ApplicationProperties;
 import com.cerner.jwala.service.HistoryService;
@@ -76,7 +79,7 @@ public class BalancemanagerServiceImplTest {
     private BalancerManagerHttpClient mockBalancerManagerHttpClient;
 
     private BalancerManagerHtmlParser balancerManagerHtmlParser = new BalancerManagerHtmlParser();
-    private BalancerManagerXmlParser balancerManagerXmlParser = new BalancerManagerXmlParser();
+    private BalancerManagerXmlParser balancerManagerXmlParser = new BalancerManagerXmlParser(mockJvmService);
 
     @Before
     public void setup() {
@@ -88,6 +91,7 @@ public class BalancemanagerServiceImplTest {
             }
         };
         System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, new File(".").getAbsolutePath() + "/src/test/resources");
+        this.balancerManagerXmlParser = new BalancerManagerXmlParser(mockJvmService);
     }
 
     @After
@@ -475,7 +479,7 @@ public class BalancemanagerServiceImplTest {
         mockGroup.getGroup();
         when(mockJvmService.getJvms()).thenReturn(mockGroup.getJvms());
         final String worker = "https://localhost:9101/mywebAppContext";
-        assertEquals("jvmname", balancerManagerServiceImpl.findJvmNameByWorker(worker));
+        assertEquals("jvmname", balancerManagerXmlParser.findJvmNameByWorker(worker));
     }
 
     @Test
@@ -484,7 +488,7 @@ public class BalancemanagerServiceImplTest {
         mockGroup.getGroup();
         when(mockJvmService.getJvms()).thenReturn(mockGroup.getJvms());
         final String worker = "ajp://localhost:9103/mywebAppContext";
-        assertEquals("jvmname", balancerManagerServiceImpl.findJvmNameByWorker(worker));
+        assertEquals("jvmname", balancerManagerXmlParser.findJvmNameByWorker(worker));
     }
 
     @Test
@@ -493,7 +497,32 @@ public class BalancemanagerServiceImplTest {
         mockGroup.getGroup();
         when(mockJvmService.getJvms()).thenReturn(mockGroup.getJvms());
         final String worker = "xxxxx://localhost:9103/mywebAppContext";
-        assertEquals("", balancerManagerServiceImpl.findJvmNameByWorker(worker));
+        assertEquals("", balancerManagerXmlParser.findJvmNameByWorker(worker));
+    }
+
+    @Test
+    public void testFindJvmUrl(){
+        final MockGroup mockGroup = new MockGroup();
+        mockGroup.getGroup();
+        when(mockApplicationService.getApplications()).thenReturn(mockGroup.getApplications());
+        Jvm jvm = new Jvm(id(0L, Jvm.class),
+                "jvmname",
+                "localhost",
+                null,
+                null,
+                9100,
+                9101,
+                9102,
+                -1,
+                9103,
+                new Path("statusPath"),
+                "systemProperties",
+                JvmState.JVM_START,
+                "errorStatus",
+                Calendar.getInstance(),
+                "username",
+                "encryptedpassword");
+        assertEquals("https://localhost:9101/hct", balancerManagerServiceImpl.findJvmUrl(jvm));
     }
 
     private String getBalancerManagerResponseXml() {

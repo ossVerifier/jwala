@@ -1,7 +1,9 @@
 package com.cerner.jwala.service.balancermanager.impl;
 
+import com.cerner.jwala.common.domain.model.jvm.Jvm;
 import com.cerner.jwala.common.exception.ApplicationException;
 import com.cerner.jwala.service.balancermanager.impl.xml.data.Manager;
+import com.cerner.jwala.service.jvm.JvmService;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,6 +18,12 @@ import java.util.Map;
 public class BalancerManagerXmlParser {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BalancerManagerXmlParser.class);
+
+    private JvmService jvmService;
+
+    public BalancerManagerXmlParser(JvmService jvmService) {
+        this.jvmService = jvmService;
+    }
 
     public String getUrlPath(final String host, final String balancerName, final String nonce) {
         return "https://" + host + "/balancer-manager" + "?b=" + balancerName + "&xml=1&nonce=" + nonce;
@@ -53,5 +61,44 @@ public class BalancerManagerXmlParser {
             }
         }
         return workers;
+    }
+
+    public Map<String, String> getJvmWorker(final Manager manager, final String balancerName, final String jvmUrl) {
+        LOGGER.info("Entering getJvmWorker for jvmUrl: " + jvmUrl);
+        Map<String, String> workers = new HashMap<>();
+        for (Manager.Balancer balancers : manager.getBalancers()) {
+            if (balancers.getName().equalsIgnoreCase("balancer://" + balancerName)) {
+                for (Manager.Balancer.Worker worker : balancers.getWorkers()) {
+                if (findJvmNameByWorker(worker.getName()).equalsIgnoreCase(jvmUrl)) {
+                        workers.put(worker.getName(), worker.getRoute());
+                    }
+                }
+            }
+        }
+        return workers;
+    }
+
+    public String findJvmNameByWorker(final String worker) {
+        LOGGER.info("Entering findJvmNameByWorker");
+        List<Jvm> jvms = jvmService.getJvms();
+        String jvmName = "";
+        for (Jvm jvm : jvms) {
+            String jvmUrl;
+            if (worker.indexOf("https") != -1) {
+                jvmUrl = "https://" + jvm.getHostName() + ":" + jvm.getHttpsPort();
+            } else if (worker.indexOf("http") != -1) {
+                jvmUrl = "http://" + jvm.getHostName() + ":" + jvm.getHttpPort();
+            } else if (worker.indexOf("ajp") != -1) {
+                jvmUrl = "ajp://" + jvm.getHostName() + ":" + jvm.getAjpPort();
+            } else {
+                return "";
+            }
+            if (worker.toLowerCase().indexOf(jvmUrl.toLowerCase()) != -1) {
+                jvmName = jvm.getJvmName();
+                break;
+            }
+        }
+        System.out.println(jvmName);
+        return jvmName;
     }
 }

@@ -36,12 +36,11 @@ public class MockGroup {
     public List<Jvm> getJvms() {
         Group myGroup = new Group(groupId, groupName);
         List<Jvm> jvms = new LinkedList<>();
-        groups.add(myGroup);
+        //groups.add(myGroup);
         Jvm jvm = new Jvm(id(0L, Jvm.class),
                 "jvmname",
                 "localhost",
                 groups,
-                myGroup,
                 9100,
                 9101,
                 9102,
@@ -51,6 +50,7 @@ public class MockGroup {
                 "systemProperties",
                 JvmState.JVM_START,
                 "errorStatus",
+                getApplications(),
                 Calendar.getInstance(),
                 "username",
                 "encryptedpassword");
@@ -94,7 +94,7 @@ public class MockGroup {
     }
 
     public List<Application> getApplications() {
-        Group myGroup = new Group(groupId, groupName);
+        Group myGroup = new Group(groupId, groupName, jvms);
         List<Application> applications = new LinkedList<>();
         Application application = new Application(id(0L, Application.class),
                 "HEALTH-CHECK-4.0",
