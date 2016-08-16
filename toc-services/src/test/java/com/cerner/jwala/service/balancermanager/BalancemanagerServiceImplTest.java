@@ -478,6 +478,24 @@ public class BalancemanagerServiceImplTest {
         assertEquals("jvmname", balancerManagerServiceImpl.findJvmNameByWorker(worker));
     }
 
+    @Test
+    public void testFindJvmNameByWorkerAJP(){
+        final MockGroup mockGroup = new MockGroup();
+        mockGroup.getGroup();
+        when(mockJvmService.getJvms()).thenReturn(mockGroup.getJvms());
+        final String worker = "ajp://localhost:9103/mywebAppContext";
+        assertEquals("jvmname", balancerManagerServiceImpl.findJvmNameByWorker(worker));
+    }
+
+    @Test
+    public void testFindJvmNameByWorkerNotFound(){
+        final MockGroup mockGroup = new MockGroup();
+        mockGroup.getGroup();
+        when(mockJvmService.getJvms()).thenReturn(mockGroup.getJvms());
+        final String worker = "xxxxx://localhost:9103/mywebAppContext";
+        assertEquals("", balancerManagerServiceImpl.findJvmNameByWorker(worker));
+    }
+
     private String getBalancerManagerResponseXml() {
         final File httpdconfFile = new File("./src/test/resources/balancermanager/balancer-manager-response.xml");
         String contents = "";

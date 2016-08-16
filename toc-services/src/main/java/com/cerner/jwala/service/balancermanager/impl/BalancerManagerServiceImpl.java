@@ -204,7 +204,7 @@ public class BalancerManagerServiceImpl implements BalancerManagerService {
         final String balancerManagerHtmlUrl = balancerManagerHtmlParser.getUrlPath(webServer.getHost());
         balancerManagerResponseHtml = getBalancerManagerResponse(balancerManagerHtmlUrl);
         final Map<String, String> balancers = balancerManagerHtmlParser.findBalancers(balancerManagerResponseHtml);
-        for(Map.Entry<String, String> entry : balancers.entrySet()){
+        for (Map.Entry<String, String> entry : balancers.entrySet()) {
             final String balancerName = entry.getKey();
             final String nonce = entry.getValue();
             final String balancerManagerXmlUrl = balancerManagerXmlParser.getUrlPath(webServer.getHost(), balancerName, nonce);
@@ -257,14 +257,19 @@ public class BalancerManagerServiceImpl implements BalancerManagerService {
             String jvmUrl;
             if (worker.indexOf("https") != -1) {
                 jvmUrl = "https://" + jvm.getHostName() + ":" + jvm.getHttpsPort();
-            } else {
+            } else if (worker.indexOf("http") != -1) {
                 jvmUrl = "http://" + jvm.getHostName() + ":" + jvm.getHttpPort();
+            } else if (worker.indexOf("ajp") != -1) {
+                jvmUrl = "ajp://" + jvm.getHostName() + ":" + jvm.getAjpPort();
+            } else {
+                return "";
             }
             if (worker.toLowerCase().indexOf(jvmUrl.toLowerCase()) != -1) {
                 jvmName = jvm.getJvmName();
                 break;
             }
         }
+        System.out.println(jvmName);
         return jvmName;
     }
 
