@@ -33,7 +33,6 @@ import com.cerner.jwala.service.resource.ResourceHandler;
 import com.cerner.jwala.service.resource.ResourceService;
 import com.cerner.jwala.service.resource.impl.handler.exception.ResourceHandlerException;
 import com.cerner.jwala.template.ResourceFileGenerator;
-
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -758,6 +757,28 @@ public class ResourceServiceImpl implements ResourceService {
             templateContent = templateContent.replaceAll("\n", "\r\n");
         }
         FileUtils.writeStringToFile(configFile, templateContent);
+    }
+
+    @Override
+    public String getExternalPropertiesAsString() {
+        Properties externalProperties = getExternalProperties();
+
+        // use a TreeMap to put the properties in alphabetical order
+        final TreeMap sortedProperties = null == externalProperties ? null : new TreeMap<>(externalProperties);
+
+        String retVal = "No External Properties configured";
+        if (null != sortedProperties && sortedProperties.size() > 0) {
+            StringBuilder sb = new StringBuilder();
+            for (Object key:sortedProperties.keySet()) {
+                sb.append(key);
+                sb.append("=");
+                sb.append(sortedProperties.get(key));
+                sb.append("\n");
+            }
+            retVal = sb.toString();
+        }
+
+        return retVal;
     }
 
     @Override

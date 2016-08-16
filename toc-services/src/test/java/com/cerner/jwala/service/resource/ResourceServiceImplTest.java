@@ -631,4 +631,11 @@ public class ResourceServiceImplTest {
         assertTrue(result.length() > 0);
         assertTrue(result.delete());
     }
+
+    @Test
+    public void testGetExternalPropertiesAsString() {
+        String result = resourceService.getExternalPropertiesAsString();
+        assertEquals("newkey=newvalue\n", result);
+    }
+
 }

@@ -18,6 +18,7 @@ import com.cerner.jwala.ws.rest.v1.response.ApplicationResponse;
 import com.cerner.jwala.ws.rest.v1.service.resource.CreateResourceParam;
 import com.cerner.jwala.ws.rest.v1.service.resource.ResourceHierarchyParam;
 import junit.framework.Assert;
+import org.apache.cxf.jaxrs.ext.MessageContext;
 import org.apache.cxf.jaxrs.ext.multipart.Attachment;
 import org.junit.Before;
 import org.junit.Test;
@@ -26,11 +27,18 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import javax.activation.DataHandler;
+import javax.servlet.ServletInputStream;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.SecurityContext;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -551,6 +559,15 @@ public class ResourceServiceRestImplTest {
     }
 
     @Test
+    public void testGetExternalPropertiesView() {
+        when(impl.getExternalPropertiesAsString()).thenReturn("key=value");
+        Response result = cut.getExternalPropertiesView();
+        verify(impl).getExternalPropertiesAsString();
+        assertEquals(200, result.getStatus());
+        assertEquals("key=value", result.getEntity().toString());
+    }
+
+    @Test
     public void testPreviewResourceContent() {
         ResourceHierarchyParam param = new ResourceHierarchyParam();
         param.setGroup("test-group");
@@ -659,5 +676,74 @@ public class ResourceServiceRestImplTest {
         when(impl.getExternalPropertiesAsFile()).thenThrow(new IOException("Fail this test"));
         Response result = cut.getExternalPropertiesDownload();
         assertEquals(500, result.getStatus());
+    }
+
+    @Test
+    public void testUploadExternalProperties() throws IOException {
+        final MessageContext msgContextMock = mock(MessageContext.class);
+        final HttpHeaders httpHeadersMock = mock(HttpHeaders.class);
+        final List<MediaType> mediaTypeList = new ArrayList<>();
+        final HttpServletRequest httpServletRequestMock = mock(HttpServletRequest.class);
+        final HttpServletResponse httpServletResponseMock = mock(HttpServletResponse.class);
+        when(httpHeadersMock.getAcceptableMediaTypes()).thenReturn(mediaTypeList);
+        when(msgContextMock.getHttpHeaders()).thenReturn(httpHeadersMock);
+        when(msgContextMock.getHttpServletRequest()).thenReturn(httpServletRequestMock);
+        when(msgContextMock.getHttpServletResponse()).thenReturn(httpServletResponseMock);
+        when(httpServletRequestMock.getContentType()).thenReturn("multipart/form-data; boundary=----WebKitFormBoundaryXRxegBGqTe4gApI2");
+        when(httpServletRequestMock.getInputStream()).thenReturn(new DelegatingServletInputStream());
+        cut.setMessageContext(msgContextMock);
+
+        final SecurityContext securityContextMock = mock(SecurityContext.class);
+        final AuthenticatedUser authenticatedUser = new AuthenticatedUser(securityContextMock);
+
+        cut.uploadExternalProperties(authenticatedUser);
+        verify(impl).createResource(any(ResourceIdentifier.class), any(ResourceTemplateMetaData.class), any(InputStream.class));
+    }
+
+    /**
+     * Instead of mocking the ServletInputStream, let's extend it instead.
+     *
+     * @see "http://stackoverflow.com/questions/20995874/how-to-mock-a-javax-servlet-servletinputstream"
+     */
+    static class DelegatingServletInputStream extends ServletInputStream {
+
+        private InputStream inputStream;
+
+        public DelegatingServletInputStream() {
+            inputStream = new ByteArrayInputStream("------WebKitFormBoundaryXRxegBGqTe4gApI2\r\nContent-Disposition: form-data; name=\"hct.properties\"; filename=\"hotel-booking.txt\"\r\nContent-Type: text/plain\r\n\r\n\r\n------WebKitFormBoundaryXRxegBGqTe4gApI2--".getBytes(Charset.defaultCharset()));
+        }
+
+        /**
+         * Return the underlying source stream (never <code>null</code>).
+         */
+        public final InputStream getSourceStream() {
+            return inputStream;
+        }
+
+
+        public int read() throws IOException {
+            return inputStream.read();
+        }
+
+        public void close() throws IOException {
+            super.close();
+            inputStream.close();
+        }
+
+    }
+
+    private class MyIS extends ServletInputStream {
+
+        private InputStream backingStream;
+
+        public MyIS(InputStream backingStream) {
+            this.backingStream = backingStream;
+        }
+
+        @Override
+        public int read() throws IOException {
+            return backingStream.read();
+        }
+
     }
 }
