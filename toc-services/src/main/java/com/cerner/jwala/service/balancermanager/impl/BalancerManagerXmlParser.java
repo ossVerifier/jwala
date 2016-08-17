@@ -98,7 +98,7 @@ public class BalancerManagerXmlParser {
                 break;
             }
         }
-        System.out.println(jvmName);
+        LOGGER.info(jvmName);
         return jvmName;
     }
 }

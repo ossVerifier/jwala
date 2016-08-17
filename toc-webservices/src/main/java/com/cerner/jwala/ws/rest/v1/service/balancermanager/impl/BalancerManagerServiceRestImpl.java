@@ -19,20 +19,20 @@ public class BalancerManagerServiceRestImpl implements BalancerManagerServiceRes
     }
 
     @Override
-    public Response drainUserGroup(final String groupName, final String webServers) {
-        BalancerManagerState balancerManagerState = balancerManagerService.drainUserGroup(groupName, webServers, getUser());
+    public Response drainUserGroup(final String groupName, final String webServerNames) {
+        BalancerManagerState balancerManagerState = balancerManagerService.drainUserGroup(groupName, webServerNames, getUser());
         return ResponseBuilder.ok(balancerManagerState);
     }
 
     @Override
-    public Response drainUserWebServer(final String groupName, final String webServerName) {
-        BalancerManagerState balancerManagerState = balancerManagerService.drainUserWebServer(groupName, webServerName, getUser());
+    public Response drainUserWebServer(final String groupName, final String webServerName, final String jvmNames) {
+        BalancerManagerState balancerManagerState = balancerManagerService.drainUserWebServer(groupName, webServerName, jvmNames, getUser());
         return ResponseBuilder.ok(balancerManagerState);
     }
 
     @Override
-    public Response drainUserJvm(final String groupName, final String jvmName) {
-        BalancerManagerState balancerManagerState = balancerManagerService.drainUserJvm(groupName, jvmName, getUser());
+    public Response drainUserJvm(final String jvmName) {
+        BalancerManagerState balancerManagerState = balancerManagerService.drainUserJvm(jvmName, getUser());
         return ResponseBuilder.ok(balancerManagerState);
     }
 

@@ -97,8 +97,7 @@ var JvmControlPanelWidget = React.createClass({
     jvmDrain: function(doneCallback) {
               this.showFadingStatusClickedLabel("Draining JVM...", this.refs.drainBtn.getDOMNode(), this.props.data.id.id);
               this.doneCallback[this.props.data.name] = doneCallback;
-              this.props.webServerService.drainJvm(this.props.parentGroup,
-                                                   this.props.data.jvmName,
+              this.props.webServerService.drainJvm(this.props.data.jvmName,
                                                    this.drainJvmErrorCallback
               );
     },

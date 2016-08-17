@@ -18,12 +18,12 @@ public interface BalancerManagerServiceRest extends InitializingBean {
     @POST
     @Path("/{groupName}/{webServerName}")
     Response drainUserWebServer(@PathParam("groupName") final String groupName,
-                                @PathParam("webServerName") final String webServerName);
+                                @PathParam("webServerName") final String webServerName,
+                                final String jvmNames);
 
     @POST
-    @Path("/{groupName}/{jvmName}")
-    Response drainUserJvm(@PathParam("groupName") final String groupName,
-                          @PathParam("jvmName") final String jvmName);
+    @Path("/jvm/{jvmName}")
+    Response drainUserJvm(@PathParam("jvmName") final String jvmName);
 
     @GET
     @Path("/{groupName}")
