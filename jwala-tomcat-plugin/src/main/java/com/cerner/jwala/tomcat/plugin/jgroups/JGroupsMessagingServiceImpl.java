@@ -16,18 +16,24 @@ public class JGroupsMessagingServiceImpl implements MessagingService<Message> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JGroupsMessagingServiceImpl.class);
 
-    private final JChannel channel;
+    private final String configXml;
     private final String clusterName;
+    private final boolean discardOwnMessages;
 
-    public JGroupsMessagingServiceImpl(final JChannel channel, final String clusterName) {
-        this.channel = channel;
+    public JChannel channel;
+
+    public JGroupsMessagingServiceImpl(final String configXml, final String clusterName, final boolean discardOwnMessages) {
+        this.configXml = configXml;
         this.clusterName = clusterName;
+        this.discardOwnMessages = discardOwnMessages;
     }
 
     @Override
     public void init() {
         try {
-            LOGGER.info("JGroups channel connecting...");
+            LOGGER.info("Initializing JGroups channel...");
+            channel = new JChannel(configXml);
+            channel.setDiscardOwnMessages(true);
             connect(clusterName);
         } catch (final Exception e) {
             throw new MessagingServiceException("Failed to initialize the service!", e);
@@ -37,10 +43,14 @@ public class JGroupsMessagingServiceImpl implements MessagingService<Message> {
     @Override
     public synchronized void send(final Message msg) {
         try {
-            connect(clusterName);
-            LOGGER.info("Sending msg {}", msg);
-            LOGGER.info("Msg content = {}", msg.getObject());
-            channel.send(msg);
+            if (msg != null) {
+                connect(clusterName);
+                LOGGER.info("Sending msg {}", msg);
+                LOGGER.info("Msg content = {}", msg.getObject());
+                channel.send(msg);
+            } else {
+                LOGGER.warn("Cannot send null msg!");
+            }
         } catch (final Exception e) {
             LOGGER.error(e.getMessage(), e);
             throw new MessagingServiceException("Failed to deliver message!", e);
@@ -49,7 +59,7 @@ public class JGroupsMessagingServiceImpl implements MessagingService<Message> {
 
     @Override
     public void destroy() {
-        if (channel.isConnected()) {
+        if (!channel.isConnected()) {
             LOGGER.info("Closing channel connection...");
             channel.close();
             LOGGER.info("Channel closed");
@@ -76,8 +86,9 @@ public class JGroupsMessagingServiceImpl implements MessagingService<Message> {
     @Override
     public String toString() {
         return "JGroupsMessagingServiceImpl{" +
-                "clusterName='" + clusterName + '\'' +
-                ", channel=" + channel +
+                "configXml='" + configXml + '\'' +
+                ", clusterName='" + clusterName + '\'' +
+                ", discardOwnMessages=" + discardOwnMessages +
                 '}';
     }
 }
