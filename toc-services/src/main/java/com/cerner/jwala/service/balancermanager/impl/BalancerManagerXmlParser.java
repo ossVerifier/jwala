@@ -69,7 +69,7 @@ public class BalancerManagerXmlParser {
         for (Manager.Balancer balancers : manager.getBalancers()) {
             if (balancers.getName().equalsIgnoreCase("balancer://" + balancerName)) {
                 for (Manager.Balancer.Worker worker : balancers.getWorkers()) {
-                if (findJvmNameByWorker(worker.getName()).equalsIgnoreCase(jvmUrl)) {
+                    if (worker.getName().equalsIgnoreCase(jvmUrl)) {
                         workers.put(worker.getName(), worker.getRoute());
                     }
                 }

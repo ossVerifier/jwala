@@ -34,12 +34,10 @@ public class MockGroup {
     }
 
     public List<Jvm> getJvms() {
-        Group myGroup = new Group(groupId, groupName);
         List<Jvm> jvms = new LinkedList<>();
-        //groups.add(myGroup);
         Jvm jvm = new Jvm(id(0L, Jvm.class),
                 "jvmname",
-                "localhost",
+                "USMLVV1CDS0057",
                 groups,
                 9100,
                 9101,
@@ -57,6 +55,27 @@ public class MockGroup {
         this.jvms.add(jvm);
         jvms.add(jvm);
         return jvms;
+    }
+
+    public Jvm getJvm(final String jvmName) {
+        Jvm jvm = new Jvm(id(0L, Jvm.class),
+                jvmName,
+                "USMLVV1CDS0057",
+                groups,
+                9100,
+                9101,
+                9102,
+                -1,
+                9103,
+                new Path("statusPath"),
+                "systemProperties",
+                JvmState.JVM_START,
+                "errorStatus",
+                getApplications(),
+                Calendar.getInstance(),
+                "username",
+                "encryptedpassword");
+        return jvm;
     }
 
     public void getWebServers() {
@@ -106,7 +125,7 @@ public class MockGroup {
                 false,
                 "myWarName");
         List<Jvm> jvmsList = new LinkedList<>();
-        for(Jvm jvm: jvms){
+        for (Jvm jvm : jvms) {
             jvmsList.add(jvm);
         }
         application.setJvms(jvmsList);
@@ -115,7 +134,7 @@ public class MockGroup {
         return applications;
     }
 
-    public List<Application> getApplicationsMulti(){
+    public List<Application> getApplicationsMulti() {
         Group myGroup = new Group(groupId, groupName);
         List<Application> applications = new LinkedList<>();
         Application application = new Application(id(0L, Application.class),
@@ -128,7 +147,7 @@ public class MockGroup {
                 false,
                 "myWarName");
         List<Jvm> jvmsList = new LinkedList<>();
-        for(Jvm jvm: jvms){
+        for (Jvm jvm : jvms) {
             jvmsList.add(jvm);
         }
         application.setJvms(jvmsList);
@@ -136,7 +155,7 @@ public class MockGroup {
         return applications;
     }
 
-    public List<Application> findApplications(){
+    public List<Application> findApplications() {
         Group myGroup = new Group(groupId, groupName);
         List<Application> applications = new LinkedList<>();
         Application application = new Application(id(0L, Application.class),
@@ -152,7 +171,7 @@ public class MockGroup {
         return applications;
     }
 
-    public List<WebServer> findWebServers(){
+    public List<WebServer> findWebServers() {
         Group myGroup = new Group(groupId, groupName);
         List<WebServer> webservers = new LinkedList<>();
         WebServer webServer = new WebServer(id(1L, WebServer.class),

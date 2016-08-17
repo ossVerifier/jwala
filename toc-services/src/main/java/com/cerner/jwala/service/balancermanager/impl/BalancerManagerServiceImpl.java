@@ -112,27 +112,40 @@ public class BalancerManagerServiceImpl implements BalancerManagerService {
     }
 
     @Override
-    public BalancerManagerState drainUserJvm(String groupName, String hostName, String jvmName, String user) {
-        LOGGER.info("Entering drainUserGroup, groupName: " + groupName + " hostName: " + hostName + " jvmName: " + jvmName);
+    public BalancerManagerState drainUserJvm(final String groupName, final String jvmName, String user) {
+        LOGGER.info("Entering drainUserGroup, groupName: " + groupName + " jvmName: " + jvmName);
         this.setUser(user);
-        List<WebServer> webServers = webServerService.getWebServers();
-        WebServer webServer = null;
-        for (WebServer webServerFromWebServers : webServers) {
-            if (webServerFromWebServers.getHost().equalsIgnoreCase(hostName)) {
-                webServer = webServerFromWebServers;
-            }
-        }
-        if (webServer == null) {
-            throw new InternalErrorException(AemFaultType.INVALID_WEBSERVER_OPERATION, "Cannot find the webServer for this hostName: " + hostName);
-        }
-        checkStatus(webServer);
+        Group group = groupService.getGroup(groupName);
+        List<WebServer> webServerList = webServerService.findWebServers(group.getId());
+        checkGroupStatus(groupName);
         List<BalancerManagerState.WebServerDrainStatus> webServerDrainStatusList = new ArrayList<>();
-        //WebServer webServer = webServerService.getWebServer(webServerName);
         Jvm jvm = jvmService.getJvm(jvmName);
-        BalancerManagerState.WebServerDrainStatus webServerDrainStatus = doDrainAndgetDrainStatus(webServer, jvm, true);
-        webServerDrainStatusList.add(webServerDrainStatus);
+        for (WebServer webServer : webServerList) {
+            BalancerManagerState.WebServerDrainStatus webServerDrainStatus = doDrainAndgetDrainStatus(webServer, jvm, true);
+            webServerDrainStatusList.add(webServerDrainStatus);
+        }
         return new BalancerManagerState(groupName, webServerDrainStatusList);
     }
+
+/*    public void findWebServerfromJvm(final String jvmName) {
+        System.out.println("Entering findWebServersfromJvm");
+        List<Application> applications = applicationService.getApplications();
+        for (Application application : applications) {
+            Group group = application.getGroup();
+            Set<Jvm> jvms = group.getJvms();
+            Set<WebServer> webServers = group.getWebServers();
+            for (WebServer webServer : webServers) {
+
+            }
+            for (Jvm jvm : jvms) {
+
+                if (jvm.getJvmName().equalsIgnoreCase(jvmName)) {
+                    //WebServer webServer = webServerService.get
+                }
+            }
+        }
+
+    }*/
 
     @Override
     public BalancerManagerState getGroupDrainStatus(final String groupName, final String user) {
@@ -282,7 +295,7 @@ public class BalancerManagerServiceImpl implements BalancerManagerService {
                 }
             }
         }
-        System.out.println(jvmUrl);
+        LOGGER.info("jvmUrl: " + jvmUrl);
         return jvmUrl;
     }
 
