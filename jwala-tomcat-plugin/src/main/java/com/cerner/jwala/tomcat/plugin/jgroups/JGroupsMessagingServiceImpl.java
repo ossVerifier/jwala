@@ -59,7 +59,7 @@ public class JGroupsMessagingServiceImpl implements MessagingService<Message> {
 
     @Override
     public void destroy() {
-        if (!channel.isConnected()) {
+        if (channel.isConnected()) {
             LOGGER.info("Closing channel connection...");
             channel.close();
             LOGGER.info("Channel closed");

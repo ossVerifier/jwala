@@ -5,18 +5,13 @@ import com.cerner.jwala.tomcat.plugin.MessagingService;
 import org.apache.catalina.LifecycleEvent;
 import org.apache.catalina.LifecycleListener;
 import org.apache.catalina.LifecycleState;
-import org.jgroups.Address;
 import org.jgroups.Message;
 import org.jgroups.stack.IpAddress;
-import org.joda.time.DateTime;
-import org.joda.time.format.ISODateTimeFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -30,8 +25,8 @@ public class JGroupsReportingLifeCycleListener implements LifecycleListener {
     private static final long SCHEDULER_DELAY_INITIAL_DEFAULT = 60;
     private static final long SCHEDULER_DELAY_SUBSEQUENT_DEFAULT = 60;
     private static final int SCHEDULER_THREAD_COUNT_DEFAULT = 1;
-    public static final String JVM_MSG_TYPE = "JVM";
     private MessagingService<Message> messagingService;
+    private JGroupsStateReporter jgroupsStateReporter;
 
     private String instanceId;
     private String jgroupsPreferIpv4Stack;
@@ -43,10 +38,6 @@ public class JGroupsReportingLifeCycleListener implements LifecycleListener {
     private long schedulerDelaySubsequent = SCHEDULER_DELAY_SUBSEQUENT_DEFAULT;
     private TimeUnit schedulerDelayUnit = TimeUnit.SECONDS;
     private int schedulerThreadCount = SCHEDULER_THREAD_COUNT_DEFAULT;
-
-    private ScheduledExecutorService scheduler;
-
-    private String lastState;
 
     private final static Map<LifecycleState, JwalaJvmState> LIFECYCLE_JWALA_JVM_STATE_REF_MAP = new HashMap<>();
 
@@ -78,59 +69,21 @@ public class JGroupsReportingLifeCycleListener implements LifecycleListener {
 
             try {
                 messagingService = new JGroupsMessagingServiceImpl(jgroupsConfigXml, jgroupsClusterName, true);
+                jgroupsStateReporter = new JGroupsStateReporter(messagingService);
             } catch (final Exception e) {
                 LOGGER.error("Failed to initialize messaging service!", e);
                 return;
             }
         }
 
-        reportCurrentState(LIFECYCLE_JWALA_JVM_STATE_REF_MAP.get(LifecycleState.valueOf(event.getLifecycle().getStateName())).toString());
-    }
-
-    /**
-     * Report the state via JGroup channel
-     * @param state the state
-     */
-    @SuppressWarnings("SynchronizeOnNonFinalField")
-    private void reportCurrentState(final String state) {
-        if (scheduler != null && !state.equalsIgnoreCase(lastState)) {
-            LOGGER.info("Shutting down the scheduler NOW...");
-            scheduler.shutdownNow();
-            scheduler = null;
-        }
-
-        final JGroupsMessageBuilder msgBuilder;
-        synchronized (messagingService) {
-            messagingService.init();
-            try {
-                final Address channelAddress = ((JGroupsMessagingServiceImpl) messagingService).getChannel().getAddress();
-                msgBuilder = new JGroupsMessageBuilder().setId(instanceId)
-                                                        .setInstanceId(instanceId)
-                                                        .setAsOf(ISODateTimeFormat.dateTime().print(DateTime.now()))
-                                                        .setType(JVM_MSG_TYPE)
-                                                        .setState(state)
-                                                        .setSrcAddress(channelAddress)
-                                                        .setDestAddress(new IpAddress(jgroupsCoordinatorIp + ":" + jgroupsCoordinatorPort));
-            } catch (final Exception e) {
-                LOGGER.error("Failed to create message!", e);
-                return;
-            }
-            messagingService.send(msgBuilder.build()); // send the state details immediately
-            if (JwalaJvmState.JVM_STOPPED.name().equalsIgnoreCase(state)) {
-                LOGGER.info("Stop JVM state was received, destroying messaging service...");
-                messagingService.destroy();
-                return;
-            }
-        }
-
-        lastState = state;
-
-        // send the last state periodically while there are no new life cycle event(s) - serves as the JVM's "heart beat"
-        if (scheduler == null) {
-            LOGGER.info("Creating scheduler...");
-            scheduler = Executors.newScheduledThreadPool(schedulerThreadCount);
-            scheduler.scheduleAtFixedRate(new JGroupsLifeCycleReporterRunnable(messagingService, msgBuilder), schedulerDelayInitial,
-                    schedulerDelaySubsequent, schedulerDelayUnit);
+        final String state = LIFECYCLE_JWALA_JVM_STATE_REF_MAP.get(LifecycleState.valueOf(event.getLifecycle().getStateName())).toString();
+        try {
+            jgroupsStateReporter.init(state)
+                                .sendMsg(instanceId, new IpAddress(jgroupsCoordinatorIp + ":" + jgroupsCoordinatorPort))
+                                .schedulePeriodicMsgDelivery(schedulerThreadCount, schedulerDelayInitial,
+                                        schedulerDelaySubsequent, schedulerDelayUnit);
+        } catch (final Exception e) {
+            LOGGER.error("Failed to report state!", e);
         }
     }
 
