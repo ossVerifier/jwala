@@ -359,7 +359,7 @@ public class ResourceServiceImplTest {
             final ResourceGroup resourceGroup = resourceService.generateResourceGroup();
             String output = resourceService.generateResourceFile(ResourceGroovyMethods.getText(httpdTemplate), resourceGroup, webServer);
 
-            String expected = ResourceGroovyMethods.getText(new File("../jwala-template/src/test/resources/HttpdConfTemplate-EXPECTED.conf"));
+            String expected = ResourceGroovyMethods.getText(new File("../jwala-common/src/test/resources/HttpdConfTemplate-EXPECTED.conf"));
             expected = expected.replaceAll("\\r", "").replaceAll("\\n", "");
             output = output.replaceAll("\\r", "").replaceAll("\\n", "");
             String diff = StringUtils.difference(output, expected);
