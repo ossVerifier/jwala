@@ -140,6 +140,7 @@ public class ResourceServiceImpl implements ResourceService {
                 Application fakedApplication = new Application(new Identifier<Application>(0L), resourceTemplateMetaData.getDeployFileName(), resourceTemplateMetaData.getDeployPath(), "", null, true, true, false, resourceTemplateMetaData.getDeployFileName());
                 UploadWebArchiveRequest uploadWebArchiveRequest = new UploadWebArchiveRequest(fakedApplication, resourceTemplateMetaData.getDeployFileName(), -1L, new ByteArrayInputStream(templateContent.getBytes()));
                 RepositoryFileInformation fileInfo = privateApplicationService.uploadWebArchiveData(uploadWebArchiveRequest);
+                templateContent = fileInfo.getPath().toString();
             }
 
             // Let's create the template!
