@@ -1,5 +1,3 @@
-version '0.0.01-SNAPSHOT'
-
 apply plugin: 'java'
 
 sourceCompatibility = 1.7
