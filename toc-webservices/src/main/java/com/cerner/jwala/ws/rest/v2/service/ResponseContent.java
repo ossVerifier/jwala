@@ -1,4 +1,4 @@
-package com.siemens.cto.aem.ws.rest.v2.service;
+package com.cerner.jwala.ws.rest.v2.service;
 
 /**
  *  Content that is passed to a {@link javax.ws.rs.core.Response}

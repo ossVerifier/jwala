@@ -17,6 +17,7 @@ import com.cerner.jwala.service.state.StateNotificationService;
 import com.cerner.jwala.service.webserver.WebServerCommandService;
 import com.cerner.jwala.service.webserver.WebServerControlService;
 import com.cerner.jwala.service.webserver.WebServerService;
+import com.cerner.jwala.ws.rest.RestServiceErrorHandler;
 import com.cerner.jwala.ws.rest.v1.exceptionmapper.*;
 import com.cerner.jwala.ws.rest.v1.impl.HistoryServiceRestImpl;
 import com.cerner.jwala.ws.rest.v1.response.ApplicationResponse;
@@ -228,6 +229,7 @@ public class AemWebServiceConfiguration {
         providers.add(getV1InternalErrorExceptionMapper());
         providers.add(getV1ExternalSystemErrorExceptionMapper());
         providers.add(getV1TransactionRequiredExceptionMapper());
+        providers.add(getInternalServerErrorHandler());
 
         return providers;
     }

@@ -1,4 +1,4 @@
-package com.siemens.cto.aem.ws.rest.v2.service.jvm;
+package com.cerner.jwala.ws.rest.v2.service.jvm;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;

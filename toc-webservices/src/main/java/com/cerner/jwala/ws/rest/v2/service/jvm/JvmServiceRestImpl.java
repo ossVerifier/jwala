@@ -1,9 +1,9 @@
-package com.siemens.cto.aem.ws.rest.v2.service.jvm;
+package com.cerner.jwala.ws.rest.v2.service.jvm;
 
-import com.siemens.cto.aem.common.domain.model.jvm.Jvm;
-import com.siemens.cto.aem.service.jvm.JvmService;
-import com.siemens.cto.aem.service.jvm.exception.JvmServiceException;
-import com.siemens.cto.aem.ws.rest.JsonResponseBuilder;
+import com.cerner.jwala.common.domain.model.jvm.Jvm;
+import com.cerner.jwala.service.jvm.JvmService;
+import com.cerner.jwala.service.jvm.exception.JvmServiceException;
+import com.cerner.jwala.ws.rest.JsonResponseBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;

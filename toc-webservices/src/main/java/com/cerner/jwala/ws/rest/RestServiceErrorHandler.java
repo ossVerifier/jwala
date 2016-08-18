@@ -1,4 +1,4 @@
-package com.siemens.cto.aem.ws.rest;
+package com.cerner.jwala.ws.rest;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -37,6 +37,7 @@ import com.cerner.jwala.service.group.GroupService;
 import com.cerner.jwala.service.group.GroupStateNotificationService;
 import com.cerner.jwala.service.jvm.JvmControlService;
 import com.cerner.jwala.service.jvm.JvmService;
+import com.cerner.jwala.service.jvm.exception.JvmServiceException;
 import com.cerner.jwala.service.resource.ResourceService;
 import com.cerner.jwala.service.webserver.component.ClientFactoryHelper;
 import com.cerner.jwala.template.ResourceFileGenerator;

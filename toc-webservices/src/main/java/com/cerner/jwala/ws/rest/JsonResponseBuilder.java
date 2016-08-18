@@ -1,6 +1,6 @@
-package com.siemens.cto.aem.ws.rest;
+package com.cerner.jwala.ws.rest;
 
-import com.siemens.cto.aem.ws.rest.v2.service.ResponseContent;
+import com.cerner.jwala.ws.rest.v2.service.ResponseContent;
 
 import javax.ws.rs.core.Response;
 

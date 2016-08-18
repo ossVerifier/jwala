@@ -1,11 +1,11 @@
-package com.siemens.cto.aem.ws.rest.v2;
+package com.cerner.jwala.ws.rest.v2;
 
-import com.siemens.cto.aem.service.jvm.JvmService;
-import com.siemens.cto.aem.ws.rest.RestServiceErrorHandler;
-import com.siemens.cto.aem.ws.rest.v2.service.group.GroupServiceRest;
-import com.siemens.cto.aem.ws.rest.v2.service.group.impl.GroupServiceRestImpl;
-import com.siemens.cto.aem.ws.rest.v2.service.jvm.JvmServiceRest;
-import com.siemens.cto.aem.ws.rest.v2.service.jvm.JvmServiceRestImpl;
+import com.cerner.jwala.service.jvm.JvmService;
+import com.cerner.jwala.ws.rest.RestServiceErrorHandler;
+import com.cerner.jwala.ws.rest.v2.service.group.GroupServiceRest;
+import com.cerner.jwala.ws.rest.v2.service.group.impl.GroupServiceRestImpl;
+import com.cerner.jwala.ws.rest.v2.service.jvm.JvmServiceRest;
+import com.cerner.jwala.ws.rest.v2.service.jvm.JvmServiceRestImpl;
 import org.apache.cxf.endpoint.Server;
 import org.apache.cxf.jaxrs.JAXRSServerFactoryBean;
 import org.codehaus.jackson.jaxrs.JacksonJsonProvider;
