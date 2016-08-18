@@ -1,9 +1,5 @@
-include "toc-common",
-        "toc-persistence",
-        "toc-services",
-        "toc-webapp",
-        "toc-webservices",
-        "toc-command-processor",
-        "toc-control",
-        "toc-filemanager",
-        "toc-template"
+include "jwala-common",
+        "jwala-persistence",
+        "jwala-services",
+        "jwala-webapp",
+        "jwala-webservices"

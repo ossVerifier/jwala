@@ -5,6 +5,7 @@ ext {
             junit : "4.11",
             pmd : "4.3",
             spring : "4.1.8.RELEASE",
+			spring_security : "4.1.1.RELEASE",
             jackson : "1.4.2",
             jpa : "2.4.0",
             h2 : "1.3.175",
@@ -43,8 +44,8 @@ sonarRunner {
         property 'sonar.host.url', 'http://usmlvv1cto923.usmlvv1d0a.smshsc.net:9000'
         property 'sonar.jdbc.url', 'jdbc:mysql://usmlvv1cto923.usmlvv1d0a.smshsc.net/sonar'
         property 'sonar.jdbc.driverClassName', 'com.mysql.jdbc.Driver'
-        property 'sonar.jdbc.username', project.properties['sonarUser']
-        property 'sonar.jdbc.password', project.properties['sonarPassword']
+        property 'sonar.jdbc.username', 'sonar'
+        property 'sonar.jdbc.password', 'sonar'
         property 'sonar.dynamicAnalysis', 'reuseReports'
         properties ["sonar.projectKey"] = 'cto.tco.toc'
         properties ["sonar.projectName"] = 'tomcat operations center'
@@ -80,12 +81,12 @@ subprojects {
             }
             publications {
                 mavenJava(MavenPublication) {
-                    if(project.name.equals('toc-webapp')) {
+                    if(project.name.equals('jwala-webapp')) {
                         from components.web
                     } else {
                         from components.java
                     }
-                    if(project.name.equals('toc-persistence')) {
+                    if(project.name.equals('jwala-persistence')) {
                         artifact("drop.sql") {
                             classifier "drop"
                             extension "sql"
@@ -112,6 +113,7 @@ subprojects {
        /* maven {
             url 'http://usmlvv1srn464.usmlvv1d0a.smshsc.net/artifactory/npm-local/'
         }*/
+		/*mavenCentral()*/
     }
 
     dependencies {
