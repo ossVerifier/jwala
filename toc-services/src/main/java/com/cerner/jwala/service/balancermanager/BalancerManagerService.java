@@ -11,6 +11,8 @@ public interface BalancerManagerService {
 
     BalancerManagerState drainUserJvm(final String jvmName, final String user);
 
+    BalancerManagerState drainUserGroupJvm(final String groupName, final String jvmName, final String user);
+
     BalancerManagerState getGroupDrainStatus(final String group, final String user);
 
 }

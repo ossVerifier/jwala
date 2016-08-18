@@ -119,7 +119,7 @@ var webServerService = {
                                      false);
     },
     drainWebServer: function(groupName, webserverName, errorCallback) {
-            return serviceFoundation.post("v1.0/balancermanager/" + encodeURIComponent(groupName) + "/" + encodeURIComponent(webserverName) + "/",
+            return serviceFoundation.post("v1.0/balancermanager/" + encodeURIComponent(groupName) + "/" + encodeURIComponent(webserverName),
             "json",
             null,
             null,
@@ -129,8 +129,8 @@ var webServerService = {
             false
             );
     },
-    drainJvm: function(jvmName, errorCallback) {
-            return serviceFoundation.post("v1.0/balancermanager/jvm/" + encodeURIComponent(jvmName),
+    drainJvm: function(groupName, jvmName, errorCallback) {
+            return serviceFoundation.post("v1.0/balancermanager/jvm/" +  encodeURIComponent(groupName) + "/" + encodeURIComponent(jvmName),
             "json",
             null,
             null,

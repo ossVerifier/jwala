@@ -112,7 +112,7 @@ public class BalancerManagerServiceImpl implements BalancerManagerService {
             BalancerManagerState.GroupDrainStatus.WebServerDrainStatus webServerDrainStatus = doDrainAndgetDrainStatus(webServer, "", true);
             webServerDrainStatusList.add(webServerDrainStatus);
         } else {
-            for(String jvmName : jvmArray){
+            for (String jvmName : jvmArray) {
                 findJvmIfExists(jvmName);
                 BalancerManagerState.GroupDrainStatus.WebServerDrainStatus webServerDrainStatus = doDrainAndgetDrainStatus(webServer, jvmName, true);
                 webServerDrainStatusList.add(webServerDrainStatus);
@@ -124,10 +124,10 @@ public class BalancerManagerServiceImpl implements BalancerManagerService {
         return new BalancerManagerState(groupDrainStatusList);
     }
 
-    public Jvm findJvmIfExists(String jvmName){
+    public Jvm findJvmIfExists(String jvmName) {
         Jvm jvm;
         try {
-            jvm = jvmService.getJvm(jvmName);
+            jvm = jvmService.getJvm(jvmName.trim());
         } catch (javax.persistence.NoResultException e) {
             String message = "Cannot find " + jvmName + ", please verify if it is valid jvmName";
             throw new InternalErrorException(AemFaultType.INVALID_WEBSERVER_OPERATION, message);
@@ -155,6 +155,38 @@ public class BalancerManagerServiceImpl implements BalancerManagerService {
             groupDrainStatusList.add(groupDrainStatus);
         }
         return new BalancerManagerState(groupDrainStatusList);
+    }
+
+    @Override
+    public BalancerManagerState drainUserGroupJvm(final String groupName, final String jvmName, final String user) {
+        LOGGER.info("Entering drainUserGroupJvm, groupName: " + groupName + ", jvmName: " + jvmName);
+        this.setUser(user);
+        checkGroupStatus(groupName);
+        Group group = groupService.getGroup(groupName);
+        group = groupService.getGroupWithWebServers(group.getId());
+        verifyJvmExistInGroup(group, jvmName);
+        List<BalancerManagerState.GroupDrainStatus.WebServerDrainStatus> webServerDrainStatusList = new ArrayList<>();
+        for (WebServer webServer : group.getWebServers()) {
+            BalancerManagerState.GroupDrainStatus.WebServerDrainStatus webServerDrainStatus = doDrainAndgetDrainStatus(webServer, jvmName, true);
+            webServerDrainStatusList.add(webServerDrainStatus);
+        }
+        BalancerManagerState.GroupDrainStatus groupDrainStatus = new BalancerManagerState.GroupDrainStatus(groupName, webServerDrainStatusList);
+        List<BalancerManagerState.GroupDrainStatus> groupDrainStatusList = new ArrayList<>();
+        groupDrainStatusList.add(groupDrainStatus);
+        return new BalancerManagerState(groupDrainStatusList);
+    }
+
+    public void verifyJvmExistInGroup(Group group, String jvmName) {
+        boolean found = false;
+        for (Jvm jvm : group.getJvms()) {
+            if (jvm.getJvmName().equalsIgnoreCase(jvmName)) {
+                found = true;
+            }
+        }
+        if (!found) {
+            String message = "Cannot find " + jvmName + " in group: " + group.getName() + ", please verify if it is valid jvmName";
+            throw new InternalErrorException(AemFaultType.INVALID_WEBSERVER_OPERATION, message);
+        }
     }
 
     @Override
@@ -248,10 +280,6 @@ public class BalancerManagerServiceImpl implements BalancerManagerService {
         return new BalancerManagerState.GroupDrainStatus.WebServerDrainStatus(webServer.getName(), jvmDrainStatusList);
     }
 
-    //It seems like no mater what balancer name and nonce I pass, it always return the whole xml format for webServer level
-    //In this case, jwala only needs to do it one time instead of go through all balancer name (multiple times) to find out all workers
-    //but it still need to pass the balancer name and nonce in order to get xml file
-    //We believe it is the issue for apache-tomcat httpd balancer manager
     public List<BalancerManagerState.GroupDrainStatus.WebServerDrainStatus.JvmDrainStatus> prepareDrainWork(final WebServer webServer, final String jvmName, final Boolean post) {
         LOGGER.info("Entering prepareDrainWork");
         List<BalancerManagerState.GroupDrainStatus.WebServerDrainStatus.JvmDrainStatus> jvmDrainStatusList = new ArrayList<>();
@@ -290,12 +318,6 @@ public class BalancerManagerServiceImpl implements BalancerManagerService {
         return jvmDrainStatusList;
     }
 
-    /*
-    Using jvm object to find it's application and generate the jvmurl such as
-    https://hostname:httpsport/webAppContext
-    or
-    http://hostname:httpport/webAppContext
-     */
     public String findJvmUrl(final String jvmName) {
         String jvmUrl = "";
         if (jvmName == null) return jvmUrl;
@@ -359,7 +381,7 @@ public class BalancerManagerServiceImpl implements BalancerManagerService {
                         final String nonce) {
         LOGGER.info("Entering doDrain");
         for (String workerUrl : workers.keySet()) {
-            final String message = "Set Drain mode for JVM " + workerUrl;
+            final String message = "Drain request for " + workerUrl;
             sendMessage(webServer, message);
             try {
                 CloseableHttpResponse response = balancerManagerHttpClient.doHttpClientPost(balancerManagerurl, getNvp(workerUrl, balancerName, nonce));

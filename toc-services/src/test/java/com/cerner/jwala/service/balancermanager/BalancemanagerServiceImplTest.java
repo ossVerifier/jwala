@@ -200,13 +200,15 @@ public class BalancemanagerServiceImplTest {
         when(mockJvmService.getJvms()).thenReturn(mockGroup.getJvms());
         BalancerManagerState balancerManagerState = balancerManagerServiceImpl.drainUserWebServer("mygroupName", "myWebServerName", "", getUser());
         List<BalancerManagerState.GroupDrainStatus> groupDrainStatusList = balancerManagerState.getGroups();
+
+        assertEquals(1, groupDrainStatusList.size());
         for (BalancerManagerState.GroupDrainStatus groupDrainStatus : groupDrainStatusList) {
             System.out.println(groupDrainStatus.getwebServers().size());
             assertEquals(1, groupDrainStatus.getwebServers().size());
-            for(BalancerManagerState.GroupDrainStatus.WebServerDrainStatus webServerDrainStatus : groupDrainStatus.getwebServers()){
+            for (BalancerManagerState.GroupDrainStatus.WebServerDrainStatus webServerDrainStatus : groupDrainStatus.getwebServers()) {
                 System.out.println(webServerDrainStatus.getjvms().size());
                 assertEquals(6, webServerDrainStatus.getjvms().size());
-                for(BalancerManagerState.GroupDrainStatus.WebServerDrainStatus.JvmDrainStatus jvmDrainStatus : webServerDrainStatus.getjvms()){
+                for (BalancerManagerState.GroupDrainStatus.WebServerDrainStatus.JvmDrainStatus jvmDrainStatus : webServerDrainStatus.getjvms()) {
                     System.out.println(jvmDrainStatus.getJvmName() + " " + jvmDrainStatus);
                 }
             }
@@ -255,19 +257,18 @@ public class BalancemanagerServiceImplTest {
 
         BalancerManagerState balancerManagerState = balancerManagerServiceImpl.drainUserWebServer("mygroupName", "myWebServerName", "jvmname", getUser());
         List<BalancerManagerState.GroupDrainStatus> groupDrainStatusList = balancerManagerState.getGroups();
-
+        assertEquals(1, groupDrainStatusList.size());
         for (BalancerManagerState.GroupDrainStatus groupDrainStatus : groupDrainStatusList) {
             System.out.println(groupDrainStatus.getwebServers().size());
             assertEquals(1, groupDrainStatus.getwebServers().size());
-            for(BalancerManagerState.GroupDrainStatus.WebServerDrainStatus webServerDrainStatus : groupDrainStatus.getwebServers()){
+            for (BalancerManagerState.GroupDrainStatus.WebServerDrainStatus webServerDrainStatus : groupDrainStatus.getwebServers()) {
                 System.out.println(webServerDrainStatus.getjvms().size());
                 assertEquals(1, webServerDrainStatus.getjvms().size());
-                for(BalancerManagerState.GroupDrainStatus.WebServerDrainStatus.JvmDrainStatus jvmDrainStatus : webServerDrainStatus.getjvms()){
+                for (BalancerManagerState.GroupDrainStatus.WebServerDrainStatus.JvmDrainStatus jvmDrainStatus : webServerDrainStatus.getjvms()) {
                     System.out.println(jvmDrainStatus.getJvmName() + " " + jvmDrainStatus);
                 }
             }
         }
-
     }
 
 
@@ -335,6 +336,7 @@ public class BalancemanagerServiceImplTest {
 
         BalancerManagerState balancerManagerState = balancerManagerServiceImpl.getGroupDrainStatus("mygroupName", getUser());
         List<BalancerManagerState.GroupDrainStatus> groupDrainStatusList = balancerManagerState.getGroups();
+        assertEquals(1, groupDrainStatusList.size());
         for (BalancerManagerState.GroupDrainStatus groupDrainStatus : groupDrainStatusList) {
             System.out.println(groupDrainStatus.getwebServers().size());
             assertEquals(2, groupDrainStatus.getwebServers().size());
@@ -343,7 +345,6 @@ public class BalancemanagerServiceImplTest {
             }
         }
     }
-
 
     @Test
     public void testManager() {
@@ -634,11 +635,88 @@ public class BalancemanagerServiceImplTest {
         BalancerManagerState balancerManagerState = balancerManagerServiceImpl.drainUserJvm("jvmname", getUser());
 
         List<BalancerManagerState.GroupDrainStatus> groupDrainStatusList = balancerManagerState.getGroups();
+        assertEquals(1, groupDrainStatusList.size());
         for (BalancerManagerState.GroupDrainStatus groupDrainStatus : groupDrainStatusList) {
             System.out.println(groupDrainStatus.getwebServers().size());
             assertEquals(2, groupDrainStatus.getwebServers().size());
             for (BalancerManagerState.GroupDrainStatus.WebServerDrainStatus webServerDrainStatus : groupDrainStatus.getwebServers()) {
                 assertEquals(1, webServerDrainStatus.getjvms().size());
+            }
+        }
+    }
+
+    @Test
+    public void testDrainUserGroupJvm() throws IOException, URISyntaxException, NoSuchAlgorithmException, KeyManagementException {
+        final MockGroup mockGroup = new MockGroup();
+        when(mockGroupService.getGroup("mygroupName")).thenReturn(mockGroup.getGroup());
+        when(mockGroupService.getGroupWithWebServers(mockGroup.getGroup().getId())).thenReturn(mockGroup.getGroup());
+        when(mockApplicationService.findApplications(new Identifier<Group>(1L))).thenReturn(mockGroup.findApplications());
+        when(mockWebServerService.findWebServers(new Identifier<Group>(1L))).thenReturn(mockGroup.findWebServers());
+        WebServer webServer = mockGroup.getWebServer("myWebServerName");
+        when(mockWebServerService.isStarted(webServer)).thenReturn(true);
+
+        ClientHttpResponse mockResponseHtml = mock(ClientHttpResponse.class);
+        when(mockResponseHtml.getStatusCode()).thenReturn(HttpStatus.OK);
+        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager"))).thenReturn(mockResponseHtml);
+        when(mockResponseHtml.getBody()).thenReturn(new ByteArrayInputStream(getBalancerManagerResponseHtml().getBytes()));
+
+        ClientHttpResponse mockResponseHtml2 = mock(ClientHttpResponse.class);
+        when(mockResponseHtml2.getStatusCode()).thenReturn(HttpStatus.OK);
+        when(mockClientFactoryHelper.requestGet(new URI("https://localhost2/balancer-manager"))).thenReturn(mockResponseHtml2);
+        when(mockResponseHtml2.getBody()).thenReturn(new ByteArrayInputStream(getBalancerManagerResponseHtml().getBytes()));
+
+        ClientHttpResponse mockResponseXml = mock(ClientHttpResponse.class);
+        when(mockResponseXml.getStatusCode()).thenReturn(HttpStatus.OK);
+        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&xml=1&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357"))).thenReturn(mockResponseXml);
+        when(mockResponseXml.getBody()).thenReturn(new ByteArrayInputStream(getBalancerManagerResponseXml().getBytes()));
+
+        ClientHttpResponse mockResponseXml2 = mock(ClientHttpResponse.class);
+        when(mockResponseXml2.getStatusCode()).thenReturn(HttpStatus.OK);
+        when(mockClientFactoryHelper.requestGet(new URI("https://localhost2/balancer-manager?b=lb-health-check-4.0&xml=1&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357"))).thenReturn(mockResponseXml2);
+        when(mockResponseXml2.getBody()).thenReturn(new ByteArrayInputStream(getBalancerManagerResponseXml().getBytes()));
+
+        CloseableHttpResponse mockResponse = mock(CloseableHttpResponse.class);
+        StatusLine mockStatusLine = mock(StatusLine.class);
+        when(mockStatusLine.getStatusCode()).thenReturn(HttpStatus.OK.value());
+        when(mockResponse.getStatusLine()).thenReturn(mockStatusLine);
+        when(mockBalancerManagerHttpClient.doHttpClientPost(any(String.class), anyListOf(NameValuePair.class))).thenReturn(mockResponse);
+
+        ClientHttpResponse mockWorkerResponse = mock(ClientHttpResponse.class);
+        when(mockWorkerResponse.getStatusCode()).thenReturn(HttpStatus.OK);
+        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://usmlvv1cds0057:9101/hct"))).thenReturn(mockWorkerResponse);
+        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://usmlvv1cds0058:9101/hct"))).thenReturn(mockWorkerResponse);
+        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://usmlvv1cds0057:9111/hct"))).thenReturn(mockWorkerResponse);
+        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://usmlvv1cds0058:9111/hct"))).thenReturn(mockWorkerResponse);
+        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://usmlvv1cds0057:9121/hct"))).thenReturn(mockWorkerResponse);
+        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://usmlvv1cds0058:9121/hct"))).thenReturn(mockWorkerResponse);
+
+        when(mockClientFactoryHelper.requestGet(new URI("https://localhost2/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://usmlvv1cds0057:9101/hct"))).thenReturn(mockWorkerResponse);
+        when(mockClientFactoryHelper.requestGet(new URI("https://localhost2/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://usmlvv1cds0058:9101/hct"))).thenReturn(mockWorkerResponse);
+        when(mockClientFactoryHelper.requestGet(new URI("https://localhost2/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://usmlvv1cds0057:9111/hct"))).thenReturn(mockWorkerResponse);
+        when(mockClientFactoryHelper.requestGet(new URI("https://localhost2/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://usmlvv1cds0058:9111/hct"))).thenReturn(mockWorkerResponse);
+        when(mockClientFactoryHelper.requestGet(new URI("https://localhost2/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://usmlvv1cds0057:9121/hct"))).thenReturn(mockWorkerResponse);
+        when(mockClientFactoryHelper.requestGet(new URI("https://localhost2/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://usmlvv1cds0058:9121/hct"))).thenReturn(mockWorkerResponse);
+        when(mockWorkerResponse.getBody()).thenReturn(new ByteArrayInputStream(getWorkerHtml().getBytes()));
+
+        when(mockJvmService.getJvm("jvmname")).thenReturn(mockGroup.getJvm("jvmname"));
+        when(mockJvmService.getJvms()).thenReturn(mockGroup.getJvms());
+        when(mockApplicationService.getApplications()).thenReturn(mockGroup.getApplications());
+
+        BalancerManagerState balancerManagerState = balancerManagerServiceImpl.drainUserGroupJvm("mygroupName", "jvmname", getUser());
+
+        List<BalancerManagerState.GroupDrainStatus> groupDrainStatusList = balancerManagerState.getGroups();
+        assertEquals(1, groupDrainStatusList.size());
+        for (BalancerManagerState.GroupDrainStatus groupDrainStatus : groupDrainStatusList) {
+            System.out.println(groupDrainStatus.getwebServers().size());
+            assertEquals(1, groupDrainStatus.getwebServers().size());
+            for (BalancerManagerState.GroupDrainStatus.WebServerDrainStatus webServerDrainStatus : groupDrainStatus.getwebServers()) {
+                System.out.println(groupDrainStatus.getwebServers().toString());
+                assertEquals(1, webServerDrainStatus.getjvms().size());
+                for(BalancerManagerState.GroupDrainStatus.WebServerDrainStatus.JvmDrainStatus jvmDrainStatus : webServerDrainStatus.getjvms()){
+                    assertEquals("JvmDrainStatus{jvmName='jvmname', ignoreError='Off', drainingMode='On', disabled='Off', hotStandby='Off', appName='HEALTH-CHECK-4.0', workerUrl='https://usmlvv1cds0057:9101/hct'}",
+                            jvmDrainStatus.toString());
+                }
+
             }
         }
     }

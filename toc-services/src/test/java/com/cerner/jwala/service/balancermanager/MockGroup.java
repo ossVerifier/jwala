@@ -30,6 +30,7 @@ public class MockGroup {
                 null,
                 null,
                 applications);
+        this.groups.add(group);
         return group;
     }
 

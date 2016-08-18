@@ -37,6 +37,12 @@ public class BalancerManagerServiceRestImpl implements BalancerManagerServiceRes
     }
 
     @Override
+    public Response drainUserGroupJvm(final String groupName, final String jvmName) {
+        BalancerManagerState balancerManagerState = balancerManagerService.drainUserGroupJvm(groupName, jvmName, getUser());
+        return ResponseBuilder.ok(balancerManagerState);
+    }
+
+    @Override
     public Response getGroup(final String groupName) {
         BalancerManagerState balancerManagerState = balancerManagerService.getGroupDrainStatus(groupName, getUser());
         return ResponseBuilder.ok(balancerManagerState);
