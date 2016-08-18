@@ -189,7 +189,7 @@ public class AemServiceConfiguration {
                                                             final MessagingService messagingService,
                                                             final HistoryService historyService){
         return new BalancerManagerServiceImpl(groupService, applicationService, webServerService, jvmService, clientFactoryHelper, messagingService,
-                historyService, new BalancerManagerHtmlParser(), new BalancerManagerXmlParser(), new BalancerManagerHttpClient());
+                historyService, new BalancerManagerHtmlParser(), new BalancerManagerXmlParser(jvmService), new BalancerManagerHttpClient());
     }
 
     @Bean(name = "webServerService")
