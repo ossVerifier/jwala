@@ -125,7 +125,7 @@ public class JGroupsReportingLifeCycleListener implements LifecycleListener {
 
         lastState = state;
 
-        // periodic state details sending while there are no new state received
+        // send the last state periodically while there are no new life cycle event(s) - serves as the JVM's "heart beat"
         if (scheduler == null) {
             LOGGER.info("Creating scheduler...");
             scheduler = Executors.newScheduledThreadPool(schedulerThreadCount);
