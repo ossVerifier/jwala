@@ -94,7 +94,8 @@ public class JGroupsReportingLifeCycleListener implements LifecycleListener {
     @SuppressWarnings("SynchronizeOnNonFinalField")
     private void reportCurrentState(final String state) {
         if (scheduler != null && !state.equalsIgnoreCase(lastState)) {
-            shutdownScheduler();
+            LOGGER.info("Shutting down the scheduler NOW...");
+            scheduler.shutdownNow();
             scheduler = null;
         }
 
@@ -131,14 +132,6 @@ public class JGroupsReportingLifeCycleListener implements LifecycleListener {
             scheduler.scheduleAtFixedRate(new JGroupsLifeCycleReporterRunnable(messagingService, msgBuilder), schedulerDelayInitial,
                     schedulerDelaySubsequent, schedulerDelayUnit);
         }
-    }
-
-    /**
-     * Shutdown the scheduler and wait until the running thread is done or has been cancelled
-     */
-    private void shutdownScheduler() {
-        LOGGER.info("Shutting down the scheduler...");
-        scheduler.shutdownNow();
     }
 
     public void setInstanceId(final String instanceId) {
