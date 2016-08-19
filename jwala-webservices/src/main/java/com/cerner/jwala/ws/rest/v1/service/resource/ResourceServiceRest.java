@@ -153,6 +153,10 @@ public interface ResourceServiceRest extends InitializingBean{
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     Response getExternalPropertiesDownload();
 
+    @GET
+    @Path("/properties/view")
+    @Produces(MediaType.TEXT_PLAIN)
+    Response getExternalPropertiesView();
     /**
      * Upload the external properties file
      * @param user a logged in user who's calling this service  @return {@link Response}

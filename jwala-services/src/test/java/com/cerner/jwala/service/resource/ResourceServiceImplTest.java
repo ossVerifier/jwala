@@ -25,7 +25,6 @@ import com.cerner.jwala.common.request.jvm.UploadJvmConfigTemplateRequest;
 import com.cerner.jwala.common.request.webserver.UploadWebServerTemplateRequest;
 import com.cerner.jwala.control.command.PlatformCommandProvider;
 import com.cerner.jwala.control.command.RemoteCommandExecutorImpl;
-import com.cerner.jwala.control.jvm.command.impl.DefaultJvmExecRequestBuilderImplTest;
 import com.cerner.jwala.exception.CommandFailureException;
 import com.cerner.jwala.files.FileManager;
 import com.cerner.jwala.files.RepositoryFileInformation;
@@ -45,8 +44,6 @@ import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.internal.verification.Times;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -69,8 +66,6 @@ import static org.mockito.Mockito.*;
  */
 public class ResourceServiceImplTest {
 
-    private final static Logger LOGGER = LoggerFactory.getLogger(ResourceServiceImplTest.class);
-			
     @Mock
     private FileManager mockFileManager;
 
@@ -131,8 +126,6 @@ public class ResourceServiceImplTest {
                 .thenReturn(mockRepositoryFileInformation);
 
         System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, new File(".").getAbsolutePath() + "/src/test/resources");
-        LOGGER.info(System.getProperty(ApplicationProperties.PROPERTIES_ROOT_PATH));
-        
     }
 
     @Test
@@ -638,4 +631,11 @@ public class ResourceServiceImplTest {
         assertTrue(result.length() > 0);
         assertTrue(result.delete());
     }
+
+    @Test
+    public void testGetExternalPropertiesAsString() {
+        String result = resourceService.getExternalPropertiesAsString();
+        assertEquals("newkey=newvalue\n", result);
+    }
+
 }

@@ -7,6 +7,7 @@ import com.cerner.jwala.ws.rest.v1.service.balancermanager.BalancerManagerServic
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
+import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Response;
 
 public class BalancerManagerServiceRestImpl implements BalancerManagerServiceRest {
@@ -18,14 +19,26 @@ public class BalancerManagerServiceRestImpl implements BalancerManagerServiceRes
     }
 
     @Override
-    public Response drainUserGroup(final String groupName, final String webServers) {
-        BalancerManagerState balancerManagerState = balancerManagerService.drainUserGroup(groupName, webServers, getUser());
+    public Response drainUserGroup(final String groupName, final String webServerNames) {
+        BalancerManagerState balancerManagerState = balancerManagerService.drainUserGroup(groupName, webServerNames, getUser());
         return ResponseBuilder.ok(balancerManagerState);
     }
 
     @Override
-    public Response drainUserWebServer(final String groupName, final String webServerName) {
-        BalancerManagerState balancerManagerState = balancerManagerService.drainUserWebServer(groupName, webServerName, getUser());
+    public Response drainUserWebServer(final String groupName, final String webServerName, final String jvmNames) {
+        BalancerManagerState balancerManagerState = balancerManagerService.drainUserWebServer(groupName, webServerName, jvmNames, getUser());
+        return ResponseBuilder.ok(balancerManagerState);
+    }
+
+    @Override
+    public Response drainUserJvm(final String jvmName) {
+        BalancerManagerState balancerManagerState = balancerManagerService.drainUserJvm(jvmName, getUser());
+        return ResponseBuilder.ok(balancerManagerState);
+    }
+
+    @Override
+    public Response drainUserGroupJvm(final String groupName, final String jvmName) {
+        BalancerManagerState balancerManagerState = balancerManagerService.drainUserGroupJvm(groupName, jvmName, getUser());
         return ResponseBuilder.ok(balancerManagerState);
     }
 

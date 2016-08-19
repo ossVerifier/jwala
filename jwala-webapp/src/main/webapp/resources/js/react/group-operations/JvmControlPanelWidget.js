@@ -11,6 +11,13 @@ var JvmControlPanelWidget = React.createClass({
         var diagnoseBtnDisplayClass = (tocVars["opsJvmMgrBtnEnabled"] === "true" ? "" : "ui-button-hide");
 
         return <div className="jvm-control-panel-widget">
+
+                    <RButton ref="drainBtn"
+                             className="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only ui-button-height"
+                             spanClassName="ui-icon ui-icon-drain-custom"
+                             onClick={this.jvmDrain}
+                             title="Drain"/>
+
                     <RButton ref="stopBtn"
                              className="zero-padding ui-widget ui-state-default ui-corner-all ui-button-text-only ui-button-height"
                              spanClassName="ui-icon ui-icon-stop"
@@ -86,6 +93,18 @@ var JvmControlPanelWidget = React.createClass({
                    this.props.data.hostName + ":" +
                    (window.location.protocol.toUpperCase() === "HTTPS:" ? this.props.data.httpsPort : this.props.data.httpPort) + "/manager/";
         window.open(url);
+    },
+    jvmDrain: function(doneCallback) {
+              this.showFadingStatusClickedLabel("Draining JVM...", this.refs.drainBtn.getDOMNode(), this.props.data.id.id);
+              this.doneCallback[this.props.data.name] = doneCallback;
+              this.props.webServerService.drainJvm(this.props.parentGroup,
+                                                   this.props.data.jvmName,
+                                                   this.drainJvmErrorCallback
+              );
+    },
+    drainJvmErrorCallback: function(applicationResponseContent, doneCallback) {
+        this.doneCallback[this.props.data.name]();
+        $.errorAlert(applicationResponseContent, "Drain JVM " + this.props.data.jvmName, false);
     },
 
     /**
