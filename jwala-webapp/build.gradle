@@ -8,6 +8,7 @@ ext {
 configurations {
     all*.exclude group: 'org.apache.geronimo.specs', module: 'geronimo-jta_1.1_spec'
     all*.exclude group: 'org.apache.geronimo.specs', module: 'geronimo-jms_1.1_spec'
+    babel
 }
 
 dependencies {
@@ -51,6 +52,8 @@ dependencies {
 
     testCompile group: "org.mockito", name: "mockito-core", version: "$project.versions.mockito"
     testCompile group: 'org.objenesis', name: 'objenesis', version: "$project.versions.objenesis"
+
+    babel group: 'babel-node', name: 'babel-node', version: '6.6.4', ext: 'zip'
 }
 
 war {
@@ -123,8 +126,12 @@ task watchJsx(type:Exec) {
     }
 }
 
-task downloadBabel(type: Exec) {
-    commandLine "cmd","/c", "npm install babel-cli@6.6.4 --prefix ${buildDir}/babel/", "npm install babel-plugin-transform-react-jsx-compat@6.5.0 --prefix ${buildDir}/babel/"
+task downloadBabel(type: Copy) {
+    def zipFile = file("${configurations.babel.files.iterator().next()}");
+    def outputDir = file("${buildDir}/babel")
+
+    from zipTree(zipFile)
+    into outputDir
 }
 
 task babel(type:Exec) {
