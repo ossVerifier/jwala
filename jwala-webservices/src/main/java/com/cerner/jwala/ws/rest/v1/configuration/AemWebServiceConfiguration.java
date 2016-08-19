@@ -17,6 +17,7 @@ import com.cerner.jwala.service.state.StateNotificationService;
 import com.cerner.jwala.service.webserver.WebServerCommandService;
 import com.cerner.jwala.service.webserver.WebServerControlService;
 import com.cerner.jwala.service.webserver.WebServerService;
+import com.cerner.jwala.ws.rest.RestServiceErrorHandler;
 import com.cerner.jwala.ws.rest.v1.exceptionmapper.*;
 import com.cerner.jwala.ws.rest.v1.impl.HistoryServiceRestImpl;
 import com.cerner.jwala.ws.rest.v1.response.ApplicationResponse;
@@ -228,6 +229,7 @@ public class AemWebServiceConfiguration {
         providers.add(getV1InternalErrorExceptionMapper());
         providers.add(getV1ExternalSystemErrorExceptionMapper());
         providers.add(getV1TransactionRequiredExceptionMapper());
+        providers.add(getInternalServerErrorHandler());
 
         return providers;
     }
@@ -272,23 +274,8 @@ public class AemWebServiceConfiguration {
         return Executors.newFixedThreadPool(12);
     } // TODO: why 12? is this configurable with a property?
 
-
     @Bean
-    public Server getV2JaxResServer(final com.cerner.jwala.ws.rest.v2.service.group.GroupServiceRest groupServiceRest) {
-        final JAXRSServerFactoryBean factory = new JAXRSServerFactoryBean();
-
-        factory.setAddress("/v2.0");
-
-        final List<Object> serviceBeans = new ArrayList<>();
-        serviceBeans.add(groupServiceRest);
-        factory.setServiceBeans(serviceBeans);
-
-        factory.setProviders(getV1Providers());
-        return factory.create();
-    }
-
-    @Bean
-    com.cerner.jwala.ws.rest.v2.service.group.GroupServiceRest getGroupServiceRestV2() {
-        return new com.cerner.jwala.ws.rest.v2.service.group.impl.GroupServiceRestImpl();
+    public RestServiceErrorHandler getInternalServerErrorHandler() {
+        return new RestServiceErrorHandler();
     }
 }

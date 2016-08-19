@@ -37,6 +37,7 @@ import com.cerner.jwala.service.group.GroupService;
 import com.cerner.jwala.service.group.GroupStateNotificationService;
 import com.cerner.jwala.service.jvm.JvmControlService;
 import com.cerner.jwala.service.jvm.JvmService;
+import com.cerner.jwala.service.jvm.exception.JvmServiceException;
 import com.cerner.jwala.service.resource.ResourceService;
 import com.cerner.jwala.service.webserver.component.ClientFactoryHelper;
 import com.cerner.jwala.template.ResourceFileGenerator;
@@ -843,5 +844,22 @@ public class JvmServiceImpl implements JvmService {
         }
         FileUtils.writeStringToFile(templateFile, generatedResourceString);
         return templateFile.getAbsolutePath();
+    }
+
+    @Override
+    @Transactional
+    public void deleteJvm(final String name, final String userName) {
+        final Jvm jvm = getJvm(name);
+        if (!jvm.getState().isStartedState()) {
+            LOGGER.info("Removing JVM from the database and deleting the service for jvm {}", name);
+            if (!jvm.getState().equals(JvmState.JVM_NEW)) {
+                deleteJvmWindowsService(new ControlJvmRequest(jvm.getId(), JvmControlOperation.DELETE_SERVICE), jvm,
+                        new User(userName));
+            }
+            jvmPersistenceService.removeJvm(jvm.getId());
+        } else {
+            LOGGER.error("The target JVM {} must be stopped before attempting to delete it", jvm.getJvmName());
+            throw new JvmServiceException("The target JVM must be stopped before attempting to delete it");
+        }
     }
 }
