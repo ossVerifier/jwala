@@ -233,7 +233,7 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
 
     // for unit testing
     public void setMessageContext(MessageContext messageContext) {
-        this.context = messageContext;
+        this.context= messageContext;
     }
 
     @Override
@@ -565,4 +565,5 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
             }
         }
     }
+
 }
