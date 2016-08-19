@@ -1,11 +1,9 @@
 package com.cerner.jwala.tomcat.plugin.jgroups;
 
-import com.cerner.jwala.tomcat.plugin.JwalaJvmState;
 import com.cerner.jwala.tomcat.plugin.MessagingService;
+import org.apache.catalina.LifecycleState;
 import org.jgroups.Address;
 import org.jgroups.Message;
-import org.joda.time.DateTime;
-import org.joda.time.format.ISODateTimeFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,12 +22,10 @@ public class JGroupsStateReporter {
 
     public static final Logger LOGGER = LoggerFactory.getLogger(JGroupsStateReporter.class);
 
-    private static final String JVM_MSG_TYPE = "JVM";
-
     private ScheduledExecutorService scheduler;
     private final MessagingService<Message> messagingService;
-    private String state;
-    private JGroupsMessageBuilder msgBuilder;
+    private LifecycleState state;
+    private JGroupsServerInfoMessageBuilder msgBuilder;
 
     public JGroupsStateReporter(final MessagingService<Message> messagingService) {
         this.messagingService = messagingService;
@@ -40,8 +36,8 @@ public class JGroupsStateReporter {
      * @param newState the latest state
      * @return {@link JGroupsStateReporter} for chaining purposes
      */
-    public JGroupsStateReporter init(final String newState) {
-        if (scheduler != null && !newState.equalsIgnoreCase(state)) {
+    public JGroupsStateReporter init(final LifecycleState newState) {
+        if (scheduler != null && !newState.equals(state)) {
             LOGGER.info("Shutting down the scheduler NOW...");
             scheduler.shutdownNow();
             scheduler = null;
@@ -52,28 +48,26 @@ public class JGroupsStateReporter {
 
     /**
      * Create a message and send it
-     * @param instanceId the JVM instance id
-     * @param destAddr the JGroups destination address
-     * @return {@link JGroupsStateReporter} for chaining purposes
+     * @param serverId the server instance id
+     * @param serverName the server name
+     *@param destAddr the JGroups destination address  @return {@link JGroupsStateReporter} for chaining purposes
      */
-    public JGroupsStateReporter sendMsg(final String instanceId, final Address destAddr) {
+    public JGroupsStateReporter sendMsg(final String serverId, final String serverName, final Address destAddr) {
         synchronized (messagingService) {
             messagingService.init();
             try {
                 final Address channelAddress = ((JGroupsMessagingServiceImpl) messagingService).getChannel().getAddress();
-                msgBuilder = new JGroupsMessageBuilder().setId(instanceId)
-                        .setInstanceId(instanceId)
-                        .setAsOf(ISODateTimeFormat.dateTime().print(DateTime.now()))
-                        .setType(JVM_MSG_TYPE)
-                        .setState(state)
-                        .setSrcAddress(channelAddress)
-                        .setDestAddress(destAddr);
+                msgBuilder = new JGroupsServerInfoMessageBuilder().setServerId(serverId)
+                                                        .setServerName(serverName)
+                                                        .setState(state)
+                                                        .setSrcAddress(channelAddress)
+                                                        .setDestAddress(destAddr);
             } catch (final Exception e) {
                 throw new JGroupsStateReporterException("Failed to create message!", e);
             }
             messagingService.send(msgBuilder.build()); // send the state details immediately
-            if (JwalaJvmState.JVM_STOPPED.name().equalsIgnoreCase(state)) {
-                LOGGER.info("Stop JVM state was received, destroying messaging service...");
+            if (LifecycleState.STOPPED.equals(state) || LifecycleState.DESTROYED.equals(state)) {
+                LOGGER.info("State {} received, destroying messaging service...", state);
                 messagingService.destroy();
                 return this;
             }

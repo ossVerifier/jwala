@@ -1,6 +1,5 @@
 package com.cerner.jwala.tomcat.plugin.jgroups;
 
-import com.cerner.jwala.tomcat.plugin.JwalaJvmState;
 import com.cerner.jwala.tomcat.plugin.MessagingService;
 import org.apache.catalina.LifecycleEvent;
 import org.apache.catalina.LifecycleListener;
@@ -10,8 +9,6 @@ import org.jgroups.stack.IpAddress;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -28,7 +25,8 @@ public class JGroupsReportingLifeCycleListener implements LifecycleListener {
     private MessagingService<Message> messagingService;
     private JGroupsStateReporter jgroupsStateReporter;
 
-    private String instanceId;
+    private String serverId;
+    private String serverName;
     private String jgroupsPreferIpv4Stack;
     private String jgroupsConfigXml;
     private String jgroupsCoordinatorIp;
@@ -39,47 +37,22 @@ public class JGroupsReportingLifeCycleListener implements LifecycleListener {
     private TimeUnit schedulerDelayUnit = TimeUnit.SECONDS;
     private int schedulerThreadCount = SCHEDULER_THREAD_COUNT_DEFAULT;
 
-    private final static Map<LifecycleState, JwalaJvmState> LIFECYCLE_JWALA_JVM_STATE_REF_MAP = new HashMap<>();
-
-    static {
-        LIFECYCLE_JWALA_JVM_STATE_REF_MAP.put(LifecycleState.DESTROYED, JwalaJvmState.JVM_STOPPED);
-        LIFECYCLE_JWALA_JVM_STATE_REF_MAP.put(LifecycleState.DESTROYING, JwalaJvmState.JVM_STOPPED);
-        LIFECYCLE_JWALA_JVM_STATE_REF_MAP.put(LifecycleState.FAILED, JwalaJvmState.JVM_FAILED);
-        LIFECYCLE_JWALA_JVM_STATE_REF_MAP.put(LifecycleState.INITIALIZED, JwalaJvmState.JVM_INITIALIZED);
-        LIFECYCLE_JWALA_JVM_STATE_REF_MAP.put(LifecycleState.INITIALIZING, JwalaJvmState.JVM_INITIALIZED);
-        LIFECYCLE_JWALA_JVM_STATE_REF_MAP.put(LifecycleState.MUST_DESTROY, JwalaJvmState.JVM_STOPPING);
-        LIFECYCLE_JWALA_JVM_STATE_REF_MAP.put(LifecycleState.MUST_STOP, JwalaJvmState.JVM_STOPPING);
-        LIFECYCLE_JWALA_JVM_STATE_REF_MAP.put(LifecycleState.NEW, JwalaJvmState.JVM_INITIALIZED);
-        LIFECYCLE_JWALA_JVM_STATE_REF_MAP.put(LifecycleState.STARTED, JwalaJvmState.JVM_STARTED);
-        LIFECYCLE_JWALA_JVM_STATE_REF_MAP.put(LifecycleState.STARTING, JwalaJvmState.JVM_STARTING);
-        LIFECYCLE_JWALA_JVM_STATE_REF_MAP.put(LifecycleState.STARTING_PREP, JwalaJvmState.JVM_STARTING);
-        LIFECYCLE_JWALA_JVM_STATE_REF_MAP.put(LifecycleState.STOPPED, JwalaJvmState.JVM_STOPPED);
-        LIFECYCLE_JWALA_JVM_STATE_REF_MAP.put(LifecycleState.STOPPING, JwalaJvmState.JVM_STOPPING);
-        LIFECYCLE_JWALA_JVM_STATE_REF_MAP.put(LifecycleState.STOPPING_PREP, JwalaJvmState.JVM_STOPPING);
-    }
-
     @Override
     public void lifecycleEvent(final LifecycleEvent event) {
         LOGGER.info("LifeCycleEvent received: {} on {}", event.getType(), event.getLifecycle().getStateName());
-
         if (messagingService == null) {
             // init messaging service...
             LOGGER.info("Set systems property java.net.preferIPv4Stack to '{}'", jgroupsPreferIpv4Stack);
             System.setProperty("java.net.preferIPv4Stack", jgroupsPreferIpv4Stack);
 
-            try {
-                messagingService = new JGroupsMessagingServiceImpl(jgroupsConfigXml, jgroupsClusterName, true);
-                jgroupsStateReporter = new JGroupsStateReporter(messagingService);
-            } catch (final Exception e) {
-                LOGGER.error("Failed to initialize messaging service!", e);
-                return;
-            }
+            messagingService = new JGroupsMessagingServiceImpl(jgroupsConfigXml, jgroupsClusterName, true);
+            jgroupsStateReporter = new JGroupsStateReporter(messagingService);
         }
 
-        final String state = LIFECYCLE_JWALA_JVM_STATE_REF_MAP.get(LifecycleState.valueOf(event.getLifecycle().getStateName())).toString();
+        final LifecycleState state = LifecycleState.valueOf(event.getLifecycle().getStateName());
         try {
             jgroupsStateReporter.init(state)
-                                .sendMsg(instanceId, new IpAddress(jgroupsCoordinatorIp + ":" + jgroupsCoordinatorPort))
+                                .sendMsg(serverId, serverName, new IpAddress(jgroupsCoordinatorIp + ":" + jgroupsCoordinatorPort))
                                 .schedulePeriodicMsgDelivery(schedulerThreadCount, schedulerDelayInitial,
                                         schedulerDelaySubsequent, schedulerDelayUnit);
         } catch (final Exception e) {
@@ -87,8 +60,12 @@ public class JGroupsReportingLifeCycleListener implements LifecycleListener {
         }
     }
 
-    public void setInstanceId(final String instanceId) {
-        this.instanceId = instanceId;
+    public void setServerId(final String serverId) {
+        this.serverId = serverId;
+    }
+
+    public void setServerName(final String serverName) {
+        this.serverName = serverName;
     }
 
     public void setJgroupsPreferIpv4Stack(String jgroupsPreferIpv4Stack) {
