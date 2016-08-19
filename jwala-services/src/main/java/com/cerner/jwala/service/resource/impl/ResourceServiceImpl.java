@@ -762,6 +762,28 @@ public class ResourceServiceImpl implements ResourceService {
     }
 
     @Override
+    public String getExternalPropertiesAsString() {
+        Properties externalProperties = getExternalProperties();
+
+        // use a TreeMap to put the properties in alphabetical order
+        final TreeMap sortedProperties = null == externalProperties ? null : new TreeMap<>(externalProperties);
+
+        String retVal = "No External Properties configured";
+        if (null != sortedProperties && sortedProperties.size() > 0) {
+            StringBuilder sb = new StringBuilder();
+            for (Object key:sortedProperties.keySet()) {
+                sb.append(key);
+                sb.append("=");
+                sb.append(sortedProperties.get(key));
+                sb.append("\n");
+            }
+            retVal = sb.toString();
+        }
+
+        return retVal;
+    }
+
+    @Override
     public File getExternalPropertiesAsFile() throws IOException {
         final List<String> extPropertiesNamesList = getResourceNames(new ResourceIdentifier.Builder().build());
         if (extPropertiesNamesList.isEmpty()) {

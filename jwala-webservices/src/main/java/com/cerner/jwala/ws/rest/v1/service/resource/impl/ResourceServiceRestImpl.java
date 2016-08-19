@@ -24,6 +24,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.jaxrs.ext.MessageContext;
 import org.apache.cxf.jaxrs.ext.multipart.Attachment;
+import org.apache.cxf.jaxrs.impl.ResponseImpl;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -229,6 +230,11 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
 
     @Context
     private MessageContext context;
+
+    // for unit testing
+    public void setMessageContext(MessageContext messageContext) {
+        this.context = messageContext;
+    }
 
     @Override
     public Response uploadExternalProperties(AuthenticatedUser user) {
@@ -516,6 +522,13 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
         // use a TreeMap to put the properties in alphabetical order
         final Properties externalProperties = resourceService.getExternalProperties();
         return ResponseBuilder.ok(null == externalProperties ? null : new TreeMap<>(externalProperties));
+    }
+
+    @Override
+    public Response getExternalPropertiesView() {
+        LOGGER.debug("Get the external properties view");
+        final String externalProperties = resourceService.getExternalPropertiesAsString();
+        return ResponseImpl.ok(externalProperties).build();
     }
 
     @Override

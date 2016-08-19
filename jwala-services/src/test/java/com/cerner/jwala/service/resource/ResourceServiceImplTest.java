@@ -25,7 +25,6 @@ import com.cerner.jwala.common.request.jvm.UploadJvmConfigTemplateRequest;
 import com.cerner.jwala.common.request.webserver.UploadWebServerTemplateRequest;
 import com.cerner.jwala.control.command.PlatformCommandProvider;
 import com.cerner.jwala.control.command.RemoteCommandExecutorImpl;
-import com.cerner.jwala.control.jvm.command.impl.DefaultJvmExecRequestBuilderImplTest;
 import com.cerner.jwala.exception.CommandFailureException;
 import com.cerner.jwala.files.FileManager;
 import com.cerner.jwala.files.RepositoryFileInformation;
@@ -36,7 +35,6 @@ import com.cerner.jwala.persistence.service.*;
 import com.cerner.jwala.service.app.ApplicationService;
 import com.cerner.jwala.service.app.PrivateApplicationService;
 import com.cerner.jwala.service.resource.impl.ResourceServiceImpl;
-
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.groovy.runtime.ResourceGroovyMethods;
 import org.joda.time.DateTime;
@@ -637,5 +635,11 @@ public class ResourceServiceImplTest {
         File result = resourceService.getExternalPropertiesAsFile();
         assertTrue(result.length() > 0);
         assertTrue(result.delete());
+    }
+
+    @Test
+    public void testGetExternalPropertiesAsString() {
+        String result = resourceService.getExternalPropertiesAsString();
+        assertEquals("newkey=newvalue\n", result);
     }
 }

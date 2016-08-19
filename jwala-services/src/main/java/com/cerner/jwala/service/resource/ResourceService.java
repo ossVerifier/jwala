@@ -258,4 +258,9 @@ public interface ResourceService {
      */
     void deployTemplateToAllHosts(String fileName, ResourceIdentifier resourceIdentifier);
 
+    /**
+     * Get the external properties as a string
+     * @return the external properties as a string
+     */
+    String getExternalPropertiesAsString();
 }
