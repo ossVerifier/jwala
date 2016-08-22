@@ -129,6 +129,7 @@ public class BalancerManagerServiceImpl implements BalancerManagerService {
         try {
             jvm = jvmService.getJvm(jvmName.trim());
         } catch (javax.persistence.NoResultException e) {
+            LOGGER.error(e.getMessage(), e);
             String message = "Cannot find " + jvmName + ", please verify if it is valid jvmName";
             throw new InternalErrorException(AemFaultType.INVALID_WEBSERVER_OPERATION, message);
         }
