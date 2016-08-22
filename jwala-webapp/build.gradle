@@ -147,8 +147,6 @@ task babel(type:Exec) {
 babel.dependsOn downloadBabel
 
 war{
-    //TODO: delete this after changiing the binary name in chef
-    archiveName 'toc-webapp-'+ "${buildVersion}"+'.war'
     manifest {
         attributes(
                 "Specification-Version": (null ==System.getProperty("gitCommitId") ? "" : System.getProperty("gitCommitId")),
