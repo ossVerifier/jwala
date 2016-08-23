@@ -25,6 +25,8 @@ dependencies {
 
     testRuntime group: "com.cerner.cto.infrastructure", name: "infrastructure-provided", version: "$project.versions.infrastructureProvided", transitive: false
 	testRuntime group: 'org.apache.tomcat', name: 'tomcat-coyote', version: "$project.versions.tomcat"
+
+    testCompile group: 'org.apache.tomcat', name: 'tomcat-catalina', version: '8.0.33'
 }
 
 test {
