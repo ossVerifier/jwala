@@ -1,5 +1,16 @@
 package com.cerner.jwala.service.state.impl;
 
+import com.cerner.jwala.common.domain.model.state.CurrentState;
+import com.cerner.jwala.common.domain.model.state.OperationalState;
+import com.cerner.jwala.common.time.TimeRemainingCalculator;
+import com.cerner.jwala.service.state.StateNotificationConsumer;
+import com.cerner.jwala.service.state.StateNotificationConsumerBuilder;
+import com.cerner.jwala.service.state.StateNotificationConsumerId;
+import com.cerner.jwala.service.state.StateNotificationService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.jms.JMSException;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -8,19 +19,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-
-import javax.jms.JMSException;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.cerner.jwala.common.domain.model.state.CurrentState;
-import com.cerner.jwala.common.domain.model.state.OperationalState;
-import com.cerner.jwala.common.time.TimeRemainingCalculator;
-import com.cerner.jwala.service.state.StateNotificationConsumer;
-import com.cerner.jwala.service.state.StateNotificationConsumerBuilder;
-import com.cerner.jwala.service.state.StateNotificationConsumerId;
-import com.cerner.jwala.service.state.StateNotificationService;
 
 public abstract class AbstractStateNotificationService implements StateNotificationService {
 
@@ -49,7 +47,7 @@ public abstract class AbstractStateNotificationService implements StateNotificat
     @Override
     public boolean isValid(final StateNotificationConsumerId aConsumerId) {
         final StateNotificationConsumer consumer = registeredConsumers.get(aConsumerId);
-        return (consumer != null) && (!consumer.isStale());
+        return consumer != null && !consumer.isStale();
     }
 
     @Override

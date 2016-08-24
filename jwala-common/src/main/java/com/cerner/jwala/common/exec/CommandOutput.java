@@ -43,7 +43,7 @@ public class CommandOutput implements Serializable {
     }
 
     private boolean isPresent(final String aString) {
-        return (aString != null) && (!"".equals(aString.trim()));
+        return aString != null && !"".equals(aString.trim());
     }
 
     @Override

@@ -56,11 +56,11 @@ public class TimeoutParameterProvider {
     }
 
     boolean isParameterPresent() {
-        return (timeout != null);
+        return timeout != null;
     }
 
     void validate(final Long aValue) {
-        if ((aValue <= 0) || (aValue > 60)) {
+        if (aValue <= 0 || aValue > 60) {
             throw new BadRequestException(RestFaultType.INVALID_TIMEOUT_PARAMETER,
                                           "Timeout value was outside the allowable range : " + aValue);
         }

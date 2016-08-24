@@ -15,7 +15,7 @@ public class NameSearchParameterProvider {
     }
 
     public boolean isNamePresent() {
-        return (name != null) && (!"".equals(name.trim()));
+        return name != null && !"".equals(name.trim());
     }
 
     public String getName() {

@@ -17,7 +17,7 @@ public abstract class ValidNameRule implements Rule {
 
     @Override
     public boolean isValid() {
-        return (name != null) && (!"".equals(name.trim()));
+        return name != null && !"".equals(name.trim());
     }
 
     @Override
