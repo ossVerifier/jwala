@@ -15,10 +15,10 @@ public class JGroupsLifeCycleReporterRunnable implements Runnable {
     private static final Logger LOGGER = LoggerFactory.getLogger(JGroupsLifeCycleReporterRunnable.class);
 
     private MessagingService<Message> messagingService;
-    private JGroupsMessageBuilder msgBuilder;
+    private JGroupsServerInfoMessageBuilder msgBuilder;
 
     public JGroupsLifeCycleReporterRunnable(final MessagingService<Message> messagingService,
-                                            final JGroupsMessageBuilder msgBuilder) {
+                                            final JGroupsServerInfoMessageBuilder msgBuilder) {
         this.messagingService = messagingService;
         this.msgBuilder = msgBuilder;
     }
