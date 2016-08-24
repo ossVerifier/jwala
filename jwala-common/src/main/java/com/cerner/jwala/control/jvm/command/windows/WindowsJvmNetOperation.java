@@ -7,19 +7,16 @@ import com.cerner.jwala.common.exec.ShellCommand;
 import com.cerner.jwala.common.properties.ApplicationProperties;
 import com.cerner.jwala.control.AemControl;
 import com.cerner.jwala.control.command.ServiceCommandBuilder;
-
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
-
-import static com.cerner.jwala.control.AemControl.Properties.*;
 
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.Properties;
+
+import static com.cerner.jwala.control.AemControl.Properties.*;
 
 /**
  * Windows JVM Net Operations
@@ -82,13 +79,10 @@ public enum WindowsJvmNetOperation implements ServiceCommandBuilder {
         @Override
         public ExecCommand buildCommandForService(String aServiceName, String... aParams) {
 
-            String dataJvmResourcesDir = ApplicationProperties.get("paths.generated.resource.dir");
-            String instancesDir = ApplicationProperties.get("paths.instances");
             return new ExecCommand(
                     cygpathWrapper(DEPLOY_CONFIG_ARCHIVE_SCRIPT_NAME, USER_TOC_SCRIPTS_PATH + "/"),
                     USER_TOC_SCRIPTS_PATH + "/" + aServiceName + "_config.jar",
-                    instancesDir + "/" + aServiceName,
-                    dataJvmResourcesDir,
+                    INSTANCES_DIR + "/" + aServiceName,
                     ApplicationProperties.get("stp.java.home") + "/bin/jar"
             );
 
@@ -128,7 +122,7 @@ public enum WindowsJvmNetOperation implements ServiceCommandBuilder {
             return new ExecCommand(
                     cygpathWrapper(INVOKE_SERVICE_SCRIPT_NAME, USER_TOC_SCRIPTS_PATH + "/"),
                     aServiceName,
-                    ApplicationProperties.get("paths.instances"),
+                    INSTANCES_DIR,
                     quotedUsername,
                     decryptedPassword);
         }
@@ -167,8 +161,7 @@ public enum WindowsJvmNetOperation implements ServiceCommandBuilder {
     private static final Map<JvmControlOperation, WindowsJvmNetOperation> LOOKUP_MAP = new EnumMap<>(
             JvmControlOperation.class);
 
-    public static final String INSTANCES_DIR = ApplicationProperties.get("paths.instances");
-    private static final Logger LOGGER = LoggerFactory.getLogger(WindowsJvmNetOperation.class);
+    public static final String INSTANCES_DIR = ApplicationProperties.get("remote.paths.instances");
 
     static {
         for (final WindowsJvmNetOperation o : values()) {

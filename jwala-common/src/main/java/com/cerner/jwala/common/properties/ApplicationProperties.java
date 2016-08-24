@@ -1,18 +1,17 @@
 package com.cerner.jwala.common.properties;
 
+import com.cerner.jwala.common.exception.ApplicationException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Properties;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.cerner.jwala.common.exception.ApplicationException;
-
 public class ApplicationProperties {
 
-    public static final String PROPERTIES_ROOT_PATH = "STP_PROPERTIES_DIR";
+    public static final String PROPERTIES_ROOT_PATH = "PROPERTIES_ROOT_PATH";
     private volatile Properties properties;
 
     private static volatile ApplicationProperties SELF;
