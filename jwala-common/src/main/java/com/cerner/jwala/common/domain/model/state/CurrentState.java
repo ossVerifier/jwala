@@ -79,7 +79,7 @@ public class CurrentState<S, T extends OperationalState> implements KeyValueStat
     }
 
     public boolean hasMessage() {
-        return (message != null) && (!"".equals(message.trim()));
+        return message != null && !"".equals(message.trim());
     }
 
     public DateTime getAsOf() {

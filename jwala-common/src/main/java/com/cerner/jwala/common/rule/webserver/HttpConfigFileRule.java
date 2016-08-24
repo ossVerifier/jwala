@@ -28,7 +28,7 @@ public class HttpConfigFileRule implements Rule {
          *       d:/some-dir/httpd.conf or /cygdrive/some-dir/httpd-conf
          *       Both of which are interpreted as absolute paths by Java.
          */
-        return (fileSystemPath != null) &&
+        return fileSystemPath != null &&
                 fileSystemPath.isAbsolute() &&
                !fileSystemPath.getUriPath().endsWith("/") &&
                !fileSystemPath.getUriPath().endsWith("\\");

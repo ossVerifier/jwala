@@ -3,4 +3,5 @@ include "jwala-common",
         "jwala-services",
         "jwala-webapp",
         "jwala-webservices",
-        "jwala-h2-lifecyclelistener"
+        "jwala-tomcat-plugin",
+        "h2-lifecyclelistener"

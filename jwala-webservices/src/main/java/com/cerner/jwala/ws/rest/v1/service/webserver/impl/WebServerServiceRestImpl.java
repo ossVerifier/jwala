@@ -409,8 +409,8 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
     protected File createTempWebServerResourceFile(String aWebServerName, String httpdDataDir, String fileNamePrefix, String fileNameSuffix, String generatedTemplate) {
         PrintWriter out = null;
         final File httpdConfFile =
-                new File((httpdDataDir + System.getProperty("file.separator") + aWebServerName + "_" + fileNamePrefix + "."
-                        + new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date()) + "." + fileNameSuffix).replace("\\", "/"));
+                new File(httpdDataDir + System.getProperty("file.separator") + aWebServerName + "_" + fileNamePrefix + "."
+                        + new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date()) + "." + fileNameSuffix.replace("\\", "/"));
         final String httpdConfAbsolutePath = httpdConfFile.getAbsolutePath().replace("\\", "/");
         try {
             out = new PrintWriter(httpdConfAbsolutePath);
