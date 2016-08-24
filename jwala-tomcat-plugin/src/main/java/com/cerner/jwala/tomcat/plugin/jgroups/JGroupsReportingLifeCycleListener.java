@@ -4,6 +4,7 @@ import com.cerner.jwala.tomcat.plugin.MessagingService;
 import org.apache.catalina.LifecycleEvent;
 import org.apache.catalina.LifecycleListener;
 import org.apache.catalina.LifecycleState;
+import org.jgroups.JChannel;
 import org.jgroups.Message;
 import org.jgroups.stack.IpAddress;
 import org.slf4j.Logger;
@@ -37,6 +38,8 @@ public class JGroupsReportingLifeCycleListener implements LifecycleListener {
     private TimeUnit schedulerDelayUnit = TimeUnit.SECONDS;
     private int schedulerThreadCount = SCHEDULER_THREAD_COUNT_DEFAULT;
 
+    private JChannel channel;
+
     @Override
     public void lifecycleEvent(final LifecycleEvent event) {
         LOGGER.info("LifeCycleEvent received: {} on {}", event.getType(), event.getLifecycle().getStateName());
@@ -45,7 +48,15 @@ public class JGroupsReportingLifeCycleListener implements LifecycleListener {
             LOGGER.info("Set systems property java.net.preferIPv4Stack to '{}'", jgroupsPreferIpv4Stack);
             System.setProperty("java.net.preferIPv4Stack", jgroupsPreferIpv4Stack);
 
-            messagingService = new JGroupsMessagingServiceImpl(jgroupsConfigXml, jgroupsClusterName, true);
+            try {
+                channel = new JChannel(jgroupsConfigXml);
+            } catch (final Exception e) {
+                LOGGER.error("Failed to create JGroups channel!", e);
+                return;
+            }
+
+            channel.setDiscardOwnMessages(true);
+            messagingService = new JGroupsMessagingServiceImpl(channel, jgroupsClusterName);
             jgroupsStateReporter = new JGroupsStateReporter(messagingService);
         }
 
