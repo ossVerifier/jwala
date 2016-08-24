@@ -11,13 +11,13 @@ import com.cerner.jwala.common.exception.MessageResponseStatus;
 public class PortNumberRule implements Rule {
 
     private final Integer port;
-	private final AemFaultType error;
+    private final AemFaultType error;
     private final boolean nullable;
 
     public PortNumberRule(final Integer thePort, final AemFaultType errorCode) {
         this(thePort,
-             errorCode,
-             false);
+                errorCode,
+                false);
     }
 
     public PortNumberRule(final Integer thePort, final AemFaultType errorCode, final boolean nullable) {
@@ -26,30 +26,32 @@ public class PortNumberRule implements Rule {
         this.nullable = nullable;
     }
 
-    protected Integer getPort() { 
+    protected Integer getPort() {
         return port;
     }
-    
+
     @Override
     public boolean isValid() {
         if (nullable && port == null) {
             return true;
         }
-        return (port != null) && (port > 0/*TCP/IP Reserved Port*/) && (port <= 65535 /*2^16-1*/);
+        return port != null && port > 0/*TCP/IP Reserved Port*/ && port <= 65535 /*2^16-1*/;
     }
 
     @Override
     public void validate() throws BadRequestException {
         if (!isValid()) {
             throw new BadRequestException(getMessageResponseStatus(),
-                                          getMessage());
+                    getMessage());
         }
     }
 
-    protected MessageResponseStatus getMessageResponseStatus() { return error; }
+    protected MessageResponseStatus getMessageResponseStatus() {
+        return error;
+    }
 
     protected String getMessage() {
-   		return "Port specified is invalid" + (port != null?(" ("+port+")."):".");
+        return "Port specified is invalid" + (port != null ? " (" + port + ")." : ".");
     }
 
     @Override

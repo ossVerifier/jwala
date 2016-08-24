@@ -225,7 +225,7 @@ public class JvmCrudServiceImpl extends AbstractCrudServiceImpl<JpaJvm> implemen
         q.setParameter("groupName", groupName);
         try {
             JpaJvm jpaJvm = (JpaJvm) q.getSingleResult();
-            jvm = (new JvmBuilder(jpaJvm)).build();
+            jvm = new JvmBuilder(jpaJvm).build();
         } catch(NoResultException e) {
             LOGGER.warn("error with getting result for jvmName: {} and groupName {}, error: {}", jvmName, groupName, e);
         }
@@ -236,7 +236,7 @@ public class JvmCrudServiceImpl extends AbstractCrudServiceImpl<JpaJvm> implemen
     public Jvm findJvmByExactName(String jvmName) {
         final Query query = entityManager.createQuery("SELECT j FROM JpaJvm j WHERE j.name=:jvmName ORDER BY j.name");
         query.setParameter("jvmName", jvmName);
-        return (new JvmBuilder((JpaJvm) query.getSingleResult())).build();
+        return new JvmBuilder((JpaJvm) query.getSingleResult()).build();
     }
 
     @Override

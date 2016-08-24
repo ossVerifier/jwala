@@ -85,7 +85,7 @@ public class UriBuilder {
         final URI uri = new URI(scheme,
                                 user,
                                 host,
-                                (httpsPort != null && scheme.equals(HTTPS)) ? httpsPort : port,
+                                httpsPort != null && scheme.equals(HTTPS) ? httpsPort : port,
                                 path.getUriPath(),
                                 query,
                                 fragment);

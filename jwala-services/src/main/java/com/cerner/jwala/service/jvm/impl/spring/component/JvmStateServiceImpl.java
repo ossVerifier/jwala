@@ -89,7 +89,7 @@ public class JvmStateServiceImpl implements JvmStateService {
     public void verifyAndUpdateNotInMemOrStaleStates() {
         final List<Jvm> jvms = jvmPersistenceService.getJvms();
         for (final Jvm jvm : jvms) {
-            if ((!isStateInMemory(jvm) || ((isStarted(jvm) || isStopping(jvm)) && isStale(jvm))) &&
+            if (!isStateInMemory(jvm) || ((isStarted(jvm) || isStopping(jvm)) && isStale(jvm)) &&
                 (!PING_FUTURE_MAP.containsKey(jvm.getId()) || PING_FUTURE_MAP.get(jvm.getId()).isDone())) {
                     LOGGER.debug("Pinging JVM {} ...", jvm.getJvmName());
                     PING_FUTURE_MAP.put(jvm.getId(), jvmStateResolverWorker.pingAndUpdateJvmState(jvm, this));
@@ -133,7 +133,7 @@ public class JvmStateServiceImpl implements JvmStateService {
     @Override
     public void updateNotInMemOrStaleState(final Jvm jvm, final JvmState state, final String errMsg) {
         // Check again before updating to make sure that nothing has change after pinging the JVM.
-        if (!isStateInMemory(jvm) || ((isStarted(jvm) || isStopping(jvm)) && isStale(jvm))) {
+        if (!isStateInMemory(jvm) || isStarted(jvm) || isStopping(jvm) && isStale(jvm)) {
                 LOGGER.debug("Updating state of JVM {} ...", jvm.getJvmName());
                 updateState(jvm.getId(), state, errMsg);
                 LOGGER.debug("Updated state of JVM {}!", jvm.getJvmName());

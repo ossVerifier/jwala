@@ -1,10 +1,10 @@
 package com.cerner.jwala.ws.rest.v1.service.state.impl;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
-
 import com.cerner.jwala.service.state.StateNotificationConsumerId;
 import com.cerner.jwala.service.state.StateNotificationService;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 
 public class StateConsumerManager {
 
@@ -56,7 +56,7 @@ public class StateConsumerManager {
     }
 
     private boolean isInvalid(final StateNotificationConsumerId aConsumerId) {
-        return (aConsumerId == null) || (!notificationService.isValid(aConsumerId));
+        return aConsumerId == null || !notificationService.isValid(aConsumerId);
     }
 
     String createSessionKey(final String aClientId) {

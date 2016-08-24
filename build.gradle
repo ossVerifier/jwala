@@ -3,7 +3,7 @@ apply plugin: "sonar-runner"
 ext {
     versions = [
             junit : "4.11",
-            pmd : "4.3",
+            pmd : "5.1.1",
             spring : "4.1.8.RELEASE",
 			spring_security : "4.1.1.RELEASE",
             jackson : "1.4.2",
@@ -124,7 +124,7 @@ subprojects {
         testCompile "junit:junit:4.11"
         testCompile group: 'org.mockito', name: 'mockito-core', version: "$versions.mockito"
 
-        pmd group: "pmd", name: "pmd", version: "$versions.pmd"
+        pmd group: "net.sourceforge.pmd", name: "pmd", version: "$versions.pmd"
     }
 
     jar {

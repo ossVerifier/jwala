@@ -45,7 +45,7 @@ public class ExecReturnCode implements Serializable {
     }
 
     public boolean wasSuccessful() {
-        return (returnCode.equals(ZERO));
+        return returnCode.equals(ZERO);
     }
 
     public boolean wasAbnormallySuccessful() {
@@ -53,7 +53,7 @@ public class ExecReturnCode implements Serializable {
     }
 
     public boolean wasCompleted() {
-        return (returnCode != null);
+        return returnCode != null;
     }
 
     @Override
