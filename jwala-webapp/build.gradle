@@ -150,15 +150,12 @@ task buildReact(type: NodeTask) {
 }
 
 task installBabelCli(type: NpmTask) {
-    // install the express package only
     args = ['install', "babel-cli@$project.versions.babelcli", '--silent']
 }
 task installJsxTransform(type: NpmTask) {
-    // install the express package only
     args = ['install', "babel-plugin-transform-react-jsx-compat@$project.versions.babeltransform", '--silent']
 }
 
-//build.dependsOn buildReact
 buildReact.dependsOn npmInstall, installJsxTransform, installBabelCli
 
 war {
