@@ -49,7 +49,7 @@ public class PortNumberRule implements Rule {
     protected MessageResponseStatus getMessageResponseStatus() { return error; }
 
     protected String getMessage() {
-   		return "Port specified is invalid" + port != null?" ("+port+").":".";
+        return "Port specified is invalid" + (port != null?" ("+port+").":".");
     }
 
     @Override
