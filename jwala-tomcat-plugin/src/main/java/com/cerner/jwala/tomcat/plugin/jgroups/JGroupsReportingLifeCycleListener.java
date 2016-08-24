@@ -60,7 +60,7 @@ public class JGroupsReportingLifeCycleListener implements LifecycleListener {
             jgroupsStateReporter = new JGroupsStateReporter(messagingService);
         }
 
-        final LifecycleState state = LifecycleState.valueOf(event.getLifecycle().getStateName());
+        final LifecycleState state = event.getLifecycle().getState();
         try {
             jgroupsStateReporter.init(state)
                                 .sendMsg(serverId, serverName, new IpAddress(jgroupsCoordinatorIp + ":" + jgroupsCoordinatorPort))

@@ -10,6 +10,8 @@ dependencies {
     testCompile group: 'junit', name: 'junit', version: "$project.versions.jgroups"
     testCompile group: 'org.mockito', name: 'mockito-core', version: "$versions.mockito"
     testCompile group: 'org.objenesis', name: 'objenesis', version: "$project.versions.objenesis"
+    testCompile group: 'log4j', name: 'log4j', version: "$project.versions.log4j"
+    testCompile group: "org.slf4j", name:"slf4j-log4j12", version:"$project.versions.slf4j"
 }
 
 sourceSets.main.compileClasspath += configurations.providedCompile
