@@ -2,41 +2,43 @@ apply plugin: "sonar-runner"
 
 ext {
     versions = [
-            junit : "4.11",
-            pmd : "5.1.1",
-            spring : "4.1.8.RELEASE",
-			spring_security : "4.1.1.RELEASE",
-            jackson : "1.4.2",
-            jpa : "2.4.0",
-            h2 : "1.3.175",
-            cxf: "3.0.0-milestone1",
-            javax_ws_rs_api: "2.0",
-            mockito: "1.9.5",
-            log4j : '1.2.17',
-            slf4j : '1.7.5',
-            slf4j_log4j12 : '1.7.5',
-            javax_servlet_api: '3.0.1',
-            csa : "4.0.0700.00",
-            commons_fileupload: '1.3.1',
-            jodaTime : "2.2",
-            jms : '1.1',
-            infrastructureProvided : "1.2.1",
-            infrastructureSecurity : "1.2.1",
-            infrastructureGradle : "1.2.1",
-            commons_lang : "3.3.2",
-            commons_logging : "1.1.1",
-            httpcomponents_core : "4.3.3",
+            junit                 : "4.11",
+            pmd                   : "5.1.1",
+            spring                : "4.1.8.RELEASE",
+            spring_security       : "4.1.1.RELEASE",
+            jackson               : "1.4.2",
+            jpa                   : "2.4.0",
+            h2                    : "1.3.175",
+            cxf                   : "3.0.0-milestone1",
+            javax_ws_rs_api       : "2.0",
+            mockito               : "1.9.5",
+            log4j                 : '1.2.17',
+            slf4j                 : '1.7.5',
+            slf4j_log4j12         : '1.7.5',
+            javax_servlet_api     : '3.0.1',
+            csa                   : "4.0.0700.00",
+            commons_fileupload    : '1.3.1',
+            jodaTime              : "2.2",
+            jms                   : '1.1',
+            infrastructureProvided: "1.2.1",
+            infrastructureSecurity: "1.2.1",
+            infrastructureGradle  : "1.2.1",
+            commons_lang          : "3.3.2",
+            commons_logging       : "1.1.1",
+            httpcomponents_core   : "4.3.3",
             httpcomponents_client : "4.3.3",
-            tomcat : '7.0.55',
-            ant: '1.8.2',
-            groovy: '2.4.3',
-            jacoco: '0.6.5.201403032054',
-            devbundle: '1.1-SNAPSHOT',
-            objenesis: '1.0',
-            jgroups: '3.6.6.Final',
-            commons_io: '2.4',
-            jkeylockmanager: '1.2.0',
-            jackson: '1.9.13'
+            tomcat                : '7.0.55',
+            ant                   : '1.8.2',
+            groovy                : '2.4.3',
+            jacoco                : '0.6.5.201403032054',
+            devbundle             : '1.1-SNAPSHOT',
+            objenesis             : '1.0',
+            jgroups               : '3.6.6.Final',
+            commons_io            : '2.4',
+            jkeylockmanager       : '1.2.0',
+            jackson               : '1.9.13',
+            babelcli              : '6.6.4',
+            babeltransform        : '6.5.0'
     ]
 }
 
@@ -48,9 +50,9 @@ sonarRunner {
         property 'sonar.jdbc.username', 'sonar'
         property 'sonar.jdbc.password', 'sonar'
         property 'sonar.dynamicAnalysis', 'reuseReports'
-        properties ["sonar.projectKey"] = 'cto.tco.toc'
-        properties ["sonar.projectName"] = 'tomcat operations center'
-        properties ["sonar.projectVersion"] = '1.0.0'
+        properties["sonar.projectKey"] = 'cto.tco.toc'
+        properties["sonar.projectName"] = 'tomcat operations center'
+        properties["sonar.projectVersion"] = '1.0.0'
     }
 }
 
@@ -82,12 +84,12 @@ subprojects {
             }
             publications {
                 mavenJava(MavenPublication) {
-                    if(project.name.equals('jwala-webapp')) {
+                    if (project.name.equals('jwala-webapp')) {
                         from components.web
                     } else {
                         from components.java
                     }
-                    if(project.name.equals('jwala-persistence')) {
+                    if (project.name.equals('jwala-persistence')) {
                         artifact("drop.sql") {
                             classifier "drop"
                             extension "sql"
@@ -109,12 +111,6 @@ subprojects {
         maven {
             url 'http://usmlvv1qmp645.usmlvv1d0a.smshsc.net:8081/artifactory/jcenter-cache/'
         }
-
-        // Required by Babel until babel node modules are transferred in usmlvv1qmp645
-       /* maven {
-            url 'http://usmlvv1srn464.usmlvv1d0a.smshsc.net/artifactory/npm-local/'
-        }*/
-		/*mavenCentral()*/
     }
 
     dependencies {
@@ -133,7 +129,7 @@ subprojects {
                     "Implementation-Title": project.name,
                     "Implementation-Version": project.version,
                     "Specification-Number": (null == System.getProperty("gitCommitId") ? "" : "." + System.getProperty("gitCommitId")),
-                    "Build-Number": (null ==System.getProperty("buildNumber") ? "" : "." + System.getProperty("buildNumber")),
+                    "Build-Number": (null == System.getProperty("buildNumber") ? "" : "." + System.getProperty("buildNumber")),
                     "Built-By": System.getProperty("user.name"),
                     "Built-JDK": System.getProperty("java.version"),
                     "Built-Host": InetAddress.getLocalHost(),
@@ -178,7 +174,7 @@ subprojects {
         from file("${project.buildDir.path}/jacoco/")
         into file("${project.rootProject.buildDir.path}/jacoco/")
         include "accum-${project.name}.exec"
-        rename  "accum-${project.name}.exec", "accum.exec"
+        rename "accum-${project.name}.exec", "accum.exec"
     }
 
     task mergeTestCodeCoverageResults(type: JacocoMerge) {
@@ -190,7 +186,7 @@ subprojects {
             testFile.exists()
         }
         executionData {
-            if(mergeFile.exists()) return files(mergeFile, testFile);
+            if (mergeFile.exists()) return files(mergeFile, testFile);
             else return files(testFile);
         }
         doLast {
@@ -217,7 +213,7 @@ task(createRelease) << {
     def version = versions.last().replace("-SNAPSHOT", "")
     lines[0] = "buildVersion=" + version
     gradleProperties.withWriter {
-        lines.eachWithIndex{ l, i ->
+        lines.eachWithIndex { l, i ->
             it.write(l + "\n")
         }
     }
@@ -231,7 +227,7 @@ task(createSnapshot) << {
     def version = versions.last().replace("-SNAPSHOT", "")
     def numbers = version.split("\\.")
     def newNumber = numbers.last().toInteger() + 1
-    numbers[numbers.size()-1] = newNumber.toString()
+    numbers[numbers.size() - 1] = newNumber.toString()
     version = new String()
     numbers.eachWithIndex { num, i ->
         if (i < numbers.size() - 1) {
@@ -242,8 +238,34 @@ task(createSnapshot) << {
     }
     lines[0] = "buildVersion=" + version + "-SNAPSHOT"
     gradleProperties.withWriter {
-        lines.eachWithIndex{ l, i ->
+        lines.eachWithIndex { l, i ->
             it.write(l + "\n")
         }
     }
 }
+
+
+buildscript {
+    repositories {
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+    }
+
+    dependencies {
+        classpath "com.moowork.gradle:gradle-node-plugin:0.13"
+    }
+}
+
+apply plugin: 'com.moowork.node'
+
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath 'de.undercouch:gradle-download-task:3.1.1'
+    }
+}
+
+apply plugin: 'de.undercouch.download'
