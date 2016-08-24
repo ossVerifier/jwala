@@ -3,9 +3,6 @@ package com.cerner.jwala.common.time;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.cerner.jwala.common.time.Stale;
-import com.cerner.jwala.common.time.TimeDuration;
-
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertFalse;
@@ -46,7 +43,7 @@ public class StaleTest {
 
     private long relativeToExpiration(final long aReferencePoint,
                                       final long anOffset) {
-        return aReferencePoint + TimeUnit.MILLISECONDS.convert((timePeriod + anOffset),
+        return aReferencePoint + TimeUnit.MILLISECONDS.convert(timePeriod + anOffset,
                                                                timeUnit);
     }
 }

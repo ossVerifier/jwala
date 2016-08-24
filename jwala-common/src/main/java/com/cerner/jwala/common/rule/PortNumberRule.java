@@ -35,7 +35,7 @@ public class PortNumberRule implements Rule {
         if (nullable && port == null) {
             return true;
         }
-        return (port != null) && (port > 0/*TCP/IP Reserved Port*/) && (port <= 65535 /*2^16-1*/);
+        return port != null && port > 0/*TCP/IP Reserved Port*/ && port <= 65535 /*2^16-1*/;
     }
 
     @Override
@@ -49,7 +49,7 @@ public class PortNumberRule implements Rule {
     protected MessageResponseStatus getMessageResponseStatus() { return error; }
 
     protected String getMessage() {
-   		return "Port specified is invalid" + (port != null?(" ("+port+")."):".");
+   		return "Port specified is invalid" + port != null?" ("+port+").":".";
     }
 
     @Override

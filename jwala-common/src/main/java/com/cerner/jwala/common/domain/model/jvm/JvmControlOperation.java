@@ -1,15 +1,15 @@
 package com.cerner.jwala.common.domain.model.jvm;
 
-import static com.cerner.jwala.common.domain.AemDomain.*;
-import static com.cerner.jwala.common.domain.model.jvm.JvmState.*;
+import com.cerner.jwala.common.domain.model.fault.AemFaultType;
+import com.cerner.jwala.common.domain.model.state.CurrentState;
+import com.cerner.jwala.common.exception.BadRequestException;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-import com.cerner.jwala.common.domain.model.fault.AemFaultType;
-import com.cerner.jwala.common.domain.model.state.CurrentState;
-import com.cerner.jwala.common.exception.BadRequestException;
+import static com.cerner.jwala.common.domain.AemDomain.*;
+import static com.cerner.jwala.common.domain.model.jvm.JvmState.*;
 
 /**
  * Enumeration of control operations that can be executed against a JVM
@@ -110,7 +110,7 @@ public enum JvmControlOperation {
     }
 
     public JvmState getFailureStateOrPrevious(CurrentState<Jvm, JvmState> prevState) {
-        return prevState == null ? failureState : (failureState == null ? prevState.getState() : failureState);
+        return prevState == null ? failureState : failureState == null ? prevState.getState() : failureState;
     }
 
     public JvmState getFailureState() {

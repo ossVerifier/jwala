@@ -53,7 +53,7 @@ public class GroupStateNotificationServiceImpl implements GroupStateNotification
     @SuppressWarnings("unchecked")
     public void retrieveStateAndSendToATopic(final Identifier id, final Class aClass) {
         LOGGER.debug("Synchronizing on {} and {}...", id, aClass);
-        synchronized ((aClass.getSimpleName() + id.toString()).intern()) {
+        synchronized (aClass.getSimpleName() + id.toString().intern()) {
             LOGGER.debug("Thread locked on {} and {}...!", id, aClass);
             final List<JpaGroup> groups;
             if (Jvm.class.getName().equals(aClass.getName())) {

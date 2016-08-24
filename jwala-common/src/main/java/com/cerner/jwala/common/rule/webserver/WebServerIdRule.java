@@ -16,7 +16,7 @@ public class WebServerIdRule implements Rule {
 
     @Override
     public boolean isValid() {
-        return (webServerId != null);
+        return webServerId != null;
     }
 
     @Override

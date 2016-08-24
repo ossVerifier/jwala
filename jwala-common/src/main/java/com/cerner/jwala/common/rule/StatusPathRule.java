@@ -22,7 +22,7 @@ public class StatusPathRule implements Rule {
 
     @Override
     public boolean isValid() {
-        if ((statusPath != null) && statusPath.isAbsolute()) {
+        if (statusPath != null && statusPath.isAbsolute()) {
             try {
                 new URI("http", null, "hostName", 8080, statusPath.getPath(), "", "");
             } catch (URISyntaxException e) {

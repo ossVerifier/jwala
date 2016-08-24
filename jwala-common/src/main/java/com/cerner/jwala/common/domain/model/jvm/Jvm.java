@@ -105,7 +105,7 @@ public class Jvm implements Serializable {
                 this.webApps,
                 this.lastUpdatedDate,
                 this.userName,
-                (this.encryptedPassword != null && this.encryptedPassword.length() > 0) ? new DecryptPassword().decrypt(this.encryptedPassword) : "");
+                this.encryptedPassword != null && this.encryptedPassword.length() > 0 ? new DecryptPassword().decrypt(this.encryptedPassword) : "");
     }
 
     public Jvm(Identifier<Jvm> id,
