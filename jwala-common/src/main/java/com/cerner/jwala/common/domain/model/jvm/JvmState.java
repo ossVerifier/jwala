@@ -54,7 +54,7 @@ public enum JvmState implements OperationalState {
         if (LOOKUP_MAP.containsKey(state)) {
             return LOOKUP_MAP.get(state);
         }
-        LOGGER.error("Unexpected JVM state:{0} from db! Returning JVM_UNEXPECTED_STATE.", state);
+        LOGGER.error("Unexpected JVM state:{} from db! Returning JVM_UNEXPECTED_STATE.", state);
         return JVM_UNEXPECTED_STATE;
     }
 

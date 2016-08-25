@@ -1,14 +1,14 @@
+apply plugin: 'com.moowork.node'
 apply plugin: "war"
 apply plugin: 'maven-publish'
 
 ext {
-    localVersions = [jstl : "1.2"]
+    localVersions = [jstl: "1.2"]
 }
 
 configurations {
     all*.exclude group: 'org.apache.geronimo.specs', module: 'geronimo-jta_1.1_spec'
     all*.exclude group: 'org.apache.geronimo.specs', module: 'geronimo-jms_1.1_spec'
-    babel
 }
 
 dependencies {
@@ -25,13 +25,13 @@ dependencies {
     compile 'org.springframework.security:spring-security-ldap:4.1.1.RELEASE'
     compile 'org.springframework.security:spring-security-test:4.1.1.RELEASE'
 
-	compile group: 'org.springframework.security', name: 'spring-security-catalina', version: '2.0.4'
+    compile group: 'org.springframework.security', name: 'spring-security-catalina', version: '2.0.4'
 
     runtime group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.6.5'
     runtime group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.6.5'
 
-    runtime group: "org.slf4j", name:"slf4j-log4j12", version:"$project.versions.slf4j"
-    runtime group: "log4j", name:"log4j", version:"$project.versions.log4j"
+    runtime group: "org.slf4j", name: "slf4j-log4j12", version: "$project.versions.slf4j"
+    runtime group: "log4j", name: "log4j", version: "$project.versions.log4j"
     runtime group: "commons-logging", name: "commons-logging", version: "$project.versions.commons_logging"
     runtime(group: 'junit', name: 'junit', version: '4.12')
 
@@ -52,8 +52,6 @@ dependencies {
 
     testCompile group: "org.mockito", name: "mockito-core", version: "$project.versions.mockito"
     testCompile group: 'org.objenesis', name: 'objenesis', version: "$project.versions.objenesis"
-
-    babel group: 'babel-node', name: 'babel-node', version: '6.6.4', ext: 'zip'
 }
 
 war {
@@ -82,7 +80,7 @@ def reactCachePath = buildDir.toPath().fileName.toString() + "/react"
 def reactCompiledOutputWarPath = "/gen/resources/js/react"
 def reactSrcPath = "src/main/webapp/resources/js/react"
 
-task compileJsx(type:Exec) {
+task compileJsx(type: Exec) {
     build.mustRunAfter clean
     workingDir "."
 
@@ -91,9 +89,9 @@ task compileJsx(type:Exec) {
     commandLine "cmd",
             "/c",
             "jsx" +
-            " ./" + reactSrcPath +
-            " ./" + reactBuildPath +
-            " --cache-dir ./" + reactCachePath
+                    " ./" + reactSrcPath +
+                    " ./" + reactBuildPath +
+                    " --cache-dir ./" + reactCachePath
 
     standardOutput = new ByteArrayOutputStream()
     ext.output = {
@@ -102,7 +100,7 @@ task compileJsx(type:Exec) {
 }
 
 
-task watchJsx(type:Exec) {
+task watchJsx(type: Exec) {
     //println "JSX Build " + reactBuildPath
     //println "JSX WAR Build " + reactCompiledOutputPath
     //println "JSX WAR Output " + reactCompiledOutputWarPath
@@ -115,10 +113,10 @@ task watchJsx(type:Exec) {
     commandLine "cmd",
             "/c",
             "jsx" +
-            " -w" +
-            " ./" + reactSrcPath +
-            " ./" + reactBuildPath +
-            " --cache-dir ./" + reactCachePath
+                    " -w" +
+                    " ./" + reactSrcPath +
+                    " ./" + reactBuildPath +
+                    " --cache-dir ./" + reactCachePath
 
     standardOutput = new ByteArrayOutputStream()
     ext.output = {
@@ -126,30 +124,46 @@ task watchJsx(type:Exec) {
     }
 }
 
-task downloadBabel(type: Copy) {
-    def zipFile = file("${configurations.babel.files.iterator().next()}");
-    def outputDir = file("${buildDir}/babel")
+node {
+    // Version of node to use.
+    version = '0.11.10'
 
-    from zipTree(zipFile)
-    into outputDir
+    npmVersion = '3.3.12'
+
+    // Base URL for fetching node distributions (change if you have a mirror).
+    distBaseUrl = 'https://nodejs.org/dist'
+
+    // If true, it will download node using above parameters.
+    // If false, it will try to use globally installed node.
+    download = true
+    // Set the work directory for unpacking node
+    workDir = file("${project.buildDir}/nodejs")
+
+    // Set the work directory where node_modules should be located
+    nodeModulesDir = file("${project.buildDir}")
 }
 
-task babel(type:Exec) {
-    commandLine "cmd", "/c", "${buildDir}/babel/babel ${projectDir}/src/main/webapp/resources/js/react " +
-                             "--out-dir ${buildDir}/react/js --blacklist useStrict"
 
-    standardOutput = new ByteArrayOutputStream()
-    ext.output = {
-        return standardOutput.toString()
-    }
+task buildReact(type: NodeTask) {
+    script = file("node_modules/babel-cli/bin/babel.js")
+    args = ['src/main/webapp/resources/js/react', '--out-dir', "${buildDir}/react/js", '--blacklist', 'useStrict']
 }
 
-babel.dependsOn downloadBabel
+task installBabelCli(type: NpmTask) {
+    args = ['install', "babel-cli@$project.versions.babelcli", '--silent']
+}
+task installJsxTransform(type: NpmTask) {
+    args = ['install', "babel-plugin-transform-react-jsx-compat@$project.versions.babeltransform", '--silent']
+}
 
-war{
+buildReact.dependsOn npmInstall, installJsxTransform, installBabelCli
+
+war {
+    //TODO: delete this after changiing the binary name in chef
+    archiveName 'toc-webapp-' + "${buildVersion}" + '.war'
     manifest {
         attributes(
-                "Specification-Version": (null ==System.getProperty("gitCommitId") ? "" : System.getProperty("gitCommitId")),
+                "Specification-Version": (null == System.getProperty("gitCommitId") ? "" : System.getProperty("gitCommitId")),
                 "Implementation-Title": project.name,
                 "Implementation-Version": buildVersion,
                 "Build-Number": (null == System.getProperty("buildNumber")) ? "" : System.getProperty("buildNumber"),
@@ -161,7 +175,7 @@ war{
     }
 
     // dependsOn(compileJsx) // NOTE!!! If you're still using JSX, enable this and disable the line below (babel).
-    dependsOn(babel)
+    dependsOn(buildReact)
 
     webInf {
         from reactCompiledOutputPath
@@ -192,10 +206,11 @@ war{
         from "${templatePath}"
         into "${appInstanceConfPath}"
         include "${appContext}.tpl"
-        rename {file -> "${appContext}"}
+        rename { file -> "${appContext}" }
         expand(deployPath: "${deployPath}", warName: project.name + "-${buildVersion}.war", jmsStatusAddr: "${jmsStatusAddr}",
                 jmsStateNotificationAddr: "${jmsStateNotificationAddr}")
     }
 
     deployWar.dependsOn deployContext, deleteWar, deleteExtractedWarPath
 }
+

@@ -201,7 +201,7 @@ public class WebServerCrudServiceImpl extends AbstractCrudServiceImpl<JpaWebServ
 
         final List<Jvm> jvms = new ArrayList<>(q.getResultList().size());
         for (final JpaJvm jpaJvm : (List<JpaJvm>) q.getResultList()) {
-            jvms.add((new JvmBuilder(jpaJvm)).build());
+            jvms.add(new JvmBuilder(jpaJvm).build());
         }
         return jvms;
     }

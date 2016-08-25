@@ -11,7 +11,7 @@ public class TimeRemaining {
 
     public TimeRemaining(final TimeDuration theTimeRemaining) {
         timeRemaining = theTimeRemaining;
-        isTimeRemaining = (theTimeRemaining.valueOf() > 0);
+        isTimeRemaining = theTimeRemaining.valueOf() > 0;
     }
 
     public TimeDuration getDuration() {
