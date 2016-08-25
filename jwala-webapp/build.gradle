@@ -49,6 +49,7 @@ dependencies {
     compile project(":jwala-persistence")
     compile project(":jwala-services")
     compile project(":jwala-webservices")
+    compile project(":jwala-h2-lifecyclelistener")
 
     testCompile group: "org.mockito", name: "mockito-core", version: "$project.versions.mockito"
     testCompile group: 'org.objenesis', name: 'objenesis', version: "$project.versions.objenesis"
@@ -160,7 +161,7 @@ buildReact.dependsOn npmInstall, installJsxTransform, installBabelCli
 
 war {
     //TODO: delete this after changiing the binary name in chef
-    archiveName 'toc-webapp-' + "${buildVersion}" + '.war'
+    archiveName "${project.name}-${buildVersion}" + '.war'
     manifest {
         attributes(
                 "Specification-Version": (null == System.getProperty("gitCommitId") ? "" : System.getProperty("gitCommitId")),
