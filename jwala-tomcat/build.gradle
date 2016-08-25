@@ -1,0 +1,28 @@
+apply plugin: 'de.undercouch.download'
+
+import de.undercouch.gradle.tasks.download.Download
+
+buildscript {
+	repositories { jcenter() }
+	dependencies { classpath 'de.undercouch:gradle-download-task:3.1.1' }
+}
+
+task downloadZipFile(type: Download) {
+	println "Downloading.."
+	println "${tomcatBinaryUrl}"
+	src "${tomcatBinaryUrl}"
+	dest new File(buildDir, 'apache-tomcat-7.0.55.zip')
+	println "Download complete"
+}
+
+task downloadAndUnzipFile(dependsOn: downloadZipFile, type: Copy) {
+	from zipTree(downloadZipFile.dest)
+	into buildDir
+}
+
+task packageJwala(){
+	println "Start Package jwala"
+	println "Copy config files"
+	println "Copy config files"
+}
+
