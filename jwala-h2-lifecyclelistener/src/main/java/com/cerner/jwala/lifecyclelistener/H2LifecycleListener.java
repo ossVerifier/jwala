@@ -13,24 +13,29 @@ public class H2LifecycleListener implements ServletContextListener, LifecycleLis
     public void lifecycleEvent(LifecycleEvent event) {
         LifecycleState lifecycleState = event.getLifecycle().getState();
         if (LifecycleState.STARTING_PREP.equals(lifecycleState) || LifecycleState.STARTING.equals(lifecycleState)) {
-            LOG.debug("Initializing H2 on Tomcat lifecyle: " + lifecycleState.toString());
+            print("Initializing H2 on Tomcat lifecyle: " + lifecycleState.toString());
             H2LifecycleService.INSTANCE.startH2DatabaseServer();
         }
         if (lifecycleState.equals(LifecycleState.DESTROYING)) {
-            LOG.debug("Destroying H2 on Tomcat lifecyle: "  + lifecycleState.toString());
+            print("Destroying H2 on Tomcat lifecyle: "  + lifecycleState.toString());
             H2LifecycleService.INSTANCE.stopH2DatabaseServer();
         }
     }
 
     @Override
     public void contextInitialized(ServletContextEvent sce) {
-        LOG.debug("Initializing H2 on Servlet Context Initialization");
+        print("Initializing H2 on Servlet Context Initialization");
         H2LifecycleService.INSTANCE.startH2DatabaseServer();
     }
 
     @Override
     public void contextDestroyed(ServletContextEvent sce) {
-        LOG.debug("Destroying H2 on Servlet Context Destruction");
+        print("Destroying H2 on Servlet Context Destruction");
         H2LifecycleService.INSTANCE.stopH2DatabaseServer();
+    }
+
+    public void print(final String content){
+        System.out.println(content);
+        LOG.debug(content);
     }
 }
