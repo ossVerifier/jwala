@@ -1,7 +1,7 @@
-package com.cerner.jwala.tomcat.plugin.jgroups;
+package com.cerner.jwala.tomcat.listener.messaging.jgroups;
 
-import com.cerner.jwala.tomcat.plugin.MessagingService;
-import com.cerner.jwala.tomcat.plugin.MessagingServiceException;
+import com.cerner.jwala.tomcat.listener.messaging.MessagingService;
+import com.cerner.jwala.tomcat.listener.messaging.MessagingServiceException;
 import org.jgroups.JChannel;
 import org.jgroups.Message;
 import org.slf4j.Logger;

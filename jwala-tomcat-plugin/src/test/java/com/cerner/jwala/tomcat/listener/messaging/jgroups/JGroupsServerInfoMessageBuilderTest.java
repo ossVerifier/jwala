@@ -1,4 +1,4 @@
-package com.cerner.jwala.tomcat.plugin.jgroups;
+package com.cerner.jwala.tomcat.listener.messaging.jgroups;
 
 import org.apache.catalina.LifecycleState;
 import org.jgroups.Message;

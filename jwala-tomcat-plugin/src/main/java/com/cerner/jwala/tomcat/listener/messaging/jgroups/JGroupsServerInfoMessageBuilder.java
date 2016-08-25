@@ -1,6 +1,6 @@
-package com.cerner.jwala.tomcat.plugin.jgroups;
+package com.cerner.jwala.tomcat.listener.messaging.jgroups;
 
-import com.cerner.jwala.tomcat.plugin.ServerInfoFields;
+import com.cerner.jwala.tomcat.listener.messaging.ServerInfoFields;
 import org.apache.catalina.LifecycleState;
 import org.jgroups.Address;
 import org.jgroups.Message;

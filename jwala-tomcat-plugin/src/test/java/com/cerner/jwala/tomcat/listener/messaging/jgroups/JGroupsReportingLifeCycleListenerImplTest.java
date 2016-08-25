@@ -1,5 +1,6 @@
-package com.cerner.jwala.tomcat.plugin.jgroups;
+package com.cerner.jwala.tomcat.listener.messaging.jgroups;
 
+import com.cerner.jwala.tomcat.listener.messaging.jgroups.JGroupsReportingLifeCycleListener;
 import org.apache.catalina.*;
 import org.apache.log4j.Appender;
 import org.apache.log4j.LogManager;

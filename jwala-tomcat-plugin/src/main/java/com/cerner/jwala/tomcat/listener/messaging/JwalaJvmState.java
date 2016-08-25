@@ -1,4 +1,4 @@
-package com.cerner.jwala.tomcat.plugin;
+package com.cerner.jwala.tomcat.listener.messaging;
 
 /**
  * JVM states as defined by Jwala

@@ -1,4 +1,4 @@
-package com.cerner.jwala.tomcat.plugin;
+package com.cerner.jwala.tomcat.listener.messaging;
 
 /**
  * Wrapper for {@link MessagingService} exceptions

@@ -1,4 +1,4 @@
-package com.cerner.jwala.tomcat.plugin;
+package com.cerner.jwala.tomcat.listener.messaging;
 
 /**
  * A contract that outlines what a messaging service can and should do

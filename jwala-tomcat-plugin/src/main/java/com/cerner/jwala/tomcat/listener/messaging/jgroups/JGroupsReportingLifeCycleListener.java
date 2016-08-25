@@ -1,6 +1,6 @@
-package com.cerner.jwala.tomcat.plugin.jgroups;
+package com.cerner.jwala.tomcat.listener.messaging.jgroups;
 
-import com.cerner.jwala.tomcat.plugin.MessagingService;
+import com.cerner.jwala.tomcat.listener.messaging.MessagingService;
 import org.apache.catalina.LifecycleEvent;
 import org.apache.catalina.LifecycleListener;
 import org.apache.catalina.LifecycleState;
