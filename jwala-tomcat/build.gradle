@@ -10,11 +10,13 @@ buildscript {
 
 task downloadTomcat(type: Download) {
 	src "${tomcatBinaryUrl}"
-	dest new File(buildDir, new File("${tomcatBinaryUrl}").getName())
-	from zipTree(downloadZipFile.dest)
-	into buildDir
+	dest new File(buildDir, 'apache-tomcat-7.0.55.zip')
 }
 
+task downloadAndUnzipTomcat(dependsOn: downloadTomcat, type: Copy) {
+	from zipTree(downloadTomcat.dest)
+	into buildDir
+}
 
 task packageJwala(){
 	//
