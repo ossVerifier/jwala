@@ -1,5 +1,4 @@
 apply plugin: "sonar-runner"
-apply plugin: "de.undercouch.download"
 
 ext {
     versions = [
@@ -259,5 +258,5 @@ buildscript {
 	}
 }
 
-apply plugin: 'de.undercouch.download'
+
 
