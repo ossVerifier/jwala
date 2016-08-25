@@ -4,21 +4,32 @@ import de.undercouch.gradle.tasks.download.Download
 
 
 buildscript {
-	repositories { jcenter() }
-	dependencies { classpath 'de.undercouch:gradle-download-task:3.1.1' }
+    repositories { jcenter() }
+    dependencies { classpath 'de.undercouch:gradle-download-task:3.1.1' }
 }
 
 task downloadTomcat(type: Download) {
-	src "${tomcatBinaryUrl}"
-	dest new File(buildDir, 'apache-tomcat-7.0.55.zip')
+    src "${tomcatBinaryUrl}"
+    dest new File(buildDir, 'apache-tomcat-7.0.55.zip')
 }
 
 task downloadAndUnzipTomcat(dependsOn: downloadTomcat, type: Copy) {
-	from zipTree(downloadTomcat.dest)
-	into buildDir
+    from zipTree(downloadTomcat.dest)
+    into buildDir
 }
 
-task packageJwala(){
-	//
+task copyOverrides(type: Copy) {
+    from('src/main/resources')
+    into("$buildDir/apache-tomcat-7.0.55")
+}
+
+task copyWar(/*dependsOn: downloadAndUnzipTomcat, */type: Copy) {
+    from project(':jwala-webapp').file("build/libs")
+    into file("$buildDir/apache-tomcat-7.0.55/data/webapps")
+}
+
+task packageJwala() {
+
+    //
 }
 
