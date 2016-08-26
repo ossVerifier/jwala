@@ -90,7 +90,7 @@ task copySql(dependsOn: [':jwala-persistence:createDdl', copyJwalaWebappWar], ty
     into file("$buildDir/$tomcatDir/data/db")
 }
 
-task createJwalaDb {
+task createJwalaDb(dependsOn: copySql) << {
     configurations.jdbcdriver.files.each {
         Sql.classLoader.addURL(it.toURI().toURL())
     }
@@ -103,7 +103,7 @@ task createJwalaDb {
     sql.execute(file("$buildDir/$tomcatDir/data/db/create.sql").text)
 }
 
-task zipJwalaTomcat(dependsOn: copyJwalaWebappWar, type: Zip) {
+task zipJwalaTomcat(dependsOn: createJwalaDb, type: Zip) {
     from "$buildDir/$tomcatDir"
     baseName = 'jwala-tomcat'
     into "$tomcatDir"// note that this specifies path *in* the archive
