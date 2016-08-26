@@ -65,7 +65,7 @@ task deleteDownloadedZip(dependsOn: downloadAndUnzipTomcat, type: Delete) {
 
 task copyConfigurationOverrides(dependsOn: deleteDownloadedZip, type: Copy) {
     from('src/main/resources')
-        filter{ it.replaceAll('@@buildVersion@@', "$buildVersion")}
+    filter { it.replaceAll('@@buildVersion@@', "$buildVersion") }
     into("$buildDir/$tomcatDir")
 }
 
@@ -92,6 +92,7 @@ task copySql(dependsOn: [':jwala-persistence:createDdl', copyJwalaWebappWar], ty
 }
 
 task createJwalaDb(dependsOn: copySql) << {
+
     configurations.jdbcdriver.files.each {
         Sql.classLoader.addURL(it.toURI().toURL())
     }
@@ -101,6 +102,11 @@ task createJwalaDb(dependsOn: copySql) << {
             'sa',
             '',
             'org.h2.Driver')
+
+    def dbFile = file("$buildDir/$tomcatDir/data/db/toc.h2.db")
+    if (dbFile.exists()) {
+        sql.execute('drop all objects delete files')
+    }
     sql.execute(file("$buildDir/$tomcatDir/data/db/create.sql").text)
 }
 
