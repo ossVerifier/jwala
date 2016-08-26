@@ -41,6 +41,7 @@ dependencies {
     compile(group: 'com.tibco', name: 'tibjmsadmin', version: '8.3.0')
     compile(group: 'org.apache.santuario', name: 'xmlsec', version: '1.5.6')
     compile(group: 'org.opensaml', name: 'xmltooling', version: '1.4.4')
+    compile project(":jwala-webapp")
 }
 
 
