@@ -70,7 +70,13 @@ task copyConfigurationOverrides(dependsOn: deleteDownloadedZip, type: Copy) {
     into("$buildDir/$tomcatDir")
 }
 
-task copyTomcatExtras(dependsOn: copyConfigurationOverrides, type: Download) {
+task deleteReadMeFiles(dependsOn: copyConfigurationOverrides, type:Delete){
+    delete fileTree("$buildDir/$tomcatDir") {
+        include '**/ReadMe.txt'
+    }
+}
+
+task copyTomcatExtras(dependsOn: deleteReadMeFiles, type: Download) {
     src 'http://archive.apache.org/dist/tomcat/tomcat-7/v7.0.55/bin/extras/catalina-jmx-remote.jar'
     dest new File("$buildDir/$tomcatDir/lib", "catalina-jmx-remote.jar")
 }
@@ -87,7 +93,6 @@ task copyJwalaWebappWar(dependsOn: copyJwalaDependenciesToTomcatLib, type: Copy)
     from project(':jwala-webapp').file("build/libs")
     into file("$buildDir/$tomcatDir/data/webapps")
 }
-
 
 task copySql(dependsOn: [':jwala-persistence:createDdl', copyJwalaWebappWar], type: Copy) {
     from project(':jwala-persistence').projectDir
