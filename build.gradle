@@ -8,7 +8,7 @@ ext {
             spring_security       : "4.1.1.RELEASE",
             jackson               : "1.4.2",
             jpa                   : "2.4.0",
-            h2                    : "1.3.175",
+            h2                    : "1.3.176",
             cxf                   : "3.0.0-milestone1",
             javax_ws_rs_api       : "2.0",
             mockito               : "1.9.5",
@@ -86,7 +86,9 @@ subprojects {
                 mavenJava(MavenPublication) {
                     if (project.name.equals('jwala-webapp')) {
                         from components.web
-                    } else {
+                    }else if (project.name.equals('jwala-tomcat')) {
+                        artifact zipJwalaTomcat
+                    }else {
                         from components.java
                     }
                     if (project.name.equals('jwala-persistence')) {
@@ -121,6 +123,7 @@ subprojects {
         testCompile group: 'org.mockito', name: 'mockito-core', version: "$versions.mockito"
 
         pmd group: "net.sourceforge.pmd", name: "pmd", version: "$versions.pmd"
+
     }
 
     jar {
@@ -243,6 +246,17 @@ task(createSnapshot) << {
         }
     }
 }
+
+buildscript {
+	repositories {
+		jcenter()
+	}
+	dependencies {
+		classpath 'de.undercouch:gradle-download-task:3.1.1'
+	}
+}
+
+
 
 
 buildscript {

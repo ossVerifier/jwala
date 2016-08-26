@@ -1,4 +1,4 @@
-apply plugin: 'maven-publish'
+//apply plugin: 'maven-publish'
 
 dependencies {
     compile project(":jwala-common")
@@ -40,7 +40,7 @@ task createDdl (type:JavaExec) {
             "-p", "${project.projectDir.path}/src/main/resources/META-INF/persistence.xml"]
 
     doLast {
-        def createSql = new File("./create.sql")
+        def createSql = file(projectDir.absolutePath + "/create.sql")
         def version = project.properties['buildVersion']
         createSql.append('CREATE TABLE IF NOT EXISTS VERSION (RELEASE_VERSION VARCHAR(255), LAST_UPDATED TIMESTAMP);\n' +
                 'INSERT INTO VERSION (RELEASE_VERSION, LAST_UPDATED) VALUES (\'' + version + '\', NOW());')
@@ -74,7 +74,7 @@ task mappingToolHelp (type:JavaExec) {
     args = ["-help"]
 }
 
-publish.dependsOn << createDdl << dropDdl
+//publish.dependsOn << createDdl << dropDdl
 
 
 task enhanceJpaEntities(type: JavaExec) {
