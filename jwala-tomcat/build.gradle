@@ -36,7 +36,7 @@ task downloadAndUnzipTomcat(dependsOn: downloadTomcat, type: Copy) {
     into buildDir
 }
 
-task deleteDownladedZip(dependsOn: downloadAndUnzipTomcat, type: Delete){
+task deleteDownladedZip(dependsOn: downloadAndUnzipTomcat, type: Delete) {
     delete new File("$buildDir", new File("${tomcatBinaryUrl}").getName())
 }
 
@@ -55,9 +55,6 @@ task copyJwalaWebappWar(dependsOn: copyJwalaDependenciesToTomcatLib, type: Copy)
     into file("$buildDir/$tomcatDir/data/webapps")
 }
 
-
-
-
 /*task createJwalaDb{
     Class.forName("org.h2.Driver")
     groovy.sql.Sql sql = Sql.newInstance(
@@ -69,34 +66,33 @@ task copyJwalaWebappWar(dependsOn: copyJwalaDependenciesToTomcatLib, type: Copy)
 }
 */
 
-task zipJwalaTomcat(dependsOn: copyJwalaWebappWar, type:Zip) {
+task zipJwalaTomcat(dependsOn: copyJwalaWebappWar, type: Zip) {
     from "$buildDir/$tomcatDir"
     baseName = 'jwala-tomcat'
     into "$tomcatDir"// note that this specifies path *in* the archive
     destinationDir file("$buildDir") // directory that you want your archive to be placed in
- }
-
+}
 
 //copyWar.dependsOn downloadAndUnzipTomcat, copyConfigurationOverrides, copyJwalaDependenciesToTomcatLib
 
 plugins.withType(MavenPublishPlugin).whenPluginAdded {
-		publishing {
-			repositories {
-				maven {
-					url project.properties['publishRepoUrl']
-					credentials {
-						username project.properties['publishRepoUser']
-						password project.properties['publishRepoPassword']
-					}
-				}
-			}
-	
-			publications {
-				mavenJava(MavenPublication) {
-					// from components.java
-					artifact file("$buildDir/jwala-tomcat*")
-				}
-			}
-		}
-	}
+    publishing {
+        repositories {
+            maven {
+                url project.properties['publishRepoUrl']
+                credentials {
+                    username project.properties['publishRepoUser']
+                    password project.properties['publishRepoPassword']
+                }
+            }
+        }
+
+        publications {
+            mavenJava(MavenPublication) {
+                // from components.java
+                artifact file("$buildDir/jwala-tomcat*")
+            }
+        }
+    }
+}
 
