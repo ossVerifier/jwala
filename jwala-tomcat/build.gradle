@@ -81,9 +81,13 @@ task copyJwalaDependenciesToTomcatLib(dependsOn: copyTomcatExtras, type: Copy) {
 }
 
 task copyJwalaWebappWar(dependsOn: copyJwalaDependenciesToTomcatLib, type: Copy) {
+    project(':jwala-webapp') {
+        dependsOn(build)
+    }
     from project(':jwala-webapp').file("build/libs")
     into file("$buildDir/$tomcatDir/data/webapps")
 }
+
 
 task copySql(dependsOn: [':jwala-persistence:createDdl', copyJwalaWebappWar], type: Copy) {
     from project(':jwala-persistence').projectDir
