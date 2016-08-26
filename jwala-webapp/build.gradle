@@ -49,6 +49,7 @@ dependencies {
     compile project(":jwala-persistence")
     compile project(":jwala-services")
     compile project(":jwala-webservices")
+    compile project(":jwala-h2-lifecyclelistener")
 
     testCompile group: "org.mockito", name: "mockito-core", version: "$project.versions.mockito"
     testCompile group: 'org.objenesis', name: 'objenesis', version: "$project.versions.objenesis"

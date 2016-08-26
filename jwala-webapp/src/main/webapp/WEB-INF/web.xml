@@ -25,6 +25,10 @@
         <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
     </listener>
 
+    <listener>
+        <listener-class>com.cerner.jwala.listener.H2ServletContextListener</listener-class>
+    </listener>
+
     <!-- Session will not timeout for TOC -->
 	<session-config>
 	    <session-timeout>1440</session-timeout>
