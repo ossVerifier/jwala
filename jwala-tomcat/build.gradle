@@ -2,16 +2,24 @@ apply plugin: 'de.undercouch.download'
 
 import de.undercouch.gradle.tasks.download.Download
 
+configurations {
+    compile {
+        description = 'compile classpath'
+        transitive = false
+    }
+}
+
 dependencies {
-    compile 'com.cerner.cto.stp.chef.toc.libs:catalina-jmx-remote@jar'
+    //compile 'com.cerner.cto.stp.chef.toc.libs:catalina-jmx-remote@jar'
     compile(group: 'commons-httpclient', name: 'commons-httpclient', version: '3.1')
     compile(group: 'commons-collections', name: 'commons-collections', version: '3.2.2')
     compile(group: 'com.cerner.cto.cac', name: 'CommonSecurity', version: '4.0.0800.05')
     compile(group: 'commons-lang', name: 'commons-lang', version: '2.6')
     compile(group: 'commons-logging', name: 'commons-logging', version: '1.1.1')
     compile(group: 'org.owasp.esapi', name: 'esapi', version: '2.0.1')
+    compile(group: "com.h2database", name: "h2", version: "$project.versions.h2")
 }
-def tomcatDir = new File("${tomcatBinaryUrl}").getName().split('.zip')[0]
+
 
 buildscript {
     repositories { jcenter() }
@@ -20,7 +28,7 @@ buildscript {
 
 task downloadTomcat(type: Download) {
     src "${tomcatBinaryUrl}"
-    dest new File(buildDir, 'apache-tomcat-7.0.55.zip')
+    dest new File(buildDir, new File("${tomcatBinaryUrl}").getName())
 }
 
 task downloadAndUnzipTomcat(dependsOn: downloadTomcat, type: Copy) {
@@ -28,20 +36,67 @@ task downloadAndUnzipTomcat(dependsOn: downloadTomcat, type: Copy) {
     into buildDir
 }
 
-task copyOverrides(type: Copy) {
+task deleteDownladedZip(dependsOn: downloadAndUnzipTomcat, type: Delete){
+    delete new File("$buildDir", new File("${tomcatBinaryUrl}").getName())
+}
+
+task copyConfigurationOverrides(dependsOn: deleteDownladedZip, type: Copy) {
     from('src/main/resources')
     into("$buildDir/$tomcatDir")
 }
 
-task copyWar(type: Copy) {
+task copyJwalaDependenciesToTomcatLib(dependsOn: copyConfigurationOverrides, type: Copy) {
+    from configurations.compile
+    into("$buildDir/$tomcatDir/lib")
+}
+
+task copyJwalaWebappWar(dependsOn: copyJwalaDependenciesToTomcatLib, type: Copy) {
     from project(':jwala-webapp').file("build/libs")
     into file("$buildDir/$tomcatDir/data/webapps")
 }
 
-task packageJwala(type: Copy) {
-    from configurations.testRuntime
-    into("$buildDir/$tomcatDir/lib")
-    //
-}
 
-copyWar.dependsOn downloadAndUnzipTomcat, copyOverrides
+
+
+/*task createJwalaDb{
+    Class.forName("org.h2.Driver")
+    groovy.sql.Sql sql = Sql.newInstance(
+                         'jdbc:h2:tcp://localhost/$buildDir/$tomcatDir/data/h2/toc;LOCK_MODE=0"/>',
+                         'sa',
+                         '',
+                          "org.h2.Driver")
+    sql.execute (':jwala-persistence').file("create.sql")
+}
+*/
+
+task zipJwalaTomcat(dependsOn: copyJwalaWebappWar, type:Zip) {
+    from "$buildDir/$tomcatDir"
+    baseName = 'jwala-tomcat'
+    into "$tomcatDir"// note that this specifies path *in* the archive
+    destinationDir file("$buildDir") // directory that you want your archive to be placed in
+ }
+
+
+//copyWar.dependsOn downloadAndUnzipTomcat, copyConfigurationOverrides, copyJwalaDependenciesToTomcatLib
+
+plugins.withType(MavenPublishPlugin).whenPluginAdded {
+		publishing {
+			repositories {
+				maven {
+					url project.properties['publishRepoUrl']
+					credentials {
+						username project.properties['publishRepoUser']
+						password project.properties['publishRepoPassword']
+					}
+				}
+			}
+	
+			publications {
+				mavenJava(MavenPublication) {
+					// from components.java
+					artifact file("$buildDir/jwala-tomcat*")
+				}
+			}
+		}
+	}
+
