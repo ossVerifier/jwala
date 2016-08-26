@@ -65,6 +65,7 @@ task deleteDownloadedZip(dependsOn: downloadAndUnzipTomcat, type: Delete) {
 
 task copyConfigurationOverrides(dependsOn: deleteDownloadedZip, type: Copy) {
     from('src/main/resources')
+        filter{ it.replaceAll('@@buildVersion@@', "$buildVersion")}
     into("$buildDir/$tomcatDir")
 }
 
@@ -109,25 +110,3 @@ task zipJwalaTomcat(dependsOn: createJwalaDb, type: Zip) {
     into "$tomcatDir"// note that this specifies path *in* the archive
     destinationDir file("$buildDir") // directory that you want your archive to be placed in
 }
-
-plugins.withType(MavenPublishPlugin).whenPluginAdded {
-    publishing {
-        repositories {
-            maven {
-                url project.properties['publishRepoUrl']
-                credentials {
-                    username project.properties['publishRepoUser']
-                    password project.properties['publishRepoPassword']
-                }
-            }
-        }
-
-        publications {
-            mavenJava(MavenPublication) {
-                // from components.java
-                artifact file("$buildDir/jwala-tomcat*")
-            }
-        }
-    }
-}
-
