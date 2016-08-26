@@ -1,4 +1,4 @@
-apply plugin: 'maven-publish'
+//apply plugin: 'maven-publish'
 
 dependencies {
     compile project(":jwala-common")
@@ -74,7 +74,7 @@ task mappingToolHelp (type:JavaExec) {
     args = ["-help"]
 }
 
-publish.dependsOn << createDdl << dropDdl
+//publish.dependsOn << createDdl << dropDdl
 
 
 task enhanceJpaEntities(type: JavaExec) {
