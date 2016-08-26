@@ -42,7 +42,7 @@ var ResourcesConfig = React.createClass({
                                                         title="Upload External Properties"
                                                         show={false}
                                                         okCallback={this.onCreateResourceOkClicked}
-                                                        content={<SelectTemplateFilesWidget ref="selectTemplateFileWidget"/>}/>
+                                                        content={<SelectTemplateFilesWidget ref="selectTemplateFileWidget" getResourceOptions={this.getResourceOptions}/>}/>
                     <ModalDialogBox ref="selectMetaDataAndTemplateFilesModalDlg"
                                     title="Create Resource Template"
                                     show={false}
@@ -63,6 +63,9 @@ var ResourcesConfig = React.createClass({
                                     okLabel="Yes"
                                     cancelLabel="No" />
                 </div>
+    },
+    getResourceOptions: function() {
+        return this.refs.resourceEditor.refs.resourcePane.state.resourceOptions;
     },
     componentDidMount: function() {
         MainArea.unsavedChanges = false;
@@ -166,7 +169,6 @@ var ResourcesConfig = React.createClass({
     },
     createResourceCallback: function(data) {
         if (data.rtreeListMetaData.entity === "extProperties") {
-            $.warningAlert("Only one properties file is allowed to be uploaded for the External Properties. Any existing properties file will be overwritten.", "Warning ", false);
             this.refs.selectTemplateFilesModalDlg.show();
         } else {
             this.refs.selectMetaDataAndTemplateFilesModalDlg.show();
@@ -722,8 +724,13 @@ var SelectTemplateFilesWidget = React.createClass({
         return {invalidTemplateFile: false};
     },
     render: function() {
+        var warningDisplay = null;
+        if (this.props.getResourceOptions().length > 0) {
+            warningDisplay = <div className="Warning"><span className="icon"/><span className="msg">Only one external properties file can be uploaded. Any existing ones file will be overwritten.</span></div>;
+        }
         return <div className="select-meta-data-and-template-files-widget">
                    <form ref="form">
+                       {warningDisplay}
                        <div className={(!this.state.invalidTemplateFile ? "hide " : "") + "error"}>Please select a file</div>
                        <div>
                            <input type="file" ref="templateFile" onChange={this.onTemplateFileChange} name="templateFile">External Properties</input>

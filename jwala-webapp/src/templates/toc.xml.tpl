@@ -13,7 +13,7 @@
           maxActive="150"
           username="sa"
           password=""
-          url="jdbc:h2:tcp://localhost/d:/stp/app/data/h2/toc;LOCK_MODE=0"/>
+          url="jdbc:h2:tcp://localhost:9094/toc;LOCK_MODE=0"/>
 
     <ResourceLink name="jms/toc-cf" global="jms/toc-cf" type="com.tibco.tibjms.TibjmsConnectionFactory" />
 
