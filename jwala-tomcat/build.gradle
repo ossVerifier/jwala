@@ -13,7 +13,6 @@ dependencies {
     compile(group: 'com.cerner.cto.cac', name: 'CommonSecurity', version: '4.0.0800.05')
     compile(group: 'com.cerner.cto.infrastructure', name: 'infrastructure-provided', version: '1.2.1')
     compile(group: 'com.cerner.cto.infrastructure', name: 'infrastructure-security', version: '1.2.1')
-    // TODO add LifecycleListener-1.0.jar
 
     compile(group: 'commons-collections', name: 'commons-collections', version: '3.2.2')
     compile(group: 'commons-httpclient', name: 'commons-httpclient', version: '3.1')
@@ -80,16 +79,12 @@ task copyJwalaWebappWar(dependsOn: copyJwalaDependenciesToTomcatLib, type: Copy)
     into file("$buildDir/$tomcatDir/data/webapps")
 }
 
-/*task createJwalaDb{
-    Class.forName("org.h2.Driver")
-    groovy.sql.Sql sql = Sql.newInstance(
-                         'jdbc:h2:tcp://localhost/$buildDir/$tomcatDir/data/h2/toc;LOCK_MODE=0"/>',
-                         'sa',
-                         '',
-                          "org.h2.Driver")
-    sql.execute (':jwala-persistence').file("create.sql")
+task copySql(dependsOn: [':jwala-persistence:createDdl', copyJwalaWebappWar], type: Copy) {
+    from project(':jwala-persistence').projectDir
+    include 'create.sql'
+    include 'update.sql'
+    into file("$buildDir/$tomcatDir/data/db")
 }
-*/
 
 task zipJwalaTomcat(dependsOn: copyJwalaWebappWar, type: Zip) {
     from "$buildDir/$tomcatDir"
@@ -97,8 +92,6 @@ task zipJwalaTomcat(dependsOn: copyJwalaWebappWar, type: Zip) {
     into "$tomcatDir"// note that this specifies path *in* the archive
     destinationDir file("$buildDir") // directory that you want your archive to be placed in
 }
-
-//copyWar.dependsOn downloadAndUnzipTomcat, copyConfigurationOverrides, copyJwalaDependenciesToTomcatLib
 
 plugins.withType(MavenPublishPlugin).whenPluginAdded {
     publishing {
