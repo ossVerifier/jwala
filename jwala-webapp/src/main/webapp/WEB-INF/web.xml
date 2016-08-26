@@ -2,6 +2,11 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
          version="3.0">
+
+    <listener>
+        <listener-class>com.cerner.jwala.listener.H2ServletContextListener</listener-class>
+    </listener>
+
     <!-- Configure ContextLoaderListener to use AnnotationConfigWebApplicationContext instead of the default XmlWebApplicationContext -->
     <context-param>
         <param-name>contextClass</param-name>
@@ -23,10 +28,6 @@
     <!-- Bootstrap the root application context as usual using ContextLoaderListener -->
     <listener>
         <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
-    </listener>
-
-    <listener>
-        <listener-class>com.cerner.jwala.listener.H2ServletContextListener</listener-class>
     </listener>
 
     <!-- Session will not timeout for TOC -->
