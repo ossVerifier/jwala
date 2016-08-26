@@ -78,6 +78,7 @@ public class H2Service implements DbService {
     private boolean init() {
         try {
             h2TcpServer = Server.createTcpServer(tcpServerParams.replaceAll(" ", "").split(","));
+            LOGGER.info("Created H2 TCP server with the following parameters: {}", tcpServerParams);
         } catch (final SQLException e) {
             LOGGER.error("Failed to create H2 TCP Server!", e);
             return false;
@@ -85,6 +86,7 @@ public class H2Service implements DbService {
 
         try {
             h2WebServer = Server.createWebServer(webServerParams.replaceAll(" ", "").split(","));
+            LOGGER.info("Created H2 web server with the following parameters: {}", webServerParams);
         } catch (final SQLException e) {
             LOGGER.error("Failed to create H2 Web Server!", e);
             return false;
