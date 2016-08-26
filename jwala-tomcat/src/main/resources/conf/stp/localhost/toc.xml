@@ -19,18 +19,39 @@
 <Context docBase="${catalina.home}/data/webapps/jwala-webapp-@@buildVersion@@.war"
 >
 
-        <Loader className="org.apache.catalina.loader.VirtualWebappLoader"
-                virtualClasspath="${catalina.home}/data/conf"/>
-<Listener className="com.siemens.hosting.epm.lifecycleListener.H2LifecycleListener" />
+    <Loader className="org.apache.catalina.loader.VirtualWebappLoader"
+            virtualClasspath="${catalina.home}/data/conf"/>
+    <Listener className="com.siemens.hosting.epm.lifecycleListener.H2LifecycleListener"/>
     <Resource name="jdbc/toc-xa"
-          auth="Container"
-          type="javax.sql.DataSource"
-          factory="org.apache.tomcat.jdbc.pool.DataSourceFactory"
-		  driverClassName="org.h2.Driver"
-		  uniqueResourceName="toc_datasource"
-		  minIdle="10"
-          maxActive="150"
-          username="sa"
-          password=""
-          url="jdbc:h2:tcp://localhost:9094/toc;LOCK_MODE=0"/>
+              auth="Container"
+              type="javax.sql.DataSource"
+              factory="org.apache.tomcat.jdbc.pool.DataSourceFactory"
+              driverClassName="org.h2.Driver"
+              uniqueResourceName="toc_datasource"
+              minIdle="10"
+              maxActive="150"
+              username="sa"
+              password=""
+              url="jdbc:h2:tcp://localhost:9094/toc;LOCK_MODE=0"/>
+
+    <Resource name="jms/toc-status"
+              auth="Container"
+              factory="org.apache.naming.factory.BeanFactory"
+              type="com.tibco.tibjms.TibjmsTopic"
+              address="com.cerner.entp.N9SF.LTST.private.stp.toc.status-USMLVV1CDS0044"/>
+
+    <Resource auth="Container"
+              name="jms/toc-cf"
+              factory="org.apache.naming.factory.BeanFactory"
+              type="com.tibco.tibjms.TibjmsConnectionFactory"
+              serverUrl="ssl://USMLVV1CTO924:7243"
+              userName="admin"
+              userPassword="${enc:9hQ4KpxpM8e/VX3KkT2VYg==}"
+              connAttemptCount="1"
+              connAttemptDelay="1000"
+              reconnAttemptCount="1"
+              reconnAttemptDelay="1000"
+              SSLEnableVerifyHost="true"
+              SSLEnableVerifyHostName="false"
+              SSLTrustedCertificate="${catalina.home}/data/security/ems/ctorootca.pem"/>
 </Context>
