@@ -10,7 +10,7 @@ configurations {
 }
 
 dependencies {
-    //compile 'com.cerner.cto.stp.chef.toc.libs:catalina-jmx-remote@jar'
+    compile(group: 'org.apache.tomcat', name: 'tomcat-catalina-jmx-remote', version: '7.0.55')
     compile(group: 'commons-httpclient', name: 'commons-httpclient', version: '3.1')
     compile(group: 'commons-collections', name: 'commons-collections', version: '3.2.2')
     compile(group: 'com.cerner.cto.cac', name: 'CommonSecurity', version: '4.0.0800.05')
