@@ -86,7 +86,9 @@ subprojects {
                 mavenJava(MavenPublication) {
                     if (project.name.equals('jwala-webapp')) {
                         from components.web
-                    } else {
+                    }else if (project.name.equals('jwala-tomcat')) {
+                        artifact zipJwalaTomcat
+                    }else {
                         from components.java
                     }
                     if (project.name.equals('jwala-persistence')) {
