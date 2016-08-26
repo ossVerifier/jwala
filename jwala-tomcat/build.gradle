@@ -10,8 +10,6 @@ configurations {
 }
 
 dependencies {
-//    TODO compile'com.cerner.cto.stp.chef.toc.libs:catalina-jmx-remote'
-//    https://artifactory/artifactory/simple/cto-ext-release-local/com/cerner/cto/stp/chef/toc/libs/catalina-jmx-remote.jar
     compile(group: 'com.cerner.cto.cac', name: 'CommonSecurity', version: '4.0.0800.05')
     compile(group: 'com.cerner.cto.infrastructure', name: 'infrastructure-provided', version: '1.2.1')
     compile(group: 'com.cerner.cto.infrastructure', name: 'infrastructure-security', version: '1.2.1')
@@ -59,6 +57,7 @@ task downloadAndUnzipTomcat(dependsOn: downloadTomcat, type: Copy) {
 
 task deleteDownloadedZip(dependsOn: downloadAndUnzipTomcat, type: Delete) {
     delete new File("$buildDir", new File("${tomcatBinaryUrl}").getName())
+    delete new File("$buildDir/$tomcatDir", 'webapps')
 }
 
 task copyConfigurationOverrides(dependsOn: deleteDownloadedZip, type: Copy) {
