@@ -1,15 +1,19 @@
 apply plugin: 'de.undercouch.download'
 
 import de.undercouch.gradle.tasks.download.Download
+import groovy.sql.Sql
 
 configurations {
     compile {
         description = 'compile classpath'
         transitive = false
     }
+    jdbcdriver
 }
 
 dependencies {
+    jdbcdriver "com.h2database:h2:$project.versions.h2"
+
     compile(group: 'com.cerner.cto.cac', name: 'CommonSecurity', version: '4.0.0800.05')
     compile(group: 'com.cerner.cto.infrastructure', name: 'infrastructure-provided', version: '1.2.1')
     compile(group: 'com.cerner.cto.infrastructure', name: 'infrastructure-security', version: '1.2.1')
@@ -85,6 +89,19 @@ task copySql(dependsOn: [':jwala-persistence:createDdl', copyJwalaWebappWar], ty
     include 'create.sql'
     include 'update.sql'
     into file("$buildDir/$tomcatDir/data/db")
+}
+
+task createJwalaDb {
+    configurations.jdbcdriver.files.each {
+        Sql.classLoader.addURL(it.toURI().toURL())
+    }
+
+    def sql = Sql.newInstance(
+            "jdbc:h2:file://$buildDir/$tomcatDir/data/db/toc;LOCK_MODE=0",
+            'sa',
+            '',
+            'org.h2.Driver')
+    sql.execute(file("$buildDir/$tomcatDir/data/db/create.sql").text)
 }
 
 task zipJwalaTomcat(dependsOn: copyJwalaWebappWar, type: Zip) {
