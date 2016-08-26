@@ -66,17 +66,15 @@ task copyConfigurationOverrides(dependsOn: deleteDownloadedZip, type: Copy) {
     into("$buildDir/$tomcatDir")
 }
 
-task copyJwalaDependenciesToTomcatLib(dependsOn: copyConfigurationOverrides, type: Copy) {
+task copyTomcatExtras(dependsOn: copyConfigurationOverrides, type: Download) {
+    src 'http://archive.apache.org/dist/tomcat/tomcat-7/v7.0.55/bin/extras/catalina-jmx-remote.jar'
+    dest new File("$buildDir/$tomcatDir/lib", "catalina-jmx-remote.jar")
+}
+
+task copyJwalaDependenciesToTomcatLib(dependsOn: copyTomcatExtras, type: Copy) {
     from configurations.compile
     into("$buildDir/$tomcatDir/lib")
 }
-
-// TODO catalina-jmx-remote
-// TODO you know what? let's unzip this thing and see if we can't find the equivalent jmx-remote jar
-//task copyJwalaDependenciesToTomcatLibTEMP(type: Download) {
-//    src 'https://artifactory/artifactory/simple/cto-ext-release-local/com/cerner/cto/stp/chef/toc/libs/catalina-jmx-remote.jar'
-//    dest new File("$buildDir/$tomcatDir/lib", "catalina-jmx-remote.jar")
-//}
 
 task copyJwalaWebappWar(dependsOn: copyJwalaDependenciesToTomcatLib, type: Copy) {
     from project(':jwala-webapp').file("build/libs")
