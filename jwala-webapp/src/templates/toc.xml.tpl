@@ -5,7 +5,7 @@
 
     <Listener className="com.cerner.jwala.tomcat.listener.db.h2.H2LifeCycleListener"
               tcpServerParam="-tcpPort,9094,-tcpAllowOthers,-baseDir,${catalina.base}\\data\\db"
-              webServerParam="-webSSL,-webPort,8084,-webAllowOthers,-baseDir,${catalina.base}\\data\\db"/>
+              webServerParam="-webSSL,-webPort,8084,-webAllowOthers"/>
 
     <Resource name="jdbc/toc-xa"
           auth="Container"
