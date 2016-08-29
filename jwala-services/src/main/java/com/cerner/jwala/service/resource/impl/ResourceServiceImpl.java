@@ -129,18 +129,15 @@ public class ResourceServiceImpl implements ResourceService {
         final ObjectMapper mapper = new ObjectMapper();
         final ResourceTemplateMetaData resourceTemplateMetaData;
         final CreateResourceResponseWrapper responseWrapper;
-        Scanner scanner = new Scanner(templateData).useDelimiter("\\A");
-        String templateContent = scanner.hasNext() ? scanner.next() : "";
-
+        String templateContent = "";
 
         try {
             resourceTemplateMetaData = mapper.readValue(IOUtils.toString(metaData), ResourceTemplateMetaData.class);
             if (resourceTemplateMetaData.getContentType().equals(ContentType.APPLICATION_BINARY.contentTypeStr)) {
-                // TODO create new API that doesn't use UploadWebArchiveRequest - just do this for now
-                Application fakedApplication = new Application(new Identifier<Application>(0L), resourceTemplateMetaData.getDeployFileName(), resourceTemplateMetaData.getDeployPath(), "", null, true, true, false, resourceTemplateMetaData.getDeployFileName());
-                UploadWebArchiveRequest uploadWebArchiveRequest = new UploadWebArchiveRequest(fakedApplication, resourceTemplateMetaData.getDeployFileName(), -1L, new ByteArrayInputStream(templateContent.getBytes()));
-                RepositoryFileInformation fileInfo = privateApplicationService.uploadWebArchiveData(uploadWebArchiveRequest);
-                templateContent = fileInfo.getPath().toString();
+                templateContent = uploadResource(resourceTemplateMetaData, templateData);
+            } else {
+                Scanner scanner = new Scanner(templateData).useDelimiter("\\A");
+                templateContent = scanner.hasNext() ? scanner.next() : "";
             }
 
             // Let's create the template!
