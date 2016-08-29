@@ -12,7 +12,7 @@ import javax.servlet.ServletContextListener;
 /**
  * A listener that start H2 when the application is initialized and stops h2 when the application is destroyed
  *
- * Created by JC043760 on 8/25/2016.
+ * Created by JC043760 on 8/25/2016
  */
 public class H2ServletContextListener implements ServletContextListener {
 
