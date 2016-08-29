@@ -27,10 +27,10 @@ public class H2LifeCycleListener implements LifecycleListener {
         }
 
         final LifecycleState lifecycleState = event.getLifecycle().getState();
-        if (LifecycleState.STARTING_PREP.equals(lifecycleState) && !dbService.isRunning()) {
+        if (LifecycleState.STARTING_PREP.equals(lifecycleState) && !dbService.isServerRunning()) {
             LOGGER.info("Initializing H2 on Tomcat lifecyle: {}", lifecycleState);
             dbService.startServer();
-        } else if (LifecycleState.DESTROYING.equals(lifecycleState) && dbService.isRunning()) {
+        } else if (LifecycleState.DESTROYING.equals(lifecycleState) && dbService.isServerRunning()) {
             LOGGER.info("Destroying H2 on Tomcat lifecyle: {}", lifecycleState);
             dbService.stopServer();
         }

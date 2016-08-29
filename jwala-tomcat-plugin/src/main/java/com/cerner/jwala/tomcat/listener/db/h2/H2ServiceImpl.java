@@ -82,7 +82,7 @@ public class H2ServiceImpl implements DbService {
     }
 
     @Override
-    public boolean isRunning() {
+    public boolean isServerRunning() {
         return !(h2TcpServer == null || h2WebServer == null) && h2TcpServer.isRunning(true) && h2WebServer.isRunning(true);
     }
 

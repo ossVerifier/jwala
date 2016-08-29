@@ -11,5 +11,5 @@ public interface DbService {
 
     void stopServer();
 
-    boolean isRunning();
+    boolean isServerRunning();
 }
