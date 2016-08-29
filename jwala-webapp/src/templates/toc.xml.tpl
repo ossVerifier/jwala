@@ -3,6 +3,10 @@
     <Loader className="org.apache.catalina.loader.VirtualWebappLoader"
             virtualClasspath="\\{STP_HOME}/app/data/toc/conf"/>
 
+    <Listener className="com.cerner.jwala.tomcat.listener.db.h2.H2LifeCycleListener"
+              tcpServerParam="-tcpPort,9094,-tcpAllowOthers,-baseDir,D:\\stp\\app\\instances\\CTO-N9SF-LTST-TOC\\data\\h2"
+              webServerParam="-webSSL,-webPort,8084,-webAllowOthers,-baseDir,D:\\stp\\app\\instances\\CTO-N9SF-LTST-TOC\\data\\h2"/>
+
     <Resource name="jdbc/toc-xa"
           auth="Container"
           type="javax.sql.DataSource"
