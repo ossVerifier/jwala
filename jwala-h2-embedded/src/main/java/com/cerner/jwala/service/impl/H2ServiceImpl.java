@@ -16,7 +16,7 @@ public class H2ServiceImpl implements DbService {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(H2ServiceImpl.class);
     private static final String DEFAULT_TCP_SERVER_PARAMS = "-tcpPort,9094,-tcpAllowOthers";
-    private static final String DEFAULT_WEBSERVER_PARAM = "-webSSL,-webPort,8084,-webAllowOthers";
+    private static final String DEFAULT_WEBSERVER_PARAM = "-webSSL,-webPort,8084";
 
     private boolean serviceInitialized;
 
