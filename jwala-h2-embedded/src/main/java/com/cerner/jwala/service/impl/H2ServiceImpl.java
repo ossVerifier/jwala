@@ -1,6 +1,7 @@
 package com.cerner.jwala.service.impl;
 
 import com.cerner.jwala.service.DbService;
+import com.cerner.jwala.service.DbServiceException;
 import org.h2.tools.Server;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,12 +30,14 @@ public class H2ServiceImpl implements DbService {
     public H2ServiceImpl(final String tcpServerParams, final String webServerParams) {
         if (tcpServerParams == null) {
             this.tcpServerParams = DEFAULT_TCP_SERVER_PARAMS;
+            LOGGER.warn("tcpServerParams is null, loading default tcpServerParams values \"{}\"", DEFAULT_TCP_SERVER_PARAMS);
         } else {
             this.tcpServerParams = tcpServerParams;
         }
 
         if (webServerParams == null) {
             this.webServerParams = DEFAULT_WEBSERVER_PARAM;
+            LOGGER.warn("webServerParams is null, loading default webServerParams values \"{}\"", DEFAULT_WEBSERVER_PARAM);
         } else {
             this.webServerParams = webServerParams;
         }
@@ -54,6 +57,7 @@ public class H2ServiceImpl implements DbService {
                     LOGGER.info("H2 TCP server started");
                 } catch (final SQLException e) {
                     LOGGER.error("Failed to start H2 TCP server!", e);
+                    throw new DbServiceException(e);
                 }
             }
 
