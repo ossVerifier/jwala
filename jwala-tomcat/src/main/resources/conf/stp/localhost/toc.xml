@@ -21,7 +21,6 @@
 
     <Loader className="org.apache.catalina.loader.VirtualWebappLoader"
             virtualClasspath="${catalina.home}/data/conf"/>
-    <Listener className="com.siemens.hosting.epm.lifecycleListener.H2LifecycleListener"/>
     <Resource name="jdbc/toc-xa"
               auth="Container"
               type="javax.sql.DataSource"
@@ -33,25 +32,25 @@
               username="sa"
               password=""
               url="jdbc:h2:tcp://localhost:9094/toc;LOCK_MODE=0"/>
-
-    <Resource name="jms/toc-status"
+                 <Resource name="jms/toc-status"
               auth="Container"
               factory="org.apache.naming.factory.BeanFactory"
               type="com.tibco.tibjms.TibjmsTopic"
               address="com.cerner.entp.N9SF.LTST.private.stp.toc.status-USMLVV1CDS0044"/>
+    
+    
+    <ResourceLink name="jms/toc-cf" global="jms/toc-cf" type="com.tibco.tibjms.TibjmsConnectionFactory" />
 
-    <Resource auth="Container"
-              name="jms/toc-cf"
-              factory="org.apache.naming.factory.BeanFactory"
-              type="com.tibco.tibjms.TibjmsConnectionFactory"
-              serverUrl="ssl://USMLVV1CTO924:7243"
-              userName="admin"
-              userPassword="${enc:9hQ4KpxpM8e/VX3KkT2VYg==}"
-              connAttemptCount="1"
-              connAttemptDelay="1000"
-              reconnAttemptCount="1"
-              reconnAttemptDelay="1000"
-              SSLEnableVerifyHost="true"
-              SSLEnableVerifyHostName="false"
-              SSLTrustedCertificate="${catalina.home}/data/security/ems/ctorootca.pem"/>
+    <Resource name="jms/toc-status"
+          auth="Container"
+          factory="org.apache.naming.factory.BeanFactory"
+          type="com.tibco.tibjms.TibjmsTopic"
+          address="com.cerner.entp.N9SF.LTST.private.stp.toc.status-USMLVV1CDS0044"/>
+
+    <Resource name="jms/toc-state-notification"
+          auth="Container"
+          factory="org.apache.naming.factory.BeanFactory"
+          type="com.tibco.tibjms.TibjmsTopic"
+          address="com.cerner.entp.N9SF.LTST.private.stp.toc.jvm-notification-USMLVV1CDS0044"/>
+
 </Context>
