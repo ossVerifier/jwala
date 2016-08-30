@@ -1,6 +1,6 @@
-package com.cerner.jwala.tomcat.listener.db.h2;
+package com.cerner.jwala.service.impl;
 
-import com.cerner.jwala.tomcat.listener.db.DbService;
+import com.cerner.jwala.service.DbService;
 import org.h2.tools.Server;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

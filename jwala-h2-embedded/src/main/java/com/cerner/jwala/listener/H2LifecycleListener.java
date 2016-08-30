@@ -1,6 +1,7 @@
-package com.cerner.jwala.tomcat.listener.db.h2;
+package com.cerner.jwala.listener;
 
-import com.cerner.jwala.tomcat.listener.db.DbService;
+import com.cerner.jwala.service.DbService;
+import com.cerner.jwala.service.impl.H2ServiceImpl;
 import org.apache.catalina.LifecycleEvent;
 import org.apache.catalina.LifecycleListener;
 import org.apache.catalina.LifecycleState;
