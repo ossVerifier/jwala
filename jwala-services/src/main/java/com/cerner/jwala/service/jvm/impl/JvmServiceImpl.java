@@ -319,7 +319,7 @@ public class JvmServiceImpl implements JvmService {
 
             // create the tar file
             //
-            final String jvmConfigJar = generateJvmConfigJar(jvm.getJvmName());
+            final String jvmConfigJar = generateJvmConfigJar(jvm);
 
             // copy the tar file
             secureCopyJvmConfigJar(jvm, jvmConfigJar, user);
@@ -393,7 +393,8 @@ public class JvmServiceImpl implements JvmService {
         }
     }
 
-    protected String generateJvmConfigJar(String jvmName) {
+    protected String generateJvmConfigJar(Jvm jvm) throws CommandFailureException {
+        String jvmName = jvm.getJvmName();
         LOGGER.info("Generating JVM configuration tar for {}", jvmName);
         final String jvmGeneratedResourcesTempDir = ApplicationProperties.get("paths.generated.resource.dir");
         String jvmResourcesNameDir = jvmGeneratedResourcesTempDir + "/" + jvmName;
@@ -425,8 +426,16 @@ public class JvmServiceImpl implements JvmService {
 
             // copy the start and stop scripts to the instances/jvm/bin directory
             final String commandsScriptsPath = ApplicationProperties.get("commands.scripts-path");
-            FileUtils.copyFileToDirectory(new File(commandsScriptsPath + "/" + AemControl.Properties.START_SCRIPT_NAME.getValue()), new File(destDirPath + "/bin"));
-            FileUtils.copyFileToDirectory(new File(commandsScriptsPath + "/" + AemControl.Properties.STOP_SCRIPT_NAME.getValue()), new File(destDirPath + "/bin"));
+            final File generatedJvmDestDirBin = new File(destDirPath + "/bin");
+            FileUtils.copyFileToDirectory(new File(commandsScriptsPath + "/" + AemControl.Properties.START_SCRIPT_NAME.getValue()), generatedJvmDestDirBin);
+            FileUtils.copyFileToDirectory(new File(commandsScriptsPath + "/" + AemControl.Properties.STOP_SCRIPT_NAME.getValue()), generatedJvmDestDirBin);
+
+            // make sure the scripts are executable
+            if (!jvmControlService.changeFileMode(jvm, "a+x", generatedJvmDestDirBin.getAbsolutePath(), "*.sh").getReturnCode().wasSuccessful()) {
+                String message = "Failed to change the file permissions in " + generatedJvmDestDirBin + " for " + jvmName;
+                LOGGER.error(message);
+                throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, message);
+            }
 
             // create the logs directory
             createDirectory(destDirPath + "/logs");

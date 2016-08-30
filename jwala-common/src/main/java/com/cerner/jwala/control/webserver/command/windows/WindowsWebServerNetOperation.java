@@ -79,7 +79,9 @@ public enum WindowsWebServerNetOperation implements ServiceCommandBuilder {
     CHANGE_FILE_MODE(WebServerControlOperation.CHANGE_FILE_MODE) {
         @Override
         public ExecCommand buildCommandForService(String aServiceName, String... aParams) {
-            return new ExecCommand("/usr/bin/chmod " + aParams[0] + " " + aParams[1] + "/" + aParams[2] + "; pushd " + aParams[0] + "; /usr/bin/sed -i 's/\\r//' " + aParams[1] +"; popd");
+            final String directory = aParams[1].replaceAll("\\\\","/");
+            String cygwinDir = "`" + CYGPATH.toString() + " " + directory + "`";
+            return new ExecCommand("/usr/bin/chmod " + aParams[0] + " " + cygwinDir + "/" + aParams[2] + "; pushd " + cygwinDir + "; /usr/bin/sed -i 's/\\r//' " + aParams[2] +"; popd");
         }
     },
     CHECK_FILE_EXISTS(WebServerControlOperation.CHECK_FILE_EXISTS) {
