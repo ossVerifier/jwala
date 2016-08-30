@@ -12,6 +12,6 @@
             location="file:${PROPERTIES_ROOT_PATH}/vars.properties"
             ignore-unresolvable="true"/>
 
-    <bean id="h2Service" class="com.cerner.jwala.service.impl.H2ServiceImpl"/>
+    <bean id="h2Service" class="com.cerner.jwala.service.impl.bean.H2ServiceImpl"/>
 
 </beans>

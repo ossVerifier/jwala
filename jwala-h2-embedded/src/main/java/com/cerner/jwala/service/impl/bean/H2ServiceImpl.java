@@ -1,4 +1,4 @@
-package com.cerner.jwala.service.impl;
+package com.cerner.jwala.service.impl.bean;
 
 import com.cerner.jwala.service.DbService;
 import org.h2.tools.Server;
