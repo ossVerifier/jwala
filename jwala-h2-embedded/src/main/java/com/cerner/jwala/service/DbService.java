@@ -10,4 +10,6 @@ public interface DbService {
     void startServer();
 
     void stopServer();
+
+    boolean isServerRunning();
 }

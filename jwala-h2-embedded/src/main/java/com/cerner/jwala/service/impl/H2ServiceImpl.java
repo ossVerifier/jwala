@@ -70,6 +70,11 @@ public class H2ServiceImpl implements DbService {
         }
     }
 
+    @Override
+    public boolean isServerRunning() {
+        throw new UnsupportedOperationException();
+    }
+
     /**
      * Create the H2 servers
      *
