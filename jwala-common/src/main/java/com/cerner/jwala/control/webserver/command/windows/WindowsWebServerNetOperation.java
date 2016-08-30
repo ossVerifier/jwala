@@ -7,10 +7,10 @@ import com.cerner.jwala.common.properties.ApplicationProperties;
 import com.cerner.jwala.control.AemControl;
 import com.cerner.jwala.control.command.ServiceCommandBuilder;
 
-import static com.cerner.jwala.control.AemControl.Properties.*;
-
 import java.util.EnumMap;
 import java.util.Map;
+
+import static com.cerner.jwala.control.AemControl.Properties.*;
 
 public enum WindowsWebServerNetOperation implements ServiceCommandBuilder {
 
@@ -79,7 +79,7 @@ public enum WindowsWebServerNetOperation implements ServiceCommandBuilder {
     CHANGE_FILE_MODE(WebServerControlOperation.CHANGE_FILE_MODE) {
         @Override
         public ExecCommand buildCommandForService(String aServiceName, String... aParams) {
-            return new ExecCommand("/usr/bin/chmod " + aParams[0] + " " + aParams[1] + "/" + aParams[2]);
+            return new ExecCommand("/usr/bin/chmod " + aParams[0] + " " + aParams[1] + "/" + aParams[2] + "; pushd " + aParams[0] + "; /usr/bin/sed -i 's/\\r//' " + aParams[1] +"; popd");
         }
     },
     CHECK_FILE_EXISTS(WebServerControlOperation.CHECK_FILE_EXISTS) {

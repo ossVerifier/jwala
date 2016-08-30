@@ -397,6 +397,8 @@ public class JvmServiceImpl implements JvmService {
         LOGGER.info("Generating JVM configuration tar for {}", jvmName);
         final String jvmGeneratedResourcesTempDir = ApplicationProperties.get("paths.generated.resource.dir");
         String jvmResourcesNameDir = jvmGeneratedResourcesTempDir + "/" + jvmName;
+        LOGGER.debug("generated resources dir: {}", jvmGeneratedResourcesTempDir);
+        LOGGER.debug("generated JVM directory location: {}", jvmResourcesNameDir);
 
         final File generatedDir = new File("./" + jvmName);
         try {
@@ -405,6 +407,7 @@ public class JvmServiceImpl implements JvmService {
             final String destDirPath = generatedDir.getAbsolutePath();
 
             // Copy the templates that would be included in the JAR file.
+            LOGGER.debug("location of template srcDir: {}", srcDir);
             LOGGER.debug("location of template copy: {}", destDirPath);
             for (String dirPath : srcDir.list()) {
                 final File srcChild = new File(srcDir + "/" + dirPath);
@@ -416,6 +419,7 @@ public class JvmServiceImpl implements JvmService {
             }
             final String generatedText = generateInvokeBat(jvmName);
             final String invokeBatDir = generatedDir + "/bin";
+            LOGGER.debug("generated invoke.bat text: {}", generatedText);
             LOGGER.debug("generating template in location: {}", invokeBatDir + "/" + CONFIG_FILENAME_INVOKE_BAT);
             createConfigFile(invokeBatDir + "/", CONFIG_FILENAME_INVOKE_BAT, generatedText);
 
@@ -438,6 +442,7 @@ public class JvmServiceImpl implements JvmService {
         String jvmConfigTar = jvmName + CONFIG_JAR;
         JarOutputStream target;
         final String configJarPath = jvmGeneratedResourcesTempDir + "/" + jvmConfigTar;
+        LOGGER.info("Creating JVM jar {}", configJarPath);
         try {
             final File jvmResourcesDirFile = new File(jvmGeneratedResourcesTempDir);
             if (!jvmResourcesDirFile.exists() && !jvmResourcesDirFile.mkdir()) {

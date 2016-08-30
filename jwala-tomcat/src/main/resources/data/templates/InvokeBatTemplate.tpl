@@ -2,7 +2,7 @@
 set svc_username=%1
 set svc_password=%2
 
-CALL ${remote.paths.instances}\\${jvm.jvmName}\bin\setenv.bat
+CALL ${vars['remote.paths.instances']}\\${jvm.jvmName}\bin\setenv.bat
 
 ECHO Install the service
 CMD /C ${remote.paths.tomcat.core}\bin\service.bat install ${jvm.jvmName}
