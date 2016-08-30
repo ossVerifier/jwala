@@ -13,9 +13,9 @@ import java.sql.SQLException;
  *
  * Created by JC043760 on 8/25/2016
  */
-public class H2Service implements DbService {
+public class H2ServiceImpl implements DbService {
 
-    private final static Logger LOGGER = LoggerFactory.getLogger(H2Service.class);
+    private final static Logger LOGGER = LoggerFactory.getLogger(H2ServiceImpl.class);
 
     private boolean serviceInitialized;
 
