@@ -12,9 +12,9 @@ import org.slf4j.LoggerFactory;
  *
  * Created by JC043760 on 8/28/2016
  */
-public class H2LifeCycleListener implements LifecycleListener {
+public class H2LifecycleListener implements LifecycleListener {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(H2LifeCycleListener.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(H2LifecycleListener.class);
     private DbService dbService;
 
     private String tcpServerParam;
