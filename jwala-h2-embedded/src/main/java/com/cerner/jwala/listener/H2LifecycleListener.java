@@ -1,7 +1,8 @@
 package com.cerner.jwala.listener;
 
 import com.cerner.jwala.service.DbService;
-import com.cerner.jwala.service.impl.H2ServiceImpl;
+import com.cerner.jwala.service.impl.H2TcpServerServiceImpl;
+import com.cerner.jwala.service.impl.H2WebServerServiceImpl;
 import org.apache.catalina.LifecycleEvent;
 import org.apache.catalina.LifecycleListener;
 import org.apache.catalina.LifecycleState;
@@ -16,24 +17,41 @@ import org.slf4j.LoggerFactory;
 public class H2LifecycleListener implements LifecycleListener {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(H2LifecycleListener.class);
-    private DbService dbService;
+
+    private DbService h2TcpServerService;
+    private DbService h2WebServerService;
 
     private String tcpServerParam;
     private String webServerParam;
 
     @Override
     public void lifecycleEvent(final LifecycleEvent event) {
-        if (dbService == null) {
-            dbService = new H2ServiceImpl(tcpServerParam, webServerParam);
+        final LifecycleState lifecycleState = event.getLifecycle().getState();
+
+        // h2 tcp server
+        if (h2TcpServerService == null) {
+            h2TcpServerService = new H2TcpServerServiceImpl(tcpServerParam);
         }
 
-        final LifecycleState lifecycleState = event.getLifecycle().getState();
-        if (LifecycleState.STARTING_PREP.equals(lifecycleState) && !dbService.isServerRunning()) {
-            LOGGER.info("Initializing H2 on Tomcat lifecyle: {}", lifecycleState);
-            dbService.startServer();
-        } else if (LifecycleState.DESTROYING.equals(lifecycleState) && dbService.isServerRunning()) {
-            LOGGER.info("Destroying H2 on Tomcat lifecyle: {}", lifecycleState);
-            dbService.stopServer();
+        if (LifecycleState.STARTING_PREP.equals(lifecycleState) && !h2TcpServerService.isServerRunning()) {
+            LOGGER.info("Initializing H2 tcp server on Tomcat lifecyle: {}", lifecycleState);
+            h2TcpServerService.startServer();
+        } else if (LifecycleState.DESTROYING.equals(lifecycleState) && h2TcpServerService.isServerRunning()) {
+            LOGGER.info("Destroying H2 tcp server on Tomcat lifecyle: {}", lifecycleState);
+            h2TcpServerService.stopServer();
+        }
+
+        // h2 web server
+        if (h2WebServerService == null) {
+            h2WebServerService = new H2WebServerServiceImpl(webServerParam);
+        }
+
+        if (LifecycleState.STARTING_PREP.equals(lifecycleState) && !h2WebServerService.isServerRunning()) {
+            LOGGER.info("Initializing H2 web server on Tomcat lifecyle: {}", lifecycleState);
+            h2WebServerService.startServer();
+        } else if (LifecycleState.DESTROYING.equals(lifecycleState) && h2WebServerService.isServerRunning()) {
+            LOGGER.info("Destroying H2 web server on Tomcat lifecyle: {}", lifecycleState);
+            h2WebServerService.stopServer();
         }
     }
 
