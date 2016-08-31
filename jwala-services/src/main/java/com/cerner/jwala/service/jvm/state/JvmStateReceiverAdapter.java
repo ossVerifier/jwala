@@ -54,7 +54,7 @@ public class JvmStateReceiverAdapter extends ReceiverAdapter {
     @SuppressWarnings("unchecked")
     public void receive(Message jgroupMessage) {
         final Address src = jgroupMessage.getSrc();
-        final Map<String, Object> serverInfoMap = (Map) jgroupMessage.getObject();
+        final Map serverInfoMap = (Map) jgroupMessage.getObject();
         final JvmState jvmState;
         final String jvmId;
         LOGGER.debug("Received JGroups JVM state message {} {}", src, serverInfoMap);
@@ -62,41 +62,20 @@ public class JvmStateReceiverAdapter extends ReceiverAdapter {
         LifecycleState lifecycleState = (LifecycleState) serverInfoMap.get(STATE_KEY);
         if (lifecycleState == null) {
             // Assume that the message came from the old JGroups listener
-            LOGGER.info("The state key = {} was not found in the lifecycle state map. " +
-                        "Jwala will proceed with the assumption that that the message came from the legacy " +
-                        "JGroups reporting lifecycle listener.", STATE_KEY);
-
-            Object legacyIdKey = null;
-            Object legacyStateKey = null;
+            LOGGER.info("The state key = {} was not found in the lifecycle state map. Proceeding with legacy JGroup message decoding.", STATE_KEY);
             try {
-                // If this if from legacy JGroups reporting lifecycle listener, the key will be of type ReportingJmsMessageKey
-                // found in the infrastructure provided jar which is provided by the container therefore we just iterate
-                // trough the keys to try to look for the "STATE" string. Note: We don't want to use ReportingJmsMessageKey
-                // to make this compatible to containers that do not have infrastructure provided jar hence the key
-                // iteration.
-                for (final Object key: serverInfoMap.keySet()) {
-                    if (legacyIdKey == null && ID_KEY.equalsIgnoreCase(key.toString())) {
-                        legacyIdKey = key;
-                    }
-
-                    if (legacyStateKey == null && STATE_KEY.equalsIgnoreCase(key.toString())) {
-                        legacyStateKey = key;
-                    }
-
-                    if (legacyIdKey != null && legacyStateKey != null) {
-                        break;
-                    }
-                }
-
-                if (legacyStateKey != null) {
-                    jvmId = serverInfoMap.get(legacyIdKey).toString();
-                    jvmState = JvmState.valueOf(serverInfoMap.get(legacyStateKey).toString());
-                } else {
-                    LOGGER.error("Failed to get the legacy key in {}! Cannot extract the lifecycle from the JGroups message.", serverInfoMap);
-                    return;
-                }
-            } catch (final IllegalArgumentException e) {
-                LOGGER.error("Cannot process legacy key = {} since it is not defined in JvmState enum!", legacyStateKey, e);
+                // If the serverInfoMap is from legacy JGroups reporting lifecycle listener, the key will be of type
+                // ReportingJmsMessageKey found in the infrastructure provided jar which is provided by the container.
+                // The said class might not always be present in the future therefore to avoid runtime errors as a result
+                // of using ReportingJmsMessageKey here, we have to use the generic "valueOf" method of java.lang.Enum
+                // to derive the key that will be used to get the value in serverInfoMap.
+                final Enum enumSample = (Enum) serverInfoMap.keySet().iterator().next();
+                final Object legacyIdKey = Enum.valueOf(enumSample.getDeclaringClass(), ID_KEY);
+                final Object legacyStateKey = Enum.valueOf(enumSample.getDeclaringClass(), STATE_KEY);
+                jvmId = serverInfoMap.get(legacyIdKey).toString();
+                jvmState = JvmState.valueOf(serverInfoMap.get(legacyStateKey).toString());
+            } catch (final RuntimeException e) {
+                LOGGER.error("Error processing legacy JGroup message!", e);
                 return;
             }
         } else {
