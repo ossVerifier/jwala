@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.SQLException;
+import java.util.Arrays;
 
 /**
  * Implement {@link DbServerService}
@@ -29,7 +30,7 @@ abstract class AbstractH2ServerServiceImpl implements DbServerService {
     public void startServer() {
         if (server == null) {
             server = createServer(serverParams);
-            logger.info("Created H2 server with the following parameters: {}", serverParams);
+            logger.info("Created H2 server with the following parameters: {}", Arrays.toString(serverParams));
         }
 
         logger.info("Starting H2 server...");
