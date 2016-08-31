@@ -9,7 +9,6 @@ import com.cerner.jwala.common.domain.model.webserver.WebServerReachableState;
 import com.cerner.jwala.common.request.webserver.CreateWebServerRequest;
 import com.cerner.jwala.common.request.webserver.UpdateWebServerRequest;
 import com.cerner.jwala.common.request.webserver.UploadWebServerTemplateRequest;
-import com.cerner.jwala.persistence.jpa.domain.resource.config.template.JpaWebServerConfigTemplate;
 
 import java.util.List;
 
@@ -37,7 +36,7 @@ public interface WebServerService {
 
     String getResourceTemplate(final String webServerName, final String resourceTemplateName, final boolean tokensReplaced, ResourceGroup resourceGroup);
 
-    JpaWebServerConfigTemplate uploadWebServerConfig(UploadWebServerTemplateRequest uploadWebServerTemplateCommand, User user);
+    void uploadWebServerConfig(UploadWebServerTemplateRequest uploadWebServerTemplateCommand, User user);
 
     String updateResourceTemplate(final String wsName, final String resourceTemplateName, final String template);
 

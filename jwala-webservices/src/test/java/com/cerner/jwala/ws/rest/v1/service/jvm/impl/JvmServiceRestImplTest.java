@@ -14,18 +14,12 @@ import com.cerner.jwala.common.properties.ApplicationProperties;
 import com.cerner.jwala.common.request.jvm.ControlJvmRequest;
 import com.cerner.jwala.common.request.jvm.CreateJvmAndAddToGroupsRequest;
 import com.cerner.jwala.common.request.jvm.UpdateJvmRequest;
-import com.cerner.jwala.persistence.jpa.service.exception.ResourceTemplateUpdateException;
 import com.cerner.jwala.service.jvm.JvmControlService;
 import com.cerner.jwala.service.jvm.impl.JvmServiceImpl;
 import com.cerner.jwala.service.jvm.state.JvmStateReceiverAdapter;
 import com.cerner.jwala.service.resource.ResourceService;
 import com.cerner.jwala.ws.rest.v1.provider.AuthenticatedUser;
 import com.cerner.jwala.ws.rest.v1.response.ApplicationResponse;
-import com.cerner.jwala.ws.rest.v1.service.jvm.impl.JsonControlJvm;
-import com.cerner.jwala.ws.rest.v1.service.jvm.impl.JsonCreateJvm;
-import com.cerner.jwala.ws.rest.v1.service.jvm.impl.JsonUpdateJvm;
-import com.cerner.jwala.ws.rest.v1.service.jvm.impl.JvmServiceRestImpl;
-
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Before;
@@ -335,9 +329,12 @@ public class JvmServiceRestImplTest {
         Response response = jvmServiceRest.updateResourceTemplate(jvm.getJvmName(), "ServerXMLTemplate.tpl", updateValue);
         assertNotNull(response.getEntity());
 
-        when(jvmService.updateResourceTemplate(anyString(), anyString(), anyString())).thenThrow(new ResourceTemplateUpdateException(jvm.getJvmName(), "server.xml"));
+        when(jvmService.updateResourceTemplate(anyString(), anyString(), anyString())).thenReturn(null);
         response = jvmServiceRest.updateResourceTemplate(jvm.getJvmName(), "ServerXMLTemplate.tpl", updateValue);
         assertNotNull(response.getEntity());
+        assertEquals(500, response.getStatus());
+        final ApplicationResponse applicationResponse = (ApplicationResponse) response.getEntity();
+        assertEquals("Failed to update the template ServerXMLTemplate.tpl for jvmName. See the log for more details.", applicationResponse.getApplicationResponseContent());
     }
 
     @Test

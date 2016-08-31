@@ -19,8 +19,6 @@ import com.cerner.jwala.common.request.webserver.ControlWebServerRequest;
 import com.cerner.jwala.common.request.webserver.UploadWebServerTemplateRequest;
 import com.cerner.jwala.control.AemControl;
 import com.cerner.jwala.exception.CommandFailureException;
-import com.cerner.jwala.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
-import com.cerner.jwala.persistence.jpa.service.exception.ResourceTemplateUpdateException;
 import com.cerner.jwala.service.group.GroupService;
 import com.cerner.jwala.service.resource.ResourceService;
 import com.cerner.jwala.service.webserver.WebServerCommandService;
@@ -469,12 +467,12 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
     public Response updateResourceTemplate(final String wsName, final String resourceTemplateName, final String content) {
         LOGGER.info("Update the resource template {} for web server {}", resourceTemplateName, wsName);
         LOGGER.debug(content);
-        try {
-            return ResponseBuilder.ok(webServerService.updateResourceTemplate(wsName, resourceTemplateName, content));
-        } catch (ResourceTemplateUpdateException | NonRetrievableResourceTemplateContentException e) {
-            LOGGER.debug("Failed to update resource template {}", resourceTemplateName, e);
+        final String someContent = webServerService.updateResourceTemplate(wsName, resourceTemplateName, content);
+        if (someContent != null) {
+            return ResponseBuilder.ok(someContent);
+        } else {
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
-                    AemFaultType.PERSISTENCE_ERROR, e.getMessage()));
+                    AemFaultType.PERSISTENCE_ERROR, "Failed to update the template " + resourceTemplateName + " for " + wsName + ". See the log for more details."));
         }
 
     }

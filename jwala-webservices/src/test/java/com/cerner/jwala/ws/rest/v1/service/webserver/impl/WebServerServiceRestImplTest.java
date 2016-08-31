@@ -19,7 +19,6 @@ import com.cerner.jwala.common.request.webserver.CreateWebServerRequest;
 import com.cerner.jwala.common.request.webserver.UpdateWebServerRequest;
 import com.cerner.jwala.control.AemControl;
 import com.cerner.jwala.exception.CommandFailureException;
-import com.cerner.jwala.persistence.jpa.service.exception.ResourceTemplateUpdateException;
 import com.cerner.jwala.service.group.GroupService;
 import com.cerner.jwala.service.resource.ResourceService;
 import com.cerner.jwala.service.webserver.WebServerCommandService;
@@ -628,9 +627,12 @@ public class WebServerServiceRestImplTest {
     public void testUpdateResourceTemplateException() {
         String resourceTemplateName = "httpd-conf.tpl";
         String content = "ServerRoot=./test-update";
-        when(impl.updateResourceTemplate(webServer.getName(), resourceTemplateName, content)).thenThrow(ResourceTemplateUpdateException.class);
+        when(impl.updateResourceTemplate(webServer.getName(), resourceTemplateName, content)).thenReturn(null);
         Response response = webServerServiceRest.updateResourceTemplate(webServer.getName(), resourceTemplateName, content);
         assertTrue(response.hasEntity());
+        assertEquals(500, response.getStatus());
+        final ApplicationResponse applicationResponse = (ApplicationResponse) response.getEntity();
+        assertEquals("Failed to update the template httpd-conf.tpl for webserverName. See the log for more details.", applicationResponse.getApplicationResponseContent());
     }
 
     @Test

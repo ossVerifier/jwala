@@ -31,6 +31,7 @@ import com.cerner.jwala.exception.CommandFailureException;
 import com.cerner.jwala.files.FileManager;
 import com.cerner.jwala.persistence.jpa.domain.resource.config.template.JpaJvmConfigTemplate;
 import com.cerner.jwala.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
+import com.cerner.jwala.persistence.jpa.service.exception.ResourceTemplateUpdateException;
 import com.cerner.jwala.persistence.service.JvmPersistenceService;
 import com.cerner.jwala.service.app.ApplicationService;
 import com.cerner.jwala.service.group.GroupService;
@@ -41,7 +42,6 @@ import com.cerner.jwala.service.jvm.exception.JvmServiceException;
 import com.cerner.jwala.service.resource.ResourceService;
 import com.cerner.jwala.service.webserver.component.ClientFactoryHelper;
 import com.cerner.jwala.template.ResourceFileGenerator;
-
 import groovy.text.SimpleTemplateEngine;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -736,7 +736,13 @@ public class JvmServiceImpl implements JvmService {
     @Override
     @Transactional
     public String updateResourceTemplate(final String jvmName, final String resourceTemplateName, final String template) {
-        return jvmPersistenceService.updateResourceTemplate(jvmName, resourceTemplateName, template);
+        String retVal = null;
+        try {
+            retVal = jvmPersistenceService.updateResourceTemplate(jvmName, resourceTemplateName, template);
+        } catch (ResourceTemplateUpdateException | NonRetrievableResourceTemplateContentException e) {
+            LOGGER.error("Failed to update the template {}", resourceTemplateName, e);
+        }
+        return retVal;
     }
 
     @Override

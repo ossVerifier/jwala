@@ -13,14 +13,13 @@ import com.cerner.jwala.common.request.webserver.CreateWebServerRequest;
 import com.cerner.jwala.common.request.webserver.UpdateWebServerRequest;
 import com.cerner.jwala.common.request.webserver.UploadWebServerTemplateRequest;
 import com.cerner.jwala.files.FileManager;
-import com.cerner.jwala.persistence.jpa.domain.resource.config.template.JpaWebServerConfigTemplate;
 import com.cerner.jwala.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
+import com.cerner.jwala.persistence.jpa.service.exception.ResourceTemplateUpdateException;
 import com.cerner.jwala.persistence.service.WebServerPersistenceService;
 import com.cerner.jwala.service.resource.ResourceService;
 import com.cerner.jwala.service.webserver.WebServerService;
 import com.cerner.jwala.service.webserver.exception.WebServerServiceException;
 import com.cerner.jwala.template.ResourceFileGenerator;
-
 import org.apache.commons.io.FileUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
@@ -214,7 +213,7 @@ public class WebServerServiceImpl implements WebServerService {
 
     @Override
     @Transactional
-    public JpaWebServerConfigTemplate uploadWebServerConfig(UploadWebServerTemplateRequest uploadWebServerTemplateRequest, User user) {
+    public void uploadWebServerConfig(UploadWebServerTemplateRequest uploadWebServerTemplateRequest, User user) {
         uploadWebServerTemplateRequest.validate();
         final String metaDataStr = uploadWebServerTemplateRequest.getMetaData();
         final String absoluteDeployPath;
@@ -228,13 +227,18 @@ public class WebServerServiceImpl implements WebServerService {
             LOGGER.error("Failed to map meta data for web server {} while uploading template {}", uploadWebServerTemplateRequest.getWebServer().getName(), uploadWebServerTemplateRequest.getConfFileName(), e);
             throw new InternalErrorException(AemFaultType.BAD_STREAM, "Unable to map the meta data for template " + uploadWebServerTemplateRequest.getConfFileName(), e);
         }
-        return webServerPersistenceService.uploadWebServerConfigTemplate(uploadWebServerTemplateRequest, absoluteDeployPath, user.getId());
+        webServerPersistenceService.uploadWebServerConfigTemplate(uploadWebServerTemplateRequest, absoluteDeployPath, user.getId());
     }
 
     @Override
     @Transactional
     public String updateResourceTemplate(final String wsName, final String resourceTemplateName, final String template) {
-        webServerPersistenceService.updateResourceTemplate(wsName, resourceTemplateName, template);
+        try {
+            webServerPersistenceService.updateResourceTemplate(wsName, resourceTemplateName, template);
+        } catch (ResourceTemplateUpdateException | NonRetrievableResourceTemplateContentException e){
+            LOGGER.error("Failed to update resource template {}", resourceTemplateName, e);
+            return null;
+        }
         return webServerPersistenceService.getResourceTemplate(wsName, resourceTemplateName);
     }
 

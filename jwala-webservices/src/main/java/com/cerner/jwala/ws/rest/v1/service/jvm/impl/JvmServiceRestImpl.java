@@ -9,15 +9,12 @@ import com.cerner.jwala.common.exception.InternalErrorException;
 import com.cerner.jwala.common.exec.CommandOutput;
 import com.cerner.jwala.common.exec.CommandOutputReturnCode;
 import com.cerner.jwala.common.request.jvm.ControlJvmRequest;
-import com.cerner.jwala.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
-import com.cerner.jwala.persistence.jpa.service.exception.ResourceTemplateUpdateException;
 import com.cerner.jwala.service.jvm.JvmControlService;
 import com.cerner.jwala.service.jvm.JvmService;
 import com.cerner.jwala.service.resource.ResourceService;
 import com.cerner.jwala.ws.rest.v1.provider.AuthenticatedUser;
 import com.cerner.jwala.ws.rest.v1.response.ResponseBuilder;
 import com.cerner.jwala.ws.rest.v1.service.jvm.JvmServiceRest;
-
 import org.apache.commons.io.FileUtils;
 import org.apache.cxf.jaxrs.ext.MessageContext;
 import org.slf4j.Logger;
@@ -155,14 +152,14 @@ public class JvmServiceRestImpl implements JvmServiceRest {
                                            final String content) {
         LOGGER.info("Update the resource template {} for JVM {}", resourceTemplateName, jvmName);
         LOGGER.debug(content);
-        try {
-            return ResponseBuilder.ok(jvmService.updateResourceTemplate(jvmName, resourceTemplateName, content));
-        } catch (ResourceTemplateUpdateException | NonRetrievableResourceTemplateContentException e) {
-            LOGGER.debug("Failed to update the template {}", resourceTemplateName, e);
-            return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
-                    AemFaultType.PERSISTENCE_ERROR, e.getMessage()));
-        }
 
+        final String someContent = jvmService.updateResourceTemplate(jvmName, resourceTemplateName, content);
+        if (someContent != null) {
+            return ResponseBuilder.ok(someContent);
+        } else {
+            return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
+                    AemFaultType.PERSISTENCE_ERROR, "Failed to update the template " + resourceTemplateName + " for " + jvmName + ". See the log for more details."));
+        }
     }
 
     @Override
