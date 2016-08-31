@@ -1,7 +1,7 @@
 package com.cerner.jwala.service.impl;
 
 import com.cerner.jwala.service.DbServerService;
-import com.cerner.jwala.service.DbServiceException;
+import com.cerner.jwala.service.DbServerServiceException;
 import com.cerner.jwala.service.H2ServerType;
 import org.h2.tools.Server;
 import org.slf4j.Logger;
@@ -41,7 +41,7 @@ abstract class AbstractH2ServerServiceImpl implements DbServerService {
             LOGGER.info("H2 {} server started", serverType);
         } catch (final SQLException e) {
             LOGGER.error("Failed to start H2 {} server!", serverType, e);
-            throw new DbServiceException(e);
+            throw new DbServerServiceException(e);
         }
     }
 
@@ -63,7 +63,7 @@ abstract class AbstractH2ServerServiceImpl implements DbServerService {
      *
      * @param serverParams array that contains server parameters
      * @return the {@link Server}
-     * @throws DbServiceException
+     * @throws DbServerServiceException
      */
-    protected abstract Server createServer(final String [] serverParams) throws DbServiceException;
+    protected abstract Server createServer(final String [] serverParams) throws DbServerServiceException;
 }

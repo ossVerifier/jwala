@@ -1,6 +1,6 @@
 package com.cerner.jwala.service.impl;
 
-import com.cerner.jwala.service.DbServiceException;
+import com.cerner.jwala.service.DbServerServiceException;
 import com.cerner.jwala.service.H2ServerType;
 import org.h2.tools.Server;
 import org.slf4j.Logger;
@@ -26,12 +26,12 @@ public class H2WebServerServiceImpl extends AbstractH2ServerServiceImpl {
     }
 
     @Override
-    protected Server createServer(final String [] serverParams) throws DbServiceException {
+    protected Server createServer(final String [] serverParams) throws DbServerServiceException {
         try {
             return Server.createWebServer(serverParams);
         } catch (final SQLException e) {
             LOGGER.error("Failed to create H2 Web Server!", e);
-            throw new DbServiceException(e);
+            throw new DbServerServiceException(e);
         }
     }
 }

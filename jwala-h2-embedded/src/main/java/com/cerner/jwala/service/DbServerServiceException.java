@@ -5,9 +5,9 @@ package com.cerner.jwala.service;
  *
  * Created by JC043760 on 8/30/2016.
  */
-public class DbServiceException extends RuntimeException {
+public class DbServerServiceException extends RuntimeException {
 
-    public DbServiceException(final Throwable t) {
+    public DbServerServiceException(final Throwable t) {
         super(t);
     }
 }
