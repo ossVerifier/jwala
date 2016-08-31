@@ -41,6 +41,11 @@ ext {
             babeltransform        : '6.5.0'
     ]
 }
+repositories {
+    maven {
+        url 'http://usmlvv1qmp645.usmlvv1d0a.smshsc.net:8081/artifactory/repo/'
+    }
+}
 
 sonarRunner {
     sonarProperties {
