@@ -386,7 +386,7 @@ public class JvmServiceImpl implements JvmService {
         }
 
         // make sure the scripts are executable
-        if (!jvmControlService.changeFileMode(jvm, "a+x", tocScriptsPath, "*.sh").getReturnCode().wasSuccessful()) {
+        if (!jvmControlService.makeExecutableUnixFormat(jvm, "a+x", tocScriptsPath, "*.sh").getReturnCode().wasSuccessful()) {
             String message = "Failed to change the file permissions in " + tocScriptsPath + duringCreationMessage + jvmName;
             LOGGER.error(message);
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, message);
@@ -429,13 +429,6 @@ public class JvmServiceImpl implements JvmService {
             final File generatedJvmDestDirBin = new File(destDirPath + "/bin");
             FileUtils.copyFileToDirectory(new File(commandsScriptsPath + "/" + AemControl.Properties.START_SCRIPT_NAME.getValue()), generatedJvmDestDirBin);
             FileUtils.copyFileToDirectory(new File(commandsScriptsPath + "/" + AemControl.Properties.STOP_SCRIPT_NAME.getValue()), generatedJvmDestDirBin);
-
-            // make sure the scripts are executable
-            if (!jvmControlService.changeFileMode(jvm, "a+x", generatedJvmDestDirBin.getAbsolutePath(), "*.sh").getReturnCode().wasSuccessful()) {
-                String message = "Failed to change the file permissions in " + generatedJvmDestDirBin + " for " + jvmName;
-                LOGGER.error(message);
-                throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, message);
-            }
 
             // create the logs directory
             createDirectory(destDirPath + "/logs");
@@ -480,7 +473,7 @@ public class JvmServiceImpl implements JvmService {
         LOGGER.info("Copy of config tar successful: {}", jvmConfigTar);
     }
 
-    protected void deployJvmConfigJar(Jvm jvm, User user, String jvmConfigTar) {
+    protected void deployJvmConfigJar(Jvm jvm, User user, String jvmConfigTar) throws CommandFailureException {
         CommandOutput execData = jvmControlService.controlJvm(
                 new ControlJvmRequest(jvm.getId(), JvmControlOperation.DEPLOY_CONFIG_ARCHIVE), user);
         if (execData.getReturnCode().wasSuccessful()) {
@@ -493,6 +486,16 @@ public class JvmServiceImpl implements JvmService {
                     jvm.getJvmName(), standardError);
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, standardError.isEmpty() ? CommandOutputReturnCode.fromReturnCode(execData.getReturnCode().getReturnCode()).getDesc() : standardError);
         }
+
+        // make sure the start/stop scripts are executable
+        String instancesDir = ApplicationProperties.get("remote.paths.instances");
+        final String targetAbsoluteDir = instancesDir + "/" + jvm.getJvmName() + "/bin";
+        if (!jvmControlService.makeExecutableUnixFormat(jvm, "a+x", targetAbsoluteDir, "*.sh").getReturnCode().wasSuccessful()) {
+            String message = "Failed to change the file permissions in " + targetAbsoluteDir + " for " + jvm.getJvmName();
+            LOGGER.error(message);
+            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, message);
+        }
+
     }
 
     protected void deployJvmResourceFiles(Jvm jvm, User user) throws IOException, CommandFailureException {

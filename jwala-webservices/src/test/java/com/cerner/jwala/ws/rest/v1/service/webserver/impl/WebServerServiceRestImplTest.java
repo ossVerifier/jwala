@@ -370,7 +370,7 @@ public class WebServerServiceRestImplTest {
         when(webServerControlService.controlWebServer(any(ControlWebServerRequest.class), any(User.class))).thenReturn(retSuccessExecData);
         when(webServerControlService.secureCopyFile(anyString(), anyString(), anyString(), anyString())).thenReturn(retSuccessExecData);
         when(webServerControlService.createDirectory(any(WebServer.class), anyString())).thenReturn(retSuccessExecData);
-        when(webServerControlService.changeFileMode(any(WebServer.class), anyString(), anyString(), anyString())).thenReturn(retSuccessExecData);
+        when(webServerControlService.makeExecutableUnixFormat(any(WebServer.class), anyString(), anyString(), anyString())).thenReturn(retSuccessExecData);
         when(impl.getWebServer(anyString())).thenReturn(webServer);
         when(impl.generateHttpdConfig(anyString(), any(ResourceGroup.class))).thenReturn("innocuous content");
         when(impl.generateInvokeWSBat(any(WebServer.class))).thenReturn("invoke me");
@@ -471,7 +471,7 @@ public class WebServerServiceRestImplTest {
         when(webServerControlService.secureCopyFile(eq(webServer.getName()), eq(AemControl.Properties.SCRIPTS_PATH + "/" + AemControl.Properties.START_SCRIPT_NAME.getValue()), anyString(), anyString())).thenReturn(retSuccessExecData);
         when(webServerControlService.secureCopyFile(eq(webServer.getName()), eq(AemControl.Properties.SCRIPTS_PATH + "/" + AemControl.Properties.STOP_SCRIPT_NAME.getValue()), anyString(), anyString())).thenReturn(retSuccessExecData);
         when(webServerControlService.secureCopyFile(eq(webServer.getName()), eq(AemControl.Properties.SCRIPTS_PATH + "/" + AemControl.Properties.INVOKE_WS_SERVICE_SCRIPT_NAME.getValue()), anyString(), anyString())).thenReturn(retSuccessExecData);
-        when(webServerControlService.changeFileMode(any(WebServer.class), anyString(), anyString(), anyString())).thenReturn(retFailExecData);
+        when(webServerControlService.makeExecutableUnixFormat(any(WebServer.class), anyString(), anyString(), anyString())).thenReturn(retFailExecData);
         when(impl.getWebServer(anyString())).thenReturn(webServer);
         when(impl.isStarted(any(WebServer.class))).thenReturn(false);
         when(impl.getResourceTemplateNames(anyString())).thenReturn(resourceTemplateNames);
@@ -490,7 +490,7 @@ public class WebServerServiceRestImplTest {
         when(webServerControlService.secureCopyFile(anyString(), anyString(), anyString(), anyString())).thenReturn(retSuccessExecData);
         when(webServerControlService.secureCopyFile(anyString(), contains("invokeWS"), anyString(), anyString())).thenReturn(retFailExecData);
         when(webServerControlService.createDirectory(any(WebServer.class), anyString())).thenReturn(retSuccessExecData);
-        when(webServerControlService.changeFileMode(any(WebServer.class), anyString(), anyString(), anyString())).thenReturn(retSuccessExecData);
+        when(webServerControlService.makeExecutableUnixFormat(any(WebServer.class), anyString(), anyString(), anyString())).thenReturn(retSuccessExecData);
         when(impl.getWebServer(anyString())).thenReturn(webServer);
         when(impl.generateHttpdConfig(anyString(), any(ResourceGroup.class))).thenReturn("innocuous content");
         when(impl.generateInvokeWSBat(any(WebServer.class))).thenReturn("invoke me");
@@ -516,7 +516,7 @@ public class WebServerServiceRestImplTest {
         when(webServerControlService.secureCopyFile(anyString(), anyString(), anyString(), anyString())).thenReturn(retSuccessExecData);
         when(webServerControlService.controlWebServer(eq(new ControlWebServerRequest(webServer.getId(), WebServerControlOperation.INVOKE_SERVICE)), any(User.class))).thenReturn(retFailExecData);
         when(webServerControlService.createDirectory(any(WebServer.class), anyString())).thenReturn(retSuccessExecData);
-        when(webServerControlService.changeFileMode(any(WebServer.class), anyString(), anyString(), anyString())).thenReturn(retSuccessExecData);
+        when(webServerControlService.makeExecutableUnixFormat(any(WebServer.class), anyString(), anyString(), anyString())).thenReturn(retSuccessExecData);
         when(impl.getWebServer(anyString())).thenReturn(webServer);
         when(impl.generateHttpdConfig(anyString(), any(ResourceGroup.class))).thenReturn("innocuous content");
         when(impl.generateInvokeWSBat(any(WebServer.class))).thenReturn("invoke me");
@@ -540,7 +540,7 @@ public class WebServerServiceRestImplTest {
         when(webServerControlService.secureCopyFile(anyString(), anyString(), anyString(), anyString())).thenReturn(retSuccessExecData);
         when(webServerControlService.controlWebServer(eq(new ControlWebServerRequest(webServer.getId(), WebServerControlOperation.DELETE_SERVICE)), any(User.class))).thenReturn(retServiceDoesNotExist);
         when(webServerControlService.createDirectory(any(WebServer.class), anyString())).thenReturn(retSuccessExecData);
-        when(webServerControlService.changeFileMode(any(WebServer.class), anyString(), anyString(), anyString())).thenReturn(retSuccessExecData);
+        when(webServerControlService.makeExecutableUnixFormat(any(WebServer.class), anyString(), anyString(), anyString())).thenReturn(retSuccessExecData);
         when(impl.getWebServer(anyString())).thenReturn(webServer);
         when(impl.generateHttpdConfig(anyString(), any(ResourceGroup.class))).thenReturn("innocuous content");
         when(impl.generateInvokeWSBat(any(WebServer.class))).thenReturn("invoke me");
@@ -565,7 +565,7 @@ public class WebServerServiceRestImplTest {
         when(webServerControlService.secureCopyFile(anyString(), anyString(), anyString(), anyString())).thenReturn(retSuccessExecData);
         when(webServerControlService.controlWebServer(eq(new ControlWebServerRequest(webServer.getId(), WebServerControlOperation.DELETE_SERVICE)), any(User.class))).thenReturn(retServiceDoesNotExist);
         when(webServerControlService.createDirectory(any(WebServer.class), anyString())).thenReturn(retSuccessExecData);
-        when(webServerControlService.changeFileMode(any(WebServer.class), anyString(), anyString(), anyString())).thenReturn(retSuccessExecData);
+        when(webServerControlService.makeExecutableUnixFormat(any(WebServer.class), anyString(), anyString(), anyString())).thenReturn(retSuccessExecData);
         when(impl.getWebServer(anyString())).thenReturn(webServer);
         when(impl.generateHttpdConfig(anyString(), any(ResourceGroup.class))).thenReturn("innocuous content");
         when(impl.generateInvokeWSBat(any(WebServer.class))).thenReturn("invoke me");

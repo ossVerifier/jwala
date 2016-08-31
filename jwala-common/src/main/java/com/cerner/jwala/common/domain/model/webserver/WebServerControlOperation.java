@@ -1,10 +1,10 @@
 package com.cerner.jwala.common.domain.model.webserver;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import com.cerner.jwala.common.domain.model.fault.AemFaultType;
 import com.cerner.jwala.common.exception.BadRequestException;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public enum WebServerControlOperation {
 
@@ -16,7 +16,7 @@ public enum WebServerControlOperation {
     DELETE_SERVICE("deleteService", null),
     INVOKE_SERVICE("invokeService", null),
     CREATE_DIRECTORY("mkdir", null),
-    CHANGE_FILE_MODE("chmod", null),
+    MAKE_UNIX_EXEC("chmod", null),
     CHECK_FILE_EXISTS("test", null);
 
     private static final Map<String, WebServerControlOperation> LOOKUP_MAP = new HashMap<>();

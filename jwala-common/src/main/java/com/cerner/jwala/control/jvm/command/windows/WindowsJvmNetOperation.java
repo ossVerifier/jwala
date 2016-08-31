@@ -145,7 +145,7 @@ public enum WindowsJvmNetOperation implements ServiceCommandBuilder {
             return new ExecCommand("if [ ! -e \"" + aParams[0] + "\" ]; then /usr/bin/mkdir -p " + aParams[0] + "; fi;");
         }
     },
-    CHANGE_FILE_MODE(JvmControlOperation.CHANGE_FILE_MODE) {
+    MAKE_UNIX_EXEC(JvmControlOperation.MAKE_UNIX_EXEC) {
         @Override
         public ExecCommand buildCommandForService(String aServiceName, String... aParams) {
             final String directory = aParams[1].replaceAll("\\\\","/");

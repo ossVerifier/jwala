@@ -14,5 +14,5 @@ public interface WebServerControlService {
 
     CommandOutput createDirectory(WebServer webServer, String dirAbsolutePath) throws CommandFailureException;
 
-    CommandOutput changeFileMode(WebServer webServer, String fileMode, String targetDirPath, String targetFile) throws CommandFailureException;
+    CommandOutput makeExecutableUnixFormat(WebServer webServer, String fileMode, String targetDirPath, String targetFile) throws CommandFailureException;
 }

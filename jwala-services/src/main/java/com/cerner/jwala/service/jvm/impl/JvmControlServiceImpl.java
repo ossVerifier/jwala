@@ -220,12 +220,12 @@ public class JvmControlServiceImpl implements JvmControlService {
     }
 
     @Override
-    public CommandOutput changeFileMode(Jvm jvm, String modifiedPermissions, String targetAbsoluteDir, String targetFile)
+    public CommandOutput makeExecutableUnixFormat(Jvm jvm, String modifiedPermissions, String targetAbsoluteDir, String targetFile)
             throws CommandFailureException {
         return remoteCommandExecutor.executeRemoteCommand(
                 jvm.getJvmName(),
                 jvm.getHostName(),
-                JvmControlOperation.CHANGE_FILE_MODE,
+                JvmControlOperation.MAKE_UNIX_EXEC,
                 new WindowsJvmPlatformCommandProvider(),
                 modifiedPermissions,
                 targetAbsoluteDir,

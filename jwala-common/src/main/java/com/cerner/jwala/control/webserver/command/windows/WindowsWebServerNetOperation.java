@@ -76,7 +76,7 @@ public enum WindowsWebServerNetOperation implements ServiceCommandBuilder {
             return new ExecCommand("if [ ! -e \"" + aParams[0] + "\" ]; then /usr/bin/mkdir -p " + aParams[0] + "; fi;");
         }
     },
-    CHANGE_FILE_MODE(WebServerControlOperation.CHANGE_FILE_MODE) {
+    CHANGE_FILE_MODE(WebServerControlOperation.MAKE_UNIX_EXEC) {
         @Override
         public ExecCommand buildCommandForService(String aServiceName, String... aParams) {
             final String directory = aParams[1].replaceAll("\\\\","/");

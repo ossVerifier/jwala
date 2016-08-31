@@ -21,7 +21,6 @@ import com.cerner.jwala.persistence.jpa.type.EventType;
 import com.cerner.jwala.service.*;
 import com.cerner.jwala.service.state.StateNotificationService;
 import com.cerner.jwala.service.webserver.WebServerService;
-import com.cerner.jwala.service.webserver.impl.WebServerControlServiceImpl;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -181,8 +180,8 @@ public class WebServerControlServiceImplVerifyTest extends VerificationBehaviorS
         WebServer mockWebServer = mock(WebServer.class);
         when(mockWebServer.getName()).thenReturn("test-ws");
         when(mockWebServer.getHost()).thenReturn("test-host");
-        webServerControlService.changeFileMode(mockWebServer, "777", "./target", "*");
-        verify(commandExecutor).executeRemoteCommand(anyString(), anyString(), eq(WebServerControlOperation.CHANGE_FILE_MODE), any(WindowsWebServerPlatformCommandProvider.class), anyString(), anyString(), anyString());
+        webServerControlService.makeExecutableUnixFormat(mockWebServer, "777", "./target", "*");
+        verify(commandExecutor).executeRemoteCommand(anyString(), anyString(), eq(WebServerControlOperation.MAKE_UNIX_EXEC), any(WindowsWebServerPlatformCommandProvider.class), anyString(), anyString(), anyString());
     }
 
     @Test
