@@ -1,7 +1,6 @@
 package com.cerner.jwala.service.impl;
 
 import com.cerner.jwala.service.DbServerServiceException;
-import com.cerner.jwala.service.H2ServerType;
 import org.h2.tools.Server;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,7 +18,7 @@ public class H2WebServerServiceImpl extends AbstractH2ServerServiceImpl {
     private static final String DEFAULT_WEBSERVER_PARAM = "-webSSL,-webPort,8084";
 
     public H2WebServerServiceImpl(final String webServerParams) {
-        super(webServerParams == null ? DEFAULT_WEBSERVER_PARAM : webServerParams, H2ServerType.WEB);
+        super(webServerParams == null ? DEFAULT_WEBSERVER_PARAM : webServerParams);
         if (webServerParams == null) {
             LOGGER.warn("webServerParams is null, loading default webServerParams values \"{}\"", DEFAULT_WEBSERVER_PARAM);
         }

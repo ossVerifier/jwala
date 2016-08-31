@@ -1,7 +1,6 @@
 package com.cerner.jwala.service.impl;
 
 import com.cerner.jwala.service.DbServerServiceException;
-import com.cerner.jwala.service.H2ServerType;
 import org.h2.tools.Server;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,7 +19,7 @@ public class H2TcpServerServiceImpl extends AbstractH2ServerServiceImpl {
     private static final String DEFAULT_TCP_SERVER_PARAMS = "-tcpPort,9094,-tcpAllowOthers";
 
     public H2TcpServerServiceImpl(final String tcpServerParams) {
-        super(tcpServerParams == null ? DEFAULT_TCP_SERVER_PARAMS : tcpServerParams, H2ServerType.TCP);
+        super(tcpServerParams == null ? DEFAULT_TCP_SERVER_PARAMS : tcpServerParams);
         if (tcpServerParams == null) {
             LOGGER.warn("tcpServerParams is null, loading default tcpServerParams values \"{}\"", DEFAULT_TCP_SERVER_PARAMS);
         }
