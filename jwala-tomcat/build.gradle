@@ -3,6 +3,7 @@ apply plugin: 'maven-publish'
 
 import de.undercouch.gradle.tasks.download.Download
 import groovy.sql.Sql
+import org.apache.tools.ant.filters.*;
 
 configurations {
     compile {
@@ -67,6 +68,8 @@ task deleteDownloadedZip(dependsOn: downloadAndUnzipTomcat, type: Delete) {
 task copyConfigurationOverrides(dependsOn: deleteDownloadedZip, type: Copy) {
     from('src/main/resources')
     filter { it.replaceAll('@@buildVersion@@', "$buildVersion") }
+    filter(FixCrLfFilter.class,
+        eol:FixCrLfFilter.CrLf.newInstance("lf")) //convert to unix format
     into("$buildDir/$tomcatDir")
 }
 
@@ -115,9 +118,10 @@ task createJwalaDb(dependsOn: copySql) << {
 
     def dbFile = file("$buildDir/$tomcatDir/data/db/toc.h2.db")
     if (dbFile.exists()) {
-        sql.execute('drop all objects delete files')
+        sql.execute('drop all objects')
     }
     sql.execute(file("$buildDir/$tomcatDir/data/db/create.sql").text)
+    sql.close()
 }
 
 task zipJwalaTomcat(dependsOn: createJwalaDb, type: Zip) {
