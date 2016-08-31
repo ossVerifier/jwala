@@ -1,6 +1,7 @@
 package com.cerner.jwala.listener;
 
 import com.cerner.jwala.service.DbServerService;
+import com.cerner.jwala.service.DbServerServiceException;
 import com.cerner.jwala.service.impl.H2TcpServerServiceImpl;
 import com.cerner.jwala.service.impl.H2WebServerServiceImpl;
 import org.apache.catalina.LifecycleEvent;
@@ -42,16 +43,20 @@ public class H2LifecycleListener implements LifecycleListener {
         }
 
         // h2 web server
-        if (h2WebServerService == null) {
-            h2WebServerService = new H2WebServerServiceImpl(webServerParam);
-        }
+        try {
+            if (h2WebServerService == null) {
+                h2WebServerService = new H2WebServerServiceImpl(webServerParam);
+            }
 
-        if (LifecycleState.STARTING_PREP.equals(lifecycleState) && !h2WebServerService.isServerRunning()) {
-            LOGGER.info("Initializing H2 web server on Tomcat lifecyle: {}", lifecycleState);
-            h2WebServerService.startServer();
-        } else if (LifecycleState.DESTROYING.equals(lifecycleState) && h2WebServerService.isServerRunning()) {
-            LOGGER.info("Destroying H2 web server on Tomcat lifecyle: {}", lifecycleState);
-            h2WebServerService.stopServer();
+            if (LifecycleState.STARTING_PREP.equals(lifecycleState) && !h2WebServerService.isServerRunning()) {
+                LOGGER.info("Initializing H2 web server on Tomcat lifecyle: {}", lifecycleState);
+                h2WebServerService.startServer();
+            } else if (LifecycleState.DESTROYING.equals(lifecycleState) && h2WebServerService.isServerRunning()) {
+                LOGGER.info("Destroying H2 web server on Tomcat lifecyle: {}", lifecycleState);
+                h2WebServerService.stopServer();
+            }
+        } catch (final DbServerServiceException e) {
+            LOGGER.error("Failed to start H2 Web Server! Continuing without it.", e);
         }
     }
 
