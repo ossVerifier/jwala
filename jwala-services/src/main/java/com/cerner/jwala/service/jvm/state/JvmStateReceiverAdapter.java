@@ -74,12 +74,12 @@ public class JvmStateReceiverAdapter extends ReceiverAdapter {
                 // trough the keys to try to look for the "STATE" string. Note: We don't want to use ReportingJmsMessageKey
                 // to make this compatible to containers that do not have infrastructure provided jar hence the key
                 // iteration.
-                for (Object key: serverInfoMap.keySet()) {
-                    if (key.toString().equalsIgnoreCase(ID_KEY)) {
+                for (final Object key: serverInfoMap.keySet()) {
+                    if (legacyIdKey == null && ID_KEY.equalsIgnoreCase(key.toString())) {
                         legacyIdKey = key;
                     }
 
-                    if (key.toString().equalsIgnoreCase(STATE_KEY)) {
+                    if (legacyStateKey == null && STATE_KEY.equalsIgnoreCase(key.toString())) {
                         legacyStateKey = key;
                     }
 
