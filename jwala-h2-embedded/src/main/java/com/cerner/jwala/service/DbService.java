@@ -1,7 +1,7 @@
 package com.cerner.jwala.service;
 
 /**
- * Contract for Db related operations
+ * Contract for database server related operations
  *
  * Created by JC043760 on 8/25/2016
  */
