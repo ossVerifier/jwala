@@ -356,6 +356,10 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
             LOGGER.error("Failed to update the permissions in {} during the creation of {}", tocScriptsPath, webServerName);
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to update the permissions in " + sourceInvokeWsServicePath + " during the creation of " + webServerName);
         }
+        if (!webServerControlService.changeFileMode(webServer, "a+x", destHttpdConfPath, "*.sh").getReturnCode().wasSuccessful()) {
+            LOGGER.error("Failed to update the permissions in {} during the creation of {}", destHttpdConfPath, webServerName);
+            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to update the permissions in " + destHttpdConfPath+ " during the creation of " + webServerName);
+        }
     }
 
     protected void installWebServerWindowsService(final AuthenticatedUser user, final ControlWebServerRequest invokeWSBatRequest, final WebServer webServer) throws CommandFailureException {
