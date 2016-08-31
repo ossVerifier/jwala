@@ -1,6 +1,6 @@
 package com.cerner.jwala.listener;
 
-import com.cerner.jwala.service.DbService;
+import com.cerner.jwala.service.DbServerService;
 import com.cerner.jwala.service.impl.H2TcpServerServiceImpl;
 import com.cerner.jwala.service.impl.H2WebServerServiceImpl;
 import org.apache.catalina.LifecycleEvent;
@@ -18,8 +18,8 @@ public class H2LifecycleListener implements LifecycleListener {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(H2LifecycleListener.class);
 
-    private DbService h2TcpServerService;
-    private DbService h2WebServerService;
+    private DbServerService h2TcpServerService;
+    private DbServerService h2WebServerService;
 
     private String tcpServerParam;
     private String webServerParam;

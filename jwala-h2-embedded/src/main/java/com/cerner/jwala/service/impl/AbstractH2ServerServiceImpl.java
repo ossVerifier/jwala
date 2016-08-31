@@ -1,6 +1,6 @@
 package com.cerner.jwala.service.impl;
 
-import com.cerner.jwala.service.DbService;
+import com.cerner.jwala.service.DbServerService;
 import com.cerner.jwala.service.DbServiceException;
 import com.cerner.jwala.service.H2ServerType;
 import org.h2.tools.Server;
@@ -10,11 +10,11 @@ import org.slf4j.LoggerFactory;
 import java.sql.SQLException;
 
 /**
- * Implement {@link com.cerner.jwala.service.DbService}
+ * Implement {@link DbServerService}
  *
  * Created by JC043760 on 8/30/2016
  */
-abstract class AbstractH2ServerServiceImpl implements DbService {
+abstract class AbstractH2ServerServiceImpl implements DbServerService {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(H2TcpServerServiceImpl.class);
 

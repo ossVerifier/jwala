@@ -5,7 +5,7 @@ package com.cerner.jwala.service;
  *
  * Created by JC043760 on 8/25/2016
  */
-public interface DbService {
+public interface DbServerService {
 
     void startServer();
 
