@@ -59,7 +59,7 @@ public class JvmStateReceiverAdapter extends ReceiverAdapter {
         final String jvmId;
         LOGGER.debug("Received JGroups JVM state message {} {}", src, serverInfoMap);
 
-        LifecycleState lifecycleState = (LifecycleState) serverInfoMap.get(STATE_KEY);
+        final LifecycleState lifecycleState = (LifecycleState) serverInfoMap.get(STATE_KEY);
         if (lifecycleState == null) {
             // Assume that the message came from the old JGroups listener
             LOGGER.info("The state key = {} was not found in the lifecycle state map. Proceeding with legacy JGroup message decoding.", STATE_KEY);
