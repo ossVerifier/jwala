@@ -1,5 +1,6 @@
 package com.cerner.jwala.service.impl;
 
+import com.cerner.jwala.service.AbstractH2ServerService;
 import com.cerner.jwala.service.DbServerServiceException;
 import org.h2.tools.Server;
 import org.slf4j.Logger;

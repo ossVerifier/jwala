@@ -1,4 +1,4 @@
-package com.cerner.jwala.service.impl;
+package com.cerner.jwala.service;
 
 import com.cerner.jwala.service.DbServerServiceException;
 import org.h2.tools.Server;
@@ -13,7 +13,7 @@ import java.util.Arrays;
  *
  * Created by JC043760 on 8/30/2016
  */
-abstract class AbstractH2ServerService {
+public abstract class AbstractH2ServerService {
 
     private Server server;
 
