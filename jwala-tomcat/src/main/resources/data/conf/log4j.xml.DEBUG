@@ -10,7 +10,7 @@
     </appender>
 
     <appender name="TRACE_TOC" class="org.apache.log4j.DailyRollingFileAppender">
-        <param name="File" value="${catalina.base}/logs/toc.log" />
+        <param name="File" value="${catalina.base}/logs/jwala.log" />
         <param name="DateFormat" value="yyyyMMdd" />
         <param name="HeaderDateFormat" value="yyyy-MM-dd HH:mm:ss" />
         <param name="Header" value="CTO TOC Log file\n" />

@@ -38,7 +38,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private static final String ACTIVE_DIRECTORY_SERVER_NAME = "active.directory.server.name";
     private static final String ACTIVE_DIRECTORY_SERVER_PORT = "active.directory.server.port";
     private static final String ACTIVE_DIRECTORY_PROTOCOL = "active.directory.server.protocol";
-    private static final String TOC_AUTH_ENABLED = "toc.authorization";
+    private static final String JWALA_AUTH_ENABLED = "jwala.authorization";
 
     
     private static final String LOGIN_PAGE ="/login";
@@ -65,7 +65,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         final String ADMIN = ApplicationProperties.get("toc.role.admin");
-        final String AUTH = ApplicationProperties.get(TOC_AUTH_ENABLED, "true");
+        final String AUTH = ApplicationProperties.get(JWALA_AUTH_ENABLED, "true");
         //ACL check
         if(!"false".equalsIgnoreCase(AUTH)){
             http.authorizeRequests().antMatchers(IDP_URL, 

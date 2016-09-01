@@ -39,7 +39,7 @@ SET GC_DEBUG_OPTS=-XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:+PrintGCApplica
 SET GC_OPTS=-XX:MaxHeapFreeRatio=40 -XX:GCTimeRatio=9
 SET GC_DEBUG_OPTS=%GC_DEBUG_OPTS% -Xloggc:D:/stp/app/instances/CTO-N9SF-LTST-TOC/logs/gc.log
 
-SET JACOCO_OPTS=-javaagent:D:/stp/app/instances/CTO-N9SF-LTST-TOC/lib/jacocoagent.jar=output=file,destfile=D:/stp/app/instances/CTO-N9SF-LTST-TOC/data/integration_test_toc.exec,jmx=true,includes=com.cerner.*
+SET JACOCO_OPTS=-javaagent:D:/stp/app/instances/CTO-N9SF-LTST-TOC/lib/jacocoagent.jar=output=file,destfile=D:/stp/app/instances/CTO-N9SF-LTST-TOC/data/integration_test_jwala.exec,jmx=true,includes=com.cerner.*
 
 SET PROD_OPTS=%APR_OPTS% %STP_OPTS% %SSL_OPTS% %JMX_OPTS% %CATALINA_OPTS% %LOG_OPTS% %GC_OPTS%
 
