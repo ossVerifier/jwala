@@ -1,10 +1,9 @@
 package com.cerner.jwala.service.jvm.state;
 
-import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
 import com.cerner.jwala.common.domain.model.jvm.JvmState;
-import com.cerner.jwala.service.jvm.JvmService;
+import com.cerner.jwala.persistence.service.JvmPersistenceService;
 import com.cerner.jwala.service.jvm.JvmStateService;
 import org.apache.catalina.LifecycleState;
 import org.apache.commons.lang3.StringUtils;
@@ -14,13 +13,10 @@ import org.junit.Test;
 import org.mockito.Mock;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 /**
@@ -38,12 +34,12 @@ public class JvmStateReceiverAdapterTest {
     private JvmStateService mockJvmStateService;
 
     @Mock
-    private JvmService mockJvmService;
+    private JvmPersistenceService mockJvmPersistenceService;
 
     @Before
     public void setup() {
         initMocks(this);
-        jvmStateReceiverAdapter = new JvmStateReceiverAdapter(mockJvmStateService, mockJvmService);
+        jvmStateReceiverAdapter = new JvmStateReceiverAdapter(mockJvmStateService, mockJvmPersistenceService);
     }
 
     @Test
@@ -114,7 +110,7 @@ public class JvmStateReceiverAdapterTest {
         serverInfoMap.put("NAME", "theJvm");
         serverInfoMap.put("STATE", LifecycleState.STOPPING);
 
-        when(mockJvmService.getJvm(eq("theJvm"))).thenReturn(new Jvm(jvmId, "theJvm", new HashSet<Group>()));
+        when(mockJvmPersistenceService.getJvmId(eq("theJvm"))).thenReturn(1L);
 
         msg = new Message();
         msg.setObject(serverInfoMap);

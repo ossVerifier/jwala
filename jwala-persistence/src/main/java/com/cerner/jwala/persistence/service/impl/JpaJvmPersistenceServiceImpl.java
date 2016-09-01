@@ -17,8 +17,11 @@ import com.cerner.jwala.persistence.jpa.service.GroupJvmRelationshipService;
 import com.cerner.jwala.persistence.jpa.service.JvmCrudService;
 import com.cerner.jwala.persistence.service.JvmPersistenceService;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,6 +30,11 @@ public class JpaJvmPersistenceServiceImpl implements JvmPersistenceService {
     private final JvmCrudService jvmCrudService;
     private final ApplicationCrudService applicationCrudService;
     private final GroupJvmRelationshipService groupJvmRelationshipService;
+
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+
+    @PersistenceContext(unitName = "aem-unit")
+    private EntityManager em; // Going forward we will be phasing out JvmCrudService thus the reason this is defined here
 
     public JpaJvmPersistenceServiceImpl(final JvmCrudService jvmCrudService,
                                         final ApplicationCrudService applicationCrudService,
@@ -233,5 +241,17 @@ public class JpaJvmPersistenceServiceImpl implements JvmPersistenceService {
     @Override
     public boolean checkJvmResourceFileName(final String groupName, final String jvmName, final String fileName) {
         return jvmCrudService.checkJvmResourceFileName(groupName, jvmName, fileName);
+    }
+
+    @Override
+    public Long getJvmId(final String name) {
+        final Query q =  em.createNamedQuery(JpaJvm.QUERY_GET_JVM_ID);
+        q.setParameter(JpaJvm.QUERY_PARAM_NAME, name);
+        try {
+            return (Long) q.getSingleResult();
+        } catch (final NoResultException e) {
+            logger.error("Failed to query the jvm id where name = {}", name, e);
+            return null;
+        }
     }
 }

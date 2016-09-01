@@ -3,7 +3,7 @@ package com.cerner.jwala.service.jvm.state;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
 import com.cerner.jwala.common.domain.model.jvm.JvmState;
-import com.cerner.jwala.service.jvm.JvmService;
+import com.cerner.jwala.persistence.service.JvmPersistenceService;
 import com.cerner.jwala.service.jvm.JvmStateService;
 import org.apache.catalina.LifecycleState;
 import org.apache.commons.lang3.StringUtils;
@@ -28,7 +28,7 @@ public class JvmStateReceiverAdapter extends ReceiverAdapter {
     private static final String NAME_KEY = "NAME";
 
     private final JvmStateService jvmStateService;
-    private final JvmService jvmService;
+    private final JvmPersistenceService jvmPersistenceService;
 
     private final static Map<LifecycleState, JvmState> LIFECYCLE_JWALA_JVM_STATE_REF_MAP = new HashMap<>();
 
@@ -49,9 +49,9 @@ public class JvmStateReceiverAdapter extends ReceiverAdapter {
         LIFECYCLE_JWALA_JVM_STATE_REF_MAP.put(LifecycleState.STOPPING_PREP, JvmState.JVM_STOPPING);
     }
 
-    public JvmStateReceiverAdapter(final JvmStateService jvmStateService, final JvmService jvmService) {
+    public JvmStateReceiverAdapter(final JvmStateService jvmStateService, final JvmPersistenceService jvmPersistenceService) {
         this.jvmStateService = jvmStateService;
-        this.jvmService = jvmService;
+        this.jvmPersistenceService = jvmPersistenceService;
     }
 
     @Override
@@ -60,7 +60,8 @@ public class JvmStateReceiverAdapter extends ReceiverAdapter {
         final Address src = jgroupMessage.getSrc();
         final Map serverInfoMap = (Map) jgroupMessage.getObject();
         final JvmState jvmState;
-        String jvmId;
+        String jvmId = null;
+
         LOGGER.debug("Received JGroups JVM state message {} {}", src, serverInfoMap);
 
         final LifecycleState lifecycleState = (LifecycleState) serverInfoMap.get(STATE_KEY);
@@ -78,33 +79,48 @@ public class JvmStateReceiverAdapter extends ReceiverAdapter {
                 final Object legacyStateKey = Enum.valueOf(enumSample.getDeclaringClass(), STATE_KEY);
                 jvmId = serverInfoMap.get(legacyIdKey).toString();
                 jvmState = JvmState.valueOf(serverInfoMap.get(legacyStateKey).toString());
-            } catch (final RuntimeException e) {
+            } catch (final RuntimeException e) { // Since the adapter is a critical component used to display the JVM state
+                                                 // let's make sure to catch all possible runtime exceptions and log them
                 LOGGER.error("Error processing legacy JGroup message!", e);
                 return;
             }
         } else {
-            final Object id = serverInfoMap.get(ID_KEY);
-            final Object name = serverInfoMap.get(NAME_KEY);
-
-            if (id != null) {
-                jvmId = id.toString();
-            } else if (name != null) {
-                final Jvm jvm = jvmService.getJvm(name.toString());
-                if (jvm == null) {
-                    LOGGER.error("Jvm {} was not found! Cannot update JVM state.", name.toString());
-                    return;
-                }
-                jvmId = jvm.getId().getId().toString();
-            } else {
-                LOGGER.error("Jvm id or name was not provided! Cannot update JVM state.");
-                return;
-            }
-
             jvmState = LIFECYCLE_JWALA_JVM_STATE_REF_MAP.get(lifecycleState);
+
+            Object id = serverInfoMap.get(ID_KEY);
+            if (id != null) {
+                jvmId = (String) id;
+            } else {
+                final Object name = serverInfoMap.get(NAME_KEY);
+                if (name != null) {
+                    id = getJvmId((String) name);
+                    if (id != null) {
+                        jvmId = id.toString();
+                    }
+                }
+            }
         }
 
-        if (!JvmState.JVM_STOPPED.equals(jvmState)) {
+        if (jvmId != null && !JvmState.JVM_STOPPED.equals(jvmState)) {
             jvmStateService.updateState(new Identifier<Jvm>(jvmId), jvmState, StringUtils.EMPTY);
+        } else if (jvmId == null) {
+            LOGGER.error("Jvm id is null! Cannot update JVM state.");
+        }
+    }
+
+    /**
+     * Get the JVM id
+     * @param name the JVM name
+     * @return the id
+     */
+    private Long getJvmId(final String name) {
+        LOGGER.info("Retrieving JVM id with name = {}...", name);
+        try {
+            return jvmPersistenceService.getJvmId(name);
+        } catch (final RuntimeException e) { // Since the adapter is a critical component used to display the JVM state
+                                             // let's make sure to catch all possible runtime exceptions and log them
+            LOGGER.error("Failed to retrieve the JVM id with the name {}! Cannot update the JVM state.", name);
+            return null;
         }
     }
 
