@@ -18,7 +18,9 @@ dependencies {
 
     compile(group: 'com.cerner.cto.cac', name: 'CommonSecurity', version: '4.0.0800.05')
     compile(group: 'com.cerner.cto.infrastructure', name: 'infrastructure-provided', version: '1.2.1')
-    compile(group: 'com.cerner.cto.infrastructure', name: 'infrastructure-security', version: '1.2.1')
+
+//  @ is used to get artifact only not its dependencies
+    compile 'com.cerner.cto.infrastructure:infrastructure-security:' + "$project.versions.infrastructureProvided" + '@jar'
 
     compile(group: 'commons-collections', name: 'commons-collections', version: '3.2.2')
     compile(group: 'commons-httpclient', name: 'commons-httpclient', version: '3.1')
