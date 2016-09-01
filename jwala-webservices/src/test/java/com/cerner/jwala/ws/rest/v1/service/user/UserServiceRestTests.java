@@ -23,13 +23,13 @@ public class UserServiceRestTests {
 
     String authFlag;
     public UserServiceRestImpl impl;
-    String TOC_ROLE_ADMIN; 
+    String JWALA_ROLE_ADMIN;
     @Before
     public void setUp() {
         System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, "./src/test/resources");
         authFlag = ApplicationProperties.get("jwala.authorization");
         impl = new UserServiceRestImpl();
-        TOC_ROLE_ADMIN = ApplicationProperties.get("toc.role.admin");
+        JWALA_ROLE_ADMIN = ApplicationProperties.get("jwala.role.admin");
 
     }
 

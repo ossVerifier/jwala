@@ -64,7 +64,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
      
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        final String ADMIN = ApplicationProperties.get("toc.role.admin");
+        final String ADMIN = ApplicationProperties.get("jwala.role.admin");
         final String AUTH = ApplicationProperties.get(JWALA_AUTH_ENABLED, "true");
         //ACL check
         if(!"false".equalsIgnoreCase(AUTH)){
