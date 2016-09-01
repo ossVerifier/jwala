@@ -14,5 +14,5 @@ public interface JvmControlService {
 
     CommandOutput createDirectory(Jvm jvm, String dirAbsolutePath) throws CommandFailureException;
 
-    CommandOutput makeExecutableUnixFormat(Jvm jvm, String modifiedPermissions, String targetAbsoluteDir, String targetFile) throws CommandFailureException;
+    CommandOutput changeFileMode(Jvm jvm, String modifiedPermissions, String targetAbsoluteDir, String targetFile) throws CommandFailureException;
 }

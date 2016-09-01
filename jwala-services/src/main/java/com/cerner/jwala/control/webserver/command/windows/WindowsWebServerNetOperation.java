@@ -76,7 +76,7 @@ public enum WindowsWebServerNetOperation implements ServiceCommandBuilder {
             return new ExecCommand("if [ ! -e \"" + aParams[0] + "\" ]; then /usr/bin/mkdir -p " + aParams[0] + "; fi;");
         }
     },
-    MAKE_UNIX_EXEC(WebServerControlOperation.MAKE_UNIX_EXEC) {
+    MAKE_UNIX_EXEC(WebServerControlOperation.CHANGE_FILE_MODE) {
         @Override
         public ExecCommand buildCommandForService(String aServiceName, String... aParams) {
             return new ExecCommand("/usr/bin/chmod " + aParams[0] + " " + aParams[1] + "/" + aParams[2]);

@@ -1,9 +1,9 @@
 apply plugin: 'de.undercouch.download'
 apply plugin: 'maven-publish'
 
+import org.apache.tools.ant.filters.FixCrLfFilter
 import de.undercouch.gradle.tasks.download.Download
 import groovy.sql.Sql
-import org.apache.tools.ant.filters.*;
 
 configurations {
     compile {
@@ -66,14 +66,20 @@ task deleteDownloadedZip(dependsOn: downloadAndUnzipTomcat, type: Delete) {
 }
 
 task copyConfigurationOverrides(dependsOn: deleteDownloadedZip, type: Copy) {
-    from('src/main/resources')
-    filter { it.replaceAll('@@buildVersion@@', "$buildVersion") }
-    filter(FixCrLfFilter.class,
-        eol:FixCrLfFilter.CrLf.newInstance("lf")) //convert to unix format
+    from('src/main/resources') {
+        filter { it.replaceAll('@@buildVersion@@', "$buildVersion") }
+    }
+
+    from('src/main/resources') {
+        include '**/*.sh'
+        filter(FixCrLfFilter.class,
+                eol: FixCrLfFilter.CrLf.newInstance("lf")) //convert to unix format
+    }
+
     into("$buildDir/$tomcatDir")
 }
 
-task deleteReadMeFiles(dependsOn: copyConfigurationOverrides, type:Delete){
+task deleteReadMeFiles(dependsOn: copyConfigurationOverrides, type: Delete) {
     delete fileTree("$buildDir/$tomcatDir") {
         include '**/ReadMe.txt'
     }

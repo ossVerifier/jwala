@@ -180,8 +180,8 @@ public class WebServerControlServiceImplVerifyTest extends VerificationBehaviorS
         WebServer mockWebServer = mock(WebServer.class);
         when(mockWebServer.getName()).thenReturn("test-ws");
         when(mockWebServer.getHost()).thenReturn("test-host");
-        webServerControlService.makeExecutableUnixFormat(mockWebServer, "777", "./target", "*");
-        verify(commandExecutor).executeRemoteCommand(anyString(), anyString(), eq(WebServerControlOperation.MAKE_UNIX_EXEC), any(WindowsWebServerPlatformCommandProvider.class), anyString(), anyString(), anyString());
+        webServerControlService.changeFileMode(mockWebServer, "777", "./target", "*");
+        verify(commandExecutor).executeRemoteCommand(anyString(), anyString(), eq(WebServerControlOperation.CHANGE_FILE_MODE), any(WindowsWebServerPlatformCommandProvider.class), anyString(), anyString(), anyString());
     }
 
     @Test

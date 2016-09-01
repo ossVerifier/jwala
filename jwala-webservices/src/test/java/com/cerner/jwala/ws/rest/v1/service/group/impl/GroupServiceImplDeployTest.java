@@ -440,7 +440,7 @@ public class GroupServiceImplDeployTest {
         when(mockResourceService.generateResourceGroup()).thenReturn(new ResourceGroup());
         when(mockWebServerControlService.controlWebServer(any(ControlWebServerRequest.class), any(User.class))).thenReturn(successCommandOutput);
         when(mockWebServerControlService.createDirectory(any(WebServer.class), anyString())).thenReturn(successCommandOutput);
-        when(mockWebServerControlService.makeExecutableUnixFormat(any(WebServer.class), anyString(), anyString(), anyString())).thenReturn(successCommandOutput);
+        when(mockWebServerControlService.changeFileMode(any(WebServer.class), anyString(), anyString(), anyString())).thenReturn(successCommandOutput);
         when(mockWebServerService.generateHttpdConfig(anyString(), any(ResourceGroup.class))).thenReturn("httpd.conf content");
         when(mockWebServerControlService.secureCopyFile(anyString(), anyString(), anyString(), anyString())).thenReturn(successCommandOutput);
         when(mockWebServerService.generateInvokeWSBat(any(WebServer.class))).thenReturn("invokeWS.bat content");
@@ -493,7 +493,7 @@ public class GroupServiceImplDeployTest {
         when(mockJvmService.getJvm(anyString())).thenReturn(mockJvm);
         when(mockJvmControlService.controlJvm(any(ControlJvmRequest.class), any(User.class))).thenReturn(successCommandOutput);
         when(mockJvmControlService.createDirectory(any(Jvm.class), anyString())).thenReturn(successCommandOutput);
-        when(mockJvmControlService.makeExecutableUnixFormat(any(Jvm.class), anyString(), anyString(), anyString())).thenReturn(successCommandOutput);
+        when(mockJvmControlService.changeFileMode(any(Jvm.class), anyString(), anyString(), anyString())).thenReturn(successCommandOutput);
         when(mockJvmControlService.secureCopyFile(any(ControlJvmRequest.class), anyString(), anyString(), anyString())).thenReturn(successCommandOutput);
 
         Response response = groupServiceRest.generateGroupJvms(new Identifier<Group>(111L), mockAuthUser);

@@ -76,12 +76,12 @@ public enum WindowsWebServerNetOperation implements ServiceCommandBuilder {
             return new ExecCommand("if [ ! -e \"" + aParams[0] + "\" ]; then /usr/bin/mkdir -p " + aParams[0] + "; fi;");
         }
     },
-    CHANGE_FILE_MODE(WebServerControlOperation.MAKE_UNIX_EXEC) {
+    CHANGE_FILE_MODE(WebServerControlOperation.CHANGE_FILE_MODE) {
         @Override
         public ExecCommand buildCommandForService(String aServiceName, String... aParams) {
             final String directory = aParams[1].replaceAll("\\\\","/");
             String cygwinDir = "`" + CYGPATH.toString() + " " + directory + "`";
-            return new ExecCommand("/usr/bin/chmod " + aParams[0] + " " + cygwinDir + "/" + aParams[2] + "; pushd " + cygwinDir + "; /usr/bin/sed -i 's/\\r//' " + aParams[2] +"; popd");
+            return new ExecCommand("/usr/bin/chmod " + aParams[0] + " " + cygwinDir + "/" + aParams[2]);
         }
     },
     CHECK_FILE_EXISTS(WebServerControlOperation.CHECK_FILE_EXISTS) {

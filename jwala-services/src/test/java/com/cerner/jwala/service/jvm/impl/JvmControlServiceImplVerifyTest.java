@@ -252,8 +252,8 @@ public class JvmControlServiceImplVerifyTest extends VerificationBehaviorSupport
         Jvm mockJvm = mock(Jvm.class);
         when(mockJvm.getJvmName()).thenReturn("test-jvm");
         when(mockJvm.getHostName()).thenReturn("test-host");
-        jvmControlService.makeExecutableUnixFormat(mockJvm, "777", "./target", "*");
-        verify(commandExecutor).executeRemoteCommand(anyString(), anyString(), eq(JvmControlOperation.MAKE_UNIX_EXEC), any(WindowsJvmPlatformCommandProvider.class), anyString(), anyString(), anyString());
+        jvmControlService.changeFileMode(mockJvm, "777", "./target", "*");
+        verify(commandExecutor).executeRemoteCommand(anyString(), anyString(), eq(JvmControlOperation.CHANGE_FILE_MODE), any(WindowsJvmPlatformCommandProvider.class), anyString(), anyString(), anyString());
     }
 
     @Test

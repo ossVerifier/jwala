@@ -350,11 +350,11 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
         }
 
         // make sure the scripts are executable
-        if (!webServerControlService.makeExecutableUnixFormat(webServer, "a+x", tocScriptsPath, "*.sh").getReturnCode().wasSuccessful()) {
+        if (!webServerControlService.changeFileMode(webServer, "a+x", tocScriptsPath, "*.sh").getReturnCode().wasSuccessful()) {
             LOGGER.error("Failed to update the permissions in {} during the creation of {}", tocScriptsPath, webServerName);
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to update the permissions in " + sourceInvokeWsServicePath + " during the creation of " + webServerName);
         }
-        if (!webServerControlService.makeExecutableUnixFormat(webServer, "a+x", destHttpdConfPath, "*.sh").getReturnCode().wasSuccessful()) {
+        if (!webServerControlService.changeFileMode(webServer, "a+x", destHttpdConfPath, "*.sh").getReturnCode().wasSuccessful()) {
             LOGGER.error("Failed to update the permissions in {} during the creation of {}", destHttpdConfPath, webServerName);
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to update the permissions in " + destHttpdConfPath+ " during the creation of " + webServerName);
         }

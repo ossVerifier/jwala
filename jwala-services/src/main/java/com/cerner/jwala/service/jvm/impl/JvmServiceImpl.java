@@ -386,7 +386,7 @@ public class JvmServiceImpl implements JvmService {
         }
 
         // make sure the scripts are executable
-        if (!jvmControlService.makeExecutableUnixFormat(jvm, "a+x", tocScriptsPath, "*.sh").getReturnCode().wasSuccessful()) {
+        if (!jvmControlService.changeFileMode(jvm, "a+x", tocScriptsPath, "*.sh").getReturnCode().wasSuccessful()) {
             String message = "Failed to change the file permissions in " + tocScriptsPath + duringCreationMessage + jvmName;
             LOGGER.error(message);
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, message);
@@ -402,6 +402,7 @@ public class JvmServiceImpl implements JvmService {
         LOGGER.debug("generated JVM directory location: {}", jvmResourcesNameDir);
 
         final File generatedDir = new File("./" + jvmName);
+        String configJarPath;
         try {
             // copy the tomcat instance-template directory
             final File srcDir = new File(TEMPLATE_DIR);
@@ -432,20 +433,13 @@ public class JvmServiceImpl implements JvmService {
 
             // create the logs directory
             createDirectory(destDirPath + "/logs");
-        } catch (FileNotFoundException e) {
-            LOGGER.error("Bad Stream: Failed to create file", e);
-            throw new InternalErrorException(AemFaultType.BAD_STREAM, "Failed to create file", e);
-        } catch (IOException e) {
-            LOGGER.error("Bad Stream: Failed to write file", e);
-            throw new InternalErrorException(AemFaultType.BAD_STREAM, "Failed to write file", e);
-        }
 
-        // jar up the file
-        String jvmConfigTar = jvmName + CONFIG_JAR;
-        JarOutputStream target;
-        final String configJarPath = jvmGeneratedResourcesTempDir + "/" + jvmConfigTar;
-        LOGGER.info("Creating JVM jar {}", configJarPath);
-        try {
+            // jar up the file
+            String jvmConfigTar = jvmName + CONFIG_JAR;
+            JarOutputStream target;
+            configJarPath = jvmGeneratedResourcesTempDir + "/" + jvmConfigTar;
+            LOGGER.info("Creating JVM jar {}", configJarPath);
+
             final File jvmResourcesDirFile = new File(jvmGeneratedResourcesTempDir);
             if (!jvmResourcesDirFile.exists() && !jvmResourcesDirFile.mkdir()) {
                 LOGGER.error("Could not create {} for JVM resources generation {}", jvmGeneratedResourcesTempDir, jvmName);
@@ -456,10 +450,15 @@ public class JvmServiceImpl implements JvmService {
             target.close();
             LOGGER.debug("created resources at {}, copying to {}", generatedDir.getAbsolutePath(), jvmGeneratedResourcesTempDir);
             FileUtils.copyDirectoryToDirectory(generatedDir, jvmResourcesDirFile);
-            FileUtils.deleteDirectory(generatedDir);
         } catch (IOException e) {
             LOGGER.error("Failed to generate the config jar for {}", jvmName, e);
             throw new InternalErrorException(AemFaultType.BAD_STREAM, "Failed to generate the resources jar for " + jvmName, e);
+        } finally {
+            try {
+                FileUtils.deleteDirectory(generatedDir);
+            } catch (IOException e) {
+                LOGGER.error("Failed to clean up the staging directory " + generatedDir, e);
+            }
         }
 
         LOGGER.info("Generation of configuration tar SUCCEEDED for {}: {}", jvmName, configJarPath);
@@ -490,7 +489,7 @@ public class JvmServiceImpl implements JvmService {
         // make sure the start/stop scripts are executable
         String instancesDir = ApplicationProperties.get("remote.paths.instances");
         final String targetAbsoluteDir = instancesDir + "/" + jvm.getJvmName() + "/bin";
-        if (!jvmControlService.makeExecutableUnixFormat(jvm, "a+x", targetAbsoluteDir, "*.sh").getReturnCode().wasSuccessful()) {
+        if (!jvmControlService.changeFileMode(jvm, "a+x", targetAbsoluteDir, "*.sh").getReturnCode().wasSuccessful()) {
             String message = "Failed to change the file permissions in " + targetAbsoluteDir + " for " + jvm.getJvmName();
             LOGGER.error(message);
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, message);

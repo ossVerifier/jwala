@@ -208,11 +208,11 @@ public class WebServerControlServiceImpl implements WebServerControlService {
     }
 
     @Override
-    public CommandOutput makeExecutableUnixFormat(WebServer webServer, String fileMode, String targetDirPath, String targetFile) throws CommandFailureException {
+    public CommandOutput changeFileMode(WebServer webServer, String fileMode, String targetDirPath, String targetFile) throws CommandFailureException {
         return commandExecutor.executeRemoteCommand(
                 webServer.getName(),
                 webServer.getHost(),
-                WebServerControlOperation.MAKE_UNIX_EXEC,
+                WebServerControlOperation.CHANGE_FILE_MODE,
                 new WindowsWebServerPlatformCommandProvider(),
                 fileMode,
                 targetDirPath,
