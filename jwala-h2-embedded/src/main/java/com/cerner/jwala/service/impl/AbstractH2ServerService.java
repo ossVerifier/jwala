@@ -1,6 +1,5 @@
 package com.cerner.jwala.service.impl;
 
-import com.cerner.jwala.service.DbServerService;
 import com.cerner.jwala.service.DbServerServiceException;
 import org.h2.tools.Server;
 import org.slf4j.Logger;
@@ -10,11 +9,11 @@ import java.sql.SQLException;
 import java.util.Arrays;
 
 /**
- * Implement {@link DbServerService}
+ * A partial contract for H2 database server functionality
  *
  * Created by JC043760 on 8/30/2016
  */
-abstract class AbstractH2ServerService implements DbServerService {
+abstract class AbstractH2ServerService {
 
     private Server server;
 
@@ -26,7 +25,6 @@ abstract class AbstractH2ServerService implements DbServerService {
         this.serverParams = serverParams.replaceAll(" ", "").split(",");
     }
 
-    @Override
     public void startServer() {
         if (server == null) {
             server = createServer(serverParams);
@@ -43,7 +41,6 @@ abstract class AbstractH2ServerService implements DbServerService {
         }
     }
 
-    @Override
     public void stopServer() {
         if (server != null && server.isRunning(true)) {
             logger.info("Stopping H2 Server...");
@@ -51,7 +48,6 @@ abstract class AbstractH2ServerService implements DbServerService {
         }
     }
 
-    @Override
     public boolean isServerRunning() {
         return server != null && server.isRunning(true);
     }
