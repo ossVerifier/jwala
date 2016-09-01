@@ -1,8 +1,10 @@
 package com.cerner.jwala.service.jvm.state;
 
+import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
 import com.cerner.jwala.common.domain.model.jvm.JvmState;
+import com.cerner.jwala.service.jvm.JvmService;
 import com.cerner.jwala.service.jvm.JvmStateService;
 import org.apache.catalina.LifecycleState;
 import org.apache.commons.lang3.StringUtils;
@@ -12,11 +14,13 @@ import org.junit.Test;
 import org.mockito.Mock;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 /**
@@ -33,10 +37,13 @@ public class JvmStateReceiverAdapterTest {
     @Mock
     private JvmStateService mockJvmStateService;
 
+    @Mock
+    private JvmService mockJvmService;
+
     @Before
     public void setup() {
         initMocks(this);
-        jvmStateReceiverAdapter = new JvmStateReceiverAdapter(mockJvmStateService);
+        jvmStateReceiverAdapter = new JvmStateReceiverAdapter(mockJvmStateService, mockJvmService);
     }
 
     @Test
@@ -83,6 +90,54 @@ public class JvmStateReceiverAdapterTest {
         jvmStateReceiverAdapter.receive(msg);
         verify(mockJvmStateService, never()).updateState(eq(jvmId), eq(JvmState.JVM_STOPPING), eq(StringUtils.EMPTY));
     }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    public void testReceiveNullId() {
+        final Identifier<Jvm> jvmId = new Identifier<>("1");
+        final Map<Object, Object> serverInfoMap = new HashMap();
+        serverInfoMap.put("ID", null);
+        serverInfoMap.put("STATE", LifecycleState.STOPPING);
+
+        msg = new Message();
+        msg.setObject(serverInfoMap);
+
+        jvmStateReceiverAdapter.receive(msg);
+        verify(mockJvmStateService, never()).updateState(eq(jvmId), eq(JvmState.JVM_STOPPING), eq(StringUtils.EMPTY));
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    public void testReceiveByJvmName() {
+        final Identifier<Jvm> jvmId = new Identifier<>("1");
+        final Map<Object, Object> serverInfoMap = new HashMap();
+        serverInfoMap.put("NAME", "theJvm");
+        serverInfoMap.put("STATE", LifecycleState.STOPPING);
+
+        when(mockJvmService.getJvm(eq("theJvm"))).thenReturn(new Jvm(jvmId, "theJvm", new HashSet<Group>()));
+
+        msg = new Message();
+        msg.setObject(serverInfoMap);
+
+        jvmStateReceiverAdapter.receive(msg);
+        verify(mockJvmStateService).updateState(eq(jvmId), eq(JvmState.JVM_STOPPING), eq(StringUtils.EMPTY));
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    public void testReceiveByJvmNameButJvmDoesNotExist() {
+        final Identifier<Jvm> jvmId = new Identifier<>("1");
+        final Map<Object, Object> serverInfoMap = new HashMap();
+        serverInfoMap.put("NAME", "nonExistingJvm");
+        serverInfoMap.put("STATE", LifecycleState.STOPPING);
+
+        msg = new Message();
+        msg.setObject(serverInfoMap);
+
+        jvmStateReceiverAdapter.receive(msg);
+        verify(mockJvmStateService, never()).updateState(eq(jvmId), eq(JvmState.JVM_STOPPING), eq(StringUtils.EMPTY));
+    }
+
 
     private enum Key {
         ID, STATE

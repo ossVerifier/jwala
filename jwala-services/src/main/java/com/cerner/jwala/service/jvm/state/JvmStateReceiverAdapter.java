@@ -3,6 +3,7 @@ package com.cerner.jwala.service.jvm.state;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
 import com.cerner.jwala.common.domain.model.jvm.JvmState;
+import com.cerner.jwala.service.jvm.JvmService;
 import com.cerner.jwala.service.jvm.JvmStateService;
 import org.apache.catalina.LifecycleState;
 import org.apache.commons.lang3.StringUtils;
@@ -24,8 +25,10 @@ public class JvmStateReceiverAdapter extends ReceiverAdapter {
     private static final Logger LOGGER = LoggerFactory.getLogger(JvmStateReceiverAdapter.class);
     private static final String STATE_KEY = "STATE";
     private static final String ID_KEY = "ID";
+    private static final String NAME_KEY = "NAME";
 
     private final JvmStateService jvmStateService;
+    private final JvmService jvmService;
 
     private final static Map<LifecycleState, JvmState> LIFECYCLE_JWALA_JVM_STATE_REF_MAP = new HashMap<>();
 
@@ -46,8 +49,9 @@ public class JvmStateReceiverAdapter extends ReceiverAdapter {
         LIFECYCLE_JWALA_JVM_STATE_REF_MAP.put(LifecycleState.STOPPING_PREP, JvmState.JVM_STOPPING);
     }
 
-    public JvmStateReceiverAdapter(final JvmStateService jvmStateService) {
+    public JvmStateReceiverAdapter(final JvmStateService jvmStateService, final JvmService jvmService) {
         this.jvmStateService = jvmStateService;
+        this.jvmService = jvmService;
     }
 
     @Override
@@ -56,7 +60,7 @@ public class JvmStateReceiverAdapter extends ReceiverAdapter {
         final Address src = jgroupMessage.getSrc();
         final Map serverInfoMap = (Map) jgroupMessage.getObject();
         final JvmState jvmState;
-        final String jvmId;
+        String jvmId;
         LOGGER.debug("Received JGroups JVM state message {} {}", src, serverInfoMap);
 
         final LifecycleState lifecycleState = (LifecycleState) serverInfoMap.get(STATE_KEY);
@@ -79,7 +83,23 @@ public class JvmStateReceiverAdapter extends ReceiverAdapter {
                 return;
             }
         } else {
-            jvmId = serverInfoMap.get(ID_KEY).toString();
+            final Object id = serverInfoMap.get(ID_KEY);
+            final Object name = serverInfoMap.get(NAME_KEY);
+
+            if (id != null) {
+                jvmId = id.toString();
+            } else if (name != null) {
+                final Jvm jvm = jvmService.getJvm(name.toString());
+                if (jvm == null) {
+                    LOGGER.error("Jvm {} was not found! Cannot update JVM state.", name.toString());
+                    return;
+                }
+                jvmId = jvm.getId().getId().toString();
+            } else {
+                LOGGER.error("Jvm id or name was not provided! Cannot update JVM state.");
+                return;
+            }
+
             jvmState = LIFECYCLE_JWALA_JVM_STATE_REF_MAP.get(lifecycleState);
         }
 
