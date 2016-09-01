@@ -14,7 +14,7 @@ import java.util.Arrays;
  *
  * Created by JC043760 on 8/30/2016
  */
-abstract class AbstractH2ServerServiceImpl implements DbServerService {
+abstract class AbstractH2ServerService implements DbServerService {
 
     private Server server;
 
@@ -22,7 +22,7 @@ abstract class AbstractH2ServerServiceImpl implements DbServerService {
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    public AbstractH2ServerServiceImpl(final String serverParams) {
+    public AbstractH2ServerService(final String serverParams) {
         this.serverParams = serverParams.replaceAll(" ", "").split(",");
     }
 

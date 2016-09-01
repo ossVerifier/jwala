@@ -8,11 +8,11 @@ import org.slf4j.LoggerFactory;
 import java.sql.SQLException;
 
 /**
- * H2 TCP Server implementation of {@link AbstractH2ServerServiceImpl}
+ * H2 TCP Server implementation of {@link AbstractH2ServerService}
  *
  * Created by JC043760 on 8/25/2016
  */
-public class H2TcpServerServiceImpl extends AbstractH2ServerServiceImpl {
+public class H2TcpServerServiceImpl extends AbstractH2ServerService {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(H2TcpServerServiceImpl.class);
 
