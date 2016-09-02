@@ -208,7 +208,7 @@ Header edit Location ^http://(.*)$  https://$1
 </Directory>
 
 
-<Files "stp.png">
+<Files "jwala.png">
     Order Deny,Allow
     Deny from all
     Allow from all

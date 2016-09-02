@@ -81,10 +81,10 @@ public class AsyncWebServerStateRetrievalScheduledTaskHandlerTest {
     @Before
     public void setup() throws IOException {
         webServer1 = new WebServer(new Identifier(1L), new ArrayList(), null, "localhost", 80, null,
-                new Path("/stp.png"), null, null, null, WebServerReachableState.WS_UNREACHABLE, null);
+                new Path("/jwala.png"), null, null, null, WebServerReachableState.WS_UNREACHABLE, null);
 
         webServer2 = new WebServer(new Identifier(2L), new ArrayList(), null, "localhost", 90, null,
-                new Path("/stp.png"), null, null, null, WebServerReachableState.WS_UNREACHABLE, null);
+                new Path("/jwala.png"), null, null, null, WebServerReachableState.WS_UNREACHABLE, null);
 
         webServers = new ArrayList<>();
         webServers.add(webServer1);

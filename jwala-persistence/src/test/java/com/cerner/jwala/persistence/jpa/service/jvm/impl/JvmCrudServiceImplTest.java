@@ -59,7 +59,7 @@ public class JvmCrudServiceImplTest {
         user.addToThread();
 
         String testJvmName = "testJvmName";
-        CreateJvmRequest createJvmRequest = new CreateJvmRequest(testJvmName, "testHostName", 100, 101, 102, 103, 104, new Path("./stp.png"), "", null, null);
+        CreateJvmRequest createJvmRequest = new CreateJvmRequest(testJvmName, "testHostName", 100, 101, 102, 103, 104, new Path("./jwala.png"), "", null, null);
         JpaJvm jpaJvm = jvmCrudService.createJvm(createJvmRequest);
         jvm = new Jvm(Identifier.<Jvm>id(jpaJvm.getId()), jpaJvm.getName(), new HashSet<Group>());
     }
@@ -125,7 +125,7 @@ public class JvmCrudServiceImplTest {
     @Test
     public void testUpdateState() throws InterruptedException {
         final CreateJvmRequest createJvmRequest = new CreateJvmRequest("jvmName", "hostName", 0, 0, 0, 0, 0,
-                new Path("./stp.png"), StringUtils.EMPTY, null, null);
+                new Path("./jwala.png"), StringUtils.EMPTY, null, null);
         final JpaJvm newJpaJvm = jvmCrudService.createJvm(createJvmRequest);
         final Identifier<Jvm> jpaJvmId = new Identifier<>(newJpaJvm.getId());
         assertEquals(1, jvmCrudService.updateState(jpaJvmId, JvmState.JVM_STOPPED));
@@ -134,7 +134,7 @@ public class JvmCrudServiceImplTest {
     @Test
     public void testUpdateErrorStatus() {
         final CreateJvmRequest createJvmRequest = new CreateJvmRequest("jvmName", "hostName", 0, 0, 0, 0, 0,
-                new Path("./stp.png"), StringUtils.EMPTY, null, null);
+                new Path("./jwala.png"), StringUtils.EMPTY, null, null);
         final JpaJvm newJpaJvm = jvmCrudService.createJvm(createJvmRequest);
         final Identifier<Jvm> jpaJvmId = new Identifier<>(newJpaJvm.getId());
         assertEquals(1, jvmCrudService.updateErrorStatus(jpaJvmId, "error!"));
@@ -143,7 +143,7 @@ public class JvmCrudServiceImplTest {
     @Test
     public void testUpdateStateAndErrSts() {
         final CreateJvmRequest createJvmRequest = new CreateJvmRequest("jvmName", "hostName", 0, 0, 0, 0, 0,
-                new Path("./stp.png"), StringUtils.EMPTY, null, null);
+                new Path("./jwala.png"), StringUtils.EMPTY, null, null);
         final JpaJvm newJpaJvm = jvmCrudService.createJvm(createJvmRequest);
         final Identifier<Jvm> jpaJvmId = new Identifier<>(newJpaJvm.getId());
         assertEquals(1, jvmCrudService.updateState(jpaJvmId, JvmState.JVM_FAILED, "error!"));
