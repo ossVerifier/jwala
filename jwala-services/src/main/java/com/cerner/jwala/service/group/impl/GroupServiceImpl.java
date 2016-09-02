@@ -480,7 +480,7 @@ public class GroupServiceImpl implements GroupService {
             }
             if(metaData.isUnpack()) {
                 LOGGER.debug("the file needs to be unpacked at the destination {}", destPath);
-                final String tocScriptsPath = AemControl.Properties.USER_TOC_SCRIPTS_PATH.getValue();
+                final String tocScriptsPath = AemControl.Properties.USER_JWALA_SCRIPTS_PATH.getValue();
                 LOGGER.debug("creating the toc scirpts path {}", tocScriptsPath);
                 commandOutput = remoteCommandExecutor.executeRemoteCommand(
                         null,

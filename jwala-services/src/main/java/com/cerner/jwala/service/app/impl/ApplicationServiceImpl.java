@@ -456,7 +456,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                     LOGGER.info("Unpacking war {} on host {}", warName, host);
 
                     // create the .toc directory as the destination for the unpack-war script
-                    final String tocScriptsPath = AemControl.Properties.USER_TOC_SCRIPTS_PATH.getValue();
+                    final String tocScriptsPath = AemControl.Properties.USER_JWALA_SCRIPTS_PATH.getValue();
                     commandOutput = applicationCommandExecutor.executeRemoteCommand(null, host, ApplicationControlOperation.CREATE_DIRECTORY, new WindowsApplicationPlatformCommandProvider(), tocScriptsPath);
                     if (!commandOutput.getReturnCode().wasSuccessful()) {
                         return commandOutput; // return immediately if creating the dir failed

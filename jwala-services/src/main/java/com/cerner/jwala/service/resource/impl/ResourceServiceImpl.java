@@ -706,7 +706,7 @@ public class ResourceServiceImpl implements ResourceService {
 
         // TODO put this back in when we start processing events for JVMs, and then make it generic for Web Servers, Applications, etc.
         // don't add any usage of the toc user internal directory to the history
-        /*if (!AemControl.Properties.USER_TOC_SCRIPTS_PATH.getValue().endsWith(fileName)) {
+        /*if (!AemControl.Properties.USER_JWALA_SCRIPTS_PATH.getValue().endsWith(fileName)) {
             final String eventDescription = "SECURE COPY " + fileName;
             historyService.createHistory(hostName, new ArrayList<>(*//*jvm.getGroups()*//*), eventDescription, EventType.USER_ACTION, userId);
             messagingService.send(new JvmHistoryEvent(jvm.getId(), eventDescription, userId, DateTime.now(), JvmControlOperation.SECURE_COPY));

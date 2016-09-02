@@ -311,7 +311,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
     }
 
     protected void createScriptsDirectory(WebServer webServer) throws CommandFailureException {
-        final String scriptsDir = AemControl.Properties.USER_TOC_SCRIPTS_PATH.getValue();
+        final String scriptsDir = AemControl.Properties.USER_JWALA_SCRIPTS_PATH.getValue();
 
         final CommandOutput result = webServerControlService.createDirectory(webServer, scriptsDir);
 
@@ -343,7 +343,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
 
         final String invokeWsScriptName = AemControl.Properties.INVOKE_WS_SERVICE_SCRIPT_NAME.getValue();
         final String sourceInvokeWsServicePath = AemControl.Properties.SCRIPTS_PATH + "/" + invokeWsScriptName;
-        final String tocScriptsPath = AemControl.Properties.USER_TOC_SCRIPTS_PATH.getValue();
+        final String tocScriptsPath = AemControl.Properties.USER_JWALA_SCRIPTS_PATH.getValue();
         if (!webServerControlService.secureCopyFile(webServerName, sourceInvokeWsServicePath, tocScriptsPath, userId).getReturnCode().wasSuccessful()) {
             LOGGER.error("Failed to secure copy file {} during creation of {}", sourceInvokeWsServicePath, webServerName);
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to secure copy file " + sourceInvokeWsServicePath + " during the creation of " + webServerName);

@@ -34,7 +34,7 @@ public enum WindowsApplicationNetOperation implements ServiceCommandBuilder {
             final String appWarName = aParams[0];
             final String appWarsDirPath = ApplicationProperties.get("stp.webapps.dir");
             final String javaHomePath = ApplicationProperties.get("stp.java.home");
-            final String unpackWarScriptPath = "`" + CYGPATH + " " + USER_TOC_SCRIPTS_PATH + "/" + UNPACK_WAR_SCRIPT_NAME + "`";
+            final String unpackWarScriptPath = "`" + CYGPATH + " " + USER_JWALA_SCRIPTS_PATH + "/" + UNPACK_WAR_SCRIPT_NAME + "`";
             return new ExecCommand(unpackWarScriptPath, appWarsDirPath, javaHomePath, appWarName);
         }
     },

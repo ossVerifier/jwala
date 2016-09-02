@@ -64,7 +64,7 @@ public enum WindowsWebServerNetOperation implements ServiceCommandBuilder {
         @Override
         public ExecCommand buildCommandForService(String aServiceName, String... aParams) {
             return new ExecCommand(
-                    cygpathWrapper(INVOKE_WS_SERVICE_SCRIPT_NAME, USER_TOC_SCRIPTS_PATH + "/"),
+                    cygpathWrapper(INVOKE_WS_SERVICE_SCRIPT_NAME, USER_JWALA_SCRIPTS_PATH + "/"),
                     aServiceName,
                     WEBSERVER_CONF_PATH
             );
