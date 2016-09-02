@@ -101,7 +101,7 @@ task copyJwalaH2EmbededJar(dependsOn: copyJwalaDependenciesToTomcatLib, type: Co
     project(':jwala-h2-embedded') {
         dependsOn(build)
     }
-    from project(':jwala-h2-embeded').file("build/libs")
+    from project(':jwala-h2-embedded').file("build/libs")
     into file("$buildDir/$tomcatDir/lib")
 }
 
