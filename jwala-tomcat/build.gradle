@@ -97,7 +97,15 @@ task copyJwalaDependenciesToTomcatLib(dependsOn: copyTomcatExtras, type: Copy) {
     into("$buildDir/$tomcatDir/lib")
 }
 
-task copyJwalaWebappWar(dependsOn: copyJwalaDependenciesToTomcatLib, type: Copy) {
+task copyJwalaH2EmbededJar(dependsOn: copyJwalaDependenciesToTomcatLib, type: Copy) {
+    project(':jwala-h2-embedded') {
+        dependsOn(build)
+    }
+    from project(':jwala-h2-embedded').file("build/libs")
+    into file("$buildDir/$tomcatDir/lib")
+}
+
+task copyJwalaWebappWar(dependsOn: copyJwalaH2EmbededJar, type: Copy) {
     project(':jwala-webapp') {
         dependsOn(build)
     }

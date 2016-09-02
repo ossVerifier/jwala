@@ -3,6 +3,10 @@
     <Loader className="org.apache.catalina.loader.VirtualWebappLoader"
             virtualClasspath="\\{JWALA_HOME}/app/data/toc/conf"/>
 
+    <Listener className="com.cerner.jwala.listener.H2LifecycleListener"
+              tcpServerParam="-tcpPort,9094,-tcpAllowOthers,-baseDir,${catalina.base}\\data\\db"
+              webServerParam="-webSSL,-webPort,8084,-webAllowOthers"/>
+
     <Resource name="jdbc/toc-xa"
           auth="Container"
           type="javax.sql.DataSource"
