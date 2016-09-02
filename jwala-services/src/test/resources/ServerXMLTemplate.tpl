@@ -36,7 +36,7 @@
             id="${jvmId}"
             instanceId="${jvmId}"
             type="JVM"
-            jmsConnectionFactory="java:/jms/toc-cf"
+            jmsConnectionFactory="java:/jms/jwala-cf"
             jmsDestination="java:/jms/toc-status"
             jmsTtl="60"
             jmsTtlUnit="SECONDS"
@@ -46,20 +46,7 @@
             schedulerDelayUnit="SECONDS"
             schedulerThreadCount="1"
             schedulerThreadNamePrefix="JMS Reporting Thread"/>
-  <!-- commented out until we have jmx ports in jvm definitions in TOC -->
-  <!--Listener className="org.apache.catalina.mbeans.JmxRemoteLifecycleListener"
-            rmiRegistryPortPlatform="@toc.jmx.rmiRegistryPortPlatform@" rmiServerPortPlatform="@toc.jmx.rmiServerPortPlatform@" /-->
 
-  <Listener className="com.siemens.cto.infrastructure.report.tomcat.FailFastLifeCycleListener"
-            jmsConnectionFactory="java:/jms/toc-cf"
-            jmsDestination="java:/jms/toc-status"
-            systemExitCodeOnError="125"
-            testMessageTimeToLiveMs="125"
-            timeToWaitForJmsResponseMs="5000"
-			exitOnError="false" />
-  
-  <Listener className="com.siemens.cto.infrastructure.report.tomcat.FastJmsStartLifeCycleListener" />
-  
   <!-- Global JNDI resources
        Documentation at /docs/jndi-resources-howto.html
   -->
@@ -80,7 +67,7 @@
               address="@toc.jms.statusTopic@"/>
 
     <Resource auth="Container"
-              name="jms/toc-cf"
+              name="jms/jwala-cf"
               factory="org.apache.naming.factory.BeanFactory"
               type="com.tibco.tibjms.TibjmsConnectionFactory"
               serverUrl="ssl://@tibco.ems.host@:@tibco.ems.port@"

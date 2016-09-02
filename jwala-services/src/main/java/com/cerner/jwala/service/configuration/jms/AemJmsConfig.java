@@ -13,9 +13,9 @@ import javax.naming.NamingException;
 
 @Configuration
 public class AemJmsConfig {
-    private static final String JNDI_JMS_CONNECTION_FACTORY = "jms/toc-cf";
-    private static final String JNDI_HEARTBEAT_TOPIC_DESTINATION = "jms/toc-status";
-    private static final String JNDI_UI_TOPIC_DESTINATION = "jms/toc-state-notification";
+    private static final String JNDI_JMS_CONNECTION_FACTORY = "jms/jwala-cf";
+    private static final String JNDI_HEARTBEAT_TOPIC_DESTINATION = "jms/jwala-status";
+    private static final String JNDI_UI_TOPIC_DESTINATION = "jms/jwala-state-notification";
 
     @Bean
     public ConnectionFactory getConnectionFactory() {

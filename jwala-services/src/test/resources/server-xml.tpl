@@ -47,7 +47,7 @@
             id="${it.id.id}"
             instanceId="${it.id.id}"
             type="JVM"
-      jmsConnectionFactory="java:/jms/toc-cf"
+      jmsConnectionFactory="java:/jms/jwala-cf"
       jmsDestination="java:/jms/toc-status"
             jmsTtl="60"
             jmsTtlUnit="SECONDS"
@@ -81,7 +81,7 @@
               address="${jmsQueue}"/>
 
     <Resource auth="Container"
-              name="jms/toc-cf"
+              name="jms/jwala-cf"
               factory="org.apache.naming.factory.BeanFactory"
               type="com.tibco.tibjms.TibjmsConnectionFactory"
               serverUrl="${jmsServer}"
