@@ -39,7 +39,7 @@ var MainArea = React.createClass({
             MainArea.isAdminRole  = response.applicationResponseContent.authorizationEnabled === "false" ||
                                     (response.applicationResponseContent.authorizationEnabled === "true" &&
                                      response.applicationResponseContent.userAuthorities.length !== 0 &&
-                                     response.applicationResponseContent.userAuthorities[0].authority === "TOC Admin")
+                                     response.applicationResponseContent.userAuthorities[0].authority === tocVars["jwalaRoleAdmin"])
             self.setState({hasRole: true});
         }).caught(function(response) {
                         console.log(response);
