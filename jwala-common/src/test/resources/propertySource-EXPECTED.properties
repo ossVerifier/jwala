@@ -19,7 +19,7 @@ hct.ldap.password.encrypted=9hQ4KpxpM8e/VX3KkT2VYg==
 hct.ldap.userBase=dc=usmlvv1d0a,dc=smshsc,dc=net
 hct.ldap.roleBase=dc=usmlvv1d0a,dc=smshsc,dc=net
 
-# STP Platform Exit Codes
-STP_EXIT_CODE_FAST_FAIL=125
-STP_EXIT_CODE_ABNORMAL_SUCCESS=126
-STP_EXIT_CODE_NO_OP=127
+# JWALA Platform Exit Codes
+JWALA_EXIT_CODE_FAST_FAIL=125
+JWALA_EXIT_CODE_ABNORMAL_SUCCESS=126
+JWALA_EXIT_CODE_NO_OP=127

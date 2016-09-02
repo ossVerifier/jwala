@@ -5,10 +5,10 @@ import com.cerner.jwala.common.exec.ExecCommand;
 import com.cerner.jwala.common.properties.ApplicationProperties;
 import com.cerner.jwala.control.command.ServiceCommandBuilder;
 
-import static com.cerner.jwala.control.AemControl.Properties.*;
-
 import java.util.EnumMap;
 import java.util.Map;
+
+import static com.cerner.jwala.control.AemControl.Properties.*;
 
 public enum WindowsApplicationNetOperation implements ServiceCommandBuilder {
 
@@ -32,8 +32,8 @@ public enum WindowsApplicationNetOperation implements ServiceCommandBuilder {
         @Override
         public ExecCommand buildCommandForService(String aServiceName, String... aParams) {
             final String appWarName = aParams[0];
-            final String appWarsDirPath = ApplicationProperties.get("stp.webapps.dir");
-            final String javaHomePath = ApplicationProperties.get("stp.java.home");
+            final String appWarsDirPath = ApplicationProperties.get("jwala.webapps.dir");
+            final String javaHomePath = ApplicationProperties.get("jwala.java.home");
             final String unpackWarScriptPath = "`" + CYGPATH + " " + USER_TOC_SCRIPTS_PATH + "/" + UNPACK_WAR_SCRIPT_NAME + "`";
             return new ExecCommand(unpackWarScriptPath, appWarsDirPath, javaHomePath, appWarName);
         }

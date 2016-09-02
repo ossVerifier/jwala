@@ -17,7 +17,7 @@ public class AemControl {
 
     public static enum Properties {
         CYGPATH("commands.cygwin.cygpath", "/usr/bin/cygpath"),
-        SCRIPTS_PATH("commands.scripts-path", "/cygdrive/d/stp/siemens/lib/scripts/"),
+        SCRIPTS_PATH("commands.scripts-path", "/cygdrive/d/jwala/siemens/lib/scripts/"),
         USER_TOC_SCRIPTS_PATH("commands.user-toc-scripts", "~/.toc"),
         START_SCRIPT_NAME("commands.cygwin.start-service", "start-service.sh"),
         STOP_SCRIPT_NAME("commands.cygwin.stop-service", "stop-service.sh"),

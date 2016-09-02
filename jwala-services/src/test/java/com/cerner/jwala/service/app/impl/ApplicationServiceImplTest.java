@@ -33,12 +33,8 @@ import com.cerner.jwala.persistence.service.ResourceDao;
 import com.cerner.jwala.service.HistoryService;
 import com.cerner.jwala.service.MessagingService;
 import com.cerner.jwala.service.app.PrivateApplicationService;
-import com.cerner.jwala.service.app.impl.ApplicationServiceImpl;
-import com.cerner.jwala.service.app.impl.DeployApplicationConfException;
-import com.cerner.jwala.service.app.impl.PrivateApplicationServiceImpl;
 import com.cerner.jwala.service.group.GroupService;
 import com.cerner.jwala.service.resource.ResourceService;
-
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -65,7 +61,7 @@ import static org.mockito.Mockito.*;
 @RunWith(MockitoJUnitRunner.class)
 public class ApplicationServiceImplTest {
 
-    static final String META_DATA_TEST_VALUES = "{\"deployPath\":\"./test/deploy-path/conf/stp/localhost\",\"contentType\":\"text/xml\",\"entity\":{\"type\":\"APPLICATION\",\"target\":\"soarcom-hct\",\"group\":\"soarcom-616\",\"parentName\":null,\"deployToJvms\":true},\"templateName\":\"hctXmlTemplate.tpl\",\"deployFileName\":\"hct.xml\"}";
+    static final String META_DATA_TEST_VALUES = "{\"deployPath\":\"./test/deploy-path/conf/jwala/localhost\",\"contentType\":\"text/xml\",\"entity\":{\"type\":\"APPLICATION\",\"target\":\"soarcom-hct\",\"group\":\"soarcom-616\",\"parentName\":null,\"deployToJvms\":true},\"templateName\":\"hctXmlTemplate.tpl\",\"deployFileName\":\"hct.xml\"}";
 
     @Mock
     private ApplicationPersistenceService applicationPersistenceService;
@@ -416,7 +412,7 @@ public class ApplicationServiceImplTest {
         when(jvm.getState()).thenReturn(JvmState.JVM_STOPPED);
         when(jvmPersistenceService.findJvmByExactName(eq("jvm-1"))).thenReturn(jvm);
         final CommandOutput execData = mock(CommandOutput.class);
-        when(execData.getReturnCode()).thenReturn(new ExecReturnCode(ExecReturnCode.STP_EXIT_CODE_NO_OP));
+        when(execData.getReturnCode()).thenReturn(new ExecReturnCode(ExecReturnCode.JWALA_EXIT_CODE_NO_OP));
         when(execData.getStandardError()).thenReturn("No operation!");
         when(remoteCommandExecutor.executeRemoteCommand(
                 anyString(), anyString(), any(ApplicationControlOperation.class), any(WindowsApplicationPlatformCommandProvider.class), anyString(), anyString())).thenReturn(execData);
@@ -435,7 +431,7 @@ public class ApplicationServiceImplTest {
         when(jvm.getState()).thenReturn(JvmState.JVM_STOPPED);
         when(jvmPersistenceService.findJvmByExactName(eq("jvm-1"))).thenReturn(jvm);
         final CommandOutput execData = mock(CommandOutput.class);
-        when(execData.getReturnCode()).thenReturn(new ExecReturnCode(ExecReturnCode.STP_EXIT_CODE_NO_OP));
+        when(execData.getReturnCode()).thenReturn(new ExecReturnCode(ExecReturnCode.JWALA_EXIT_CODE_NO_OP));
         when(execData.getStandardError()).thenReturn("No operation!");
         when(remoteCommandExecutor.executeRemoteCommand(
                 anyString(), anyString(), any(ApplicationControlOperation.class), any(WindowsApplicationPlatformCommandProvider.class), anyString(), anyString())).thenReturn(execData);
@@ -454,7 +450,7 @@ public class ApplicationServiceImplTest {
         when(jvm.getState()).thenReturn(JvmState.JVM_STOPPED);
         when(jvmPersistenceService.findJvmByExactName(eq("jvm-1"))).thenReturn(jvm);
         final CommandOutput execData = mock(CommandOutput.class);
-        when(execData.getReturnCode()).thenReturn(new ExecReturnCode(ExecReturnCode.STP_EXIT_CODE_NO_OP));
+        when(execData.getReturnCode()).thenReturn(new ExecReturnCode(ExecReturnCode.JWALA_EXIT_CODE_NO_OP));
         when(execData.getStandardError()).thenReturn("No operation!");
         when(remoteCommandExecutor.executeRemoteCommand(
                 anyString(), anyString(), any(ApplicationControlOperation.class), any(WindowsApplicationPlatformCommandProvider.class), anyString(), anyString())).thenReturn(execData);

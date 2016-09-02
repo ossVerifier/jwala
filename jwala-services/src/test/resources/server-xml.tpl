@@ -96,12 +96,12 @@
    -->
   <!-- Soarian Tomcat Platform Service 
        Features: SSL enabled, AJP disabled, HTTP disabled 
-       Exploded apps: stpapps
-       Archived apps: by context.xmls in conf/stp/localhost
+       Exploded apps: jwalaapps
+       Archived apps: by context.xmls in conf/jwala/localhost
        -->
-  <Service name="stp">
+  <Service name="jwala">
    <!-- Defines Peter's APR + JSSE compatible port 
-        STP Features: 
+        JWALA Features:
         Compression: Forced on
         Compressable types: text/html,text/xml,text/plain,application/json
         compressionMinSize: 2048 (default)
@@ -136,18 +136,18 @@
      on to the appropriate Host (virtual host).
      Documentation at /docs/config/engine.html -->
      
-     <!-- The STP Engine is the normal standalone Tomcat host 
+     <!-- The JWALA Engine is the normal standalone Tomcat host
           Warning: potential name conflict on jvmRoute -->
-    <Engine name="stp" defaultHost="localhost" jvmRoute="${jvmName}">
+    <Engine name="jwala" defaultHost="localhost" jvmRoute="${jvmName}">
       <!-- Host Features: Standard Host
-           AppBase: stpapps/
+           AppBase: jwalaapps/
            Unpacking: no
            Auto deploy: yes
            Deploy .war/META-INF/context.xml: no
            Customized Error Reports: no
       -->
       <Host name="localhost"  
-            appBase="stpapps"
+            appBase="jwalaapps"
             unpackWARs="false"
             autoDeploy="true"
             deployXML="false" 
@@ -159,12 +159,12 @@
         
         <!-- Access log processes all example.
              Documentation at: /docs/config/valve.html
-             STP Features: Standard Access Log
+             JWALA Features: Standard Access Log
              Daily rotating: yes
              Status request logging can be disabled by adding attribute "status" to the ServletRequest.
              -->
         <Valve className="org.apache.catalina.valves.AccessLogValve" directory="logs"
-               prefix="stp_access_log." suffix=".txt"
+               prefix="jwala_access_log." suffix=".txt"
                pattern="common"
                conditionUnless="status" />
 

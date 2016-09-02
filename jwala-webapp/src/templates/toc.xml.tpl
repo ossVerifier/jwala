@@ -1,7 +1,7 @@
 <Context docBase="${deployPath}/${warName}">
 
     <Loader className="org.apache.catalina.loader.VirtualWebappLoader"
-            virtualClasspath="\\{STP_HOME}/app/data/toc/conf"/>
+            virtualClasspath="\\{JWALA_HOME}/app/data/toc/conf"/>
 
     <Resource name="jdbc/toc-xa"
           auth="Container"

@@ -17,7 +17,7 @@ public enum ApplicationPropertySourceDefinition {
     OPS_GRP_CHILDREN_VIEW_OPEN("opsGrpChildrenViewOpen", "operations.group.children.view.open", "true", VariableStyle.STRING),
     OPS_JVM_MGR_BTN_ENABLED("opsJvmMgrBtnEnabled", "operations.jvm.mgr.btn.enabled", "true", VariableStyle.STRING),
     OPS_JVM_DIAGNOSE_BTN_ENABLED("opsJvmDiagnoseBtnEnabled", "operations.jvm.diagnose.btn.enabled", "true", VariableStyle.STRING),
-    WEBSERVER_HTTPD_CONF_PATH("webserverHttpdConfPath", "paths.httpd.conf", "d:/stp/app/data/httpd/", VariableStyle.STRING);
+    WEBSERVER_HTTPD_CONF_PATH("webserverHttpdConfPath", "paths.httpd.conf", "d:/jwala/app/data/httpd/", VariableStyle.STRING);
 
     private final String variableName;
     private final String propertyKey;

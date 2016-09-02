@@ -1,4 +1,4 @@
-<Context docBase="${vars.'stp.webapps.dir'}/${webApp.warName}">
+<Context docBase="${vars.'jwala.webapps.dir'}/${webApp.warName}">
 
     <Listener className="com.siemens.cto.infrastructure.atomikos.AtomikosTaskManagerLifecycleListener"/>
 
@@ -8,7 +8,7 @@
                  override="false"/>
 
     <Environment name="roleMappingProperties"
-                value="d:/stp/app/properties/hctRoleMapping.properties"
+                value="d:/jwala/app/properties/hctRoleMapping.properties"
                 type="java.lang.String"
                 override="false" />
 
@@ -49,7 +49,7 @@
               xaProperties.reconnAttemptDelay="1000"
               xaProperties.SSLEnableVerifyHost="true"
               xaProperties.SSLEnableVerifyHostName="false"
-              xaProperties.SSLTrustedCertificate="\${STP_HOME}/app/data/security/ems/ctorootca.pem" />
+              xaProperties.SSLTrustedCertificate="\${JWALA_HOME}/app/data/security/ems/ctorootca.pem" />
 
     <Resource auth="Container"
               name="jms/hct-cf"
@@ -64,7 +64,7 @@
               reconnAttemptDelay="1000"
               SSLEnableVerifyHost="true"
               SSLEnableVerifyHostName="false"
-              SSLTrustedCertificate="\${STP_HOME}/app/data/security/ems/ctorootca.pem" />
+              SSLTrustedCertificate="\${JWALA_HOME}/app/data/security/ems/ctorootca.pem" />
 
     <Resource auth="Container"
               name="jms/healthCheckServiceDestination"

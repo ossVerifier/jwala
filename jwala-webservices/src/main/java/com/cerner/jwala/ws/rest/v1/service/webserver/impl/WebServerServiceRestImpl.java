@@ -396,7 +396,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
             CommandOutput commandOutput = webServerControlService.controlWebServer(controlWebServerRequest, user.getUser());
             if (commandOutput.getReturnCode().wasSuccessful()) {
                 LOGGER.info("Delete of windows service {} was successful", webServerName);
-            } else if (ExecReturnCode.STP_EXIT_CODE_SERVICE_DOES_NOT_EXIST == commandOutput.getReturnCode().getReturnCode()) {
+            } else if (ExecReturnCode.JWALA_EXIT_CODE_SERVICE_DOES_NOT_EXIST == commandOutput.getReturnCode().getReturnCode()) {
                 LOGGER.info("No such service found for {} during delete. Continuing with request.", webServerName);
             } else {
                 String standardError =

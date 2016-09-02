@@ -35,7 +35,7 @@
 # least PidFile.
 #
 #ServerRoot ./
-ServerRoot d:/stp/apache-httpd-2.4.10
+ServerRoot d:/jwala/apache-httpd-2.4.10
 
 #
 # Mutex: Allows you to set the mutex mechanism and mutex file directory

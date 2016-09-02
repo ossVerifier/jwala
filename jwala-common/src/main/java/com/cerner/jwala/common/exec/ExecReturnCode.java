@@ -19,12 +19,12 @@ public class ExecReturnCode implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private static final Integer ZERO = 0;
-    public static final int STP_EXIT_CODE_SERVICE_DOES_NOT_EXIST = 36;
-    public static final int STP_EXIT_CODE_FAST_FAIL = 125; /* Use FailFast Listener */
-    public static final int STP_EXIT_CODE_ABNORMAL_SUCCESS = 126;
-    public static final int STP_EXIT_CODE_NO_OP = 127;
-    public static final int STP_EXIT_NO_SUCH_SERVICE = 123;
-    public static final int STP_EXIT_PROCESS_KILLED = 255;
+    public static final int JWALA_EXIT_CODE_SERVICE_DOES_NOT_EXIST = 36;
+    public static final int JWALA_EXIT_CODE_FAST_FAIL = 125; /* Use FailFast Listener */
+    public static final int JWALA_EXIT_CODE_ABNORMAL_SUCCESS = 126;
+    public static final int JWALA_EXIT_CODE_NO_OP = 127;
+    public static final int JWALA_EXIT_NO_SUCH_SERVICE = 123;
+    public static final int JWALA_EXIT_PROCESS_KILLED = 255;
 
     private final Integer returnCode;
 
@@ -49,7 +49,7 @@ public class ExecReturnCode implements Serializable {
     }
 
     public boolean wasAbnormallySuccessful() {
-        return returnCode.equals(STP_EXIT_CODE_ABNORMAL_SUCCESS);
+        return returnCode.equals(JWALA_EXIT_CODE_ABNORMAL_SUCCESS);
     }
 
     public boolean wasCompleted() {

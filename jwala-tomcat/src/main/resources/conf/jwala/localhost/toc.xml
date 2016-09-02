@@ -36,7 +36,7 @@
               auth="Container"
               factory="org.apache.naming.factory.BeanFactory"
               type="com.tibco.tibjms.TibjmsTopic"
-              address="com.cerner.entp.N9SF.LTST.private.stp.toc.status-USMLVV1CDS0044"/>
+              address="com.cerner.entp.N9SF.LTST.private.jwala.toc.status-USMLVV1CDS0044"/>
     
     
     <ResourceLink name="jms/toc-cf" global="jms/toc-cf" type="com.tibco.tibjms.TibjmsConnectionFactory" />
@@ -45,12 +45,12 @@
           auth="Container"
           factory="org.apache.naming.factory.BeanFactory"
           type="com.tibco.tibjms.TibjmsTopic"
-          address="com.cerner.entp.N9SF.LTST.private.stp.toc.status-USMLVV1CDS0044"/>
+          address="com.cerner.entp.N9SF.LTST.private.jwala.toc.status-USMLVV1CDS0044"/>
 
     <Resource name="jms/toc-state-notification"
           auth="Container"
           factory="org.apache.naming.factory.BeanFactory"
           type="com.tibco.tibjms.TibjmsTopic"
-          address="com.cerner.entp.N9SF.LTST.private.stp.toc.jvm-notification-USMLVV1CDS0044"/>
+          address="com.cerner.entp.N9SF.LTST.private.jwala.toc.jvm-notification-USMLVV1CDS0044"/>
 
 </Context>

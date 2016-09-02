@@ -11,8 +11,6 @@ import com.cerner.jwala.common.request.jvm.ControlJvmRequest;
 import com.cerner.jwala.exception.CommandFailureException;
 import com.cerner.jwala.service.jvm.JvmControlService;
 import com.cerner.jwala.service.webserver.WebServerCommandService;
-import com.cerner.jwala.web.controller.CommandController;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -104,7 +102,7 @@ public class RequestControllerTest {
 
         final CommandOutput execData = mock(CommandOutput.class);
         ExecReturnCode mockExecReturnCode = mock(ExecReturnCode.class);
-        when(mockExecReturnCode.getReturnCode()).thenReturn(ExecReturnCode.STP_EXIT_NO_SUCH_SERVICE);
+        when(mockExecReturnCode.getReturnCode()).thenReturn(ExecReturnCode.JWALA_EXIT_NO_SUCH_SERVICE);
         when(execData.getReturnCode()).thenReturn(mockExecReturnCode);
         when(execData.getReturnCode().wasSuccessful()).thenReturn(false);
         when(execData.getStandardError()).thenReturn("Error!");
