@@ -9,11 +9,11 @@
         </layout>
     </appender>
 
-    <appender name="TRACE_TOC" class="org.apache.log4j.DailyRollingFileAppender">
+    <appender name="TRACE_JWALA" class="org.apache.log4j.DailyRollingFileAppender">
         <param name="File" value="${catalina.base}/logs/jwala.log" />
         <param name="DateFormat" value="yyyyMMdd" />
         <param name="HeaderDateFormat" value="yyyy-MM-dd HH:mm:ss" />
-        <param name="Header" value="CTO TOC Log file\n" />
+        <param name="Header" value="CTO Jwala Log file\n" />
         <param name="MaxFileSizeBeforeRoll" value="100000000" />
         <param name="MaxBackupIndex" value="5" />
         <!-- specify the layout -->
@@ -25,14 +25,14 @@
     <!-- CTO TCO logger -->
     <logger name="com.cerner.jwala" additivity="false">
         <level value="DEBUG" />
-        <appender-ref ref="TRACE_TOC" />
+        <appender-ref ref="TRACE_JWALA" />
         <appender-ref ref="CONSOLE" />
     </logger>
 
     <!-- CTO TCO logger -->
     <logger name="org.springframework" additivity="false">
         <level value="ERROR" />
-        <appender-ref ref="TRACE_TOC" />
+        <appender-ref ref="TRACE_JWALA" />
         <appender-ref ref="CONSOLE" />
     </logger>
 
@@ -40,7 +40,7 @@
     <root>
         <level value="ERROR" />
         <appender-ref ref="CONSOLE" />
-        <appender-ref ref="TRACE_TOC" />
+        <appender-ref ref="TRACE_JWALA" />
     </root>
 
 
