@@ -7,8 +7,8 @@ var JvmControlPanelWidget = React.createClass({
     render: function() {
 
         // Can be defined here not outside since JvmControlPanelWidget is not really generic.
-        var mgrBtnDisplayClass = (tocVars["opsJvmMgrBtnEnabled"] === "true" ? "" : "ui-button-hide");
-        var diagnoseBtnDisplayClass = (tocVars["opsJvmMgrBtnEnabled"] === "true" ? "" : "ui-button-hide");
+        var mgrBtnDisplayClass = (jwalaVars["opsJvmMgrBtnEnabled"] === "true" ? "" : "ui-button-hide");
+        var diagnoseBtnDisplayClass = (jwalaVars["opsJvmMgrBtnEnabled"] === "true" ? "" : "ui-button-hide");
 
         return <div className="jvm-control-panel-widget">
 

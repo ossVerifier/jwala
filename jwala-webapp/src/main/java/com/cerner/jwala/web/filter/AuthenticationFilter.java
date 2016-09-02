@@ -3,7 +3,6 @@ package com.cerner.jwala.web.filter;
 import org.apache.log4j.Logger;
 
 import javax.servlet.*;
-import javax.servlet.annotation.WebFilter;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -14,7 +13,7 @@ import java.util.regex.Pattern;
  * <p/>
  * Original Author: z002xuvs
  * Modified by: z003bpej
- * Comments: Modified to fit TOC, this filter was originally used in EPM.
+ * Comments: Modified to fit Jwala, this filter was originally used in EPM.
  */
 //@WebFilter(urlPatterns = "/*", asyncSupported = true)
 

@@ -184,7 +184,7 @@ var WebServerConfigForm = React.createClass({
         var host = "";
         var port = "";
         var httpsPort = "";
-        var statusPath = tocVars.loadBalancerStatusMount;
+        var statusPath = jwalaVars.loadBalancerStatusMount;
         var svrRoot = "";
         var docRoot = "";
         var groupIds = [];
@@ -380,14 +380,14 @@ var WebServerDataTable = React.createClass({
     },
     render: function() {
         var tableDef = [{sTitle:"Web Server ID", mData:"id.id", bVisible:false},
-                        {sTitle:"Name", mData:"name", tocType:"custom", tocRenderCfgFn:this.renderNameLink},
+                        {sTitle:"Name", mData:"name", jwalaType:"custom", jwalaRenderCfgFn:this.renderNameLink},
                         {sTitle:"Host", mData:"host", maxDisplayTextLen:45},
                         {sTitle:"Port", mData:"port"},
                         {sTitle:"HTTPS Port", mData:"httpsPort"},
                         {sTitle:"Status Path", mData:"statusPath.path", maxDisplayTextLen:20},
                         {sTitle:"Group",
                          mData:"groups",
-                         tocType:"array",
+                         jwalaType:"array",
                          displayProperty:"name",
                          sWidth: "40%", maxDisplayTextLen:20}];
         return <TocDataTable tableId="webserver-config-datatable"

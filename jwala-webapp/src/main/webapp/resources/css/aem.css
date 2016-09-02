@@ -20,26 +20,26 @@ body {
     text-align: left;
 }
 
-.tocTable {
+.jwalaTable {
   display:table;
   width:100%;
 }
-.tocRow {
+.jwalaRow {
   width:100%;
   display:table-row;
 }
-.tocRowContent { 
+.jwalaRowContent {
   width:90%;
   display:table-cell;
   vertical-align: middle;  
 }
-.tocRowIcons {
+.jwalaRowIcons {
   min-width:55px;
   width:10%;
   display:table-cell;
 }
 
-.tocRowIcons img:hover { 
+.jwalaRowIcons img:hover {
   -moz-box-shadow: 0 0 10px #ccc; 
   -webkit-box-shadow: 0 0 10px #ccc;
    box-shadow: 0 0 10px #ccc;    

@@ -25,7 +25,7 @@ public class GrantedAuthoritiesMapperImpl implements GrantedAuthoritiesMapper {
     @Override
     public Collection<? extends GrantedAuthority> mapAuthorities(Collection<? extends GrantedAuthority> authorities) {
         Set<GrantedAuthority> roles = new HashSet<GrantedAuthority>();
-        //Add only TOC groups as authorities
+        //Add only Jwala groups as authorities
         for (GrantedAuthority a : authorities) {
             if (JWALA_ROLE_ADMIN.equals(a.getAuthority())) {
                 roles.add(new SimpleGrantedAuthority(JWALA_ROLE_ADMIN));
