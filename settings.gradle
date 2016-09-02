@@ -5,4 +5,4 @@ include "jwala-common",
         "jwala-webservices",
         "jwala-tomcat",
         "jwala-tomcat-plugin",
-        "jwala-h2-lifecyclelistener"
+        "jwala-h2-embedded"
