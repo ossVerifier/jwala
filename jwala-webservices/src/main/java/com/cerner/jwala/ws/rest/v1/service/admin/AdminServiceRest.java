@@ -27,8 +27,8 @@ public interface AdminServiceRest {
     Response manifest(@Context ServletContext context);
 
     @GET
-    @Path("/isTOCAuthorizationEnabled")
-    Response isTOCAuthorizationEnabled();
+    @Path("/isJwalaAuthorizationEnabled")
+    Response isJwalaAuthorizationEnabled();
 
     @GET
     @Path("/context/authorization")

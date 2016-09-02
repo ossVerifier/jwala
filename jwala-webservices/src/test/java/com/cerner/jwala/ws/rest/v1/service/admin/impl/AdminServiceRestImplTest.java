@@ -115,8 +115,8 @@ public class AdminServiceRestImplTest {
     }
     
     @Test
-    public void testIsTOCAuthorizationEnabled() throws Exception {
-        Response response = cut.isTOCAuthorizationEnabled();
+    public void testIsJwalaAuthorizationEnabled() throws Exception {
+        Response response = cut.isJwalaAuthorizationEnabled();
         ApplicationResponse applicationResponse = (ApplicationResponse) response.getEntity();
         Object content = applicationResponse.getApplicationResponseContent();
         assertEquals(content, AdminServiceRestImpl.JSON_RESPONSE_TRUE);

@@ -118,7 +118,7 @@ public class AdminServiceRestImpl implements AdminServiceRest {
     }
 
     @Override
-    public Response isTOCAuthorizationEnabled() {
+    public Response isJwalaAuthorizationEnabled() {
         String auth = ApplicationProperties.get(JWALA_AUTHORIZATION, "true");
         if("false".equals(auth))
             return ResponseBuilder.ok(JSON_RESPONSE_FALSE);

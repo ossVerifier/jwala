@@ -1,5 +1,5 @@
 Manifest-Version: 1.0
-Implementation-Title: toc-webservices-test
+Implementation-Title: jwala-webservices-test
 Implementation-Version: 1.1.2.999
 Built-By: test_user
 Built-JDK: 1.7.0_45
