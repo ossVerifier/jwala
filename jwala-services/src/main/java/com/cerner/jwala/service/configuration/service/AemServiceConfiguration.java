@@ -156,7 +156,7 @@ public class AemServiceConfiguration {
     @Bean(name = "aemServiceConfigurationPropertiesConfigurer")
     public static PropertySourcesPlaceholderConfigurer configurer() {
         PropertySourcesPlaceholderConfigurer ppc = new PropertySourcesPlaceholderConfigurer();
-        ppc.setLocation(new ClassPathResource("META-INF/spring/toc-defaults.properties"));
+        ppc.setLocation(new ClassPathResource("META-INF/spring/jwala-defaults.properties"));
         ppc.setLocalOverride(true);
         ppc.setProperties(ApplicationProperties.getProperties());
         return ppc;

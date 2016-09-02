@@ -182,7 +182,7 @@ public class JvmControlServiceImpl implements JvmControlService {
         final Jvm jvm = jvmPersistenceService.getJvm(jvmId);
         final int beginIndex = destPath.lastIndexOf("/");
         final String fileName = destPath.substring(beginIndex + 1, destPath.length());
-        // don't add any usage of the toc user internal directory to the history
+        // don't add any usage of the Jwala user internal directory to the history
         if (!AemControl.Properties.USER_JWALA_SCRIPTS_PATH.getValue().endsWith(fileName)) {
             final String eventDescription = event + " " + fileName;
             historyService.createHistory(getServerName(jvm), new ArrayList<>(jvm.getGroups()), eventDescription, EventType.USER_ACTION, userId);

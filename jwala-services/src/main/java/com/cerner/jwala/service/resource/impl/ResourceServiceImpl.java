@@ -705,7 +705,7 @@ public class ResourceServiceImpl implements ResourceService {
         final String fileName = destPath.substring(beginIndex + 1, destPath.length());
 
         // TODO put this back in when we start processing events for JVMs, and then make it generic for Web Servers, Applications, etc.
-        // don't add any usage of the toc user internal directory to the history
+        // don't add any usage of the Jwala user internal directory to the history
         /*if (!AemControl.Properties.USER_JWALA_SCRIPTS_PATH.getValue().endsWith(fileName)) {
             final String eventDescription = "SECURE COPY " + fileName;
             historyService.createHistory(hostName, new ArrayList<>(*//*jvm.getGroups()*//*), eventDescription, EventType.USER_ACTION, userId);

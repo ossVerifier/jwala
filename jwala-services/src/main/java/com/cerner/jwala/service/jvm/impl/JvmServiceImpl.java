@@ -290,7 +290,7 @@ public class JvmServiceImpl implements JvmService {
         Jvm jvm = getJvm(jvmName);
 
         // only one at a time per JVM
-        // TODO return error if .toc directory is already being written to
+        // TODO return error if .jwala directory is already being written to
         // TODO lock on host name (check performance on 125 JVM env)
         if (!jvmWriteLocks.containsKey(jvm.getId().toString())) {
             jvmWriteLocks.put(jvm.getId().toString(), new ReentrantReadWriteLock());
@@ -366,28 +366,28 @@ public class JvmServiceImpl implements JvmService {
         final String commandsScriptsPath = ApplicationProperties.get("commands.scripts-path");
 
         final String deployConfigJarPath = commandsScriptsPath + "/" + AemControl.Properties.DEPLOY_CONFIG_ARCHIVE_SCRIPT_NAME.getValue();
-        final String tocScriptsPath = AemControl.Properties.USER_JWALA_SCRIPTS_PATH.getValue();
+        final String jwalaScriptsPath = AemControl.Properties.USER_JWALA_SCRIPTS_PATH.getValue();
         final String jvmName = jvm.getJvmName();
         final String userId = user.getId();
 
         final String failedToCopyMessage = "Failed to secure copy ";
         final String duringCreationMessage = " during the creation of ";
-        if (!jvmControlService.secureCopyFile(secureCopyRequest, deployConfigJarPath, tocScriptsPath, userId).getReturnCode().wasSuccessful()) {
+        if (!jvmControlService.secureCopyFile(secureCopyRequest, deployConfigJarPath, jwalaScriptsPath, userId).getReturnCode().wasSuccessful()) {
             String message = failedToCopyMessage + deployConfigJarPath + duringCreationMessage + jvmName;
             LOGGER.error(message);
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, message);
         }
 
         final String invokeServicePath = commandsScriptsPath + "/" + AemControl.Properties.INVOKE_SERVICE_SCRIPT_NAME.getValue();
-        if (!jvmControlService.secureCopyFile(secureCopyRequest, invokeServicePath, tocScriptsPath, userId).getReturnCode().wasSuccessful()) {
+        if (!jvmControlService.secureCopyFile(secureCopyRequest, invokeServicePath, jwalaScriptsPath, userId).getReturnCode().wasSuccessful()) {
             String message = failedToCopyMessage + invokeServicePath + duringCreationMessage + jvmName;
             LOGGER.error(message);
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, message);
         }
 
         // make sure the scripts are executable
-        if (!jvmControlService.changeFileMode(jvm, "a+x", tocScriptsPath, "*.sh").getReturnCode().wasSuccessful()) {
-            String message = "Failed to change the file permissions in " + tocScriptsPath + duringCreationMessage + jvmName;
+        if (!jvmControlService.changeFileMode(jvm, "a+x", jwalaScriptsPath, "*.sh").getReturnCode().wasSuccessful()) {
+            String message = "Failed to change the file permissions in " + jwalaScriptsPath + duringCreationMessage + jvmName;
             LOGGER.error(message);
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, message);
         }
