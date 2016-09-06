@@ -1,7 +1,5 @@
 <Context docBase="${vars.'jwala.webapps.dir'}/${webApp.warName}">
 
-    <Listener className="com.cerner.cto.infrastructure.atomikos.AtomikosTaskManagerLifecycleListener"/>
-
     <Environment name="jvmInstanceName"
                  value="${jvm.jvmName}"
                  type="java.lang.String"
@@ -15,7 +13,6 @@
     <Resource name="jdbc/hct-xa"
               auth="Container"
               type="com.atomikos.jdbc.AtomikosDataSourceBean"
-              factory="com.cerner.cto.infrastructure.atomikos.EnhancedTomcatAtomikosBeanFactory"
               uniqueResourceName="AtomikosJndiXaDataSource2"
               xaDataSourceClassName="com.microsoft.sqlserver.jdbc.SQLServerXADataSource"
               xaProperties.user="\${hct.db.user}"
@@ -34,12 +31,10 @@
     <Resource name="jms/hct-xacf"
               auth="Container"
               type="com.atomikos.jms.AtomikosConnectionFactoryBean"
-              factory="com.cerner.cto.infrastructure.atomikos.EnhancedTomcatAtomikosBeanFactory"
               uniqueResourceName="AtomikosJndiJmsXaConnectionFactory-1.0"
               maxPoolSize="3"
               minPoolSize="1"
               ignoreSessionTransactedFlag="false"
-              xaConnectionFactoryClassName="com.tibco.tibjms.TibjmsXAConnectionFactory"
               xaProperties.userName="\${hct.ems.user}"
               xaProperties.userPassword="\${hct.ems.password.encrypted}"
               xaProperties.serverUrl="\${hct.ems.url}"
@@ -54,7 +49,6 @@
     <Resource auth="Container"
               name="jms/hct-cf"
               factory="org.apache.naming.factory.BeanFactory"
-              type="com.tibco.tibjms.TibjmsConnectionFactory"
               serverUrl="\${hct.ems.url}"
               userName="\${hct.ems.user}"
               userPassword="\${hct.ems.password.encrypted}"
@@ -69,19 +63,16 @@
     <Resource auth="Container"
               name="jms/healthCheckServiceDestination"
               factory="org.apache.naming.factory.BeanFactory"
-              type="com.tibco.tibjms.TibjmsQueue"
               address="\${hct.ems.serviceQueue}"/>
 
     <Resource name="jms/healthCheckServiceReplyDestination"
               auth="Container"
               factory="org.apache.naming.factory.BeanFactory"
-              type="com.tibco.tibjms.TibjmsQueue"
               address="\${hct.ems.serviceReplyQueue}"/>
 
     <Resource name="jms/healthCheckStatusDestination"
               auth="Container"
               factory="org.apache.naming.factory.BeanFactory"
-              type="com.tibco.tibjms.TibjmsQueue"
               address="\${hct.ems.statusQueue}"/>
 
     <Resource name="wm/healthWorkManager"

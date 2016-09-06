@@ -8,10 +8,10 @@ SET JWALA_HOME_UNIX=%JWALA_HOME:\=/%
 
 :: ------------------------------------------------------------------------------
 :: Use fn jwalaSet to set any path variables. This allows the 'jwala' folder to be
-:: moved anywhere in the file system. EPM properties (marked by @) determine 
+:: moved anywhere in the file system. EPM properties (marked by @) determine
 :: the location at build time and jwalaSet will adapt the path based on the current
 :: location of the 'jwala' folder.  Relocation of the 'jwala' dir is needed primarily
-:: for developer environments. 
+:: for developer environments.
 :: ------------------------------------------------------------------------------
 
 CALL:jwalaSet JAVA_HOME d:\jwala\jdk1.8.0_66
@@ -26,8 +26,8 @@ SET JMX_OPTS=%JMX_OPTS% -Dcom.sun.management.jmxremote.authenticate=false
 REM SET JMX_OPTS=%JMX_OPTS% -Dcom.sun.management.jmxremote.password.file=%CATALINA_BASE%/conf/jmxremote.password
 REM SET JMX_OPTS=%JMX_OPTS% -Dcom.sun.management.jmxremote.access.file=%CATALINA_BASE%/conf/jmxremote.access
 
-REM SET SSL_OPTS=-Ddeployment.security.SSLv2Hello=false -Ddeployment.security.SSLv3=false 
-REM SET SSL_OPTS=%SSL_OPTS% -Ddeployment.security.TLSv1=false -Ddeployment.security.TLSv1.1=false 
+REM SET SSL_OPTS=-Ddeployment.security.SSLv2Hello=false -Ddeployment.security.SSLv3=false
+REM SET SSL_OPTS=%SSL_OPTS% -Ddeployment.security.TLSv1=false -Ddeployment.security.TLSv1.1=false
 REM SET SSL_OPTS=%SSL_OPTS% -Ddeployment.security.TLSv1.2=true
 REM SET SSL_OPTS=%SSL_OPTS% -Dhttps.protocols=TLSv1.2
 SET SSL_OPTS=-Dhttps.protocols=TLSv1.2
@@ -118,7 +118,7 @@ goto:eof
 :: arg2 = original value of variable (eg d:\jwala\cerner\apache-tomcat-7.0.55\core)
 ::
 :: if JWALA_HOME=e:\view_stores\jwala, then this fn sets CATALINA_HOME to e:\view_stores\jwala\cerner\apache-tomcat-7.0.55\core
- 
+
 SET %~1=%~2
 CALL SET %~1=%%%~1:d:\jwala=%JWALA_HOME%%%
 

@@ -64,13 +64,11 @@
     <Resource name="jms/toc-status"
               auth="Container"
               factory="org.apache.naming.factory.BeanFactory"
-              type="com.tibco.tibjms.TibjmsQueue"
               address="${jmsQueue}"/>
 
     <Resource auth="Container"
               name="jms/toc-cf"
               factory="org.apache.naming.factory.BeanFactory"
-              type="com.tibco.tibjms.TibjmsConnectionFactory"
               serverUrl="${jmsServer}"
               userName="${jmsUsername}"
               userPassword="${jmsPassword}"/>              

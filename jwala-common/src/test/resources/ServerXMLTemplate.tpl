@@ -32,8 +32,7 @@
     <Listener className="org.apache.catalina.core.JreMemoryLeakPreventionListener" />
     <Listener className="org.apache.catalina.mbeans.GlobalResourcesLifecycleListener" />
     <Listener className="org.apache.catalina.core.ThreadLocalLeakPreventionListener" />
-    <Listener className="com.cerner.cto.infrastructure.report.tomcat.ReportingLifeCycleListener"
-            id="${jvm.id.getId()}"
+    <Listener id="${jvm.id.getId()}"
             instanceId="${jvm.id.getId()}"
             type="JVM"
             jgroupsPreferIpv4Stack="true"
@@ -52,15 +51,7 @@
     <!--Listener className="org.apache.catalina.mbeans.JmxRemoteLifecycleListener"
             rmiRegistryPortPlatform="9090" rmiServerPortPlatform="9091" /-->
 
-    <!-- <Listener className="com.cerner.cto.infrastructure.report.tomcat.FailFastLifeCycleListener"
-            jmsConnectionFactory="java:/jms/toc-cf"
-            jmsDestination="java:/jms/toc-status"
-            systemExitCodeOnError="125"
-            testMessageTimeToLiveMs="125"
-            timeToWaitForJmsResponseMs="5000"
-            exitOnError="false" />
 
-    <Listener className="com.cerner.cto.infrastructure.report.tomcat.FastJmsStartLifeCycleListener" /> -->
 
     <!-- Global JNDI resources
             Documentation at /docs/jndi-resources-howto.html
@@ -78,13 +69,11 @@
     <Resource name="jms/toc-status"
             auth="Container"
             factory="org.apache.naming.factory.BeanFactory"
-            type="com.tibco.tibjms.TibjmsTopic"
             address="com.cerner.entp.n9sf.ltst.private.jwala.toc.status-USMLVV2CTO0147"/>
 
     <Resource auth="Container"
             name="jms/toc-cf"
             factory="org.apache.naming.factory.BeanFactory"
-            type="com.tibco.tibjms.TibjmsConnectionFactory"
             serverUrl="ssl://USMLVV1CTO924:7243"
             userName="admin"
             userPassword="\${enc:9hQ4KpxpM8e/VX3KkT2VYg==}"

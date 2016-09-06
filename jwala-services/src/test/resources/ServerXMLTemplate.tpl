@@ -53,16 +53,11 @@
     <Resource name="jms/toc-status"
               auth="Container"
               factory="org.apache.naming.factory.BeanFactory"
-              type="com.tibco.tibjms.TibjmsTopic"
               address="@toc.jms.statusTopic@"/>
 
     <Resource auth="Container"
               name="jms/toc-cf"
               factory="org.apache.naming.factory.BeanFactory"
-              type="com.tibco.tibjms.TibjmsConnectionFactory"
-              serverUrl="ssl://@tibco.ems.host@:@tibco.ems.port@"
-              userName="@tibco.ems.user.name@"
-              userPassword="@tibco.ems.password.stpencrypted@"
               connAttemptCount="100"
               connAttemptDelay="1000"
               reconnAttemptCount="100"

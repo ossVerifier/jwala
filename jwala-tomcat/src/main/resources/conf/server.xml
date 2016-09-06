@@ -53,13 +53,11 @@
     <Resource name="jms/toc-status"
               auth="Container"
               factory="org.apache.naming.factory.BeanFactory"
-              type="com.tibco.tibjms.TibjmsTopic"
               address="com.cerner.entp.N9SF.LTST.private.jwala.toc.status-USMLVV1CDS0044"/>
 
     <Resource auth="Container"
               name="jms/toc-cf"
               factory="org.apache.naming.factory.BeanFactory"
-              type="com.tibco.tibjms.TibjmsConnectionFactory"
               serverUrl="ssl://USMLVV1CTO924:7243"
               userName="admin"
               userPassword="${enc:9hQ4KpxpM8e/VX3KkT2VYg==}"

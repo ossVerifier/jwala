@@ -19,18 +19,16 @@
           password=""
           url="jdbc:h2:tcp://localhost:9094/toc;LOCK_MODE=0"/>
 
-    <ResourceLink name="jms/toc-cf" global="jms/toc-cf" type="com.tibco.tibjms.TibjmsConnectionFactory" />
+    <!--<ResourceLink name="jms/toc-cf" global="jms/toc-cf" type="com.tibco.tibjms.TibjmsConnectionFactory" />-->
 
 	<Resource name="jms/toc-status"
           auth="Container"
           factory="org.apache.naming.factory.BeanFactory"
-          type="com.tibco.tibjms.TibjmsTopic"
           address="${jmsStatusAddr}"/>
 
     <Resource name="jms/toc-state-notification"
           auth="Container"
           factory="org.apache.naming.factory.BeanFactory"
-          type="com.tibco.tibjms.TibjmsTopic"
           address="${jmsStateNotificationAddr}"/>
 
 </Context>
