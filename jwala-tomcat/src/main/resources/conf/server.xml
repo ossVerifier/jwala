@@ -27,8 +27,8 @@
   <!--APR library loader. Documentation at /docs/apr.html -->
   <Listener className="org.apache.catalina.core.AprLifecycleListener" SSLEngine="on" />
 
-    <!--Initialize Jasper prior to webapps are loaded. Documentation at /docs/jasper-howto.html -->
-    <Listener className="org.apache.catalina.core.JasperListener" />
+  <!--Initialize Jasper prior to webapps are loaded. Documentation at /docs/jasper-howto.html -->
+  <Listener className="org.apache.catalina.core.JasperListener" />
 
   <!-- Prevent memory leaks due to use of particular java/javax APIs-->
   <Listener className="org.apache.catalina.core.JreMemoryLeakPreventionListener" />
@@ -53,11 +53,13 @@
     <Resource name="jms/toc-status"
               auth="Container"
               factory="org.apache.naming.factory.BeanFactory"
+              type="com.tibco.tibjms.TibjmsTopic"
               address="com.cerner.entp.N9SF.LTST.private.jwala.toc.status-USMLVV1CDS0044"/>
 
     <Resource auth="Container"
               name="jms/toc-cf"
               factory="org.apache.naming.factory.BeanFactory"
+              type="com.tibco.tibjms.TibjmsConnectionFactory"
               serverUrl="ssl://USMLVV1CTO924:7243"
               userName="admin"
               userPassword="${enc:9hQ4KpxpM8e/VX3KkT2VYg==}"
@@ -78,7 +80,7 @@
    -->
   <!-- Soarian Tomcat Platform Service
        Features: SSL enabled, AJP disabled, HTTP disabled
-       Exploded apps: jwala-apps
+       Exploded apps: jwalaapps
        Archived apps: by context.xmls in conf/jwala/localhost
        -->
   <Service name="jwala">
@@ -91,56 +93,56 @@
                maxThreads="150" scheme="https" secure="true"
                clientAuth="false" sslProtocol="TLS" />
     -->
-   <!-- Defines Peter's APR + JSSE compatible port
-        JWALA Features:
-        Compression: Forced on
-        Compressable types: text/html,text/xml,text/plain,application/json
-        compressionMinSize: 2048 (default)
-        threadPriority: 1 above Java NORM_PRIORITY - 6
-        -->
+    <!-- Defines Peter's APR + JSSE compatible port
+         STP Features:
+         Compression: Forced on
+         Compressable types: text/html,text/xml,text/plain,application/json
+         compressionMinSize: 2048 (default)
+         threadPriority: 1 above Java NORM_PRIORITY - 6
+         -->
     <Connector
-      port="8001"
-      SSLCertificateFile="${catalina.home}/data/security/id/server.crt"
-      SSLCertificateKeyFile="${catalina.home}/data/security/id/server.key"
-      SSLEnabled="true"
-      SSLPassword=""
-      acceptCount="100"
-      clientAuth="false"
-      disableUploadTimeout="true"
-      enableLookups="false"
-      keystoreFile="conf/.keystore"
-      maxHttpHeaderSize="8192"
-      maxSavePostSize="-1"
-      maxThreads="200"
-      minSpareThreads="20"
-      protocol="HTTP/1.1"
-      scheme="https"
-      secure="true"
-      sslProtocol="TLS1.2"
-      compressableMimeTypes="text/html,text/xml,text/plain,application/json"
-      compressionMinSize="2048"
-      compression="force"
-      threadPriority="6" />
+            port="8001"
+            SSLCertificateFile="${catalina.home}/data/security/id/server.crt"
+            SSLCertificateKeyFile="${catalina.home}/data/security/id/server.key"
+            SSLEnabled="true"
+            SSLPassword=""
+            acceptCount="100"
+            clientAuth="false"
+            disableUploadTimeout="true"
+            enableLookups="false"
+            keystoreFile="conf/.keystore"
+            maxHttpHeaderSize="8192"
+            maxSavePostSize="-1"
+            maxThreads="200"
+            minSpareThreads="20"
+            protocol="HTTP/1.1"
+            scheme="https"
+            secure="true"
+            sslProtocol="TLS1.2"
+            compressableMimeTypes="text/html,text/xml,text/plain,application/json"
+            compressionMinSize="2048"
+            compression="force"
+            threadPriority="6" />
 
-     <!-- An Engine represents the entry point (within Catalina) that processes
-     every request.  The Engine implementation for Tomcat stand alone
-     analyzes the HTTP headers included with the request, and passes them
-     on to the appropriate Host (virtual host).
-     Documentation at /docs/config/engine.html -->
+    <!-- An Engine represents the entry point (within Catalina) that processes
+    every request.  The Engine implementation for Tomcat stand alone
+    analyzes the HTTP headers included with the request, and passes them
+    on to the appropriate Host (virtual host).
+    Documentation at /docs/config/engine.html -->
 
-     <!-- The JWALA Engine is the normal standalone Tomcat host
-          Warning: potential name conflict on jvmRoute -->
+    <!-- The STP Engine is the normal standalone Tomcat host
+         Warning: potential name conflict on jvmRoute -->
     <Engine name="jwala" defaultHost="localhost" jvmRoute="CTO-N9SF-LTST-TOC">
       <!-- Host Features: Standard Host
-           AppBase: jwala-apps/
+           AppBase: jwalaapps/
            Unpacking: no
            Auto deploy: yes
            Deploy .war/META-INF/context.xml: no
            Customized Error Reports: no
       -->
       <Host name="localhost"
-            appBase="jwala-apps"
-                unpackWARs="false"
+            appBase="jwalaapps"
+            unpackWARs="false"
             autoDeploy="true"
             deployXML="false"
             errorReportValveClass="org.apache.catalina.valves.ErrorReportValve">
@@ -150,7 +152,7 @@
 
         <!-- Access log processes all example.
              Documentation at: /docs/config/valve.html
-             JWALA Features: Standard Access Log
+             STP Features: Standard Access Log
              Daily rotating: yes
              Status request logging can be disabled by adding attribute "status" to the ServletRequest.
              -->
