@@ -97,8 +97,7 @@ public enum WindowsWebServerNetOperation implements ServiceCommandBuilder {
 
     private static final Map<WebServerControlOperation, WindowsWebServerNetOperation> LOOKUP_MAP = new EnumMap<>(WebServerControlOperation.class);
 
-    public static final String HTTPD_CONF_PATH = ApplicationProperties.get("paths.httpd.conf");
-    public static final String WEBSERVER_CONF_PATH = ApplicationProperties.get("remote.paths.httpd.conf", HTTPD_CONF_PATH);
+    public static final String WEBSERVER_CONF_PATH = ApplicationProperties.get("remote.paths.httpd.conf");
 
     static {
         for (final WindowsWebServerNetOperation o : values()) {

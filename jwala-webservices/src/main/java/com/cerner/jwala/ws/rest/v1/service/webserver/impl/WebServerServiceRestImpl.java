@@ -325,7 +325,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
 
     protected void deployStartStopScripts(WebServer webServer, String userId) throws CommandFailureException {
         final String webServerName = webServer.getName();
-        final String destHttpdConfPath = ApplicationProperties.get("remote.paths.httpd.conf", ApplicationProperties.get("paths.httpd.conf")) + "/";
+        final String destHttpdConfPath = ApplicationProperties.get("remote.paths.httpd.conf") + "/";
 
         final String startScriptName = AemControl.Properties.START_SCRIPT_NAME.getValue();
         final String sourceStartServicePath = AemControl.Properties.SCRIPTS_PATH + "/" + startScriptName;
