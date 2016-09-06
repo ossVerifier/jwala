@@ -10,7 +10,6 @@ import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -20,8 +19,14 @@ import java.util.zip.ZipOutputStream;
 public class ZipDirectoryImpl implements ZipDirectory {
     private static final Logger LOGGER = LoggerFactory.getLogger(ZipDirectoryImpl.class);
 
+    /**
+     * This method zips the source directory into the destination directory.
+     *
+     * @param source This is the source directory location.
+     * @param destination This is the destination file. The destination should contain .zip extension.
+     */
     @Override
-    public void zipDirectory(String source, String destination) {
+    public void zip(final String source, final String destination) {
         File zipDir = new File(source);
         if (zipDir.exists()) {
             if (new File(destination).exists()) {
@@ -35,7 +40,7 @@ public class ZipDirectoryImpl implements ZipDirectory {
                 }
             }
             LOGGER.debug("Zipping {} to {}", source, destination);
-            List<String> fileNames = new ArrayList<>();
+            ArrayList<String> fileNames = new ArrayList<>();
             getFiles(zipDir, source, fileNames);
             FileOutputStream fileOutputStream;
             ZipOutputStream zipOutputStream = null;
@@ -78,12 +83,19 @@ public class ZipDirectoryImpl implements ZipDirectory {
         }
     }
 
-    private void getFiles(File file, String source, List<String> files) {
+    /**
+     * This method returns the relative path of all the files in the source directory.
+     *
+     * @param file The file/directory which needs to be added to the ArrayList
+     * @param source The original source directory
+     * @param files ArrayList of all the files under the source directory
+     */
+    private void getFiles(File file, String source, ArrayList<String> files) {
         if (file.isFile()) {
-            files.add(file.getAbsolutePath().substring(source.length() + 1));
+            files.add(file.getAbsolutePath().substring(source.length()));
         } else if (file.isDirectory()) {
             for (String f : file.list()) {
-                getFiles(new File(f), source, files);
+                getFiles(new File(file, f), source, files);
             }
         }
     }
