@@ -43,20 +43,7 @@
   <Listener className="org.apache.catalina.core.JreMemoryLeakPreventionListener" />
   <Listener className="org.apache.catalina.mbeans.GlobalResourcesLifecycleListener" />
   <Listener className="org.apache.catalina.core.ThreadLocalLeakPreventionListener" />
-  <Listener className="com.cerner.cto.infrastructure.report.tomcat.ReportingLifeCycleListener"
-            id="${it.id.id}"
-            instanceId="${it.id.id}"
-            type="JVM"
-      jmsConnectionFactory="java:/jms/toc-cf"
-      jmsDestination="java:/jms/toc-status"
-            jmsTtl="60"
-            jmsTtlUnit="SECONDS"
-            schedulerDelayInitial="30"
-            schedulerDelaySubsequent="30"
-            schedulerDelayShutdown="30"
-            schedulerDelayUnit="SECONDS"
-      schedulerThreadCount="1"
-      schedulerThreadNamePrefix="JMS Reporting Thread"/>
+
   <Listener className="org.apache.catalina.mbeans.JmxRemoteLifecycleListener"
             rmiRegistryPortPlatform="${rmiRegistryPort}" rmiServerPortPlatform="${rmiServerPort}" />
   

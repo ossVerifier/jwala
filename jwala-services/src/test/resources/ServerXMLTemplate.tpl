@@ -32,33 +32,10 @@
   <Listener className="org.apache.catalina.core.JreMemoryLeakPreventionListener" />
   <Listener className="org.apache.catalina.mbeans.GlobalResourcesLifecycleListener" />
   <Listener className="org.apache.catalina.core.ThreadLocalLeakPreventionListener" />
-  <Listener className="com.cerner.cto.infrastructure.report.tomcat.ReportingLifeCycleListener"
-            id="${jvmId}"
-            instanceId="${jvmId}"
-            type="JVM"
-            jmsConnectionFactory="java:/jms/toc-cf"
-            jmsDestination="java:/jms/toc-status"
-            jmsTtl="60"
-            jmsTtlUnit="SECONDS"
-            schedulerDelayInitial="30"
-            schedulerDelaySubsequent="30"
-            schedulerDelayShutdown="30"
-            schedulerDelayUnit="SECONDS"
-            schedulerThreadCount="1"
-            schedulerThreadNamePrefix="JMS Reporting Thread"/>
+
   <!-- commented out until we have jmx ports in jvm definitions in TOC -->
   <!--Listener className="org.apache.catalina.mbeans.JmxRemoteLifecycleListener"
             rmiRegistryPortPlatform="@toc.jmx.rmiRegistryPortPlatform@" rmiServerPortPlatform="@toc.jmx.rmiServerPortPlatform@" /-->
-
-  <Listener className="com.cerner.cto.infrastructure.report.tomcat.FailFastLifeCycleListener"
-            jmsConnectionFactory="java:/jms/toc-cf"
-            jmsDestination="java:/jms/toc-status"
-            systemExitCodeOnError="125"
-            testMessageTimeToLiveMs="125"
-            timeToWaitForJmsResponseMs="5000"
-			exitOnError="false" />
-  
-  <Listener className="com.cerner.cto.infrastructure.report.tomcat.FastJmsStartLifeCycleListener" />
   
   <!-- Global JNDI resources
        Documentation at /docs/jndi-resources-howto.html
