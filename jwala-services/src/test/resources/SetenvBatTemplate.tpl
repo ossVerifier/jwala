@@ -16,8 +16,8 @@ SET JWALA_HOME_UNIX=%JWALA_HOME:\=/%
 CALL:jwalaSet JAVA_HOME d:\jwala\jdk1.7.0_45
 SET JRE_HOME=%JAVA_HOME%\jre
 
-CALL:jwalaSet CATALINA_HOME d:\jwala\siemens\apache-tomcat-7.0.55\core
-CALL:jwalaSet CATALINA_BASE d:\jwala\siemens\instances\jvm-1
+CALL:jwalaSet CATALINA_HOME d:\jwala\cerner\apache-tomcat-7.0.55\core
+CALL:jwalaSet CATALINA_BASE d:\jwala\cerner\instances\jvm-1
 
 REM JMX_OPTS port settings deprecated in favor of a lifecycle listener in server.xml
 SET JMX_OPTS=-Dcom.sun.management.jmxremote.ssl=false
@@ -35,15 +35,15 @@ REM Warning - too many system properties will cause the deployment to fail due t
 
 SET SSL_DEBUG_OPTS=-Djavax.net.debug=ssl
 
-CALL:jwalaSet SPRING_AGENT d:\jwala\siemens\lib\tomcat\ext\spring-instrument-3.2.6.RELEASE.jar
+CALL:jwalaSet SPRING_AGENT d:\jwala\cerner\lib\tomcat\ext\spring-instrument-3.2.6.RELEASE.jar
 SET SPRING_OPTS=-javaagent:%SPRING_AGENT%
 
 :: -------------------------------------------------------------------------------------------------------------------------------
 :: JWALA_HOME and the gsm classLoaderUrl are needed as system properties for replacement in files like server.xml or context.xml
 :: -------------------------------------------------------------------------------------------------------------------------------
-SET CATALINA_OPTS=-XX:PermSize=512m -XX:MaxPermSize=512m -DJWALA_HOME=%JWALA_HOME% -Dgsm.classloader.url=%JWALA_HOME_UNIX%/siemens/lib/tomcat/ext/gsm
+SET CATALINA_OPTS=-XX:PermSize=512m -XX:MaxPermSize=512m -DJWALA_HOME=%JWALA_HOME% -Dgsm.classloader.url=%JWALA_HOME_UNIX%/cerner/lib/tomcat/ext/gsm
 
-CALL:jwalaSet PROPERTIES_PATH d:\jwala\siemens\properties
+CALL:jwalaSet PROPERTIES_PATH d:\jwala\cerner\properties
 SET JWALA_OPTS=-DPROPERTIES_ROOT_PATH=%PROPERTIES_PATH%
 SET JWALA_OPTS=%JWALA_OPTS% -DJWALA_PROPERTIES_DIR=%PROPERTIES_PATH%
 
@@ -106,9 +106,9 @@ goto:eof
 
 :jwalaSet
 :: arg1 = variable to set (eg CATALINA_HOME)
-:: arg2 = original value of variable (eg d:\jwala\siemens\apache-tomcat-7.0.55\core)
+:: arg2 = original value of variable (eg d:\jwala\cerner\apache-tomcat-7.0.55\core)
 ::
-:: if JWALA_HOME=e:\view_stores\jwala, then this fn sets CATALINA_HOME to e:\view_stores\jwala\siemens\apache-tomcat-7.0.55\core
+:: if JWALA_HOME=e:\view_stores\jwala, then this fn sets CATALINA_HOME to e:\view_stores\jwala\cerner\apache-tomcat-7.0.55\core
  
 SET %~1=%~2
 CALL SET %~1=%%%~1:d:\jwala=%JWALA_HOME%%%

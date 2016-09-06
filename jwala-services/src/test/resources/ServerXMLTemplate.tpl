@@ -32,7 +32,7 @@
   <Listener className="org.apache.catalina.core.JreMemoryLeakPreventionListener" />
   <Listener className="org.apache.catalina.mbeans.GlobalResourcesLifecycleListener" />
   <Listener className="org.apache.catalina.core.ThreadLocalLeakPreventionListener" />
-  <Listener className="com.siemens.cto.infrastructure.report.tomcat.ReportingLifeCycleListener"
+  <Listener className="com.cerner.cto.infrastructure.report.tomcat.ReportingLifeCycleListener"
             id="${jvmId}"
             instanceId="${jvmId}"
             type="JVM"
@@ -50,7 +50,7 @@
   <!--Listener className="org.apache.catalina.mbeans.JmxRemoteLifecycleListener"
             rmiRegistryPortPlatform="@toc.jmx.rmiRegistryPortPlatform@" rmiServerPortPlatform="@toc.jmx.rmiServerPortPlatform@" /-->
 
-  <Listener className="com.siemens.cto.infrastructure.report.tomcat.FailFastLifeCycleListener"
+  <Listener className="com.cerner.cto.infrastructure.report.tomcat.FailFastLifeCycleListener"
             jmsConnectionFactory="java:/jms/toc-cf"
             jmsDestination="java:/jms/toc-status"
             systemExitCodeOnError="125"
@@ -58,7 +58,7 @@
             timeToWaitForJmsResponseMs="5000"
 			exitOnError="false" />
   
-  <Listener className="com.siemens.cto.infrastructure.report.tomcat.FastJmsStartLifeCycleListener" />
+  <Listener className="com.cerner.cto.infrastructure.report.tomcat.FastJmsStartLifeCycleListener" />
   
   <!-- Global JNDI resources
        Documentation at /docs/jndi-resources-howto.html

@@ -43,7 +43,7 @@
   <Listener className="org.apache.catalina.core.JreMemoryLeakPreventionListener" />
   <Listener className="org.apache.catalina.mbeans.GlobalResourcesLifecycleListener" />
   <Listener className="org.apache.catalina.core.ThreadLocalLeakPreventionListener" />
-  <Listener className="com.siemens.cto.infrastructure.report.tomcat.ReportingLifeCycleListener"
+  <Listener className="com.cerner.cto.infrastructure.report.tomcat.ReportingLifeCycleListener"
             id="${it.id.id}"
             instanceId="${it.id.id}"
             type="JVM"

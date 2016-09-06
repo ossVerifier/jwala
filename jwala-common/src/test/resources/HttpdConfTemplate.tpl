@@ -327,7 +327,7 @@ Allow from all
 </Location>
 
 #mod_proxy load balancing - AJP example only. not encrypted, just a ping
-# ProxyPassMatch ^/stp\.png$ balancer://PING
+# ProxyPassMatch ^/jwala\.png$ balancer://PING
 
 </VirtualHost>
 
