@@ -81,7 +81,7 @@
    -->
   <!-- Soarian Tomcat Platform Service 
        Features: SSL enabled, AJP disabled, HTTP disabled 
-       Exploded apps: jwalaapps
+       Exploded apps: jwala-apps
        Archived apps: by context.xmls in conf/jwala/localhost
        -->
   <Service name="jwala">
@@ -125,14 +125,14 @@
           Warning: potential name conflict on jvmRoute -->
     <Engine name="jwala" defaultHost="localhost" jvmRoute="${jvmName}">
       <!-- Host Features: Standard Host
-           AppBase: jwalaapps/
+           AppBase: jwala-apps/
            Unpacking: no
            Auto deploy: yes
            Deploy .war/META-INF/context.xml: no
            Customized Error Reports: no
       -->
       <Host name="localhost"  
-            appBase="jwalaapps"
+            appBase="jwala-apps"
             unpackWARs="false"
             autoDeploy="true"
             deployXML="false" 
