@@ -75,7 +75,7 @@
    -->
   <!-- Soarian Tomcat Platform Service 
        Features: SSL enabled, AJP disabled, HTTP disabled 
-       Exploded apps: jwala-apps
+       Exploded apps: sslwebapps
        Archived apps: by context.xmls in conf/jwala/localhost
        -->
 
@@ -125,7 +125,7 @@
     <Engine name="jwala" defaultHost="localhost" jvmRoute="${jvmName}">
 
       <!-- Host Features: Standard Host
-           AppBase: jwala-apps/
+           AppBase: sslwebapps/
            Unpacking: no
            Auto deploy: yes
            Deploy .war/META-INF/context.xml: no
@@ -138,7 +138,7 @@
       </Realm>
 
       <Host name="localhost"  
-            appBase="jwala-apps"
+            appBase="sslwebapps"
             unpackWARs="false"
             autoDeploy="true"
             deployXML="false" 

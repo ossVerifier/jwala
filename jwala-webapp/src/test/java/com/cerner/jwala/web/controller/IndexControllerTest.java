@@ -3,8 +3,6 @@ package com.cerner.jwala.web.controller;
 import junit.framework.TestCase;
 import org.springframework.web.servlet.ModelAndView;
 
-import com.cerner.jwala.web.controller.IndexController;
-
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 
@@ -16,30 +14,30 @@ public class IndexControllerTest extends TestCase {
     final IndexController ic = new IndexController();
 
     public void testIndex() {
-        assertEquals("aem/index", ic.index());
+        assertEquals("jwala/index", ic.index());
     }
 
     public void testAbout() {
-        assertEquals("aem/about", ic.about());
+        assertEquals("jwala/about", ic.about());
     }
 
     public void testSandbox() {
-        assertEquals("aem/sandbox", ic.sandbox());
+        assertEquals("jwala/sandbox", ic.sandbox());
     }
 
     public void testIndexPageScripts() {
         String result = ic.indexPageScripts("true", false);
-        assertEquals("aem/dev-index-page-scripts", result);
+        assertEquals("jwala/dev-index-page-scripts", result);
         result = ic.indexPageScripts("true", true);
-        assertEquals("aem/dev-index-page-scripts", result);
+        assertEquals("jwala/dev-index-page-scripts", result);
         result = ic.indexPageScripts("false", false);
-        assertEquals("aem/prod-index-page-scripts", result);
+        assertEquals("jwala/prod-index-page-scripts", result);
         result = ic.indexPageScripts("false", true);
-        assertEquals("aem/prod-index-page-scripts", result);
+        assertEquals("jwala/prod-index-page-scripts", result);
         result = ic.indexPageScripts(null, true);
-        assertEquals("aem/dev-index-page-scripts", result);
+        assertEquals("jwala/dev-index-page-scripts", result);
         result = ic.indexPageScripts(null, false);
-        assertEquals("aem/prod-index-page-scripts", result);
+        assertEquals("jwala/prod-index-page-scripts", result);
     }
 
     public void testDevModeTrue() {
@@ -59,21 +57,21 @@ public class IndexControllerTest extends TestCase {
     }
 
     public void testLogin() {
-        assertEquals("aem/login", ic.login());
+        assertEquals("jwala/login", ic.login());
     }
 
     public void testLoginPageScripts() {
         String result = ic.loginPageScripts("true", false);
-        assertEquals("aem/dev-login-page-scripts", result);
+        assertEquals("jwala/dev-login-page-scripts", result);
         result = ic.loginPageScripts("true", true);
-        assertEquals("aem/dev-login-page-scripts", result);
+        assertEquals("jwala/dev-login-page-scripts", result);
         result = ic.loginPageScripts("false", false);
-        assertEquals("aem/prod-login-page-scripts", result);
+        assertEquals("jwala/prod-login-page-scripts", result);
         result = ic.loginPageScripts("false", true);
-        assertEquals("aem/prod-login-page-scripts", result);
+        assertEquals("jwala/prod-login-page-scripts", result);
         result = ic.loginPageScripts(null, true);
-        assertEquals("aem/dev-login-page-scripts", result);
+        assertEquals("jwala/dev-login-page-scripts", result);
         result = ic.loginPageScripts(null, false);
-        assertEquals("aem/prod-login-page-scripts", result);
+        assertEquals("jwala/prod-login-page-scripts", result);
     }
 }

@@ -3,7 +3,7 @@
 <head>
 <meta http-equiv="x-ua-compatible" content="IE=Edge"/>
 <title>Tomcat Operations Center</title>
-<link rel="stylesheet" type="text/css" href="public-resources/css/aem.css">
+<link rel="stylesheet" type="text/css" href="public-resources/css/jwala.css">
 <link rel="stylesheet" type="text/css" href="public-resources/css/config-area.css">
 <link rel="stylesheet" type="text/css" href="public-resources/css/react/generic-components/default/tabs.css">
 <link rel="stylesheet" type="text/css" href="public-resources/css/react/generic-components/default/data-grid.css">

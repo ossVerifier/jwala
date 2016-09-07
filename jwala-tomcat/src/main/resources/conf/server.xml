@@ -94,7 +94,7 @@
                clientAuth="false" sslProtocol="TLS" />
     -->
     <!-- Defines Peter's APR + JSSE compatible port
-         STP Features:
+         JWALA Features:
          Compression: Forced on
          Compressable types: text/html,text/xml,text/plain,application/json
          compressionMinSize: 2048 (default)
@@ -130,7 +130,7 @@
     on to the appropriate Host (virtual host).
     Documentation at /docs/config/engine.html -->
 
-    <!-- The STP Engine is the normal standalone Tomcat host
+    <!-- The JWALA Engine is the normal standalone Tomcat host
          Warning: potential name conflict on jvmRoute -->
     <Engine name="jwala" defaultHost="localhost" jvmRoute="CTO-N9SF-LTST-TOC">
       <!-- Host Features: Standard Host
@@ -152,7 +152,7 @@
 
         <!-- Access log processes all example.
              Documentation at: /docs/config/valve.html
-             STP Features: Standard Access Log
+             JWALA Features: Standard Access Log
              Daily rotating: yes
              Status request logging can be disabled by adding attribute "status" to the ServletRequest.
              -->

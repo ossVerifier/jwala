@@ -136,14 +136,14 @@ public class ApplicationServiceImplTest {
         when(mockApplication.getWarPath()).thenReturn("the-ws-group-name/toc-1.0.war");
         when(mockApplication.getName()).thenReturn("TOC 1.0");
         when(mockApplication.getGroup()).thenReturn(group);
-        when(mockApplication.getWebAppContext()).thenReturn("/aem");
+        when(mockApplication.getWebAppContext()).thenReturn("/jwala");
         when(mockApplication.isSecure()).thenReturn(true);
 
         when(mockApplication2.getId()).thenReturn(new Identifier<Application>(2L));
         when(mockApplication2.getWarPath()).thenReturn("the-ws-group-name-2/toc-1.1.war");
         when(mockApplication2.getName()).thenReturn("TOC 1.1");
         when(mockApplication2.getGroup()).thenReturn(group2);
-        when(mockApplication2.getWebAppContext()).thenReturn("/aem");
+        when(mockApplication2.getWebAppContext()).thenReturn("/jwala");
         when(mockApplication2.isSecure()).thenReturn(false);
 
         applications2.add(mockApplication);
