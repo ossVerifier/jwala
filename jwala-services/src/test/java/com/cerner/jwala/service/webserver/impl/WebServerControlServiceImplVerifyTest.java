@@ -19,9 +19,7 @@ import com.cerner.jwala.control.webserver.command.impl.WindowsWebServerPlatformC
 import com.cerner.jwala.exception.CommandFailureException;
 import com.cerner.jwala.persistence.jpa.type.EventType;
 import com.cerner.jwala.service.*;
-import com.cerner.jwala.service.state.StateNotificationService;
 import com.cerner.jwala.service.webserver.WebServerService;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -54,9 +52,6 @@ public class WebServerControlServiceImplVerifyTest extends VerificationBehaviorS
 
     @Mock
     private HistoryService mockHistoryService;
-
-    @Mock
-    private StateNotificationService stateNotificationService;
 
     @Mock
     private MessagingService mockMessagingService;

@@ -13,7 +13,6 @@ import com.cerner.jwala.service.jvm.JvmControlService;
 import com.cerner.jwala.service.jvm.JvmService;
 import com.cerner.jwala.service.jvm.JvmStateService;
 import com.cerner.jwala.service.resource.ResourceService;
-import com.cerner.jwala.service.state.StateNotificationService;
 import com.cerner.jwala.service.webserver.WebServerCommandService;
 import com.cerner.jwala.service.webserver.WebServerControlService;
 import com.cerner.jwala.service.webserver.WebServerService;
@@ -35,20 +34,15 @@ import com.cerner.jwala.ws.rest.v1.service.jvm.JvmServiceRest;
 import com.cerner.jwala.ws.rest.v1.service.jvm.impl.JvmServiceRestImpl;
 import com.cerner.jwala.ws.rest.v1.service.resource.ResourceServiceRest;
 import com.cerner.jwala.ws.rest.v1.service.resource.impl.ResourceServiceRestImpl;
-import com.cerner.jwala.ws.rest.v1.service.state.StateServiceRest;
-import com.cerner.jwala.ws.rest.v1.service.state.impl.StateConsumerManager;
-import com.cerner.jwala.ws.rest.v1.service.state.impl.StateServiceRestImpl;
 import com.cerner.jwala.ws.rest.v1.service.user.UserServiceRest;
 import com.cerner.jwala.ws.rest.v1.service.user.impl.UserServiceRestImpl;
 import com.cerner.jwala.ws.rest.v1.service.webserver.WebServerServiceRest;
 import com.cerner.jwala.ws.rest.v1.service.webserver.impl.WebServerServiceRestImpl;
-
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.cxf.endpoint.Server;
 import org.apache.cxf.jaxrs.JAXRSServerFactoryBean;
 import org.codehaus.jackson.jaxrs.JacksonJsonProvider;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -90,10 +84,6 @@ public class AemWebServiceConfiguration {
 
     @Autowired
     private ResourceService resourceService;
-
-    @Autowired
-    @Qualifier("stateNotificationService")
-    private StateNotificationService stateNotificationService;
 
     @Autowired
     private HistoryCrudService historyCrudService;
@@ -138,7 +128,6 @@ public class AemWebServiceConfiguration {
         serviceBeans.add(getV1ApplicationServiceRest());
         serviceBeans.add(getV1UserServiceRest());
         serviceBeans.add(getV1AdminServiceRest());
-        serviceBeans.add(getV1StateServiceRest());
         serviceBeans.add(getV1ResourceServiceRest());
         serviceBeans.add(getV1HistoryServiceRest());
         serviceBeans.add(getV1BalancermanagerServiceRest());
@@ -177,11 +166,6 @@ public class AemWebServiceConfiguration {
     }
 
     @Bean
-    public StateConsumerManager getStateConsumerManager() {
-        return new StateConsumerManager(stateNotificationService);
-    }
-
-    @Bean
     public WebServerServiceRest getV1WebServerServiceRest() {
         return new WebServerServiceRestImpl(webServerService,
                 webServerControlService,
@@ -195,12 +179,6 @@ public class AemWebServiceConfiguration {
     @Autowired
     public HistoryServiceRest getV1HistoryServiceRest() {
         return new HistoryServiceRestImpl(historyService);
-    }
-
-    @Bean
-    public StateServiceRest getV1StateServiceRest() {
-        return new StateServiceRestImpl(stateNotificationService, getStateConsumerManager(), jvmService, jvmStateService,
-                webServerService);
     }
 
     @Bean
