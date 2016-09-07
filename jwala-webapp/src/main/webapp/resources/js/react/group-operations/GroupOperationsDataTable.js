@@ -777,10 +777,6 @@ var GroupOperationsDataTable = React.createClass({
         }
         ServiceFactory.getJvmService().diagnoseJvm(data.id.id);
     },
-    onClickHealthCheck: function (unused1, unused2, data) {
-        var url = window.location.protocol + "//" + data.hostName + ":" + (window.location.protocol.toUpperCase() === "HTTPS:" ? data.httpsPort : data.httpPort) + tocVars.healthCheckApp;
-        window.open(url);
-    },
     /* web server callbacks */
     buildHRefLoadBalancerConfig: function (data) {
         return "https://" + data.host + ":" + data.httpsPort + tocVars.loadBalancerStatusMount;
