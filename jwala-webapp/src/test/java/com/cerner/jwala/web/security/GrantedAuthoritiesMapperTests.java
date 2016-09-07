@@ -15,7 +15,6 @@ import com.cerner.jwala.common.properties.ApplicationProperties;
 import com.cerner.jwala.web.security.GrantedAuthoritiesMapperImpl;
 
 public class GrantedAuthoritiesMapperTests {
-    @Mock
     GrantedAuthoritiesMapperImpl authorities;
     
     SimpleGrantedAuthority user;
@@ -25,7 +24,6 @@ public class GrantedAuthoritiesMapperTests {
 
     @Before
     public void setUp() throws Exception {
-
         System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, "./src/test/resources");
         authorities = new GrantedAuthoritiesMapperImpl();
         auths = new HashSet<SimpleGrantedAuthority>();
@@ -36,9 +34,9 @@ public class GrantedAuthoritiesMapperTests {
     }
 
     @Test
-    public void test() {
+    public void testMapAuthorities() {
             assertNotNull(authorities.mapAuthorities(auths));
-//            assertEquals(2, authorities.mapAuthorities(auths).size());
+            assertEquals(1, authorities.mapAuthorities(auths).size());
      }
 
 }
