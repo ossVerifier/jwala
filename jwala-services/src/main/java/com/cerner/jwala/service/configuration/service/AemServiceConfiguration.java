@@ -34,7 +34,13 @@ import com.cerner.jwala.service.app.impl.ApplicationCommandServiceImpl;
 import com.cerner.jwala.service.app.impl.ApplicationServiceImpl;
 import com.cerner.jwala.service.app.impl.PrivateApplicationServiceImpl;
 import com.cerner.jwala.service.balancermanager.BalancerManagerService;
+import com.cerner.jwala.service.balancermanager.impl.BalancerManagerHtmlParser;
+import com.cerner.jwala.service.balancermanager.impl.BalancerManagerHttpClient;
 import com.cerner.jwala.service.balancermanager.impl.BalancerManagerServiceImpl;
+import com.cerner.jwala.service.balancermanager.impl.BalancerManagerXmlParser;
+import com.cerner.jwala.service.binarydistribution.BinaryDistributionService;
+import com.cerner.jwala.service.binarydistribution.impl.BinaryDistributionControlServiceImpl;
+import com.cerner.jwala.service.binarydistribution.impl.BinaryDistributionServiceImpl;
 import com.cerner.jwala.service.configuration.jms.AemJmsConfig;
 import com.cerner.jwala.service.group.*;
 import com.cerner.jwala.service.group.impl.GroupControlServiceImpl;
@@ -71,15 +77,15 @@ import com.cerner.jwala.service.webserver.impl.WebServerServiceImpl;
 import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
-import com.cerner.jwala.service.balancermanager.impl.BalancerManagerHtmlParser;
-import com.cerner.jwala.service.balancermanager.impl.BalancerManagerHttpClient;
-import com.cerner.jwala.service.balancermanager.impl.BalancerManagerXmlParser;
 import org.apache.commons.pool2.impl.GenericKeyedObjectPool;
 import org.apache.commons.pool2.impl.GenericKeyedObjectPoolConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.*;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.ClassPathResource;
@@ -140,6 +146,9 @@ public class AemServiceConfiguration {
     @Autowired
     private GroupStateNotificationService groupStateNotificationService;
 
+    @Autowired
+    private BinaryDistributionService binaryDistributionService;
+
     private final Map webServerFutureMap = new HashMap();
 
     @Resource
@@ -177,7 +186,7 @@ public class AemServiceConfiguration {
         final JvmPersistenceService jvmPersistenceService = persistenceServiceConfiguration.getJvmPersistenceService();
         return new JvmServiceImpl(jvmPersistenceService, groupService, applicationService,
                 fileManager, messagingTemplate, groupStateNotificationService, resourceService,
-                clientFactoryHelper, topicServerStates, jvmControlService, jvmWriteLockMap);
+                clientFactoryHelper, topicServerStates, jvmControlService, jvmWriteLockMap, binaryDistributionService);
     }
 
     @Bean(name = "balancermanagerService")
@@ -415,6 +424,11 @@ public class AemServiceConfiguration {
         CustomizableThreadFactory tf = new CustomizableThreadFactory("polling-");
         tf.setDaemon(true);
         return tf;
+    }
+
+    @Bean(name = "binaryDistributionService")
+    public BinaryDistributionService binaryDistributionService() {
+        return new BinaryDistributionServiceImpl(new BinaryDistributionControlServiceImpl(aemCommandExecutorConfig.getRemoteCommandExecutor()));
     }
 
 }

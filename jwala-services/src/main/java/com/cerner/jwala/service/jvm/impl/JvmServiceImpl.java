@@ -34,6 +34,7 @@ import com.cerner.jwala.persistence.jpa.service.exception.NonRetrievableResource
 import com.cerner.jwala.persistence.jpa.service.exception.ResourceTemplateUpdateException;
 import com.cerner.jwala.persistence.service.JvmPersistenceService;
 import com.cerner.jwala.service.app.ApplicationService;
+import com.cerner.jwala.service.binarydistribution.BinaryDistributionService;
 import com.cerner.jwala.service.group.GroupService;
 import com.cerner.jwala.service.group.GroupStateNotificationService;
 import com.cerner.jwala.service.jvm.JvmControlService;
@@ -81,6 +82,7 @@ public class JvmServiceImpl implements JvmService {
     private final ClientFactoryHelper clientFactoryHelper;
     private final JvmControlService jvmControlService;
     private final Map<String, ReentrantReadWriteLock> jvmWriteLocks;
+    private final BinaryDistributionService binaryDistributionService;
 
     private static final String DIAGNOSIS_INITIATED = "Diagnosis Initiated on JVM ${jvm.jvmName}, host ${jvm.hostName}";
     private static final String TEMPLATE_DIR = ApplicationProperties.get("paths.tomcat.instance.template");
@@ -97,7 +99,8 @@ public class JvmServiceImpl implements JvmService {
                           final ClientFactoryHelper clientFactoryHelper,
                           final String topicServerStates,
                           final JvmControlService jvmControlService,
-                          final Map<String, ReentrantReadWriteLock> writeLockMap) {
+                          final Map<String, ReentrantReadWriteLock> writeLockMap,
+                          final BinaryDistributionService binaryDistributionService) {
         this.jvmPersistenceService = jvmPersistenceService;
         this.groupService = groupService;
         this.applicationService = applicationService;
@@ -109,6 +112,7 @@ public class JvmServiceImpl implements JvmService {
         this.jvmControlService = jvmControlService;
         this.topicServerStates = topicServerStates;
         jvmWriteLocks = writeLockMap;
+        this.binaryDistributionService = binaryDistributionService;
     }
 
     protected Jvm createJvm(final CreateJvmRequest aCreateJvmRequest) {
@@ -320,6 +324,9 @@ public class JvmServiceImpl implements JvmService {
             // create the tar file
             //
             final String jvmConfigJar = generateJvmConfigJar(jvm);
+
+            binaryDistributionService.distributeJdk(jvm.getHostName());
+            binaryDistributionService.distributeTomcat(jvm.getHostName());
 
             // copy the tar file
             secureCopyJvmConfigJar(jvm, jvmConfigJar, user);

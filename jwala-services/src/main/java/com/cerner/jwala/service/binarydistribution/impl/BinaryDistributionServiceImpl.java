@@ -10,12 +10,15 @@ import com.cerner.jwala.service.zip.ZipDirectory;
 import com.cerner.jwala.service.zip.impl.ZipDirectoryImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.io.File;
 
 /**
  * Created by SP043299 on 9/6/2016.
  */
+@Service
 public class BinaryDistributionServiceImpl implements BinaryDistributionService {
     private static final Logger LOGGER = LoggerFactory.getLogger(BinaryDistributionServiceImpl.class);
 
@@ -28,6 +31,7 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
     private final ZipDirectory zipDirectory = new ZipDirectoryImpl();
     private final BinaryDistributionControlService binaryDistributionControlService;
 
+    @Autowired
     public BinaryDistributionServiceImpl(BinaryDistributionControlService binaryDistributionControlService) {
         this.binaryDistributionControlService = binaryDistributionControlService;
     }
