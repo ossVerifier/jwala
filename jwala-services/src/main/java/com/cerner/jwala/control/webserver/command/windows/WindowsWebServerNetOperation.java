@@ -48,7 +48,7 @@ public enum WindowsWebServerNetOperation implements ServiceCommandBuilder {
     BACK_UP_HTTP_CONFIG_FILE(WebServerControlOperation.BACK_UP_CONFIG_FILE) {
         @Override
         public ExecCommand buildCommandForService(String aServiceName, String... aParams) {
-            return new ExecCommand("/usr/bin/cp", aParams[0], aParams[1]);
+            return new ExecCommand(USR_BIN_CP, aParams[0], aParams[1]);
         }
     },
     DELETE_SERVICE(WebServerControlOperation.DELETE_SERVICE) {
@@ -64,7 +64,7 @@ public enum WindowsWebServerNetOperation implements ServiceCommandBuilder {
         @Override
         public ExecCommand buildCommandForService(String aServiceName, String... aParams) {
             return new ExecCommand(
-                    cygpathWrapper(INVOKE_WS_SERVICE_SCRIPT_NAME, USER_TOC_SCRIPTS_PATH + "/"),
+                    cygpathWrapper(INVOKE_WS_SERVICE_SCRIPT_NAME, REMOTE_COMMANDS_USER_SCRIPTS + "/"),
                     aServiceName,
                     WEBSERVER_CONF_PATH
             );
@@ -73,29 +73,36 @@ public enum WindowsWebServerNetOperation implements ServiceCommandBuilder {
     CREATE_DIRECTORY(WebServerControlOperation.CREATE_DIRECTORY) {
         @Override
         public ExecCommand buildCommandForService(String aServiceName, String... aParams) {
-            return new ExecCommand("if [ ! -e \"" + aParams[0] + "\" ]; then /usr/bin/mkdir -p " + aParams[0] + "; fi;");
+            return new ExecCommand("if [ ! -e \"" + aParams[0] + "\" ]; then " + USR_BIN_MKDIR + " -p " + aParams[0] + "; fi;");
         }
     },
     MAKE_UNIX_EXEC(WebServerControlOperation.CHANGE_FILE_MODE) {
         @Override
         public ExecCommand buildCommandForService(String aServiceName, String... aParams) {
-            return new ExecCommand("/usr/bin/chmod " + aParams[0] + " " + aParams[1] + "/" + aParams[2]);
+            return new ExecCommand(USR_BIN_CHMOD + " " + aParams[0] + " " + aParams[1] + "/" + aParams[2]);
         }
     },
     CHECK_FILE_EXISTS(WebServerControlOperation.CHECK_FILE_EXISTS) {
         @Override
         public ExecCommand buildCommandForService(String aServiceName, String... aParams) {
-            return new ExecCommand("/usr/bin/test -e " + aParams[0]);
+            return new ExecCommand(USR_BIN_TEST + " -e " + aParams[0]);
         }
     };
 
+    private static final String USR_BIN_CYGPATH = "/usr/bin/cygpath";
+
     private static String cygpathWrapper(AemControl.Properties scriptName, String scriptPath) {
-        return "`" + CYGPATH.toString() + " " + scriptPath + scriptName + "`";
+        return "`" + USR_BIN_CYGPATH + " " + scriptPath + scriptName + "`";
     }
 
     private static final Map<WebServerControlOperation, WindowsWebServerNetOperation> LOOKUP_MAP = new EnumMap<>(WebServerControlOperation.class);
 
     public static final String WEBSERVER_CONF_PATH = ApplicationProperties.get("remote.paths.httpd.conf");
+    private static final String REMOTE_COMMANDS_USER_SCRIPTS = ApplicationProperties.get("remote.commands.user-scripts");
+    private static final String USR_BIN_CP = "/usr/bin/cp";
+    private static final String USR_BIN_MKDIR = "/usr/bin/mkdir";
+    private static final String USR_BIN_CHMOD = "/usr/bin/chmod";
+    private static final String USR_BIN_TEST = "/usr/bin/test";
 
     static {
         for (final WindowsWebServerNetOperation o : values()) {

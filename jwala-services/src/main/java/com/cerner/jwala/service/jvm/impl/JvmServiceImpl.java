@@ -69,6 +69,7 @@ import java.util.jar.JarOutputStream;
 public class JvmServiceImpl implements JvmService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JvmServiceImpl.class);
+    private static final String REMOTE_COMMANDS_USER_SCRIPTS = ApplicationProperties.get("remote.commands.user-scripts");
 
     private String topicServerStates;
     private final JvmPersistenceService jvmPersistenceService;
@@ -350,7 +351,7 @@ public class JvmServiceImpl implements JvmService {
     }
 
     protected void createScriptsDirectory(Jvm jvm) throws CommandFailureException {
-        final String scriptsDir = AemControl.Properties.USER_TOC_SCRIPTS_PATH.getValue();
+        final String scriptsDir = REMOTE_COMMANDS_USER_SCRIPTS;
 
         final CommandOutput commandOutput = jvmControlService.createDirectory(jvm, scriptsDir);
         ExecReturnCode resultReturnCode = commandOutput.getReturnCode();
@@ -366,7 +367,7 @@ public class JvmServiceImpl implements JvmService {
         final String commandsScriptsPath = ApplicationProperties.get("commands.scripts-path");
 
         final String deployConfigJarPath = commandsScriptsPath + "/" + AemControl.Properties.DEPLOY_CONFIG_ARCHIVE_SCRIPT_NAME.getValue();
-        final String tocScriptsPath = AemControl.Properties.USER_TOC_SCRIPTS_PATH.getValue();
+        final String tocScriptsPath = REMOTE_COMMANDS_USER_SCRIPTS;
         final String jvmName = jvm.getJvmName();
         final String userId = user.getId();
 
@@ -468,7 +469,7 @@ public class JvmServiceImpl implements JvmService {
 
     protected void secureCopyJvmConfigJar(Jvm jvm, String jvmConfigTar, User user) throws CommandFailureException {
         String configTarName = jvm.getJvmName() + CONFIG_JAR;
-        secureCopyFileToJvm(jvm, ApplicationProperties.get("paths.generated.resource.dir") + "/" + configTarName, AemControl.Properties.USER_TOC_SCRIPTS_PATH + "/" + configTarName, user);
+        secureCopyFileToJvm(jvm, ApplicationProperties.get("paths.generated.resource.dir") + "/" + configTarName, REMOTE_COMMANDS_USER_SCRIPTS + "/" + configTarName, user);
         LOGGER.info("Copy of config tar successful: {}", jvmConfigTar);
     }
 
