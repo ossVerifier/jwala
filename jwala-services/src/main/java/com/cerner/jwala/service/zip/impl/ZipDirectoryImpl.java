@@ -90,7 +90,7 @@ public class ZipDirectoryImpl implements ZipDirectory {
      * @param source The original source directory
      * @param files ArrayList of all the files under the source directory
      */
-    private void getFiles(File file, String source, ArrayList<String> files) {
+    private void getFiles(final File file, final String source, final ArrayList<String> files) {
         if (file.isFile()) {
             files.add(file.getAbsolutePath().substring(source.length()));
         } else if (file.isDirectory()) {
