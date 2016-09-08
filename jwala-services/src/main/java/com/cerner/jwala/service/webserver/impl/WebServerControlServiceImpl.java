@@ -155,7 +155,7 @@ public class WebServerControlServiceImpl implements WebServerControlService {
         final WebServer aWebServer = webServerService.getWebServer(aWebServerName);
         final int beginIndex = destPath.lastIndexOf('/');
         final String fileName = destPath.substring(beginIndex + 1, destPath.length());
-        if (!AemControl.Properties.USER_TOC_SCRIPTS_PATH.getValue().endsWith(fileName)) {
+        if (!AemControl.Properties.USER_JWALA_SCRIPTS_PATH.getValue().endsWith(fileName)) {
             final String eventDescription = WindowsWebServerNetOperation.SECURE_COPY.name() + " " + fileName;
             historyService.createHistory(getServerName(aWebServer), new ArrayList<>(aWebServer.getGroups()), eventDescription, EventType.USER_ACTION, userId);
             messagingService.send(new WebServerHistoryEvent(aWebServer.getId(), eventDescription, userId, DateTime.now(), WebServerControlOperation.SECURE_COPY));

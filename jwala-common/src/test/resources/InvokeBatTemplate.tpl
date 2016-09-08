@@ -1,4 +1,4 @@
-REM ${vars.'test.toc.property'}
+REM ${vars.'test.jwala.property'}
 
 CALL d:\stp\app\instances\\${jvm.jvmName}\bin\setenv.bat
 CMD /C d:\stp\apache-tomcat-7.0.55\core\bin\service.bat install ${jvm.jvmName}

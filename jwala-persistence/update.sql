@@ -1,5 +1,5 @@
 -- ================================================== --
--- === BEGIN: UPGRADE FROM TOC 0.0.1 to TOC 1.3.0 === --
+-- === BEGIN: UPGRADE FROM Jwala 0.0.1 to Jwala 1.3.0 === --
 -- ================================================== --
 -- Update the App table
 ALTER TABLE APP ADD COLUMN IF NOT EXISTS loadBalanceAcrossServers BOOLEAN DEFAULT FALSE;
@@ -67,22 +67,22 @@ ALTER TABLE WEBSERVER_GRP ADD CONSTRAINT IF NOT EXISTS FK_WEBSERVER_ID_TO_WEBSER
 CREATE TABLE IF NOT EXISTS VERSION (RELEASE_VERSION VARCHAR(255), LAST_UPDATED TIMESTAMP);
 INSERT INTO VERSION (RELEASE_VERSION, LAST_UPDATED) VALUES ('1.3.0', NOW());
 -- ================================================ --
--- === END: UPGRADE FROM TOC 0.0.1 to TOC 1.3.0 === --
+-- === END: UPGRADE FROM Jwala 0.0.1 to Jwala 1.3.0 === --
 -- ================================================ --
 
 
 -- ================================================== --
--- === BEGIN: UPGRADE FROM TOC 1.3.0 to TOC 1.3.1 === --
+-- === BEGIN: UPGRADE FROM Jwala 1.3.0 to Jwala 1.3.1 === --
 -- ================================================== --
 CREATE TABLE IF NOT EXISTS VERSION (RELEASE_VERSION VARCHAR(255), LAST_UPDATED TIMESTAMP);
 INSERT INTO VERSION (RELEASE_VERSION, LAST_UPDATED) VALUES ('1.3.1', NOW());
 -- ================================================ --
--- === END: UPGRADE FROM TOC 1.3.0 to TOC 1.3.1 === --
+-- === END: UPGRADE FROM Jwala 1.3.0 to Jwala 1.3.1 === --
 -- ================================================ --
 
 
 -- ================================================== --
--- === BEGIN: UPGRADE FROM TOC 1.3.1 to TOC 1.3.2 === --
+-- === BEGIN: UPGRADE FROM Jwala 1.3.1 to Jwala 1.3.2 === --
 -- ================================================== --
 -- Fix for JVM state set to null
 UPDATE JVM SET STATE='JVM_STARTED' WHERE STATE IS NULL;
@@ -90,12 +90,12 @@ UPDATE JVM SET STATE='JVM_STARTED' WHERE STATE IS NULL;
 CREATE TABLE IF NOT EXISTS VERSION (RELEASE_VERSION VARCHAR(255), LAST_UPDATED TIMESTAMP);
 INSERT INTO VERSION (RELEASE_VERSION, LAST_UPDATED) VALUES ('1.3.2', NOW());
 -- ================================================ --
--- === END: UPGRADE FROM TOC 1.3.1 to TOC 1.3.2 === --
+-- === END: UPGRADE FROM Jwala 1.3.1 to Jwala 1.3.2 === --
 -- ================================================ --
 
 
 -- =================================================== --
--- === BEGIN: UPGRADE FROM TOC 1.3.2 to TOC 1.3.10 === --
+-- === BEGIN: UPGRADE FROM Jwala 1.3.2 to Jwala 1.3.10 === --
 -- =================================================== --
 CREATE TABLE IF NOT EXISTS RESOURCE_CONFIG_TEMPLATE (ID INTEGER NOT NULL IDENTITY, createBy VARCHAR(255), createDate TIMESTAMP, lastUpdateDate TIMESTAMP, updateBy VARCHAR(255), locked BOOLEAN, metaData VARCHAR(2147483647) NOT NULL, TEMPLATE_CONTENT VARCHAR(2147483647) NOT NULL, TEMPLATE_NAME VARCHAR(255) NOT NULL, APP_ID BIGINT, ENTITY_ID BIGINT, ENTITY_TYPE SMALLINT, GRP_ID BIGINT, CONSTRAINT U_RSRCPLT_ENTITY_ID UNIQUE (ENTITY_ID, APP_ID, GRP_ID, ENTITY_TYPE, TEMPLATE_NAME));
 ALTER TABLE JVM ADD COLUMN IF NOT EXISTS encryptedPassword VARCHAR(255);
@@ -103,5 +103,5 @@ ALTER TABLE JVM ADD COLUMN IF NOT EXISTS encryptedPassword VARCHAR(255);
 CREATE TABLE IF NOT EXISTS VERSION (RELEASE_VERSION VARCHAR(255), LAST_UPDATED TIMESTAMP);
 INSERT INTO VERSION (RELEASE_VERSION, LAST_UPDATED) VALUES ('1.3.10', NOW());
 -- ================================================= --
--- === END: UPGRADE FROM TOC 1.3.2 to TOC 1.3.10 === --
+-- === END: UPGRADE FROM Jwala 1.3.2 to Jwala 1.3.10 === --
 -- ================================================= --

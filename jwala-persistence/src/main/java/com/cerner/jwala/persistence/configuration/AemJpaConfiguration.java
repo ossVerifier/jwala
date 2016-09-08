@@ -22,7 +22,7 @@ public class AemJpaConfiguration {
     @Bean
     public DataSource getAemDataSource() {
         try {
-            return JndiLocatorDelegate.createDefaultResourceRefLocator().lookup("jdbc/toc-xa",
+            return JndiLocatorDelegate.createDefaultResourceRefLocator().lookup("jdbc/jwala-xa",
                     DataSource.class);
         } catch (final NamingException ne) {
             throw new ApplicationException(ne);

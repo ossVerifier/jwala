@@ -225,9 +225,7 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
     @Test
     public void testPopulateJvmConfig() throws FileNotFoundException {
         List<UploadJvmTemplateRequest> uploadRequests = new ArrayList<>();
-        InputStream data = new FileInputStream(new File("./src/test/resources/ServerXMLTemplate.tpl"));
-        Scanner scanner = new Scanner(data).useDelimiter("\\A");
-        String templateContent = scanner.hasNext() ? scanner.next() : "";
+        String templateContent = "<server>content</server>";
 
         UploadJvmTemplateRequest uploadJvmRequest = new UploadJvmTemplateRequest(new Jvm(new Identifier<Jvm>(11L), "testJvm",
                 new HashSet<Group>()), "ServerXMLTemplate.tpl", templateContent, StringUtils.EMPTY) {
@@ -245,9 +243,7 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
     @Test
     public void testPopulateGroupJvmTemplates() throws FileNotFoundException {
         List<UploadJvmTemplateRequest> uploadRequests = new ArrayList<>();
-        InputStream data = new FileInputStream(new File("./src/test/resources/ServerXMLTemplate.tpl"));
-        Scanner scanner = new Scanner(data).useDelimiter("\\A");
-        String templateContent = scanner.hasNext() ? scanner.next() : "";
+        String templateContent = "<server>content</server>";
 
         UploadJvmTemplateRequest uploadJvmRequest = new UploadJvmTemplateRequest(new Jvm(new Identifier<Jvm>(11L), "testJvm",
                 new HashSet<Group>()), "ServerXMLTemplate.tpl", templateContent, StringUtils.EMPTY) {

@@ -127,12 +127,12 @@ task createJwalaDb(dependsOn: copySql) << {
     }
 
     def sql = Sql.newInstance(
-            "jdbc:h2:file://$buildDir/$tomcatDir/data/db/toc;LOCK_MODE=0",
+            "jdbc:h2:file://$buildDir/$tomcatDir/data/db/jwala;LOCK_MODE=0",
             'sa',
             '',
             'org.h2.Driver')
 
-    def dbFile = file("$buildDir/$tomcatDir/data/db/toc.h2.db")
+    def dbFile = file("$buildDir/$tomcatDir/data/db/jwala.h2.db")
     if (dbFile.exists()) {
         sql.execute('drop all objects')
     }

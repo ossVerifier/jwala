@@ -79,7 +79,7 @@ public class ApplicationServiceRestImplTest {
 
     Group group1 = new Group(Identifier.id(0L, Group.class), "");
     Application application = new Application(Identifier.id(1L, Application.class), "", "", "", group1, true, true, false, "testWar.war");
-    Application applicationWithWar = new Application(Identifier.id(1L, Application.class), "", "D:\\APACHE\\TOMCAT\\WEBAPPS\\toc-webapp-1.0-SNAPSHOT-b6349ade-d8f2-4a2f-bdc5-d92d644a1a67-.war", "", group1, true, true, false, "testWar.war");
+    Application applicationWithWar = new Application(Identifier.id(1L, Application.class), "", "D:\\APACHE\\TOMCAT\\WEBAPPS\\jwala-webapp-1.0-SNAPSHOT-b6349ade-d8f2-4a2f-bdc5-d92d644a1a67-.war", "", group1, true, true, false, "testWar.war");
     Application newlyCreatedApp = new Application(Identifier.id(2L, Application.class), "", "", "", group1, true, true, false, "testWar.war");
 
     List<Application> applications = new ArrayList<>(1);
@@ -205,7 +205,7 @@ public class ApplicationServiceRestImplTest {
 //
 //        String dataText = "abcdef";
 //        String contentText = "--" + boundary + ls +
-//                "Content-Disposition: form-data; name=\"files\"; filename=\"toc-webapp-1.0-SNAPSHOT.war\"" + ls +
+//                "Content-Disposition: form-data; name=\"files\"; filename=\"jwala-webapp-1.0-SNAPSHOT.war\"" + ls +
 //                "Content-Type: text/plain" + ls + ls +
 //                dataText + ls +
 //                "--" + boundary + "--" + ls;
@@ -252,7 +252,7 @@ public class ApplicationServiceRestImplTest {
 //                "User-Agent:Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.114 Safari/537.36" + ls;
 //
 //        String content = "--" + boundary + ls +
-//                "Content-Disposition: form-data; name=\"files\"; filename=\"toc-webapp-1.0-SNAPSHOT.war\"" + ls +
+//                "Content-Disposition: form-data; name=\"files\"; filename=\"jwala-webapp-1.0-SNAPSHOT.war\"" + ls +
 //                "Content-Type: application/octet-stream" + ls + ls +
 //                data + ls +
 //                "--" + boundary + "--" + ls;
@@ -298,7 +298,7 @@ public class ApplicationServiceRestImplTest {
 //                "User-Agent:Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.114 Safari/537.36" + ls;
 //
 //        String content = "--" + boundary + ls +
-//                "Content-Disposition: form-data; name=\"files\"; filename=\"toc-webapp-1.0-SNAPSHOT.war\"" + ls +
+//                "Content-Disposition: form-data; name=\"files\"; filename=\"jwala-webapp-1.0-SNAPSHOT.war\"" + ls +
 //                "Content-Type: application/octet-stream" + ls + ls +
 //                data + ls +
 //                "--" + boundary + "--" + ls;
@@ -337,7 +337,7 @@ public class ApplicationServiceRestImplTest {
 //                "User-Agent:Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.114 Safari/537.36" + ls;
 //
 //        String content = "--" + boundary + ls +
-//                "Content-Disposition: form-data; name=\"files\"; filename=\"toc-webapp-1.0-SNAPSHOT.war\"" + ls +
+//                "Content-Disposition: form-data; name=\"files\"; filename=\"jwala-webapp-1.0-SNAPSHOT.war\"" + ls +
 //                "Content-Type: application/octet-stream" + ls + ls +
 //                data + ls +
 //                /*"--" + bad stream!*/ boundary + "--" + ls;

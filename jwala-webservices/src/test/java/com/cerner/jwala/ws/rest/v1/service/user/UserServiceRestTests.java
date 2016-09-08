@@ -1,37 +1,35 @@
 package com.cerner.jwala.ws.rest.v1.service.user;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.mockito.Mockito.mock;
-
-import java.io.IOException;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.ws.rs.core.Response;
-
+import com.cerner.jwala.common.properties.ApplicationProperties;
+import com.cerner.jwala.ws.rest.v1.response.ApplicationResponse;
+import com.cerner.jwala.ws.rest.v1.service.user.impl.UserServiceRestImpl;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import com.cerner.jwala.common.properties.ApplicationProperties;
-import com.cerner.jwala.ws.rest.v1.response.ApplicationResponse;
-import com.cerner.jwala.ws.rest.v1.service.user.impl.UserServiceRestImpl;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.core.Response;
+import java.io.IOException;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.mockito.Mockito.mock;
 
 @RunWith(MockitoJUnitRunner.class)
 public class UserServiceRestTests {
 
     String authFlag;
     public UserServiceRestImpl impl;
-    String TOC_ROLE_ADMIN; 
+    String JWALA_ROLE_ADMIN;
     @Before
     public void setUp() {
         System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, "./src/test/resources");
-        authFlag = ApplicationProperties.get("toc.authorization");
+        authFlag = ApplicationProperties.get("jwala.authorization");
         impl = new UserServiceRestImpl();
-        TOC_ROLE_ADMIN = ApplicationProperties.get("toc.role.admin");
+        JWALA_ROLE_ADMIN = ApplicationProperties.get("jwala.role.admin");
 
     }
 

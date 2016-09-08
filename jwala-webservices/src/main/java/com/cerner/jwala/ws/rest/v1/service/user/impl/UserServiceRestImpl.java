@@ -35,7 +35,7 @@ public class UserServiceRestImpl implements UserServiceRest {
     public static final String JSON_RESPONSE_FALSE = "false";
 
     public static final String JSON_RESPONSE_OK = "{'response':'ok'}";
-    private static final String PROP_TOC_ROLE_ADMIN = "toc.role.admin";
+    private static final String PROP_JWALA_ROLE_ADMIN = "jwala.role.admin";
     
     private static final String USER = "user";
 
@@ -70,7 +70,7 @@ public class UserServiceRestImpl implements UserServiceRest {
         if (auth != null) {
             @SuppressWarnings("unchecked")
             Collection<GrantedAuthority> authorities = (Collection<GrantedAuthority>) auth.getAuthorities();
-            if (authorities!= null &&  authorities.contains(new SimpleGrantedAuthority(ApplicationProperties.get(PROP_TOC_ROLE_ADMIN)))) {
+            if (authorities!= null &&  authorities.contains(new SimpleGrantedAuthority(ApplicationProperties.get(PROP_JWALA_ROLE_ADMIN)))) {
                 return ResponseBuilder.ok(JSON_RESPONSE_TRUE);
             }
         }

@@ -77,7 +77,7 @@ var ExpandCollapseControl = React.createClass({
             // on its top level container (the parent of the parent)
             if (!dataTable.parent().parent().hasClass("ui-accordion")) {
                 dataTable.parent().parent().accordion({
-                    active: tocVars["opsGrpChildrenViewOpen"] === "true" ? 0 : false /* active = true will not open the accordion by default, it has to be 0! */,
+                    active: jwalaVars["opsGrpChildrenViewOpen"] === "true" ? 0 : false /* active = true will not open the accordion by default, it has to be 0! */,
                     header: headerComponents === undefined ? "h3" : "div.accordion-title",
                     collapsible: true,
                     heightStyle: "content",
@@ -95,7 +95,7 @@ var ExpandCollapseControl = React.createClass({
 
                         var component = headerComponents[i];
 
-                        if (component.tocType === "button") {
+                        if (component.jwalaType === "button") {
                             var buttonSelector = dataTable.selector + "_" + component.id;
 
                             var label = $(buttonSelector).find("span").html();
@@ -208,9 +208,9 @@ var ExpandCollapseControl = React.createClass({
         // This is required to mount the command status window without refactoring (REACTifying) the group operations page.
         var externalComponentContainer = "<div id='ext-comp-div-"+ this.props.id  +  "'></div>";
         if(Object.prototype.toString.call(this.props.childTableDetails) === "[object Array]") {
-            var tocDataTables = [];
+            var jwalaDataTables = [];
             for (var i = 0; i < this.props.childTableDetails.length; i++) {
-                tocDataTables[i] = new TocDataTable({tableId:this.props.childTableDetails[i].tableIdPrefix + this.props.id,
+                jwalaDataTables[i] = new TocDataTable({tableId:this.props.childTableDetails[i].tableIdPrefix + this.props.id,
                                                      tableDef:this.props.childTableDetails[i].tableDef,
                                                      className:this.props.childTableDetails[i].className,
                                                      title:this.props.childTableDetails[i].title,
@@ -218,7 +218,7 @@ var ExpandCollapseControl = React.createClass({
                                                      hide:true // hide (show later) to prevent from screwing up the display when data is not yet available because of the header components
                                                     });
             }
-            return externalComponentContainer + React.renderComponentToStaticMarkup(new React.DOM.div("", tocDataTables));
+            return externalComponentContainer + React.renderComponentToStaticMarkup(new React.DOM.div("", jwalaDataTables));
         } else {
             return externalComponentContainer + React.renderComponentToStaticMarkup(<TocDataTable tableId={this.props.childTableDetails.tableIdPrefix + this.props.id}
                                                                      tableDef={this.props.childTableDetails.tableDef}

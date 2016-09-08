@@ -203,11 +203,11 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
                 configFilePath = webServerService.getResourceTemplate(aWebServerName, resourceFileName, false, resourceService.generateResourceGroup());
             } else {
                 // create the file
-                final String tocGeneratedResourcesDir = ApplicationProperties.get(PATHS_GENERATED_RESOURCE_DIR);
+                final String jwalaGeneratedResourcesDir = ApplicationProperties.get(PATHS_GENERATED_RESOURCE_DIR);
                 final String generatedHttpdConf = webServerService.getResourceTemplate(aWebServerName, resourceFileName, true,
                         resourceService.generateResourceGroup());
                 int resourceNameDotIndex = resourceFileName.lastIndexOf(".");
-                final File configFile = createTempWebServerResourceFile(aWebServerName, tocGeneratedResourcesDir, resourceFileName.substring(0, resourceNameDotIndex), resourceFileName.substring(resourceNameDotIndex + 1, resourceFileName.length()), generatedHttpdConf);
+                final File configFile = createTempWebServerResourceFile(aWebServerName, jwalaGeneratedResourcesDir, resourceFileName.substring(0, resourceNameDotIndex), resourceFileName.substring(resourceNameDotIndex + 1, resourceFileName.length()), generatedHttpdConf);
 
                 // copy the file
                 configFilePath = configFile.getAbsolutePath().replace("\\", "/");
@@ -311,7 +311,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
     }
 
     protected void createScriptsDirectory(WebServer webServer) throws CommandFailureException {
-        final String scriptsDir = AemControl.Properties.USER_TOC_SCRIPTS_PATH.getValue();
+        final String scriptsDir = AemControl.Properties.USER_JWALA_SCRIPTS_PATH.getValue();
 
         final CommandOutput result = webServerControlService.createDirectory(webServer, scriptsDir);
 
@@ -343,15 +343,15 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
 
         final String invokeWsScriptName = AemControl.Properties.INVOKE_WS_SERVICE_SCRIPT_NAME.getValue();
         final String sourceInvokeWsServicePath = AemControl.Properties.SCRIPTS_PATH + "/" + invokeWsScriptName;
-        final String tocScriptsPath = AemControl.Properties.USER_TOC_SCRIPTS_PATH.getValue();
-        if (!webServerControlService.secureCopyFile(webServerName, sourceInvokeWsServicePath, tocScriptsPath, userId).getReturnCode().wasSuccessful()) {
+        final String jwalaScriptsPath = AemControl.Properties.USER_JWALA_SCRIPTS_PATH.getValue();
+        if (!webServerControlService.secureCopyFile(webServerName, sourceInvokeWsServicePath, jwalaScriptsPath, userId).getReturnCode().wasSuccessful()) {
             LOGGER.error("Failed to secure copy file {} during creation of {}", sourceInvokeWsServicePath, webServerName);
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to secure copy file " + sourceInvokeWsServicePath + " during the creation of " + webServerName);
         }
 
         // make sure the scripts are executable
-        if (!webServerControlService.changeFileMode(webServer, "a+x", tocScriptsPath, "*.sh").getReturnCode().wasSuccessful()) {
-            LOGGER.error("Failed to update the permissions in {} during the creation of {}", tocScriptsPath, webServerName);
+        if (!webServerControlService.changeFileMode(webServer, "a+x", jwalaScriptsPath, "*.sh").getReturnCode().wasSuccessful()) {
+            LOGGER.error("Failed to update the permissions in {} during the creation of {}", jwalaScriptsPath, webServerName);
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to update the permissions in " + sourceInvokeWsServicePath + " during the creation of " + webServerName);
         }
         if (!webServerControlService.changeFileMode(webServer, "a+x", destHttpdConfPath, "*.sh").getReturnCode().wasSuccessful()) {
@@ -364,10 +364,10 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
 
         // create the invokeWs.bat file
         String invokeWSBatText = webServerService.generateInvokeWSBat(webServer);
-        final String tocGeneratedResourcesDir = ApplicationProperties.get(PATHS_GENERATED_RESOURCE_DIR);
+        final String jwalaGeneratedResourcesDir = ApplicationProperties.get(PATHS_GENERATED_RESOURCE_DIR);
         final String httpdDataDir = ApplicationProperties.get("remote.paths.httpd.conf");
         final String name = webServer.getName();
-        final File invokeWsBatFile = createTempWebServerResourceFile(name, tocGeneratedResourcesDir, "invokeWS", "bat", invokeWSBatText);
+        final File invokeWsBatFile = createTempWebServerResourceFile(name, jwalaGeneratedResourcesDir, "invokeWS", "bat", invokeWSBatText);
 
         // copy the invokeWs.bat file
         final String invokeWsBatFileAbsolutePath = invokeWsBatFile.getAbsolutePath();

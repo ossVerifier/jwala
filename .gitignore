@@ -5,12 +5,6 @@ classes
 .settings
 .classpath
 .project
-/toc-build/jacoco.exec
-/toc-build/toc-tomcat/logs
-/toc-build/work
-/toc-build/toc-tomcat/webapps
-/toc-webapp/src/main/webapp/gen
-/toc-services/logs/PropertiesStore
 .idea/
 *.iml
 *.iws

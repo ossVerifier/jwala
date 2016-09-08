@@ -38,7 +38,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private static final String ACTIVE_DIRECTORY_SERVER_NAME = "active.directory.server.name";
     private static final String ACTIVE_DIRECTORY_SERVER_PORT = "active.directory.server.port";
     private static final String ACTIVE_DIRECTORY_PROTOCOL = "active.directory.server.protocol";
-    private static final String TOC_AUTH_ENABLED = "toc.authorization";
+    private static final String JWALA_AUTH_ENABLED = "jwala.authorization";
 
     
     private static final String LOGIN_PAGE ="/login";
@@ -50,7 +50,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private static final String PAGE_CONSTANTS = "/page-constants";
     
     private static final String  WEBSERVER_CONF_URL = "/**/webservers/**/conf/deploy";
-    private static final String  WEBSERVER_GENERATE_URL = "/toc/**/groups/**/webservers/conf/deploy";
+    private static final String  WEBSERVER_GENERATE_URL = "/jwala/**/groups/**/webservers/conf/deploy";
     private static final String  JVM_CONF_URL = "/**/jvms/**/conf";
     private static final String  IDP_URL = "/idp";
 
@@ -64,8 +64,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
      
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        final String ADMIN = ApplicationProperties.get("toc.role.admin");
-        final String AUTH = ApplicationProperties.get(TOC_AUTH_ENABLED, "true");
+        final String ADMIN = ApplicationProperties.get("jwala.role.admin");
+        final String AUTH = ApplicationProperties.get(JWALA_AUTH_ENABLED, "true");
         //ACL check
         if(!"false".equalsIgnoreCase(AUTH)){
             http.authorizeRequests().antMatchers(IDP_URL, 
@@ -101,7 +101,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         final String port = ApplicationProperties.get(ACTIVE_DIRECTORY_SERVER_PORT);
         final String protocol = ApplicationProperties.get(ACTIVE_DIRECTORY_PROTOCOL);
         if (LOGGER.isDebugEnabled())
-            LOGGER.debug("TOC AuthenticationManagerBuilder initialized");
+            LOGGER.debug("Jwala AuthenticationManagerBuilder initialized");
         ActiveDirectoryLdapAuthenticationProvider provider = new ActiveDirectoryLdapAuthenticationProvider(domain,
                 protocol + "://" + host + ":" + port);
         provider.setConvertSubErrorCodesToExceptions(true);

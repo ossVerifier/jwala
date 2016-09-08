@@ -48,13 +48,13 @@
             schedulerThreadCount="1"
             schedulerThreadNamePrefix="JGroups_Reporting_Thread"
             />
-    <!-- commented out until we have jmx ports in jvm definitions in TOC -->
+    <!-- commented out until we have jmx ports in jvm definitions in Jwala -->
     <!--Listener className="org.apache.catalina.mbeans.JmxRemoteLifecycleListener"
             rmiRegistryPortPlatform="9090" rmiServerPortPlatform="9091" /-->
 
     <!-- <Listener className="com.siemens.cto.infrastructure.report.tomcat.FailFastLifeCycleListener"
-            jmsConnectionFactory="java:/jms/toc-cf"
-            jmsDestination="java:/jms/toc-status"
+            jmsConnectionFactory="java:/jms/jwala-cf"
+            jmsDestination="java:/jms/jwala-status"
             systemExitCodeOnError="125"
             testMessageTimeToLiveMs="125"
             timeToWaitForJmsResponseMs="5000"
@@ -75,14 +75,14 @@
             factory="org.apache.catalina.users.MemoryUserDatabaseFactory"
             pathname="conf/tomcat-users.xml" />
 
-    <Resource name="jms/toc-status"
+    <Resource name="jms/jwala-status"
             auth="Container"
             factory="org.apache.naming.factory.BeanFactory"
             type="com.tibco.tibjms.TibjmsTopic"
-            address="com.cerner.entp.n9sf.ltst.private.stp.toc.status-USMLVV2CTO0147"/>
+            address="com.cerner.entp.n9sf.ltst.private.stp.jwala.status-USMLVV2CTO0147"/>
 
     <Resource auth="Container"
-            name="jms/toc-cf"
+            name="jms/jwala-cf"
             factory="org.apache.naming.factory.BeanFactory"
             type="com.tibco.tibjms.TibjmsConnectionFactory"
             serverUrl="ssl://USMLVV1CTO924:7243"
@@ -234,7 +234,7 @@
     <!-- You should set jvmRoute to support load-balancing via AJP ie :
     <Engine name="Catalina" defaultHost="localhost" jvmRoute="jvm1">
     -->
-    <Engine name="Catalina" defaultHost="localhost" jvmRoute="CTO-N9SF-LTST-TOC">
+    <Engine name="Catalina" defaultHost="localhost" jvmRoute="CTO-N9SF-LTST-JWALA">
 
     <!--For clustering, please take a look at documentation at:
         /docs/cluster-howto.html  (simple how to)
