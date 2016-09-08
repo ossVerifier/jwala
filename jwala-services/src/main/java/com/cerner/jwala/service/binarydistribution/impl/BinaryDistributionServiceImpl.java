@@ -82,19 +82,33 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
                     if (remoteCreateDirectory(hostname, binaryDeployDir)) {
                         LOGGER.info("successfully created directories {}", binaryDeployDir);
                         if (remoteSecureCopyFile(hostname, zipFile, destinationZipFile)) {
-                            if (remoteUnzipBinary(hostname, destinationZipFile, binaryDeployDir)) {
-                                LOGGER.info("successfully unzipped the binary {}", destinationZipFile);
+                            LOGGER.info("successfully copied the binary {} over to {}", zipFile, destinationZipFile);
+                            try {
+                                if (remoteUnzipBinary(hostname, destinationZipFile, binaryDeployDir)) {
+                                    LOGGER.info("successfully unzipped the binary {}", destinationZipFile);
+                                } else {
+                                    final String message = "JDK not found at " +  ApplicationProperties.get("stp.java.home");
+                                    LOGGER.error(message);
+                                    throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, message);
+                                }
+                            } finally {
                                 if (remoteDeleteBinary(hostname, destinationZipFile)) {
                                     LOGGER.info("successfully delete the binary {}", destinationZipFile);
                                 } else {
-                                    LOGGER.error("Issue with deleting binary {}", destinationZipFile);
+                                    final String message = "error in deleting file " + destinationZipFile;
+                                    LOGGER.error(message);
+                                    throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, message);
                                 }
-                            } else {
-                                LOGGER.error("Issue with unzipping file {}", destinationZipFile);
                             }
                         } else {
-                            LOGGER.error("Issue with creating directories {}", binaryDeployDir);
+                            final String message = "error with scp of binary " + zipFile + " to destination " + destinationZipFile;
+                            LOGGER.error(message);
+                            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, message);
                         }
+                    } else {
+                        final String message = "user does not have permission to create the directory " + binaryDeployDir;
+                        LOGGER.error(message);
+                        throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, message);
                     }
                 } else {
                     LOGGER.warn("Cannot find the binary directory location in jwala, value is {}", binaryDir);
@@ -107,7 +121,7 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
         }
     }
 
-    public boolean remoteDeleteBinary(final String hostname, final String destination) {
+    private boolean remoteDeleteBinary(final String hostname, final String destination) {
         boolean result;
         try {
             result = binaryDistributionControlService.deleteBinary(hostname, destination).getReturnCode().wasSuccessful();
@@ -119,7 +133,7 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
         return result;
     }
 
-    public boolean remoteUnzipBinary(final String hostname, final String binaryLocation, final String destination) {
+    private boolean remoteUnzipBinary(final String hostname, final String binaryLocation, final String destination) {
         boolean result;
         try {
             result = binaryDistributionControlService.unzipBinary(hostname, binaryLocation, destination).getReturnCode().wasSuccessful();
@@ -131,7 +145,7 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
         return result;
     }
 
-    public boolean remoteSecureCopyFile(final String hostname, final String source, final String destination) {
+    private boolean remoteSecureCopyFile(final String hostname, final String source, final String destination) {
         boolean result;
         try {
             result = binaryDistributionControlService.secureCopyFile(hostname, source, destination).getReturnCode().wasSuccessful();
@@ -143,7 +157,7 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
         return result;
     }
 
-    public boolean remoteCreateDirectory(final String hostname, final String destination) {
+    private boolean remoteCreateDirectory(final String hostname, final String destination) {
         boolean result;
         try {
             result = binaryDistributionControlService.createDirectory(hostname, destination).getReturnCode().wasSuccessful();
@@ -155,7 +169,7 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
         return result;
     }
 
-    public boolean remoteFileCheck(final String hostname, final String destination) {
+    private boolean remoteFileCheck(final String hostname, final String destination) {
         boolean result;
         try {
             result = binaryDistributionControlService.checkFileExists(hostname, destination).getReturnCode().wasSuccessful();
