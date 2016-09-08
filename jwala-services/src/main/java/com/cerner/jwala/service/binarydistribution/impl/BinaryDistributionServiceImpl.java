@@ -70,46 +70,101 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
         String binaryDir = ApplicationProperties.get(BINARY_LOCATION_PROPERTY_KEY);
         String binaryDeployDir = ApplicationProperties.get(BINARY_DEPLOY_LOCATION_PROPERTY_KEY);
         if (binaryDeployDir != null && !binaryDeployDir.isEmpty()) {
-            try {
-                if (!binaryDistributionControlService.checkFileExists(hostname, binaryDeployDir + "/" + binaryName).getReturnCode().wasSuccessful()) {
-                    LOGGER.info("Couldn't find {} on host {}. Trying to deploy it", binaryName, hostname);
-                    if (binaryDir != null && !binaryDir.isEmpty()) {
-                        String zipFile = binaryDir + "/" + binaryName + ".zip";
-                        String destinationZipFile = binaryDeployDir + "/" + binaryName + ".zip";
-                        if (!new File(zipFile).exists()) {
-                            LOGGER.debug("binary zip does not exists, create zip");
-                            zipFile = zipBinary(binaryDir + "/" + binaryName);
-                        }
-                        if (binaryDistributionControlService.createDirectory(hostname, binaryDeployDir).getReturnCode().wasSuccessful()) {
-                            LOGGER.info("successfully created directories {}", binaryDeployDir);
-                            if (binaryDistributionControlService.secureCopyFile(hostname, zipFile, destinationZipFile).getReturnCode().wasSuccessful()) {
-                                if (binaryDistributionControlService.unzipBinary(hostname, destinationZipFile, binaryDeployDir).getReturnCode().wasSuccessful()) {
-                                    LOGGER.info("successfully unzipped the binary {}", destinationZipFile);
-                                    if (binaryDistributionControlService.deleteBinary(hostname, destinationZipFile).getReturnCode().wasSuccessful()) {
-                                        LOGGER.info("successfully delete the binary {}", destinationZipFile);
-                                    } else {
-                                        LOGGER.error("Issue with deleting binary {}", destinationZipFile);
-                                    }
+            if (!remoteFileCheck(hostname, binaryDeployDir + "/" + binaryName)) {
+                LOGGER.info("Couldn't find {} on host {}. Trying to deploy it", binaryName, hostname);
+                if (binaryDir != null && !binaryDir.isEmpty()) {
+                    String zipFile = binaryDir + "/" + binaryName + ".zip";
+                    String destinationZipFile = binaryDeployDir + "/" + binaryName + ".zip";
+                    if (!new File(zipFile).exists()) {
+                        LOGGER.debug("binary zip does not exists, create zip");
+                        zipFile = zipBinary(binaryDir + "/" + binaryName);
+                    }
+                    if (remoteCreateDirectory(hostname, binaryDeployDir)) {
+                        LOGGER.info("successfully created directories {}", binaryDeployDir);
+                        if (remoteSecureCopyFile(hostname, zipFile, destinationZipFile)) {
+                            if (remoteUnzipBinary(hostname, destinationZipFile, binaryDeployDir)) {
+                                LOGGER.info("successfully unzipped the binary {}", destinationZipFile);
+                                if (remoteDeleteBinary(hostname, destinationZipFile)) {
+                                    LOGGER.info("successfully delete the binary {}", destinationZipFile);
                                 } else {
-                                    LOGGER.error("Issue with unzipping file {}", destinationZipFile);
+                                    LOGGER.error("Issue with deleting binary {}", destinationZipFile);
                                 }
                             } else {
-                                LOGGER.error("Issue with creating directories {}", binaryDeployDir);
+                                LOGGER.error("Issue with unzipping file {}", destinationZipFile);
                             }
+                        } else {
+                            LOGGER.error("Issue with creating directories {}", binaryDeployDir);
                         }
-                    } else {
-                        LOGGER.warn("Cannot find the binary directory location in jwala, value is {}", binaryDir);
                     }
                 } else {
-                    LOGGER.info("Found {} at on host {}", binaryName, hostname);
+                    LOGGER.warn("Cannot find the binary directory location in jwala, value is {}", binaryDir);
                 }
-            } catch (CommandFailureException e) {
-                LOGGER.error("Error with copying binary for " + binaryName, e);
-                throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Error with copying binary for " + binaryName, e);
+            } else {
+                LOGGER.info("Found {} at on host {}", binaryName, hostname);
             }
         } else {
             LOGGER.warn("Binary deploy location not provided value is {}", binaryDeployDir);
         }
+    }
+
+    public boolean remoteDeleteBinary(final String hostname, final String destination) {
+        boolean result;
+        try {
+            result = binaryDistributionControlService.deleteBinary(hostname, destination).getReturnCode().wasSuccessful();
+        } catch (CommandFailureException e) {
+            final String message = "Error in delete remote binary at host: " + hostname + " destination: " + destination;
+            LOGGER.error(message, e);
+            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, message, e);
+        }
+        return result;
+    }
+
+    public boolean remoteUnzipBinary(final String hostname, final String binaryLocation, final String destination) {
+        boolean result;
+        try {
+            result = binaryDistributionControlService.unzipBinary(hostname, binaryLocation, destination).getReturnCode().wasSuccessful();
+        } catch (CommandFailureException e) {
+            final String message = "Error in remote unzip binary at host: " + hostname + " binaryLocation: " + binaryLocation + " destination: " + destination;
+            LOGGER.error(message, e);
+            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, message, e);
+        }
+        return result;
+    }
+
+    public boolean remoteSecureCopyFile(final String hostname, final String source, final String destination) {
+        boolean result;
+        try {
+            result = binaryDistributionControlService.secureCopyFile(hostname, source, destination).getReturnCode().wasSuccessful();
+        } catch (CommandFailureException e) {
+            final String message = "Error in remote secure copy at host: " + hostname + " source: " + source + " destination: " + destination;
+            LOGGER.error(message, e);
+            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, message, e);
+        }
+        return result;
+    }
+
+    public boolean remoteCreateDirectory(final String hostname, final String destination) {
+        boolean result;
+        try {
+            result = binaryDistributionControlService.createDirectory(hostname, destination).getReturnCode().wasSuccessful();
+        } catch (CommandFailureException e) {
+            final String message = "Error in create remote directory at host: " + hostname + " destination: " + destination;
+            LOGGER.error(message, e);
+            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, message, e);
+        }
+        return result;
+    }
+
+    public boolean remoteFileCheck(final String hostname, final String destination) {
+        boolean result;
+        try {
+            result = binaryDistributionControlService.checkFileExists(hostname, destination).getReturnCode().wasSuccessful();
+        } catch (CommandFailureException e) {
+            final String message = "Error in check remote File at host: " + hostname + " destination: " + destination;
+            LOGGER.error(message, e);
+            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, message, e);
+        }
+        return result;
     }
 
     @Override
