@@ -13,7 +13,7 @@ public interface BinaryDistributionControlService {
 
     CommandOutput checkFileExists(final String hostname, final String destination) throws CommandFailureException;
 
-    CommandOutput unzipBinary(final String hostname, final String binaryLocation) throws CommandFailureException;
+    CommandOutput unzipBinary(final String hostname, final String binaryLocation, final String destination) throws CommandFailureException;
 
     CommandOutput deleteBinary(final String hostname, final String destination) throws CommandFailureException;
 }
