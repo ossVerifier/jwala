@@ -34,7 +34,6 @@ import com.cerner.jwala.service.exception.ApplicationServiceException;
 import com.cerner.jwala.service.group.GroupService;
 import com.cerner.jwala.service.resource.ResourceService;
 import com.cerner.jwala.template.ResourceFileGenerator;
-
 import org.apache.commons.lang3.StringUtils;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;

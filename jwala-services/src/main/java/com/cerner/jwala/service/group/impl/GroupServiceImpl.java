@@ -30,7 +30,6 @@ import com.cerner.jwala.persistence.service.WebServerPersistenceService;
 import com.cerner.jwala.service.app.impl.DeployApplicationConfException;
 import com.cerner.jwala.service.group.GroupService;
 import com.cerner.jwala.template.ResourceFileGenerator;
-
 import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
