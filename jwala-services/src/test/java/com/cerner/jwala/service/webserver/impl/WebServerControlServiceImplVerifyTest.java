@@ -113,14 +113,14 @@ public class WebServerControlServiceImplVerifyTest extends VerificationBehaviorS
         webServerControlService.controlWebServer(controlWSRequest, user);
         verify(mockMessagingService).send(any(CurrentState.class));
 
-        when(remoteCommandExecutorService.executeCommand(any(RemoteExecCommand.class))).thenReturn(new RemoteCommandReturnInfo(ExecReturnCode.STP_EXIT_PROCESS_KILLED, "", "PROCESS KILLED"));
+        when(remoteCommandExecutorService.executeCommand(any(RemoteExecCommand.class))).thenReturn(new RemoteCommandReturnInfo(ExecReturnCode.JWALA_EXIT_PROCESS_KILLED, "", "PROCESS KILLED"));
         CommandOutput returnOutput = webServerControlService.controlWebServer(controlWSRequest, user);
         assertEquals("FORCED STOPPED", returnOutput.getStandardOutput());
         verify(webServerService).updateState(any(Identifier.class), eq(WebServerReachableState.FORCED_STOPPED), eq(""));
         verify(mockMessagingService, times(2)).send(any(CurrentState.class));
         reset(mockMessagingService);
 
-        when(remoteCommandExecutorService.executeCommand(any(RemoteExecCommand.class))).thenReturn(new RemoteCommandReturnInfo(ExecReturnCode.STP_EXIT_CODE_ABNORMAL_SUCCESS, "", "ABNORMAL SUCCESS"));
+        when(remoteCommandExecutorService.executeCommand(any(RemoteExecCommand.class))).thenReturn(new RemoteCommandReturnInfo(ExecReturnCode.JWALA_EXIT_CODE_ABNORMAL_SUCCESS, "", "ABNORMAL SUCCESS"));
         webServerControlService.controlWebServer(controlWSRequest, user);
         verify(mockMessagingService).send(any(CurrentState.class));
         reset(mockMessagingService);

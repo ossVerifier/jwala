@@ -20,7 +20,7 @@ import java.util.List;
 
 public abstract class AbstractCrudServiceImpl<T extends AbstractEntity<T>> implements CrudService<T> {
 
-    @PersistenceContext(unitName = "aem-unit")
+    @PersistenceContext(unitName = "jwala-unit")
     protected EntityManager entityManager;
 
     private Class<T> entityClass;

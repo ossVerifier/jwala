@@ -200,16 +200,16 @@ SSLSessionCache shmcb:logs/ssl_cache_shm
 LoadModule rewrite_module modules/mod_rewrite.so
 
 <VirtualHost *:443>
-DocumentRoot "stpdocs"
+DocumentRoot "jwaladocs"
 Header edit Location ^http://(.*)\$  https://\$1
-<Directory "stpdocs">
+<Directory "jwaladocs">
     Options Indexes FollowSymLinks
     AllowOverride None
     Require all granted
 </Directory>
 
 
-<Files "stp.png">
+<Files "jwala.png">
     Order Deny,Allow
     Deny from all
     Allow from all
@@ -324,7 +324,7 @@ Allow from all
 </Location>
 
 #mod_proxy load balancing - AJP example only. not encrypted, just a ping
-# ProxyPassMatch ^/stp\\.png\$ balancer://PING
+# ProxyPassMatch ^/jwala\\.png\$ balancer://PING
 
 </VirtualHost>
 

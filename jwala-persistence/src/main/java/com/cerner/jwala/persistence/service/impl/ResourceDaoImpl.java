@@ -19,7 +19,7 @@ import java.util.List;
  */
 public class ResourceDaoImpl implements ResourceDao {
 
-    @PersistenceContext(unitName = "aem-unit")
+    @PersistenceContext(unitName = "jwala-unit")
     private EntityManager em;
 
     @Override

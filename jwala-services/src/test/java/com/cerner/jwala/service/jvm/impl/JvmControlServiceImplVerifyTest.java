@@ -107,31 +107,31 @@ public class JvmControlServiceImplVerifyTest extends VerificationBehaviorSupport
 
 
         // test other command codes
-        when(mockRemoteCommandExecutorService.executeCommand(any(RemoteExecCommand.class))).thenReturn(new RemoteCommandReturnInfo(ExecReturnCode.STP_EXIT_CODE_ABNORMAL_SUCCESS, "Abnormal success", ""));
+        when(mockRemoteCommandExecutorService.executeCommand(any(RemoteExecCommand.class))).thenReturn(new RemoteCommandReturnInfo(ExecReturnCode.JWALA_EXIT_CODE_ABNORMAL_SUCCESS, "Abnormal success", ""));
         CommandOutput returnOutput = jvmControlService.controlJvm(controlCommand, user);
         // abnormal success is not a successful return code
         assertFalse(returnOutput.getReturnCode().getWasSuccessful());
 
         when(jvm.getState()).thenReturn(JvmState.JVM_STARTED);
-        when(mockRemoteCommandExecutorService.executeCommand(any(RemoteExecCommand.class))).thenReturn(new RemoteCommandReturnInfo(ExecReturnCode.STP_EXIT_CODE_NO_OP, "No op", ""));
+        when(mockRemoteCommandExecutorService.executeCommand(any(RemoteExecCommand.class))).thenReturn(new RemoteCommandReturnInfo(ExecReturnCode.JWALA_EXIT_CODE_NO_OP, "No op", ""));
         returnOutput = jvmControlService.controlJvm(controlCommand, user);
         assertFalse(returnOutput.getReturnCode().getWasSuccessful());
 
-        when(mockRemoteCommandExecutorService.executeCommand(any(RemoteExecCommand.class))).thenReturn(new RemoteCommandReturnInfo(ExecReturnCode.STP_EXIT_CODE_FAST_FAIL, "", "Fast Fail"));
+        when(mockRemoteCommandExecutorService.executeCommand(any(RemoteExecCommand.class))).thenReturn(new RemoteCommandReturnInfo(ExecReturnCode.JWALA_EXIT_CODE_FAST_FAIL, "", "Fast Fail"));
         try {
             jvmControlService.controlJvm(controlCommand, user);
         } catch (ExternalSystemErrorException ee) {
             assertEquals(ee.getMessageResponseStatus(), AemFaultType.FAST_FAIL);
         }
 
-        when(mockRemoteCommandExecutorService.executeCommand(any(RemoteExecCommand.class))).thenReturn(new RemoteCommandReturnInfo(ExecReturnCode.STP_EXIT_NO_SUCH_SERVICE, "", "No such service"));
+        when(mockRemoteCommandExecutorService.executeCommand(any(RemoteExecCommand.class))).thenReturn(new RemoteCommandReturnInfo(ExecReturnCode.JWALA_EXIT_NO_SUCH_SERVICE, "", "No such service"));
         try {
             jvmControlService.controlJvm(controlCommand, user);
         } catch (ExternalSystemErrorException ee) {
             assertEquals(ee.getMessageResponseStatus(), AemFaultType.REMOTE_COMMAND_FAILURE);
         }
 
-        when(mockRemoteCommandExecutorService.executeCommand(any(RemoteExecCommand.class))).thenReturn(new RemoteCommandReturnInfo(ExecReturnCode.STP_EXIT_PROCESS_KILLED, "", "Process killed"));
+        when(mockRemoteCommandExecutorService.executeCommand(any(RemoteExecCommand.class))).thenReturn(new RemoteCommandReturnInfo(ExecReturnCode.JWALA_EXIT_PROCESS_KILLED, "", "Process killed"));
         returnOutput = jvmControlService.controlJvm(controlCommand, user);
         assertEquals("FORCED STOPPED", returnOutput.getStandardOutput());
 
@@ -143,7 +143,7 @@ public class JvmControlServiceImplVerifyTest extends VerificationBehaviorSupport
         }
 
         when(controlCommand.getControlOperation()).thenReturn(JvmControlOperation.HEAP_DUMP);
-        when(mockRemoteCommandExecutorService.executeCommand(any(RemoteExecCommand.class))).thenReturn(new RemoteCommandReturnInfo(ExecReturnCode.STP_EXIT_CODE_ABNORMAL_SUCCESS, "Abnormal success", ""));
+        when(mockRemoteCommandExecutorService.executeCommand(any(RemoteExecCommand.class))).thenReturn(new RemoteCommandReturnInfo(ExecReturnCode.JWALA_EXIT_CODE_ABNORMAL_SUCCESS, "Abnormal success", ""));
         returnOutput = jvmControlService.controlJvm(controlCommand, user);
         assertFalse(returnOutput.getReturnCode().getWasSuccessful());
 
@@ -167,15 +167,15 @@ public class JvmControlServiceImplVerifyTest extends VerificationBehaviorSupport
         when(controlCommand.getControlOperation()).thenReturn(JvmControlOperation.START);
         when(mockJvm.getState()).thenReturn(JvmState.JVM_STARTED);
         when(controlCommand.getJvmId()).thenReturn(jvmId);
-        when(mockRemoteCommandExecutorService.executeCommand(any(RemoteExecCommand.class))).thenReturn(new RemoteCommandReturnInfo(ExecReturnCode.STP_EXIT_CODE_FAST_FAIL, "Test standard out when START or STOP", "Test standard error"));
+        when(mockRemoteCommandExecutorService.executeCommand(any(RemoteExecCommand.class))).thenReturn(new RemoteCommandReturnInfo(ExecReturnCode.JWALA_EXIT_CODE_FAST_FAIL, "Test standard out when START or STOP", "Test standard error"));
 
         jvmControlService.controlJvm(controlCommand, user);
         verify(mockHistoryService, times(2)).createHistory(anyString(), anyList(), anyString(), any(EventType.class), anyString());
 
-        when(mockRemoteCommandExecutorService.executeCommand(any(RemoteExecCommand.class))).thenReturn(new RemoteCommandReturnInfo(ExecReturnCode.STP_EXIT_NO_SUCH_SERVICE, "Test standard out when START or STOP", "Test standard error"));
+        when(mockRemoteCommandExecutorService.executeCommand(any(RemoteExecCommand.class))).thenReturn(new RemoteCommandReturnInfo(ExecReturnCode.JWALA_EXIT_NO_SUCH_SERVICE, "Test standard out when START or STOP", "Test standard error"));
         jvmControlService.controlJvm(controlCommand, user);
 
-        when(mockRemoteCommandExecutorService.executeCommand(any(RemoteExecCommand.class))).thenReturn(new RemoteCommandReturnInfo(ExecReturnCode.STP_EXIT_PROCESS_KILLED, "Test standard out when START or STOP", "Test standard error"));
+        when(mockRemoteCommandExecutorService.executeCommand(any(RemoteExecCommand.class))).thenReturn(new RemoteCommandReturnInfo(ExecReturnCode.JWALA_EXIT_PROCESS_KILLED, "Test standard out when START or STOP", "Test standard error"));
         final CommandOutput commandOutput = jvmControlService.controlJvm(controlCommand, user);
         assertTrue(commandOutput.getReturnCode().wasSuccessful());
 

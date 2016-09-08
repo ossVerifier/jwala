@@ -30,17 +30,17 @@ public class IndexController {
 
     @RequestMapping(value = "/about")
     public String about() {
-        return "aem/about";
+        return "jwala/about";
     }
 
     @RequestMapping(value = "/")
     public String index() {
-        return "aem/index";
+        return "jwala/index";
     }
 
     @RequestMapping(value = "/sandbox")
     public String sandbox() {
-        return "aem/sandbox";
+        return "jwala/sandbox";
     }
 
     @RequestMapping(value = "/index-page-scripts")
@@ -58,9 +58,9 @@ public class IndexController {
         }
 
         if (devMode) {
-            return "aem/dev-index-page-scripts";
+            return "jwala/dev-index-page-scripts";
         }
-        return "aem/prod-index-page-scripts";
+        return "jwala/prod-index-page-scripts";
     }
 
     @RequestMapping(value = "/devMode", method = RequestMethod.GET)
@@ -68,7 +68,7 @@ public class IndexController {
         Boolean devMode = Boolean.valueOf(val);
         response.addCookie(new Cookie(DEV_MODE_COOKIE_NAME, devMode.toString()));
 
-        ModelAndView mv = new ModelAndView("aem/index");
+        ModelAndView mv = new ModelAndView("jwala/index");
 
         /**
          * We need to add cookie value to a model since the cookie won't be set
@@ -81,7 +81,7 @@ public class IndexController {
     // TODO: Verify if this should be here since the controller's name is IndexController
     @RequestMapping(value = "/login")
     public String login() {
-        return "aem/login";
+        return "jwala/login";
     }
 
     @RequestMapping(value = "/login-page-scripts")
@@ -99,9 +99,9 @@ public class IndexController {
         }
 
         if (devMode) {
-            return "aem/dev-login-page-scripts";
+            return "jwala/dev-login-page-scripts";
         }
-        return "aem/prod-login-page-scripts";
+        return "jwala/prod-login-page-scripts";
     }
 
     @RequestMapping(value = "/page-constants")
@@ -120,6 +120,6 @@ public class IndexController {
     String addJavaScriptVariablesToModel(final Model aModel,
                                        Set<JavaScriptVariable> someVariables) {
         aModel.addAttribute("javaScriptVariables", someVariables);
-        return "aem/page-constants";
+        return "jwala/page-constants";
     }
 }
