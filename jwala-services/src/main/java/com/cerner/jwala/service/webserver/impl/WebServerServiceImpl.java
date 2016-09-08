@@ -157,7 +157,7 @@ public class WebServerServiceImpl implements WebServerService {
     }
 
     @Override
-    @Transactional(propagation = Propagation.REQUIRES_NEW) // We need state db persistence to succeed even if JMS fails.
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void updateState(final Identifier<WebServer> id, final WebServerReachableState state, final String errorStatus) {
         webServerPersistenceService.updateState(id, state, errorStatus);
     }
