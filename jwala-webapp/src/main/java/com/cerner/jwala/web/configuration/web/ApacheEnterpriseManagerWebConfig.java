@@ -70,7 +70,7 @@ public class ApacheEnterpriseManagerWebConfig extends WebMvcConfigurerAdapter {
     @Bean
     public MessageSource messageSource() {
         final ResourceBundleMessageSource messageSource = new ResourceBundleMessageSource();
-        messageSource.setBasenames("/messages/aem/ApacheEnterpriseManager");
+        messageSource.setBasenames("/messages/jwala/ApacheEnterpriseManager");
         return messageSource;
     }
 

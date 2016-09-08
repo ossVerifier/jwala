@@ -72,7 +72,7 @@ subprojects {
     apply plugin: "eclipse"
 
     sourceCompatibility = 1.7
-    group = "com.cerner.cto.aem"
+    group = "com.cerner.cto.jwala"
     version = project.properties['buildVersion']
 
     plugins.withType(MavenPublishPlugin).whenPluginAdded {

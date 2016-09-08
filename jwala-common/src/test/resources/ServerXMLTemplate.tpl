@@ -79,7 +79,7 @@
             auth="Container"
             factory="org.apache.naming.factory.BeanFactory"
             type="com.tibco.tibjms.TibjmsTopic"
-            address="com.cerner.entp.n9sf.ltst.private.stp.jwala.status-USMLVV2CTO0147"/>
+            address="com.cerner.entp.n9sf.ltst.private.jwala.jwala.status-USMLVV2CTO0147"/>
 
     <Resource auth="Container"
             name="jms/jwala-cf"
@@ -94,7 +94,7 @@
             reconnAttemptDelay="1000"
             SSLEnableVerifyHost="true"
             SSLEnableVerifyHostName="false"
-            SSLTrustedCertificate="d:\stp\app\data\security\ems\ctorootca.pem" />
+            SSLTrustedCertificate="d:\jwala\app\data\security\ems\ctorootca.pem" />
     </GlobalNamingResources>
 
 
@@ -105,16 +105,16 @@
     -->
     <!-- Soarian Tomcat Platform Service
         Features: SSL enabled, AJP disabled, HTTP disabled
-        Exploded apps: stpapps
-        Archived apps: by context.xmls in conf/stp/localhost
+        Exploded apps: sslwebapps
+        Archived apps: by context.xmls in conf/jwala/localhost
     -->
 
-    <Service name="stp">
+    <Service name="jwala">
     <!-- Define a SSL HTTP/1.1 Connector.  This connector uses the JSSE configuration, when using APR, the
          connector should be using the OpenSSL style configuration described in the APR documentation
 
         Defines Peter's APR + JSSE compatible port
-        STP Features:
+        JWALA Features:
         Compression: Forced on
         Compressable types: text/html,text/xml,text/plain,application/json
         compressionMinSize: 2048 (default)
@@ -123,8 +123,8 @@
 
     <Connector
         port="${jvm.httpsPort}"
-        SSLCertificateFile="d:\stp\app\data\security\id\\${jvm.hostName}.cer"
-        SSLCertificateKeyFile="d:\stp\app\data\security\id\\${jvm.hostName}.key"
+        SSLCertificateFile="d:\jwala\app\data\security\id\\${jvm.hostName}.cer"
+        SSLCertificateKeyFile="d:\jwala\app\data\security\id\\${jvm.hostName}.key"
         SSLEnabled="true"
         SSLPassword=""
         acceptCount="100"
@@ -150,12 +150,12 @@
     on to the appropriate Host (virtual host).
     Documentation at /docs/config/engine.html -->
 
-    <!-- The STP Engine is the normal standalone Tomcat host
+    <!-- The JWALA Engine is the normal standalone Tomcat host
         Warning: potential name conflict on jvmRoute -->
-    <Engine name="stp" defaultHost="localhost" jvmRoute="${jvm.jvmName}">
+    <Engine name="jwala" defaultHost="localhost" jvmRoute="${jvm.jvmName}">
 
     <!-- Host Features: Standard Host
-        AppBase: stpapps/
+        AppBase: sslwebapps/
         Unpacking: no
         Auto deploy: yes
         Deploy .war/META-INF/context.xml: no
@@ -168,7 +168,7 @@
     </Realm>
 
     <Host name="localhost"
-        appBase="stpapps"
+        appBase="sslwebapps"
         unpackWARs="false"
         autoDeploy="true"
         deployXML="false"
@@ -179,12 +179,12 @@
 
     <!-- Access log processes all example.
          Documentation at: /docs/config/valve.html
-         STP Features: Standard Access Log
+         JWALA Features: Standard Access Log
          Daily rotating: yes
          Status request logging can be disabled by adding attribute "status" to the ServletRequest.
          -->
     <Valve className="org.apache.catalina.valves.AccessLogValve" directory="logs"
-           prefix="stp_access_log." suffix=".txt"
+           prefix="jwala_access_log." suffix=".txt"
            pattern="common"
            conditionUnless="status" />
 

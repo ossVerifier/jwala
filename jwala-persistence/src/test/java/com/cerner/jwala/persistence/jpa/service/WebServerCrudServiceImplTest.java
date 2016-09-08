@@ -366,7 +366,7 @@ public class WebServerCrudServiceImplTest {
         jpaWebServerParam.setName("WebServer");
         jpaWebServerParam.setDocRoot("/htdocs");
         jpaWebServerParam.setHttpConfigFile("conf");
-        jpaWebServerParam.setStatusPath("/stp.png");
+        jpaWebServerParam.setStatusPath("/jwala.png");
         jpaWebServerParam.setSvrRoot("root");
         final JpaWebServer jpaWebServer = webServerCrudService.create(jpaWebServerParam);
         assertEquals(1, webServerCrudService.updateState(new Identifier<WebServer>(jpaWebServer.getId()),
@@ -379,7 +379,7 @@ public class WebServerCrudServiceImplTest {
         jpaWebServerParam.setName("WebServer");
         jpaWebServerParam.setDocRoot("/htdocs");
         jpaWebServerParam.setHttpConfigFile("conf");
-        jpaWebServerParam.setStatusPath("/stp.png");
+        jpaWebServerParam.setStatusPath("/jwala.png");
         jpaWebServerParam.setSvrRoot("root");
         final JpaWebServer jpaWebServer = webServerCrudService.create(jpaWebServerParam);
         assertEquals(1, webServerCrudService.updateErrorStatus(new Identifier<WebServer>(jpaWebServer.getId()),
@@ -392,7 +392,7 @@ public class WebServerCrudServiceImplTest {
         jpaWebServerParam.setName("WebServer");
         jpaWebServerParam.setDocRoot("/htdocs");
         jpaWebServerParam.setHttpConfigFile("conf");
-        jpaWebServerParam.setStatusPath("/stp.png");
+        jpaWebServerParam.setStatusPath("/jwala.png");
         jpaWebServerParam.setSvrRoot("root");
         final JpaWebServer jpaWebServer = webServerCrudService.create(jpaWebServerParam);
         assertEquals(1, webServerCrudService.updateState(new Identifier<WebServer>(jpaWebServer.getId()),

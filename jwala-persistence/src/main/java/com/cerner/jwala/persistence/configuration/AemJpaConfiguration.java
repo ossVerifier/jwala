@@ -35,7 +35,7 @@ public class AemJpaConfiguration {
         final LocalContainerEntityManagerFactoryBean factory = new LocalContainerEntityManagerFactoryBean();
         factory.setDataSource(dataSource);
         factory.setJpaVendorAdapter(new OpenJpaVendorAdapter());
-        factory.setPersistenceUnitName("aem-unit");
+        factory.setPersistenceUnitName("jwala-unit");
         factory.setPersistenceXmlLocation("classpath:META-INF/persistence.xml");
 
         return factory;

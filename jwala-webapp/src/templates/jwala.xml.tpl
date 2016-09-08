@@ -1,7 +1,7 @@
 <Context docBase="${deployPath}/${warName}">
 
     <Loader className="org.apache.catalina.loader.VirtualWebappLoader"
-            virtualClasspath="\\{STP_HOME}/app/data/jwala/conf"/>
+            virtualClasspath="\\{JWALA_HOME}/app/data/jwala/conf"/>
 
     <Listener className="com.cerner.jwala.listener.H2LifecycleListener"
               tcpServerParam="-tcpPort,9094,-tcpAllowOthers,-baseDir,${catalina.base}\\data\\db"
