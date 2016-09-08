@@ -141,7 +141,7 @@
      
      <!-- The JWALA Engine is the normal standalone Tomcat host
           Warning: potential name conflict on jvmRoute -->
-    <Engine name="jwala" defaultHost="localhost">
+    <Engine name="CatalinaSSL" defaultHost="localhost">
       <!-- Host Features: Standard Host
 
            AppBase: sslwebapps/
