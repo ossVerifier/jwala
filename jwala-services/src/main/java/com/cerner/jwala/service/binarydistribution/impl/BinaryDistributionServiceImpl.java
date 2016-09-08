@@ -71,7 +71,7 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
         String binaryDeployDir = ApplicationProperties.get(BINARY_DEPLOY_LOCATION_PROPERTY_KEY);
         if (binaryDeployDir != null && !binaryDeployDir.isEmpty()) {
             try {
-                if (!binaryDistributionControlService.checkFileExists(binaryDeployDir + "/" + binaryName, hostname).getReturnCode().wasSuccessful()) {
+                if (!binaryDistributionControlService.checkFileExists(hostname, binaryDeployDir + "/" + binaryName).getReturnCode().wasSuccessful()) {
                     LOGGER.info("Couldn't find {} on host {}. Trying to deploy it", binaryName, hostname);
                     if (binaryDir != null && !binaryDir.isEmpty()) {
                         String zipFile = binaryDir + "/" + binaryName + ".zip";

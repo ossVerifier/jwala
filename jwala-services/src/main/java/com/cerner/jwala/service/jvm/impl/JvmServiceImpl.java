@@ -308,6 +308,9 @@ public class JvmServiceImpl implements JvmService {
                         "The target JVM must be stopped before attempting to update the resource files");
             }
 
+            binaryDistributionService.distributeJdk(jvm.getHostName());
+            binaryDistributionService.distributeTomcat(jvm.getHostName());
+
             // check for setenv.bat
             checkForSetenvBat(jvm.getJvmName());
 
@@ -324,9 +327,6 @@ public class JvmServiceImpl implements JvmService {
             // create the tar file
             //
             final String jvmConfigJar = generateJvmConfigJar(jvm);
-
-            binaryDistributionService.distributeJdk(jvm.getHostName());
-            binaryDistributionService.distributeTomcat(jvm.getHostName());
 
             // copy the tar file
             secureCopyJvmConfigJar(jvm, jvmConfigJar, user);
