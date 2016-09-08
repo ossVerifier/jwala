@@ -83,26 +83,6 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
                         if (binaryDistributionControlService.createDirectory(hostname, binaryDeployDir).getReturnCode().wasSuccessful()) {
                             LOGGER.info("successfully created directories {}", binaryDeployDir);
                             if (binaryDistributionControlService.secureCopyFile(hostname, zipFile, destinationZipFile).getReturnCode().wasSuccessful()) {
-                                if (binaryDistributionControlService.unzipBinary(hostname, destinationZipFile).getReturnCode().wasSuccessful()) {
-                                    LOGGER.info("successfully unzipped the binary {}", destinationZipFile);
-                                    if (binaryDistributionControlService.deleteBinary(hostname, destinationZipFile).getReturnCode().wasSuccessful()) {
-                                        LOGGER.info("successfully delete the binary {}", destinationZipFile);
-                                    } else {
-                                        LOGGER.error("Issue with deleting binary {}", destinationZipFile);
-                                    }
-            try {
-                if (!binaryDistributionControlService.checkFileExists(hostname, binaryDeployDir + "/" + binaryName).getReturnCode().wasSuccessful()) {
-                    LOGGER.info("Couldn't find {} on host {}. Trying to deploy it", binaryName, hostname);
-                    if (binaryDir != null && !binaryDir.isEmpty()) {
-                        String zipFile = binaryDir + "/" + binaryName + ".zip";
-                        String destinationZipFile = binaryDeployDir + "/" + binaryName + ".zip";
-                        if (!new File(zipFile).exists()) {
-                            LOGGER.debug("binary zip does not exists, create zip");
-                            zipFile = zipBinary(binaryDir + "/" + binaryName);
-                        }
-                        if (binaryDistributionControlService.createDirectory(hostname, binaryDeployDir).getReturnCode().wasSuccessful()) {
-                            LOGGER.info("successfully created directories {}", binaryDeployDir);
-                            if (binaryDistributionControlService.secureCopyFile(hostname, zipFile, destinationZipFile).getReturnCode().wasSuccessful()) {
                                 if (binaryDistributionControlService.unzipBinary(hostname, destinationZipFile, binaryDeployDir).getReturnCode().wasSuccessful()) {
                                     LOGGER.info("successfully unzipped the binary {}", destinationZipFile);
                                     if (binaryDistributionControlService.deleteBinary(hostname, destinationZipFile).getReturnCode().wasSuccessful()) {
