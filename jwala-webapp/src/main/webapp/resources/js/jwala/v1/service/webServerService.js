@@ -50,31 +50,9 @@ var webServerService = {
 	deleteWebServer : function(id, caughtCallback) {
         return serviceFoundation.del("v1.0/webservers/" + id, "json", caughtCallback);
     },
-<<<<<<< HEAD:jwala-webapp/src/main/webapp/resources/js/toc/v1/service/webServerService.js
-	/*
-	 * Get details of one defined web server - pass identifier integer Console
-	 * test code:
-	 * jQuery.getScript('/jwala/public-resources/js/toc/v1/service/webServerService.js')
-	 * var svc = webServerService; svc.getWebServer(1).then(null, function(e) {
-	 *
-	 * if(e.readyState == 4) { alert(e.responseText); } else
-	 * alert(e.responseText); });
-	 */
 	getWebServer : function(id, responseCallback) {
 		return serviceFoundation.get("v1.0/webservers/" + id, "json", responseCallback);
 	},
-	/*
-	 * Get list of defined web servers - no parameters needed Console test code:
-	 * jQuery.getScript('/jwala/public-resources/js/toc/v1/service/webServerService.js');
-	 * var svc = webServerService; svc.getWebServers().then(function(e) {
-	 *
-	 * if(e.readyState > 1) { alert(e.applicationResponseContent); } },null);
-	 */
-=======
-	getWebServer : function(id, responseCallback) {
-		return serviceFoundation.get("v1.0/webservers/" + id, "json", responseCallback);
-	},
->>>>>>> master:jwala-webapp/src/main/webapp/resources/js/jwala/v1/service/webServerService.js
 	getWebServers : function(responseCallback) {
 		return serviceFoundation.get("v1.0/webservers?all", "json", responseCallback);
 	},

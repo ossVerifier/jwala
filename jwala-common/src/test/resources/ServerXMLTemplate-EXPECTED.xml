@@ -79,7 +79,7 @@
                   auth="Container"
                   factory="org.apache.naming.factory.BeanFactory"
                   type="com.tibco.tibjms.TibjmsTopic"
-                  address="com.cerner.entp.n9sf.ltst.private.stp.jwala.status-USMLVV2CTO0147"/>
+                  address="com.cerner.entp.n9sf.ltst.private.jwala.jwala.status-USMLVV2CTO0147"/>
 
         <Resource auth="Container"
                   name="jms/jwala-cf"
@@ -94,7 +94,7 @@
                   reconnAttemptDelay="1000"
                   SSLEnableVerifyHost="true"
                   SSLEnableVerifyHostName="false"
-                  SSLTrustedCertificate="d:\stp\app\data\security\ems\ctorootca.pem" />
+                  SSLTrustedCertificate="d:\jwala\app\data\security\ems\ctorootca.pem" />
     </GlobalNamingResources>
 
 
@@ -106,7 +106,7 @@
     <!-- Soarian Tomcat Platform Service
         Features: SSL enabled, AJP disabled, HTTP disabled
         Exploded apps: sslwebapps
-        Archived apps: by context.xmls in conf/stp/localhost
+        Archived apps: by context.xmls in conf/jwala/localhost
     -->
 
     <Service name="jwala">
@@ -114,7 +114,7 @@
              connector should be using the OpenSSL style configuration described in the APR documentation
 
             Defines Peter's APR + JSSE compatible port
-            STP Features:
+            JWALA Features:
             Compression: Forced on
             Compressable types: text/html,text/xml,text/plain,application/json
             compressionMinSize: 2048 (default)
@@ -123,8 +123,8 @@
 
         <Connector
                 port="11011"
-                SSLCertificateFile="d:\stp\app\data\security\id\usmlvv1ctoGenerateMe.cer"
-                SSLCertificateKeyFile="d:\stp\app\data\security\id\usmlvv1ctoGenerateMe.key"
+                SSLCertificateFile="d:\jwala\app\data\security\id\usmlvv1ctoGenerateMe.cer"
+                SSLCertificateKeyFile="d:\jwala\app\data\security\id\usmlvv1ctoGenerateMe.key"
                 SSLEnabled="true"
                 SSLPassword=""
                 acceptCount="100"
@@ -179,12 +179,12 @@
 
                 <!-- Access log processes all example.
                      Documentation at: /docs/config/valve.html
-                     STP Features: Standard Access Log
+                     JWALA Features: Standard Access Log
                      Daily rotating: yes
                      Status request logging can be disabled by adding attribute "status" to the ServletRequest.
                      -->
                 <Valve className="org.apache.catalina.valves.AccessLogValve" directory="logs"
-                       prefix="stp_access_log." suffix=".txt"
+                       prefix="jwala_access_log." suffix=".txt"
                        pattern="common"
                        conditionUnless="status" />
 

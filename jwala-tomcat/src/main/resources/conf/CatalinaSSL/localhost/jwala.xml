@@ -44,12 +44,12 @@
           auth="Container"
           factory="org.apache.naming.factory.BeanFactory"
           type="com.tibco.tibjms.TibjmsTopic"
-          address="com.cerner.entp.N9SF.LTST.private.stp.jwala.status-USMLVV1CDS0044"/>
+          address="com.cerner.entp.N9SF.LTST.private.jwala.jwala.status-USMLVV1CDS0044"/>
 
     <Resource name="jms/jwala-state-notification"
           auth="Container"
           factory="org.apache.naming.factory.BeanFactory"
           type="com.tibco.tibjms.TibjmsTopic"
-          address="com.cerner.entp.N9SF.LTST.private.stp.jwala.jvm-notification-USMLVV1CDS0044"/>
+          address="com.cerner.entp.N9SF.LTST.private.jwala.jwala.jvm-notification-USMLVV1CDS0044"/>
 
 </Context>
