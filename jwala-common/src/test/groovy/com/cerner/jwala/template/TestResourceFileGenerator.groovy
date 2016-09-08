@@ -125,27 +125,11 @@ println f.exists()
         assertEquals(removeCarriageReturnsAndNewLines(expectedText), removeCarriageReturnsAndNewLines(generatedText));
     }
 
-    void testGenerateHctPropertiesConfigFile() {
-        File httpdTemplate = new File("./src/test/resources/hct.properties.tpl");
-        resourceGroup = new ResourceGroup(new ArrayList<Group>(groupHashSet));
-        def generatedText = ResourceFileGenerator.generateResourceConfig(httpdTemplate.text, resourceGroup, app);
-        def expectedText = new File("./src/test/resources/hct-EXPECTED.properties").text
-        assertEquals(removeCarriageReturnsAndNewLines(expectedText), removeCarriageReturnsAndNewLines(generatedText));
-    }
-
     void testGenerateHctRoleMappingPropertiesConfigFile() {
         File httpdTemplate = new File("./src/test/resources/hctRoleMapping.properties.tpl");
         resourceGroup = new ResourceGroup(new ArrayList<Group>(groupHashSet));
         def generatedText = ResourceFileGenerator.generateResourceConfig(httpdTemplate.text, resourceGroup, app);
         def expectedText = new File("./src/test/resources/hctRoleMapping-EXPECTED.properties").text
-        assertEquals(removeCarriageReturnsAndNewLines(expectedText), removeCarriageReturnsAndNewLines(generatedText));
-    }
-
-    void testGeneratePropertySourcePropertiesConfigFile() {
-        File httpdTemplate = new File("./src/test/resources/propertySource.properties.tpl");
-        resourceGroup = new ResourceGroup(new ArrayList<Group>(groupHashSet));
-        def generatedText = ResourceFileGenerator.generateResourceConfig(httpdTemplate.text, resourceGroup, app);
-        def expectedText = new File("./src/test/resources/propertySource-EXPECTED.properties").text
         assertEquals(removeCarriageReturnsAndNewLines(expectedText), removeCarriageReturnsAndNewLines(generatedText));
     }
 
