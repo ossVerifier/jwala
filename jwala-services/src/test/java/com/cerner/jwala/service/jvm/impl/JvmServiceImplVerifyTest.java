@@ -29,6 +29,7 @@ import com.cerner.jwala.persistence.jpa.service.exception.NonRetrievableResource
 import com.cerner.jwala.persistence.service.JvmPersistenceService;
 import com.cerner.jwala.service.VerificationBehaviorSupport;
 import com.cerner.jwala.service.app.ApplicationService;
+import com.cerner.jwala.service.binarydistribution.BinaryDistributionService;
 import com.cerner.jwala.service.group.GroupService;
 import com.cerner.jwala.service.group.GroupStateNotificationService;
 import com.cerner.jwala.service.jvm.JvmControlService;
@@ -95,6 +96,9 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
     @Mock
     private JvmControlService mockJvmControlService;
 
+    @Mock
+    private BinaryDistributionService mockBinaryDistributionService;
+
     private JvmService jvmService;
 
     private JvmServiceImpl jvmServiceImpl;
@@ -106,7 +110,7 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
         initMocks(this);
         jvmServiceImpl = new JvmServiceImpl(mockJvmPersistenceService, mockGroupService, mockApplicationService, mockFileManager,
                 mockMessagingTemplate, mockGroupStateNotificationService, mockResourceService, mockClientFactoryHelper,
-                 "/topic/server-states", mockJvmControlService, lockMap);
+                 "/topic/server-states", mockJvmControlService, lockMap, mockBinaryDistributionService);
         jvmService = jvmServiceImpl;
     }
 
