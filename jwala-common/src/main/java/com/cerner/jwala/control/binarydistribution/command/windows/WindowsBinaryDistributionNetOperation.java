@@ -41,9 +41,7 @@ public enum WindowsBinaryDistributionNetOperation implements ServiceCommandBuild
         @Override
         public ExecCommand buildCommandForService(String aServiceName, String... aParams) {
             return new ExecCommand(
-                    cygpathWrapper(DEPLOY_CONFIG_ARCHIVE_SCRIPT_NAME, USER_TOC_SCRIPTS_PATH + "/"),
-                    aParams[0],
-                    ApplicationProperties.get("stp.java.home") + "/bin/jar xf"
+                    ApplicationProperties.get("stp.java.home") + "/bin/jar xf " + aParams[0]
             );
         }
     };
