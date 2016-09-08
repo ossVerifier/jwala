@@ -210,6 +210,6 @@ war {
 //    }
 //
 //    deployWar.dependsOn deployContext, deleteWar, deleteExtractedWarPath
-    deployWar.dependsOn deployContext, deleteWar, deleteExtractedWarPath
+    deployWar.dependsOn deleteWar, deleteExtractedWarPath
 }
 
