@@ -21,10 +21,6 @@ public class IndexControllerTest extends TestCase {
         assertEquals("jwala/about", ic.about());
     }
 
-    public void testSandbox() {
-        assertEquals("jwala/sandbox", ic.sandbox());
-    }
-
     public void testIndexPageScripts() {
         String result = ic.indexPageScripts("true", false);
         assertEquals("jwala/dev-index-page-scripts", result);
