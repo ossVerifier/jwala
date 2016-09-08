@@ -58,7 +58,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ApplicationServiceImpl.class);
     private static final String GENERATED_RESOURCE_DIR = "paths.generated.resource.dir";
-    private static final String JWALA_WEBAPPS_DIR = "jwala.webapps.dir";
+    private static final String JWALA_WEBAPPS_DIR = "remote.jwala.webapps.dir";
     private final ExecutorService executorService;
 
     @Autowired
@@ -414,7 +414,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         Map<String, Future<CommandOutput>> futures = new HashMap<>();
         try {
             FileCopyUtils.copy(applicationWar, tempWarFile);
-            final String destPath = ApplicationProperties.get("jwala.webapps.dir");
+            final String destPath = ApplicationProperties.get("remote.jwala.webapps.dir");
             for(String hostName: hostNames) {
                 Future<CommandOutput> commandOutputFuture = executeCopyCommand(application, tempWarFile, destPath, null, hostName);
                 futures.put(hostName, commandOutputFuture);

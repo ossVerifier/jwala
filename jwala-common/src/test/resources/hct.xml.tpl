@@ -1,4 +1,4 @@
-<Context docBase="${vars.'jwala.webapps.dir'}/${webApp.warName}">
+<Context docBase="${vars.'remote.jwala.webapps.dir'}/${webApp.warName}">
 
     <Environment name="jvmInstanceName"
                  value="${jvm.jvmName}"

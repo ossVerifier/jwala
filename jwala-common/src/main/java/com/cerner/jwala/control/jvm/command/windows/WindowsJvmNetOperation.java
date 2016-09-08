@@ -52,7 +52,7 @@ public enum WindowsJvmNetOperation implements ServiceCommandBuilder {
         @Override
         public ExecCommand buildCommandForService(final String aServiceName, final String... aParams) {
             final Properties properties = ApplicationProperties.getProperties();
-            String jStackCmd = properties.getProperty("jwala.java.home") + "/bin/jstack";
+            String jStackCmd = properties.getProperty("remote.jwala.java.home") + "/bin/jstack";
             return new ExecCommand(jStackCmd, "-l `sc queryex", aServiceName, "| grep PID | awk '{ print $3 }'`");
         }
     },
@@ -63,9 +63,9 @@ public enum WindowsJvmNetOperation implements ServiceCommandBuilder {
         //       itself then an echo to mark the end of the heap dump command sequence.
         public ExecCommand buildCommandForService(final String aServiceName, final String... aParams) {
             final Properties properties = ApplicationProperties.getProperties();
-            String dataDir = properties.getProperty("jwala.data.dir");
+            String dataDir = properties.getProperty("remote.jwala.data.dir");
             String jMapCmd = "echo '***heapdump-start***';mkdir -p " + dataDir + ";" +
-                    properties.getProperty("jwala.java.home") + "/bin/jmap";
+                    properties.getProperty("remote.jwala.java.home") + "/bin/jmap";
             final boolean dumpLiveEnabled = Boolean.parseBoolean(properties.getProperty("jmap.dump.live.enabled"));
             DateTimeFormatter fmt = DateTimeFormat.forPattern("yyyyMMdd.HHmmss");
             String dumpFile = dataDir + "/heapDump." + StringUtils.replace(aServiceName, " ", "") + "." +
@@ -83,7 +83,7 @@ public enum WindowsJvmNetOperation implements ServiceCommandBuilder {
                     cygpathWrapper(DEPLOY_CONFIG_ARCHIVE_SCRIPT_NAME, USER_TOC_SCRIPTS_PATH + "/"),
                     USER_TOC_SCRIPTS_PATH + "/" + aServiceName + "_config.jar",
                     INSTANCES_DIR + "/" + aServiceName,
-                    ApplicationProperties.get("jwala.java.home") + "/bin/jar"
+                    ApplicationProperties.get("remote.jwala.java.home") + "/bin/jar"
             );
 
         }
