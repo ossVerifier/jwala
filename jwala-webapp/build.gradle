@@ -199,15 +199,17 @@ war {
         delete "${extractedWarPath}"
     }
 
-    task deployContext(type: Copy) {
-        from "${templatePath}"
-        into "${appInstanceConfPath}"
-        include "${appContext}.tpl"
-        rename { file -> "${appContext}" }
-        expand(deployPath: "${deployPath}", warName: project.name + "-${buildVersion}.war", jmsStatusAddr: "${jmsStatusAddr}",
-                jmsStateNotificationAddr: "${jmsStateNotificationAddr}")
-    }
-
+// TODO: User jwala.xml located in [workspace]\jwala\jwala-tomcat\src\main\resources\conf\stp\localhost
+//    task deployContext(type: Copy) {
+//        from "${templatePath}"
+//        into "${appInstanceConfPath}"
+//        include "${appContext}.tpl"
+//        rename { file -> "${appContext}" }
+//        expand(deployPath: "${deployPath}", warName: project.name + "-${buildVersion}.war", jmsStatusAddr: "${jmsStatusAddr}",
+//                jmsStateNotificationAddr: "${jmsStateNotificationAddr}")
+//    }
+//
+//    deployWar.dependsOn deployContext, deleteWar, deleteExtractedWarPath
     deployWar.dependsOn deployContext, deleteWar, deleteExtractedWarPath
 }
 
