@@ -32,8 +32,8 @@
     <Listener className="org.apache.catalina.core.JreMemoryLeakPreventionListener" />
     <Listener className="org.apache.catalina.mbeans.GlobalResourcesLifecycleListener" />
     <Listener className="org.apache.catalina.core.ThreadLocalLeakPreventionListener" />
-  
-    <Listener id="${jvm.id.getId()}"
+    <Listener className="com.siemens.cto.infrastructure.report.tomcat.ReportingLifeCycleListener"
+            id="${jvm.id.getId()}"
             instanceId="${jvm.id.getId()}"
             type="JVM"
             jgroupsPreferIpv4Stack="true"
@@ -48,12 +48,10 @@
             schedulerThreadCount="1"
             schedulerThreadNamePrefix="JGroups_Reporting_Thread"
             />
-
     <!-- commented out until we have jmx ports in jvm definitions in Jwala -->
     <!--Listener className="org.apache.catalina.mbeans.JmxRemoteLifecycleListener"
             rmiRegistryPortPlatform="9090" rmiServerPortPlatform="9091" /-->
 
-   
     <!-- <Listener className="com.siemens.cto.infrastructure.report.tomcat.FailFastLifeCycleListener"
             jmsConnectionFactory="java:/jms/jwala-cf"
             jmsDestination="java:/jms/jwala-status"
@@ -62,6 +60,7 @@
             timeToWaitForJmsResponseMs="5000"
             exitOnError="false" />
 
+    <Listener className="com.siemens.cto.infrastructure.report.tomcat.FastJmsStartLifeCycleListener" /> -->
 
     <!-- Global JNDI resources
             Documentation at /docs/jndi-resources-howto.html
@@ -79,18 +78,13 @@
     <Resource name="jms/jwala-status"
             auth="Container"
             factory="org.apache.naming.factory.BeanFactory"
-<<<<<<< .mine
-            address="com.cerner.entp.n9sf.ltst.private.jwala.toc.status-USMLVV2CTO0147"/>
-
-=======
             type="com.tibco.tibjms.TibjmsTopic"
-            address="com.cerner.entp.n9sf.ltst.private.stp.jwala.status-USMLVV2CTO0147"/>
->>>>>>> .theirs
+            address="com.cerner.entp.n9sf.ltst.private.jwala.jwala.status-USMLVV2CTO0147"/>
 
     <Resource auth="Container"
-
             name="jms/jwala-cf"
             factory="org.apache.naming.factory.BeanFactory"
+            type="com.tibco.tibjms.TibjmsConnectionFactory"
             serverUrl="ssl://USMLVV1CTO924:7243"
             userName="admin"
             userPassword="\${enc:9hQ4KpxpM8e/VX3KkT2VYg==}"
@@ -100,7 +94,6 @@
             reconnAttemptDelay="1000"
             SSLEnableVerifyHost="true"
             SSLEnableVerifyHostName="false"
-
             SSLTrustedCertificate="d:\jwala\app\data\security\ems\ctorootca.pem" />
     </GlobalNamingResources>
 
@@ -112,18 +105,15 @@
     -->
     <!-- Soarian Tomcat Platform Service
         Features: SSL enabled, AJP disabled, HTTP disabled
-    
         Exploded apps: sslwebapps
         Archived apps: by context.xmls in conf/jwala/localhost
     -->
-
 
     <Service name="jwala">
     <!-- Define a SSL HTTP/1.1 Connector.  This connector uses the JSSE configuration, when using APR, the
          connector should be using the OpenSSL style configuration described in the APR documentation
 
         Defines Peter's APR + JSSE compatible port
-
         JWALA Features:
         Compression: Forced on
         Compressable types: text/html,text/xml,text/plain,application/json
@@ -133,7 +123,6 @@
 
     <Connector
         port="${jvm.httpsPort}"
-
         SSLCertificateFile="d:\jwala\app\data\security\id\\${jvm.hostName}.cer"
         SSLCertificateKeyFile="d:\jwala\app\data\security\id\\${jvm.hostName}.key"
         SSLEnabled="true"
@@ -161,14 +150,11 @@
     on to the appropriate Host (virtual host).
     Documentation at /docs/config/engine.html -->
 
-
     <!-- The JWALA Engine is the normal standalone Tomcat host
         Warning: potential name conflict on jvmRoute -->
-
     <Engine name="jwala" defaultHost="localhost" jvmRoute="${jvm.jvmName}">
 
     <!-- Host Features: Standard Host
-
         AppBase: sslwebapps/
         Unpacking: no
         Auto deploy: yes
@@ -182,7 +168,6 @@
     </Realm>
 
     <Host name="localhost"
-
         appBase="sslwebapps"
         unpackWARs="false"
         autoDeploy="true"
@@ -194,13 +179,11 @@
 
     <!-- Access log processes all example.
          Documentation at: /docs/config/valve.html
-
          JWALA Features: Standard Access Log
          Daily rotating: yes
          Status request logging can be disabled by adding attribute "status" to the ServletRequest.
          -->
     <Valve className="org.apache.catalina.valves.AccessLogValve" directory="logs"
-
            prefix="jwala_access_log." suffix=".txt"
            pattern="common"
            conditionUnless="status" />
@@ -251,7 +234,6 @@
     <!-- You should set jvmRoute to support load-balancing via AJP ie :
     <Engine name="Catalina" defaultHost="localhost" jvmRoute="jvm1">
     -->
-
     <Engine name="Catalina" defaultHost="localhost" jvmRoute="CTO-N9SF-LTST-JWALA">
 
     <!--For clustering, please take a look at documentation at:
