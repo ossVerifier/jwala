@@ -43,8 +43,7 @@ public enum WindowsBinaryDistributionNetOperation implements ServiceCommandBuild
             return new ExecCommand(
                     cygpathWrapper(DEPLOY_CONFIG_ARCHIVE_SCRIPT_NAME, USER_TOC_SCRIPTS_PATH + "/"),
                     aParams[0],
-                    aParams[1],
-                    ApplicationProperties.get("stp.java.home") + "/bin/jar"
+                    ApplicationProperties.get("stp.java.home") + "/bin/jar xf"
             );
         }
     };

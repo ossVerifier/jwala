@@ -83,7 +83,7 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
                         if (binaryDistributionControlService.createDirectory(hostname, binaryDeployDir).getReturnCode().wasSuccessful()) {
                             LOGGER.info("successfully created directories {}", binaryDeployDir);
                             if (binaryDistributionControlService.secureCopyFile(hostname, zipFile, destinationZipFile).getReturnCode().wasSuccessful()) {
-                                if (binaryDistributionControlService.unzipBinary(hostname, destinationZipFile, binaryDeployDir + "/" + binaryName).getReturnCode().wasSuccessful()) {
+                                if (binaryDistributionControlService.unzipBinary(hostname, destinationZipFile).getReturnCode().wasSuccessful()) {
                                     LOGGER.info("successfully unzipped the binary {}", destinationZipFile);
                                     if (binaryDistributionControlService.deleteBinary(hostname, destinationZipFile).getReturnCode().wasSuccessful()) {
                                         LOGGER.info("successfully delete the binary {}", destinationZipFile);
