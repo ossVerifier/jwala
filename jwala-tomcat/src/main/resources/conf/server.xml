@@ -132,7 +132,7 @@
 
      <!-- The STP Engine is the normal standalone Tomcat host
           Warning: potential name conflict on jvmRoute -->
-    <Engine name="stp" defaultHost="localhost" jvmRoute="CTO-N9SF-LTST-JWALA">
+    <Engine name="stp" defaultHost="localhost">
       <!-- Host Features: Standard Host
            AppBase: stpapps/
            Unpacking: no
@@ -207,7 +207,7 @@
     <!-- You should set jvmRoute to support load-balancing via AJP ie :
     <Engine name="Catalina" defaultHost="localhost" jvmRoute="jvm1">
     -->
-    <Engine name="Catalina" defaultHost="localhost" jvmRoute="CTO-N9SF-LTST-JWALA">
+    <Engine name="Catalina" defaultHost="localhost">
 
       <!--For clustering, please take a look at documentation at:
           /docs/cluster-howto.html  (simple how to)

@@ -16,7 +16,7 @@ var userService = {
     },
 
     getAuthorization: function(){
-      return serviceFoundation.promisedGet("v1.0/admin/isJwalaAuthorizationEnabled", "json");
+      return serviceFoundation.promisedGet("v1.0/admin/auth/state", "json");
     },
 
     getIsAdmin: function(){
