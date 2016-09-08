@@ -16,6 +16,7 @@ import javax.management.ReflectionException;
 import org.apache.catalina.Engine;
 import org.apache.catalina.Realm;
 import org.apache.catalina.realm.GenericPrincipal;
+import org.apache.catalina.realm.NullRealm;
 import org.apache.log4j.Logger;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -46,6 +47,8 @@ public class JwalaAuthenticationProvider implements AuthenticationProvider {
         Set<GrantedAuthority> auths = new HashSet<>();
         try {
             realm = getTomcatContextRealm();
+            if(realm instanceof NullRealm)
+                throw new ProviderNotFoundException("No Realms configured for Jwala to Authenticate");
             Principal principal = realm.authenticate(authentication.getName(),
                     authentication.getCredentials().toString());
             if (principal == null) {
