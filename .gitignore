@@ -5,6 +5,7 @@ classes
 .settings
 .classpath
 .project
+
 /toc-build/jacoco.exec
 /toc-build/toc-tomcat/logs
 /toc-build/work

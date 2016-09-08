@@ -1,7 +1,7 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
-var tocVars = {};
+var jwalaVars = {};
 <c:forEach var="javaScriptVariable" items="${javaScriptVariables}">
-    tocVars["${javaScriptVariable.variableName}"] = ${javaScriptVariable.variableValue};
+    jwalaVars["${javaScriptVariable.variableName}"] = ${javaScriptVariable.variableValue};
 </c:forEach>
-tocVars["rootContextName"]="<%= request.getContextPath() %>";
+jwalaVars["rootContextName"]="<%= request.getContextPath() %>";

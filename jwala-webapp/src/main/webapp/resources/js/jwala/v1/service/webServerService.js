@@ -50,6 +50,7 @@ var webServerService = {
 	deleteWebServer : function(id, caughtCallback) {
         return serviceFoundation.del("v1.0/webservers/" + id, "json", caughtCallback);
     },
+<<<<<<< HEAD:jwala-webapp/src/main/webapp/resources/js/toc/v1/service/webServerService.js
 	/*
 	 * Get details of one defined web server - pass identifier integer Console
 	 * test code:
@@ -69,6 +70,11 @@ var webServerService = {
 	 *
 	 * if(e.readyState > 1) { alert(e.applicationResponseContent); } },null);
 	 */
+=======
+	getWebServer : function(id, responseCallback) {
+		return serviceFoundation.get("v1.0/webservers/" + id, "json", responseCallback);
+	},
+>>>>>>> master:jwala-webapp/src/main/webapp/resources/js/jwala/v1/service/webServerService.js
 	getWebServers : function(responseCallback) {
 		return serviceFoundation.get("v1.0/webservers?all", "json", responseCallback);
 	},

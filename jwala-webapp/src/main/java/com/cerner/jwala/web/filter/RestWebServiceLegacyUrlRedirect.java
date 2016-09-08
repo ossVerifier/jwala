@@ -6,7 +6,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 
 /**
- * A filter that redirects legacy REST service url calls e.g. toc/v1.0 to toc/services/v1.0
+ * A filter that redirects legacy REST service url calls e.g. jwala/v1.0 to jwala/services/v1.0
  *
  * Created by JC043760 on 8/8/2016.
  */

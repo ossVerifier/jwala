@@ -11,12 +11,12 @@ var userService = {
     },
     logout : function() {
         return serviceFoundation.post("v1.0/user/logout", "json", "", function(){
-            window.location = tocVars.contextPath;
+            window.location = jwalaVars.contextPath;
         });
     },
 
     getAuthorization: function(){
-      return serviceFoundation.promisedGet("v1.0/admin/isTOCAuthorizationEnabled", "json");
+      return serviceFoundation.promisedGet("v1.0/admin/auth/state", "json");
     },
 
     getIsAdmin: function(){

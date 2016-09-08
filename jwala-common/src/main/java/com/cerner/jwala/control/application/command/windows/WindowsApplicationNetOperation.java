@@ -32,9 +32,11 @@ public enum WindowsApplicationNetOperation implements ServiceCommandBuilder {
         @Override
         public ExecCommand buildCommandForService(String aServiceName, String... aParams) {
             final String appWarName = aParams[0];
+
             final String appWarsDirPath = ApplicationProperties.get("remote.jwala.webapps.dir");
             final String javaHomePath = ApplicationProperties.get("remote.jwala.java.home");
-            final String unpackWarScriptPath = "`" + CYGPATH + " " + USER_TOC_SCRIPTS_PATH + "/" + UNPACK_WAR_SCRIPT_NAME + "`";
+
+            final String unpackWarScriptPath = "`" + CYGPATH + " " + USER_JWALA_SCRIPTS_PATH + "/" + UNPACK_WAR_SCRIPT_NAME + "`";
             return new ExecCommand(unpackWarScriptPath, appWarsDirPath, javaHomePath, appWarName);
         }
     },

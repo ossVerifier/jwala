@@ -40,7 +40,6 @@ public class AemMessageListenerConfig {
         container.setSessionAcknowledgeMode(Session.SESSION_TRANSACTED);
         container.setPubSubDomain(true);
         container.setSubscriptionDurable(true);
-        container.setDurableSubscriptionName(ApplicationProperties.get("toc.jms.heartbeat.durable-name"));
         container.setConcurrentConsumers(1);
         return container;
     }

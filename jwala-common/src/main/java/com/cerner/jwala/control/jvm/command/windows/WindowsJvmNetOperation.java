@@ -80,8 +80,8 @@ public enum WindowsJvmNetOperation implements ServiceCommandBuilder {
         public ExecCommand buildCommandForService(String aServiceName, String... aParams) {
 
             return new ExecCommand(
-                    cygpathWrapper(DEPLOY_CONFIG_ARCHIVE_SCRIPT_NAME, USER_TOC_SCRIPTS_PATH + "/"),
-                    USER_TOC_SCRIPTS_PATH + "/" + aServiceName + "_config.jar",
+                    cygpathWrapper(DEPLOY_CONFIG_ARCHIVE_SCRIPT_NAME, USER_JWALA_SCRIPTS_PATH + "/"),
+                    USER_JWALA_SCRIPTS_PATH + "/" + aServiceName + "_config.jar",
                     INSTANCES_DIR + "/" + aServiceName,
                     ApplicationProperties.get("remote.jwala.java.home") + "/bin/jar"
             );
@@ -120,7 +120,7 @@ public enum WindowsJvmNetOperation implements ServiceCommandBuilder {
             }            
             final String decryptedPassword = encryptedPassword!=null && encryptedPassword.length()>0 ? new DecryptPassword().decrypt(encryptedPassword): "";
             return new ExecCommand(
-                    cygpathWrapper(INVOKE_SERVICE_SCRIPT_NAME, USER_TOC_SCRIPTS_PATH + "/"),
+                    cygpathWrapper(INVOKE_SERVICE_SCRIPT_NAME, USER_JWALA_SCRIPTS_PATH + "/"),
                     aServiceName,
                     INSTANCES_DIR,
                     quotedUsername,
