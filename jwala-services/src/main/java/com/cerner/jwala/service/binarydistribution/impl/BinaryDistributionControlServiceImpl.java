@@ -46,6 +46,13 @@ public class BinaryDistributionControlServiceImpl implements BinaryDistributionC
     }
 
     @Override
+    public CommandOutput unzipBinary(final String hostname, final String binaryLocation) throws CommandFailureException {
+        return remoteCommandExecutor.executeRemoteCommand(null,
+                hostname,
+                BinaryDistributionControlOperation.UNZIP_BINARY,
+                new WindowsBinaryDistributionPlatformCommandProvider(),
+                binaryLocation);
+
     public CommandOutput unzipBinary(final String hostname, final String binaryLocation, final String destination) throws CommandFailureException {
         return remoteCommandExecutor.executeRemoteCommand(null,
                 hostname,
@@ -53,6 +60,12 @@ public class BinaryDistributionControlServiceImpl implements BinaryDistributionC
                 new WindowsBinaryDistributionPlatformCommandProvider(),
                 binaryLocation,
                 destination);
+
+
+
+
+
+
     }
 
     @Override
