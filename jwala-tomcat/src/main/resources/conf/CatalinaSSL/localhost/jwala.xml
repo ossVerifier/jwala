@@ -16,8 +16,7 @@
   limitations under the License.
 -->
 <!-- The contents of this file will be loaded for each web application -->
-<Context docBase="${catalina.home}/data/webapps/jwala-webapp-@@buildVersion@@.war"
->
+<Context docBase="${catalina.home}/data/webapps/jwala-webapp-@@buildVersion@@.war">
 
     <Loader className="org.apache.catalina.loader.VirtualWebappLoader"
             virtualClasspath="${catalina.home}/data/conf"/>
@@ -37,19 +36,5 @@
               username="sa"
               password=""
               url="jdbc:h2:tcp://localhost:9094/jwala;LOCK_MODE=0"/>
-    
-    <ResourceLink name="jms/jwala-cf" global="jms/jwala-cf" type="com.tibco.tibjms.TibjmsConnectionFactory" />
-
-    <Resource name="jms/jwala-status"
-          auth="Container"
-          factory="org.apache.naming.factory.BeanFactory"
-          type="com.tibco.tibjms.TibjmsTopic"
-          address="com.cerner.entp.N9SF.LTST.private.jwala.jwala.status-USMLVV1CDS0044"/>
-
-    <Resource name="jms/jwala-state-notification"
-          auth="Container"
-          factory="org.apache.naming.factory.BeanFactory"
-          type="com.tibco.tibjms.TibjmsTopic"
-          address="com.cerner.entp.N9SF.LTST.private.jwala.jwala.jvm-notification-USMLVV1CDS0044"/>
 
 </Context>
