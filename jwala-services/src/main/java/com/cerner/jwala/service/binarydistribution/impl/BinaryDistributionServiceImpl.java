@@ -1,9 +1,6 @@
 package com.cerner.jwala.service.binarydistribution.impl;
 
-import com.cerner.jwala.common.domain.model.fault.AemFaultType;
-import com.cerner.jwala.common.exception.InternalErrorException;
 import com.cerner.jwala.common.properties.ApplicationProperties;
-import com.cerner.jwala.exception.CommandFailureException;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionControlService;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionService;
 import com.cerner.jwala.service.zip.ZipDirectory;
@@ -70,42 +67,37 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
         String binaryDir = ApplicationProperties.get(BINARY_LOCATION_PROPERTY_KEY);
         String binaryDeployDir = ApplicationProperties.get(BINARY_DEPLOY_LOCATION_PROPERTY_KEY);
         if (binaryDeployDir != null && !binaryDeployDir.isEmpty()) {
-            try {
-                if (!binaryDistributionControlService.checkFileExists(hostname, binaryDeployDir + "/" + binaryName).getReturnCode().wasSuccessful()) {
-                    LOGGER.info("Couldn't find {} on host {}. Trying to deploy it", binaryName, hostname);
-                    if (binaryDir != null && !binaryDir.isEmpty()) {
-                        String zipFile = binaryDir + "/" + binaryName + ".zip";
-                        String destinationZipFile = binaryDeployDir + "/" + binaryName + ".zip";
-                        if (!new File(zipFile).exists()) {
-                            LOGGER.debug("binary zip does not exists, create zip");
-                            zipFile = zipBinary(binaryDir + "/" + binaryName);
-                        }
-                        if (binaryDistributionControlService.createDirectory(hostname, binaryDeployDir).getReturnCode().wasSuccessful()) {
-                            LOGGER.info("successfully created directories {}", binaryDeployDir);
-                            if (binaryDistributionControlService.secureCopyFile(hostname, zipFile, destinationZipFile).getReturnCode().wasSuccessful()) {
-                                if (binaryDistributionControlService.unzipBinary(hostname, destinationZipFile).getReturnCode().wasSuccessful()) {
-                                    LOGGER.info("successfully unzipped the binary {}", destinationZipFile);
-                                    if (binaryDistributionControlService.deleteBinary(hostname, destinationZipFile).getReturnCode().wasSuccessful()) {
-                                        LOGGER.info("successfully delete the binary {}", destinationZipFile);
-                                    } else {
-                                        LOGGER.error("Issue with deleting binary {}", destinationZipFile);
-                                    }
+            if (!binaryDistributionControlService.checkFileExists(hostname, binaryDeployDir + "/" + binaryName).getReturnCode().wasSuccessful()) {
+                LOGGER.info("Couldn't find {} on host {}. Trying to deploy it", binaryName, hostname);
+                if (binaryDir != null && !binaryDir.isEmpty()) {
+                    String zipFile = binaryDir + "/" + binaryName + ".zip";
+                    String destinationZipFile = binaryDeployDir + "/" + binaryName + ".zip";
+                    if (!new File(zipFile).exists()) {
+                        LOGGER.debug("binary zip does not exists, create zip");
+                        zipFile = zipBinary(binaryDir + "/" + binaryName);
+                    }
+                    if (binaryDistributionControlService.createDirectory(hostname, binaryDeployDir).getReturnCode().wasSuccessful()) {
+                        LOGGER.info("successfully created directories {}", binaryDeployDir);
+                        if (binaryDistributionControlService.secureCopyFile(hostname, zipFile, destinationZipFile).getReturnCode().wasSuccessful()) {
+                            if (binaryDistributionControlService.unzipBinary(hostname, destinationZipFile).getReturnCode().wasSuccessful()) {
+                                LOGGER.info("successfully unzipped the binary {}", destinationZipFile);
+                                if (binaryDistributionControlService.deleteBinary(hostname, destinationZipFile).getReturnCode().wasSuccessful()) {
+                                    LOGGER.info("successfully delete the binary {}", destinationZipFile);
                                 } else {
-                                    LOGGER.error("Issue with unzipping file {}", destinationZipFile);
+                                    LOGGER.error("Issue with deleting binary {}", destinationZipFile);
                                 }
                             } else {
-                                LOGGER.error("Issue with creating directories {}", binaryDeployDir);
+                                LOGGER.error("Issue with unzipping file {}", destinationZipFile);
                             }
+                        } else {
+                            LOGGER.error("Issue with creating directories {}", binaryDeployDir);
                         }
-                    } else {
-                        LOGGER.warn("Cannot find the binary directory location in jwala, value is {}", binaryDir);
                     }
                 } else {
-                    LOGGER.info("Found {} at on host {}", binaryName, hostname);
+                    LOGGER.warn("Cannot find the binary directory location in jwala, value is {}", binaryDir);
                 }
-            } catch (CommandFailureException e) {
-                LOGGER.error("Error with copying binary for " + binaryName, e);
-                throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Error with copying binary for " + binaryName, e);
+            } else {
+                LOGGER.info("Found {} at on host {}", binaryName, hostname);
             }
         } else {
             LOGGER.warn("Binary deploy location not provided value is {}", binaryDeployDir);
@@ -114,44 +106,23 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
 
     @Override
     public boolean jdkExists(final String hostname) {
-        boolean result;
-        try {
-            result = binaryDistributionControlService.checkFileExists(hostname,
-                    ApplicationProperties.get(BINARY_DEPLOY_LOCATION_PROPERTY_KEY) + "/" + ApplicationProperties.get(JDK_PROPERTY_KEY))
-                    .getReturnCode().wasSuccessful();
-        } catch (CommandFailureException e) {
-            LOGGER.error("Error in checking if jdk exists", e);
-            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Error with checking if jdk exists", e);
-        }
-        return result;
+        return binaryDistributionControlService.checkFileExists(hostname,
+                ApplicationProperties.get(BINARY_DEPLOY_LOCATION_PROPERTY_KEY) + "/" + ApplicationProperties.get(JDK_PROPERTY_KEY))
+                .getReturnCode().wasSuccessful();
     }
 
     @Override
     public boolean tomcatExists(final String hostname) {
-        boolean result;
-        try {
-            result = binaryDistributionControlService.checkFileExists(hostname,
-                    ApplicationProperties.get(BINARY_DEPLOY_LOCATION_PROPERTY_KEY) + "/" + ApplicationProperties.get(TOMCAT_PROPERTY_KEY))
-                    .getReturnCode().wasSuccessful();
-        } catch (CommandFailureException e) {
-            LOGGER.error("Error in checking if tomcat exists", e);
-            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Error with checking if tomcat exists", e);
-        }
-        return result;
+        return binaryDistributionControlService.checkFileExists(hostname,
+                ApplicationProperties.get(BINARY_DEPLOY_LOCATION_PROPERTY_KEY) + "/" + ApplicationProperties.get(TOMCAT_PROPERTY_KEY))
+                .getReturnCode().wasSuccessful();
     }
 
     @Override
     public boolean webServerExists(final String hostname) {
-        boolean result;
-        try {
-            result = binaryDistributionControlService.checkFileExists(hostname,
-                    ApplicationProperties.get(BINARY_DEPLOY_LOCATION_PROPERTY_KEY) + "/" + ApplicationProperties.get(JDK_PROPERTY_KEY))
-                    .getReturnCode().wasSuccessful();
-        } catch (CommandFailureException e) {
-            LOGGER.error("Error in checking if httpd exists", e);
-            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Error with checking if httpd exists", e);
-        }
-        return result;
+        return binaryDistributionControlService.checkFileExists(hostname,
+                ApplicationProperties.get(BINARY_DEPLOY_LOCATION_PROPERTY_KEY) + "/" + ApplicationProperties.get(JDK_PROPERTY_KEY))
+                .getReturnCode().wasSuccessful();
     }
 
     @Override
