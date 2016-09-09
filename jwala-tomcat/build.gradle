@@ -29,7 +29,6 @@ dependencies {
     compile(group: 'org.owasp.esapi', name: 'esapi', version: '2.0.1')
     compile(group: 'org.apache.geronimo.specs', name: 'geronimo-jpa_2.0_spec', version: '1.1')
     compile(group: "com.h2database", name: "h2", version: "$project.versions.h2")
-    compile(group: 'javax.jms', name: 'jms', version: '2.0')
     compile(group: 'joda-time', name: 'joda-time', version: '2.2')
     compile(group: 'javax.servlet', name: 'jstl', version: '1.2')
     compile(group: 'javax.transaction', name: 'jta', version: '1.1')
@@ -39,13 +38,9 @@ dependencies {
     compile(group: 'org.opensaml', name: 'openws', version: '1.5.4')
     compile(group: 'org.slf4j', name: 'slf4j-api', version: '1.7.6')
     compile(group: 'taglibs', name: 'standard', version: '1.1.2')
-    compile(group: 'com.tibco', name: 'tibcrypt', version: '8.3.0')
-    compile(group: 'com.tibco', name: 'tibjms', version: '8.3.0')
-    compile(group: 'com.tibco', name: 'tibjmsadmin', version: '8.3.0')
     compile(group: 'org.apache.santuario', name: 'xmlsec', version: '1.5.6')
     compile(group: 'org.opensaml', name: 'xmltooling', version: '1.4.4')
 }
-
 
 buildscript {
     repositories { jcenter() }

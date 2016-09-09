@@ -49,30 +49,6 @@
               description="User database that can be updated and saved"
               factory="org.apache.catalina.users.MemoryUserDatabaseFactory"
               pathname="conf/tomcat-users.xml" />
-
-
-    <Resource name="jms/jwala-status"
-              auth="Container"
-              factory="org.apache.naming.factory.BeanFactory"
-              type="com.tibco.tibjms.TibjmsTopic"
-
-              address="com.cerner.entp.N9SF.LTST.private.jwala.jwala.status-USMLVV1CDS0044"/>
-
-    <Resource auth="Container"
-
-              name="jms/jwala-cf"
-              factory="org.apache.naming.factory.BeanFactory"
-              type="com.tibco.tibjms.TibjmsConnectionFactory"
-              serverUrl="ssl://USMLVV1CTO924:7243"
-              userName="admin"
-              userPassword="${enc:9hQ4KpxpM8e/VX3KkT2VYg==}"
-              connAttemptCount="1"
-              connAttemptDelay="1000"
-              reconnAttemptCount="1"
-              reconnAttemptDelay="1000"
-              SSLEnableVerifyHost="true"
-              SSLEnableVerifyHostName="false"
-              SSLTrustedCertificate="${catalina.home}/data/security/ems/ctorootca.pem" />
   </GlobalNamingResources>
 
 
@@ -106,39 +82,37 @@
          compressionMinSize: 2048 (default)
          threadPriority: 1 above Java NORM_PRIORITY - 6
          -->
-    <Connector
-      
-            port="8001"
-            SSLCertificateFile="${catalina.home}/data/security/id/server.crt"
-            SSLCertificateKeyFile="${catalina.home}/data/security/id/server.key"
-            SSLEnabled="true"
-            SSLPassword=""
-            acceptCount="100"
-            clientAuth="false"
-            disableUploadTimeout="true"
-            enableLookups="false"
-            keystoreFile="conf/.keystore"
-            maxHttpHeaderSize="8192"
-            maxSavePostSize="-1"
-            maxThreads="200"
-            minSpareThreads="20"
-            protocol="HTTP/1.1"
-            scheme="https"
-            secure="true"
-            sslProtocol="TLS1.2"
-            compressableMimeTypes="text/html,text/xml,text/plain,application/json"
-            compressionMinSize="2048"
-            compression="force"
-            threadPriority="6" />
+    <Connector port="8001"
+               SSLCertificateFile="${catalina.home}/data/security/id/server.crt"
+               SSLCertificateKeyFile="${catalina.home}/data/security/id/server.key"
+               SSLEnabled="true"
+               SSLPassword=""
+               acceptCount="100"
+               clientAuth="false"
+               disableUploadTimeout="true"
+               enableLookups="false"
+               keystoreFile="conf/.keystore"
+               maxHttpHeaderSize="8192"
+               maxSavePostSize="-1"
+               maxThreads="200"
+               minSpareThreads="20"
+               protocol="HTTP/1.1"
+               scheme="https"
+               secure="true"
+               sslProtocol="TLS1.2"
+               compressableMimeTypes="text/html,text/xml,text/plain,application/json"
+               compressionMinSize="2048"
+               compression="force"
+               threadPriority="6" />
 
-     
+
     <!-- An Engine represents the entry point (within Catalina) that processes
     every request.  The Engine implementation for Tomcat stand alone
     analyzes the HTTP headers included with the request, and passes them
     on to the appropriate Host (virtual host).
     Documentation at /docs/config/engine.html -->
 
-     
+
      <!-- The JWALA Engine is the normal standalone Tomcat host
           Warning: potential name conflict on jvmRoute -->
     <Engine name="CatalinaSSL" defaultHost="localhost">
@@ -151,7 +125,7 @@
            Customized Error Reports: no
       -->
       <Host name="localhost"
-          
+
             appBase="sslwebapps"
             unpackWARs="false"
             autoDeploy="true"

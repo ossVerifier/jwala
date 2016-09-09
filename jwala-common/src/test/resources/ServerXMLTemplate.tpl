@@ -52,16 +52,6 @@
     <!--Listener className="org.apache.catalina.mbeans.JmxRemoteLifecycleListener"
             rmiRegistryPortPlatform="9090" rmiServerPortPlatform="9091" /-->
 
-    <!-- <Listener className="com.siemens.cto.infrastructure.report.tomcat.FailFastLifeCycleListener"
-            jmsConnectionFactory="java:/jms/jwala-cf"
-            jmsDestination="java:/jms/jwala-status"
-            systemExitCodeOnError="125"
-            testMessageTimeToLiveMs="125"
-            timeToWaitForJmsResponseMs="5000"
-            exitOnError="false" />
-
-    <Listener className="com.siemens.cto.infrastructure.report.tomcat.FastJmsStartLifeCycleListener" /> -->
-
     <!-- Global JNDI resources
             Documentation at /docs/jndi-resources-howto.html
     -->
@@ -74,29 +64,6 @@
             description="User database that can be updated and saved"
             factory="org.apache.catalina.users.MemoryUserDatabaseFactory"
             pathname="conf/tomcat-users.xml" />
-
-    <Resource name="jms/jwala-status"
-            auth="Container"
-            factory="org.apache.naming.factory.BeanFactory"
-            type="com.tibco.tibjms.TibjmsTopic"
-            address="com.cerner.entp.n9sf.ltst.private.jwala.jwala.status-USMLVV2CTO0147"/>
-
-    <Resource auth="Container"
-            name="jms/jwala-cf"
-            factory="org.apache.naming.factory.BeanFactory"
-            type="com.tibco.tibjms.TibjmsConnectionFactory"
-            serverUrl="ssl://USMLVV1CTO924:7243"
-            userName="admin"
-            userPassword="\${enc:9hQ4KpxpM8e/VX3KkT2VYg==}"
-            connAttemptCount="1"
-            connAttemptDelay="1000"
-            reconnAttemptCount="1"
-            reconnAttemptDelay="1000"
-            SSLEnableVerifyHost="true"
-            SSLEnableVerifyHostName="false"
-            SSLTrustedCertificate="d:\jwala\app\data\security\ems\ctorootca.pem" />
-    </GlobalNamingResources>
-
 
     <!-- A "Service" is a collection of one or more "Connectors" that share
         a single "Container" Note:  A "Service" is not itself a "Container",

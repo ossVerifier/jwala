@@ -12,10 +12,7 @@ import com.cerner.jwala.common.request.group.ControlGroupRequest;
 import com.cerner.jwala.common.request.webserver.ControlGroupWebServerRequest;
 import com.cerner.jwala.service.group.GroupJvmControlService;
 import com.cerner.jwala.service.group.GroupWebServerControlService;
-import com.cerner.jwala.service.group.impl.GroupControlServiceImpl;
-import com.cerner.jwala.service.group.impl.GroupJvmControlServiceImpl;
 import com.cerner.jwala.service.state.GroupStateService.API;
-
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;

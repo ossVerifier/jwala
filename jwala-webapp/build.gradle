@@ -36,7 +36,6 @@ dependencies {
     runtime(group: 'junit', name: 'junit', version: '4.12')
 
     providedCompile group: "javax.servlet", name: "javax.servlet-api", version: "$project.versions.javax_servlet_api"
-    providedCompile group: "javax.jms", name: "jms", version: "$project.versions.jms"
     providedCompile group: 'commons-collections', name: 'commons-collections', version: '3.2.2'
     providedCompile group: 'commons-codec', name: 'commons-codec', version: '1.6'
 
@@ -200,15 +199,17 @@ war {
         delete "${extractedWarPath}"
     }
 
-    task deployContext(type: Copy) {
-        from "${templatePath}"
-        into "${appInstanceConfPath}"
-        include "${appContext}.tpl"
-        rename { file -> "${appContext}" }
-        expand(deployPath: "${deployPath}", warName: project.name + "-${buildVersion}.war", jmsStatusAddr: "${jmsStatusAddr}",
-                jmsStateNotificationAddr: "${jmsStateNotificationAddr}")
-    }
-
-    deployWar.dependsOn deployContext, deleteWar, deleteExtractedWarPath
+// TODO: User jwala.xml located in [workspace]\jwala\jwala-tomcat\src\main\resources\conf\stp\localhost
+//    task deployContext(type: Copy) {
+//        from "${templatePath}"
+//        into "${appInstanceConfPath}"
+//        include "${appContext}.tpl"
+//        rename { file -> "${appContext}" }
+//        expand(deployPath: "${deployPath}", warName: project.name + "-${buildVersion}.war", jmsStatusAddr: "${jmsStatusAddr}",
+//                jmsStateNotificationAddr: "${jmsStateNotificationAddr}")
+//    }
+//
+//    deployWar.dependsOn deployContext, deleteWar, deleteExtractedWarPath
+    deployWar.dependsOn deleteWar, deleteExtractedWarPath
 }
 
