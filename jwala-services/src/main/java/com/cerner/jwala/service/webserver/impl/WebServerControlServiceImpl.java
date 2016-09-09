@@ -11,8 +11,8 @@ import com.cerner.jwala.common.domain.model.webserver.WebServerReachableState;
 import com.cerner.jwala.common.domain.model.webserver.message.WebServerHistoryEvent;
 import com.cerner.jwala.common.exception.InternalErrorException;
 import com.cerner.jwala.common.exec.*;
+import com.cerner.jwala.common.properties.ApplicationProperties;
 import com.cerner.jwala.common.request.webserver.ControlWebServerRequest;
-import com.cerner.jwala.control.AemControl;
 import com.cerner.jwala.control.command.RemoteCommandExecutor;
 import com.cerner.jwala.control.command.ServiceCommandBuilder;
 import com.cerner.jwala.control.webserver.command.impl.WindowsWebServerPlatformCommandProvider;
@@ -155,7 +155,7 @@ public class WebServerControlServiceImpl implements WebServerControlService {
         final WebServer aWebServer = webServerService.getWebServer(aWebServerName);
         final int beginIndex = destPath.lastIndexOf('/');
         final String fileName = destPath.substring(beginIndex + 1, destPath.length());
-        if (!AemControl.Properties.USER_JWALA_SCRIPTS_PATH.getValue().endsWith(fileName)) {
+        if (!ApplicationProperties.get("remote.commands.user-scripts").endsWith(fileName)) {
             final String eventDescription = WindowsWebServerNetOperation.SECURE_COPY.name() + " " + fileName;
             historyService.createHistory(getServerName(aWebServer), new ArrayList<>(aWebServer.getGroups()), eventDescription, EventType.USER_ACTION, userId);
             messagingService.send(new WebServerHistoryEvent(aWebServer.getId(), eventDescription, userId, DateTime.now(), WebServerControlOperation.SECURE_COPY));
