@@ -43,7 +43,6 @@ import com.cerner.jwala.ws.rest.v1.service.user.UserServiceRest;
 import com.cerner.jwala.ws.rest.v1.service.user.impl.UserServiceRestImpl;
 import com.cerner.jwala.ws.rest.v1.service.webserver.WebServerServiceRest;
 import com.cerner.jwala.ws.rest.v1.service.webserver.impl.WebServerServiceRestImpl;
-
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.cxf.endpoint.Server;
 import org.apache.cxf.jaxrs.JAXRSServerFactoryBean;
@@ -167,7 +166,7 @@ public class AemWebServiceConfiguration {
     }
 
     @Bean
-    public BalancerManagerServiceRest getV1BalancermanagerServiceRest(){
+    public BalancerManagerServiceRest getV1BalancermanagerServiceRest() {
         return new BalancerManagerServiceRestImpl(balancerManagerService);
     }
 
@@ -193,7 +192,7 @@ public class AemWebServiceConfiguration {
                 wsWriteLockMap,
                 resourceService,
                 groupService,
-                binaryDistributionService   );
+                binaryDistributionService);
     }
 
     @Bean
@@ -283,4 +282,5 @@ public class AemWebServiceConfiguration {
     public RestServiceErrorHandler getInternalServerErrorHandler() {
         return new RestServiceErrorHandler();
     }
+
 }

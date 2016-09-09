@@ -42,7 +42,7 @@ public enum WindowsBinaryDistributionNetOperation implements ServiceCommandBuild
         @Override
         public ExecCommand buildCommandForService(String aServiceName, String... aParams) {
             return new ShellCommand(
-                    aParams[0] + "  -q " + aParams[1] + " -d " + aParams[2]
+                    aParams[0] + " -q " + aParams[1] + " -d " + aParams[2] + " -x " + aParams[3]
             );
         }
     },

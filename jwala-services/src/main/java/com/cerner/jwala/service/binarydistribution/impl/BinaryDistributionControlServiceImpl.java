@@ -9,9 +9,6 @@ import com.cerner.jwala.service.binarydistribution.BinaryDistributionControlServ
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * Created by SP043299 on 9/7/2016.
- */
 public class BinaryDistributionControlServiceImpl implements BinaryDistributionControlService {
     private static final Logger LOGGER = LoggerFactory.getLogger(BinaryDistributionControlServiceImpl.class);
     private final RemoteCommandExecutor<BinaryDistributionControlOperation> remoteCommandExecutor;
@@ -49,14 +46,15 @@ public class BinaryDistributionControlServiceImpl implements BinaryDistributionC
     }
 
     @Override
-    public CommandOutput unzipBinary(final String hostname, final String zipPath, final String binaryLocation, final String destination) throws CommandFailureException {
+    public CommandOutput unzipBinary(final String hostname, final String zipPath, final String binaryLocation, final String destination, final String exclude) throws CommandFailureException {
         CommandOutput commandOutput = remoteCommandExecutor.executeRemoteCommand(null,
                 hostname,
                 BinaryDistributionControlOperation.UNZIP_BINARY,
                 new WindowsBinaryDistributionPlatformCommandProvider(),
                 zipPath,
                 binaryLocation,
-                destination);
+                destination,
+                exclude);
         printCommandOutput(commandOutput);
         return commandOutput;
     }

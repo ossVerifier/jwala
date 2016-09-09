@@ -4,6 +4,7 @@ import com.cerner.jwala.commandprocessor.CommandExecutor;
 import com.cerner.jwala.commandprocessor.impl.jsch.JschBuilder;
 import com.cerner.jwala.commandprocessor.jsch.impl.ChannelSessionKey;
 import com.cerner.jwala.commandprocessor.jsch.impl.KeyedPooledJschChannelFactory;
+import com.cerner.jwala.common.domain.model.binarydistribution.BinaryDistributionControlOperation;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.ssh.SshConfiguration;
 import com.cerner.jwala.common.domain.model.webserver.WebServer;
@@ -196,7 +197,7 @@ public class AemServiceConfiguration {
                                                             final JvmService jvmService,
                                                             final ClientFactoryHelper clientFactoryHelper,
                                                             final MessagingService messagingService,
-                                                            final HistoryService historyService){
+                                                            final HistoryService historyService) {
         return new BalancerManagerServiceImpl(groupService, applicationService, webServerService, jvmService, clientFactoryHelper, messagingService,
                 historyService, new BalancerManagerHtmlParser(), new BalancerManagerXmlParser(jvmService), new BalancerManagerHttpClient());
     }
@@ -223,7 +224,7 @@ public class AemServiceConfiguration {
 
     @Bean
     public ApplicationService getApplicationService(final JvmPersistenceService jvmPersistenceService, final GroupService groupService,
-            final HistoryCrudService historyCrudService, final MessagingService messagingService, final ResourceService resourceService) {
+                                                    final HistoryCrudService historyCrudService, final MessagingService messagingService, final ResourceService resourceService) {
         return new ApplicationServiceImpl(persistenceServiceConfiguration.getApplicationPersistenceService(),
                 jvmPersistenceService, aemCommandExecutorConfig.getRemoteCommandExecutor(), groupService, null, null,
                 getHistoryService(historyCrudService), messagingService, resourceService);
@@ -417,18 +418,24 @@ public class AemServiceConfiguration {
     /**
      * Bean method to create a thread factory that creates daemon threads.
      * <code>
-     <bean id="pollingThreadFactory" class="org.springframework.scheduling.concurrent.CustomizableThreadFactory">
-     <constructor-arg value="polling-"/>
-     </bean></code> */
-    @Bean(name="pollingThreadFactory") public ThreadFactory getPollingThreadFactory() {
+     * <bean id="pollingThreadFactory" class="org.springframework.scheduling.concurrent.CustomizableThreadFactory">
+     * <constructor-arg value="polling-"/>
+     * </bean></code>
+     */
+    @Bean(name = "pollingThreadFactory")
+    public ThreadFactory getPollingThreadFactory() {
         CustomizableThreadFactory tf = new CustomizableThreadFactory("polling-");
         tf.setDaemon(true);
         return tf;
     }
 
-    @Bean(name = "binaryDistributionService")
-    public BinaryDistributionService binaryDistributionService() {
-        return new BinaryDistributionServiceImpl(new BinaryDistributionControlServiceImpl(aemCommandExecutorConfig.getRemoteCommandExecutor()));
+    @Bean
+    public BinaryDistributionControlServiceImpl getBinaryDistributionControlService(RemoteCommandExecutor<BinaryDistributionControlOperation> remoteCommandExecutor){
+        return new BinaryDistributionControlServiceImpl(remoteCommandExecutor);
     }
 
+    @Bean
+    public BinaryDistributionService getBinaryDistributionService(BinaryDistributionControlServiceImpl binaryDistributionControlService) {
+        return new BinaryDistributionServiceImpl(binaryDistributionControlService);
+    }
 }

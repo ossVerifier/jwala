@@ -268,6 +268,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
                 throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "The target Web Server must be stopped before attempting to update the resource file");
             }
 
+            binaryDistributionService.prepareUnzip(webServer.getHost());
             binaryDistributionService.distributeWebServer(webServer.getHost());
 
             // check for httpd.conf template

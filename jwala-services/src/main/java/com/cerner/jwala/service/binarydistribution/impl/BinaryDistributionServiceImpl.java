@@ -16,15 +16,13 @@ import org.springframework.stereotype.Service;
 
 import java.io.File;
 
-/**
- * Created by SP043299 on 9/6/2016.
- */
 @Service
 public class BinaryDistributionServiceImpl implements BinaryDistributionService {
     private static final Logger LOGGER = LoggerFactory.getLogger(BinaryDistributionServiceImpl.class);
 
     private static final String BINARY_LOCATION_PROPERTY_KEY = "jwala.binary.dir";
     private static final String UNZIPEXE = "unzip.exe";
+    private static final String APACHE_EXCLUDE = "ReadMe.txt *--";
 
     private final ZipDirectory zipDirectory = new ZipDirectoryImpl();
     private final BinaryDistributionControlService binaryDistributionControlService;
@@ -40,7 +38,7 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
         String jdkDir = javaHome.getName();
         String binaryDeployDir = javaHome.getParentFile().getAbsolutePath().replaceAll("\\\\", "/");
         if (jdkDir != null && !jdkDir.isEmpty()) {
-            distributeBinary(hostname, jdkDir, binaryDeployDir);
+            distributeBinary(hostname, jdkDir, binaryDeployDir, "");
         } else {
             LOGGER.warn("JDK dir location is null or empty {}", jdkDir);
         }
@@ -52,7 +50,7 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
         String tomcatDir = tomcat.getParentFile().getName();
         String binaryDeployDir = tomcat.getParentFile().getParentFile().getAbsolutePath().replaceAll("\\\\", "/");
         if (tomcatDir != null && !tomcatDir.isEmpty()) {
-            distributeBinary(hostname, tomcatDir, binaryDeployDir);
+            distributeBinary(hostname, tomcatDir, binaryDeployDir, "");
         } else {
             LOGGER.warn("Tomcat dir location is null or empty {}", tomcatDir);
         }
@@ -60,17 +58,18 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
 
     @Override
     public void distributeWebServer(final String hostname) {
-        File apache = new File("remote.paths.apache.httpd");
+        File apache = new File(ApplicationProperties.get("remote.paths.apache.httpd"));
         String webServerDir = apache.getName();
         String binaryDeployDir = apache.getParentFile().getAbsolutePath().replaceAll("\\\\", "/");
+
         if (webServerDir != null && !webServerDir.isEmpty()) {
-            distributeBinary(hostname, webServerDir, binaryDeployDir);
+            distributeBinary(hostname, webServerDir, binaryDeployDir, APACHE_EXCLUDE);
         } else {
             LOGGER.warn("WebServer dir location is null or empty {}", webServerDir);
         }
     }
 
-    private void distributeBinary(final String hostname, final String binaryName, final String binaryDeployDir) {
+    private void distributeBinary(final String hostname, final String binaryName, final String binaryDeployDir, final String exclude) {
         String binaryDir = ApplicationProperties.get(BINARY_LOCATION_PROPERTY_KEY);
         if (binaryDeployDir != null && !binaryDeployDir.isEmpty()) {
             if (!remoteFileCheck(hostname, binaryDeployDir + "/" + binaryName)) {
@@ -103,8 +102,8 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
 
                     final String unzipFileDestination = AemControl.Properties.USER_TOC_SCRIPTS_PATH.getValue() + "/" + UNZIPEXE;
                     LOGGER.info("unzipFileDestination: " + unzipFileDestination);
-                    if (remoteUnzipBinary(hostname, unzipFileDestination, binaryDeployDir, destinationZipFile)) {
-                        LOGGER.info("successfully unzipped the binary {}", destinationZipFile);
+                    if (remoteUnzipBinary(hostname, unzipFileDestination, destinationZipFile, binaryDeployDir, exclude)) {
+                        LOGGER.info("successfully unzipped the binary {}", binaryDeployDir);
                     } else {
                         final String message = "cannot unzip from " + destinationZipFile + " to " + binaryDeployDir;
                         LOGGER.error(message);
@@ -132,6 +131,7 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
     }
 
     private boolean changeFileMode(final String hostname, final String mode, final String targetDir, final String target) {
+        //TODO: it will never catch here
         boolean result;
         try {
             result = binaryDistributionControlService.changeFileMode(hostname, mode, targetDir, target).getReturnCode().wasSuccessful();
@@ -144,6 +144,7 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
     }
 
     private boolean remoteDeleteBinary(final String hostname, final String destination) {
+        //TODO: it will never catch here
         boolean result;
         try {
             result = binaryDistributionControlService.deleteBinary(hostname, destination).getReturnCode().wasSuccessful();
@@ -155,11 +156,11 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
         return result;
     }
 
-    private boolean remoteUnzipBinary(final String hostname, final String zipPath, final String binaryLocation, final String destination) {
+    private boolean remoteUnzipBinary(final String hostname, final String zipPath, final String binaryLocation, final String destination, final String exclude) {
         //TODO: it will never catch here
         boolean result;
         try {
-            result = binaryDistributionControlService.unzipBinary(hostname, zipPath, binaryLocation, destination).getReturnCode().wasSuccessful();
+            result = binaryDistributionControlService.unzipBinary(hostname, zipPath, binaryLocation, destination, exclude).getReturnCode().wasSuccessful();
         } catch (CommandFailureException e) {
             final String message = "Error in remote unzip binary at host: " + hostname + " binaryLocation: " + binaryLocation + " destination: " + destination;
             LOGGER.error(message, e);
@@ -169,6 +170,7 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
     }
 
     private boolean remoteSecureCopyFile(final String hostname, final String source, final String destination) {
+        //TODO: it will never catch here
         boolean result;
         try {
             result = binaryDistributionControlService.secureCopyFile(hostname, source, destination).getReturnCode().wasSuccessful();
@@ -181,6 +183,7 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
     }
 
     private boolean remoteCreateDirectory(final String hostname, final String destination) {
+        //TODO: it will never catch here
         boolean result;
         try {
             result = binaryDistributionControlService.createDirectory(hostname, destination).getReturnCode().wasSuccessful();
@@ -193,6 +196,7 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
     }
 
     private boolean remoteFileCheck(final String hostname, final String destination) {
+        //TODO: it will never catch here
         boolean result;
         try {
             result = binaryDistributionControlService.checkFileExists(hostname, destination).getReturnCode().wasSuccessful();
@@ -219,20 +223,33 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
 
     @Override
     public void prepareUnzip(String hostname) {
-        //TODO: check if unzip.exe already exist or not (in cygwin home ~/.toc/unzip.exe)
-        final String unzipFileSource = ApplicationProperties.get(BINARY_LOCATION_PROPERTY_KEY) + "/" + UNZIPEXE;
-        LOGGER.info("unzipFileSource: " + unzipFileSource);
-        final String unzipFileDestination = AemControl.Properties.USER_TOC_SCRIPTS_PATH.getValue();
-        if (!remoteSecureCopyFile(hostname, unzipFileSource, unzipFileDestination)) {
-            final String message = UNZIPEXE + " cannot be scp from " + unzipFileSource + " to " + unzipFileDestination;
-            LOGGER.error(message);
-            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, message);
-        }
         final String tocScriptsPath = AemControl.Properties.USER_TOC_SCRIPTS_PATH.getValue();
-        if (!changeFileMode(hostname, "a+x", tocScriptsPath, UNZIPEXE)) {
-            String message = "Failed to change the file permissions in " + tocScriptsPath + "/" + UNZIPEXE;
-            LOGGER.error(message);
-            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, message);
+        if (remoteFileCheck(hostname, tocScriptsPath)) {
+            LOGGER.info(tocScriptsPath + " exists at " + hostname);
+        } else {
+            if (!remoteCreateDirectory(hostname, tocScriptsPath)) {
+                final String message = "Failed to create the directory in host: " + hostname + " dir: " + tocScriptsPath;
+                LOGGER.error(message);
+                throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, message);
+            }
         }
+        final String unzipFileDestination = AemControl.Properties.USER_TOC_SCRIPTS_PATH.getValue();
+        if (remoteFileCheck(hostname, unzipFileDestination + "/" + UNZIPEXE)) {
+            LOGGER.info(unzipFileDestination + "/" + UNZIPEXE + " exists at " + hostname);
+        } else {
+            final String unzipFileSource = ApplicationProperties.get(BINARY_LOCATION_PROPERTY_KEY) + "/" + UNZIPEXE;
+            LOGGER.info("unzipFileSource: " + unzipFileSource);
+            if (!remoteSecureCopyFile(hostname, unzipFileSource, unzipFileDestination)) {
+                final String message = UNZIPEXE + " cannot be scp from " + unzipFileSource + " to " + unzipFileDestination;
+                LOGGER.error(message);
+                throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, message);
+            }
+            if (!changeFileMode(hostname, "a+x", tocScriptsPath, UNZIPEXE)) {
+                String message = "Failed to change the file permissions in " + tocScriptsPath + "/" + UNZIPEXE;
+                LOGGER.error(message);
+                throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, message);
+            }
+        }
+
     }
 }
