@@ -479,8 +479,8 @@ public class GroupServiceImpl implements GroupService {
             }
             if(metaData.isUnpack()) {
                 LOGGER.debug("the file needs to be unpacked at the destination {}", destPath);
-                final String jwalaScriptsPath = AemControl.Properties.USER_JWALA_SCRIPTS_PATH.getValue();
-                LOGGER.debug("creating the jwala scirpts path {}", jwalaScriptsPath);
+                final String jwalaScriptsPath = ApplicationProperties.get("remote.commands.user-scripts");
+                LOGGER.debug("creating the toc scirpts path {}", jwalaScriptsPath);
                 commandOutput = remoteCommandExecutor.executeRemoteCommand(
                         null,
                         hostName,
