@@ -23,10 +23,6 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
     private static final Logger LOGGER = LoggerFactory.getLogger(BinaryDistributionServiceImpl.class);
 
     private static final String BINARY_LOCATION_PROPERTY_KEY = "jwala.binary.dir";
-    private static final String JDK_PROPERTY_KEY = "jwala.binary.dir.jdk";
-    private static final String TOMCAT_PROPERTY_KEY = "jwala.binary.dir.tomcat";
-    private static final String WEBSERVER_PROPERTY_KEY = "jwala.binary.dir.webServer";
-    private static final String BINARY_DEPLOY_LOCATION_PROPERTY_KEY = "jwala.binary.deploy.dir";
 
     private final ZipDirectory zipDirectory = new ZipDirectoryImpl();
     private final BinaryDistributionControlService binaryDistributionControlService;
@@ -38,9 +34,11 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
 
     @Override
     public void distributeJdk(final String hostname) {
-        String jdkDir = ApplicationProperties.get(JDK_PROPERTY_KEY);
+        File javaHome = new File(ApplicationProperties.get("stp.java.home"));
+        String jdkDir = javaHome.getName();
+        String binaryDeployDir = javaHome.getParentFile().getAbsolutePath().replaceAll("\\\\", "/");
         if (jdkDir != null && !jdkDir.isEmpty()) {
-            distributeBinary(hostname, jdkDir);
+            distributeBinary(hostname, jdkDir, binaryDeployDir);
         } else {
             LOGGER.warn("JDK dir location is null or empty {}", jdkDir);
         }
@@ -48,9 +46,11 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
 
     @Override
     public void distributeTomcat(final String hostname) {
-        String tomcatDir = ApplicationProperties.get(TOMCAT_PROPERTY_KEY);
+        File tomcat = new File(ApplicationProperties.get("remote.paths.tomcat.core"));
+        String tomcatDir = tomcat.getParentFile().getName();
+        String binaryDeployDir = tomcat.getParentFile().getParentFile().getAbsolutePath().replaceAll("\\\\", "/");
         if (tomcatDir != null && !tomcatDir.isEmpty()) {
-            distributeBinary(hostname, tomcatDir);
+            distributeBinary(hostname, tomcatDir, binaryDeployDir);
         } else {
             LOGGER.warn("Tomcat dir location is null or empty {}", tomcatDir);
         }
@@ -58,17 +58,18 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
 
     @Override
     public void distributeWebServer(final String hostname) {
-        String webServerDir = ApplicationProperties.get(WEBSERVER_PROPERTY_KEY);
+        File apache = new File("remote.paths.apache.httpd");
+        String webServerDir = apache.getName();
+        String binaryDeployDir = apache.getParentFile().getAbsolutePath().replaceAll("\\\\", "/");
         if (webServerDir != null && !webServerDir.isEmpty()) {
-            distributeBinary(hostname, webServerDir);
+            distributeBinary(hostname, webServerDir, binaryDeployDir);
         } else {
             LOGGER.warn("WebServer dir location is null or empty {}", webServerDir);
         }
     }
 
-    private void distributeBinary(final String hostname, final String binaryName) {
+    private void distributeBinary(final String hostname, final String binaryName, final String binaryDeployDir) {
         String binaryDir = ApplicationProperties.get(BINARY_LOCATION_PROPERTY_KEY);
-        String binaryDeployDir = ApplicationProperties.get(BINARY_DEPLOY_LOCATION_PROPERTY_KEY);
         if (binaryDeployDir != null && !binaryDeployDir.isEmpty()) {
             if (!remoteFileCheck(hostname, binaryDeployDir + "/" + binaryName)) {
                 LOGGER.info("Couldn't find {} on host {}. Trying to deploy it", binaryName, hostname);
@@ -177,48 +178,6 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
             final String message = "Error in check remote File at host: " + hostname + " destination: " + destination;
             LOGGER.error(message, e);
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, message, e);
-        }
-        return result;
-    }
-
-    @Override
-    public boolean jdkExists(final String hostname) {
-        boolean result;
-        try {
-            result = binaryDistributionControlService.checkFileExists(hostname,
-                    ApplicationProperties.get(BINARY_DEPLOY_LOCATION_PROPERTY_KEY) + "/" + ApplicationProperties.get(JDK_PROPERTY_KEY))
-                    .getReturnCode().wasSuccessful();
-        } catch (CommandFailureException e) {
-            LOGGER.error("Error in checking if jdk exists", e);
-            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Error with checking if jdk exists", e);
-        }
-        return result;
-    }
-
-    @Override
-    public boolean tomcatExists(final String hostname) {
-        boolean result;
-        try {
-            result = binaryDistributionControlService.checkFileExists(hostname,
-                    ApplicationProperties.get(BINARY_DEPLOY_LOCATION_PROPERTY_KEY) + "/" + ApplicationProperties.get(TOMCAT_PROPERTY_KEY))
-                    .getReturnCode().wasSuccessful();
-        } catch (CommandFailureException e) {
-            LOGGER.error("Error in checking if tomcat exists", e);
-            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Error with checking if tomcat exists", e);
-        }
-        return result;
-    }
-
-    @Override
-    public boolean webServerExists(final String hostname) {
-        boolean result;
-        try {
-            result = binaryDistributionControlService.checkFileExists(hostname,
-                    ApplicationProperties.get(BINARY_DEPLOY_LOCATION_PROPERTY_KEY) + "/" + ApplicationProperties.get(JDK_PROPERTY_KEY))
-                    .getReturnCode().wasSuccessful();
-        } catch (CommandFailureException e) {
-            LOGGER.error("Error in checking if httpd exists", e);
-            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Error with checking if httpd exists", e);
         }
         return result;
     }

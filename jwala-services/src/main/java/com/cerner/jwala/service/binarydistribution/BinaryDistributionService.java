@@ -10,11 +10,5 @@ public interface BinaryDistributionService {
 
     void distributeWebServer(final String hostname);
 
-    boolean jdkExists(final String hostname);
-
-    boolean tomcatExists(final String hostname);
-
-    boolean webServerExists(final String hostname);
-
     String zipBinary(final String location);
 }

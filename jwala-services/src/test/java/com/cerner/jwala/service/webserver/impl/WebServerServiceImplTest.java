@@ -21,8 +21,6 @@ import com.cerner.jwala.files.TocFile;
 import com.cerner.jwala.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
 import com.cerner.jwala.persistence.service.WebServerPersistenceService;
 import com.cerner.jwala.service.resource.ResourceService;
-import com.cerner.jwala.service.webserver.impl.WebServerServiceImpl;
-
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
 import org.junit.Test;

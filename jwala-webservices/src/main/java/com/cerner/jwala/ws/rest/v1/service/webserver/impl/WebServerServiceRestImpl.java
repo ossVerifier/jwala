@@ -19,6 +19,7 @@ import com.cerner.jwala.common.request.webserver.ControlWebServerRequest;
 import com.cerner.jwala.common.request.webserver.UploadWebServerTemplateRequest;
 import com.cerner.jwala.control.AemControl;
 import com.cerner.jwala.exception.CommandFailureException;
+import com.cerner.jwala.service.binarydistribution.BinaryDistributionService;
 import com.cerner.jwala.service.group.GroupService;
 import com.cerner.jwala.service.resource.ResourceService;
 import com.cerner.jwala.service.webserver.WebServerCommandService;
@@ -58,18 +59,21 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
     private ResourceService resourceService;
     private GroupService groupService;
     private static WebServerServiceRestImpl instance;
+    private final BinaryDistributionService binaryDistributionService;
 
     public WebServerServiceRestImpl(final WebServerService theWebServerService,
                                     final WebServerControlService theWebServerControlService,
                                     final WebServerCommandService theWebServerCommandService,
                                     final Map<String, ReentrantReadWriteLock> theWriteLocks,
-                                    final ResourceService theResourceService, GroupService groupService) {
+                                    final ResourceService theResourceService, GroupService groupService,
+                                    final BinaryDistributionService binaryDistributionService) {
         webServerService = theWebServerService;
         webServerControlService = theWebServerControlService;
         webServerCommandService = theWebServerCommandService;
         wsWriteLocks = theWriteLocks;
         resourceService = theResourceService;
         this.groupService = groupService;
+        this.binaryDistributionService = binaryDistributionService;
     }
 
     @Override
@@ -263,6 +267,8 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
                 LOGGER.error("The target Web Server {} must be stopped before attempting to update the resource file", aWebServerName);
                 throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "The target Web Server must be stopped before attempting to update the resource file");
             }
+
+            binaryDistributionService.distributeWebServer(webServer.getHost());
 
             // check for httpd.conf template
             checkForHttpdConfTemplate(aWebServerName);

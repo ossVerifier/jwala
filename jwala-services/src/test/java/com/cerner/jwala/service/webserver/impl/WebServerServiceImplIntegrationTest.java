@@ -15,8 +15,6 @@ import com.cerner.jwala.persistence.service.impl.WebServerPersistenceServiceImpl
 import com.cerner.jwala.service.configuration.TestJpaConfiguration;
 import com.cerner.jwala.service.resource.ResourceService;
 import com.cerner.jwala.service.webserver.WebServerService;
-import com.cerner.jwala.service.webserver.impl.WebServerServiceImpl;
-
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
