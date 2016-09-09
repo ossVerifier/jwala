@@ -19,7 +19,6 @@ ext {
             csa                   : "4.0.0700.00",
             commons_fileupload    : '1.3.1',
             jodaTime              : "2.2",
-            jms                   : '1.1',
             infrastructureProvided: "1.2.1",
             infrastructureSecurity: "1.2.1",
             infrastructureGradle  : "1.2.1",
@@ -55,7 +54,7 @@ sonarRunner {
         property 'sonar.jdbc.username', 'sonar'
         property 'sonar.jdbc.password', 'sonar'
         property 'sonar.dynamicAnalysis', 'reuseReports'
-        properties["sonar.projectKey"] = 'cto.tco.toc'
+        properties["sonar.projectKey"] = 'cto.tco.jwala'
         properties["sonar.projectName"] = 'tomcat operations center'
         properties["sonar.projectVersion"] = '1.0.0'
     }
@@ -72,7 +71,7 @@ subprojects {
     apply plugin: "eclipse"
 
     sourceCompatibility = 1.7
-    group = "com.cerner.cto.aem"
+    group = "com.cerner.cto.jwala"
     version = project.properties['buildVersion']
 
     plugins.withType(MavenPublishPlugin).whenPluginAdded {
@@ -208,7 +207,7 @@ subprojects {
         sonarProperties {
             property "sonar.junit.reportsPath", test.reports.junitXml.destination   // will be fixed in Gradle 1.12
             property "sonar.jacoco.reportPath", project.rootProject.buildDir.path + "/jacoco/" + "accum.exec"
-            property "sonar.jacoco.itReportPath", project.rootProject.buildDir.path + "/jacoco/" + "integration_test_toc.exec"
+            property "sonar.jacoco.itReportPath", project.rootProject.buildDir.path + "/jacoco/" + "integration_test_jwala.exec"
         }
     }
 }

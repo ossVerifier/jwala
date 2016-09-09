@@ -34,7 +34,7 @@ public class JpaGroupPersistenceServiceImpl implements GroupPersistenceService {
     private final GroupJvmRelationshipService groupJvmRelationshipService;
 
 
-    @PersistenceContext(unitName = "aem-unit")
+    @PersistenceContext(unitName = "jwala-unit")
     protected EntityManager entityManager; // We're removing the CRUD layer in the near future so going forward, new methods will be using the entity manager in this class.
 
     public JpaGroupPersistenceServiceImpl(final GroupCrudService theGroupCrudService,

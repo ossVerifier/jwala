@@ -4,9 +4,6 @@ import com.cerner.jwala.common.properties.ApplicationProperties;
 import com.cerner.jwala.files.FilesConfiguration;
 import com.cerner.jwala.service.resource.ResourceService;
 import com.cerner.jwala.ws.rest.v1.response.ApplicationResponse;
-import com.cerner.jwala.ws.rest.v1.response.ResponseBuilder;
-import com.cerner.jwala.ws.rest.v1.service.admin.impl.AdminServiceRestImpl;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -18,12 +15,12 @@ import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 
 import javax.servlet.ServletContext;
 import javax.ws.rs.core.Response;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 
-import java.io.*;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -54,7 +51,7 @@ public class AdminServiceRestImplTest {
     @Before
     public void setUp() {
         System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, "./src/test/resources");
-            authFlag = ApplicationProperties.get("toc.authorization");
+            authFlag = ApplicationProperties.get("jwala.authorization");
     }
 
     @After
@@ -118,12 +115,12 @@ public class AdminServiceRestImplTest {
     }
     
     @Test
-    public void testIsTOCAuthorizationEnabled() throws Exception {
-        Response response = cut.isTOCAuthorizationEnabled();
+    public void testIsJwalaAuthorizationEnabled() throws Exception {
+        Response response = cut.isJwalaAuthorizationEnabled();
         ApplicationResponse applicationResponse = (ApplicationResponse) response.getEntity();
         Object content = applicationResponse.getApplicationResponseContent();
         assertEquals(content, AdminServiceRestImpl.JSON_RESPONSE_TRUE);
-        System.setProperty("toc.authorization", "false");
+        System.setProperty("jwala.authorization", "false");
     }
 
 }

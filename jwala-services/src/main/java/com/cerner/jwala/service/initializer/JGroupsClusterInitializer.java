@@ -24,7 +24,7 @@ public class JGroupsClusterInitializer implements InitializingBean {
     private final String jgroupsCoordinatorIPAddress = ApplicationProperties.get("jgroups.coordinator.ip.address");
     private final String jgroupsCoordinatorPort = ApplicationProperties.get("jgroups.coordinator.port");
     private final String jgroupsClusterConnectTimeout = ApplicationProperties.get("jgroups.cluster.connect.timeout", "10000");
-    private final String jgroupsClusterName = ApplicationProperties.get("jgroups.cluster.name", "DefaultTOCCluster");
+    private final String jgroupsClusterName = ApplicationProperties.get("jgroups.cluster.name", "DefaultJwalaCluster");
     private final String jgroupsConfXml = ApplicationProperties.get("jgroups.conf.xml", "tcp.xml");
     private final ReceiverAdapter receiverAdapter;
 

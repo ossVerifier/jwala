@@ -157,7 +157,7 @@ public class WebServerServiceImpl implements WebServerService {
     }
 
     @Override
-    @Transactional(propagation = Propagation.REQUIRES_NEW) // We need state db persistence to succeed even if JMS fails.
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void updateState(final Identifier<WebServer> id, final WebServerReachableState state, final String errorStatus) {
         webServerPersistenceService.updateState(id, state, errorStatus);
     }
@@ -165,7 +165,7 @@ public class WebServerServiceImpl implements WebServerService {
     @Override
     public String generateInvokeWSBat(WebServer webServer) {
         try {
-            // NOTE: invokeWS.bat is internal to TOC that is why the template is not in Db.
+            // NOTE: invokeWS.bat is internal to Jwala that is why the template is not in Db.
             return resourceService.generateResourceFile(FileUtils.readFileToString(new File(templatePath + INVOKE_WSBAT_TEMPLATE_TPL_PATH)),
                     resourceService.generateResourceGroup(), webServer);
         } catch (final IOException ioe) {

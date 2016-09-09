@@ -21,7 +21,7 @@ public class AemJpaConfiguration {
     @Bean
     public DataSource getAemDataSource() {
         try {
-            return JndiLocatorDelegate.createDefaultResourceRefLocator().lookup("jdbc/toc-xa",
+            return JndiLocatorDelegate.createDefaultResourceRefLocator().lookup("jdbc/jwala-xa",
                     DataSource.class);
         } catch (final NamingException ne) {
             throw new ApplicationException(ne);
@@ -34,7 +34,7 @@ public class AemJpaConfiguration {
         final LocalContainerEntityManagerFactoryBean factory = new LocalContainerEntityManagerFactoryBean();
         factory.setDataSource(dataSource);
         factory.setJpaVendorAdapter(new OpenJpaVendorAdapter());
-        factory.setPersistenceUnitName("aem-unit");
+        factory.setPersistenceUnitName("jwala-unit");
         factory.setPersistenceXmlLocation("classpath:META-INF/persistence.xml");
 
         return factory;

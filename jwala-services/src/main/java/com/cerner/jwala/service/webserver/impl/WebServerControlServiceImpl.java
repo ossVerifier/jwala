@@ -107,11 +107,11 @@ public class WebServerControlServiceImpl implements WebServerControlService {
             // Process non successful return codes...
             if (!commandOutput.getReturnCode().wasSuccessful()) {
                 switch (commandOutput.getReturnCode().getReturnCode()) {
-                    case ExecReturnCode.STP_EXIT_PROCESS_KILLED:
+                    case ExecReturnCode.JWALA_EXIT_PROCESS_KILLED:
                         commandOutput = new CommandOutput(new ExecReturnCode(0), FORCED_STOPPED, commandOutput.getStandardError());
                         webServerService.updateState(webServer.getId(), WebServerReachableState.FORCED_STOPPED, "");
                         break;
-                    case ExecReturnCode.STP_EXIT_CODE_ABNORMAL_SUCCESS:
+                    case ExecReturnCode.JWALA_EXIT_CODE_ABNORMAL_SUCCESS:
                         LOGGER.warn(CommandOutputReturnCode.fromReturnCode(commandOutput.getReturnCode().getReturnCode()).getDesc());
                         break;
                     default:

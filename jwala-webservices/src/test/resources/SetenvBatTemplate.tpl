@@ -1,7 +1,7 @@
 :: -------------------------
-:: Set the STP_HOME variable 
+:: Set the JWALA_HOME variable
 :: -------------------------
 
-CALL:stpSetHome
-SET STP_HOME_UNIX=%STP_HOME:\=/%
+CALL:jwalaSetHome
+SET JWALA_HOME_UNIX=%JWALA_HOME:\=/%
 

@@ -48,19 +48,9 @@
             schedulerThreadCount="1"
             schedulerThreadNamePrefix="JGroups_Reporting_Thread"
             />
-    <!-- commented out until we have jmx ports in jvm definitions in TOC -->
+    <!-- commented out until we have jmx ports in jvm definitions in Jwala -->
     <!--Listener className="org.apache.catalina.mbeans.JmxRemoteLifecycleListener"
             rmiRegistryPortPlatform="9090" rmiServerPortPlatform="9091" /-->
-
-    <!-- <Listener className="com.siemens.cto.infrastructure.report.tomcat.FailFastLifeCycleListener"
-            jmsConnectionFactory="java:/jms/toc-cf"
-            jmsDestination="java:/jms/toc-status"
-            systemExitCodeOnError="125"
-            testMessageTimeToLiveMs="125"
-            timeToWaitForJmsResponseMs="5000"
-            exitOnError="false" />
-
-    <Listener className="com.siemens.cto.infrastructure.report.tomcat.FastJmsStartLifeCycleListener" /> -->
 
     <!-- Global JNDI resources
             Documentation at /docs/jndi-resources-howto.html
@@ -75,29 +65,6 @@
             factory="org.apache.catalina.users.MemoryUserDatabaseFactory"
             pathname="conf/tomcat-users.xml" />
 
-    <Resource name="jms/toc-status"
-            auth="Container"
-            factory="org.apache.naming.factory.BeanFactory"
-            type="com.tibco.tibjms.TibjmsTopic"
-            address="com.cerner.entp.n9sf.ltst.private.stp.toc.status-USMLVV2CTO0147"/>
-
-    <Resource auth="Container"
-            name="jms/toc-cf"
-            factory="org.apache.naming.factory.BeanFactory"
-            type="com.tibco.tibjms.TibjmsConnectionFactory"
-            serverUrl="ssl://USMLVV1CTO924:7243"
-            userName="admin"
-            userPassword="\${enc:9hQ4KpxpM8e/VX3KkT2VYg==}"
-            connAttemptCount="1"
-            connAttemptDelay="1000"
-            reconnAttemptCount="1"
-            reconnAttemptDelay="1000"
-            SSLEnableVerifyHost="true"
-            SSLEnableVerifyHostName="false"
-            SSLTrustedCertificate="d:\stp\app\data\security\ems\ctorootca.pem" />
-    </GlobalNamingResources>
-
-
     <!-- A "Service" is a collection of one or more "Connectors" that share
         a single "Container" Note:  A "Service" is not itself a "Container",
         so you may not define subcomponents such as "Valves" at this level.
@@ -105,16 +72,16 @@
     -->
     <!-- Soarian Tomcat Platform Service
         Features: SSL enabled, AJP disabled, HTTP disabled
-        Exploded apps: stpapps
-        Archived apps: by context.xmls in conf/stp/localhost
+        Exploded apps: sslwebapps
+        Archived apps: by context.xmls in conf/jwala/localhost
     -->
 
-    <Service name="stp">
+    <Service name="jwala">
     <!-- Define a SSL HTTP/1.1 Connector.  This connector uses the JSSE configuration, when using APR, the
          connector should be using the OpenSSL style configuration described in the APR documentation
 
         Defines Peter's APR + JSSE compatible port
-        STP Features:
+        JWALA Features:
         Compression: Forced on
         Compressable types: text/html,text/xml,text/plain,application/json
         compressionMinSize: 2048 (default)
@@ -123,8 +90,8 @@
 
     <Connector
         port="${jvm.httpsPort}"
-        SSLCertificateFile="d:\stp\app\data\security\id\\${jvm.hostName}.cer"
-        SSLCertificateKeyFile="d:\stp\app\data\security\id\\${jvm.hostName}.key"
+        SSLCertificateFile="d:\jwala\app\data\security\id\\${jvm.hostName}.cer"
+        SSLCertificateKeyFile="d:\jwala\app\data\security\id\\${jvm.hostName}.key"
         SSLEnabled="true"
         SSLPassword=""
         acceptCount="100"
@@ -150,12 +117,12 @@
     on to the appropriate Host (virtual host).
     Documentation at /docs/config/engine.html -->
 
-    <!-- The STP Engine is the normal standalone Tomcat host
+    <!-- The JWALA Engine is the normal standalone Tomcat host
         Warning: potential name conflict on jvmRoute -->
-    <Engine name="stp" defaultHost="localhost" jvmRoute="${jvm.jvmName}">
+    <Engine name="jwala" defaultHost="localhost" jvmRoute="${jvm.jvmName}">
 
     <!-- Host Features: Standard Host
-        AppBase: stpapps/
+        AppBase: sslwebapps/
         Unpacking: no
         Auto deploy: yes
         Deploy .war/META-INF/context.xml: no
@@ -168,7 +135,7 @@
     </Realm>
 
     <Host name="localhost"
-        appBase="stpapps"
+        appBase="sslwebapps"
         unpackWARs="false"
         autoDeploy="true"
         deployXML="false"
@@ -179,12 +146,12 @@
 
     <!-- Access log processes all example.
          Documentation at: /docs/config/valve.html
-         STP Features: Standard Access Log
+         JWALA Features: Standard Access Log
          Daily rotating: yes
          Status request logging can be disabled by adding attribute "status" to the ServletRequest.
          -->
     <Valve className="org.apache.catalina.valves.AccessLogValve" directory="logs"
-           prefix="stp_access_log." suffix=".txt"
+           prefix="jwala_access_log." suffix=".txt"
            pattern="common"
            conditionUnless="status" />
 
@@ -234,7 +201,7 @@
     <!-- You should set jvmRoute to support load-balancing via AJP ie :
     <Engine name="Catalina" defaultHost="localhost" jvmRoute="jvm1">
     -->
-    <Engine name="Catalina" defaultHost="localhost" jvmRoute="CTO-N9SF-LTST-TOC">
+    <Engine name="Catalina" defaultHost="localhost" jvmRoute="CTO-N9SF-LTST-JWALA">
 
     <!--For clustering, please take a look at documentation at:
         /docs/cluster-howto.html  (simple how to)

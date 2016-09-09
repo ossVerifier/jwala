@@ -29,7 +29,7 @@ public class JpaApplicationPersistenceServiceImpl implements ApplicationPersiste
     private final ApplicationCrudService applicationCrudService;
     private final GroupCrudService groupCrudService;
 
-    @PersistenceContext(unitName = "aem-unit")
+    @PersistenceContext(unitName = "jwala-unit")
     // Note: We will deprecate the CRUD service soon and make this class a DAO so going forward, we use the entity manager in this class for new methods.
     private EntityManager em;
 

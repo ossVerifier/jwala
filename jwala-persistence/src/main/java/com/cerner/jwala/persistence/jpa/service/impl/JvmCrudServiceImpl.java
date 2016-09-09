@@ -25,7 +25,7 @@ import java.util.List;
 public class JvmCrudServiceImpl extends AbstractCrudServiceImpl<JpaJvm> implements JvmCrudService {
     private static final Logger LOGGER = LoggerFactory.getLogger(JvmCrudServiceImpl.class);
 
-    @PersistenceContext(unitName = "aem-unit")
+    @PersistenceContext(unitName = "jwala-unit")
     private EntityManager entityManager;
 
     @Override

@@ -56,7 +56,7 @@ var decorateTableAsDataTable = function(tableId,
                     aoColumnDefs[itemIndex].bVisible = item.bVisible;
                 }
 
-                if (item.tocType === "control") {
+                if (item.jwalaType === "control") {
                     self.expandCollapseEnabled = true;
                     aoColumnDefs[itemIndex].mDataProp = null;
                     aoColumnDefs[itemIndex].sClass = "control center";
@@ -71,9 +71,9 @@ var decorateTableAsDataTable = function(tableId,
                 }
 
                 if (item.mRender !== undefined ||
-                    item.tocType === "button"  ||
-                    item.tocType === "emptyColumn" ||
-                    item.tocType === "control") {
+                    item.jwalaType === "button"  ||
+                    item.jwalaType === "emptyColumn" ||
+                    item.jwalaType === "control") {
                         aoColumnDefs[itemIndex].bSortable = (item.bSortable === undefined ? false : item.bSortable);
                 }
 
@@ -96,7 +96,7 @@ var decorateTableAsDataTable = function(tableId,
                 var colWidth = 0;
                 // look for the item with the mData
                 for (var i = 0; i < item.length; i++) {
-                    if (theItem === undefined && item[i].mData !== undefined && item[i].tocType === undefined) {
+                    if (theItem === undefined && item[i].mData !== undefined && item[i].jwalaType === undefined) {
                         theItem = item[i];
                     }
                     colWidth += item[i].colWidth !== undefined ? item[i].colWidth : 0;
@@ -122,10 +122,10 @@ var decorateTableAsDataTable = function(tableId,
             if (!isArray(item) && item.mRender !== undefined) {
                 // If mRender is set to a function
                 aoColumnDefs[itemIndex].mRender = item.mRender;
-            } else if (!isArray(item) && item.tocType === "custom") {
-                if(item.tocRenderer == 'undefined') {
-                    alert('You set tocType to custom, but you did not set tocRenderCfgFn to a function(dataTable, data, aoColumnDefs, i) { aoColumnDefs[i].mRender = function(data, type, full){}}!');
-                } return item.tocRenderCfgFn(self, item, aoColumnDefs, itemIndex, parentItemId, parentItemName);
+            } else if (!isArray(item) && item.jwalaType === "custom") {
+                if(item.jwalaRenderer == 'undefined') {
+                    alert('You set jwalaType to custom, but you did not set jwalaRenderCfgFn to a function(dataTable, data, aoColumnDefs, i) { aoColumnDefs[i].mRender = function(data, type, full){}}!');
+                } return item.jwalaRenderCfgFn(self, item, aoColumnDefs, itemIndex, parentItemId, parentItemName);
             } else {
                 aoColumnDefs[itemIndex].mRender = function(data, type, full) {
                    if (!isArray(item)) {
@@ -172,7 +172,7 @@ var decorateTableAsDataTable = function(tableId,
                                                    [25, 50, 100, 200, "All"]],
                                    "iDisplayLength": 25,
                                    "fnDrawCallback": datableDrawCallback,
-                                   "sPaginationType": "toc",
+                                   "sPaginationType": "jwala",
                                    "bPaginate": paginationEnabled === undefined ? true : paginationEnabled};
 
         if (hideHeaderAndFooter === false) {
@@ -186,7 +186,7 @@ var decorateTableAsDataTable = function(tableId,
 var TocPager = {
 
     init: function() {
-        $.fn.dataTableExt.oPagination.toc = this;
+        $.fn.dataTableExt.oPagination.jwala = this;
 
     },
     "fnInit": function ( oSettings, nPaging, fnCallbackDraw )
@@ -246,20 +246,20 @@ var renderComponents = function(tableId,
                                 parentItemName) {
     var renderedComponent;
 
-    if (item.tocType === "space") {
+    if (item.jwalaType === "space") {
         renderedComponent = "&nbsp;";
-    } else if (item.tocType === "link") {
+    } else if (item.jwalaType === "link") {
         renderedComponent = renderLink(item, tableId, data, type, full, editCallback);
-    } else if (item.tocType === "array") {
+    } else if (item.jwalaType === "array") {
         renderedComponent = renderArray(item, data);
         if (renderedComponent.length > item.maxDisplayTextLen) {
             renderedComponent = "<span title=" + renderedComponent.replace(/ /gi, "&nbsp;").replace(/,/gi, "&#10;") + ">"  +
                                 renderedComponent.substring(0, item.maxDisplayTextLen) + "..." +
                                 "</span>";
         }
-    } else if (item.tocType === "button") {
+    } else if (item.jwalaType === "button") {
         renderedComponent = renderButton(tableId, item, data, type, full, parentItemId);
-    } else if (item.tocType === "emptyColumn") {
+    } else if (item.jwalaType === "emptyColumn") {
         renderedComponent = "";
     } else {
 

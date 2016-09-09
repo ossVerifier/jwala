@@ -16,21 +16,21 @@ var TocDataTable = React.createClass({
         if (this.props.headerComponents !== undefined) {
             for (var i = 0; i < this.props.headerComponents.length; i++) {
                 var obj = this.props.headerComponents[i];
-                if (obj.tocType === "button") {
+                if (obj.jwalaType === "button") {
                     headerComponents.push(new DataTableButton({ id: this.props.tableId + "_" + obj.id,
                         itemId: "whatever",
                         label: obj.btnLabel,
                         className: "inline-block",
                         callback: obj.btnCallback ,
                         disabled: obj.disabled}));
-                } else if (obj.tocType === "label") {
+                } else if (obj.jwalaType === "label") {
                     var labelId = null;
                     if (obj.id !== undefined) {
                         // Generate an id if obj has an id
                         labelId = this.props.tableId + "_" + obj.id;
                     }
                     headerComponents.push(React.DOM.div({ id: labelId, className: obj.className }, obj.text));
-                } else if (obj.tocType === "space") {
+                } else if (obj.jwalaType === "space") {
                     headerComponents.push(" ");
                 }
             }
