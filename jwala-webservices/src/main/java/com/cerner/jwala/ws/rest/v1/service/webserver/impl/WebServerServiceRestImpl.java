@@ -50,6 +50,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(WebServerServiceRestImpl.class);
     public static final String PATHS_GENERATED_RESOURCE_DIR = "paths.generated.resource.dir";
+    private static final String COMMANDS_SCRIPTS_PATH = ApplicationProperties.get("commands.scripts-path");
 
     private final WebServerService webServerService;
     private final WebServerControlService webServerControlService;
@@ -311,8 +312,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
     }
 
     protected void createScriptsDirectory(WebServer webServer) throws CommandFailureException {
-        final String scriptsDir = AemControl.Properties.USER_JWALA_SCRIPTS_PATH.getValue();
-
+        final String scriptsDir = ApplicationProperties.get("remote.commands.user-scripts");
         final CommandOutput result = webServerControlService.createDirectory(webServer, scriptsDir);
 
         final ExecReturnCode resultReturnCode = result.getReturnCode();
@@ -325,25 +325,25 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
 
     protected void deployStartStopScripts(WebServer webServer, String userId) throws CommandFailureException {
         final String webServerName = webServer.getName();
-        final String destHttpdConfPath = ApplicationProperties.get("remote.paths.httpd.conf", ApplicationProperties.get("paths.httpd.conf")) + "/";
+        final String destHttpdConfPath = ApplicationProperties.get("remote.paths.httpd.conf") + "/";
 
         final String startScriptName = AemControl.Properties.START_SCRIPT_NAME.getValue();
-        final String sourceStartServicePath = AemControl.Properties.SCRIPTS_PATH + "/" + startScriptName;
+        final String sourceStartServicePath = COMMANDS_SCRIPTS_PATH + "/" + startScriptName;
         if (!webServerControlService.secureCopyFile(webServerName, sourceStartServicePath, destHttpdConfPath, userId).getReturnCode().wasSuccessful()) {
             LOGGER.error("Failed to secure copy file {} during creation of {}", sourceStartServicePath, webServerName);
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to secure copy file " + sourceStartServicePath + " during the creation of " + webServerName);
         }
 
         final String stopScriptName = AemControl.Properties.STOP_SCRIPT_NAME.getValue();
-        final String sourceStopServicePath = AemControl.Properties.SCRIPTS_PATH + "/" + stopScriptName;
+        final String sourceStopServicePath = COMMANDS_SCRIPTS_PATH + "/" + stopScriptName;
         if (!webServerControlService.secureCopyFile(webServerName, sourceStopServicePath, destHttpdConfPath, userId).getReturnCode().wasSuccessful()) {
             LOGGER.error("Failed to secure copy file {} during creation of {}", sourceStopServicePath, webServerName);
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to secure copy file " + sourceStopServicePath + " during the creation of " + webServerName);
         }
 
         final String invokeWsScriptName = AemControl.Properties.INVOKE_WS_SERVICE_SCRIPT_NAME.getValue();
-        final String sourceInvokeWsServicePath = AemControl.Properties.SCRIPTS_PATH + "/" + invokeWsScriptName;
-        final String jwalaScriptsPath = AemControl.Properties.USER_JWALA_SCRIPTS_PATH.getValue();
+        final String sourceInvokeWsServicePath = COMMANDS_SCRIPTS_PATH + "/" + invokeWsScriptName;
+        final String jwalaScriptsPath = ApplicationProperties.get("remote.commands.user-scripts");
         if (!webServerControlService.secureCopyFile(webServerName, sourceInvokeWsServicePath, jwalaScriptsPath, userId).getReturnCode().wasSuccessful()) {
             LOGGER.error("Failed to secure copy file {} during creation of {}", sourceInvokeWsServicePath, webServerName);
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to secure copy file " + sourceInvokeWsServicePath + " during the creation of " + webServerName);

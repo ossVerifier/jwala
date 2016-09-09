@@ -454,8 +454,8 @@ public class ApplicationServiceImpl implements ApplicationService {
                     final String warName = application.getWarName();
                     LOGGER.info("Unpacking war {} on host {}", warName, host);
 
-                    // create the .jwala directory as the destination for the unpack-war script
-                    final String jwalaScriptsPath = AemControl.Properties.USER_JWALA_SCRIPTS_PATH.getValue();
+                    // create the .toc directory as the destination for the unpack-war script
+                    final String jwalaScriptsPath = ApplicationProperties.get("remote.commands.user-scripts");
                     commandOutput = applicationCommandExecutor.executeRemoteCommand(null, host, ApplicationControlOperation.CREATE_DIRECTORY, new WindowsApplicationPlatformCommandProvider(), jwalaScriptsPath);
                     if (!commandOutput.getReturnCode().wasSuccessful()) {
                         return commandOutput; // return immediately if creating the dir failed

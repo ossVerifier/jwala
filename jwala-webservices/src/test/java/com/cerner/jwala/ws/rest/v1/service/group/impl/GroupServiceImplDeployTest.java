@@ -119,7 +119,7 @@ public class GroupServiceImplDeployTest {
         when(mockAuthUser.getUser()).thenReturn(mockUser);
 
         System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, "./src/test/resources");
-        httpdConfDirPath = ApplicationProperties.get("paths.httpd.conf");
+        httpdConfDirPath = ApplicationProperties.get("remote.paths.httpd.conf");
         // assertTrue(new File(httpdConfDirPath).mkdirs());
         new File(httpdConfDirPath).mkdirs();
         generatedResourceDir = ApplicationProperties.get("paths.generated.resource.dir");
