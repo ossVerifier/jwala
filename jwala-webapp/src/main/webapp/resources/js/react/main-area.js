@@ -39,7 +39,7 @@ var MainArea = React.createClass({
             MainArea.isAdminRole  = response.applicationResponseContent.authorizationEnabled === "false" ||
                                     (response.applicationResponseContent.authorizationEnabled === "true" &&
                                      response.applicationResponseContent.userAuthorities.length !== 0 &&
-                                     response.applicationResponseContent.userAuthorities[0].authority === tocVars["jwalaRoleAdmin"])
+                                     response.applicationResponseContent.userAuthorities[0].authority === jwalaVars["jwalaRoleAdmin"])
             self.setState({hasRole: true});
         }).caught(function(response) {
                         console.log(response);
@@ -55,7 +55,7 @@ var MainArea = React.createClass({
 var Banner = React.createClass({
     render: function() {
         return <div className="banner-container ui-widget-header">
-                    <img src="public-resources/img/aem-gears-fade-right.png"/>
+                    <img src="public-resources/img/jwala-gears-fade-right.png"/>
                     <span className="banner-logout"><a href="#" onClick={this.handleLogoutClick}>Logout</a></span>
                     <div className="banner-title">Tomcat Operations Center</div>
                </div>
@@ -79,7 +79,7 @@ var MainTabs = React.createClass({
         var items = [{title:"Operations", content:<GroupOperations className="group-config"
                                                                    service={ServiceFactory.getGroupService()}
                                                                    stateService={ServiceFactory.getStateService()}
-                                                                   statePollTimeout={tocVars.statePollTimeout}/>},
+                                                                   statePollTimeout={jwalaVars.statePollTimeout}/>},
                      {title: "Configuration", content:<ConfigureTabs/>,  disabled: !MainArea.isAdminRole},
                      {title: "Admin", content:<AdminTab/>}]
         this.setState({items: items});
@@ -104,7 +104,7 @@ var ConfigureTabs = React.createClass({
                                        service={ServiceFactory.getWebAppService()}
                                        groupService={ServiceFactory.getGroupService()}/>});
 
-        if (tocVars["resourcesEnabled"] === "true") {
+        if (jwalaVars["resourcesEnabled"] === "true") {
             this.state.items.push({title: "Resources", content:<ResourcesConfig resourceService={ServiceFactory.getResourceService()}
                                                                      groupService={ServiceFactory.getGroupService()}
                                                                      jvmService={ServiceFactory.getJvmService()}

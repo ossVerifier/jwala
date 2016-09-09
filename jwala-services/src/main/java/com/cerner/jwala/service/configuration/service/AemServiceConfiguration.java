@@ -5,7 +5,10 @@ import com.cerner.jwala.commandprocessor.impl.jsch.JschBuilder;
 import com.cerner.jwala.commandprocessor.jsch.impl.ChannelSessionKey;
 import com.cerner.jwala.commandprocessor.jsch.impl.KeyedPooledJschChannelFactory;
 import com.cerner.jwala.common.domain.model.id.Identifier;
+import com.cerner.jwala.common.domain.model.jvm.Jvm;
+import com.cerner.jwala.common.domain.model.jvm.JvmState;
 import com.cerner.jwala.common.domain.model.ssh.SshConfiguration;
+import com.cerner.jwala.common.domain.model.state.CurrentState;
 import com.cerner.jwala.common.domain.model.webserver.WebServer;
 import com.cerner.jwala.common.domain.model.webserver.WebServerControlOperation;
 import com.cerner.jwala.common.domain.model.webserver.WebServerReachableState;
@@ -34,8 +37,10 @@ import com.cerner.jwala.service.app.impl.ApplicationCommandServiceImpl;
 import com.cerner.jwala.service.app.impl.ApplicationServiceImpl;
 import com.cerner.jwala.service.app.impl.PrivateApplicationServiceImpl;
 import com.cerner.jwala.service.balancermanager.BalancerManagerService;
+import com.cerner.jwala.service.balancermanager.impl.BalancerManagerHtmlParser;
+import com.cerner.jwala.service.balancermanager.impl.BalancerManagerHttpClient;
 import com.cerner.jwala.service.balancermanager.impl.BalancerManagerServiceImpl;
-import com.cerner.jwala.service.configuration.jms.AemJmsConfig;
+import com.cerner.jwala.service.balancermanager.impl.BalancerManagerXmlParser;
 import com.cerner.jwala.service.group.*;
 import com.cerner.jwala.service.group.impl.GroupControlServiceImpl;
 import com.cerner.jwala.service.group.impl.GroupJvmControlServiceImpl;
@@ -54,11 +59,7 @@ import com.cerner.jwala.service.resource.impl.ResourceServiceImpl;
 import com.cerner.jwala.service.resource.impl.handler.WebServerResourceHandler;
 import com.cerner.jwala.service.ssl.hc.HttpClientRequestFactory;
 import com.cerner.jwala.service.state.InMemoryStateManagerService;
-import com.cerner.jwala.service.state.StateNotificationConsumerBuilder;
-import com.cerner.jwala.service.state.StateNotificationService;
 import com.cerner.jwala.service.state.impl.InMemoryStateManagerServiceImpl;
-import com.cerner.jwala.service.state.jms.JmsStateNotificationConsumerBuilderImpl;
-import com.cerner.jwala.service.state.jms.JmsStateNotificationServiceImpl;
 import com.cerner.jwala.service.webserver.WebServerCommandService;
 import com.cerner.jwala.service.webserver.WebServerControlService;
 import com.cerner.jwala.service.webserver.WebServerService;
@@ -71,15 +72,15 @@ import com.cerner.jwala.service.webserver.impl.WebServerServiceImpl;
 import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
-import com.cerner.jwala.service.balancermanager.impl.BalancerManagerHtmlParser;
-import com.cerner.jwala.service.balancermanager.impl.BalancerManagerHttpClient;
-import com.cerner.jwala.service.balancermanager.impl.BalancerManagerXmlParser;
 import org.apache.commons.pool2.impl.GenericKeyedObjectPool;
 import org.apache.commons.pool2.impl.GenericKeyedObjectPoolConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.*;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.ClassPathResource;
@@ -120,9 +121,6 @@ public class AemServiceConfiguration {
     private AemCommandExecutorConfig aemCommandExecutorConfig;
 
     @Autowired
-    private AemJmsConfig aemJmsConfig;
-
-    @Autowired
     private FileManager fileManager;
 
     @Autowired
@@ -156,7 +154,7 @@ public class AemServiceConfiguration {
     @Bean(name = "aemServiceConfigurationPropertiesConfigurer")
     public static PropertySourcesPlaceholderConfigurer configurer() {
         PropertySourcesPlaceholderConfigurer ppc = new PropertySourcesPlaceholderConfigurer();
-        ppc.setLocation(new ClassPathResource("META-INF/spring/toc-defaults.properties"));
+        ppc.setLocation(new ClassPathResource("META-INF/spring/jwala-defaults.properties"));
         ppc.setLocalOverride(true);
         ppc.setProperties(ApplicationProperties.getProperties());
         return ppc;
@@ -285,18 +283,6 @@ public class AemServiceConfiguration {
         return new ApplicationCommandServiceImpl(aemSshConfig.getSshConfiguration(), aemSshConfig.getJschBuilder());
     }
 
-    @Bean(name = "stateNotificationService")
-    public StateNotificationService getStateNotificationService() {
-        return new JmsStateNotificationServiceImpl(aemJmsConfig.getJmsTemplate(),
-                aemJmsConfig.getStateNotificationDestination(),
-                getStateNotificationConsumerBuilder());
-    }
-
-    @Bean
-    public StateNotificationConsumerBuilder getStateNotificationConsumerBuilder() {
-        return new JmsStateNotificationConsumerBuilderImpl(aemJmsConfig.getJmsPackageBuilder());
-    }
-
     @Bean(name = "resourceService")
     public ResourceService getResourceService(final ApplicationPersistenceService applicationPersistenceService,
                                               final JvmPersistenceService jvmPersistenceService,
@@ -397,6 +383,11 @@ public class AemServiceConfiguration {
 
     @Bean(name = "webServerInMemoryStateManagerService")
     InMemoryStateManagerService<Identifier<WebServer>, WebServerReachableState> getWebServerInMemoryStateManagerService() {
+        return new InMemoryStateManagerServiceImpl<>();
+    }
+
+    @Bean(name = "jvmInMemoryStateManagerService")
+    InMemoryStateManagerService<Identifier<Jvm>, CurrentState<Jvm, JvmState>> getJvmInMemoryStateManagerService() {
         return new InMemoryStateManagerServiceImpl<>();
     }
 

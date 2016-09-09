@@ -1,11 +1,9 @@
 package com.cerner.jwala.commandprocessor.impl.jsch;
 
-import com.cerner.jwala.commandprocessor.impl.jsch.JschCommandProcessorImpl;
 import com.cerner.jwala.commandprocessor.jsch.impl.ChannelSessionKey;
 import com.cerner.jwala.common.exec.*;
 import com.cerner.jwala.exception.RemoteCommandFailureException;
 import com.jcraft.jsch.*;
-
 import org.apache.commons.pool2.impl.GenericKeyedObjectPool;
 import org.junit.Before;
 import org.junit.Test;
@@ -77,7 +75,7 @@ public class JschCommandProcessorImplTest {
         when(mockChannel.getErrStream()).thenReturn(mockRemoteErr);
         when(mockChannel.isClosed()).thenReturn(true);
         jschCommandProcessor = new JschCommandProcessorImpl(mockJsch, new RemoteExecCommand(new RemoteSystemConnection("testUser", "testPassword", "testHost", 1111),
-                new ExecCommand("scp ./toc-command-processor/src/test/resources/known_hosts destpath/testfile.txt".split(" "))), null);
+                new ExecCommand("scp ./jwala-services/src/test/resources/known_hosts destpath/testfile.txt".split(" "))), null);
         try {
             jschCommandProcessor.processCommand();
             ExecReturnCode returnCode = jschCommandProcessor.getExecutionReturnCode();

@@ -26,7 +26,6 @@ import com.cerner.jwala.service.RemoteCommandReturnInfo;
 import com.cerner.jwala.service.exception.RemoteCommandExecutorServiceException;
 import com.cerner.jwala.service.webserver.WebServerControlService;
 import com.cerner.jwala.service.webserver.WebServerService;
-
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
@@ -108,11 +107,11 @@ public class WebServerControlServiceImpl implements WebServerControlService {
             // Process non successful return codes...
             if (!commandOutput.getReturnCode().wasSuccessful()) {
                 switch (commandOutput.getReturnCode().getReturnCode()) {
-                    case ExecReturnCode.STP_EXIT_PROCESS_KILLED:
+                    case ExecReturnCode.JWALA_EXIT_PROCESS_KILLED:
                         commandOutput = new CommandOutput(new ExecReturnCode(0), FORCED_STOPPED, commandOutput.getStandardError());
                         webServerService.updateState(webServer.getId(), WebServerReachableState.FORCED_STOPPED, "");
                         break;
-                    case ExecReturnCode.STP_EXIT_CODE_ABNORMAL_SUCCESS:
+                    case ExecReturnCode.JWALA_EXIT_CODE_ABNORMAL_SUCCESS:
                         LOGGER.warn(CommandOutputReturnCode.fromReturnCode(commandOutput.getReturnCode().getReturnCode()).getDesc());
                         break;
                     default:
@@ -156,7 +155,7 @@ public class WebServerControlServiceImpl implements WebServerControlService {
         final WebServer aWebServer = webServerService.getWebServer(aWebServerName);
         final int beginIndex = destPath.lastIndexOf('/');
         final String fileName = destPath.substring(beginIndex + 1, destPath.length());
-        if (!AemControl.Properties.USER_TOC_SCRIPTS_PATH.getValue().endsWith(fileName)) {
+        if (!AemControl.Properties.USER_JWALA_SCRIPTS_PATH.getValue().endsWith(fileName)) {
             final String eventDescription = WindowsWebServerNetOperation.SECURE_COPY.name() + " " + fileName;
             historyService.createHistory(getServerName(aWebServer), new ArrayList<>(aWebServer.getGroups()), eventDescription, EventType.USER_ACTION, userId);
             messagingService.send(new WebServerHistoryEvent(aWebServer.getId(), eventDescription, userId, DateTime.now(), WebServerControlOperation.SECURE_COPY));

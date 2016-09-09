@@ -1,24 +1,20 @@
 package com.cerner.jwala.web.security;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
-import java.util.Collection;
-import java.util.HashSet;
-
+import com.cerner.jwala.common.properties.ApplicationProperties;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
-import com.cerner.jwala.common.properties.ApplicationProperties;
-import com.cerner.jwala.web.security.GrantedAuthoritiesMapperImpl;
+import java.util.Collection;
+import java.util.HashSet;
+
+import static org.junit.Assert.assertNotNull;
 
 public class GrantedAuthoritiesMapperTests {
     @Mock
     GrantedAuthoritiesMapperImpl authorities;
     
-    SimpleGrantedAuthority user;
     SimpleGrantedAuthority admin;
     Collection<SimpleGrantedAuthority> auths;
 
@@ -29,9 +25,7 @@ public class GrantedAuthoritiesMapperTests {
         System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, "./src/test/resources");
         authorities = new GrantedAuthoritiesMapperImpl();
         auths = new HashSet<SimpleGrantedAuthority>();
-        user = new SimpleGrantedAuthority(ApplicationProperties.get("toc.role.user"));
-        admin = new SimpleGrantedAuthority(ApplicationProperties.get("toc.role.admin"));
-        auths.add(user);
+        admin = new SimpleGrantedAuthority(ApplicationProperties.get("jwala.role.admin"));
         auths.add(admin);
     }
 

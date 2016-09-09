@@ -10,7 +10,7 @@ import java.util.List;
 
 public class JpaResourcePersistenceServiceImpl implements ResourcePersistenceService {
 
-    @PersistenceContext(unitName = "aem-unit")
+    @PersistenceContext(unitName = "jwala-unit")
     private EntityManager entityManager;
 
     @Override

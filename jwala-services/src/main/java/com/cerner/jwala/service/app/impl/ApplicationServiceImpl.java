@@ -34,7 +34,6 @@ import com.cerner.jwala.service.exception.ApplicationServiceException;
 import com.cerner.jwala.service.group.GroupService;
 import com.cerner.jwala.service.resource.ResourceService;
 import com.cerner.jwala.template.ResourceFileGenerator;
-
 import org.apache.commons.lang3.StringUtils;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
@@ -59,7 +58,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ApplicationServiceImpl.class);
     private static final String GENERATED_RESOURCE_DIR = "paths.generated.resource.dir";
-    private static final String STP_WEBAPPS_DIR = "stp.webapps.dir";
+    private static final String JWALA_WEBAPPS_DIR = "remote.jwala.webapps.dir";
     private final ExecutorService executorService;
 
     @Autowired
@@ -415,7 +414,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         Map<String, Future<CommandOutput>> futures = new HashMap<>();
         try {
             FileCopyUtils.copy(applicationWar, tempWarFile);
-            final String destPath = ApplicationProperties.get("stp.webapps.dir");
+            final String destPath = ApplicationProperties.get("remote.jwala.webapps.dir");
             for(String hostName: hostNames) {
                 Future<CommandOutput> commandOutputFuture = executeCopyCommand(application, tempWarFile, destPath, null, hostName);
                 futures.put(hostName, commandOutputFuture);
@@ -455,22 +454,22 @@ public class ApplicationServiceImpl implements ApplicationService {
                     final String warName = application.getWarName();
                     LOGGER.info("Unpacking war {} on host {}", warName, host);
 
-                    // create the .toc directory as the destination for the unpack-war script
-                    final String tocScriptsPath = AemControl.Properties.USER_TOC_SCRIPTS_PATH.getValue();
-                    commandOutput = applicationCommandExecutor.executeRemoteCommand(null, host, ApplicationControlOperation.CREATE_DIRECTORY, new WindowsApplicationPlatformCommandProvider(), tocScriptsPath);
+                    // create the .jwala directory as the destination for the unpack-war script
+                    final String jwalaScriptsPath = AemControl.Properties.USER_JWALA_SCRIPTS_PATH.getValue();
+                    commandOutput = applicationCommandExecutor.executeRemoteCommand(null, host, ApplicationControlOperation.CREATE_DIRECTORY, new WindowsApplicationPlatformCommandProvider(), jwalaScriptsPath);
                     if (!commandOutput.getReturnCode().wasSuccessful()) {
                         return commandOutput; // return immediately if creating the dir failed
                     }
 
-                    // copy the unpack war script to .toc
+                    // copy the unpack war script to .jwala
                     final String unpackWarScriptPath = ApplicationProperties.get("commands.scripts-path") + "/" + AemControl.Properties.UNPACK_WAR_SCRIPT_NAME;
-                    commandOutput = applicationCommandExecutor.executeRemoteCommand(null, host, ApplicationControlOperation.SECURE_COPY, new WindowsApplicationPlatformCommandProvider(), unpackWarScriptPath, tocScriptsPath);
+                    commandOutput = applicationCommandExecutor.executeRemoteCommand(null, host, ApplicationControlOperation.SECURE_COPY, new WindowsApplicationPlatformCommandProvider(), unpackWarScriptPath, jwalaScriptsPath);
                     if (!commandOutput.getReturnCode().wasSuccessful()) {
                         return commandOutput; // return immediately if the copy failed
                     }
 
                     // make sure the scripts are executable
-                    commandOutput = applicationCommandExecutor.executeRemoteCommand(null, host, ApplicationControlOperation.CHANGE_FILE_MODE, new WindowsApplicationPlatformCommandProvider(), "a+x", tocScriptsPath, "*.sh");
+                    commandOutput = applicationCommandExecutor.executeRemoteCommand(null, host, ApplicationControlOperation.CHANGE_FILE_MODE, new WindowsApplicationPlatformCommandProvider(), "a+x", jwalaScriptsPath, "*.sh");
                     if (!commandOutput.getReturnCode().wasSuccessful()) {
                         return commandOutput;
                     }
@@ -593,7 +592,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 
             metaData.setContentType(ContentType.APPLICATION_BINARY.contentTypeStr);
             metaData.setDeployPath(StringUtils.isEmpty(deployPath) ?
-                                                   ApplicationProperties.get(STP_WEBAPPS_DIR) : deployPath);
+                                                   ApplicationProperties.get(JWALA_WEBAPPS_DIR) : deployPath);
             metaData.setDeployFileName(warName);
             metaData.setTemplateName(warName);
 

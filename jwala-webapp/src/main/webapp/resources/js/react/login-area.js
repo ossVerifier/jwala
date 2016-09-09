@@ -76,6 +76,6 @@ var LoginArea = React.createClass({
 });
 
 $(document).ready(function () {
-    var errorMessage = tocVars.loginStatus === "error" ? "Your user name or password is incorrect." : "";
+    var errorMessage = jwalaVars.loginStatus === "error" ? "Your user name or password is incorrect." : "";
     React.renderComponent(LoginArea({ className: "login-area", error: errorMessage }), document.body);
 });

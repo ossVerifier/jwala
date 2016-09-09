@@ -36,7 +36,6 @@ import com.cerner.jwala.service.jvm.JvmService;
 import com.cerner.jwala.service.resource.ResourceService;
 import com.cerner.jwala.service.webserver.component.ClientFactoryHelper;
 import com.jcraft.jsch.JSchException;
-
 import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -60,6 +59,7 @@ import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.anyBoolean;
 import static org.mockito.Mockito.anyObject;
+import static org.mockito.Mockito.contains;
 import static org.mockito.Mockito.*;
 import static org.mockito.MockitoAnnotations.initMocks;
 
@@ -626,9 +626,9 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
         final ResourceGroup mockResourceGroup = mock(ResourceGroup.class);
         List<JpaJvmConfigTemplate> jpaJvmConfigTemplates = new ArrayList<>();
         jpaJvmConfigTemplates.add(mockJpaJvmConfigTemplate);
-        final String metadata = "{\"contentType\":\"text/plain\",\"deployPath\":\"D:/stp/app/instances/testJvmName/bin\",\"deployFileName\": \"test.file\"}";
+        final String metadata = "{\"contentType\":\"text/plain\",\"deployPath\":\"D:/jwala/app/instances/testJvmName/bin\",\"deployFileName\": \"test.file\"}";
         Map<String, String> expectedMap = new HashMap<>();
-        expectedMap.put("C:/Temp/test.file", "D:/stp/app/instances/testJvmName/bin/test.file");
+        expectedMap.put("C:/Temp/test.file", "D:/jwala/app/instances/testJvmName/bin/test.file");
 
         when(mockResourceService.generateResourceGroup()).thenReturn(mockResourceGroup);
         when(mockResourceService.generateResourceFile(anyString(), any(ResourceGroup.class), any(Jvm.class))).thenReturn(metadata);
@@ -650,7 +650,7 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
         JpaJvmConfigTemplate jpaJvmConfigTemplate = new JpaJvmConfigTemplate();
         jpaJvmConfigTemplate.setTemplateContent("C:/Temp/test.file");
         jpaJvmConfigTemplates.add(jpaJvmConfigTemplate);
-        final String metadata = "{\"contentType\":\"application/binary\",\"deployPath\":\"D:/stp/app/instances/testJvmName/bin\",\"deployFileName\": \"test.file\"}";
+        final String metadata = "{\"contentType\":\"application/binary\",\"deployPath\":\"D:/jwala/app/instances/testJvmName/bin\",\"deployFileName\": \"test.file\"}";
 
         when(mockResourceService.generateResourceGroup()).thenReturn(mockResourceGroup);
         when(mockResourceService.generateResourceFile(anyString(), any(ResourceGroup.class), any(Jvm.class))).thenReturn(metadata);

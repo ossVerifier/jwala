@@ -27,7 +27,6 @@ import com.cerner.jwala.service.RemoteCommandReturnInfo;
 import com.cerner.jwala.service.exception.RemoteCommandExecutorServiceException;
 import com.cerner.jwala.service.jvm.JvmControlService;
 import com.cerner.jwala.service.jvm.JvmStateService;
-
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
@@ -127,11 +126,11 @@ public class JvmControlServiceImpl implements JvmControlService {
                 // Process non successful return codes...
                 final String commandOutputReturnDescription = CommandOutputReturnCode.fromReturnCode(returnCode.getReturnCode()).getDesc();
                 switch (returnCode.getReturnCode()) {
-                    case ExecReturnCode.STP_EXIT_PROCESS_KILLED:
+                    case ExecReturnCode.JWALA_EXIT_PROCESS_KILLED:
                         commandOutput = new CommandOutput(new ExecReturnCode(0), FORCED_STOPPED, commandOutput.getStandardError());
                         jvmStateService.updateState(jvm.getId(), JvmState.FORCED_STOPPED);
                         break;
-                    case ExecReturnCode.STP_EXIT_CODE_ABNORMAL_SUCCESS:
+                    case ExecReturnCode.JWALA_EXIT_CODE_ABNORMAL_SUCCESS:
                         LOGGER.warn(commandOutputReturnDescription);
                         historyService.createHistory(getServerName(jvm), new ArrayList<>(jvm.getGroups()), commandOutputReturnDescription,
                                 EventType.APPLICATION_ERROR, aUser.getId());
@@ -182,8 +181,8 @@ public class JvmControlServiceImpl implements JvmControlService {
         final Jvm jvm = jvmPersistenceService.getJvm(jvmId);
         final int beginIndex = destPath.lastIndexOf("/");
         final String fileName = destPath.substring(beginIndex + 1, destPath.length());
-        // don't add any usage of the toc user internal directory to the history
-        if (!AemControl.Properties.USER_TOC_SCRIPTS_PATH.getValue().endsWith(fileName)) {
+        // don't add any usage of the Jwala user internal directory to the history
+        if (!AemControl.Properties.USER_JWALA_SCRIPTS_PATH.getValue().endsWith(fileName)) {
             final String eventDescription = event + " " + fileName;
             historyService.createHistory(getServerName(jvm), new ArrayList<>(jvm.getGroups()), eventDescription, EventType.USER_ACTION, userId);
             messagingService.send(new JvmHistoryEvent(jvm.getId(), eventDescription, userId, DateTime.now(), JvmControlOperation.SECURE_COPY));

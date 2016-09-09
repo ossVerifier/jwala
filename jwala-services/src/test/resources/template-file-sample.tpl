@@ -1,1 +1,1 @@
-<Context docBase="\${STP_HOME}/app/webapps/jedi-webapp.war"/>
+<Context docBase="\${JWALA_HOME}/app/webapps/jedi-webapp.war"/>
