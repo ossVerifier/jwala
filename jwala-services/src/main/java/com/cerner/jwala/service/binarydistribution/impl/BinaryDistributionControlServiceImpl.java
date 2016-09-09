@@ -6,11 +6,14 @@ import com.cerner.jwala.control.binarydistribution.command.impl.WindowsBinaryDis
 import com.cerner.jwala.control.command.RemoteCommandExecutor;
 import com.cerner.jwala.exception.CommandFailureException;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionControlService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Created by SP043299 on 9/7/2016.
  */
 public class BinaryDistributionControlServiceImpl implements BinaryDistributionControlService {
+    private static final Logger LOGGER = LoggerFactory.getLogger(BinaryDistributionControlServiceImpl.class);
     private final RemoteCommandExecutor<BinaryDistributionControlOperation> remoteCommandExecutor;
 
     public BinaryDistributionControlServiceImpl(RemoteCommandExecutor<BinaryDistributionControlOperation> remoteCommandExecutor) {
@@ -46,13 +49,16 @@ public class BinaryDistributionControlServiceImpl implements BinaryDistributionC
     }
 
     @Override
-    public CommandOutput unzipBinary(final String hostname, final String binaryLocation, final String destination) throws CommandFailureException {
-        return remoteCommandExecutor.executeRemoteCommand(null,
+    public CommandOutput unzipBinary(final String hostname, final String zipPath, final String binaryLocation, final String destination) throws CommandFailureException {
+        CommandOutput commandOutput = remoteCommandExecutor.executeRemoteCommand(null,
                 hostname,
                 BinaryDistributionControlOperation.UNZIP_BINARY,
                 new WindowsBinaryDistributionPlatformCommandProvider(),
+                zipPath,
                 binaryLocation,
                 destination);
+        printCommandOutput(commandOutput);
+        return commandOutput;
     }
 
     @Override
@@ -62,5 +68,21 @@ public class BinaryDistributionControlServiceImpl implements BinaryDistributionC
                 BinaryDistributionControlOperation.DELETE_BINARY,
                 new WindowsBinaryDistributionPlatformCommandProvider(),
                 destination);
+    }
+
+    @Override
+    public CommandOutput changeFileMode(String hostname, String mode, String targetDir, String target) throws CommandFailureException {
+        return remoteCommandExecutor.executeRemoteCommand(null,
+                hostname,
+                BinaryDistributionControlOperation.CHANGE_FILE_MODE,
+                new WindowsBinaryDistributionPlatformCommandProvider(),
+                mode,
+                targetDir,
+                target);
+    }
+
+    public void printCommandOutput(CommandOutput commandOutput) {
+        LOGGER.info(commandOutput.getStandardOutput());
+        LOGGER.info(commandOutput.getStandardError());
     }
 }

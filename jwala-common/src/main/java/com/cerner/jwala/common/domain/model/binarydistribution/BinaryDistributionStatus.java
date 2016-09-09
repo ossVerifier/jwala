@@ -14,7 +14,9 @@ public enum BinaryDistributionStatus {
     MKDIR_FAIL("mkdir fail"),
     MKDIR_SUCCESSFUL("mkdir successful"),
     UNZIP_FAIL("unzip fail"),
-    UNZIP_SUCCESSFUL("unzip successful");
+    UNZIP_SUCCESSFUL("unzip successful"),
+    CHANGE_MODE_FAIL("change mode fail"),
+    CHANGE_MODE_SUCCESSFUL("change mode successful");
 
     private String message;
     BinaryDistributionStatus(String message) {

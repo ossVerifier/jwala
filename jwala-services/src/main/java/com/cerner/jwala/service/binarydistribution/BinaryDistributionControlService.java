@@ -13,7 +13,9 @@ public interface BinaryDistributionControlService {
 
     CommandOutput checkFileExists(final String hostname, final String destination) throws CommandFailureException;
 
-    CommandOutput unzipBinary(final String hostname, final String binaryLocation, final String destination) throws CommandFailureException;
+    CommandOutput unzipBinary(final String hostname, final String zipPath, final String binaryLocation, final String destination) throws CommandFailureException;
 
     CommandOutput deleteBinary(final String hostname, final String destination) throws CommandFailureException;
+
+    CommandOutput changeFileMode(final String hostname, final String mode, final String targetDir, final String target) throws CommandFailureException;
 }

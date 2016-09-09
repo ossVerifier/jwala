@@ -11,7 +11,8 @@ public enum BinaryDistributionControlOperation {
     CREATE_DIRECTORY("createDirectory", MKDIR_FAIL, MKDIR_SUCCESSFUL),
     SECURE_COPY("secureCopy", COPY_FAIL, COPY_SUCCESSFUL),
     DELETE_BINARY("deleteBinary", DELETE_FAIL, DELETE_SUCCESSFUL),
-    UNZIP_BINARY("unzipBinary", UNZIP_FAIL, UNZIP_SUCCESSFUL);
+    UNZIP_BINARY("unzipBinary", UNZIP_FAIL, UNZIP_SUCCESSFUL),
+    CHANGE_FILE_MODE("changeFileMode", CHANGE_MODE_FAIL, CHANGE_MODE_SUCCESSFUL);
 
     private final String operationValue;
     private final BinaryDistributionStatus fail, success;
