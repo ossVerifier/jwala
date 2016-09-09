@@ -308,6 +308,7 @@ public class JvmServiceImpl implements JvmService {
                         "The target JVM must be stopped before attempting to update the resource files");
             }
 
+            binaryDistributionService.prepareUnzip(jvm.getHostName());
             binaryDistributionService.distributeJdk(jvm.getHostName());
             binaryDistributionService.distributeTomcat(jvm.getHostName());
 

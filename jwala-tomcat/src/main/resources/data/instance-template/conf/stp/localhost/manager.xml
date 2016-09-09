@@ -1,0 +1,14 @@
+<Context antiResourceLocking="false" privileged="true" docBase="${STP_HOME}/app/webapps/tomcat-manager-7.0.55-nocsrf.war" path="/manager"  unpackWAR="false">
+
+	<Environment name="roleMappingProperties"
+        value="${STP_HOME}/app/properties/hctRoleMapping.properties"
+        type="java.lang.String"
+        override="false" />
+		
+	<!-- Octr 29,2015 : we don't need this anymore. The SamlIdp code will pass three groups which we will map to the proper roles. -->
+    <!-- Valve to apply the Tomcat manager roles to any user coming in through Saml SSO -->
+    <!--
+	<Valve className="com.siemens.cto.security.tomcat.TomcatManagerRolesAsserterValve" />
+	-->
+    <Valve className="com.siemens.cto.security.tomcat.TomcatManagerJmxProxyValve" />
+</Context>
