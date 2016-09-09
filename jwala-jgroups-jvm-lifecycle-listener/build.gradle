@@ -5,7 +5,7 @@ configurations { providedCompile }
 dependencies {
     compile group: 'joda-time', name: 'joda-time', version: "$project.versions.jodaTime"
     compile group: 'org.jgroups', name: 'jgroups', version: "$project.versions.jgroups"
-    providedCompile group: 'org.apache.tomcat', name: 'tomcat-catalina', version: '8.0.33'
+    providedCompile group: 'org.apache.tomcat', name: 'tomcat-catalina', version: "$project.versions.tomcat"
 
     testCompile group: 'junit', name: 'junit', version: "$project.versions.jgroups"
     testCompile group: 'org.mockito', name: 'mockito-core', version: "$versions.mockito"
