@@ -17,7 +17,9 @@ export JVM_INSTANCE=`/usr/bin/basename $2`
 cd $2/.. 
 
 # back up current jvm directory
-/usr/bin/mv $2 $2.$BACKUP_DATE
+if [ -d "$2" ]; then
+    /usr/bin/mv $2 $2.$BACKUP_DATE
+fi
 /usr/bin/mkdir $2
 
 # extract the new configuration files

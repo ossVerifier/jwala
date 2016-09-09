@@ -94,4 +94,11 @@ public interface JvmPersistenceService {
      * @return true if the file exists, else returns false
      */
     boolean checkJvmResourceFileName(String groupName, String jvmName, String filename);
+
+    /**
+     * Get the JVM id
+     * @param name the name of the JVM
+     * @return the JVM id
+     */
+    Long getJvmId(String name);
 }

@@ -372,8 +372,9 @@ public class AemServiceConfiguration {
     }
 
     @Bean
-    public JvmStateReceiverAdapter getJvmReceiverAdapter(final JvmStateService jvmStateService) {
-        return new JvmStateReceiverAdapter(jvmStateService);
+    public JvmStateReceiverAdapter getJvmReceiverAdapter(final JvmStateService jvmStateService,
+                                                         final JvmPersistenceService jvmPersistenceService) {
+        return new JvmStateReceiverAdapter(jvmStateService, jvmPersistenceService);
     }
 
     @Bean
