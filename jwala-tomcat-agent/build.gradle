@@ -1,11 +1,9 @@
 apply plugin: 'java'
 
-configurations { providedCompile }
-
 dependencies {
     compile group: 'joda-time', name: 'joda-time', version: "$project.versions.jodaTime"
     compile group: 'org.jgroups', name: 'jgroups', version: "$project.versions.jgroups"
-    providedCompile group: 'org.apache.tomcat', name: 'tomcat-catalina', version: "$project.versions.tomcat"
+    compile group: 'org.apache.tomcat', name: 'tomcat-catalina', version: "$project.versions.tomcat"
 
     testCompile group: 'junit', name: 'junit', version: "$project.versions.jgroups"
     testCompile group: 'org.mockito', name: 'mockito-core', version: "$versions.mockito"
@@ -13,7 +11,3 @@ dependencies {
     testCompile group: 'log4j', name: 'log4j', version: "$project.versions.log4j"
     testCompile group: "org.slf4j", name:"slf4j-log4j12", version:"$project.versions.slf4j"
 }
-
-sourceSets.main.compileClasspath += configurations.providedCompile
-sourceSets.test.compileClasspath += configurations.providedCompile
-sourceSets.test.runtimeClasspath += configurations.providedCompile
