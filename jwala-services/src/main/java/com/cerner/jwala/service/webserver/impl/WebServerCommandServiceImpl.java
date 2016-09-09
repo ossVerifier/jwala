@@ -50,7 +50,7 @@ public class WebServerCommandServiceImpl implements WebServerCommandService {
     @Override
     public CommandOutput getHttpdConf(final Identifier<WebServer> webServerId) throws CommandFailureException {
         final WebServer webServer = webServerService.getWebServer(webServerId);
-        String httpdPath = ApplicationProperties.get("remote.paths.httpd.conf", ApplicationProperties.get("paths.httpd.conf"));
+        String httpdPath = ApplicationProperties.get("remote.paths.httpd.conf");
         final ExecCommand execCommand = createExecCommand(webServer, WebServerControlOperation.VIEW_HTTP_CONFIG_FILE,
                 httpdPath + "/httpd.conf");
         final RemoteExecCommand remoteExecCommand = new RemoteExecCommand(new RemoteSystemConnection(sshConfig.getUserName(),

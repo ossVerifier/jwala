@@ -16,6 +16,7 @@ import static com.cerner.jwala.common.domain.model.jvm.JvmState.*;
  */
 public enum JvmControlOperation {
 
+
     START("start", JVM_START, NO_JVM_COMPLETE_STATE, JVM_FAILED,
             new String[]{
                             /*net*/"The requested service has already been started.",
@@ -50,7 +51,7 @@ public enum JvmControlOperation {
 
     CHANGE_FILE_MODE("changeFileMode", NO_JVM_IN_PROGRESS_STATE, NO_JVM_COMPLETE_STATE, NO_JVM_FAILURE_STATE, NO_JVM_SUCCESS_KEYWORDS),
 
-    CHECK_FILE_EXISTS("checkFileExists", NO_JVM_IN_PROGRESS_STATE, NO_JVM_COMPLETE_STATE, NO_JVM_FAILURE_STATE, NO_JVM_SUCCESS_KEYWORDS);
+    CHECK_FILE_EXISTS("checkFileExists", NO_JVM_IN_PROGRESS_STATE, NO_JVM_COMPLETE_STATE, NO_JVM_FAILURE_STATE, NO_JVM_SUCCESS_KEYWORDS),;
 
     private static final Map<String, JvmControlOperation> LOOKUP_MAP = new HashMap<>();
 
