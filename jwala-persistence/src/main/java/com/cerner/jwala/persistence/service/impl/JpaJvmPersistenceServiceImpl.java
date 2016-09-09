@@ -33,7 +33,7 @@ public class JpaJvmPersistenceServiceImpl implements JvmPersistenceService {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    @PersistenceContext(unitName = "aem-unit")
+    @PersistenceContext(unitName = "jwala-unit")
     private EntityManager em; // Going forward we will be phasing out JvmCrudService thus the reason this is defined here
 
     public JpaJvmPersistenceServiceImpl(final JvmCrudService jvmCrudService,
