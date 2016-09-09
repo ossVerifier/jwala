@@ -52,7 +52,12 @@ buildscript {
     dependencies { classpath 'de.undercouch:gradle-download-task:3.1.1' }
 }
 
-task downloadTomcat(type: Download) {
+task downloadDeploymentBinaries(type: Download) {
+    src ([jdkBinaryUrl, apachehttpdBinaryUrl, apachetomcatDeploymentBinaryUrl])
+    dest "$buildDir/$tomcatDir/data/binaries"
+}
+
+task downloadTomcat(dependsOn: downloadDeploymentBinaries, type: Download) {
     src "${tomcatBinaryUrl}"
     dest new File(buildDir, new File("${tomcatBinaryUrl}").getName())
 }
