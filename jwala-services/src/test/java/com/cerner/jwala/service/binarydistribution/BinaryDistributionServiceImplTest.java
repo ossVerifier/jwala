@@ -12,6 +12,9 @@ import org.mockito.Mock;
 
 import java.io.File;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+
 /**
  * Created by LW044480 on 9/8/2016.
  */
@@ -34,6 +37,16 @@ public class BinaryDistributionServiceImplTest {
 
     @Test
     public void testZipBinary(){
-        //TODO:
+        String source = getClass().getClassLoader().getResource("zip-test").getFile();
+        String destination = binaryDistributionService.zipBinary(source);
+        assertEquals(source + ".zip", destination);
     }
+
+    @Test
+    public void testZipBinaryFail(){
+        String source = "../../temp/test";
+        String destination = binaryDistributionService.zipBinary(source);
+        assertNull(destination);
+    }
+
 }
