@@ -1,5 +1,6 @@
 package com.cerner.jwala.files;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -22,5 +23,13 @@ public interface FileManager {
      */
     String getMasterTemplate(String masterTemplateName);
     InputStream getMasterTemplateByStream(String masterTemplateName);
+
+    /**
+     *
+     * @param zipFile
+     * @param destinationDir
+     * @throws IOException
+     */
+    void unZipFile(File zipFile, File destinationDir) throws IOException;
 
 }

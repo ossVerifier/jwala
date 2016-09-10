@@ -21,6 +21,7 @@ import org.springframework.test.context.support.AnnotationConfigContextLoader;
 
 import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.*;
@@ -28,6 +29,7 @@ import java.util.Properties;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 
 @ContextConfiguration(loader = AnnotationConfigContextLoader.class, classes = {
@@ -107,5 +109,14 @@ public class FileManagerTest {
         
         assertEquals(filesConfiguration.getConfiguredPath(TocPath.TEMPLATES) + "\\.", result);
     }
-    
+    @Test
+    public void testUnZip() throws IOException{
+        File tempDir = new File("build/resources/test/temp");
+        tempDir.mkdir();
+        File zipFile = new File(getClass().getClassLoader().getResource("instance-template-7.0.55.zip").getFile());
+        fileManager.unZipFile(zipFile,tempDir);
+        File serverXml = new File(tempDir.getAbsolutePath()+"/conf/server.xml");
+        assertTrue(serverXml.exists());
+
+    }
 }

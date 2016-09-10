@@ -405,6 +405,7 @@ public class JvmServiceImpl implements JvmService {
         String jvmName = jvm.getJvmName();
         LOGGER.info("Generating JVM configuration tar for {}", jvmName);
         final String jvmGeneratedResourcesTempDir = ApplicationProperties.get("paths.generated.resource.dir");
+        final String instanceTemplateZipName = ApplicationProperties.get("jwala.instance-template");
         String jvmResourcesNameDir = jvmGeneratedResourcesTempDir + "/" + jvmName;
         LOGGER.debug("generated resources dir: {}", jvmGeneratedResourcesTempDir);
         LOGGER.debug("generated JVM directory location: {}", jvmResourcesNameDir);
@@ -412,21 +413,11 @@ public class JvmServiceImpl implements JvmService {
         final File generatedDir = new File("./" + jvmName);
         String configJarPath;
         try {
-            // copy the tomcat instance-template directory
-            final File srcDir = new File(TEMPLATE_DIR);
             final String destDirPath = generatedDir.getAbsolutePath();
-
-            // Copy the templates that would be included in the JAR file.
-            LOGGER.debug("location of template srcDir: {}", srcDir);
-            LOGGER.debug("location of template copy: {}", destDirPath);
-            for (String dirPath : srcDir.list()) {
-                final File srcChild = new File(srcDir + "/" + dirPath);
-                if (srcChild.isDirectory()) {
-                    FileUtils.copyDirectoryToDirectory(srcChild, generatedDir);
-                } else {
-                    FileUtils.copyFileToDirectory(srcChild, generatedDir);
-                }
-            }
+            LOGGER.debug("Start Unzip Instance Template {} to {} ", instanceTemplateZipName, generatedDir);
+            // Copy the templates that would be included in the zip file.
+            fileManager.unZipFile(new File(instanceTemplateZipName), generatedDir);
+            LOGGER.debug("End Unzip Instance Template {} to {} ", instanceTemplateZipName, generatedDir);
             final String generatedText = generateInvokeBat(jvmName);
             final String invokeBatDir = generatedDir + "/bin";
             LOGGER.debug("generated invoke.bat text: {}", generatedText);
