@@ -79,7 +79,7 @@ public class BinaryDistributionControlServiceImplTest {
     }
 
     @Test
-    public void testCheckFileExists(){
+    public void testCheckFileExists() {
         final String hostname = "localhost";
         final String destination = "/build/tmp/";
         final CommandOutput execData = mock(CommandOutput.class);
@@ -96,25 +96,27 @@ public class BinaryDistributionControlServiceImplTest {
     }
 
     @Test
-    public void testUnzipBinary(){
+    public void testUnzipBinary() {
         final String hostname = "localhost";
-        final String binaryLocation  = "/src/test/resources/binarydistribution/copy.txt";
+        final String binaryLocation = "/src/test/resources/binarydistribution/copy.txt";
         final String destination = "/build/tmp/";
+        final String zipPath = "";
+        final String exclude = "";
         final CommandOutput execData = mock(CommandOutput.class);
         when(execData.getReturnCode()).thenReturn(new ExecReturnCode(0));
         try {
             when(remoteCommandExecutor.executeRemoteCommand(anyString(), anyString(), eq(BinaryDistributionControlOperation.UNZIP_BINARY),
-                    any(WindowsBinaryDistributionPlatformCommandProvider.class), anyString(), anyString())).thenReturn(execData);
-            binaryDistributionControlServiceImpl.unzipBinary(hostname, binaryLocation, destination);
+                    any(WindowsBinaryDistributionPlatformCommandProvider.class), anyString(), anyString(), anyString(), anyString())).thenReturn(execData);
+            binaryDistributionControlServiceImpl.unzipBinary(hostname, zipPath, binaryLocation, destination, exclude);
             verify(remoteCommandExecutor).executeRemoteCommand(anyString(), eq(hostname), eq(BinaryDistributionControlOperation.UNZIP_BINARY),
-                    any(WindowsBinaryDistributionPlatformCommandProvider.class), eq(binaryLocation), eq(destination));
+                    any(WindowsBinaryDistributionPlatformCommandProvider.class), eq(zipPath), eq(binaryLocation), eq(destination), eq(exclude));
         } catch (CommandFailureException e) {
             e.printStackTrace();
         }
     }
 
     @Test
-    public void testDeleteBinary(){
+    public void testDeleteBinary() {
         final String hostname = "localhost";
         final String destination = "/build/tmp/";
         final CommandOutput execData = mock(CommandOutput.class);
