@@ -40,6 +40,9 @@ dependencies {
     compile(group: 'taglibs', name: 'standard', version: '1.1.2')
     compile(group: 'org.apache.santuario', name: 'xmlsec', version: '1.5.6')
     compile(group: 'org.opensaml', name: 'xmltooling', version: '1.4.4')
+    compile group: 'joda-time', name: 'joda-time', version: "$project.versions.jodaTime"
+    compile group: 'org.jgroups', name: 'jgroups', version: "$project.versions.jgroups"
+
 }
 
 buildscript {
@@ -99,8 +102,14 @@ task copyJwalaH2EmbededJar(dependsOn: copyJwalaDependenciesToTomcatLib, type: Co
     from project(':jwala-h2-embedded').file("build/libs")
     into file("$buildDir/$tomcatDir/lib")
 }
-
-task copyJwalaWebappWar(dependsOn: copyJwalaH2EmbededJar, type: Copy) {
+task copyJwalaAgent(dependsOn: copyJwalaH2EmbededJar, type: Copy) {
+    project(':jwala-tomcat-agent') {
+        dependsOn(build)
+    }
+    from project(':jwala-tomcat-agent').file("build/libs")
+    into file("$buildDir/$tomcatDir/data/agent")
+}
+task copyJwalaWebappWar(dependsOn: copyJwalaAgent, type: Copy) {
     project(':jwala-webapp') {
         dependsOn(build)
     }
