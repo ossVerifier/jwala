@@ -61,7 +61,6 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
         File apache = new File(ApplicationProperties.get("remote.paths.apache.httpd"));
         String webServerDir = apache.getName();
         String binaryDeployDir = apache.getParentFile().getAbsolutePath().replaceAll("\\\\", "/");
-
         if (webServerDir != null && !webServerDir.isEmpty()) {
             distributeBinary(hostname, webServerDir, binaryDeployDir, APACHE_EXCLUDE);
         } else {
@@ -82,41 +81,13 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
                         zipFile = zipBinary(binaryDir + "/" + binaryName);
                     }
 
-                    if (remoteCreateDirectory(hostname, binaryDeployDir)) {
-                        LOGGER.info("successfully created directories {}", binaryDeployDir);
-                    } else {
-                        final String message = "user does not have permission to create the directory " + binaryDeployDir;
-                        LOGGER.error(message);
-                        throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, message);
-                    }
+                    remoteCreateDirectory(hostname, binaryDeployDir);
 
-                    if (remoteSecureCopyFile(hostname, zipFile, destinationZipFile)) {
-                        LOGGER.info("successfully copied the binary {} over to {}", zipFile, destinationZipFile);
-                        LOGGER.info("binaryDeployDir: " + binaryDeployDir);
-                        LOGGER.info("destinationZipFile: " + destinationZipFile);
-                    } else {
-                        final String message = "error with scp of binary " + zipFile + " to destination " + destinationZipFile;
-                        LOGGER.error(message);
-                        throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, message);
-                    }
+                    remoteSecureCopyFile(hostname, zipFile, destinationZipFile);
 
-                    final String unzipFileDestination = AemControl.Properties.USER_TOC_SCRIPTS_PATH.getValue() + "/" + UNZIPEXE;
-                    LOGGER.info("unzipFileDestination: " + unzipFileDestination);
-                    if (remoteUnzipBinary(hostname, unzipFileDestination, destinationZipFile, binaryDeployDir, exclude)) {
-                        LOGGER.info("successfully unzipped the binary {}", binaryDeployDir);
-                    } else {
-                        final String message = "cannot unzip from " + destinationZipFile + " to " + binaryDeployDir;
-                        LOGGER.error(message);
-                        throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, message);
-                    }
+                    remoteUnzipBinary(hostname, AemControl.Properties.USER_TOC_SCRIPTS_PATH.getValue() + "/" + UNZIPEXE, destinationZipFile, binaryDeployDir, exclude);
 
-                    if (remoteDeleteBinary(hostname, destinationZipFile)) {
-                        LOGGER.info("successfully delete the binary {}", destinationZipFile);
-                    } else {
-                        final String message = "error in deleting file " + destinationZipFile;
-                        LOGGER.error(message);
-                        throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, message);
-                    }
+                    remoteDeleteBinary(hostname, destinationZipFile);
 
                 } else {
                     LOGGER.warn("Cannot find the binary directory location in jwala, value is {}", binaryDir);
@@ -130,72 +101,87 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
         }
     }
 
-    private boolean changeFileMode(final String hostname, final String mode, final String targetDir, final String target) {
-        //TODO: it will never catch here
-        boolean result;
+    public void changeFileMode(final String hostname, final String mode, final String targetDir, final String target) {
         try {
-            result = binaryDistributionControlService.changeFileMode(hostname, mode, targetDir, target).getReturnCode().wasSuccessful();
+            if (binaryDistributionControlService.changeFileMode(hostname, mode, targetDir, target).getReturnCode().wasSuccessful()) {
+                LOGGER.info("chnage file mode " + mode + " at targetDir " + targetDir);
+            } else {
+                String message = "Failed to change the file permissions in " + targetDir + "/" + UNZIPEXE;
+                LOGGER.error(message);
+                throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, message);
+            }
         } catch (CommandFailureException e) {
             final String message = "Error in change file mode at host: " + hostname + " mode: " + mode + " target: " + target;
             LOGGER.error(message, e);
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, message, e);
         }
-        return result;
     }
 
-    private boolean remoteDeleteBinary(final String hostname, final String destination) {
-        //TODO: it will never catch here
-        boolean result;
+    public void remoteDeleteBinary(final String hostname, final String destination) {
         try {
-            result = binaryDistributionControlService.deleteBinary(hostname, destination).getReturnCode().wasSuccessful();
+            if (binaryDistributionControlService.deleteBinary(hostname, destination).getReturnCode().wasSuccessful()) {
+                LOGGER.info("successfully delete the binary {}", destination);
+            } else {
+                final String message = "error in deleting file " + destination;
+                LOGGER.error(message);
+                throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, message);
+            }
         } catch (CommandFailureException e) {
             final String message = "Error in delete remote binary at host: " + hostname + " destination: " + destination;
             LOGGER.error(message, e);
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, message, e);
         }
-        return result;
     }
 
-    private boolean remoteUnzipBinary(final String hostname, final String zipPath, final String binaryLocation, final String destination, final String exclude) {
-        //TODO: it will never catch here
-        boolean result;
+    public void remoteUnzipBinary(final String hostname, final String zipPath, final String binaryLocation, final String destination, final String exclude) {
         try {
-            result = binaryDistributionControlService.unzipBinary(hostname, zipPath, binaryLocation, destination, exclude).getReturnCode().wasSuccessful();
+            if (binaryDistributionControlService.unzipBinary(hostname, zipPath, binaryLocation, destination, exclude).getReturnCode().wasSuccessful()) {
+                LOGGER.info("successfully unzipped the binary {}", binaryLocation);
+            } else {
+                final String message = "cannot unzip from " + binaryLocation + " to " + destination;
+                LOGGER.error(message);
+                throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, message);
+            }
         } catch (CommandFailureException e) {
             final String message = "Error in remote unzip binary at host: " + hostname + " binaryLocation: " + binaryLocation + " destination: " + destination;
             LOGGER.error(message, e);
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, message, e);
         }
-        return result;
     }
 
-    private boolean remoteSecureCopyFile(final String hostname, final String source, final String destination) {
-        //TODO: it will never catch here
-        boolean result;
+    public void remoteSecureCopyFile(final String hostname, final String source, final String destination) {
         try {
-            result = binaryDistributionControlService.secureCopyFile(hostname, source, destination).getReturnCode().wasSuccessful();
+            if (binaryDistributionControlService.secureCopyFile(hostname, source, destination).getReturnCode().wasSuccessful()) {
+                LOGGER.info("successfully copied the binary {} over to {}", source, destination);
+            } else {
+                final String message = "error with scp of binary " + source + " to destination " + destination;
+                LOGGER.error(message);
+                throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, message);
+            }
         } catch (CommandFailureException e) {
             final String message = "Error in remote secure copy at host: " + hostname + " source: " + source + " destination: " + destination;
             LOGGER.error(message, e);
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, message, e);
         }
-        return result;
     }
 
-    private boolean remoteCreateDirectory(final String hostname, final String destination) {
-        //TODO: it will never catch here
-        boolean result;
+    public void remoteCreateDirectory(final String hostname, final String destination) {
         try {
-            result = binaryDistributionControlService.createDirectory(hostname, destination).getReturnCode().wasSuccessful();
+            if (binaryDistributionControlService.createDirectory(hostname, destination).getReturnCode().wasSuccessful()) {
+                LOGGER.info("successfully created directories {}", destination);
+            } else {
+                final String message = "user does not have permission to create the directory " + destination;
+                LOGGER.error(message);
+                throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, message);
+            }
         } catch (CommandFailureException e) {
             final String message = "Error in create remote directory at host: " + hostname + " destination: " + destination;
             LOGGER.error(message, e);
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, message, e);
         }
-        return result;
     }
 
-    private boolean remoteFileCheck(final String hostname, final String destination) {
+    public boolean remoteFileCheck(final String hostname, final String destination) {
         //TODO: it will never catch here
         boolean result;
         try {
@@ -227,11 +213,7 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
         if (remoteFileCheck(hostname, tocScriptsPath)) {
             LOGGER.info(tocScriptsPath + " exists at " + hostname);
         } else {
-            if (!remoteCreateDirectory(hostname, tocScriptsPath)) {
-                final String message = "Failed to create the directory in host: " + hostname + " dir: " + tocScriptsPath;
-                LOGGER.error(message);
-                throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, message);
-            }
+            remoteCreateDirectory(hostname, tocScriptsPath);
         }
         final String unzipFileDestination = AemControl.Properties.USER_TOC_SCRIPTS_PATH.getValue();
         if (remoteFileCheck(hostname, unzipFileDestination + "/" + UNZIPEXE)) {
@@ -239,17 +221,8 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
         } else {
             final String unzipFileSource = ApplicationProperties.get(BINARY_LOCATION_PROPERTY_KEY) + "/" + UNZIPEXE;
             LOGGER.info("unzipFileSource: " + unzipFileSource);
-            if (!remoteSecureCopyFile(hostname, unzipFileSource, unzipFileDestination)) {
-                final String message = UNZIPEXE + " cannot be scp from " + unzipFileSource + " to " + unzipFileDestination;
-                LOGGER.error(message);
-                throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, message);
-            }
-            if (!changeFileMode(hostname, "a+x", tocScriptsPath, UNZIPEXE)) {
-                String message = "Failed to change the file permissions in " + tocScriptsPath + "/" + UNZIPEXE;
-                LOGGER.error(message);
-                throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, message);
-            }
+            remoteSecureCopyFile(hostname, unzipFileSource, unzipFileDestination);
+            changeFileMode(hostname, "a+x", tocScriptsPath, UNZIPEXE);
         }
-
     }
 }
