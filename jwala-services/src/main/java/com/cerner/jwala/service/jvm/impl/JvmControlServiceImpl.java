@@ -33,6 +33,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 
+import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -189,7 +190,22 @@ public class JvmControlServiceImpl implements JvmControlService {
         }
         final String name = jvm.getJvmName();
         final String hostName = jvm.getHostName();
+        final String parentDir = new File(destPath).getParentFile().getAbsolutePath();
         CommandOutput commandOutput = remoteCommandExecutor.executeRemoteCommand(
+                name,
+                hostName,
+                JvmControlOperation.CREATE_DIRECTORY,
+                new WindowsJvmPlatformCommandProvider(),
+                parentDir
+        );
+        if (commandOutput.getReturnCode().wasSuccessful()) {
+            LOGGER.info("Successfully created parent dir {} on host {}", parentDir, hostName);
+        } else {
+            final String standardError = commandOutput.getStandardError().isEmpty() ? commandOutput.getStandardOutput() : commandOutput.getStandardError();
+            LOGGER.error("create command failed with error trying to create parent directory {} on {} :: ERROR: {}", parentDir, hostName, standardError);
+            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, standardError.isEmpty() ? CommandOutputReturnCode.fromReturnCode(commandOutput.getReturnCode().getReturnCode()).getDesc() : standardError);
+        }
+        commandOutput = remoteCommandExecutor.executeRemoteCommand(
                 name,
                 hostName,
                 JvmControlOperation.CHECK_FILE_EXISTS,

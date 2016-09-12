@@ -262,7 +262,7 @@ public class ApplicationServiceImpl implements ApplicationService {
             app.setParentJvm(jvm);
             final String destPath = ResourceFileGenerator.generateResourceConfig(metaDataPath, resourceGroup, app) + '/' + resourceTemplateName;
             String srcPath;
-            if (templateMetaData.getContentType().equals(ContentType.APPLICATION_BINARY.contentTypeStr)){
+            if (templateMetaData.getContentType().equals(ContentType.APPLICATION_BINARY.contentTypeStr)) {
                 srcPath = applicationPersistenceService.getResourceTemplate(appName, resourceTemplateName, jvmName, groupName);
             } else {
                 srcPath = confFile.getAbsolutePath().replace("\\", "/");
@@ -276,7 +276,22 @@ public class ApplicationServiceImpl implements ApplicationService {
 
             final String deployJvmName = jvm.getJvmName();
             final String hostName = jvm.getHostName();
+            final String parentDir = new File(destPath).getParentFile().getAbsolutePath();
             CommandOutput commandOutput = applicationCommandExecutor.executeRemoteCommand(
+                    deployJvmName,
+                    hostName,
+                    ApplicationControlOperation.CREATE_DIRECTORY,
+                    new WindowsApplicationPlatformCommandProvider(),
+                    parentDir
+            );
+            if (commandOutput.getReturnCode().wasSuccessful()) {
+                LOGGER.info("created the parent dir {} successfully", parentDir);
+            } else {
+                final String standardError = commandOutput.getStandardError().isEmpty() ? commandOutput.getStandardOutput() : commandOutput.getStandardError();
+                LOGGER.error("error in creating parent directory {} :: ERROR : ", parentDir, parentDir);
+                throw new DeployApplicationConfException(standardError);
+            }
+            commandOutput = applicationCommandExecutor.executeRemoteCommand(
                     deployJvmName,
                     hostName,
                     ApplicationControlOperation.CHECK_FILE_EXISTS,
@@ -447,8 +462,22 @@ public class ApplicationServiceImpl implements ApplicationService {
         Future<CommandOutput> commandOutputFuture = executorService.submit(new Callable<CommandOutput>() {
             @Override
             public CommandOutput call() throws Exception {
+                final String parentDir = new File(destPath).getParentFile().getAbsolutePath().replaceAll("\\\\", "/");
+                CommandOutput commandOutput = applicationCommandExecutor.executeRemoteCommand(
+                        null,
+                        host,
+                        ApplicationControlOperation.CREATE_DIRECTORY,
+                        new WindowsApplicationPlatformCommandProvider(),
+                        parentDir);
+                if (commandOutput.getReturnCode().wasSuccessful()) {
+                    LOGGER.info("Successfully created parent dir {} on host {}", parentDir, host);
+                } else {
+                    final String standardError = commandOutput.getStandardError().isEmpty() ? commandOutput.getStandardOutput() : commandOutput.getStandardError();
+                    LOGGER.error("Error in creating parent dir {} on host {}:: ERROR : {}", parentDir, host, standardError);
+                    throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, standardError);
+                }
                 LOGGER.info("Copying {} war to host {}", name, host);
-                CommandOutput commandOutput = applicationCommandExecutor.executeRemoteCommand(null, host, ApplicationControlOperation.SECURE_COPY, new WindowsApplicationPlatformCommandProvider(), tempWarFile.getAbsolutePath().replaceAll("\\\\", "/"), destPath);
+                commandOutput = applicationCommandExecutor.executeRemoteCommand(null, host, ApplicationControlOperation.SECURE_COPY, new WindowsApplicationPlatformCommandProvider(), tempWarFile.getAbsolutePath().replaceAll("\\\\", "/"), destPath);
 
                 if (application.isUnpackWar()) {
                     final String warName = application.getWarName();
@@ -462,6 +491,21 @@ public class ApplicationServiceImpl implements ApplicationService {
                     }
 
                     // copy the unpack war script to .toc
+                    final String tocScriptsParent = new File(tocScriptsPath).getParentFile().getAbsolutePath();
+                    commandOutput = applicationCommandExecutor.executeRemoteCommand(
+                            null,
+                            host,
+                            ApplicationControlOperation.CREATE_DIRECTORY,
+                            new WindowsApplicationPlatformCommandProvider(),
+                            tocScriptsParent
+                    );
+                    if (commandOutput.getReturnCode().wasSuccessful()) {
+                        LOGGER.info("Successfully created the parent dir {} on host", tocScriptsParent, host);
+                    } else {
+                        final String standardError = commandOutput.getStandardError().isEmpty() ? commandOutput.getStandardOutput() : commandOutput.getStandardError();
+                        LOGGER.error("Error in creating parent dir {} on host {}:: ERROR : {}", parentDir, host, standardError);
+                        throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, standardError);
+                    }
                     final String unpackWarScriptPath = ApplicationProperties.get("commands.scripts-path") + "/" + AemControl.Properties.UNPACK_WAR_SCRIPT_NAME;
                     commandOutput = applicationCommandExecutor.executeRemoteCommand(null, host, ApplicationControlOperation.SECURE_COPY, new WindowsApplicationPlatformCommandProvider(), unpackWarScriptPath, tocScriptsPath);
                     if (!commandOutput.getReturnCode().wasSuccessful()) {

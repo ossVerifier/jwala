@@ -715,7 +715,23 @@ public class ResourceServiceImpl implements ResourceService {
         // TODO update this to be derived from the resource type being copied
         final String name = "Ext Properties";
 
+        final String parentDir = new File(destPath).getParentFile().getAbsolutePath();
         CommandOutput commandOutput = remoteCommandExecutor.executeRemoteCommand(
+                name,
+                hostName,
+                ApplicationControlOperation.CREATE_DIRECTORY,
+                new WindowsApplicationPlatformCommandProvider(),
+                parentDir
+        );
+        if (commandOutput.getReturnCode().wasSuccessful()) {
+            LOGGER.info("Successfully created the parent dir {} on host {}", parentDir, hostName);
+        } else {
+            final String stdErr = commandOutput.getStandardError().isEmpty() ? commandOutput.getStandardOutput() : commandOutput.getStandardError();
+            LOGGER.error("Error in creating parent dir {} on host {}:: ERROR : {}", parentDir, hostName, stdErr);
+            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, stdErr);
+        }
+
+        commandOutput = remoteCommandExecutor.executeRemoteCommand(
                 name,
                 hostName,
                 ApplicationControlOperation.CHECK_FILE_EXISTS,

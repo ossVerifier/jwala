@@ -297,6 +297,11 @@ public class WebServerServiceRestImplTest {
         CommandOutput retSuccessExecData = new CommandOutput(new ExecReturnCode(0), "", "");
         when(webServerControlService.secureCopyFile(anyString(), anyString(), anyString(), anyString())).thenReturn(retSuccessExecData);
         when(impl.getResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"contentType\":\"text/plain\",\"deployPath\":\"./anyPath\"}");
+        CommandOutput commandOutput = mock(CommandOutput.class);
+        when(webServerControlService.createDirectory(isNull(WebServer.class), anyString())).thenReturn(commandOutput);
+        ExecReturnCode execReturnCode = mock(ExecReturnCode.class);
+        when(commandOutput.getReturnCode()).thenReturn(execReturnCode);
+        when(commandOutput.getReturnCode().wasSuccessful()).thenReturn(true);
         when(resourceService.generateResourceGroup()).thenReturn(new ResourceGroup());
         Response response = webServerServiceRest.generateAndDeployConfig(webServer.getName(), "httpd.conf", authenticatedUser);
         assertTrue(response.hasEntity());
@@ -308,6 +313,11 @@ public class WebServerServiceRestImplTest {
         when(webServerControlService.secureCopyFile(anyString(), anyString(), anyString(), anyString())).thenReturn(retSuccessExecData);
         when(impl.getResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"contentType\":\"application/binary\",\"deployPath\":\"./anyPath\"}");
         when(resourceService.generateResourceGroup()).thenReturn(new ResourceGroup());
+        CommandOutput commandOutput = mock(CommandOutput.class);
+        when(webServerControlService.createDirectory(isNull(WebServer.class), anyString())).thenReturn(commandOutput);
+        ExecReturnCode execReturnCode = mock(ExecReturnCode.class);
+        when(commandOutput.getReturnCode()).thenReturn(execReturnCode);
+        when(commandOutput.getReturnCode().wasSuccessful()).thenReturn(true);
         Response response = webServerServiceRest.generateAndDeployConfig(webServer.getName(), "httpd.exe", authenticatedUser);
         assertTrue(response.hasEntity());
     }
@@ -333,6 +343,11 @@ public class WebServerServiceRestImplTest {
     public void testGenerateAndDeployConfigFailsSecureCopy() throws CommandFailureException, IOException {
         when(impl.getResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"contentType\":\"text/plain\",\"deployPath\":\"./anyPath\"}");
         when(resourceService.generateResourceGroup()).thenReturn(new ResourceGroup());
+        CommandOutput commandOutput = mock(CommandOutput.class);
+        when(webServerControlService.createDirectory(isNull(WebServer.class), anyString())).thenReturn(commandOutput);
+        ExecReturnCode execReturnCode = mock(ExecReturnCode.class);
+        when(commandOutput.getReturnCode()).thenReturn(execReturnCode);
+        when(commandOutput.getReturnCode().wasSuccessful()).thenReturn(true);
         when(webServerControlService.secureCopyFile(anyString(), anyString(), anyString(), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(1), "", "FAILED SECURE COPY TEST"));
         boolean failedSecureCopy = false;
         Response response = null;
@@ -351,6 +366,11 @@ public class WebServerServiceRestImplTest {
         when(impl.getResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"contentType\":\"text/plain\",\"deployPath\":\"./anyPath\"}");
         when(resourceService.generateResourceGroup()).thenReturn(new ResourceGroup());
         when(webServerControlService.secureCopyFile(anyString(), anyString(), anyString(), anyString())).thenThrow(new CommandFailureException(new ExecCommand("Fail secure copy"), new Exception()));
+        CommandOutput commandOutput = mock(CommandOutput.class);
+        when(webServerControlService.createDirectory(isNull(WebServer.class), anyString())).thenReturn(commandOutput);
+        ExecReturnCode execReturnCode = mock(ExecReturnCode.class);
+        when(commandOutput.getReturnCode()).thenReturn(execReturnCode);
+        when(commandOutput.getReturnCode().wasSuccessful()).thenReturn(true);
         Response response = null;
         response = webServerServiceRest.generateAndDeployConfig(webServer.getName(), "httpd.conf", authenticatedUser);
         assertNotNull(response);

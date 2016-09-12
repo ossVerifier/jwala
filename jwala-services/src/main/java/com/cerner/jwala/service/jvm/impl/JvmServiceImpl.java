@@ -377,7 +377,9 @@ public class JvmServiceImpl implements JvmService {
         final String tocScriptsPath = AemControl.Properties.USER_TOC_SCRIPTS_PATH.getValue();
         final String jvmName = jvm.getJvmName();
         final String userId = user.getId();
+        final String parentDir = new File(tocScriptsPath).getParentFile().getAbsolutePath();
 
+        createParentDir(jvm, parentDir);
         final String failedToCopyMessage = "Failed to secure copy ";
         final String duringCreationMessage = " during the creation of ";
         if (!jvmControlService.secureCopyFile(secureCopyRequest, deployConfigJarPath, tocScriptsPath, userId).getReturnCode().wasSuccessful()) {
@@ -472,6 +474,17 @@ public class JvmServiceImpl implements JvmService {
         return jvmResourcesNameDir;
     }
 
+    protected void createParentDir(final Jvm jvm, final String parentDir) throws CommandFailureException {
+        final CommandOutput commandOutput = jvmControlService.createDirectory(jvm, parentDir);
+        if (commandOutput.getReturnCode().wasSuccessful()) {
+            LOGGER.info("created {} directory successfully", parentDir);
+        } else {
+            final String standardError = commandOutput.getStandardError().isEmpty() ? commandOutput.getStandardOutput() : commandOutput.getStandardError();
+            LOGGER.error("create command failed with error trying to create parent directory {} on {} :: ERROR: {}", parentDir, jvm.getHostName(), standardError);
+            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, standardError.isEmpty() ? CommandOutputReturnCode.fromReturnCode(commandOutput.getReturnCode().getReturnCode()).getDesc() : standardError);
+        }
+    }
+
     protected void secureCopyJvmConfigJar(Jvm jvm, String jvmConfigTar, User user) throws CommandFailureException {
         String configTarName = jvm.getJvmName() + CONFIG_JAR;
         secureCopyFileToJvm(jvm, ApplicationProperties.get("paths.generated.resource.dir") + "/" + configTarName, AemControl.Properties.USER_TOC_SCRIPTS_PATH + "/" + configTarName, user);
@@ -543,6 +556,8 @@ public class JvmServiceImpl implements JvmService {
      * @throws CommandFailureException If the command fails, this exception contains the details of the failure.
      */
     protected void secureCopyFileToJvm(final Jvm jvm, final String sourceFile, final String destinationFile, User user) throws CommandFailureException {
+        final String parentDir = new File(destinationFile).getParentFile().getAbsolutePath().replaceAll("\\\\", "/");
+        createParentDir(jvm, parentDir);
         final ControlJvmRequest controlJvmRequest = new ControlJvmRequest(jvm.getId(), JvmControlOperation.SECURE_COPY);
         final CommandOutput commandOutput = jvmControlService.secureCopyFile(controlJvmRequest, sourceFile, destinationFile, user.getId());
         if (commandOutput.getReturnCode().wasSuccessful()) {
@@ -646,6 +661,8 @@ public class JvmServiceImpl implements JvmService {
 
     protected void deployJvmConfigFile(String fileName, Jvm jvm, String destPath, String sourcePath, User user)
             throws CommandFailureException {
+        final String parentDir = new File(destPath).getParentFile().getAbsolutePath();
+        createParentDir(jvm, parentDir);
         CommandOutput result =
                 jvmControlService.secureCopyFile(new ControlJvmRequest(jvm.getId(), JvmControlOperation.SECURE_COPY), sourcePath, destPath, user.getId());
         if (result.getReturnCode().wasSuccessful()) {

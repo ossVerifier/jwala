@@ -216,10 +216,9 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
                 // copy the file
                 configFilePath = configFile.getAbsolutePath().replace("\\", "/");
             }
-
+            String destinationPath = ResourceFileGenerator.generateResourceConfig(metaData.getDeployPath(), resourceService.generateResourceGroup(), webServerService.getWebServer(aWebServerName)) + "/" + resourceFileName;
             final CommandOutput execData;
-            String metaDataPath = ResourceFileGenerator.generateResourceConfig(metaData.getDeployPath(), resourceService.generateResourceGroup(), webServerService.getWebServer(aWebServerName)) + "/" + resourceFileName;
-            execData = webServerControlService.secureCopyFile(aWebServerName, configFilePath, metaDataPath, user.getUser().getId());
+            execData = webServerControlService.secureCopyFile(aWebServerName, configFilePath, destinationPath, user.getUser().getId());
             if (execData.getReturnCode().wasSuccessful()) {
                 LOGGER.info("Copy of {} successful: {}", resourceFileName, configFilePath);
             } else {

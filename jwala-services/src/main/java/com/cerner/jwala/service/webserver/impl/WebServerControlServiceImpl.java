@@ -32,6 +32,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 
+import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -163,7 +164,22 @@ public class WebServerControlServiceImpl implements WebServerControlService {
 
         // back up the original file first
         final String host = aWebServer.getHost();
-        CommandOutput commandOutput = commandExecutor.executeRemoteCommand(aWebServerName,
+        final String parentDir = new File(destPath).getParentFile().getAbsolutePath();
+        CommandOutput commandOutput = commandExecutor.executeRemoteCommand(
+                aWebServerName,
+                host,
+                WebServerControlOperation.CREATE_DIRECTORY,
+                new WindowsWebServerPlatformCommandProvider(),
+                destPath
+        );
+        if (commandOutput.getReturnCode().wasSuccessful()) {
+            LOGGER.info("Successfully created parent directory {} on host {}", parentDir, host);
+        } else {
+            final String standardError = commandOutput.getStandardError().isEmpty() ? commandOutput.getStandardOutput() : commandOutput.getStandardError();
+            LOGGER.error("create command failed with error trying to create parent directory {} on {} :: ERROR: {}", parentDir, host, standardError);
+            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, standardError.isEmpty() ? CommandOutputReturnCode.fromReturnCode(commandOutput.getReturnCode().getReturnCode()).getDesc() : standardError);
+        }
+        commandOutput = commandExecutor.executeRemoteCommand(aWebServerName,
                 host,
                 WebServerControlOperation.CHECK_FILE_EXISTS,
                 new WindowsWebServerPlatformCommandProvider(),
