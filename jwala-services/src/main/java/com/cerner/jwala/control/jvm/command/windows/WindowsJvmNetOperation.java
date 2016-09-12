@@ -161,8 +161,8 @@ public enum WindowsJvmNetOperation implements ServiceCommandBuilder {
             JvmControlOperation.class);
 
     public static final String REMOTE_PATHS_INSTANCES = ApplicationProperties.get("remote.paths.instances");
-    private static final String REMOTE_HEAP_DUMP_DIR = ApplicationProperties.get("stp.data.dir");
-    private static final String REMOTE_JAVA_HOME = ApplicationProperties.get("stp.java.home");
+    private static final String REMOTE_HEAP_DUMP_DIR = ApplicationProperties.get("remote.jwala.data.dir");
+    private static final String REMOTE_JAVA_HOME = ApplicationProperties.get("remote.jwala.java.home");
     private static final String JMAP_DUMP_LIVE_ENABLED = ApplicationProperties.get("jmap.dump.live.enabled");
     private static final String REMOTE_COMMANDS_USER_SCRIPTS = ApplicationProperties.get("remote.commands.user-scripts");
 
