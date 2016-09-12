@@ -14,7 +14,7 @@ public enum ApplicationPropertySourceDefinition {
     RESOURCES_ENABLED("resourcesEnabled", "resources.enabled", "true", VariableStyle.STRING),
     OPS_GRP_CHILDREN_VIEW_OPEN("opsGrpChildrenViewOpen", "operations.group.children.view.open", "true", VariableStyle.STRING),
     OPS_JVM_MGR_BTN_ENABLED("opsJvmMgrBtnEnabled", "operations.jvm.mgr.btn.enabled", "true", VariableStyle.STRING),
-    JWALA_ROLE_ADMIN("jwalaRoleAdmin", "toc.role.admin", "Tomcat Admin", VariableStyle.STRING);
+    JWALA_ROLE_ADMIN("jwalaRoleAdmin", "jwala.role.admin", "Tomcat Admin", VariableStyle.STRING);
 
     private final String variableName;
     private final String propertyKey;
