@@ -406,6 +406,9 @@ public class JvmServiceImpl implements JvmService {
         LOGGER.info("Generating JVM configuration tar for {}", jvmName);
         final String jvmGeneratedResourcesTempDir = ApplicationProperties.get("paths.generated.resource.dir");
         final String instanceTemplateZipName = ApplicationProperties.get("jwala.instance-template");
+        final String binaryDir = ApplicationProperties.get("jwala.binary.dir");
+        final String agentDir = ApplicationProperties.get("jwala.agent.dir");
+
         String jvmResourcesNameDir = jvmGeneratedResourcesTempDir + "/" + jvmName;
         LOGGER.debug("generated resources dir: {}", jvmGeneratedResourcesTempDir);
         LOGGER.debug("generated JVM directory location: {}", jvmResourcesNameDir);
@@ -414,19 +417,23 @@ public class JvmServiceImpl implements JvmService {
         String configJarPath;
         try {
             final String destDirPath = generatedDir.getAbsolutePath();
-            LOGGER.debug("Start Unzip Instance Template {} to {} ", instanceTemplateZipName, generatedDir);
+            final File generatedJvmDestDirBin = new File(destDirPath + "/bin");
+            LOGGER.debug("Start Unzip Instance Template {} to {} ", binaryDir+"/"+instanceTemplateZipName, generatedDir);
             // Copy the templates that would be included in the zip file.
-            fileManager.unZipFile(new File(instanceTemplateZipName), generatedDir);
-            LOGGER.debug("End Unzip Instance Template {} to {} ", instanceTemplateZipName, generatedDir);
+            fileManager.unZipFile(new File(binaryDir+"/"+instanceTemplateZipName), generatedJvmDestDirBin);
+            LOGGER.debug("End Unzip Instance Template {} to {} ", binaryDir+"/"+instanceTemplateZipName, generatedDir);
             final String generatedText = generateInvokeBat(jvmName);
             final String invokeBatDir = generatedDir + "/bin";
             LOGGER.debug("generated invoke.bat text: {}", generatedText);
             LOGGER.debug("generating template in location: {}", invokeBatDir + "/" + CONFIG_FILENAME_INVOKE_BAT);
             createConfigFile(invokeBatDir + "/", CONFIG_FILENAME_INVOKE_BAT, generatedText);
-
+            // copy Agent, JodaTime & JGroup Libraries
+            // create the lib directory
+            final File generatedJvmDestDirLib = new File(destDirPath + "/lib");
+            LOGGER.debug("Copy agent dir: {} to instance template {}", agentDir, generatedJvmDestDirLib);
+            FileUtils.copyDirectoryToDirectory(new File(agentDir), generatedJvmDestDirLib);
             // copy the start and stop scripts to the instances/jvm/bin directory
             final String commandsScriptsPath = ApplicationProperties.get("commands.scripts-path");
-            final File generatedJvmDestDirBin = new File(destDirPath + "/bin");
             FileUtils.copyFileToDirectory(new File(commandsScriptsPath + "/" + AemControl.Properties.START_SCRIPT_NAME.getValue()), generatedJvmDestDirBin);
             FileUtils.copyFileToDirectory(new File(commandsScriptsPath + "/" + AemControl.Properties.STOP_SCRIPT_NAME.getValue()), generatedJvmDestDirBin);
 
