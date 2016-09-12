@@ -436,7 +436,13 @@ public class JvmServiceImpl implements JvmService {
                 generatedJvmDestDirLib.mkdir();
             }
             LOGGER.debug("Copy agent dir: {} to instance template {}", agentDir, generatedJvmDestDirLib);
-            FileUtils.copyDirectoryToDirectory(new File(agentDir), generatedJvmDestDirLib);
+            File jwalaAgentDir = new File(agentDir);
+            if(jwalaAgentDir.exists() && jwalaAgentDir.isDirectory()){
+                File[] files  = jwalaAgentDir.listFiles();
+                    for(File file:files) {
+                        FileUtils.copyFileToDirectory(file, generatedJvmDestDirLib);
+                    }
+            }
             // copy the start and stop scripts to the instances/jvm/bin directory
             final String commandsScriptsPath = ApplicationProperties.get("commands.scripts-path");
             final File generatedJvmDestDirBin = new File(destDirPath + "/bin");
