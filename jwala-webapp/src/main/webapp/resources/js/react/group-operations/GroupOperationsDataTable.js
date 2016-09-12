@@ -764,9 +764,6 @@ var GroupOperationsDataTable = React.createClass({
 
         this.verifyAndConfirmJvmWebServerControlOperation(data.id.id, data.parentItemId, buttonSelector, data.jvmName, data.groups, "stop", doJvmStop, cancelCallback, "JVM");
     },
-    buildHRef: function (data) {
-        return "idp?saml_redirectUrl=" + window.location.protocol + "//" + data.hostName + ":" + (window.location.protocol.toUpperCase() === "HTTPS:" ? data.httpsPort : data.httpPort) + "/manager/";
-    },
     jvmDiagnose: function (data, buttonSelector, cancelCallback) {
         var commandStatusWidget = this.props.commandStatusWidgetMap[GroupOperations.getExtDivCompId(data.parentItemId)];
         if (commandStatusWidget !== undefined) {
@@ -776,10 +773,6 @@ var GroupOperationsDataTable = React.createClass({
                 from: "JVM " + data.jvmName, userId: AdminTab.getCookie("userName") }, "action-status-font");
         }
         ServiceFactory.getJvmService().diagnoseJvm(data.id.id);
-    },
-    /* web server callbacks */
-    buildHRefLoadBalancerConfig: function (data) {
-        return "https://" + data.host + ":" + data.httpsPort + jwalaVars.loadBalancerStatusMount;
     },
     webServerStart: function (id, buttonSelector, data, parentItemId, cancelCallback) {
         var self = this;
