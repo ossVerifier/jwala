@@ -104,7 +104,7 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
     public void changeFileMode(final String hostname, final String mode, final String targetDir, final String target) {
         try {
             if (binaryDistributionControlService.changeFileMode(hostname, mode, targetDir, target).getReturnCode().wasSuccessful()) {
-                LOGGER.info("chnage file mode " + mode + " at targetDir " + targetDir);
+                LOGGER.info("change file mode " + mode + " at targetDir " + targetDir);
             } else {
                 String message = "Failed to change the file permissions in " + targetDir + "/" + UNZIPEXE;
                 LOGGER.error(message);
