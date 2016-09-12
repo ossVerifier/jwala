@@ -47,7 +47,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private static final String PUBLIC_RESOURCES = "/public-resources/**";
     private static final String PAGE_CONSTANTS = "/page-constants";
     private static final String  WEBSERVER_CONF_URL = "/**/webservers/**/conf/deploy";
-    private static final String  WEBSERVER_GENERATE_URL = "/jwala/**/groups/**/webservers/conf/deploy";
+    private static final String  WEBSERVER_GENERATE_URL = "/**/**/groups/**/webservers/conf/deploy";
     private static final String  JVM_CONF_URL = "/**/jvms/**/conf";
     private static final String  IDP_URL = "/idp";
     /*
