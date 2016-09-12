@@ -1,6 +1,7 @@
 package com.cerner.jwala.files;
 
 import com.cerner.jwala.common.domain.model.app.Application;
+import com.cerner.jwala.common.properties.ApplicationProperties;
 import com.cerner.jwala.files.FileManager;
 import com.cerner.jwala.files.FilesConfiguration;
 import com.cerner.jwala.files.RepositoryService;
@@ -13,6 +14,8 @@ import com.cerner.jwala.files.resources.ResourceTypeDeserializer;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.test.context.ContextConfiguration;
@@ -36,7 +39,8 @@ import static org.junit.Assert.assertTrue;
     FileManagerTest.CommonConfiguration.class})
 @RunWith(SpringJUnit4ClassRunner.class)
 public class FileManagerTest {
-    
+    private static final Logger LOGGER = LoggerFactory.getLogger(FileManagerTest.class);
+
     static class CommonConfiguration { 
         
         @Bean FileSystem getPlatformFileSystem() {
@@ -111,9 +115,15 @@ public class FileManagerTest {
     }
     @Test
     public void testUnZip() throws IOException{
+//        System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, new File(".").getAbsolutePath() + "/src/test/resources/properties");
+        System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, "build/resources/test");
+        ApplicationProperties.getInstance();
         File tempDir = new File("build/resources/test/temp");
         tempDir.mkdir();
-        File zipFile = new File(getClass().getClassLoader().getResource("instance-template-7.0.55.zip").getFile());
+        String instanceTemplatePath = ApplicationProperties.get("jwala.instance-template");
+        LOGGER.info("instanceTemplatePath: "+instanceTemplatePath);
+        LOGGER.info("build/resources/test/");
+        File zipFile = new File("build/resources/test/"+instanceTemplatePath);
         fileManager.unZipFile(zipFile,tempDir);
         File serverXml = new File(tempDir.getAbsolutePath()+"/conf/server.xml");
         assertTrue(serverXml.exists());
