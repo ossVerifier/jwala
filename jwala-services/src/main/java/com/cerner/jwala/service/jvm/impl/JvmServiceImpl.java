@@ -417,10 +417,9 @@ public class JvmServiceImpl implements JvmService {
         String configJarPath;
         try {
             final String destDirPath = generatedDir.getAbsolutePath();
-            final File generatedJvmDestDirBin = new File(destDirPath + "/bin");
             LOGGER.debug("Start Unzip Instance Template {} to {} ", binaryDir+"/"+instanceTemplateZipName, generatedDir);
             // Copy the templates that would be included in the zip file.
-            fileManager.unZipFile(new File(binaryDir+"/"+instanceTemplateZipName), generatedJvmDestDirBin);
+            fileManager.unZipFile(new File(binaryDir+"/"+instanceTemplateZipName), generatedDir);
             LOGGER.debug("End Unzip Instance Template {} to {} ", binaryDir+"/"+instanceTemplateZipName, generatedDir);
             final String generatedText = generateInvokeBat(jvmName);
             final String invokeBatDir = generatedDir + "/bin";
@@ -434,6 +433,7 @@ public class JvmServiceImpl implements JvmService {
             FileUtils.copyDirectoryToDirectory(new File(agentDir), generatedJvmDestDirLib);
             // copy the start and stop scripts to the instances/jvm/bin directory
             final String commandsScriptsPath = ApplicationProperties.get("commands.scripts-path");
+            final File generatedJvmDestDirBin = new File(destDirPath + "/bin");
             FileUtils.copyFileToDirectory(new File(commandsScriptsPath + "/" + AemControl.Properties.START_SCRIPT_NAME.getValue()), generatedJvmDestDirBin);
             FileUtils.copyFileToDirectory(new File(commandsScriptsPath + "/" + AemControl.Properties.STOP_SCRIPT_NAME.getValue()), generatedJvmDestDirBin);
 
