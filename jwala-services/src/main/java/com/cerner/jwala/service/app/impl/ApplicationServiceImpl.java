@@ -276,7 +276,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 
             final String deployJvmName = jvm.getJvmName();
             final String hostName = jvm.getHostName();
-            final String parentDir = new File(destPath).getParentFile().getAbsolutePath();
+            final String parentDir = new File(destPath).getParentFile().getAbsolutePath().replaceAll("\\\\", "/");
             CommandOutput commandOutput = applicationCommandExecutor.executeRemoteCommand(
                     deployJvmName,
                     hostName,
@@ -491,7 +491,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                     }
 
                     // copy the unpack war script to .toc
-                    final String tocScriptsParent = new File(tocScriptsPath).getParentFile().getAbsolutePath();
+                    final String tocScriptsParent = new File(tocScriptsPath).getParentFile().getAbsolutePath().replaceAll("\\\\", "/");
                     commandOutput = applicationCommandExecutor.executeRemoteCommand(
                             null,
                             host,
@@ -503,7 +503,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                         LOGGER.info("Successfully created the parent dir {} on host", tocScriptsParent, host);
                     } else {
                         final String standardError = commandOutput.getStandardError().isEmpty() ? commandOutput.getStandardOutput() : commandOutput.getStandardError();
-                        LOGGER.error("Error in creating parent dir {} on host {}:: ERROR : {}", parentDir, host, standardError);
+                        LOGGER.error("Error in creating parent dir {} on host {}:: ERROR : {}", tocScriptsParent, host, standardError);
                         throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, standardError);
                     }
                     final String unpackWarScriptPath = ApplicationProperties.get("commands.scripts-path") + "/" + AemControl.Properties.UNPACK_WAR_SCRIPT_NAME;

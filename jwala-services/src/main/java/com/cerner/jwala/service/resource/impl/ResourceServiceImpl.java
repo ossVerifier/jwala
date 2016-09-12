@@ -715,7 +715,7 @@ public class ResourceServiceImpl implements ResourceService {
         // TODO update this to be derived from the resource type being copied
         final String name = "Ext Properties";
 
-        final String parentDir = new File(destPath).getParentFile().getAbsolutePath();
+        final String parentDir = new File(destPath).getParentFile().getAbsolutePath().replaceAll("\\\\", "/");
         CommandOutput commandOutput = remoteCommandExecutor.executeRemoteCommand(
                 name,
                 hostName,

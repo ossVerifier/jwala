@@ -377,7 +377,7 @@ public class JvmServiceImpl implements JvmService {
         final String tocScriptsPath = AemControl.Properties.USER_TOC_SCRIPTS_PATH.getValue();
         final String jvmName = jvm.getJvmName();
         final String userId = user.getId();
-        final String parentDir = new File(tocScriptsPath).getParentFile().getAbsolutePath();
+        final String parentDir = new File(tocScriptsPath).getParentFile().getAbsolutePath().replaceAll("\\\\", "/");
 
         createParentDir(jvm, parentDir);
         final String failedToCopyMessage = "Failed to secure copy ";
@@ -671,7 +671,7 @@ public class JvmServiceImpl implements JvmService {
 
     protected void deployJvmConfigFile(String fileName, Jvm jvm, String destPath, String sourcePath, User user)
             throws CommandFailureException {
-        final String parentDir = new File(destPath).getParentFile().getAbsolutePath();
+        final String parentDir = new File(destPath).getParentFile().getAbsolutePath().replaceAll("\\\\", "/");
         createParentDir(jvm, parentDir);
         CommandOutput result =
                 jvmControlService.secureCopyFile(new ControlJvmRequest(jvm.getId(), JvmControlOperation.SECURE_COPY), sourcePath, destPath, user.getId());

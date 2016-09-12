@@ -164,7 +164,7 @@ public class WebServerControlServiceImpl implements WebServerControlService {
 
         // back up the original file first
         final String host = aWebServer.getHost();
-        final String parentDir = new File(destPath).getParentFile().getAbsolutePath();
+        final String parentDir = new File(destPath).getParentFile().getAbsolutePath().replaceAll("\\\\", "/");
         CommandOutput commandOutput = commandExecutor.executeRemoteCommand(
                 aWebServerName,
                 host,

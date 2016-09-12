@@ -439,7 +439,7 @@ public class GroupServiceImpl implements GroupService {
             } else {
                 srcPath = confFile.getAbsolutePath().replace("\\", "/");
             }
-            final String parentDir = new File(destPath).getParentFile().getAbsolutePath();
+            final String parentDir = new File(destPath).getParentFile().getAbsolutePath().replaceAll("\\\\", "/");
             CommandOutput commandOutput = remoteCommandExecutor.executeRemoteCommand(
                     jvmName,
                     hostName,
@@ -509,7 +509,7 @@ public class GroupServiceImpl implements GroupService {
                 }
 
                 final String unpackWarScriptPath = ApplicationProperties.get("commands.scripts-path") + "/" + AemControl.Properties.UNPACK_WAR_SCRIPT_NAME;
-                final String parentDirScripts = new File(unpackWarScriptPath).getParentFile().getAbsolutePath();
+                final String parentDirScripts = new File(unpackWarScriptPath).getParentFile().getAbsolutePath().replaceAll("\\\\", "/");
                 commandOutput = remoteCommandExecutor.executeRemoteCommand(
                         jvmName,
                         hostName,
