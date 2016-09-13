@@ -4,7 +4,6 @@ dependencies {
     compile project(":jwala-persistence")
     compile project(":jwala-common")
 
-    compile group: "com.cerner.cto.infrastructure", name: "infrastructure-provided", version: "$project.versions.infrastructureProvided", transitive: false
     compile group: "org.springframework", name: "spring-core", version: "$project.versions.spring"
     compile group: "org.springframework", name: "spring-context", version: "$project.versions.spring"
     compile group: "org.springframework", name: "spring-web", version: "$project.versions.spring"
@@ -33,16 +32,9 @@ dependencies {
     testCompile group: "org.mockito", name: "mockito-core", version: "$project.versions.mockito"
     testCompile group: 'org.objenesis', name: 'objenesis', version: "$project.versions.objenesis"
     testCompile group: "com.h2database", name: "h2", version: "$project.versions.h2"
-    testRuntime group: "com.cerner.cto.infrastructure", name: "infrastructure-provided", version: "$project.versions.infrastructureProvided", transitive: false
     testRuntime group: 'org.apache.tomcat', name: 'tomcat-coyote', version: "$project.versions.tomcat"
     testRuntime group: 'org.apache.tomcat', name: 'tomcat-util', version: "$project.versions.tomcat"
 
-}
-
-test {
-    systemProperty 'com.siemens.cto.infrastructure.keyfile', 'src/test/resources/META-INF/keyfile'
-    systemProperty 'com.siemens.cto.infrastructure.iv', '025f9fbcfa17ea27a7715ab449ee81f9'
-    systemProperty 'com.siemens.cto.infrastructure.bits', '128'
 }
 
 sourceSets.main.compileClasspath += configurations.providedCompile

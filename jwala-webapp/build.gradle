@@ -39,10 +39,6 @@ dependencies {
     providedCompile group: "javax.servlet", name: "javax.servlet-api", version: "$project.versions.javax_servlet_api"
     providedCompile group: 'commons-collections', name: 'commons-collections', version: '3.2.2'
     providedCompile group: 'commons-codec', name: 'commons-codec', version: '1.6'
-
-    providedCompile 'com.cerner.cto.infrastructure:infrastructure-provided:' + "$project.versions.infrastructureProvided" + '@jar'
-    providedCompile 'com.cerner.cto.infrastructure:infrastructure-security:' + "$project.versions.infrastructureProvided" + '@jar'
-
     providedCompile group: 'joda-time', name: 'joda-time', version: "$project.versions.jodaTime"
 
     compile project(":jwala-common")

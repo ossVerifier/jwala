@@ -46,7 +46,7 @@ IF "%JWALA_PS_LOC%" == "" (
 :: --------------------------------------------------------------------------------------------------------------------------------------------------
 :: JWALA_HOME, gsm classLoaderUrl, and property source location are needed as system properties for replacement in files like server.xml or context.xml
 :: --------------------------------------------------------------------------------------------------------------------------------------------------
-SET CATALINA_OPTS=-XX:PermSize=512m -XX:MaxPermSize=512m -DJWALA_HOME=%JWALA_HOME% -Dgsm.classloader.url=d:/jwala/app/lib/tomcat/gsm -Dcom.cerner.cto.infrastructure.properties.propertySourceLocations=%JWALA_PS_LOC%
+SET CATALINA_OPTS=-XX:PermSize=512m -XX:MaxPermSize=512m -DJWALA_HOME=%JWALA_HOME%
 
 CALL:jwalaSet PROPERTIES_ROOT_PATH d:\jwala\app\properties
 SET JWALA_OPTS=-DPROPERTIES_ROOT_PATH=%PROPERTIES_ROOT_PATH%

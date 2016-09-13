@@ -10,7 +10,7 @@ import java.util.Map;
 
 /**
  * JvmState defines the known states for JVMs.
- * JVMs utilize infrastructure-provided code to send JVM state to Jwala.
+ * JVMs utilize jwala-tomcat-agent code to send JVM state to Jwala.
  * The translation is done using the enum names defined for JvmState here.
  * 
  * @author horspe00
