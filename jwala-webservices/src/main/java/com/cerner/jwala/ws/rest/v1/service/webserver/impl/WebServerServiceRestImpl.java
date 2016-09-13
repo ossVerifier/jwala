@@ -333,7 +333,13 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
         final String webServerName = webServer.getName();
         final String startScriptName = AemControl.Properties.START_SCRIPT_NAME.getValue();
         final String sourceStartServicePath = COMMANDS_SCRIPTS_PATH + "/" + startScriptName;
-        final String destHttpdConfPath = ApplicationProperties.get("remote.paths.httpd.conf") + "/" + new File(sourceStartServicePath).getName();
+        final String destHttpdConfPath = ApplicationProperties.get("remote.paths.httpd.conf") + "/";
+        if (webServerControlService.createDirectory(webServer, destHttpdConfPath).getReturnCode().wasSuccessful()) {
+            LOGGER.info("Successfully created the directory {}", destHttpdConfPath);
+        } else {
+            LOGGER.error("Failed to create the directory {} during creation of {}", destHttpdConfPath, webServerName);
+            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to secure copy file " + sourceStartServicePath + " during the creation of " + webServerName);
+        }
         if (!webServerControlService.secureCopyFile(webServerName, sourceStartServicePath, destHttpdConfPath, userId).getReturnCode().wasSuccessful()) {
             LOGGER.error("Failed to secure copy file {} during creation of {}", sourceStartServicePath, webServerName);
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to secure copy file " + sourceStartServicePath + " during the creation of " + webServerName);
