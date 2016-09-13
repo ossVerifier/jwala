@@ -21,7 +21,7 @@ dependencies {
     compile group: 'org.apache.openjpa', name: 'openjpa', version: "$project.versions.jpa"
     compile group: "commons-io", name: "commons-io", version: "$project.versions.commons_io"
 
-    providedCompile group: 'org.apache.tomcat', name: 'tomcat-catalina', version: '8.0.33'
+    providedCompile group: 'org.apache.tomcat', name: 'tomcat-catalina', version: "$project.versions.tomcat"
 
     compile group: "de.jkeylockmanager", name: "jkeylockmanager", version: "$project.versions.jkeylockmanager"
 
