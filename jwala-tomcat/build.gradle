@@ -106,17 +106,26 @@ task copyJwalaAgent(dependsOn: copyJwalaH2EmbededJar, type: Copy) {
     project(':jwala-tomcat-agent') {
         dependsOn(build)
     }
-    from project(':jwala-tomcat-agent').file("build/libs")
+    from (project(':jwala-tomcat-agent').file("build/libs"))
+    from (file("$buildDir/$tomcatDir/lib/")){
+        include "$jgroups_lib"
+        include "$joda_time_lib"
+    }
     into file("$buildDir/$tomcatDir/data/agent")
 }
-task copyJwalaWebappWar(dependsOn: copyJwalaAgent, type: Copy) {
+task deleteJwalaAgentDependencises(dependsOn: copyJwalaAgent, type: Delete){
+    delete fileTree("$buildDir/$tomcatDir/lib/") {
+        include "$jgroups_lib"
+        include "$joda_time_lib"
+    }
+}
+task copyJwalaWebappWar(dependsOn: deleteJwalaAgentDependencises, type: Copy) {
     project(':jwala-webapp') {
         dependsOn(build)
     }
     from project(':jwala-webapp').file("build/libs")
     into file("$buildDir/$tomcatDir/data/webapps")
 }
-
 task copySql(dependsOn: [':jwala-persistence:createDdl', copyJwalaWebappWar], type: Copy) {
     from project(':jwala-persistence').projectDir
     include 'create.sql'
