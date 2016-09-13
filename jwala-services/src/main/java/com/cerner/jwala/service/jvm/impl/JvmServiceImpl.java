@@ -502,7 +502,16 @@ public class JvmServiceImpl implements JvmService {
     }
 
     protected void deployJvmConfigJar(Jvm jvm, User user, String jvmConfigTar) throws CommandFailureException {
-        CommandOutput execData = jvmControlService.controlJvm(
+        final String parentDir = ApplicationProperties.get("remote.paths.instances");
+        CommandOutput execData = jvmControlService.createDirectory(jvm, parentDir);
+        if (execData.getReturnCode().wasSuccessful()) {
+            LOGGER.info("Successfully created the parent directory {}", parentDir);
+        } else {
+            String standardError = execData.getStandardError().isEmpty() ? execData.getStandardOutput() : execData.getStandardError();
+            LOGGER.error("Deploy command completed with error trying to extract and back up JVM config {} :: ERROR: {}", jvm.getJvmName(), standardError);
+            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, standardError.isEmpty() ? CommandOutputReturnCode.fromReturnCode(execData.getReturnCode().getReturnCode()).getDesc() : standardError);
+        }
+        execData = jvmControlService.controlJvm(
                 new ControlJvmRequest(jvm.getId(), JvmControlOperation.DEPLOY_CONFIG_ARCHIVE), user);
         if (execData.getReturnCode().wasSuccessful()) {
             LOGGER.info("Deployment of config tar was successful: {}", jvmConfigTar);
