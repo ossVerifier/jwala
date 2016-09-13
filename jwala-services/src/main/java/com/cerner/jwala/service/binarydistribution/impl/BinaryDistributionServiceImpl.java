@@ -80,22 +80,19 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
                         LOGGER.debug("binary zip does not exists, create zip");
                         zipFile = zipBinary(binaryDir + "/" + binaryName);
                     }
-
                     remoteCreateDirectory(hostname, binaryDeployDir);
-
                     remoteSecureCopyFile(hostname, zipFile, destinationZipFile);
-
-                    remoteUnzipBinary(hostname, AemControl.Properties.USER_TOC_SCRIPTS_PATH.getValue() + "/" + UNZIPEXE, destinationZipFile, binaryDeployDir, exclude);
-
-                    remoteDeleteBinary(hostname, destinationZipFile);
-
+                    try {
+                        remoteUnzipBinary(hostname, AemControl.Properties.USER_TOC_SCRIPTS_PATH.getValue() + "/" + UNZIPEXE, destinationZipFile, binaryDeployDir, exclude);
+                    } finally {
+                        remoteDeleteBinary(hostname, destinationZipFile);
+                    }
                 } else {
                     LOGGER.warn("Cannot find the binary directory location in jwala, value is {}", binaryDir);
                 }
             } else {
                 LOGGER.info("Found {} at on host {}", binaryName, hostname);
             }
-
         } else {
             LOGGER.warn("Binary deploy location not provided value is {}", binaryDeployDir);
         }

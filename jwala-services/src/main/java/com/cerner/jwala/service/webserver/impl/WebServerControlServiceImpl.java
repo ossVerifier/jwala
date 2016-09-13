@@ -170,7 +170,7 @@ public class WebServerControlServiceImpl implements WebServerControlService {
                 host,
                 WebServerControlOperation.CREATE_DIRECTORY,
                 new WindowsWebServerPlatformCommandProvider(),
-                destPath
+                parentDir
         );
         if (commandOutput.getReturnCode().wasSuccessful()) {
             LOGGER.info("Successfully created parent directory {} on host {}", parentDir, host);
