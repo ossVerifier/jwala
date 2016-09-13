@@ -27,6 +27,7 @@ import com.cerner.jwala.persistence.service.ApplicationPersistenceService;
 import com.cerner.jwala.persistence.service.GroupPersistenceService;
 import com.cerner.jwala.persistence.service.WebServerPersistenceService;
 import com.cerner.jwala.service.app.ApplicationService;
+import com.cerner.jwala.service.binarydistribution.BinaryDistributionService;
 import com.cerner.jwala.service.group.GroupControlService;
 import com.cerner.jwala.service.group.GroupJvmControlService;
 import com.cerner.jwala.service.group.GroupService;
@@ -48,7 +49,6 @@ import com.cerner.jwala.ws.rest.v1.service.jvm.JvmServiceRest;
 import com.cerner.jwala.ws.rest.v1.service.jvm.impl.JvmServiceRestImpl;
 import com.cerner.jwala.ws.rest.v1.service.webserver.WebServerServiceRest;
 import com.cerner.jwala.ws.rest.v1.service.webserver.impl.WebServerServiceRestImpl;
-
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
@@ -92,6 +92,7 @@ public class GroupServiceImplDeployTest {
     @Autowired
     ApplicationServiceRest applicationServiceRest;
 
+    static final BinaryDistributionService binaryDistributionService = mock(BinaryDistributionService.class);
     static final GroupService mockGroupService = mock(GroupService.class);
     static final ResourceService mockResourceService = mock(ResourceService.class);
     static final GroupControlService mockGroupControlService = mock(GroupControlService.class);
@@ -635,7 +636,7 @@ public class GroupServiceImplDeployTest {
 
         @Bean
         WebServerServiceRest getWebServerServiceRest() {
-            return new WebServerServiceRestImpl(mockWebServerService, mockWebServerControlService, mock(WebServerCommandService.class), new HashMap<String, ReentrantReadWriteLock>(), mockResourceService, mockGroupService);
+            return new WebServerServiceRestImpl(mockWebServerService, mockWebServerControlService, mock(WebServerCommandService.class), new HashMap<String, ReentrantReadWriteLock>(), mockResourceService, mockGroupService, binaryDistributionService);
         }
 
         @Bean

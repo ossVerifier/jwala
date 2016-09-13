@@ -11,6 +11,7 @@ import com.cerner.jwala.common.domain.model.webserver.WebServerReachableState;
 import com.cerner.jwala.common.exec.CommandOutput;
 import com.cerner.jwala.common.exec.ExecReturnCode;
 import com.cerner.jwala.common.exec.RemoteExecCommand;
+import com.cerner.jwala.common.properties.ApplicationProperties;
 import com.cerner.jwala.common.request.state.SetStateRequest;
 import com.cerner.jwala.common.request.webserver.ControlWebServerRequest;
 import com.cerner.jwala.control.command.PlatformCommandProvider;
@@ -30,6 +31,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.client.ClientHttpResponse;
 
+import java.io.File;
 import java.util.HashSet;
 
 import static org.junit.Assert.assertEquals;
@@ -66,6 +68,7 @@ public class WebServerControlServiceImplVerifyTest extends VerificationBehaviorS
 
     @Before
     public void setup() {
+        System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, new File(".").getAbsolutePath() + "/src/test/resources");
         webServerControlService = new WebServerControlServiceImpl(webServerService, commandExecutor,
                 mockHistoryService, mockMessagingService, remoteCommandExecutorService, mockSshConfig);
 
@@ -140,6 +143,7 @@ public class WebServerControlServiceImplVerifyTest extends VerificationBehaviorS
         CommandOutput successReturnOutput = new CommandOutput(new ExecReturnCode(0), "SUCCESS", "");
         when(commandExecutor.executeRemoteCommand(anyString(), anyString(), any(WebServerControlOperation.class), any(PlatformCommandProvider.class), anyString(), anyString())).thenReturn(successReturnOutput);
         when(commandExecutor.executeRemoteCommand(anyString(), anyString(), eq(WebServerControlOperation.CHECK_FILE_EXISTS), any(PlatformCommandProvider.class), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(1), "File does not exist", ""));
+        when(commandExecutor.executeRemoteCommand(anyString(), anyString(), eq(WebServerControlOperation.CREATE_DIRECTORY), any(PlatformCommandProvider.class), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(0), "Directory Created", ""));
         CommandOutput returnOutput = webServerControlService.secureCopyFile("testWebServer", "./source", "./dest", "user-id");
         assertEquals(new ExecReturnCode(0), returnOutput.getReturnCode());
     }
@@ -153,6 +157,7 @@ public class WebServerControlServiceImplVerifyTest extends VerificationBehaviorS
         when(commandExecutor.executeRemoteCommand(anyString(), anyString(), any(WebServerControlOperation.class), any(PlatformCommandProvider.class), anyString(), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(0), "Secure copy succeeded", ""));
         when(commandExecutor.executeRemoteCommand(anyString(), anyString(), eq(WebServerControlOperation.CHECK_FILE_EXISTS), any(PlatformCommandProvider.class), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(0), "File does exist", ""));
         when(commandExecutor.executeRemoteCommand(anyString(), anyString(), eq(WebServerControlOperation.BACK_UP_CONFIG_FILE), any(PlatformCommandProvider.class), anyString(), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(0), "Back up succeeded", ""));
+        when(commandExecutor.executeRemoteCommand(anyString(), anyString(), eq(WebServerControlOperation.CREATE_DIRECTORY), any(PlatformCommandProvider.class), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(0), "Directory Created", ""));
         webServerControlService.secureCopyFile("testWebServer", "./source", "./dest", "user-id");
         verify(commandExecutor).executeRemoteCommand(anyString(), anyString(), eq(WebServerControlOperation.SECURE_COPY), any(WindowsWebServerPlatformCommandProvider.class), anyString(), anyString());
     }
@@ -166,6 +171,7 @@ public class WebServerControlServiceImplVerifyTest extends VerificationBehaviorS
         when(commandExecutor.executeRemoteCommand(anyString(), anyString(), any(WebServerControlOperation.class), any(PlatformCommandProvider.class), anyString(), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(0), "Secure copy succeeded", ""));
         when(commandExecutor.executeRemoteCommand(anyString(), anyString(), eq(WebServerControlOperation.CHECK_FILE_EXISTS), any(PlatformCommandProvider.class), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(0), "File does exist", ""));
         when(commandExecutor.executeRemoteCommand(anyString(), anyString(), eq(WebServerControlOperation.BACK_UP_CONFIG_FILE), any(PlatformCommandProvider.class), anyString(), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(1), "", "Back up failed"));
+        when(commandExecutor.executeRemoteCommand(anyString(), anyString(), eq(WebServerControlOperation.CREATE_DIRECTORY), any(PlatformCommandProvider.class), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(0), "Directory Created", ""));
         webServerControlService.secureCopyFile("testWebServer", "./source", "./dest", "user-id");
         verify(commandExecutor).executeRemoteCommand(anyString(), anyString(), eq(WebServerControlOperation.SECURE_COPY), any(WindowsWebServerPlatformCommandProvider.class), anyString(), anyString());
     }

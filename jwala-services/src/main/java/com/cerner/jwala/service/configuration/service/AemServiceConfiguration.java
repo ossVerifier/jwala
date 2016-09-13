@@ -4,6 +4,7 @@ import com.cerner.jwala.commandprocessor.CommandExecutor;
 import com.cerner.jwala.commandprocessor.impl.jsch.JschBuilder;
 import com.cerner.jwala.commandprocessor.jsch.impl.ChannelSessionKey;
 import com.cerner.jwala.commandprocessor.jsch.impl.KeyedPooledJschChannelFactory;
+import com.cerner.jwala.common.domain.model.binarydistribution.BinaryDistributionControlOperation;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
 import com.cerner.jwala.common.domain.model.jvm.JvmState;
@@ -41,6 +42,9 @@ import com.cerner.jwala.service.balancermanager.impl.BalancerManagerHtmlParser;
 import com.cerner.jwala.service.balancermanager.impl.BalancerManagerHttpClient;
 import com.cerner.jwala.service.balancermanager.impl.BalancerManagerServiceImpl;
 import com.cerner.jwala.service.balancermanager.impl.BalancerManagerXmlParser;
+import com.cerner.jwala.service.binarydistribution.BinaryDistributionService;
+import com.cerner.jwala.service.binarydistribution.impl.BinaryDistributionControlServiceImpl;
+import com.cerner.jwala.service.binarydistribution.impl.BinaryDistributionServiceImpl;
 import com.cerner.jwala.service.group.*;
 import com.cerner.jwala.service.group.impl.GroupControlServiceImpl;
 import com.cerner.jwala.service.group.impl.GroupJvmControlServiceImpl;
@@ -143,6 +147,9 @@ public class AemServiceConfiguration {
     @Resource
     private Environment env;
 
+    @Autowired
+    private BinaryDistributionService binaryDistributionService;
+
     private final Map<String, ReentrantReadWriteLock> resourceWriteLockMap = new HashMap<>();
 
     private final Map<String, ReentrantReadWriteLock> jvmWriteLockMap = new HashMap<>();
@@ -175,7 +182,7 @@ public class AemServiceConfiguration {
         final JvmPersistenceService jvmPersistenceService = persistenceServiceConfiguration.getJvmPersistenceService();
         return new JvmServiceImpl(jvmPersistenceService, groupService, applicationService,
                 fileManager, messagingTemplate, groupStateNotificationService, resourceService,
-                clientFactoryHelper, topicServerStates, jvmControlService, jvmWriteLockMap);
+                clientFactoryHelper, topicServerStates, jvmControlService, jvmWriteLockMap, binaryDistributionService);
     }
 
     @Bean(name = "balancermanagerService")
@@ -212,7 +219,7 @@ public class AemServiceConfiguration {
 
     @Bean
     public ApplicationService getApplicationService(final JvmPersistenceService jvmPersistenceService, final GroupService groupService,
-            final HistoryCrudService historyCrudService, final MessagingService messagingService, final ResourceService resourceService) {
+                                                    final HistoryCrudService historyCrudService, final MessagingService messagingService, final ResourceService resourceService) {
         return new ApplicationServiceImpl(persistenceServiceConfiguration.getApplicationPersistenceService(),
                 jvmPersistenceService, aemCommandExecutorConfig.getRemoteCommandExecutor(), groupService, null, null,
                 getHistoryService(historyCrudService), messagingService, resourceService);
@@ -407,6 +414,16 @@ public class AemServiceConfiguration {
         CustomizableThreadFactory tf = new CustomizableThreadFactory("polling-");
         tf.setDaemon(true);
         return tf;
+    }
+
+    @Bean
+    public BinaryDistributionControlServiceImpl getBinaryDistributionControlService(RemoteCommandExecutor<BinaryDistributionControlOperation> remoteCommandExecutor){
+        return new BinaryDistributionControlServiceImpl(remoteCommandExecutor);
+    }
+
+    @Bean
+    public BinaryDistributionService getBinaryDistributionService(BinaryDistributionControlServiceImpl binaryDistributionControlService) {
+        return new BinaryDistributionServiceImpl(binaryDistributionControlService);
     }
 
 }

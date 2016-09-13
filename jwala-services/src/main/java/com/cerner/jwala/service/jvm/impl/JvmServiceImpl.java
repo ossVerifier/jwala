@@ -34,6 +34,7 @@ import com.cerner.jwala.persistence.jpa.service.exception.NonRetrievableResource
 import com.cerner.jwala.persistence.jpa.service.exception.ResourceTemplateUpdateException;
 import com.cerner.jwala.persistence.service.JvmPersistenceService;
 import com.cerner.jwala.service.app.ApplicationService;
+import com.cerner.jwala.service.binarydistribution.BinaryDistributionService;
 import com.cerner.jwala.service.group.GroupService;
 import com.cerner.jwala.service.group.GroupStateNotificationService;
 import com.cerner.jwala.service.jvm.JvmControlService;
@@ -82,6 +83,8 @@ public class JvmServiceImpl implements JvmService {
     private final ClientFactoryHelper clientFactoryHelper;
     private final JvmControlService jvmControlService;
     private final Map<String, ReentrantReadWriteLock> jvmWriteLocks;
+    private final BinaryDistributionService binaryDistributionService;
+    final String tocScriptsPath = AemControl.Properties.USER_TOC_SCRIPTS_PATH.getValue();
 
     private static final String DIAGNOSIS_INITIATED = "Diagnosis Initiated on JVM ${jvm.jvmName}, host ${jvm.hostName}";
     private static final String TEMPLATE_DIR = ApplicationProperties.get("paths.tomcat.instance.template");
@@ -98,7 +101,8 @@ public class JvmServiceImpl implements JvmService {
                           final ClientFactoryHelper clientFactoryHelper,
                           final String topicServerStates,
                           final JvmControlService jvmControlService,
-                          final Map<String, ReentrantReadWriteLock> writeLockMap) {
+                          final Map<String, ReentrantReadWriteLock> writeLockMap,
+                          final BinaryDistributionService binaryDistributionService) {
         this.jvmPersistenceService = jvmPersistenceService;
         this.groupService = groupService;
         this.applicationService = applicationService;
@@ -110,6 +114,7 @@ public class JvmServiceImpl implements JvmService {
         this.jvmControlService = jvmControlService;
         this.topicServerStates = topicServerStates;
         jvmWriteLocks = writeLockMap;
+        this.binaryDistributionService = binaryDistributionService;
     }
 
     protected Jvm createJvm(final CreateJvmRequest aCreateJvmRequest) {
@@ -305,6 +310,10 @@ public class JvmServiceImpl implements JvmService {
                         "The target JVM must be stopped before attempting to update the resource files");
             }
 
+            binaryDistributionService.prepareUnzip(jvm.getHostName());
+            binaryDistributionService.distributeJdk(jvm.getHostName());
+            binaryDistributionService.distributeTomcat(jvm.getHostName());
+
             // check for setenv.bat
             checkForSetenvBat(jvm.getJvmName());
 
@@ -369,7 +378,9 @@ public class JvmServiceImpl implements JvmService {
         final String jwalaScriptsPath = REMOTE_COMMANDS_USER_SCRIPTS;
         final String jvmName = jvm.getJvmName();
         final String userId = user.getId();
+        final String parentDir = new File(tocScriptsPath).getParentFile().getAbsolutePath().replaceAll("\\\\", "/");
 
+        createParentDir(jvm, parentDir);
         final String failedToCopyMessage = "Failed to secure copy ";
         final String duringCreationMessage = " during the creation of ";
         if (!jvmControlService.secureCopyFile(secureCopyRequest, deployConfigJarPath, jwalaScriptsPath, userId).getReturnCode().wasSuccessful()) {
@@ -397,34 +408,42 @@ public class JvmServiceImpl implements JvmService {
         String jvmName = jvm.getJvmName();
         LOGGER.info("Generating JVM configuration tar for {}", jvmName);
         final String jvmGeneratedResourcesTempDir = ApplicationProperties.get("paths.generated.resource.dir");
+        final String instanceTemplateZipName = ApplicationProperties.get("jwala.instance-template");
+        final String binaryDir = ApplicationProperties.get("jwala.binary.dir");
+        final String agentDir = ApplicationProperties.get("jwala.agent.dir");
+
         String jvmResourcesNameDir = jvmGeneratedResourcesTempDir + "/" + jvmName;
         LOGGER.debug("generated resources dir: {}", jvmGeneratedResourcesTempDir);
         LOGGER.debug("generated JVM directory location: {}", jvmResourcesNameDir);
 
         final File generatedDir = new File("./" + jvmName);
+        final File unzipDir = new File(jvmName);
         String configJarPath;
         try {
-            // copy the tomcat instance-template directory
-            final File srcDir = new File(TEMPLATE_DIR);
             final String destDirPath = generatedDir.getAbsolutePath();
-
-            // Copy the templates that would be included in the JAR file.
-            LOGGER.debug("location of template srcDir: {}", srcDir);
-            LOGGER.debug("location of template copy: {}", destDirPath);
-            for (String dirPath : srcDir.list()) {
-                final File srcChild = new File(srcDir + "/" + dirPath);
-                if (srcChild.isDirectory()) {
-                    FileUtils.copyDirectoryToDirectory(srcChild, generatedDir);
-                } else {
-                    FileUtils.copyFileToDirectory(srcChild, generatedDir);
-                }
-            }
+            LOGGER.debug("Start Unzip Instance Template {} to {} ", binaryDir+"/"+instanceTemplateZipName, unzipDir);
+            // Copy the templates that would be included in the zip file.
+            fileManager.unZipFile(new File(binaryDir+"/"+instanceTemplateZipName), unzipDir);
+            LOGGER.debug("End Unzip Instance Template {} to {} ", binaryDir+"/"+instanceTemplateZipName, unzipDir);
             final String generatedText = generateInvokeBat(jvmName);
             final String invokeBatDir = generatedDir + "/bin";
             LOGGER.debug("generated invoke.bat text: {}", generatedText);
             LOGGER.debug("generating template in location: {}", invokeBatDir + "/" + CONFIG_FILENAME_INVOKE_BAT);
             createConfigFile(invokeBatDir + "/", CONFIG_FILENAME_INVOKE_BAT, generatedText);
-
+            // copy Agent, JodaTime & JGroup Libraries
+            // create the lib directory
+            final File generatedJvmDestDirLib = new File(jvmName + "/lib");
+            if(!generatedJvmDestDirLib.exists()) {
+                generatedJvmDestDirLib.mkdir();
+            }
+            LOGGER.debug("Copy agent dir: {} to instance template {}", agentDir, generatedJvmDestDirLib);
+            File jwalaAgentDir = new File(agentDir);
+            if(jwalaAgentDir.exists() && jwalaAgentDir.isDirectory()){
+                File[] files  = jwalaAgentDir.listFiles();
+                    for(File file:files) {
+                        FileUtils.copyFileToDirectory(file, generatedJvmDestDirLib);
+                    }
+            }
             // copy the start and stop scripts to the instances/jvm/bin directory
             final String commandsScriptsPath = ApplicationProperties.get("commands.scripts-path");
             final File generatedJvmDestDirBin = new File(destDirPath + "/bin");
@@ -464,6 +483,17 @@ public class JvmServiceImpl implements JvmService {
         LOGGER.info("Generation of configuration tar SUCCEEDED for {}: {}", jvmName, configJarPath);
 
         return jvmResourcesNameDir;
+    }
+
+    protected void createParentDir(final Jvm jvm, final String parentDir) throws CommandFailureException {
+        final CommandOutput commandOutput = jvmControlService.createDirectory(jvm, parentDir);
+        if (commandOutput.getReturnCode().wasSuccessful()) {
+            LOGGER.info("created {} directory successfully", parentDir);
+        } else {
+            final String standardError = commandOutput.getStandardError().isEmpty() ? commandOutput.getStandardOutput() : commandOutput.getStandardError();
+            LOGGER.error("create command failed with error trying to create parent directory {} on {} :: ERROR: {}", parentDir, jvm.getHostName(), standardError);
+            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, standardError.isEmpty() ? CommandOutputReturnCode.fromReturnCode(commandOutput.getReturnCode().getReturnCode()).getDesc() : standardError);
+        }
     }
 
     protected void secureCopyJvmConfigJar(Jvm jvm, String jvmConfigTar, User user) throws CommandFailureException {
@@ -537,6 +567,8 @@ public class JvmServiceImpl implements JvmService {
      * @throws CommandFailureException If the command fails, this exception contains the details of the failure.
      */
     protected void secureCopyFileToJvm(final Jvm jvm, final String sourceFile, final String destinationFile, User user) throws CommandFailureException {
+        final String parentDir = new File(destinationFile).getParentFile().getAbsolutePath().replaceAll("\\\\", "/");
+        createParentDir(jvm, parentDir);
         final ControlJvmRequest controlJvmRequest = new ControlJvmRequest(jvm.getId(), JvmControlOperation.SECURE_COPY);
         final CommandOutput commandOutput = jvmControlService.secureCopyFile(controlJvmRequest, sourceFile, destinationFile, user.getId());
         if (commandOutput.getReturnCode().wasSuccessful()) {
@@ -640,6 +672,8 @@ public class JvmServiceImpl implements JvmService {
 
     protected void deployJvmConfigFile(String fileName, Jvm jvm, String destPath, String sourcePath, User user)
             throws CommandFailureException {
+        final String parentDir = new File(destPath).getParentFile().getAbsolutePath().replaceAll("\\\\", "/");
+        createParentDir(jvm, parentDir);
         CommandOutput result =
                 jvmControlService.secureCopyFile(new ControlJvmRequest(jvm.getId(), JvmControlOperation.SECURE_COPY), sourcePath, destPath, user.getId());
         if (result.getReturnCode().wasSuccessful()) {

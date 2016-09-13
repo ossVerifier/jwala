@@ -50,7 +50,12 @@ buildscript {
     dependencies { classpath 'de.undercouch:gradle-download-task:3.1.1' }
 }
 
-task downloadTomcat(type: Download) {
+task downloadDeploymentBinaries(type: Download) {
+    src ([jdkBinaryUrl,apachehttpdBinaryUrl, apachetomcatDeploymentBinaryUrl, unZipExeBinaryUrl, apachetomcattBinaryDeploymenTemplatUrl])
+    dest "$buildDir/$tomcatDir/data/binaries"
+}
+
+task downloadTomcat(dependsOn: downloadDeploymentBinaries, type: Download) {
     src "${tomcatBinaryUrl}"
     dest new File(buildDir, new File("${tomcatBinaryUrl}").getName())
 }
@@ -113,13 +118,8 @@ task copyJwalaAgent(dependsOn: copyJwalaH2EmbededJar, type: Copy) {
     }
     into file("$buildDir/$tomcatDir/data/agent")
 }
-task deleteJwalaAgentDependencises(dependsOn: copyJwalaAgent, type: Delete){
-    delete fileTree("$buildDir/$tomcatDir/lib/") {
-        include "$jgroups_lib"
-        include "$joda_time_lib"
-    }
-}
-task copyJwalaWebappWar(dependsOn: deleteJwalaAgentDependencises, type: Copy) {
+
+task copyJwalaWebappWar(dependsOn: copyJwalaAgent, type: Copy) {
     project(':jwala-webapp') {
         dependsOn(build)
     }

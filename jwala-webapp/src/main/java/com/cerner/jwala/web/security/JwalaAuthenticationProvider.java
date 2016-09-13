@@ -47,8 +47,9 @@ public class JwalaAuthenticationProvider implements AuthenticationProvider {
         Set<GrantedAuthority> auths = new HashSet<>();
         try {
             realm = getTomcatContextRealm();
-            if(realm instanceof NullRealm)
+            if(realm instanceof NullRealm) {
                 throw new ProviderNotFoundException("No Realms configured for Jwala to Authenticate");
+            }
             Principal principal = realm.authenticate(authentication.getName(),
                     authentication.getCredentials().toString());
             if (principal == null) {
@@ -85,8 +86,9 @@ public class JwalaAuthenticationProvider implements AuthenticationProvider {
      */
     public Realm getTomcatContextRealm() throws AttributeNotFoundException, InstanceNotFoundException, MBeanException, ReflectionException {
         try {
-            if (mBeanServer == null)
+            if (mBeanServer == null) {
                 mBeanServer = ManagementFactory.getPlatformMBeanServer();
+            }
             ObjectName name = new ObjectName("Catalina", "type", "Engine");
             Engine engine = (Engine) mBeanServer.getAttribute(name, "managedResource");
             return engine.getRealm();
