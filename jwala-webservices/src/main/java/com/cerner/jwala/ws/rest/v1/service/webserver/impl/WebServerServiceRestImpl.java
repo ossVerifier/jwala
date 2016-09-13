@@ -376,7 +376,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
         final File invokeWsBatFile = createTempWebServerResourceFile(name, tocGeneratedResourcesDir, "invokeWS", "bat", invokeWSBatText);
 
         // copy the invokeWs.bat file
-        final String invokeWsBatFileAbsolutePath = invokeWsBatFile.getAbsolutePath();
+        final String invokeWsBatFileAbsolutePath = invokeWsBatFile.getAbsolutePath().replaceAll("\\\\", "/");
         CommandOutput copyResult = webServerControlService.secureCopyFile(name, invokeWsBatFileAbsolutePath, httpdDataDir + "/invokeWS.bat", user.getUser().getId());
         if (copyResult.getReturnCode().wasSuccessful()) {
             LOGGER.info("Successfully copied {} to {}", invokeWsBatFileAbsolutePath, webServer.getHost());
