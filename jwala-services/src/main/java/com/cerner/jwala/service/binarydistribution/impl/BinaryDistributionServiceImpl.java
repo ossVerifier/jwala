@@ -31,7 +31,7 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
 
     @Override
     public void distributeJdk(final String hostname) {
-        File javaHome = new File(ApplicationProperties.get("stp.java.home"));
+        File javaHome = new File(ApplicationProperties.get("remote.jwala.java.home"));
         String jdkDir = javaHome.getName();
         String binaryDeployDir = javaHome.getParentFile().getAbsolutePath().replaceAll("\\\\", "/");
         if (jdkDir != null && !jdkDir.isEmpty()) {
