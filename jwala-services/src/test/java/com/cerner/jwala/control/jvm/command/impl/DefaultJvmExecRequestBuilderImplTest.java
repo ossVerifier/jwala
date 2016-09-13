@@ -37,7 +37,7 @@ public class DefaultJvmExecRequestBuilderImplTest {
     @Before
     public void setup() {
         originalPRP = System.getProperty(ApplicationProperties.PROPERTIES_ROOT_PATH);
-        System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, "./toc-control/src/test/resources");
+        System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, "src/test/resources");
         try {
             ApplicationProperties.getInstance();
         } catch (ApplicationException e) {

@@ -19,6 +19,7 @@ import com.cerner.jwala.common.request.webserver.CreateWebServerRequest;
 import com.cerner.jwala.common.request.webserver.UpdateWebServerRequest;
 import com.cerner.jwala.control.AemControl;
 import com.cerner.jwala.exception.CommandFailureException;
+import com.cerner.jwala.service.binarydistribution.BinaryDistributionService;
 import com.cerner.jwala.service.group.GroupService;
 import com.cerner.jwala.service.resource.ResourceService;
 import com.cerner.jwala.service.webserver.WebServerCommandService;
@@ -88,6 +89,9 @@ public class WebServerServiceRestImplTest {
     @Mock
     private AuthenticatedUser authenticatedUser;
 
+    @Mock
+    private BinaryDistributionService binaryDistributionService;
+
     private WebServerServiceRestImpl webServerServiceRest;
     private Map<String, ReentrantReadWriteLock> writeLockMap = new HashMap<>();
     private String generatedResourceDir;
@@ -114,7 +118,7 @@ public class WebServerServiceRestImplTest {
 
     @Before
     public void setUp() {
-        webServerServiceRest = new WebServerServiceRestImpl(impl, webServerControlService, commandImpl, writeLockMap, resourceService, groupService);
+        webServerServiceRest = new WebServerServiceRestImpl(impl, webServerControlService, commandImpl, writeLockMap, resourceService, groupService, binaryDistributionService);
         when(authenticatedUser.getUser()).thenReturn(new User("Unused"));
 
         try {
@@ -293,6 +297,11 @@ public class WebServerServiceRestImplTest {
         CommandOutput retSuccessExecData = new CommandOutput(new ExecReturnCode(0), "", "");
         when(webServerControlService.secureCopyFile(anyString(), anyString(), anyString(), anyString())).thenReturn(retSuccessExecData);
         when(impl.getResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"contentType\":\"text/plain\",\"deployPath\":\"./anyPath\"}");
+        CommandOutput commandOutput = mock(CommandOutput.class);
+        when(webServerControlService.createDirectory(isNull(WebServer.class), anyString())).thenReturn(commandOutput);
+        ExecReturnCode execReturnCode = mock(ExecReturnCode.class);
+        when(commandOutput.getReturnCode()).thenReturn(execReturnCode);
+        when(commandOutput.getReturnCode().wasSuccessful()).thenReturn(true);
         when(resourceService.generateResourceGroup()).thenReturn(new ResourceGroup());
         Response response = webServerServiceRest.generateAndDeployConfig(webServer.getName(), "httpd.conf", authenticatedUser);
         assertTrue(response.hasEntity());
@@ -304,6 +313,11 @@ public class WebServerServiceRestImplTest {
         when(webServerControlService.secureCopyFile(anyString(), anyString(), anyString(), anyString())).thenReturn(retSuccessExecData);
         when(impl.getResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"contentType\":\"application/binary\",\"deployPath\":\"./anyPath\"}");
         when(resourceService.generateResourceGroup()).thenReturn(new ResourceGroup());
+        CommandOutput commandOutput = mock(CommandOutput.class);
+        when(webServerControlService.createDirectory(isNull(WebServer.class), anyString())).thenReturn(commandOutput);
+        ExecReturnCode execReturnCode = mock(ExecReturnCode.class);
+        when(commandOutput.getReturnCode()).thenReturn(execReturnCode);
+        when(commandOutput.getReturnCode().wasSuccessful()).thenReturn(true);
         Response response = webServerServiceRest.generateAndDeployConfig(webServer.getName(), "httpd.exe", authenticatedUser);
         assertTrue(response.hasEntity());
     }
@@ -329,6 +343,11 @@ public class WebServerServiceRestImplTest {
     public void testGenerateAndDeployConfigFailsSecureCopy() throws CommandFailureException, IOException {
         when(impl.getResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"contentType\":\"text/plain\",\"deployPath\":\"./anyPath\"}");
         when(resourceService.generateResourceGroup()).thenReturn(new ResourceGroup());
+        CommandOutput commandOutput = mock(CommandOutput.class);
+        when(webServerControlService.createDirectory(isNull(WebServer.class), anyString())).thenReturn(commandOutput);
+        ExecReturnCode execReturnCode = mock(ExecReturnCode.class);
+        when(commandOutput.getReturnCode()).thenReturn(execReturnCode);
+        when(commandOutput.getReturnCode().wasSuccessful()).thenReturn(true);
         when(webServerControlService.secureCopyFile(anyString(), anyString(), anyString(), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(1), "", "FAILED SECURE COPY TEST"));
         boolean failedSecureCopy = false;
         Response response = null;
@@ -347,6 +366,11 @@ public class WebServerServiceRestImplTest {
         when(impl.getResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"contentType\":\"text/plain\",\"deployPath\":\"./anyPath\"}");
         when(resourceService.generateResourceGroup()).thenReturn(new ResourceGroup());
         when(webServerControlService.secureCopyFile(anyString(), anyString(), anyString(), anyString())).thenThrow(new CommandFailureException(new ExecCommand("Fail secure copy"), new Exception()));
+        CommandOutput commandOutput = mock(CommandOutput.class);
+        when(webServerControlService.createDirectory(isNull(WebServer.class), anyString())).thenReturn(commandOutput);
+        ExecReturnCode execReturnCode = mock(ExecReturnCode.class);
+        when(commandOutput.getReturnCode()).thenReturn(execReturnCode);
+        when(commandOutput.getReturnCode().wasSuccessful()).thenReturn(true);
         Response response = null;
         response = webServerServiceRest.generateAndDeployConfig(webServer.getName(), "httpd.conf", authenticatedUser);
         assertNotNull(response);

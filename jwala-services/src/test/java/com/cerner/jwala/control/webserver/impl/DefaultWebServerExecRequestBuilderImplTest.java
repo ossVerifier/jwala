@@ -26,7 +26,7 @@ public class DefaultWebServerExecRequestBuilderImplTest {
 
     @Before
     public void setup() throws IOException {
-        System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, new File(".").getCanonicalPath() + "/toc-control/src/test/resources");
+        System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, new File(".").getCanonicalPath() + "/src/test/resources");
         impl = new DefaultExecCommandBuilderImpl();
         webServer = mock(WebServer.class);
         webServerName = "theWebServerName";

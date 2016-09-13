@@ -439,8 +439,23 @@ public class GroupServiceImpl implements GroupService {
             } else {
                 srcPath = confFile.getAbsolutePath().replace("\\", "/");
             }
-            LOGGER.debug("checking if file: {} exists on remote location", destPath);
+            final String parentDir = new File(destPath).getParentFile().getAbsolutePath().replaceAll("\\\\", "/");
             CommandOutput commandOutput = remoteCommandExecutor.executeRemoteCommand(
+                    jvmName,
+                    hostName,
+                    ApplicationControlOperation.CREATE_DIRECTORY,
+                    new WindowsApplicationPlatformCommandProvider(),
+                    parentDir
+            );
+            if (commandOutput.getReturnCode().wasSuccessful()) {
+                LOGGER.info("Successfully created the parent dir {} on host {}", parentDir, hostName);
+            } else {
+                final String stdErr = commandOutput.getStandardError().isEmpty() ? commandOutput.getStandardOutput() : commandOutput.getStandardError();
+                LOGGER.error("Error in creating parent dir {} on host {}:: ERROR : {}", parentDir, hostName, stdErr);
+                throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, stdErr);
+            }
+            LOGGER.debug("checking if file: {} exists on remote location", destPath);
+            commandOutput = remoteCommandExecutor.executeRemoteCommand(
                     jvmName,
                     hostName,
                     ApplicationControlOperation.CHECK_FILE_EXISTS,
@@ -494,6 +509,21 @@ public class GroupServiceImpl implements GroupService {
                 }
 
                 final String unpackWarScriptPath = ApplicationProperties.get("commands.scripts-path") + "/" + AemControl.Properties.UNPACK_WAR_SCRIPT_NAME;
+                final String parentDirScripts = new File(unpackWarScriptPath).getParentFile().getAbsolutePath().replaceAll("\\\\", "/");
+                commandOutput = remoteCommandExecutor.executeRemoteCommand(
+                        jvmName,
+                        hostName,
+                        ApplicationControlOperation.CREATE_DIRECTORY,
+                        new WindowsApplicationPlatformCommandProvider(),
+                        parentDirScripts
+                );
+                if (commandOutput.getReturnCode().wasSuccessful()) {
+                    LOGGER.info("Successfully created the parent dir {} on host {}", parentDirScripts, hostName);
+                } else {
+                    final String stdErr = commandOutput.getStandardError().isEmpty() ? commandOutput.getStandardOutput() : commandOutput.getStandardError();
+                    LOGGER.error("Error in creating parent dir {} on host {}:: ERROR : {}", parentDirScripts, hostName, stdErr);
+                    throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, stdErr);
+                }
                 LOGGER.debug("copying scripts to unpack war at {}", unpackWarScriptPath);
                 commandOutput = remoteCommandExecutor.executeRemoteCommand(
                         null,

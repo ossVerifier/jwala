@@ -5,6 +5,7 @@ import com.cerner.jwala.persistence.jpa.service.HistoryCrudService;
 import com.cerner.jwala.service.HistoryService;
 import com.cerner.jwala.service.app.ApplicationService;
 import com.cerner.jwala.service.balancermanager.BalancerManagerService;
+import com.cerner.jwala.service.binarydistribution.BinaryDistributionService;
 import com.cerner.jwala.service.group.GroupControlService;
 import com.cerner.jwala.service.group.GroupJvmControlService;
 import com.cerner.jwala.service.group.GroupService;
@@ -106,6 +107,9 @@ public class AemWebServiceConfiguration {
     @Autowired
     private BalancerManagerService balancerManagerService;
 
+    @Autowired
+    private BinaryDistributionService binaryDistributionService;
+
     private final Map<String, ReentrantReadWriteLock> jvmWriteLockMap = new HashMap<>();
     private final Map<String, ReentrantReadWriteLock> wsWriteLockMap = new HashMap<>();
 
@@ -152,7 +156,7 @@ public class AemWebServiceConfiguration {
     }
 
     @Bean
-    public BalancerManagerServiceRest getV1BalancermanagerServiceRest(){
+    public BalancerManagerServiceRest getV1BalancermanagerServiceRest() {
         return new BalancerManagerServiceRestImpl(balancerManagerService);
     }
 
@@ -172,7 +176,8 @@ public class AemWebServiceConfiguration {
                 webServerCommandService,
                 wsWriteLockMap,
                 resourceService,
-                groupService);
+                groupService,
+                binaryDistributionService);
     }
 
     @Bean
@@ -256,4 +261,5 @@ public class AemWebServiceConfiguration {
     public RestServiceErrorHandler getInternalServerErrorHandler() {
         return new RestServiceErrorHandler();
     }
+
 }

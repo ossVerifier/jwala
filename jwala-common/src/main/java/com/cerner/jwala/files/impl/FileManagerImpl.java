@@ -1,19 +1,18 @@
 package com.cerner.jwala.files.impl;
 
+import com.cerner.jwala.files.*;
+import com.cerner.jwala.files.RepositoryFileInformation.Type;
+import com.cerner.jwala.files.resources.ResourceTypeDeserializer;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.cerner.jwala.files.*;
-import com.cerner.jwala.files.RepositoryFileInformation.Type;
-import com.cerner.jwala.files.resources.ResourceTypeDeserializer;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.nio.file.*;
+import java.util.Enumeration;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 
 public class FileManagerImpl implements FileManager {
 
@@ -96,6 +95,39 @@ public class FileManagerImpl implements FileManager {
             line = reader.readLine();
         }
         return sb.toString();
+    }
+
+    /**
+     *
+     * @param zipFile
+     * @param destDir
+     * @throws IOException
+     */
+    @Override
+    public void unZipFile(File zipFile, File destDir) throws IOException {
+        LOGGER.debug("zipFile: " + zipFile.getAbsolutePath());
+        LOGGER.debug("destDir: " + destDir.getAbsolutePath());
+        if(!destDir.exists()) {
+            destDir.mkdir();
+        }
+        //TODO: can be optimized
+        JarFile zip = new JarFile(zipFile);
+        Enumeration enumEntries = zip.entries();
+        while (enumEntries.hasMoreElements()) {
+            JarEntry file = (JarEntry) enumEntries.nextElement();
+            File f = new File(destDir + File.separator + file.getName());
+            if (file.isDirectory()) { // if its a directory, create it
+                f.mkdir();
+                continue;
+            }
+            InputStream is = zip.getInputStream(file); // get the input stream
+            FileOutputStream fos = new FileOutputStream(f);
+            while (is.available() > 0) {  // write contents of 'is' to 'fos'
+                fos.write(is.read());
+            }
+            fos.close();
+            is.close();
+        }
     }
 
 }
