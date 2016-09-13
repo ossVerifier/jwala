@@ -15,7 +15,6 @@ import com.cerner.jwala.common.properties.ApplicationProperties;
 import com.cerner.jwala.common.request.webserver.ControlWebServerRequest;
 import com.cerner.jwala.control.command.RemoteCommandExecutor;
 import com.cerner.jwala.control.command.ServiceCommandBuilder;
-import com.cerner.jwala.control.jvm.command.impl.WindowsJvmPlatformCommandProvider;
 import com.cerner.jwala.control.webserver.command.impl.WindowsWebServerPlatformCommandProvider;
 import com.cerner.jwala.control.webserver.command.windows.WindowsWebServerNetOperation;
 import com.cerner.jwala.exception.CommandFailureException;
@@ -168,7 +167,7 @@ public class WebServerControlServiceImpl implements WebServerControlService {
                 aWebServerName,
                 host,
                 WebServerControlOperation.CHECK_FILE_EXISTS,
-                new WindowsJvmPlatformCommandProvider(),
+                new WindowsWebServerPlatformCommandProvider(),
                 destPath
         );
         if (commandOutput.getReturnCode().wasSuccessful()) {
