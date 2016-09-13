@@ -154,8 +154,7 @@ public class WebServerControlServiceImpl implements WebServerControlService {
     public CommandOutput secureCopyFile(final String aWebServerName, final String sourcePath, final String destPath, String userId) throws CommandFailureException {
 
         final WebServer aWebServer = webServerService.getWebServer(aWebServerName);
-        final int beginIndex = destPath.lastIndexOf('/');
-        final String fileName = destPath.substring(beginIndex + 1, destPath.length());
+        final String fileName = new File(destPath).getName();
         if (!ApplicationProperties.get("remote.commands.user-scripts").endsWith(fileName)) {
             final String eventDescription = WindowsWebServerNetOperation.SECURE_COPY.name() + " " + fileName;
             historyService.createHistory(getServerName(aWebServer), new ArrayList<>(aWebServer.getGroups()), eventDescription, EventType.USER_ACTION, userId);

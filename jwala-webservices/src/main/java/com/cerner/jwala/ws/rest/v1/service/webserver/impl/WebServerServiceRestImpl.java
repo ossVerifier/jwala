@@ -331,10 +331,9 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
 
     protected void deployStartStopScripts(WebServer webServer, String userId) throws CommandFailureException {
         final String webServerName = webServer.getName();
-        final String destHttpdConfPath = ApplicationProperties.get("remote.paths.httpd.conf") + "/";
-
         final String startScriptName = AemControl.Properties.START_SCRIPT_NAME.getValue();
         final String sourceStartServicePath = COMMANDS_SCRIPTS_PATH + "/" + startScriptName;
+        final String destHttpdConfPath = ApplicationProperties.get("remote.paths.httpd.conf") + "/" + new File(sourceStartServicePath).getName();
         if (!webServerControlService.secureCopyFile(webServerName, sourceStartServicePath, destHttpdConfPath, userId).getReturnCode().wasSuccessful()) {
             LOGGER.error("Failed to secure copy file {} during creation of {}", sourceStartServicePath, webServerName);
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to secure copy file " + sourceStartServicePath + " during the creation of " + webServerName);
