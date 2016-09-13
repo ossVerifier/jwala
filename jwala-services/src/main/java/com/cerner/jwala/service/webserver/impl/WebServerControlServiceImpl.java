@@ -11,8 +11,8 @@ import com.cerner.jwala.common.domain.model.webserver.WebServerReachableState;
 import com.cerner.jwala.common.domain.model.webserver.message.WebServerHistoryEvent;
 import com.cerner.jwala.common.exception.InternalErrorException;
 import com.cerner.jwala.common.exec.*;
+import com.cerner.jwala.common.properties.ApplicationProperties;
 import com.cerner.jwala.common.request.webserver.ControlWebServerRequest;
-import com.cerner.jwala.control.AemControl;
 import com.cerner.jwala.control.command.RemoteCommandExecutor;
 import com.cerner.jwala.control.command.ServiceCommandBuilder;
 import com.cerner.jwala.control.webserver.command.impl.WindowsWebServerPlatformCommandProvider;
@@ -108,11 +108,11 @@ public class WebServerControlServiceImpl implements WebServerControlService {
             // Process non successful return codes...
             if (!commandOutput.getReturnCode().wasSuccessful()) {
                 switch (commandOutput.getReturnCode().getReturnCode()) {
-                    case ExecReturnCode.STP_EXIT_PROCESS_KILLED:
+                    case ExecReturnCode.JWALA_EXIT_PROCESS_KILLED:
                         commandOutput = new CommandOutput(new ExecReturnCode(0), FORCED_STOPPED, commandOutput.getStandardError());
                         webServerService.updateState(webServer.getId(), WebServerReachableState.FORCED_STOPPED, "");
                         break;
-                    case ExecReturnCode.STP_EXIT_CODE_ABNORMAL_SUCCESS:
+                    case ExecReturnCode.JWALA_EXIT_CODE_ABNORMAL_SUCCESS:
                         LOGGER.warn(CommandOutputReturnCode.fromReturnCode(commandOutput.getReturnCode().getReturnCode()).getDesc());
                         break;
                     default:
@@ -156,7 +156,7 @@ public class WebServerControlServiceImpl implements WebServerControlService {
         final WebServer aWebServer = webServerService.getWebServer(aWebServerName);
         final int beginIndex = destPath.lastIndexOf('/');
         final String fileName = destPath.substring(beginIndex + 1, destPath.length());
-        if (!AemControl.Properties.USER_TOC_SCRIPTS_PATH.getValue().endsWith(fileName)) {
+        if (!ApplicationProperties.get("remote.commands.user-scripts").endsWith(fileName)) {
             final String eventDescription = WindowsWebServerNetOperation.SECURE_COPY.name() + " " + fileName;
             historyService.createHistory(getServerName(aWebServer), new ArrayList<>(aWebServer.getGroups()), eventDescription, EventType.USER_ACTION, userId);
             messagingService.send(new WebServerHistoryEvent(aWebServer.getId(), eventDescription, userId, DateTime.now(), WebServerControlOperation.SECURE_COPY));

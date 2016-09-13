@@ -29,7 +29,6 @@ dependencies {
     compile(group: 'org.owasp.esapi', name: 'esapi', version: '2.0.1')
     compile(group: 'org.apache.geronimo.specs', name: 'geronimo-jpa_2.0_spec', version: '1.1')
     compile(group: "com.h2database", name: "h2", version: "$project.versions.h2")
-    compile(group: 'javax.jms', name: 'jms', version: '2.0')
     compile(group: 'joda-time', name: 'joda-time', version: '2.2')
     compile(group: 'javax.servlet', name: 'jstl', version: '1.2')
     compile(group: 'javax.transaction', name: 'jta', version: '1.1')
@@ -39,13 +38,12 @@ dependencies {
     compile(group: 'org.opensaml', name: 'openws', version: '1.5.4')
     compile(group: 'org.slf4j', name: 'slf4j-api', version: '1.7.6')
     compile(group: 'taglibs', name: 'standard', version: '1.1.2')
-    compile(group: 'com.tibco', name: 'tibcrypt', version: '8.3.0')
-    compile(group: 'com.tibco', name: 'tibjms', version: '8.3.0')
-    compile(group: 'com.tibco', name: 'tibjmsadmin', version: '8.3.0')
     compile(group: 'org.apache.santuario', name: 'xmlsec', version: '1.5.6')
     compile(group: 'org.opensaml', name: 'xmltooling', version: '1.4.4')
-}
+    compile group: 'joda-time', name: 'joda-time', version: "$project.versions.jodaTime"
+    compile group: 'org.jgroups', name: 'jgroups', version: "$project.versions.jgroups"
 
+}
 
 buildscript {
     repositories { jcenter() }
@@ -109,15 +107,25 @@ task copyJwalaH2EmbededJar(dependsOn: copyJwalaDependenciesToTomcatLib, type: Co
     from project(':jwala-h2-embedded').file("build/libs")
     into file("$buildDir/$tomcatDir/lib")
 }
+task copyJwalaAgent(dependsOn: copyJwalaH2EmbededJar, type: Copy) {
+    project(':jwala-tomcat-agent') {
+        dependsOn(build)
+    }
+    from (project(':jwala-tomcat-agent').file("build/libs"))
+    from (file("$buildDir/$tomcatDir/lib/")){
+        include "$jgroups_lib"
+        include "$joda_time_lib"
+    }
+    into file("$buildDir/$tomcatDir/data/agent")
+}
 
-task copyJwalaWebappWar(dependsOn: copyJwalaH2EmbededJar, type: Copy) {
+task copyJwalaWebappWar(dependsOn: copyJwalaAgent, type: Copy) {
     project(':jwala-webapp') {
         dependsOn(build)
     }
     from project(':jwala-webapp').file("build/libs")
     into file("$buildDir/$tomcatDir/data/webapps")
 }
-
 task copySql(dependsOn: [':jwala-persistence:createDdl', copyJwalaWebappWar], type: Copy) {
     from project(':jwala-persistence').projectDir
     include 'create.sql'
@@ -132,12 +140,12 @@ task createJwalaDb(dependsOn: copySql) << {
     }
 
     def sql = Sql.newInstance(
-            "jdbc:h2:file://$buildDir/$tomcatDir/data/db/toc;LOCK_MODE=0",
+            "jdbc:h2:file://$buildDir/$tomcatDir/data/db/jwala;LOCK_MODE=0",
             'sa',
             '',
             'org.h2.Driver')
 
-    def dbFile = file("$buildDir/$tomcatDir/data/db/toc.h2.db")
+    def dbFile = file("$buildDir/$tomcatDir/data/db/jwala.h2.db")
     if (dbFile.exists()) {
         sql.execute('drop all objects')
     }

@@ -51,6 +51,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(WebServerServiceRestImpl.class);
     public static final String PATHS_GENERATED_RESOURCE_DIR = "paths.generated.resource.dir";
+    private static final String COMMANDS_SCRIPTS_PATH = ApplicationProperties.get("commands.scripts-path");
 
     private final WebServerService webServerService;
     private final WebServerControlService webServerControlService;
@@ -207,11 +208,11 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
                 configFilePath = webServerService.getResourceTemplate(aWebServerName, resourceFileName, false, resourceService.generateResourceGroup());
             } else {
                 // create the file
-                final String tocGeneratedResourcesDir = ApplicationProperties.get(PATHS_GENERATED_RESOURCE_DIR);
+                final String jwalaGeneratedResourcesDir = ApplicationProperties.get(PATHS_GENERATED_RESOURCE_DIR);
                 final String generatedHttpdConf = webServerService.getResourceTemplate(aWebServerName, resourceFileName, true,
                         resourceService.generateResourceGroup());
                 int resourceNameDotIndex = resourceFileName.lastIndexOf(".");
-                final File configFile = createTempWebServerResourceFile(aWebServerName, tocGeneratedResourcesDir, resourceFileName.substring(0, resourceNameDotIndex), resourceFileName.substring(resourceNameDotIndex + 1, resourceFileName.length()), generatedHttpdConf);
+                final File configFile = createTempWebServerResourceFile(aWebServerName, jwalaGeneratedResourcesDir, resourceFileName.substring(0, resourceNameDotIndex), resourceFileName.substring(resourceNameDotIndex + 1, resourceFileName.length()), generatedHttpdConf);
 
                 // copy the file
                 configFilePath = configFile.getAbsolutePath().replace("\\", "/");
@@ -317,8 +318,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
     }
 
     protected void createScriptsDirectory(WebServer webServer) throws CommandFailureException {
-        final String scriptsDir = AemControl.Properties.USER_TOC_SCRIPTS_PATH.getValue();
-
+        final String scriptsDir = ApplicationProperties.get("remote.commands.user-scripts");
         final CommandOutput result = webServerControlService.createDirectory(webServer, scriptsDir);
 
         final ExecReturnCode resultReturnCode = result.getReturnCode();
@@ -331,33 +331,33 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
 
     protected void deployStartStopScripts(WebServer webServer, String userId) throws CommandFailureException {
         final String webServerName = webServer.getName();
-        final String destHttpdConfPath = ApplicationProperties.get("remote.paths.httpd.conf", ApplicationProperties.get("paths.httpd.conf")) + "/";
+        final String destHttpdConfPath = ApplicationProperties.get("remote.paths.httpd.conf") + "/";
 
         final String startScriptName = AemControl.Properties.START_SCRIPT_NAME.getValue();
-        final String sourceStartServicePath = AemControl.Properties.SCRIPTS_PATH + "/" + startScriptName;
+        final String sourceStartServicePath = COMMANDS_SCRIPTS_PATH + "/" + startScriptName;
         if (!webServerControlService.secureCopyFile(webServerName, sourceStartServicePath, destHttpdConfPath, userId).getReturnCode().wasSuccessful()) {
             LOGGER.error("Failed to secure copy file {} during creation of {}", sourceStartServicePath, webServerName);
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to secure copy file " + sourceStartServicePath + " during the creation of " + webServerName);
         }
 
         final String stopScriptName = AemControl.Properties.STOP_SCRIPT_NAME.getValue();
-        final String sourceStopServicePath = AemControl.Properties.SCRIPTS_PATH + "/" + stopScriptName;
+        final String sourceStopServicePath = COMMANDS_SCRIPTS_PATH + "/" + stopScriptName;
         if (!webServerControlService.secureCopyFile(webServerName, sourceStopServicePath, destHttpdConfPath, userId).getReturnCode().wasSuccessful()) {
             LOGGER.error("Failed to secure copy file {} during creation of {}", sourceStopServicePath, webServerName);
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to secure copy file " + sourceStopServicePath + " during the creation of " + webServerName);
         }
 
         final String invokeWsScriptName = AemControl.Properties.INVOKE_WS_SERVICE_SCRIPT_NAME.getValue();
-        final String sourceInvokeWsServicePath = AemControl.Properties.SCRIPTS_PATH + "/" + invokeWsScriptName;
-        final String tocScriptsPath = AemControl.Properties.USER_TOC_SCRIPTS_PATH.getValue();
-        if (!webServerControlService.secureCopyFile(webServerName, sourceInvokeWsServicePath, tocScriptsPath, userId).getReturnCode().wasSuccessful()) {
+        final String sourceInvokeWsServicePath = COMMANDS_SCRIPTS_PATH + "/" + invokeWsScriptName;
+        final String jwalaScriptsPath = ApplicationProperties.get("remote.commands.user-scripts");
+        if (!webServerControlService.secureCopyFile(webServerName, sourceInvokeWsServicePath, jwalaScriptsPath, userId).getReturnCode().wasSuccessful()) {
             LOGGER.error("Failed to secure copy file {} during creation of {}", sourceInvokeWsServicePath, webServerName);
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to secure copy file " + sourceInvokeWsServicePath + " during the creation of " + webServerName);
         }
 
         // make sure the scripts are executable
-        if (!webServerControlService.changeFileMode(webServer, "a+x", tocScriptsPath, "*.sh").getReturnCode().wasSuccessful()) {
-            LOGGER.error("Failed to update the permissions in {} during the creation of {}", tocScriptsPath, webServerName);
+        if (!webServerControlService.changeFileMode(webServer, "a+x", jwalaScriptsPath, "*.sh").getReturnCode().wasSuccessful()) {
+            LOGGER.error("Failed to update the permissions in {} during the creation of {}", jwalaScriptsPath, webServerName);
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to update the permissions in " + sourceInvokeWsServicePath + " during the creation of " + webServerName);
         }
         if (!webServerControlService.changeFileMode(webServer, "a+x", destHttpdConfPath, "*.sh").getReturnCode().wasSuccessful()) {
@@ -370,10 +370,10 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
 
         // create the invokeWs.bat file
         String invokeWSBatText = webServerService.generateInvokeWSBat(webServer);
-        final String tocGeneratedResourcesDir = ApplicationProperties.get(PATHS_GENERATED_RESOURCE_DIR);
+        final String jwalaGeneratedResourcesDir = ApplicationProperties.get(PATHS_GENERATED_RESOURCE_DIR);
         final String httpdDataDir = ApplicationProperties.get("remote.paths.httpd.conf");
         final String name = webServer.getName();
-        final File invokeWsBatFile = createTempWebServerResourceFile(name, tocGeneratedResourcesDir, "invokeWS", "bat", invokeWSBatText);
+        final File invokeWsBatFile = createTempWebServerResourceFile(name, jwalaGeneratedResourcesDir, "invokeWS", "bat", invokeWSBatText);
 
         // copy the invokeWs.bat file
         final String invokeWsBatFileAbsolutePath = invokeWsBatFile.getAbsolutePath().replaceAll("\\\\", "/");
@@ -402,7 +402,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
             CommandOutput commandOutput = webServerControlService.controlWebServer(controlWebServerRequest, user.getUser());
             if (commandOutput.getReturnCode().wasSuccessful()) {
                 LOGGER.info("Delete of windows service {} was successful", webServerName);
-            } else if (ExecReturnCode.STP_EXIT_CODE_SERVICE_DOES_NOT_EXIST == commandOutput.getReturnCode().getReturnCode()) {
+            } else if (ExecReturnCode.JWALA_EXIT_CODE_SERVICE_DOES_NOT_EXIST == commandOutput.getReturnCode().getReturnCode()) {
                 LOGGER.info("No such service found for {} during delete. Continuing with request.", webServerName);
             } else {
                 String standardError =

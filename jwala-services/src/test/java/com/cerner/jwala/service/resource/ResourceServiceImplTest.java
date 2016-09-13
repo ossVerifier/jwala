@@ -327,11 +327,11 @@ public class ResourceServiceImplTest {
                     new HashSet<History>(),
                     new HashSet<>(applications));
             groups.add(group);
-            applications.add(new Application(new Identifier<Application>(111L), "hello-world-1", "d:/stp/app/archive", "/hello-world-1", group, true, true, false, "testWar.war"));
-            applications.add(new Application(new Identifier<Application>(222L), "hello-world-2", "d:/stp/app/archive", "/hello-world-2", group, true, true, false, "testWar.war"));
-            applications.add(new Application(new Identifier<Application>(333L), "hello-world-3", "d:/stp/app/archive", "/hello-world-3", group, true, true, false, "testWar.war"));
+            applications.add(new Application(new Identifier<Application>(111L), "hello-world-1", "d:/jwala/app/archive", "/hello-world-1", group, true, true, false, "testWar.war"));
+            applications.add(new Application(new Identifier<Application>(222L), "hello-world-2", "d:/jwala/app/archive", "/hello-world-2", group, true, true, false, "testWar.war"));
+            applications.add(new Application(new Identifier<Application>(333L), "hello-world-3", "d:/jwala/app/archive", "/hello-world-3", group, true, true, false, "testWar.war"));
             WebServer webServer = new WebServer(new Identifier<WebServer>(1L), groups, "Apache2.4", "localhost", 80, 443,
-                    new com.cerner.jwala.common.domain.model.path.Path("/statusPath"), new FileSystemPath("D:/stp/app/data/httpd//httpd.conf"),
+                    new com.cerner.jwala.common.domain.model.path.Path("/statusPath"), new FileSystemPath("D:/jwala/app/data/httpd//httpd.conf"),
                     new com.cerner.jwala.common.domain.model.path.Path("./"), new com.cerner.jwala.common.domain.model.path.Path("htdocs"), WebServerReachableState.WS_UNREACHABLE, "");
             webServers.add(webServer);
             jvms.add(new Jvm(new Identifier<Jvm>(11L), "tc1", "usmlvv1ctoGenerateMe", new HashSet<>(groups), 11010, 11011, 11012, -1, 11013,

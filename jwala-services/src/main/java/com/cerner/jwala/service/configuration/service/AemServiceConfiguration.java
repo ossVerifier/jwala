@@ -6,7 +6,10 @@ import com.cerner.jwala.commandprocessor.jsch.impl.ChannelSessionKey;
 import com.cerner.jwala.commandprocessor.jsch.impl.KeyedPooledJschChannelFactory;
 import com.cerner.jwala.common.domain.model.binarydistribution.BinaryDistributionControlOperation;
 import com.cerner.jwala.common.domain.model.id.Identifier;
+import com.cerner.jwala.common.domain.model.jvm.Jvm;
+import com.cerner.jwala.common.domain.model.jvm.JvmState;
 import com.cerner.jwala.common.domain.model.ssh.SshConfiguration;
+import com.cerner.jwala.common.domain.model.state.CurrentState;
 import com.cerner.jwala.common.domain.model.webserver.WebServer;
 import com.cerner.jwala.common.domain.model.webserver.WebServerControlOperation;
 import com.cerner.jwala.common.domain.model.webserver.WebServerReachableState;
@@ -42,7 +45,6 @@ import com.cerner.jwala.service.balancermanager.impl.BalancerManagerXmlParser;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionService;
 import com.cerner.jwala.service.binarydistribution.impl.BinaryDistributionControlServiceImpl;
 import com.cerner.jwala.service.binarydistribution.impl.BinaryDistributionServiceImpl;
-import com.cerner.jwala.service.configuration.jms.AemJmsConfig;
 import com.cerner.jwala.service.group.*;
 import com.cerner.jwala.service.group.impl.GroupControlServiceImpl;
 import com.cerner.jwala.service.group.impl.GroupJvmControlServiceImpl;
@@ -61,11 +63,7 @@ import com.cerner.jwala.service.resource.impl.ResourceServiceImpl;
 import com.cerner.jwala.service.resource.impl.handler.WebServerResourceHandler;
 import com.cerner.jwala.service.ssl.hc.HttpClientRequestFactory;
 import com.cerner.jwala.service.state.InMemoryStateManagerService;
-import com.cerner.jwala.service.state.StateNotificationConsumerBuilder;
-import com.cerner.jwala.service.state.StateNotificationService;
 import com.cerner.jwala.service.state.impl.InMemoryStateManagerServiceImpl;
-import com.cerner.jwala.service.state.jms.JmsStateNotificationConsumerBuilderImpl;
-import com.cerner.jwala.service.state.jms.JmsStateNotificationServiceImpl;
 import com.cerner.jwala.service.webserver.WebServerCommandService;
 import com.cerner.jwala.service.webserver.WebServerControlService;
 import com.cerner.jwala.service.webserver.WebServerService;
@@ -127,9 +125,6 @@ public class AemServiceConfiguration {
     private AemCommandExecutorConfig aemCommandExecutorConfig;
 
     @Autowired
-    private AemJmsConfig aemJmsConfig;
-
-    @Autowired
     private FileManager fileManager;
 
     @Autowired
@@ -147,13 +142,13 @@ public class AemServiceConfiguration {
     @Autowired
     private GroupStateNotificationService groupStateNotificationService;
 
-    @Autowired
-    private BinaryDistributionService binaryDistributionService;
-
     private final Map webServerFutureMap = new HashMap();
 
     @Resource
     private Environment env;
+
+    @Autowired
+    private BinaryDistributionService binaryDistributionService;
 
     private final Map<String, ReentrantReadWriteLock> resourceWriteLockMap = new HashMap<>();
 
@@ -166,7 +161,7 @@ public class AemServiceConfiguration {
     @Bean(name = "aemServiceConfigurationPropertiesConfigurer")
     public static PropertySourcesPlaceholderConfigurer configurer() {
         PropertySourcesPlaceholderConfigurer ppc = new PropertySourcesPlaceholderConfigurer();
-        ppc.setLocation(new ClassPathResource("META-INF/spring/toc-defaults.properties"));
+        ppc.setLocation(new ClassPathResource("META-INF/spring/jwala-defaults.properties"));
         ppc.setLocalOverride(true);
         ppc.setProperties(ApplicationProperties.getProperties());
         return ppc;
@@ -197,7 +192,7 @@ public class AemServiceConfiguration {
                                                             final JvmService jvmService,
                                                             final ClientFactoryHelper clientFactoryHelper,
                                                             final MessagingService messagingService,
-                                                            final HistoryService historyService) {
+                                                            final HistoryService historyService){
         return new BalancerManagerServiceImpl(groupService, applicationService, webServerService, jvmService, clientFactoryHelper, messagingService,
                 historyService, new BalancerManagerHtmlParser(), new BalancerManagerXmlParser(jvmService), new BalancerManagerHttpClient());
     }
@@ -295,18 +290,6 @@ public class AemServiceConfiguration {
         return new ApplicationCommandServiceImpl(aemSshConfig.getSshConfiguration(), aemSshConfig.getJschBuilder());
     }
 
-    @Bean(name = "stateNotificationService")
-    public StateNotificationService getStateNotificationService() {
-        return new JmsStateNotificationServiceImpl(aemJmsConfig.getJmsTemplate(),
-                aemJmsConfig.getStateNotificationDestination(),
-                getStateNotificationConsumerBuilder());
-    }
-
-    @Bean
-    public StateNotificationConsumerBuilder getStateNotificationConsumerBuilder() {
-        return new JmsStateNotificationConsumerBuilderImpl(aemJmsConfig.getJmsPackageBuilder());
-    }
-
     @Bean(name = "resourceService")
     public ResourceService getResourceService(final ApplicationPersistenceService applicationPersistenceService,
                                               final JvmPersistenceService jvmPersistenceService,
@@ -396,8 +379,9 @@ public class AemServiceConfiguration {
     }
 
     @Bean
-    public JvmStateReceiverAdapter getJvmReceiverAdapter(final JvmStateService jvmStateService) {
-        return new JvmStateReceiverAdapter(jvmStateService);
+    public JvmStateReceiverAdapter getJvmReceiverAdapter(final JvmStateService jvmStateService,
+                                                         final JvmPersistenceService jvmPersistenceService) {
+        return new JvmStateReceiverAdapter(jvmStateService, jvmPersistenceService);
     }
 
     @Bean
@@ -410,6 +394,11 @@ public class AemServiceConfiguration {
         return new InMemoryStateManagerServiceImpl<>();
     }
 
+    @Bean(name = "jvmInMemoryStateManagerService")
+    InMemoryStateManagerService<Identifier<Jvm>, CurrentState<Jvm, JvmState>> getJvmInMemoryStateManagerService() {
+        return new InMemoryStateManagerServiceImpl<>();
+    }
+
     @Bean
     public JSch getJSch() {
         return new JSch();
@@ -418,12 +407,10 @@ public class AemServiceConfiguration {
     /**
      * Bean method to create a thread factory that creates daemon threads.
      * <code>
-     * <bean id="pollingThreadFactory" class="org.springframework.scheduling.concurrent.CustomizableThreadFactory">
-     * <constructor-arg value="polling-"/>
-     * </bean></code>
-     */
-    @Bean(name = "pollingThreadFactory")
-    public ThreadFactory getPollingThreadFactory() {
+     <bean id="pollingThreadFactory" class="org.springframework.scheduling.concurrent.CustomizableThreadFactory">
+     <constructor-arg value="polling-"/>
+     </bean></code> */
+    @Bean(name="pollingThreadFactory") public ThreadFactory getPollingThreadFactory() {
         CustomizableThreadFactory tf = new CustomizableThreadFactory("polling-");
         tf.setDaemon(true);
         return tf;
@@ -438,4 +425,5 @@ public class AemServiceConfiguration {
     public BinaryDistributionService getBinaryDistributionService(BinaryDistributionControlServiceImpl binaryDistributionControlService) {
         return new BinaryDistributionServiceImpl(binaryDistributionControlService);
     }
+
 }

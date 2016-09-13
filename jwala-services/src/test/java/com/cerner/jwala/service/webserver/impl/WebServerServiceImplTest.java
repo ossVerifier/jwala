@@ -34,7 +34,10 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -279,29 +282,6 @@ public class WebServerServiceImplTest {
         String generatedHttpdConf = wsService.generateHttpdConfig("Apache2.4", resourceGroup);
 
         assertEquals("httpd.conf template content", generatedHttpdConf);
-    }
-
-    @Test
-    public void testGenerateHttpdConfigWithSsl() throws IOException {
-        Application app1 = new Application(null, "hello-world-1", null, "/hello-world-1", null, true, true, false, "testWar.war");
-        Application app2 = new Application(null, "hello-world-2", null, "/hello-world-2", null, true, true, false, "testWar.war");
-
-        Application[] appArray = {app1, app2};
-
-        when(webServerPersistenceService.findWebServerByName(anyString())).thenReturn(mockWebServer);
-        final List<Application> applications = Arrays.asList(appArray);
-        when(webServerPersistenceService.findApplications(anyString())).thenReturn(applications);
-        when(webServerPersistenceService.getResourceTemplate(anyString(), anyString())).thenReturn(readReferenceFile("/httpd-ssl-conf.tpl"));
-        final ArrayList<Group> groupList = new ArrayList<>();
-        Group mockGroup = mock(Group.class);
-        when(mockGroup.getApplications()).thenReturn(new LinkedHashSet<>(applications));
-        groupList.add(mockGroup);
-        when(resourceService.generateResourceGroup()).thenReturn(new ResourceGroup(groupList));
-
-        String generatedHttpdConf = wsService.generateHttpdConfig("Apache2.4", new ResourceGroup(groupList));
-
-        assertEquals(removeCarriageReturnsAndNewLines(readReferenceFile("/httpd-ssl.conf")),
-                removeCarriageReturnsAndNewLines(generatedHttpdConf));
     }
 
     @Test(expected = InternalErrorException.class)

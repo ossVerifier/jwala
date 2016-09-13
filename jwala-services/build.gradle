@@ -7,7 +7,6 @@ dependencies {
     compile group: "com.cerner.cto.infrastructure", name: "infrastructure-provided", version: "$project.versions.infrastructureProvided", transitive: false
     compile group: "org.springframework", name: "spring-core", version: "$project.versions.spring"
     compile group: "org.springframework", name: "spring-context", version: "$project.versions.spring"
-    compile group: "org.springframework", name: "spring-jms", version: "$project.versions.spring"
     compile group: "org.springframework", name: "spring-web", version: "$project.versions.spring"
     compile group: "org.springframework", name: "spring-aop", version: "$project.versions.spring"
     compile group: "org.springframework", name: "spring-websocket", version: "$project.versions.spring"
@@ -18,12 +17,11 @@ dependencies {
     compile group: 'org.apache.httpcomponents', name: 'httpcore', version: "$project.versions.httpcomponents_core"
     compile group: 'org.apache.httpcomponents', name: 'httpclient', version: "$project.versions.httpcomponents_client"
     compile group: 'joda-time', name: 'joda-time', version: "$project.versions.jodaTime"
-    compile group: 'javax.jms', name: 'jms', version: "$project.versions.jms"
     compile group: 'log4j', name: 'log4j', version: "$project.versions.log4j"
     compile group: 'org.apache.openjpa', name: 'openjpa', version: "$project.versions.jpa"
     compile group: "commons-io", name: "commons-io", version: "$project.versions.commons_io"
 
-    providedCompile group: 'org.apache.tomcat', name: 'tomcat-catalina', version: '8.0.33'
+    providedCompile group: 'org.apache.tomcat', name: 'tomcat-catalina', version: "$project.versions.tomcat"
 
     compile group: "de.jkeylockmanager", name: "jkeylockmanager", version: "$project.versions.jkeylockmanager"
 

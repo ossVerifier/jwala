@@ -494,17 +494,17 @@ public class GroupServiceImpl implements GroupService {
             }
             if(metaData.isUnpack()) {
                 LOGGER.debug("the file needs to be unpacked at the destination {}", destPath);
-                final String tocScriptsPath = AemControl.Properties.USER_TOC_SCRIPTS_PATH.getValue();
-                LOGGER.debug("creating the toc scirpts path {}", tocScriptsPath);
+                final String jwalaScriptsPath = ApplicationProperties.get("remote.commands.user-scripts");
+                LOGGER.debug("creating the toc scirpts path {}", jwalaScriptsPath);
                 commandOutput = remoteCommandExecutor.executeRemoteCommand(
                         null,
                         hostName,
                         ApplicationControlOperation.CREATE_DIRECTORY,
                         new WindowsApplicationPlatformCommandProvider(),
-                        tocScriptsPath);
+                        jwalaScriptsPath);
                 if(!commandOutput.getReturnCode().wasSuccessful()) {
                     standardError = commandOutput.getStandardError().isEmpty()? commandOutput.getStandardOutput() : commandOutput.getStandardError();
-                    LOGGER.error("Error in creating new directory for tocScripts path :: ERROR: {}", standardError);
+                    LOGGER.error("Error in creating new directory for jwalaScripts path :: ERROR: {}", standardError);
                     throw new DeployApplicationConfException(standardError);
                 }
 
@@ -531,21 +531,21 @@ public class GroupServiceImpl implements GroupService {
                         ApplicationControlOperation.SECURE_COPY,
                         new WindowsApplicationPlatformCommandProvider(),
                         unpackWarScriptPath,
-                        tocScriptsPath);
+                        jwalaScriptsPath);
                 if (!commandOutput.getReturnCode().wasSuccessful()) {
                     standardError = commandOutput.getStandardError().isEmpty()? commandOutput.getStandardOutput() : commandOutput.getStandardError();
                     LOGGER.error("Error in copying scripts to unpack :: ERROR: {}", standardError);
                     throw new DeployApplicationConfException(standardError);
                 }
 
-                LOGGER.debug("changing the permissions for the toc scripts path {}", tocScriptsPath);
+                LOGGER.debug("changing the permissions for the jwala scripts path {}", jwalaScriptsPath);
                 commandOutput = remoteCommandExecutor.executeRemoteCommand(
                         null,
                         hostName,
                         ApplicationControlOperation.CHANGE_FILE_MODE,
                         new WindowsApplicationPlatformCommandProvider(),
                         "a+x",
-                        tocScriptsPath,
+                        jwalaScriptsPath,
                         "*.sh");
                 if (!commandOutput.getReturnCode().wasSuccessful()) {
                     standardError = commandOutput.getStandardError().isEmpty()? commandOutput.getStandardOutput() : commandOutput.getStandardError();

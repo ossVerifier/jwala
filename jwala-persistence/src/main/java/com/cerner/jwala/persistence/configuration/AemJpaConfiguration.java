@@ -1,5 +1,6 @@
 package com.cerner.jwala.persistence.configuration;
 
+import com.cerner.jwala.common.exception.ApplicationException;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jndi.JndiLocatorDelegate;
@@ -8,8 +9,6 @@ import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.orm.jpa.vendor.OpenJpaVendorAdapter;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
-
-import com.cerner.jwala.common.exception.ApplicationException;
 
 import javax.naming.NamingException;
 import javax.persistence.EntityManagerFactory;
@@ -22,7 +21,7 @@ public class AemJpaConfiguration {
     @Bean
     public DataSource getAemDataSource() {
         try {
-            return JndiLocatorDelegate.createDefaultResourceRefLocator().lookup("jdbc/toc-xa",
+            return JndiLocatorDelegate.createDefaultResourceRefLocator().lookup("jdbc/jwala-xa",
                     DataSource.class);
         } catch (final NamingException ne) {
             throw new ApplicationException(ne);
@@ -35,7 +34,7 @@ public class AemJpaConfiguration {
         final LocalContainerEntityManagerFactoryBean factory = new LocalContainerEntityManagerFactoryBean();
         factory.setDataSource(dataSource);
         factory.setJpaVendorAdapter(new OpenJpaVendorAdapter());
-        factory.setPersistenceUnitName("aem-unit");
+        factory.setPersistenceUnitName("jwala-unit");
         factory.setPersistenceXmlLocation("classpath:META-INF/persistence.xml");
 
         return factory;

@@ -26,7 +26,7 @@ public class DefaultWebServerExecRequestBuilderImplTest {
 
     @Before
     public void setup() throws IOException {
-        System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, new File(".").getCanonicalPath() + "/toc-control/src/test/resources");
+        System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, new File(".").getCanonicalPath() + "/src/test/resources");
         impl = new DefaultExecCommandBuilderImpl();
         webServer = mock(WebServer.class);
         webServerName = "theWebServerName";
@@ -44,7 +44,7 @@ public class DefaultWebServerExecRequestBuilderImplTest {
 
         final ExecCommand actualCommand = impl.build(new WindowsWebServerPlatformCommandProvider());
         final ExecCommand expectedCommand =
-                new ShellCommand("`/usr/bin/cygpath d:/stp/app/data/httpd/start-service.sh`",
+                new ShellCommand("`/usr/bin/cygpath d:/jwala/app/data/httpd/start-service.sh`",
                         "\"" + webServerName + "\"", "20");
 
         assertEquals(expectedCommand.toCommandString(), actualCommand.toCommandString());
@@ -60,7 +60,7 @@ public class DefaultWebServerExecRequestBuilderImplTest {
 
         final ExecCommand actualCommand = impl.build(new WindowsWebServerPlatformCommandProvider());
         final ShellCommand expectedCommand =
-                new ShellCommand("`/usr/bin/cygpath d:/stp/app/data/httpd/stop-service.sh`",
+                new ShellCommand("`/usr/bin/cygpath d:/jwala/app/data/httpd/stop-service.sh`",
                         "\"" + webServerName + "\"", "20");
 
         assertEquals(expectedCommand.toCommandString(), actualCommand.toCommandString());

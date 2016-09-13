@@ -2,7 +2,7 @@ package com.cerner.jwala.service.binarydistribution.impl;
 
 import com.cerner.jwala.common.domain.model.binarydistribution.BinaryDistributionControlOperation;
 import com.cerner.jwala.common.exec.CommandOutput;
-import com.cerner.jwala.control.binarydistribution.command.impl.WindowsBinaryDistributionPlatformCommandProvider;
+import com.cerner.jwala.control.command.impl.WindowsBinaryDistributionPlatformCommandProvider;
 import com.cerner.jwala.control.command.RemoteCommandExecutor;
 import com.cerner.jwala.exception.CommandFailureException;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionControlService;

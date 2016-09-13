@@ -7,8 +7,8 @@ var JvmControlPanelWidget = React.createClass({
     render: function() {
 
         // Can be defined here not outside since JvmControlPanelWidget is not really generic.
-        var mgrBtnDisplayClass = (tocVars["opsJvmMgrBtnEnabled"] === "true" ? "" : "ui-button-hide");
-        var diagnoseBtnDisplayClass = (tocVars["opsJvmMgrBtnEnabled"] === "true" ? "" : "ui-button-hide");
+        var mgrBtnDisplayClass = (jwalaVars["opsJvmMgrBtnEnabled"] === "true" ? "" : "ui-button-hide");
+        var diagnoseBtnDisplayClass = (jwalaVars["opsJvmMgrBtnEnabled"] === "true" ? "" : "ui-button-hide");
 
         return <div className="jvm-control-panel-widget">
 
@@ -88,8 +88,7 @@ var JvmControlPanelWidget = React.createClass({
         this.props.jvmDiagnoseCallback(this.props.data, this.refs.diagnoseBtn, function(){});
     },
     showMgr: function() {
-        var url = "idp?saml_redirectUrl=" +
-                   window.location.protocol + "//" +
+        var url =  window.location.protocol + "//" +
                    this.props.data.hostName + ":" +
                    (window.location.protocol.toUpperCase() === "HTTPS:" ? this.props.data.httpsPort : this.props.data.httpPort) + "/manager/";
         window.open(url);

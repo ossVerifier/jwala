@@ -1,23 +1,23 @@
 :: -------------------------
-:: Set the STP_HOME variable 
+:: Set the JWALA_HOME variable
 :: -------------------------
 
-CALL:stpSetHome
-SET STP_HOME_UNIX=%STP_HOME:\=/%
+CALL:jwalaSetHome
+SET JWALA_HOME_UNIX=%JWALA_HOME:\=/%
 
 :: ------------------------------------------------------------------------------
-:: Use fn stpSet to set any path variables. This allows the 'stp' folder to be 
+:: Use fn jwalaSet to set any path variables. This allows the 'jwala' folder to be
 :: moved anywhere in the file system. EPM properties (marked by @) determine 
-:: the location at build time and stpSet will adapt the path based on the current 
-:: location of the 'stp' folder.  Relocation of the 'stp' dir is needed primarily 
+:: the location at build time and jwalaSet will adapt the path based on the current
+:: location of the 'jwala' folder.  Relocation of the 'jwala' dir is needed primarily
 :: for developer environments. 
 :: ------------------------------------------------------------------------------
 
-CALL:stpSet JAVA_HOME d:\stp\jdk1.7.0_45
+CALL:jwalaSet JAVA_HOME d:\jwala\jdk1.7.0_45
 SET JRE_HOME=%JAVA_HOME%\jre
 
-CALL:stpSet CATALINA_HOME d:\stp\siemens\apache-tomcat-7.0.55\core
-CALL:stpSet CATALINA_BASE d:\stp\siemens\instances\jvm-1
+CALL:jwalaSet CATALINA_HOME d:\jwala\cerner\apache-tomcat-7.0.55\core
+CALL:jwalaSet CATALINA_BASE d:\jwala\cerner\instances\jvm-1
 
 REM JMX_OPTS port settings deprecated in favor of a lifecycle listener in server.xml
 SET JMX_OPTS=-Dcom.sun.management.jmxremote.ssl=false
@@ -35,20 +35,20 @@ REM Warning - too many system properties will cause the deployment to fail due t
 
 SET SSL_DEBUG_OPTS=-Djavax.net.debug=ssl
 
-CALL:stpSet SPRING_AGENT d:\stp\siemens\lib\tomcat\ext\spring-instrument-3.2.6.RELEASE.jar
+CALL:jwalaSet SPRING_AGENT d:\jwala\cerner\lib\tomcat\ext\spring-instrument-3.2.6.RELEASE.jar
 SET SPRING_OPTS=-javaagent:%SPRING_AGENT%
 
 :: -------------------------------------------------------------------------------------------------------------------------------
-:: STP_HOME and the gsm classLoaderUrl are needed as system properties for replacement in files like server.xml or context.xml
+:: JWALA_HOME and the gsm classLoaderUrl are needed as system properties for replacement in files like server.xml or context.xml
 :: -------------------------------------------------------------------------------------------------------------------------------
-SET CATALINA_OPTS=-XX:PermSize=512m -XX:MaxPermSize=512m -DSTP_HOME=%STP_HOME% -Dgsm.classloader.url=%STP_HOME_UNIX%/siemens/lib/tomcat/ext/gsm
+SET CATALINA_OPTS=-XX:PermSize=512m -XX:MaxPermSize=512m -DJWALA_HOME=%JWALA_HOME% -Dgsm.classloader.url=%JWALA_HOME_UNIX%/cerner/lib/tomcat/ext/gsm
 
-CALL:stpSet PROPERTIES_PATH d:\stp\siemens\properties
-SET STP_OPTS=-DPROPERTIES_ROOT_PATH=%PROPERTIES_PATH%
-SET STP_OPTS=%STP_OPTS% -DSTP_PROPERTIES_DIR=%PROPERTIES_PATH%
+CALL:jwalaSet PROPERTIES_PATH d:\jwala\cerner\properties
+SET JWALA_OPTS=-DPROPERTIES_ROOT_PATH=%PROPERTIES_PATH%
+SET JWALA_OPTS=%JWALA_OPTS% -DJWALA_PROPERTIES_DIR=%PROPERTIES_PATH%
 
 SET LOG_OPTS=-Dlog4j.debug=true
-CALL:stpSet LOG_ROOT_DIR d:/stp/apache-tomcat-7.0.55/logs
+CALL:jwalaSet LOG_ROOT_DIR d:/jwala/apache-tomcat-7.0.55/logs
 SET LOG_OPTS=-Dlog.root.dir=%LOG_ROOT_DIR%
 SET LOG_OPTS=%LOG_OPTS% -Dlog4j.configuration=log4j.xml
 
@@ -56,7 +56,7 @@ SET LOGIN_CONFIG=-Djava.security.auth.login.config=%PROPERTIES_PATH%\jaas.config
 
 SET APR_OPTS=-Djava.library.path=%CATALINA_HOME%\bin
 
-SET PROD_OPTS=%APR_OPTS% %STP_OPTS% %SSL_OPTS% %JMX_OPTS% %SPRING_OPTS% %CATALINA_OPTS% %LOG_OPTS% %LOGIN_CONFIG%
+SET PROD_OPTS=%APR_OPTS% %JWALA_OPTS% %SSL_OPTS% %JMX_OPTS% %SPRING_OPTS% %CATALINA_OPTS% %LOG_OPTS% %LOGIN_CONFIG%
 SET DEBUG_OPTS=%PROD_OPTS%
 
 SET JAVA_SERVICE_OPTS=%PROD_OPTS: =#%
@@ -67,50 +67,50 @@ goto:eof
 
 
 :: ----------------------------------------------------------------------------
-:: Sets the STP_DRIVE and STP_HOME variables based on the location of this file
+:: Sets the JWALA_DRIVE and JWALA_HOME variables based on the location of this file
 :: ----------------------------------------------------------------------------
 
-:stpSetHome
+:jwalaSetHome
 
-set STP_DRIVE=%~d0
+set JWALA_DRIVE=%~d0
 
 Setlocal EnableDelayedExpansion
 
 set path=%~p0
 set pathList=%path:\=,%
 set trimmedPathList=%pathList:~1,-1%
-set stpDir=%STP_DRIVE%
-set foundStp=0
-set savedStpDir=!stpDidr!
+set jwalaDir=%JWALA_DRIVE%
+set foundJwala=0
+set savedJwalaDir=!jwalaDir!
 
 For %%A in (%trimmedPathList%) do (
-   set stpDir=!stpDir!\%%A
-   IF %%A==stp (
-      set savedStpDir=!stpDir!
-      set foundStp=1
+   set jwalaDir=!jwalaDir!\%%A
+   IF %%A==jwala (
+      set savedJwalaDir=!jwalaDir!
+      set foundJwala=1
    )
 )
-:END_FIND_STP_DIR
+:END_FIND_JWALA_DIR
 
-if %foundStp% EQU 0 (echo stp dir not found so setting to default & set savedStpDir=d:\stp)
-echo stpDir is %savedStpDir%
+if %foundJwala% EQU 0 (echo jwala dir not found so setting to default & set savedJwalaDir=d:\jwala)
+echo jwalaDir is %savedJwalaDir%
 
-ENDLOCAL & SET STP_HOME=%savedStpDir%
+ENDLOCAL & SET JWALA_HOME=%savedJwalaDir%
 
 goto:eof
 
 
 :: ----------------------------------------------------------------------
-:: Function to set paths variables based on the current value of STP_HOME
+:: Function to set paths variables based on the current value of JWALA_HOME
 :: ----------------------------------------------------------------------
 
-:stpSet
+:jwalaSet
 :: arg1 = variable to set (eg CATALINA_HOME)
-:: arg2 = original value of variable (eg d:\stp\siemens\apache-tomcat-7.0.55\core)
+:: arg2 = original value of variable (eg d:\jwala\cerner\apache-tomcat-7.0.55\core)
 ::
-:: if STP_HOME=e:\view_stores\stp, then this fn sets CATALINA_HOME to e:\view_stores\stp\siemens\apache-tomcat-7.0.55\core 
+:: if JWALA_HOME=e:\view_stores\jwala, then this fn sets CATALINA_HOME to e:\view_stores\jwala\cerner\apache-tomcat-7.0.55\core
  
 SET %~1=%~2
-CALL SET %~1=%%%~1:d:\stp=%STP_HOME%%%
+CALL SET %~1=%%%~1:d:\jwala=%JWALA_HOME%%%
 
 goto:eof

@@ -10,15 +10,11 @@ public enum ApplicationPropertySourceDefinition {
 
     LOAD_BALANCER_STATUS_MOUNT("loadBalancerStatusMount", "mod_jk.load-balancer.status.mount", "/balancer-manager", VariableStyle.STRING),
     STATE_POLL_TIMEOUT("statePollTimeout", "state.poll.timeout", "1000", VariableStyle.STRING),
-    START_STOP_TIMEOUT("startStopTimeout", "start.stop.timeout", "180000", VariableStyle.STRING),
-    HEALTH_CHECK_APP("healthCheckApp", "health.check.app", "/hct", VariableStyle.STRING),
     HISTORY_MAX_READ_REC_COUNT("historyReadMaxRecCount", "history.max-read-rec-count", "30", VariableStyle.STRING),
     RESOURCES_ENABLED("resourcesEnabled", "resources.enabled", "true", VariableStyle.STRING),
     OPS_GRP_CHILDREN_VIEW_OPEN("opsGrpChildrenViewOpen", "operations.group.children.view.open", "true", VariableStyle.STRING),
     OPS_JVM_MGR_BTN_ENABLED("opsJvmMgrBtnEnabled", "operations.jvm.mgr.btn.enabled", "true", VariableStyle.STRING),
-    OPS_JVM_DIAGNOSE_BTN_ENABLED("opsJvmDiagnoseBtnEnabled", "operations.jvm.diagnose.btn.enabled", "true", VariableStyle.STRING),
-    WEBSERVER_HTTPD_CONF_PATH("webserverHttpdConfPath", "paths.httpd.conf", "d:/stp/app/data/httpd/", VariableStyle.STRING),
-    JWALA_ROLE_ADMIN("jwalaRoleAdmin", "toc.role.admin", "TOC Admin", VariableStyle.STRING);
+    JWALA_ROLE_ADMIN("jwalaRoleAdmin", "jwala.role.admin", "Tomcat Admin", VariableStyle.STRING);
 
     private final String variableName;
     private final String propertyKey;

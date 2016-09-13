@@ -37,7 +37,7 @@ public class AdminServiceRestImpl implements AdminServiceRest {
     public static final String JSON_RESPONSE_TRUE = "true";
     public static final String JSON_RESPONSE_FALSE = "false";
 
-    private static final String TOC_AUTHORIZATION= "toc.authorization";
+    private static final String JWALA_AUTHORIZATION = "jwala.authorization";
 
     private FilesConfiguration filesConfiguration;
     private ResourceService resourceService;
@@ -118,8 +118,8 @@ public class AdminServiceRestImpl implements AdminServiceRest {
     }
 
     @Override
-    public Response isTOCAuthorizationEnabled() {
-        String auth = ApplicationProperties.get(TOC_AUTHORIZATION, "true");
+    public Response isJwalaAuthorizationEnabled() {
+        String auth = ApplicationProperties.get(JWALA_AUTHORIZATION, "true");
         if("false".equals(auth))
             return ResponseBuilder.ok(JSON_RESPONSE_FALSE);
         else 
@@ -130,7 +130,7 @@ public class AdminServiceRestImpl implements AdminServiceRest {
     public Response getAuthorizationDetails() {
         return ResponseBuilder.ok(new ResponseContent() {
             private static final String TRUE = "true";
-            private final String authEnabled = ApplicationProperties.get(TOC_AUTHORIZATION, TRUE);
+            private final String authEnabled = ApplicationProperties.get(JWALA_AUTHORIZATION, TRUE);
 
             public String getAuthorizationEnabled() {
                 return authEnabled;

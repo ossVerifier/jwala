@@ -6,9 +6,7 @@ import com.cerner.jwala.common.exec.ExecCommand;
 import com.cerner.jwala.common.exec.ShellCommand;
 import com.cerner.jwala.common.properties.ApplicationProperties;
 import com.cerner.jwala.control.command.DefaultExecCommandBuilderImpl;
-import com.cerner.jwala.control.jvm.command.impl.WindowsJvmPlatformCommandProvider;
 import com.cerner.jwala.persistence.jpa.domain.JpaJvm;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -39,7 +37,7 @@ public class DefaultJvmExecRequestBuilderImplTest {
     @Before
     public void setup() {
         originalPRP = System.getProperty(ApplicationProperties.PROPERTIES_ROOT_PATH);
-        System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, "./toc-control/src/test/resources");
+        System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, "src/test/resources");
         try {
             ApplicationProperties.getInstance();
         } catch (ApplicationException e) {
@@ -64,7 +62,7 @@ public class DefaultJvmExecRequestBuilderImplTest {
         impl.setOperation(operation);
 
         final ExecCommand actualCommand = impl.build(new WindowsJvmPlatformCommandProvider());
-        final ShellCommand expectedCommand = new ShellCommand("`/usr/bin/cygpath d:/stp/app/instances/theJvmName/bin/start-service.sh`",
+        final ShellCommand expectedCommand = new ShellCommand("`/usr/bin/cygpath d:/jwala/app/instances/theJvmName/bin/start-service.sh`",
                 "\"" + jvmName + "\"", "20");
         assertEquals(expectedCommand,
                 actualCommand);

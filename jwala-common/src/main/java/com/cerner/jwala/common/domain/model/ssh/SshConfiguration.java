@@ -1,15 +1,14 @@
 package com.cerner.jwala.common.domain.model.ssh;
 
-import java.io.Serializable;
-
+import com.cerner.jwala.common.domain.model.fault.AemFaultType;
+import com.cerner.jwala.common.exception.InternalErrorException;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.cerner.jwala.common.domain.model.fault.AemFaultType;
-import com.cerner.jwala.common.exception.InternalErrorException;
+import java.io.Serializable;
 
 public class SshConfiguration implements Serializable {
 
@@ -33,7 +32,7 @@ public class SshConfiguration implements Serializable {
                 || thePort == null
                 || thePrivateKeyFile == null
                 || theKnownHostsFile == null) {
-            String message = "Startup Aborted: Aem SSH Properties Not Set in Application Properties file";
+            String message = "Startup Aborted: Jwala SSH Properties Not Set in Application Properties file";
             LOGGER.error(message);
             throw new InternalErrorException(AemFaultType.SSH_CONFIG_MISSING, message);
         }
