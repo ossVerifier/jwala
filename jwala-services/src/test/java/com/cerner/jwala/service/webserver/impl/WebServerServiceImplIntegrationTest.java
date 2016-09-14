@@ -71,7 +71,7 @@ public class WebServerServiceImplIntegrationTest {
 
     @Before
     public void setup() {
-        webServerService = new WebServerServiceImpl(webServerPersistenceService, fileManager, resourceService,"d:/jwala/app/data/toc/types");
+        webServerService = new WebServerServiceImpl(webServerPersistenceService, fileManager, resourceService,"d:/jwala/app/data/types");
     }
 
     @Test(expected = NotFoundException.class)
