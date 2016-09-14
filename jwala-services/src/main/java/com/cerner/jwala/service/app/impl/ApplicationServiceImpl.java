@@ -492,19 +492,18 @@ public class ApplicationServiceImpl implements ApplicationService {
                     }
 
                     // copy the unpack war script to .jwala
-                    final String tocScriptsParent = new File(tocScriptsPath).getParentFile().getAbsolutePath().replaceAll("\\\\", "/");
                     commandOutput = applicationCommandExecutor.executeRemoteCommand(
                             null,
                             host,
                             ApplicationControlOperation.CREATE_DIRECTORY,
                             new WindowsApplicationPlatformCommandProvider(),
-                            tocScriptsParent
+                            tocScriptsPath
                     );
                     if (commandOutput.getReturnCode().wasSuccessful()) {
-                        LOGGER.info("Successfully created the parent dir {} on host", tocScriptsParent, host);
+                        LOGGER.info("Successfully created the parent dir {} on host", tocScriptsPath, host);
                     } else {
                         final String standardError = commandOutput.getStandardError().isEmpty() ? commandOutput.getStandardOutput() : commandOutput.getStandardError();
-                        LOGGER.error("Error in creating parent dir {} on host {}:: ERROR : {}", tocScriptsParent, host, standardError);
+                        LOGGER.error("Error in creating parent dir {} on host {}:: ERROR : {}", tocScriptsPath, host, standardError);
                         throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, standardError);
                     }
                     final String unpackWarScriptPath = ApplicationProperties.get("commands.scripts-path") + "/" + AemControl.Properties.UNPACK_WAR_SCRIPT_NAME;

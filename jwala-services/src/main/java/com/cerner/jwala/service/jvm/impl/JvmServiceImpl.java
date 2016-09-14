@@ -575,7 +575,12 @@ public class JvmServiceImpl implements JvmService {
      * @throws CommandFailureException If the command fails, this exception contains the details of the failure.
      */
     protected void secureCopyFileToJvm(final Jvm jvm, final String sourceFile, final String destinationFile, User user) throws CommandFailureException {
-        final String parentDir = new File(destinationFile).getParentFile().getAbsolutePath().replaceAll("\\\\", "/");
+        final String parentDir;
+        if (destinationFile.startsWith("~")) {
+            parentDir = destinationFile.substring(0, destinationFile.lastIndexOf("/"));
+        } else {
+            parentDir = new File(destinationFile).getParentFile().getAbsolutePath().replaceAll("\\\\", "/");
+        }
         createParentDir(jvm, parentDir);
         final ControlJvmRequest controlJvmRequest = new ControlJvmRequest(jvm.getId(), JvmControlOperation.SECURE_COPY);
         final CommandOutput commandOutput = jvmControlService.secureCopyFile(controlJvmRequest, sourceFile, destinationFile, user.getId());
@@ -680,7 +685,12 @@ public class JvmServiceImpl implements JvmService {
 
     protected void deployJvmConfigFile(String fileName, Jvm jvm, String destPath, String sourcePath, User user)
             throws CommandFailureException {
-        final String parentDir = new File(destPath).getParentFile().getAbsolutePath().replaceAll("\\\\", "/");
+        final String parentDir;
+        if (destPath.startsWith("~")) {
+            parentDir = destPath.substring(0, destPath.lastIndexOf("/"));
+        } else {
+            parentDir = new File(destPath).getParentFile().getAbsolutePath().replaceAll("\\\\", "/");
+        }
         createParentDir(jvm, parentDir);
         CommandOutput result =
                 jvmControlService.secureCopyFile(new ControlJvmRequest(jvm.getId(), JvmControlOperation.SECURE_COPY), sourcePath, destPath, user.getId());

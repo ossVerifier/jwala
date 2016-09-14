@@ -173,7 +173,12 @@ public class WebServerControlServiceImpl implements WebServerControlService {
         if (commandOutput.getReturnCode().wasSuccessful()) {
             LOGGER.info("Found the file {}", destPath);
         } else {
-            final String parentDir = new File(destPath).getParentFile().getAbsolutePath().replaceAll("\\\\", "/");
+            final String parentDir;
+            if (destPath.startsWith("~")) {
+                parentDir = destPath.substring(0, destPath.lastIndexOf("/"));
+            } else {
+                parentDir = new File(destPath).getParentFile().getAbsolutePath().replaceAll("\\\\", "/");
+            }
             commandOutput = commandExecutor.executeRemoteCommand(
                     aWebServerName,
                     host,
