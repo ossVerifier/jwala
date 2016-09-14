@@ -16,4 +16,8 @@ classes
 .idea/
 *.iml
 *.iws
-
+_windows
+web-browsers.xml
+debugger.xml
+diff.xml
+IntelliLang.xml
