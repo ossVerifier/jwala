@@ -3,12 +3,9 @@ package com.cerner.jwala.service.binarydistribution.impl;
 import com.cerner.jwala.common.domain.model.fault.AemFaultType;
 import com.cerner.jwala.common.exception.InternalErrorException;
 import com.cerner.jwala.common.properties.ApplicationProperties;
-import com.cerner.jwala.control.AemControl;
 import com.cerner.jwala.exception.CommandFailureException;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionControlService;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionService;
-import com.cerner.jwala.service.zip.ZipDirectory;
-import com.cerner.jwala.service.zip.impl.ZipDirectoryImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +21,6 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
     private static final String UNZIPEXE = "unzip.exe";
     private static final String APACHE_EXCLUDE = "ReadMe.txt *--";
 
-    private final ZipDirectory zipDirectory = new ZipDirectoryImpl();
     private final BinaryDistributionControlService binaryDistributionControlService;
 
     @Autowired
@@ -34,7 +30,7 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
 
     @Override
     public void distributeJdk(final String hostname) {
-        File javaHome = new File(ApplicationProperties.get("stp.java.home"));
+        File javaHome = new File(ApplicationProperties.get("remote.jwala.java.home"));
         String jdkDir = javaHome.getName();
         String binaryDeployDir = javaHome.getParentFile().getAbsolutePath().replaceAll("\\\\", "/");
         if (jdkDir != null && !jdkDir.isEmpty()) {
@@ -76,26 +72,19 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
                 if (binaryDir != null && !binaryDir.isEmpty()) {
                     String zipFile = binaryDir + "/" + binaryName + ".zip";
                     String destinationZipFile = binaryDeployDir + "/" + binaryName + ".zip";
-                    if (!new File(zipFile).exists()) {
-                        LOGGER.debug("binary zip does not exists, create zip");
-                        zipFile = zipBinary(binaryDir + "/" + binaryName);
-                    }
-
                     remoteCreateDirectory(hostname, binaryDeployDir);
-
                     remoteSecureCopyFile(hostname, zipFile, destinationZipFile);
-
-                    remoteUnzipBinary(hostname, AemControl.Properties.USER_TOC_SCRIPTS_PATH.getValue() + "/" + UNZIPEXE, destinationZipFile, binaryDeployDir, exclude);
-
-                    remoteDeleteBinary(hostname, destinationZipFile);
-
+                    try {
+                        remoteUnzipBinary(hostname, ApplicationProperties.get("remote.commands.user-scripts") + "/" + UNZIPEXE, destinationZipFile, binaryDeployDir, exclude);
+                    } finally {
+                        remoteDeleteBinary(hostname, destinationZipFile);
+                    }
                 } else {
                     LOGGER.warn("Cannot find the binary directory location in jwala, value is {}", binaryDir);
                 }
             } else {
                 LOGGER.info("Found {} at on host {}", binaryName, hostname);
             }
-
         } else {
             LOGGER.warn("Binary deploy location not provided value is {}", binaryDeployDir);
         }
@@ -182,7 +171,7 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
     }
 
     public boolean remoteFileCheck(final String hostname, final String destination) {
-        //TODO: it will never catch here
+        LOGGER.info("remoteFileCheck hostname: " + hostname + " destination: " + destination);
         boolean result;
         try {
             result = binaryDistributionControlService.checkFileExists(hostname, destination).getReturnCode().wasSuccessful();
@@ -191,38 +180,26 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
             LOGGER.error(message, e);
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, message, e);
         }
+        LOGGER.info("result: " + result);
         return result;
     }
 
     @Override
-    public String zipBinary(final String location) {
-        String destination = null;
-        if (location != null && !location.isEmpty() && new File(location).exists()) {
-            destination = location + ".zip";
-            LOGGER.info("{} found, zipping to {}", location, destination);
-            zipDirectory.zip(location, destination);
-        } else {
-            LOGGER.warn("Could not find the location {}", location);
-        }
-        return destination;
-    }
-
-    @Override
     public void prepareUnzip(String hostname) {
-        final String tocScriptsPath = AemControl.Properties.USER_TOC_SCRIPTS_PATH.getValue();
-        if (remoteFileCheck(hostname, tocScriptsPath)) {
-            LOGGER.info(tocScriptsPath + " exists at " + hostname);
+        final String jwalaScriptsPath = ApplicationProperties.get("remote.commands.user-scripts");
+        if (remoteFileCheck(hostname, jwalaScriptsPath)) {
+            LOGGER.info(jwalaScriptsPath + " exists at " + hostname);
         } else {
-            remoteCreateDirectory(hostname, tocScriptsPath);
+            remoteCreateDirectory(hostname, jwalaScriptsPath);
         }
-        final String unzipFileDestination = AemControl.Properties.USER_TOC_SCRIPTS_PATH.getValue();
+        final String unzipFileDestination = jwalaScriptsPath;
         if (remoteFileCheck(hostname, unzipFileDestination + "/" + UNZIPEXE)) {
             LOGGER.info(unzipFileDestination + "/" + UNZIPEXE + " exists at " + hostname);
         } else {
             final String unzipFileSource = ApplicationProperties.get(BINARY_LOCATION_PROPERTY_KEY) + "/" + UNZIPEXE;
             LOGGER.info("unzipFileSource: " + unzipFileSource);
             remoteSecureCopyFile(hostname, unzipFileSource, unzipFileDestination);
-            changeFileMode(hostname, "a+x", tocScriptsPath, UNZIPEXE);
+            changeFileMode(hostname, "a+x", jwalaScriptsPath, UNZIPEXE);
         }
     }
 }

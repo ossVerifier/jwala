@@ -182,7 +182,7 @@ public class JvmControlServiceImpl implements JvmControlService {
         final Jvm jvm = jvmPersistenceService.getJvm(jvmId);
         final int beginIndex = destPath.lastIndexOf("/");
         final String fileName = destPath.substring(beginIndex + 1, destPath.length());
-        // don't add any usage of the toc user internal directory to the history
+        // don't add any usage of the jwala user internal directory to the history
         if (!ApplicationProperties.get("remote.commands.user-scripts").endsWith(fileName)) {
             final String eventDescription = event + " " + fileName;
             historyService.createHistory(getServerName(jvm), new ArrayList<>(jvm.getGroups()), eventDescription, EventType.USER_ACTION, userId);
@@ -190,7 +190,12 @@ public class JvmControlServiceImpl implements JvmControlService {
         }
         final String name = jvm.getJvmName();
         final String hostName = jvm.getHostName();
-        final String parentDir = new File(destPath).getParentFile().getAbsolutePath().replaceAll("\\\\", "/");
+        final String parentDir;
+        if (destPath.startsWith("~")) {
+            parentDir = destPath.substring(0, destPath.lastIndexOf("/"));
+        } else {
+            parentDir = new File(destPath).getParentFile().getAbsolutePath().replaceAll("\\\\", "/");
+        }
         CommandOutput commandOutput = remoteCommandExecutor.executeRemoteCommand(
                 name,
                 hostName,

@@ -7,7 +7,5 @@ public interface BinaryDistributionService {
 
     void distributeWebServer(final String hostname);
 
-    String zipBinary(final String location);
-
     void prepareUnzip(final String hostname);
 }

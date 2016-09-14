@@ -60,7 +60,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     private static final String GENERATED_RESOURCE_DIR = "paths.generated.resource.dir";
     private static final String JWALA_WEBAPPS_DIR = "remote.jwala.webapps.dir";
     private final ExecutorService executorService;
-    final String tocScriptsPath = AemControl.Properties.USER_TOC_SCRIPTS_PATH.getValue();
+    final String jwalaScriptsPath = ApplicationProperties.get("remote.commands.user-scripts");
 
     @Autowired
     private ApplicationPersistenceService applicationPersistenceService;
@@ -484,29 +484,20 @@ public class ApplicationServiceImpl implements ApplicationService {
                     final String warName = application.getWarName();
                     LOGGER.info("Unpacking war {} on host {}", warName, host);
 
-                    // create the .toc directory as the destination for the unpack-war script
-                    final String jwalaScriptsPath = ApplicationProperties.get("remote.commands.user-scripts");
-                    commandOutput = applicationCommandExecutor.executeRemoteCommand(null, host, ApplicationControlOperation.CREATE_DIRECTORY, new WindowsApplicationPlatformCommandProvider(), jwalaScriptsPath);
-                    if (!commandOutput.getReturnCode().wasSuccessful()) {
-                        return commandOutput; // return immediately if creating the dir failed
-                    }
-
-                    // copy the unpack war script to .jwala
-                    final String tocScriptsParent = new File(tocScriptsPath).getParentFile().getAbsolutePath().replaceAll("\\\\", "/");
-                    commandOutput = applicationCommandExecutor.executeRemoteCommand(
-                            null,
+                    // create the .jwala directory as the destination for the unpack-war script
+                    commandOutput = applicationCommandExecutor.executeRemoteCommand(null,
                             host,
                             ApplicationControlOperation.CREATE_DIRECTORY,
                             new WindowsApplicationPlatformCommandProvider(),
-                            tocScriptsParent
-                    );
+                            jwalaScriptsPath);
                     if (commandOutput.getReturnCode().wasSuccessful()) {
-                        LOGGER.info("Successfully created the parent dir {} on host", tocScriptsParent, host);
+                        LOGGER.info("Successfully created the parent dir {} on host", jwalaScriptsPath, host);
                     } else {
                         final String standardError = commandOutput.getStandardError().isEmpty() ? commandOutput.getStandardOutput() : commandOutput.getStandardError();
-                        LOGGER.error("Error in creating parent dir {} on host {}:: ERROR : {}", tocScriptsParent, host, standardError);
+                        LOGGER.error("Error in creating parent dir {} on host {}:: ERROR : {}", jwalaScriptsPath, host, standardError);
                         throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, standardError);
                     }
+
                     final String unpackWarScriptPath = ApplicationProperties.get("commands.scripts-path") + "/" + AemControl.Properties.UNPACK_WAR_SCRIPT_NAME;
                     commandOutput = applicationCommandExecutor.executeRemoteCommand(null, host, ApplicationControlOperation.SECURE_COPY, new WindowsApplicationPlatformCommandProvider(), unpackWarScriptPath, jwalaScriptsPath);
                     if (!commandOutput.getReturnCode().wasSuccessful()) {
