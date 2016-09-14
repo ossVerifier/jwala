@@ -61,7 +61,6 @@ var GroupOperations = React.createClass({
                                                               jvms={this.state.jvms}
                                                               updateWebServerDataCallback={this.updateWebServerDataCallback}
                                                               collapseRowCallback={this.collapseRowCallback}
-                                                              stateService={this.props.stateService}
                                                               commandStatusWidgetMap={this.commandStatusWidgetMap}
                                                               parent={this}/>
                                 </div>

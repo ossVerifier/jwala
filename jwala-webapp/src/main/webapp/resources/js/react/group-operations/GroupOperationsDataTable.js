@@ -268,11 +268,6 @@ var GroupOperationsDataTable = React.createClass({
                 jvmStartedCount.text("Started: " + response.applicationResponseContent.jvmStartedCount + "/" + response.applicationResponseContent.jvmCount);
             });
         }
-
-        // Request JVM current states.
-        stateService.requestForJvmStates(groupName).then(function (response) {
-            console.log(response);
-        });
     },
     renderGroupStateRowData: function (type, dataTable, data, aoColumnDefs, itemIndex, parentId) {
         var self = this;

@@ -84,10 +84,6 @@ var ResourceAttrPane = React.createClass({
                 case "webServers":
                      newData["parentGroup"] = ResourceAttrPane.sanitizeAndCloneData(parent.rtreeListMetaData.parent);
                      newAttributes["webServer"] = newData;
-                    break;
-                case "extProperties":
-                    newData["parentGroup"] = ResourceAttrPane.sanitizeAndCloneData(parent.rtreeListMetaData.parent);
-                    newAttributes["extProperties"] = newData;
             }
 
             this.refs.attrTree.refresh(newAttributes);
