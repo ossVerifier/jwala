@@ -190,7 +190,12 @@ public class JvmControlServiceImpl implements JvmControlService {
         }
         final String name = jvm.getJvmName();
         final String hostName = jvm.getHostName();
-        final String parentDir = new File(destPath).getParentFile().getAbsolutePath().replaceAll("\\\\", "/");
+        final String parentDir;
+        if (destPath.startsWith("~")) {
+            parentDir = destPath.substring(0, destPath.lastIndexOf("/"));
+        } else {
+            parentDir = new File(destPath).getParentFile().getAbsolutePath().replaceAll("\\\\", "/");
+        }
         CommandOutput commandOutput = remoteCommandExecutor.executeRemoteCommand(
                 name,
                 hostName,

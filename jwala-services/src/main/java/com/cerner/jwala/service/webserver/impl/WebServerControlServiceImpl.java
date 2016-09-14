@@ -154,8 +154,7 @@ public class WebServerControlServiceImpl implements WebServerControlService {
     public CommandOutput secureCopyFile(final String aWebServerName, final String sourcePath, final String destPath, String userId) throws CommandFailureException {
 
         final WebServer aWebServer = webServerService.getWebServer(aWebServerName);
-        final int beginIndex = destPath.lastIndexOf('/');
-        final String fileName = destPath.substring(beginIndex + 1, destPath.length());
+        final String fileName = new File(destPath).getName();
         if (!ApplicationProperties.get("remote.commands.user-scripts").endsWith(fileName)) {
             final String eventDescription = WindowsWebServerNetOperation.SECURE_COPY.name() + " " + fileName;
             historyService.createHistory(getServerName(aWebServer), new ArrayList<>(aWebServer.getGroups()), eventDescription, EventType.USER_ACTION, userId);
@@ -164,20 +163,36 @@ public class WebServerControlServiceImpl implements WebServerControlService {
 
         // back up the original file first
         final String host = aWebServer.getHost();
-        final String parentDir = new File(destPath).getParentFile().getAbsolutePath().replaceAll("\\\\", "/");
         CommandOutput commandOutput = commandExecutor.executeRemoteCommand(
                 aWebServerName,
                 host,
-                WebServerControlOperation.CREATE_DIRECTORY,
+                WebServerControlOperation.CHECK_FILE_EXISTS,
                 new WindowsWebServerPlatformCommandProvider(),
                 destPath
         );
         if (commandOutput.getReturnCode().wasSuccessful()) {
-            LOGGER.info("Successfully created parent directory {} on host {}", parentDir, host);
+            LOGGER.info("Found the file {}", destPath);
         } else {
-            final String standardError = commandOutput.getStandardError().isEmpty() ? commandOutput.getStandardOutput() : commandOutput.getStandardError();
-            LOGGER.error("create command failed with error trying to create parent directory {} on {} :: ERROR: {}", parentDir, host, standardError);
-            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, standardError.isEmpty() ? CommandOutputReturnCode.fromReturnCode(commandOutput.getReturnCode().getReturnCode()).getDesc() : standardError);
+            final String parentDir;
+            if (destPath.startsWith("~")) {
+                parentDir = destPath.substring(0, destPath.lastIndexOf("/"));
+            } else {
+                parentDir = new File(destPath).getParentFile().getAbsolutePath().replaceAll("\\\\", "/");
+            }
+            commandOutput = commandExecutor.executeRemoteCommand(
+                    aWebServerName,
+                    host,
+                    WebServerControlOperation.CREATE_DIRECTORY,
+                    new WindowsWebServerPlatformCommandProvider(),
+                    parentDir
+            );
+            if (commandOutput.getReturnCode().wasSuccessful()) {
+                LOGGER.info("Successfully created parent directory {} on host {}", parentDir, host);
+            } else {
+                final String standardError = commandOutput.getStandardError().isEmpty() ? commandOutput.getStandardOutput() : commandOutput.getStandardError();
+                LOGGER.error("create command failed with error trying to create parent directory {} on {} :: ERROR: {}", parentDir, host, standardError);
+                throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, standardError.isEmpty() ? CommandOutputReturnCode.fromReturnCode(commandOutput.getReturnCode().getReturnCode()).getDesc() : standardError);
+            }
         }
         commandOutput = commandExecutor.executeRemoteCommand(aWebServerName,
                 host,

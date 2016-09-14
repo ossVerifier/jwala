@@ -107,7 +107,11 @@ var ResourceEditor = React.createClass({
         return this.selectNodeCallback(data, entity, parent);
     },
     selectNodeCallback: function(data, entity, parent) {
-        this.setState({entity: entity});
+         // setState was not used so that the currently selected attribute will be displayed in the attributes tree
+         // setState triggers a re-rendering of the resource editor which resets the attribute tree to the default
+         // state thus the selected entity attribute will not be displayed (which we don't want)
+        this.state.entity = entity;
+
         if (this.props.selectEntityCallback(data, entity, parent)) {
             this.refs.resourcePane.getData(data);
             this.refs.resourceAttrPane.setCurrentlySelectedEntityData(data, entity, parent);
