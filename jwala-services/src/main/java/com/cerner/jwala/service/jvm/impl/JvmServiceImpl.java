@@ -84,7 +84,7 @@ public class JvmServiceImpl implements JvmService {
     private final JvmControlService jvmControlService;
     private final Map<String, ReentrantReadWriteLock> jvmWriteLocks;
     private final BinaryDistributionService binaryDistributionService;
-    final String tocScriptsPath = AemControl.Properties.USER_TOC_SCRIPTS_PATH.getValue();
+    final String jwalaScriptsPath = ApplicationProperties.get("remote.commands.user-scripts");
 
     private static final String DIAGNOSIS_INITIATED = "Diagnosis Initiated on JVM ${jvm.jvmName}, host ${jvm.hostName}";
     private static final String TEMPLATE_DIR = ApplicationProperties.get("paths.tomcat.instance.template");
@@ -378,7 +378,7 @@ public class JvmServiceImpl implements JvmService {
         final String jwalaScriptsPath = REMOTE_COMMANDS_USER_SCRIPTS;
         final String jvmName = jvm.getJvmName();
         final String userId = user.getId();
-        final String parentDir = new File(tocScriptsPath).getParentFile().getAbsolutePath().replaceAll("\\\\", "/");
+        final String parentDir = new File(this.jwalaScriptsPath).getParentFile().getAbsolutePath().replaceAll("\\\\", "/");
 
         createParentDir(jvm, parentDir);
         final String failedToCopyMessage = "Failed to secure copy ";

@@ -495,7 +495,7 @@ public class GroupServiceImpl implements GroupService {
             if(metaData.isUnpack()) {
                 LOGGER.debug("the file needs to be unpacked at the destination {}", destPath);
                 final String jwalaScriptsPath = ApplicationProperties.get("remote.commands.user-scripts");
-                LOGGER.debug("creating the toc scirpts path {}", jwalaScriptsPath);
+                LOGGER.debug("creating the jwala scripts path {}", jwalaScriptsPath);
                 commandOutput = remoteCommandExecutor.executeRemoteCommand(
                         null,
                         hostName,

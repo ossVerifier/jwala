@@ -133,15 +133,15 @@ public class ApplicationServiceImplTest {
         group2 = new Group(groupId2, "the-ws-group-name-2");
 
         when(mockApplication.getId()).thenReturn(new Identifier<Application>(1L));
-        when(mockApplication.getWarPath()).thenReturn("the-ws-group-name/toc-1.0.war");
-        when(mockApplication.getName()).thenReturn("TOC 1.0");
+        when(mockApplication.getWarPath()).thenReturn("the-ws-group-name/jwala-1.0.war");
+        when(mockApplication.getName()).thenReturn("jwala 1.0");
         when(mockApplication.getGroup()).thenReturn(group);
         when(mockApplication.getWebAppContext()).thenReturn("/jwala");
         when(mockApplication.isSecure()).thenReturn(true);
 
         when(mockApplication2.getId()).thenReturn(new Identifier<Application>(2L));
-        when(mockApplication2.getWarPath()).thenReturn("the-ws-group-name-2/toc-1.1.war");
-        when(mockApplication2.getName()).thenReturn("TOC 1.1");
+        when(mockApplication2.getWarPath()).thenReturn("the-ws-group-name-2/jwala-1.1.war");
+        when(mockApplication2.getName()).thenReturn("jwala 1.1");
         when(mockApplication2.getGroup()).thenReturn(group2);
         when(mockApplication2.getWebAppContext()).thenReturn("/jwala");
         when(mockApplication2.isSecure()).thenReturn(false);
@@ -173,20 +173,20 @@ public class ApplicationServiceImplTest {
         final Application application = applicationService.getApplication(new Identifier<Application>(1L));
         assertEquals(new Identifier<Application>(1L), application.getId());
         assertEquals(groupId, application.getGroup().getId());
-        assertEquals("TOC 1.0", application.getName());
+        assertEquals("jwala 1.0", application.getName());
         assertEquals("the-ws-group-name", application.getGroup().getName());
-        assertEquals("the-ws-group-name/toc-1.0.war", application.getWarPath());
+        assertEquals("the-ws-group-name/jwala-1.0.war", application.getWarPath());
     }
 
     @Test
     public void testGetApplicationByName() {
         when(applicationPersistenceService.getApplication(anyString())).thenReturn(mockApplication);
-        final Application application = applicationService.getApplication("TOC 1.0");
+        final Application application = applicationService.getApplication("jwala 1.0");
         assertEquals(new Identifier<Application>(1L), application.getId());
         assertEquals(groupId, application.getGroup().getId());
-        assertEquals("TOC 1.0", application.getName());
+        assertEquals("jwala 1.0", application.getName());
         assertEquals("the-ws-group-name", application.getGroup().getName());
-        assertEquals("the-ws-group-name/toc-1.0.war", application.getWarPath());
+        assertEquals("the-ws-group-name/jwala-1.0.war", application.getWarPath());
     }
 
     @Test
@@ -198,16 +198,16 @@ public class ApplicationServiceImplTest {
         Application application = apps.get(0);
         assertEquals(new Identifier<Application>(1L), application.getId());
         assertEquals(groupId, application.getGroup().getId());
-        assertEquals("TOC 1.0", application.getName());
+        assertEquals("jwala 1.0", application.getName());
         assertEquals("the-ws-group-name", application.getGroup().getName());
-        assertEquals("the-ws-group-name/toc-1.0.war", application.getWarPath());
+        assertEquals("the-ws-group-name/jwala-1.0.war", application.getWarPath());
 
         application = apps.get(1);
         assertEquals(new Identifier<Application>(2L), application.getId());
         assertEquals(groupId2, application.getGroup().getId());
-        assertEquals("TOC 1.1", application.getName());
+        assertEquals("jwala 1.1", application.getName());
         assertEquals("the-ws-group-name-2", application.getGroup().getName());
-        assertEquals("the-ws-group-name-2/toc-1.1.war", application.getWarPath());
+        assertEquals("the-ws-group-name-2/jwala-1.1.war", application.getWarPath());
     }
 
     @SuppressWarnings("unchecked")
@@ -221,9 +221,9 @@ public class ApplicationServiceImplTest {
 
         assertEquals(new Identifier<Application>(2L), application.getId());
         assertEquals(groupId2, application.getGroup().getId());
-        assertEquals("TOC 1.1", application.getName());
+        assertEquals("jwala 1.1", application.getName());
         assertEquals("the-ws-group-name-2", application.getGroup().getName());
-        assertEquals("the-ws-group-name-2/toc-1.1.war", application.getWarPath());
+        assertEquals("the-ws-group-name-2/jwala-1.1.war", application.getWarPath());
     }
 
     @SuppressWarnings("unchecked")
