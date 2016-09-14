@@ -3,7 +3,6 @@ package com.cerner.jwala.service.binarydistribution.impl;
 import com.cerner.jwala.common.domain.model.fault.AemFaultType;
 import com.cerner.jwala.common.exception.InternalErrorException;
 import com.cerner.jwala.common.properties.ApplicationProperties;
-import com.cerner.jwala.control.AemControl;
 import com.cerner.jwala.exception.CommandFailureException;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionControlService;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionService;
@@ -34,7 +33,7 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
 
     @Override
     public void distributeJdk(final String hostname) {
-        File javaHome = new File(ApplicationProperties.get("stp.java.home"));
+        File javaHome = new File(ApplicationProperties.get("remote.jwala.java.home"));
         String jdkDir = javaHome.getName();
         String binaryDeployDir = javaHome.getParentFile().getAbsolutePath().replaceAll("\\\\", "/");
         if (jdkDir != null && !jdkDir.isEmpty()) {
@@ -85,7 +84,7 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
 
                     remoteSecureCopyFile(hostname, zipFile, destinationZipFile);
 
-                    remoteUnzipBinary(hostname, AemControl.Properties.USER_TOC_SCRIPTS_PATH.getValue() + "/" + UNZIPEXE, destinationZipFile, binaryDeployDir, exclude);
+                    remoteUnzipBinary(hostname, ApplicationProperties.get("remote.commands.user-scripts") + "/" + UNZIPEXE, destinationZipFile, binaryDeployDir, exclude);
 
                     remoteDeleteBinary(hostname, destinationZipFile);
 
@@ -209,20 +208,20 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
 
     @Override
     public void prepareUnzip(String hostname) {
-        final String tocScriptsPath = AemControl.Properties.USER_TOC_SCRIPTS_PATH.getValue();
-        if (remoteFileCheck(hostname, tocScriptsPath)) {
-            LOGGER.info(tocScriptsPath + " exists at " + hostname);
+        final String jwalaScriptsPath = ApplicationProperties.get("remote.commands.user-scripts");
+        if (remoteFileCheck(hostname, jwalaScriptsPath)) {
+            LOGGER.info(jwalaScriptsPath + " exists at " + hostname);
         } else {
-            remoteCreateDirectory(hostname, tocScriptsPath);
+            remoteCreateDirectory(hostname, jwalaScriptsPath);
         }
-        final String unzipFileDestination = AemControl.Properties.USER_TOC_SCRIPTS_PATH.getValue();
+        final String unzipFileDestination = jwalaScriptsPath;
         if (remoteFileCheck(hostname, unzipFileDestination + "/" + UNZIPEXE)) {
             LOGGER.info(unzipFileDestination + "/" + UNZIPEXE + " exists at " + hostname);
         } else {
             final String unzipFileSource = ApplicationProperties.get(BINARY_LOCATION_PROPERTY_KEY) + "/" + UNZIPEXE;
             LOGGER.info("unzipFileSource: " + unzipFileSource);
             remoteSecureCopyFile(hostname, unzipFileSource, unzipFileDestination);
-            changeFileMode(hostname, "a+x", tocScriptsPath, UNZIPEXE);
+            changeFileMode(hostname, "a+x", jwalaScriptsPath, UNZIPEXE);
         }
     }
 }
