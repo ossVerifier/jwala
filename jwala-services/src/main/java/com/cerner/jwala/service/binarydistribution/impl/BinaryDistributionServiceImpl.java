@@ -171,7 +171,7 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
     }
 
     public boolean remoteFileCheck(final String hostname, final String destination) {
-        //TODO: it will never catch here
+        LOGGER.info("remoteFileCheck hostname: " + hostname + " destination: " + destination);
         boolean result;
         try {
             result = binaryDistributionControlService.checkFileExists(hostname, destination).getReturnCode().wasSuccessful();
@@ -180,6 +180,7 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
             LOGGER.error(message, e);
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, message, e);
         }
+        LOGGER.info("result: " + result);
         return result;
     }
 
