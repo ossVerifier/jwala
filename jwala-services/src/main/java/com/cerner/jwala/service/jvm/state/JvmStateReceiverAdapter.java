@@ -70,7 +70,7 @@ public class JvmStateReceiverAdapter extends ReceiverAdapter {
             LOGGER.info("The state key = {} was not found in the lifecycle state map. Proceeding with legacy JGroup message decoding.", STATE_KEY);
             try {
                 // If the serverInfoMap is from legacy JGroups reporting lifecycle listener, the key will be of type
-                // ReportingJmsMessageKey found in the infrastructure provided jar which is provided by the container.
+                // ReportingJmsMessageKey found in the reporting lifecycle jar which is provided by the container.
                 // The said class might not always be present in the future therefore to avoid runtime errors as a result
                 // of using ReportingJmsMessageKey here, we have to use the generic "valueOf" method of java.lang.Enum
                 // to derive the key that will be used to get the value in serverInfoMap.

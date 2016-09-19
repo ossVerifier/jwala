@@ -2,7 +2,6 @@ package com.cerner.jwala.web.configuration.web;
 
 import com.cerner.jwala.common.properties.ApplicationProperties;
 import com.cerner.jwala.web.controller.IndexController;
-import com.cerner.jwala.web.controller.SamlController;
 import com.cerner.jwala.web.interceptor.UserIdHandlerInterceptor;
 import com.cerner.jwala.web.javascript.variable.CompositeJavaScriptVariableSource;
 import com.cerner.jwala.web.javascript.variable.JavaScriptVariableSource;
@@ -10,8 +9,6 @@ import com.cerner.jwala.web.javascript.variable.dynamic.ContextPathSource;
 import com.cerner.jwala.web.javascript.variable.dynamic.LoginStatusSource;
 import com.cerner.jwala.web.javascript.variable.property.ApplicationPropertySource;
 import com.cerner.jwala.web.security.GrantedAuthoritiesMapperImpl;
-import com.siemens.cto.security.saml.service.SamlIdentityProviderService;
-import com.siemens.cto.security.saml.service.impl.SamlIdentityProviderServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.*;
@@ -32,7 +29,7 @@ import java.util.List;
 
 @Configuration
 @EnableWebMvc
-@ComponentScan(basePackageClasses = {IndexController.class, SamlController.class})
+@ComponentScan(basePackageClasses = {IndexController.class})
 // This scans the package within which IndexController is located (type/compile-safe, as opposed to plain Strings)
 public class ApacheEnterpriseManagerWebConfig extends WebMvcConfigurerAdapter {
 
@@ -41,11 +38,6 @@ public class ApacheEnterpriseManagerWebConfig extends WebMvcConfigurerAdapter {
 
     @Autowired
     private HttpServletRequest request;
-
-    @Bean(name = "samlIdentityProviderService")
-    public SamlIdentityProviderService samlIdentityProviderService() {
-        return new SamlIdentityProviderServiceImpl();
-    }
 
     @Override
     public void configureContentNegotiation(final ContentNegotiationConfigurer configurer) {

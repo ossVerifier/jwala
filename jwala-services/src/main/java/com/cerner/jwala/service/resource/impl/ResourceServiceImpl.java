@@ -61,6 +61,7 @@ public class ResourceServiceImpl implements ResourceService {
 
     private final SpelExpressionParser expressionParser;
     private final Expression encryptExpression;
+    private final Expression decryptExpression;
     private final ResourcePersistenceService resourcePersistenceService;
     private final GroupPersistenceService groupPersistenceService;
     private final ExecutorService executorService;
@@ -69,7 +70,9 @@ public class ResourceServiceImpl implements ResourceService {
     private RemoteCommandExecutorImpl<ApplicationControlOperation> remoteCommandExecutor;
     private Map<String, ReentrantReadWriteLock> resourceWriteLockMap;
 
-    private final String encryptExpressionString = "new com.siemens.cto.infrastructure.StpCryptoService().encryptToBase64( #stringToEncrypt )";
+    private final String encryptExpressionString = ApplicationProperties.get("encryptExpression");
+
+    private final String decryptExpressionString = ApplicationProperties.get("decryptExpression");
 
     private ApplicationPersistenceService applicationPersistenceService;
 
@@ -104,6 +107,7 @@ public class ResourceServiceImpl implements ResourceService {
         this.resourceWriteLockMap = resourceWriteLockMap;
         expressionParser = new SpelExpressionParser();
         encryptExpression = expressionParser.parseExpression(encryptExpressionString);
+        decryptExpression = expressionParser.parseExpression(decryptExpressionString);
         this.applicationPersistenceService = applicationPersistenceService;
         this.jvmPersistenceService = jvmPersistenceService;
         this.webServerPersistenceService = webServerPersistenceService;
@@ -114,9 +118,16 @@ public class ResourceServiceImpl implements ResourceService {
     }
 
     @Override
+    public String decryptUsingPlatformBean(String encryptedString) {
+        StandardEvaluationContext context = new StandardEvaluationContext();
+        context.setVariable("stringToDecrypt", encryptedString);
+        return decryptExpression.getValue(context, String.class);
+    }
+
+    @Override
     public String encryptUsingPlatformBean(String cleartext) {
         StandardEvaluationContext context = new StandardEvaluationContext();
-        context.setVariable("stringToEncrypt", cleartext);
+        context.setVariable("stringToEncrypt", cleartext.getBytes());
         return encryptExpression.getValue(context, String.class);
     }
 
@@ -288,9 +299,9 @@ public class ResourceServiceImpl implements ResourceService {
     /**
      * Create the JVM template in the db and in the templates path for a specific JVM entity target.
      *
-     * @param metaData     the data that describes the template, please see {@link ResourceTemplateMetaData}
+     * @param metaData        the data that describes the template, please see {@link ResourceTemplateMetaData}
      * @param templateContent the template content/data
-     * @param jvmName      identifies the JVM to which the template is attached to
+     * @param jvmName         identifies the JVM to which the template is attached to
      */
     @Deprecated
     private CreateResourceResponseWrapper createJvmTemplate(final ResourceTemplateMetaData metaData,
@@ -325,7 +336,7 @@ public class ResourceServiceImpl implements ResourceService {
     /**
      * Create the JVM template in the db and in the templates path for all the JVMs.
      *
-     * @param metaData     the data that describes the template, please see {@link ResourceTemplateMetaData}
+     * @param metaData        the data that describes the template, please see {@link ResourceTemplateMetaData}
      * @param templateContent the template content/data
      */
     // TODO: When the resource file is locked, don't overwrite!
@@ -356,9 +367,9 @@ public class ResourceServiceImpl implements ResourceService {
     /**
      * Create the web server template in the db and in the templates path for a specific web server entity target.
      *
-     * @param metaData      the data that describes the template, please see {@link ResourceTemplateMetaData}
-     * @param templateContent  the template content/data
-     * @param webServerName identifies the web server to which the template belongs to
+     * @param metaData        the data that describes the template, please see {@link ResourceTemplateMetaData}
+     * @param templateContent the template content/data
+     * @param webServerName   identifies the web server to which the template belongs to
      * @param user
      */
     @Deprecated
@@ -381,7 +392,7 @@ public class ResourceServiceImpl implements ResourceService {
     /**
      * Create the web server template in the db and in the templates path for all the web servers.
      *
-     * @param metaData     the data that describes the template, please see {@link ResourceTemplateMetaData}
+     * @param metaData        the data that describes the template, please see {@link ResourceTemplateMetaData}
      * @param templateContent the template content/data
      * @param user
      */
@@ -424,9 +435,9 @@ public class ResourceServiceImpl implements ResourceService {
     /**
      * Create the application template in the db and in the templates path for a specific application entity target.
      *
-     * @param metaData      the data that describes the template, please see {@link ResourceTemplateMetaData}
-     * @param templateContent  the template content/data
-     * @param targetJvmName the name of the JVM to associate with the application template
+     * @param metaData        the data that describes the template, please see {@link ResourceTemplateMetaData}
+     * @param templateContent the template content/data
+     * @param targetJvmName   the name of the JVM to associate with the application template
      */
     @Deprecated
     private CreateResourceResponseWrapper createApplicationTemplate(final ResourceTemplateMetaData metaData, final String templateContent, String targetJvmName) {
@@ -440,9 +451,9 @@ public class ResourceServiceImpl implements ResourceService {
     /**
      * Create the application template in the db and in the templates path for all the application.
      *
-     * @param metaData      the data that describes the template, please see {@link ResourceTemplateMetaData}
-     * @param templateContent  the template content/data
-     * @param targetAppName the application name
+     * @param metaData        the data that describes the template, please see {@link ResourceTemplateMetaData}
+     * @param templateContent the template content/data
+     * @param targetAppName   the application name
      */
     @Deprecated
     private CreateResourceResponseWrapper createGroupedApplicationsTemplate(final ResourceTemplateMetaData metaData,
@@ -631,7 +642,9 @@ public class ResourceServiceImpl implements ResourceService {
                 throw new InternalErrorException(AemFaultType.CONTROL_OPERATION_UNSUCCESSFUL, "Failed to deploy the template " + fileName + " to host " + hostName);
             }
         }
-    };
+    }
+
+    ;
 
     protected void waitForDeployToComplete(Map<String, Future<CommandOutput>> futures) {
         final int size = futures.size();
@@ -783,7 +796,7 @@ public class ResourceServiceImpl implements ResourceService {
         String retVal = "No External Properties configured";
         if (null != sortedProperties && sortedProperties.size() > 0) {
             StringBuilder sb = new StringBuilder();
-            for (Object key:sortedProperties.keySet()) {
+            for (Object key : sortedProperties.keySet()) {
                 sb.append(key);
                 sb.append("=");
                 sb.append(sortedProperties.get(key));
