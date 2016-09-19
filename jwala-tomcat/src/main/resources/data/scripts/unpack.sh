@@ -23,11 +23,11 @@ echo $FILE_EXT
 
 export BASENAME_BINARY=`basename $3 .$FILE_EXT`
 
-echo BASENAME_BINARY $BASENAME_BINARY
+echo BASENAME_BINARY $BASENAME_BINARY 
 
 if [ "$4" = "true" ]; then
    rm -r $1/$BASENAME_BINARY
-fi
+fi 
 
 cd $1
 if [ -d "$BASENAME_BINARY" ]; then
