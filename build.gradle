@@ -108,11 +108,6 @@ subprojects {
         maven {
             url 'http://usmlvv1qmp645.usmlvv1d0a.smshsc.net:8081/artifactory/jcenter-cache/'
         }
-
-        // Required by Babel until babel node modules are transferred in usmlvv1qmp645
-        maven {
-            url 'http://usmlvv1srn464.usmlvv1d0a.smshsc.net/artifactory/npm-local/'
-        }
     }
 
     dependencies {
