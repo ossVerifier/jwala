@@ -21,3 +21,7 @@ web-browsers.xml
 debugger.xml
 diff.xml
 IntelliLang.xml
+debugger.renderers.xml
+editor.xml
+find.xmlgradle.run.settings.xml
+/inspection
