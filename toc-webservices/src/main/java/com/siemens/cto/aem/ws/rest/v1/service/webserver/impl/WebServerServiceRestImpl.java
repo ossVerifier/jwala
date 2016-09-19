@@ -158,12 +158,16 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
 
     @Override
     public Response controlWebServer(final Identifier<WebServer> aWebServerId,
-                                     final JsonControlWebServer aWebServerToControl, final AuthenticatedUser aUser) {
+                                     final JsonControlWebServer aWebServerToControl, final AuthenticatedUser aUser,
+                                     final boolean wait, final int timeout) {
         LOGGER.debug("Control Web Server requested: {} {} by user {}", aWebServerId, aWebServerToControl, aUser.getUser().getId());
+        final ControlWebServerRequest controlWebServerRequest = new ControlWebServerRequest(aWebServerId, aWebServerToControl.toControlOperation());
         final CommandOutput commandOutput = webServerControlService.controlWebServer(
-                new ControlWebServerRequest(aWebServerId, aWebServerToControl.toControlOperation()),
+                controlWebServerRequest,
                 aUser.getUser());
-        if (commandOutput.getReturnCode().wasSuccessful()) {
+        if (wait && commandOutput.getReturnCode().wasSuccessful() && webServerControlService.waitForState(controlWebServerRequest, timeout)) {
+            return ResponseBuilder.ok(commandOutput.getStandardOutput());
+        } else if (!wait && commandOutput.getReturnCode().wasSuccessful()) {
             return ResponseBuilder.ok(commandOutput.getStandardOutput());
         } else {
             final String standardError = commandOutput.getStandardError();

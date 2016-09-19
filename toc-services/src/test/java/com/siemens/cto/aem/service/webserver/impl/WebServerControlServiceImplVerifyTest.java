@@ -35,6 +35,8 @@ import org.springframework.http.client.ClientHttpResponse;
 import java.util.HashSet;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 
@@ -194,5 +196,49 @@ public class WebServerControlServiceImplVerifyTest extends VerificationBehaviorS
         when(mockWebServer.getHost()).thenReturn("test-host");
         webServerControlService.createDirectory(mockWebServer, "./target");
         verify(commandExecutor).executeRemoteCommand(anyString(), anyString(), eq(WebServerControlOperation.CREATE_DIRECTORY), any(WindowsWebServerPlatformCommandProvider.class), anyString());
+    }
+
+    @Test
+    public void testWaitForState() {
+        final ControlWebServerRequest mockControlWebServerRequest = mock(ControlWebServerRequest.class);
+        final WebServer mockWebServer = mock(WebServer.class);
+        when(mockControlWebServerRequest.getControlOperation()).thenReturn(WebServerControlOperation.START);
+        when(webServerService.getWebServer(any(Identifier.class))).thenReturn(mockWebServer);
+        when(mockWebServer.getState()).thenReturn(WebServerReachableState.WS_REACHABLE);
+        boolean result = webServerControlService.waitForState(mockControlWebServerRequest, 120);
+        assertTrue(result);
+    }
+
+    @Test
+    public void testWaitForStateFail() {
+        final ControlWebServerRequest mockControlWebServerRequest = mock(ControlWebServerRequest.class);
+        final WebServer mockWebServer = mock(WebServer.class);
+        when(mockControlWebServerRequest.getControlOperation()).thenReturn(WebServerControlOperation.STOP);
+        when(webServerService.getWebServer(any(Identifier.class))).thenReturn(mockWebServer);
+        when(mockWebServer.getState()).thenReturn(WebServerReachableState.WS_REACHABLE);
+        boolean result = webServerControlService.waitForState(mockControlWebServerRequest, 5);
+        assertFalse(result);
+    }
+
+    @Test
+    public void testWaitStateForStop() {
+        final ControlWebServerRequest mockControlWebServerRequest = mock(ControlWebServerRequest.class);
+        final WebServer mockWebServer = mock(WebServer.class);
+        when(mockControlWebServerRequest.getControlOperation()).thenReturn(WebServerControlOperation.STOP);
+        when(webServerService.getWebServer(any(Identifier.class))).thenReturn(mockWebServer);
+        when(mockWebServer.getState()).thenReturn(WebServerReachableState.WS_UNREACHABLE);
+        boolean result = webServerControlService.waitForState(mockControlWebServerRequest, 5);
+        assertTrue(result);
+    }
+
+    @Test
+    public void testWaitStateForForcedStop() {
+        final ControlWebServerRequest mockControlWebServerRequest = mock(ControlWebServerRequest.class);
+        final WebServer mockWebServer = mock(WebServer.class);
+        when(mockControlWebServerRequest.getControlOperation()).thenReturn(WebServerControlOperation.STOP);
+        when(webServerService.getWebServer(any(Identifier.class))).thenReturn(mockWebServer);
+        when(mockWebServer.getState()).thenReturn(WebServerReachableState.FORCED_STOPPED);
+        boolean result = webServerControlService.waitForState(mockControlWebServerRequest, 5);
+        assertTrue(result);
     }
 }

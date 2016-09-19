@@ -15,4 +15,6 @@ public interface WebServerControlService {
     CommandOutput createDirectory(WebServer webServer, String dirAbsolutePath) throws CommandFailureException;
 
     CommandOutput changeFileMode(WebServer webServer, String fileMode, String targetDirPath, String targetFile) throws CommandFailureException;
+
+    boolean waitForState(final ControlWebServerRequest controlWebServerRequest, final int timeout);
 }

@@ -118,6 +118,7 @@ public class WebServerControlServiceImpl implements WebServerControlService {
                         break;
                     case ExecReturnCode.STP_EXIT_CODE_ABNORMAL_SUCCESS:
                         LOGGER.warn(CommandOutputReturnCode.fromReturnCode(commandOutput.getReturnCode().getReturnCode()).getDesc());
+                        commandOutput = new CommandOutput(new ExecReturnCode(0), null, null);
                         break;
                     default:
                         final String errorMsg = "Web Server control command was not successful! Return code = "
@@ -224,4 +225,31 @@ public class WebServerControlServiceImpl implements WebServerControlService {
 
     }
 
+    @Override
+    public boolean waitForState(ControlWebServerRequest controlWebServerRequest, int timeout) {
+        for (int i = 0; i <= timeout; i++) {
+            final WebServer webServer = webServerService.getWebServer(controlWebServerRequest.getWebServerId());
+            WebServerControlOperation webServerControlOperation = controlWebServerRequest.getControlOperation();
+            switch (webServerControlOperation) {
+                case START:
+                    if (webServer.getState() == WebServerReachableState.WS_REACHABLE) {
+                        return true;
+                    }
+                    break;
+                case STOP:
+                    if (webServer.getState() == WebServerReachableState.WS_UNREACHABLE ||
+                            webServer.getState() == WebServerReachableState.FORCED_STOPPED) {
+                        return true;
+                    }
+                    break;
+            }
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                LOGGER.error("Error with Thread.sleep", e);
+                throw new InternalErrorException(AemFaultType.SERVICE_EXCEPTION, "Error with waiting for state for WebServer: " + webServer.getName(), e);
+            }
+        }
+        return false;
+    }
 }

@@ -264,7 +264,7 @@ public class WebServerServiceRestImplTest {
 
         final JsonControlWebServer jsonControlWebServer = new JsonControlWebServer("start");
         when(webServerControlService.controlWebServer(any(ControlWebServerRequest.class), any(User.class))).thenReturn(execData);
-        final Response response = webServerServiceRest.controlWebServer(Identifier.id(1l, WebServer.class), jsonControlWebServer, authenticatedUser);
+        final Response response = webServerServiceRest.controlWebServer(Identifier.id(1l, WebServer.class), jsonControlWebServer, authenticatedUser, false, 120);
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
     }
 
@@ -278,7 +278,34 @@ public class WebServerServiceRestImplTest {
         when(execData.getStandardError()).thenReturn("TEST ERROR");
         when(execData.getStandardOutput()).thenReturn("");
         when(webServerControlService.controlWebServer(any(ControlWebServerRequest.class), any(User.class))).thenReturn(execData);
-        webServerServiceRest.controlWebServer(Identifier.id(1l, WebServer.class), jsonControlWebServer, authenticatedUser);
+        webServerServiceRest.controlWebServer(Identifier.id(1l, WebServer.class), jsonControlWebServer, authenticatedUser, false, 120);
+    }
+
+    @Test
+    public void testControlWebServerWait() {
+        final CommandOutput execData = mock(CommandOutput.class);
+        final ExecReturnCode execDataReturnCode = mock(ExecReturnCode.class);
+        when(execDataReturnCode.wasSuccessful()).thenReturn(true);
+        when(execData.getReturnCode()).thenReturn(execDataReturnCode);
+
+        final JsonControlWebServer jsonControlWebServer = new JsonControlWebServer("start");
+        when(webServerControlService.controlWebServer(any(ControlWebServerRequest.class), any(User.class))).thenReturn(execData);
+        when(webServerControlService.waitForState(any(ControlWebServerRequest.class), anyInt())).thenReturn(true);
+        final Response response = webServerServiceRest.controlWebServer(Identifier.id(1l, WebServer.class), jsonControlWebServer, authenticatedUser, true, 120);
+        assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
+    }
+
+    @Test (expected = InternalErrorException.class)
+    public void testControlWebServerWaitForException() {
+        final CommandOutput execData = mock(CommandOutput.class);
+        final ExecReturnCode execDataReturnCode = mock(ExecReturnCode.class);
+        when(execDataReturnCode.wasSuccessful()).thenReturn(true);
+        when(execData.getReturnCode()).thenReturn(execDataReturnCode);
+
+        final JsonControlWebServer jsonControlWebServer = new JsonControlWebServer("start");
+        when(webServerControlService.controlWebServer(any(ControlWebServerRequest.class), any(User.class))).thenReturn(execData);
+        when(webServerControlService.waitForState(any(ControlWebServerRequest.class), anyInt())).thenReturn(false);
+        webServerServiceRest.controlWebServer(Identifier.id(1l, WebServer.class), jsonControlWebServer, authenticatedUser, true, 120);
     }
 
     @Test
