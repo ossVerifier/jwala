@@ -11,6 +11,7 @@ import com.cerner.jwala.common.domain.model.resource.ResourceGroup;
 import com.cerner.jwala.common.domain.model.resource.ResourceTemplateMetaData;
 import com.cerner.jwala.common.domain.model.webserver.WebServer;
 import com.cerner.jwala.common.domain.model.webserver.WebServerControlOperation;
+import com.cerner.jwala.common.exception.BadRequestException;
 import com.cerner.jwala.common.exception.FaultCodeException;
 import com.cerner.jwala.common.exception.InternalErrorException;
 import com.cerner.jwala.common.exec.CommandOutput;
@@ -121,24 +122,34 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     @Override
     public Response createGroup(final String aNewGroupName,
                                 final AuthenticatedUser aUser) {
-        LOGGER.info("Create Group requested: {} by user {}", aNewGroupName, aUser.getUser().getId());
-        final Group group = groupService.createGroup(new CreateGroupRequest(aNewGroupName), aUser.getUser());
-        return ResponseBuilder.created(group);
+        try {
+            LOGGER.info("Create Group requested: {} by user {}", aNewGroupName, aUser.getUser().getId());
+            final Group group = groupService.createGroup(new CreateGroupRequest(aNewGroupName), aUser.getUser());
+            return ResponseBuilder.created(group);
+        } catch (BadRequestException be) {
+            return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
+                    AemFaultType.DUPLICATE_GROUP_NAME, "Group Name already exists", be));
+        }
     }
+
 
     @Override
 
     public Response updateGroup(final JsonUpdateGroup anUpdatedGroup,
                                 final AuthenticatedUser aUser) {
         LOGGER.info("Update Group requested: {} by user {}", anUpdatedGroup, aUser.getUser().getId());
+        try {
+            // TODO: Refactor adhoc conversion to process group name instead of Id.
+            final Group group = groupService.getGroup(anUpdatedGroup.getId());
+            final JsonUpdateGroup updatedGroup = new JsonUpdateGroup(group.getId().getId().toString(),
+                    anUpdatedGroup.getName());
 
-        // TODO: Refactor adhoc conversion to process group name instead of Id.
-        final Group group = groupService.getGroup(anUpdatedGroup.getId());
-        final JsonUpdateGroup updatedGroup = new JsonUpdateGroup(group.getId().getId().toString(),
-                anUpdatedGroup.getName());
-
-        return ResponseBuilder.ok(groupService.updateGroup(updatedGroup.toUpdateGroupCommand(),
-                aUser.getUser()));
+            return ResponseBuilder.ok(groupService.updateGroup(updatedGroup.toUpdateGroupCommand(),
+                    aUser.getUser()));
+        } catch (BadRequestException be) {
+            return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
+                    AemFaultType.DUPLICATE_GROUP_NAME, "Group Name already exists", be));
+        }
     }
 
     @Override

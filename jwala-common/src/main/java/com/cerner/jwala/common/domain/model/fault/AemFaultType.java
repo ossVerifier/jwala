@@ -13,6 +13,10 @@ public enum AemFaultType implements MessageResponseStatus {
     /**/
     DUPLICATE_GROUP_NAME("AEM4", "DuplicateGroupName"),
     /**/
+    DUPLICATE_JVM_NAME("AEM65", "DuplicateJVMName"),
+    /**/
+    DUPLICATE_WEBSERVER_NAME("AEM66", "DuplicateWebServerName"),
+    /**/
     INVALID_JVM_NAME("AEM5", "InvalidJvmName"),
     /**/
     INVALID_HOST_NAME("AEM6", "InvalidHostName"),
@@ -134,23 +138,23 @@ public enum AemFaultType implements MessageResponseStatus {
 
     INVALID_REST_SERVICE_PARAMETER("AEM64", "InvalidRestServiceParameter");
 
-	private final String faultCode;
-	private final String faultMessage;
+    private final String faultCode;
+    private final String faultMessage;
 
-	AemFaultType(final String theFaultCode,
-                         final String theFaultMessage) {
-		faultCode = theFaultCode;
-		faultMessage = theFaultMessage;
-		org.apache.commons.lang3.text.WordUtils.capitalize(toString(), '_').replace("_","");
-	}
+    AemFaultType(final String theFaultCode,
+                 final String theFaultMessage) {
+        faultCode = theFaultCode;
+        faultMessage = theFaultMessage;
+        org.apache.commons.lang3.text.WordUtils.capitalize(toString(), '_').replace("_","");
+    }
 
-	@Override
-	public String getMessageCode() {
-		return faultCode;
-	}
+    @Override
+    public String getMessageCode() {
+        return faultCode;
+    }
 
-	@Override
-	public String getMessage() {
-		return faultMessage;
-	}
+    @Override
+    public String getMessage() {
+        return faultMessage;
+    }
 }
