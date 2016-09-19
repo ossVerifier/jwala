@@ -196,7 +196,8 @@ var ExternalPropertiesNode = React.createClass({
         this.setState({focus: true});
     },
     onMouseOut: function() {
-        this.setState({focus: false});},
+        this.setState({focus: false});
+    },
     setActive: function(val) {
         this.setState({active: val});
     }
