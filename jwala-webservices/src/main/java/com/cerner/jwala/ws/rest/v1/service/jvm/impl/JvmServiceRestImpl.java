@@ -115,7 +115,13 @@ public class JvmServiceRestImpl implements JvmServiceRest {
     @Override
     public Response generateAndDeployJvm(final String jvmName, final AuthenticatedUser user) {
         LOGGER.info("Generate and deploy JVM {} by user {}", jvmName, user.getUser().getId());
-        return ResponseBuilder.ok(jvmService.generateAndDeployJvm(jvmName, user.getUser()));
+        try {
+            return ResponseBuilder.ok(jvmService.generateAndDeployJvm(jvmName, user.getUser()));
+        } catch (InternalErrorException iee) {
+            final String message = "user does not have permission to create the directory ";
+            return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
+                    AemFaultType.REMOTE_COMMAND_FAILURE, message, iee));
+        }
     }
 
     @Override

@@ -1,13 +1,15 @@
 package com.cerner.jwala.ws.rest.v1.service.balancermanager.impl;
 
 import com.cerner.jwala.common.domain.model.balancermanager.BalancerManagerState;
+import com.cerner.jwala.common.domain.model.fault.AemFaultType;
+import com.cerner.jwala.common.exception.FaultCodeException;
+import com.cerner.jwala.common.exception.InternalErrorException;
 import com.cerner.jwala.service.balancermanager.BalancerManagerService;
 import com.cerner.jwala.ws.rest.v1.response.ResponseBuilder;
 import com.cerner.jwala.ws.rest.v1.service.balancermanager.BalancerManagerServiceRest;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
-import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Response;
 
 public class BalancerManagerServiceRestImpl implements BalancerManagerServiceRest {
@@ -20,8 +22,15 @@ public class BalancerManagerServiceRestImpl implements BalancerManagerServiceRes
 
     @Override
     public Response drainUserGroup(final String groupName, final String webServerNames) {
-        BalancerManagerState balancerManagerState = balancerManagerService.drainUserGroup(groupName, webServerNames, getUser());
-        return ResponseBuilder.ok(balancerManagerState);
+        try {
+            BalancerManagerState balancerManagerState = balancerManagerService.drainUserGroup(groupName, webServerNames, getUser());
+            return ResponseBuilder.ok(balancerManagerState);
+        } catch (InternalErrorException iee) {
+            final String message = "The target Web Server " + webServerNames + " in group " + groupName + " must be STARTED before attempting to drain users";
+
+            return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
+                    AemFaultType.INVALID_WEBSERVER_OPERATION, message, iee));
+        }
     }
 
     @Override
@@ -52,7 +61,7 @@ public class BalancerManagerServiceRestImpl implements BalancerManagerServiceRes
     public void afterPropertiesSet() throws Exception {
     }
 
-    public String getUser(){
+    public String getUser() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         return auth.getName();
     }
