@@ -511,7 +511,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                     }
 
                     // call the unpack war script
-                    commandOutput = applicationCommandExecutor.executeRemoteCommand(null, host, ApplicationControlOperation.UNPACK, new WindowsApplicationPlatformCommandProvider(), warName, "false");
+                    commandOutput = applicationCommandExecutor.executeRemoteCommand(null, host, ApplicationControlOperation.UNPACK, new WindowsApplicationPlatformCommandProvider(), warName, ApplicationProperties.get("remote.jwala.webapps.dir"), "false");
                 }
                 return commandOutput;
             }

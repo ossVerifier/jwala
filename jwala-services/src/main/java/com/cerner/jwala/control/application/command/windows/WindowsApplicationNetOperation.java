@@ -64,7 +64,6 @@ public enum WindowsApplicationNetOperation implements ServiceCommandBuilder {
     private static final String USR_BIN_TEST = "/usr/bin/test";
     private static final String USR_BIN_CYGPATH = "/usr/bin/cygpath";
 
-    //private static final String REMOTE_WEBAPPS_DIR = ApplicationProperties.get("remote.jwala.webapps.dir");
     private static final String REMOTE_JAVA_HOME = ApplicationProperties.get("remote.jwala.java.home");
     private static final String REMOTE_COMMANDS_USER_SCRIPTS = ApplicationProperties.get("remote.commands.user-scripts");
 
