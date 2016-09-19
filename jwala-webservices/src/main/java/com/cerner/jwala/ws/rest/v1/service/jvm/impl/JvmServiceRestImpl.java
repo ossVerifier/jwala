@@ -4,6 +4,7 @@ import com.cerner.jwala.common.domain.model.fault.AemFaultType;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
 import com.cerner.jwala.common.domain.model.user.User;
+import com.cerner.jwala.common.exception.BadRequestException;
 import com.cerner.jwala.common.exception.FaultCodeException;
 import com.cerner.jwala.common.exception.InternalErrorException;
 import com.cerner.jwala.common.exec.CommandOutput;
@@ -67,16 +68,26 @@ public class JvmServiceRestImpl implements JvmServiceRest {
 
     @Override
     public Response createJvm(final JsonCreateJvm aJvmToCreate, final AuthenticatedUser aUser) {
-        final User user = aUser.getUser();
-        LOGGER.info("Create JVM requested: {} by user {}", aJvmToCreate, user.getId());
-        Jvm jvm = jvmService.createJvm(aJvmToCreate.toCreateAndAddRequest(), user);
-        return ResponseBuilder.created(jvm);
+        try {
+            final User user = aUser.getUser();
+            LOGGER.info("Create JVM requested: {} by user {}", aJvmToCreate, user.getId());
+            Jvm jvm = jvmService.createJvm(aJvmToCreate.toCreateAndAddRequest(), user);
+            return ResponseBuilder.created(jvm);
+        } catch (BadRequestException be) {
+            return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
+                    AemFaultType.DUPLICATE_JVM_NAME, "JVM Name already exists", be));
+        }
     }
 
     @Override
     public Response updateJvm(final JsonUpdateJvm aJvmToUpdate, final AuthenticatedUser aUser) {
         LOGGER.info("Update JVM requested: {} by user {}", aJvmToUpdate, aUser.getUser().getId());
-        return ResponseBuilder.ok(jvmService.updateJvm(aJvmToUpdate.toUpdateJvmRequest(), aUser.getUser()));
+        try {
+            return ResponseBuilder.ok(jvmService.updateJvm(aJvmToUpdate.toUpdateJvmRequest(), aUser.getUser()));
+        } catch (BadRequestException be) {
+            return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
+                    AemFaultType.DUPLICATE_JVM_NAME, "JVM Name already exists", be));
+        }
     }
 
     @Override

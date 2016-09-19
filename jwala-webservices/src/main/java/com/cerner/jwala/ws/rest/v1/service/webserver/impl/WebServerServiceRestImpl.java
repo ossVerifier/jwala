@@ -9,6 +9,7 @@ import com.cerner.jwala.common.domain.model.resource.ResourceTemplateMetaData;
 import com.cerner.jwala.common.domain.model.webserver.WebServer;
 import com.cerner.jwala.common.domain.model.webserver.WebServerControlOperation;
 import com.cerner.jwala.common.domain.model.webserver.WebServerReachableState;
+import com.cerner.jwala.common.exception.BadRequestException;
 import com.cerner.jwala.common.exception.FaultCodeException;
 import com.cerner.jwala.common.exception.InternalErrorException;
 import com.cerner.jwala.common.exec.CommandOutput;
@@ -31,6 +32,7 @@ import com.cerner.jwala.ws.rest.v1.response.ResponseBuilder;
 import com.cerner.jwala.ws.rest.v1.service.webserver.WebServerServiceRest;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.jaxrs.ext.MessageContext;
+import org.apache.openjpa.persistence.EntityExistsException;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -98,43 +100,53 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
     @Override
     public Response createWebServer(final JsonCreateWebServer aWebServerToCreate, final AuthenticatedUser aUser) {
         LOGGER.info("Create WS requested: {} by user {}", aWebServerToCreate, aUser.getUser().getId());
-        final WebServer webServer = webServerService.createWebServer(aWebServerToCreate.toCreateWebServerRequest(), aUser.getUser());
-
-        // Populate the web server templates from the group templates
-        Collection<Group> groups = webServer.getGroups();
-        if (null != groups && groups.size() > 0) {
-            Group group = groups.iterator().next();
-            final String groupName = group.getName();
-            for (final String templateName : groupService.getGroupWebServersResourceTemplateNames(groupName)) {
-                String templateContent = groupService.getGroupWebServerResourceTemplate(groupName, templateName, false, new ResourceGroup());
-                String metaDataStr = groupService.getGroupWebServerResourceTemplateMetaData(groupName, templateName);
-                ResourceTemplateMetaData metaData;
-                try {
-                    metaData = new ObjectMapper().readValue(metaDataStr, ResourceTemplateMetaData.class);
-                    UploadWebServerTemplateRequest uploadWSRequest = new UploadWebServerTemplateRequest(webServer, metaData.getTemplateName(), metaDataStr, templateContent) {
-                        @Override
-                        public String getConfFileName() {
-                            return templateName;
-                        }
-                    };
-                    webServerService.uploadWebServerConfig(uploadWSRequest, aUser.getUser());
-                } catch (IOException e) {
-                    LOGGER.error("Failed to map meta data when creating template {} for web server {}", templateName, webServer.getName(), e);
-                    return ResponseBuilder.notOk(Response.Status.EXPECTATION_FAILED, new FaultCodeException(AemFaultType.BAD_STREAM, "Created web server " + webServer.getName() + " but failed creating templates from parent group " + groupName, e));
+        try {
+            final WebServer webServer = webServerService.createWebServer(aWebServerToCreate.toCreateWebServerRequest(), aUser.getUser());
+            // Populate the web server templates from the group templates
+            Collection<Group> groups = webServer.getGroups();
+            if (null != groups && groups.size() > 0) {
+                Group group = groups.iterator().next();
+                final String groupName = group.getName();
+                for (final String templateName : groupService.getGroupWebServersResourceTemplateNames(groupName)) {
+                    String templateContent = groupService.getGroupWebServerResourceTemplate(groupName, templateName, false, new ResourceGroup());
+                    String metaDataStr = groupService.getGroupWebServerResourceTemplateMetaData(groupName, templateName);
+                    ResourceTemplateMetaData metaData;
+                    try {
+                        metaData = new ObjectMapper().readValue(metaDataStr, ResourceTemplateMetaData.class);
+                        UploadWebServerTemplateRequest uploadWSRequest = new UploadWebServerTemplateRequest(webServer, metaData.getTemplateName(), metaDataStr, templateContent) {
+                            @Override
+                            public String getConfFileName() {
+                                return templateName;
+                            }
+                        };
+                        webServerService.uploadWebServerConfig(uploadWSRequest, aUser.getUser());
+                    } catch (IOException e) {
+                        LOGGER.error("Failed to map meta data when creating template {} for web server {}", templateName, webServer.getName(), e);
+                        return ResponseBuilder.notOk(Response.Status.EXPECTATION_FAILED, new FaultCodeException(AemFaultType.BAD_STREAM, "Created web server " + webServer.getName() + " but failed creating templates from parent group " + groupName, e));
+                    }
+                }
+                if (groups.size() > 1) {
+                    return ResponseBuilder.notOk(Response.Status.EXPECTATION_FAILED, new FaultCodeException(AemFaultType.GROUP_NOT_SPECIFIED, "Multiple groups were associated with the Web Server, but the Web Server was created using the templates from group " + groupName));
                 }
             }
-            if (groups.size() > 1) {
-                return ResponseBuilder.notOk(Response.Status.EXPECTATION_FAILED, new FaultCodeException(AemFaultType.GROUP_NOT_SPECIFIED, "Multiple groups were associated with the Web Server, but the Web Server was created using the templates from group " + groupName));
-            }
+            return ResponseBuilder.created(webServer);
+
+        } catch (BadRequestException be) {
+            return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
+                    AemFaultType.DUPLICATE_WEBSERVER_NAME, "Web Server Name already exists", be));
         }
-        return ResponseBuilder.created(webServer);
     }
 
     @Override
     public Response updateWebServer(final JsonUpdateWebServer aWebServerToCreate, final AuthenticatedUser aUser) {
         LOGGER.info("Update WS requested: {} by user {}", aWebServerToCreate, aUser.getUser().getId());
-        return ResponseBuilder.ok(webServerService.updateWebServer(aWebServerToCreate.toUpdateWebServerRequest(),
-                aUser.getUser()));
+        try {
+            return ResponseBuilder.ok(webServerService.updateWebServer(aWebServerToCreate.toUpdateWebServerRequest(),
+                    aUser.getUser()));
+        } catch (EntityExistsException be) {
+            return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
+                    AemFaultType.DUPLICATE_WEBSERVER_NAME, "Web Server Name already exists", be));
+        }
     }
 
     @Override
@@ -178,7 +190,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
     public Response generateConfig(final String webServerName) {
         LOGGER.info("Generate the httpd.conf for {}", webServerName);
         return Response.ok(webServerService.getResourceTemplate(webServerName, "httpd.conf", true,
-                           resourceService.generateResourceGroup())).build();
+                resourceService.generateResourceGroup())).build();
     }
 
     @Override
@@ -285,7 +297,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
 
             // create the configuration file(s)
             final List<String> templateNames = webServerService.getResourceTemplateNames(aWebServerName);
-            for (final String templateName: templateNames) {
+            for (final String templateName : templateNames) {
                 generateAndDeployConfig(aWebServerName, templateName, aUser);
             }
 
@@ -307,7 +319,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
         boolean foundHttpdConf = false;
         final List<String> templateNames = webServerService.getResourceTemplateNames(aWebServerName);
         for (final String templateName : templateNames) {
-            if (templateName.equals("httpd.conf")){
+            if (templateName.equals("httpd.conf")) {
                 foundHttpdConf = true;
                 break;
             }
@@ -367,7 +379,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
         }
         if (!webServerControlService.changeFileMode(webServer, "a+x", destHttpdConfPath, "*.sh").getReturnCode().wasSuccessful()) {
             LOGGER.error("Failed to update the permissions in {} during the creation of {}", destHttpdConfPath, webServerName);
-            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to update the permissions in " + destHttpdConfPath+ " during the creation of " + webServerName);
+            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to update the permissions in " + destHttpdConfPath + " during the creation of " + webServerName);
         }
     }
 

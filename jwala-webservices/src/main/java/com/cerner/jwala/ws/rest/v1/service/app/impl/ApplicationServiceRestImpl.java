@@ -5,11 +5,10 @@ import com.cerner.jwala.common.domain.model.fault.AemFaultType;
 import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
+import com.cerner.jwala.common.exception.BadRequestException;
 import com.cerner.jwala.common.exception.FaultCodeException;
-import com.cerner.jwala.common.exception.InternalErrorException;
 import com.cerner.jwala.common.exec.CommandOutput;
 import com.cerner.jwala.common.exec.CommandOutputReturnCode;
-import com.cerner.jwala.common.request.app.UploadAppTemplateRequest;
 import com.cerner.jwala.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
 import com.cerner.jwala.persistence.jpa.service.exception.ResourceTemplateUpdateException;
 import com.cerner.jwala.service.app.ApplicationService;
@@ -20,18 +19,17 @@ import com.cerner.jwala.service.resource.ResourceService;
 import com.cerner.jwala.ws.rest.v1.provider.AuthenticatedUser;
 import com.cerner.jwala.ws.rest.v1.response.ResponseBuilder;
 import com.cerner.jwala.ws.rest.v1.service.app.ApplicationServiceRest;
-
 import org.apache.commons.fileupload.FileItemIterator;
 import org.apache.commons.fileupload.FileItemStream;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.io.IOUtils;
 import org.apache.cxf.jaxrs.ext.MessageContext;
+import org.apache.openjpa.persistence.EntityExistsException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import java.io.IOException;
@@ -92,15 +90,25 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
     @Override
     public Response createApplication(final JsonCreateApplication anAppToCreate, final AuthenticatedUser aUser) {
         LOGGER.info("Create Application requested: {}", anAppToCreate);
-        Application created = service.createApplication(anAppToCreate.toCreateCommand(), aUser.getUser());
-        return ResponseBuilder.created(created);
+        try {
+            Application created = service.createApplication(anAppToCreate.toCreateCommand(), aUser.getUser());
+            return ResponseBuilder.created(created);
+        } catch (BadRequestException be) {
+            return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
+                    AemFaultType.DUPLICATE_APPLICATION, "Application already exists", be));
+        }
     }
 
     @Override
     public Response updateApplication(final JsonUpdateApplication anAppToUpdate, final AuthenticatedUser aUser) {
         LOGGER.info("Update Application requested: {}", anAppToUpdate);
-        Application updated = service.updateApplication(anAppToUpdate.toUpdateCommand(), aUser.getUser());
-        return ResponseBuilder.ok(updated);
+        try {
+            Application updated = service.updateApplication(anAppToUpdate.toUpdateCommand(), aUser.getUser());
+            return ResponseBuilder.ok(updated);
+        } catch (EntityExistsException be) {
+            return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
+                    AemFaultType.DUPLICATE_APPLICATION, "Application already exists", be));
+        }
     }
 
     @Override
@@ -118,7 +126,7 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
         InputStream in;
         String deployPath = null;
         String warName = null;
-        byte [] war = null;
+        byte[] war = null;
 
         try {
             final FileItemIterator it = servletFileUpload.getItemIterator(messageContext.getHttpServletRequest());
@@ -147,7 +155,7 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
             // TODO: Decide if uploading a new war is a CREATE rather than an UPDATE.
             return ResponseBuilder.created(application);
         } catch (final FileUploadException | ApplicationServiceException | ResourceServiceException | IOException e) {
-                LOGGER.error("Error uploading web archive",e);
+            LOGGER.error("Error uploading web archive", e);
             return ResponseBuilder.notOk(Status.INTERNAL_SERVER_ERROR, new FaultCodeException(AemFaultType.IO_EXCEPTION,
                     e.getMessage()));
         }
