@@ -9,7 +9,7 @@ import java.util.EnumMap;
 import java.util.Map;
 
 import static com.cerner.jwala.control.AemControl.Properties.SCP_SCRIPT_NAME;
-import static com.cerner.jwala.control.AemControl.Properties.UNPACK_WAR_SCRIPT_NAME;
+import static com.cerner.jwala.control.AemControl.Properties.UNPACK_BINARY_SCRIPT_NAME;
 
 public enum WindowsApplicationNetOperation implements ServiceCommandBuilder {
 
@@ -29,14 +29,14 @@ public enum WindowsApplicationNetOperation implements ServiceCommandBuilder {
             return new ExecCommand(USR_BIN_CP, srcPath, destPath);
         }
     },
-    UNPACK_WAR(ApplicationControlOperation.UNPACK_WAR) {
+    UNPACK(ApplicationControlOperation.UNPACK) {
         @Override
         public ExecCommand buildCommandForService(String aServiceName, String... aParams) {
             final String appWarName = aParams[0];
-            final String appWarsDirPath = REMOTE_WEBAPPS_DIR;
+            final String appWarsDirPath = aParams[1];
             final String javaHomePath = REMOTE_JAVA_HOME;
-            final String unpackWarScriptPath = "`" + USR_BIN_CYGPATH + " " + REMOTE_COMMANDS_USER_SCRIPTS + "/" + UNPACK_WAR_SCRIPT_NAME + "`";
-            return new ExecCommand(unpackWarScriptPath, appWarsDirPath, javaHomePath, appWarName);
+            final String unpackWarScriptPath = "`" + USR_BIN_CYGPATH + " " + REMOTE_COMMANDS_USER_SCRIPTS + "/" + UNPACK_BINARY_SCRIPT_NAME + "`";
+            return new ExecCommand(unpackWarScriptPath, appWarsDirPath, javaHomePath, appWarName, aParams[2]);
         }
     },
     CREATE_DIRECTORY(ApplicationControlOperation.CREATE_DIRECTORY) {
@@ -64,7 +64,7 @@ public enum WindowsApplicationNetOperation implements ServiceCommandBuilder {
     private static final String USR_BIN_TEST = "/usr/bin/test";
     private static final String USR_BIN_CYGPATH = "/usr/bin/cygpath";
 
-    private static final String REMOTE_WEBAPPS_DIR = ApplicationProperties.get("remote.jwala.webapps.dir");
+    //private static final String REMOTE_WEBAPPS_DIR = ApplicationProperties.get("remote.jwala.webapps.dir");
     private static final String REMOTE_JAVA_HOME = ApplicationProperties.get("remote.jwala.java.home");
     private static final String REMOTE_COMMANDS_USER_SCRIPTS = ApplicationProperties.get("remote.commands.user-scripts");
 

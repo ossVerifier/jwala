@@ -498,7 +498,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                         throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, standardError);
                     }
 
-                    final String unpackWarScriptPath = ApplicationProperties.get("commands.scripts-path") + "/" + AemControl.Properties.UNPACK_WAR_SCRIPT_NAME;
+                    final String unpackWarScriptPath = ApplicationProperties.get("commands.scripts-path") + "/" + AemControl.Properties.UNPACK_BINARY_SCRIPT_NAME;
                     commandOutput = applicationCommandExecutor.executeRemoteCommand(null, host, ApplicationControlOperation.SECURE_COPY, new WindowsApplicationPlatformCommandProvider(), unpackWarScriptPath, jwalaScriptsPath);
                     if (!commandOutput.getReturnCode().wasSuccessful()) {
                         return commandOutput; // return immediately if the copy failed
@@ -511,7 +511,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                     }
 
                     // call the unpack war script
-                    commandOutput = applicationCommandExecutor.executeRemoteCommand(null, host, ApplicationControlOperation.UNPACK_WAR, new WindowsApplicationPlatformCommandProvider(), warName);
+                    commandOutput = applicationCommandExecutor.executeRemoteCommand(null, host, ApplicationControlOperation.UNPACK, new WindowsApplicationPlatformCommandProvider(), warName, "false");
                 }
                 return commandOutput;
             }
@@ -636,6 +636,7 @@ public class ApplicationServiceImpl implements ApplicationService {
             entity.setGroup(application.getGroup().getName());
             entity.setDeployToJvms(false);
             metaData.setUnpack(application.isUnpackWar());
+            metaData.setOverwrite(false);
 
             // Note: This is for backward compatibility.
             entity.setTarget(application.getName());

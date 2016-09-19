@@ -508,7 +508,7 @@ public class GroupServiceImpl implements GroupService {
                     throw new DeployApplicationConfException(standardError);
                 }
 
-                final String unpackWarScriptPath = ApplicationProperties.get("commands.scripts-path") + "/" + AemControl.Properties.UNPACK_WAR_SCRIPT_NAME;
+                final String unpackWarScriptPath = ApplicationProperties.get("commands.scripts-path") + "/" + AemControl.Properties.UNPACK_BINARY_SCRIPT_NAME;
                 final String parentDirScripts = new File(unpackWarScriptPath).getParentFile().getAbsolutePath().replaceAll("\\\\", "/");
                 commandOutput = remoteCommandExecutor.executeRemoteCommand(
                         jvmName,
@@ -557,9 +557,11 @@ public class GroupServiceImpl implements GroupService {
                 commandOutput = remoteCommandExecutor.executeRemoteCommand(
                         null,
                         hostName,
-                        ApplicationControlOperation.UNPACK_WAR,
+                        ApplicationControlOperation.UNPACK,
                         new WindowsApplicationPlatformCommandProvider(),
-                        fileName);
+                        fileName,
+                        metaData.getDeployPath(),
+                        String.valueOf(metaData.isOverwrite()));
                 if(!commandOutput.getReturnCode().wasSuccessful()) {
                     standardError = commandOutput.getStandardError().isEmpty()? commandOutput.getStandardOutput() : commandOutput.getStandardError();
                     LOGGER.error("Error in unpacking binary {} :: ERROR: {}", fileName, standardError);
