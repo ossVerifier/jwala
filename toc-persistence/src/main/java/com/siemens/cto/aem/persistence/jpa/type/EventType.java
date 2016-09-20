@@ -7,7 +7,7 @@ package com.siemens.cto.aem.persistence.jpa.type;
  */
 public enum EventType {
 
-    USER_ACTION("A"), APPLICATION_ERROR("E"), UNKNOWN(null);
+    USER_ACTION("A"), APPLICATION_EVENT("E"), UNKNOWN(null);
 
     private final String abbrev;
 

@@ -59,6 +59,9 @@ public class JvmControlServiceImpl implements JvmControlService {
     private final SshConfiguration sshConfig;
     private final GroupStateNotificationService groupStateNotificationService;
 
+    private static final String MSG_SERVICE_ALREADY_STARTED = "Service already started";
+    private static final String MSG_SERVICE_ALREADY_STOPPED = "Service already stopped";
+
     public JvmControlServiceImpl(final JvmService theJvmService,
                                  final RemoteCommandExecutor<JvmControlOperation> theExecutor,
                                  final HistoryService historyService,
@@ -132,18 +135,38 @@ public class JvmControlServiceImpl implements JvmControlService {
                 }
             } else {
                 // Process non successful return codes...
-                final String commandOutputReturnDescription = CommandOutputReturnCode.fromReturnCode(returnCode.getReturnCode()).getDesc();
+                String commandOutputReturnDescription = CommandOutputReturnCode.fromReturnCode(returnCode.getReturnCode()).getDesc();
                 switch (returnCode.getReturnCode()) {
                     case ExecReturnCode.STP_EXIT_PROCESS_KILLED:
                         commandOutput = new CommandOutput(new ExecReturnCode(0), FORCED_STOPPED, commandOutput.getStandardError());
                         jvmStateService.updateState(jvm.getId(), JvmState.FORCED_STOPPED);
                         break;
                     case ExecReturnCode.STP_EXIT_CODE_ABNORMAL_SUCCESS:
+                        int retCode = 0;
+                        switch (controlJvmRequest.getControlOperation()) {
+                            case START:
+                                commandOutputReturnDescription = MSG_SERVICE_ALREADY_STARTED;
+                                break;
+                            case STOP:
+                                commandOutputReturnDescription = MSG_SERVICE_ALREADY_STOPPED;
+                                break;
+                            default:
+                                retCode = returnCode.getReturnCode();
+                        }
+
                         LOGGER.warn(commandOutputReturnDescription);
-                        historyService.createHistory(getServerName(jvm), new ArrayList<>(jvm.getGroups()), commandOutputReturnDescription,
-                                EventType.APPLICATION_ERROR, aUser.getId());
+                        historyService.createHistory(getServerName(jvm), new ArrayList<>(jvm.getGroups()),
+                                commandOutputReturnDescription, EventType.APPLICATION_EVENT, aUser.getId());
+
+                        // Send as a failure to make the UI display it in the history window
+                        // TODO: Sending a failure state so that the commandOutputReturnDescription will be shown in the UI is not the proper way to do this, refactor this in the future
                         messagingService.send(new CurrentState<>(jvm.getId(), JvmState.JVM_FAILED, DateTime.now(), StateType.JVM,
                                 commandOutputReturnDescription));
+
+                        if (retCode == 0) {
+                            commandOutput = new CommandOutput(new ExecReturnCode(retCode), commandOutputReturnDescription, null);
+                        }
+
                         break;
                     default:
                         final String errorMsg = "JVM control command was not successful! Return code = "
@@ -152,7 +175,7 @@ public class JvmControlServiceImpl implements JvmControlService {
 
                         LOGGER.error(errorMsg);
                         historyService.createHistory(getServerName(jvm), new ArrayList<>(jvm.getGroups()), errorMsg,
-                                EventType.APPLICATION_ERROR, aUser.getId());
+                                EventType.APPLICATION_EVENT, aUser.getId());
                         messagingService.send(new CurrentState<>(jvm.getId(), JvmState.JVM_FAILED, DateTime.now(), StateType.JVM,
                                 errorMsg));
 
@@ -163,7 +186,7 @@ public class JvmControlServiceImpl implements JvmControlService {
             return commandOutput;
         } catch (final RemoteCommandExecutorServiceException e) {
             LOGGER.error(e.getMessage(), e);
-            historyService.createHistory(getServerName(jvm), new ArrayList<>(jvm.getGroups()), e.getMessage(), EventType.APPLICATION_ERROR,
+            historyService.createHistory(getServerName(jvm), new ArrayList<>(jvm.getGroups()), e.getMessage(), EventType.APPLICATION_EVENT,
                     aUser.getId());
             messagingService.send(new CurrentState<>(jvm.getId(), JvmState.JVM_FAILED, DateTime.now(), StateType.JVM, e.getMessage()));
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE,

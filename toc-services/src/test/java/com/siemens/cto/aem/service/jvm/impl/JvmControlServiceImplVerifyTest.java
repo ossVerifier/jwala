@@ -112,7 +112,7 @@ public class JvmControlServiceImplVerifyTest extends VerificationBehaviorSupport
         when(mockRemoteCommandExecutorService.executeCommand(any(RemoteExecCommand.class))).thenReturn(new RemoteCommandReturnInfo(ExecReturnCode.STP_EXIT_CODE_ABNORMAL_SUCCESS, "Abnormal success", ""));
         CommandOutput returnOutput = jvmControlService.controlJvm(controlCommand, user);
         // abnormal success is not a successful return code
-        assertFalse(returnOutput.getReturnCode().getWasSuccessful());
+        assertTrue(returnOutput.getReturnCode().getWasSuccessful());
 
         when(jvm.getState()).thenReturn(JvmState.JVM_STARTED);
         when(mockRemoteCommandExecutorService.executeCommand(any(RemoteExecCommand.class))).thenReturn(new RemoteCommandReturnInfo(ExecReturnCode.STP_EXIT_CODE_NO_OP, "No op", ""));

@@ -133,7 +133,7 @@ public class WebServerControlServiceImplVerifyTest extends VerificationBehaviorS
 
         when(remoteCommandExecutorService.executeCommand(any(RemoteExecCommand.class))).thenReturn(new RemoteCommandReturnInfo(1, "", "ABNORMAL SUCCESS"));
         webServerControlService.controlWebServer(controlWSRequest, user);
-        verify(mockHistoryService).createHistory(anyString(), anyList(), anyString(), eq(EventType.APPLICATION_ERROR), anyString());
+        verify(mockHistoryService).createHistory(anyString(), anyList(), anyString(), eq(EventType.APPLICATION_EVENT), anyString());
         verify(mockMessagingService, times(2)).send(any(CurrentState.class));
         reset(mockMessagingService);
 

@@ -128,7 +128,7 @@ public class WebServerControlServiceImpl implements WebServerControlService {
 
                         LOGGER.error(errorMsg);
                         historyService.createHistory(getServerName(webServer), new ArrayList<>(webServer.getGroups()), errorMsg,
-                                EventType.APPLICATION_ERROR, aUser.getId());
+                                EventType.APPLICATION_EVENT, aUser.getId());
                         messagingService.send(new CurrentState<>(webServer.getId(), WebServerReachableState.WS_FAILED,
                                 DateTime.now(), StateType.WEB_SERVER, errorMsg));
                         break;
@@ -138,7 +138,7 @@ public class WebServerControlServiceImpl implements WebServerControlService {
         } catch (final RemoteCommandExecutorServiceException e) {
             LOGGER.error(e.getMessage(), e);
             historyService.createHistory(getServerName(webServer), new ArrayList<>(webServer.getGroups()), e.getMessage(),
-                    EventType.APPLICATION_ERROR, aUser.getId());
+                    EventType.APPLICATION_EVENT, aUser.getId());
             messagingService.send(new CurrentState<>(webServer.getId(), WebServerReachableState.WS_FAILED, DateTime.now(),
                     StateType.WEB_SERVER, e.getMessage()));
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE,
