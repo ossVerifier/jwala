@@ -291,6 +291,16 @@ public class JvmControlServiceImplVerifyTest extends VerificationBehaviorSupport
         assertTrue(commandOutput.getReturnCode().getWasSuccessful());
     }
 
+    @Test(expected = JvmControlServiceException.class)
+    public void testControlJvmSynchronouslyOnTimeout() throws InterruptedException {
+        final Jvm mockJvm = mock(Jvm.class);
+        when(mockJvm.getState()).thenReturn(JvmState.JVM_STOPPING);
+        when(jvmService.getJvm(any(Identifier.class))).thenReturn(mockJvm);
+        when(mockRemoteCommandExecutorService.executeCommand(any(RemoteExecCommand.class))).thenReturn(new RemoteCommandReturnInfo(0, "Success!", ""));
+        final ControlJvmRequest controlJvmRequest = new ControlJvmRequest(new Identifier<Jvm>("1"), JvmControlOperation.STOP);
+        final CommandOutput commandOutput  = jvmControlService.controlJvmSynchronously(controlJvmRequest, 3000, new User("jedi"));
+    }
+
     @Test(expected = UnsupportedOperationException.class)
     public void testHeapDumpControlJvmSynchronously() throws InterruptedException {
         final Jvm mockJvm = mock(Jvm.class);
