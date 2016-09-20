@@ -216,7 +216,7 @@ public class JvmControlServiceImpl implements JvmControlService {
 
             for (final JvmState jvmState : expectedStates) {
                 if (jvmState.equals(jvm.getState())) {
-                    break;
+                    return;
                 }
             }
 
