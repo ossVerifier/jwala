@@ -61,6 +61,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
     public static final String ENTITY_TYPE_JVM = "jvm";
     public static final String CONFIG_FILENAME_INVOKE_BAT = "invoke.bat";
     public static final String CONFIG_JAR = "_config.jar";
+    private static final long DEFAULT_WAIT_TIMEOUT = 300000L;
 
     private final JvmService jvmService;
     private final JvmControlService jvmControlService;
@@ -167,7 +168,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
         final CommandOutput commandOutput;
         final ControlJvmRequest controlJvmRequest = new ControlJvmRequest(aJvmId, aJvmToControl.toControlOperation());
         if (Boolean.TRUE.equals(wait)) {
-            waitTimeout = waitTimeout == null ? 300000L : waitTimeout * 1000; // waitTimeout is in seconds, need to convert to ms
+            waitTimeout = waitTimeout == null ? DEFAULT_WAIT_TIMEOUT : waitTimeout * 1000; // waitTimeout is in seconds, need to convert to ms
             try {
                 commandOutput = jvmControlService.controlJvmSynchronously(controlJvmRequest, waitTimeout, aUser.getUser());
             } catch (final InterruptedException | JvmControlServiceException e) {
