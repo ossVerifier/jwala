@@ -161,9 +161,10 @@ public class JvmServiceRestImpl implements JvmServiceRest {
     }
 
     @Override
-    public Response controlJvm(final Identifier<Jvm> aJvmId, final JsonControlJvm aJvmToControl, Boolean wait,
+    public Response controlJvm(final Identifier<Jvm> aJvmId, final JsonControlJvm aJvmToControl, final Boolean wait,
                                Long waitTimeout, final AuthenticatedUser aUser) {
-        LOGGER.debug("Control JVM requested: {} {} by user {}", aJvmId, aJvmToControl, aUser.getUser().getId());
+        LOGGER.debug("Control JVM requested: {} {} by user {} with wait = {} and timeout = {}s", aJvmId, aJvmToControl,
+                aUser.getUser().getId(), wait, waitTimeout);
 
         final CommandOutput commandOutput;
         final ControlJvmRequest controlJvmRequest = new ControlJvmRequest(aJvmId, aJvmToControl.toControlOperation());
@@ -172,6 +173,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
             try {
                 commandOutput = jvmControlService.controlJvmSynchronously(controlJvmRequest, waitTimeout, aUser.getUser());
             } catch (final InterruptedException | JvmControlServiceException e) {
+                LOGGER.error("Control a JVM synchronously has failed!", e);
                 return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR,
                         new FaultCodeException(AemFaultType.SERVICE_EXCEPTION, e.getMessage()));
             }
