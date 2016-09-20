@@ -12,8 +12,4 @@ public class JvmControlServiceException extends RuntimeException {
     public JvmControlServiceException(final String msg) {
         super(msg);
     }
-
-    public JvmControlServiceException(final Throwable t) {
-        super(t);
-    }
 }
