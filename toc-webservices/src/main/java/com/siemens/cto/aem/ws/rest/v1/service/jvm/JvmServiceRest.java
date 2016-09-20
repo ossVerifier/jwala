@@ -38,11 +38,19 @@ public interface JvmServiceRest extends InitializingBean{
     Response removeJvm(@PathParam("jvmId") final Identifier<Jvm> aJvmId,
                        @BeanParam final AuthenticatedUser aUser);
 
+    /**
+     * Control a JVM (e.g. start, stop)
+     * @param aJvmId the id of the JVM
+     * @param aJvmToControl {@link JsonControlJvm} contains control details
+     * @param wait if true the REST service is executed synchronously
+     * @param waitTimeout timeout duration while REST is waiting for the synchronous service to finish (in seconds)
+     * @param aUser {@link AuthenticatedUser}
+     * @return {@link Response}
+     */
     @POST
     @Path("/{jvmId}/commands")
-    Response controlJvm(@PathParam("jvmId") final Identifier<Jvm> aJvmId,
-                        final JsonControlJvm aJvmToControl,
-                        @BeanParam final AuthenticatedUser aUser);
+    Response controlJvm(@PathParam("jvmId") Identifier<Jvm> aJvmId, JsonControlJvm aJvmToControl, @QueryParam("wait") Boolean wait,
+                        @QueryParam("timeout") Long waitTimeout, @BeanParam AuthenticatedUser aUser);
 
     /**
      * Generate JVM config files then deploy the JVM.

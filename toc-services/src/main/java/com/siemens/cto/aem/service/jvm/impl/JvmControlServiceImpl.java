@@ -28,6 +28,7 @@ import com.siemens.cto.aem.service.group.GroupStateNotificationService;
 import com.siemens.cto.aem.service.jvm.JvmControlService;
 import com.siemens.cto.aem.service.jvm.JvmService;
 import com.siemens.cto.aem.service.jvm.JvmStateService;
+import com.siemens.cto.aem.service.jvm.exception.JvmControlServiceException;
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
@@ -39,6 +40,8 @@ import java.util.ArrayList;
 import java.util.Date;
 
 public class JvmControlServiceImpl implements JvmControlService {
+
+    private static final int THREAD_SLEEP_DURATION = 1000;
 
     @Value("${spring.messaging.topic.serverStates:/topic/server-states}")
     protected String topicServerStates;
@@ -164,6 +167,53 @@ public class JvmControlServiceImpl implements JvmControlService {
             messagingService.send(new CurrentState<>(jvm.getId(), JvmState.JVM_FAILED, DateTime.now(), StateType.JVM, e.getMessage()));
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE,
                     "CommandFailureException when attempting to control a JVM: " + controlJvmRequest, e);
+        }
+    }
+
+    @Override
+    public CommandOutput controlJvmSynchronously(final ControlJvmRequest controlJvmRequest, final long timeout,
+                                                 final User user) throws InterruptedException {
+
+        final CommandOutput commandOutput = controlJvm(controlJvmRequest, user);
+        if (commandOutput.getReturnCode().wasSuccessful()) {
+            // Process start/stop operations only for now...
+            switch (controlJvmRequest.getControlOperation()) {
+                case START:
+                    waitUntilJvmIsInExpectedState(controlJvmRequest, timeout, JvmState.JVM_STARTED);
+                    break;
+                case STOP:
+                    waitUntilJvmIsInExpectedState(controlJvmRequest, timeout, JvmState.JVM_STOPPED, JvmState.FORCED_STOPPED);
+                    break;
+                default:
+            }
+        }
+        return commandOutput;
+    }
+
+    /**
+     * Loop until jvm state is in expected state
+     * @param controlJvmRequest {@link ControlJvmRequest}
+     * @param timeout the timeout in ms
+     * @param expectedStates expected {@link JvmState}
+     * @throws InterruptedException
+     */
+    private void waitUntilJvmIsInExpectedState(final ControlJvmRequest controlJvmRequest, final long timeout,
+                                               final JvmState ... expectedStates) throws InterruptedException {
+        final long startTime = DateTime.now().getMillis();
+        while (true) {
+            final Jvm jvm = jvmService.getJvm(controlJvmRequest.getJvmId());
+
+            for (final JvmState jvmState : expectedStates) {
+                if (jvmState.equals(jvm.getState())) {
+                    break;
+                }
+            }
+
+            if ((DateTime.now().getMillis() - startTime) > timeout) {
+                throw new JvmControlServiceException("Timeout limit reached while waiting for JVM to " +
+                        controlJvmRequest.getControlOperation().name());
+            }
+            Thread.sleep(THREAD_SLEEP_DURATION);
         }
     }
 

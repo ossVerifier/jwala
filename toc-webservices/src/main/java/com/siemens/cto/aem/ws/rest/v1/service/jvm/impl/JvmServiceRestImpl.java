@@ -24,6 +24,7 @@ import com.siemens.cto.aem.persistence.jpa.service.exception.NonRetrievableResou
 import com.siemens.cto.aem.persistence.jpa.service.exception.ResourceTemplateUpdateException;
 import com.siemens.cto.aem.service.jvm.JvmControlService;
 import com.siemens.cto.aem.service.jvm.JvmService;
+import com.siemens.cto.aem.service.jvm.exception.JvmControlServiceException;
 import com.siemens.cto.aem.service.jvm.exception.JvmServiceException;
 import com.siemens.cto.aem.service.resource.ResourceService;
 import com.siemens.cto.aem.template.ResourceFileGenerator;
@@ -159,9 +160,24 @@ public class JvmServiceRestImpl implements JvmServiceRest {
     }
 
     @Override
-    public Response controlJvm(final Identifier<Jvm> aJvmId, final JsonControlJvm aJvmToControl, final AuthenticatedUser aUser) {
+    public Response controlJvm(final Identifier<Jvm> aJvmId, final JsonControlJvm aJvmToControl, Boolean wait,
+                               Long waitTimeout, final AuthenticatedUser aUser) {
         LOGGER.debug("Control JVM requested: {} {} by user {}", aJvmId, aJvmToControl, aUser.getUser().getId());
-        final CommandOutput commandOutput = jvmControlService.controlJvm(new ControlJvmRequest(aJvmId, aJvmToControl.toControlOperation()), aUser.getUser());
+
+        final CommandOutput commandOutput;
+        final ControlJvmRequest controlJvmRequest = new ControlJvmRequest(aJvmId, aJvmToControl.toControlOperation());
+        if (Boolean.TRUE.equals(wait)) {
+            waitTimeout = waitTimeout == null ? 300000L : waitTimeout * 1000; // waitTimeout is in seconds, need to convert to ms
+            try {
+                commandOutput = jvmControlService.controlJvmSynchronously(controlJvmRequest, waitTimeout, aUser.getUser());
+            } catch (final InterruptedException | JvmControlServiceException e) {
+                return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR,
+                        new FaultCodeException(AemFaultType.SERVICE_EXCEPTION, e.getMessage()));
+            }
+        } else {
+            commandOutput = jvmControlService.controlJvm(controlJvmRequest, aUser.getUser());
+        }
+
         if (commandOutput.getReturnCode().wasSuccessful()) {
             return ResponseBuilder.ok(commandOutput);
         } else {
