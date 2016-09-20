@@ -232,6 +232,7 @@ public class WebServerControlServiceImpl implements WebServerControlService {
         final WebServerControlOperation webServerControlOperation = controlWebServerRequest.getControlOperation();
         while (true) {
             final WebServer webServer = webServerService.getWebServer(controlWebServerRequest.getWebServerId());
+            LOGGER.info("Retrieved web server: {}", webServer);
             switch (webServerControlOperation) {
                 case START:
                     if (webServer.getState() == WebServerReachableState.WS_REACHABLE) {
