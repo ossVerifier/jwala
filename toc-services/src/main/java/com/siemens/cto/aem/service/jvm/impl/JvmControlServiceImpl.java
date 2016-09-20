@@ -30,7 +30,6 @@ import com.siemens.cto.aem.service.jvm.JvmService;
 import com.siemens.cto.aem.service.jvm.JvmStateService;
 import com.siemens.cto.aem.service.jvm.exception.JvmControlServiceException;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.openjpa.util.UnsupportedException;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -218,7 +217,7 @@ public class JvmControlServiceImpl implements JvmControlService {
                 case INVOKE_SERVICE:
                 case SECURE_COPY:
                 case THREAD_DUMP:
-                    throw new UnsupportedException();
+                    throw new UnsupportedOperationException();
             }
         }
         return commandOutput;

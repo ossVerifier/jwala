@@ -22,8 +22,10 @@ import com.siemens.cto.aem.persistence.jpa.domain.JpaJvm;
 import com.siemens.cto.aem.persistence.jpa.type.EventType;
 import com.siemens.cto.aem.service.*;
 import com.siemens.cto.aem.service.group.GroupStateNotificationService;
+import com.siemens.cto.aem.service.jvm.JvmControlService;
 import com.siemens.cto.aem.service.jvm.JvmService;
 import com.siemens.cto.aem.service.jvm.JvmStateService;
+import com.siemens.cto.aem.service.jvm.exception.JvmControlServiceException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -287,5 +289,14 @@ public class JvmControlServiceImplVerifyTest extends VerificationBehaviorSupport
         final ControlJvmRequest controlJvmRequest = new ControlJvmRequest(new Identifier<Jvm>("1"), JvmControlOperation.STOP);
         final CommandOutput commandOutput  = jvmControlService.controlJvmSynchronously(controlJvmRequest, 60000, new User("jedi"));
         assertTrue(commandOutput.getReturnCode().getWasSuccessful());
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testHeapDumpControlJvmSynchronously() throws InterruptedException {
+        final Jvm mockJvm = mock(Jvm.class);
+        when(jvmService.getJvm(any(Identifier.class))).thenReturn(mockJvm);
+        when(mockRemoteCommandExecutorService.executeCommand(any(RemoteExecCommand.class))).thenReturn(new RemoteCommandReturnInfo(0, "***heapdump-start***hi there***heapdump-end***", ""));
+        final ControlJvmRequest controlJvmRequest = new ControlJvmRequest(new Identifier<Jvm>("1"), JvmControlOperation.HEAP_DUMP);
+        final CommandOutput commandOutput  = jvmControlService.controlJvmSynchronously(controlJvmRequest, 60000, new User("jedi"));
     }
 }
