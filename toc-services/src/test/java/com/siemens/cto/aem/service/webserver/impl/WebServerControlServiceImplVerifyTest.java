@@ -8,6 +8,7 @@ import com.siemens.cto.aem.common.domain.model.user.User;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServer;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServerControlOperation;
 import com.siemens.cto.aem.common.domain.model.webserver.WebServerReachableState;
+import com.siemens.cto.aem.common.exception.InternalErrorException;
 import com.siemens.cto.aem.common.exec.CommandOutput;
 import com.siemens.cto.aem.common.exec.ExecReturnCode;
 import com.siemens.cto.aem.common.exec.RemoteExecCommand;
@@ -205,7 +206,7 @@ public class WebServerControlServiceImplVerifyTest extends VerificationBehaviorS
         when(mockControlWebServerRequest.getControlOperation()).thenReturn(WebServerControlOperation.START);
         when(webServerService.getWebServer(any(Identifier.class))).thenReturn(mockWebServer);
         when(mockWebServer.getState()).thenReturn(WebServerReachableState.WS_REACHABLE);
-        boolean result = webServerControlService.waitForState(mockControlWebServerRequest, 120);
+        boolean result = webServerControlService.waitForState(mockControlWebServerRequest, 120L);
         assertTrue(result);
     }
 
@@ -216,7 +217,7 @@ public class WebServerControlServiceImplVerifyTest extends VerificationBehaviorS
         when(mockControlWebServerRequest.getControlOperation()).thenReturn(WebServerControlOperation.STOP);
         when(webServerService.getWebServer(any(Identifier.class))).thenReturn(mockWebServer);
         when(mockWebServer.getState()).thenReturn(WebServerReachableState.WS_REACHABLE);
-        boolean result = webServerControlService.waitForState(mockControlWebServerRequest, 5);
+        boolean result = webServerControlService.waitForState(mockControlWebServerRequest, 5L);
         assertFalse(result);
     }
 
@@ -227,7 +228,7 @@ public class WebServerControlServiceImplVerifyTest extends VerificationBehaviorS
         when(mockControlWebServerRequest.getControlOperation()).thenReturn(WebServerControlOperation.STOP);
         when(webServerService.getWebServer(any(Identifier.class))).thenReturn(mockWebServer);
         when(mockWebServer.getState()).thenReturn(WebServerReachableState.WS_UNREACHABLE);
-        boolean result = webServerControlService.waitForState(mockControlWebServerRequest, 5);
+        boolean result = webServerControlService.waitForState(mockControlWebServerRequest, 5L);
         assertTrue(result);
     }
 
@@ -238,7 +239,17 @@ public class WebServerControlServiceImplVerifyTest extends VerificationBehaviorS
         when(mockControlWebServerRequest.getControlOperation()).thenReturn(WebServerControlOperation.STOP);
         when(webServerService.getWebServer(any(Identifier.class))).thenReturn(mockWebServer);
         when(mockWebServer.getState()).thenReturn(WebServerReachableState.FORCED_STOPPED);
-        boolean result = webServerControlService.waitForState(mockControlWebServerRequest, 5);
+        boolean result = webServerControlService.waitForState(mockControlWebServerRequest, 5L);
         assertTrue(result);
+    }
+
+    @Test (expected = InternalErrorException.class)
+    public void testWaitStateForUnexpectedOperation() {
+        final ControlWebServerRequest mockControlWebServerRequest = mock(ControlWebServerRequest.class);
+        final WebServer mockWebServer = mock(WebServer.class);
+        when(mockControlWebServerRequest.getControlOperation()).thenReturn(WebServerControlOperation.BACK_UP_CONFIG_FILE);
+        when(webServerService.getWebServer(any(Identifier.class))).thenReturn(mockWebServer);
+        when(mockWebServer.getState()).thenReturn(WebServerReachableState.FORCED_STOPPED);
+        webServerControlService.waitForState(mockControlWebServerRequest, 5L);
     }
 }

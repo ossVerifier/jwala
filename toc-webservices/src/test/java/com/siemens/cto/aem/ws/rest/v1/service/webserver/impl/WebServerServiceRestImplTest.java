@@ -264,7 +264,7 @@ public class WebServerServiceRestImplTest {
 
         final JsonControlWebServer jsonControlWebServer = new JsonControlWebServer("start");
         when(webServerControlService.controlWebServer(any(ControlWebServerRequest.class), any(User.class))).thenReturn(execData);
-        final Response response = webServerServiceRest.controlWebServer(Identifier.id(1l, WebServer.class), jsonControlWebServer, authenticatedUser, false, 120);
+        final Response response = webServerServiceRest.controlWebServer(Identifier.id(1l, WebServer.class), jsonControlWebServer, authenticatedUser, false, 120L);
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
     }
 
@@ -278,7 +278,7 @@ public class WebServerServiceRestImplTest {
         when(execData.getStandardError()).thenReturn("TEST ERROR");
         when(execData.getStandardOutput()).thenReturn("");
         when(webServerControlService.controlWebServer(any(ControlWebServerRequest.class), any(User.class))).thenReturn(execData);
-        webServerServiceRest.controlWebServer(Identifier.id(1l, WebServer.class), jsonControlWebServer, authenticatedUser, false, 120);
+        webServerServiceRest.controlWebServer(Identifier.id(1l, WebServer.class), jsonControlWebServer, authenticatedUser, false, 120L);
     }
 
     @Test
@@ -290,8 +290,8 @@ public class WebServerServiceRestImplTest {
 
         final JsonControlWebServer jsonControlWebServer = new JsonControlWebServer("start");
         when(webServerControlService.controlWebServer(any(ControlWebServerRequest.class), any(User.class))).thenReturn(execData);
-        when(webServerControlService.waitForState(any(ControlWebServerRequest.class), anyInt())).thenReturn(true);
-        final Response response = webServerServiceRest.controlWebServer(Identifier.id(1l, WebServer.class), jsonControlWebServer, authenticatedUser, true, 120);
+        when(webServerControlService.waitForState(any(ControlWebServerRequest.class), anyLong())).thenReturn(true);
+        final Response response = webServerServiceRest.controlWebServer(Identifier.id(1l, WebServer.class), jsonControlWebServer, authenticatedUser, true, 120L);
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
     }
 
@@ -304,8 +304,8 @@ public class WebServerServiceRestImplTest {
 
         final JsonControlWebServer jsonControlWebServer = new JsonControlWebServer("start");
         when(webServerControlService.controlWebServer(any(ControlWebServerRequest.class), any(User.class))).thenReturn(execData);
-        when(webServerControlService.waitForState(any(ControlWebServerRequest.class), anyInt())).thenReturn(false);
-        webServerServiceRest.controlWebServer(Identifier.id(1l, WebServer.class), jsonControlWebServer, authenticatedUser, true, 120);
+        when(webServerControlService.waitForState(any(ControlWebServerRequest.class), anyLong())).thenReturn(false);
+        webServerServiceRest.controlWebServer(Identifier.id(1l, WebServer.class), jsonControlWebServer, authenticatedUser, true, 120L);
     }
 
     @Test

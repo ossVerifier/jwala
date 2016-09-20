@@ -63,6 +63,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
     private ResourceService resourceService;
     private GroupService groupService;
     private static WebServerServiceRestImpl instance;
+    private static final Long DEFAULT_WAIT_TIMEOUT = 30000L;
 
     public WebServerServiceRestImpl(final WebServerService theWebServerService,
                                     final WebServerControlService theWebServerControlService,
@@ -159,15 +160,18 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
     @Override
     public Response controlWebServer(final Identifier<WebServer> aWebServerId,
                                      final JsonControlWebServer aWebServerToControl, final AuthenticatedUser aUser,
-                                     final boolean wait, final int timeout) {
+                                     final Boolean wait, Long waitTimeout) {
         LOGGER.debug("Control Web Server requested: {} {} by user {}", aWebServerId, aWebServerToControl, aUser.getUser().getId());
         final ControlWebServerRequest controlWebServerRequest = new ControlWebServerRequest(aWebServerId, aWebServerToControl.toControlOperation());
         final CommandOutput commandOutput = webServerControlService.controlWebServer(
                 controlWebServerRequest,
                 aUser.getUser());
-        if (wait && commandOutput.getReturnCode().wasSuccessful() && webServerControlService.waitForState(controlWebServerRequest, timeout)) {
+        if (Boolean.TRUE.equals(wait)) {
+            waitTimeout = waitTimeout == null? DEFAULT_WAIT_TIMEOUT : waitTimeout * 1000; // wait timeout is in seconds converting it to ms
+        }
+        if (Boolean.TRUE.equals(wait) && commandOutput.getReturnCode().wasSuccessful() && webServerControlService.waitForState(controlWebServerRequest, waitTimeout)) {
             return ResponseBuilder.ok(commandOutput.getStandardOutput());
-        } else if (!wait && commandOutput.getReturnCode().wasSuccessful()) {
+        } else if (!Boolean.TRUE.equals(wait) && commandOutput.getReturnCode().wasSuccessful()) {
             return ResponseBuilder.ok(commandOutput.getStandardOutput());
         } else {
             final String standardError = commandOutput.getStandardError();

@@ -16,5 +16,5 @@ public interface WebServerControlService {
 
     CommandOutput changeFileMode(WebServer webServer, String fileMode, String targetDirPath, String targetFile) throws CommandFailureException;
 
-    boolean waitForState(final ControlWebServerRequest controlWebServerRequest, final int timeout);
+    boolean waitForState(final ControlWebServerRequest controlWebServerRequest, final Long waitTimeout);
 }

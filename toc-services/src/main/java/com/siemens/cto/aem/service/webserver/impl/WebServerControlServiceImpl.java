@@ -53,6 +53,7 @@ public class WebServerControlServiceImpl implements WebServerControlService {
     private final MessagingService messagingService;
     private final RemoteCommandExecutorService remoteCommandExecutorService;
     private final SshConfiguration sshConfig;
+    private static final int SLEEP_DURATION = 1000;
 
     public WebServerControlServiceImpl(final WebServerService webServerService,
                                        final RemoteCommandExecutor<WebServerControlOperation> commandExecutor,
@@ -226,10 +227,11 @@ public class WebServerControlServiceImpl implements WebServerControlService {
     }
 
     @Override
-    public boolean waitForState(ControlWebServerRequest controlWebServerRequest, int timeout) {
-        for (int i = 0; i <= timeout; i++) {
+    public boolean waitForState(final ControlWebServerRequest controlWebServerRequest, final Long waitTimeout) {
+        final Long startTime = DateTime.now().getMillis();
+        final WebServerControlOperation webServerControlOperation = controlWebServerRequest.getControlOperation();
+        while (true) {
             final WebServer webServer = webServerService.getWebServer(controlWebServerRequest.getWebServerId());
-            WebServerControlOperation webServerControlOperation = controlWebServerRequest.getControlOperation();
             switch (webServerControlOperation) {
                 case START:
                     if (webServer.getState() == WebServerReachableState.WS_REACHABLE) {
@@ -242,9 +244,15 @@ public class WebServerControlServiceImpl implements WebServerControlService {
                         return true;
                     }
                     break;
+                default:
+                    throw new InternalErrorException(AemFaultType.SERVICE_EXCEPTION, "Command: " + webServerControlOperation.toString() + " not supported");
+            }
+            if (DateTime.now().getMillis() - startTime > waitTimeout) {
+                LOGGER.warn("Timeout reached to get the state for webserver: {}", webServer.getName());
+                break;
             }
             try {
-                Thread.sleep(1000);
+                Thread.sleep(SLEEP_DURATION);
             } catch (InterruptedException e) {
                 LOGGER.error("Error with Thread.sleep", e);
                 throw new InternalErrorException(AemFaultType.SERVICE_EXCEPTION, "Error with waiting for state for WebServer: " + webServer.getName(), e);

@@ -43,8 +43,8 @@ public interface WebServerServiceRest extends InitializingBean {
     Response controlWebServer(@PathParam("webServerId") final Identifier<WebServer> aWebServerId,
                               final JsonControlWebServer aWebServerToControl,
                               @BeanParam final AuthenticatedUser aUser,
-                              @DefaultValue("false") @QueryParam("wait") final boolean wait,
-                              @DefaultValue("120") @QueryParam("timeout") final int timeout);
+                              @QueryParam("wait") final Boolean wait,
+                              @QueryParam("timeout") final Long waitTimeout);
 
     @GET
     @Path("/{webServerName}/conf")
