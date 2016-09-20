@@ -177,7 +177,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
             final String standardError = commandOutput.getStandardError();
             final String standardOut = commandOutput.getStandardOutput();
             String errMessage = null != standardError && !standardError.isEmpty() ? standardError : standardOut;
-            LOGGER.error("Control Operation Unsuccessful: " + errMessage);
+            LOGGER.error("Control Operation Unsuccessful: {}", errMessage);
             throw new InternalErrorException(AemFaultType.CONTROL_OPERATION_UNSUCCESSFUL, CommandOutputReturnCode.fromReturnCode(commandOutput.getReturnCode().getReturnCode()).getDesc());
         }
     }
