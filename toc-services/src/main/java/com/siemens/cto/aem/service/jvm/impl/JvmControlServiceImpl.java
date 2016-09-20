@@ -180,10 +180,10 @@ public class JvmControlServiceImpl implements JvmControlService {
             // Process start/stop operations only for now...
             switch (controlJvmRequest.getControlOperation()) {
                 case START:
-                    waitUntilJvmIsInExpectedState(controlJvmRequest, timeout, JvmState.JVM_STARTED);
+                    waitForState(controlJvmRequest, timeout, JvmState.JVM_STARTED);
                     break;
                 case STOP:
-                    waitUntilJvmIsInExpectedState(controlJvmRequest, timeout, JvmState.JVM_STOPPED, JvmState.FORCED_STOPPED);
+                    waitForState(controlJvmRequest, timeout, JvmState.JVM_STOPPED, JvmState.FORCED_STOPPED);
                     break;
                 case BACK_UP_FILE:
                 case CHANGE_FILE_MODE:
@@ -208,8 +208,8 @@ public class JvmControlServiceImpl implements JvmControlService {
      * @param expectedStates expected {@link JvmState}
      * @throws InterruptedException
      */
-    private void waitUntilJvmIsInExpectedState(final ControlJvmRequest controlJvmRequest, final long timeout,
-                                               final JvmState ... expectedStates) throws InterruptedException {
+    private void waitForState(final ControlJvmRequest controlJvmRequest, final long timeout,
+                              final JvmState ... expectedStates) throws InterruptedException {
         final long startTime = DateTime.now().getMillis();
         while (true) {
             final Jvm jvm = jvmService.getJvm(controlJvmRequest.getJvmId());
