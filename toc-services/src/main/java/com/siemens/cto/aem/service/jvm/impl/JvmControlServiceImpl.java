@@ -205,6 +205,8 @@ public class JvmControlServiceImpl implements JvmControlService {
      * Loop until jvm state is in expected state
      * @param controlJvmRequest {@link ControlJvmRequest}
      * @param timeout the timeout in ms
+     *                Note: the remote command called before this method might also be waiting for service state like in
+     *                the case of "FORCED STOPPED" and if so a timeout will never occur here
      * @param expectedStates expected {@link JvmState}
      * @throws InterruptedException
      */
@@ -213,6 +215,7 @@ public class JvmControlServiceImpl implements JvmControlService {
         final long startTime = DateTime.now().getMillis();
         while (true) {
             final Jvm jvm = jvmService.getJvm(controlJvmRequest.getJvmId());
+            LOGGER.info("Retrieved jvm: {}", jvm);
 
             for (final JvmState jvmState : expectedStates) {
                 if (jvmState.equals(jvm.getState())) {
