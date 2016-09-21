@@ -10,7 +10,6 @@ import com.cerner.jwala.common.domain.model.path.Path;
 import com.cerner.jwala.common.domain.model.user.User;
 import com.cerner.jwala.common.domain.model.webserver.WebServer;
 import com.cerner.jwala.common.domain.model.webserver.WebServerReachableState;
-import com.cerner.jwala.common.exception.BadRequestException;
 import com.cerner.jwala.common.request.app.CreateApplicationRequest;
 import com.cerner.jwala.common.request.group.CreateGroupRequest;
 import com.cerner.jwala.common.request.jvm.CreateJvmRequest;
@@ -43,6 +42,7 @@ import org.springframework.test.context.support.AnnotationConfigContextLoader;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.EntityExistsException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -185,7 +185,7 @@ public class WebServerCrudServiceImplTest {
         assertTrue(webServersBelongingTo.size() == 1);
     }
 
-    @Test(expected = BadRequestException.class)
+    @Test(expected = EntityExistsException.class)
     public void testCreateWebServerThrowsException() {
         WebServer webServer = new WebServer(new Identifier<WebServer>(1111L), new HashSet<Group>(), "testWebServer", "testHost",
                 101, 102, new Path("./statusPath"), new FileSystemPath("./httpdConfPath"), new Path("./svrRootPath"), new Path("./docRoot"),

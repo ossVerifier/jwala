@@ -5,19 +5,18 @@ import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
 import com.cerner.jwala.common.domain.model.path.Path;
 import com.cerner.jwala.common.domain.model.user.User;
-import com.cerner.jwala.common.exception.BadRequestException;
 import com.cerner.jwala.common.exception.NotFoundException;
 import com.cerner.jwala.persistence.service.CommonGroupPersistenceServiceBehavior;
 import com.cerner.jwala.persistence.service.CommonJvmPersistenceServiceBehavior;
 import com.cerner.jwala.persistence.service.GroupPersistenceService;
 import com.cerner.jwala.persistence.service.JvmPersistenceService;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.EntityExistsException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -73,7 +72,7 @@ public abstract class AbstractJvmPersistenceServiceTest {
                 jvm.getHostName());
     }
 
-    @Test(expected = BadRequestException.class)
+    @Test(expected = EntityExistsException.class)
     public void testCreateJvmWithDuplicateName() {
 
         final Jvm existingJvm = jvmHelper.createJvm("A Jvm Name",
@@ -152,7 +151,7 @@ public abstract class AbstractJvmPersistenceServiceTest {
         
     }
 
-    @Test(expected = BadRequestException.class)
+    @Test(expected = EntityExistsException.class)
     public void testUpdateJvmWithDuplicateName() {
 
         final Jvm jvm = jvmHelper.createJvm("A Jvm Name",

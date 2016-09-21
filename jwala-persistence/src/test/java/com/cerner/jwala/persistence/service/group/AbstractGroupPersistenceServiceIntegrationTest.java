@@ -19,7 +19,6 @@ import com.cerner.jwala.common.request.state.SetStateRequest;
 import com.cerner.jwala.common.request.webserver.UploadWebServerTemplateRequest;
 import com.cerner.jwala.persistence.jpa.domain.resource.config.template.ConfigTemplate;
 import com.cerner.jwala.persistence.service.*;
-
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.junit.After;
@@ -28,6 +27,7 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.EntityExistsException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -98,7 +98,7 @@ public abstract class AbstractGroupPersistenceServiceIntegrationTest {
         assertNotNull(actualGroup.getId());
     }
 
-    @Test(expected = BadRequestException.class)
+    @Test(expected = EntityExistsException.class)
     public void testCreateDuplicateGroup() {
 
         groupHelper.createGroup(preCreatedGroup.getName(),
@@ -130,7 +130,7 @@ public abstract class AbstractGroupPersistenceServiceIntegrationTest {
                            userId);
     }
 
-    @Test(expected = BadRequestException.class)
+    @Test(expected = EntityExistsException.class)
     public void testUpdateDuplicateGroup() {
 
         final Group newGroup = groupHelper.createGroup("Group Name to turn into a duplicate",

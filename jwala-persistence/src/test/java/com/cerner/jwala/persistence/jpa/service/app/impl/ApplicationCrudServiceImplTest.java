@@ -51,6 +51,7 @@ import org.springframework.test.context.support.AnnotationConfigContextLoader;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.EntityExistsException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -157,7 +158,7 @@ public class ApplicationCrudServiceImplTest {
         User.getThreadLocalUser().invalidate();
     }
 
-    @Test(expected = BadRequestException.class)
+    @Test(expected = EntityExistsException.class)
     public void testApplicationCrudServiceEEE() {
         CreateApplicationRequest request = new CreateApplicationRequest(expGroupId, textName, textContext, true, true, false);
 

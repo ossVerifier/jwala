@@ -49,8 +49,7 @@ public class ApplicationCrudServiceImpl extends AbstractCrudServiceImpl<JpaAppli
         try {
             return create(jpaApp);
         } catch (final EntityExistsException eee) {
-            throw new BadRequestException(AemFaultType.DUPLICATE_APPLICATION,
-                    "App already exists: " + createApplicationRequest.getName(),
+            throw new EntityExistsException("App already exists: " + createApplicationRequest.getName(),
                     eee);
         }
     }
@@ -133,8 +132,7 @@ public class ApplicationCrudServiceImpl extends AbstractCrudServiceImpl<JpaAppli
 
             return update(jpaApp);
         } else {
-            throw new BadRequestException(AemFaultType.INVALID_APPLICATION_NAME,
-                    "Application cannot be found: " + appId.getId());
+            throw new EntityExistsException("Application cannot be found: " + appId.getId());
         }
     }
 
@@ -145,8 +143,7 @@ public class ApplicationCrudServiceImpl extends AbstractCrudServiceImpl<JpaAppli
         if (jpaApp != null) {
             remove(jpaApp);
         } else {
-            throw new BadRequestException(AemFaultType.INVALID_APPLICATION_NAME,
-                    "Application cannot be found: " + appId.getId());
+            throw new EntityExistsException("Application cannot be found: " + appId.getId());
         }
     }
 
@@ -314,12 +311,12 @@ public class ApplicationCrudServiceImpl extends AbstractCrudServiceImpl<JpaAppli
     @Override
     public boolean checkAppResourceFileName(final String groupName, final String appName, final String fileName) {
         final Application app = findApplication(groupName, appName);
-        if(app!=null) {
+        if (app != null) {
             final Query q = entityManager.createNamedQuery(JpaApplicationConfigTemplate.GET_APP_TEMPLATE_RESOURCE_NAME);
             q.setParameter(JpaApplicationConfigTemplate.QUERY_PARAM_APP_NAME, appName);
             q.setParameter(JpaApplicationConfigTemplate.QUERY_PARAM_TEMPLATE_NAME, fileName);
             final List<String> result = q.getResultList();
-            if(result!=null && result.size()==1) {
+            if (result != null && result.size() == 1) {
                 return true;
             }
         }

@@ -48,8 +48,7 @@ public class JvmCrudServiceImpl extends AbstractCrudServiceImpl<JpaJvm> implemen
 
             return create(jpaJvm);
         } catch (final EntityExistsException eee) {
-            throw new BadRequestException(AemFaultType.INVALID_JVM_NAME,
-                    "JVM with name already exists: " + createJvmRequest.getJvmName(),
+            throw new EntityExistsException("JVM with name already exists: " + createJvmRequest.getJvmName(),
                     eee);
         }
     }
@@ -75,9 +74,7 @@ public class JvmCrudServiceImpl extends AbstractCrudServiceImpl<JpaJvm> implemen
 
             return update(jpaJvm);
         } catch (final EntityExistsException eee) {
-            throw new BadRequestException(AemFaultType.INVALID_JVM_NAME,
-                    "JVM with name already exists: " + updateJvmRequest.getNewJvmName(),
-                    eee);
+            throw new EntityExistsException("JVM with name already exists: " + updateJvmRequest.getNewJvmName(), eee);
         }
     }
 
@@ -168,7 +165,7 @@ public class JvmCrudServiceImpl extends AbstractCrudServiceImpl<JpaJvm> implemen
     }
 
     @Override
-    public String getResourceTemplate(final String jvmName, final String resourceTemplateName) throws NonRetrievableResourceTemplateContentException{
+    public String getResourceTemplate(final String jvmName, final String resourceTemplateName) throws NonRetrievableResourceTemplateContentException {
         final Query q = entityManager.createNamedQuery(JpaJvmConfigTemplate.GET_JVM_TEMPLATE_CONTENT);
         q.setParameter("jvmName", jvmName);
         q.setParameter("templateName", resourceTemplateName);
@@ -212,7 +209,6 @@ public class JvmCrudServiceImpl extends AbstractCrudServiceImpl<JpaJvm> implemen
     }
 
     /**
-     *
      * @param jvmName
      * @param groupName
      * @return
@@ -226,7 +222,7 @@ public class JvmCrudServiceImpl extends AbstractCrudServiceImpl<JpaJvm> implemen
         try {
             JpaJvm jpaJvm = (JpaJvm) q.getSingleResult();
             jvm = new JvmBuilder(jpaJvm).build();
-        } catch(NoResultException e) {
+        } catch (NoResultException e) {
             LOGGER.warn("error with getting result for jvmName: {} and groupName {}, error: {}", jvmName, groupName, e);
         }
         return jvm;
@@ -335,12 +331,13 @@ public class JvmCrudServiceImpl extends AbstractCrudServiceImpl<JpaJvm> implemen
 
     /**
      * Build the JVM list.
+     *
      * @param jpaJvms {@link JpaJvm}
      * @return The JVM list. Returns an empty list if there are no JVMs.
      */
     private List<Jvm> buildJvms(List<JpaJvm> jpaJvms) {
         final List<Jvm> jvms = new ArrayList<>(jpaJvms.size());
-        for(final JpaJvm jpaJvm: jpaJvms) {
+        for (final JpaJvm jpaJvm : jpaJvms) {
             jvms.add(new JvmBuilder(jpaJvm).build());
         }
         return jvms;
@@ -349,7 +346,7 @@ public class JvmCrudServiceImpl extends AbstractCrudServiceImpl<JpaJvm> implemen
     @Override
     public boolean checkJvmResourceFileName(final String groupName, final String jvmName, final String fileName) {
         final Jvm jvm = findJvm(jvmName, groupName);
-        if(jvm!=null) {
+        if (jvm != null) {
             final Query q = entityManager.createNamedQuery(JpaJvmConfigTemplate.GET_JVM_TEMPLATE_RESOURCE_NAME);
             q.setParameter(JpaJvmConfigTemplate.QUERY_PARAM_JVM_NAME, jvmName);
             q.setParameter(JpaJvmConfigTemplate.QUERY_PARAM_TEMPLATE_NAME, fileName);
