@@ -2,6 +2,7 @@ package com.cerner.jwala.service.app.impl;
 
 import com.cerner.jwala.common.domain.model.app.Application;
 import com.cerner.jwala.common.domain.model.app.ApplicationControlOperation;
+import com.cerner.jwala.common.domain.model.binarydistribution.BinaryDistributionControlOperation;
 import com.cerner.jwala.common.domain.model.fault.AemFaultType;
 import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.id.Identifier;
@@ -17,6 +18,8 @@ import com.cerner.jwala.common.request.app.*;
 import com.cerner.jwala.control.AemControl;
 import com.cerner.jwala.control.application.command.impl.WindowsApplicationPlatformCommandProvider;
 import com.cerner.jwala.control.command.RemoteCommandExecutor;
+import com.cerner.jwala.control.command.RemoteCommandExecutorImpl;
+import com.cerner.jwala.control.command.impl.WindowsBinaryDistributionPlatformCommandProvider;
 import com.cerner.jwala.control.jvm.command.windows.WindowsJvmNetOperation;
 import com.cerner.jwala.exception.CommandFailureException;
 import com.cerner.jwala.files.RepositoryFileInformation;
@@ -30,6 +33,7 @@ import com.cerner.jwala.service.HistoryService;
 import com.cerner.jwala.service.MessagingService;
 import com.cerner.jwala.service.app.ApplicationService;
 import com.cerner.jwala.service.app.PrivateApplicationService;
+import com.cerner.jwala.service.binarydistribution.BinaryDistributionService;
 import com.cerner.jwala.service.exception.ApplicationServiceException;
 import com.cerner.jwala.service.group.GroupService;
 import com.cerner.jwala.service.resource.ResourceService;
@@ -80,9 +84,14 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     private Map<String, ReentrantReadWriteLock> writeLock = new HashMap<>();
 
+    private final RemoteCommandExecutorImpl remoteCommandExecutor;
+
+    private final BinaryDistributionService binaryDistributionService;
+
     private GroupService groupService;
     private final HistoryService historyService;
     private final MessagingService messagingService;
+    private static final String UNZIPEXE = "unzip.exe";
 
     public ApplicationServiceImpl(final ApplicationPersistenceService applicationPersistenceService,
                                   final JvmPersistenceService jvmPersistenceService,
@@ -92,7 +101,9 @@ public class ApplicationServiceImpl implements ApplicationService {
                                   final PrivateApplicationService privateApplicationService,
                                   final HistoryService historyService,
                                   final MessagingService messagingService,
-                                  final ResourceService resourceService) {
+                                  final ResourceService resourceService,
+                                  final RemoteCommandExecutorImpl remoteCommandExecutor,
+                                  final BinaryDistributionService binaryDistributionService) {
         this.applicationPersistenceService = applicationPersistenceService;
         this.jvmPersistenceService = jvmPersistenceService;
         this.applicationCommandExecutor = applicationCommandService;
@@ -102,6 +113,8 @@ public class ApplicationServiceImpl implements ApplicationService {
         this.historyService = historyService;
         this.messagingService = messagingService;
         this.resourceService = resourceService;
+        this.remoteCommandExecutor = remoteCommandExecutor;
+        this.binaryDistributionService = binaryDistributionService;
         executorService = Executors.newFixedThreadPool(Integer.parseInt(ApplicationProperties.get("resources.thread-task-executor.pool.size", "25")));
     }
 
@@ -511,7 +524,18 @@ public class ApplicationServiceImpl implements ApplicationService {
                     }
 
                     // call the unpack war script
-                    commandOutput = applicationCommandExecutor.executeRemoteCommand(null, host, ApplicationControlOperation.UNPACK, new WindowsApplicationPlatformCommandProvider(), warName, ApplicationProperties.get("remote.jwala.webapps.dir"), "false");
+                    //commandOutput = applicationCommandExecutor.executeRemoteCommand(null, host, ApplicationControlOperation.UNPACK,
+                    //        new WindowsApplicationPlatformCommandProvider(), warName, ApplicationProperties.get("remote.jwala.webapps.dir"), "false");
+
+                    binaryDistributionService.prepareUnzip(host);
+                    commandOutput = remoteCommandExecutor.executeRemoteCommand(null,
+                            host,
+                            BinaryDistributionControlOperation.UNZIP_BINARY,
+                            new WindowsBinaryDistributionPlatformCommandProvider(),
+                            ApplicationProperties.get("remote.commands.user-scripts") + "/" + UNZIPEXE,
+                            ApplicationProperties.get("remote.jwala.webapps.dir")+ "/" + warName,
+                            ApplicationProperties.get("remote.jwala.webapps.dir"),
+                            "");
                 }
                 return commandOutput;
             }

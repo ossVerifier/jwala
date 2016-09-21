@@ -20,6 +20,7 @@ import com.cerner.jwala.persistence.service.ApplicationPersistenceService;
 import com.cerner.jwala.persistence.service.GroupPersistenceService;
 import com.cerner.jwala.persistence.service.WebServerPersistenceService;
 import com.cerner.jwala.service.VerificationBehaviorSupport;
+import com.cerner.jwala.service.binarydistribution.BinaryDistributionService;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -45,6 +46,7 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
     private WebServerPersistenceService webServerPersistenceService;
     private User user;
     private RemoteCommandExecutorImpl remoteCommandExecutor;
+    private BinaryDistributionService binaryDistributionService;
 
     public GroupServiceImplVerifyTest() {
         System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH,
@@ -58,11 +60,11 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
         applicationPersistenceService = mock(ApplicationPersistenceService.class);
         webServerPersistenceService = mock(WebServerPersistenceService.class);
         remoteCommandExecutor = mock(RemoteCommandExecutorImpl.class);
-
+        binaryDistributionService = mock(BinaryDistributionService.class);
         groupService = new GroupServiceImpl(groupPersistenceService,
                 webServerPersistenceService,
                 applicationPersistenceService,
-                remoteCommandExecutor);
+                remoteCommandExecutor, binaryDistributionService);
         user = new User("unused");
     }
 
