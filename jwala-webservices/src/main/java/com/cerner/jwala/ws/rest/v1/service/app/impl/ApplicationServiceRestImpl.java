@@ -92,9 +92,9 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
         try {
             Application created = service.createApplication(anAppToCreate.toCreateCommand(), aUser.getUser());
             return ResponseBuilder.created(created);
-        } catch (EntityExistsException be) {
+        } catch (EntityExistsException eee) {
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
-                    AemFaultType.DUPLICATE_APPLICATION, "Application already exists", be));
+                    AemFaultType.DUPLICATE_APPLICATION, eee.getMessage(), eee));
         }
     }
 
@@ -104,9 +104,9 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
         try {
             Application updated = service.updateApplication(anAppToUpdate.toUpdateCommand(), aUser.getUser());
             return ResponseBuilder.ok(updated);
-        } catch (EntityExistsException be) {
+        } catch (EntityExistsException eee) {
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
-                    AemFaultType.DUPLICATE_APPLICATION, "Application already exists", be));
+                    AemFaultType.DUPLICATE_APPLICATION, eee.getMessage(), eee));
         }
     }
 

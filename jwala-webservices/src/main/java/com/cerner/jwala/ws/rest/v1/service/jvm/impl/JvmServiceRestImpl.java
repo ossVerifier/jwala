@@ -75,7 +75,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
             return ResponseBuilder.created(jvm);
         } catch (EntityExistsException eee) {
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
-                    AemFaultType.DUPLICATE_JVM_NAME, "JVM Name already exists", eee));
+                    AemFaultType.DUPLICATE_JVM_NAME, eee.getMessage(), eee));
         }
     }
 
@@ -86,7 +86,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
             return ResponseBuilder.ok(jvmService.updateJvm(aJvmToUpdate.toUpdateJvmRequest(), aUser.getUser()));
         } catch (EntityExistsException eee) {
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
-                    AemFaultType.DUPLICATE_JVM_NAME, "JVM Name already exists", eee));
+                    AemFaultType.DUPLICATE_JVM_NAME, eee.getMessage(), eee));
         }
     }
 
@@ -118,9 +118,8 @@ public class JvmServiceRestImpl implements JvmServiceRest {
         try {
             return ResponseBuilder.ok(jvmService.generateAndDeployJvm(jvmName, user.getUser()));
         } catch (InternalErrorException iee) {
-            final String message = "user does not have permission to create the directory ";
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
-                    AemFaultType.REMOTE_COMMAND_FAILURE, message, iee));
+                    AemFaultType.REMOTE_COMMAND_FAILURE, iee.getMessage(), iee));
         }
     }
 

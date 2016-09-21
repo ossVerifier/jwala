@@ -129,10 +129,15 @@ public class ApplicationCrudServiceImpl extends AbstractCrudServiceImpl<JpaAppli
             jpaApp.setSecure(updateApplicationRequest.isNewSecure());
             jpaApp.setLoadBalanceAcrossServers(updateApplicationRequest.isNewLoadBalanceAcrossServers());
             jpaApp.setUnpackWar(updateApplicationRequest.isUnpackWar());
-
-            return update(jpaApp);
+            try {
+                return update(jpaApp);
+            } catch (EntityExistsException eee) {
+                throw new EntityExistsException("App already exists: " + updateApplicationRequest.getNewName(),
+                        eee);
+            }
         } else {
-            throw new EntityExistsException("Application cannot be found: " + appId.getId());
+            throw new BadRequestException(AemFaultType.INVALID_APPLICATION_NAME,
+                    "Application cannot be found: " + appId.getId());
         }
     }
 
