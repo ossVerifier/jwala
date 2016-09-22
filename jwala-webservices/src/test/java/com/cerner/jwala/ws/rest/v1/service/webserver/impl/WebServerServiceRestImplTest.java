@@ -377,7 +377,7 @@ public class WebServerServiceRestImplTest {
         assertEquals(webServer.getName(), ((Map) ((ApplicationResponse) response.getEntity()).getApplicationResponseContent()).get("webServerName"));
     }
 
-    @Test
+    @Test(expected = InternalErrorException.class)
     public void testGenerateAndDeployWebServerWithNoHttpdConfTemplate() {
         when(impl.getWebServer(anyString())).thenReturn(webServer);
         when(impl.isStarted(any(WebServer.class))).thenReturn(false);
@@ -418,7 +418,7 @@ public class WebServerServiceRestImplTest {
         assertNotNull(response);
     }
 
-    @Test
+    @Test(expected = InternalErrorException.class)
     public void testGenerateAndDeployWebServerFailsMakeDirectory() throws CommandFailureException, IOException {
         List<String> resourceTemplateNames = new ArrayList<>();
         resourceTemplateNames.add("httpd.conf");
@@ -432,7 +432,7 @@ public class WebServerServiceRestImplTest {
         webServerServiceRest.generateAndDeployWebServer(webServer.getName(), authenticatedUser);
     }
 
-    @Test
+    @Test(expected = InternalErrorException.class)
     public void testGenerateAndDeployWebServerFailsSecureCopyScriptsStartScript() throws CommandFailureException, IOException {
         List<String> resourceTemplateNames = new ArrayList<>();
         resourceTemplateNames.add("httpd.conf");
@@ -448,7 +448,7 @@ public class WebServerServiceRestImplTest {
         webServerServiceRest.generateAndDeployWebServer(webServer.getName(), authenticatedUser);
     }
 
-    @Test
+    @Test(expected = InternalErrorException.class)
     public void testGenerateAndDeployWebServerFailsSecureCopyScriptsStopScript() throws CommandFailureException, IOException {
         List<String> resourceTemplateNames = new ArrayList<>();
         resourceTemplateNames.add("httpd.conf");
@@ -465,7 +465,7 @@ public class WebServerServiceRestImplTest {
         webServerServiceRest.generateAndDeployWebServer(webServer.getName(), authenticatedUser);
     }
 
-    @Test
+    @Test(expected = InternalErrorException.class)
     public void testGenerateAndDeployWebServerFailsSecureCopyScriptsInvokeScript() throws CommandFailureException, IOException {
         List<String> resourceTemplateNames = new ArrayList<>();
         resourceTemplateNames.add("httpd.conf");
@@ -483,7 +483,7 @@ public class WebServerServiceRestImplTest {
         webServerServiceRest.generateAndDeployWebServer(webServer.getName(), authenticatedUser);
     }
 
-    @Test
+    @Test(expected = InternalErrorException.class)
     public void testGenerateAndDeployWebServerFailsChangeFileMode() throws CommandFailureException, IOException {
         List<String> resourceTemplateNames = new ArrayList<>();
         resourceTemplateNames.add("httpd.conf");
@@ -502,7 +502,7 @@ public class WebServerServiceRestImplTest {
         webServerServiceRest.generateAndDeployWebServer(webServer.getName(), authenticatedUser);
     }
 
-    @Test
+    @Test(expected = InternalErrorException.class)
     public void testGenerateAndDeployWebServerSecureCopyInvokeWSServiceFails() throws CommandFailureException, IOException {
         List<String> webServerResourceNames = new ArrayList<>();
         webServerResourceNames.add("httpd.conf");
@@ -528,7 +528,7 @@ public class WebServerServiceRestImplTest {
 
     }
 
-    @Test
+    @Test(expected = InternalErrorException.class)
     public void testGenerateAndDeployWebServerCallInvokeWSFails() throws CommandFailureException, IOException {
         List<String> webServerResourceNames = new ArrayList<>();
         webServerResourceNames.add("httpd.conf");
@@ -577,7 +577,7 @@ public class WebServerServiceRestImplTest {
 
     }
 
-    @Test
+    @Test(expected = InternalErrorException.class)
     public void testGenerateAndDeployWebServerDeleteServiceFails() throws CommandFailureException, IOException {
         List<String> webServerResourceNames = new ArrayList<>();
         webServerResourceNames.add("httpd.conf");
@@ -600,7 +600,7 @@ public class WebServerServiceRestImplTest {
         assertNotNull(response);
     }
 
-    @Test
+    @Test(expected = InternalErrorException.class)
     public void testGenerateAndDeployWebServerWhenWebServerNotStopped() {
         when(impl.getWebServer(anyString())).thenReturn(webServer);
         when(impl.isStarted(any(WebServer.class))).thenReturn(true);
