@@ -159,7 +159,7 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
             if (binaryDistributionControlService.createDirectory(hostname, destination).getReturnCode().wasSuccessful()) {
                 LOGGER.info("successfully created directories {}", destination);
             } else {
-                final String message = "user does not have permission to create the directory " + destination;
+                final String message = "User does not have permission to create the directory " + destination;
                 LOGGER.error(message);
                 throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, message);
             }

@@ -305,9 +305,12 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
 
             webServerService.updateState(webServer.getId(), WebServerReachableState.WS_UNREACHABLE, StringUtils.EMPTY);
 
+        } catch (InternalErrorException iee) {
+            return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
+                    AemFaultType.REMOTE_COMMAND_FAILURE, iee.getMessage(), iee));
         } catch (CommandFailureException e) {
-            LOGGER.error("Failed to secure copy the invokeWS.bat file for {}", aWebServerName, e);
-            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to secure copy the invokeWS.bat file for " + aWebServerName, e);
+            ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
+                    AemFaultType.REMOTE_COMMAND_FAILURE, e.getMessage(), e));
         } finally {
             wsWriteLocks.get(aWebServerName).writeLock().unlock();
         }
