@@ -511,12 +511,12 @@ public class GroupServiceImpl implements GroupService {
                         BinaryDistributionControlOperation.UNZIP_BINARY,
                         new WindowsBinaryDistributionPlatformCommandProvider(),
                         ApplicationProperties.get("remote.commands.user-scripts") + "/" + UNZIPEXE,
-                        metaData.getDeployPath() + "/" + metaData.getDeployFileName(),
-                        metaData.getDeployPath(),
+                        destPath ,
+                        parentDir,
                         "");
                 LOGGER.info("commandOutput.getReturnCode().toString(): " + commandOutput.getReturnCode().toString());
                 if (!commandOutput.getReturnCode().wasSuccessful()) {
-                    standardError = "Cannot unzip " + metaData.getDeployPath() + "/" + metaData.getDeployFileName() + " to " + metaData.getDeployPath() + ", please check the log for more information.";
+                    standardError = "Cannot unzip " + destPath + " to " + parentDir + ", please check the log for more information.";
                     LOGGER.error(standardError);
                     throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, standardError);
                 }
