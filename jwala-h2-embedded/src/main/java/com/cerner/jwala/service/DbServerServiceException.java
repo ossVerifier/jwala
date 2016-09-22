@@ -1,7 +1,7 @@
 package com.cerner.jwala.service;
 
 /**
- * {@link DbServerService} exception wrapper
+ * Db server service exception wrapper
  *
  * Created by JC043760 on 8/30/2016.
  */
