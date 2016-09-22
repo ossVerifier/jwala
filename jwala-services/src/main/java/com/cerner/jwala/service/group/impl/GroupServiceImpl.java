@@ -2,6 +2,7 @@ package com.cerner.jwala.service.group.impl;
 
 import com.cerner.jwala.common.domain.model.app.Application;
 import com.cerner.jwala.common.domain.model.app.ApplicationControlOperation;
+import com.cerner.jwala.common.domain.model.binarydistribution.BinaryDistributionControlOperation;
 import com.cerner.jwala.common.domain.model.fault.AemFaultType;
 import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.group.GroupState;
@@ -20,14 +21,15 @@ import com.cerner.jwala.common.request.group.*;
 import com.cerner.jwala.common.request.jvm.UploadJvmTemplateRequest;
 import com.cerner.jwala.common.request.webserver.UploadWebServerTemplateRequest;
 import com.cerner.jwala.common.rule.group.GroupNameRule;
-import com.cerner.jwala.control.AemControl;
 import com.cerner.jwala.control.application.command.impl.WindowsApplicationPlatformCommandProvider;
 import com.cerner.jwala.control.command.RemoteCommandExecutorImpl;
+import com.cerner.jwala.control.command.impl.WindowsBinaryDistributionPlatformCommandProvider;
 import com.cerner.jwala.exception.CommandFailureException;
 import com.cerner.jwala.persistence.service.ApplicationPersistenceService;
 import com.cerner.jwala.persistence.service.GroupPersistenceService;
 import com.cerner.jwala.persistence.service.WebServerPersistenceService;
 import com.cerner.jwala.service.app.impl.DeployApplicationConfException;
+import com.cerner.jwala.service.binarydistribution.BinaryDistributionService;
 import com.cerner.jwala.service.group.GroupService;
 import com.cerner.jwala.template.ResourceFileGenerator;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -49,18 +51,22 @@ public class GroupServiceImpl implements GroupService {
     private final GroupPersistenceService groupPersistenceService;
     private final WebServerPersistenceService webServerPersistenceService;
     private final RemoteCommandExecutorImpl remoteCommandExecutor;
+    private final BinaryDistributionService binaryDistributionService;
     private ApplicationPersistenceService applicationPersistenceService;
 
     private static final String GENERATED_RESOURCE_DIR = "paths.generated.resource.dir";
     private static final Logger LOGGER = LoggerFactory.getLogger(GroupServiceImpl.class);
+    private static final String UNZIPEXE = "unzip.exe";
+
 
     public GroupServiceImpl(final GroupPersistenceService groupPersistenceService,
                             final WebServerPersistenceService webServerPersistenceService,
-                            final ApplicationPersistenceService applicationPersistenceService, RemoteCommandExecutorImpl remoteCommandExecutor) {
+                            final ApplicationPersistenceService applicationPersistenceService, RemoteCommandExecutorImpl remoteCommandExecutor, BinaryDistributionService binaryDistributionService) {
         this.groupPersistenceService = groupPersistenceService;
         this.webServerPersistenceService = webServerPersistenceService;
         this.applicationPersistenceService = applicationPersistenceService;
         this.remoteCommandExecutor = remoteCommandExecutor;
+        this.binaryDistributionService = binaryDistributionService;
     }
 
     @Override
@@ -417,12 +423,13 @@ public class GroupServiceImpl implements GroupService {
 
     /**
      * This method executes all the commands for copying the template over to the destination for a group app config file
-     * @param groupName name of the group in which the application can be found
-     * @param fileName name of the file that needs to deployed
+     *
+     * @param groupName     name of the group in which the application can be found
+     * @param fileName      name of the file that needs to deployed
      * @param resourceGroup the resource group object that contains all the groups, jvms, webservers and webapps
-     * @param application the application object for the application to deploy the config file too
-     * @param jvmName name of the jvm for which the config file needs to be deployed
-     * @param hostName name of the host which needs the application file
+     * @param application   the application object for the application to deploy the config file too
+     * @param jvmName       name of the jvm for which the config file needs to be deployed
+     * @param hostName      name of the host which needs the application file
      * @return returns a command output object
      */
     protected CommandOutput executeDeployGroupAppTemplate(final String groupName, final String fileName, final ResourceGroup resourceGroup,
@@ -434,7 +441,7 @@ public class GroupServiceImpl implements GroupService {
             final String destPath = ResourceFileGenerator.generateResourceConfig(metaData.getDeployPath(), resourceGroup, application) + '/' + fileName;
             File confFile = createConfFile(metaData.getEntity().getTarget(), groupName, fileName, resourceGroup);
             String srcPath, standardError;
-            if (metaData.getContentType().equals(ContentType.APPLICATION_BINARY.contentTypeStr)){
+            if (metaData.getContentType().equals(ContentType.APPLICATION_BINARY.contentTypeStr)) {
                 srcPath = getGroupAppResourceTemplate(groupName, application.getName(), fileName, false, resourceGroup);
             } else {
                 srcPath = confFile.getAbsolutePath().replace("\\", "/");
@@ -462,6 +469,11 @@ public class GroupServiceImpl implements GroupService {
                     new WindowsApplicationPlatformCommandProvider(),
                     destPath);
             if (commandOutput.getReturnCode().wasSuccessful()) {
+                if (metaData.isUnpack() && !metaData.isOverwrite()) {
+                    standardError = "Destination zip: " + destPath +" exists and isOverwrite = false, so no unzip perform.";
+                    LOGGER.error(standardError);
+                    throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, standardError);
+                }
                 LOGGER.debug("backing up file: {}", destPath);
                 String currentDateSuffix = new SimpleDateFormat(".yyyyMMdd_HHmmss").format(new Date());
                 final String destPathBackup = destPath + currentDateSuffix;
@@ -473,7 +485,7 @@ public class GroupServiceImpl implements GroupService {
                         destPath,
                         destPathBackup);
                 if (!commandOutput.getReturnCode().wasSuccessful()) {
-                    standardError = commandOutput.getStandardError().isEmpty()? commandOutput.getStandardOutput() : commandOutput.getStandardError();
+                    standardError = commandOutput.getStandardError().isEmpty() ? commandOutput.getStandardOutput() : commandOutput.getStandardError();
                     LOGGER.error("Error in backing up older file {} :: ERROR: {}", destPath, standardError);
                     throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to back up " + destPath + " for " + jvmName);
                 }
@@ -486,84 +498,27 @@ public class GroupServiceImpl implements GroupService {
                     new WindowsApplicationPlatformCommandProvider(),
                     srcPath,
                     destPath);
-            if(!commandOutput.getReturnCode().wasSuccessful()) {
+            if (!commandOutput.getReturnCode().wasSuccessful()) {
                 standardError = commandOutput.getStandardError().isEmpty() ? commandOutput.getStandardOutput() : commandOutput.getStandardError();
                 LOGGER.error("Copy command completed with error trying to copy {} to {} :: ERROR: {}",
                         fileName, application.getName(), standardError);
                 throw new DeployApplicationConfException(standardError);
             }
-            if(metaData.isUnpack()) {
-                LOGGER.debug("the file needs to be unpacked at the destination {}", destPath);
-                final String jwalaScriptsPath = ApplicationProperties.get("remote.commands.user-scripts");
-                LOGGER.debug("creating the jwala scripts path {}", jwalaScriptsPath);
-                commandOutput = remoteCommandExecutor.executeRemoteCommand(
-                        null,
+            if (metaData.isUnpack()) {
+                binaryDistributionService.prepareUnzip(hostName);
+                commandOutput = remoteCommandExecutor.executeRemoteCommand(null,
                         hostName,
-                        ApplicationControlOperation.CREATE_DIRECTORY,
-                        new WindowsApplicationPlatformCommandProvider(),
-                        jwalaScriptsPath);
-                if(!commandOutput.getReturnCode().wasSuccessful()) {
-                    standardError = commandOutput.getStandardError().isEmpty()? commandOutput.getStandardOutput() : commandOutput.getStandardError();
-                    LOGGER.error("Error in creating new directory for jwalaScripts path :: ERROR: {}", standardError);
-                    throw new DeployApplicationConfException(standardError);
-                }
-
-                final String unpackWarScriptPath = ApplicationProperties.get("commands.scripts-path") + "/" + AemControl.Properties.UNPACK_WAR_SCRIPT_NAME;
-                final String parentDirScripts = new File(unpackWarScriptPath).getParentFile().getAbsolutePath().replaceAll("\\\\", "/");
-                commandOutput = remoteCommandExecutor.executeRemoteCommand(
-                        jvmName,
-                        hostName,
-                        ApplicationControlOperation.CREATE_DIRECTORY,
-                        new WindowsApplicationPlatformCommandProvider(),
-                        parentDirScripts
-                );
-                if (commandOutput.getReturnCode().wasSuccessful()) {
-                    LOGGER.info("Successfully created the parent dir {} on host {}", parentDirScripts, hostName);
-                } else {
-                    final String stdErr = commandOutput.getStandardError().isEmpty() ? commandOutput.getStandardOutput() : commandOutput.getStandardError();
-                    LOGGER.error("Error in creating parent dir {} on host {}:: ERROR : {}", parentDirScripts, hostName, stdErr);
-                    throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, stdErr);
-                }
-                LOGGER.debug("copying scripts to unpack war at {}", unpackWarScriptPath);
-                commandOutput = remoteCommandExecutor.executeRemoteCommand(
-                        null,
-                        hostName,
-                        ApplicationControlOperation.SECURE_COPY,
-                        new WindowsApplicationPlatformCommandProvider(),
-                        unpackWarScriptPath,
-                        jwalaScriptsPath);
+                        BinaryDistributionControlOperation.UNZIP_BINARY,
+                        new WindowsBinaryDistributionPlatformCommandProvider(),
+                        ApplicationProperties.get("remote.commands.user-scripts") + "/" + UNZIPEXE,
+                        metaData.getDeployPath() + "/" + metaData.getDeployFileName(),
+                        metaData.getDeployPath(),
+                        "");
+                LOGGER.info("commandOutput.getReturnCode().toString(): " + commandOutput.getReturnCode().toString());
                 if (!commandOutput.getReturnCode().wasSuccessful()) {
-                    standardError = commandOutput.getStandardError().isEmpty()? commandOutput.getStandardOutput() : commandOutput.getStandardError();
-                    LOGGER.error("Error in copying scripts to unpack :: ERROR: {}", standardError);
-                    throw new DeployApplicationConfException(standardError);
-                }
-
-                LOGGER.debug("changing the permissions for the jwala scripts path {}", jwalaScriptsPath);
-                commandOutput = remoteCommandExecutor.executeRemoteCommand(
-                        null,
-                        hostName,
-                        ApplicationControlOperation.CHANGE_FILE_MODE,
-                        new WindowsApplicationPlatformCommandProvider(),
-                        "a+x",
-                        jwalaScriptsPath,
-                        "*.sh");
-                if (!commandOutput.getReturnCode().wasSuccessful()) {
-                    standardError = commandOutput.getStandardError().isEmpty()? commandOutput.getStandardOutput() : commandOutput.getStandardError();
-                    LOGGER.error("Error in changing file mode for scripts :: ERROR: {}", standardError);
-                    throw new DeployApplicationConfException(standardError);
-                }
-
-                LOGGER.debug("unpacking the war {}", fileName);
-                commandOutput = remoteCommandExecutor.executeRemoteCommand(
-                        null,
-                        hostName,
-                        ApplicationControlOperation.UNPACK_WAR,
-                        new WindowsApplicationPlatformCommandProvider(),
-                        fileName);
-                if(!commandOutput.getReturnCode().wasSuccessful()) {
-                    standardError = commandOutput.getStandardError().isEmpty()? commandOutput.getStandardOutput() : commandOutput.getStandardError();
-                    LOGGER.error("Error in unpacking binary {} :: ERROR: {}", fileName, standardError);
-                    throw new DeployApplicationConfException(standardError);
+                    standardError = "Cannot unzip " + metaData.getDeployPath() + "/" + metaData.getDeployFileName() + " to " + metaData.getDeployPath() + ", please check the log for more information.";
+                    LOGGER.error(standardError);
+                    throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, standardError);
                 }
             }
             return commandOutput;
@@ -622,7 +577,7 @@ public class GroupServiceImpl implements GroupService {
     @Override
     public List<String> getAllHosts() {
         Set<String> allHosts = new TreeSet<>();
-        for (Group group : groupPersistenceService.getGroups()){
+        for (Group group : groupPersistenceService.getGroups()) {
             allHosts.addAll(groupPersistenceService.getHosts(group.getName()));
         }
         return new ArrayList<>(allHosts);

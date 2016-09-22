@@ -21,6 +21,7 @@ import com.cerner.jwala.common.request.app.*;
 import com.cerner.jwala.control.application.command.impl.WindowsApplicationPlatformCommandProvider;
 import com.cerner.jwala.control.command.PlatformCommandProvider;
 import com.cerner.jwala.control.command.RemoteCommandExecutor;
+import com.cerner.jwala.control.command.RemoteCommandExecutorImpl;
 import com.cerner.jwala.control.configuration.AemSshConfig;
 import com.cerner.jwala.exception.CommandFailureException;
 import com.cerner.jwala.files.FileManager;
@@ -33,6 +34,7 @@ import com.cerner.jwala.persistence.service.ResourceDao;
 import com.cerner.jwala.service.HistoryService;
 import com.cerner.jwala.service.MessagingService;
 import com.cerner.jwala.service.app.PrivateApplicationService;
+import com.cerner.jwala.service.binarydistribution.BinaryDistributionService;
 import com.cerner.jwala.service.group.GroupService;
 import com.cerner.jwala.service.resource.ResourceService;
 import org.junit.Before;
@@ -106,6 +108,9 @@ public class ApplicationServiceImplTest {
 
     @Mock
     private ResourceService mockResourceService;
+
+    private RemoteCommandExecutorImpl remoteCommandExecutorImpl;
+    private BinaryDistributionService binaryDistributionService;
 
     private Group group;
     private Group group2;
@@ -545,7 +550,7 @@ public class ApplicationServiceImplTest {
 
         ApplicationServiceImpl mockApplicationService = new ApplicationServiceImpl(applicationPersistenceService,
                 jvmPersistenceService, remoteCommandExecutor, mockGroupService, webArchiveManager, privateApplicationService,
-                mockHistoryService, mockMessagingService, mockResourceService);
+                mockHistoryService, mockMessagingService, mockResourceService, remoteCommandExecutorImpl, binaryDistributionService);
 
         try {
             CommandOutput successCommandOutput = new CommandOutput(new ExecReturnCode(0), "SUCCESS", "");
@@ -596,7 +601,7 @@ public class ApplicationServiceImplTest {
 
         ApplicationServiceImpl mockApplicationService = new ApplicationServiceImpl(applicationPersistenceService,
                 jvmPersistenceService, remoteCommandExecutor, null, webArchiveManager, privateApplicationService,
-                mockHistoryService, mockMessagingService, mockResourceService);
+                mockHistoryService, mockMessagingService, mockResourceService, remoteCommandExecutorImpl, binaryDistributionService);
 
         try {
             CommandOutput successCommandOutput = new CommandOutput(new ExecReturnCode(0), "SUCCESS", "");
@@ -667,7 +672,7 @@ public class ApplicationServiceImplTest {
 
         ApplicationServiceImpl mockApplicationService = new ApplicationServiceImpl(applicationPersistenceService,
                 jvmPersistenceService, remoteCommandExecutor, mockGroupService, webArchiveManager, privateApplicationService,
-                mockHistoryService, mockMessagingService, mockResourceService);
+                mockHistoryService, mockMessagingService, mockResourceService, remoteCommandExecutorImpl, binaryDistributionService);
         mockApplicationService.copyApplicationConfigToGroupJvms(mockGroup, "testApp", mock(ResourceGroup.class), testUser);
     }
 

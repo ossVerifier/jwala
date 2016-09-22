@@ -30,7 +30,7 @@ public class RestServiceErrorHandler implements ExceptionMapper {
             msg = t.getMessage();
         } else {
             status = Response.Status.INTERNAL_SERVER_ERROR.getStatusCode();
-            msg = INTERNAL_SERVER_ERR_MSG;
+            msg = t.getMessage();
         }
 
         return new JsonResponseBuilder().setStatusCode(status).setMessage(msg).build();

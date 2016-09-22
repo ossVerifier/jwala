@@ -29,7 +29,7 @@ public class BalancerManagerServiceRestImpl implements BalancerManagerServiceRes
             final String message = "The target Web Server " + webServerNames + " in group " + groupName + " must be STARTED before attempting to drain users";
 
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
-                    AemFaultType.INVALID_WEBSERVER_OPERATION, message, iee));
+                    AemFaultType.INVALID_WEBSERVER_OPERATION, message + "" + iee.getMessage(), iee));
         }
     }
 
