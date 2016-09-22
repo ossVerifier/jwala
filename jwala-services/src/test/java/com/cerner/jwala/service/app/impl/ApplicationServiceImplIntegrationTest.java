@@ -10,6 +10,7 @@ import com.cerner.jwala.common.domain.model.ssh.SshConfiguration;
 import com.cerner.jwala.common.exception.NotFoundException;
 import com.cerner.jwala.common.properties.ApplicationProperties;
 import com.cerner.jwala.control.command.RemoteCommandExecutor;
+import com.cerner.jwala.control.command.RemoteCommandExecutorImpl;
 import com.cerner.jwala.control.configuration.AemSshConfig;
 import com.cerner.jwala.files.FileManager;
 import com.cerner.jwala.files.FilesConfiguration;
@@ -32,14 +33,12 @@ import com.cerner.jwala.service.HistoryService;
 import com.cerner.jwala.service.MessagingService;
 import com.cerner.jwala.service.app.ApplicationCommandService;
 import com.cerner.jwala.service.app.ApplicationService;
-import com.cerner.jwala.service.app.impl.ApplicationCommandServiceImpl;
-import com.cerner.jwala.service.app.impl.ApplicationServiceImpl;
+import com.cerner.jwala.service.binarydistribution.BinaryDistributionService;
 import com.cerner.jwala.service.configuration.TestJpaConfiguration;
 import com.cerner.jwala.service.group.GroupService;
 import com.cerner.jwala.service.resource.ResourceService;
 import com.cerner.jwala.service.ssl.hc.HttpClientRequestFactory;
 import com.cerner.jwala.service.webserver.component.ClientFactoryHelper;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -188,6 +187,9 @@ public class ApplicationServiceImplIntegrationTest {
 
     private RemoteCommandExecutor<ApplicationControlOperation> remoteCommandExecutor;
 
+    private RemoteCommandExecutorImpl remoteCommandExecutorImpl;
+    private BinaryDistributionService binaryDistributionService;
+
     @Autowired
     private FileManager fileManager;
 
@@ -197,6 +199,8 @@ public class ApplicationServiceImplIntegrationTest {
         SshConfiguration mockSshConfig = mock(SshConfiguration.class);
         aemSshConfig = mock(AemSshConfig.class);
         groupService = mock(GroupService.class);
+        remoteCommandExecutorImpl = mock(RemoteCommandExecutorImpl.class);
+        binaryDistributionService = mock(BinaryDistributionService.class);
         when(mockSshConfig.getUserName()).thenReturn("mockUser");
         when(aemSshConfig.getSshConfiguration()).thenReturn(mockSshConfig);
         applicationService = new ApplicationServiceImpl(
@@ -207,7 +211,8 @@ public class ApplicationServiceImplIntegrationTest {
                 null,
                 null,
                 historyService,
-                messagingService, mockResourceService);
+                messagingService, mockResourceService,
+                remoteCommandExecutorImpl, binaryDistributionService);
     }
 
     @After

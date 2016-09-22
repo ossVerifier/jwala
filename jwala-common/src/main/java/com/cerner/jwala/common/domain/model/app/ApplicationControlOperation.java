@@ -1,16 +1,16 @@
 package com.cerner.jwala.common.domain.model.app;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import com.cerner.jwala.common.domain.model.fault.AemFaultType;
 import com.cerner.jwala.common.exception.BadRequestException;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public enum ApplicationControlOperation {
 
     SECURE_COPY("scp"),
     BACK_UP_FILE("backUpFile"),
-    UNPACK_WAR("unpackWar"),
+    UNPACK("unpack"),
     CREATE_DIRECTORY("mkdir"),
     CHANGE_FILE_MODE("chmod"),
     CHECK_FILE_EXISTS("test");

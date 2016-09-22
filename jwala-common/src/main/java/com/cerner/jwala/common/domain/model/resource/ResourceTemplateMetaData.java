@@ -14,6 +14,7 @@ public class ResourceTemplateMetaData {
     private String deployPath;
     private Entity entity;
     private boolean unpack = false;
+    private boolean overwrite = false;
 
     public String getTemplateName() {
         return templateName;
@@ -66,6 +67,10 @@ public class ResourceTemplateMetaData {
         this.unpack = unpack;
     }
 
+    public boolean isOverwrite() { return overwrite; }
+
+    public void setOverwrite(boolean overwrite) { this.overwrite = overwrite; }
+
     @Override
     public String toString() {
         return "ResourceTemplateMetaData{" +
@@ -75,6 +80,7 @@ public class ResourceTemplateMetaData {
                 ", deployPath='" + deployPath + '\'' +
                 ", entity=" + entity +
                 ", unpack=" + unpack +
+                ", overwrite=" + overwrite +
                 '}';
     }
 }
