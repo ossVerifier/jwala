@@ -127,7 +127,7 @@ public class ResourceServiceImpl implements ResourceService {
     @Override
     public String encryptUsingPlatformBean(String cleartext) {
         StandardEvaluationContext context = new StandardEvaluationContext();
-        context.setVariable("stringToEncrypt", cleartext.getBytes());
+        context.setVariable("stringToEncrypt", cleartext);
         return encryptExpression.getValue(context, String.class);
     }
 
