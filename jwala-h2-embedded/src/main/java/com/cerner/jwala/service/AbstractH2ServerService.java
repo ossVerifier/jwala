@@ -1,11 +1,11 @@
 package com.cerner.jwala.service;
 
 import org.h2.tools.Server;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * A partial contract for H2 database server functionality
@@ -18,7 +18,7 @@ public abstract class AbstractH2ServerService {
 
     private final String [] serverParams;
 
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
+    private Logger logger = Logger.getLogger(this.getClass().getName());
 
     public AbstractH2ServerService(final String serverParams) {
         this.serverParams = serverParams.replaceAll(" ", "").split(",");
@@ -27,7 +27,7 @@ public abstract class AbstractH2ServerService {
     public void startServer() {
         if (server == null) {
             server = createServer(serverParams);
-            logger.info("Created H2 server with the following parameters: {}", Arrays.toString(serverParams));
+            logger.info("Created H2 server with the following parameters: " + Arrays.toString(serverParams));
         }
 
         logger.info("Starting H2 server...");
@@ -35,7 +35,7 @@ public abstract class AbstractH2ServerService {
             server = server.start();
             logger.info("H2 server started");
         } catch (final SQLException e) {
-            logger.error("Failed to start H2 server!", e);
+            logger.log(Level.SEVERE, "Failed to start H2 server!", e);
             throw new DbServerServiceException(e);
         }
     }

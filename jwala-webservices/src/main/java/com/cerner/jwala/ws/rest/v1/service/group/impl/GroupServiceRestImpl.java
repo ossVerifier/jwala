@@ -11,7 +11,6 @@ import com.cerner.jwala.common.domain.model.resource.ResourceGroup;
 import com.cerner.jwala.common.domain.model.resource.ResourceTemplateMetaData;
 import com.cerner.jwala.common.domain.model.webserver.WebServer;
 import com.cerner.jwala.common.domain.model.webserver.WebServerControlOperation;
-import com.cerner.jwala.common.exception.BadRequestException;
 import com.cerner.jwala.common.exception.FaultCodeException;
 import com.cerner.jwala.common.exception.InternalErrorException;
 import com.cerner.jwala.common.exec.CommandOutput;
@@ -43,7 +42,6 @@ import com.cerner.jwala.ws.rest.v1.service.jvm.impl.JsonControlJvm;
 import com.cerner.jwala.ws.rest.v1.service.jvm.impl.JvmServiceRestImpl;
 import com.cerner.jwala.ws.rest.v1.service.webserver.impl.JsonControlWebServer;
 import com.cerner.jwala.ws.rest.v1.service.webserver.impl.WebServerServiceRestImpl;
-
 import org.apache.commons.fileupload.FileItemIterator;
 import org.apache.commons.fileupload.FileItemStream;
 import org.apache.commons.fileupload.FileUploadException;
@@ -57,6 +55,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import javax.persistence.EntityExistsException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -126,9 +125,9 @@ public class GroupServiceRestImpl implements GroupServiceRest {
             LOGGER.info("Create Group requested: {} by user {}", aNewGroupName, aUser.getUser().getId());
             final Group group = groupService.createGroup(new CreateGroupRequest(aNewGroupName), aUser.getUser());
             return ResponseBuilder.created(group);
-        } catch (BadRequestException be) {
+        } catch (EntityExistsException eee) {
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
-                    AemFaultType.DUPLICATE_GROUP_NAME, "Group Name already exists", be));
+                    AemFaultType.DUPLICATE_GROUP_NAME, eee.getMessage(), eee));
         }
     }
 
@@ -146,9 +145,9 @@ public class GroupServiceRestImpl implements GroupServiceRest {
 
             return ResponseBuilder.ok(groupService.updateGroup(updatedGroup.toUpdateGroupCommand(),
                     aUser.getUser()));
-        } catch (BadRequestException be) {
+        } catch (EntityExistsException eee) {
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
-                    AemFaultType.DUPLICATE_GROUP_NAME, "Group Name already exists", be));
+                    AemFaultType.DUPLICATE_GROUP_NAME, eee.getMessage(), eee));
         }
     }
 

@@ -42,8 +42,7 @@ public class GroupCrudServiceImpl extends AbstractCrudServiceImpl<JpaGroup> impl
         try {
             return create(jpaGroup);
         } catch (final EntityExistsException eee) {
-            throw new BadRequestException(AemFaultType.INVALID_GROUP_NAME,
-                    "Group Name already exists: " + createGroupRequest.getGroupName(),
+            throw new EntityExistsException("Group Name already exists: " + createGroupRequest.getGroupName(),
                     eee);
         }
     }
@@ -58,8 +57,7 @@ public class GroupCrudServiceImpl extends AbstractCrudServiceImpl<JpaGroup> impl
         try {
             update(jpaGroup);
         } catch (final EntityExistsException eee) {
-            throw new BadRequestException(AemFaultType.INVALID_GROUP_NAME,
-                    "Group Name already exists: " + updateGroupRequest.getNewName(),
+            throw new EntityExistsException("Group Name already exists: " + updateGroupRequest.getNewName(),
                     eee);
         }
     }
@@ -411,7 +409,7 @@ public class GroupCrudServiceImpl extends AbstractCrudServiceImpl<JpaGroup> impl
         q.setParameter(JpaGroupJvmConfigTemplate.QUERY_PARAM_GROUP_NAME, groupName);
         q.setParameter(JpaGroupJvmConfigTemplate.QUERY_PARAM_TEMPLATE_NAME, fileName);
         final List<String> result = q.getResultList();
-        if(result!=null && result.size()==1) {
+        if (result != null && result.size() == 1) {
             return true;
         }
         return false;
@@ -423,7 +421,7 @@ public class GroupCrudServiceImpl extends AbstractCrudServiceImpl<JpaGroup> impl
         q.setParameter(JpaGroupWebServerConfigTemplate.QUERY_PARAM_GROUP_NAME, groupName);
         q.setParameter(JpaGroupWebServerConfigTemplate.QUERY_PARAM_TEMPLATE_NAME, fileName);
         final List<String> result = q.getResultList();
-        if(result!=null && result.size()==1) {
+        if (result != null && result.size() == 1) {
             return true;
         }
         return false;
@@ -435,7 +433,7 @@ public class GroupCrudServiceImpl extends AbstractCrudServiceImpl<JpaGroup> impl
         q.setParameter(JpaGroupAppConfigTemplate.QUERY_PARAM_GRP_NAME, groupName);
         q.setParameter(JpaGroupAppConfigTemplate.QUERY_PARAM_TEMPLATE_NAME, fileName);
         final List<String> result = q.getResultList();
-        if(result!=null && result.size()==1) {
+        if (result != null && result.size() == 1) {
             return true;
         }
         return false;

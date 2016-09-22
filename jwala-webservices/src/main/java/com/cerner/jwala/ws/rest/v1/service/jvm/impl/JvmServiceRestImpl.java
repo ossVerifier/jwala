@@ -4,7 +4,6 @@ import com.cerner.jwala.common.domain.model.fault.AemFaultType;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
 import com.cerner.jwala.common.domain.model.user.User;
-import com.cerner.jwala.common.exception.BadRequestException;
 import com.cerner.jwala.common.exception.FaultCodeException;
 import com.cerner.jwala.common.exception.InternalErrorException;
 import com.cerner.jwala.common.exec.CommandOutput;
@@ -21,6 +20,7 @@ import org.apache.cxf.jaxrs.ext.MessageContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.persistence.EntityExistsException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import java.io.File;
@@ -73,9 +73,9 @@ public class JvmServiceRestImpl implements JvmServiceRest {
             LOGGER.info("Create JVM requested: {} by user {}", aJvmToCreate, user.getId());
             Jvm jvm = jvmService.createJvm(aJvmToCreate.toCreateAndAddRequest(), user);
             return ResponseBuilder.created(jvm);
-        } catch (BadRequestException be) {
+        } catch (EntityExistsException eee) {
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
-                    AemFaultType.DUPLICATE_JVM_NAME, "JVM Name already exists", be));
+                    AemFaultType.DUPLICATE_JVM_NAME, eee.getMessage(), eee));
         }
     }
 
@@ -84,9 +84,9 @@ public class JvmServiceRestImpl implements JvmServiceRest {
         LOGGER.info("Update JVM requested: {} by user {}", aJvmToUpdate, aUser.getUser().getId());
         try {
             return ResponseBuilder.ok(jvmService.updateJvm(aJvmToUpdate.toUpdateJvmRequest(), aUser.getUser()));
-        } catch (BadRequestException be) {
+        } catch (EntityExistsException eee) {
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
-                    AemFaultType.DUPLICATE_JVM_NAME, "JVM Name already exists", be));
+                    AemFaultType.DUPLICATE_JVM_NAME, eee.getMessage(), eee));
         }
     }
 
@@ -118,9 +118,8 @@ public class JvmServiceRestImpl implements JvmServiceRest {
         try {
             return ResponseBuilder.ok(jvmService.generateAndDeployJvm(jvmName, user.getUser()));
         } catch (InternalErrorException iee) {
-            final String message = "user does not have permission to create the directory ";
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
-                    AemFaultType.REMOTE_COMMAND_FAILURE, message, iee));
+                    AemFaultType.REMOTE_COMMAND_FAILURE, iee.getMessage(), iee));
         }
     }
 

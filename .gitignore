@@ -25,3 +25,4 @@ debugger.renderers.xml
 editor.xml
 find.xmlgradle.run.settings.xml
 /inspection
+gradle.run.settings.xml

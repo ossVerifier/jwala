@@ -56,8 +56,7 @@ public class WebServerCrudServiceImpl extends AbstractCrudServiceImpl<JpaWebServ
 
             return webServerFrom(create(jpaWebServer));
         } catch (final EntityExistsException eee) {
-            throw new BadRequestException(AemFaultType.INVALID_WEBSERVER_NAME,
-                    "Web server with name already exists: " + webServer.getName(),
+            throw new EntityExistsException("Web server with name already exists: " + webServer.getName(),
                     eee);
         }
 
@@ -65,19 +64,23 @@ public class WebServerCrudServiceImpl extends AbstractCrudServiceImpl<JpaWebServ
 
     @Override
     public WebServer updateWebServer(final WebServer webServer, final String createdBy) {
-        final JpaWebServer jpaWebServer = findById(webServer.getId().getId());
+        try {
+            final JpaWebServer jpaWebServer = findById(webServer.getId().getId());
 
-        jpaWebServer.setName(webServer.getName());
-        jpaWebServer.setHost(webServer.getHost());
-        jpaWebServer.setPort(webServer.getPort());
-        jpaWebServer.setHttpsPort(webServer.getHttpsPort());
-        jpaWebServer.setStatusPath(webServer.getStatusPath().getPath());
-        jpaWebServer.setHttpConfigFile(webServer.getHttpConfigFile().getPath());
-        jpaWebServer.setSvrRoot(webServer.getSvrRoot().getPath());
-        jpaWebServer.setDocRoot(webServer.getDocRoot().getPath());
-        jpaWebServer.setCreateBy(createdBy);
+            jpaWebServer.setName(webServer.getName());
+            jpaWebServer.setHost(webServer.getHost());
+            jpaWebServer.setPort(webServer.getPort());
+            jpaWebServer.setHttpsPort(webServer.getHttpsPort());
+            jpaWebServer.setStatusPath(webServer.getStatusPath().getPath());
+            jpaWebServer.setHttpConfigFile(webServer.getHttpConfigFile().getPath());
+            jpaWebServer.setSvrRoot(webServer.getSvrRoot().getPath());
+            jpaWebServer.setDocRoot(webServer.getDocRoot().getPath());
+            jpaWebServer.setCreateBy(createdBy);
 
-        return webServerFrom(update(jpaWebServer));
+            return webServerFrom(update(jpaWebServer));
+        } catch (final EntityExistsException eee) {
+            throw new EntityExistsException("Web Server Name already exists", eee);
+        }
     }
 
     @Override
@@ -399,12 +402,13 @@ public class WebServerCrudServiceImpl extends AbstractCrudServiceImpl<JpaWebServ
 
     /**
      * Builds a list of Web Servers.
+     *
      * @param jpaWebServers {@link JpaWebServer}
      * @return A list of web servers. Returns an empty list if there are no web servers.
      */
     private List<WebServer> buildWebServers(List<JpaWebServer> jpaWebServers) {
         List<WebServer> webServers = new ArrayList<>();
-        for(JpaWebServer jpaWebServer:jpaWebServers) {
+        for (JpaWebServer jpaWebServer : jpaWebServers) {
             webServers.add(new JpaWebServerBuilder(jpaWebServer).build());
         }
         return webServers;
@@ -418,7 +422,7 @@ public class WebServerCrudServiceImpl extends AbstractCrudServiceImpl<JpaWebServ
         q.setParameter(JpaWebServer.QUERY_PARAM_GROUP_NAME, groupName);
         try {
             jpaWebServer = (JpaWebServer) q.getSingleResult();
-        } catch(NoResultException e) {
+        } catch (NoResultException e) {
             LOGGER.warn("error with getting data for webserverName: {} under group: {}, error: {}", webServerName, groupName, e);
         }
         return jpaWebServer;
@@ -427,12 +431,12 @@ public class WebServerCrudServiceImpl extends AbstractCrudServiceImpl<JpaWebServ
     @Override
     public boolean checkWebServerResourceFileName(String groupName, String webServerName, String fileName) {
         final JpaWebServer jpaWebServer = findWebServer(groupName, webServerName);
-        if(jpaWebServer!=null) {
+        if (jpaWebServer != null) {
             final Query q = entityManager.createNamedQuery(JpaWebServerConfigTemplate.GET_WEBSERVER_TEMPLATE_RESOURCE_NAME);
             q.setParameter(JpaWebServerConfigTemplate.QUERY_PARAM_WEBSERVER_NAME, webServerName);
             q.setParameter(JpaWebServerConfigTemplate.QUERY_PARAM_TEMPLATE_NAME, fileName);
             final List<String> result = q.getResultList();
-            if(result!=null && result.size()==1) {
+            if (result != null && result.size() == 1) {
                 return true;
             }
         }

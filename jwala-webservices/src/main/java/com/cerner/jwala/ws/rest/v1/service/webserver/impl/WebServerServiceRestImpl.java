@@ -9,7 +9,6 @@ import com.cerner.jwala.common.domain.model.resource.ResourceTemplateMetaData;
 import com.cerner.jwala.common.domain.model.webserver.WebServer;
 import com.cerner.jwala.common.domain.model.webserver.WebServerControlOperation;
 import com.cerner.jwala.common.domain.model.webserver.WebServerReachableState;
-import com.cerner.jwala.common.exception.BadRequestException;
 import com.cerner.jwala.common.exception.FaultCodeException;
 import com.cerner.jwala.common.exception.InternalErrorException;
 import com.cerner.jwala.common.exec.CommandOutput;
@@ -32,13 +31,13 @@ import com.cerner.jwala.ws.rest.v1.response.ResponseBuilder;
 import com.cerner.jwala.ws.rest.v1.service.webserver.WebServerServiceRest;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.jaxrs.ext.MessageContext;
-import org.apache.openjpa.persistence.EntityExistsException;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.persistence.EntityExistsException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import java.io.File;
@@ -131,9 +130,9 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
             }
             return ResponseBuilder.created(webServer);
 
-        } catch (BadRequestException be) {
+        } catch (EntityExistsException eee) {
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
-                    AemFaultType.DUPLICATE_WEBSERVER_NAME, "Web Server Name already exists", be));
+                    AemFaultType.DUPLICATE_WEBSERVER_NAME, eee.getMessage(), eee));
         }
     }
 
@@ -143,9 +142,9 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
         try {
             return ResponseBuilder.ok(webServerService.updateWebServer(aWebServerToCreate.toUpdateWebServerRequest(),
                     aUser.getUser()));
-        } catch (EntityExistsException be) {
+        } catch (EntityExistsException eee) {
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
-                    AemFaultType.DUPLICATE_WEBSERVER_NAME, "Web Server Name already exists", be));
+                    AemFaultType.DUPLICATE_WEBSERVER_NAME, eee.getMessage(), eee));
         }
     }
 
@@ -307,8 +306,8 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
             webServerService.updateState(webServer.getId(), WebServerReachableState.WS_UNREACHABLE, StringUtils.EMPTY);
 
         } catch (CommandFailureException e) {
-            LOGGER.error("Failed to secure copy the invokeWS.bat file for {}", aWebServerName, e);
-            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to secure copy the invokeWS.bat file for " + aWebServerName, e);
+            ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
+                    AemFaultType.REMOTE_COMMAND_FAILURE, e.getMessage(), e));
         } finally {
             wsWriteLocks.get(aWebServerName).writeLock().unlock();
         }

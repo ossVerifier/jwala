@@ -251,7 +251,7 @@ var ResourcePane = React.createClass({
     statics: {
         parseDetailedErrorMsg: function(response, defaultErrMsg) {
             try {
-                return JSON.parse(response.responseText).applicationResponseContent;
+                return JSON.parse(response.responseText).message;
             } catch (e) {
                 console.log("There was an error parsing the detailed error message from the response:");
                 console.log(response);
