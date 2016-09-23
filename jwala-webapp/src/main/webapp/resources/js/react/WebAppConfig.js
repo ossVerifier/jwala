@@ -598,7 +598,7 @@ var PropertyRow = React.createClass({
     render: function() {
         var self = this;
         return <tr>
-                   <td><span className="ui-icon ui-icon-plus" onClick={function(){self.props.onAddPropertiesClickCallback("${" + self.props.propertyName + "}")}} /></td>
+                   <td><span className="ui-icon ui-icon-plus" onClick={function(){self.props.onAddPropertiesClickCallback("${vars['" + self.props.propertyName + "']}")}} /></td>
                    <td><span className="key">{self.props.propertyName}</span>: {self.props.propertyValue}</td>
                </tr>;
     }
