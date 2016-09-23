@@ -35,10 +35,10 @@ public class BalancerManagerServiceRestImpl implements BalancerManagerServiceRes
 
     @Override
     public Response drainUserWebServer(final String groupName, final String webServerName, final String jvmNames) {
-        try{
-        BalancerManagerState balancerManagerState = balancerManagerService.drainUserWebServer(groupName, webServerName, jvmNames, getUser());
-        return ResponseBuilder.ok(balancerManagerState);}
-        catch (InternalErrorException iee){
+        try {
+            BalancerManagerState balancerManagerState = balancerManagerService.drainUserWebServer(groupName, webServerName, jvmNames, getUser());
+            return ResponseBuilder.ok(balancerManagerState);
+        } catch (InternalErrorException iee) {
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
                     AemFaultType.INVALID_WEBSERVER_OPERATION, iee.getMessage(), iee));
         }

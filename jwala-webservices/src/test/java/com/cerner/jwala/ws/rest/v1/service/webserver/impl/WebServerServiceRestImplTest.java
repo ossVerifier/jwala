@@ -1,5 +1,6 @@
 package com.cerner.jwala.ws.rest.v1.service.webserver.impl;
 
+import com.cerner.jwala.common.domain.model.fault.AemFaultType;
 import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.path.FileSystemPath;
@@ -9,6 +10,7 @@ import com.cerner.jwala.common.domain.model.user.User;
 import com.cerner.jwala.common.domain.model.webserver.WebServer;
 import com.cerner.jwala.common.domain.model.webserver.WebServerControlOperation;
 import com.cerner.jwala.common.domain.model.webserver.WebServerReachableState;
+import com.cerner.jwala.common.exception.FaultCodeException;
 import com.cerner.jwala.common.exception.InternalErrorException;
 import com.cerner.jwala.common.exec.CommandOutput;
 import com.cerner.jwala.common.exec.ExecCommand;
@@ -27,6 +29,7 @@ import com.cerner.jwala.service.webserver.WebServerControlService;
 import com.cerner.jwala.service.webserver.impl.WebServerServiceImpl;
 import com.cerner.jwala.ws.rest.v1.provider.AuthenticatedUser;
 import com.cerner.jwala.ws.rest.v1.response.ApplicationResponse;
+import com.cerner.jwala.ws.rest.v1.response.ResponseBuilder;
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Before;
@@ -95,6 +98,7 @@ public class WebServerServiceRestImplTest {
     private WebServerServiceRestImpl webServerServiceRest;
     private Map<String, ReentrantReadWriteLock> writeLockMap = new HashMap<>();
     private String generatedResourceDir;
+    private Response expected;
 
     private static List<WebServer> createWebServerList() {
         final Group groupOne = new Group(Identifier.id(1L, Group.class), "ws-groupOne");
@@ -120,6 +124,10 @@ public class WebServerServiceRestImplTest {
     public void setUp() {
         webServerServiceRest = new WebServerServiceRestImpl(impl, webServerControlService, commandImpl, writeLockMap, resourceService, groupService, binaryDistributionService);
         when(authenticatedUser.getUser()).thenReturn(new User("Unused"));
+
+        InternalErrorException iee = new InternalErrorException(null, "User does not have permission to create the directory ~/.jwala");
+        expected = ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
+                AemFaultType.DUPLICATE_GROUP_NAME, iee.getMessage(), iee));
 
         try {
             webServerServiceRest.afterPropertiesSet();
@@ -381,7 +389,10 @@ public class WebServerServiceRestImplTest {
     public void testGenerateAndDeployWebServerWithNoHttpdConfTemplate() {
         when(impl.getWebServer(anyString())).thenReturn(webServer);
         when(impl.isStarted(any(WebServer.class))).thenReturn(false);
-        webServerServiceRest.generateAndDeployWebServer(webServer.getName(), authenticatedUser);
+        Response actual = webServerServiceRest.generateAndDeployWebServer(webServer.getName(), authenticatedUser);
+
+        assertEquals(expected.getStatus(), actual.getStatus());
+
     }
 
     @Test
@@ -429,7 +440,10 @@ public class WebServerServiceRestImplTest {
         when(impl.isStarted(any(WebServer.class))).thenReturn(false);
         when(impl.getResourceTemplateNames(anyString())).thenReturn(resourceTemplateNames);
 
-        webServerServiceRest.generateAndDeployWebServer(webServer.getName(), authenticatedUser);
+        Response actual = webServerServiceRest.generateAndDeployWebServer(webServer.getName(), authenticatedUser);
+
+        assertEquals(expected.getStatus(), actual.getStatus());
+
     }
 
     @Test
@@ -445,7 +459,9 @@ public class WebServerServiceRestImplTest {
         when(impl.isStarted(any(WebServer.class))).thenReturn(false);
         when(impl.getResourceTemplateNames(anyString())).thenReturn(resourceTemplateNames);
 
-        webServerServiceRest.generateAndDeployWebServer(webServer.getName(), authenticatedUser);
+        Response actual = webServerServiceRest.generateAndDeployWebServer(webServer.getName(), authenticatedUser);
+
+        assertEquals(expected.getStatus(), actual.getStatus());
     }
 
     @Test
@@ -462,7 +478,8 @@ public class WebServerServiceRestImplTest {
         when(impl.isStarted(any(WebServer.class))).thenReturn(false);
         when(impl.getResourceTemplateNames(anyString())).thenReturn(resourceTemplateNames);
 
-        webServerServiceRest.generateAndDeployWebServer(webServer.getName(), authenticatedUser);
+        Response actual = webServerServiceRest.generateAndDeployWebServer(webServer.getName(), authenticatedUser);
+        assertEquals(expected.getStatus(), actual.getStatus());
     }
 
     @Test
@@ -480,7 +497,8 @@ public class WebServerServiceRestImplTest {
         when(impl.isStarted(any(WebServer.class))).thenReturn(false);
         when(impl.getResourceTemplateNames(anyString())).thenReturn(resourceTemplateNames);
 
-        webServerServiceRest.generateAndDeployWebServer(webServer.getName(), authenticatedUser);
+        Response actual = webServerServiceRest.generateAndDeployWebServer(webServer.getName(), authenticatedUser);
+        assertEquals(expected.getStatus(), actual.getStatus());
     }
 
     @Test
@@ -499,7 +517,8 @@ public class WebServerServiceRestImplTest {
         when(impl.isStarted(any(WebServer.class))).thenReturn(false);
         when(impl.getResourceTemplateNames(anyString())).thenReturn(resourceTemplateNames);
 
-        webServerServiceRest.generateAndDeployWebServer(webServer.getName(), authenticatedUser);
+        Response actual = webServerServiceRest.generateAndDeployWebServer(webServer.getName(), authenticatedUser);
+        assertEquals(expected.getStatus(), actual.getStatus());
     }
 
     @Test
@@ -521,10 +540,8 @@ public class WebServerServiceRestImplTest {
         when(impl.getResourceTemplateNames(anyString())).thenReturn(webServerResourceNames);
         when(resourceService.generateResourceGroup()).thenReturn(new ResourceGroup());
 
-
-        Response response;
-        response = webServerServiceRest.generateAndDeployWebServer(webServer.getName(), authenticatedUser);
-        assertNotNull(response);
+        Response actual = webServerServiceRest.generateAndDeployWebServer(webServer.getName(), authenticatedUser);
+        assertEquals(expected.getStatus(), actual.getStatus());
 
     }
 
@@ -548,8 +565,8 @@ public class WebServerServiceRestImplTest {
         when(resourceService.generateResourceGroup()).thenReturn(new ResourceGroup());
 
 
-        Response response = webServerServiceRest.generateAndDeployWebServer(webServer.getName(), authenticatedUser);
-        assertNotNull(response);
+        Response actual = webServerServiceRest.generateAndDeployWebServer(webServer.getName(), authenticatedUser);
+        assertEquals(expected.getStatus(), actual.getStatus());
     }
 
     @Test
@@ -596,15 +613,17 @@ public class WebServerServiceRestImplTest {
         when(impl.getResourceTemplateNames(anyString())).thenReturn(webServerResourceNames);
         when(resourceService.generateResourceGroup()).thenReturn(new ResourceGroup());
 
-        Response response = webServerServiceRest.generateAndDeployWebServer(webServer.getName(), authenticatedUser);
-        assertNotNull(response);
+        Response actual = webServerServiceRest.generateAndDeployWebServer(webServer.getName(), authenticatedUser);
+        assertEquals(expected.getStatus(), actual.getStatus());
     }
 
     @Test
     public void testGenerateAndDeployWebServerWhenWebServerNotStopped() {
         when(impl.getWebServer(anyString())).thenReturn(webServer);
         when(impl.isStarted(any(WebServer.class))).thenReturn(true);
-        webServerServiceRest.generateAndDeployWebServer(webServer.getName(), authenticatedUser);
+        Response actual = webServerServiceRest.generateAndDeployWebServer(webServer.getName(), authenticatedUser);
+
+        assertEquals(expected.getStatus(), actual.getStatus());
     }
 
     @Test
