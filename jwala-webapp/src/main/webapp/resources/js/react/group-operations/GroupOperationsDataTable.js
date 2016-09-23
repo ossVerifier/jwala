@@ -639,7 +639,7 @@ var GroupOperationsDataTable = React.createClass({
                     return groupControlService.generateJvms(event.data.id, function (resp) {
                         $.alert("Successfully generated the JVMs for " + resp.applicationResponseContent.name, false);
                     }, function (errMsg) {
-                        $.alert(errMsg, "Generate JVMs Failed", false);
+                        $.errorAlert(errMsg, "Generate JVMs Failed", false);
                     });
                 }, "ui-icon-stop");
             }, true);
