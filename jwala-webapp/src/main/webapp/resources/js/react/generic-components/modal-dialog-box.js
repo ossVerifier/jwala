@@ -13,8 +13,8 @@
  * 8. cancelCallback - the callback that is called when the cancel button is clicked.
  * 9. okLabel - the "ok" button label. If undefined the button label shows "Ok" by default.
  * 10. cancelLabel - the "cancel" button label. If undefined the button label shows "Cancel" by default.
- * 11. top - the dialog's top position. If not set top will be computed to position the dialog at the middle of the screen.
- * 12. left - the dialog's left position. If not set left will be computed to position the dialog at the center of the screen.
+ * 11. top - the dialog's top position in px. This attribute only accepts a numeric value (no units or auto). If not set top will be computed to position the dialog at the middle of the screen.
+ * 12. left - the dialog's left position in px. This attribute only accepts a numeric value (no units or auto). If not set left will be computed to position the dialog at the center of the screen.
  * 13. position - position of the dialog's main div element e.g. absolute, fixed, relative etc...search for "div position"
  * 14. contentReferenceName - if specified the content can be referenced outside the ModalDialogBox by this property
  *
@@ -52,7 +52,7 @@ var ModalDialogBox = React.createClass({
         var width = this.props.width ? this.props.width : ModalDialogBox.DEFAULT_WIDTH;
 
         var theStyle = {overflow: "visible", zIndex: "998", position: this.props.position ? this.props.position : "absolute",
-                        height: height, width: width, top: this.state.top, left: this.state.left, display: "block"};
+                        height: height, width: width, top: this.state.top + "px", left: this.state.left + "px", display: "block"};
 
         var theContent = this.props.contentReferenceName ? React.addons.cloneWithProps(this.state.content, {ref: this.props.contentReferenceName}) : this.state.content;
         var theDialog = React.createElement("div", {ref: "theDialog", style: theStyle,
@@ -92,7 +92,7 @@ var ModalDialogBox = React.createClass({
             if (this.props.position !== "fixed" && this.props.modal) {
                 $(this.getDOMNode()).parent().append(this.divOverlay);
             }
-            var states = this.computePosition();
+            var states = (this.props.top && this.props.left) ? {} : this.computePosition();
             states["needsRepositioning"] = false; // It's very important to set this to false to prevent infinite calling of componentDidUpdate
             this.setState(states);
         }
