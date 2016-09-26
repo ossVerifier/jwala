@@ -98,7 +98,7 @@ public class WebServerServiceRestImplTest {
     private WebServerServiceRestImpl webServerServiceRest;
     private Map<String, ReentrantReadWriteLock> writeLockMap = new HashMap<>();
     private String generatedResourceDir;
-    private Response expected;
+    private Response statusNotOk;
 
     private static List<WebServer> createWebServerList() {
         final Group groupOne = new Group(Identifier.id(1L, Group.class), "ws-groupOne");
@@ -126,7 +126,7 @@ public class WebServerServiceRestImplTest {
         when(authenticatedUser.getUser()).thenReturn(new User("Unused"));
 
         InternalErrorException iee = new InternalErrorException(null, "User does not have permission to create the directory ~/.jwala");
-        expected = ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
+        statusNotOk = ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
                 AemFaultType.DUPLICATE_GROUP_NAME, iee.getMessage(), iee));
 
         try {
@@ -391,7 +391,7 @@ public class WebServerServiceRestImplTest {
         when(impl.isStarted(any(WebServer.class))).thenReturn(false);
         Response actual = webServerServiceRest.generateAndDeployWebServer(webServer.getName(), authenticatedUser);
 
-        assertEquals(expected.getStatus(), actual.getStatus());
+        assertEquals(statusNotOk.getStatus(), actual.getStatus());
 
     }
 
@@ -442,7 +442,7 @@ public class WebServerServiceRestImplTest {
 
         Response actual = webServerServiceRest.generateAndDeployWebServer(webServer.getName(), authenticatedUser);
 
-        assertEquals(expected.getStatus(), actual.getStatus());
+        assertEquals(statusNotOk.getStatus(), actual.getStatus());
 
     }
 
@@ -461,7 +461,7 @@ public class WebServerServiceRestImplTest {
 
         Response actual = webServerServiceRest.generateAndDeployWebServer(webServer.getName(), authenticatedUser);
 
-        assertEquals(expected.getStatus(), actual.getStatus());
+        assertEquals(statusNotOk.getStatus(), actual.getStatus());
     }
 
     @Test
@@ -479,7 +479,7 @@ public class WebServerServiceRestImplTest {
         when(impl.getResourceTemplateNames(anyString())).thenReturn(resourceTemplateNames);
 
         Response actual = webServerServiceRest.generateAndDeployWebServer(webServer.getName(), authenticatedUser);
-        assertEquals(expected.getStatus(), actual.getStatus());
+        assertEquals(statusNotOk.getStatus(), actual.getStatus());
     }
 
     @Test
@@ -498,7 +498,7 @@ public class WebServerServiceRestImplTest {
         when(impl.getResourceTemplateNames(anyString())).thenReturn(resourceTemplateNames);
 
         Response actual = webServerServiceRest.generateAndDeployWebServer(webServer.getName(), authenticatedUser);
-        assertEquals(expected.getStatus(), actual.getStatus());
+        assertEquals(statusNotOk.getStatus(), actual.getStatus());
     }
 
     @Test
@@ -518,7 +518,7 @@ public class WebServerServiceRestImplTest {
         when(impl.getResourceTemplateNames(anyString())).thenReturn(resourceTemplateNames);
 
         Response actual = webServerServiceRest.generateAndDeployWebServer(webServer.getName(), authenticatedUser);
-        assertEquals(expected.getStatus(), actual.getStatus());
+        assertEquals(statusNotOk.getStatus(), actual.getStatus());
     }
 
     @Test
@@ -541,7 +541,7 @@ public class WebServerServiceRestImplTest {
         when(resourceService.generateResourceGroup()).thenReturn(new ResourceGroup());
 
         Response actual = webServerServiceRest.generateAndDeployWebServer(webServer.getName(), authenticatedUser);
-        assertEquals(expected.getStatus(), actual.getStatus());
+        assertEquals(statusNotOk.getStatus(), actual.getStatus());
 
     }
 
@@ -566,7 +566,7 @@ public class WebServerServiceRestImplTest {
 
 
         Response actual = webServerServiceRest.generateAndDeployWebServer(webServer.getName(), authenticatedUser);
-        assertEquals(expected.getStatus(), actual.getStatus());
+        assertEquals(statusNotOk.getStatus(), actual.getStatus());
     }
 
     @Test
@@ -614,7 +614,7 @@ public class WebServerServiceRestImplTest {
         when(resourceService.generateResourceGroup()).thenReturn(new ResourceGroup());
 
         Response actual = webServerServiceRest.generateAndDeployWebServer(webServer.getName(), authenticatedUser);
-        assertEquals(expected.getStatus(), actual.getStatus());
+        assertEquals(statusNotOk.getStatus(), actual.getStatus());
     }
 
     @Test
@@ -623,7 +623,7 @@ public class WebServerServiceRestImplTest {
         when(impl.isStarted(any(WebServer.class))).thenReturn(true);
         Response actual = webServerServiceRest.generateAndDeployWebServer(webServer.getName(), authenticatedUser);
 
-        assertEquals(expected.getStatus(), actual.getStatus());
+        assertEquals(statusNotOk.getStatus(), actual.getStatus());
     }
 
     @Test
