@@ -7,6 +7,8 @@ import com.cerner.jwala.common.exception.InternalErrorException;
 import com.cerner.jwala.service.balancermanager.BalancerManagerService;
 import com.cerner.jwala.ws.rest.v1.response.ResponseBuilder;
 import com.cerner.jwala.ws.rest.v1.service.balancermanager.BalancerManagerServiceRest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
@@ -15,6 +17,7 @@ import javax.ws.rs.core.Response;
 public class BalancerManagerServiceRestImpl implements BalancerManagerServiceRest {
 
     final BalancerManagerService balancerManagerService;
+    private static final Logger LOGGER = LoggerFactory.getLogger(BalancerManagerServiceRestImpl.class);
 
     public BalancerManagerServiceRestImpl(final BalancerManagerService balancerManagerService) {
         this.balancerManagerService = balancerManagerService;
@@ -26,10 +29,10 @@ public class BalancerManagerServiceRestImpl implements BalancerManagerServiceRes
             BalancerManagerState balancerManagerState = balancerManagerService.drainUserGroup(groupName, webServerNames, getUser());
             return ResponseBuilder.ok(balancerManagerState);
         } catch (InternalErrorException iee) {
+            LOGGER.error("The target Web Server " + webServerNames + " in group " + groupName + " must be STARTED before attempting to drain users");
             final String message = "The target Web Server " + webServerNames + " in group " + groupName + " must be STARTED before attempting to drain users";
-
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
-                    AemFaultType.INVALID_WEBSERVER_OPERATION, message + "" + iee.getMessage(), iee));
+                    AemFaultType.INVALID_WEBSERVER_OPERATION, message + " " + iee.getMessage(), iee));
         }
     }
 
@@ -39,6 +42,7 @@ public class BalancerManagerServiceRestImpl implements BalancerManagerServiceRes
             BalancerManagerState balancerManagerState = balancerManagerService.drainUserWebServer(groupName, webServerName, jvmNames, getUser());
             return ResponseBuilder.ok(balancerManagerState);
         } catch (InternalErrorException iee) {
+            LOGGER.error(iee.getMessage());
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
                     AemFaultType.INVALID_WEBSERVER_OPERATION, iee.getMessage(), iee));
         }
@@ -56,6 +60,7 @@ public class BalancerManagerServiceRestImpl implements BalancerManagerServiceRes
             BalancerManagerState balancerManagerState = balancerManagerService.drainUserGroupJvm(groupName, jvmName, getUser());
             return ResponseBuilder.ok(balancerManagerState);
         } catch (InternalErrorException iee) {
+            LOGGER.error(iee.getMessage());
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
                     AemFaultType.INVALID_WEBSERVER_OPERATION, iee.getMessage(), iee));
         }
