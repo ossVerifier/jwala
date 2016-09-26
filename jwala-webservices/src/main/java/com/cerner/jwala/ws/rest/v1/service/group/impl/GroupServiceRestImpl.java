@@ -164,7 +164,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
             return ResponseBuilder.ok();
         } catch (PersistenceException pe) {
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
-                    AemFaultType.DUPLICATE_GROUP_NAME, pe.getMessage(), pe));
+                    AemFaultType.DELETE_CANNOT_BE_PERFORMED_CHECK_JVM_AND_WEBSERVER, pe.getMessage(), pe));
         }
     }
 
