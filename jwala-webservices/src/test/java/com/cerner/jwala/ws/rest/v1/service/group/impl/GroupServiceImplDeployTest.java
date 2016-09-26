@@ -453,7 +453,7 @@ public class GroupServiceImplDeployTest {
         assertNotNull(response);
     }
 
-    @Test(expected = InternalErrorException.class)
+    @Test
     public void testGenerateGroupWebServersWithWebServerStarted() {
         Group mockGroup = mock(Group.class);
         Set<WebServer> webServersSet = new HashSet<>();
@@ -513,7 +513,7 @@ public class GroupServiceImplDeployTest {
 
     }
 
-    @Test(expected = InternalErrorException.class)
+    @Test
     public void testGenerateGroupJvmsWithJvmStarted() {
         Group mockGroup = mock(Group.class);
         Set<Jvm> jvmSet = new HashSet<>();

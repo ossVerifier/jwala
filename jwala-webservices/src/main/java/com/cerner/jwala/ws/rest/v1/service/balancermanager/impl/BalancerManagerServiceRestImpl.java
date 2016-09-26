@@ -35,8 +35,13 @@ public class BalancerManagerServiceRestImpl implements BalancerManagerServiceRes
 
     @Override
     public Response drainUserWebServer(final String groupName, final String webServerName, final String jvmNames) {
-        BalancerManagerState balancerManagerState = balancerManagerService.drainUserWebServer(groupName, webServerName, jvmNames, getUser());
-        return ResponseBuilder.ok(balancerManagerState);
+        try {
+            BalancerManagerState balancerManagerState = balancerManagerService.drainUserWebServer(groupName, webServerName, jvmNames, getUser());
+            return ResponseBuilder.ok(balancerManagerState);
+        } catch (InternalErrorException iee) {
+            return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
+                    AemFaultType.INVALID_WEBSERVER_OPERATION, iee.getMessage(), iee));
+        }
     }
 
     @Override
@@ -47,8 +52,13 @@ public class BalancerManagerServiceRestImpl implements BalancerManagerServiceRes
 
     @Override
     public Response drainUserGroupJvm(final String groupName, final String jvmName) {
-        BalancerManagerState balancerManagerState = balancerManagerService.drainUserGroupJvm(groupName, jvmName, getUser());
-        return ResponseBuilder.ok(balancerManagerState);
+        try {
+            BalancerManagerState balancerManagerState = balancerManagerService.drainUserGroupJvm(groupName, jvmName, getUser());
+            return ResponseBuilder.ok(balancerManagerState);
+        } catch (InternalErrorException iee) {
+            return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
+                    AemFaultType.INVALID_WEBSERVER_OPERATION, iee.getMessage(), iee));
+        }
     }
 
     @Override

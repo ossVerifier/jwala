@@ -305,8 +305,8 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
 
             webServerService.updateState(webServer.getId(), WebServerReachableState.WS_UNREACHABLE, StringUtils.EMPTY);
 
-        } catch (CommandFailureException e) {
-            ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
+        } catch (InternalErrorException | CommandFailureException e) {
+            return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
                     AemFaultType.REMOTE_COMMAND_FAILURE, e.getMessage(), e));
         } finally {
             wsWriteLocks.get(aWebServerName).writeLock().unlock();
