@@ -15,6 +15,7 @@ div.main-area {
 }
 
 .banner-container {
+    border-style: none !important;
     height:99px;
     display:block;
 }
