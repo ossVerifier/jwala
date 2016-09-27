@@ -42,7 +42,7 @@ public class BalancerManagerServiceRestImpl implements BalancerManagerServiceRes
             BalancerManagerState balancerManagerState = balancerManagerService.drainUserWebServer(groupName, webServerName, jvmNames, getUser());
             return ResponseBuilder.ok(balancerManagerState);
         } catch (InternalErrorException iee) {
-            LOGGER.error(iee.getMessage());
+            LOGGER.error("The target Web Server " + webServerName + " in group " + groupName + " must be STARTED before attempting to drain users");
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
                     AemFaultType.INVALID_WEBSERVER_OPERATION, iee.getMessage(), iee));
         }
@@ -60,7 +60,7 @@ public class BalancerManagerServiceRestImpl implements BalancerManagerServiceRes
             BalancerManagerState balancerManagerState = balancerManagerService.drainUserGroupJvm(groupName, jvmName, getUser());
             return ResponseBuilder.ok(balancerManagerState);
         } catch (InternalErrorException iee) {
-            LOGGER.error(iee.getMessage());
+            LOGGER.error("The target Web Server " + jvmName + " in group " + groupName + " must be STARTED before attempting to drain users");
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
                     AemFaultType.INVALID_WEBSERVER_OPERATION, iee.getMessage(), iee));
         }

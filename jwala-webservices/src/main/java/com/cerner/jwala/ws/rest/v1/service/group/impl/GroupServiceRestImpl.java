@@ -56,6 +56,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.persistence.EntityExistsException;
+import javax.persistence.PersistenceException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -154,12 +155,17 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     @Override
     public Response removeGroup(final String name, final boolean byName) {
         LOGGER.info("Delete Group requested: {} byName={}", name, byName);
-        if (byName) {
-            groupService.removeGroup(name);
-        } else {
-            groupService.removeGroup(new Identifier<Group>(name));
+        try {
+            if (byName) {
+                groupService.removeGroup(name);
+            } else {
+                groupService.removeGroup(new Identifier<Group>(name));
+            }
+            return ResponseBuilder.ok();
+        } catch (PersistenceException pe) {
+            return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
+                    AemFaultType.DELETE_CANNOT_BE_PERFORMED_CHECK_JVM_AND_WEBSERVER, pe.getMessage(), pe));
         }
-        return ResponseBuilder.ok();
     }
 
     @Override
