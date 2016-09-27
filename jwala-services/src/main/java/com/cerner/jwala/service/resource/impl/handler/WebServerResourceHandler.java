@@ -85,8 +85,7 @@ public class WebServerResourceHandler extends ResourceHandler {
     @Override
     public String updateResourceMetaData(ResourceIdentifier resourceIdentifier, String resourceName, String metaData) {
         if (canHandle(resourceIdentifier)) {
-            // TODO implement me !!!!
-            throw new UnsupportedOperationException();
+            return webServerPersistenceService.updateResourceMetaData(resourceIdentifier.webServerName, resourceName, metaData);
         } else {
             return successor.updateResourceMetaData(resourceIdentifier, resourceName, metaData);
         }

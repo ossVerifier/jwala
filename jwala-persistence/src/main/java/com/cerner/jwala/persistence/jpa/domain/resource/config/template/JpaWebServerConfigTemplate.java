@@ -1,8 +1,8 @@
 package com.cerner.jwala.persistence.jpa.domain.resource.config.template;
 
-import javax.persistence.*;
-
 import com.cerner.jwala.persistence.jpa.domain.JpaWebServer;
+
+import javax.persistence.*;
 
 /**
  * POJO that describes a db table that holds data about web server related resource configuration templates.
@@ -20,6 +20,8 @@ import com.cerner.jwala.persistence.jpa.domain.JpaWebServer;
                 query = "SELECT t.metaData FROM JpaWebServerConfigTemplate t where t.webServer.name = :webServerName and t.templateName = :templateName"),
         @NamedQuery(name = JpaWebServerConfigTemplate.UPDATE_WEBSERVER_TEMPLATE_CONTENT,
                 query = "UPDATE JpaWebServerConfigTemplate t SET t.templateContent = :templateContent WHERE t.webServer.name = :webServerName AND t.templateName = :templateName"),
+        @NamedQuery(name = JpaWebServerConfigTemplate.UPDATE_WEBSERVER_TEMPLATE_META_DATA,
+                query = "UPDATE JpaWebServerConfigTemplate t SET t.metaData= :metaData WHERE t.webServer.name = :webServerName AND t.templateName = :templateName"),
         @NamedQuery(name = JpaWebServerConfigTemplate.GET_WEBSERVER_TEMPLATE,
         query = "SELECT t FROM JpaWebServerConfigTemplate t where t.webServer.name = :webServerName and t.templateName = :templateName"),
         @NamedQuery(name = JpaWebServerConfigTemplate.QUERY_DELETE_WEB_SERVER_TEMPLATE, query="DELETE FROM JpaWebServerConfigTemplate t WHERE t.templateName = :templateName"),
@@ -39,6 +41,7 @@ public class JpaWebServerConfigTemplate extends ConfigTemplate {
     public static final String GET_WEBSERVER_TEMPLATE_CONTENT = "getWebServerTemplateContent";
     public static final String GET_WEBSERVER_TEMPLATE_METADATA = "getWebServerTemplateMetaData";
     public static final String UPDATE_WEBSERVER_TEMPLATE_CONTENT = "updateWebServerTemplateContent";
+    public static final String UPDATE_WEBSERVER_TEMPLATE_META_DATA = "updateWebServerTemplateMetaData";
     public static final String GET_WEBSERVER_TEMPLATE = "getWebServerTemplate";
     public static final String QUERY_DELETE_WEB_SERVER_TEMPLATE = "deleteWebServerTemplate";
     public static final String QUERY_DELETE_WEBSERVER_RESOURCE_BY_TEMPLATE_WEBSERVER_NAME = "deleteWebServerResourceByTemplateWebServerName";

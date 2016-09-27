@@ -96,6 +96,10 @@ public class JvmResourceHandler extends ResourceHandler {
 
     @Override
     public String updateResourceMetaData(ResourceIdentifier resourceIdentifier, String resourceName, String metaData) {
-        return jvmPersistenceService.updateResourceMetaData(resourceIdentifier.jvmName, resourceName, metaData);
+        if (canHandle(resourceIdentifier)) {
+            return jvmPersistenceService.updateResourceMetaData(resourceIdentifier.jvmName, resourceName, metaData);
+        } else {
+            return successor.updateResourceMetaData(resourceIdentifier, resourceName, metaData);
+        }
     }
 }

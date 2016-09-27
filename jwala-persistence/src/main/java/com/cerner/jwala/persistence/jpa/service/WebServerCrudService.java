@@ -89,4 +89,6 @@ public interface WebServerCrudService extends CrudService<JpaWebServer> {
      * @return return true if the resource exists, else returns false
      */
 	boolean checkWebServerResourceFileName(String groupName, String webServerName, String fileName);
+
+    void updateResourceMetaData(String webServerName, String resourceName, String metaData);
 }

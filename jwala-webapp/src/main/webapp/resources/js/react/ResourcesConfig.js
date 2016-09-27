@@ -482,12 +482,9 @@ var XmlTabs = React.createClass({
         var thePromise;
         console.log("saving meta data...");
         if (this.state.entity !== null && this.state.resourceTemplateName !== null) {
-            if (this.state.entityType === "jvms") {
-                thePromise = this.props.resourceService.updateResourceMetaData(this.state.entity.jvmName,
+            if (this.state.entityType === "jvms" || this.state.entityType === "webServers") {
+                thePromise = this.props.resourceService.updateResourceMetaData(this.state.entity.jvmName, this.state.entity.name,
                     this.state.resourceTemplateName, metaData);
-            } else if (this.state.entityType === "webServers") {
-                thePromise = this.props.wsService.updateResourceTemplate(this.state.entity.name,
-                    this.state.resourceTemplateName, template);
             } else if (this.state.entityType === "webApps") {
                 thePromise = this.props.webAppService.updateResourceTemplate(this.state.entity.name,
                     this.state.resourceTemplateName, template, this.state.entityParent.jvmName, this.state.entity.group.name);

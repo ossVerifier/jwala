@@ -69,4 +69,6 @@ public interface WebServerPersistenceService {
      * @return
      */
     boolean checkWebServerResourceFileName(String groupName, String webServerName, String fileName);
+
+    String updateResourceMetaData(String webServerName, String resourceName, String metaData);
 }
