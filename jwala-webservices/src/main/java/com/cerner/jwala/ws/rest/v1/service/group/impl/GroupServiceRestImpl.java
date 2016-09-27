@@ -165,7 +165,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
             }
             return ResponseBuilder.ok();
         } catch (PersistenceException pe) {
-            LOGGER.error("Web Server,JVM or both might depend on group:" + name);
+            LOGGER.error("Remove group error: " + name);
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
                     AemFaultType.DELETE_CANNOT_BE_PERFORMED_CHECK_JVM_AND_WEBSERVER, pe.getMessage(), pe));
         }
