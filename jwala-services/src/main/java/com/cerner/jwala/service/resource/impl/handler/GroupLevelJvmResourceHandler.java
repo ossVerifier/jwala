@@ -96,8 +96,7 @@ public class GroupLevelJvmResourceHandler extends ResourceHandler {
     @Override
     public String updateResourceMetaData(ResourceIdentifier resourceIdentifier, String resourceName, String metaData) {
         if (canHandle(resourceIdentifier)) {
-            // TODO implement me !!!!
-            throw new UnsupportedOperationException();
+            return groupPersistenceService.updateGroupJvmResourceMetaData(resourceIdentifier.groupName, resourceName, metaData);
         } else {
             return successor.updateResourceMetaData(resourceIdentifier, resourceName, metaData);
         }
