@@ -131,7 +131,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
             return ResponseBuilder.created(webServer);
 
         } catch (EntityExistsException eee) {
-            LOGGER.error(eee.getMessage());
+            LOGGER.error("Web server with name already exists " + eee.getMessage());
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
                     AemFaultType.DUPLICATE_WEBSERVER_NAME, eee.getMessage(), eee));
         }
@@ -144,7 +144,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
             return ResponseBuilder.ok(webServerService.updateWebServer(aWebServerToCreate.toUpdateWebServerRequest(),
                     aUser.getUser()));
         } catch (EntityExistsException eee) {
-            LOGGER.error(eee.getMessage());
+            LOGGER.error("Web server with name already exists " + eee.getMessage());
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
                     AemFaultType.DUPLICATE_WEBSERVER_NAME, eee.getMessage(), eee));
         }

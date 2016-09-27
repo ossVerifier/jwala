@@ -86,6 +86,9 @@ var GroupConfig = React.createClass({
                                        function() {
                                            self.refs.modalDeleteDlg.close();
                                            self.props.service.getGroups().then(self.getGroupsCallback);
+                                       },
+                                       function(errMsg) {
+                                          $.errorAlert(errMsg, "Error");
                                        });
         
     },
