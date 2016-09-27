@@ -110,6 +110,7 @@ task copyJwalaAgent(dependsOn: copyJwalaH2EmbededJar, type: Copy) {
     from (project(':jwala-tomcat-agent').file("build/libs"))
     from (file("$buildDir/$tomcatDir/lib/")){
         include "$jgroups_lib"
+        include "$slf4j_lib"
         include "$joda_time_lib"
     }
     into file("$buildDir/$tomcatDir/data/agent")
