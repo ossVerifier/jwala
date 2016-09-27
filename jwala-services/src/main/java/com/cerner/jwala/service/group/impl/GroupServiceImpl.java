@@ -437,9 +437,11 @@ public class GroupServiceImpl implements GroupService {
         String metaDataStr = getGroupAppResourceTemplateMetaData(groupName, fileName);
         ResourceTemplateMetaData metaData;
         try {
-            metaData = new ObjectMapper().readValue(metaDataStr, ResourceTemplateMetaData.class);
-            final String destPath = ResourceFileGenerator.generateResourceConfig(metaData.getDeployPath(), resourceGroup, application) + '/' + fileName;
-            File confFile = createConfFile(metaData.getEntity().getTarget(), groupName, fileName, resourceGroup);
+            final String tokenizedMetaData = ResourceFileGenerator.generateResourceConfig(metaDataStr, resourceGroup, application);
+            LOGGER.info("tokenized metadata is : {}", tokenizedMetaData);
+            metaData = new ObjectMapper().readValue(tokenizedMetaData, ResourceTemplateMetaData.class);
+            final String destPath = metaData.getDeployPath() + '/' + metaData.getDeployFileName();
+            File confFile = createConfFile(metaData.getEntity().getTarget(), groupName, metaData.getDeployFileName(), resourceGroup);
             String srcPath, standardError;
             if (metaData.getContentType().equals(ContentType.APPLICATION_BINARY.contentTypeStr)) {
                 srcPath = getGroupAppResourceTemplate(groupName, application.getName(), fileName, false, resourceGroup);
@@ -501,7 +503,7 @@ public class GroupServiceImpl implements GroupService {
             if (!commandOutput.getReturnCode().wasSuccessful()) {
                 standardError = commandOutput.getStandardError().isEmpty() ? commandOutput.getStandardOutput() : commandOutput.getStandardError();
                 LOGGER.error("Copy command completed with error trying to copy {} to {} :: ERROR: {}",
-                        fileName, application.getName(), standardError);
+                        metaData.getDeployFileName(), application.getName(), standardError);
                 throw new DeployApplicationConfException(standardError);
             }
             if (metaData.isUnpack()) {

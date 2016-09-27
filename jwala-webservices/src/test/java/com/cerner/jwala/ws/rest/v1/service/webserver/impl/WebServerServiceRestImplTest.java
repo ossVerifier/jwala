@@ -304,7 +304,7 @@ public class WebServerServiceRestImplTest {
     public void testGenerateAndDeployConfig() throws CommandFailureException, IOException {
         CommandOutput retSuccessExecData = new CommandOutput(new ExecReturnCode(0), "", "");
         when(webServerControlService.secureCopyFile(anyString(), anyString(), anyString(), anyString())).thenReturn(retSuccessExecData);
-        when(impl.getResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"contentType\":\"text/plain\",\"deployPath\":\"./anyPath\"}");
+        when(impl.getResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"contentType\":\"text/plain\",\"deployPath\":\"./anyPath\",\"deployFileName\":\"httpd.conf\"}");
         CommandOutput commandOutput = mock(CommandOutput.class);
         when(webServerControlService.createDirectory(isNull(WebServer.class), anyString())).thenReturn(commandOutput);
         ExecReturnCode execReturnCode = mock(ExecReturnCode.class);
@@ -349,7 +349,7 @@ public class WebServerServiceRestImplTest {
 
     @Test
     public void testGenerateAndDeployConfigFailsSecureCopy() throws CommandFailureException, IOException {
-        when(impl.getResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"contentType\":\"text/plain\",\"deployPath\":\"./anyPath\"}");
+        when(impl.getResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"contentType\":\"text/plain\",\"deployPath\":\"./anyPath\",\"deployFileName\":\"httpd.conf\"}");
         when(resourceService.generateResourceGroup()).thenReturn(new ResourceGroup());
         CommandOutput commandOutput = mock(CommandOutput.class);
         when(webServerControlService.createDirectory(isNull(WebServer.class), anyString())).thenReturn(commandOutput);
@@ -371,7 +371,7 @@ public class WebServerServiceRestImplTest {
 
     @Test
     public void testGenerateAndDeployConfigThrowsException() throws IOException, CommandFailureException {
-        when(impl.getResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"contentType\":\"text/plain\",\"deployPath\":\"./anyPath\"}");
+        when(impl.getResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"contentType\":\"text/plain\",\"deployPath\":\"./anyPath\",\"deployFileName\":\"httpd.conf\"}");
         when(resourceService.generateResourceGroup()).thenReturn(new ResourceGroup());
         when(webServerControlService.secureCopyFile(anyString(), anyString(), anyString(), anyString())).thenThrow(new CommandFailureException(new ExecCommand("Fail secure copy"), new Exception()));
         CommandOutput commandOutput = mock(CommandOutput.class);
@@ -408,7 +408,7 @@ public class WebServerServiceRestImplTest {
         when(impl.getWebServer(anyString())).thenReturn(webServer);
         when(impl.generateHttpdConfig(anyString(), any(ResourceGroup.class))).thenReturn("innocuous content");
         when(impl.generateInvokeWSBat(any(WebServer.class))).thenReturn("invoke me");
-        when(impl.getResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"contentType\":\"text/plain\",\"deployPath\":\"./anyPath\"}");
+        when(impl.getResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"contentType\":\"text/plain\",\"deployPath\":\"./anyPath\",\"deployFileName\":\"httpd.conf\"}");
         when(impl.getResourceTemplateNames(anyString())).thenReturn(webServerResourceNames);
         when(resourceService.generateResourceGroup()).thenReturn(new ResourceGroup());
 
@@ -419,13 +419,7 @@ public class WebServerServiceRestImplTest {
 
         when(webServerControlService.secureCopyFile(anyString(), anyString(), anyString(), anyString())).thenThrow(new CommandFailureException(new ExecCommand("failed command"), new Throwable()));
         response = null;
-        boolean exceptionThrown = false;
-        try {
-            response = webServerServiceRest.generateAndDeployWebServer(webServer.getName(), authenticatedUser);
-        } catch (Exception e) {
-            exceptionThrown = true;
-        }
-//        assertTrue(exceptionThrown);
+        response = webServerServiceRest.generateAndDeployWebServer(webServer.getName(), authenticatedUser);
         assertNotNull(response);
     }
 
@@ -536,7 +530,7 @@ public class WebServerServiceRestImplTest {
         when(impl.getWebServer(anyString())).thenReturn(webServer);
         when(impl.generateHttpdConfig(anyString(), any(ResourceGroup.class))).thenReturn("innocuous content");
         when(impl.generateInvokeWSBat(any(WebServer.class))).thenReturn("invoke me");
-        when(impl.getResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"contentType\":\"text/plain\",\"deployPath\":\"./anyPath\"}");
+        when(impl.getResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"contentType\":\"text/plain\",\"deployPath\":\"./anyPath\",\"deployFileName\":\"httpd.conf\"}");
         when(impl.getResourceTemplateNames(anyString())).thenReturn(webServerResourceNames);
         when(resourceService.generateResourceGroup()).thenReturn(new ResourceGroup());
 
@@ -560,7 +554,7 @@ public class WebServerServiceRestImplTest {
         when(impl.getWebServer(anyString())).thenReturn(webServer);
         when(impl.generateHttpdConfig(anyString(), any(ResourceGroup.class))).thenReturn("innocuous content");
         when(impl.generateInvokeWSBat(any(WebServer.class))).thenReturn("invoke me");
-        when(impl.getResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"contentType\":\"text/plain\",\"deployPath\":\"./anyPath\"}");
+        when(impl.getResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"contentType\":\"text/plain\",\"deployPath\":\"./anyPath\",\"deployFileName\":\"httpd.conf\"}");
         when(impl.getResourceTemplateNames(anyString())).thenReturn(webServerResourceNames);
         when(resourceService.generateResourceGroup()).thenReturn(new ResourceGroup());
 
@@ -584,7 +578,7 @@ public class WebServerServiceRestImplTest {
         when(impl.getWebServer(anyString())).thenReturn(webServer);
         when(impl.generateHttpdConfig(anyString(), any(ResourceGroup.class))).thenReturn("innocuous content");
         when(impl.generateInvokeWSBat(any(WebServer.class))).thenReturn("invoke me");
-        when(impl.getResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"contentType\":\"text/plain\",\"deployPath\":\"./anyPath\"}");
+        when(impl.getResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"contentType\":\"text/plain\",\"deployPath\":\"./anyPath\",\"deployFileName\":\"httpd.conf\"}");
         when(impl.getResourceTemplateNames(anyString())).thenReturn(webServerResourceNames);
         when(resourceService.generateResourceGroup()).thenReturn(new ResourceGroup());
 
@@ -609,12 +603,29 @@ public class WebServerServiceRestImplTest {
         when(impl.getWebServer(anyString())).thenReturn(webServer);
         when(impl.generateHttpdConfig(anyString(), any(ResourceGroup.class))).thenReturn("innocuous content");
         when(impl.generateInvokeWSBat(any(WebServer.class))).thenReturn("invoke me");
-        when(impl.getResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"contentType\":\"text/plain\",\"deployPath\":\"./anyPath\"}");
+        when(impl.getResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"contentType\":\"text/plain\",\"deployPath\":\"./anyPath\",\"deployFileName\":\"httpd.conf\"}");
         when(impl.getResourceTemplateNames(anyString())).thenReturn(webServerResourceNames);
         when(resourceService.generateResourceGroup()).thenReturn(new ResourceGroup());
 
         Response actual = webServerServiceRest.generateAndDeployWebServer(webServer.getName(), authenticatedUser);
         assertEquals(expected.getStatus(), actual.getStatus());
+    }
+
+    @Test
+    public void testGenerateAndDeployWebServerTemplate() throws CommandFailureException, IOException {
+        CommandOutput retSuccessExecData = new CommandOutput(new ExecReturnCode(0), "", "");
+        when(webServerControlService.secureCopyFile(anyString(), anyString(), anyString(), anyString())).thenReturn(retSuccessExecData);
+        when(impl.getResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"contentType\":\"text/plain\",\"deployPath\":\"./anyPath\",\"deployFileName\":\"${webServer.name}.txt\"}");
+        CommandOutput commandOutput = mock(CommandOutput.class);
+        when(webServerControlService.createDirectory(isNull(WebServer.class), anyString())).thenReturn(commandOutput);
+        ExecReturnCode execReturnCode = mock(ExecReturnCode.class);
+        when(commandOutput.getReturnCode()).thenReturn(execReturnCode);
+        when(commandOutput.getReturnCode().wasSuccessful()).thenReturn(true);
+        when(resourceService.generateResourceGroup()).thenReturn(new ResourceGroup());
+        when(impl.getResourceTemplate(anyString(), anyString(), anyBoolean(), any(ResourceGroup.class))).thenReturn("");
+        when(impl.getWebServer(anyString())).thenReturn(webServer);
+        Response response = webServerServiceRest.generateAndDeployConfig(webServer.getName(), "${webServer.name}.txt", authenticatedUser);
+        assertTrue(response.hasEntity());
     }
 
     @Test

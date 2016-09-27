@@ -214,7 +214,11 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
 
             // get the meta data
             String metaDataStr = webServerService.getResourceTemplateMetaData(aWebServerName, resourceFileName);
-            ResourceTemplateMetaData metaData = new ObjectMapper().readValue(metaDataStr, ResourceTemplateMetaData.class);
+            final String tokenizedMetaData = ResourceFileGenerator.generateResourceConfig(metaDataStr,
+                    resourceService.generateResourceGroup(),
+                    webServerService.getWebServer(aWebServerName));
+            LOGGER.info("tokenized metadata is : {}", tokenizedMetaData);
+            ResourceTemplateMetaData metaData = new ObjectMapper().readValue(tokenizedMetaData, ResourceTemplateMetaData.class);
 
             String configFilePath;
             if (metaData.getContentType().equals(ContentType.APPLICATION_BINARY.contentTypeStr)) {
@@ -224,17 +228,17 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
                 final String jwalaGeneratedResourcesDir = ApplicationProperties.get(PATHS_GENERATED_RESOURCE_DIR);
                 final String generatedHttpdConf = webServerService.getResourceTemplate(aWebServerName, resourceFileName, true,
                         resourceService.generateResourceGroup());
-                int resourceNameDotIndex = resourceFileName.lastIndexOf(".");
-                final File configFile = createTempWebServerResourceFile(aWebServerName, jwalaGeneratedResourcesDir, resourceFileName.substring(0, resourceNameDotIndex), resourceFileName.substring(resourceNameDotIndex + 1, resourceFileName.length()), generatedHttpdConf);
+                int resourceNameDotIndex = metaData.getDeployFileName().lastIndexOf(".");
+                final File configFile = createTempWebServerResourceFile(aWebServerName, jwalaGeneratedResourcesDir, metaData.getDeployFileName().substring(0, resourceNameDotIndex), resourceFileName.substring(resourceNameDotIndex + 1, resourceFileName.length()), generatedHttpdConf);
 
                 // copy the file
                 configFilePath = configFile.getAbsolutePath().replace("\\", "/");
             }
-            String destinationPath = ResourceFileGenerator.generateResourceConfig(metaData.getDeployPath(), resourceService.generateResourceGroup(), webServerService.getWebServer(aWebServerName)) + "/" + resourceFileName;
+            String destinationPath = metaData.getDeployPath() + "/" + metaData.getDeployFileName();
             final CommandOutput execData;
             execData = webServerControlService.secureCopyFile(aWebServerName, configFilePath, destinationPath, user.getUser().getId());
             if (execData.getReturnCode().wasSuccessful()) {
-                LOGGER.info("Copy of {} successful: {}", resourceFileName, configFilePath);
+                LOGGER.info("Copy of {} successful: {}", metaData.getDeployFileName(), configFilePath);
             } else {
                 String standardError =
                         execData.getStandardError().isEmpty() ? execData.getStandardOutput() : execData
