@@ -92,4 +92,14 @@ public class GroupLevelJvmResourceHandler extends ResourceHandler {
                StringUtils.isEmpty(resourceIdentifier.webServerName) &&
                StringUtils.isEmpty(resourceIdentifier.webAppName);
     }
+
+    @Override
+    public String updateResourceMetaData(ResourceIdentifier resourceIdentifier, String resourceName, String metaData) {
+        if (canHandle(resourceIdentifier)) {
+            // TODO implement me !!!!
+            throw new UnsupportedOperationException();
+        } else {
+            return successor.updateResourceMetaData(resourceIdentifier, resourceName, metaData);
+        }
+    }
 }

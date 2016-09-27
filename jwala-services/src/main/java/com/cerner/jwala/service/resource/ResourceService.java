@@ -222,6 +222,15 @@ public interface ResourceService {
     String updateResourceContent(ResourceIdentifier resourceIdentifier, String templateContent);
 
     /**
+     * Update the resource meta data
+     *
+     * @param resourceIdentifier the resource identifier
+     * @param resourceName
+     *@param metaData the template meta data  @return return the updated content
+     */
+    String updateResourceMetaData(ResourceIdentifier resourceIdentifier, String resourceName, String metaData);
+
+    /**
      * Get all of the properties that were uploaded by an outside application/user
      *
      * @return the external properties
@@ -294,4 +303,6 @@ public interface ResourceService {
      * @return the external properties as a string
      */
     String getExternalPropertiesAsString();
+
+    String getJvmResourceMetaData(String templateName, String jvmName);
 }

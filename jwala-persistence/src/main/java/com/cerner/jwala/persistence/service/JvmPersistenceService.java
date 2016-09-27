@@ -101,4 +101,6 @@ public interface JvmPersistenceService {
      * @return the JVM id
      */
     Long getJvmId(String name);
+
+    String updateResourceMetaData(String jvmName, String resourceName, String metaData);
 }

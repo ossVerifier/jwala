@@ -591,6 +591,16 @@ public class ResourceServiceImpl implements ResourceService {
         return configTemplate.getTemplateContent();
     }
 
+    @Override
+    @Transactional
+    public String updateResourceMetaData(ResourceIdentifier resourceIdentifier, String resourceName, String metaData) {
+        try {
+            return resourceHandler.updateResourceMetaData(resourceIdentifier, resourceName, metaData);
+        } catch (final ResourceHandlerException rhe) {
+            throw new ResourceServiceException(rhe);
+        }
+    }
+
     protected void checkResourceExternalProperties(ResourceIdentifier resourceIdentifier, String templateContent) {
         if (StringUtils.isNotEmpty(resourceIdentifier.resourceName) &&
                 StringUtils.isEmpty(resourceIdentifier.webAppName) &&
@@ -869,4 +879,10 @@ public class ResourceServiceImpl implements ResourceService {
 
         return fileInfo.getPath().toString();
     }
+
+    @Override
+    public String getJvmResourceMetaData(final String templateName, final String jvmName) {
+        return resourceDao.getJvmResourceMetaData(templateName, jvmName);
+    }
+
 }

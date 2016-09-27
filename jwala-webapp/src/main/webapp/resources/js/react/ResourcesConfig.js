@@ -337,43 +337,56 @@ var ResourcesConfig = React.createClass({
 var XmlTabs = React.createClass({
     getInitialState: function() {
         return {entityType: null, entity: null, entityParent: null, resourceTemplateName: null, template: "",
-                entityGroupName: "", groupJvmEntityType: null, readOnly: false}
+                metaData: "", lastSaved: "Template", entityGroupName: "", groupJvmEntityType: null, readOnly: false}
     },
     clearEditor: function() {
         this.setState({resourceTemplateName: null, template: ""});
     },
     render: function() {
         var codeMirrorComponent;
+        var metaDataEditor;
+        var metaDataPreview;
         var xmlPreview;
 
         if (this.state.resourceTemplateName === null) {
             codeMirrorComponent = <div style={{padding: "5px 5px"}}>Please select a JVM, Web Server or Web Application and a resource</div>;
             xmlPreview = <div style={{padding: "5px 5px"}}>Please select a JVM, Web Server or Web Application and a resource</div>;
+            metaDataEditor = <div style={{padding: "5px 5px"}}>Please select a JVM, Web Server or Web Application and a resource</div>;
+            metaDataPreview = <div style={{padding: "5px 5px"}}>Please select a JVM, Web Server or Web Application and a resource</div>;
         } else {
-            // console.log("readOnly = " + this.state.readOnly);
             codeMirrorComponent = <CodeMirrorComponent ref="codeMirrorComponent" content={this.state.template}
                                    className="xml-editor-container" saveCallback={this.saveResource}
                                    onChange={this.onChangeCallback} readOnly={this.state.readOnly}/>
+            metaDataEditor = <CodeMirrorComponent ref="metaDataEditor" content={this.state.metaData}
+                                    className="xml-editor-container" saveCallback={this.saveResourceMetaData}
+                                    onChange={this.onChangeCallback}/>
+
             if (this.state.entityType === "webServerSection" || this.state.entityType === "jvmSection") {
                 xmlPreview = <div style={{padding: "5px 5px"}}>A group level web server or JVM template cannot be previewed. Please select a specific web server or JVM instead.</div>;
+                metaDataPreview = <div style={{padding: "5px 5px"}}>A group level web server or JVM template cannot be previewed. Please select a specific web server or JVM instead.</div>;
             } else {
                 xmlPreview = <XmlPreview ref="xmlPreview" />
+                metaDataPreview = <MetaDataPreview ref="metaDataPreview"/>
+
             }
         }
 
         var xmlTabItems = [{title: "Template", content:codeMirrorComponent},
-                           {title: "Preview", content:xmlPreview}];
+                            {title: "Template Preview", content:xmlPreview},
+                            {title: "Meta Data", content: metaDataEditor},
+                            {title: "Meta Data Preview", content: metaDataPreview}];
 
         return <RTabs ref="tabs" items={xmlTabItems} depth={2} onSelectTab={this.onSelectTab}
                       className="xml-editor-preview-tab-component"
                       contentClassName="xml-editor-preview-tab-component content" />
     },
     componentWillUpdate: function(nextProps, nextState) {
-        this.refs.tabs.setState({activeHash: "#/Configuration/Resources/Template/",
+        this.refs.tabs.setState({activeHash: "#/Configuration/Resources/" + this.state.lastSaved + "/",
             entityGroupName: nextState.entityParent.name});
     },
     onChangeCallback: function() {
-        if (this.refs.codeMirrorComponent !== undefined && this.refs.codeMirrorComponent.isContentChanged()) {
+        if ((this.refs.codeMirrorComponent !== undefined && this.refs.codeMirrorComponent.isContentChanged())
+                || (this.refs.metaDataEditor !== undefined && this.refs.metaDataEditor.isContentChanged())) {
             MainArea.unsavedChanges = true;
         } else {
             MainArea.unsavedChanges = false;
@@ -435,7 +448,7 @@ var XmlTabs = React.createClass({
             console.log("Save success!");
             MainArea.unsavedChanges = false;
             this.showFadingStatus("Saved", this.refs.codeMirrorComponent.getDOMNode());
-            this.setState({template:response.applicationResponseContent});
+            this.setState({template:response.applicationResponseContent, lastSaved: "Template"});
             if (this.state.entity === "extProperties"){
                 this.props.updateExtPropsAttributesCallback();
             }
@@ -456,6 +469,51 @@ var XmlTabs = React.createClass({
             console.log(response);
             console.log(e);
             $.errorAlert("Operation was not successful! Please check console logs for details.", title, false);
+        }
+    },
+    saveResourceMetaData: function(metaData) {
+        if (this.state.entityType === "jvmSection" || this.state.entityType === "webServerSection"){
+            this.props.updateGroupMetaDataCallback(metaData);
+        } else {
+            this.saveResourceMetaDataPromise(metaData).then(this.savedResourceMetaDataCallback).caught(this.failed.bind(this, "Save Resource Meta Data"));
+        }
+    },
+    saveResourceMetaDataPromise: function(metaData) {
+        var thePromise;
+        console.log("saving meta data...");
+        if (this.state.entity !== null && this.state.resourceTemplateName !== null) {
+            if (this.state.entityType === "jvms") {
+                thePromise = this.props.resourceService.updateResourceMetaData(this.state.entity.jvmName,
+                    this.state.resourceTemplateName, metaData);
+            } else if (this.state.entityType === "webServers") {
+                thePromise = this.props.wsService.updateResourceTemplate(this.state.entity.name,
+                    this.state.resourceTemplateName, template);
+            } else if (this.state.entityType === "webApps") {
+                thePromise = this.props.webAppService.updateResourceTemplate(this.state.entity.name,
+                    this.state.resourceTemplateName, template, this.state.entityParent.jvmName, this.state.entity.group.name);
+            } else if (this.state.groupJvmEntityType && this.state.groupJvmEntityType === "webApp") {
+                thePromise = this.props.groupService.updateGroupAppResourceTemplate(this.state.entityGroupName, this.state.resourceTemplateName, template);
+            }  else if (this.state.entityType === "webServerSection") {
+                thePromise = this.props.groupService.updateGroupWebServerResourceTemplate(this.state.entityGroupName, this.state.resourceTemplateName, template);
+            } else if (this.state.entityType === "extProperties"){
+                thePromise = this.props.resourceService.updateResourceContent(this.state.resourceTemplateName, template, null, null, null, null);
+            } else {
+                thePromise = this.props.groupService.updateGroupJvmResourceTemplate(this.state.entityGroupName, this.state.resourceTemplateName, template);
+            }
+        }
+        return thePromise;
+    },
+    savedResourceMetaDataCallback: function(response) {
+        if (response.message === "SUCCESS") {
+            console.log("Save meta data success!");
+            MainArea.unsavedChanges = false;
+            this.showFadingStatus("Saved", this.refs.metaDataEditor.getDOMNode());
+            this.setState({metaData: response.applicationResponseContent, lastSaved: "Meta Data"});
+            if (this.state.entity === "extProperties"){
+                this.props.updateExtPropsAttributesCallback();
+            }
+        } else {
+            throw response;
         }
     },
     /*** Save and Deploy methods: End ***/
@@ -499,13 +557,16 @@ var XmlTabs = React.createClass({
             self.setState({entity: data,
                            resourceTemplateName: resourceName,
                            template: response.applicationResponseContent.content,
+                           metaData: metaData,
                            entityGroupName: self.state.entityGroupName,
                            readOnly: readOnly});
+
         }).caught(function(response) {
             $.errorAlert("Error loading template!", "Error");
         });
     },
     onSelectTab: function(index) {
+        var self = this;
         if (this.state.entity !== null && this.state.resourceTemplateName !== null) {
             if (index === 1 ) {
                 if (this.state.entityType === "jvms") {
@@ -546,7 +607,11 @@ var XmlTabs = React.createClass({
                                                                    this.previewSuccessCallback,
                                                                    this.previewErrorCallback);
 
+
                 }
+            } else if (index === 3) {
+                // TODO preview meta data
+                alert("Preview Meta Data");
             }
         }
     },

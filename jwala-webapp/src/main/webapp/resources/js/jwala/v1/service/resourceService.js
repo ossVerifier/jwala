@@ -109,5 +109,18 @@ var resourceService = {
             matrixParam += ";webApp=" + encodeURIComponent(webAppName);
         }
         return matrixParam;
+    },
+    getJvmMetaData: function(templateName, jvmName) {
+        // TODO use createMatrixParam to make method more generic
+        return serviceFoundation.promisedGet("v1.0/resources/template/" + templateName + "/metaData;jvm=" + jvmName);
+    },
+    updateResourceMetaData: function(jvmName,resourceTemplateName, metaData) {
+        // TODO add params for groupName, webServerName, webAppName
+        var matrixParam = this.createMatrixParam(/*groupName*/null, /*webServerName*/null, jvmName, /*webAppName*/null);
+        return serviceFoundation.promisedPut("v1.0/resources/template/metadata/" + encodeURIComponent(resourceTemplateName) + matrixParam,
+                                                            "json",
+                                                             metaData,
+                                                             false,
+                                                             "text/plain; charset=utf-8");
     }
 };

@@ -217,11 +217,11 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
                                 "There was no resource handler to process the request!"));
             }
         } catch (final IOException ioe) {
-            LOGGER.warn("exception thrown in CreateResource", ioe);
+            LOGGER.warn("exception thrown in CreateResource: {}", ioe);
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR,
                     new FaultCodeException(AemFaultType.SERVICE_EXCEPTION, ioe.getMessage()));
         } catch (final ResourceServiceException rse) {
-            LOGGER.error("exception thrown in CreateResource", rse);
+            LOGGER.error("exception thrown in CreateResource: {}", rse);
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR,
                     new FaultCodeException(AemFaultType.SERVICE_EXCEPTION, rse.getMessage()));
         }
@@ -233,7 +233,7 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
 
     // for unit testing
     public void setMessageContext(MessageContext messageContext) {
-        this.context= messageContext;
+        this.context = messageContext;
     }
 
     @Override
@@ -460,6 +460,20 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
     }
 
     @Override
+    public Response updateResourceMetaData(String resourceName, ResourceHierarchyParam resourceHierarchyParam, String metaData) {
+        LOGGER.info("Update the meta data for resource {} with hierarchy {}", resourceName, resourceHierarchyParam);
+        LOGGER.debug("Updated content: {}", metaData);
+
+        final ResourceIdentifier resourceIdentifier = new ResourceIdentifier.Builder().setResourceName(resourceName)
+                .setGroupName(resourceHierarchyParam.getGroup())
+                .setWebServerName(resourceHierarchyParam.getWebServer())
+                .setJvmName(resourceHierarchyParam.getJvm())
+                .setWebAppName(resourceHierarchyParam.getWebApp()).build();
+
+        return ResponseBuilder.ok(resourceService.updateResourceMetaData(resourceIdentifier, resourceName, metaData));
+    }
+
+    @Override
     public Response previewResourceContent(final ResourceHierarchyParam resourceHierarchyParam, String content) {
         LOGGER.debug("Preview the template for {}", resourceHierarchyParam);
         final ResourceIdentifier resourceIdentifier = new ResourceIdentifier.Builder()
@@ -566,4 +580,8 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
         }
     }
 
+    @Override
+    public Response getResourceMetaData(final String templateName, final ResourceHierarchyParam resourceHierarchyParam) {
+        return ResponseBuilder.ok(resourceService.getJvmResourceMetaData(templateName, resourceHierarchyParam.getJvm()));
+    }
 }

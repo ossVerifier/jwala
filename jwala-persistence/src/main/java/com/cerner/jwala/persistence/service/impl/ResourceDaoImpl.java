@@ -143,7 +143,7 @@ public class ResourceDaoImpl implements ResourceDao {
     public JpaJvmConfigTemplate getJvmResource(final String resourceName, final String jvmName) {
         final Query q = em.createNamedQuery(JpaJvmConfigTemplate.QUERY_GET_JVM_RESOURCE);
         q.setParameter(JpaJvmConfigTemplate.QUERY_PARAM_TEMPLATE_NAME, resourceName);
-        q.setParameter(JpaJvmConfigTemplate.QUERY_PARAM_JVM_NAME,  jvmName);
+        q.setParameter(JpaJvmConfigTemplate.QUERY_PARAM_JVM_NAME, jvmName);
         return (JpaJvmConfigTemplate) q.getSingleResult();
     }
 
@@ -151,8 +151,8 @@ public class ResourceDaoImpl implements ResourceDao {
     public JpaApplicationConfigTemplate getAppResource(final String resourceName, final String appName, final String jvmName) {
         final Query q = em.createNamedQuery(JpaApplicationConfigTemplate.QUERY_GET_APP_RESOURCE);
         q.setParameter(JpaApplicationConfigTemplate.QUERY_PARAM_TEMPLATE_NAME, resourceName);
-        q.setParameter(JpaApplicationConfigTemplate.QUERY_PARAM_APP_NAME,  appName);
-        q.setParameter(JpaApplicationConfigTemplate.QUERY_PARAM_JVM_NAME,  jvmName);
+        q.setParameter(JpaApplicationConfigTemplate.QUERY_PARAM_APP_NAME, appName);
+        q.setParameter(JpaApplicationConfigTemplate.QUERY_PARAM_JVM_NAME, jvmName);
         return (JpaApplicationConfigTemplate) q.getSingleResult();
     }
 
@@ -160,7 +160,7 @@ public class ResourceDaoImpl implements ResourceDao {
     public JpaGroupWebServerConfigTemplate getGroupLevelWebServerResource(final String resourceName, final String groupName) {
         final Query q = em.createNamedQuery(JpaGroupWebServerConfigTemplate.QUERY_GET_GROUP_LEVEL_WEBSERVER_RESOURCE);
         q.setParameter(JpaGroupWebServerConfigTemplate.QUERY_PARAM_TEMPLATE_NAME, resourceName);
-        q.setParameter(JpaGroupWebServerConfigTemplate.QUERY_PARAM_GROUP_NAME,  groupName);
+        q.setParameter(JpaGroupWebServerConfigTemplate.QUERY_PARAM_GROUP_NAME, groupName);
         return (JpaGroupWebServerConfigTemplate) q.getSingleResult();
     }
 
@@ -168,7 +168,7 @@ public class ResourceDaoImpl implements ResourceDao {
     public JpaGroupJvmConfigTemplate getGroupLevelJvmResource(final String resourceName, final String groupName) {
         final Query q = em.createNamedQuery(JpaGroupJvmConfigTemplate.QUERY_GET_GROUP_LEVEL_JVM_RESOURCE);
         q.setParameter(JpaGroupJvmConfigTemplate.QUERY_PARAM_TEMPLATE_NAME, resourceName);
-        q.setParameter(JpaGroupJvmConfigTemplate.QUERY_PARAM_GROUP_NAME,  groupName);
+        q.setParameter(JpaGroupJvmConfigTemplate.QUERY_PARAM_GROUP_NAME, groupName);
         return (JpaGroupJvmConfigTemplate) q.getSingleResult();
     }
 
@@ -176,8 +176,8 @@ public class ResourceDaoImpl implements ResourceDao {
     public JpaGroupAppConfigTemplate getGroupLevelAppResource(final String resourceName, final String appName, final String groupName) {
         final Query q = em.createNamedQuery(JpaGroupAppConfigTemplate.QUERY_GET_GROUP_LEVEL_APP_RESOURCE);
         q.setParameter(JpaGroupAppConfigTemplate.QUERY_PARAM_TEMPLATE_NAME, resourceName);
-        q.setParameter(JpaGroupAppConfigTemplate.QUERY_PARAM_APP_NAME,  appName);
-        q.setParameter(JpaGroupAppConfigTemplate.QUERY_PARAM_GRP_NAME,  groupName);
+        q.setParameter(JpaGroupAppConfigTemplate.QUERY_PARAM_APP_NAME, appName);
+        q.setParameter(JpaGroupAppConfigTemplate.QUERY_PARAM_GRP_NAME, groupName);
         return (JpaGroupAppConfigTemplate) q.getSingleResult();
     }
 
@@ -243,5 +243,13 @@ public class ResourceDaoImpl implements ResourceDao {
         q.setParameter(JpaResourceConfigTemplate.QUERY_PARAM_ENTITY_TYPE, EntityType.EXT_PROPERTIES);
 
         return q.getResultList();
+    }
+
+    public String getJvmResourceMetaData(final String templateName, final String jvmName) {
+        final Query q = em.createNamedQuery(JpaJvmConfigTemplate.GET_JVM_TEMPLATE_META_DATA);
+        q.setParameter(JpaJvmConfigTemplate.QUERY_PARAM_TEMPLATE_NAME, templateName);
+        q.setParameter(JpaJvmConfigTemplate.QUERY_PARAM_JVM_NAME, jvmName);
+        return (String) q.getSingleResult();
+
     }
 }

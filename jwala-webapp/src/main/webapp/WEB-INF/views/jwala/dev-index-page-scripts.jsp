@@ -47,6 +47,7 @@
 <script type="text/jsx" src="public-resources/js/react/generic-components/RToolbar.js"></script>
 <script type="text/jsx" src="public-resources/js/react/generic-components/RTabs.js"></script>
 <script type="text/jsx" src="public-resources/js/react/XmlPreview.js"></script>
+<script type="text/jsx" src="public-resources/js/react/MetaDataPreview.js"></script>
 <script type="text/jsx" src="public-resources/js/react/generic-components/tabs.js"></script>
 <script type="text/jsx" src="public-resources/js/react/generic-components/dialog-box.js"></script>
 <script type="text/jsx" src="public-resources/js/react/generic-components/modal-dialog-box.js"></script>

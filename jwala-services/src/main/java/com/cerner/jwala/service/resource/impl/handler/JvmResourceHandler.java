@@ -93,4 +93,9 @@ public class JvmResourceHandler extends ResourceHandler {
                StringUtils.isEmpty(resourceIdentifier.webAppName) &&
                StringUtils.isEmpty(resourceIdentifier.webServerName);
     }
+
+    @Override
+    public String updateResourceMetaData(ResourceIdentifier resourceIdentifier, String resourceName, String metaData) {
+        return jvmPersistenceService.updateResourceMetaData(resourceIdentifier.jvmName, resourceName, metaData);
+    }
 }

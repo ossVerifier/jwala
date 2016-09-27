@@ -74,4 +74,6 @@ public interface JvmCrudService extends CrudService<JpaJvm> {
      * @return true if the file exists else false
      */
     boolean checkJvmResourceFileName(String groupName, String jvmName, String fileName);
+
+    void updateResourceMetaData(String jvmName, String resourceTemplateName, String metaData);
 }
