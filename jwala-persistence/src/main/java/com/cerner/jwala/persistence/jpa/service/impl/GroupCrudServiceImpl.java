@@ -21,6 +21,7 @@ import com.cerner.jwala.persistence.jpa.domain.resource.config.template.JpaGroup
 import com.cerner.jwala.persistence.jpa.domain.resource.config.template.JpaGroupWebServerConfigTemplate;
 import com.cerner.jwala.persistence.jpa.service.GroupCrudService;
 import com.cerner.jwala.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
+import com.cerner.jwala.persistence.jpa.service.exception.ResourceTemplateMetaDataUpdateException;
 import com.cerner.jwala.persistence.jpa.service.exception.ResourceTemplateUpdateException;
 import org.joda.time.DateTime;
 
@@ -333,6 +334,27 @@ public class GroupCrudServiceImpl extends AbstractCrudServiceImpl<JpaGroup> impl
         if (numEntities == 0) {
             throw new ResourceTemplateUpdateException(groupName, resourceTemplateName);
         }
+    }
+
+    @Override
+    public void updateGroupWebServerResourceMetaData(String groupName, String resourceName, String metaData) {
+        final Query q = entityManager.createNamedQuery(JpaGroupWebServerConfigTemplate.UPDATE_GROUP_WEBSERVER_TEMPLATE_META_DATA);
+        q.setParameter("grpName", groupName);
+        q.setParameter("templateName", resourceName);
+        q.setParameter("metaData", metaData);
+
+        int numEntities;
+
+        try {
+            numEntities = q.executeUpdate();
+        } catch (RuntimeException re) {
+            throw new ResourceTemplateMetaDataUpdateException(groupName, resourceName, re);
+        }
+
+        if (numEntities == 0) {
+            throw new ResourceTemplateMetaDataUpdateException(groupName, resourceName);
+        }
+
     }
 
     @Override

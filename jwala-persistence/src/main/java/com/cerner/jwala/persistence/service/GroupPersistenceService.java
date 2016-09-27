@@ -113,4 +113,6 @@ public interface GroupPersistenceService extends StatePersistenceService<Group, 
      * @return all the host names of a group
      */
     List<String> getHosts(String groupName);
+
+    String updateGroupWebServerResourceMetaData(String groupName, String resourceName, String metaData);
 }

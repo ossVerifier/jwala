@@ -116,8 +116,7 @@ public class GroupLevelWebServerResourceHandler extends ResourceHandler {
     @Override
     public String updateResourceMetaData(ResourceIdentifier resourceIdentifier, String resourceName, String metaData) {
         if (canHandle(resourceIdentifier)) {
-            // TODO implement me !!!!
-            throw new UnsupportedOperationException();
+            return groupPersistenceService.updateGroupWebServerResourceMetaData(resourceIdentifier.groupName, resourceName, metaData);
         } else {
             return successor.updateResourceMetaData(resourceIdentifier, resourceName, metaData);
         }
