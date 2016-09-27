@@ -144,7 +144,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
             return ResponseBuilder.ok(webServerService.updateWebServer(aWebServerToCreate.toUpdateWebServerRequest(),
                     aUser.getUser()));
         } catch (EntityExistsException eee) {
-            LOGGER.error("Web server with name already exists " + eee.getMessage());
+            LOGGER.error("Update webserver error: " + eee.getMessage());
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
                     AemFaultType.DUPLICATE_WEBSERVER_NAME, eee.getMessage(), eee));
         }
@@ -308,7 +308,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
             webServerService.updateState(webServer.getId(), WebServerReachableState.WS_UNREACHABLE, StringUtils.EMPTY);
 
         } catch (InternalErrorException | CommandFailureException e) {
-            LOGGER.error(e.getMessage());
+            LOGGER.error("Failed to secure copy the invokeWS.bat file for {}", aWebServerName, e);
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
                     AemFaultType.REMOTE_COMMAND_FAILURE, e.getMessage(), e));
         } finally {

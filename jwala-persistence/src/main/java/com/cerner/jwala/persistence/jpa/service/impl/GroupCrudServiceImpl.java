@@ -101,7 +101,7 @@ public class GroupCrudServiceImpl extends AbstractCrudServiceImpl<JpaGroup> impl
         try {
             remove(group);
         } catch (PersistenceException pe) {
-            throw new PersistenceException("Web Server,JVM or both might depend on group:" + group.getName(), pe);
+            throw new PersistenceException("Web Server,JVM or both might depend on group: " + group.getName(), pe);
         }
     }
 
