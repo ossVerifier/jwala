@@ -76,4 +76,6 @@ public interface ApplicationPersistenceService {
      * @return the number of rows updated
      */
     Application deleteWarInfo(String appName);
+
+    String updateResourceMetaData(String webAppName, String resourceName, String metaData, String jvmName, String groupName);
 }

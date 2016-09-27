@@ -98,6 +98,13 @@ public class JpaApplicationPersistenceServiceImpl implements ApplicationPersiste
         return applicationCrudService.getResourceTemplate(appName, resourceTemplateName, jpaJvm);
     }
 
+    @Override
+    public String updateResourceMetaData(String webAppName, String resourceName, String metaData, String jvmName, String groupName) {
+        final JpaJvm jpaJvm = getJpaJvm(jvmName, groupName);
+        applicationCrudService.updateResourceMetaData(webAppName, resourceName, metaData, jpaJvm);
+        return applicationCrudService.getMetaData(webAppName, jvmName, groupName, resourceName);
+    }
+
     // Why jpaJvm ? The methods updateResourceTemplate and getResourceTemplate
     // of ApplicationCrudService requires JpaJvm. Those 2 methods were created
     // in a time where the use of DTOs or just POJOs is vague. We need to

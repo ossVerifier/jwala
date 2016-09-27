@@ -72,15 +72,14 @@ public class AppResourceHandler extends ResourceHandler {
         return StringUtils.isNotEmpty(resourceIdentifier.resourceName) &&
                StringUtils.isNotEmpty(resourceIdentifier.webAppName) &&
                StringUtils.isNotEmpty(resourceIdentifier.jvmName) &&
-               StringUtils.isEmpty(resourceIdentifier.groupName) &&
+               /*StringUtils.isEmpty(resourceIdentifier.groupName) &&*/
                StringUtils.isEmpty(resourceIdentifier.webServerName);
     }
 
     @Override
     public String updateResourceMetaData(ResourceIdentifier resourceIdentifier, String resourceName, String metaData) {
         if (canHandle(resourceIdentifier)) {
-            // TODO implement me !!!!
-            throw new UnsupportedOperationException();
+            return applicationPersistenceService.updateResourceMetaData(resourceIdentifier.webAppName, resourceName, metaData, resourceIdentifier.jvmName, resourceIdentifier.groupName);
         } else {
             return successor.updateResourceMetaData(resourceIdentifier, resourceName, metaData);
         }

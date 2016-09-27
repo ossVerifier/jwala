@@ -71,4 +71,6 @@ public interface ApplicationCrudService extends CrudService<JpaApplication> {
      * @return
      */
     boolean checkAppResourceFileName(String groupName, String appName, String fileName);
+
+    void updateResourceMetaData(String webAppName, String resourceName, String metaData, JpaJvm jpaJvm);
 }

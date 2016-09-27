@@ -1,8 +1,8 @@
 package com.cerner.jwala.persistence.jpa.domain;
 
-import javax.persistence.*;
-
 import com.cerner.jwala.persistence.jpa.domain.resource.config.template.ConfigTemplate;
+
+import javax.persistence.*;
 
 /**
  * JPA POJO for application resource template data.
@@ -20,6 +20,8 @@ import com.cerner.jwala.persistence.jpa.domain.resource.config.template.ConfigTe
                 query = "SELECT t.metaData FROM JpaApplicationConfigTemplate t where t.app.name = :appName and t.templateName = :templateName and t.jvm = :templateJvm"),
         @NamedQuery(name = JpaApplicationConfigTemplate.UPDATE_APP_TEMPLATE_CONTENT,
                 query = "UPDATE JpaApplicationConfigTemplate t SET t.templateContent = :templateContent WHERE t.app.name = :appName AND t.templateName = :templateName and t.jvm = :templateJvm"),
+        @NamedQuery(name = JpaApplicationConfigTemplate.UPDATE_APP_TEMPLATE_META_DATA,
+                query = "UPDATE JpaApplicationConfigTemplate t SET t.metaData = :metaData WHERE t.app.name = :appName AND t.templateName = :templateName and t.jvm = :templateJvm"),
         @NamedQuery(name = JpaApplicationConfigTemplate.GET_APP_TEMPLATE,
                 query = "SELECT t FROM JpaApplicationConfigTemplate t where t.templateName = :tempName and t.app.name = :appName and t.jvm.name = :jvmName"),
         @NamedQuery(name = JpaApplicationConfigTemplate.QUERY_DELETE_APP_TEMPLATE, query = "DELETE FROM JpaApplicationConfigTemplate t WHERE t.templateName = :templateName"),
@@ -37,6 +39,7 @@ public class JpaApplicationConfigTemplate extends ConfigTemplate {
     public static final String GET_APP_RESOURCE_TEMPLATE_NAMES = "getAppResourceTemplateNames";
     public static final String GET_APP_TEMPLATE_CONTENT = "getAppTemplateContent";
     public static final String UPDATE_APP_TEMPLATE_CONTENT = "updateAppTemplateContent";
+    public static final String UPDATE_APP_TEMPLATE_META_DATA = "updateAppTemplateMetaData";
     public static final String GET_APP_TEMPLATE = "getAppTemplate";
     public static final String GET_APP_TEMPLATE_META_DATA = "getAppTemplateMetaData";
     public static final String QUERY_DELETE_APP_TEMPLATE = "deleteAppTemplate";
