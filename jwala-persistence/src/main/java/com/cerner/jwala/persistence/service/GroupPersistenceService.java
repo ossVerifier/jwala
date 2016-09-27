@@ -117,4 +117,6 @@ public interface GroupPersistenceService extends StatePersistenceService<Group, 
     String updateGroupWebServerResourceMetaData(String groupName, String resourceName, String metaData);
 
     String updateGroupJvmResourceMetaData(String groupName, String resourceName, String metaData);
+
+    String updateGroupAppResourceMetaData(String groupName, String webAppName, String resourceName, String metaData);
 }

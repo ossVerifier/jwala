@@ -1,9 +1,9 @@
 package com.cerner.jwala.persistence.jpa.domain.resource.config.template;
 
-import javax.persistence.*;
-
 import com.cerner.jwala.persistence.jpa.domain.JpaApplication;
 import com.cerner.jwala.persistence.jpa.domain.JpaGroup;
+
+import javax.persistence.*;
 
 /**
  * POJO that describes a db table that holds data about a group of application related resource configuration templates.
@@ -19,6 +19,8 @@ import com.cerner.jwala.persistence.jpa.domain.JpaGroup;
                 query = "SELECT t.metaData FROM JpaGroupAppConfigTemplate t where t.grp.name = :grpName and t.templateName = :templateName"),
         @NamedQuery(name = JpaGroupAppConfigTemplate.UPDATE_GROUP_APP_TEMPLATE_CONTENT,
                 query = "UPDATE JpaGroupAppConfigTemplate t SET t.templateContent = :templateContent WHERE t.grp.name = :grpName AND t.app.name = :appName AND t.templateName = :templateName"),
+        @NamedQuery(name = JpaGroupAppConfigTemplate.UPDATE_GROUP_APP_TEMPLATE_META_DATA,
+                query = "UPDATE JpaGroupAppConfigTemplate t SET t.metaData = :metaData WHERE t.grp.name = :grpName AND t.app.name = :appName AND t.templateName = :templateName"),
         @NamedQuery(name = JpaGroupAppConfigTemplate.QUERY_APP_RESOURCE_NAMES, query = "SELECT t.templateName FROM JpaGroupAppConfigTemplate t WHERE t.grp.name = :grpName AND t.app.name = :appName"),
         @NamedQuery(name = JpaGroupAppConfigTemplate.GET_GROUP_APP_TEMPLATE_RESOURCE_NAME,
                 query = "SELECT t.templateName FROM JpaGroupAppConfigTemplate t WHERE t.grp.name = :grpName AND t.templateName = :templateName"),
@@ -34,6 +36,7 @@ public class JpaGroupAppConfigTemplate extends ConfigTemplate {
     public static final String GET_GROUP_APP_TEMPLATE_CONTENT = "getGroupAppTemplateContent";
     public static final String GET_GROUP_APP_TEMPLATE_META_DATA = "getGroupAppTemplateMetaData";
     public static final String UPDATE_GROUP_APP_TEMPLATE_CONTENT = "updateGroupAppTemplateContent";
+    public static final String UPDATE_GROUP_APP_TEMPLATE_META_DATA = "updateGroupAppTemplateMetaData";
     public static final String QUERY_DELETE_GROUP_LEVEL_APP_RESOURCE_BY_APP_GROUP_TEMPLATE_NAME = "deleteGroupLevelAppResourceByTemplateGroupName";
     public static final String QUERY_DELETE_GROUP_LEVEL_APP_RESOURCES_BY_APP_GROUP_NAME_TEMPLATE_NAME_LIST = "deleteGroupLevelAppResourcesByTemplateNameListAndGroupName";
     public static final String QUERY_GET_GROUP_LEVEL_APP_RESOURCE = "getGroupLevelAppResource";

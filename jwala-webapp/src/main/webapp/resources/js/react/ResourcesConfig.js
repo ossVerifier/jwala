@@ -473,6 +473,7 @@ var XmlTabs = React.createClass({
     },
     saveResourceMetaData: function(metaData) {
 /*        if (this.state.entityType === "jvmSection" || this.state.entityType === "webServerSection"){
+            // TODO show the confirmation dialog and then call saveResourceMetaDataPromise
             this.props.updateGroupMetaDataCallback(metaData);
         } else {*/
             this.saveResourceMetaDataPromise(metaData).then(this.savedResourceMetaDataCallback).caught(this.failed.bind(this, "Save Resource Meta Data"));
@@ -483,20 +484,21 @@ var XmlTabs = React.createClass({
         console.log("saving meta data...");
         if (this.state.entity !== null && this.state.resourceTemplateName !== null) {
             if (this.state.entityType === "jvms" || this.state.entityType === "webServers") {
-                thePromise = this.props.resourceService.updateResourceMetaData(this.state.entity.jvmName, this.state.entity.name, this.state.entityGroupName,
+                thePromise = this.props.resourceService.updateResourceMetaData(this.state.entity.jvmName, this.state.entity.name, this.state.entityGroupName, "",
                     this.state.resourceTemplateName, metaData);
             } else if (this.state.entityType === "webApps") {
-                thePromise = this.props.webAppService.updateResourceTemplate(this.state.entity.name,
-                    this.state.resourceTemplateName, template, this.state.entityParent.jvmName, this.state.entity.group.name);
+                thePromise = this.props.resourceService.updateResourceMetaData("", "", this.state.entity.group.name, this.state.entity.name,
+                    this.state.resourceTemplateName, metaData);
             } else if (this.state.groupJvmEntityType && this.state.groupJvmEntityType === "webApp") {
-                thePromise = this.props.groupService.updateGroupAppResourceTemplate(this.state.entityGroupName, this.state.resourceTemplateName, template);
+                thePromise = this.props.resourceService.updateResourceMetaData(this.state.entityParent.jvmName, "", "", this.state.entity.name,
+                    this.state.resourceTemplateName, metaData);
             }  else if (this.state.entityType === "webServerSection") {
-                thePromise = this.props.resourceService.updateResourceMetaData("", "*", this.state.entityGroupName,
+                thePromise = this.props.resourceService.updateResourceMetaData("", "*", this.state.entityGroupName, "",
                     this.state.resourceTemplateName, metaData);
             } else if (this.state.entityType === "extProperties"){
                 thePromise = this.props.resourceService.updateResourceContent(this.state.resourceTemplateName, template, null, null, null, null);
             } else {
-                thePromise = this.props.resourceService.updateResourceMetaData("*", "", this.state.entityGroupName,
+                thePromise = this.props.resourceService.updateResourceMetaData("*", "", this.state.entityGroupName, "",
                     this.state.resourceTemplateName, metaData);
             }
         }
