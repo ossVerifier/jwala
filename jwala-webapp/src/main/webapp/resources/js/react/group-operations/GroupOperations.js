@@ -40,14 +40,18 @@ var GroupOperations = React.createClass({
                                     okCallback={this.confirmStopGroupsCallback}
                                     content={<div className="text-align-center"><br/><b>Are you sure you want to STOP all the groups ?</b><br/><br/></div>}
                                     okLabel="Yes"
-                                    cancelLabel="No" />
+                                    cancelLabel="No"
+                                    top="300"
+                                    left="800"/>
                     <ModalDialogBox ref="startGroupsModalDlg"
                                     title="Confirmation Dialog Box"
                                     show={false}
                                     okCallback={this.confirmStartGroupsCallback}
                                     content={<div className="text-align-center"><br/><b>Are you sure you want to START all the groups ?</b><br/><br/></div>}
                                     okLabel="Yes"
-                                    cancelLabel="No" />
+                                    cancelLabel="No"
+                                    top="300"
+                                    left="800"/>
                     <table style={{width:"1084px"}}>
                         <tr>
                             <td>

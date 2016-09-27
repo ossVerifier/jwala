@@ -56,6 +56,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.persistence.EntityExistsException;
+import javax.persistence.PersistenceException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -126,6 +127,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
             final Group group = groupService.createGroup(new CreateGroupRequest(aNewGroupName), aUser.getUser());
             return ResponseBuilder.created(group);
         } catch (EntityExistsException eee) {
+            LOGGER.error("Group Name already exists: " + aNewGroupName);
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
                     AemFaultType.DUPLICATE_GROUP_NAME, eee.getMessage(), eee));
         }
@@ -146,6 +148,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
             return ResponseBuilder.ok(groupService.updateGroup(updatedGroup.toUpdateGroupCommand(),
                     aUser.getUser()));
         } catch (EntityExistsException eee) {
+            LOGGER.error("Group Name already exists: " + anUpdatedGroup.getName());
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
                     AemFaultType.DUPLICATE_GROUP_NAME, eee.getMessage(), eee));
         }
@@ -154,12 +157,18 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     @Override
     public Response removeGroup(final String name, final boolean byName) {
         LOGGER.info("Delete Group requested: {} byName={}", name, byName);
-        if (byName) {
-            groupService.removeGroup(name);
-        } else {
-            groupService.removeGroup(new Identifier<Group>(name));
+        try {
+            if (byName) {
+                groupService.removeGroup(name);
+            } else {
+                groupService.removeGroup(new Identifier<Group>(name));
+            }
+            return ResponseBuilder.ok();
+        } catch (PersistenceException pe) {
+            LOGGER.error("Remove group error: " + name);
+            return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
+                    AemFaultType.DELETE_CANNOT_BE_PERFORMED_CHECK_JVM_AND_WEBSERVER, pe.getMessage(), pe));
         }
-        return ResponseBuilder.ok();
     }
 
     @Override

@@ -13,8 +13,8 @@
  * 8. cancelCallback - the callback that is called when the cancel button is clicked.
  * 9. okLabel - the "ok" button label. If undefined the button label shows "Ok" by default.
  * 10. cancelLabel - the "cancel" button label. If undefined the button label shows "Cancel" by default.
- * 11. top - the dialog's top position. If not set top will be computed to position the dialog at the middle of the screen.
- * 12. left - the dialog's left position. If not set left will be computed to position the dialog at the center of the screen.
+ * 11. top - the dialog's top position in px. This attribute only accepts a numeric value (no units or auto). If not set top will be computed to position the dialog at the middle of the screen.
+ * 12. left - the dialog's left position in px. This attribute only accepts a numeric value (no units or auto). If not set left will be computed to position the dialog at the center of the screen.
  * 13. position - position of the dialog's main div element e.g. absolute, fixed, relative etc...search for "div position"
  * 14. contentReferenceName - if specified the content can be referenced outside the ModalDialogBox by this property
  *
@@ -29,143 +29,110 @@
  */
 var ModalDialogBox = React.createClass({
     getInitialState: function() {
+        var top = this.props.top === undefined ? ModalDialogBox.DEFAULT_TOP : this.props.top;
+        var left = this.props.left === undefined ? ModalDialogBox.DEFAULT_LEFT : this.props.left;
 
-        var top = this.props.top === undefined ? -10000 : this.props.top;
-        var left = this.props.left === undefined ? -10000 : this.props.left;
-
-        return {
-            top: top,
-            left: left,
-            show: this.props.show,
-            title: this.props.title,
-            content: this.props.content,
-            okCallback: this.props.okCallback,
-            cancelCallback: this.props.cancelCallback
-        }
-    },
-    componentWillReceiveProps: function(nextProps) {
-        if (this.props.show !== nextProps.show) {
-            this.setState({show:nextProps.show, content:nextProps.content});
-        }
+        return {show: false,
+                top: top,
+                left: left,
+                title: this.props.title,
+                content: this.props.content,
+                okCallback: this.props.okCallback,
+                cancelCallback: this.props.cancelCallback ? this.props.cancelCallback : this.close,
+                mouseDownXDiff: 0,
+                mouseDownYDiff: 0,
+                needsRepositioning: false};
     },
     render: function() {
         if (!this.state.show) {
-            return React.DOM.div();
+            return null;
         }
 
-        var height = this.props.height === undefined ? "auto" : this.props.height;
-        var width = this.props.width === undefined ? "auto" : this.props.width;
+        var height = this.props.height ? this.props.height : ModalDialogBox.DEFAULT_HEIGHT;
+        var width = this.props.width ? this.props.width : ModalDialogBox.DEFAULT_WIDTH;
 
         var theStyle = {overflow: "visible", zIndex: "998", position: this.props.position ? this.props.position : "absolute",
                         height: height, width: width, top: this.state.top + "px", left: this.state.left + "px", display: "block"};
 
-        var contentDivStyle = {display:"block",width:"auto",maxHeight:"none",height:"auto"};
-        var contentDivClassName = this.props.contentDivClassName !== undefined ? this.props.contentDivClassName : "";
-
         var theContent = this.props.contentReferenceName ? React.addons.cloneWithProps(this.state.content, {ref: this.props.contentReferenceName}) : this.state.content;
-
-        var theDialog = React.DOM.div({ref:"theDialog",
-                                       className:"ui-dialog ui-widget ui-widget-content ui-corner-all ui-front ui-dialog-buttons ui-draggable ui-resizable",
-                                       tabIndex:"-1",
-                                       style:theStyle,
-                                       onKeyDown:this.keyDownHandler},
-                                       React.DOM.div({className:"ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix",
-                                                      onMouseDown:this.mouseDownHandler,
-                                                      onMouseUp:this.mouseUpHandler},
-                                                     React.DOM.span({className:"ui-dialog-title text-align-center"}, this.state.title),
-                                                     RButton({ref:"xBtn",
-                                                              title:"close",
-                                                              className:"ui-button ui-widget ui-state-default ui-corner-all ui-button-icon-only ui-dialog-titlebar-close",
-                                                              onClick:this.xBtnClick,
-                                                              spanClassName:"ui-button-icon-primary ui-icon ui-icon-closethick"})),
-                                       React.DOM.div({className:"ui-dialog-content ui-widget-content " + contentDivClassName, style:contentDivStyle}, theContent),
-                                       React.DOM.div({className:"ui-dialog-buttonpane ui-widget-content ui-helper-clearfix"},
-                                                     React.DOM.div({className:"ui-dialog-buttonset"},
-                                                     this.state.okCallback ? RButton({ref:"okBtn", onClick:this.okCallback, label:this.props.okLabel === undefined ? "Ok" : this.props.okLabel}) : null,
-                                                     RButton({ref:"cancelBtn", onClick:this.cancelCallback, label:this.props.cancelLabel === undefined ? "Cancel" : this.props.cancelLabel}))));
-
-                                       // Text area that would do the resizing for us, the only problem is that we need to resize the content along with it.
-                                       // React.createElement("textArea", {style: {width: "100%", height: "100%", position: "absolute", top: 0, left: 0, zIndex: -999}})
-
-        return React.DOM.div({style:this.state.show ? {} : {display:"none"}, onMouseMove: function(e){e.stopPropagation()}},
-                             React.DOM.div({className:"ui-widget-overlay ui-front"}, ""), theDialog);
-
+        var theDialog = React.createElement("div", {ref: "theDialog", style: theStyle,
+                                                    className: "ui-dialog ui-widget ui-widget-content ui-corner-all ui-front ui-dialog-buttons ui-draggable ui-resizable", tabIndex: "-1", onKeyDown: this.keyDownHandler},
+                            React.createElement(DialogHeader, {title: this.state.title, closeBtnOnClick: this.closeBtnOnClickHandler, onMouseDown: this.mouseDownHandler, onMouseUp: this.mouseUpHandler}),
+                            React.createElement(DialogContent, {content: theContent}),
+                            React.createElement(DialogFooter, {okLabel: this.props.okLabel, cancelLabel: this.props.cancelLabel, okCallback: this.okBtnOnClickHandler, cancelCallback: this.closeBtnOnClickHandler}));
+        return React.createElement("div", null, React.createElement("div", {className:"ui-widget-overlay ui-front"}), theDialog);
     },
     keyDownHandler: function(e) {
-        if (e.keyCode === 27) {
+        if (e.keyCode === ModalDialogBox.KEY_CODE_ESC) {
             this.state.cancelCallback();
-        } else if (e.keyCode === 13) {
+        } else if (e.keyCode === ModalDialogBox.KEY_CODE_ENTER) {
             if (this.state.okCallback() !== false) {
                 e.preventDefault();
             }
         }
     },
     componentDidMount: function() {
-        // This is for scenario where show is set to true initially.
+        // This is for the scenario where show is set to true initially.
         // Initiate re-render if top and left is not defined.
         if (this.state.show && this.state.top < 0) {
-            this.setState({show:true}); // Initiates render which computes top and left
+            this.show(); // Initiates render which computes top and left
         }
     },
-    componentDidUpdate: function() {
-        // Set the initial position if it is not yet set. Position the dialog at the center of the screen.
-        if (this.refs.theDialog !== undefined) {
-            if (this.state.top === -10000) {
-                if (this.props.position === "fixed") {
-                    var top = Math.floor(window.innerHeight/2) - Math.floor($(this.refs.theDialog.getDOMNode()).height()/2);
-                    var left = Math.floor(window.innerWidth/2) - Math.floor($(this.refs.theDialog.getDOMNode()).width()/2);
-                    this.setState({top: top, left: left});
-                } else {
-                    var height = $(this.refs.theDialog.getDOMNode()).height();
-                    var width = $(this.refs.theDialog.getDOMNode()).width();
-
-                    var offsetX = $(window).width()/2 - $(this.getDOMNode()).parent().offset().left;
-                    var offsetY = $(document).height()/2 - $(this.getDOMNode()).parent().offset().top;
-
-                    this.setState({top:offsetY - height/2,left:offsetX - width/2});
-
-                    if (this.props.modal === true) {
-                        $(this.getDOMNode()).parent().append(this.divOverlay);
-                    }
-                }
+    componentWillReceiveProps: function(nextProps) {
+        if (this.props.show !== nextProps.show) {
+            if (nextProps.show) {
+                this.show(this.state.title, nextProps.content);
+            } else {
+                this.close();
             }
         }
     },
-    xBtnClick: function() {
-        if (this.state.cancelCallback !== undefined) {
-            this.state.cancelCallback();
-        } else {
-            this.setState({show:false});
+    componentDidUpdate: function() {
+        if (this.refs.theDialog && this.state.needsRepositioning) {
+            if (this.props.position !== "fixed" && this.props.modal) {
+                $(this.getDOMNode()).parent().append(this.divOverlay);
+            }
+            var states = (this.props.top && this.props.left) ? {} : this.computePosition();
+            states["needsRepositioning"] = false; // It's very important to set this to false to prevent infinite calling of componentDidUpdate
+            this.setState(states);
+        }
+
+        if (this.refs.theDialog) {
+            // If the dialog box or its content is not focused the onKeyDown will not work therefore we set the focus
+            // manually if the dialog box or its content is not focused
+            if ($(this.refs.theDialog.getDOMNode()).find(document.activeElement).length === 0) {
+                this.refs.theDialog.getDOMNode().focus();
+            }
         }
     },
-    okCallback: function() {
-        this.state.okCallback();
+    computePosition: function() {
+        var position = {};
+        if (this.props.position === "fixed") {
+            position["top"] = Math.floor(window.innerHeight/2) - Math.floor($(this.refs.theDialog.getDOMNode()).height()/2);
+            position["left"] = Math.floor(window.innerWidth/2) - Math.floor($(this.refs.theDialog.getDOMNode()).width()/2);
+        } else {
+            var height = $(this.refs.theDialog.getDOMNode()).height();
+            var width = $(this.refs.theDialog.getDOMNode()).width();
+
+            var offsetX = $(window).width()/2 - $(this.getDOMNode()).parent().offset().left;
+            var offsetY = $(document).height()/2 - $(this.getDOMNode()).parent().offset().top;
+
+            position["top"] = offsetY - height/2;
+            position["left"] = offsetX - width/2;
+        }
+        return position;
     },
-    cancelCallback: function() {
-        this.xBtnClick();
-    },
-    mouseDownXDiff: 0,
-    mouseDownYDiff: 0,
-    mouseDownHandler: function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        this.mouseDown = true;
-        this.mouseDownXDiff = e.pageX - this.state.left;
-        this.mouseDownYDiff = e.pageY - this.state.top;
-        $(document).on("mousemove", this.mouseMoveHandler);
-    },
-    mouseUpHandler: function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        $(document).off("mousemove", this.mouseMoveHandler);
-    },
-    mouseMoveHandler: function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        this.setState({top:e.pageY - this.mouseDownYDiff, left:e.pageX - this.mouseDownXDiff});
-    },
+
+    /**
+     * Shows and initiates dialog box repositioning
+     *
+     * Note: Showing the dialog box is a 2 step process. The first process is to have the dialog box render
+     *       out of the screen to get the actual width and height of the dialog box. The 2nd process is to reposition
+     *       the dialog in the viewable screen area which requires the dialog box's actual width and height derived
+     *       in the first process.
+     */
     show: function(title, content, okCallback, cancelCallback) {
-        var states = {show: true};
+        var states = {show: true, needsRepositioning: true};
 
         if (title) {
             states["title"] = title;
@@ -186,6 +153,101 @@ var ModalDialogBox = React.createClass({
         this.setState(states);
     },
     close: function() {
-        this.setState({show:false});
+        this.setState({show: false});
+    },
+    okBtnOnClickHandler: function() {
+        this.state.okCallback();
+    },
+    closeBtnOnClickHandler: function() {
+        if (this.state.cancelCallback) {
+            this.state.cancelCallback();
+        } else {
+            this.close();
+        }
+    },
+    mouseDownHandler: function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        this.mouseDown = true;
+        this.state.mouseDownXDiff = e.pageX - this.state.left;
+        this.state.mouseDownYDiff = e.pageY - this.state.top;
+        $(document).on("mousemove", this.mouseMoveHandler);
+    },
+    mouseUpHandler: function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        $(document).off("mousemove", this.mouseMoveHandler);
+    },
+    mouseMoveHandler: function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        this.setState({top: e.pageY - this.state.mouseDownYDiff, left: e.pageX - this.state.mouseDownXDiff});
+    },
+    statics: {
+        DEFAULT_TOP: -10000,
+        DEFAULT_LEFT: -10000,
+        DEFAULT_HEIGHT: "auto",
+        DEFAULT_WIDTH: "auto",
+        KEY_CODE_ESC: 27,
+        KEY_CODE_ENTER: 13
+    }
+});
+
+/**
+ * Dialog box head
+ */
+var DialogHeader = React.createClass({
+    render: function() {
+        return React.createElement("div", {className: "ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix",
+                                           onMouseDown: this.props.onMouseDown, onMouseUp: this.props.onMouseUp},
+                   React.createElement(DialogHeaderTitle, {title: this.props.title}),
+                   React.createElement(DialogHeaderCloseBtn, {onClick: this.props.closeBtnOnClick}));
+    }
+});
+
+/**
+ * Dialog box title
+ */
+var DialogHeaderTitle = React.createClass({
+    render: function() {
+        return React.createElement("span", {className: "ui-dialog-title text-align-center"}, this.props.title);
+    }
+});
+
+/**
+ * Dialog box header "x" button
+ */
+var DialogHeaderCloseBtn = React.createClass({
+    render: function() {
+        return React.createElement(RButton, {title: "close",
+                                             className: "ui-button ui-widget ui-state-default ui-corner-all ui-button-icon-only ui-dialog-titlebar-close",
+                                             spanClassName:"ui-button-icon-primary ui-icon ui-icon-closethick",
+                                             onClick: this.onClickHandler});
+    },
+    onClickHandler: function() {
+        this.props.onClick();
+    }
+});
+
+/**
+ * Dialog box content component
+ */
+var DialogContent = React.createClass({
+    render: function() {
+        return React.createElement("div", {className: "ui-dialog-content ui-widget-content " + this.props.className,
+                   style: this.props.style}, this.props.content);
+    }
+});
+
+/**
+ * Dialog box footer which contains ok and cancel buttons
+ */
+var DialogFooter = React.createClass({
+    render: function() {
+        var okBtn = this.props.okCallback ? RButton({ref: "okBtn", onClick: this.props.okCallback, label: this.props.okLabel === undefined ? "Ok" : this.props.okLabel}) : null;
+        var cancelBtn = RButton({ref: "cancelBtn", onClick: this.props.cancelCallback, label: this.props.cancelLabel === undefined ? "Cancel" : this.props.cancelLabel});
+        return React.createElement("div", {className: "ui-dialog-buttonpane ui-widget-content ui-helper-clearfix"},
+                   React.createElement("div", {className: "ui-dialog-buttonset"},
+                       React.createElement("div", {className: "ui-dialog-buttonset"}, okBtn, cancelBtn)));
     }
 });
