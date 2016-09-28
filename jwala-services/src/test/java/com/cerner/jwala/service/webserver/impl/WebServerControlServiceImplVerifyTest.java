@@ -8,6 +8,7 @@ import com.cerner.jwala.common.domain.model.user.User;
 import com.cerner.jwala.common.domain.model.webserver.WebServer;
 import com.cerner.jwala.common.domain.model.webserver.WebServerControlOperation;
 import com.cerner.jwala.common.domain.model.webserver.WebServerReachableState;
+import com.cerner.jwala.common.exception.InternalErrorException;
 import com.cerner.jwala.common.exec.CommandOutput;
 import com.cerner.jwala.common.exec.ExecReturnCode;
 import com.cerner.jwala.common.exec.RemoteExecCommand;
@@ -192,5 +193,32 @@ public class WebServerControlServiceImplVerifyTest extends VerificationBehaviorS
         when(mockWebServer.getHost()).thenReturn("test-host");
         webServerControlService.createDirectory(mockWebServer, "./target");
         verify(commandExecutor).executeRemoteCommand(anyString(), anyString(), eq(WebServerControlOperation.CREATE_DIRECTORY), any(WindowsWebServerPlatformCommandProvider.class), anyString());
+    }
+
+    @Test
+    public void testSecureCopyHomeDir() throws CommandFailureException {
+        final Identifier<WebServer> webServerIdentifier = new Identifier<>(12L);
+        WebServer webserver = new WebServer(webServerIdentifier, new HashSet<Group>(), "testWebServer");
+        when(webServerService.getWebServer(anyString())).thenReturn(webserver);
+
+        CommandOutput successReturnOutput = new CommandOutput(new ExecReturnCode(0), "SUCCESS", "");
+        when(commandExecutor.executeRemoteCommand(anyString(), anyString(), any(WebServerControlOperation.class), any(PlatformCommandProvider.class), anyString(), anyString())).thenReturn(successReturnOutput);
+        when(commandExecutor.executeRemoteCommand(anyString(), anyString(), eq(WebServerControlOperation.CHECK_FILE_EXISTS), any(PlatformCommandProvider.class), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(1), "File does not exist", ""));
+        when(commandExecutor.executeRemoteCommand(anyString(), anyString(), eq(WebServerControlOperation.CREATE_DIRECTORY), any(PlatformCommandProvider.class), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(0), "Directory Created", ""));
+        CommandOutput returnOutput = webServerControlService.secureCopyFile("testWebServer", "./source", "~/dest", "user-id");
+        assertEquals(new ExecReturnCode(0), returnOutput.getReturnCode());
+    }
+
+    @Test (expected = InternalErrorException.class)
+    public void testSecureCopyCreateParentFail() throws CommandFailureException {
+        final Identifier<WebServer> webServerIdentifier = new Identifier<>(12L);
+        WebServer webserver = new WebServer(webServerIdentifier, new HashSet<Group>(), "testWebServer");
+        when(webServerService.getWebServer(anyString())).thenReturn(webserver);
+
+        CommandOutput successReturnOutput = new CommandOutput(new ExecReturnCode(0), "SUCCESS", "");
+        when(commandExecutor.executeRemoteCommand(anyString(), anyString(), any(WebServerControlOperation.class), any(PlatformCommandProvider.class), anyString(), anyString())).thenReturn(successReturnOutput);
+        when(commandExecutor.executeRemoteCommand(anyString(), anyString(), eq(WebServerControlOperation.CHECK_FILE_EXISTS), any(PlatformCommandProvider.class), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(1), "File does not exist", ""));
+        when(commandExecutor.executeRemoteCommand(anyString(), anyString(), eq(WebServerControlOperation.CREATE_DIRECTORY), any(PlatformCommandProvider.class), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(2), "Failed to create directory", ""));
+        webServerControlService.secureCopyFile("testWebServer", "./source", "./dest", "user-id");
     }
 }
