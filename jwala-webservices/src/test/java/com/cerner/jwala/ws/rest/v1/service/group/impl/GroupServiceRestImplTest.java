@@ -20,6 +20,7 @@ import com.cerner.jwala.common.request.group.UpdateGroupRequest;
 import com.cerner.jwala.persistence.jpa.service.exception.ResourceTemplateUpdateException;
 import com.cerner.jwala.persistence.service.GroupPersistenceService;
 import com.cerner.jwala.service.app.ApplicationService;
+import com.cerner.jwala.service.exception.GroupServiceException;
 import com.cerner.jwala.service.group.GroupControlService;
 import com.cerner.jwala.service.group.GroupJvmControlService;
 import com.cerner.jwala.service.group.GroupWebServerControlService;
@@ -40,7 +41,6 @@ import com.cerner.jwala.ws.rest.v1.service.webserver.impl.JsonControlWebServer;
 import org.apache.commons.fileupload.FileUploadBase;
 import org.apache.cxf.jaxrs.ext.MessageContext;
 import org.apache.openjpa.persistence.EntityExistsException;
-import org.apache.openjpa.persistence.PersistenceException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -820,14 +820,14 @@ public class GroupServiceRestImplTest {
 
     @Test
     public void testRemoveGroupByNameFail() {
-        Mockito.doThrow(PersistenceException.class).when(mockGroupService).removeGroup(anyString());
+        Mockito.doThrow(GroupServiceException.class).when(mockGroupService).removeGroup(anyString());
         Response response = groupServiceRest.removeGroup("test-group", true);
         assertEquals(500, response.getStatus());
     }
 
     @Test
     public void testRemoveGroupByIdFail() {
-        Mockito.doThrow(PersistenceException.class).when(mockGroupService).removeGroup(any(Identifier.class));
+        Mockito.doThrow(GroupServiceException.class).when(mockGroupService).removeGroup(any(Identifier.class));
         Response response = groupServiceRest.removeGroup("1", false);
         assertEquals(500, response.getStatus());
     }

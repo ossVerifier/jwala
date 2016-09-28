@@ -25,7 +25,6 @@ import com.cerner.jwala.persistence.jpa.service.exception.ResourceTemplateUpdate
 import org.joda.time.DateTime;
 
 import javax.persistence.EntityExistsException;
-import javax.persistence.PersistenceException;
 import javax.persistence.Query;
 import java.util.ArrayList;
 import java.util.List;
@@ -98,11 +97,7 @@ public class GroupCrudServiceImpl extends AbstractCrudServiceImpl<JpaGroup> impl
     @Override
     public void removeGroup(final Identifier<Group> aGroupId) {
         final JpaGroup group = getGroup(aGroupId);
-        try {
             remove(group);
-        } catch (PersistenceException pe) {
-            throw new PersistenceException("Web Server,JVM or both might depend on group: " + group.getName(), pe);
-        }
     }
 
     @Override

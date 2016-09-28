@@ -22,6 +22,7 @@ import com.cerner.jwala.common.request.webserver.UploadWebServerTemplateRequest;
 import com.cerner.jwala.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
 import com.cerner.jwala.persistence.jpa.service.exception.ResourceTemplateUpdateException;
 import com.cerner.jwala.service.app.ApplicationService;
+import com.cerner.jwala.service.exception.GroupServiceException;
 import com.cerner.jwala.service.group.GroupControlService;
 import com.cerner.jwala.service.group.GroupJvmControlService;
 import com.cerner.jwala.service.group.GroupService;
@@ -56,7 +57,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.persistence.EntityExistsException;
-import javax.persistence.PersistenceException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -135,7 +135,6 @@ public class GroupServiceRestImpl implements GroupServiceRest {
 
 
     @Override
-
     public Response updateGroup(final JsonUpdateGroup anUpdatedGroup,
                                 final AuthenticatedUser aUser) {
         LOGGER.info("Update Group requested: {} by user {}", anUpdatedGroup, aUser.getUser().getId());
@@ -164,10 +163,10 @@ public class GroupServiceRestImpl implements GroupServiceRest {
                 groupService.removeGroup(new Identifier<Group>(name));
             }
             return ResponseBuilder.ok();
-        } catch (PersistenceException pe) {
+        } catch (GroupServiceException pe) {
             LOGGER.error("Remove group error: " + name);
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
-                    AemFaultType.DELETE_CANNOT_BE_PERFORMED_CHECK_JVM_AND_WEBSERVER, pe.getMessage(), pe));
+                    AemFaultType.FAILED_TO_DELETE_GROUP, pe.getMessage(), pe));
         }
     }
 
