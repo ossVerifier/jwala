@@ -40,4 +40,6 @@ public abstract class ResourceHandler {
     }
 
     public abstract String updateResourceMetaData(ResourceIdentifier resourceIdentifier, String resourceName, String metaData);
+
+    public abstract Object getSelectedValue(ResourceIdentifier resourceIdentifier);
 }

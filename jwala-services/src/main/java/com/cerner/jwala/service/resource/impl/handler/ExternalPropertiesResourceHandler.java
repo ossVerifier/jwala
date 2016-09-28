@@ -93,4 +93,13 @@ public class ExternalPropertiesResourceHandler extends ResourceHandler {
             return successor.updateResourceMetaData(resourceIdentifier, resourceName, metaData);
         }
     }
+
+    @Override
+    public Object getSelectedValue(ResourceIdentifier resourceIdentifier) {
+        if (canHandle(resourceIdentifier)){
+            return null;
+        } else {
+            return successor.getSelectedValue(resourceIdentifier);
+        }
+    }
 }

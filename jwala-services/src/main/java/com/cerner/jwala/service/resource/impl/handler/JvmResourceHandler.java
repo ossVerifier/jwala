@@ -102,4 +102,13 @@ public class JvmResourceHandler extends ResourceHandler {
             return successor.updateResourceMetaData(resourceIdentifier, resourceName, metaData);
         }
     }
+
+    @Override
+    public Object getSelectedValue(ResourceIdentifier resourceIdentifier) {
+        if (canHandle(resourceIdentifier)){
+            return jvmPersistenceService.findJvmByExactName(resourceIdentifier.jvmName);
+        } else {
+            return successor.getSelectedValue(resourceIdentifier);
+        }
+    }
 }

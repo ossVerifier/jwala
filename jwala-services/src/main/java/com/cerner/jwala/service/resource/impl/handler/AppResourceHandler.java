@@ -84,4 +84,15 @@ public class AppResourceHandler extends ResourceHandler {
             return successor.updateResourceMetaData(resourceIdentifier, resourceName, metaData);
         }
     }
+
+    @Override
+    public Object getSelectedValue(ResourceIdentifier resourceIdentifier) {
+        if (canHandle(resourceIdentifier)){
+            final Application application = applicationPersistenceService.getApplication(resourceIdentifier.webAppName);
+            application.setParentJvm(jvmPersistenceService.findJvmByExactName(resourceIdentifier.jvmName));
+            return application;
+        } else {
+            return successor.getSelectedValue(resourceIdentifier);
+        }
+    }
 }

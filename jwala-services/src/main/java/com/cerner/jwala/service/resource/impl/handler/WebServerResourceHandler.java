@@ -90,4 +90,13 @@ public class WebServerResourceHandler extends ResourceHandler {
             return successor.updateResourceMetaData(resourceIdentifier, resourceName, metaData);
         }
     }
+
+    @Override
+    public Object getSelectedValue(ResourceIdentifier resourceIdentifier) {
+        if (canHandle(resourceIdentifier)){
+            return webServerPersistenceService.findWebServerByName(resourceIdentifier.webServerName);
+        } else {
+            return successor.getSelectedValue(resourceIdentifier);
+        }
+    }
 }

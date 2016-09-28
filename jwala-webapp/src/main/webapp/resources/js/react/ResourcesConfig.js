@@ -358,16 +358,14 @@ var XmlTabs = React.createClass({
                                    className="xml-editor-container" saveCallback={this.saveResource}
                                    onChange={this.onChangeCallback} readOnly={this.state.readOnly}/>
             metaDataEditor = <CodeMirrorComponent ref="metaDataEditor" content={this.state.metaData}
-                                    className="xml-editor-container" saveCallback={this.saveResourceMetaData}
-                                    onChange={this.onChangeCallback}/>
-
+                                className="xml-editor-container" saveCallback={this.saveResourceMetaData}
+                                onChange={this.onChangeCallback}/>
             if (this.state.entityType === "webServerSection" || this.state.entityType === "jvmSection") {
                 xmlPreview = <div style={{padding: "5px 5px"}}>A group level web server or JVM template cannot be previewed. Please select a specific web server or JVM instead.</div>;
                 metaDataPreview = <div style={{padding: "5px 5px"}}>A group level web server or JVM template cannot be previewed. Please select a specific web server or JVM instead.</div>;
             } else {
                 xmlPreview = <XmlPreview ref="xmlPreview" />
                 metaDataPreview = <MetaDataPreview ref="metaDataPreview"/>
-
             }
         }
 
@@ -375,6 +373,11 @@ var XmlTabs = React.createClass({
                             {title: "Template Preview", content:xmlPreview},
                             {title: "Meta Data", content: metaDataEditor},
                             {title: "Meta Data Preview", content: metaDataPreview}];
+
+        if (this.state.entityType === "extProperties") {
+            xmlTabItems = [{title: "Template", content:codeMirrorComponent},
+                                                      {title: "Template Preview", content:xmlPreview}];
+        }
 
         return <RTabs ref="tabs" items={xmlTabItems} depth={2} onSelectTab={this.onSelectTab}
                       className="xml-editor-preview-tab-component"
@@ -611,17 +614,46 @@ var XmlTabs = React.createClass({
 
                 }
             } else if (index === 3) {
-                // TODO preview meta data
-                alert("Preview Meta Data");
+                if (this.state.entityType === "jvms" || this.state.entityType === "webServers") {
+                    this.props.resourceService.previewResourceFile(this.refs.metaDataEditor.getText(),
+                                                                   this.state.entityParent.rtreeListMetaData.parent.name,
+                                                                   this.state.entity.name,
+                                                                   this.state.entity.jvmName,
+                                                                   "",
+                                                                   this.previewMetaDataSuccessCallback,
+                                                                   this.previewMetaDataErrorCallback);
+                } else if (this.state.entityType === "webApps" && this.state.entityParent.jvmName) {
+                    this.props.resourceService.previewResourceFile(this.refs.metaDataEditor.getText(),
+                                                                   this.state.entityParent.rtreeListMetaData.parent.name,
+                                                                   "",
+                                                                   this.state.entityParent.jvmName,
+                                                                   this.state.entity.name,
+                                                                   this.previewMetaDataSuccessCallback,
+                                                                   this.previewMetaDataErrorCallback);
+                } else if (this.state.entityType === "webApps") {
+                    this.props.resourceService.previewResourceFile(this.refs.metaDataEditor.getText(),
+                                                                   this.state.entityParent.rtreeListMetaData.parent.name,
+                                                                   "",
+                                                                   "",
+                                                                   this.state.entity.name,
+                                                                   this.previewMetaDataSuccessCallback,
+                                                                   this.previewMetaDataErrorCallback);
+                }
             }
         }
     },
     previewSuccessCallback: function(response) {
         this.refs.xmlPreview.refresh(response.applicationResponseContent);
-        // this.refs.xmlTabs.refs.xmlPreview.resize();
     },
     previewErrorCallback: function(errMsg) {
         this.refs.tabs.setState({activeHash: "#/Configuration/Resources/Template/"});
+        $.errorAlert(errMsg, "Error");
+    },
+    previewMetaDataSuccessCallback: function(response) {
+        this.refs.metaDataPreview.refresh(response.applicationResponseContent);
+    },
+    previewErrorCallback: function(errMsg) {
+        this.refs.tabs.setState({activeHash: "#/Configuration/Resources/Meta Data/"});
         $.errorAlert(errMsg, "Error");
     },
     /**

@@ -110,12 +110,7 @@ var resourceService = {
         }
         return matrixParam;
     },
-    getJvmMetaData: function(templateName, jvmName) {
-        // TODO use createMatrixParam to make method more generic
-        return serviceFoundation.promisedGet("v1.0/resources/template/" + templateName + "/metaData;jvm=" + jvmName);
-    },
     updateResourceMetaData: function(jvmName, webServerName, groupName, webAppName, resourceTemplateName, metaData) {
-        // TODO add params for groupName, webAppName
         var matrixParam = this.createMatrixParam(groupName, webServerName, jvmName, webAppName);
         return serviceFoundation.promisedPut("v1.0/resources/template/metadata/" + encodeURIComponent(resourceTemplateName) + matrixParam,
                                                             "json",

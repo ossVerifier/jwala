@@ -614,8 +614,7 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Override
     public String previewResourceContent(ResourceIdentifier resourceIdentifier, String content) {
-        // TODO make the selected value object non-null based on the resource identifier
-        return generateResourceFile(content, generateResourceGroup(), null);
+        return generateResourceFile(content, generateResourceGroup(), resourceHandler.getSelectedValue(resourceIdentifier));
     }
 
     @Override
