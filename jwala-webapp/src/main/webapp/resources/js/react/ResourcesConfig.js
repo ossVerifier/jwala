@@ -22,6 +22,7 @@ var ResourcesConfig = React.createClass({
                                          ref="xmlTabs"
                                          uploadDialogCallback={this.launchUpload}
                                          updateGroupTemplateCallback={this.launchUpdateGroupTemplate}
+                                         updateGroupMetaDataCallback={this.launchUpdateGroupMetaData}
                                          updateExtPropsAttributesCallback={this.updateExtPropsAttributesCallback}
                                          />);
 
@@ -38,6 +39,11 @@ var ResourcesConfig = React.createClass({
                      show={false}
                      cancelCallback={this.cancelUpdateGroupTemplateCallback}
                      ref="templateUpdateGroupModal"/>
+                    <ModalDialogBox
+                     title="Confirm meta data update"
+                     show={false}
+                     cancelCallback={this.cancelUpdateGroupMetaDataCallback}
+                     ref="metaDataUpdateGroupModal"/>
                     <ModalDialogBox ref="selectTemplateFilesModalDlg"
                                                         title="Upload External Properties"
                                                         show={false}
@@ -138,13 +144,29 @@ var ResourcesConfig = React.createClass({
     cancelUpdateGroupTemplateCallback: function() {
         this.refs.templateUpdateGroupModal.close();
     },
-
     launchUpdateGroupTemplate: function(template){
         var self = this;
         this.refs.templateUpdateGroupModal.show("Confirm update",
             <ConfirmUpdateGroupDialog componentDidMountCallback={this.confirmUpdateGroupDidMount}
+                                      resourceType="templates"
                                       template={template}/>, function() {
                                         self.okUpdateGroupTemplateCallback(template);
+                                      });
+    },
+    okUpdateGroupMetaDataCallback: function(metaData) {
+        this.refs.xmlTabs.saveResourceMetaDataPromise(metaData);
+        this.refs.metaDataUpdateGroupModal.close();
+    },
+    cancelUpdateGroupMetaDataCallback: function() {
+        this.refs.metaDataUpdateGroupModal.close();
+    },
+    launchUpdateGroupMetaData: function(metaData){
+        var self = this;
+        this.refs.metaDataUpdateGroupModal.show("Confirm meta data update",
+            <ConfirmUpdateGroupDialog componentDidMountCallback={this.confirmUpdateGroupDidMount}
+                                      resourceType="meta data"
+                                      metaData={metaData}/>, function() {
+                                        self.okUpdateGroupMetaDataCallback(metaData);
                                       });
     },
     updateExtPropsAttributesCallback: function(){
@@ -475,12 +497,12 @@ var XmlTabs = React.createClass({
         }
     },
     saveResourceMetaData: function(metaData) {
-/*        if (this.state.entityType === "jvmSection" || this.state.entityType === "webServerSection"){
+        if (this.state.entityType === "jvmSection" || this.state.entityType === "webServerSection"){
             // TODO show the confirmation dialog and then call saveResourceMetaDataPromise
             this.props.updateGroupMetaDataCallback(metaData);
-        } else {*/
+        } else {
             this.saveResourceMetaDataPromise(metaData).then(this.savedResourceMetaDataCallback).caught(this.failed.bind(this, "Save Resource Meta Data"));
-        /*}*/
+        }
     },
     saveResourceMetaDataPromise: function(metaData) {
         var thePromise;
@@ -652,7 +674,7 @@ var XmlTabs = React.createClass({
     previewMetaDataSuccessCallback: function(response) {
         this.refs.metaDataPreview.refresh(response.applicationResponseContent);
     },
-    previewErrorCallback: function(errMsg) {
+    previewMetaDataErrorCallback: function(errMsg) {
         this.refs.tabs.setState({activeHash: "#/Configuration/Resources/Meta Data/"});
         $.errorAlert(errMsg, "Error");
     },
@@ -755,11 +777,12 @@ var ConfirmUpdateGroupDialog = React.createClass({
     },
     render: function() {
         var entityType = "JVM";
+        var resourceType = this.props.resourceType;
         if (this.state.entityType === "webServerSection"){
             entityType = "Web Server"
         }
         return <div className={this.props.className}>
-                 Saving will overwrite all the {entityType} templates in the group
+                 Saving will overwrite all the {entityType} {resourceType} in the group
                  <br/>
                  {this.state.entityGroupName}.
                  <br/><br/>

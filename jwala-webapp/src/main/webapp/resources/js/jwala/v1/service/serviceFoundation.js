@@ -121,7 +121,12 @@ var serviceFoundation = {
                                     }).caught(function(e) {
                                         if ($.isFunction(caughtCallback)) {
                                             try {
-                                                caughtCallback(JSON.parse(e.responseText).applicationResponseContent);
+                                                var jsonResponseText = JSON.parse(e.responseText);
+                                                if (jsonResponseText.applicationResponseContent) {
+                                                    caughtCallback(jsonResponseText.applicationResponseContent);
+                                                } else {
+                                                    caughtCallback(jsonResponseText.message);
+                                                }
                                             }catch(e) {
                                                 caughtCallback("Unexpected content in error response: " + e.responseText);
                                             }
