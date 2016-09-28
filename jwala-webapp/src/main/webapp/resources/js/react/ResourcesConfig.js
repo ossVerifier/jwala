@@ -378,10 +378,10 @@ var XmlTabs = React.createClass({
         } else {
             codeMirrorComponent = <CodeMirrorComponent ref="codeMirrorComponent" content={this.state.template}
                                    className="xml-editor-container" saveCallback={this.saveResource}
-                                   onChange={this.onChangeCallback} readOnly={this.state.readOnly}/>
+                                   onChange={this.onChangeCallback} readOnly={this.state.readOnly} mode="xml"/>
             metaDataEditor = <CodeMirrorComponent ref="metaDataEditor" content={this.state.metaData}
                                 className="xml-editor-container" saveCallback={this.saveResourceMetaData}
-                                onChange={this.onChangeCallback}/>
+                                onChange={this.onChangeCallback} mode="javascript"/>
             if (this.state.entityType === "webServerSection" || this.state.entityType === "jvmSection") {
                 xmlPreview = <div style={{padding: "5px 5px"}}>A group level web server or JVM template cannot be previewed. Please select a specific web server or JVM instead.</div>;
                 metaDataPreview = <div style={{padding: "5px 5px"}}>A group level web server or JVM template cannot be previewed. Please select a specific web server or JVM instead.</div>;
@@ -593,6 +593,14 @@ var XmlTabs = React.createClass({
     onSelectTab: function(index) {
         var self = this;
         if (this.state.entity !== null && this.state.resourceTemplateName !== null) {
+            // keep the tab open for template and meta data
+            if (index === 0) {
+                this.state.lastSaved = "Template";
+            } else if (index === 2) {
+                this.state.lastSaved = "Meta Data";
+            }
+
+            // show the preview
             if (index === 1 ) {
                 if (this.state.entityType === "jvms") {
                     this.props.jvmService.previewResourceFile(this.state.entity.jvmName,

@@ -16,7 +16,7 @@ var CodeMirrorComponent = React.createClass({
     componentDidMount: function() {
         var val = this.props.content ? this.props.content : "";
         this.codeMirror = CodeMirror(this.refs.codeMirrorHost.getDOMNode(), {value: val, lineNumbers: true,
-                                     mode:  "xml", readOnly: this.props.readOnly});
+                                     mode:  this.props.mode, readOnly: this.props.readOnly});
         this.state.data = this.codeMirror.getValue();
         this.codeMirror.on("change", this.onChanged);
         this.resize();

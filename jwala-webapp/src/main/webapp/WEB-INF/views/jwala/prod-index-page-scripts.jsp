@@ -18,6 +18,7 @@
 <script src="public-resources/ext/js/codemirror/codemirror.js"></script>
 <script src="public-resources/ext/js/codemirror/mode/groovy.js"></script>
 <script src="public-resources/ext/js/codemirror/mode/xml.js"></script>
+<script src="public-resources/ext/js/codemirror/mode/javascript.js"></script>
 
 <!-- TODO: Get non beta then minify  -->
 <script src="public-resources/ext/js/moment.js"></script>
