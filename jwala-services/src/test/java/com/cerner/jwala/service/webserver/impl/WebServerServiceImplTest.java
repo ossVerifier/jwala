@@ -432,6 +432,16 @@ public class WebServerServiceImplTest {
         assertEquals(webServers, wsService.getWebServersPropagationNew());
     }
 
+    @Test (expected = InternalErrorException.class)
+    public void testUploadWebServerConfigFail() {
+        UploadWebServerTemplateRequest request = mock(UploadWebServerTemplateRequest.class);
+        when(request.getMetaData()).thenReturn("\"deployPath\":\"d:/httpd-data\",\"deployFileName\":\"httpd.conf\"}");
+        when(request.getWebServer()).thenReturn(mockWebServer);
+        when(mockWebServer.getName()).thenReturn("testWebServer");
+        when(request.getConfFileName()).thenReturn("httpd.conf");
+        wsService.uploadWebServerConfig(request, testUser);
+    }
+
     private String removeCarriageReturnsAndNewLines(String s) {
         return s.replaceAll("\\r", "").replaceAll("\\n", "");
     }
