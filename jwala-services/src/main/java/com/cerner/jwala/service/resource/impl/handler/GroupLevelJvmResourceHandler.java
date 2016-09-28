@@ -96,7 +96,12 @@ public class GroupLevelJvmResourceHandler extends ResourceHandler {
     @Override
     public String updateResourceMetaData(ResourceIdentifier resourceIdentifier, String resourceName, String metaData) {
         if (canHandle(resourceIdentifier)) {
-            return groupPersistenceService.updateGroupJvmResourceMetaData(resourceIdentifier.groupName, resourceName, metaData);
+            final String updatedMetaData = groupPersistenceService.updateGroupJvmResourceMetaData(resourceIdentifier.groupName, resourceName, metaData);
+            Set<Jvm> jvmSet = groupPersistenceService.getGroup(resourceIdentifier.groupName).getJvms();
+            for (Jvm jvm : jvmSet) {
+                jvmPersistenceService.updateResourceMetaData(jvm.getJvmName(), resourceName, metaData);
+            }
+            return updatedMetaData;
         } else {
             return successor.updateResourceMetaData(resourceIdentifier, resourceName, metaData);
         }

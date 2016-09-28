@@ -498,7 +498,6 @@ var XmlTabs = React.createClass({
     },
     saveResourceMetaData: function(metaData) {
         if (this.state.entityType === "jvmSection" || this.state.entityType === "webServerSection"){
-            // TODO show the confirmation dialog and then call saveResourceMetaDataPromise
             this.props.updateGroupMetaDataCallback(metaData);
         } else {
             this.saveResourceMetaDataPromise(metaData).then(this.savedResourceMetaDataCallback).caught(this.failed.bind(this, "Save Resource Meta Data"));
