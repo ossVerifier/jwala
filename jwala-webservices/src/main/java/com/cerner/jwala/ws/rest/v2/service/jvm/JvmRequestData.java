@@ -2,7 +2,10 @@ package com.cerner.jwala.ws.rest.v2.service.jvm;
 
 import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 
-import javax.xml.bind.annotation.*;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlRootElement;
+import java.util.Arrays;
 
 /**
  * POJO that wraps JVM related data
@@ -120,7 +123,7 @@ public class JvmRequestData {
         return groupNames;
     }
 
-    public void setGroupNames(String[] groupNames) {
-        this.groupNames = groupNames;
+    public void setGroupNames(String [] groupNames) {
+        this.groupNames = Arrays.copyOf(groupNames, groupNames.length, String[].class);
     }
 }

@@ -688,19 +688,21 @@ public class ResourceServiceImpl implements ResourceService {
             final String metaDataPath;
             final ResourceContent resourceContent = getResourceContent(resourceIdentifier);
             String metaDataStr = resourceContent.getMetaData();
-            ResourceTemplateMetaData resourceTemplateMetaData = new ObjectMapper().readValue(metaDataStr, ResourceTemplateMetaData.class);
+            final String tokenizedMetaData = ResourceFileGenerator.generateResourceConfig(metaDataStr, generateResourceGroup(), null);
+            LOGGER.info("tokenized metadata is : {}", tokenizedMetaData);
+            ResourceTemplateMetaData resourceTemplateMetaData = new ObjectMapper().readValue(tokenizedMetaData, ResourceTemplateMetaData.class);
             metaDataPath = resourceTemplateMetaData.getDeployPath();
             String resourceSourceCopy;
             // TODO set the selected entity value, for now make it null for the external properties
-            String resourceDestPath = ResourceFileGenerator.generateResourceConfig(metaDataPath, generateResourceGroup(), null) + "/" + fileName;
+            String resourceDestPath = metaDataPath + "/" + resourceTemplateMetaData.getDeployFileName();
             if (resourceTemplateMetaData.getContentType().equals(ContentType.APPLICATION_BINARY.contentTypeStr)) {
                 resourceSourceCopy = resourceContent.getContent();
             } else {
                 String fileContent = resourceContent.getContent();
                 // TODO make the copy source generic (not external-properties directory)
                 String jvmResourcesNameDir = ApplicationProperties.get("paths.generated.resource.dir") + "/external-properties";
-                resourceSourceCopy = jvmResourcesNameDir + "/" + fileName;
-                createConfigFile(jvmResourcesNameDir + "/", fileName, fileContent);
+                resourceSourceCopy = jvmResourcesNameDir + "/" + resourceTemplateMetaData.getDeployFileName();
+                createConfigFile(jvmResourcesNameDir + "/", resourceTemplateMetaData.getDeployFileName(), fileContent);
             }
 
             LOGGER.info("Copying {} to {} on host {}", resourceSourceCopy, resourceDestPath, hostName);

@@ -98,7 +98,7 @@ public class GroupCrudServiceImpl extends AbstractCrudServiceImpl<JpaGroup> impl
     @Override
     public void removeGroup(final Identifier<Group> aGroupId) {
         final JpaGroup group = getGroup(aGroupId);
-        remove(group);
+            remove(group);
     }
 
     @Override

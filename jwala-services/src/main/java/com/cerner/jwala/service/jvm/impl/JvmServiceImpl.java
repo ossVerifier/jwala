@@ -651,22 +651,22 @@ public class JvmServiceImpl implements JvmService {
                         "The target JVM must be stopped before attempting to update the resource files");
             }
 
-            final String metaDataPath;
             String metaDataStr = getResourceTemplateMetaData(jvmName, fileName);
-            ResourceTemplateMetaData resourceTemplateMetaData = new ObjectMapper().readValue(metaDataStr, ResourceTemplateMetaData.class);
-            metaDataPath = resourceTemplateMetaData.getDeployPath();
+            final String tokenizedMetaData = ResourceFileGenerator.generateResourceConfig(metaDataStr, resourceService.generateResourceGroup(), jvm);
+            LOGGER.info("tokenized metadata is : {}", tokenizedMetaData);
+            ResourceTemplateMetaData resourceTemplateMetaData = new ObjectMapper().readValue(tokenizedMetaData, ResourceTemplateMetaData.class);
             String resourceSourceCopy;
-            String resourceDestPath = ResourceFileGenerator.generateResourceConfig(metaDataPath, resourceService.generateResourceGroup(), jvm) + "/" + fileName;
+            String resourceDestPath = resourceTemplateMetaData.getDeployPath() + "/" + resourceTemplateMetaData.getDeployFileName();
             if (resourceTemplateMetaData.getContentType().equals(ContentType.APPLICATION_BINARY.contentTypeStr)) {
                 resourceSourceCopy = getResourceTemplate(jvmName, fileName, false);
             } else {
                 String fileContent = generateConfigFile(jvmName, fileName);
                 String jvmResourcesNameDir = ApplicationProperties.get("paths.generated.resource.dir") + "/" + jvmName;
-                resourceSourceCopy = jvmResourcesNameDir + "/" + fileName;
-                createConfigFile(jvmResourcesNameDir + "/", fileName, fileContent);
+                resourceSourceCopy = jvmResourcesNameDir + "/" + resourceTemplateMetaData.getDeployFileName();
+                createConfigFile(jvmResourcesNameDir + "/", resourceTemplateMetaData.getDeployFileName(), fileContent);
             }
 
-            deployJvmConfigFile(fileName, jvm, resourceDestPath, resourceSourceCopy, user);
+            deployJvmConfigFile(resourceTemplateMetaData.getDeployFileName(), jvm, resourceDestPath, resourceSourceCopy, user);
         } catch (IOException e) {
             String message = "Failed to write file";
             LOGGER.error(badStreamMessage + message, e);

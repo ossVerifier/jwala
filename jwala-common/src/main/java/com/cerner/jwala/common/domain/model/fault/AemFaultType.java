@@ -136,7 +136,9 @@ public enum AemFaultType implements MessageResponseStatus {
 
     HTTPD_CONF_TEMPLATE_ALREADY_EXISTS("AEM63", "HttpdConfTemplateAlreadyExists"),
 
-    INVALID_REST_SERVICE_PARAMETER("AEM64", "InvalidRestServiceParameter");
+    INVALID_REST_SERVICE_PARAMETER("AEM64", "InvalidRestServiceParameter"),
+
+    FAILED_TO_DELETE_GROUP("AEM67","FailedToDeleteGroup");
 
     private final String faultCode;
     private final String faultMessage;

@@ -104,7 +104,7 @@ public class JGroupsReportingLifeCycleListener implements LifecycleListener {
             this.schedulerDelayInitial = Long.parseLong(schedulerDelayInitial);
         } catch (final NumberFormatException e) {
             LOGGER.error("Failed to convert schedulerDelayInitial value of \"{}\" to long! " +
-                    "The default value {} will be used instead.", schedulerDelayInitial, SCHEDULER_DELAY_INITIAL_DEFAULT);
+                    "The default value {} will be used instead.", schedulerDelayInitial, SCHEDULER_DELAY_INITIAL_DEFAULT, e);
         }
     }
 
@@ -113,7 +113,7 @@ public class JGroupsReportingLifeCycleListener implements LifecycleListener {
             this.schedulerDelaySubsequent = Long.parseLong(schedulerDelaySubsequent);
         } catch (final NumberFormatException e) {
             LOGGER.error("Failed to convert schedulerDelaySubsequent value of \"{}\" to long! " +
-                    "The default value {} will be used instead.", schedulerDelaySubsequent, SCHEDULER_DELAY_SUBSEQUENT_DEFAULT);
+                    "The default value {} will be used instead.", schedulerDelaySubsequent, SCHEDULER_DELAY_SUBSEQUENT_DEFAULT, e);
         }
     }
 
@@ -121,7 +121,7 @@ public class JGroupsReportingLifeCycleListener implements LifecycleListener {
         try {
             this.schedulerDelayUnit = TimeUnit.valueOf(schedulerDelayUnit);
         } catch (final IllegalArgumentException e) {
-            LOGGER.error("Invalid schedulerDelayUnit value \"{}\"! The default value of {} will be used instead.", TimeUnit.SECONDS);
+            LOGGER.error("Invalid schedulerDelayUnit value \"{}\"! The default value of {} will be used instead.", TimeUnit.SECONDS, e);
         }
     }
 
@@ -130,7 +130,7 @@ public class JGroupsReportingLifeCycleListener implements LifecycleListener {
             this.schedulerThreadCount = Integer.parseInt(schedulerThreadCount);
         } catch (final NumberFormatException e) {
             LOGGER.error("Failed to convert schedulerThreadCount value of \"{}\" to integer! " +
-                    "The default value {} will be used instead.", schedulerDelaySubsequent, SCHEDULER_THREAD_COUNT_DEFAULT);
+                    "The default value {} will be used instead.", schedulerDelaySubsequent, SCHEDULER_THREAD_COUNT_DEFAULT, e);
         }
     }
 }

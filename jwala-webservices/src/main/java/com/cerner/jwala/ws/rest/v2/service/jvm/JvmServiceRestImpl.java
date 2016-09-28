@@ -49,6 +49,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
             jvmService.deleteJvm(name, auth.getName());
             return Response.ok().build();
         } catch (final JvmServiceException e) {
+            LOGGER.error(e.getMessage(), e);
             return new JsonResponseBuilder<String>().setStatus(Response.Status.INTERNAL_SERVER_ERROR)
                     .setContent(e.getMessage()).build();
         }
