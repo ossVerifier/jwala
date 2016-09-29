@@ -274,7 +274,8 @@ public class ApplicationServiceImpl implements ApplicationService {
             LOGGER.info("tokenized metadata is : {}", tokenizedMetaData);
             ObjectMapper mapper = new ObjectMapper();
             ResourceTemplateMetaData templateMetaData = mapper.readValue(tokenizedMetaData, ResourceTemplateMetaData.class);
-            final String destPath = templateMetaData.getDeployPath() + '/' + templateMetaData.getDeployFileName();
+            final String deployFileName = templateMetaData.getDeployFileName();
+            final String destPath = templateMetaData.getDeployPath() + '/' + deployFileName;
             String srcPath;
             if (templateMetaData.getContentType().equals(ContentType.APPLICATION_BINARY.contentTypeStr)) {
                 srcPath = applicationPersistenceService.getResourceTemplate(appName, resourceTemplateName, jvmName, groupName);
@@ -282,7 +283,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                 srcPath = confFile.getAbsolutePath().replace("\\", "/");
             }
 
-            final String eventDescription = WindowsJvmNetOperation.SECURE_COPY.name() + " " + templateMetaData.getDeployFileName();
+            final String eventDescription = WindowsJvmNetOperation.SECURE_COPY.name() + " " + deployFileName;
             final String id = user.getId();
 
             historyService.createHistory("JVM " + jvm.getJvmName(), new ArrayList<Group>(jvm.getGroups()), eventDescription, EventType.USER_ACTION, id);
@@ -333,12 +334,12 @@ public class ApplicationServiceImpl implements ApplicationService {
                     srcPath,
                     destPath);
             if (execData.getReturnCode().wasSuccessful()) {
-                LOGGER.info("Copy of {} successful: {}", templateMetaData.getDeployFileName(), confFile.getAbsolutePath());
+                LOGGER.info("Copy of {} successful: {}", deployFileName, confFile.getAbsolutePath());
                 return execData;
             } else {
                 String standardError = execData.getStandardError().isEmpty() ? execData.getStandardOutput() : execData.getStandardError();
                 LOGGER.error("Copy command completed with error trying to copy {} to {} :: ERROR: {}",
-                        templateMetaData.getDeployFileName(), appName, standardError);
+                        deployFileName, appName, standardError);
                 throw new DeployApplicationConfException(standardError);
             }
         } catch (FileNotFoundException | CommandFailureException ex) {
