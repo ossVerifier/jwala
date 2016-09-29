@@ -148,6 +148,7 @@ public class JvmControlServiceImpl implements JvmControlService {
                                 break;
                             default:
                                 retCode = returnCode.getReturnCode();
+                                break;
                         }
 
                         LOGGER.warn(commandOutputReturnDescription);
