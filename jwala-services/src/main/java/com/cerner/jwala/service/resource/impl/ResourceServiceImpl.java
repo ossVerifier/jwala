@@ -594,11 +594,7 @@ public class ResourceServiceImpl implements ResourceService {
     @Override
     @Transactional
     public String updateResourceMetaData(ResourceIdentifier resourceIdentifier, String resourceName, String metaData) {
-        try {
-            return resourceHandler.updateResourceMetaData(resourceIdentifier, resourceName, metaData);
-        } catch (final ResourceHandlerException rhe) {
-            throw new ResourceServiceException(rhe);
-        }
+        return resourceHandler.updateResourceMetaData(resourceIdentifier, resourceName, metaData);
     }
 
     protected void checkResourceExternalProperties(ResourceIdentifier resourceIdentifier, String templateContent) {

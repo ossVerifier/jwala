@@ -176,7 +176,7 @@ public class ApplicationCrudServiceImpl extends AbstractCrudServiceImpl<JpaAppli
     }
 
     @Override
-    public void updateResourceMetaData(String webAppName, String resourceName, String metaData, JpaJvm jpaJvm) {
+    public void updateResourceMetaData(String webAppName, String resourceName, String metaData, JpaJvm jpaJvm) throws ResourceTemplateMetaDataUpdateException{
         final Query q = entityManager.createNamedQuery(JpaApplicationConfigTemplate.UPDATE_APP_TEMPLATE_META_DATA);
         q.setParameter("appName", webAppName);
         q.setParameter("templateName", resourceName);

@@ -8,6 +8,7 @@ import com.cerner.jwala.common.domain.model.resource.ResourceTemplateMetaData;
 import com.cerner.jwala.common.exception.FaultCodeException;
 import com.cerner.jwala.common.exec.CommandOutput;
 import com.cerner.jwala.common.properties.ExternalProperties;
+import com.cerner.jwala.persistence.jpa.service.exception.ResourceTemplateMetaDataUpdateException;
 import com.cerner.jwala.service.exception.ResourceServiceException;
 import com.cerner.jwala.service.resource.ResourceService;
 import com.cerner.jwala.service.resource.impl.CreateResourceResponseWrapper;
@@ -469,8 +470,12 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
                 .setWebServerName(resourceHierarchyParam.getWebServer())
                 .setJvmName(resourceHierarchyParam.getJvm())
                 .setWebAppName(resourceHierarchyParam.getWebApp()).build();
-
-        return ResponseBuilder.ok(resourceService.updateResourceMetaData(resourceIdentifier, resourceName, metaData));
+        try {
+            return ResponseBuilder.ok(resourceService.updateResourceMetaData(resourceIdentifier, resourceName, metaData));
+        } catch (ResourceTemplateMetaDataUpdateException ue) {
+            LOGGER.error("Failed to update the resource", ue);
+            return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(AemFaultType.RESOURCE_META_DATA_UPDATE_FAILED, ue.getMessage()));
+        }
     }
 
     @Override

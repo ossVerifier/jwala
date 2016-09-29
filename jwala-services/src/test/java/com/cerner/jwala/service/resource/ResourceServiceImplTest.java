@@ -781,4 +781,14 @@ public class ResourceServiceImplTest {
         when(mockResourcePersistenceService.getAppTemplate(eq(groupName), eq(appName), eq(templateName))).thenReturn(result);
         assertEquals(result, resourceService.getAppTemplate(groupName, appName, templateName));
     }
+
+    @Test
+    public void testUpdateResourceMetaData() {
+        ResourceIdentifier mockResourceIdentifier = mock(ResourceIdentifier.class);
+        when(mockResourceHandler.updateResourceMetaData(any(ResourceIdentifier.class), anyString(), anyString())).thenReturn("{}");
+        final String resourceName = "test-resource-name";
+        final String metaData = "{\"key\":\"value\"}";
+        resourceService.updateResourceMetaData(mockResourceIdentifier, resourceName, metaData);
+        verify(mockResourceHandler).updateResourceMetaData(eq(mockResourceIdentifier), eq(resourceName), eq(metaData));
+    }
 }
