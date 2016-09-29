@@ -142,6 +142,7 @@ public class GroupServiceImpl implements GroupService {
         try {
             groupPersistenceService.removeGroup(name);
         } catch (PersistenceException e) {
+            LOGGER.error("Error removing group", e);
             if (e.getMessage().contains("The transaction has been rolled back.  See the nested exceptions for details on the errors that occurred.")) {
                 throw new GroupServiceException("Please check for group dependents Web Apps, Web Servers or JVMs before deleting " + name);
             }
