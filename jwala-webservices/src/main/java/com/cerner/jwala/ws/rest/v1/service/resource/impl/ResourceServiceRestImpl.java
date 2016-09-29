@@ -580,9 +580,4 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
             }
         }
     }
-
-    @Override
-    public Response getResourceMetaData(final String templateName, final ResourceHierarchyParam resourceHierarchyParam) {
-        return ResponseBuilder.ok(resourceService.getJvmResourceMetaData(templateName, resourceHierarchyParam.getJvm()));
-    }
 }

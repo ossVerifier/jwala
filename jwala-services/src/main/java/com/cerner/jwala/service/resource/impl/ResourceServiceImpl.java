@@ -887,9 +887,4 @@ public class ResourceServiceImpl implements ResourceService {
         return fileInfo.getPath().toString();
     }
 
-    @Override
-    public String getJvmResourceMetaData(final String templateName, final String jvmName) {
-        return resourceDao.getJvmResourceMetaData(templateName, jvmName);
-    }
-
 }

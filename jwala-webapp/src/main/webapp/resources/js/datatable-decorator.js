@@ -123,9 +123,13 @@ var decorateTableAsDataTable = function(tableId,
                 // If mRender is set to a function
                 aoColumnDefs[itemIndex].mRender = item.mRender;
             } else if (!isArray(item) && item.jwalaType === "custom") {
-                if(item.jwalaRenderer == 'undefined') {
+                if (item.jwalaRenderer == 'undefined') {
                     alert('You set jwalaType to custom, but you did not set jwalaRenderCfgFn to a function(dataTable, data, aoColumnDefs, i) { aoColumnDefs[i].mRender = function(data, type, full){}}!');
-                } return item.jwalaRenderCfgFn(self, item, aoColumnDefs, itemIndex, parentItemId, parentItemName);
+                }
+
+                // aoColumnDefs[itemIndex].sSortDataType = "dom-server-state";
+
+                return item.jwalaRenderCfgFn(self, item, aoColumnDefs, itemIndex, parentItemId, parentItemName);
             } else {
                 aoColumnDefs[itemIndex].mRender = function(data, type, full) {
                    if (!isArray(item)) {
