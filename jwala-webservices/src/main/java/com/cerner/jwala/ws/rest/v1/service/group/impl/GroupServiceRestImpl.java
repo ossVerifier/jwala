@@ -127,7 +127,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
             final Group group = groupService.createGroup(new CreateGroupRequest(aNewGroupName), aUser.getUser());
             return ResponseBuilder.created(group);
         } catch (EntityExistsException eee) {
-            LOGGER.error("Group Name already exists: " + aNewGroupName);
+            LOGGER.error("Group Name already exists: {}", aNewGroupName);
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
                     AemFaultType.DUPLICATE_GROUP_NAME, eee.getMessage(), eee));
         }
@@ -147,7 +147,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
             return ResponseBuilder.ok(groupService.updateGroup(updatedGroup.toUpdateGroupCommand(),
                     aUser.getUser()));
         } catch (EntityExistsException eee) {
-            LOGGER.error("Group Name already exists: " + anUpdatedGroup.getName());
+            LOGGER.error("Group Name already exists: {}", anUpdatedGroup.getName());
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
                     AemFaultType.DUPLICATE_GROUP_NAME, eee.getMessage(), eee));
         }
