@@ -42,7 +42,7 @@ public class BalancerManagerServiceRestImpl implements BalancerManagerServiceRes
             BalancerManagerState balancerManagerState = balancerManagerService.drainUserWebServer(groupName, webServerName, jvmNames, getUser());
             return ResponseBuilder.ok(balancerManagerState);
         } catch (InternalErrorException iee) {
-            LOGGER.error("Drain web server error: " + iee.getMessage());
+            LOGGER.error("Drain web server error ", iee.getMessage());
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
                     AemFaultType.INVALID_WEBSERVER_OPERATION, iee.getMessage(), iee));
         }
@@ -60,7 +60,7 @@ public class BalancerManagerServiceRestImpl implements BalancerManagerServiceRes
             BalancerManagerState balancerManagerState = balancerManagerService.drainUserGroupJvm(groupName, jvmName, getUser());
             return ResponseBuilder.ok(balancerManagerState);
         } catch (InternalErrorException iee) {
-            LOGGER.error("Drain jvm error: " + iee.getMessage());
+            LOGGER.error("Drain jvm error ", iee.getMessage());
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
                     AemFaultType.INVALID_WEBSERVER_OPERATION, iee.getMessage(), iee));
         }

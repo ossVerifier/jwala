@@ -163,10 +163,10 @@ public class GroupServiceRestImpl implements GroupServiceRest {
                 groupService.removeGroup(new Identifier<Group>(name));
             }
             return ResponseBuilder.ok();
-        } catch (GroupServiceException pe) {
-            LOGGER.error("Remove group error: " + name);
+        } catch (GroupServiceException e) {
+            LOGGER.error("Remove group error: {}", name, e);
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
-                    AemFaultType.FAILED_TO_DELETE_GROUP, pe.getMessage(), pe));
+                    AemFaultType.FAILED_TO_DELETE_GROUP, e.getMessage(), e));
         }
     }
 
@@ -492,6 +492,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
             }
             return ResponseBuilder.ok(group);
         } catch (InternalErrorException iee) {
+            LOGGER.error("Generate group web servers error {}", iee.getMessage());
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
                     AemFaultType.INVALID_WEBSERVER_OPERATION, iee.getMessage(), iee));
         }
@@ -535,6 +536,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
 
             return ResponseBuilder.ok(group);
         } catch (InternalErrorException iee) {
+            LOGGER.error("Generate group jvms error ", iee.getMessage());
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
                     AemFaultType.INVALID_WEBSERVER_OPERATION, iee.getMessage(), iee));
         }
