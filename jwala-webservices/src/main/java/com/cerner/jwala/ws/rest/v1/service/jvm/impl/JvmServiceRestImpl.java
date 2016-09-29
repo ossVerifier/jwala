@@ -11,6 +11,7 @@ import com.cerner.jwala.common.exec.CommandOutputReturnCode;
 import com.cerner.jwala.common.request.jvm.ControlJvmRequest;
 import com.cerner.jwala.service.jvm.JvmControlService;
 import com.cerner.jwala.service.jvm.JvmService;
+import com.cerner.jwala.service.jvm.exception.JvmControlServiceException;
 import com.cerner.jwala.service.resource.ResourceService;
 import com.cerner.jwala.ws.rest.v1.provider.AuthenticatedUser;
 import com.cerner.jwala.ws.rest.v1.response.ResponseBuilder;
@@ -36,6 +37,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
     private final JvmControlService jvmControlService;
     private final ResourceService resourceService;
     private static JvmServiceRestImpl instance;
+    private static final long DEFAULT_WAIT_TIMEOUT = 300000L;
 
     @Context
     private MessageContext context;
@@ -98,9 +100,26 @@ public class JvmServiceRestImpl implements JvmServiceRest {
     }
 
     @Override
-    public Response controlJvm(final Identifier<Jvm> aJvmId, final JsonControlJvm aJvmToControl, final AuthenticatedUser aUser) {
-        LOGGER.debug("Control JVM requested: {} {} by user {}", aJvmId, aJvmToControl, aUser.getUser().getId());
-        final CommandOutput commandOutput = jvmControlService.controlJvm(new ControlJvmRequest(aJvmId, aJvmToControl.toControlOperation()), aUser.getUser());
+    public Response controlJvm(final Identifier<Jvm> aJvmId, final JsonControlJvm aJvmToControl, Boolean wait,
+                               Long waitTimeout, final AuthenticatedUser aUser) {
+        LOGGER.debug("Control JVM requested: {} {} by user {} with wait = {} and timeout = {}s", aJvmId, aJvmToControl,
+                aUser.getUser().getId(), wait, waitTimeout);
+
+        final CommandOutput commandOutput;
+        final ControlJvmRequest controlJvmRequest = new ControlJvmRequest(aJvmId, aJvmToControl.toControlOperation());
+        if (Boolean.TRUE.equals(wait)) {
+            waitTimeout = waitTimeout == null ? DEFAULT_WAIT_TIMEOUT : waitTimeout * 1000; // waitTimeout is in seconds, need to convert to ms
+            try {
+                commandOutput = jvmControlService.controlJvmSynchronously(controlJvmRequest, waitTimeout, aUser.getUser());
+            } catch (final InterruptedException | JvmControlServiceException e) {
+                LOGGER.error("Control a JVM synchronously has failed!", e);
+                return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR,
+                        new FaultCodeException(AemFaultType.SERVICE_EXCEPTION, e.getMessage()));
+            }
+        } else {
+            commandOutput = jvmControlService.controlJvm(controlJvmRequest, aUser.getUser());
+        }
+
         if (commandOutput.getReturnCode().wasSuccessful()) {
             return ResponseBuilder.ok(commandOutput);
         } else {

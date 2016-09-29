@@ -27,6 +27,7 @@ import com.cerner.jwala.service.RemoteCommandReturnInfo;
 import com.cerner.jwala.service.exception.RemoteCommandExecutorServiceException;
 import com.cerner.jwala.service.jvm.JvmControlService;
 import com.cerner.jwala.service.jvm.JvmStateService;
+import com.cerner.jwala.service.jvm.exception.JvmControlServiceException;
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
@@ -53,6 +54,11 @@ public class JvmControlServiceImpl implements JvmControlService {
     private final RemoteCommandExecutorService remoteCommandExecutorService;
     private final SshConfiguration sshConfig;
     private final JvmStateService jvmStateService;
+
+    private static final int THREAD_SLEEP_DURATION = 1000;
+
+    private static final String MSG_SERVICE_ALREADY_STARTED = "Service already started";
+    private static final String MSG_SERVICE_ALREADY_STOPPED = "Service already stopped";
 
     public JvmControlServiceImpl(final JvmPersistenceService jvmPersistenceService,
                                  final RemoteCommandExecutor<JvmControlOperation> theExecutor,
@@ -125,18 +131,37 @@ public class JvmControlServiceImpl implements JvmControlService {
                 }
             } else {
                 // Process non successful return codes...
-                final String commandOutputReturnDescription = CommandOutputReturnCode.fromReturnCode(returnCode.getReturnCode()).getDesc();
+                String commandOutputReturnDescription = CommandOutputReturnCode.fromReturnCode(returnCode.getReturnCode()).getDesc();
                 switch (returnCode.getReturnCode()) {
                     case ExecReturnCode.JWALA_EXIT_PROCESS_KILLED:
                         commandOutput = new CommandOutput(new ExecReturnCode(0), FORCED_STOPPED, commandOutput.getStandardError());
                         jvmStateService.updateState(jvm.getId(), JvmState.FORCED_STOPPED);
                         break;
                     case ExecReturnCode.JWALA_EXIT_CODE_ABNORMAL_SUCCESS:
+                        int retCode = 0;
+                        switch (controlJvmRequest.getControlOperation()) {
+                            case START:
+                                commandOutputReturnDescription = MSG_SERVICE_ALREADY_STARTED;
+                                break;
+                            case STOP:
+                                commandOutputReturnDescription = MSG_SERVICE_ALREADY_STOPPED;
+                                break;
+                            default:
+                                retCode = returnCode.getReturnCode();
+                        }
+
                         LOGGER.warn(commandOutputReturnDescription);
                         historyService.createHistory(getServerName(jvm), new ArrayList<>(jvm.getGroups()), commandOutputReturnDescription,
-                                EventType.APPLICATION_ERROR, aUser.getId());
+                                EventType.APPLICATION_EVENT, aUser.getId());
+
+                        // Send as a failure to make the UI display it in the history window
+                        // TODO: Sending a failure state so that the commandOutputReturnDescription will be shown in the UI is not the proper way to do this, refactor this in the future
                         messagingService.send(new CurrentState<>(jvm.getId(), JvmState.JVM_FAILED, DateTime.now(), StateType.JVM,
                                 commandOutputReturnDescription));
+
+                        if (retCode == 0) {
+                            commandOutput = new CommandOutput(new ExecReturnCode(retCode), commandOutputReturnDescription, null);
+                        }
                         break;
                     default:
                         final String errorMsg = "JVM control command was not successful! Return code = "
@@ -145,7 +170,7 @@ public class JvmControlServiceImpl implements JvmControlService {
 
                         LOGGER.error(errorMsg);
                         historyService.createHistory(getServerName(jvm), new ArrayList<>(jvm.getGroups()), errorMsg,
-                                EventType.APPLICATION_ERROR, aUser.getId());
+                                EventType.APPLICATION_EVENT, aUser.getId());
                         messagingService.send(new CurrentState<>(jvm.getId(), JvmState.JVM_FAILED, DateTime.now(), StateType.JVM,
                                 errorMsg));
 
@@ -156,11 +181,71 @@ public class JvmControlServiceImpl implements JvmControlService {
             return commandOutput;
         } catch (final RemoteCommandExecutorServiceException e) {
             LOGGER.error(e.getMessage(), e);
-            historyService.createHistory(getServerName(jvm), new ArrayList<>(jvm.getGroups()), e.getMessage(), EventType.APPLICATION_ERROR,
+            historyService.createHistory(getServerName(jvm), new ArrayList<>(jvm.getGroups()), e.getMessage(), EventType.APPLICATION_EVENT,
                     aUser.getId());
             messagingService.send(new CurrentState<>(jvm.getId(), JvmState.JVM_FAILED, DateTime.now(), StateType.JVM, e.getMessage()));
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE,
                     "CommandFailureException when attempting to control a JVM: " + controlJvmRequest, e);
+        }
+    }
+
+    @Override
+    public CommandOutput controlJvmSynchronously(final ControlJvmRequest controlJvmRequest, final long timeout,
+                                                 final User user) throws InterruptedException {
+
+        final CommandOutput commandOutput = controlJvm(controlJvmRequest, user);
+        if (commandOutput.getReturnCode().wasSuccessful()) {
+            // Process start/stop operations only for now...
+            switch (controlJvmRequest.getControlOperation()) {
+                case START:
+                    waitForState(controlJvmRequest, timeout, JvmState.JVM_STARTED);
+                    break;
+                case STOP:
+                    waitForState(controlJvmRequest, timeout, JvmState.JVM_STOPPED, JvmState.FORCED_STOPPED);
+                    break;
+                case BACK_UP_FILE:
+                case CHANGE_FILE_MODE:
+                case CHECK_FILE_EXISTS:
+                case CREATE_DIRECTORY:
+                case DELETE_SERVICE:
+                case DEPLOY_CONFIG_ARCHIVE:
+                case HEAP_DUMP:
+                case INVOKE_SERVICE:
+                case SECURE_COPY:
+                case THREAD_DUMP:
+                    throw new UnsupportedOperationException();
+            }
+        }
+        return commandOutput;
+    }
+
+    /**
+     * Loop until jvm state is in expected state
+     * @param controlJvmRequest {@link ControlJvmRequest}
+     * @param timeout the timeout in ms
+     *                Note: the remote command called before this method might also be waiting for service state like in
+     *                the case of "FORCED STOPPED" and if so a timeout will never occur here
+     * @param expectedStates expected {@link JvmState}
+     * @throws InterruptedException
+     */
+    private void waitForState(final ControlJvmRequest controlJvmRequest, final long timeout,
+                              final JvmState ... expectedStates) throws InterruptedException {
+        final long startTime = DateTime.now().getMillis();
+        while (true) {
+            final Jvm jvm = jvmPersistenceService.getJvm(controlJvmRequest.getJvmId());
+            LOGGER.info("Retrieved jvm: {}", jvm);
+
+            for (final JvmState jvmState : expectedStates) {
+                if (jvmState.equals(jvm.getState())) {
+                    return;
+                }
+            }
+
+            if ((DateTime.now().getMillis() - startTime) > timeout) {
+                throw new JvmControlServiceException("Timeout limit reached while waiting for JVM to " +
+                        controlJvmRequest.getControlOperation().name());
+            }
+            Thread.sleep(THREAD_SLEEP_DURATION);
         }
     }
 

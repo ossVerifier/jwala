@@ -276,7 +276,7 @@ public class JvmServiceRestImplTest {
         when(execData.getReturnCode()).thenReturn(execDataReturnCode);
 
         final JsonControlJvm jsonControlJvm = new JsonControlJvm("start");
-        final Response response = jvmServiceRest.controlJvm(Identifier.id(1l, Jvm.class), jsonControlJvm, authenticatedUser);
+        final Response response = jvmServiceRest.controlJvm(Identifier.id(1l, Jvm.class), jsonControlJvm, null, null, authenticatedUser);
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
 
 
@@ -290,7 +290,7 @@ public class JvmServiceRestImplTest {
 
         when(jvmControlService.controlJvm(any(ControlJvmRequest.class), any(User.class))).thenReturn(new CommandOutput(execDataReturnCode, "", "Jvm Control Failed"));
         try {
-            jvmServiceRest.controlJvm(Identifier.id(1l, Jvm.class), jsonControlJvm, authenticatedUser);
+            jvmServiceRest.controlJvm(Identifier.id(1l, Jvm.class), jsonControlJvm, null, null, authenticatedUser);
         } catch (Exception e) {
             exceptionThrown = true;
             assertEquals(CommandOutputReturnCode.NO_SUCH_SERVICE.getDesc(), e.getMessage());
