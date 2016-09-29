@@ -227,6 +227,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
                     webServerService.getWebServer(aWebServerName));
             LOGGER.info("tokenized metadata is : {}", tokenizedMetaData);
             ResourceTemplateMetaData metaData = new ObjectMapper().readValue(tokenizedMetaData, ResourceTemplateMetaData.class);
+            final String deployFileName = metaData.getDeployFileName();
 
             String configFilePath;
             if (metaData.getContentType().equals(ContentType.APPLICATION_BINARY.contentTypeStr)) {
@@ -236,17 +237,17 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
                 final String jwalaGeneratedResourcesDir = ApplicationProperties.get(PATHS_GENERATED_RESOURCE_DIR);
                 final String generatedHttpdConf = webServerService.getResourceTemplate(aWebServerName, resourceFileName, true,
                         resourceService.generateResourceGroup());
-                int resourceNameDotIndex = metaData.getDeployFileName().lastIndexOf(".");
-                final File configFile = createTempWebServerResourceFile(aWebServerName, jwalaGeneratedResourcesDir, metaData.getDeployFileName().substring(0, resourceNameDotIndex), resourceFileName.substring(resourceNameDotIndex + 1, resourceFileName.length()), generatedHttpdConf);
+                int resourceNameDotIndex = deployFileName.lastIndexOf(".");
+                final File configFile = createTempWebServerResourceFile(aWebServerName, jwalaGeneratedResourcesDir, deployFileName.substring(0, resourceNameDotIndex), resourceFileName.substring(resourceNameDotIndex + 1, resourceFileName.length()), generatedHttpdConf);
 
                 // copy the file
                 configFilePath = configFile.getAbsolutePath().replace("\\", "/");
             }
-            String destinationPath = metaData.getDeployPath() + "/" + metaData.getDeployFileName();
+            String destinationPath = metaData.getDeployPath() + "/" + deployFileName;
             final CommandOutput execData;
             execData = webServerControlService.secureCopyFile(aWebServerName, configFilePath, destinationPath, user.getUser().getId());
             if (execData.getReturnCode().wasSuccessful()) {
-                LOGGER.info("Copy of {} successful: {}", metaData.getDeployFileName(), configFilePath);
+                LOGGER.info("Copy of {} successful: {}", deployFileName, configFilePath);
             } else {
                 String standardError =
                         execData.getStandardError().isEmpty() ? execData.getStandardOutput() : execData
