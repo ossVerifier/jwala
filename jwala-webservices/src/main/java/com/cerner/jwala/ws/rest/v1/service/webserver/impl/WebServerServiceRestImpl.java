@@ -132,7 +132,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
             return ResponseBuilder.created(webServer);
 
         } catch (EntityExistsException eee) {
-            LOGGER.error("Web server with name already exists " + eee.getMessage());
+            LOGGER.error("Web server with name \"{}\" already exists", aWebServerToCreate.toCreateWebServerRequest().getName(), eee);
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
                     AemFaultType.DUPLICATE_WEBSERVER_NAME, eee.getMessage(), eee));
         }
