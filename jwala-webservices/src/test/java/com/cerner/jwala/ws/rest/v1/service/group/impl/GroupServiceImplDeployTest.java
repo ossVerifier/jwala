@@ -522,7 +522,8 @@ public class GroupServiceImplDeployTest {
         when(mockJvm.getState()).thenReturn(JvmState.JVM_STARTED);
         when(mockGroup.getJvms()).thenReturn(jvmSet);
         when(mockGroupService.getGroup(any(Identifier.class))).thenReturn(mockGroup);
-        groupServiceRest.generateGroupJvms(new Identifier<Group>(111L), mockAuthUser);
+        Response response = groupServiceRest.generateGroupJvms(new Identifier<Group>(111L), mockAuthUser);
+        assertEquals(500, response.getStatus());
     }
 
     @Test
