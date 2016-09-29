@@ -244,12 +244,4 @@ public class ResourceDaoImpl implements ResourceDao {
 
         return q.getResultList();
     }
-
-    public String getJvmResourceMetaData(final String templateName, final String jvmName) {
-        final Query q = em.createNamedQuery(JpaJvmConfigTemplate.GET_JVM_TEMPLATE_META_DATA);
-        q.setParameter(JpaJvmConfigTemplate.QUERY_PARAM_TEMPLATE_NAME, templateName);
-        q.setParameter(JpaJvmConfigTemplate.QUERY_PARAM_JVM_NAME, jvmName);
-        return (String) q.getSingleResult();
-
-    }
 }

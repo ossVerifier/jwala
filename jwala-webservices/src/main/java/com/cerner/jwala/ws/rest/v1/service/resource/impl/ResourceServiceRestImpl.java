@@ -217,11 +217,11 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
                                 "There was no resource handler to process the request!"));
             }
         } catch (final IOException ioe) {
-            LOGGER.warn("exception thrown in CreateResource: {}", ioe);
+            LOGGER.error("IOException thrown in CreateResource", ioe);
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR,
                     new FaultCodeException(AemFaultType.SERVICE_EXCEPTION, ioe.getMessage()));
         } catch (final ResourceServiceException rse) {
-            LOGGER.error("exception thrown in CreateResource: {}", rse);
+            LOGGER.error("ResourceServiceException thrown in CreateResource", rse);
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR,
                     new FaultCodeException(AemFaultType.SERVICE_EXCEPTION, rse.getMessage()));
         }
@@ -579,10 +579,5 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
                 }
             }
         }
-    }
-
-    @Override
-    public Response getResourceMetaData(final String templateName, final ResourceHierarchyParam resourceHierarchyParam) {
-        return ResponseBuilder.ok(resourceService.getJvmResourceMetaData(templateName, resourceHierarchyParam.getJvm()));
     }
 }

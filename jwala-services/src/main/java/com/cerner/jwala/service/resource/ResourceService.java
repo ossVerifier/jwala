@@ -303,6 +303,4 @@ public interface ResourceService {
      * @return the external properties as a string
      */
     String getExternalPropertiesAsString();
-
-    String getJvmResourceMetaData(String templateName, String jvmName);
 }

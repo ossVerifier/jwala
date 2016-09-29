@@ -207,15 +207,5 @@ public interface ResourceServiceRest extends InitializingBean {
     @PUT
     @Path("/template/{fileName}/deploy/hosts")
     Response deployTemplateToAllHosts(@PathParam("fileName") final String fileName, @MatrixParam("") final ResourceHierarchyParam resourceHierarchyParam, @BeanParam AuthenticatedUser authenticatedUser);
-
-    /* Get the JVM resource meta data.
-     * @param templateName the template name
-     * @param resourceHierarchyParam the entity hierarchy that describes where the resource belongs to
-     * @return a wrapper class that contains the JVM resource meta data
-     */
-    @GET
-    @Path("/template/{name}/metaData")
-    Response getResourceMetaData(@PathParam("name") String templateName, @MatrixParam("") ResourceHierarchyParam resourceHierarchyParam);
-
 }
 

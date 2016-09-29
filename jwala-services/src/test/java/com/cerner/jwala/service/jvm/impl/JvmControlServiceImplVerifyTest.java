@@ -25,6 +25,7 @@ import com.cerner.jwala.persistence.service.JvmPersistenceService;
 import com.cerner.jwala.service.*;
 import com.cerner.jwala.service.jvm.JvmStateService;
 
+import com.cerner.jwala.service.jvm.exception.JvmControlServiceException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -112,7 +113,7 @@ public class JvmControlServiceImplVerifyTest extends VerificationBehaviorSupport
         when(mockRemoteCommandExecutorService.executeCommand(any(RemoteExecCommand.class))).thenReturn(new RemoteCommandReturnInfo(ExecReturnCode.JWALA_EXIT_CODE_ABNORMAL_SUCCESS, "Abnormal success", ""));
         CommandOutput returnOutput = jvmControlService.controlJvm(controlCommand, user);
         // abnormal success is not a successful return code
-        assertFalse(returnOutput.getReturnCode().getWasSuccessful());
+        assertTrue(returnOutput.getReturnCode().getWasSuccessful());
 
         when(jvm.getState()).thenReturn(JvmState.JVM_STARTED);
         when(mockRemoteCommandExecutorService.executeCommand(any(RemoteExecCommand.class))).thenReturn(new RemoteCommandReturnInfo(ExecReturnCode.JWALA_EXIT_CODE_NO_OP, "No op", ""));
@@ -268,5 +269,46 @@ public class JvmControlServiceImplVerifyTest extends VerificationBehaviorSupport
         when(mockJvm.getHostName()).thenReturn("test-host");
         jvmControlService.createDirectory(mockJvm, "./target");
         verify(commandExecutor).executeRemoteCommand(anyString(), anyString(), eq(JvmControlOperation.CREATE_DIRECTORY), any(WindowsJvmPlatformCommandProvider.class), anyString());
+    }
+
+    @Test
+    public void testStartControlJvmSynchronously() throws InterruptedException {
+        final Jvm mockJvm = mock(Jvm.class);
+        when(mockJvm.getState()).thenReturn(JvmState.JVM_STARTED);
+        when(mockJvmPersistenceService.getJvm(any(Identifier.class))).thenReturn(mockJvm);
+        when(mockRemoteCommandExecutorService.executeCommand(any(RemoteExecCommand.class))).thenReturn(new RemoteCommandReturnInfo(0, "Success!", ""));
+        final ControlJvmRequest controlJvmRequest = new ControlJvmRequest(new Identifier<Jvm>("1"), JvmControlOperation.START);
+        final CommandOutput commandOutput  = jvmControlService.controlJvmSynchronously(controlJvmRequest, 60000, new User("jedi"));
+        assertTrue(commandOutput.getReturnCode().getWasSuccessful());
+    }
+
+    @Test
+    public void testStopControlJvmSynchronously() throws InterruptedException {
+        final Jvm mockJvm = mock(Jvm.class);
+        when(mockJvm.getState()).thenReturn(JvmState.JVM_STOPPED);
+        when(mockJvmPersistenceService.getJvm(any(Identifier.class))).thenReturn(mockJvm);
+        when(mockRemoteCommandExecutorService.executeCommand(any(RemoteExecCommand.class))).thenReturn(new RemoteCommandReturnInfo(0, "Success!", ""));
+        final ControlJvmRequest controlJvmRequest = new ControlJvmRequest(new Identifier<Jvm>("1"), JvmControlOperation.STOP);
+        final CommandOutput commandOutput  = jvmControlService.controlJvmSynchronously(controlJvmRequest, 60000, new User("jedi"));
+        assertTrue(commandOutput.getReturnCode().getWasSuccessful());
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testHeapDumpControlJvmSynchronously() throws InterruptedException {
+        final Jvm mockJvm = mock(Jvm.class);
+        when(mockJvmPersistenceService.getJvm(any(Identifier.class))).thenReturn(mockJvm);
+        when(mockRemoteCommandExecutorService.executeCommand(any(RemoteExecCommand.class))).thenReturn(new RemoteCommandReturnInfo(0, "***heapdump-start***hi there***heapdump-end***", ""));
+        final ControlJvmRequest controlJvmRequest = new ControlJvmRequest(new Identifier<Jvm>("1"), JvmControlOperation.HEAP_DUMP);
+        final CommandOutput commandOutput  = jvmControlService.controlJvmSynchronously(controlJvmRequest, 60000, new User("jedi"));
+    }
+
+    @Test(expected = JvmControlServiceException.class)
+    public void testControlJvmSynchronouslyOnTimeout() throws InterruptedException {
+        final Jvm mockJvm = mock(Jvm.class);
+        when(mockJvm.getState()).thenReturn(JvmState.JVM_STOPPING);
+        when(mockJvmPersistenceService.getJvm(any(Identifier.class))).thenReturn(mockJvm);
+        when(mockRemoteCommandExecutorService.executeCommand(any(RemoteExecCommand.class))).thenReturn(new RemoteCommandReturnInfo(0, "Success!", ""));
+        final ControlJvmRequest controlJvmRequest = new ControlJvmRequest(new Identifier<Jvm>("1"), JvmControlOperation.STOP);
+        final CommandOutput commandOutput  = jvmControlService.controlJvmSynchronously(controlJvmRequest, 3000, new User("jedi"));
     }
 }
