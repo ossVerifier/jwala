@@ -55,7 +55,8 @@ var GroupOperationsDataTable = React.createClass({
             colWidth: "129px" }, { mData: null,
             jwalaType: "custom",
             jwalaRenderCfgFn: this.renderWebServerControlPanelWidget.bind(this, "grp", "webServer") }, { sTitle: "State",
-            mData: null,
+            mData: "stateLabel",
+            sSortDataType: "ServerStateWidget",
             jwalaType: "custom",
             jwalaRenderCfgFn: this.renderWebServerStateRowData.bind(this, "grp", "webServer"),
             colWidth: "120px" }];
@@ -204,7 +205,8 @@ var GroupOperationsDataTable = React.createClass({
             colWidth: "138px" }, { mData: null,
             jwalaType: "custom",
             jwalaRenderCfgFn: this.renderJvmControlPanelWidget.bind(this, "grp", "jvm") }, { sTitle: "State",
-            mData: null,
+            mData: "stateLabel",
+            sSortDataType: "ServerStateWidget",
             jwalaType: "custom",
             jwalaRenderCfgFn: this.renderJvmStateRowData.bind(this, "grp", "jvm"),
             colWidth: "120px" }];

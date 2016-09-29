@@ -50,7 +50,8 @@ var decorateTableAsDataTable = function(tableId,
             if (!isArray(item)) {
                 aoColumnDefs[itemIndex] = {"sTitle": item.sTitle,
                                            "mData": item.mData,
-                                           "aTargets": [itemIndex]};
+                                           "aTargets": [itemIndex],
+                                           "sSortDataType": item.sSortDataType};
 
                 if(item.bVisible !== undefined) {
                     aoColumnDefs[itemIndex].bVisible = item.bVisible;
@@ -126,9 +127,6 @@ var decorateTableAsDataTable = function(tableId,
                 if (item.jwalaRenderer == 'undefined') {
                     alert('You set jwalaType to custom, but you did not set jwalaRenderCfgFn to a function(dataTable, data, aoColumnDefs, i) { aoColumnDefs[i].mRender = function(data, type, full){}}!');
                 }
-
-                // aoColumnDefs[itemIndex].sSortDataType = "dom-server-state";
-
                 return item.jwalaRenderCfgFn(self, item, aoColumnDefs, itemIndex, parentItemId, parentItemName);
             } else {
                 aoColumnDefs[itemIndex].mRender = function(data, type, full) {

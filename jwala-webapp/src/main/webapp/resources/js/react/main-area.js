@@ -147,5 +147,15 @@ $(document).ready(function(){
         return this.optional(element) || exp.test(value);
     }, "The field must only contain letters, numbers, underscores, dashes and-or periods.");
 
+    // Rebuilds sort data before sorting
+    // Columns that uses ServerStateWidget component is dynamic hence the need for afnSortData callback
+    $.fn.dataTableExt.afnSortData['ServerStateWidget'] = function  (oSettings, iColumn) {
+        var sortDataArray = [];
+        oSettings.oApi._fnGetTrNodes(oSettings).forEach(function(tr){
+            sortDataArray.push($("td:eq(" + (iColumn - 1) + ") span", tr).text());
+        });
+        return sortDataArray;
+    }
+
     React.renderComponent(<MainArea className="main-area"/>, document.body);
 });
