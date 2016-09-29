@@ -9,6 +9,7 @@ import com.cerner.jwala.common.exec.CommandOutput;
 import com.cerner.jwala.common.exec.ExecReturnCode;
 import com.cerner.jwala.common.request.resource.ResourceInstanceRequest;
 import com.cerner.jwala.persistence.jpa.domain.resource.config.template.ConfigTemplate;
+import com.cerner.jwala.persistence.jpa.service.exception.ResourceTemplateMetaDataUpdateException;
 import com.cerner.jwala.service.group.GroupService;
 import com.cerner.jwala.service.jvm.JvmService;
 import com.cerner.jwala.service.resource.ResourceService;
@@ -698,6 +699,31 @@ public class ResourceServiceRestImplTest {
 
         cut.uploadExternalProperties(authenticatedUser);
         verify(impl).createResource(any(ResourceIdentifier.class), any(ResourceTemplateMetaData.class), any(InputStream.class));
+    }
+
+    @Test
+    public void testUpdateResourceMetaData() {
+        final String updatedMetadata = "{\"updated\":\"meta-data\"}";
+        ResourceHierarchyParam resourceHierarchyParam = new ResourceHierarchyParam();
+        when(impl.updateResourceMetaData(any(ResourceIdentifier.class), anyString(), anyString())).thenReturn(updatedMetadata);
+
+        Response response = cut.updateResourceMetaData("test-resource.txt", resourceHierarchyParam, updatedMetadata);
+
+        assertEquals(200, response.getStatus());
+        verify(impl).updateResourceMetaData(any(ResourceIdentifier.class), eq("test-resource.txt"), eq(updatedMetadata));
+    }
+
+    @Test
+    public void testUpdateResourceMetaDataFails() {
+        final String updatedMetadata = "{\"updated\":\"meta-data\"}";
+        final String resourceName = "test-resource.txt";
+        ResourceHierarchyParam resourceHierarchyParam = new ResourceHierarchyParam();
+        when(impl.updateResourceMetaData(any(ResourceIdentifier.class), anyString(), anyString())).thenThrow(new ResourceTemplateMetaDataUpdateException("failed-entity", resourceName));
+
+        Response response = cut.updateResourceMetaData(resourceName, resourceHierarchyParam, updatedMetadata);
+
+        assertEquals(500, response.getStatus());
+        assertEquals("test-resource.txt of failed-entity meta data update failed!", ((ApplicationResponse)response.getEntity()).getApplicationResponseContent());
     }
 
     /**
