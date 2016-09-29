@@ -16,7 +16,7 @@ configurations {
 dependencies {
     jdbcdriver "com.h2database:h2:$project.versions.h2"
 
-    compile(group: 'com.cerner.cto.cac', name: 'CommonSecurity', version: '4.0.0800.05')
+//    compile(group: 'com.cerner.cto.cac', name: 'CommonSecurity', version: '4.0.0800.05')
 
     compile(group: 'commons-collections', name: 'commons-collections', version: '3.2.2')
     compile(group: 'commons-httpclient', name: 'commons-httpclient', version: '3.1')
