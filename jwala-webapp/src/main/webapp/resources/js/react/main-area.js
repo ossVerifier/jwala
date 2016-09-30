@@ -55,9 +55,8 @@ var MainArea = React.createClass({
 var Banner = React.createClass({
     render: function() {
         return <div className="banner-container ui-widget-header">
-                    <img src="public-resources/img/jwala-gears-fade-right.png"/>
-                    <span className="banner-logout"><a href="#" onClick={this.handleLogoutClick}>Logout</a></span>
-                    <div className="banner-title">Tomcat Operations Center</div>
+                   <img src="public-resources/img/jwala-logo-gears-fade-right.png"/>
+                   <span className="banner-logout"><a href="#" onClick={this.handleLogoutClick}>Logout</a></span>
                </div>
     },
     handleLogoutClick: function() {
@@ -147,6 +146,16 @@ $(document).ready(function(){
         var exp = /^.*\.xml$/i;
         return this.optional(element) || exp.test(value);
     }, "The field must only contain letters, numbers, underscores, dashes and-or periods.");
+
+    // Rebuilds sort data before sorting
+    // Columns that uses ServerStateWidget component is dynamic hence the need for afnSortData callback
+    $.fn.dataTableExt.afnSortData['ServerStateWidget'] = function  (oSettings, iColumn) {
+        var sortDataArray = [];
+        oSettings.oApi._fnGetTrNodes(oSettings).forEach(function(tr){
+            sortDataArray.push($("td:eq(" + (iColumn - 1) + ") span", tr).text());
+        });
+        return sortDataArray;
+    }
 
     React.renderComponent(<MainArea className="main-area"/>, document.body);
 });

@@ -18,6 +18,7 @@
 <script src="public-resources/ext/js/codemirror/codemirror.js"></script>
 <script src="public-resources/ext/js/codemirror/mode/groovy.js"></script>
 <script src="public-resources/ext/js/codemirror/mode/xml.js"></script>
+<script src="public-resources/ext/js/codemirror/mode/javascript.js"></script>
 
 <!-- TODO: Get non beta then minify  -->
 <script src="public-resources/ext/js/moment.js"></script>
@@ -92,6 +93,7 @@
 <script src="gen-public-resources/js/react/main-area.js"></script>
 <script src="gen-public-resources/js/react/error-msg-list.js"></script>
 <script src="gen-public-resources/js/react/XmlPreview.js"></script>
+<script src="gen-public-resources/js/react/MetaDataPreview.js"></script>
 
 <!-- Web sockets and STOMP --->
 <script src="public-resources/js/sockjs-0.3.4.js"></script>

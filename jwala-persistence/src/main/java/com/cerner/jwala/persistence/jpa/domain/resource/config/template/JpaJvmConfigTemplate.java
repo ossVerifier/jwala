@@ -1,8 +1,8 @@
 package com.cerner.jwala.persistence.jpa.domain.resource.config.template;
 
-import javax.persistence.*;
-
 import com.cerner.jwala.persistence.jpa.domain.JpaJvm;
+
+import javax.persistence.*;
 
 /**
  * POJO that describes a db table that holds data about JVM related resource configuration templates.
@@ -18,6 +18,8 @@ import com.cerner.jwala.persistence.jpa.domain.JpaJvm;
                 query = "SELECT t.templateContent FROM JpaJvmConfigTemplate t where t.jvm.name = :jvmName and t.templateName = :templateName"),
         @NamedQuery(name = JpaJvmConfigTemplate.GET_JVM_TEMPLATE_META_DATA,
                 query = "SELECT t.metaData FROM JpaJvmConfigTemplate t where t.jvm.name = :jvmName and t.templateName = :templateName"),
+        @NamedQuery(name = JpaJvmConfigTemplate.UPDATE_JVM_TEMPLATE_META_DATA,
+                query = "UPDATE JpaJvmConfigTemplate t SET t.metaData= :metaData WHERE t.jvm.name = :jvmName AND t.templateName = :templateName"),
         @NamedQuery(name = JpaJvmConfigTemplate.UPDATE_JVM_TEMPLATE_CONTENT,
                 query = "UPDATE JpaJvmConfigTemplate t SET t.templateContent = :templateContent WHERE t.jvm.name = :jvmName AND t.templateName = :templateName"),
         @NamedQuery(name = JpaJvmConfigTemplate.QUERY_DELETE_JVM_TEMPLATE, query = "DELETE FROM JpaJvmConfigTemplate t WHERE t.templateName = :templateName"),
@@ -35,6 +37,7 @@ public class JpaJvmConfigTemplate extends ConfigTemplate {
     public static final String GET_JVM_TEMPLATE_CONTENT = "getJvmTemplateContent";
     public static final String GET_JVM_TEMPLATE_META_DATA = "getJvmTemplateMetaData";
     public static final String UPDATE_JVM_TEMPLATE_CONTENT = "updateJvmTemplateContent";
+    public static final String UPDATE_JVM_TEMPLATE_META_DATA = "updateJvmTemplateMetaData";
     public static final String QUERY_DELETE_JVM_TEMPLATE = "deleteJvmTemplate";
     public static final String QUERY_DELETE_JVM_RESOURCE_BY_TEMPLATE_JVM_NAME = "deleteJvmResourceByTemplateJvmName";
     public static final String QUERY_DELETE_JVM_RESOURCES_BY_TEMPLATE_NAME_LIST_JVM_NAME = "deleteJvmResourcesByTemplateNameListAndJvmName";

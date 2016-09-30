@@ -651,22 +651,24 @@ public class JvmServiceImpl implements JvmService {
                         "The target JVM must be stopped before attempting to update the resource files");
             }
 
-            final String metaDataPath;
             String metaDataStr = getResourceTemplateMetaData(jvmName, fileName);
-            ResourceTemplateMetaData resourceTemplateMetaData = new ObjectMapper().readValue(metaDataStr, ResourceTemplateMetaData.class);
-            metaDataPath = resourceTemplateMetaData.getDeployPath();
+            final String tokenizedMetaData = ResourceFileGenerator.generateResourceConfig(metaDataStr, resourceService.generateResourceGroup(), jvm);
+            LOGGER.info("tokenized metadata is : {}", tokenizedMetaData);
+            ResourceTemplateMetaData resourceTemplateMetaData = new ObjectMapper().readValue(tokenizedMetaData, ResourceTemplateMetaData.class);
             String resourceSourceCopy;
             String resourceDestPath = resourceService.generateResourceFile(fileName, metaDataPath, resourceService.generateResourceGroup(), jvm) + "/" + fileName;
+            final String deployFileName = resourceTemplateMetaData.getDeployFileName();
+            String resourceDestPath = resourceTemplateMetaData.getDeployPath() + "/" + deployFileName;
             if (resourceTemplateMetaData.getContentType().equals(ContentType.APPLICATION_BINARY.contentTypeStr)) {
                 resourceSourceCopy = getResourceTemplate(jvmName, fileName, false);
             } else {
                 String fileContent = generateConfigFile(jvmName, fileName);
                 String jvmResourcesNameDir = ApplicationProperties.get("paths.generated.resource.dir") + "/" + jvmName;
-                resourceSourceCopy = jvmResourcesNameDir + "/" + fileName;
-                createConfigFile(jvmResourcesNameDir + "/", fileName, fileContent);
+                resourceSourceCopy = jvmResourcesNameDir + "/" + deployFileName;
+                createConfigFile(jvmResourcesNameDir + "/", deployFileName, fileContent);
             }
 
-            deployJvmConfigFile(fileName, jvm, resourceDestPath, resourceSourceCopy, user);
+            deployJvmConfigFile(deployFileName, jvm, resourceDestPath, resourceSourceCopy, user);
         } catch (IOException e) {
             String message = "Failed to write file";
             LOGGER.error(badStreamMessage + message, e);
@@ -882,6 +884,7 @@ public class JvmServiceImpl implements JvmService {
             final String resourceTemplateMetaDataString = resourceService.generateResourceFile(jpaJvmConfigTemplate.getTemplateName(), jpaJvmConfigTemplate.getMetaData(), resourceGroup, jvm);
             final ResourceTemplateMetaData resourceTemplateMetaData =
                     mapper.readValue(resourceTemplateMetaDataString, ResourceTemplateMetaData.class);
+            final String deployFileName = resourceTemplateMetaData.getDeployFileName();
             if (generatedFiles == null) {
                 generatedFiles = new HashMap<>();
             }
@@ -890,12 +893,12 @@ public class JvmServiceImpl implements JvmService {
                     generatedFiles = new HashMap<>();
                 }
                 generatedFiles.put(jpaJvmConfigTemplate.getTemplateContent(),
-                        resourceTemplateMetaData.getDeployPath() + "/" + resourceTemplateMetaData.getDeployFileName());
+                        resourceTemplateMetaData.getDeployPath() + "/" + deployFileName);
             } else {
                 final String generatedResourceStr = resourceService.generateResourceFile(jpaJvmConfigTemplate.getTemplateName(), jpaJvmConfigTemplate.getTemplateContent(),
                         resourceGroup, jvm);
-                generatedFiles.put(createConfigFile(ApplicationProperties.get("paths.generated.resource.dir") + "/" + jvmName, resourceTemplateMetaData.getDeployFileName(), generatedResourceStr),
-                        resourceTemplateMetaData.getDeployPath() + "/" + resourceTemplateMetaData.getDeployFileName());
+                generatedFiles.put(createConfigFile(ApplicationProperties.get("paths.generated.resource.dir") + "/" + jvmName, deployFileName, generatedResourceStr),
+                        resourceTemplateMetaData.getDeployPath() + "/" + deployFileName);
             }
         }
         return generatedFiles;

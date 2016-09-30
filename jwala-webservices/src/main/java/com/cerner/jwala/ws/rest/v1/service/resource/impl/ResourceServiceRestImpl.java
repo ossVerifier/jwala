@@ -8,6 +8,7 @@ import com.cerner.jwala.common.domain.model.resource.ResourceTemplateMetaData;
 import com.cerner.jwala.common.exception.FaultCodeException;
 import com.cerner.jwala.common.exec.CommandOutput;
 import com.cerner.jwala.common.properties.ExternalProperties;
+import com.cerner.jwala.persistence.jpa.service.exception.ResourceTemplateMetaDataUpdateException;
 import com.cerner.jwala.service.exception.ResourceServiceException;
 import com.cerner.jwala.service.resource.ResourceService;
 import com.cerner.jwala.service.resource.impl.CreateResourceResponseWrapper;
@@ -217,11 +218,11 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
                                 "There was no resource handler to process the request!"));
             }
         } catch (final IOException ioe) {
-            LOGGER.warn("exception thrown in CreateResource", ioe);
+            LOGGER.error("IOException thrown in CreateResource", ioe);
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR,
                     new FaultCodeException(AemFaultType.SERVICE_EXCEPTION, ioe.getMessage()));
         } catch (final ResourceServiceException rse) {
-            LOGGER.error("exception thrown in CreateResource", rse);
+            LOGGER.error("ResourceServiceException thrown in CreateResource", rse);
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR,
                     new FaultCodeException(AemFaultType.SERVICE_EXCEPTION, rse.getMessage()));
         }
@@ -233,7 +234,7 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
 
     // for unit testing
     public void setMessageContext(MessageContext messageContext) {
-        this.context= messageContext;
+        this.context = messageContext;
     }
 
     @Override
@@ -460,9 +461,28 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
     }
 
     @Override
-    public Response previewResourceContent(final String resourceName, final ResourceHierarchyParam resourceHierarchyParam, String content) {
+    public Response updateResourceMetaData(String resourceName, ResourceHierarchyParam resourceHierarchyParam, String metaData) {
+        LOGGER.info("Update the meta data for resource {} with hierarchy {}", resourceName, resourceHierarchyParam);
+        LOGGER.debug("Updated content: {}", metaData);
+
+        final ResourceIdentifier resourceIdentifier = new ResourceIdentifier.Builder().setResourceName(resourceName)
+                .setGroupName(resourceHierarchyParam.getGroup())
+                .setWebServerName(resourceHierarchyParam.getWebServer())
+                .setJvmName(resourceHierarchyParam.getJvm())
+                .setWebAppName(resourceHierarchyParam.getWebApp()).build();
+        try {
+            return ResponseBuilder.ok(resourceService.updateResourceMetaData(resourceIdentifier, resourceName, metaData));
+        } catch (ResourceTemplateMetaDataUpdateException ue) {
+            LOGGER.error("Failed to update the resource", ue);
+            return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(AemFaultType.RESOURCE_META_DATA_UPDATE_FAILED, ue.getMessage()));
+        }
+    }
+
+    @Override
+    public Response previewResourceContent(final ResourceHierarchyParam resourceHierarchyParam, String content) {
         LOGGER.debug("Preview the template for {}", resourceHierarchyParam);
         final ResourceIdentifier resourceIdentifier = new ResourceIdentifier.Builder()
+                .setResourceName("meta data preview")
                 .setGroupName(resourceHierarchyParam.getGroup())
                 .setWebServerName(resourceHierarchyParam.getWebServer())
                 .setJvmName(resourceHierarchyParam.getJvm())
@@ -565,5 +585,4 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
             }
         }
     }
-
 }

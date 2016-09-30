@@ -349,11 +349,12 @@ public class ResourceServiceImpl implements ResourceService {
                                                                     final String templateContent) throws IOException {
         final Set<Jvm> jvms = groupPersistenceService.getGroup(metaData.getEntity().getGroup()).getJvms();
         ConfigTemplate createdJpaJvmConfigTemplate = null;
+        final String deployFileName = metaData.getDeployFileName();
 
         for (final Jvm jvm : jvms) {
             UploadJvmConfigTemplateRequest uploadJvmTemplateRequest = new UploadJvmConfigTemplateRequest(jvm, metaData.getTemplateName(),
                     templateContent, convertResourceTemplateMetaDataToJson(metaData));
-            uploadJvmTemplateRequest.setConfFileName(metaData.getDeployFileName());
+            uploadJvmTemplateRequest.setConfFileName(deployFileName);
 
             // Since we're just creating the same template for all the JVMs, we just keep one copy of the created
             // configuration template.
@@ -362,7 +363,7 @@ public class ResourceServiceImpl implements ResourceService {
         final List<UploadJvmTemplateRequest> uploadJvmTemplateRequestList = new ArrayList<>();
         UploadJvmConfigTemplateRequest uploadJvmTemplateRequest = new UploadJvmConfigTemplateRequest(null, metaData.getTemplateName(),
                 templateContent, convertResourceTemplateMetaDataToJson(metaData));
-        uploadJvmTemplateRequest.setConfFileName(metaData.getDeployFileName());
+        uploadJvmTemplateRequest.setConfFileName(deployFileName);
         uploadJvmTemplateRequestList.add(uploadJvmTemplateRequest);
         groupPersistenceService.populateGroupJvmTemplates(metaData.getEntity().getGroup(), uploadJvmTemplateRequestList);
         return new CreateResourceResponseWrapper(createdJpaJvmConfigTemplate);
@@ -382,15 +383,16 @@ public class ResourceServiceImpl implements ResourceService {
                                                                   final String webServerName,
                                                                   final User user) {
         final WebServer webServer = webServerPersistenceService.findWebServerByName(webServerName);
+        final String deployFileName = metaData.getDeployFileName();
         final UploadWebServerTemplateRequest uploadWebArchiveRequest = new UploadWebServerTemplateRequest(webServer,
                 metaData.getTemplateName(), convertResourceTemplateMetaDataToJson(metaData), templateContent) {
             @Override
             public String getConfFileName() {
-                return metaData.getDeployFileName();
+                return deployFileName;
             }
         };
         String generatedDeployPath = generateResourceFile(metaData.getTemplateName(), metaData.getDeployPath(), generateResourceGroup(), webServer);
-        return new CreateResourceResponseWrapper(webServerPersistenceService.uploadWebServerConfigTemplate(uploadWebArchiveRequest, generatedDeployPath + "/" + metaData.getDeployFileName(), user.getId()));
+        return new CreateResourceResponseWrapper(webServerPersistenceService.uploadWebServerConfigTemplate(uploadWebArchiveRequest, generatedDeployPath + "/" + deployFileName, user.getId()));
     }
 
     /**
@@ -408,30 +410,31 @@ public class ResourceServiceImpl implements ResourceService {
         final Set<WebServer> webServers = group.getWebServers();
         final Map<String, UploadWebServerTemplateRequest> uploadWebServerTemplateRequestMap = new HashMap<>();
         ConfigTemplate createdConfigTemplate = null;
+        final String deployFileName = metaData.getDeployFileName();
         for (final WebServer webServer : webServers) {
 
             UploadWebServerTemplateRequest uploadWebServerTemplateRequest = new UploadWebServerTemplateRequest(webServer,
                     metaData.getTemplateName(), convertResourceTemplateMetaDataToJson(metaData), templateContent) {
                 @Override
                 public String getConfFileName() {
-                    return metaData.getDeployFileName();
+                    return deployFileName;
                 }
             };
 
             // Since we're just creating the same template for all the JVMs, we just keep one copy of the created
             // configuration template.
             String generatedDeployPath = generateResourceFile(metaData.getTemplateName(), metaData.getDeployPath(), generateResourceGroup(), webServer);
-            createdConfigTemplate = webServerPersistenceService.uploadWebServerConfigTemplate(uploadWebServerTemplateRequest, generatedDeployPath + "/" + metaData.getDeployFileName(), user.getId());
+            createdConfigTemplate = webServerPersistenceService.uploadWebServerConfigTemplate(uploadWebServerTemplateRequest, generatedDeployPath + "/" + deployFileName, user.getId());
         }
 
         UploadWebServerTemplateRequest uploadWebServerTemplateRequest = new UploadWebServerTemplateRequest(null,
                 metaData.getTemplateName(), convertResourceTemplateMetaDataToJson(metaData), templateContent) {
             @Override
             public String getConfFileName() {
-                return metaData.getDeployFileName();
+                return deployFileName;
             }
         };
-        uploadWebServerTemplateRequestMap.put(metaData.getDeployFileName(), uploadWebServerTemplateRequest);
+        uploadWebServerTemplateRequestMap.put(deployFileName, uploadWebServerTemplateRequest);
         groupPersistenceService.populateGroupWebServerTemplates(group.getName(), uploadWebServerTemplateRequestMap);
         return new CreateResourceResponseWrapper(createdConfigTemplate);
     }
@@ -472,12 +475,13 @@ public class ResourceServiceImpl implements ResourceService {
                 metaData.getTemplateName().toLowerCase().endsWith(WAR_FILE_EXTENSION)) {
             applicationPersistenceService.updateWarInfo(targetAppName, metaData.getTemplateName(), templateContent);
         }
+        final String deployFileName = metaData.getDeployFileName();
 
         for (final Application application : applications) {
             if (metaData.getEntity().getDeployToJvms() && application.getName().equals(targetAppName)) {
                 for (final Jvm jvm : group.getJvms()) {
                     UploadAppTemplateRequest uploadAppTemplateRequest = new UploadAppTemplateRequest(application, metaData.getTemplateName(),
-                            metaData.getDeployFileName(), jvm.getJvmName(), convertResourceTemplateMetaDataToJson(metaData), templateContent
+                            deployFileName, jvm.getJvmName(), convertResourceTemplateMetaDataToJson(metaData), templateContent
                     );
                     JpaJvm jpaJvm = jvmPersistenceService.getJpaJvm(jvm.getId(), false);
                     applicationPersistenceService.uploadAppTemplate(uploadAppTemplateRequest, jpaJvm);
@@ -485,7 +489,7 @@ public class ResourceServiceImpl implements ResourceService {
             }
         }
 
-        createdConfigTemplate = groupPersistenceService.populateGroupAppTemplate(groupName, targetAppName, metaData.getDeployFileName(),
+        createdConfigTemplate = groupPersistenceService.populateGroupAppTemplate(groupName, targetAppName, deployFileName,
                 convertResourceTemplateMetaDataToJson(metaData), templateContent);
 
         return new CreateResourceResponseWrapper(createdConfigTemplate);
@@ -595,6 +599,12 @@ public class ResourceServiceImpl implements ResourceService {
         return configTemplate.getTemplateContent();
     }
 
+    @Override
+    @Transactional
+    public String updateResourceMetaData(ResourceIdentifier resourceIdentifier, String resourceName, String metaData) {
+        return resourceHandler.updateResourceMetaData(resourceIdentifier, resourceName, metaData);
+    }
+
     protected void checkResourceExternalProperties(ResourceIdentifier resourceIdentifier, String templateContent) {
         if (StringUtils.isNotEmpty(resourceIdentifier.resourceName) &&
                 StringUtils.isEmpty(resourceIdentifier.webAppName) &&
@@ -609,7 +619,7 @@ public class ResourceServiceImpl implements ResourceService {
     @Override
     public String previewResourceContent(String fileName, ResourceIdentifier resourceIdentifier, String content) {
         // TODO make the selected value object non-null based on the resource identifier
-        return generateResourceFile(fileName, content, generateResourceGroup(), null);
+        return generateResourceFile(content, generateResourceGroup(), resourceHandler.getSelectedValue(resourceIdentifier));
     }
 
     @Override
@@ -683,19 +693,23 @@ public class ResourceServiceImpl implements ResourceService {
             final String metaDataPath;
             final ResourceContent resourceContent = getResourceContent(resourceIdentifier);
             String metaDataStr = resourceContent.getMetaData();
-            ResourceTemplateMetaData resourceTemplateMetaData = new ObjectMapper().readValue(metaDataStr, ResourceTemplateMetaData.class);
+            final String tokenizedMetaData = ResourceFileGenerator.generateResourceConfig(metaDataStr, generateResourceGroup(), null);
+            LOGGER.info("tokenized metadata is : {}", tokenizedMetaData);
+            ResourceTemplateMetaData resourceTemplateMetaData = new ObjectMapper().readValue(tokenizedMetaData, ResourceTemplateMetaData.class);
             metaDataPath = resourceTemplateMetaData.getDeployPath();
             String resourceSourceCopy;
+            final String deployFileName = resourceTemplateMetaData.getDeployFileName();
             // TODO set the selected entity value, for now make it null for the external properties
             String resourceDestPath = this.generateResourceFile(fileName, metaDataPath, generateResourceGroup(), null) + "/" + fileName;
+            String resourceDestPath = metaDataPath + "/" + deployFileName;
             if (resourceTemplateMetaData.getContentType().equals(ContentType.APPLICATION_BINARY.contentTypeStr)) {
                 resourceSourceCopy = resourceContent.getContent();
             } else {
                 String fileContent = resourceContent.getContent();
                 // TODO make the copy source generic (not external-properties directory)
                 String jvmResourcesNameDir = ApplicationProperties.get("paths.generated.resource.dir") + "/external-properties";
-                resourceSourceCopy = jvmResourcesNameDir + "/" + fileName;
-                createConfigFile(jvmResourcesNameDir + "/", fileName, fileContent);
+                resourceSourceCopy = jvmResourcesNameDir + "/" + deployFileName;
+                createConfigFile(jvmResourcesNameDir + "/", deployFileName, fileContent);
             }
 
             LOGGER.info("Copying {} to {} on host {}", resourceSourceCopy, resourceDestPath, hostName);
@@ -865,10 +879,11 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Override
     public String uploadResource(final ResourceTemplateMetaData resourceTemplateMetaData, final InputStream resourceDataIn) {
-        final Application fakedApplication = new Application(new Identifier<Application>(0L), resourceTemplateMetaData.getDeployFileName(),
-                resourceTemplateMetaData.getDeployPath(), "", null, true, true, false, resourceTemplateMetaData.getDeployFileName());
+        final String deployFileName = resourceTemplateMetaData.getDeployFileName();
+        final Application fakedApplication = new Application(new Identifier<Application>(0L), deployFileName,
+                resourceTemplateMetaData.getDeployPath(), "", null, true, true, false, deployFileName);
         final UploadWebArchiveRequest uploadWebArchiveRequest = new UploadWebArchiveRequest(fakedApplication,
-                resourceTemplateMetaData.getDeployFileName(), -1L, resourceDataIn);
+                deployFileName, -1L, resourceDataIn);
         final RepositoryFileInformation fileInfo = privateApplicationService.uploadWebArchiveData(uploadWebArchiveRequest);
 
         return fileInfo.getPath().toString();

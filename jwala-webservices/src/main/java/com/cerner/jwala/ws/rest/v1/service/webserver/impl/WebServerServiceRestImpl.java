@@ -61,6 +61,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
     private GroupService groupService;
     private static WebServerServiceRestImpl instance;
     private final BinaryDistributionService binaryDistributionService;
+    private static final Long DEFAULT_WAIT_TIMEOUT = 30000L;
 
     public WebServerServiceRestImpl(final WebServerService theWebServerService,
                                     final WebServerControlService theWebServerControlService,
@@ -130,7 +131,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
             return ResponseBuilder.created(webServer);
 
         } catch (EntityExistsException eee) {
-            LOGGER.error("Web server with name already exists " + eee.getMessage());
+            LOGGER.error("Web server with name \"{}\" already exists", aWebServerToCreate.toCreateWebServerRequest().getName(), eee);
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
                     AemFaultType.DUPLICATE_WEBSERVER_NAME, eee.getMessage(), eee));
         }
@@ -143,7 +144,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
             return ResponseBuilder.ok(webServerService.updateWebServer(aWebServerToCreate.toUpdateWebServerRequest(),
                     aUser.getUser()));
         } catch (EntityExistsException eee) {
-            LOGGER.error("Web server with name already exists " + eee.getMessage());
+            LOGGER.error("Web server with name \"{}\" already exists", aWebServerToCreate.toUpdateWebServerRequest().getNewName(), eee);
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
                     AemFaultType.DUPLICATE_WEBSERVER_NAME, eee.getMessage(), eee));
         }
@@ -170,18 +171,25 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
 
     @Override
     public Response controlWebServer(final Identifier<WebServer> aWebServerId,
-                                     final JsonControlWebServer aWebServerToControl, final AuthenticatedUser aUser) {
+                                     final JsonControlWebServer aWebServerToControl, final AuthenticatedUser aUser,
+                                     final Boolean wait, Long waitTimeout) {
         LOGGER.debug("Control Web Server requested: {} {} by user {}", aWebServerId, aWebServerToControl, aUser.getUser().getId());
+        final ControlWebServerRequest controlWebServerRequest = new ControlWebServerRequest(aWebServerId, aWebServerToControl.toControlOperation());
         final CommandOutput commandOutput = webServerControlService.controlWebServer(
-                new ControlWebServerRequest(aWebServerId, aWebServerToControl.toControlOperation()),
+                controlWebServerRequest,
                 aUser.getUser());
-        if (commandOutput.getReturnCode().wasSuccessful()) {
+        if (Boolean.TRUE.equals(wait)) {
+            waitTimeout = waitTimeout == null? DEFAULT_WAIT_TIMEOUT : waitTimeout * 1000; // wait timeout is in seconds converting it to ms
+        }
+        if (Boolean.TRUE.equals(wait) && commandOutput.getReturnCode().wasSuccessful() && webServerControlService.waitForState(controlWebServerRequest, waitTimeout)) {
+            return ResponseBuilder.ok(commandOutput.getStandardOutput());
+        } else if (!Boolean.TRUE.equals(wait) && commandOutput.getReturnCode().wasSuccessful()) {
             return ResponseBuilder.ok(commandOutput.getStandardOutput());
         } else {
             final String standardError = commandOutput.getStandardError();
             final String standardOut = commandOutput.getStandardOutput();
             String errMessage = null != standardError && !standardError.isEmpty() ? standardError : standardOut;
-            LOGGER.error("Control Operation Unsuccessful: " + errMessage);
+            LOGGER.error("Control Operation Unsuccessful: {}", errMessage);
             throw new InternalErrorException(AemFaultType.CONTROL_OPERATION_UNSUCCESSFUL, CommandOutputReturnCode.fromReturnCode(commandOutput.getReturnCode().getReturnCode()).getDesc());
         }
     }
@@ -213,7 +221,12 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
 
             // get the meta data
             String metaDataStr = webServerService.getResourceTemplateMetaData(aWebServerName, resourceFileName);
-            ResourceTemplateMetaData metaData = new ObjectMapper().readValue(metaDataStr, ResourceTemplateMetaData.class);
+            final String tokenizedMetaData = ResourceFileGenerator.generateResourceConfig(metaDataStr,
+                    resourceService.generateResourceGroup(),
+                    webServerService.getWebServer(aWebServerName));
+            LOGGER.info("tokenized metadata is : {}", tokenizedMetaData);
+            ResourceTemplateMetaData metaData = new ObjectMapper().readValue(tokenizedMetaData, ResourceTemplateMetaData.class);
+            final String deployFileName = metaData.getDeployFileName();
 
             String configFilePath;
             if (metaData.getContentType().equals(ContentType.APPLICATION_BINARY.contentTypeStr)) {
@@ -223,17 +236,18 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
                 final String jwalaGeneratedResourcesDir = ApplicationProperties.get(PATHS_GENERATED_RESOURCE_DIR);
                 final String generatedHttpdConf = webServerService.getResourceTemplate(aWebServerName, resourceFileName, true,
                         resourceService.generateResourceGroup());
-                int resourceNameDotIndex = resourceFileName.lastIndexOf(".");
-                final File configFile = createTempWebServerResourceFile(aWebServerName, jwalaGeneratedResourcesDir, resourceFileName.substring(0, resourceNameDotIndex), resourceFileName.substring(resourceNameDotIndex + 1, resourceFileName.length()), generatedHttpdConf);
+                int resourceNameDotIndex = deployFileName.lastIndexOf(".");
+                final File configFile = createTempWebServerResourceFile(aWebServerName, jwalaGeneratedResourcesDir, deployFileName.substring(0, resourceNameDotIndex), resourceFileName.substring(resourceNameDotIndex + 1, resourceFileName.length()), generatedHttpdConf);
 
                 // copy the file
                 configFilePath = configFile.getAbsolutePath().replace("\\", "/");
             }
-            String destinationPath = resourceService.generateResourceFile(resourceFileName, metaData.getDeployPath(), resourceService.generateResourceGroup(), webServerService.getWebServer(aWebServerName)) + "/" + resourceFileName;
+            //String destinationPath = resourceService.generateResourceFile(resourceFileName,metaData.getDeployPath(), resourceService.generateResourceGroup(), webServerService.getWebServer(aWebServerName)) + "/" + resourceFileName;
+            String destinationPath = metaData.getDeployPath() + "/" + deployFileName;
             final CommandOutput execData;
             execData = webServerControlService.secureCopyFile(aWebServerName, configFilePath, destinationPath, user.getUser().getId());
             if (execData.getReturnCode().wasSuccessful()) {
-                LOGGER.info("Copy of {} successful: {}", resourceFileName, configFilePath);
+                LOGGER.info("Copy of {} successful: {}", deployFileName, configFilePath);
             } else {
                 String standardError =
                         execData.getStandardError().isEmpty() ? execData.getStandardOutput() : execData
@@ -307,7 +321,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
             webServerService.updateState(webServer.getId(), WebServerReachableState.WS_UNREACHABLE, StringUtils.EMPTY);
 
         } catch (InternalErrorException | CommandFailureException e) {
-            LOGGER.error(e.getMessage());
+            LOGGER.error("Failed to secure copy the invokeWS.bat file for {}", aWebServerName, e);
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
                     AemFaultType.REMOTE_COMMAND_FAILURE, e.getMessage(), e));
         } finally {

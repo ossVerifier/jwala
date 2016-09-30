@@ -235,6 +235,12 @@ public class JpaGroupPersistenceServiceImpl implements GroupPersistenceService {
     }
 
     @Override
+    public String updateGroupJvmResourceMetaData(String groupName, String resourceName, String metaData) {
+        groupCrudService.updateGroupJvmResourceMetaData(groupName, resourceName, metaData);
+        return groupCrudService.getGroupJvmResourceTemplateMetaData(groupName, resourceName);
+    }
+
+    @Override
     public String getGroupJvmResourceTemplate(String groupName, String resourceTemplateName) {
         return groupCrudService.getGroupJvmResourceTemplate(groupName, resourceTemplateName);
     }
@@ -248,6 +254,12 @@ public class JpaGroupPersistenceServiceImpl implements GroupPersistenceService {
     public String updateGroupWebServerResourceTemplate(String groupName, String resourceTemplateName, String content) {
         groupCrudService.updateGroupWebServerResourceTemplate(groupName, resourceTemplateName, content);
         return groupCrudService.getGroupWebServerResourceTemplate(groupName, resourceTemplateName);
+    }
+
+    @Override
+    public String updateGroupWebServerResourceMetaData(String groupName, String resourceName, String metaData) {
+        groupCrudService.updateGroupWebServerResourceMetaData(groupName, resourceName, metaData);
+        return groupCrudService.getGroupWebServerResourceTemplateMetaData(groupName, resourceName);
     }
 
     @Override
@@ -270,6 +282,12 @@ public class JpaGroupPersistenceServiceImpl implements GroupPersistenceService {
     public String updateGroupAppResourceTemplate(String groupName, String appName, String resourceTemplateName, String content) {
         groupCrudService.updateGroupAppResourceTemplate(groupName, appName, resourceTemplateName, content);
         return groupCrudService.getGroupAppResourceTemplate(groupName, appName, resourceTemplateName);
+    }
+
+    @Override
+    public String updateGroupAppResourceMetaData(String groupName, String webAppName, String resourceName, String metaData) {
+        groupCrudService.updateGroupAppResourceMetaData(groupName, webAppName, resourceName, metaData);
+        return groupCrudService.getGroupAppResourceTemplateMetaData(groupName, resourceName);
     }
 
     @Override

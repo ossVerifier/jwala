@@ -1,8 +1,8 @@
 package com.cerner.jwala.persistence.jpa.domain.resource.config.template;
 
-import javax.persistence.*;
-
 import com.cerner.jwala.persistence.jpa.domain.JpaGroup;
+
+import javax.persistence.*;
 
 /**
  * POJO that describes a db table that holds data about a group of JVM related resource configuration templates.
@@ -18,6 +18,8 @@ import com.cerner.jwala.persistence.jpa.domain.JpaGroup;
                 query = "SELECT t.metaData FROM JpaGroupJvmConfigTemplate t where t.grp.name = :grpName and t.templateName = :templateName"),
         @NamedQuery(name = JpaGroupJvmConfigTemplate.UPDATE_GROUP_JVM_TEMPLATE_CONTENT,
                 query = "UPDATE JpaGroupJvmConfigTemplate t SET t.templateContent = :templateContent WHERE t.grp.name = :grpName AND t.templateName = :templateName"),
+        @NamedQuery(name = JpaGroupJvmConfigTemplate.UPDATE_GROUP_JVM_TEMPLATE_META_DATA,
+                query = "UPDATE JpaGroupJvmConfigTemplate t SET t.metaData = :metaData WHERE t.grp.name = :grpName AND t.templateName = :templateName"),
         @NamedQuery(name = JpaGroupJvmConfigTemplate.QUERY_DELETE_GRP_JVM_TEMPLATE, query = "DELETE FROM JpaGroupJvmConfigTemplate t WHERE t.templateName = :templateName"),
         @NamedQuery(name = JpaGroupJvmConfigTemplate.GET_GROUP_JVM_TEMPLATE_RESOURCE_NAME,
                 query = "SELECT t.templateName FROM JpaGroupJvmConfigTemplate t WHERE t.grp.name = :grpName AND t.templateName = :templateName"),
@@ -31,6 +33,7 @@ public class JpaGroupJvmConfigTemplate extends ConfigTemplate {
     public static final String GET_GROUP_JVM_TEMPLATE_RESOURCE_NAMES = "getGroupJvmTemplateResourceNames";
     public static final String GET_GROUP_JVM_TEMPLATE_CONTENT = "getGroupJvmTemplateContent";
     public static final String UPDATE_GROUP_JVM_TEMPLATE_CONTENT = "updateGroupJvmTemplateContent";
+    public static final String UPDATE_GROUP_JVM_TEMPLATE_META_DATA = "updateGroupJvmTemplateMetaData";
     public static final String GET_GROUP_JVM_TEMPLATE_META_DATA = "getGroupJvmMetaData";
     public static final String QUERY_DELETE_GRP_JVM_TEMPLATE = "deleteGrpJvmTemplate";
     public static final String QUERY_DELETE_GROUP_LEVEL_JVM_RESOURCE_BY_TEMPLATE_GROUP_NAME = "deleteGroupLevelJvmResourceByTemplateGroupName";

@@ -138,7 +138,9 @@ public enum AemFaultType implements MessageResponseStatus {
 
     INVALID_REST_SERVICE_PARAMETER("AEM64", "InvalidRestServiceParameter"),
 
-    DELETE_CANNOT_BE_PERFORMED_CHECK_JVM_AND_WEBSERVER("AEM67","DeleteCannotBePerformedCheckJvmAndWebServer");
+    FAILED_TO_DELETE_GROUP("AEM67","FailedToDeleteGroup"),
+
+    RESOURCE_META_DATA_UPDATE_FAILED("AEM68", "ResourceMetaDataUpdateFailed");
 
     private final String faultCode;
     private final String faultMessage;

@@ -22,6 +22,7 @@ import com.cerner.jwala.common.request.webserver.UploadWebServerTemplateRequest;
 import com.cerner.jwala.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
 import com.cerner.jwala.persistence.jpa.service.exception.ResourceTemplateUpdateException;
 import com.cerner.jwala.service.app.ApplicationService;
+import com.cerner.jwala.service.exception.GroupServiceException;
 import com.cerner.jwala.service.group.GroupControlService;
 import com.cerner.jwala.service.group.GroupJvmControlService;
 import com.cerner.jwala.service.group.GroupService;
@@ -56,7 +57,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.persistence.EntityExistsException;
-import javax.persistence.PersistenceException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -127,7 +127,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
             final Group group = groupService.createGroup(new CreateGroupRequest(aNewGroupName), aUser.getUser());
             return ResponseBuilder.created(group);
         } catch (EntityExistsException eee) {
-            LOGGER.error("Group Name already exists: " + aNewGroupName);
+            LOGGER.error("Group Name already exists: {}", aNewGroupName);
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
                     AemFaultType.DUPLICATE_GROUP_NAME, eee.getMessage(), eee));
         }
@@ -135,7 +135,6 @@ public class GroupServiceRestImpl implements GroupServiceRest {
 
 
     @Override
-
     public Response updateGroup(final JsonUpdateGroup anUpdatedGroup,
                                 final AuthenticatedUser aUser) {
         LOGGER.info("Update Group requested: {} by user {}", anUpdatedGroup, aUser.getUser().getId());
@@ -148,7 +147,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
             return ResponseBuilder.ok(groupService.updateGroup(updatedGroup.toUpdateGroupCommand(),
                     aUser.getUser()));
         } catch (EntityExistsException eee) {
-            LOGGER.error("Group Name already exists: " + anUpdatedGroup.getName());
+            LOGGER.error("Group Name already exists: {}", anUpdatedGroup.getName(), eee);
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
                     AemFaultType.DUPLICATE_GROUP_NAME, eee.getMessage(), eee));
         }
@@ -164,10 +163,10 @@ public class GroupServiceRestImpl implements GroupServiceRest {
                 groupService.removeGroup(new Identifier<Group>(name));
             }
             return ResponseBuilder.ok();
-        } catch (PersistenceException pe) {
-            LOGGER.error("Web Server,JVM or both might depend on group:" + name);
+        } catch (GroupServiceException e) {
+            LOGGER.error("Remove group error: {}", name, e);
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
-                    AemFaultType.DELETE_CANNOT_BE_PERFORMED_CHECK_JVM_AND_WEBSERVER, pe.getMessage(), pe));
+                    AemFaultType.FAILED_TO_DELETE_GROUP, e.getMessage(), e));
         }
     }
 
@@ -493,6 +492,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
             }
             return ResponseBuilder.ok(group);
         } catch (InternalErrorException iee) {
+            LOGGER.error("Generate group web servers error {}", iee.getMessage());
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
                     AemFaultType.INVALID_WEBSERVER_OPERATION, iee.getMessage(), iee));
         }
@@ -536,6 +536,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
 
             return ResponseBuilder.ok(group);
         } catch (InternalErrorException iee) {
+            LOGGER.error("Generate group jvms error ", iee.getMessage());
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
                     AemFaultType.INVALID_WEBSERVER_OPERATION, iee.getMessage(), iee));
         }

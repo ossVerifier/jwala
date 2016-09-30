@@ -121,6 +121,12 @@ public class JpaJvmPersistenceServiceImpl implements JvmPersistenceService {
     }
 
     @Override
+    public String updateResourceMetaData(final String jvmName, final String resourceTemplateName, final String metaData) {
+        jvmCrudService.updateResourceMetaData(jvmName, resourceTemplateName, metaData);
+        return jvmCrudService.getResourceTemplateMetaData(jvmName, resourceTemplateName);
+    }
+
+    @Override
     public Jvm findJvm(final String jvmName, final String groupName) {
         return jvmCrudService.findJvm(jvmName, groupName);
     }

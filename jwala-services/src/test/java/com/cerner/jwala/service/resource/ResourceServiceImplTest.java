@@ -19,6 +19,7 @@ import com.cerner.jwala.common.exec.CommandOutput;
 import com.cerner.jwala.common.exec.ExecCommand;
 import com.cerner.jwala.common.exec.ExecReturnCode;
 import com.cerner.jwala.common.properties.ApplicationProperties;
+import com.cerner.jwala.common.request.app.RemoveWebArchiveRequest;
 import com.cerner.jwala.common.request.app.UploadAppTemplateRequest;
 import com.cerner.jwala.common.request.app.UploadWebArchiveRequest;
 import com.cerner.jwala.common.request.jvm.UploadJvmConfigTemplateRequest;
@@ -36,7 +37,9 @@ import com.cerner.jwala.service.HistoryService;
 import com.cerner.jwala.service.MessagingService;
 import com.cerner.jwala.service.app.ApplicationService;
 import com.cerner.jwala.service.app.PrivateApplicationService;
+
 import com.cerner.jwala.service.resource.impl.ResourceContentGeneratorServiceImpl;
+import com.cerner.jwala.service.resource.impl.CreateResourceResponseWrapper;
 import com.cerner.jwala.service.resource.impl.ResourceServiceImpl;
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.groovy.runtime.ResourceGroovyMethods;
@@ -61,6 +64,7 @@ import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anyMap;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.anyList;
 import static org.mockito.Mockito.*;
 
 /**
@@ -657,5 +661,149 @@ public class ResourceServiceImplTest {
     public void testGetExternalPropertiesAsString() {
         String result = resourceService.getExternalPropertiesAsString();
         assertEquals("newkey=newvalue\n", result);
+    }
+
+    @Test
+    public void testDeleteGroupLevelAppResources() throws IOException {
+        List<String> templateList = new ArrayList<>();
+        templateList.add("test.war");
+        List<Jvm> jvms = new ArrayList<>();
+        Jvm mockJvm = mock(Jvm.class);
+        jvms.add(mockJvm);
+        Application mockApp = mock(Application.class);
+        RepositoryFileInformation mockRepositoryFileInformation = mock(RepositoryFileInformation.class);
+        when(mockResourceDao.deleteGroupLevelAppResources(anyString(), anyString(), anyList())).thenReturn(1);
+        when(mockJvmPersistenceService.getJvmsByGroupName(anyString())).thenReturn(jvms);
+        when(mockResourceDao.deleteAppResources(anyList(), anyString(), anyString())).thenReturn(1);
+        when(mockAppPersistenceService.getApplication(anyString())).thenReturn(mockApp);
+        when(mockAppPersistenceService.deleteWarInfo(anyString())).thenReturn(mockApp);
+        when(mockWebArchiveManager.remove(any(RemoveWebArchiveRequest.class))).thenReturn(mockRepositoryFileInformation);
+        when(mockRepositoryFileInformation.getType()).thenReturn(RepositoryFileInformation.Type.DELETED);
+        assertEquals(1, resourceService.deleteGroupLevelAppResources("test-app", "test-group", templateList));
+    }
+
+    @Test
+    public void testDeleteGroupLevelAppResourcesFail() throws IOException {
+        List<String> templateList = new ArrayList<>();
+        templateList.add("test.war");
+        List<Jvm> jvms = new ArrayList<>();
+        Jvm mockJvm = mock(Jvm.class);
+        jvms.add(mockJvm);
+        Application mockApp = mock(Application.class);
+        RepositoryFileInformation mockRepositoryFileInformation = mock(RepositoryFileInformation.class);
+        when(mockResourceDao.deleteGroupLevelAppResources(anyString(), anyString(), anyList())).thenReturn(1);
+        when(mockJvmPersistenceService.getJvmsByGroupName(anyString())).thenReturn(jvms);
+        when(mockResourceDao.deleteAppResources(anyList(), anyString(), anyString())).thenReturn(1);
+        when(mockAppPersistenceService.getApplication(anyString())).thenReturn(mockApp);
+        when(mockAppPersistenceService.deleteWarInfo(anyString())).thenReturn(mockApp);
+        when(mockWebArchiveManager.remove(any(RemoveWebArchiveRequest.class))).thenThrow(IOException.class);
+        when(mockRepositoryFileInformation.getType()).thenReturn(RepositoryFileInformation.Type.DELETED);
+        assertEquals(1, resourceService.deleteGroupLevelAppResources("test-app", "test-group", templateList));
+    }
+
+    @Test
+    public void testCreateResource() {
+        ResourceIdentifier resourceIdentifier = mock(ResourceIdentifier.class);
+        ResourceTemplateMetaData resourceTemplateMetaData = mock(ResourceTemplateMetaData.class);
+        InputStream inputStream = mock(InputStream.class);
+        CreateResourceResponseWrapper createResourceResponseWrapper = mock(CreateResourceResponseWrapper.class);
+        when(mockResourceHandler.createResource(eq(resourceIdentifier), eq(resourceTemplateMetaData), anyString())).thenReturn(createResourceResponseWrapper);
+        assertEquals(createResourceResponseWrapper, resourceService.createResource(resourceIdentifier, resourceTemplateMetaData, inputStream));
+    }
+
+    @Test (expected = ResourceServiceException.class)
+    public void testCreateResourceFail() {
+        ResourceIdentifier resourceIdentifier = mock(ResourceIdentifier.class);
+        ResourceTemplateMetaData resourceTemplateMetaData = mock(ResourceTemplateMetaData.class);
+        InputStream inputStream = mock(InputStream.class);
+        when(mockResourceHandler.createResource(eq(resourceIdentifier), eq(resourceTemplateMetaData), anyString())).thenThrow(ResourceServiceException.class);
+        resourceService.createResource(resourceIdentifier, resourceTemplateMetaData, inputStream);
+    }
+
+    @Test (expected = InternalErrorException.class)
+    public void testDeployTemplateToHostFail() throws CommandFailureException {
+        ResourceIdentifier mockResourceIdentifier = mock(ResourceIdentifier.class);
+        ConfigTemplate mockConfigTemplate = mock(ConfigTemplate.class);
+
+        when(mockResourceHandler.fetchResource(any(ResourceIdentifier.class))).thenReturn(mockConfigTemplate);
+        when(mockConfigTemplate.getMetaData()).thenReturn("\"deployPath\":\"c:/fake/path\", \"deployFileName\":\"deploy-me.txt\"}");
+        when(mockConfigTemplate.getTemplateContent()).thenReturn("key=value");
+        when(mockRemoteCommandExector.executeRemoteCommand(anyString(), anyString(), eq(ApplicationControlOperation.SECURE_COPY), any(PlatformCommandProvider.class), anyString(), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(0), "SUCCESS", ""));
+        when(mockRemoteCommandExector.executeRemoteCommand(anyString(), anyString(), eq(ApplicationControlOperation.CHECK_FILE_EXISTS), any(PlatformCommandProvider.class), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(0), "SUCCESS", ""));
+        when(mockRemoteCommandExector.executeRemoteCommand(anyString(), anyString(), eq(ApplicationControlOperation.BACK_UP_FILE), any(PlatformCommandProvider.class), anyString(), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(0), "SUCCESS", ""));
+        when(mockRemoteCommandExector.executeRemoteCommand(anyString(), anyString(), eq(ApplicationControlOperation.CREATE_DIRECTORY), any(PlatformCommandProvider.class), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(0), "SUCCESS", ""));
+
+        resourceService.deployTemplateToHost("external.properties", "test-host", mockResourceIdentifier);
+    }
+
+    @Test
+    public void testDeleteWebServerResource() {
+        when(mockResourceDao.deleteWebServerResource(anyString(), anyString())).thenReturn(1);
+        assertEquals(1, resourceService.deleteWebServerResource("testFilename", "testWebServer"));
+    }
+
+    @Test
+    public void testDeleteGroupLevelWebServerResource() {
+        when(mockResourceDao.deleteGroupLevelWebServerResource(anyString(), anyString())).thenReturn(1);
+        assertEquals(1, resourceService.deleteGroupLevelWebServerResource("testFilename", "testGroupName"));
+    }
+
+    @Test
+    public void testDeleteJvmResource() {
+        when(mockResourceDao.deleteJvmResource(anyString(), anyString())).thenReturn(1);
+        assertEquals(1, resourceService.deleteJvmResource("testFilename", "testJvm"));
+    }
+
+    @Test
+    public void testDeleteGroupLevelJvmResource() {
+        when(mockResourceDao.deleteGroupLevelJvmResource(anyString(), anyString())).thenReturn(1);
+        assertEquals(1, resourceService.deleteGroupLevelJvmResource("testFilename", "testGroupName"));
+    }
+
+    @Test
+    public void testDeleteAppResource() {
+        when(mockResourceDao.deleteAppResource(anyString(), anyString(), anyString())).thenReturn(1);
+        assertEquals(1, resourceService.deleteAppResource("testFilename", "testApp", "testJvm"));
+    }
+
+    @Test
+    public void testDeleteGroupLevelAppResource() {
+        Application application = mock(Application.class);
+        when(mockAppPersistenceService.getApplication(anyString())).thenReturn(application);
+        when(application.getName()).thenReturn("testApp");
+        Group group = mock(Group.class);
+        when(application.getGroup()).thenReturn(group);
+        when(group.getName()).thenReturn("testGroup");
+        when(mockResourceDao.deleteGroupLevelAppResource(anyString(), anyString(), anyString())).thenReturn(1);
+        assertEquals(1, resourceService.deleteGroupLevelAppResource("testAppName", "testFilename"));
+    }
+
+    @Test
+    public void testGetApplicationResourceNames() {
+        List<String> strings = new ArrayList<>();
+        final String groupName = "testGroupName";
+        final String appName = "testAppName";
+        when(mockResourcePersistenceService.getApplicationResourceNames(eq(groupName), eq(appName))).thenReturn(strings);
+        assertEquals(strings, resourceService.getApplicationResourceNames(groupName, appName));
+    }
+
+    @Test
+    public void testGetAppTemplate() {
+        final String result = "test";
+        final String groupName = "testGroupName";
+        final String appName = "testAppName";
+        final String templateName = "testTemplate";
+        when(mockResourcePersistenceService.getAppTemplate(eq(groupName), eq(appName), eq(templateName))).thenReturn(result);
+        assertEquals(result, resourceService.getAppTemplate(groupName, appName, templateName));
+    }
+
+    @Test
+    public void testUpdateResourceMetaData() {
+        ResourceIdentifier mockResourceIdentifier = mock(ResourceIdentifier.class);
+        when(mockResourceHandler.updateResourceMetaData(any(ResourceIdentifier.class), anyString(), anyString())).thenReturn("{}");
+        final String resourceName = "test-resource-name";
+        final String metaData = "{\"key\":\"value\"}";
+        resourceService.updateResourceMetaData(mockResourceIdentifier, resourceName, metaData);
+        verify(mockResourceHandler).updateResourceMetaData(eq(mockResourceIdentifier), eq(resourceName), eq(metaData));
     }
 }

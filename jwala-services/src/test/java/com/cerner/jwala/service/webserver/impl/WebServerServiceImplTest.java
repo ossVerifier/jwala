@@ -21,6 +21,7 @@ import com.cerner.jwala.files.TocFile;
 import com.cerner.jwala.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
 import com.cerner.jwala.persistence.service.WebServerPersistenceService;
 import com.cerner.jwala.service.resource.ResourceService;
+import com.cerner.jwala.service.webserver.exception.WebServerServiceException;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -385,6 +386,61 @@ public class WebServerServiceImplTest {
     public void testUpdateState() {
         wsService.updateState(mockWebServer.getId(), WebServerReachableState.WS_REACHABLE, "");
         verify(webServerPersistenceService).updateState(new Identifier<WebServer>(1L), WebServerReachableState.WS_REACHABLE, "");
+    }
+
+    @Test
+    public void testGetWebServerStartedCount() {
+        final String groupName = "testGroup";
+        final Long returnCount = 1L;
+        when(webServerPersistenceService.getWebServerStartedCount(eq(groupName))).thenReturn(returnCount);
+        assertEquals(returnCount, wsService.getWebServerStartedCount(groupName));
+    }
+
+    @Test
+    public void testGetWebServerCount() {
+        final String groupName = "testGroup";
+        final Long returnCount = 1L;
+        when(webServerPersistenceService.getWebServerCount(eq(groupName))).thenReturn(returnCount);
+        assertEquals(returnCount, wsService.getWebServerCount(groupName));
+    }
+
+    @Test
+    public void testGetWebServerStoppedCount() {
+        final String groupName = "testGroup";
+        final Long returnCount = 1L;
+        when(webServerPersistenceService.getWebServerStoppedCount(eq(groupName))).thenReturn(returnCount);
+        assertEquals(returnCount, wsService.getWebServerStoppedCount(groupName));
+    }
+
+    @Test
+    public void testGetResourceTemplateMetaData() {
+        final String wsName = "testWS";
+        final String resourceTemplate = "resourceTemplateName";
+        when(webServerPersistenceService.getResourceTemplateMetaData(eq(wsName), eq(resourceTemplate))).thenReturn("");
+        assertEquals("", wsService.getResourceTemplateMetaData(wsName, resourceTemplate));
+    }
+
+    @Test (expected = WebServerServiceException.class)
+    public void testGenerateInvokeWSBat() {
+        when(resourceService.generateResourceFile(anyString(), any(ResourceGroup.class), eq(mockWebServer))).thenThrow(IOException.class);
+        wsService.generateInvokeWSBat(mockWebServer);
+    }
+
+    @Test
+    public void testGetWebServerPropogationNew() {
+        List<WebServer> webServers = new ArrayList<>();
+        when(webServerPersistenceService.getWebServers()).thenReturn(webServers);
+        assertEquals(webServers, wsService.getWebServersPropagationNew());
+    }
+
+    @Test (expected = InternalErrorException.class)
+    public void testUploadWebServerConfigFail() {
+        UploadWebServerTemplateRequest request = mock(UploadWebServerTemplateRequest.class);
+        when(request.getMetaData()).thenReturn("\"deployPath\":\"d:/httpd-data\",\"deployFileName\":\"httpd.conf\"}");
+        when(request.getWebServer()).thenReturn(mockWebServer);
+        when(mockWebServer.getName()).thenReturn("testWebServer");
+        when(request.getConfFileName()).thenReturn("httpd.conf");
+        wsService.uploadWebServerConfig(request, testUser);
     }
 
     private String removeCarriageReturnsAndNewLines(String s) {

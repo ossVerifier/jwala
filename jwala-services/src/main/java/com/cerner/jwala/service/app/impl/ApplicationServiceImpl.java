@@ -268,20 +268,21 @@ public class ApplicationServiceImpl implements ApplicationService {
             final Application app = applicationPersistenceService.findApplication(appName, groupName, jvmName);
 
             String metaData = applicationPersistenceService.getMetaData(appName, jvmName, groupName, resourceTemplateName);
-            ObjectMapper mapper = new ObjectMapper();
-            ResourceTemplateMetaData templateMetaData = mapper.readValue(metaData, ResourceTemplateMetaData.class);
-            String metaDataPath = templateMetaData.getDeployPath();
-
             app.setParentJvm(jvm);
-            final String destPath = resourceService.generateResourceFile(resourceTemplateName, metaDataPath, resourceGroup, app) + '/' + resourceTemplateName;
-            String srcPath;
+            final String tokenizedMetaData = resourceService.generateResourceFile(resourceTemplateName, metaData, resourceGroup, app);
+
+            LOGGER.info("tokenized metadata is : {}", tokenizedMetaData);
+            ObjectMapper mapper = new ObjectMapper();
+ResourceTemplateMetaData templateMetaData = mapper.readValue(tokenizedMetaData, ResourceTemplateMetaData.class);
+            final String deployFileName = templateMetaData.getDeployFileName();
+            final String destPath = templateMetaData.getDeployPath() + '/' + deployFileName;            String srcPath;
             if (templateMetaData.getContentType().equals(ContentType.APPLICATION_BINARY.contentTypeStr)) {
                 srcPath = applicationPersistenceService.getResourceTemplate(appName, resourceTemplateName, jvmName, groupName);
             } else {
                 srcPath = confFile.getAbsolutePath().replace("\\", "/");
             }
 
-            final String eventDescription = WindowsJvmNetOperation.SECURE_COPY.name() + " " + resourceTemplateName;
+            final String eventDescription = WindowsJvmNetOperation.SECURE_COPY.name() + " " + deployFileName;
             final String id = user.getId();
 
             historyService.createHistory("JVM " + jvm.getJvmName(), new ArrayList<Group>(jvm.getGroups()), eventDescription, EventType.USER_ACTION, id);
@@ -332,12 +333,12 @@ public class ApplicationServiceImpl implements ApplicationService {
                     srcPath,
                     destPath);
             if (execData.getReturnCode().wasSuccessful()) {
-                LOGGER.info("Copy of {} successful: {}", resourceTemplateName, confFile.getAbsolutePath());
+                LOGGER.info("Copy of {} successful: {}", deployFileName, confFile.getAbsolutePath());
                 return execData;
             } else {
                 String standardError = execData.getStandardError().isEmpty() ? execData.getStandardOutput() : execData.getStandardError();
                 LOGGER.error("Copy command completed with error trying to copy {} to {} :: ERROR: {}",
-                        resourceTemplateName, appName, standardError);
+                        deployFileName, appName, standardError);
                 throw new DeployApplicationConfException(standardError);
             }
         } catch (FileNotFoundException | CommandFailureException ex) {

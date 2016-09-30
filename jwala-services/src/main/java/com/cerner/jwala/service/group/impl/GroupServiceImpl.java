@@ -30,6 +30,7 @@ import com.cerner.jwala.persistence.service.GroupPersistenceService;
 import com.cerner.jwala.persistence.service.WebServerPersistenceService;
 import com.cerner.jwala.service.app.impl.DeployApplicationConfException;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionService;
+import com.cerner.jwala.service.exception.GroupServiceException;
 import com.cerner.jwala.service.group.GroupService;
 import com.cerner.jwala.service.resource.ResourceService;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -37,6 +38,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.PersistenceException;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -141,7 +143,14 @@ public class GroupServiceImpl implements GroupService {
     @Override
     @Transactional
     public void removeGroup(final String name) {
-        groupPersistenceService.removeGroup(name);
+        try {
+            groupPersistenceService.removeGroup(name);
+        } catch (PersistenceException e) {
+            LOGGER.error("Error removing group", e);
+            if (e.getMessage().contains("The transaction has been rolled back.  See the nested exceptions for details on the errors that occurred.")) {
+                throw new GroupServiceException("Please check for group dependents Web Apps, Web Servers or JVMs before deleting " + name);
+            }
+        }
     }
 
     @Override
@@ -441,9 +450,12 @@ public class GroupServiceImpl implements GroupService {
         String metaDataStr = getGroupAppResourceTemplateMetaData(groupName, fileName);
         ResourceTemplateMetaData metaData;
         try {
-            metaData = new ObjectMapper().readValue(metaDataStr, ResourceTemplateMetaData.class);
             final String destPath = resourceService.generateResourceFile(fileName, metaData.getDeployPath(), resourceGroup, application) + '/' + fileName;
-            File confFile = createConfFile(metaData.getEntity().getTarget(), groupName, fileName, resourceGroup);
+            final String tokenizedMetaData = resourceService.generateResourceFile(fileName, metaDataStr, resourceGroup, application);
+            LOGGER.info("tokenized metadata is : {}", tokenizedMetaData);
+            metaData = new ObjectMapper().readValue(tokenizedMetaData, ResourceTemplateMetaData.class);
+            final String destPath = metaData.getDeployPath() + '/' + metaData.getDeployFileName();
+            File confFile = createConfFile(metaData.getEntity().getTarget(), groupName, metaData.getDeployFileName(), resourceGroup);
             String srcPath, standardError;
             if (metaData.getContentType().equals(ContentType.APPLICATION_BINARY.contentTypeStr)) {
                 srcPath = getGroupAppResourceTemplate(groupName, application.getName(), fileName, false, resourceGroup);
@@ -505,7 +517,7 @@ public class GroupServiceImpl implements GroupService {
             if (!commandOutput.getReturnCode().wasSuccessful()) {
                 standardError = commandOutput.getStandardError().isEmpty() ? commandOutput.getStandardOutput() : commandOutput.getStandardError();
                 LOGGER.error("Copy command completed with error trying to copy {} to {} :: ERROR: {}",
-                        fileName, application.getName(), standardError);
+                        metaData.getDeployFileName(), application.getName(), standardError);
                 throw new DeployApplicationConfException(standardError);
             }
             if (metaData.isUnpack()) {

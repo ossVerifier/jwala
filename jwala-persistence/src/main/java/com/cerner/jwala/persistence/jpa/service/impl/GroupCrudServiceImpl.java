@@ -21,11 +21,11 @@ import com.cerner.jwala.persistence.jpa.domain.resource.config.template.JpaGroup
 import com.cerner.jwala.persistence.jpa.domain.resource.config.template.JpaGroupWebServerConfigTemplate;
 import com.cerner.jwala.persistence.jpa.service.GroupCrudService;
 import com.cerner.jwala.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
+import com.cerner.jwala.persistence.jpa.service.exception.ResourceTemplateMetaDataUpdateException;
 import com.cerner.jwala.persistence.jpa.service.exception.ResourceTemplateUpdateException;
 import org.joda.time.DateTime;
 
 import javax.persistence.EntityExistsException;
-import javax.persistence.PersistenceException;
 import javax.persistence.Query;
 import java.util.ArrayList;
 import java.util.List;
@@ -98,11 +98,7 @@ public class GroupCrudServiceImpl extends AbstractCrudServiceImpl<JpaGroup> impl
     @Override
     public void removeGroup(final Identifier<Group> aGroupId) {
         final JpaGroup group = getGroup(aGroupId);
-        try {
             remove(group);
-        } catch (PersistenceException pe) {
-            throw new PersistenceException("Web Server,JVM or both might depend on group:" + group.getName(), pe);
-        }
     }
 
     @Override
@@ -245,6 +241,27 @@ public class GroupCrudServiceImpl extends AbstractCrudServiceImpl<JpaGroup> impl
     }
 
     @Override
+    public void updateGroupAppResourceMetaData(String groupName, String webAppName, String resourceName, String metaData) {
+        final Query q = entityManager.createNamedQuery(JpaGroupAppConfigTemplate.UPDATE_GROUP_APP_TEMPLATE_META_DATA);
+        q.setParameter(JpaGroupAppConfigTemplate.QUERY_PARAM_GRP_NAME, groupName);
+        q.setParameter(JpaGroupAppConfigTemplate.QUERY_PARAM_APP_NAME, webAppName);
+        q.setParameter(JpaGroupAppConfigTemplate.QUERY_PARAM_TEMPLATE_NAME, resourceName);
+        q.setParameter("metaData", metaData);
+
+        int numEntities;
+
+        try {
+            numEntities = q.executeUpdate();
+        } catch (RuntimeException re) {
+            throw new ResourceTemplateMetaDataUpdateException(groupName, resourceName, re);
+        }
+
+        if (numEntities == 0) {
+            throw new ResourceTemplateMetaDataUpdateException(groupName, resourceName);
+        }
+    }
+
+    @Override
     public String getGroupAppResourceTemplateMetaData(String groupName, String resourceTemplateName) {
         final Query q = entityManager.createNamedQuery(JpaGroupAppConfigTemplate.GET_GROUP_APP_TEMPLATE_META_DATA);
         q.setParameter("grpName", groupName);
@@ -297,6 +314,26 @@ public class GroupCrudServiceImpl extends AbstractCrudServiceImpl<JpaGroup> impl
     }
 
     @Override
+    public void updateGroupJvmResourceMetaData(String groupName, String resourceName, String metaData) {
+        final Query q = entityManager.createNamedQuery(JpaGroupJvmConfigTemplate.UPDATE_GROUP_JVM_TEMPLATE_META_DATA);
+        q.setParameter("grpName", groupName);
+        q.setParameter("templateName", resourceName);
+        q.setParameter("metaData", metaData);
+
+        int numEntities;
+
+        try {
+            numEntities = q.executeUpdate();
+        } catch (RuntimeException re) {
+            throw new ResourceTemplateMetaDataUpdateException(groupName, resourceName, re);
+        }
+
+        if (numEntities == 0) {
+            throw new ResourceTemplateMetaDataUpdateException(groupName, resourceName);
+        }
+    }
+
+    @Override
     public String getGroupJvmResourceTemplate(String groupName, String resourceTemplateName) {
         final Query q = entityManager.createNamedQuery(JpaGroupJvmConfigTemplate.GET_GROUP_JVM_TEMPLATE_CONTENT);
         q.setParameter("grpName", groupName);
@@ -338,6 +375,27 @@ public class GroupCrudServiceImpl extends AbstractCrudServiceImpl<JpaGroup> impl
         if (numEntities == 0) {
             throw new ResourceTemplateUpdateException(groupName, resourceTemplateName);
         }
+    }
+
+    @Override
+    public void updateGroupWebServerResourceMetaData(String groupName, String resourceName, String metaData) {
+        final Query q = entityManager.createNamedQuery(JpaGroupWebServerConfigTemplate.UPDATE_GROUP_WEBSERVER_TEMPLATE_META_DATA);
+        q.setParameter("grpName", groupName);
+        q.setParameter("templateName", resourceName);
+        q.setParameter("metaData", metaData);
+
+        int numEntities;
+
+        try {
+            numEntities = q.executeUpdate();
+        } catch (RuntimeException re) {
+            throw new ResourceTemplateMetaDataUpdateException(groupName, resourceName, re);
+        }
+
+        if (numEntities == 0) {
+            throw new ResourceTemplateMetaDataUpdateException(groupName, resourceName);
+        }
+
     }
 
     @Override

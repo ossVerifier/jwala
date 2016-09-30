@@ -1,8 +1,8 @@
 package com.cerner.jwala.persistence.jpa.domain.resource.config.template;
 
-import javax.persistence.*;
-
 import com.cerner.jwala.persistence.jpa.domain.JpaGroup;
+
+import javax.persistence.*;
 
 /**
  * POJO that describes a db table that holds data about a group of web server related resource configuration templates.
@@ -18,6 +18,8 @@ import com.cerner.jwala.persistence.jpa.domain.JpaGroup;
                 query = "SELECT t.metaData FROM JpaGroupWebServerConfigTemplate t where t.grp.name = :grpName and t.templateName = :templateName"),
         @NamedQuery(name = JpaGroupWebServerConfigTemplate.UPDATE_GROUP_WEBSERVER_TEMPLATE_CONTENT,
                 query = "UPDATE JpaGroupWebServerConfigTemplate t SET t.templateContent = :templateContent WHERE t.grp.name = :grpName AND t.templateName = :templateName"),
+        @NamedQuery(name = JpaGroupWebServerConfigTemplate.UPDATE_GROUP_WEBSERVER_TEMPLATE_META_DATA,
+                query = "UPDATE JpaGroupWebServerConfigTemplate t SET t.metaData = :metaData WHERE t.grp.name = :grpName AND t.templateName = :templateName"),
         @NamedQuery(name = JpaGroupWebServerConfigTemplate.QUERY_DELETE_GRP_WEBSERVER_TEMPLATE, query = "DELETE FROM JpaGroupWebServerConfigTemplate t WHERE t.templateName = :templateName"),
         @NamedQuery(name = JpaGroupWebServerConfigTemplate.GET_GROUP_WEBSERVER_TEMPLATE_RESOURCE_NAME, query = "SELECT t.templateName FROM JpaGroupWebServerConfigTemplate t WHERE t.grp.name = :grpName and t.templateName = :templateName"),
         @NamedQuery(name = JpaGroupWebServerConfigTemplate.QUERY_DELETE_GROUP_LEVEL_WEBSERVER_RESOURCE_BY_TEMPLATE_GROUP_NAME,
@@ -31,6 +33,7 @@ public class JpaGroupWebServerConfigTemplate extends ConfigTemplate {
     public static final String GET_GROUP_WEBSERVER_TEMPLATE_RESOURCE_NAMES = "getGroupWebServerTemplateResourcesName";
     public static final String GET_GROUP_WEBSERVER_TEMPLATE_CONTENT = "getGroupWebServerTemplateContent";
     public static final String UPDATE_GROUP_WEBSERVER_TEMPLATE_CONTENT = "updateGroupWebServerTemplateContent";
+    public static final String UPDATE_GROUP_WEBSERVER_TEMPLATE_META_DATA = "updateGroupWebServerTemplateMetaData";
     public static final String GET_GROUP_WEBSERVER_TEMPLATE_META_DATA = "getGroupWebServerTemplateMetaData";
     public static final String QUERY_DELETE_GRP_WEBSERVER_TEMPLATE = "deleteGrpWebServerTemplate";
     public static final String QUERY_GET_GROUP_LEVEL_WEBSERVER_RESOURCE = "getGroupLevelWebServerResource";

@@ -15,13 +15,14 @@ import java.util.List;
  */
 @Path("/resources")
 @Produces(MediaType.APPLICATION_JSON)
-public interface ResourceServiceRest extends InitializingBean{
+public interface ResourceServiceRest extends InitializingBean {
 
     /**
      * Creates a template file and it's corresponding JSON meta data file.
      * A template file is used when generating the actual resource file what will be deployed to a JVM or web server.
+     *
      * @param attachments contains the template's meta data and main content
-     * @param user a logged in user who's calling this service
+     * @param user        a logged in user who's calling this service
      * @return {@link Response}
      */
     @POST
@@ -35,6 +36,7 @@ public interface ResourceServiceRest extends InitializingBean{
 
     /**
      * Gets the resource data topology.
+     *
      * @return resource JSON data topology wrapped by {@link Response}.
      */
     @GET
@@ -47,8 +49,9 @@ public interface ResourceServiceRest extends InitializingBean{
 
     /**
      * Gets an application's resource template.
-     * @param groupName the group the application belongs to
-     * @param appName the application name
+     *
+     * @param groupName    the group the application belongs to
+     * @param appName      the application name
      * @param templateName the template name
      * @return {@link Response}
      */
@@ -59,11 +62,12 @@ public interface ResourceServiceRest extends InitializingBean{
 
     /**
      * Checks if a group/jvm/webapp/webserver contains a resource file.
-     * @param groupName name of the group under which the resource file should exist or the jvm/webapp/webvserver should exist
-     * @param jvmName name of the jvm under which the resource file should exist
-     * @param webappName name of the webapp under which the resource file should exist
+     *
+     * @param groupName     name of the group under which the resource file should exist or the jvm/webapp/webvserver should exist
+     * @param jvmName       name of the jvm under which the resource file should exist
+     * @param webappName    name of the webapp under which the resource file should exist
      * @param webserverName name of the webserver under which the resource file should exist
-     * @param fileName name of the resource file that is being searched
+     * @param fileName      name of the resource file that is being searched
      * @return returns a json string with the information about the file {@link Response}
      */
     @GET
@@ -76,9 +80,10 @@ public interface ResourceServiceRest extends InitializingBean{
 
     /**
      * Creates a resource.
-     * @param attachments contains the template's meta data and content
+     *
+     * @param attachments         contains the template's meta data and content
      * @param createResourceParam contains information on who owns the resource to be created
-     * @param user a logged in user who's calling this service  @return {@link Response}
+     * @param user                a logged in user who's calling this service  @return {@link Response}
      */
     @POST
     @Path("/data")
@@ -94,18 +99,20 @@ public interface ResourceServiceRest extends InitializingBean{
 
     /**
      * Delete resources.
-     * @param templateNameArray contains the template names of resource to delete
+     *
+     * @param templateNameArray      contains the template names of resource to delete
      * @param resourceHierarchyParam the entity hierarchy that describes where the resource belongs to
-     * @param user the user
+     * @param user                   the user
      * @return a wrapper class that contains the number of records that were deleted
      */
     @DELETE
     @Path("/templates")
-    Response deleteResources(@MatrixParam("name") String [] templateNameArray, @MatrixParam("") ResourceHierarchyParam resourceHierarchyParam, @BeanParam AuthenticatedUser user);
+    Response deleteResources(@MatrixParam("name") String[] templateNameArray, @MatrixParam("") ResourceHierarchyParam resourceHierarchyParam, @BeanParam AuthenticatedUser user);
 
     /**
      * Get the template content
-     * @param resourceName the template name
+     *
+     * @param resourceName           the template name
      * @param resourceHierarchyParam the group, JVM, webserver, web app hierarchy info
      * @return the content of the template
      */
@@ -115,7 +122,8 @@ public interface ResourceServiceRest extends InitializingBean{
 
     /**
      * Update the template content
-     * @param resourceName the template name
+     *
+     * @param resourceName           the template name
      * @param resourceHierarchyParam the group, JVM, web server, web app hierarchy info
      * @return the saved content
      */
@@ -125,7 +133,20 @@ public interface ResourceServiceRest extends InitializingBean{
     Response updateResourceContent(@PathParam("resourceName") String resourceName, @MatrixParam("") ResourceHierarchyParam resourceHierarchyParam, final String content);
 
     /**
+     * Update the template meta data
+     *
+     * @param resourceName           the template name
+     * @param resourceHierarchyParam the group, JVM, web server, web app hierarchy info
+     * @return the saved meta data
+     */
+    @PUT
+    @Path("/template/metadata/{resourceName}")
+    @Consumes(MediaType.TEXT_PLAIN)
+    Response updateResourceMetaData(@PathParam("resourceName") String resourceName, @MatrixParam("") ResourceHierarchyParam resourceHierarchyParam, final String metaData);
+
+    /**
      * Preview the template content
+     *
      * @param resourceHierarchyParam the group, JVM, web server, web app hierarchy info
      * @return the saved content
      */
@@ -136,6 +157,7 @@ public interface ResourceServiceRest extends InitializingBean{
 
     /**
      * Get the key/value pairings for any external properties that were loaded
+     *
      * @return the key/value pairings for any external properties
      */
     @GET
@@ -146,6 +168,7 @@ public interface ResourceServiceRest extends InitializingBean{
 
     /**
      * Return the properties file as a download
+     *
      * @return a link to download the external properties file
      */
     @GET
@@ -157,8 +180,10 @@ public interface ResourceServiceRest extends InitializingBean{
     @Path("/properties/view")
     @Produces(MediaType.TEXT_PLAIN)
     Response getExternalPropertiesView();
+
     /**
      * Upload the external properties file
+     *
      * @param user a logged in user who's calling this service  @return {@link Response}
      */
     @POST
@@ -168,6 +193,7 @@ public interface ResourceServiceRest extends InitializingBean{
 
     /**
      * Get the name of any templates that were loaded for a resource
+     *
      * @return the names of the resource files for a given entity
      */
     @GET

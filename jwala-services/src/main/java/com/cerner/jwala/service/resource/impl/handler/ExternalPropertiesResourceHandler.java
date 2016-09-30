@@ -83,4 +83,23 @@ public class ExternalPropertiesResourceHandler extends ResourceHandler {
                 StringUtils.isEmpty(resourceIdentifier.groupName) &&
                 StringUtils.isEmpty(resourceIdentifier.webServerName);
     }
+
+    @Override
+    public String updateResourceMetaData(ResourceIdentifier resourceIdentifier, String resourceName, String metaData) {
+        if (canHandle(resourceIdentifier)) {
+            // TODO implement me !!!!
+            throw new UnsupportedOperationException();
+        } else {
+            return successor.updateResourceMetaData(resourceIdentifier, resourceName, metaData);
+        }
+    }
+
+    @Override
+    public Object getSelectedValue(ResourceIdentifier resourceIdentifier) {
+        if (canHandle(resourceIdentifier)){
+            return null;
+        } else {
+            return successor.getSelectedValue(resourceIdentifier);
+        }
+    }
 }

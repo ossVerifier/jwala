@@ -8,6 +8,8 @@ import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
 import com.cerner.jwala.common.domain.model.jvm.JvmState;
 import com.cerner.jwala.common.domain.model.resource.ResourceGroup;
+import com.cerner.jwala.common.domain.model.resource.ResourceIdentifier;
+import com.cerner.jwala.common.domain.model.resource.ResourceTemplateMetaData;
 import com.cerner.jwala.common.domain.model.ssh.SshConfiguration;
 import com.cerner.jwala.common.domain.model.user.User;
 import com.cerner.jwala.common.exception.ApplicationException;
@@ -35,8 +37,10 @@ import com.cerner.jwala.service.HistoryService;
 import com.cerner.jwala.service.MessagingService;
 import com.cerner.jwala.service.app.PrivateApplicationService;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionService;
+import com.cerner.jwala.service.exception.ApplicationServiceException;
 import com.cerner.jwala.service.group.GroupService;
 import com.cerner.jwala.service.resource.ResourceService;
+import com.cerner.jwala.service.resource.impl.CreateResourceResponseWrapper;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -50,6 +54,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.file.FileSystems;
 import java.util.*;
@@ -676,6 +681,29 @@ public class ApplicationServiceImplTest {
                 mockHistoryService, mockMessagingService, mockResourceService, remoteCommandExecutorImpl, binaryDistributionService);
         mockApplicationService.copyApplicationConfigToGroupJvms(mockGroup, "testApp", mock(ResourceGroup.class), testUser);
 
+    }
+
+    @Test
+    public void testUploadWebArchiveWithWarName() throws IOException {
+        Identifier<Application> id = new Identifier<>("1");
+        Group mockGroup = mock(Group.class);
+        Application app = new Application(id, "testApp", "D:/stp/app/webapps", "/test", mockGroup, false, false, false, "test.war");
+        Application returnApp = new Application(id, "testApp", null, "/test", mockGroup, false, false, false, null);
+        when(applicationPersistenceService.getApplication(any(Identifier.class))).thenReturn(returnApp);
+        when(mockGroup.getName()).thenReturn("testGroup");
+        byte[] bytes = new byte[0];
+        when(mockResourceService.uploadResource(any(ResourceTemplateMetaData.class), any(InputStream.class))).thenReturn("");
+        CreateResourceResponseWrapper createResourceResponseWrapper = mock(CreateResourceResponseWrapper.class);
+        when(mockResourceService.createResource(any(ResourceIdentifier.class), any(ResourceTemplateMetaData.class), any(InputStream.class))).thenReturn(createResourceResponseWrapper);
+        when(mockResourceService.getAppTemplate(anyString(), anyString(), anyString())).thenReturn("");
+        Application app2 = applicationService.uploadWebArchive(app.getId(), app.getWarName(), bytes, app.getWarPath());
+        assertEquals(app.getWarName(), app2.getWarName());
+        assertEquals(app.getWarPath(), app.getWarPath());
+    }
+
+    @Test (expected = ApplicationServiceException.class)
+    public void testUploadWebArchiveWithWarNameFail() throws IOException {
+        applicationService.uploadWebArchive(new Identifier<Application>("1"), null, new byte[0], new String());
     }
 
 }

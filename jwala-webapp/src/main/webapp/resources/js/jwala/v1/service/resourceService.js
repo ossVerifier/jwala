@@ -109,5 +109,13 @@ var resourceService = {
             matrixParam += ";webApp=" + encodeURIComponent(webAppName);
         }
         return matrixParam;
+    },
+    updateResourceMetaData: function(jvmName, webServerName, groupName, webAppName, resourceTemplateName, metaData) {
+        var matrixParam = this.createMatrixParam(groupName, webServerName, jvmName, webAppName);
+        return serviceFoundation.promisedPut("v1.0/resources/template/metadata/" + encodeURIComponent(resourceTemplateName) + matrixParam,
+                                                            "json",
+                                                             metaData,
+                                                             false,
+                                                             "text/plain; charset=utf-8");
     }
 };

@@ -20,6 +20,7 @@
 <script src="public-resources/ext/js/codemirror/codemirror.js"></script>
 <script src="public-resources/ext/js/codemirror/mode/groovy.js"></script>
 <script src="public-resources/ext/js/codemirror/mode/xml.js"></script>
+<script src="public-resources/ext/js/codemirror/mode/javascript.js"></script>
 
 <!--  Services -->
 <script src="public-resources/ext/js/bluebird/bluebird-2.1.3.js"></script>
@@ -47,6 +48,7 @@
 <script type="text/jsx" src="public-resources/js/react/generic-components/RToolbar.js"></script>
 <script type="text/jsx" src="public-resources/js/react/generic-components/RTabs.js"></script>
 <script type="text/jsx" src="public-resources/js/react/XmlPreview.js"></script>
+<script type="text/jsx" src="public-resources/js/react/MetaDataPreview.js"></script>
 <script type="text/jsx" src="public-resources/js/react/generic-components/tabs.js"></script>
 <script type="text/jsx" src="public-resources/js/react/generic-components/dialog-box.js"></script>
 <script type="text/jsx" src="public-resources/js/react/generic-components/modal-dialog-box.js"></script>

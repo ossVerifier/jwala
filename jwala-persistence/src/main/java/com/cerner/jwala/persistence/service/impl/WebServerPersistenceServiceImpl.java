@@ -123,6 +123,12 @@ public class WebServerPersistenceServiceImpl implements WebServerPersistenceServ
     }
 
     @Override
+    public String updateResourceMetaData(String webServerName, String resourceName, String metaData) {
+        webServerCrudService.updateResourceMetaData(webServerName, resourceName, metaData);
+        return webServerCrudService.getResourceTemplateMetaData(webServerName, resourceName);
+    }
+
+    @Override
     public int updateState(final Identifier<WebServer> id, final WebServerReachableState state) {
         return webServerCrudService.updateState(id, state);
     }

@@ -51,6 +51,7 @@ public class WebServerControlServiceImpl implements WebServerControlService {
     private final MessagingService messagingService;
     private final RemoteCommandExecutorService remoteCommandExecutorService;
     private final SshConfiguration sshConfig;
+    private static final int SLEEP_DURATION = 1000;
 
     public WebServerControlServiceImpl(final WebServerService webServerService,
                                        final RemoteCommandExecutor<WebServerControlOperation> commandExecutor,
@@ -114,6 +115,7 @@ public class WebServerControlServiceImpl implements WebServerControlService {
                         break;
                     case ExecReturnCode.JWALA_EXIT_CODE_ABNORMAL_SUCCESS:
                         LOGGER.warn(CommandOutputReturnCode.fromReturnCode(commandOutput.getReturnCode().getReturnCode()).getDesc());
+                        commandOutput = new CommandOutput(new ExecReturnCode(0), null, null);
                         break;
                     default:
                         final String errorMsg = "Web Server control command was not successful! Return code = "
@@ -122,7 +124,7 @@ public class WebServerControlServiceImpl implements WebServerControlService {
 
                         LOGGER.error(errorMsg);
                         historyService.createHistory(getServerName(webServer), new ArrayList<>(webServer.getGroups()), errorMsg,
-                                EventType.APPLICATION_ERROR, aUser.getId());
+                                EventType.APPLICATION_EVENT, aUser.getId());
                         messagingService.send(new CurrentState<>(webServer.getId(), WebServerReachableState.WS_FAILED,
                                 DateTime.now(), StateType.WEB_SERVER, errorMsg));
                         break;
@@ -132,7 +134,7 @@ public class WebServerControlServiceImpl implements WebServerControlService {
         } catch (final RemoteCommandExecutorServiceException e) {
             LOGGER.error(e.getMessage(), e);
             historyService.createHistory(getServerName(webServer), new ArrayList<>(webServer.getGroups()), e.getMessage(),
-                    EventType.APPLICATION_ERROR, aUser.getId());
+                    EventType.APPLICATION_EVENT, aUser.getId());
             messagingService.send(new CurrentState<>(webServer.getId(), WebServerReachableState.WS_FAILED, DateTime.now(),
                     StateType.WEB_SERVER, e.getMessage()));
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE,
@@ -248,6 +250,42 @@ public class WebServerControlServiceImpl implements WebServerControlService {
                 targetDirPath,
                 targetFile);
 
+    }
+
+    @Override
+    public boolean waitForState(ControlWebServerRequest controlWebServerRequest, final Long waitTimeout) {
+        final Long startTime = DateTime.now().getMillis();
+        final WebServerControlOperation webServerControlOperation = controlWebServerRequest.getControlOperation();
+        while (true) {
+            final WebServer webServer = webServerService.getWebServer(controlWebServerRequest.getWebServerId());
+            LOGGER.info("Retrieved web server: {}", webServer);
+            switch (webServerControlOperation) {
+                case START:
+                    if (webServer.getState() == WebServerReachableState.WS_REACHABLE) {
+                        return true;
+                    }
+                    break;
+                case STOP:
+                    if (webServer.getState() == WebServerReachableState.WS_UNREACHABLE ||
+                            webServer.getState() == WebServerReachableState.FORCED_STOPPED) {
+                        return true;
+                    }
+                    break;
+                default:
+                    throw new InternalErrorException(AemFaultType.SERVICE_EXCEPTION, "Command: " + webServerControlOperation.toString() + " not supported");
+            }
+            if (DateTime.now().getMillis() - startTime > waitTimeout) {
+                LOGGER.warn("Timeout reached to get the state for webserver: {}", webServer.getName());
+                break;
+            }
+            try {
+                Thread.sleep(SLEEP_DURATION);
+            } catch (InterruptedException e) {
+                LOGGER.error("Error with Thread.sleep", e);
+                throw new InternalErrorException(AemFaultType.SERVICE_EXCEPTION, "Error with waiting for state for WebServer: " + webServer.getName(), e);
+            }
+        }
+        return false;
     }
 
 }

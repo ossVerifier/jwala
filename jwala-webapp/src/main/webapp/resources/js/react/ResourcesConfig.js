@@ -22,6 +22,7 @@ var ResourcesConfig = React.createClass({
                                          ref="xmlTabs"
                                          uploadDialogCallback={this.launchUpload}
                                          updateGroupTemplateCallback={this.launchUpdateGroupTemplate}
+                                         updateGroupMetaDataCallback={this.launchUpdateGroupMetaData}
                                          updateExtPropsAttributesCallback={this.updateExtPropsAttributesCallback}
                                          />);
 
@@ -38,6 +39,11 @@ var ResourcesConfig = React.createClass({
                      show={false}
                      cancelCallback={this.cancelUpdateGroupTemplateCallback}
                      ref="templateUpdateGroupModal"/>
+                    <ModalDialogBox
+                     title="Confirm meta data update"
+                     show={false}
+                     cancelCallback={this.cancelUpdateGroupMetaDataCallback}
+                     ref="metaDataUpdateGroupModal"/>
                     <ModalDialogBox ref="selectTemplateFilesModalDlg"
                                                         title="Upload External Properties"
                                                         show={false}
@@ -138,13 +144,29 @@ var ResourcesConfig = React.createClass({
     cancelUpdateGroupTemplateCallback: function() {
         this.refs.templateUpdateGroupModal.close();
     },
-
     launchUpdateGroupTemplate: function(template){
         var self = this;
         this.refs.templateUpdateGroupModal.show("Confirm update",
             <ConfirmUpdateGroupDialog componentDidMountCallback={this.confirmUpdateGroupDidMount}
+                                      resourceType="templates"
                                       template={template}/>, function() {
                                         self.okUpdateGroupTemplateCallback(template);
+                                      });
+    },
+    okUpdateGroupMetaDataCallback: function(metaData) {
+        this.refs.xmlTabs.saveResourceMetaDataPromise(metaData);
+        this.refs.metaDataUpdateGroupModal.close();
+    },
+    cancelUpdateGroupMetaDataCallback: function() {
+        this.refs.metaDataUpdateGroupModal.close();
+    },
+    launchUpdateGroupMetaData: function(metaData){
+        var self = this;
+        this.refs.metaDataUpdateGroupModal.show("Confirm meta data update",
+            <ConfirmUpdateGroupDialog componentDidMountCallback={this.confirmUpdateGroupDidMount}
+                                      resourceType="meta data"
+                                      metaData={metaData}/>, function() {
+                                        self.okUpdateGroupMetaDataCallback(metaData);
                                       });
     },
     updateExtPropsAttributesCallback: function(){
@@ -337,43 +359,59 @@ var ResourcesConfig = React.createClass({
 var XmlTabs = React.createClass({
     getInitialState: function() {
         return {entityType: null, entity: null, entityParent: null, resourceTemplateName: null, template: "",
-                entityGroupName: "", groupJvmEntityType: null, readOnly: false}
+                metaData: "", lastSaved: "Template", entityGroupName: "", groupJvmEntityType: null, readOnly: false}
     },
     clearEditor: function() {
         this.setState({resourceTemplateName: null, template: ""});
     },
     render: function() {
         var codeMirrorComponent;
+        var metaDataEditor;
+        var metaDataPreview;
         var xmlPreview;
 
         if (this.state.resourceTemplateName === null) {
             codeMirrorComponent = <div style={{padding: "5px 5px"}}>Please select a JVM, Web Server or Web Application and a resource</div>;
             xmlPreview = <div style={{padding: "5px 5px"}}>Please select a JVM, Web Server or Web Application and a resource</div>;
+            metaDataEditor = <div style={{padding: "5px 5px"}}>Please select a JVM, Web Server or Web Application and a resource</div>;
+            metaDataPreview = <div style={{padding: "5px 5px"}}>Please select a JVM, Web Server or Web Application and a resource</div>;
         } else {
-            // console.log("readOnly = " + this.state.readOnly);
             codeMirrorComponent = <CodeMirrorComponent ref="codeMirrorComponent" content={this.state.template}
                                    className="xml-editor-container" saveCallback={this.saveResource}
-                                   onChange={this.onChangeCallback} readOnly={this.state.readOnly}/>
+                                   onChange={this.onChangeCallback} readOnly={this.state.readOnly} mode="xml"/>
+            metaDataEditor = <CodeMirrorComponent ref="metaDataEditor" content={this.state.metaData}
+                                className="xml-editor-container" saveCallback={this.saveResourceMetaData}
+                                onChange={this.onChangeCallback} mode="javascript"/>
             if (this.state.entityType === "webServerSection" || this.state.entityType === "jvmSection") {
                 xmlPreview = <div style={{padding: "5px 5px"}}>A group level web server or JVM template cannot be previewed. Please select a specific web server or JVM instead.</div>;
+                metaDataPreview = <div style={{padding: "5px 5px"}}>A group level web server or JVM template cannot be previewed. Please select a specific web server or JVM instead.</div>;
             } else {
                 xmlPreview = <XmlPreview ref="xmlPreview" />
+                metaDataPreview = <MetaDataPreview ref="metaDataPreview"/>
             }
         }
 
         var xmlTabItems = [{title: "Template", content:codeMirrorComponent},
-                           {title: "Preview", content:xmlPreview}];
+                            {title: "Template Preview", content:xmlPreview},
+                            {title: "Meta Data", content: metaDataEditor},
+                            {title: "Meta Data Preview", content: metaDataPreview}];
+
+        if (this.state.entityType === "extProperties") {
+            xmlTabItems = [{title: "Template", content:codeMirrorComponent},
+                                                      {title: "Template Preview", content:xmlPreview}];
+        }
 
         return <RTabs ref="tabs" items={xmlTabItems} depth={2} onSelectTab={this.onSelectTab}
                       className="xml-editor-preview-tab-component"
                       contentClassName="xml-editor-preview-tab-component content" />
     },
     componentWillUpdate: function(nextProps, nextState) {
-        this.refs.tabs.setState({activeHash: "#/Configuration/Resources/Template/",
+        this.refs.tabs.setState({activeHash: "#/Configuration/Resources/" + this.state.lastSaved + "/",
             entityGroupName: nextState.entityParent.name});
     },
     onChangeCallback: function() {
-        if (this.refs.codeMirrorComponent !== undefined && this.refs.codeMirrorComponent.isContentChanged()) {
+        if ((this.refs.codeMirrorComponent !== undefined && this.refs.codeMirrorComponent.isContentChanged())
+                || (this.refs.metaDataEditor !== undefined && this.refs.metaDataEditor.isContentChanged())) {
             MainArea.unsavedChanges = true;
         } else {
             MainArea.unsavedChanges = false;
@@ -435,7 +473,7 @@ var XmlTabs = React.createClass({
             console.log("Save success!");
             MainArea.unsavedChanges = false;
             this.showFadingStatus("Saved", this.refs.codeMirrorComponent.getDOMNode());
-            this.setState({template:response.applicationResponseContent});
+            this.setState({template:response.applicationResponseContent, lastSaved: "Template"});
             if (this.state.entity === "extProperties"){
                 this.props.updateExtPropsAttributesCallback();
             }
@@ -456,6 +494,51 @@ var XmlTabs = React.createClass({
             console.log(response);
             console.log(e);
             $.errorAlert("Operation was not successful! Please check console logs for details.", title, false);
+        }
+    },
+    saveResourceMetaData: function(metaData) {
+        if (this.state.entityType === "jvmSection" || this.state.entityType === "webServerSection"){
+            this.props.updateGroupMetaDataCallback(metaData);
+        } else {
+            this.saveResourceMetaDataPromise(metaData).then(this.savedResourceMetaDataCallback).caught(this.failed.bind(this, "Save Resource Meta Data"));
+        }
+    },
+    saveResourceMetaDataPromise: function(metaData) {
+        var thePromise;
+        console.log("saving meta data...");
+        if (this.state.entity !== null && this.state.resourceTemplateName !== null) {
+            if (this.state.entityType === "jvms" || this.state.entityType === "webServers") {
+                thePromise = this.props.resourceService.updateResourceMetaData(this.state.entity.jvmName, this.state.entity.name, this.state.entityGroupName, "",
+                    this.state.resourceTemplateName, metaData);
+            } else if (this.state.entityType === "webApps" && this.state.entityParent.jvmName) {
+                thePromise = this.props.resourceService.updateResourceMetaData(this.state.entityParent.jvmName, "", this.state.entity.group.name, this.state.entity.name,
+                    this.state.resourceTemplateName, metaData);
+            } else if (this.state.entityType === "webApps") {
+                thePromise = this.props.resourceService.updateResourceMetaData("", "", this.state.entity.group.name, this.state.entity.name,
+                    this.state.resourceTemplateName, metaData);
+            }  else if (this.state.entityType === "webServerSection") {
+                thePromise = this.props.resourceService.updateResourceMetaData("", "*", this.state.entityGroupName, "",
+                    this.state.resourceTemplateName, metaData);
+            } else if (this.state.entityType === "extProperties"){
+                thePromise = this.props.resourceService.updateResourceContent(this.state.resourceTemplateName, template, null, null, null, null);
+            } else {
+                thePromise = this.props.resourceService.updateResourceMetaData("*", "", this.state.entityGroupName, "",
+                    this.state.resourceTemplateName, metaData);
+            }
+        }
+        return thePromise;
+    },
+    savedResourceMetaDataCallback: function(response) {
+        if (response.message === "SUCCESS") {
+            console.log("Save meta data success!");
+            MainArea.unsavedChanges = false;
+            this.showFadingStatus("Saved", this.refs.metaDataEditor.getDOMNode());
+            this.setState({metaData: response.applicationResponseContent, lastSaved: "Meta Data"});
+            if (this.state.entity === "extProperties"){
+                this.props.updateExtPropsAttributesCallback();
+            }
+        } else {
+            throw response;
         }
     },
     /*** Save and Deploy methods: End ***/
@@ -499,14 +582,25 @@ var XmlTabs = React.createClass({
             self.setState({entity: data,
                            resourceTemplateName: resourceName,
                            template: response.applicationResponseContent.content,
+                           metaData: metaData,
                            entityGroupName: self.state.entityGroupName,
                            readOnly: readOnly});
+
         }).caught(function(response) {
             $.errorAlert("Error loading template!", "Error");
         });
     },
     onSelectTab: function(index) {
+        var self = this;
         if (this.state.entity !== null && this.state.resourceTemplateName !== null) {
+            // keep the tab open for template and meta data
+            if (index === 0) {
+                this.state.lastSaved = "Template";
+            } else if (index === 2) {
+                this.state.lastSaved = "Meta Data";
+            }
+
+            // show the preview
             if (index === 1 ) {
                 if (this.state.entityType === "jvms") {
                     this.props.jvmService.previewResourceFile(this.state.resourceTemplateName,
@@ -551,16 +645,49 @@ var XmlTabs = React.createClass({
                                                                    this.previewSuccessCallback,
                                                                    this.previewErrorCallback);
 
+
+                }
+            } else if (index === 3) {
+                if (this.state.entityType === "jvms" || this.state.entityType === "webServers") {
+                    this.props.resourceService.previewResourceFile(this.refs.metaDataEditor.getText(),
+                                                                   this.state.entityParent.rtreeListMetaData.parent.name,
+                                                                   this.state.entity.name,
+                                                                   this.state.entity.jvmName,
+                                                                   "",
+                                                                   this.previewMetaDataSuccessCallback,
+                                                                   this.previewMetaDataErrorCallback);
+                } else if (this.state.entityType === "webApps" && this.state.entityParent.jvmName) {
+                    this.props.resourceService.previewResourceFile(this.refs.metaDataEditor.getText(),
+                                                                   this.state.entityParent.rtreeListMetaData.parent.name,
+                                                                   "",
+                                                                   this.state.entityParent.jvmName,
+                                                                   this.state.entity.name,
+                                                                   this.previewMetaDataSuccessCallback,
+                                                                   this.previewMetaDataErrorCallback);
+                } else if (this.state.entityType === "webApps") {
+                    this.props.resourceService.previewResourceFile(this.refs.metaDataEditor.getText(),
+                                                                   this.state.entityParent.rtreeListMetaData.parent.name,
+                                                                   "",
+                                                                   "",
+                                                                   this.state.entity.name,
+                                                                   this.previewMetaDataSuccessCallback,
+                                                                   this.previewMetaDataErrorCallback);
                 }
             }
         }
     },
     previewSuccessCallback: function(response) {
         this.refs.xmlPreview.refresh(response.applicationResponseContent);
-        // this.refs.xmlTabs.refs.xmlPreview.resize();
     },
     previewErrorCallback: function(errMsg) {
         this.refs.tabs.setState({activeHash: "#/Configuration/Resources/Template/"});
+        $.errorAlert(errMsg, "Error");
+    },
+    previewMetaDataSuccessCallback: function(response) {
+        this.refs.metaDataPreview.refresh(response.applicationResponseContent);
+    },
+    previewMetaDataErrorCallback: function(errMsg) {
+        this.refs.tabs.setState({activeHash: "#/Configuration/Resources/Meta Data/"});
         $.errorAlert(errMsg, "Error");
     },
     /**
@@ -662,11 +789,12 @@ var ConfirmUpdateGroupDialog = React.createClass({
     },
     render: function() {
         var entityType = "JVM";
+        var resourceType = this.props.resourceType;
         if (this.state.entityType === "webServerSection"){
             entityType = "Web Server"
         }
         return <div className={this.props.className}>
-                 Saving will overwrite all the {entityType} templates in the group
+                 Saving will overwrite all the {entityType} {resourceType} in the group
                  <br/>
                  {this.state.entityGroupName}.
                  <br/><br/>

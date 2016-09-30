@@ -38,4 +38,8 @@ public abstract class ResourceHandler {
             throw new ResourceServiceException(ioe);
         }
     }
+
+    public abstract String updateResourceMetaData(ResourceIdentifier resourceIdentifier, String resourceName, String metaData);
+
+    public abstract Object getSelectedValue(ResourceIdentifier resourceIdentifier);
 }

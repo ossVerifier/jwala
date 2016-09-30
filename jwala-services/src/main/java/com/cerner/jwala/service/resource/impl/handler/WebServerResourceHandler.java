@@ -81,4 +81,22 @@ public class WebServerResourceHandler extends ResourceHandler {
                StringUtils.isEmpty(resourceIdentifier.webAppName) &&
                StringUtils.isEmpty(resourceIdentifier.jvmName);
     }
+
+    @Override
+    public String updateResourceMetaData(ResourceIdentifier resourceIdentifier, String resourceName, String metaData) {
+        if (canHandle(resourceIdentifier)) {
+            return webServerPersistenceService.updateResourceMetaData(resourceIdentifier.webServerName, resourceName, metaData);
+        } else {
+            return successor.updateResourceMetaData(resourceIdentifier, resourceName, metaData);
+        }
+    }
+
+    @Override
+    public Object getSelectedValue(ResourceIdentifier resourceIdentifier) {
+        if (canHandle(resourceIdentifier)){
+            return webServerPersistenceService.findWebServerByName(resourceIdentifier.webServerName);
+        } else {
+            return successor.getSelectedValue(resourceIdentifier);
+        }
+    }
 }

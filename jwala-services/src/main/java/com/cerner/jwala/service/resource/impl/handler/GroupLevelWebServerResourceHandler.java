@@ -112,4 +112,27 @@ public class GroupLevelWebServerResourceHandler extends ResourceHandler {
                StringUtils.isEmpty(resourceIdentifier.jvmName) &&
                StringUtils.isEmpty(resourceIdentifier.webAppName);
     }
+
+    @Override
+    public String updateResourceMetaData(ResourceIdentifier resourceIdentifier, String resourceName, String metaData) {
+        if (canHandle(resourceIdentifier)) {
+            final String updatedMetaData = groupPersistenceService.updateGroupWebServerResourceMetaData(resourceIdentifier.groupName, resourceName, metaData);
+            Set<WebServer> webServersSet = groupPersistenceService.getGroupWithWebServers(resourceIdentifier.groupName).getWebServers();
+            for (WebServer webServer : webServersSet){
+                webServerPersistenceService.updateResourceMetaData(webServer.getName(), resourceName, metaData);
+            }
+            return updatedMetaData;
+        } else {
+            return successor.updateResourceMetaData(resourceIdentifier, resourceName, metaData);
+        }
+    }
+
+    @Override
+    public Object getSelectedValue(ResourceIdentifier resourceIdentifier) {
+        if (canHandle(resourceIdentifier)){
+            return null;
+        } else {
+            return successor.getSelectedValue(resourceIdentifier);
+        }
+    }
 }

@@ -120,4 +120,22 @@ public class GroupLevelAppResourceHandler extends ResourceHandler {
                StringUtils.isEmpty(resourceIdentifier.webServerName) &&
                StringUtils.isEmpty(resourceIdentifier.jvmName);
     }
+
+    @Override
+    public String updateResourceMetaData(ResourceIdentifier resourceIdentifier, String resourceName, String metaData) {
+        if (canHandle(resourceIdentifier)) {
+            return groupPersistenceService.updateGroupAppResourceMetaData(resourceIdentifier.groupName, resourceIdentifier.webAppName, resourceName, metaData);
+        } else {
+            return successor.updateResourceMetaData(resourceIdentifier, resourceName, metaData);
+        }
+    }
+
+    @Override
+    public Object getSelectedValue(ResourceIdentifier resourceIdentifier) {
+        if (canHandle(resourceIdentifier)){
+            return null;
+        } else {
+            return successor.getSelectedValue(resourceIdentifier);
+        }
+    }
 }

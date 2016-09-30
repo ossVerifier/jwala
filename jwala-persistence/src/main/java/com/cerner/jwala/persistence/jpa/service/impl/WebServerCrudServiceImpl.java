@@ -21,6 +21,7 @@ import com.cerner.jwala.persistence.jpa.domain.builder.JvmBuilder;
 import com.cerner.jwala.persistence.jpa.domain.resource.config.template.JpaWebServerConfigTemplate;
 import com.cerner.jwala.persistence.jpa.service.WebServerCrudService;
 import com.cerner.jwala.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
+import com.cerner.jwala.persistence.jpa.service.exception.ResourceTemplateMetaDataUpdateException;
 import com.cerner.jwala.persistence.jpa.service.exception.ResourceTemplateUpdateException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -311,6 +312,25 @@ public class WebServerCrudServiceImpl extends AbstractCrudServiceImpl<JpaWebServ
 
         if (numEntities == 0) {
             throw new ResourceTemplateUpdateException(wsName, resourceTemplateName);
+        }
+    }
+
+    @Override
+    public void updateResourceMetaData(String webServerName, String resourceName, String metaData) {
+        final Query q = entityManager.createNamedQuery(JpaWebServerConfigTemplate.UPDATE_WEBSERVER_TEMPLATE_META_DATA);
+        q.setParameter("webServerName", webServerName);
+        q.setParameter("templateName", resourceName);
+        q.setParameter("metaData", metaData);
+
+        int numEntities;
+        try {
+            numEntities = q.executeUpdate();
+        } catch (RuntimeException re) {
+            throw new ResourceTemplateMetaDataUpdateException(webServerName, resourceName, re);
+        }
+
+        if (numEntities == 0) {
+            throw new ResourceTemplateMetaDataUpdateException(webServerName, resourceName);
         }
     }
 

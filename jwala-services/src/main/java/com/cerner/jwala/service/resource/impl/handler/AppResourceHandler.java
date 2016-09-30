@@ -72,7 +72,27 @@ public class AppResourceHandler extends ResourceHandler {
         return StringUtils.isNotEmpty(resourceIdentifier.resourceName) &&
                StringUtils.isNotEmpty(resourceIdentifier.webAppName) &&
                StringUtils.isNotEmpty(resourceIdentifier.jvmName) &&
-               StringUtils.isEmpty(resourceIdentifier.groupName) &&
+               /*StringUtils.isEmpty(resourceIdentifier.groupName) &&*/
                StringUtils.isEmpty(resourceIdentifier.webServerName);
+    }
+
+    @Override
+    public String updateResourceMetaData(ResourceIdentifier resourceIdentifier, String resourceName, String metaData) {
+        if (canHandle(resourceIdentifier)) {
+            return applicationPersistenceService.updateResourceMetaData(resourceIdentifier.webAppName, resourceName, metaData, resourceIdentifier.jvmName, resourceIdentifier.groupName);
+        } else {
+            return successor.updateResourceMetaData(resourceIdentifier, resourceName, metaData);
+        }
+    }
+
+    @Override
+    public Object getSelectedValue(ResourceIdentifier resourceIdentifier) {
+        if (canHandle(resourceIdentifier)){
+            final Application application = applicationPersistenceService.getApplication(resourceIdentifier.webAppName);
+            application.setParentJvm(jvmPersistenceService.findJvmByExactName(resourceIdentifier.jvmName));
+            return application;
+        } else {
+            return successor.getSelectedValue(resourceIdentifier);
+        }
     }
 }

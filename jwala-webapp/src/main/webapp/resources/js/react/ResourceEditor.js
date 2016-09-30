@@ -71,36 +71,27 @@ var ResourceEditor = React.createClass({
                                             {width:"44%", height:"100%"}]} />
     },
     componentDidMount: function() {
-        this.props.resourceService.getResourceTopology().then(this.getGroupDataCallback);
-    },
-
-    dataRetrievalCount: 1 /* We can't make this into a state since it's being used by asynchronous callbacks! */,
-    groupData: null,
-
-    getGroupDataCallback: function(response) {
         var self = this;
-        this.dataRetrievalCount = 0; // set to zero since group data retrieval is done at this point
-
-        if (response.applicationResponseContent !== undefined) {
-            this.groupData = response.applicationResponseContent.groups;
-        }
-
-        if (this.dataRetrievalCount === 0) {
-            // Add the sections e.g. jvmSection
-            this.setGroupData(this.groupData);
-        }
+        this.props.resourceService.getResourceTopology().then(function(response){
+            self.setGroupData(response.applicationResponseContent.groups);
+        });
     },
     setGroupData: function(groupData) {
         // Transform group data to contain a jvm and a web server section so that jvms and web server data will show up
         // under the said sections.
-        groupData.forEach(function(theGroupData) {
-            theGroupData["jvmSection"] = [{key: theGroupData.name + "JVMs", name: "JVMs", jvms: theGroupData.jvms}];
-            theGroupData["webServerSection"] = [{key: theGroupData.name + "WebServers", name: "Web Servers",
-                webServers: theGroupData.webServers}];
-            theGroupData["webAppSection"] = [{key: theGroupData.name + "WebApps", name: "Web Apps", webApps: theGroupData.applications}];
-        });
+        if (groupData !== null) {
+            var groupDataClone = $.extend(true, [], groupData); // it's good practice not to mutate the source
+            groupDataClone.forEach(function(theGroupData) {
+                theGroupData["jvmSection"] = [{key: theGroupData.name + "JVMs", name: "JVMs", jvms: theGroupData.jvms}];
+                theGroupData["webServerSection"] = [{key: theGroupData.name + "WebServers", name: "Web Servers",
+                    webServers: theGroupData.webServers}];
+                theGroupData["webAppSection"] = [{key: theGroupData.name + "WebApps", name: "Web Apps", webApps: theGroupData.applications}];
+            });
 
-        this.setState({groupData:groupData});
+            this.setState({groupData:groupDataClone});
+        } else {
+            this.setState({groupData:{}});
+        }
     },
     selectTreeNodeCallback: function(data, entity, parent) {
         this.refs.externalPropertiesNode.setActive(false);

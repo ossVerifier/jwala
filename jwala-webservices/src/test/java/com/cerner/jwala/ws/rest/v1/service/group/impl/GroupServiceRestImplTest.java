@@ -20,6 +20,7 @@ import com.cerner.jwala.common.request.group.UpdateGroupRequest;
 import com.cerner.jwala.persistence.jpa.service.exception.ResourceTemplateUpdateException;
 import com.cerner.jwala.persistence.service.GroupPersistenceService;
 import com.cerner.jwala.service.app.ApplicationService;
+import com.cerner.jwala.service.exception.GroupServiceException;
 import com.cerner.jwala.service.group.GroupControlService;
 import com.cerner.jwala.service.group.GroupJvmControlService;
 import com.cerner.jwala.service.group.GroupWebServerControlService;
@@ -32,21 +33,20 @@ import com.cerner.jwala.service.webserver.WebServerService;
 import com.cerner.jwala.ws.rest.v1.provider.AuthenticatedUser;
 import com.cerner.jwala.ws.rest.v1.provider.NameSearchParameterProvider;
 import com.cerner.jwala.ws.rest.v1.response.ApplicationResponse;
+import com.cerner.jwala.ws.rest.v1.service.app.ApplicationServiceRest;
 import com.cerner.jwala.ws.rest.v1.service.group.GroupChildType;
 import com.cerner.jwala.ws.rest.v1.service.group.MembershipDetails;
-import com.cerner.jwala.ws.rest.v1.service.group.impl.GroupServiceRestImpl;
-import com.cerner.jwala.ws.rest.v1.service.group.impl.JsonControlGroup;
-import com.cerner.jwala.ws.rest.v1.service.group.impl.JsonJvms;
-import com.cerner.jwala.ws.rest.v1.service.group.impl.JsonUpdateGroup;
 import com.cerner.jwala.ws.rest.v1.service.jvm.impl.JsonControlJvm;
 import com.cerner.jwala.ws.rest.v1.service.webserver.impl.JsonControlWebServer;
-
 import org.apache.commons.fileupload.FileUploadBase;
 import org.apache.cxf.jaxrs.ext.MessageContext;
+import org.apache.openjpa.persistence.EntityExistsException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import javax.servlet.ServletInputStream;
@@ -65,6 +65,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
 
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
@@ -130,6 +131,7 @@ public class GroupServiceRestImplTest {
     @Mock
     private Group mockGroup;
 
+    @InjectMocks
     private GroupServiceRestImpl groupServiceRest;
 
     @Mock
@@ -140,6 +142,9 @@ public class GroupServiceRestImplTest {
 
     @Mock
     private ApplicationService mockApplicationService;
+
+    @Mock
+    private ExecutorService mockExecutorService;
 
     private static List<Group> createGroupList() {
         final Group ws = new Group(Identifier.id(1L, Group.class), name);
@@ -792,6 +797,61 @@ public class GroupServiceRestImplTest {
         when(mockGroupService.getAllHosts()).thenReturn(new ArrayList<String>());
         Response result = groupServiceRest.getAllHosts();
         assertEquals(200, result.getStatus());
+    }
+
+    @Test
+    public void testCreateGroupFail() {
+        when(mockGroupService.createGroup(any(CreateGroupRequest.class), any(User.class))).thenThrow(EntityExistsException.class);
+        Response response = groupServiceRest.createGroup(mockGroup.getName(), mockAuthenticatedUser);
+        assertEquals(500, response.getStatus());
+    }
+
+    @Test
+    public void testUpdateGroupFail() {
+        JsonUpdateGroup mockJsonUpdateGroup = mock(JsonUpdateGroup.class);
+        Identifier mockIdentifier = mock(Identifier.class);
+        when(mockJsonUpdateGroup.getId()).thenReturn("1");
+        when(mockGroupService.getGroup(anyString())).thenReturn(mockGroup);
+        when(mockGroup.getId()).thenReturn(mockIdentifier);
+        when(mockIdentifier.getId()).thenReturn(1l);
+        when(mockJsonUpdateGroup.getName()).thenReturn("test-group");
+        when(mockGroupService.updateGroup(any(UpdateGroupRequest.class), any(User.class))).thenThrow(EntityExistsException.class);
+        Response response = groupServiceRest.updateGroup(mockJsonUpdateGroup, mockAuthenticatedUser);
+        assertEquals(500, response.getStatus());
+    }
+
+    @Test
+    public void testRemoveGroupByNameFail() {
+        Mockito.doThrow(GroupServiceException.class).when(mockGroupService).removeGroup(anyString());
+        Response response = groupServiceRest.removeGroup("test-group", true);
+        assertEquals(500, response.getStatus());
+    }
+
+    @Test
+    public void testRemoveGroupByIdFail() {
+        Mockito.doThrow(GroupServiceException.class).when(mockGroupService).removeGroup(any(Identifier.class));
+        Response response = groupServiceRest.removeGroup("1", false);
+        assertEquals(500, response.getStatus());
+    }
+
+    @Test (expected = InternalErrorException.class)
+    public void testGenerateAndDeployGroupAppFileFail() {
+        when(mockGroupService.getGroup(anyString())).thenReturn(mockGroup);
+        when(mockGroupService.getGroupAppResourceTemplateMetaData(anyString(), anyString())).thenReturn("anyString");
+        groupServiceRest.generateAndDeployGroupAppFile("test-group", "anyFile.txt", mockAuthenticatedUser, "anyHost");
+    }
+
+    @Test (expected = InternalErrorException.class)
+    public void testPerformGroupAppDeployToJvmsFail() {
+        final Set<Jvm> jvms = new HashSet<>();
+        final String hostname = "testHost";
+        final ApplicationServiceRest mockApplicationServiceRest = mock(ApplicationServiceRest.class);
+        JvmState jvmState = JvmState.JVM_STARTED;
+        jvms.add(mockJvm);
+        when(mockJvm.getHostName()).thenReturn(hostname);
+        when(mockGroup.getJvms()).thenReturn(jvms);
+        when(mockJvm.getState()).thenReturn(jvmState);
+        groupServiceRest.performGroupAppDeployToJvms("test-group", "test-file", mockAuthenticatedUser, mockGroup, "test-app", mockApplicationServiceRest, hostname);
     }
 
     /**

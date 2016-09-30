@@ -119,7 +119,7 @@ public class JvmStateReceiverAdapter extends ReceiverAdapter {
             return jvmPersistenceService.getJvmId(name);
         } catch (final RuntimeException e) { // Since the adapter is a critical component used to display the JVM state
                                              // let's make sure to catch all possible runtime exceptions and log them
-            LOGGER.error("Failed to retrieve the JVM id with the name {}! Cannot update the JVM state.", name);
+            LOGGER.error("Failed to retrieve the JVM id with the name {}! Cannot update the JVM state.", name, e);
             return null;
         }
     }
