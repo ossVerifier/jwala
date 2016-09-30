@@ -316,7 +316,9 @@ public class AemServiceConfiguration {
 
     @Bean(name = "webServerHttpRequestFactory")
     @DependsOn("aemServiceConfigurationPropertiesConfigurer")
-    // TODO: Check why the bean name says webServer while the parameter seems to be for JVM. Is this bean actively in used ?
+    // TODO: Refactor the @value parameter names e.g. ping.jvm.connectTimeout -> ping.request.connectTimeout
+    // TODO: Better yet if we can do away with this, just use HttpComponentsClientHttpRequestFactory directly
+    // This bean is used by the ClientFactoryHelper.
     public HttpClientRequestFactory getHttpClientRequestFactory(
             @Value("${ping.jvm.connectTimeout}") final int connectionTimeout,
             @Value("${ping.jvm.readTimeout}") final int readTimeout,
