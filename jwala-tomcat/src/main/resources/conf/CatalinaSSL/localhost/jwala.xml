@@ -35,6 +35,10 @@
               maxActive="150"
               username="sa"
               password=""
-              url="jdbc:h2:tcp://localhost:9094/jwala;LOCK_MODE=0"/>
+              testOnBorrow="true"
+              testWhileIdle="true"
+              maxWait="600000"
+              validationQuery="select 1"
+              url="jdbc:h2:tcp://localhost:9094/jwala;LOCK_MODE=0;AUTO_RECONNECT=TRUE"/>
 
 </Context>

@@ -23,7 +23,7 @@ SET SSL_OPTS=%SSL_OPTS% -Djavax.net.ssl.trustStorePassword=changeit
 REM High impact, unused: -Djavax.net.debug=ssl:handshake
 SET SSL_DEBUG_OPTS=-Djavax.net.debug=ssl:handshake
 
-SET CATALINA_OPTS=-XX:PermSize=128m -XX:MaxPermSize=256m
+SET CATALINA_OPTS=-XX:PermSize=128m -XX:MaxPermSize=256m -Dh2.socketConnectTimeout=3600000 -Dh2.maxReconnect=10000
 SET CATALINA_OPTS=%CATALINA_OPTS% -Xmx2048m -Xms256m
 
 SET CATALINA_OPTS=%CATALINA_OPTS% -DJWALA_HOME=%JWALA_HOME%
