@@ -90,6 +90,7 @@ import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.task.TaskExecutor;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -333,6 +334,15 @@ public class AemServiceConfiguration {
         httpClientRequestFactory.setPeriodMillis(millis);
         httpClientRequestFactory.setMaxHttpConnections(maxHttpConnections);
         return httpClientRequestFactory;
+    }
+
+    @Bean(name = "httpRequestFactory")
+    public HttpComponentsClientHttpRequestFactory getHttpComponentsClientHttpRequestFactory(@Value("${ping.http.connectTimeout:60000}") final int connectionRequestTimeout,
+                                                                                            @Value("${ping.http.connectTimeout:600000}") final int readTimeout) {
+        final HttpComponentsClientHttpRequestFactory httpRequestFactory = new HttpComponentsClientHttpRequestFactory();
+        httpRequestFactory.setConnectionRequestTimeout(60000);
+        httpRequestFactory.setReadTimeout(600000);
+        return httpRequestFactory;
     }
 
     @Bean(name = "webServerStateRetrievalScheduledTaskHandler")

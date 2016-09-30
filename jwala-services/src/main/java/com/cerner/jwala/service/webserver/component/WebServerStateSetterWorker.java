@@ -20,8 +20,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.client.ClientHttpRequest;
 import org.springframework.http.client.ClientHttpResponse;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Service;
@@ -51,7 +54,9 @@ public class WebServerStateSetterWorker {
     private final WebServerService webServerService;
     private final MessagingService messagingService;
     private final GroupStateNotificationService groupStateNotificationService;
-    private final ClientFactoryHelper clientFactoryHelper;
+
+    private HttpComponentsClientHttpRequestFactory httpRequestFactory = new HttpComponentsClientHttpRequestFactory();
+
 
     private static final Map<Identifier<WebServer>, WebServerReachableState> WEB_SERVER_LAST_PERSISTED_STATE_MAP = new ConcurrentHashMap<>();
     private static final Map<Identifier<WebServer>, String> WEB_SERVER_LAST_PERSISTED_ERROR_STATUS_MAP = new ConcurrentHashMap<>();
@@ -61,12 +66,13 @@ public class WebServerStateSetterWorker {
                                       final InMemoryStateManagerService<Identifier<WebServer>, WebServerReachableState> inMemoryStateManagerService,
                                       final WebServerService webServerService, final MessagingService messagingService,
                                       final GroupStateNotificationService groupStateNotificationService,
-                                      final ClientFactoryHelper clientFactoryHelper) {
+                                      @Qualifier("httpRequestFactory")
+                                      final HttpComponentsClientHttpRequestFactory httpRequestFactory) {
         this.inMemoryStateManagerService = inMemoryStateManagerService;
         this.webServerService = webServerService;
         this.messagingService = messagingService;
         this.groupStateNotificationService = groupStateNotificationService;
-        this.clientFactoryHelper = clientFactoryHelper;
+        this.httpRequestFactory = httpRequestFactory;
     }
 
     /**
@@ -82,7 +88,9 @@ public class WebServerStateSetterWorker {
                 final String webServerName = webServer.getName();
                 final WebServerReachableState webServerState = webServer.getState();
                 try {
-                    response = clientFactoryHelper.requestGet(webServer.getStatusUri());
+                    final ClientHttpRequest request = httpRequestFactory.createRequest(webServer.getStatusUri(), HttpMethod.GET);
+                    response = request.execute();
+
                     LOGGER.debug(">>> Response = {} from web server {}", response.getStatusCode(), webServer.getId().getId());
                     if (response.getStatusCode() == HttpStatus.OK) {
                         setState(webServer, WebServerReachableState.WS_REACHABLE, StringUtils.EMPTY);
