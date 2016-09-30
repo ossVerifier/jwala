@@ -38,6 +38,7 @@ import com.cerner.jwala.service.MessagingService;
 import com.cerner.jwala.service.app.ApplicationService;
 import com.cerner.jwala.service.app.PrivateApplicationService;
 
+import com.cerner.jwala.service.exception.ResourceServiceException;
 import com.cerner.jwala.service.resource.impl.ResourceContentGeneratorServiceImpl;
 import com.cerner.jwala.service.resource.impl.CreateResourceResponseWrapper;
 import com.cerner.jwala.service.resource.impl.ResourceServiceImpl;

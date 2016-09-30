@@ -652,11 +652,10 @@ public class JvmServiceImpl implements JvmService {
             }
 
             String metaDataStr = getResourceTemplateMetaData(jvmName, fileName);
-            final String tokenizedMetaData = ResourceFileGenerator.generateResourceConfig(metaDataStr, resourceService.generateResourceGroup(), jvm);
+            final String tokenizedMetaData = resourceService.generateResourceFile(fileName,metaDataStr, resourceService.generateResourceGroup(), jvm);
             LOGGER.info("tokenized metadata is : {}", tokenizedMetaData);
             ResourceTemplateMetaData resourceTemplateMetaData = new ObjectMapper().readValue(tokenizedMetaData, ResourceTemplateMetaData.class);
             String resourceSourceCopy;
-            String resourceDestPath = resourceService.generateResourceFile(fileName, metaDataPath, resourceService.generateResourceGroup(), jvm) + "/" + fileName;
             final String deployFileName = resourceTemplateMetaData.getDeployFileName();
             String resourceDestPath = resourceTemplateMetaData.getDeployPath() + "/" + deployFileName;
             if (resourceTemplateMetaData.getContentType().equals(ContentType.APPLICATION_BINARY.contentTypeStr)) {

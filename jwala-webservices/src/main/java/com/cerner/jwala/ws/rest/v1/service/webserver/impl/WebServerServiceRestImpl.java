@@ -221,7 +221,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
 
             // get the meta data
             String metaDataStr = webServerService.getResourceTemplateMetaData(aWebServerName, resourceFileName);
-            final String tokenizedMetaData = ResourceFileGenerator.generateResourceConfig(metaDataStr,
+            final String tokenizedMetaData = resourceService.generateResourceFile(resourceFileName, metaDataStr,
                     resourceService.generateResourceGroup(),
                     webServerService.getWebServer(aWebServerName));
             LOGGER.info("tokenized metadata is : {}", tokenizedMetaData);

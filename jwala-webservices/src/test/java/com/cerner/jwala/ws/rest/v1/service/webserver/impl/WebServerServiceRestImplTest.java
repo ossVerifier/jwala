@@ -311,6 +311,7 @@ public class WebServerServiceRestImplTest {
         when(commandOutput.getReturnCode()).thenReturn(execReturnCode);
         when(commandOutput.getReturnCode().wasSuccessful()).thenReturn(true);
         when(resourceService.generateResourceGroup()).thenReturn(new ResourceGroup());
+        when(resourceService.generateResourceFile(anyString(), anyString(), any(ResourceGroup.class), any())).thenReturn("{\"contentType\":\"text/plain\",\"deployPath\":\"./anyPath\",\"deployFileName\":\"httpd.conf\"}");
         Response response = webServerServiceRest.generateAndDeployConfig(webServer.getName(), "httpd.conf", authenticatedUser);
         assertTrue(response.hasEntity());
     }
@@ -326,6 +327,7 @@ public class WebServerServiceRestImplTest {
         ExecReturnCode execReturnCode = mock(ExecReturnCode.class);
         when(commandOutput.getReturnCode()).thenReturn(execReturnCode);
         when(commandOutput.getReturnCode().wasSuccessful()).thenReturn(true);
+        when(resourceService.generateResourceFile(anyString(), anyString(), any(ResourceGroup.class), any())).thenReturn("{\"contentType\":\"application/binary\",\"deployPath\":\"./anyPath\"}");
         Response response = webServerServiceRest.generateAndDeployConfig(webServer.getName(), "httpd.exe", authenticatedUser);
         assertTrue(response.hasEntity());
     }
@@ -335,7 +337,7 @@ public class WebServerServiceRestImplTest {
         when(impl.isStarted(any(WebServer.class))).thenReturn(true);
         when(impl.getResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"contentType\":\"text/plain\",\"deployPath\":\"./anyPath\"}");
         when(resourceService.generateResourceGroup()).thenReturn(new ResourceGroup());
-
+        when(resourceService.generateResourceFile(anyString(), anyString(), any(ResourceGroup.class), any())).thenReturn("{\"contentType\":\"text/plain\",\"deployPath\":\"./anyPath\"}");
         boolean exceptionThrown = false;
         try {
             webServerServiceRest.generateAndDeployConfig(webServer.getName(), "httpd.conf", authenticatedUser);
@@ -357,6 +359,7 @@ public class WebServerServiceRestImplTest {
         when(commandOutput.getReturnCode()).thenReturn(execReturnCode);
         when(commandOutput.getReturnCode().wasSuccessful()).thenReturn(true);
         when(webServerControlService.secureCopyFile(anyString(), anyString(), anyString(), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(1), "", "FAILED SECURE COPY TEST"));
+        when(resourceService.generateResourceFile(anyString(), anyString(), any(ResourceGroup.class), any())).thenReturn("{\"contentType\":\"text/plain\",\"deployPath\":\"./anyPath\",\"deployFileName\":\"httpd.conf\"}");
         boolean failedSecureCopy = false;
         Response response = null;
         try {
@@ -380,6 +383,7 @@ public class WebServerServiceRestImplTest {
         when(commandOutput.getReturnCode()).thenReturn(execReturnCode);
         when(commandOutput.getReturnCode().wasSuccessful()).thenReturn(true);
         Response response = null;
+        when(resourceService.generateResourceFile(anyString(), anyString(), any(ResourceGroup.class), any())).thenReturn("{\"contentType\":\"text/plain\",\"deployPath\":\"./anyPath\",\"deployFileName\":\"httpd.conf\"}");
         response = webServerServiceRest.generateAndDeployConfig(webServer.getName(), "httpd.conf", authenticatedUser);
         assertNotNull(response);
         assertEquals(webServer.getName(), ((Map) ((ApplicationResponse) response.getEntity()).getApplicationResponseContent()).get("webServerName"));
@@ -411,7 +415,7 @@ public class WebServerServiceRestImplTest {
         when(impl.getResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"contentType\":\"text/plain\",\"deployPath\":\"./anyPath\",\"deployFileName\":\"httpd.conf\"}");
         when(impl.getResourceTemplateNames(anyString())).thenReturn(webServerResourceNames);
         when(resourceService.generateResourceGroup()).thenReturn(new ResourceGroup());
-
+        when(resourceService.generateResourceFile(anyString(), anyString(), any(ResourceGroup.class), any())).thenReturn("{\"contentType\":\"text/plain\",\"deployPath\":\"./anyPath\",\"deployFileName\":\"httpd.conf\"}");
 
         Response response = null;
         response = webServerServiceRest.generateAndDeployWebServer(webServer.getName(), authenticatedUser);
@@ -533,7 +537,7 @@ public class WebServerServiceRestImplTest {
         when(impl.getResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"contentType\":\"text/plain\",\"deployPath\":\"./anyPath\",\"deployFileName\":\"httpd.conf\"}");
         when(impl.getResourceTemplateNames(anyString())).thenReturn(webServerResourceNames);
         when(resourceService.generateResourceGroup()).thenReturn(new ResourceGroup());
-
+        when(resourceService.generateResourceFile(anyString(), anyString(), any(ResourceGroup.class), any())).thenReturn("{\"contentType\":\"text/plain\",\"deployPath\":\"./anyPath\",\"deployFileName\":\"httpd.conf\"}");
         Response actual = webServerServiceRest.generateAndDeployWebServer(webServer.getName(), authenticatedUser);
         assertEquals(statusNotOk.getStatus(), actual.getStatus());
 
@@ -557,7 +561,7 @@ public class WebServerServiceRestImplTest {
         when(impl.getResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"contentType\":\"text/plain\",\"deployPath\":\"./anyPath\",\"deployFileName\":\"httpd.conf\"}");
         when(impl.getResourceTemplateNames(anyString())).thenReturn(webServerResourceNames);
         when(resourceService.generateResourceGroup()).thenReturn(new ResourceGroup());
-
+        when(resourceService.generateResourceFile(anyString(), anyString(), any(ResourceGroup.class), any())).thenReturn("{\"contentType\":\"text/plain\",\"deployPath\":\"./anyPath\",\"deployFileName\":\"httpd.conf\"}");
 
         Response actual = webServerServiceRest.generateAndDeployWebServer(webServer.getName(), authenticatedUser);
         assertEquals(statusNotOk.getStatus(), actual.getStatus());
@@ -581,7 +585,7 @@ public class WebServerServiceRestImplTest {
         when(impl.getResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"contentType\":\"text/plain\",\"deployPath\":\"./anyPath\",\"deployFileName\":\"httpd.conf\"}");
         when(impl.getResourceTemplateNames(anyString())).thenReturn(webServerResourceNames);
         when(resourceService.generateResourceGroup()).thenReturn(new ResourceGroup());
-
+        when(resourceService.generateResourceFile(anyString(), anyString(), any(ResourceGroup.class), any())).thenReturn("{\"contentType\":\"text/plain\",\"deployPath\":\"./anyPath\",\"deployFileName\":\"httpd.conf\"}");
 
         Response response = webServerServiceRest.generateAndDeployWebServer(webServer.getName(), authenticatedUser);
         assertNotNull(response);
@@ -606,6 +610,7 @@ public class WebServerServiceRestImplTest {
         when(impl.getResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"contentType\":\"text/plain\",\"deployPath\":\"./anyPath\",\"deployFileName\":\"httpd.conf\"}");
         when(impl.getResourceTemplateNames(anyString())).thenReturn(webServerResourceNames);
         when(resourceService.generateResourceGroup()).thenReturn(new ResourceGroup());
+        when(resourceService.generateResourceFile(anyString(), anyString(), any(ResourceGroup.class), any())).thenReturn("{\"contentType\":\"text/plain\",\"deployPath\":\"./anyPath\",\"deployFileName\":\"httpd.conf\"}");
 
         Response actual = webServerServiceRest.generateAndDeployWebServer(webServer.getName(), authenticatedUser);
         assertEquals(statusNotOk.getStatus(), actual.getStatus());
@@ -624,6 +629,7 @@ public class WebServerServiceRestImplTest {
         when(resourceService.generateResourceGroup()).thenReturn(new ResourceGroup());
         when(impl.getResourceTemplate(anyString(), anyString(), anyBoolean(), any(ResourceGroup.class))).thenReturn("");
         when(impl.getWebServer(anyString())).thenReturn(webServer);
+        when(resourceService.generateResourceFile(anyString(), anyString(), any(ResourceGroup.class), any())).thenReturn("{\"contentType\":\"text/plain\",\"deployPath\":\"./anyPath\",\"deployFileName\":\"${webServer.name}.txt\"}");
         Response response = webServerServiceRest.generateAndDeployConfig(webServer.getName(), "${webServer.name}.txt", authenticatedUser);
         assertTrue(response.hasEntity());
     }

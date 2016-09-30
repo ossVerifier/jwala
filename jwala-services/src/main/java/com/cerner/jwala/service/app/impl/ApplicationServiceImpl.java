@@ -273,7 +273,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 
             LOGGER.info("tokenized metadata is : {}", tokenizedMetaData);
             ObjectMapper mapper = new ObjectMapper();
-ResourceTemplateMetaData templateMetaData = mapper.readValue(tokenizedMetaData, ResourceTemplateMetaData.class);
+            ResourceTemplateMetaData templateMetaData = mapper.readValue(tokenizedMetaData, ResourceTemplateMetaData.class);
             final String deployFileName = templateMetaData.getDeployFileName();
             final String destPath = templateMetaData.getDeployPath() + '/' + deployFileName;            String srcPath;
             if (templateMetaData.getContentType().equals(ContentType.APPLICATION_BINARY.contentTypeStr)) {

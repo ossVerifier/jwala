@@ -422,7 +422,7 @@ public class WebServerServiceImplTest {
 
     @Test (expected = WebServerServiceException.class)
     public void testGenerateInvokeWSBat() {
-        when(resourceService.generateResourceFile(anyString(), any(ResourceGroup.class), eq(mockWebServer))).thenThrow(IOException.class);
+        when(resourceService.generateResourceFile(anyString(), anyString(), any(ResourceGroup.class), eq(mockWebServer))).thenThrow(IOException.class);
         wsService.generateInvokeWSBat(mockWebServer);
     }
 

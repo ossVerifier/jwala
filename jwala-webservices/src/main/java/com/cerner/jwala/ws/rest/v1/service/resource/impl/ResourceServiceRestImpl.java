@@ -479,7 +479,7 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
     }
 
     @Override
-    public Response previewResourceContent(final ResourceHierarchyParam resourceHierarchyParam, String content) {
+    public Response previewResourceContent(final String resourceName, final ResourceHierarchyParam resourceHierarchyParam, String content) {
         LOGGER.debug("Preview the template for {}", resourceHierarchyParam);
         final ResourceIdentifier resourceIdentifier = new ResourceIdentifier.Builder()
                 .setResourceName("meta data preview")

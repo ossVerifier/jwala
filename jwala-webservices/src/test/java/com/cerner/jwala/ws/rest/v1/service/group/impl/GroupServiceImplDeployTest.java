@@ -415,6 +415,7 @@ public class GroupServiceImplDeployTest {
         when(commandOutput.getReturnCode()).thenReturn(execReturnCode);
         when(execReturnCode.wasSuccessful()).thenReturn(true);
 
+        when(mockResourceService.generateResourceFile(anyString(), anyString(), any(ResourceGroup.class), any())).thenReturn(metaData);
         assertEquals(commandOutput, groupServiceImpl.deployGroupAppTemplate(groupName, fileName, resourceGroup, application, jvm));
     }
 

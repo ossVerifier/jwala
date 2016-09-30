@@ -884,7 +884,7 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
         when(mockJvmControlService.secureCopyFile(any(ControlJvmRequest.class), anyString(), anyString(), anyString())).thenReturn(mockExecData);
         when(mockJvmControlService.createDirectory(any(Jvm.class), anyString())).thenReturn(mockExecData);
         when(mockResourceService.generateResourceGroup()).thenReturn(new ResourceGroup());
-
+        when(mockResourceService.generateResourceFile(anyString(), anyString(), any(ResourceGroup.class), any())).thenReturn("{\"deployFileName\":\"server.xml\", \"deployPath\":\"/\",\"contentType\":\"text/plain\"}");
         Jvm jvm = jvmService.generateAndDeployFile("test-jvm-deploy-file", "server.xml", mockUser);
         assertEquals(mockJvm, jvm);
 

@@ -619,7 +619,7 @@ public class ResourceServiceImpl implements ResourceService {
     @Override
     public String previewResourceContent(String fileName, ResourceIdentifier resourceIdentifier, String content) {
         // TODO make the selected value object non-null based on the resource identifier
-        return generateResourceFile(content, generateResourceGroup(), resourceHandler.getSelectedValue(resourceIdentifier));
+        return generateResourceFile(fileName, content, generateResourceGroup(), resourceHandler.getSelectedValue(resourceIdentifier));
     }
 
     @Override
@@ -693,14 +693,13 @@ public class ResourceServiceImpl implements ResourceService {
             final String metaDataPath;
             final ResourceContent resourceContent = getResourceContent(resourceIdentifier);
             String metaDataStr = resourceContent.getMetaData();
-            final String tokenizedMetaData = ResourceFileGenerator.generateResourceConfig(metaDataStr, generateResourceGroup(), null);
+            final String tokenizedMetaData = this.generateResourceFile(fileName, metaDataStr, generateResourceGroup(), null);
             LOGGER.info("tokenized metadata is : {}", tokenizedMetaData);
             ResourceTemplateMetaData resourceTemplateMetaData = new ObjectMapper().readValue(tokenizedMetaData, ResourceTemplateMetaData.class);
             metaDataPath = resourceTemplateMetaData.getDeployPath();
             String resourceSourceCopy;
             final String deployFileName = resourceTemplateMetaData.getDeployFileName();
             // TODO set the selected entity value, for now make it null for the external properties
-            String resourceDestPath = this.generateResourceFile(fileName, metaDataPath, generateResourceGroup(), null) + "/" + fileName;
             String resourceDestPath = metaDataPath + "/" + deployFileName;
             if (resourceTemplateMetaData.getContentType().equals(ContentType.APPLICATION_BINARY.contentTypeStr)) {
                 resourceSourceCopy = resourceContent.getContent();

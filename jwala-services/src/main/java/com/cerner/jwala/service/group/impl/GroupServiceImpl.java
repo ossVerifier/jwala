@@ -450,7 +450,6 @@ public class GroupServiceImpl implements GroupService {
         String metaDataStr = getGroupAppResourceTemplateMetaData(groupName, fileName);
         ResourceTemplateMetaData metaData;
         try {
-            final String destPath = resourceService.generateResourceFile(fileName, metaData.getDeployPath(), resourceGroup, application) + '/' + fileName;
             final String tokenizedMetaData = resourceService.generateResourceFile(fileName, metaDataStr, resourceGroup, application);
             LOGGER.info("tokenized metadata is : {}", tokenizedMetaData);
             metaData = new ObjectMapper().readValue(tokenizedMetaData, ResourceTemplateMetaData.class);
