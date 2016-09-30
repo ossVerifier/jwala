@@ -340,8 +340,8 @@ public class AemServiceConfiguration {
     public HttpComponentsClientHttpRequestFactory getHttpComponentsClientHttpRequestFactory(@Value("${ping.http.connectTimeout:60000}") final int connectionRequestTimeout,
                                                                                             @Value("${ping.http.connectTimeout:600000}") final int readTimeout) {
         final HttpComponentsClientHttpRequestFactory httpRequestFactory = new HttpComponentsClientHttpRequestFactory();
-        httpRequestFactory.setConnectionRequestTimeout(60000);
-        httpRequestFactory.setReadTimeout(600000);
+        httpRequestFactory.setConnectionRequestTimeout(connectionRequestTimeout);
+        httpRequestFactory.setReadTimeout(readTimeout);
         return httpRequestFactory;
     }
 
