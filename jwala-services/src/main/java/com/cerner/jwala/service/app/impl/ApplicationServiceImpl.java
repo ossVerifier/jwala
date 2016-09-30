@@ -37,7 +37,6 @@ import com.cerner.jwala.service.binarydistribution.BinaryDistributionService;
 import com.cerner.jwala.service.exception.ApplicationServiceException;
 import com.cerner.jwala.service.group.GroupService;
 import com.cerner.jwala.service.resource.ResourceService;
-import com.cerner.jwala.template.ResourceFileGenerator;
 import org.apache.commons.lang3.StringUtils;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
@@ -231,7 +230,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         if (tokensReplaced) {
             final Application application = applicationPersistenceService.findApplication(appName, groupName, jvmName);
             application.setParentJvm(jvmPersistenceService.findJvmByExactName(jvmName));
-            return ResourceFileGenerator.generateResourceConfig(template, resourceGroup, application);
+            return resourceService.generateResourceFile(resourceTemplateName, template, resourceGroup, application);
         }
         return template;
     }
@@ -274,7 +273,7 @@ public class ApplicationServiceImpl implements ApplicationService {
             String metaDataPath = templateMetaData.getDeployPath();
 
             app.setParentJvm(jvm);
-            final String destPath = ResourceFileGenerator.generateResourceConfig(metaDataPath, resourceGroup, app) + '/' + resourceTemplateName;
+            final String destPath = resourceService.generateResourceFile(resourceTemplateName, metaDataPath, resourceGroup, app) + '/' + resourceTemplateName;
             String srcPath;
             if (templateMetaData.getContentType().equals(ContentType.APPLICATION_BINARY.contentTypeStr)) {
                 srcPath = applicationPersistenceService.getResourceTemplate(appName, resourceTemplateName, jvmName, groupName);
@@ -366,7 +365,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     @Override
     @Transactional
-    public String previewResourceTemplate(String appName, String groupName, String jvmName, String template, ResourceGroup resourceGroup) {
+    public String previewResourceTemplate(String fileName, String appName, String groupName, String jvmName, String template, ResourceGroup resourceGroup) {
         final Application application;
         if (StringUtils.isNotEmpty(jvmName)) {
             application = applicationPersistenceService.findApplication(appName, groupName, jvmName);
@@ -374,7 +373,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         } else {
             application = applicationPersistenceService.getApplication(appName);
         }
-        return ResourceFileGenerator.generateResourceConfig(template, resourceGroup, application);
+        return resourceService.generateResourceFile(fileName, template, resourceGroup, application);
     }
 
     @Override

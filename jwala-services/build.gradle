@@ -1,3 +1,4 @@
+
 configurations { providedCompile }
 
 dependencies {
@@ -19,6 +20,10 @@ dependencies {
     compile group: 'log4j', name: 'log4j', version: "$project.versions.log4j"
     compile group: 'org.apache.openjpa', name: 'openjpa', version: "$project.versions.jpa"
     compile group: "commons-io", name: "commons-io", version: "$project.versions.commons_io"
+
+    compile group: 'org.springframework.security', name: 'spring-security-web', version: "$project.versions.spring_security"
+    compile group: "org.springframework.security", name: "spring-security-config", version: "$project.versions.spring_security"
+    compile group: "org.springframework.security", name: "spring-security-ldap", version: "$project.versions.spring_security"
 
     providedCompile group: 'org.apache.tomcat', name: 'tomcat-catalina', version: "$project.versions.tomcat"
 

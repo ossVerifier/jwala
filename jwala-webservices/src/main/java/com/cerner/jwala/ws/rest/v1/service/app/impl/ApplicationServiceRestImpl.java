@@ -253,10 +253,11 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
 
     @Override
     public Response previewResourceTemplate(final String appName, final String groupName, final String jvmName,
+                                            final String fileName,
                                             final String template) {
         LOGGER.debug("Preview resource template for app {} in group {} for JVM {} with content {}", appName, groupName, jvmName, template);
         try {
-            return ResponseBuilder.ok(service.previewResourceTemplate(appName, groupName, jvmName, template, resourceService.generateResourceGroup()));
+            return ResponseBuilder.ok(service.previewResourceTemplate(fileName, appName, groupName, jvmName, template, resourceService.generateResourceGroup()));
         } catch (RuntimeException rte) {
             LOGGER.debug("Error previewing template.", rte);
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(

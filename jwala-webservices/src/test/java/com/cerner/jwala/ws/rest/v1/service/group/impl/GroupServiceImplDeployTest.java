@@ -37,7 +37,6 @@ import com.cerner.jwala.service.group.GroupWebServerControlService;
 import com.cerner.jwala.service.group.impl.GroupServiceImpl;
 import com.cerner.jwala.service.jvm.JvmControlService;
 import com.cerner.jwala.service.jvm.JvmService;
-import com.cerner.jwala.service.jvm.state.JvmStateReceiverAdapter;
 import com.cerner.jwala.service.resource.ResourceService;
 import com.cerner.jwala.service.webserver.WebServerCommandService;
 import com.cerner.jwala.service.webserver.WebServerControlService;
@@ -105,7 +104,6 @@ public class GroupServiceImplDeployTest {
     static final WebServerService mockWebServerService = mock(WebServerService.class);
     static final WebServerControlService mockWebServerControlService = mock(WebServerControlService.class);
     static final ApplicationService mockApplicationService = mock(ApplicationService.class);
-    static final JvmStateReceiverAdapter mockJvmStateReceiverAdapter = mock(JvmStateReceiverAdapter.class);
 
     private AuthenticatedUser mockAuthUser = mock(AuthenticatedUser.class);
     private User mockUser = mock(User.class);
@@ -376,7 +374,7 @@ public class GroupServiceImplDeployTest {
         WebServerPersistenceService webServerPersistenceService = mock(WebServerPersistenceService.class);
         ApplicationPersistenceService applicationPersistenceService = mock(ApplicationPersistenceService.class);
         RemoteCommandExecutorImpl remoteCommandExecutorImpl = mock(RemoteCommandExecutorImpl.class);
-        GroupServiceImpl groupServiceImpl = new GroupServiceImpl(groupPersistenceService, webServerPersistenceService, applicationPersistenceService, remoteCommandExecutorImpl, binaryDistributionService);
+        GroupServiceImpl groupServiceImpl = new GroupServiceImpl(groupPersistenceService, webServerPersistenceService, applicationPersistenceService, remoteCommandExecutorImpl, binaryDistributionService, mockResourceService);
         CommandOutput commandOutput = mock(CommandOutput.class);
 
         String metaData = "{\"templateName\":\"someTemplateName\",\"contentType\":\"application/binary\",\"deployPath\":" +

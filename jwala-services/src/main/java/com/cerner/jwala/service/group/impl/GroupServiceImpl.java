@@ -31,7 +31,7 @@ import com.cerner.jwala.persistence.service.WebServerPersistenceService;
 import com.cerner.jwala.service.app.impl.DeployApplicationConfException;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionService;
 import com.cerner.jwala.service.group.GroupService;
-import com.cerner.jwala.template.ResourceFileGenerator;
+import com.cerner.jwala.service.resource.ResourceService;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,20 +53,24 @@ public class GroupServiceImpl implements GroupService {
     private final RemoteCommandExecutorImpl remoteCommandExecutor;
     private final BinaryDistributionService binaryDistributionService;
     private ApplicationPersistenceService applicationPersistenceService;
+    private ResourceService resourceService;
 
     private static final String GENERATED_RESOURCE_DIR = "paths.generated.resource.dir";
     private static final Logger LOGGER = LoggerFactory.getLogger(GroupServiceImpl.class);
     private static final String UNZIPEXE = "unzip.exe";
 
-
     public GroupServiceImpl(final GroupPersistenceService groupPersistenceService,
                             final WebServerPersistenceService webServerPersistenceService,
-                            final ApplicationPersistenceService applicationPersistenceService, RemoteCommandExecutorImpl remoteCommandExecutor, BinaryDistributionService binaryDistributionService) {
+                            final ApplicationPersistenceService applicationPersistenceService, 
+                            RemoteCommandExecutorImpl remoteCommandExecutor, 
+                            BinaryDistributionService binaryDistributionService,
+                            final ResourceService resourceService) {
         this.groupPersistenceService = groupPersistenceService;
         this.webServerPersistenceService = webServerPersistenceService;
         this.applicationPersistenceService = applicationPersistenceService;
         this.remoteCommandExecutor = remoteCommandExecutor;
         this.binaryDistributionService = binaryDistributionService;
+        this.resourceService = resourceService;
     }
 
     @Override
@@ -268,7 +272,7 @@ public class GroupServiceImpl implements GroupService {
             // TODO returns the tokenized version of a dummy JVM, but make sure that when deployed each instance is tokenized per JVM
             final Set<Jvm> jvms = groupPersistenceService.getGroup(groupName).getJvms();
             if (jvms != null && !jvms.isEmpty()) {
-                return ResourceFileGenerator.generateResourceConfig(template, resourceGroup, jvms.iterator().next());
+                return resourceService.generateResourceFile(resourceTemplateName, template, resourceGroup, jvms.iterator().next());
             }
         }
         return template;
@@ -293,12 +297,12 @@ public class GroupServiceImpl implements GroupService {
 
     @Override
     @Transactional
-    public String previewGroupWebServerResourceTemplate(String groupName, String template, ResourceGroup resourceGroup) {
+    public String previewGroupWebServerResourceTemplate(String fileName, String groupName, String template, ResourceGroup resourceGroup) {
         final Group group = groupPersistenceService.getGroup(groupName);
         Set<WebServer> webservers = groupPersistenceService.getGroupWithWebServers(group.getId()).getWebServers();
         if (webservers != null && !webservers.isEmpty()) {
             final WebServer webServer = webservers.iterator().next();
-            return ResourceFileGenerator.generateResourceConfig(template, resourceGroup, webServer);
+            return resourceService.generateResourceFile(fileName, template, resourceGroup, webServer);
         }
         return template;
     }
@@ -315,7 +319,7 @@ public class GroupServiceImpl implements GroupService {
             Set<WebServer> webservers = groupPersistenceService.getGroupWithWebServers(group.getId()).getWebServers();
             if (webservers != null && !webservers.isEmpty()) {
                 final WebServer webServer = webservers.iterator().next();
-                return ResourceFileGenerator.generateResourceConfig(template, resourceGroup, webServer);
+                return resourceService.generateResourceFile(resourceTemplateName, template, resourceGroup, webServer);
             }
         }
         return template;
@@ -375,7 +379,7 @@ public class GroupServiceImpl implements GroupService {
             ResourceTemplateMetaData metaData = new ObjectMapper().readValue(metaDataStr, ResourceTemplateMetaData.class);
             Application app = applicationPersistenceService.getApplication(metaData.getEntity().getTarget());
             app.setParentJvm(jvm);
-            return ResourceFileGenerator.generateResourceConfig(template, resourceGroup, app);
+            return resourceService.generateResourceFile(resourceTemplateName, template, resourceGroup, app);
         } catch (Exception x) {
             LOGGER.error("Failed to generate preview for template {} in  group {}", resourceTemplateName, groupName, x);
             throw new ApplicationException("Template token replacement failed.", x);
@@ -396,7 +400,7 @@ public class GroupServiceImpl implements GroupService {
             try {
                 ResourceTemplateMetaData metaData = new ObjectMapper().readValue(metaDataStr, ResourceTemplateMetaData.class);
                 Application app = applicationPersistenceService.getApplication(metaData.getEntity().getTarget());
-                return ResourceFileGenerator.generateResourceConfig(template, resourceGroup, app);
+                return resourceService.generateResourceFile(resourceTemplateName, template, resourceGroup, app);
             } catch (Exception x) {
                 LOGGER.error("Failed to tokenize template {} in group {}", resourceTemplateName, groupName, x);
                 throw new ApplicationException("Template token replacement failed.", x);
@@ -438,7 +442,7 @@ public class GroupServiceImpl implements GroupService {
         ResourceTemplateMetaData metaData;
         try {
             metaData = new ObjectMapper().readValue(metaDataStr, ResourceTemplateMetaData.class);
-            final String destPath = ResourceFileGenerator.generateResourceConfig(metaData.getDeployPath(), resourceGroup, application) + '/' + fileName;
+            final String destPath = resourceService.generateResourceFile(fileName, metaData.getDeployPath(), resourceGroup, application) + '/' + fileName;
             File confFile = createConfFile(metaData.getEntity().getTarget(), groupName, fileName, resourceGroup);
             String srcPath, standardError;
             if (metaData.getContentType().equals(ContentType.APPLICATION_BINARY.contentTypeStr)) {
@@ -470,7 +474,7 @@ public class GroupServiceImpl implements GroupService {
                     destPath);
             if (commandOutput.getReturnCode().wasSuccessful()) {
                 if (metaData.isUnpack() && !metaData.isOverwrite()) {
-                    standardError = "Destination zip: " + destPath +" exists and isOverwrite = false, so no unzip perform.";
+                    standardError = "Destination zip: " + destPath + " exists and isOverwrite = false, so no unzip perform.";
                     LOGGER.error(standardError);
                     throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, standardError);
                 }
@@ -511,7 +515,7 @@ public class GroupServiceImpl implements GroupService {
                         BinaryDistributionControlOperation.UNZIP_BINARY,
                         new WindowsBinaryDistributionPlatformCommandProvider(),
                         ApplicationProperties.get("remote.commands.user-scripts") + "/" + UNZIPEXE,
-                        destPath ,
+                        destPath,
                         parentDir,
                         "");
                 LOGGER.info("commandOutput.getReturnCode().toString(): " + commandOutput.getReturnCode().toString());

@@ -82,9 +82,10 @@ public interface GroupServiceRest {
                                          @QueryParam("tokensReplaced") final boolean tokensReplaced);
 
     @PUT
-    @Path("/{groupName}/jvms/resources/preview")
+    @Path("/{groupName}/jvms/resources/preview/{resourceTemplateName}")
     @Consumes(MediaType.TEXT_PLAIN)
     Response previewGroupJvmResourceTemplate(@PathParam("groupName") String groupName,
+                                             @PathParam("resourceTemplateName") final String resourceTemplateName,
                                              String template);
 
     @PUT
@@ -121,9 +122,10 @@ public interface GroupServiceRest {
                                                @QueryParam("tokensReplaced") final boolean tokensReplaced);
 
     @PUT
-    @Path("/{groupName}/webservers/resources/preview")
+    @Path("/{groupName}/webservers/resources/preview/{resourceTemplateName}")
     @Consumes(MediaType.TEXT_PLAIN)
     Response previewGroupWebServerResourceTemplate(@PathParam("groupName") String groupName,
+                                                   @PathParam("resourceTemplateName") final String resourceTemplateName,
                                                    String template);
 
 

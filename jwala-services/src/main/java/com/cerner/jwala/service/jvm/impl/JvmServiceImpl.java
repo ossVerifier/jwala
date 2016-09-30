@@ -42,7 +42,6 @@ import com.cerner.jwala.service.jvm.JvmService;
 import com.cerner.jwala.service.jvm.exception.JvmServiceException;
 import com.cerner.jwala.service.resource.ResourceService;
 import com.cerner.jwala.service.webserver.component.ClientFactoryHelper;
-import com.cerner.jwala.template.ResourceFileGenerator;
 import groovy.text.SimpleTemplateEngine;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -116,6 +115,7 @@ public class JvmServiceImpl implements JvmService {
         jvmWriteLocks = writeLockMap;
         this.binaryDistributionService = binaryDistributionService;
     }
+
 
     protected Jvm createJvm(final CreateJvmRequest aCreateJvmRequest) {
         aCreateJvmRequest.validate();
@@ -284,7 +284,7 @@ public class JvmServiceImpl implements JvmService {
 
         final String templateContent = jvmPersistenceService.getJvmTemplate(templateName, jvm.getId());
         if (!templateContent.isEmpty()) {
-            return resourceService.generateResourceFile(templateContent, resourceService.generateResourceGroup(), jvmPersistenceService.findJvmByExactName(aJvmName));
+            return resourceService.generateResourceFile(templateName, templateContent, resourceService.generateResourceGroup(), jvmPersistenceService.findJvmByExactName(aJvmName));
         } else {
             throw new BadRequestException(AemFaultType.JVM_TEMPLATE_NOT_FOUND, "Failed to find the template in the database or on the file system");
         }
@@ -656,7 +656,7 @@ public class JvmServiceImpl implements JvmService {
             ResourceTemplateMetaData resourceTemplateMetaData = new ObjectMapper().readValue(metaDataStr, ResourceTemplateMetaData.class);
             metaDataPath = resourceTemplateMetaData.getDeployPath();
             String resourceSourceCopy;
-            String resourceDestPath = ResourceFileGenerator.generateResourceConfig(metaDataPath, resourceService.generateResourceGroup(), jvm) + "/" + fileName;
+            String resourceDestPath = resourceService.generateResourceFile(fileName, metaDataPath, resourceService.generateResourceGroup(), jvm) + "/" + fileName;
             if (resourceTemplateMetaData.getContentType().equals(ContentType.APPLICATION_BINARY.contentTypeStr)) {
                 resourceSourceCopy = getResourceTemplate(jvmName, fileName, false);
             } else {
@@ -756,8 +756,8 @@ public class JvmServiceImpl implements JvmService {
 
     @Override
     @Transactional
-    public String previewResourceTemplate(String jvmName, String groupName, String template) {
-        return resourceService.generateResourceFile(template, resourceService.generateResourceGroup(), jvmPersistenceService.findJvm(jvmName, groupName));
+    public String previewResourceTemplate(String fileName, String jvmName, String groupName, String template) {
+        return resourceService.generateResourceFile(fileName, template, resourceService.generateResourceGroup(), jvmPersistenceService.findJvm(jvmName, groupName));
     }
 
     @Override
@@ -773,7 +773,7 @@ public class JvmServiceImpl implements JvmService {
                                       final boolean tokensReplaced) {
         final String template = jvmPersistenceService.getResourceTemplate(jvmName, resourceTemplateName);
         if (tokensReplaced) {
-            return resourceService.generateResourceFile(template, resourceService.generateResourceGroup(), jvmPersistenceService.findJvmByExactName(jvmName));
+            return resourceService.generateResourceFile(resourceTemplateName, template, resourceService.generateResourceGroup(), jvmPersistenceService.findJvmByExactName(jvmName));
         }
         return template;
     }
@@ -799,7 +799,7 @@ public class JvmServiceImpl implements JvmService {
     @Transactional
     public String generateInvokeBat(String jvmName) {
         final String invokeBatTemplateContent = fileManager.getResourceTypeTemplate("InvokeBat");
-        return resourceService.generateResourceFile(invokeBatTemplateContent, resourceService.generateResourceGroup(), jvmPersistenceService.findJvmByExactName(jvmName));
+        return resourceService.generateResourceFile("invoke.bat", invokeBatTemplateContent, resourceService.generateResourceGroup(), jvmPersistenceService.findJvmByExactName(jvmName));
     }
 
     @Override
@@ -879,7 +879,7 @@ public class JvmServiceImpl implements JvmService {
         for (final JpaJvmConfigTemplate jpaJvmConfigTemplate : jpaJvmConfigTemplateList) {
             final ResourceGroup resourceGroup = resourceService.generateResourceGroup();
             final Jvm jvm = jvmPersistenceService.findJvmByExactName(jvmName);
-            final String resourceTemplateMetaDataString = resourceService.generateResourceFile(jpaJvmConfigTemplate.getMetaData(), resourceGroup, jvm);
+            final String resourceTemplateMetaDataString = resourceService.generateResourceFile(jpaJvmConfigTemplate.getTemplateName(), jpaJvmConfigTemplate.getMetaData(), resourceGroup, jvm);
             final ResourceTemplateMetaData resourceTemplateMetaData =
                     mapper.readValue(resourceTemplateMetaDataString, ResourceTemplateMetaData.class);
             if (generatedFiles == null) {
@@ -892,7 +892,7 @@ public class JvmServiceImpl implements JvmService {
                 generatedFiles.put(jpaJvmConfigTemplate.getTemplateContent(),
                         resourceTemplateMetaData.getDeployPath() + "/" + resourceTemplateMetaData.getDeployFileName());
             } else {
-                final String generatedResourceStr = resourceService.generateResourceFile(jpaJvmConfigTemplate.getTemplateContent(),
+                final String generatedResourceStr = resourceService.generateResourceFile(jpaJvmConfigTemplate.getTemplateName(), jpaJvmConfigTemplate.getTemplateContent(),
                         resourceGroup, jvm);
                 generatedFiles.put(createConfigFile(ApplicationProperties.get("paths.generated.resource.dir") + "/" + jvmName, resourceTemplateMetaData.getDeployFileName(), generatedResourceStr),
                         resourceTemplateMetaData.getDeployPath() + "/" + resourceTemplateMetaData.getDeployFileName());

@@ -105,11 +105,12 @@ public interface ApplicationServiceRest extends InitializingBean {
                         @BeanParam AuthenticatedUser aUser);
 
     @PUT
-    @Path("/{appName}/resources/preview")
+    @Path("/{appName}/resources/preview/{resourceTemplateName}")
     @Consumes(MediaType.TEXT_PLAIN)
     Response previewResourceTemplate(@PathParam("appName") String appName,
                                      @MatrixParam("groupName") String groupName,
                                      @MatrixParam("jvmName") String jvmName,
+                                     @PathParam("resourceTemplateName") String resourceTemplateName,
                                      String template);
 
 }

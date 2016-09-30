@@ -58,7 +58,7 @@ public class WebServerResourceHandler extends ResourceHandler {
                     return metaData.getDeployFileName();
                 }
             };
-            final String generatedDeployPath = resourceContentGeneratorService.generateContent(metaData.getDeployPath(), webServer);
+            final String generatedDeployPath = resourceContentGeneratorService.generateContent(metaData.getTemplateName(), metaData.getDeployPath(), null, webServer);
             createResourceResponseWrapper = new CreateResourceResponseWrapper(webServerPersistenceService
                     .uploadWebServerConfigTemplate(uploadWebArchiveRequest, generatedDeployPath + "/" + metaData.getDeployFileName(), null));
         } else if (successor != null) {

@@ -68,8 +68,8 @@ var groupService = {
                                              false,
                                              "text/plain; charset=utf-8");
     },
-    previewGroupWebServerResourceFile: function(groupName, template, successCallback, errorCallback) {
-        return serviceFoundation.put("v1.0/groups/" + encodeURIComponent(groupName) + "/webservers/resources/preview",
+    previewGroupWebServerResourceFile: function(resourceTemplateName, groupName, template, successCallback, errorCallback) {
+        return serviceFoundation.put("v1.0/groups/" + encodeURIComponent(groupName) + "/webservers/resources/preview/" + encodeURIComponent(resourceTemplateName),
                                      "json",
                                      template,
                                      successCallback,
@@ -77,8 +77,8 @@ var groupService = {
                                      false,
                                      "text/plain; charset=utf-8");
     },
-    previewGroupJvmResourceFile: function(jvmName, template, successCallback, errorCallback) {
-        return serviceFoundation.put("v1.0/groups/" + encodeURIComponent(jvmName) + "/jvms/resources/preview",
+    previewGroupJvmResourceFile: function(resourceTemplateName, jvmName, template, successCallback, errorCallback) {
+        return serviceFoundation.put("v1.0/groups/" + encodeURIComponent(jvmName) + "/jvms/resources/preview/" + encodeURIComponent(resourceTemplateName),
                                      "json",
                                      template,
                                      successCallback,
@@ -87,7 +87,7 @@ var groupService = {
                                      "text/plain; charset=utf-8");
     },
     previewGroupAppResourceFile: function(jvmName, templateName, template, successCallback, errorCallback) {
-        return serviceFoundation.put("v1.0/groups/" + encodeURIComponent(jvmName) + "/apps/resources/preview/" + templateName,
+        return serviceFoundation.put("v1.0/groups/" + encodeURIComponent(jvmName) + "/apps/resources/preview/" + encodeURIComponent(templateName),
                                      "json",
                                      template,
                                      successCallback,

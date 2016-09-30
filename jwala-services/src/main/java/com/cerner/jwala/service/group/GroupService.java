@@ -1,8 +1,5 @@
 package com.cerner.jwala.service.group;
 
-import java.util.List;
-import java.util.Map;
-
 import com.cerner.jwala.common.domain.model.app.Application;
 import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.group.GroupState;
@@ -15,6 +12,9 @@ import com.cerner.jwala.common.exec.CommandOutput;
 import com.cerner.jwala.common.request.group.*;
 import com.cerner.jwala.common.request.jvm.UploadJvmTemplateRequest;
 import com.cerner.jwala.common.request.webserver.UploadWebServerTemplateRequest;
+
+import java.util.List;
+import java.util.Map;
 
 public interface GroupService {
 
@@ -75,7 +75,7 @@ public interface GroupService {
     String getGroupWebServerResourceTemplate(String groupName, String resourceTemplateName, boolean tokensReplaced, ResourceGroup resourceGroup);
 
     @Deprecated
-    String previewGroupWebServerResourceTemplate(String groupName, String template, ResourceGroup resourceGroup);
+    String previewGroupWebServerResourceTemplate(String fileName, String groupName, String template, ResourceGroup resourceGroup);
 
     String updateGroupJvmResourceTemplate(String groupName, String resourceTemplateName, String content);
 

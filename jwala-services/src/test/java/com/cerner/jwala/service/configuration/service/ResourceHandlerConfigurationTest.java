@@ -13,6 +13,7 @@ import com.cerner.jwala.common.request.jvm.UploadJvmConfigTemplateRequest;
 import com.cerner.jwala.common.request.webserver.UploadWebServerTemplateRequest;
 import com.cerner.jwala.persistence.jpa.domain.JpaJvm;
 import com.cerner.jwala.persistence.service.*;
+import com.cerner.jwala.service.HistoryService;
 import com.cerner.jwala.service.resource.impl.handler.WebServerResourceHandler;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -37,7 +38,7 @@ import static org.mockito.Mockito.*;
 
 /**
  * Test resource handler chain
- *
+ * <p>
  * Created by JC043760 on 7/22/2016.
  */
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -274,6 +275,7 @@ public class ResourceHandlerConfigurationTest {
         public static final WebServerPersistenceService MOCK_WEB_SERVER_PERSISTENCE_SERVICE = mock(WebServerPersistenceService.class);
         public static final JvmPersistenceService MOCK_JVM_PERSISTENCE_SERVICE = mock(JvmPersistenceService.class);
         public static final ApplicationPersistenceService MOCK_APPLICATION_PERSISTENCE_SERVICE = mock(ApplicationPersistenceService.class);
+        public static final HistoryService MOCK_HISTORY_SERVICE = mock(HistoryService.class);
 
         @Bean
         public ResourceDao resourceDao() {
@@ -303,5 +305,8 @@ public class ResourceHandlerConfigurationTest {
         public static ApplicationPersistenceService getMockApplicationPersistenceService() {
             return MOCK_APPLICATION_PERSISTENCE_SERVICE;
         }
+
+        @Bean
+        public static HistoryService getMockHistoryService() { return MOCK_HISTORY_SERVICE;}
     }
 }

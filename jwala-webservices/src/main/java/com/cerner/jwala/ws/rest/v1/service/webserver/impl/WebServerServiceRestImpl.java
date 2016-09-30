@@ -25,7 +25,6 @@ import com.cerner.jwala.service.resource.ResourceService;
 import com.cerner.jwala.service.webserver.WebServerCommandService;
 import com.cerner.jwala.service.webserver.WebServerControlService;
 import com.cerner.jwala.service.webserver.WebServerService;
-import com.cerner.jwala.template.ResourceFileGenerator;
 import com.cerner.jwala.ws.rest.v1.provider.AuthenticatedUser;
 import com.cerner.jwala.ws.rest.v1.response.ResponseBuilder;
 import com.cerner.jwala.ws.rest.v1.service.webserver.WebServerServiceRest;
@@ -230,7 +229,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
                 // copy the file
                 configFilePath = configFile.getAbsolutePath().replace("\\", "/");
             }
-            String destinationPath = ResourceFileGenerator.generateResourceConfig(metaData.getDeployPath(), resourceService.generateResourceGroup(), webServerService.getWebServer(aWebServerName)) + "/" + resourceFileName;
+            String destinationPath = resourceService.generateResourceFile(resourceFileName, metaData.getDeployPath(), resourceService.generateResourceGroup(), webServerService.getWebServer(aWebServerName)) + "/" + resourceFileName;
             final CommandOutput execData;
             execData = webServerControlService.secureCopyFile(aWebServerName, configFilePath, destinationPath, user.getUser().getId());
             if (execData.getReturnCode().wasSuccessful()) {
@@ -503,10 +502,10 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
     }
 
     @Override
-    public Response previewResourceTemplate(final String webServerName, final String groupName, String template) {
+    public Response previewResourceTemplate(final String webServerName, final String fileName, final String groupName, String template) {
         LOGGER.debug("Preview resource template {} for web server {} in group {}", template, webServerName, groupName);
         try {
-            return ResponseBuilder.ok(webServerService.previewResourceTemplate(webServerName, groupName, template));
+            return ResponseBuilder.ok(webServerService.previewResourceTemplate(fileName, webServerName, groupName, template));
         } catch (RuntimeException rte) {
             LOGGER.debug("Error previewing template.", rte);
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(

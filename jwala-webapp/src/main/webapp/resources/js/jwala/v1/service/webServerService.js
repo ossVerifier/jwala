@@ -134,8 +134,8 @@ var webServerService = {
                                              false,
                                              "text/plain; charset=utf-8");
     },
-     previewResourceFile: function(webServerName, groupName, template, successCallback, errorCallback) {
-        return serviceFoundation.put("v1.0/webservers/" + encodeURIComponent(webServerName) + "/resources/preview;groupName=" + encodeURIComponent(groupName),
+     previewResourceFile: function(resourceTemplateName, webServerName, groupName, template, successCallback, errorCallback) {
+        return serviceFoundation.put("v1.0/webservers/" + encodeURIComponent(webServerName) + "/resources/preview/" + encodeURIComponent(resourceTemplateName) + ";groupName=" + encodeURIComponent(groupName),
                                      "json",
                                      template,
                                      successCallback,

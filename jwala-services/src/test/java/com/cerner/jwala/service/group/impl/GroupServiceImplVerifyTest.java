@@ -15,21 +15,30 @@ import com.cerner.jwala.common.request.group.*;
 import com.cerner.jwala.common.request.jvm.UploadJvmTemplateRequest;
 import com.cerner.jwala.common.request.webserver.UploadWebServerTemplateRequest;
 import com.cerner.jwala.control.command.RemoteCommandExecutorImpl;
+import com.cerner.jwala.files.WebArchiveManager;
 import com.cerner.jwala.persistence.jpa.domain.resource.config.template.ConfigTemplate;
-import com.cerner.jwala.persistence.service.ApplicationPersistenceService;
-import com.cerner.jwala.persistence.service.GroupPersistenceService;
-import com.cerner.jwala.persistence.service.WebServerPersistenceService;
+import com.cerner.jwala.persistence.service.*;
+import com.cerner.jwala.service.HistoryService;
+import com.cerner.jwala.service.MessagingService;
 import com.cerner.jwala.service.VerificationBehaviorSupport;
+import com.cerner.jwala.service.app.PrivateApplicationService;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionService;
+import com.cerner.jwala.service.resource.ResourceContentGeneratorService;
+import com.cerner.jwala.service.resource.ResourceHandler;
+import com.cerner.jwala.service.resource.ResourceService;
+import com.cerner.jwala.service.resource.impl.ResourceContentGeneratorServiceImpl;
+import com.cerner.jwala.service.resource.impl.ResourceServiceImpl;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mock;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.*;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import static junit.framework.TestCase.assertFalse;
 import static org.junit.Assert.assertEquals;
@@ -48,6 +57,48 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
     private RemoteCommandExecutorImpl remoteCommandExecutor;
     private BinaryDistributionService binaryDistributionService;
 
+    @Mock
+    private ResourcePersistenceService mockResourcePersistenceService;
+
+    @Mock
+    private GroupPersistenceService mockGroupPesistenceService;
+
+    @Mock
+    private ApplicationPersistenceService mockAppPersistenceService;
+
+    @Mock
+    private JvmPersistenceService mockJvmPersistenceService;
+
+    @Mock
+    private WebServerPersistenceService mockWebServerPersistenceService;
+
+    @Mock
+    private PrivateApplicationService mockPrivateApplicationService;
+
+    @Mock
+    private ResourceDao mockResourceDao;
+
+    @Mock
+    private WebArchiveManager mockWebArchiveManager;
+
+    @Mock
+    private ResourceHandler mockResourceHandler;
+
+    @Mock
+    private RemoteCommandExecutorImpl mockRemoteCommandExector;
+
+    @Mock
+    private MessagingService mockMessagingService;
+
+    @Mock
+    private HistoryService mockHistoryService;
+
+    private ResourceContentGeneratorService resourceContentGeneratorService;
+
+    Map<String, ReentrantReadWriteLock> resourceWriteLockMap = new HashMap<>();
+
+    private ResourceService resourceService;
+
     public GroupServiceImplVerifyTest() {
         System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH,
                 this.getClass().getClassLoader().getResource("vars.properties").getPath()
@@ -61,11 +112,22 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
         webServerPersistenceService = mock(WebServerPersistenceService.class);
         remoteCommandExecutor = mock(RemoteCommandExecutorImpl.class);
         binaryDistributionService = mock(BinaryDistributionService.class);
+
+        resourceContentGeneratorService = new ResourceContentGeneratorServiceImpl(mockGroupPesistenceService, mockWebServerPersistenceService, mockJvmPersistenceService,
+                mockAppPersistenceService, mockHistoryService);
+
+        resourceService = new ResourceServiceImpl(mockResourcePersistenceService, mockGroupPesistenceService,
+                mockAppPersistenceService, mockJvmPersistenceService, mockWebServerPersistenceService,
+                mockPrivateApplicationService, mockResourceDao, mockWebArchiveManager, mockResourceHandler, mockRemoteCommandExector, resourceWriteLockMap,
+                resourceContentGeneratorService);
+
         groupService = new GroupServiceImpl(groupPersistenceService,
                 webServerPersistenceService,
                 applicationPersistenceService,
-                remoteCommandExecutor, binaryDistributionService);
+                remoteCommandExecutor, binaryDistributionService,
+                resourceService);
         user = new User("unused");
+
     }
 
     @Test
@@ -355,11 +417,11 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
         when(groupPersistenceService.getGroup(anyString())).thenReturn(mockGroup);
         when(groupPersistenceService.getGroupWithWebServers(any(Identifier.class))).thenReturn(mockGroup);
         when(mockGroup.getWebServers()).thenReturn(wsList);
-        String template = groupService.previewGroupWebServerResourceTemplate("testGroupName", "${webServer.name}", new ResourceGroup());
+        String template = groupService.previewGroupWebServerResourceTemplate("myFile","testGroupName", "${webServer.name}", new ResourceGroup());
         assertEquals("${webServer.name}", template);
 
         wsList.add(webServer);
-        template = groupService.previewGroupWebServerResourceTemplate("testGroupName", "${webServer.name}", new ResourceGroup());
+        template = groupService.previewGroupWebServerResourceTemplate("myFile","testGroupName", "${webServer.name}", new ResourceGroup());
         assertEquals("testWebServerName", template);
     }
 

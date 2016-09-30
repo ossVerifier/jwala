@@ -78,7 +78,7 @@ public class GroupLevelWebServerResourceHandler extends ResourceHandler {
                 // Since we're just creating the same template for all the JVMs, we just keep one copy of the created
                 // configuration template. Note that ResourceGroup is null since we only need the web server paths and
                 // application properties for mapping.
-                final String generatedDeployPath = resourceContentGeneratorService.generateContent(metaData.getDeployPath(), webServer);
+                final String generatedDeployPath = resourceContentGeneratorService.generateContent(metaData.getTemplateName(), metaData.getDeployPath(), null, webServer);
                 createdConfigTemplate = webServerPersistenceService.uploadWebServerConfigTemplate(uploadWebServerTemplateRequest,
                         generatedDeployPath + "/" + metaData.getDeployFileName(), null);
             }

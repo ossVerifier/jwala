@@ -5,14 +5,17 @@ import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
 import com.cerner.jwala.common.domain.model.resource.ResourceGroup;
 import com.cerner.jwala.common.domain.model.webserver.WebServer;
+import com.cerner.jwala.persistence.jpa.type.EventType;
 import com.cerner.jwala.persistence.service.ApplicationPersistenceService;
 import com.cerner.jwala.persistence.service.GroupPersistenceService;
 import com.cerner.jwala.persistence.service.JvmPersistenceService;
 import com.cerner.jwala.persistence.service.WebServerPersistenceService;
+import com.cerner.jwala.service.HistoryService;
 import com.cerner.jwala.service.resource.ResourceContentGeneratorService;
 import com.cerner.jwala.template.ResourceFileGenerator;
-
+import com.cerner.jwala.template.exception.ResourceFileGeneratorException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -21,7 +24,7 @@ import java.util.List;
 
 /**
  * Implement {@link ResourceContentGeneratorService}
- *
+ * <p>
  * Created by JC043760 on 7/26/2016.
  */
 @Service
@@ -31,25 +34,34 @@ public class ResourceContentGeneratorServiceImpl implements ResourceContentGener
     private final WebServerPersistenceService webServerPersistenceService;
     private final JvmPersistenceService jvmPersistenceService;
     private final ApplicationPersistenceService applicationPersistenceService;
+    private final HistoryService historyService;
 
     @Autowired
     public ResourceContentGeneratorServiceImpl(final GroupPersistenceService groupPersistenceService,
                                                final WebServerPersistenceService webServerPersistenceService,
                                                final JvmPersistenceService jvmPersistenceService,
-                                               final ApplicationPersistenceService applicationPersistenceService) {
+                                               final ApplicationPersistenceService applicationPersistenceService,
+                                               final HistoryService historyService) {
         this.groupPersistenceService = groupPersistenceService;
         this.webServerPersistenceService = webServerPersistenceService;
         this.jvmPersistenceService = jvmPersistenceService;
         this.applicationPersistenceService = applicationPersistenceService;
+        this.historyService = historyService;
     }
 
     @Override
-    public <T> String generateContent(final String template, final T entity) {
-        return ResourceFileGenerator.generateResourceConfig(template, generateResourceGroup(), entity);
+    public <T> String generateContent(final String fileName, final String template, final ResourceGroup resourceGroup, final T entity) {
+        try {
+            return ResourceFileGenerator.generateResourceConfig(fileName, template, null == resourceGroup ? generateResourceGroup() : resourceGroup, entity);
+        } catch (ResourceFileGeneratorException e) {
+            historyService.createHistory("", resourceGroup.getGroups(), e.getMessage(), EventType.USER_ACTION, SecurityContextHolder.getContext().getAuthentication().getName());
+            throw new ResourceFileGeneratorException(e.getMessage(), e);
+        }
     }
 
     /**
      * Create pertinent data to pass to the template generator engine
+     *
      * @return {@link ResourceGroup}
      */
     private ResourceGroup generateResourceGroup() {

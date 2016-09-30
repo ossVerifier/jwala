@@ -58,6 +58,7 @@ import com.cerner.jwala.service.jvm.JvmStateService;
 import com.cerner.jwala.service.jvm.impl.JvmControlServiceImpl;
 import com.cerner.jwala.service.jvm.impl.JvmServiceImpl;
 import com.cerner.jwala.service.jvm.state.JvmStateReceiverAdapter;
+import com.cerner.jwala.service.resource.ResourceContentGeneratorService;
 import com.cerner.jwala.service.resource.ResourceService;
 import com.cerner.jwala.service.resource.impl.ResourceServiceImpl;
 import com.cerner.jwala.service.resource.impl.handler.WebServerResourceHandler;
@@ -150,6 +151,9 @@ public class AemServiceConfiguration {
     @Autowired
     private BinaryDistributionService binaryDistributionService;
 
+    @Autowired
+    private ResourceService resourceService;
+
     private final Map<String, ReentrantReadWriteLock> resourceWriteLockMap = new HashMap<>();
 
     private final Map<String, ReentrantReadWriteLock> jvmWriteLockMap = new HashMap<>();
@@ -170,7 +174,7 @@ public class AemServiceConfiguration {
     @Bean
     public GroupService getGroupService(final WebServerPersistenceService webServerPersistenceService) {
         return new GroupServiceImpl(persistenceServiceConfiguration.getGroupPersistenceService(), webServerPersistenceService,
-                persistenceServiceConfiguration.getApplicationPersistenceService(), aemCommandExecutorConfig.getRemoteCommandExecutor(), binaryDistributionService);
+                persistenceServiceConfiguration.getApplicationPersistenceService(), aemCommandExecutorConfig.getRemoteCommandExecutor(), binaryDistributionService, resourceService);
     }
 
     @Bean(name = "jvmService")
@@ -192,7 +196,7 @@ public class AemServiceConfiguration {
                                                             final JvmService jvmService,
                                                             final ClientFactoryHelper clientFactoryHelper,
                                                             final MessagingService messagingService,
-                                                            final HistoryService historyService){
+                                                            final HistoryService historyService) {
         return new BalancerManagerServiceImpl(groupService, applicationService, webServerService, jvmService, clientFactoryHelper, messagingService,
                 historyService, new BalancerManagerHtmlParser(), new BalancerManagerXmlParser(jvmService), new BalancerManagerHttpClient());
     }
@@ -296,11 +300,13 @@ public class AemServiceConfiguration {
                                               final WebServerPersistenceService webServerPersistenceService,
                                               final ResourceDao resourceDao,
                                               final WebArchiveManager webArchiveManager,
-                                              final WebServerResourceHandler webServerResourceHandler) {
+                                              final WebServerResourceHandler webServerResourceHandler,
+                                              final ResourceContentGeneratorService resourceContentGeneratorService) {
         return new ResourceServiceImpl(persistenceServiceConfiguration.getResourcePersistenceService(),
                 persistenceServiceConfiguration.getGroupPersistenceService(), applicationPersistenceService,
                 jvmPersistenceService, webServerPersistenceService, getPrivateApplicationService(), resourceDao,
-                webArchiveManager, webServerResourceHandler, aemCommandExecutorConfig.getRemoteCommandExecutor(), resourceWriteLockMap);
+                webArchiveManager, webServerResourceHandler, aemCommandExecutorConfig.getRemoteCommandExecutor(), resourceWriteLockMap,
+                resourceContentGeneratorService);
     }
 
     @Bean
@@ -407,17 +413,19 @@ public class AemServiceConfiguration {
     /**
      * Bean method to create a thread factory that creates daemon threads.
      * <code>
-     <bean id="pollingThreadFactory" class="org.springframework.scheduling.concurrent.CustomizableThreadFactory">
-     <constructor-arg value="polling-"/>
-     </bean></code> */
-    @Bean(name="pollingThreadFactory") public ThreadFactory getPollingThreadFactory() {
+     * <bean id="pollingThreadFactory" class="org.springframework.scheduling.concurrent.CustomizableThreadFactory">
+     * <constructor-arg value="polling-"/>
+     * </bean></code>
+     */
+    @Bean(name = "pollingThreadFactory")
+    public ThreadFactory getPollingThreadFactory() {
         CustomizableThreadFactory tf = new CustomizableThreadFactory("polling-");
         tf.setDaemon(true);
         return tf;
     }
 
     @Bean
-    public BinaryDistributionControlServiceImpl getBinaryDistributionControlService(RemoteCommandExecutor<BinaryDistributionControlOperation> remoteCommandExecutor){
+    public BinaryDistributionControlServiceImpl getBinaryDistributionControlService(RemoteCommandExecutor<BinaryDistributionControlOperation> remoteCommandExecutor) {
         return new BinaryDistributionControlServiceImpl(remoteCommandExecutor);
     }
 
@@ -425,5 +433,4 @@ public class AemServiceConfiguration {
     public BinaryDistributionService getBinaryDistributionService(BinaryDistributionControlServiceImpl binaryDistributionControlService) {
         return new BinaryDistributionServiceImpl(binaryDistributionControlService);
     }
-
 }

@@ -96,10 +96,10 @@ public class ApplicationServiceImplTest {
     private Application mockApplication;
     @Mock
     private Application mockApplication2;
-    
+
     @Mock
     private HistoryService mockHistoryService;
-    
+
     @Mock
     private MessagingService mockMessagingService;
 
@@ -169,6 +169,7 @@ public class ApplicationServiceImplTest {
 
         when(fileManager.getResourceTypeTemplate(eq("AppContextXMLTemplate.tpl"))).thenReturn("The application context template.");
         when(fileManager.getResourceTypeTemplate(eq("RoleMappingTemplate.tpl"))).thenReturn("The role mapping properties template.");
+
     }
 
     @SuppressWarnings("unchecked")
@@ -342,8 +343,8 @@ public class ApplicationServiceImplTest {
         when(app.getWarPath()).thenReturn("theWarPath");
         when(applicationPersistenceService.findApplication(eq("hct"), anyString(), anyString())).thenReturn(app);
         when(jvmPersistenceService.findJvm(anyString(), anyString())).thenReturn(null);
-        assertEquals("<context>theWarPath</context>", applicationService.getResourceTemplate("hct", "group1", "jvm1", "hct.xml", new ResourceGroup(), true));
-
+        applicationService.getResourceTemplate("hct", "group1", "jvm1", "hct.xml", new ResourceGroup(), true);
+        verify(mockResourceService).generateResourceFile(anyString(), anyString(), any(ResourceGroup.class), any(Application.class));
         when(applicationPersistenceService.getResourceTemplate(eq("hct"), eq("hct.xml"), eq("jvm1"), eq("group1"))).thenReturn(theTemplate);
         try {
             applicationService.getResourceTemplate("hct", "group1", "jvm1", "hct.xml", new ResourceGroup(), true);
@@ -487,8 +488,8 @@ public class ApplicationServiceImplTest {
         final Jvm jvm = mock(Jvm.class);
         when(applicationPersistenceService.findApplication(eq("hct"), eq("hct-group"), eq("jvm-1"))).thenReturn(mockApplication);
         when(jvmPersistenceService.findJvm(eq("jvm-1"), eq("hct-group"))).thenReturn(jvm);
-        final String preview = applicationService.previewResourceTemplate("hct", "hct-group", "jvm-1", "Template contents", new ResourceGroup());
-        assertEquals("Template contents", preview);
+        final String preview = applicationService.previewResourceTemplate("myFile", "hct", "hct-group", "jvm-1", "Template contents", new ResourceGroup());
+        verify(mockResourceService).generateResourceFile(anyString(), anyString(), any(ResourceGroup.class), any(Application.class));
     }
 
     @Test
@@ -674,6 +675,7 @@ public class ApplicationServiceImplTest {
                 jvmPersistenceService, remoteCommandExecutor, mockGroupService, webArchiveManager, privateApplicationService,
                 mockHistoryService, mockMessagingService, mockResourceService, remoteCommandExecutorImpl, binaryDistributionService);
         mockApplicationService.copyApplicationConfigToGroupJvms(mockGroup, "testApp", mock(ResourceGroup.class), testUser);
+
     }
 
 }

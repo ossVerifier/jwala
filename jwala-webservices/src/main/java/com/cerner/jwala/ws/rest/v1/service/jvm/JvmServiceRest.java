@@ -111,9 +111,10 @@ public interface JvmServiceRest extends InitializingBean{
      * @return
      */
     @PUT
-    @Path("/{jvmName}/resources/preview")
+    @Path("/{jvmName}/resources/preview/{resourceTemplateName}")
     @Consumes(MediaType.TEXT_PLAIN)
     Response previewResourceTemplate(@PathParam("jvmName") String jvmName,
+                                     @PathParam("resourceTemplateName") final String resourceTemplateName,
                                      @MatrixParam("groupName") String groupName,
                                      String template);
 

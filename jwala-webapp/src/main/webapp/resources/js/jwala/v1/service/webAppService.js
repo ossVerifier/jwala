@@ -79,8 +79,8 @@ var webAppService = {
                                      false,
                                      "text/plain; charset=utf-8");
     },
-     previewResourceFile: function(appName, groupName, jvmName, template, successCallback, errorCallback) {
-        return serviceFoundation.put("v1.0/applications/" + encodeURIComponent(appName) + "/resources/preview;groupName=" +
+     previewResourceFile: function(resourceTemplateName, appName, groupName, jvmName, template, successCallback, errorCallback) {
+        return serviceFoundation.put("v1.0/applications/" + encodeURIComponent(appName) + "/resources/preview/ " + encodeURIComponent(resourceTemplateName) + ";groupName=" +
                                      encodeURIComponent(groupName) + ";jvmName=" + encodeURIComponent(jvmName),
                                      "json",
                                      template,

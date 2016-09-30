@@ -509,19 +509,22 @@ var XmlTabs = React.createClass({
         if (this.state.entity !== null && this.state.resourceTemplateName !== null) {
             if (index === 1 ) {
                 if (this.state.entityType === "jvms") {
-                    this.props.jvmService.previewResourceFile(this.state.entity.jvmName,
+                    this.props.jvmService.previewResourceFile(this.state.resourceTemplateName,
+                                                              this.state.entity.jvmName,
                                                               this.state.entityParent.rtreeListMetaData.parent.name,
                                                               this.refs.codeMirrorComponent.getText(),
                                                               this.previewSuccessCallback,
                                                               this.previewErrorCallback);
                 } else if (this.state.entityType === "webServers") {
-                    this.props.wsService.previewResourceFile(this.state.entity.name,
+                    this.props.wsService.previewResourceFile(this.state.resourceTemplateName,
+                                                             this.state.entity.name,
                                                              this.state.entityParent.rtreeListMetaData.parent.name,
                                                              this.refs.codeMirrorComponent.getText(),
                                                              this.previewSuccessCallback,
                                                              this.previewErrorCallback);
                 } else if (this.state.entityType === "webApps") {
-                    this.props.webAppService.previewResourceFile(this.state.entity.name,
+                    this.props.webAppService.previewResourceFile(this.state.resourceTemplateName,
+                                                                 this.state.entity.name,
                                                                  this.state.entity.group.name,
                                                                  this.state.entityParent.jvmName ? this.state.entityParent.jvmName : "",
                                                                  this.refs.codeMirrorComponent.getText(),
@@ -531,14 +534,16 @@ var XmlTabs = React.createClass({
 
                 }  else if (this.state.entityType === "jvmSection") {
                     if (this.state.groupJvmEntityType && this.state.groupJvmEntityType === "webApp") {
-                        this.props.groupService.previewGroupAppResourceFile(this.state.entityGroupName,
+                        this.props.groupService.previewGroupAppResourceFile(this.state.resourceTemplateName,
+                                                                                     this.state.entityGroupName,
                                                                                      this.state.resourceTemplateName,
                                                                                      this.refs.codeMirrorComponent.getText(),
                                                                                      this.previewSuccessCallback,
                                                                                      this.previewErrorCallback);
                     }
                 } else if (this.state.entityType === "extProperties"){
-                    this.props.resourceService.previewResourceFile(this.refs.codeMirrorComponent.getText(),
+                    this.props.resourceService.previewResourceFile(this.state.resourceTemplateName,
+                                                                   this.refs.codeMirrorComponent.getText(),
                                                                    null,
                                                                    null,
                                                                    null,

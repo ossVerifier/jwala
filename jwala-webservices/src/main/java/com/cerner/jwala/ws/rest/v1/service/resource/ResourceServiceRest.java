@@ -130,9 +130,9 @@ public interface ResourceServiceRest extends InitializingBean{
      * @return the saved content
      */
     @PUT
-    @Path("/template/preview")
+    @Path("/template/preview/{resourceName}")
     @Consumes(MediaType.TEXT_PLAIN)
-    Response previewResourceContent(@MatrixParam("") ResourceHierarchyParam resourceHierarchyParam, final String content);
+    Response previewResourceContent(@PathParam("resourceName") String resourceName, @MatrixParam("") ResourceHierarchyParam resourceHierarchyParam, final String content);
 
     /**
      * Get the key/value pairings for any external properties that were loaded

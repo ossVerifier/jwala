@@ -68,7 +68,7 @@ public interface ApplicationService {
      * @param resourceGroup
      * @return The resource file preview.
      */
-    String previewResourceTemplate(String appName, String groupName, String jvmName, String template, ResourceGroup resourceGroup);
+    String previewResourceTemplate(String fileName, String appName, String groupName, String jvmName, String template, ResourceGroup resourceGroup);
 
     void copyApplicationWarToGroupHosts(Application application);
 

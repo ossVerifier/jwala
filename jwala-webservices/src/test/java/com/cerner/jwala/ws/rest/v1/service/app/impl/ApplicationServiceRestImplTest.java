@@ -557,12 +557,12 @@ public class ApplicationServiceRestImplTest {
 
     @Test
     public void testPreviewResourceTemplate() {
-        when(service.previewResourceTemplate(anyString(), anyString(), anyString(), anyString(), any(ResourceGroup.class))).thenReturn("preview content");
-        Response response = cut.previewResourceTemplate(application.getName(), group1.getName(), "jvmName", "ServerXMLTemplate.tpl");
+        when(service.previewResourceTemplate(anyString(), anyString(), anyString(), anyString(), anyString(), any(ResourceGroup.class))).thenReturn("preview content");
+        Response response = cut.previewResourceTemplate("myFile", application.getName(), group1.getName(), "jvmName", "ServerXMLTemplate.tpl");
         assertNotNull(response.getEntity());
 
-        when(service.previewResourceTemplate(anyString(), anyString(), anyString(), anyString(), any(ResourceGroup.class))).thenThrow(new RuntimeException("Test fail preview"));
-        response = cut.previewResourceTemplate(application.getName(), group1.getName(), "jvmName", "ServerXMLTemplate.tpl");
+        when(service.previewResourceTemplate(anyString(), anyString(), anyString(), anyString(), anyString(), any(ResourceGroup.class))).thenThrow(new RuntimeException("Test fail preview"));
+        response = cut.previewResourceTemplate("myFile", application.getName(), group1.getName(), "jvmName", "ServerXMLTemplate.tpl");
         assertNotNull(response.getEntity());
     }
 

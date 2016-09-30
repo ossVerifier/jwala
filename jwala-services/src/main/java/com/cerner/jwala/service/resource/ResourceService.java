@@ -62,7 +62,7 @@ public interface ResourceService {
      * @param selectedValue the selectedvalue
      * @return the generated resource file string
      */
-    <T> String generateResourceFile(final String template, final ResourceGroup resourceGroup, T selectedValue);
+    <T> String generateResourceFile(final String fileName, final String template, final ResourceGroup resourceGroup, T selectedValue);
 
     /**
      * Get an application's resource names.
@@ -269,7 +269,7 @@ public interface ResourceService {
      * @param content                the untokenized template content
      * @return the tokenized template content
      */
-    String previewResourceContent(ResourceIdentifier resourceHierarchyParam, String content);
+    String previewResourceContent(String fileName, ResourceIdentifier resourceHierarchyParam, String content);
 
     /**
      * Deploy the resource to a host
@@ -294,4 +294,5 @@ public interface ResourceService {
      * @return the external properties as a string
      */
     String getExternalPropertiesAsString();
+
 }

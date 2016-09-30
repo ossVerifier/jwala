@@ -427,14 +427,14 @@ public class GroupServiceRestImplTest {
 
     @Test
     public void testPreviewWebServerTemplate() {
-        Response response = groupServiceRest.previewGroupWebServerResourceTemplate(group.getName(), "httpd.conf");
+        Response response = groupServiceRest.previewGroupWebServerResourceTemplate(group.getName(), "myFile", "httpd.conf");
         assertNotNull(response);
     }
 
     @Test
     public void testPreviewWebServerTemplateThrowsRuntimeException() {
-        when(mockGroupService.previewGroupWebServerResourceTemplate(anyString(), anyString(), any(ResourceGroup.class))).thenThrow(new RuntimeException());
-        Response response = groupServiceRest.previewGroupWebServerResourceTemplate(group.getName(), "httpd.conf");
+        when(mockGroupService.previewGroupWebServerResourceTemplate(anyString(), anyString(), anyString(), any(ResourceGroup.class))).thenThrow(new RuntimeException());
+        Response response = groupServiceRest.previewGroupWebServerResourceTemplate(group.getName(), "myFile", "httpd.conf");
         assertNotNull(response);
         assertTrue(response.getStatus() > 499);
     }
@@ -498,11 +498,12 @@ public class GroupServiceRestImplTest {
 
         final ResourceGroup resourceGroup = new ResourceGroup();
         final String templateContent = "preview template ${jvm.jvmName}";
+        final String fileName = "myFile";
         when(mockResourceService.generateResourceGroup()).thenReturn(resourceGroup);
         when(mockGroupService.getGroup(anyString())).thenReturn(mockPreviewJvmGroup);
-        groupServiceRest.previewGroupJvmResourceTemplate("test-group-name", templateContent);
+        groupServiceRest.previewGroupJvmResourceTemplate("test-group-name", fileName, templateContent);
 
-        verify(mockResourceService).generateResourceFile(eq(templateContent), eq(resourceGroup), eq(mockPreviewJvm));
+        verify(mockResourceService).generateResourceFile(eq(fileName), eq(templateContent), eq(resourceGroup), eq(mockPreviewJvm));
     }
 
     @Test
@@ -517,11 +518,12 @@ public class GroupServiceRestImplTest {
 
         final ResourceGroup resourceGroup = new ResourceGroup();
         final String templateContent = "preview template ${jvm.jvmName}";
+        final String fileName = "myFile";
         when(mockResourceService.generateResourceGroup()).thenReturn(resourceGroup);
         when(mockGroupService.getGroup(anyString())).thenReturn(mockPreviewJvmGroup);
-        when(mockResourceService.generateResourceFile(templateContent, resourceGroup, mockPreviewJvm)).thenThrow(new RuntimeException("Fail"));
+        when(mockResourceService.generateResourceFile(fileName, templateContent, resourceGroup, mockPreviewJvm)).thenThrow(new RuntimeException("Fail"));
 
-        Response response = groupServiceRest.previewGroupJvmResourceTemplate("test-group-name", templateContent);
+        Response response = groupServiceRest.previewGroupJvmResourceTemplate("test-group-name", fileName, templateContent);
         assertEquals(500, response.getStatus());
     }
 

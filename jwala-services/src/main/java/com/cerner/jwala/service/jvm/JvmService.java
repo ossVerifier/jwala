@@ -1,9 +1,5 @@
 package com.cerner.jwala.service.jvm;
 
-import java.io.IOException;
-import java.util.List;
-import java.util.Map;
-
 import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
@@ -12,6 +8,10 @@ import com.cerner.jwala.common.domain.model.user.User;
 import com.cerner.jwala.common.request.jvm.ControlJvmRequest;
 import com.cerner.jwala.common.request.jvm.CreateJvmAndAddToGroupsRequest;
 import com.cerner.jwala.common.request.jvm.UpdateJvmRequest;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
 
 public interface JvmService {
 
@@ -45,7 +45,7 @@ public interface JvmService {
 
     String generateInvokeBat(String jvmName);
 
-    String previewResourceTemplate(String jvmName, String groupName, String template);
+    String previewResourceTemplate(String fileName, String jvmName, String groupName, String template);
 
     void updateState(Identifier<Jvm> id, JvmState state);
 
@@ -95,4 +95,5 @@ public interface JvmService {
      * @param userName
      */
     void deleteJvm(String name, String userName);
+
 }

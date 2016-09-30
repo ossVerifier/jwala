@@ -88,9 +88,10 @@ public interface WebServerServiceRest extends InitializingBean {
                                     final String content);
 
     @PUT
-    @Path("/{webServerName}/resources/preview")
+    @Path("/{webServerName}/resources/preview/{resourceTemplateName}")
     @Consumes(MediaType.TEXT_PLAIN)
     Response previewResourceTemplate(@PathParam("webServerName") String webServerName,
+                                     @PathParam("resourceTemplateName") final String resourceTemplateName,
                                      @MatrixParam("groupName") String groupName,
                                      String template);
 

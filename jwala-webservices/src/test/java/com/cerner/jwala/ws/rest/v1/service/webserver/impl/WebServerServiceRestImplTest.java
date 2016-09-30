@@ -680,11 +680,11 @@ public class WebServerServiceRestImplTest {
 
     @Test
     public void testPreviewResourceTemplate() {
-        Response response = webServerServiceRest.previewResourceTemplate(webServer.getName(), "groupName", "httpd.conf");
+        Response response = webServerServiceRest.previewResourceTemplate(webServer.getName(), "httpd.conf", "groupName", "httpd.conf");
         assertNotNull(response);
 
-        when(impl.previewResourceTemplate(anyString(), anyString(), anyString())).thenThrow(new RuntimeException("test runtime exception"));
-        response = webServerServiceRest.previewResourceTemplate(webServer.getName(), "groupName", "httpd.conf");
+        when(impl.previewResourceTemplate(anyString(), anyString(), anyString(), anyString())).thenThrow(new RuntimeException("test runtime exception"));
+        response = webServerServiceRest.previewResourceTemplate(webServer.getName(), "httpd.conf", "groupName", "httpd.conf");
         assertNotNull(response);
     }
 

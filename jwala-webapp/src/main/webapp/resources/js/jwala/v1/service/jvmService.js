@@ -80,8 +80,8 @@
     getResources : function(jvmName, responseCallback) {
         return serviceFoundation.get("v1.0/jvms/" + encodeURIComponent(jvmName) + "/resources/name", "json", responseCallback);
     },
-    previewResourceFile: function(jvmName, groupName, template, successCallback, errorCallback) {
-        return serviceFoundation.put("v1.0/jvms/" + encodeURIComponent(jvmName) + "/resources/preview;groupName=" + encodeURIComponent(groupName),
+    previewResourceFile: function(resourceTemplateName, jvmName, groupName, template, successCallback, errorCallback) {
+        return serviceFoundation.put("v1.0/jvms/" + encodeURIComponent(jvmName) + "/resources/preview/" + encodeURIComponent(resourceTemplateName) + ";groupName=" + encodeURIComponent(groupName),
                                      "json",
                                      template,
                                      successCallback,

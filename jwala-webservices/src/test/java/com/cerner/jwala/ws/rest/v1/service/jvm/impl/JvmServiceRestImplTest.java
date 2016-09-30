@@ -339,12 +339,12 @@ public class JvmServiceRestImplTest {
 
     @Test
     public void testPreviewResourceTemplate() {
-        when(jvmService.previewResourceTemplate(anyString(), anyString(), anyString())).thenReturn("<server>preview</server>");
-        Response response = jvmServiceRest.previewResourceTemplate(jvm.getJvmName(), "group1", "ServerXMLTemplate.tpl");
+        when(jvmService.previewResourceTemplate(anyString(), anyString(), anyString(), anyString())).thenReturn("<server>preview</server>");
+        Response response = jvmServiceRest.previewResourceTemplate("myFile", jvm.getJvmName(), "group1", "ServerXMLTemplate.tpl");
         assertNotNull(response.getEntity());
 
-        when(jvmService.previewResourceTemplate(anyString(), anyString(), anyString())).thenThrow(new RuntimeException("Test failed preview"));
-        response = jvmServiceRest.previewResourceTemplate(jvm.getJvmName(), "group1", "ServerXMLTemplate.tpl");
+        when(jvmService.previewResourceTemplate(anyString(), anyString(), anyString(), anyString())).thenThrow(new RuntimeException("Test failed preview"));
+        response = jvmServiceRest.previewResourceTemplate("myFile", jvm.getJvmName(), "group1", "ServerXMLTemplate.tpl");
         assertNotNull(response.getEntity());
     }
 

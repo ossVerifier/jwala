@@ -9,13 +9,19 @@ import com.cerner.jwala.common.properties.ApplicationProperties
 import com.cerner.jwala.common.properties.ExternalProperties
 import com.cerner.jwala.template.exception.ResourceFileGeneratorException
 import groovy.text.StreamingTemplateEngine
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 class ResourceFileGenerator {
-    static <T> String generateResourceConfig(String templateText, ResourceGroup resourceGroup, T selectedValue) {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(ResourceFileGenerator.class);
+
+    static <T> String generateResourceConfig(String fileName, String templateText, ResourceGroup resourceGroup, T selectedValue) {
         Group group = null
         WebServer webServer = null
         Jvm jvm = null
         Application webApp = null
+        String entityInfo
 
         List<Group> groups = resourceGroup.getGroups();
         List<WebServer> webServers = null;
@@ -25,13 +31,16 @@ class ResourceFileGenerator {
         if (selectedValue instanceof WebServer) {
             webServer = selectedValue as WebServer
             group = webServer.getParentGroup()
+            entityInfo = "WebServer: " + webServer.getName()
         } else if (selectedValue instanceof Jvm) {
             jvm = selectedValue as Jvm
             group = jvm.getParentGroup()
+            entityInfo = "Jvm: " + jvm.getJvmName()
         } else if (selectedValue instanceof Application) {
             webApp = selectedValue as Application
             jvm = webApp.getParentJvm()
             group = webApp.getGroup()
+            entityInfo = "WebApp:" + webApp.getName()
         }
         groups.each {
             if (it.getWebServers() != null) {
@@ -66,8 +75,8 @@ class ResourceFileGenerator {
                        groups    : groups,
                        group     : group,
                        vars      : map];
-				   println "SIZE **********---- "+ map.size()
-	map.each{ k, v -> println "${k}:${v}" }
+        println "SIZE **********---- " + map.size()
+        map.each { k, v -> println "${k}:${v}" }
         def properties = ExternalProperties.properties
         if (properties.size() > 0) {
             final extMap = new HashMap<String, String>(properties);
@@ -79,9 +88,10 @@ class ResourceFileGenerator {
         try {
             return engine.createTemplate(templateText).make(binding.withDefault { '' })
         } catch (final Exception e) {
-            throw new ResourceFileGeneratorException("Failed to bind data and properties to the template. " +
-                    "Cause(s) of the failure is/are: " + e.getMessage(), e)
+            final String messageHistory = "Failed to bind data and properties to the template: " + fileName.trim();
+            final String message = messageHistory + " for " + entityInfo + ". Cause(s) of the failure is/are: " + e.getMessage()
+            LOGGER.error(message, e)
+            throw new ResourceFileGeneratorException(message, e)
         }
-
     }
 }

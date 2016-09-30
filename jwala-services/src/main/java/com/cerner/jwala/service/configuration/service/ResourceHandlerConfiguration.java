@@ -3,7 +3,6 @@ package com.cerner.jwala.service.configuration.service;
 import com.cerner.jwala.persistence.service.*;
 import com.cerner.jwala.service.resource.ResourceContentGeneratorService;
 import com.cerner.jwala.service.resource.impl.handler.*;
-
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 

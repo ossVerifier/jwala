@@ -1,4 +1,5 @@
 package com.cerner.jwala.template
+
 import com.cerner.jwala.common.domain.model.app.Application
 import com.cerner.jwala.common.domain.model.group.CurrentGroupState
 import com.cerner.jwala.common.domain.model.group.Group
@@ -45,7 +46,7 @@ println f.exists()
         apps.add(new Application(new Identifier<Application>(333L), "hello-world-3", "d:/jwala/app/archive", "/hello-world-3", group, true, true, false, "testWar.war"))
 
         // do it again to associate the group with the jvms and web servers
-        createTestJvmsAndWebServers(groupHashSet)
+        createTestJvmsAndWebServers(groupHashSet, group)
     }
 
     private void createTestJvmsAndWebServers(HashSet<Group> groupHashSet) {
@@ -65,10 +66,27 @@ println f.exists()
 
     }
 
+    private void createTestJvmsAndWebServers(HashSet<Group> groupHashSet, Group group) {
+        webServer = new WebServer(new Identifier<WebServer>(1L), "localhost", "Apache2.4", 80, 443,
+                new Path("/statusPath"), new FileSystemPath("D:/jwala/app/data/httpd//httpd.conf"),
+                new Path("./"), new Path("htdocs"), WebServerReachableState.WS_UNREACHABLE, "", group);
+        jvm = new Jvm(new Identifier<Jvm>(11L), "tc1", "usmlvv1ctoGenerateMe", groupHashSet, group, 11010, 11011, 11012, -1, 11013,
+                new Path("/statusPath"), "EXAMPLE_OPTS=%someEvn%/someVal", JvmState.JVM_STOPPED, "", null, null, null)
+
+        webServers = new HashSet<>()
+        webServers.add(webServer)
+
+        jvms = new HashSet<>()
+        jvms.add(jvm)
+        jvms.add(new Jvm(new Identifier<Jvm>(22L), "tc2", "usmlvv1ctoGenerateMe", groupHashSet, 11020, 11021, 11022, -1, 11023,
+                new Path("/statusPath"), "EXAMPLE_OPTS=%someEvn%/someVal", JvmState.JVM_STOPPED, "", null, null, null, null))
+
+    }
+
     void testGenerateHttpdConfConfigFile(){
         File httpdTemplate = new File("./src/test/resources/HttpdConfTemplate.tpl");
         resourceGroup = new ResourceGroup(new ArrayList<Group>(groupHashSet));
-        def generatedText = ResourceFileGenerator.generateResourceConfig(httpdTemplate.text, resourceGroup, webServer);
+        def generatedText = ResourceFileGenerator.generateResourceConfig("HttpdConfTemplate.tpl", httpdTemplate.text, resourceGroup, webServer);
         def expectedText = new File("./src/test/resources/HttpdConfTemplate-EXPECTED.conf").text
         assertEquals(removeCarriageReturnsAndNewLines(expectedText), removeCarriageReturnsAndNewLines(generatedText));
     }
@@ -76,7 +94,7 @@ println f.exists()
     void testGenerateInvokeBatConfigFile(){
         File httpdTemplate = new File("./src/test/resources/InvokeBatTemplate.tpl");
         resourceGroup = new ResourceGroup(new ArrayList<Group>(groupHashSet));
-        def generatedText = ResourceFileGenerator.generateResourceConfig(httpdTemplate.text, resourceGroup, jvm);
+        def generatedText = ResourceFileGenerator.generateResourceConfig(httpdTemplate.getName(), httpdTemplate.text, resourceGroup, jvm);
         def expectedText = new File("./src/test/resources/InvokeBatTemplate-EXPECTED.bat").text
         assertEquals(removeCarriageReturnsAndNewLines(expectedText), removeCarriageReturnsAndNewLines(generatedText));
     }
@@ -84,7 +102,7 @@ println f.exists()
     void testGenerateInvokeWSBatConfigFile() {
         File httpdTemplate = new File("./src/test/resources/InvokeWSBatTemplate.tpl");
         resourceGroup = new ResourceGroup(new ArrayList<Group>(groupHashSet));
-        def generatedText = ResourceFileGenerator.generateResourceConfig(httpdTemplate.text, resourceGroup, webServer);
+        def generatedText = ResourceFileGenerator.generateResourceConfig(httpdTemplate.getName(), httpdTemplate.text, resourceGroup, webServer);
         def expectedText = new File("./src/test/resources/InvokeWSBatTemplate-EXPECTED.bat").text
         assertEquals(removeCarriageReturnsAndNewLines(expectedText), removeCarriageReturnsAndNewLines(generatedText));
     }
@@ -99,7 +117,7 @@ println f.exists()
     void testGenerateSetenvBatConfigFile() {
         File httpdTemplate = new File("./src/test/resources/SetenvBatTemplate.tpl");
         resourceGroup = new ResourceGroup(new ArrayList<Group>(groupHashSet));
-        def generatedText = ResourceFileGenerator.generateResourceConfig(httpdTemplate.text, resourceGroup, jvm);
+        def generatedText = ResourceFileGenerator.generateResourceConfig(httpdTemplate.getName(), httpdTemplate.text, resourceGroup, jvm);
         def expectedText = new File("./src/test/resources/SetenvBatTemplate-EXPECTED.bat").text
         assertEquals(removeCarriageReturnsAndNewLines(expectedText), removeCarriageReturnsAndNewLines(generatedText));
     }
@@ -107,7 +125,7 @@ println f.exists()
     void testGenerateLargeWebXmlConfigFile() {
         File httpdTemplate = new File("./src/test/resources/web.xml.tpl");
         resourceGroup = new ResourceGroup(new ArrayList<Group>(groupHashSet));
-        def generatedText = ResourceFileGenerator.generateResourceConfig(httpdTemplate.text, resourceGroup, jvm);
+        def generatedText = ResourceFileGenerator.generateResourceConfig("web.xml.tpl", httpdTemplate.text, resourceGroup, jvm);
         def expectedText = new File("./src/test/resources/web-EXPECTED.xml").text
         assertEquals(removeCarriageReturnsAndNewLines(expectedText), removeCarriageReturnsAndNewLines(generatedText));
     }

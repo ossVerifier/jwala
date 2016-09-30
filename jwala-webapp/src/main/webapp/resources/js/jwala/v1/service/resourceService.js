@@ -84,9 +84,9 @@ var resourceService = {
                                                      false,
                                                      "text/plain; charset=utf-8")
     },
-    previewResourceFile: function(template, groupName, webServerName, jvmName, webAppName, successCallback, errorCallback) {
+    previewResourceFile: function(resourceTemplateName, template, groupName, webServerName, jvmName, webAppName, successCallback, errorCallback) {
         var matrixParam = this.createMatrixParam(groupName, webServerName, jvmName, webAppName);
-        return serviceFoundation.put("v1.0/resources/template/preview" + matrixParam,
+        return serviceFoundation.put("v1.0/resources/template/preview/"+ encodeURIComponent(resourceTemplateName) + matrixParam,
                                      "json",
                                      template,
                                      successCallback,

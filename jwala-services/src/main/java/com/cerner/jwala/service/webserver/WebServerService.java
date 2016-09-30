@@ -40,7 +40,7 @@ public interface WebServerService {
 
     String updateResourceTemplate(final String wsName, final String resourceTemplateName, final String template);
 
-    String previewResourceTemplate(String webServerName, String groupName, String template);
+    String previewResourceTemplate(String fileName, String webServerName, String groupName, String template);
 
     boolean isStarted(WebServer webServer);
 
@@ -57,4 +57,5 @@ public interface WebServerService {
     Long getWebServerStoppedCount(String groupName);
 
     String getResourceTemplateMetaData(String aWebServerName, String resourceTemplateName);
+
 }

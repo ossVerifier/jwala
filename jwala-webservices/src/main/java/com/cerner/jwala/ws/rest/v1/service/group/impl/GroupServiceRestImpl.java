@@ -248,11 +248,11 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     }
 
     @Override
-    public Response previewGroupWebServerResourceTemplate(String groupName, String template) {
+    public Response previewGroupWebServerResourceTemplate(String groupName, String resourceTemplateName,String template) {
         LOGGER.debug("Preview group web server template for group {}", groupName);
         LOGGER.debug(template);
         try {
-            return ResponseBuilder.ok(groupService.previewGroupWebServerResourceTemplate(groupName, template, resourceService.generateResourceGroup()));
+            return ResponseBuilder.ok(groupService.previewGroupWebServerResourceTemplate(resourceTemplateName, groupName, template, resourceService.generateResourceGroup()));
         } catch (RuntimeException e) {
             LOGGER.error("Failed to preview the web server template for {}", groupName, e);
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
@@ -373,14 +373,14 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     }
 
     @Override
-    public Response previewGroupJvmResourceTemplate(String groupName, String template) {
+    public Response previewGroupJvmResourceTemplate(String groupName, String fileName, String template) {
         LOGGER.debug("Preview group JVM resource template for group {}", groupName);
         LOGGER.debug(template);
         try {
             final Group group = groupService.getGroup(groupName);
             final ResourceGroup resourceGroup = resourceService.generateResourceGroup();
             final Set<Jvm> jvms = group.getJvms();
-            return ResponseBuilder.ok(resourceService.generateResourceFile(template, resourceGroup, (null != jvms && jvms.size() > 0 ? jvms.iterator().next() : null)));
+            return ResponseBuilder.ok(resourceService.generateResourceFile(fileName, template, resourceGroup, (null != jvms && jvms.size() > 0 ? jvms.iterator().next() : null)));
         } catch (RuntimeException e) {
             LOGGER.error("Failed to preview the JVM template for {}", groupName, e);
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(

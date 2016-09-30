@@ -32,8 +32,11 @@ import com.cerner.jwala.files.WebArchiveManager;
 import com.cerner.jwala.persistence.jpa.domain.JpaJvm;
 import com.cerner.jwala.persistence.jpa.domain.resource.config.template.ConfigTemplate;
 import com.cerner.jwala.persistence.service.*;
+import com.cerner.jwala.service.HistoryService;
+import com.cerner.jwala.service.MessagingService;
 import com.cerner.jwala.service.app.ApplicationService;
 import com.cerner.jwala.service.app.PrivateApplicationService;
+import com.cerner.jwala.service.resource.impl.ResourceContentGeneratorServiceImpl;
 import com.cerner.jwala.service.resource.impl.ResourceServiceImpl;
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.groovy.runtime.ResourceGroovyMethods;
@@ -103,6 +106,12 @@ public class ResourceServiceImplTest {
     @Mock
     private RemoteCommandExecutorImpl mockRemoteCommandExector;
 
+    @Mock
+    private MessagingService mockMessagingService;
+
+    @Mock
+    private HistoryService mockHistoryService;
+
     Map<String, ReentrantReadWriteLock> resourceWriteLockMap = new HashMap<>();
 
     @Before
@@ -111,9 +120,14 @@ public class ResourceServiceImplTest {
         // initialized here. This makes sure that unrelated tests don't affect each other.
         MockitoAnnotations.initMocks(this);
         System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, new File(".").getAbsolutePath() + "/src/test/resources");
+
+        ResourceContentGeneratorService resourceContentGeneratorService = new ResourceContentGeneratorServiceImpl(mockGroupPesistenceService,
+                mockWebServerPersistenceService, mockJvmPersistenceService, mockAppPersistenceService, mockHistoryService);
+
         resourceService = new ResourceServiceImpl(mockResourcePersistenceService, mockGroupPesistenceService,
                 mockAppPersistenceService, mockJvmPersistenceService, mockWebServerPersistenceService,
-                mockPrivateApplicationService, mockResourceDao, mockWebArchiveManager, mockResourceHandler, mockRemoteCommandExector, resourceWriteLockMap);
+                mockPrivateApplicationService, mockResourceDao, mockWebArchiveManager, mockResourceHandler, mockRemoteCommandExector, resourceWriteLockMap,
+                resourceContentGeneratorService);
 
         when(mockJvmPersistenceService.findJvmByExactName(eq("someJvm"))).thenReturn(mock(Jvm.class));
 
@@ -124,6 +138,7 @@ public class ResourceServiceImplTest {
         when(mockRepositoryFileInformation.getPath()).thenReturn(mockPath);
         when(mockPrivateApplicationService.uploadWebArchiveData(any(UploadWebArchiveRequest.class)))
                 .thenReturn(mockRepositoryFileInformation);
+
     }
 
     @Test
@@ -351,7 +366,7 @@ public class ResourceServiceImplTest {
                     this.getClass().getClassLoader().getResource("vars.properties").getPath().replace("vars.properties", ""));
 
             final ResourceGroup resourceGroup = resourceService.generateResourceGroup();
-            String output = resourceService.generateResourceFile(ResourceGroovyMethods.getText(httpdTemplate), resourceGroup, webServer);
+            String output = resourceService.generateResourceFile(ResourceGroovyMethods.getText(httpdTemplate), ResourceGroovyMethods.getText(httpdTemplate), resourceGroup, webServer);
 
             String expected = ResourceGroovyMethods.getText(new File("../jwala-common/src/test/resources/HttpdConfTemplate-EXPECTED.conf"));
             expected = expected.replaceAll("\\r", "").replaceAll("\\n", "");
@@ -478,7 +493,7 @@ public class ResourceServiceImplTest {
 
     @Test
     public void testPreviewResourceContent() {
-        String result = resourceService.previewResourceContent(null, "key=value");
+        String result = resourceService.previewResourceContent(null, null, "key=value");
         assertEquals("key=value", result);
     }
 
