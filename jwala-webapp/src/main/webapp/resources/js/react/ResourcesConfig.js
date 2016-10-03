@@ -649,7 +649,8 @@ var XmlTabs = React.createClass({
                 }
             } else if (index === 3) {
                 if (this.state.entityType === "jvms" || this.state.entityType === "webServers") {
-                    this.props.resourceService.previewResourceFile(this.refs.metaDataEditor.getText(),
+                    this.props.resourceService.previewResourceFile(this.state.resourceTemplateName,
+                                                                   this.refs.metaDataEditor.getText(),
                                                                    this.state.entityParent.rtreeListMetaData.parent.name,
                                                                    this.state.entity.name,
                                                                    this.state.entity.jvmName,
@@ -657,7 +658,8 @@ var XmlTabs = React.createClass({
                                                                    this.previewMetaDataSuccessCallback,
                                                                    this.previewMetaDataErrorCallback);
                 } else if (this.state.entityType === "webApps" && this.state.entityParent.jvmName) {
-                    this.props.resourceService.previewResourceFile(this.refs.metaDataEditor.getText(),
+                    this.props.resourceService.previewResourceFile(this.state.resourceTemplateName,
+                                                                   this.refs.metaDataEditor.getText(),
                                                                    this.state.entityParent.rtreeListMetaData.parent.name,
                                                                    "",
                                                                    this.state.entityParent.jvmName,
@@ -665,7 +667,8 @@ var XmlTabs = React.createClass({
                                                                    this.previewMetaDataSuccessCallback,
                                                                    this.previewMetaDataErrorCallback);
                 } else if (this.state.entityType === "webApps") {
-                    this.props.resourceService.previewResourceFile(this.refs.metaDataEditor.getText(),
+                    this.props.resourceService.previewResourceFile(this.state.resourceTemplateName,
+                                                                   this.refs.metaDataEditor.getText(),
                                                                    this.state.entityParent.rtreeListMetaData.parent.name,
                                                                    "",
                                                                    "",
