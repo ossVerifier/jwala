@@ -9,10 +9,12 @@ var XmlPreview = React.createClass({
                </div>
     },
     componentDidUpdate: function() {
-        $(this.refs.codeMirrorHost.getDOMNode()).empty(); // Remove old code mirror node if there is one to prevent duplicate
-        CodeMirror(this.refs.codeMirrorHost.getDOMNode(), {value: this.state.content, lineNumbers: true,
-                   mode: this.props.mode, readOnly: true});
-        this.resize();
+        if (this.state.content) {
+            $(this.refs.codeMirrorHost.getDOMNode()).empty(); // Remove old code mirror node if there is one to prevent duplicate
+            CodeMirror(this.refs.codeMirrorHost.getDOMNode(), {value: this.state.content, lineNumbers: true,
+                       mode: this.props.mode, readOnly: true});
+            this.resize();
+        }
     },
     refresh: function(content) {
         this.setState({content: content});
