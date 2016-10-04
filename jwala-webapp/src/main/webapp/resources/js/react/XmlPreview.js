@@ -5,15 +5,21 @@ var XmlPreview = React.createClass({
     },
     render: function() {
         return <div ref="theContainer" className="xml-preview-container">
-                   <RTextPreview ref="textPreview">{this.state.content}</RTextPreview>
+                   <div ref="codeMirrorHost"/>
                </div>
+    },
+    componentDidUpdate: function() {
+        $(this.refs.codeMirrorHost.getDOMNode()).empty(); // Remove old code mirror node if there is one to prevent duplicate
+        CodeMirror(this.refs.codeMirrorHost.getDOMNode(), {value: this.state.content, lineNumbers: true,
+                   mode: this.props.mode, readOnly: true});
+        this.resize();
     },
     refresh: function(content) {
         this.setState({content: content});
     },
     resize: function() {
         var textPreviewHeight = $(this.refs.theContainer.getDOMNode()).height() - XmlPreview.SPLITTER_DISTANCE_FROM_PREVIEW_COMPONENT;
-        $(this.refs.textPreview.getDOMNode()).css("height", textPreviewHeight);
+        $(".CodeMirror.cm-s-default").css("height", textPreviewHeight);
     },
     statics: {
         SPLITTER_DISTANCE_FROM_PREVIEW_COMPONENT: 19
