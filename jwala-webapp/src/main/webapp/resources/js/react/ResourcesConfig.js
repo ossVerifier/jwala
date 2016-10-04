@@ -383,8 +383,8 @@ var XmlTabs = React.createClass({
                                 className="xml-editor-container" saveCallback={this.saveResourceMetaData}
                                 onChange={this.onChangeCallback} mode="application/ld+json"/>
             if (this.state.entityType === "webServerSection" || this.state.entityType === "jvmSection") {
-                xmlPreview = <div style={{padding: "5px 5px"}}>A group level web server or JVM template cannot be previewed. Please select a specific web server or JVM instead.</div>;
-                metaDataPreview = <div style={{padding: "5px 5px"}}>A group level web server or JVM template cannot be previewed. Please select a specific web server or JVM instead.</div>;
+                xmlPreview = <div className="Resource preview msg">A group level web server or JVM template cannot be previewed. Please select a specific web server or JVM instead.</div>;
+                metaDataPreview = <div className="Resource preview msg">A group level web server or JVM template cannot be previewed. Please select a specific web server or JVM instead.</div>;
             } else {
                 xmlPreview = <XmlPreview ref="xmlPreview" mode="xml"/>
                 metaDataPreview = <MetaDataPreview ref="metaDataPreview" mode="application/ld+json"/>

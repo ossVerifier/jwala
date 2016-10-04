@@ -127,3 +127,10 @@
     margin-left: 5px;
     font-weight: bold;
 }
+
+.Resource.preview.msg {
+    text-align: center;
+    vertical-align: middle;
+    line-height: 20em;
+    color: red;
+}
