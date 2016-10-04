@@ -1,6 +1,7 @@
 package com.cerner.jwala.service.resource;
 
 import com.cerner.jwala.common.domain.model.resource.ResourceGroup;
+import com.cerner.jwala.service.resource.impl.ResourceGeneratorType;
 
 /**
  * Contract for a service that generates resource content
@@ -15,6 +16,6 @@ public interface ResourceContentGeneratorService {
      * @param entity an entity that contains data to map to the template e.g. JVM, WebServer etc...
      * @return the content (template + data)
      */
-    <T> String generateContent(final String fileName, final String template, final ResourceGroup resourceGroup, T entity);
+    <T> String generateContent(final String fileName, final String template, final ResourceGroup resourceGroup, T entity, ResourceGeneratorType resourceGeneratorType);
 
 }

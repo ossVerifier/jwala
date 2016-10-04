@@ -218,8 +218,8 @@ public class ResourceServiceImpl implements ResourceService {
     }
 
     @Override
-    public <T> String generateResourceFile(final String fileName, final String template, final ResourceGroup resourceGroup, T selectedValue) {
-        return resourceContentGeneratorService.generateContent(fileName, template, resourceGroup, selectedValue);
+    public <T> String generateResourceFile(final String fileName, final String template, final ResourceGroup resourceGroup, T selectedValue, ResourceGeneratorType resourceGeneratorType) {
+        return resourceContentGeneratorService.generateContent(fileName, template, resourceGroup, selectedValue, resourceGeneratorType);
     }
 
     @Override
@@ -391,7 +391,7 @@ public class ResourceServiceImpl implements ResourceService {
                 return deployFileName;
             }
         };
-        String generatedDeployPath = generateResourceFile(metaData.getTemplateName(), metaData.getDeployPath(), generateResourceGroup(), webServer);
+        String generatedDeployPath = generateResourceFile(metaData.getDeployFileName(), metaData.getDeployPath(), generateResourceGroup(), webServer, ResourceGeneratorType.METADATA);
         return new CreateResourceResponseWrapper(webServerPersistenceService.uploadWebServerConfigTemplate(uploadWebArchiveRequest, generatedDeployPath + "/" + deployFileName, user.getId()));
     }
 
@@ -423,7 +423,7 @@ public class ResourceServiceImpl implements ResourceService {
 
             // Since we're just creating the same template for all the JVMs, we just keep one copy of the created
             // configuration template.
-            String generatedDeployPath = generateResourceFile(metaData.getTemplateName(), metaData.getDeployPath(), generateResourceGroup(), webServer);
+            String generatedDeployPath = generateResourceFile(metaData.getDeployFileName(), metaData.getDeployPath(), generateResourceGroup(), webServer, ResourceGeneratorType.METADATA);
             createdConfigTemplate = webServerPersistenceService.uploadWebServerConfigTemplate(uploadWebServerTemplateRequest, generatedDeployPath + "/" + deployFileName, user.getId());
         }
 
@@ -629,9 +629,8 @@ public class ResourceServiceImpl implements ResourceService {
     }
 
     @Override
-    public String previewResourceContent(String fileName, ResourceIdentifier resourceIdentifier, String content) {
-        // TODO make the selected value object non-null based on the resource identifier
-        return generateResourceFile(fileName, content, generateResourceGroup(), resourceHandler.getSelectedValue(resourceIdentifier));
+    public String previewResourceContent(ResourceIdentifier resourceIdentifier, String content) {
+        return generateResourceFile(resourceIdentifier.resourceName, content, generateResourceGroup(), resourceHandler.getSelectedValue(resourceIdentifier), ResourceGeneratorType.PREVIEW);
     }
 
     @Override
@@ -703,7 +702,7 @@ public class ResourceServiceImpl implements ResourceService {
             final String metaDataPath;
             final ResourceContent resourceContent = getResourceContent(resourceIdentifier);
             String metaDataStr = resourceContent.getMetaData();
-            final String tokenizedMetaData = this.generateResourceFile(fileName, metaDataStr, generateResourceGroup(), null);
+            final String tokenizedMetaData = this.generateResourceFile(fileName, metaDataStr, generateResourceGroup(), null, ResourceGeneratorType.METADATA);
             LOGGER.info("tokenized metadata is : {}", tokenizedMetaData);
             ResourceTemplateMetaData resourceTemplateMetaData = new ObjectMapper().readValue(tokenizedMetaData, ResourceTemplateMetaData.class);
             metaDataPath = resourceTemplateMetaData.getDeployPath();
@@ -849,7 +848,7 @@ public class ResourceServiceImpl implements ResourceService {
         final ResourceContent resourceContent = getResourceContent(resourceIdentifier);
         final String content = resourceContent.getContent();
         final ResourceGroup resourceGroup = generateResourceGroup();
-        String fileContent = this.generateResourceFile(extPropertiesResourceName, content, resourceGroup, null);
+        String fileContent = this.generateResourceFile(extPropertiesResourceName, content, resourceGroup, null, ResourceGeneratorType.TEMPLATE);
         String jvmResourcesNameDir = ApplicationProperties.get("paths.generated.resource.dir") + "/external-properties-download";
 
         createConfigFile(jvmResourcesNameDir + "/", extPropertiesResourceName, fileContent);

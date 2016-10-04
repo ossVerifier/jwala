@@ -11,6 +11,7 @@ import com.cerner.jwala.service.resource.ResourceContentGeneratorService;
 import com.cerner.jwala.service.resource.ResourceHandler;
 import com.cerner.jwala.service.resource.impl.CreateResourceResponseWrapper;
 
+import com.cerner.jwala.service.resource.impl.ResourceGeneratorType;
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -58,7 +59,7 @@ public class WebServerResourceHandler extends ResourceHandler {
                     return metaData.getDeployFileName();
                 }
             };
-            final String generatedDeployPath = resourceContentGeneratorService.generateContent(metaData.getTemplateName(), metaData.getDeployPath(), null, webServer);
+            final String generatedDeployPath = resourceContentGeneratorService.generateContent(metaData.getDeployFileName(), metaData.getDeployPath(), null, webServer, ResourceGeneratorType.METADATA);
             createResourceResponseWrapper = new CreateResourceResponseWrapper(webServerPersistenceService
                     .uploadWebServerConfigTemplate(uploadWebArchiveRequest, generatedDeployPath + "/" + metaData.getDeployFileName(), null));
         } else if (successor != null) {

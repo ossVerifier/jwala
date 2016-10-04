@@ -482,12 +482,12 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
     public Response previewResourceContent(final String resourceName, final ResourceHierarchyParam resourceHierarchyParam, String content) {
         LOGGER.debug("Preview the template for {}", resourceHierarchyParam);
         final ResourceIdentifier resourceIdentifier = new ResourceIdentifier.Builder()
-                .setResourceName("meta data preview")
+                .setResourceName(resourceName)
                 .setGroupName(resourceHierarchyParam.getGroup())
                 .setWebServerName(resourceHierarchyParam.getWebServer())
                 .setJvmName(resourceHierarchyParam.getJvm())
                 .setWebAppName(resourceHierarchyParam.getWebApp()).build();
-        return ResponseBuilder.ok(resourceService.previewResourceContent(resourceName, resourceIdentifier, content));
+        return ResponseBuilder.ok(resourceService.previewResourceContent(resourceIdentifier, content));
     }
 
     @Override

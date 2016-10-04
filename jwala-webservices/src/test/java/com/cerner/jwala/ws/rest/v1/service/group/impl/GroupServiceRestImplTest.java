@@ -29,6 +29,7 @@ import com.cerner.jwala.service.group.impl.GroupJvmControlServiceImpl;
 import com.cerner.jwala.service.group.impl.GroupServiceImpl;
 import com.cerner.jwala.service.jvm.JvmService;
 import com.cerner.jwala.service.resource.ResourceService;
+import com.cerner.jwala.service.resource.impl.ResourceGeneratorType;
 import com.cerner.jwala.service.webserver.WebServerService;
 import com.cerner.jwala.ws.rest.v1.provider.AuthenticatedUser;
 import com.cerner.jwala.ws.rest.v1.provider.NameSearchParameterProvider;
@@ -508,7 +509,7 @@ public class GroupServiceRestImplTest {
         when(mockGroupService.getGroup(anyString())).thenReturn(mockPreviewJvmGroup);
         groupServiceRest.previewGroupJvmResourceTemplate("test-group-name", fileName, templateContent);
 
-        verify(mockResourceService).generateResourceFile(eq(fileName), eq(templateContent), eq(resourceGroup), eq(mockPreviewJvm));
+        verify(mockResourceService).generateResourceFile(eq(fileName), eq(templateContent), eq(resourceGroup), eq(mockPreviewJvm), eq(ResourceGeneratorType.PREVIEW));
     }
 
     @Test
@@ -526,7 +527,7 @@ public class GroupServiceRestImplTest {
         final String fileName = "myFile";
         when(mockResourceService.generateResourceGroup()).thenReturn(resourceGroup);
         when(mockGroupService.getGroup(anyString())).thenReturn(mockPreviewJvmGroup);
-        when(mockResourceService.generateResourceFile(fileName, templateContent, resourceGroup, mockPreviewJvm)).thenThrow(new RuntimeException("Fail"));
+        when(mockResourceService.generateResourceFile(fileName, templateContent, resourceGroup, mockPreviewJvm, ResourceGeneratorType.PREVIEW)).thenThrow(new RuntimeException("Fail"));
 
         Response response = groupServiceRest.previewGroupJvmResourceTemplate("test-group-name", fileName, templateContent);
         assertEquals(500, response.getStatus());

@@ -41,6 +41,7 @@ import com.cerner.jwala.service.jvm.JvmControlService;
 import com.cerner.jwala.service.jvm.JvmService;
 import com.cerner.jwala.service.jvm.exception.JvmServiceException;
 import com.cerner.jwala.service.resource.ResourceService;
+import com.cerner.jwala.service.resource.impl.ResourceGeneratorType;
 import com.cerner.jwala.service.webserver.component.ClientFactoryHelper;
 import groovy.text.SimpleTemplateEngine;
 import org.apache.commons.io.FileUtils;
@@ -284,7 +285,7 @@ public class JvmServiceImpl implements JvmService {
 
         final String templateContent = jvmPersistenceService.getJvmTemplate(templateName, jvm.getId());
         if (!templateContent.isEmpty()) {
-            return resourceService.generateResourceFile(templateName, templateContent, resourceService.generateResourceGroup(), jvmPersistenceService.findJvmByExactName(aJvmName));
+            return resourceService.generateResourceFile(templateName, templateContent, resourceService.generateResourceGroup(), jvmPersistenceService.findJvmByExactName(aJvmName), ResourceGeneratorType.TEMPLATE);
         } else {
             throw new BadRequestException(AemFaultType.JVM_TEMPLATE_NOT_FOUND, "Failed to find the template in the database or on the file system");
         }
@@ -652,7 +653,7 @@ public class JvmServiceImpl implements JvmService {
             }
 
             String metaDataStr = getResourceTemplateMetaData(jvmName, fileName);
-            final String tokenizedMetaData = resourceService.generateResourceFile(fileName,metaDataStr, resourceService.generateResourceGroup(), jvm);
+            final String tokenizedMetaData = resourceService.generateResourceFile(fileName, metaDataStr, resourceService.generateResourceGroup(), jvm, ResourceGeneratorType.METADATA);
             LOGGER.info("tokenized metadata is : {}", tokenizedMetaData);
             ResourceTemplateMetaData resourceTemplateMetaData = new ObjectMapper().readValue(tokenizedMetaData, ResourceTemplateMetaData.class);
             String resourceSourceCopy;
@@ -758,7 +759,7 @@ public class JvmServiceImpl implements JvmService {
     @Override
     @Transactional
     public String previewResourceTemplate(String fileName, String jvmName, String groupName, String template) {
-        return resourceService.generateResourceFile(fileName, template, resourceService.generateResourceGroup(), jvmPersistenceService.findJvm(jvmName, groupName));
+        return resourceService.generateResourceFile(fileName, template, resourceService.generateResourceGroup(), jvmPersistenceService.findJvm(jvmName, groupName), ResourceGeneratorType.TEMPLATE);
     }
 
     @Override
@@ -774,7 +775,7 @@ public class JvmServiceImpl implements JvmService {
                                       final boolean tokensReplaced) {
         final String template = jvmPersistenceService.getResourceTemplate(jvmName, resourceTemplateName);
         if (tokensReplaced) {
-            return resourceService.generateResourceFile(resourceTemplateName, template, resourceService.generateResourceGroup(), jvmPersistenceService.findJvmByExactName(jvmName));
+            return resourceService.generateResourceFile(resourceTemplateName, template, resourceService.generateResourceGroup(), jvmPersistenceService.findJvmByExactName(jvmName), ResourceGeneratorType.TEMPLATE);
         }
         return template;
     }
@@ -800,7 +801,7 @@ public class JvmServiceImpl implements JvmService {
     @Transactional
     public String generateInvokeBat(String jvmName) {
         final String invokeBatTemplateContent = fileManager.getResourceTypeTemplate("InvokeBat");
-        return resourceService.generateResourceFile("invoke.bat", invokeBatTemplateContent, resourceService.generateResourceGroup(), jvmPersistenceService.findJvmByExactName(jvmName));
+        return resourceService.generateResourceFile("invoke.bat", invokeBatTemplateContent, resourceService.generateResourceGroup(), jvmPersistenceService.findJvmByExactName(jvmName), ResourceGeneratorType.TEMPLATE);
     }
 
     @Override
@@ -880,7 +881,7 @@ public class JvmServiceImpl implements JvmService {
         for (final JpaJvmConfigTemplate jpaJvmConfigTemplate : jpaJvmConfigTemplateList) {
             final ResourceGroup resourceGroup = resourceService.generateResourceGroup();
             final Jvm jvm = jvmPersistenceService.findJvmByExactName(jvmName);
-            final String resourceTemplateMetaDataString = resourceService.generateResourceFile(jpaJvmConfigTemplate.getTemplateName(), jpaJvmConfigTemplate.getMetaData(), resourceGroup, jvm);
+            final String resourceTemplateMetaDataString = resourceService.generateResourceFile(jpaJvmConfigTemplate.getTemplateName(), jpaJvmConfigTemplate.getMetaData(), resourceGroup, jvm, ResourceGeneratorType.METADATA);
             final ResourceTemplateMetaData resourceTemplateMetaData =
                     mapper.readValue(resourceTemplateMetaDataString, ResourceTemplateMetaData.class);
             final String deployFileName = resourceTemplateMetaData.getDeployFileName();
@@ -895,7 +896,7 @@ public class JvmServiceImpl implements JvmService {
                         resourceTemplateMetaData.getDeployPath() + "/" + deployFileName);
             } else {
                 final String generatedResourceStr = resourceService.generateResourceFile(jpaJvmConfigTemplate.getTemplateName(), jpaJvmConfigTemplate.getTemplateContent(),
-                        resourceGroup, jvm);
+                        resourceGroup, jvm, ResourceGeneratorType.TEMPLATE);
                 generatedFiles.put(createConfigFile(ApplicationProperties.get("paths.generated.resource.dir") + "/" + jvmName, deployFileName, generatedResourceStr),
                         resourceTemplateMetaData.getDeployPath() + "/" + deployFileName);
             }

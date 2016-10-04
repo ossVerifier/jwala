@@ -12,6 +12,7 @@ import com.cerner.jwala.persistence.service.WebServerPersistenceService;
 import com.cerner.jwala.service.resource.ResourceContentGeneratorService;
 import com.cerner.jwala.service.resource.ResourceHandler;
 import com.cerner.jwala.service.resource.impl.CreateResourceResponseWrapper;
+import com.cerner.jwala.service.resource.impl.ResourceGeneratorType;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.HashMap;
@@ -78,7 +79,7 @@ public class GroupLevelWebServerResourceHandler extends ResourceHandler {
                 // Since we're just creating the same template for all the JVMs, we just keep one copy of the created
                 // configuration template. Note that ResourceGroup is null since we only need the web server paths and
                 // application properties for mapping.
-                final String generatedDeployPath = resourceContentGeneratorService.generateContent(metaData.getTemplateName(), metaData.getDeployPath(), null, webServer);
+                final String generatedDeployPath = resourceContentGeneratorService.generateContent(metaData.getTemplateName(), metaData.getDeployPath(), null, webServer, ResourceGeneratorType.METADATA);
                 createdConfigTemplate = webServerPersistenceService.uploadWebServerConfigTemplate(uploadWebServerTemplateRequest,
                         generatedDeployPath + "/" + metaData.getDeployFileName(), null);
             }

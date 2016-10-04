@@ -88,7 +88,7 @@ class ResourceFileGenerator {
         try {
             return engine.createTemplate(templateText).make(binding.withDefault { '' })
         } catch (final Exception e) {
-            final String messageHistory = "Failed to bind data and properties to the template: " + fileName.trim();
+            final String messageHistory = "Failed to bind data and properties to : " + fileName.trim();
             final String message = messageHistory + " for " + entityInfo + ". Cause(s) of the failure is/are: " + e.getMessage()
             LOGGER.error(message, e)
             throw new ResourceFileGeneratorException(message, e)

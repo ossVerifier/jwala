@@ -37,10 +37,10 @@ import com.cerner.jwala.service.HistoryService;
 import com.cerner.jwala.service.MessagingService;
 import com.cerner.jwala.service.app.ApplicationService;
 import com.cerner.jwala.service.app.PrivateApplicationService;
-
 import com.cerner.jwala.service.exception.ResourceServiceException;
-import com.cerner.jwala.service.resource.impl.ResourceContentGeneratorServiceImpl;
 import com.cerner.jwala.service.resource.impl.CreateResourceResponseWrapper;
+import com.cerner.jwala.service.resource.impl.ResourceContentGeneratorServiceImpl;
+import com.cerner.jwala.service.resource.impl.ResourceGeneratorType;
 import com.cerner.jwala.service.resource.impl.ResourceServiceImpl;
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.groovy.runtime.ResourceGroovyMethods;
@@ -371,7 +371,7 @@ public class ResourceServiceImplTest {
                     this.getClass().getClassLoader().getResource("vars.properties").getPath().replace("vars.properties", ""));
 
             final ResourceGroup resourceGroup = resourceService.generateResourceGroup();
-            String output = resourceService.generateResourceFile(ResourceGroovyMethods.getText(httpdTemplate), ResourceGroovyMethods.getText(httpdTemplate), resourceGroup, webServer);
+            String output = resourceService.generateResourceFile(ResourceGroovyMethods.getText(httpdTemplate), ResourceGroovyMethods.getText(httpdTemplate), resourceGroup, webServer, ResourceGeneratorType.TEMPLATE);
 
             String expected = ResourceGroovyMethods.getText(new File("../jwala-common/src/test/resources/HttpdConfTemplate-EXPECTED.conf"));
             expected = expected.replaceAll("\\r", "").replaceAll("\\n", "");
@@ -500,7 +500,9 @@ public class ResourceServiceImplTest {
 
     @Test
     public void testPreviewResourceContent() {
-        String result = resourceService.previewResourceContent(null, null, "key=value");
+        ResourceIdentifier.Builder idBuilder = new ResourceIdentifier.Builder();
+        ResourceIdentifier resourceId = idBuilder.setResourceName("external.properties").build();
+        String result = resourceService.previewResourceContent(resourceId, "key=value");
         assertEquals("key=value", result);
     }
 
