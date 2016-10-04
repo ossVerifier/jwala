@@ -57,6 +57,7 @@ public class WebServerCrudServiceImpl extends AbstractCrudServiceImpl<JpaWebServ
 
             return webServerFrom(create(jpaWebServer));
         } catch (final EntityExistsException eee) {
+            LOGGER.error("Error creating web server {}", webServer, eee);
             throw new EntityExistsException("Web server with name already exists: " + webServer.getName(),
                     eee);
         }
@@ -80,6 +81,7 @@ public class WebServerCrudServiceImpl extends AbstractCrudServiceImpl<JpaWebServ
 
             return webServerFrom(update(jpaWebServer));
         } catch (final EntityExistsException eee) {
+            LOGGER.error("Error updating web server {}", webServer, eee);
             throw new EntityExistsException("Web Server Name already exists", eee);
         }
     }
@@ -225,6 +227,7 @@ public class WebServerCrudServiceImpl extends AbstractCrudServiceImpl<JpaWebServ
         try {
             return (String) q.getSingleResult();
         } catch (NoResultException | NonUniqueResultException e) {
+            LOGGER.error("Error getting resource template {} for web server {}", resourceTemplateName, webServerName, e);
             throw new NonRetrievableResourceTemplateContentException(webServerName, resourceTemplateName, e);
         }
     }
@@ -237,6 +240,7 @@ public class WebServerCrudServiceImpl extends AbstractCrudServiceImpl<JpaWebServ
         try {
             return (String) q.getSingleResult();
         } catch (NoResultException | NonUniqueResultException e) {
+            LOGGER.error("Error getting resource meta data {} for web server {}", resourceTemplateName, webServerName, e);
             throw new NonRetrievableResourceTemplateContentException(webServerName, resourceTemplateName, e);
         }
     }
@@ -289,6 +293,7 @@ public class WebServerCrudServiceImpl extends AbstractCrudServiceImpl<JpaWebServ
             entityManager.persist(jpaConfigTemplate);
             entityManager.flush();
         } else {
+            LOGGER.error("Error uploading web server template for request {}", request);
             throw new BadRequestException(AemFaultType.WEB_SERVER_HTTPD_CONF_TEMPLATE_NOT_FOUND,
                     "Only expecting one template to be returned for web server [" + webServer.getName() + "] but returned " + templates.size() + " templates");
         }
@@ -307,10 +312,12 @@ public class WebServerCrudServiceImpl extends AbstractCrudServiceImpl<JpaWebServ
         try {
             numEntities = q.executeUpdate();
         } catch (RuntimeException re) {
+            LOGGER.error("Error updating resource template {} for web server {}", resourceTemplateName, wsName, re);
             throw new ResourceTemplateUpdateException(wsName, resourceTemplateName, re);
         }
 
         if (numEntities == 0) {
+            LOGGER.error("Error updating resource template numEntities=0 {} for web server {}", resourceTemplateName, wsName);
             throw new ResourceTemplateUpdateException(wsName, resourceTemplateName);
         }
     }
@@ -326,10 +333,12 @@ public class WebServerCrudServiceImpl extends AbstractCrudServiceImpl<JpaWebServ
         try {
             numEntities = q.executeUpdate();
         } catch (RuntimeException re) {
+            LOGGER.error("Error updating resource meta data {} for web server {}", resourceName, webServerName, re);
             throw new ResourceTemplateMetaDataUpdateException(webServerName, resourceName, re);
         }
 
         if (numEntities == 0) {
+            LOGGER.error("Error updating resource meta data numEntities=0 {} for web server {}", resourceName, webServerName);
             throw new ResourceTemplateMetaDataUpdateException(webServerName, resourceName);
         }
     }
@@ -443,7 +452,7 @@ public class WebServerCrudServiceImpl extends AbstractCrudServiceImpl<JpaWebServ
         try {
             jpaWebServer = (JpaWebServer) q.getSingleResult();
         } catch (NoResultException e) {
-            LOGGER.warn("error with getting data for webserverName: {} under group: {}, error: {}", webServerName, groupName, e);
+            LOGGER.error("error with getting data for webserverName: {} under group: {}, error: {}", webServerName, groupName, e);
         }
         return jpaWebServer;
     }

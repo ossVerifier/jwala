@@ -50,6 +50,7 @@ public class ApplicationCrudServiceImpl extends AbstractCrudServiceImpl<JpaAppli
         try {
             return create(jpaApp);
         } catch (final EntityExistsException eee) {
+            LOGGER.error("Error creating app with request {} in group {}", createApplicationRequest, jpaGroup, eee);
             throw new EntityExistsException("App already exists: " + createApplicationRequest.getName(),
                     eee);
         }
@@ -76,6 +77,7 @@ public class ApplicationCrudServiceImpl extends AbstractCrudServiceImpl<JpaAppli
         try {
             jpaJvm = (JpaJvm) jvmQuery.getSingleResult();
         } catch (NoResultException | NonUniqueResultException e) {
+            LOGGER.error("Error getting resource template {} for app {} and JVM {} in group {}", resourceTemplateName, appName, jvmName, groupName, e);
             throw new NonRetrievableResourceTemplateContentException(appName, resourceTemplateName, e);
         }
         return getResourceTemplate(appName, resourceTemplateName, jpaJvm);
@@ -90,6 +92,7 @@ public class ApplicationCrudServiceImpl extends AbstractCrudServiceImpl<JpaAppli
         try {
             return (String) q.getSingleResult();
         } catch (NoResultException | NonUniqueResultException e) {
+            LOGGER.error("Error getting resource template {} for app {} and JVM {}", resourceTemplateName, appName, appJvm, e);
             throw new NonRetrievableResourceTemplateContentException(appName, resourceTemplateName, e);
         }
     }
@@ -103,6 +106,7 @@ public class ApplicationCrudServiceImpl extends AbstractCrudServiceImpl<JpaAppli
         try {
             jpaJvm = (JpaJvm) jvmQuery.getSingleResult();
         } catch (NoResultException | NonUniqueResultException e) {
+            LOGGER.error("Error getting meta data {} for app {} and JVM {} in group {}", resourceTemplateName, appName, jvmName, groupName, e);
             throw new NonRetrievableResourceTemplateContentException(appName, resourceTemplateName, e);
         }
 
@@ -113,6 +117,7 @@ public class ApplicationCrudServiceImpl extends AbstractCrudServiceImpl<JpaAppli
         try {
             return (String) q.getSingleResult();
         } catch (NoResultException | NonUniqueResultException e) {
+            LOGGER.error("Error getting meta data for template {} for app {} and JVM {} in group {}", resourceTemplateName, appName, jvmName, groupName, e);
             throw new NonRetrievableResourceTemplateContentException(appName, resourceTemplateName, e);
         }
 
@@ -133,10 +138,12 @@ public class ApplicationCrudServiceImpl extends AbstractCrudServiceImpl<JpaAppli
             try {
                 return update(jpaApp);
             } catch (EntityExistsException eee) {
+                LOGGER.error("Error updating application {} in group {}", jpaApp, jpaGroup, eee);
                 throw new EntityExistsException("App already exists: " + updateApplicationRequest.getNewName(),
                         eee);
             }
         } else {
+            LOGGER.error("Application cannot be found {} attempting to update application", updateApplicationRequest);
             throw new BadRequestException(AemFaultType.INVALID_APPLICATION_NAME,
                     "Application cannot be found: " + appId.getId());
         }
@@ -149,6 +156,7 @@ public class ApplicationCrudServiceImpl extends AbstractCrudServiceImpl<JpaAppli
         if (jpaApp != null) {
             remove(jpaApp);
         } else {
+            LOGGER.error("Application cannot be found {} attempting to delete app", appId);
             throw new EntityExistsException("Application cannot be found: " + appId.getId());
         }
     }
@@ -167,10 +175,12 @@ public class ApplicationCrudServiceImpl extends AbstractCrudServiceImpl<JpaAppli
         try {
             numEntities = q.executeUpdate();
         } catch (RuntimeException re) {
+            LOGGER.error("Error updating application resource template {} for app {} and JVM {}", resourceTemplateName, appName, jvm, re);
             throw new ResourceTemplateUpdateException(appName, resourceTemplateName, re);
         }
 
         if (numEntities == 0) {
+            LOGGER.error("Error updating application numEntities=0 resource template {} for app {} and JVM {}", resourceTemplateName, appName, jvm);
             throw new ResourceTemplateUpdateException(appName, resourceTemplateName);
         }
     }
@@ -188,10 +198,12 @@ public class ApplicationCrudServiceImpl extends AbstractCrudServiceImpl<JpaAppli
         try {
             numEntities = q.executeUpdate();
         } catch (RuntimeException re) {
+            LOGGER.error("Error updating meta data for {} for app {} and JVM {}", resourceName, webAppName, jpaJvm, re);
             throw new ResourceTemplateMetaDataUpdateException(webAppName, resourceName, re);
         }
 
         if (numEntities == 0) {
+            LOGGER.error("Error updating meta data numEntities=0 for {} for app {} and JVM {}", resourceName, webAppName, jpaJvm);
             throw new ResourceTemplateMetaDataUpdateException(webAppName, resourceName);
         }
 
@@ -246,6 +258,7 @@ public class ApplicationCrudServiceImpl extends AbstractCrudServiceImpl<JpaAppli
             entityManager.persist(jpaConfigTemplate);
             entityManager.flush();
         } else {
+            LOGGER.error("Error uploading template for app request {} and JVM {}", uploadAppTemplateRequest, jpaJvm);
             throw new BadRequestException(AemFaultType.APPLICATION_NOT_FOUND,
                     "Only expecting one template to be returned for application [" + application.getName() + "] but returned " + templates.size() + " templates");
         }
@@ -257,6 +270,7 @@ public class ApplicationCrudServiceImpl extends AbstractCrudServiceImpl<JpaAppli
     public Application getApplication(Identifier<Application> aApplicationId) throws NotFoundException {
         JpaApplication jpaApp = entityManager.find(JpaApplication.class, aApplicationId.getId());
         if (jpaApp == null) {
+            LOGGER.error("No application found for id {}", aApplicationId);
             throw new NotFoundException(AemFaultType.APPLICATION_NOT_FOUND,
                     "Application not found: " + aApplicationId);
         }
@@ -331,7 +345,7 @@ public class ApplicationCrudServiceImpl extends AbstractCrudServiceImpl<JpaAppli
         try {
             application = JpaAppBuilder.appFrom((JpaApplication) q.getSingleResult());
         } catch (NoResultException e) {
-            LOGGER.warn("error getting data for appName: {} from group: {}, error: {}", appName, groupName, e);
+            LOGGER.error("error getting data for appName: {} from group: {}, error: {}", appName, groupName, e);
         }
         return application;
     }

@@ -1,9 +1,8 @@
 package com.cerner.jwala.persistence.jpa.domain;
 
-import javax.persistence.*;
-
 import com.cerner.jwala.common.domain.model.group.GroupState;
 
+import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -137,5 +136,18 @@ public class JpaGroup extends AbstractEntity<JpaGroup> {
     @Override
     public int hashCode() {
         return id != null ? id.hashCode() : 0;
+    }
+
+    @Override
+    public String toString() {
+        return "JpaGroup{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", jvms=" + jvms +
+                ", stateName='" + stateName + '\'' +
+                ", stateUpdated=" + stateUpdated +
+                ", webServers=" + webServers +
+                ", history=" + history +
+                '}';
     }
 }

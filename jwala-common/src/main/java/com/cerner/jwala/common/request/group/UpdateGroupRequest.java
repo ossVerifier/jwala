@@ -1,9 +1,5 @@
 package com.cerner.jwala.common.request.group;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ToStringBuilder;
-
 import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.exception.BadRequestException;
@@ -11,6 +7,8 @@ import com.cerner.jwala.common.request.Request;
 import com.cerner.jwala.common.rule.MultipleRules;
 import com.cerner.jwala.common.rule.group.GroupIdRule;
 import com.cerner.jwala.common.rule.group.GroupNameRule;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import java.io.Serializable;
 
@@ -69,9 +67,9 @@ public class UpdateGroupRequest implements Serializable, Request {
 
     @Override
     public String toString() {
-        return new ToStringBuilder(this)
-                .append("id", id)
-                .append("newName", newName)
-                .toString();
+        return "UpdateGroupRequest{" +
+                "id=" + id +
+                ", newName='" + newName + '\'' +
+                '}';
     }
 }

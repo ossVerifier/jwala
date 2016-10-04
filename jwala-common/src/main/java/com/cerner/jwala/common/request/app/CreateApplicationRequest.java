@@ -1,7 +1,5 @@
 package com.cerner.jwala.common.request.app;
 
-import java.io.Serializable;
-
 import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.request.Request;
@@ -9,6 +7,8 @@ import com.cerner.jwala.common.rule.MultipleRules;
 import com.cerner.jwala.common.rule.app.ApplicationContextRule;
 import com.cerner.jwala.common.rule.app.ApplicationNameRule;
 import com.cerner.jwala.common.rule.group.GroupIdRule;
+
+import java.io.Serializable;
 
 public class CreateApplicationRequest implements Serializable, Request {
 
@@ -63,5 +63,17 @@ public class CreateApplicationRequest implements Serializable, Request {
 
     public boolean isUnpackWar() {
         return unpackWar;
+    }
+
+    @Override
+    public String toString() {
+        return "CreateApplicationRequest{" +
+                "name='" + name + '\'' +
+                ", webAppContext='" + webAppContext + '\'' +
+                ", groupId=" + groupId +
+                ", unpackWar=" + unpackWar +
+                ", secure=" + secure +
+                ", loadBalanceAcrossServers=" + loadBalanceAcrossServers +
+                '}';
     }
 }

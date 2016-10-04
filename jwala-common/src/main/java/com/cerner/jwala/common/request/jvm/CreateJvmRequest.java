@@ -1,20 +1,14 @@
 package com.cerner.jwala.common.request.jvm;
 
-import java.io.Serializable;
-
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ToStringBuilder;
-
 import com.cerner.jwala.common.domain.model.fault.AemFaultType;
 import com.cerner.jwala.common.domain.model.path.Path;
 import com.cerner.jwala.common.request.Request;
-import com.cerner.jwala.common.rule.HostNameRule;
-import com.cerner.jwala.common.rule.MultipleRules;
-import com.cerner.jwala.common.rule.PortNumberRule;
-import com.cerner.jwala.common.rule.ShutdownPortNumberRule;
-import com.cerner.jwala.common.rule.StatusPathRule;
+import com.cerner.jwala.common.rule.*;
 import com.cerner.jwala.common.rule.jvm.JvmNameRule;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+
+import java.io.Serializable;
 
 public class CreateJvmRequest implements Serializable, Request {
 
@@ -163,17 +157,18 @@ public class CreateJvmRequest implements Serializable, Request {
 
     @Override
     public String toString() {
-        return new ToStringBuilder(this)
-                .append("jvmName", jvmName)
-                .append("hostName", hostName)
-                .append("statusPath", statusPath)
-                .append("httpPort", httpPort)
-                .append("httpsPort", httpsPort)
-                .append("redirectPort", redirectPort)
-                .append("shutdownPort", shutdownPort)
-                .append("ajpPort", ajpPort)
-                .append("systemProperties", systemsProperties)
-                .append("userName",userName)
-                .toString();
+        return "CreateJvmRequest{" +
+                "jvmName='" + jvmName + '\'' +
+                ", hostName='" + hostName + '\'' +
+                ", httpPort=" + httpPort +
+                ", httpsPort=" + httpsPort +
+                ", redirectPort=" + redirectPort +
+                ", shutdownPort=" + shutdownPort +
+                ", ajpPort=" + ajpPort +
+                ", statusPath=" + statusPath +
+                ", systemsProperties='" + systemsProperties + '\'' +
+                ", userName='" + userName + '\'' +
+                ", encryptedPassword='" + encryptedPassword + '\'' +
+                '}';
     }
 }

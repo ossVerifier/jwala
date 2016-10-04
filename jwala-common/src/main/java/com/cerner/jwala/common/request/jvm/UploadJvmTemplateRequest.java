@@ -55,4 +55,14 @@ public abstract class UploadJvmTemplateRequest implements Serializable, Request 
     public String getMetaData() {
         return metaData;
     }
+
+    @Override
+    public String toString() {
+        return "UploadJvmTemplateRequest{" +
+                "jvm=" + jvm +
+                ", fileName='" + fileName + '\'' +
+                ", templateContent='" + templateContent + '\'' +
+                ", metaData='" + metaData + '\'' +
+                '}';
+    }
 }

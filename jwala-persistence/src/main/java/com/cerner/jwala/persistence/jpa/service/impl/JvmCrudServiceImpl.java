@@ -49,6 +49,7 @@ public class JvmCrudServiceImpl extends AbstractCrudServiceImpl<JpaJvm> implemen
 
             return create(jpaJvm);
         } catch (final EntityExistsException eee) {
+            LOGGER.error("Error creating JVM for request {}", createJvmRequest, eee);
             throw new EntityExistsException("JVM with name already exists: " + createJvmRequest.getJvmName(),
                     eee);
         }
@@ -75,6 +76,7 @@ public class JvmCrudServiceImpl extends AbstractCrudServiceImpl<JpaJvm> implemen
 
             return update(jpaJvm);
         } catch (final EntityExistsException eee) {
+            LOGGER.error("Error updating JVM for request {}", updateJvmRequest, eee);
             throw new EntityExistsException("JVM with name already exists: " + updateJvmRequest.getNewJvmName(), eee);
         }
     }
@@ -84,6 +86,7 @@ public class JvmCrudServiceImpl extends AbstractCrudServiceImpl<JpaJvm> implemen
         final JpaJvm jvm = findById(aJvmId.getId());
 
         if (jvm == null) {
+            LOGGER.error("Error getting JVM for ID {}", aJvmId);
             throw new NotFoundException(AemFaultType.JVM_NOT_FOUND,
                     "Jvm not found: " + aJvmId);
         }
@@ -134,6 +137,7 @@ public class JvmCrudServiceImpl extends AbstractCrudServiceImpl<JpaJvm> implemen
             entityManager.persist(jpaConfigTemplate);
             entityManager.flush();
         } else {
+            LOGGER.error("Error uploading JVM template for request {}", uploadJvmTemplateRequest);
             throw new BadRequestException(AemFaultType.JVM_TEMPLATE_NOT_FOUND,
                     "Only expecting one template to be returned for JVM [" + jvm.getJvmName() + "] but returned " + templates.size() + " templates");
         }
@@ -153,6 +157,7 @@ public class JvmCrudServiceImpl extends AbstractCrudServiceImpl<JpaJvm> implemen
         } else if (templates.isEmpty()) {
             return "";
         } else {
+            LOGGER.error("Error getting JVM template {} for JVM ID {}", templateName, jvmId);
             throw new BadRequestException(AemFaultType.JVM_TEMPLATE_NOT_FOUND,
                     "Only expecting one " + templateName + " template to be returned for JVM [" + jpaJvm.getName() + "] but returned " + templates.size() + " templates");
         }
@@ -173,6 +178,7 @@ public class JvmCrudServiceImpl extends AbstractCrudServiceImpl<JpaJvm> implemen
         try {
             return (String) q.getSingleResult();
         } catch (RuntimeException re) {
+            LOGGER.error("Error getting resource template {} for JVM {}", resourceTemplateName, jvmName, re);
             throw new NonRetrievableResourceTemplateContentException(jvmName, resourceTemplateName, re);
         }
     }
@@ -185,6 +191,7 @@ public class JvmCrudServiceImpl extends AbstractCrudServiceImpl<JpaJvm> implemen
         try {
             return (String) q.getSingleResult();
         } catch (RuntimeException re) {
+            LOGGER.error("Error getting resource meta data {} for JVM {}", fileName, jvmName, re);
             throw new NonRetrievableResourceTemplateContentException(jvmName, fileName, re);
         }
     }
@@ -201,10 +208,12 @@ public class JvmCrudServiceImpl extends AbstractCrudServiceImpl<JpaJvm> implemen
         try {
             numEntities = q.executeUpdate();
         } catch (RuntimeException re) {
+            LOGGER.error("Error updating resource template {} for JVM {}", resourceTemplateName, jvmName, re);
             throw new ResourceTemplateUpdateException(jvmName, resourceTemplateName, re);
         }
 
         if (numEntities == 0) {
+            LOGGER.error("Error updating resource template numEntities=0 {} for JVM {}", resourceTemplateName, jvmName);
             throw new ResourceTemplateUpdateException(jvmName, resourceTemplateName);
         }
     }
@@ -221,10 +230,12 @@ public class JvmCrudServiceImpl extends AbstractCrudServiceImpl<JpaJvm> implemen
         try {
             numEntities = q.executeUpdate();
         } catch (RuntimeException re) {
+            LOGGER.error("Error updating resource meta data {} for JVM {}", resourceTemplateName, jvmName, re);
             throw new ResourceTemplateMetaDataUpdateException(jvmName, resourceTemplateName, re);
         }
 
         if (numEntities == 0) {
+            LOGGER.error("Error updating resource meta data {} for JVM {}", resourceTemplateName, jvmName);
             throw new ResourceTemplateMetaDataUpdateException(jvmName, resourceTemplateName);
         }
     }
@@ -244,7 +255,7 @@ public class JvmCrudServiceImpl extends AbstractCrudServiceImpl<JpaJvm> implemen
             JpaJvm jpaJvm = (JpaJvm) q.getSingleResult();
             jvm = new JvmBuilder(jpaJvm).build();
         } catch (NoResultException e) {
-            LOGGER.warn("error with getting result for jvmName: {} and groupName {}, error: {}", jvmName, groupName, e);
+            LOGGER.error("error with getting result for jvmName: {} and groupName {}, error: {}", jvmName, groupName, e);
         }
         return jvm;
     }

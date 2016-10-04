@@ -1,16 +1,16 @@
 package com.cerner.jwala.common.domain.model.webserver;
 
-import java.io.Serializable;
-import java.net.URI;
-import java.util.Collection;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
 import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.path.FileSystemPath;
 import com.cerner.jwala.common.domain.model.path.Path;
 import com.cerner.jwala.common.domain.model.uri.UriBuilder;
+
+import java.io.Serializable;
+import java.net.URI;
+import java.util.Collection;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class WebServer implements Serializable {
 

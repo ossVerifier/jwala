@@ -69,4 +69,16 @@ public class UploadAppTemplateRequest implements Serializable, Request {
     public String getMedataData() {
         return medataData;
     }
+
+    @Override
+    public String toString() {
+        return "UploadAppTemplateRequest{" +
+                "application=" + application +
+                ", fileName='" + fileName + '\'' +
+                ", jvmName='" + jvmName + '\'' +
+                ", templateContent='" + templateContent + '\'' +
+                ", confFileName='" + confFileName + '\'' +
+                ", medataData='" + medataData + '\'' +
+                '}';
+    }
 }

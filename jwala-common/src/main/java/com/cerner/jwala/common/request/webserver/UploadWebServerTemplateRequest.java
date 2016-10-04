@@ -56,4 +56,14 @@ public abstract class UploadWebServerTemplateRequest implements Serializable, Re
     public String getMetaData() {
         return metaData;
     }
+
+    @Override
+    public String toString() {
+        return "UploadWebServerTemplateRequest{" +
+                "webServer=" + webServer +
+                ", fileName='" + fileName + '\'' +
+                ", templateContent='" + templateContent + '\'' +
+                ", metaData='" + metaData + '\'' +
+                '}';
+    }
 }

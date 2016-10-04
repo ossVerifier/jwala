@@ -171,4 +171,20 @@ public class JpaApplication extends AbstractEntity<JpaApplication> {
     public void setUnpackWar(boolean unpackWar) {
         this.unpackWar = unpackWar;
     }
+
+    @Override
+    public String toString() {
+        return "JpaApplication{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", group=" + group +
+                ", webAppContext='" + webAppContext + '\'' +
+                ", warPath='" + warPath + '\'' +
+                ", documentRoot='" + documentRoot + '\'' +
+                ", secure=" + secure +
+                ", loadBalanceAcrossServers=" + loadBalanceAcrossServers +
+                ", unpackWar=" + unpackWar +
+                ", warName='" + warName + '\'' +
+                '}';
+    }
 }

@@ -24,6 +24,8 @@ import com.cerner.jwala.persistence.jpa.service.exception.NonRetrievableResource
 import com.cerner.jwala.persistence.jpa.service.exception.ResourceTemplateMetaDataUpdateException;
 import com.cerner.jwala.persistence.jpa.service.exception.ResourceTemplateUpdateException;
 import org.joda.time.DateTime;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.persistence.EntityExistsException;
 import javax.persistence.Query;
@@ -31,6 +33,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class GroupCrudServiceImpl extends AbstractCrudServiceImpl<JpaGroup> implements GroupCrudService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(GroupCrudServiceImpl.class);
 
     public GroupCrudServiceImpl() {
     }
@@ -43,6 +47,7 @@ public class GroupCrudServiceImpl extends AbstractCrudServiceImpl<JpaGroup> impl
         try {
             return create(jpaGroup);
         } catch (final EntityExistsException eee) {
+            LOGGER.error("Error creating group {}", createGroupRequest, eee);
             throw new EntityExistsException("Group Name already exists: " + createGroupRequest.getGroupName(),
                     eee);
         }
@@ -58,6 +63,7 @@ public class GroupCrudServiceImpl extends AbstractCrudServiceImpl<JpaGroup> impl
         try {
             update(jpaGroup);
         } catch (final EntityExistsException eee) {
+            LOGGER.error("Error updating group {}", updateGroupRequest, eee);
             throw new EntityExistsException("Group Name already exists: " + updateGroupRequest.getNewName(),
                     eee);
         }
@@ -75,6 +81,7 @@ public class GroupCrudServiceImpl extends AbstractCrudServiceImpl<JpaGroup> impl
         query.setParameter("groupName", name);
         List<JpaGroup> jpaGroups = query.getResultList();
         if (jpaGroups == null || jpaGroups.size() < 1) {
+            LOGGER.error("Error getting the group {}", name);
             throw new NotFoundException(AemFaultType.GROUP_NOT_FOUND, "Group not found: " + name);
         }
         return jpaGroups.get(0);
@@ -98,7 +105,7 @@ public class GroupCrudServiceImpl extends AbstractCrudServiceImpl<JpaGroup> impl
     @Override
     public void removeGroup(final Identifier<Group> aGroupId) {
         final JpaGroup group = getGroup(aGroupId);
-            remove(group);
+        remove(group);
     }
 
     @Override
@@ -232,10 +239,12 @@ public class GroupCrudServiceImpl extends AbstractCrudServiceImpl<JpaGroup> impl
         try {
             numEntities = q.executeUpdate();
         } catch (RuntimeException re) {
+            LOGGER.error("Error update the group app resource template {} for {} {}", resourceTemplateName, groupName, appName, re);
             throw new ResourceTemplateUpdateException(groupName, resourceTemplateName, re);
         }
 
         if (numEntities == 0) {
+            LOGGER.error("Error updating group app template: numEntities=0 {} {} {}", resourceTemplateName, groupName, appName);
             throw new ResourceTemplateUpdateException(groupName, resourceTemplateName);
         }
     }
@@ -253,10 +262,12 @@ public class GroupCrudServiceImpl extends AbstractCrudServiceImpl<JpaGroup> impl
         try {
             numEntities = q.executeUpdate();
         } catch (RuntimeException re) {
+            LOGGER.error("Error updating group app resource meta data for resource {} in group {} app {}", resourceName, groupName, webAppName, re);
             throw new ResourceTemplateMetaDataUpdateException(groupName, resourceName, re);
         }
 
         if (numEntities == 0) {
+            LOGGER.error("Error updating group app resource meta data numEntities=0 for resource {} in group {} app {}", resourceName, groupName, webAppName);
             throw new ResourceTemplateMetaDataUpdateException(groupName, resourceName);
         }
     }
@@ -269,6 +280,7 @@ public class GroupCrudServiceImpl extends AbstractCrudServiceImpl<JpaGroup> impl
         try {
             return (String) q.getSingleResult();
         } catch (RuntimeException re) {
+            LOGGER.error("Error getting group app resource meta data for resource {} in group {}", resourceTemplateName, groupName, re);
             throw new NonRetrievableResourceTemplateContentException(groupName, resourceTemplateName, re);
         }
     }
@@ -282,6 +294,7 @@ public class GroupCrudServiceImpl extends AbstractCrudServiceImpl<JpaGroup> impl
         try {
             return (String) q.getSingleResult();
         } catch (RuntimeException re) {
+            LOGGER.error("Error getting group app resource template {} in group {} for app {}", resourceTemplateName, groupName, appName, re);
             throw new NonRetrievableResourceTemplateContentException(groupName, resourceTemplateName, re);
         }
     }
@@ -305,10 +318,12 @@ public class GroupCrudServiceImpl extends AbstractCrudServiceImpl<JpaGroup> impl
         try {
             numEntities = q.executeUpdate();
         } catch (RuntimeException re) {
+            LOGGER.error("Error updating group JVM template {} in group {}", resourceTemplateName, groupName, re);
             throw new ResourceTemplateUpdateException(groupName, resourceTemplateName, re);
         }
 
         if (numEntities == 0) {
+            LOGGER.error("Error updating group JVM template numEntities=0 {} in group {}", resourceTemplateName, groupName);
             throw new ResourceTemplateUpdateException(groupName, resourceTemplateName);
         }
     }
@@ -325,10 +340,12 @@ public class GroupCrudServiceImpl extends AbstractCrudServiceImpl<JpaGroup> impl
         try {
             numEntities = q.executeUpdate();
         } catch (RuntimeException re) {
+            LOGGER.error("Error updating group JVM resource meta data {} in group {}", resourceName, groupName, re);
             throw new ResourceTemplateMetaDataUpdateException(groupName, resourceName, re);
         }
 
         if (numEntities == 0) {
+            LOGGER.error("Error updating group JVM resource meta data numEntities==0 {} in group {}", resourceName, groupName);
             throw new ResourceTemplateMetaDataUpdateException(groupName, resourceName);
         }
     }
@@ -341,6 +358,7 @@ public class GroupCrudServiceImpl extends AbstractCrudServiceImpl<JpaGroup> impl
         try {
             return (String) q.getSingleResult();
         } catch (RuntimeException re) {
+            LOGGER.error("Error getting group JVM resource {} in group {}", resourceTemplateName, groupName, re);
             throw new NonRetrievableResourceTemplateContentException(groupName, resourceTemplateName, re);
         }
     }
@@ -353,6 +371,7 @@ public class GroupCrudServiceImpl extends AbstractCrudServiceImpl<JpaGroup> impl
         try {
             return (String) q.getSingleResult();
         } catch (RuntimeException re) {
+            LOGGER.error("Error getting group JVM resource meta data {} in group {}", resourceTemplateName, groupName, re);
             throw new NonRetrievableResourceTemplateContentException(groupName, resourceTemplateName, re);
         }
     }
@@ -369,10 +388,12 @@ public class GroupCrudServiceImpl extends AbstractCrudServiceImpl<JpaGroup> impl
         try {
             numEntities = q.executeUpdate();
         } catch (RuntimeException re) {
+            LOGGER.error("Error updating group web server resource {} in group {}", resourceTemplateName, groupName, re);
             throw new ResourceTemplateUpdateException(groupName, resourceTemplateName, re);
         }
 
         if (numEntities == 0) {
+            LOGGER.error("Error updating group web server resource numEntities=0 {} in group {}", resourceTemplateName, groupName);
             throw new ResourceTemplateUpdateException(groupName, resourceTemplateName);
         }
     }
@@ -389,10 +410,12 @@ public class GroupCrudServiceImpl extends AbstractCrudServiceImpl<JpaGroup> impl
         try {
             numEntities = q.executeUpdate();
         } catch (RuntimeException re) {
+            LOGGER.error("Error updating group web server resource meta data {} in group {}", resourceName, groupName, re);
             throw new ResourceTemplateMetaDataUpdateException(groupName, resourceName, re);
         }
 
         if (numEntities == 0) {
+            LOGGER.error("Error updating group web server resource meta data numEntities=0 {} in group {}", resourceName, groupName);
             throw new ResourceTemplateMetaDataUpdateException(groupName, resourceName);
         }
 
@@ -406,6 +429,7 @@ public class GroupCrudServiceImpl extends AbstractCrudServiceImpl<JpaGroup> impl
         try {
             return (String) q.getSingleResult();
         } catch (RuntimeException re) {
+            LOGGER.error("Error getting group web server resource template {} in group {}", resourceTemplateName, groupName, re);
             throw new NonRetrievableResourceTemplateContentException(groupName, resourceTemplateName, re);
         }
     }
@@ -418,6 +442,7 @@ public class GroupCrudServiceImpl extends AbstractCrudServiceImpl<JpaGroup> impl
         try {
             return (String) q.getSingleResult();
         } catch (RuntimeException re) {
+            LOGGER.error("Error getting group web server resource meta data {} in group {}", resourceTemplateName, groupName, re);
             throw new NonRetrievableResourceTemplateContentException(groupName, resourceTemplateName, re);
         }
     }
@@ -451,6 +476,7 @@ public class GroupCrudServiceImpl extends AbstractCrudServiceImpl<JpaGroup> impl
             entityManager.persist(jpaConfigTemplate);
             entityManager.flush();
         } else {
+            LOGGER.error("Error popuklating group app template {} for app {} in group {}", templateFileName, appName, groupName);
             throw new BadRequestException(AemFaultType.APP_TEMPLATE_NOT_FOUND,
                     "Only expecting one template to be returned for GROUP APP Template [" + groupName + "] but returned " + templates.size() + " templates");
         }

@@ -1,14 +1,5 @@
 package com.cerner.jwala.common.request.jvm;
 
-import java.io.Serializable;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
-
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ToStringBuilder;
-
 import com.cerner.jwala.common.domain.model.fault.AemFaultType;
 import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.id.Identifier;
@@ -16,14 +7,17 @@ import com.cerner.jwala.common.domain.model.jvm.Jvm;
 import com.cerner.jwala.common.domain.model.path.Path;
 import com.cerner.jwala.common.request.Request;
 import com.cerner.jwala.common.request.group.AddJvmToGroupRequest;
-import com.cerner.jwala.common.rule.HostNameRule;
-import com.cerner.jwala.common.rule.MultipleRules;
-import com.cerner.jwala.common.rule.PortNumberRule;
-import com.cerner.jwala.common.rule.ShutdownPortNumberRule;
-import com.cerner.jwala.common.rule.StatusPathRule;
+import com.cerner.jwala.common.rule.*;
 import com.cerner.jwala.common.rule.group.GroupIdsRule;
 import com.cerner.jwala.common.rule.jvm.JvmIdRule;
 import com.cerner.jwala.common.rule.jvm.JvmNameRule;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+
+import java.io.Serializable;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 public class UpdateJvmRequest implements Serializable, Request {
 
@@ -185,18 +179,20 @@ public class UpdateJvmRequest implements Serializable, Request {
 
     @Override
     public String toString() {
-        return new ToStringBuilder(this)
-                .append("id", id)
-                .append("newJvmName", newJvmName)
-                .append("newHostName", newHostName)
-                .append("newHttpPort", newHttpPort)
-                .append("newHttpsPort", newHttpsPort)
-                .append("newRedirectPort", newRedirectPort)
-                .append("newShutdownPort", newShutdownPort)
-                .append("newAjpPort", newAjpPort)
-                .append("groupIds", groupIds)
-                .append("newSystemProperties", newSystemProperties)
-                .append("newUserName", newUserName)
-                .toString();
+        return "UpdateJvmRequest{" +
+                "id=" + id +
+                ", newJvmName='" + newJvmName + '\'' +
+                ", newHostName='" + newHostName + '\'' +
+                ", newHttpPort=" + newHttpPort +
+                ", newHttpsPort=" + newHttpsPort +
+                ", newRedirectPort=" + newRedirectPort +
+                ", newShutdownPort=" + newShutdownPort +
+                ", newAjpPort=" + newAjpPort +
+                ", newStatusPath=" + newStatusPath +
+                ", newSystemProperties='" + newSystemProperties + '\'' +
+                ", newUserName='" + newUserName + '\'' +
+                ", newEncryptedPassword='" + newEncryptedPassword + '\'' +
+                ", groupIds=" + groupIds +
+                '}';
     }
 }

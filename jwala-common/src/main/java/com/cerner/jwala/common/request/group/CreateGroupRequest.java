@@ -1,12 +1,9 @@
 package com.cerner.jwala.common.request.group;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ToStringBuilder;
-
-import com.cerner.jwala.common.exception.BadRequestException;
 import com.cerner.jwala.common.request.Request;
 import com.cerner.jwala.common.rule.group.GroupNameRule;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import java.io.Serializable;
 
@@ -55,8 +52,8 @@ public class CreateGroupRequest implements Serializable, Request {
 
     @Override
     public String toString() {
-        return new ToStringBuilder(this)
-                .append("groupName", groupName)
-                .toString();
+        return "CreateGroupRequest{" +
+                "groupName='" + groupName + '\'' +
+                '}';
     }
 }
