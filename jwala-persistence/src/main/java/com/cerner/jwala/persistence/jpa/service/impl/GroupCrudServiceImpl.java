@@ -48,7 +48,7 @@ public class GroupCrudServiceImpl extends AbstractCrudServiceImpl<JpaGroup> impl
             return create(jpaGroup);
         } catch (final EntityExistsException eee) {
             LOGGER.error("Error creating group {}", createGroupRequest, eee);
-            throw new EntityExistsException("Group Name already exists: " + createGroupRequest.getGroupName(),
+            throw new EntityExistsException("Group Name already exists: " + createGroupRequest,
                     eee);
         }
     }
@@ -64,7 +64,7 @@ public class GroupCrudServiceImpl extends AbstractCrudServiceImpl<JpaGroup> impl
             update(jpaGroup);
         } catch (final EntityExistsException eee) {
             LOGGER.error("Error updating group {}", updateGroupRequest, eee);
-            throw new EntityExistsException("Group Name already exists: " + updateGroupRequest.getNewName(),
+            throw new EntityExistsException("Group Name already exists: " + updateGroupRequest,
                     eee);
         }
     }

@@ -50,8 +50,7 @@ public class JvmCrudServiceImpl extends AbstractCrudServiceImpl<JpaJvm> implemen
             return create(jpaJvm);
         } catch (final EntityExistsException eee) {
             LOGGER.error("Error creating JVM for request {}", createJvmRequest, eee);
-            throw new EntityExistsException("JVM with name already exists: " + createJvmRequest.getJvmName(),
-                    eee);
+            throw new EntityExistsException("JVM with name already exists: " + createJvmRequest, eee);
         }
     }
 
@@ -77,7 +76,7 @@ public class JvmCrudServiceImpl extends AbstractCrudServiceImpl<JpaJvm> implemen
             return update(jpaJvm);
         } catch (final EntityExistsException eee) {
             LOGGER.error("Error updating JVM for request {}", updateJvmRequest, eee);
-            throw new EntityExistsException("JVM with name already exists: " + updateJvmRequest.getNewJvmName(), eee);
+            throw new EntityExistsException("JVM with name already exists: " + updateJvmRequest, eee);
         }
     }
 
@@ -139,7 +138,7 @@ public class JvmCrudServiceImpl extends AbstractCrudServiceImpl<JpaJvm> implemen
         } else {
             LOGGER.error("Error uploading JVM template for request {}", uploadJvmTemplateRequest);
             throw new BadRequestException(AemFaultType.JVM_TEMPLATE_NOT_FOUND,
-                    "Only expecting one template to be returned for JVM [" + jvm.getJvmName() + "] but returned " + templates.size() + " templates");
+                    "Only expecting one template to be returned for JVM [" + uploadJvmTemplateRequest+ "] but returned " + templates.size() + " templates");
         }
 
         return jpaConfigTemplate;
@@ -159,7 +158,7 @@ public class JvmCrudServiceImpl extends AbstractCrudServiceImpl<JpaJvm> implemen
         } else {
             LOGGER.error("Error getting JVM template {} for JVM ID {}", templateName, jvmId);
             throw new BadRequestException(AemFaultType.JVM_TEMPLATE_NOT_FOUND,
-                    "Only expecting one " + templateName + " template to be returned for JVM [" + jpaJvm.getName() + "] but returned " + templates.size() + " templates");
+                    "Only expecting one " + templateName + " template to be returned for JVM [" + jvmId + "] but returned " + templates.size() + " templates");
         }
     }
 

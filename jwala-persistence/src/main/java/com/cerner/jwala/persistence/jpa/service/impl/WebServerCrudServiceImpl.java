@@ -58,7 +58,7 @@ public class WebServerCrudServiceImpl extends AbstractCrudServiceImpl<JpaWebServ
             return webServerFrom(create(jpaWebServer));
         } catch (final EntityExistsException eee) {
             LOGGER.error("Error creating web server {}", webServer, eee);
-            throw new EntityExistsException("Web server with name already exists: " + webServer.getName(),
+            throw new EntityExistsException("Web server with name already exists: " + webServer,
                     eee);
         }
 
@@ -295,7 +295,7 @@ public class WebServerCrudServiceImpl extends AbstractCrudServiceImpl<JpaWebServ
         } else {
             LOGGER.error("Error uploading web server template for request {}", request);
             throw new BadRequestException(AemFaultType.WEB_SERVER_HTTPD_CONF_TEMPLATE_NOT_FOUND,
-                    "Only expecting one template to be returned for web server [" + webServer.getName() + "] but returned " + templates.size() + " templates");
+                    "Only expecting one template to be returned for web server [" + request + "] but returned " + templates.size() + " templates");
         }
 
         return jpaConfigTemplate;

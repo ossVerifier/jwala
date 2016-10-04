@@ -51,8 +51,7 @@ public class ApplicationCrudServiceImpl extends AbstractCrudServiceImpl<JpaAppli
             return create(jpaApp);
         } catch (final EntityExistsException eee) {
             LOGGER.error("Error creating app with request {} in group {}", createApplicationRequest, jpaGroup, eee);
-            throw new EntityExistsException("App already exists: " + createApplicationRequest.getName(),
-                    eee);
+            throw new EntityExistsException("App already exists: " + createApplicationRequest, eee);
         }
     }
 
@@ -139,8 +138,7 @@ public class ApplicationCrudServiceImpl extends AbstractCrudServiceImpl<JpaAppli
                 return update(jpaApp);
             } catch (EntityExistsException eee) {
                 LOGGER.error("Error updating application {} in group {}", jpaApp, jpaGroup, eee);
-                throw new EntityExistsException("App already exists: " + updateApplicationRequest.getNewName(),
-                        eee);
+                throw new EntityExistsException("App already exists: " + updateApplicationRequest, eee);
             }
         } else {
             LOGGER.error("Application cannot be found {} attempting to update application", updateApplicationRequest);
@@ -260,7 +258,7 @@ public class ApplicationCrudServiceImpl extends AbstractCrudServiceImpl<JpaAppli
         } else {
             LOGGER.error("Error uploading template for app request {} and JVM {}", uploadAppTemplateRequest, jpaJvm);
             throw new BadRequestException(AemFaultType.APPLICATION_NOT_FOUND,
-                    "Only expecting one template to be returned for application [" + application.getName() + "] but returned " + templates.size() + " templates");
+                    "Only expecting one template to be returned for application [" + uploadAppTemplateRequest + "] but returned " + templates.size() + " templates");
         }
 
         return jpaConfigTemplate;
