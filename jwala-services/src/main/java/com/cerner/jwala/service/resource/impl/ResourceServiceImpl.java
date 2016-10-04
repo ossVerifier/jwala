@@ -578,7 +578,19 @@ public class ResourceServiceImpl implements ResourceService {
     public ResourceContent getResourceContent(final ResourceIdentifier resourceIdentifier) {
         final ConfigTemplate configTemplate = resourceHandler.fetchResource(resourceIdentifier);
         if (configTemplate != null) {
-            return new ResourceContent(configTemplate.getMetaData(), configTemplate.getTemplateContent());
+            final ObjectMapper mapper = new ObjectMapper();
+            String jsonStrMetaData;
+            try {
+                final ResourceTemplateMetaData metaData = mapper.readValue(configTemplate.getMetaData(),
+                                                                           ResourceTemplateMetaData.class);
+                jsonStrMetaData = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(metaData);
+            } catch (final IOException e) {
+                // Since prettifying JSON is not a critical error, we just log it instead of throwing
+                // an exception and just return the JSON in its raw format
+                LOGGER.error("Failed to prettify JSON meta data = {}", configTemplate.getMetaData(), e);
+                jsonStrMetaData = configTemplate.getMetaData();
+            }
+            return new ResourceContent(jsonStrMetaData, configTemplate.getTemplateContent());
         }
         return null;
     }
@@ -657,8 +669,6 @@ public class ResourceServiceImpl implements ResourceService {
             }
         }
     }
-
-    ;
 
     protected void waitForDeployToComplete(Map<String, Future<CommandOutput>> futures) {
         final int size = futures.size();
