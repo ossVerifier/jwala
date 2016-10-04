@@ -1,5 +1,7 @@
 package com.cerner.jwala.common.domain.model.resource;
 
+import org.apache.commons.lang3.StringUtils;
+
 /**
  * Content type enumeration e.g. application/xml etc...
  * Note: Maybe a better alternative is to use http://docs.guava-libraries.googlecode.com/git/javadoc/com/google/common/net/MediaType.html.
@@ -8,9 +10,13 @@ package com.cerner.jwala.common.domain.model.resource;
  * Created by JC043760 on 3/31/2016.
  */
 public enum ContentType {
-    XML_UTF_8("text/xml"), PLAIN_TEXT_UTF_8("text/plain"), APPLICATION_BINARY("application/binary"), UNDEFINED(null);
+    XML_UTF_8("text/xml"), PLAIN_TEXT_UTF_8("text/plain"), APPLICATION_BINARY("application/binary"), UNDEFINED;
 
     public final String contentTypeStr;
+
+    ContentType() {
+        this.contentTypeStr = StringUtils.EMPTY;
+    }
 
     ContentType(final String contentTypeStr) {
         this.contentTypeStr = contentTypeStr;
