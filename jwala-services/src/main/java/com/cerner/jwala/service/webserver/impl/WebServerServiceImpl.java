@@ -20,7 +20,6 @@ import com.cerner.jwala.service.resource.ResourceService;
 import com.cerner.jwala.service.webserver.WebServerService;
 import com.cerner.jwala.service.webserver.exception.WebServerServiceException;
 import org.apache.commons.io.FileUtils;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Propagation;
@@ -214,18 +213,20 @@ public class WebServerServiceImpl implements WebServerService {
     @Transactional
     public void uploadWebServerConfig(UploadWebServerTemplateRequest uploadWebServerTemplateRequest, User user) {
         uploadWebServerTemplateRequest.validate();
+        final String confFileName = uploadWebServerTemplateRequest.getConfFileName();
+        final WebServer webServer = uploadWebServerTemplateRequest.getWebServer();
         final String metaDataStr = uploadWebServerTemplateRequest.getMetaData();
         final String absoluteDeployPath;
         try{
-            ResourceTemplateMetaData metaData = new ObjectMapper().readValue(metaDataStr, ResourceTemplateMetaData.class);
+            ResourceTemplateMetaData metaData = resourceService.getFormattedResourceMetaData(confFileName, webServer, metaDataStr);
             absoluteDeployPath = resourceService.generateResourceFile(
-                    metaData.getTemplateName(),
+                    metaData.getDeployFileName(),
                     metaData.getDeployPath() + "/" + metaData.getDeployFileName(),
                     resourceService.generateResourceGroup(),
-                    uploadWebServerTemplateRequest.getWebServer());
+                    webServer);
         } catch (IOException e) {
-            LOGGER.error("Failed to map meta data for web server {} while uploading template {}", uploadWebServerTemplateRequest.getWebServer().getName(), uploadWebServerTemplateRequest.getConfFileName(), e);
-            throw new InternalErrorException(AemFaultType.BAD_STREAM, "Unable to map the meta data for template " + uploadWebServerTemplateRequest.getConfFileName(), e);
+            LOGGER.error("Failed to map meta data when uploading web server config {}", uploadWebServerTemplateRequest, e);
+            throw new InternalErrorException(AemFaultType.BAD_STREAM, "Unable to map the meta data for template " + confFileName, e);
         }
         webServerPersistenceService.uploadWebServerConfigTemplate(uploadWebServerTemplateRequest, absoluteDeployPath, user.getId());
     }

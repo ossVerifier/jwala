@@ -147,7 +147,7 @@ public class ResourceServiceImpl implements ResourceService {
         String templateContent = "";
 
         try {
-            resourceTemplateMetaData = mapper.readValue(IOUtils.toString(metaData), ResourceTemplateMetaData.class);
+            resourceTemplateMetaData = getFormattedResourceMetaData("createTemplate", null, IOUtils.toString(metaData));
             if (resourceTemplateMetaData.getContentType().equals(ContentType.APPLICATION_BINARY.contentTypeStr)) {
                 templateContent = uploadResource(resourceTemplateMetaData, templateData);
             } else {
@@ -220,6 +220,14 @@ public class ResourceServiceImpl implements ResourceService {
     @Override
     public <T> String generateResourceFile(final String fileName, final String template, final ResourceGroup resourceGroup, T selectedValue) {
         return resourceContentGeneratorService.generateContent(fileName, template, resourceGroup, selectedValue);
+    }
+
+    @Override
+    public <T> ResourceTemplateMetaData getFormattedResourceMetaData(String fileName, T entity, String metaDataStr) throws IOException {
+        String tokenizedMetaData = generateResourceFile(fileName, metaDataStr, generateResourceGroup(), entity);
+        tokenizedMetaData = tokenizedMetaData.replace("\\", "\\\\");
+        LOGGER.info("tokenized metadata is : {}", tokenizedMetaData);
+        return new ObjectMapper().readValue(tokenizedMetaData, ResourceTemplateMetaData.class);
     }
 
     @Override
@@ -578,18 +586,7 @@ public class ResourceServiceImpl implements ResourceService {
     public ResourceContent getResourceContent(final ResourceIdentifier resourceIdentifier) {
         final ConfigTemplate configTemplate = resourceHandler.fetchResource(resourceIdentifier);
         if (configTemplate != null) {
-            final ObjectMapper mapper = new ObjectMapper();
-            String jsonStrMetaData;
-            try {
-                final ResourceTemplateMetaData metaData = mapper.readValue(configTemplate.getMetaData(),
-                                                                           ResourceTemplateMetaData.class);
-                jsonStrMetaData = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(metaData);
-            } catch (final IOException e) {
-                // Since prettifying JSON is not a critical error, we just log it instead of throwing
-                // an exception and just return the JSON in its raw format
-                LOGGER.error("Failed to prettify JSON meta data = {}", configTemplate.getMetaData(), e);
-                jsonStrMetaData = configTemplate.getMetaData();
-            }
+            String jsonStrMetaData = configTemplate.getMetaData();
             return new ResourceContent(jsonStrMetaData, configTemplate.getTemplateContent());
         }
         return null;
@@ -702,10 +699,7 @@ public class ResourceServiceImpl implements ResourceService {
         try {
             final String metaDataPath;
             final ResourceContent resourceContent = getResourceContent(resourceIdentifier);
-            String metaDataStr = resourceContent.getMetaData();
-            final String tokenizedMetaData = this.generateResourceFile(fileName, metaDataStr, generateResourceGroup(), null);
-            LOGGER.info("tokenized metadata is : {}", tokenizedMetaData);
-            ResourceTemplateMetaData resourceTemplateMetaData = new ObjectMapper().readValue(tokenizedMetaData, ResourceTemplateMetaData.class);
+            ResourceTemplateMetaData resourceTemplateMetaData = getFormattedResourceMetaData(fileName, null, resourceContent.getMetaData());
             metaDataPath = resourceTemplateMetaData.getDeployPath();
             String resourceSourceCopy;
             final String deployFileName = resourceTemplateMetaData.getDeployFileName();

@@ -573,7 +573,7 @@ var XmlTabs = React.createClass({
             var metaData = response.applicationResponseContent.metaData;
             var readOnly = false;
             if (metaData) {
-                var jsonMetaData = JSON.parse(metaData);
+                var jsonMetaData = JSON.parse(metaData.replace(/\\/g, "\\\\"));
                 if (jsonMetaData.contentType === "application/binary") {
                     readOnly = true;
                 }

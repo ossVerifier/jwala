@@ -45,10 +45,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.Spy;
+import org.mockito.*;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import java.io.ByteArrayInputStream;
@@ -365,7 +362,7 @@ public class ApplicationServiceImplTest {
     }
 
     @Test
-    public void testDeployConf() throws CommandFailureException {
+    public void testDeployConf() throws CommandFailureException, IOException {
         final Jvm jvm = mock(Jvm.class);
         when(jvm.getHostName()).thenReturn("localhost");
         when(jvm.getState()).thenReturn(JvmState.JVM_STOPPED);
@@ -383,6 +380,11 @@ public class ApplicationServiceImplTest {
 
         when(jvmPersistenceService.findJvm(eq("jvm-1"), eq("hct-group"))).thenReturn(jvm);
 
+        ResourceTemplateMetaData mockMetaData = mock(ResourceTemplateMetaData.class);
+        when(mockMetaData.getDeployFileName()).thenReturn("hct.xml");
+        when(mockMetaData.getDeployPath()).thenReturn("./test/deploy-path/conf/CatalinaSSL/localhost");
+        when(mockMetaData.getContentType()).thenReturn("text/xml");
+        when(mockResourceService.getFormattedResourceMetaData(anyString(), any(Object.class), anyString())).thenReturn(mockMetaData);
         when(mockResourceService.generateResourceFile(anyString(), anyString(), any(ResourceGroup.class), any())).thenReturn("{\"deployPath\":\"./test/deploy-path/conf/CatalinaSSL/localhost\",\"contentType\":\"text/xml\",\"entity\":{\"type\":\"APPLICATION\",\"target\":\"soarcom-hct\",\"group\":\"soarcom-616\",\"parentName\":null,\"deployToJvms\":true},\"templateName\":\"hctXmlTemplate.tpl\",\"deployFileName\":\"hct.xml\"}");
 
         CommandOutput retExecData = applicationService.deployConf("hct", "hct-group", "jvm-1", "hct.xml", mock(ResourceGroup.class), testUser);
@@ -420,7 +422,7 @@ public class ApplicationServiceImplTest {
     }
 
     @Test(expected = DeployApplicationConfException.class)
-    public void testDeployConfExecDataWasNotSuccessful() throws CommandFailureException {
+    public void testDeployConfExecDataWasNotSuccessful() throws CommandFailureException, IOException {
         final Jvm jvm = mock(Jvm.class);
         when(jvm.getHostName()).thenReturn("localhost");
         when(jvm.getState()).thenReturn(JvmState.JVM_STOPPED);
@@ -436,12 +438,17 @@ public class ApplicationServiceImplTest {
         when(applicationPersistenceService.findApplication(eq("hct"), eq("hct-group"), eq("jvm-1"))).thenReturn(mockApplication);
         when(applicationPersistenceService.getMetaData(anyString(), anyString(), anyString(), anyString())).thenReturn(META_DATA_TEST_VALUES);
         when(jvmPersistenceService.findJvm(eq("jvm-1"), eq("hct-group"))).thenReturn(jvm);
+        ResourceTemplateMetaData mockMetaData = mock(ResourceTemplateMetaData.class);
+        when(mockMetaData.getDeployFileName()).thenReturn("hct.xml");
+        when(mockMetaData.getDeployPath()).thenReturn("./test/deploy-path/conf/CatalinaSSL/localhost");
+        when(mockMetaData.getContentType()).thenReturn("text/xml");
+        when(mockResourceService.getFormattedResourceMetaData(anyString(), any(Object.class), anyString())).thenReturn(mockMetaData);
         when(mockResourceService.generateResourceFile(anyString(), anyString(), any(ResourceGroup.class), any())).thenReturn("anything");
         final CommandOutput retExecData = applicationService.deployConf("hct", "hct-group", "jvm-1", "hct.xml", mock(ResourceGroup.class), testUser);
     }
 
     @Test(expected = DeployApplicationConfException.class)
-    public void testDeployConfExecDataCommandFailureException() throws CommandFailureException {
+    public void testDeployConfExecDataCommandFailureException() throws CommandFailureException, IOException {
         final Jvm jvm = mock(Jvm.class);
         when(jvm.getHostName()).thenReturn("localhost");
         when(jvm.getState()).thenReturn(JvmState.JVM_STOPPED);
@@ -457,12 +464,17 @@ public class ApplicationServiceImplTest {
         when(applicationPersistenceService.findApplication(eq("hct"), eq("hct-group"), eq("jvm-1"))).thenReturn(mockApplication);
         when(applicationPersistenceService.getMetaData(anyString(), anyString(), anyString(), anyString())).thenReturn(META_DATA_TEST_VALUES);
         when(jvmPersistenceService.findJvm(eq("jvm-1"), eq("hct-group"))).thenReturn(jvm);
+        ResourceTemplateMetaData mockMetaData = mock(ResourceTemplateMetaData.class);
+        when(mockMetaData.getDeployFileName()).thenReturn("hct.xml");
+        when(mockMetaData.getDeployPath()).thenReturn("./test/deploy-path/conf/CatalinaSSL/localhost");
+        when(mockMetaData.getContentType()).thenReturn("text/xml");
+        when(mockResourceService.getFormattedResourceMetaData(anyString(), any(Object.class), anyString())).thenReturn(mockMetaData);
         when(mockResourceService.generateResourceFile(anyString(), anyString(), any(ResourceGroup.class), any())).thenReturn("anything");
         final CommandOutput retExecData = applicationService.deployConf("hct", "hct-group", "jvm-1", "hct.xml", mock(ResourceGroup.class), testUser);
     }
 
     @Test(expected = DeployApplicationConfException.class)
-    public void testDeployConfExecDataFileNotFoundException() throws CommandFailureException {
+    public void testDeployConfExecDataFileNotFoundException() throws CommandFailureException, IOException {
         final Jvm jvm = mock(Jvm.class);
         when(jvm.getHostName()).thenReturn("localhost");
         when(jvm.getState()).thenReturn(JvmState.JVM_STOPPED);
@@ -478,6 +490,11 @@ public class ApplicationServiceImplTest {
         when(applicationPersistenceService.findApplication(eq("hct"), eq("hct-group"), eq("jvm-1"))).thenReturn(mockApplication);
         when(applicationPersistenceService.getMetaData(anyString(), anyString(), anyString(), anyString())).thenReturn(META_DATA_TEST_VALUES);
         when(jvmPersistenceService.findJvm(eq("jvm-1"), eq("hct-group"))).thenReturn(jvm);
+        ResourceTemplateMetaData mockMetaData = mock(ResourceTemplateMetaData.class);
+        when(mockMetaData.getDeployFileName()).thenReturn("hct.xml");
+        when(mockMetaData.getDeployPath()).thenReturn("./test/deploy-path/conf/CatalinaSSL/localhost");
+        when(mockMetaData.getContentType()).thenReturn("text/xml");
+        when(mockResourceService.getFormattedResourceMetaData(anyString(), any(Object.class), anyString())).thenReturn(mockMetaData);
         when(mockResourceService.generateResourceFile(anyString(), anyString(), any(ResourceGroup.class), any())).thenReturn("anything");
         final CommandOutput retExecData = applicationService.deployConf("hct", "hct-group", "jvm-1", "hct.xml", mock(ResourceGroup.class), testUser);
     }

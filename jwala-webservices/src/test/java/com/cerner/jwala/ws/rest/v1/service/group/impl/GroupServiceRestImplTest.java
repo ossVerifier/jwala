@@ -44,10 +44,7 @@ import org.apache.openjpa.persistence.EntityExistsException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
+import org.mockito.*;
 
 import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
@@ -835,9 +832,10 @@ public class GroupServiceRestImplTest {
     }
 
     @Test (expected = InternalErrorException.class)
-    public void testGenerateAndDeployGroupAppFileFail() {
+    public void testGenerateAndDeployGroupAppFileFail() throws IOException {
         when(mockGroupService.getGroup(anyString())).thenReturn(mockGroup);
         when(mockGroupService.getGroupAppResourceTemplateMetaData(anyString(), anyString())).thenReturn("anyString");
+        when(mockResourceService.getFormattedResourceMetaData(anyString(), Matchers.anyObject(), anyString())).thenThrow(new IOException("Cannot parse meta data: \"anyString\""));
         groupServiceRest.generateAndDeployGroupAppFile("test-group", "anyFile.txt", mockAuthenticatedUser, "anyHost");
     }
 

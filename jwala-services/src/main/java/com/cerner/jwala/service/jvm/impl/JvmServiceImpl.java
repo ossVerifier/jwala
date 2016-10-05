@@ -163,9 +163,9 @@ public class JvmServiceImpl implements JvmService {
             String templateContent = groupService.getGroupJvmResourceTemplate(groupName, templateName, resourceService.generateResourceGroup(), false);
             String metaDataStr = groupService.getGroupJvmResourceTemplateMetaData(groupName, templateName);
             try {
-                ResourceTemplateMetaData metaData = new ObjectMapper().readValue(metaDataStr, ResourceTemplateMetaData.class);
+                ResourceTemplateMetaData metaData = resourceService.getFormattedResourceMetaData(templateName, jvmPersistenceService.findJvmByExactName(jvmName), metaDataStr);
                 final ResourceIdentifier resourceIdentifier = new ResourceIdentifier.Builder()
-                        .setResourceName(metaData.getTemplateName())
+                        .setResourceName(metaData.getDeployFileName())
                         .setJvmName(jvmName)
                         .setGroupName(groupName)
                         .build();
@@ -652,9 +652,7 @@ public class JvmServiceImpl implements JvmService {
             }
 
             String metaDataStr = getResourceTemplateMetaData(jvmName, fileName);
-            final String tokenizedMetaData = resourceService.generateResourceFile(fileName,metaDataStr, resourceService.generateResourceGroup(), jvm);
-            LOGGER.info("tokenized metadata is : {}", tokenizedMetaData);
-            ResourceTemplateMetaData resourceTemplateMetaData = new ObjectMapper().readValue(tokenizedMetaData, ResourceTemplateMetaData.class);
+            ResourceTemplateMetaData resourceTemplateMetaData = resourceService.getFormattedResourceMetaData(fileName, jvm, metaDataStr);
             String resourceSourceCopy;
             final String deployFileName = resourceTemplateMetaData.getDeployFileName();
             String resourceDestPath = resourceTemplateMetaData.getDeployPath() + "/" + deployFileName;
@@ -669,11 +667,11 @@ public class JvmServiceImpl implements JvmService {
 
             deployJvmConfigFile(deployFileName, jvm, resourceDestPath, resourceSourceCopy, user);
         } catch (IOException e) {
-            String message = "Failed to write file";
+            String message = "Failed to write file " + fileName + " for JVM " + jvmName;
             LOGGER.error(badStreamMessage + message, e);
             throw new InternalErrorException(AemFaultType.BAD_STREAM, message, e);
         } catch (CommandFailureException ce) {
-            String message = "Failed to copy file";
+            String message = "Failed to copy file " + fileName + " for JVM " + jvmName;
             LOGGER.error(badStreamMessage + message, ce);
             throw new InternalErrorException(AemFaultType.BAD_STREAM, message, ce);
         } finally {
@@ -876,13 +874,10 @@ public class JvmServiceImpl implements JvmService {
     public Map<String, String> generateResourceFiles(final String jvmName) throws IOException {
         Map<String, String> generatedFiles = null;
         final List<JpaJvmConfigTemplate> jpaJvmConfigTemplateList = jvmPersistenceService.getConfigTemplates(jvmName);
-        final ObjectMapper mapper = new ObjectMapper();
         for (final JpaJvmConfigTemplate jpaJvmConfigTemplate : jpaJvmConfigTemplateList) {
             final ResourceGroup resourceGroup = resourceService.generateResourceGroup();
             final Jvm jvm = jvmPersistenceService.findJvmByExactName(jvmName);
-            final String resourceTemplateMetaDataString = resourceService.generateResourceFile(jpaJvmConfigTemplate.getTemplateName(), jpaJvmConfigTemplate.getMetaData(), resourceGroup, jvm);
-            final ResourceTemplateMetaData resourceTemplateMetaData =
-                    mapper.readValue(resourceTemplateMetaDataString, ResourceTemplateMetaData.class);
+            final ResourceTemplateMetaData resourceTemplateMetaData = resourceService.getFormattedResourceMetaData(jpaJvmConfigTemplate.getTemplateName(), jvm, jpaJvmConfigTemplate.getMetaData());
             final String deployFileName = resourceTemplateMetaData.getDeployFileName();
             if (generatedFiles == null) {
                 generatedFiles = new HashMap<>();

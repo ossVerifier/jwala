@@ -33,7 +33,6 @@ import com.cerner.jwala.service.binarydistribution.BinaryDistributionService;
 import com.cerner.jwala.service.exception.GroupServiceException;
 import com.cerner.jwala.service.group.GroupService;
 import com.cerner.jwala.service.resource.ResourceService;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
@@ -385,7 +384,7 @@ public class GroupServiceImpl implements GroupService {
         Jvm jvm = jvms != null && jvms.size() > 0 ? jvms.iterator().next() : null;
         String metaDataStr = groupPersistenceService.getGroupAppResourceTemplateMetaData(groupName, resourceTemplateName);
         try {
-            ResourceTemplateMetaData metaData = new ObjectMapper().readValue(metaDataStr, ResourceTemplateMetaData.class);
+            ResourceTemplateMetaData metaData = resourceService.getFormattedResourceMetaData(resourceTemplateName, jvm, metaDataStr);
             Application app = applicationPersistenceService.getApplication(metaData.getEntity().getTarget());
             app.setParentJvm(jvm);
             return resourceService.generateResourceFile(resourceTemplateName, template, resourceGroup, app);
@@ -405,9 +404,9 @@ public class GroupServiceImpl implements GroupService {
     public String getGroupAppResourceTemplate(String groupName, String appName, String resourceTemplateName, boolean tokensReplaced, ResourceGroup resourceGroup) {
         final String template = groupPersistenceService.getGroupAppResourceTemplate(groupName, appName, resourceTemplateName);
         if (tokensReplaced) {
-            String metaDataStr = groupPersistenceService.getGroupAppResourceTemplateMetaData(groupName, resourceTemplateName);
             try {
-                ResourceTemplateMetaData metaData = new ObjectMapper().readValue(metaDataStr, ResourceTemplateMetaData.class);
+                ResourceTemplateMetaData metaData = resourceService.getFormattedResourceMetaData(resourceTemplateName, applicationPersistenceService.getApplication(appName), groupPersistenceService.getGroupAppResourceTemplateMetaData(groupName, resourceTemplateName));
+                // TODO: why are we getting the meta data to get the target name when the appName is already passed as a method parameter?
                 Application app = applicationPersistenceService.getApplication(metaData.getEntity().getTarget());
                 return resourceService.generateResourceFile(resourceTemplateName, template, resourceGroup, app);
             } catch (Exception x) {
@@ -450,9 +449,7 @@ public class GroupServiceImpl implements GroupService {
         String metaDataStr = getGroupAppResourceTemplateMetaData(groupName, fileName);
         ResourceTemplateMetaData metaData;
         try {
-            final String tokenizedMetaData = resourceService.generateResourceFile(fileName, metaDataStr, resourceGroup, application);
-            LOGGER.info("tokenized metadata is : {}", tokenizedMetaData);
-            metaData = new ObjectMapper().readValue(tokenizedMetaData, ResourceTemplateMetaData.class);
+            metaData = resourceService.getFormattedResourceMetaData(fileName, application, metaDataStr);
             final String destPath = metaData.getDeployPath() + '/' + metaData.getDeployFileName();
             File confFile = createConfFile(metaData.getEntity().getTarget(), groupName, metaData.getDeployFileName(), resourceGroup);
             String srcPath, standardError;

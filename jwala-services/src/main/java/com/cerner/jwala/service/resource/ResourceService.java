@@ -304,4 +304,5 @@ public interface ResourceService {
      */
     String getExternalPropertiesAsString();
 
+    <T> ResourceTemplateMetaData getFormattedResourceMetaData(String fileName, T entity, String metaDataStr) throws IOException;
 }

@@ -26,7 +26,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.jaxrs.ext.MessageContext;
 import org.apache.cxf.jaxrs.ext.multipart.Attachment;
 import org.apache.cxf.jaxrs.impl.ResponseImpl;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -186,9 +185,7 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
 
         CreateResourceResponseWrapper responseWrapper = null;
         try {
-            final ObjectMapper mapper = new ObjectMapper();
-            final ResourceTemplateMetaData metaData = mapper.readValue(IOUtils.toString(metadataIn),
-                    ResourceTemplateMetaData.class);
+            final ResourceTemplateMetaData metaData = resourceService.getFormattedResourceMetaData(fileName, null, IOUtils.toString(metadataIn));
 
             // We do the file attachment validation here since this is a REST services affair IMHO.
             // TODO: Use a more sophisticated way of knowing the content type in next releases.
@@ -199,7 +196,7 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
                         new FaultCodeException(AemFaultType.SERVICE_EXCEPTION, UNEXPECTED_CONTENT_TYPE_ERROR_MSG));
             }
 
-            final ResourceIdentifier resourceIdentifier = new ResourceIdentifier.Builder().setResourceName(metaData.getTemplateName())
+            final ResourceIdentifier resourceIdentifier = new ResourceIdentifier.Builder().setResourceName(metaData.getDeployFileName())
                     .setGroupName(createResourceParam.getGroup())
                     .setWebServerName(createResourceParam.getWebServer())
                     .setJvmName(createResourceParam.getJvm())
@@ -250,13 +247,12 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
 
         ResourceIdentifier.Builder idBuilder = new ResourceIdentifier.Builder();
         ResourceIdentifier resourceIdentifier = idBuilder.setResourceName(EXT_PROPERTIES_RESOURCE_NAME).build();
-        final ObjectMapper mapper = new ObjectMapper();
         final ResourceTemplateMetaData metaData;
         InputStream data = null;
         CreateResourceResponseWrapper responseWrapper = null;
 
         try {
-            metaData = mapper.readValue(EXT_PROPERTIES_RESOURCE_META_DATA, ResourceTemplateMetaData.class);
+            metaData = resourceService.getFormattedResourceMetaData("ext.properties", null, EXT_PROPERTIES_RESOURCE_META_DATA);
 
             ServletFileUpload sfu = new ServletFileUpload();
             FileItemIterator iter = sfu.getItemIterator(context.getHttpServletRequest());

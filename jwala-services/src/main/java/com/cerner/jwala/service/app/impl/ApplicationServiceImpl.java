@@ -40,7 +40,6 @@ import com.cerner.jwala.service.resource.ResourceService;
 import org.apache.commons.lang3.StringUtils;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -269,11 +268,8 @@ public class ApplicationServiceImpl implements ApplicationService {
 
             String metaData = applicationPersistenceService.getMetaData(appName, jvmName, groupName, resourceTemplateName);
             app.setParentJvm(jvm);
-            final String tokenizedMetaData = resourceService.generateResourceFile(resourceTemplateName, metaData, resourceGroup, app);
 
-            LOGGER.info("tokenized metadata is : {}", tokenizedMetaData);
-            ObjectMapper mapper = new ObjectMapper();
-            ResourceTemplateMetaData templateMetaData = mapper.readValue(tokenizedMetaData, ResourceTemplateMetaData.class);
+            ResourceTemplateMetaData templateMetaData = resourceService.getFormattedResourceMetaData(resourceTemplateName, app, metaData);
             final String deployFileName = templateMetaData.getDeployFileName();
             final String destPath = templateMetaData.getDeployPath() + '/' + deployFileName;            String srcPath;
             if (templateMetaData.getContentType().equals(ContentType.APPLICATION_BINARY.contentTypeStr)) {
@@ -404,7 +400,7 @@ public class ApplicationServiceImpl implements ApplicationService {
             for (String resourceTemplateName : appResourcesNames) {
                 String metaDataStr = groupService.getGroupAppResourceTemplateMetaData(groupName, resourceTemplateName);
                 try {
-                    ResourceTemplateMetaData metaData = new ObjectMapper().readValue(metaDataStr, ResourceTemplateMetaData.class);
+                    ResourceTemplateMetaData metaData = resourceService.getFormattedResourceMetaData(resourceTemplateName, app, metaDataStr);
                     if (jvms != null && jvms.size() > 0 && !metaData.getEntity().getDeployToJvms()) {
                         // still need to iterate through the JVMs to get the host names
                         Set<String> hostNames = new HashSet<>();
