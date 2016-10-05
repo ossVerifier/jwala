@@ -381,7 +381,7 @@ var XmlTabs = React.createClass({
                                    onChange={this.onChangeCallback} readOnly={this.state.readOnly} mode="xml"/>
             metaDataEditor = <CodeMirrorComponent ref="metaDataEditor" content={this.state.metaData}
                                 className="xml-editor-container" saveCallback={this.saveResourceMetaData}
-                                onChange={this.onChangeCallback} mode="application/ld+json"/>
+                                onChange={this.onChangeCallback} mode="application/ld+json" formatCallback={this.formatMetaDataCallback}/>
             if (this.state.entityType === "webServerSection" || this.state.entityType === "jvmSection") {
                 xmlPreview = <div className="Resource preview msg">A group level web server or JVM template cannot be previewed. Please select a specific web server or JVM instead.</div>;
                 metaDataPreview = <div className="Resource preview msg">A group level web server or JVM template cannot be previewed. Please select a specific web server or JVM instead.</div>;
@@ -404,6 +404,15 @@ var XmlTabs = React.createClass({
         return <RTabs ref="tabs" items={xmlTabItems} depth={2} onSelectTab={this.onSelectTab}
                       className="xml-editor-preview-tab-component"
                       contentClassName="xml-editor-preview-tab-component content" />
+    },
+    formatMetaDataCallback: function() {
+        try {
+            var metaDataJson = JSON.parse(this.refs.metaDataEditor.getText());
+            this.refs.metaDataEditor.codeMirror.setValue(JSON.stringify(metaDataJson, null, XmlTabs.SPACING_LEVEL));
+        } catch(e) {
+            console.log(e);
+            $.errorAlert(e.message, "Error formatting meta data", false);
+        }
     },
     componentWillUpdate: function(nextProps, nextState) {
         this.refs.tabs.setState({activeHash: "#/Configuration/Resources/" + this.state.lastSaved + "/",
@@ -710,6 +719,9 @@ var XmlTabs = React.createClass({
             });
 
         }
+    },
+    statics: {
+        SPACING_LEVEL: 4
     }
 });
 
