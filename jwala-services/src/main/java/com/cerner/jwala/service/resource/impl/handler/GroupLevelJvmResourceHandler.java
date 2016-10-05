@@ -59,7 +59,7 @@ public class GroupLevelJvmResourceHandler extends ResourceHandler {
 
             for (final Jvm jvm : jvms) {
                 UploadJvmConfigTemplateRequest uploadJvmTemplateRequest = new UploadJvmConfigTemplateRequest(jvm, metaData.getTemplateName(),
-                        templateContent, convertResourceTemplateMetaDataToJson(metaData));
+                        templateContent, metaData.getJsonData());
                 uploadJvmTemplateRequest.setConfFileName(metaData.getDeployFileName());
 
                 // Since we're just creating the same template for all the JVMs, we just keep one copy of the created
@@ -68,7 +68,7 @@ public class GroupLevelJvmResourceHandler extends ResourceHandler {
             }
             final List<UploadJvmTemplateRequest> uploadJvmTemplateRequestList = new ArrayList<>();
             UploadJvmConfigTemplateRequest uploadJvmTemplateRequest = new UploadJvmConfigTemplateRequest(null, metaData.getTemplateName(),
-                    templateContent, convertResourceTemplateMetaDataToJson(metaData));
+                    templateContent, metaData.getJsonData());
             uploadJvmTemplateRequest.setConfFileName(metaData.getDeployFileName());
             uploadJvmTemplateRequestList.add(uploadJvmTemplateRequest);
             groupPersistenceService.populateGroupJvmTemplates(resourceIdentifier.groupName, uploadJvmTemplateRequestList);

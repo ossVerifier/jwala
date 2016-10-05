@@ -1,6 +1,10 @@
 package com.cerner.jwala.common.domain.model.resource;
 
 import org.apache.commons.lang3.StringUtils;
+import org.codehaus.jackson.annotate.JsonIgnore;
+import org.codehaus.jackson.map.ObjectMapper;
+
+import java.io.IOException;
 
 /**
  * Resource template meta data.
@@ -15,6 +19,11 @@ public class ResourceTemplateMetaData {
     private Entity entity;
     private boolean unpack = false;
     private boolean overwrite = false;
+
+    @JsonIgnore
+    private String jsonData;
+
+    private static final ObjectMapper objectMapper = new ObjectMapper();
 
     public String getTemplateName() {
         return templateName;
@@ -71,6 +80,23 @@ public class ResourceTemplateMetaData {
 
     public void setOverwrite(boolean overwrite) { this.overwrite = overwrite; }
 
+    public String getJsonData() {
+        try {
+            final ResourceTemplateMetaData metaData = createFromJsonStr(jsonData);
+            if (this.equals(metaData)) {
+                return jsonData;
+            }
+            jsonData = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(this);
+            return jsonData;
+        } catch (final IOException e) {
+            throw new ResourceTemplateMetaDataException("Failed to generate JSON data!", e);
+        }
+    }
+
+    public void setJsonData(String jsonData) {
+        this.jsonData = jsonData;
+    }
+
     @Override
     public String toString() {
         return "ResourceTemplateMetaData{" +
@@ -82,5 +108,51 @@ public class ResourceTemplateMetaData {
                 ", unpack=" + unpack +
                 ", overwrite=" + overwrite +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        ResourceTemplateMetaData metaData = (ResourceTemplateMetaData) o;
+
+        if (unpack != metaData.unpack) return false;
+        if (overwrite != metaData.overwrite) return false;
+        if (templateName != null ? !templateName.equals(metaData.templateName) : metaData.templateName != null)
+            return false;
+        if (contentType != metaData.contentType) return false;
+        if (deployFileName != null ? !deployFileName.equals(metaData.deployFileName) : metaData.deployFileName != null)
+            return false;
+        if (deployPath != null ? !deployPath.equals(metaData.deployPath) : metaData.deployPath != null) return false;
+        return !(entity != null ? !entity.equals(metaData.entity) : metaData.entity != null);
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = templateName != null ? templateName.hashCode() : 0;
+        result = 31 * result + (contentType != null ? contentType.hashCode() : 0);
+        result = 31 * result + (deployFileName != null ? deployFileName.hashCode() : 0);
+        result = 31 * result + (deployPath != null ? deployPath.hashCode() : 0);
+        result = 31 * result + (entity != null ? entity.hashCode() : 0);
+        result = 31 * result + (unpack ? 1 : 0);
+        result = 31 * result + (overwrite ? 1 : 0);
+        return result;
+    }
+
+    /**
+     * Creates a resource meta data from a json string
+     * @param jsonData the json resource meta data string
+     * @return {@link ResourceTemplateMetaData}
+     * @throws IOException
+     */
+    public static ResourceTemplateMetaData createFromJsonStr(final String jsonData) throws IOException {
+        if (StringUtils.isNotEmpty(jsonData)) {
+            final ResourceTemplateMetaData metaData = objectMapper.readValue(jsonData, ResourceTemplateMetaData.class);
+            metaData.setJsonData(jsonData);
+            return metaData;
+        }
+        return new ResourceTemplateMetaData();
     }
 }

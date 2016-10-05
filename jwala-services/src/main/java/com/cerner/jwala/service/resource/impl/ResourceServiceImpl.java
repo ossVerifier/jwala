@@ -36,7 +36,6 @@ import com.cerner.jwala.service.resource.impl.handler.exception.ResourceHandlerE
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -141,13 +140,12 @@ public class ResourceServiceImpl implements ResourceService {
                                                         InputStream templateData,
                                                         final String targetName,
                                                         final User user) {
-        final ObjectMapper mapper = new ObjectMapper();
         final ResourceTemplateMetaData resourceTemplateMetaData;
         final CreateResourceResponseWrapper responseWrapper;
         String templateContent = "";
 
         try {
-            resourceTemplateMetaData = mapper.readValue(IOUtils.toString(metaData), ResourceTemplateMetaData.class);
+            resourceTemplateMetaData = ResourceTemplateMetaData.createFromJsonStr(IOUtils.toString(metaData));
             if (resourceTemplateMetaData.getContentType().equals(ContentType.APPLICATION_BINARY.contentTypeStr)) {
                 templateContent = uploadResource(resourceTemplateMetaData, templateData);
             } else {
@@ -184,15 +182,6 @@ public class ResourceServiceImpl implements ResourceService {
         }
 
         return responseWrapper;
-    }
-
-    protected String convertResourceTemplateMetaDataToJson(final ResourceTemplateMetaData resourceTemplateMetaData) {
-        final ObjectMapper mapper = new ObjectMapper();
-        try {
-            return mapper.writeValueAsString(resourceTemplateMetaData);
-        } catch (final IOException ioe) {
-            throw new ResourceServiceException(ioe);
-        }
     }
 
     @Override
@@ -332,7 +321,7 @@ public class ResourceServiceImpl implements ResourceService {
                 jvm.getEncryptedPassword());
 
         final UploadJvmConfigTemplateRequest uploadJvmTemplateRequest = new UploadJvmConfigTemplateRequest(jvmWithParentGroup, metaData.getTemplateName(),
-                templateContent, convertResourceTemplateMetaDataToJson(metaData));
+                templateContent, metaData.getJsonData());
         uploadJvmTemplateRequest.setConfFileName(metaData.getDeployFileName());
         return new CreateResourceResponseWrapper(jvmPersistenceService.uploadJvmConfigTemplate(uploadJvmTemplateRequest));
     }
@@ -353,7 +342,7 @@ public class ResourceServiceImpl implements ResourceService {
 
         for (final Jvm jvm : jvms) {
             UploadJvmConfigTemplateRequest uploadJvmTemplateRequest = new UploadJvmConfigTemplateRequest(jvm, metaData.getTemplateName(),
-                    templateContent, convertResourceTemplateMetaDataToJson(metaData));
+                    templateContent, metaData.getJsonData());
             uploadJvmTemplateRequest.setConfFileName(deployFileName);
 
             // Since we're just creating the same template for all the JVMs, we just keep one copy of the created
@@ -362,7 +351,7 @@ public class ResourceServiceImpl implements ResourceService {
         }
         final List<UploadJvmTemplateRequest> uploadJvmTemplateRequestList = new ArrayList<>();
         UploadJvmConfigTemplateRequest uploadJvmTemplateRequest = new UploadJvmConfigTemplateRequest(null, metaData.getTemplateName(),
-                templateContent, convertResourceTemplateMetaDataToJson(metaData));
+                templateContent, metaData.getJsonData());
         uploadJvmTemplateRequest.setConfFileName(deployFileName);
         uploadJvmTemplateRequestList.add(uploadJvmTemplateRequest);
         groupPersistenceService.populateGroupJvmTemplates(metaData.getEntity().getGroup(), uploadJvmTemplateRequestList);
@@ -385,7 +374,7 @@ public class ResourceServiceImpl implements ResourceService {
         final WebServer webServer = webServerPersistenceService.findWebServerByName(webServerName);
         final String deployFileName = metaData.getDeployFileName();
         final UploadWebServerTemplateRequest uploadWebArchiveRequest = new UploadWebServerTemplateRequest(webServer,
-                metaData.getTemplateName(), convertResourceTemplateMetaDataToJson(metaData), templateContent) {
+                metaData.getTemplateName(), metaData.getJsonData(), templateContent) {
             @Override
             public String getConfFileName() {
                 return deployFileName;
@@ -414,7 +403,7 @@ public class ResourceServiceImpl implements ResourceService {
         for (final WebServer webServer : webServers) {
 
             UploadWebServerTemplateRequest uploadWebServerTemplateRequest = new UploadWebServerTemplateRequest(webServer,
-                    metaData.getTemplateName(), convertResourceTemplateMetaDataToJson(metaData), templateContent) {
+                    metaData.getTemplateName(), metaData.getJsonData(), templateContent) {
                 @Override
                 public String getConfFileName() {
                     return deployFileName;
@@ -428,7 +417,7 @@ public class ResourceServiceImpl implements ResourceService {
         }
 
         UploadWebServerTemplateRequest uploadWebServerTemplateRequest = new UploadWebServerTemplateRequest(null,
-                metaData.getTemplateName(), convertResourceTemplateMetaDataToJson(metaData), templateContent) {
+                metaData.getTemplateName(), metaData.getJsonData(), templateContent) {
             @Override
             public String getConfFileName() {
                 return deployFileName;
@@ -450,7 +439,7 @@ public class ResourceServiceImpl implements ResourceService {
     private CreateResourceResponseWrapper createApplicationTemplate(final ResourceTemplateMetaData metaData, final String templateContent, String targetJvmName) {
         final Application application = applicationPersistenceService.getApplication(metaData.getEntity().getTarget());
         UploadAppTemplateRequest uploadAppTemplateRequest = new UploadAppTemplateRequest(application, metaData.getTemplateName(),
-                metaData.getDeployFileName(), targetJvmName, convertResourceTemplateMetaDataToJson(metaData), templateContent);
+                metaData.getDeployFileName(), targetJvmName, metaData.getJsonData(), templateContent);
         JpaJvm jpaJvm = jvmPersistenceService.getJpaJvm(jvmPersistenceService.findJvmByExactName(targetJvmName).getId(), false);
         return new CreateResourceResponseWrapper(applicationPersistenceService.uploadAppTemplate(uploadAppTemplateRequest, jpaJvm));
     }
@@ -481,7 +470,7 @@ public class ResourceServiceImpl implements ResourceService {
             if (metaData.getEntity().getDeployToJvms() && application.getName().equals(targetAppName)) {
                 for (final Jvm jvm : group.getJvms()) {
                     UploadAppTemplateRequest uploadAppTemplateRequest = new UploadAppTemplateRequest(application, metaData.getTemplateName(),
-                            deployFileName, jvm.getJvmName(), convertResourceTemplateMetaDataToJson(metaData), templateContent
+                            deployFileName, jvm.getJvmName(), metaData.getJsonData(), templateContent
                     );
                     JpaJvm jpaJvm = jvmPersistenceService.getJpaJvm(jvm.getId(), false);
                     applicationPersistenceService.uploadAppTemplate(uploadAppTemplateRequest, jpaJvm);
@@ -490,7 +479,7 @@ public class ResourceServiceImpl implements ResourceService {
         }
 
         createdConfigTemplate = groupPersistenceService.populateGroupAppTemplate(groupName, targetAppName, deployFileName,
-                convertResourceTemplateMetaDataToJson(metaData), templateContent);
+                metaData.getJsonData(), templateContent);
 
         return new CreateResourceResponseWrapper(createdConfigTemplate);
     }
@@ -578,19 +567,7 @@ public class ResourceServiceImpl implements ResourceService {
     public ResourceContent getResourceContent(final ResourceIdentifier resourceIdentifier) {
         final ConfigTemplate configTemplate = resourceHandler.fetchResource(resourceIdentifier);
         if (configTemplate != null) {
-            final ObjectMapper mapper = new ObjectMapper();
-            String jsonStrMetaData;
-            try {
-                final ResourceTemplateMetaData metaData = mapper.readValue(configTemplate.getMetaData(),
-                                                                           ResourceTemplateMetaData.class);
-                jsonStrMetaData = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(metaData);
-            } catch (final IOException e) {
-                // Since prettifying JSON is not a critical error, we just log it instead of throwing
-                // an exception and just return the JSON in its raw format
-                LOGGER.error("Failed to prettify JSON meta data = {}", configTemplate.getMetaData(), e);
-                jsonStrMetaData = configTemplate.getMetaData();
-            }
-            return new ResourceContent(jsonStrMetaData, configTemplate.getTemplateContent());
+            return new ResourceContent(configTemplate.getMetaData(), configTemplate.getTemplateContent());
         }
         return null;
     }
@@ -704,7 +681,7 @@ public class ResourceServiceImpl implements ResourceService {
             String metaDataStr = resourceContent.getMetaData();
             final String tokenizedMetaData = this.generateResourceFile(fileName, metaDataStr, generateResourceGroup(), null, ResourceGeneratorType.METADATA);
             LOGGER.info("tokenized metadata is : {}", tokenizedMetaData);
-            ResourceTemplateMetaData resourceTemplateMetaData = new ObjectMapper().readValue(tokenizedMetaData, ResourceTemplateMetaData.class);
+            ResourceTemplateMetaData resourceTemplateMetaData = ResourceTemplateMetaData.createFromJsonStr(tokenizedMetaData);
             metaDataPath = resourceTemplateMetaData.getDeployPath();
             String resourceSourceCopy;
             final String deployFileName = resourceTemplateMetaData.getDeployFileName();

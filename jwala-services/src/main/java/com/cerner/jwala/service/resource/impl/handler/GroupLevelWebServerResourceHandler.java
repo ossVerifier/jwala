@@ -69,7 +69,7 @@ public class GroupLevelWebServerResourceHandler extends ResourceHandler {
             for (final WebServer webServer : webServers) {
 
                 UploadWebServerTemplateRequest uploadWebServerTemplateRequest = new UploadWebServerTemplateRequest(webServer,
-                        metaData.getTemplateName(), convertResourceTemplateMetaDataToJson(metaData), templateContent) {
+                        metaData.getTemplateName(), metaData.getJsonData(), templateContent) {
                     @Override
                     public String getConfFileName() {
                         return metaData.getDeployFileName();
@@ -85,7 +85,7 @@ public class GroupLevelWebServerResourceHandler extends ResourceHandler {
             }
 
             UploadWebServerTemplateRequest uploadWebServerTemplateRequest = new UploadWebServerTemplateRequest(null,
-                    metaData.getTemplateName(), convertResourceTemplateMetaDataToJson(metaData), templateContent) {
+                    metaData.getTemplateName(), metaData.getJsonData(), templateContent) {
                 @Override
                 public String getConfFileName() {
                     return metaData.getDeployFileName();

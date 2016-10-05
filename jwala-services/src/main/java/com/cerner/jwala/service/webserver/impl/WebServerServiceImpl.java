@@ -21,7 +21,6 @@ import com.cerner.jwala.service.resource.impl.ResourceGeneratorType;
 import com.cerner.jwala.service.webserver.WebServerService;
 import com.cerner.jwala.service.webserver.exception.WebServerServiceException;
 import org.apache.commons.io.FileUtils;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Propagation;
@@ -218,7 +217,7 @@ public class WebServerServiceImpl implements WebServerService {
         final String metaDataStr = uploadWebServerTemplateRequest.getMetaData();
         final String absoluteDeployPath;
         try{
-            ResourceTemplateMetaData metaData = new ObjectMapper().readValue(metaDataStr, ResourceTemplateMetaData.class);
+            ResourceTemplateMetaData metaData = ResourceTemplateMetaData.createFromJsonStr(metaDataStr);
             absoluteDeployPath = resourceService.generateResourceFile(
                     metaData.getDeployFileName(),
                     metaData.getDeployPath() + "/" + metaData.getDeployFileName(),

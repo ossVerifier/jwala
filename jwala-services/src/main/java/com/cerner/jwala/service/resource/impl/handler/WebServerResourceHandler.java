@@ -53,7 +53,7 @@ public class WebServerResourceHandler extends ResourceHandler {
         if (canHandle(resourceIdentifier)) {
             final WebServer webServer = webServerPersistenceService.findWebServerByName(resourceIdentifier.webServerName);
             final UploadWebServerTemplateRequest uploadWebArchiveRequest = new UploadWebServerTemplateRequest(webServer,
-                    metaData.getTemplateName(), convertResourceTemplateMetaDataToJson(metaData), templateContent) {
+                    metaData.getTemplateName(), metaData.getJsonData(), templateContent) {
                 @Override
                 public String getConfFileName() {
                     return metaData.getDeployFileName();

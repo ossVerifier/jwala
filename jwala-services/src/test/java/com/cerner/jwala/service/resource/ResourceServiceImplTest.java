@@ -470,9 +470,7 @@ public class ResourceServiceImplTest {
         when(mockResourceHandler.fetchResource(any(ResourceIdentifier.class))).thenReturn(mockConfigTemplate);
 
         ResourceContent result = resourceService.getResourceContent(identifier);
-        assertEquals("{  \"templateName\" : null,  \"contentType\" : \"\",  \"deployFileName\" : null,  \"deployPath\" " +
-                ": null,  \"entity\" : null,  \"unpack\" : false,  \"overwrite\" : false}", result.getMetaData().
-                replaceAll("\r\n", ""));
+        assertEquals("{}", result.getMetaData());
         assertEquals("key=value", result.getContent());
     }
 

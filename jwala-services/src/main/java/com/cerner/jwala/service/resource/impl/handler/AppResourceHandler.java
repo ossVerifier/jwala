@@ -53,7 +53,7 @@ public class AppResourceHandler extends ResourceHandler {
         if (canHandle(resourceIdentifier)) {
             final Application application = applicationPersistenceService.getApplication(resourceIdentifier.webAppName);
             final UploadAppTemplateRequest uploadAppTemplateRequest = new UploadAppTemplateRequest(application, metaData.getTemplateName(),
-                    metaData.getDeployFileName(), resourceIdentifier.jvmName, convertResourceTemplateMetaDataToJson(metaData), templateContent);
+                    metaData.getDeployFileName(), resourceIdentifier.jvmName, metaData.getJsonData(), templateContent);
             final JpaJvm jpaJvm = jvmPersistenceService.getJpaJvm(jvmPersistenceService.findJvmByExactName(resourceIdentifier.jvmName).getId(), false);
             createResourceResponseWrapper = new CreateResourceResponseWrapper(applicationPersistenceService.uploadAppTemplate(uploadAppTemplateRequest, jpaJvm));
         } else if (successor != null) {

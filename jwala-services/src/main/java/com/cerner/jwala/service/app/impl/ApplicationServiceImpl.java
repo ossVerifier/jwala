@@ -41,7 +41,6 @@ import com.cerner.jwala.service.resource.impl.ResourceGeneratorType;
 import org.apache.commons.lang3.StringUtils;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -273,8 +272,7 @@ public class ApplicationServiceImpl implements ApplicationService {
             final String tokenizedMetaData = resourceService.generateResourceFile(resourceTemplateName, metaData, resourceGroup, app, ResourceGeneratorType.METADATA);
 
             LOGGER.info("tokenized metadata is : {}", tokenizedMetaData);
-            ObjectMapper mapper = new ObjectMapper();
-            ResourceTemplateMetaData templateMetaData = mapper.readValue(tokenizedMetaData, ResourceTemplateMetaData.class);
+            ResourceTemplateMetaData templateMetaData = ResourceTemplateMetaData.createFromJsonStr(tokenizedMetaData);
             final String deployFileName = templateMetaData.getDeployFileName();
             final String destPath = templateMetaData.getDeployPath() + '/' + deployFileName;
             String srcPath;
@@ -406,7 +404,7 @@ public class ApplicationServiceImpl implements ApplicationService {
             for (String resourceTemplateName : appResourcesNames) {
                 String metaDataStr = groupService.getGroupAppResourceTemplateMetaData(groupName, resourceTemplateName);
                 try {
-                    ResourceTemplateMetaData metaData = new ObjectMapper().readValue(metaDataStr, ResourceTemplateMetaData.class);
+                    ResourceTemplateMetaData metaData = ResourceTemplateMetaData.createFromJsonStr(metaDataStr);
                     if (jvms != null && jvms.size() > 0 && !metaData.getEntity().getDeployToJvms()) {
                         // still need to iterate through the JVMs to get the host names
                         Set<String> hostNames = new HashSet<>();

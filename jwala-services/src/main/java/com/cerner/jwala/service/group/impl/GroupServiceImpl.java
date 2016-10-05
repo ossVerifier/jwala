@@ -34,7 +34,6 @@ import com.cerner.jwala.service.exception.GroupServiceException;
 import com.cerner.jwala.service.group.GroupService;
 import com.cerner.jwala.service.resource.ResourceService;
 import com.cerner.jwala.service.resource.impl.ResourceGeneratorType;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
@@ -386,7 +385,7 @@ public class GroupServiceImpl implements GroupService {
         Jvm jvm = jvms != null && jvms.size() > 0 ? jvms.iterator().next() : null;
         String metaDataStr = groupPersistenceService.getGroupAppResourceTemplateMetaData(groupName, resourceTemplateName);
         try {
-            ResourceTemplateMetaData metaData = new ObjectMapper().readValue(metaDataStr, ResourceTemplateMetaData.class);
+            ResourceTemplateMetaData metaData = ResourceTemplateMetaData.createFromJsonStr(metaDataStr);
             Application app = applicationPersistenceService.getApplication(metaData.getEntity().getTarget());
             app.setParentJvm(jvm);
             return resourceService.generateResourceFile(resourceTemplateName, template, resourceGroup, app, ResourceGeneratorType.TEMPLATE);
@@ -408,7 +407,7 @@ public class GroupServiceImpl implements GroupService {
         if (tokensReplaced) {
             String metaDataStr = groupPersistenceService.getGroupAppResourceTemplateMetaData(groupName, resourceTemplateName);
             try {
-                ResourceTemplateMetaData metaData = new ObjectMapper().readValue(metaDataStr, ResourceTemplateMetaData.class);
+                ResourceTemplateMetaData metaData = ResourceTemplateMetaData.createFromJsonStr(metaDataStr);
                 Application app = applicationPersistenceService.getApplication(metaData.getEntity().getTarget());
                 return resourceService.generateResourceFile(resourceTemplateName, template, resourceGroup, app, ResourceGeneratorType.TEMPLATE);
             } catch (Exception x) {
@@ -453,7 +452,7 @@ public class GroupServiceImpl implements GroupService {
         try {
             final String tokenizedMetaData = resourceService.generateResourceFile(fileName, metaDataStr, resourceGroup, application, ResourceGeneratorType.METADATA);
             LOGGER.info("tokenized metadata is : {}", tokenizedMetaData);
-            metaData = new ObjectMapper().readValue(tokenizedMetaData, ResourceTemplateMetaData.class);
+            metaData = ResourceTemplateMetaData.createFromJsonStr(tokenizedMetaData);
             final String destPath = metaData.getDeployPath() + '/' + metaData.getDeployFileName();
             File confFile = createConfFile(metaData.getEntity().getTarget(), groupName, metaData.getDeployFileName(), resourceGroup);
             String srcPath, standardError;

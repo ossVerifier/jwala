@@ -52,7 +52,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.jaxrs.ext.MessageContext;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -735,9 +734,8 @@ public class GroupServiceRestImpl implements GroupServiceRest {
 
         try {
             final String updatedContent = groupService.updateGroupAppResourceTemplate(groupName, appName, resourceTemplateName, content);
-            ResourceTemplateMetaData metaData = new ObjectMapper().readValue(metaDataStr, ResourceTemplateMetaData.class);
-
-            Set<Jvm> groupJvms = group.getJvms();
+            ResourceTemplateMetaData metaData = ResourceTemplateMetaData.createFromJsonStr(metaDataStr);
+                    Set<Jvm> groupJvms = group.getJvms();
             Set<Future<Response>> futureContents = new HashSet<>();
             if (null != groupJvms) {
                 LOGGER.info("Updating the templates for all the JVMs in group {}", groupName);
@@ -784,10 +782,9 @@ public class GroupServiceRestImpl implements GroupServiceRest {
 
         Group group = groupService.getGroup(groupName);
         final String groupAppMetaData = groupService.getGroupAppResourceTemplateMetaData(groupName, fileName);
-        ObjectMapper objectMapper = new ObjectMapper();
         ResourceTemplateMetaData metaData;
         try {
-            metaData = objectMapper.readValue(groupAppMetaData, ResourceTemplateMetaData.class);
+            metaData = ResourceTemplateMetaData.createFromJsonStr(groupAppMetaData);
             final String appName = metaData.getEntity().getTarget();
             final ApplicationServiceRest appServiceRest = ApplicationServiceRestImpl.get();
             if (metaData.getEntity().getDeployToJvms()) {
