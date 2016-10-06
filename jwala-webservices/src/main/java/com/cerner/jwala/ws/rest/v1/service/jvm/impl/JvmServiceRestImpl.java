@@ -198,7 +198,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
     }
 
     @Override
-    public Response previewResourceTemplate(final String fileName, final String jvmName, final String groupName, final String template) {
+    public Response previewResourceTemplate(final String jvmName, final String fileName, final String groupName, final String template) {
         LOGGER.debug("Preview resource template for JVM {} in group {} with content {}", jvmName, groupName, template);
         try {
             return ResponseBuilder.ok(jvmService.previewResourceTemplate(fileName, jvmName, groupName, template));

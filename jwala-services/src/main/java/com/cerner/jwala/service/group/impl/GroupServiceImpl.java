@@ -33,8 +33,9 @@ import com.cerner.jwala.service.binarydistribution.BinaryDistributionService;
 import com.cerner.jwala.service.exception.GroupServiceException;
 import com.cerner.jwala.service.group.GroupService;
 import com.cerner.jwala.service.resource.ResourceService;
+import com.cerner.jwala.service.resource.impl.ResourceGeneratorType;
+import org.slf4j.Logger;
 import org.apache.commons.io.FilenameUtils;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
@@ -283,7 +284,7 @@ public class GroupServiceImpl implements GroupService {
             // TODO returns the tokenized version of a dummy JVM, but make sure that when deployed each instance is tokenized per JVM
             final Set<Jvm> jvms = groupPersistenceService.getGroup(groupName).getJvms();
             if (jvms != null && !jvms.isEmpty()) {
-                return resourceService.generateResourceFile(resourceTemplateName, template, resourceGroup, jvms.iterator().next());
+                return resourceService.generateResourceFile(resourceTemplateName, template, resourceGroup, jvms.iterator().next(), ResourceGeneratorType.TEMPLATE);
             }
         }
         return template;
@@ -313,7 +314,7 @@ public class GroupServiceImpl implements GroupService {
         Set<WebServer> webservers = groupPersistenceService.getGroupWithWebServers(group.getId()).getWebServers();
         if (webservers != null && !webservers.isEmpty()) {
             final WebServer webServer = webservers.iterator().next();
-            return resourceService.generateResourceFile(fileName, template, resourceGroup, webServer);
+            return resourceService.generateResourceFile(fileName, template, resourceGroup, webServer, ResourceGeneratorType.PREVIEW);
         }
         return template;
     }
@@ -330,7 +331,7 @@ public class GroupServiceImpl implements GroupService {
             Set<WebServer> webservers = groupPersistenceService.getGroupWithWebServers(group.getId()).getWebServers();
             if (webservers != null && !webservers.isEmpty()) {
                 final WebServer webServer = webservers.iterator().next();
-                return resourceService.generateResourceFile(resourceTemplateName, template, resourceGroup, webServer);
+                return resourceService.generateResourceFile(resourceTemplateName, template, resourceGroup, webServer, ResourceGeneratorType.TEMPLATE);
             }
         }
         return template;
@@ -387,10 +388,10 @@ public class GroupServiceImpl implements GroupService {
         Jvm jvm = jvms != null && jvms.size() > 0 ? jvms.iterator().next() : null;
         String metaDataStr = groupPersistenceService.getGroupAppResourceTemplateMetaData(groupName, resourceTemplateName);
         try {
-            ResourceTemplateMetaData metaData = new ObjectMapper().readValue(metaDataStr, ResourceTemplateMetaData.class);
+            ResourceTemplateMetaData metaData = ResourceTemplateMetaData.createFromJsonStr(metaDataStr);
             Application app = applicationPersistenceService.getApplication(metaData.getEntity().getTarget());
             app.setParentJvm(jvm);
-            return resourceService.generateResourceFile(resourceTemplateName, template, resourceGroup, app);
+            return resourceService.generateResourceFile(resourceTemplateName, template, resourceGroup, app, ResourceGeneratorType.TEMPLATE);
         } catch (Exception x) {
             LOGGER.error("Failed to generate preview for template {} in  group {}", resourceTemplateName, groupName, x);
             throw new ApplicationException("Template token replacement failed.", x);
@@ -409,9 +410,9 @@ public class GroupServiceImpl implements GroupService {
         if (tokensReplaced) {
             String metaDataStr = groupPersistenceService.getGroupAppResourceTemplateMetaData(groupName, resourceTemplateName);
             try {
-                ResourceTemplateMetaData metaData = new ObjectMapper().readValue(metaDataStr, ResourceTemplateMetaData.class);
+                ResourceTemplateMetaData metaData = ResourceTemplateMetaData.createFromJsonStr(metaDataStr);
                 Application app = applicationPersistenceService.getApplication(metaData.getEntity().getTarget());
-                return resourceService.generateResourceFile(resourceTemplateName, template, resourceGroup, app);
+                return resourceService.generateResourceFile(resourceTemplateName, template, resourceGroup, app, ResourceGeneratorType.TEMPLATE);
             } catch (Exception x) {
                 LOGGER.error("Failed to tokenize template {} in group {}", resourceTemplateName, groupName, x);
                 throw new ApplicationException("Template token replacement failed.", x);
@@ -452,9 +453,9 @@ public class GroupServiceImpl implements GroupService {
         String metaDataStr = getGroupAppResourceTemplateMetaData(groupName, fileName);
         ResourceTemplateMetaData metaData;
         try {
-            final String tokenizedMetaData = resourceService.generateResourceFile(fileName, metaDataStr, resourceGroup, application);
+            final String tokenizedMetaData = resourceService.generateResourceFile(fileName, metaDataStr, resourceGroup, application, ResourceGeneratorType.METADATA);
             LOGGER.info("tokenized metadata is : {}", tokenizedMetaData);
-            metaData = new ObjectMapper().readValue(tokenizedMetaData, ResourceTemplateMetaData.class);
+            metaData = ResourceTemplateMetaData.createFromJsonStr(tokenizedMetaData);
             final String destPath = metaData.getDeployPath() + '/' + metaData.getDeployFileName();
             File confFile = createConfFile(metaData.getEntity().getTarget(), groupName, metaData.getDeployFileName(), resourceGroup);
             String srcPath, standardError;

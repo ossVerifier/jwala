@@ -575,7 +575,7 @@ public class ResourceServiceRestImplTest {
         param.setJvm("test-jvm");
         param.setWebApp("test-app");
         param.setWebServer("test-webserver");
-        when(impl.previewResourceContent(anyString(), any(ResourceIdentifier.class), anyString())).thenReturn("key=value");
+        when(impl.previewResourceContent(any(ResourceIdentifier.class), anyString())).thenReturn("key=value");
         Response result = cut.previewResourceContent("myFile", param, "key=value");
         assertEquals(200, result.getStatus());
     }

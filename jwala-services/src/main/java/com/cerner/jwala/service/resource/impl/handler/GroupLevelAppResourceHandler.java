@@ -81,7 +81,7 @@ public class GroupLevelAppResourceHandler extends ResourceHandler {
             }
 
             createdConfigTemplate = groupPersistenceService.populateGroupAppTemplate(groupName, resourceIdentifier.webAppName,
-                    metaData.getDeployFileName(), convertResourceTemplateMetaDataToJson(metaData), templateContent);
+                    metaData.getDeployFileName(), metaData.getJsonData(), templateContent);
 
             // Can't we just get the application using the group name and target app name instead of getting all the applications
             // then iterating it to compare with the target app name ???
@@ -92,7 +92,7 @@ public class GroupLevelAppResourceHandler extends ResourceHandler {
                 if (metaData.getEntity().getDeployToJvms() && application.getName().equals(resourceIdentifier.webAppName)) {
                     for (final Jvm jvm : group.getJvms()) {
                         UploadAppTemplateRequest uploadAppTemplateRequest = new UploadAppTemplateRequest(application, metaData.getTemplateName(),
-                                metaData.getDeployFileName(), jvm.getJvmName(), convertResourceTemplateMetaDataToJson(metaData), templateContent
+                                metaData.getDeployFileName(), jvm.getJvmName(), metaData.getJsonData(), templateContent
                         );
                         JpaJvm jpaJvm = jvmPersistenceService.getJpaJvm(jvm.getId(), false);
                         applicationPersistenceService.uploadAppTemplate(uploadAppTemplateRequest, jpaJvm);

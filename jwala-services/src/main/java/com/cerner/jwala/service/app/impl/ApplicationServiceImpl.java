@@ -37,11 +37,11 @@ import com.cerner.jwala.service.binarydistribution.BinaryDistributionService;
 import com.cerner.jwala.service.exception.ApplicationServiceException;
 import com.cerner.jwala.service.group.GroupService;
 import com.cerner.jwala.service.resource.ResourceService;
+import com.cerner.jwala.service.resource.impl.ResourceGeneratorType;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -232,7 +232,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         if (tokensReplaced) {
             final Application application = applicationPersistenceService.findApplication(appName, groupName, jvmName);
             application.setParentJvm(jvmPersistenceService.findJvmByExactName(jvmName));
-            return resourceService.generateResourceFile(resourceTemplateName, template, resourceGroup, application);
+            return resourceService.generateResourceFile(resourceTemplateName, template, resourceGroup, application, ResourceGeneratorType.TEMPLATE);
         }
         return template;
     }
@@ -271,13 +271,13 @@ public class ApplicationServiceImpl implements ApplicationService {
 
             String metaData = applicationPersistenceService.getMetaData(appName, jvmName, groupName, resourceTemplateName);
             app.setParentJvm(jvm);
-            final String tokenizedMetaData = resourceService.generateResourceFile(resourceTemplateName, metaData, resourceGroup, app);
+            final String tokenizedMetaData = resourceService.generateResourceFile(resourceTemplateName, metaData, resourceGroup, app, ResourceGeneratorType.METADATA);
 
             LOGGER.info("tokenized metadata is : {}", tokenizedMetaData);
-            ObjectMapper mapper = new ObjectMapper();
-            ResourceTemplateMetaData templateMetaData = mapper.readValue(tokenizedMetaData, ResourceTemplateMetaData.class);
+            ResourceTemplateMetaData templateMetaData = ResourceTemplateMetaData.createFromJsonStr(tokenizedMetaData);
             final String deployFileName = templateMetaData.getDeployFileName();
-            final String destPath = templateMetaData.getDeployPath() + '/' + deployFileName;            String srcPath;
+            final String destPath = templateMetaData.getDeployPath() + '/' + deployFileName;
+            String srcPath;
             if (templateMetaData.getContentType().equals(ContentType.APPLICATION_BINARY.contentTypeStr)) {
                 srcPath = applicationPersistenceService.getResourceTemplate(appName, resourceTemplateName, jvmName, groupName);
             } else {
@@ -376,7 +376,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         } else {
             application = applicationPersistenceService.getApplication(appName);
         }
-        return resourceService.generateResourceFile(fileName, template, resourceGroup, application);
+        return resourceService.generateResourceFile(fileName, template, resourceGroup, application, ResourceGeneratorType.PREVIEW);
     }
 
     @Override
@@ -406,7 +406,7 @@ public class ApplicationServiceImpl implements ApplicationService {
             for (String resourceTemplateName : appResourcesNames) {
                 String metaDataStr = groupService.getGroupAppResourceTemplateMetaData(groupName, resourceTemplateName);
                 try {
-                    ResourceTemplateMetaData metaData = new ObjectMapper().readValue(metaDataStr, ResourceTemplateMetaData.class);
+                    ResourceTemplateMetaData metaData = ResourceTemplateMetaData.createFromJsonStr(metaDataStr);
                     if (jvms != null && jvms.size() > 0 && !metaData.getEntity().getDeployToJvms()) {
                         // still need to iterate through the JVMs to get the host names
                         Set<String> hostNames = new HashSet<>();

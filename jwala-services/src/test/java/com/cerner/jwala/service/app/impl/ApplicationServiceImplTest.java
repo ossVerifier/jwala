@@ -41,6 +41,7 @@ import com.cerner.jwala.service.exception.ApplicationServiceException;
 import com.cerner.jwala.service.group.GroupService;
 import com.cerner.jwala.service.resource.ResourceService;
 import com.cerner.jwala.service.resource.impl.CreateResourceResponseWrapper;
+import com.cerner.jwala.service.resource.impl.ResourceGeneratorType;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -349,7 +350,7 @@ public class ApplicationServiceImplTest {
         when(applicationPersistenceService.findApplication(eq("hct"), anyString(), anyString())).thenReturn(app);
         when(jvmPersistenceService.findJvm(anyString(), anyString())).thenReturn(null);
         applicationService.getResourceTemplate("hct", "group1", "jvm1", "hct.xml", new ResourceGroup(), true);
-        verify(mockResourceService).generateResourceFile(anyString(), anyString(), any(ResourceGroup.class), any(Application.class));
+        verify(mockResourceService).generateResourceFile(anyString(), anyString(), any(ResourceGroup.class), any(Application.class), any(ResourceGeneratorType.class));
         when(applicationPersistenceService.getResourceTemplate(eq("hct"), eq("hct.xml"), eq("jvm1"), eq("group1"))).thenReturn(theTemplate);
         try {
             applicationService.getResourceTemplate("hct", "group1", "jvm1", "hct.xml", new ResourceGroup(), true);
@@ -383,7 +384,7 @@ public class ApplicationServiceImplTest {
 
         when(jvmPersistenceService.findJvm(eq("jvm-1"), eq("hct-group"))).thenReturn(jvm);
 
-        when(mockResourceService.generateResourceFile(anyString(), anyString(), any(ResourceGroup.class), any())).thenReturn("{\"deployPath\":\"./test/deploy-path/conf/CatalinaSSL/localhost\",\"contentType\":\"text/xml\",\"entity\":{\"type\":\"APPLICATION\",\"target\":\"soarcom-hct\",\"group\":\"soarcom-616\",\"parentName\":null,\"deployToJvms\":true},\"templateName\":\"hctXmlTemplate.tpl\",\"deployFileName\":\"hct.xml\"}");
+        when(mockResourceService.generateResourceFile(anyString(), anyString(), any(ResourceGroup.class), any(), any(ResourceGeneratorType.class))).thenReturn("{\"deployPath\":\"./test/deploy-path/conf/CatalinaSSL/localhost\",\"contentType\":\"text/xml\",\"entity\":{\"type\":\"APPLICATION\",\"target\":\"soarcom-hct\",\"group\":\"soarcom-616\",\"parentName\":null,\"deployToJvms\":true},\"templateName\":\"hctXmlTemplate.tpl\",\"deployFileName\":\"hct.xml\"}");
 
         CommandOutput retExecData = applicationService.deployConf("hct", "hct-group", "jvm-1", "hct.xml", mock(ResourceGroup.class), testUser);
         assertTrue(retExecData.getReturnCode().wasSuccessful());
@@ -436,7 +437,7 @@ public class ApplicationServiceImplTest {
         when(applicationPersistenceService.findApplication(eq("hct"), eq("hct-group"), eq("jvm-1"))).thenReturn(mockApplication);
         when(applicationPersistenceService.getMetaData(anyString(), anyString(), anyString(), anyString())).thenReturn(META_DATA_TEST_VALUES);
         when(jvmPersistenceService.findJvm(eq("jvm-1"), eq("hct-group"))).thenReturn(jvm);
-        when(mockResourceService.generateResourceFile(anyString(), anyString(), any(ResourceGroup.class), any())).thenReturn("anything");
+        when(mockResourceService.generateResourceFile(anyString(), anyString(), any(ResourceGroup.class), any(), any(ResourceGeneratorType.class))).thenReturn("anything");
         final CommandOutput retExecData = applicationService.deployConf("hct", "hct-group", "jvm-1", "hct.xml", mock(ResourceGroup.class), testUser);
     }
 
@@ -457,7 +458,7 @@ public class ApplicationServiceImplTest {
         when(applicationPersistenceService.findApplication(eq("hct"), eq("hct-group"), eq("jvm-1"))).thenReturn(mockApplication);
         when(applicationPersistenceService.getMetaData(anyString(), anyString(), anyString(), anyString())).thenReturn(META_DATA_TEST_VALUES);
         when(jvmPersistenceService.findJvm(eq("jvm-1"), eq("hct-group"))).thenReturn(jvm);
-        when(mockResourceService.generateResourceFile(anyString(), anyString(), any(ResourceGroup.class), any())).thenReturn("anything");
+        when(mockResourceService.generateResourceFile(anyString(), anyString(), any(ResourceGroup.class), any(), any(ResourceGeneratorType.class))).thenReturn("anything");
         final CommandOutput retExecData = applicationService.deployConf("hct", "hct-group", "jvm-1", "hct.xml", mock(ResourceGroup.class), testUser);
     }
 
@@ -478,7 +479,7 @@ public class ApplicationServiceImplTest {
         when(applicationPersistenceService.findApplication(eq("hct"), eq("hct-group"), eq("jvm-1"))).thenReturn(mockApplication);
         when(applicationPersistenceService.getMetaData(anyString(), anyString(), anyString(), anyString())).thenReturn(META_DATA_TEST_VALUES);
         when(jvmPersistenceService.findJvm(eq("jvm-1"), eq("hct-group"))).thenReturn(jvm);
-        when(mockResourceService.generateResourceFile(anyString(), anyString(), any(ResourceGroup.class), any())).thenReturn("anything");
+        when(mockResourceService.generateResourceFile(anyString(), anyString(), any(ResourceGroup.class), any(), any(ResourceGeneratorType.class))).thenReturn("anything");
         final CommandOutput retExecData = applicationService.deployConf("hct", "hct-group", "jvm-1", "hct.xml", mock(ResourceGroup.class), testUser);
     }
 
@@ -499,7 +500,7 @@ public class ApplicationServiceImplTest {
         when(applicationPersistenceService.findApplication(eq("hct"), eq("hct-group"), eq("jvm-1"))).thenReturn(mockApplication);
         when(jvmPersistenceService.findJvm(eq("jvm-1"), eq("hct-group"))).thenReturn(jvm);
         final String preview = applicationService.previewResourceTemplate("myFile", "hct", "hct-group", "jvm-1", "Template contents", new ResourceGroup());
-        verify(mockResourceService).generateResourceFile(anyString(), anyString(), any(ResourceGroup.class), any(Application.class));
+        verify(mockResourceService).generateResourceFile(anyString(), anyString(), any(ResourceGroup.class), any(Application.class), any(ResourceGeneratorType.class));
     }
 
     @Test

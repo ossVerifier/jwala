@@ -22,6 +22,7 @@ import com.cerner.jwala.exception.CommandFailureException;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionService;
 import com.cerner.jwala.service.group.GroupService;
 import com.cerner.jwala.service.resource.ResourceService;
+import com.cerner.jwala.service.resource.impl.ResourceGeneratorType;
 import com.cerner.jwala.service.webserver.WebServerCommandService;
 import com.cerner.jwala.service.webserver.WebServerControlService;
 import com.cerner.jwala.service.webserver.WebServerService;
@@ -32,7 +33,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.jaxrs.ext.MessageContext;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -111,7 +111,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
                     String metaDataStr = groupService.getGroupWebServerResourceTemplateMetaData(groupName, templateName);
                     ResourceTemplateMetaData metaData;
                     try {
-                        metaData = new ObjectMapper().readValue(metaDataStr, ResourceTemplateMetaData.class);
+                        metaData = ResourceTemplateMetaData.createFromJsonStr(metaDataStr);
                         UploadWebServerTemplateRequest uploadWSRequest = new UploadWebServerTemplateRequest(webServer, metaData.getTemplateName(), metaDataStr, templateContent) {
                             @Override
                             public String getConfFileName() {
@@ -223,9 +223,9 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
             String metaDataStr = webServerService.getResourceTemplateMetaData(aWebServerName, resourceFileName);
             final String tokenizedMetaData = resourceService.generateResourceFile(resourceFileName, metaDataStr,
                     resourceService.generateResourceGroup(),
-                    webServerService.getWebServer(aWebServerName));
+                    webServerService.getWebServer(aWebServerName), ResourceGeneratorType.METADATA);
             LOGGER.info("tokenized metadata is : {}", tokenizedMetaData);
-            ResourceTemplateMetaData metaData = new ObjectMapper().readValue(tokenizedMetaData, ResourceTemplateMetaData.class);
+            ResourceTemplateMetaData metaData = ResourceTemplateMetaData.createFromJsonStr(tokenizedMetaData);
             final String deployFileName = metaData.getDeployFileName();
 
             String configFilePath;
