@@ -434,7 +434,8 @@ var XmlTabs = React.createClass({
     },
     /*** Save and Deploy methods: Start ***/
     saveResource: function(template) {
-        if (this.state.entityType === "jvmSection" || this.state.entityType === "webServerSection"){
+        var parsedMetaData = JSON.parse(this.state.metaData.replace(/\\/g, "\\\\")); // escape any backslashes before parsing
+        if (this.state.entityType === "jvmSection" || this.state.entityType === "webServerSection" || (this.state.entityType === "webApps" && parsedMetaData.entity.deployToJvms)){
             this.props.updateGroupTemplateCallback(template);
         } else {
             this.saveResourcePromise(template).then(this.savedResourceCallback).caught(this.failed.bind(this, "Save Resource Template"));
@@ -468,8 +469,8 @@ var XmlTabs = React.createClass({
     saveGroupTemplate: function(template){
         var thePromise;
         var self = this;
-        if (this.state.groupJvmEntityType && this.state.groupJvmEntityType === "webApp") {
-            thePromise = this.props.groupService.updateGroupAppResourceTemplate(this.state.entityGroupName, this.state.resourceTemplateName, template);
+        if (this.state.entityType === "webApps") {
+            thePromise = this.props.groupService.updateGroupAppResourceTemplate(this.state.entity.group.name, this.state.entity.name, this.state.resourceTemplateName, template);
         }  else if (this.state.entityType === "webServerSection") {
             thePromise = this.props.groupService.updateGroupWebServerResourceTemplate(this.state.entityGroupName, this.state.resourceTemplateName, template);
         } else {
@@ -582,7 +583,7 @@ var XmlTabs = React.createClass({
             var metaData = response.applicationResponseContent.metaData;
             var readOnly = false;
             if (metaData) {
-                var jsonMetaData = JSON.parse(metaData.replace(/\\/g, "\\\\"));
+                var jsonMetaData = JSON.parse(metaData.replace(/\\/g, "\\\\")); // escape any backslashes before parsing
                 if (jsonMetaData.contentType === "application/binary") {
                     readOnly = true;
                 }
