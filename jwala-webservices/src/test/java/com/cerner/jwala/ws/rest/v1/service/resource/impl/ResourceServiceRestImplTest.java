@@ -24,6 +24,7 @@ import org.apache.cxf.jaxrs.ext.multipart.Attachment;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
@@ -185,6 +186,12 @@ public class ResourceServiceRestImplTest {
         final CreateResourceParam createResourceParam = new CreateResourceParam();
         createResourceParam.setGroup("someGroup");
         createResourceParam.setWebApp("someWebApp");
+
+        ResourceTemplateMetaData mockMetaData = mock(ResourceTemplateMetaData.class);
+        when(mockMetaData.getContentType()).thenReturn("text/plain");
+        when(mockMetaData.getDeployFileName()).thenReturn("sample-resource.txt");
+        when(impl.getFormattedResourceMetaData(anyString(), Matchers.anyObject(), anyString())).thenReturn(mockMetaData);
+
         cut.createResource(attachmentList, createResourceParam, authenticatedUser);
         verify(impl).createResource(any(ResourceIdentifier.class), any(ResourceTemplateMetaData.class), any(InputStream.class));
     }
@@ -215,6 +222,12 @@ public class ResourceServiceRestImplTest {
         final CreateResourceParam createResourceParam = new CreateResourceParam();
         createResourceParam.setJvm("someJvm");
         createResourceParam.setWebApp("someWebApp");
+
+        ResourceTemplateMetaData mockMetaData = mock(ResourceTemplateMetaData.class);
+        when(mockMetaData.getContentType()).thenReturn("text/plain");
+        when(mockMetaData.getDeployFileName()).thenReturn("sample-resource.txt");
+        when(impl.getFormattedResourceMetaData(anyString(), Matchers.anyObject(), anyString())).thenReturn(mockMetaData);
+
         cut.createResource(attachmentList, createResourceParam, authenticatedUser);
         verify(impl).createResource(any(ResourceIdentifier.class), any(ResourceTemplateMetaData.class), any(InputStream.class));
     }
@@ -245,6 +258,12 @@ public class ResourceServiceRestImplTest {
         final CreateResourceParam createResourceParam = new CreateResourceParam();
         createResourceParam.setGroup("someGroup");
         createResourceParam.setWebServer("*");
+
+        ResourceTemplateMetaData mockMetaData = mock(ResourceTemplateMetaData.class);
+        when(mockMetaData.getContentType()).thenReturn("text/plain");
+        when(mockMetaData.getDeployFileName()).thenReturn("sample-resource.txt");
+        when(impl.getFormattedResourceMetaData(anyString(), Matchers.anyObject(), anyString())).thenReturn(mockMetaData);
+
         cut.createResource(attachmentList, createResourceParam, authenticatedUser);
         verify(impl).createResource(any(ResourceIdentifier.class), any(ResourceTemplateMetaData.class), any(InputStream.class));
     }
@@ -274,6 +293,12 @@ public class ResourceServiceRestImplTest {
 
         final CreateResourceParam createResourceParam = new CreateResourceParam();
         createResourceParam.setWebServer("someWebServer");
+
+        ResourceTemplateMetaData mockMetaData = mock(ResourceTemplateMetaData.class);
+        when(mockMetaData.getContentType()).thenReturn("text/plain");
+        when(mockMetaData.getDeployFileName()).thenReturn("sample-resource.txt");
+        when(impl.getFormattedResourceMetaData(anyString(), Matchers.anyObject(), anyString())).thenReturn(mockMetaData);
+
         cut.createResource(attachmentList, createResourceParam, authenticatedUser);
         verify(impl).createResource(any(ResourceIdentifier.class), any(ResourceTemplateMetaData.class), any(InputStream.class));
     }
@@ -304,6 +329,12 @@ public class ResourceServiceRestImplTest {
         final CreateResourceParam createResourceParam = new CreateResourceParam();
         createResourceParam.setGroup("someGroup");
         createResourceParam.setJvm("*");
+
+        ResourceTemplateMetaData mockMetaData = mock(ResourceTemplateMetaData.class);
+        when(mockMetaData.getContentType()).thenReturn("text/plain");
+        when(mockMetaData.getDeployFileName()).thenReturn("sample-resource.txt");
+        when(impl.getFormattedResourceMetaData(anyString(), Matchers.anyObject(), anyString())).thenReturn(mockMetaData);
+
         cut.createResource(attachmentList, createResourceParam, authenticatedUser);
         verify(impl).createResource(any(ResourceIdentifier.class), any(ResourceTemplateMetaData.class), any(InputStream.class));
     }
@@ -333,6 +364,12 @@ public class ResourceServiceRestImplTest {
 
         final CreateResourceParam createResourceParam = new CreateResourceParam();
         createResourceParam.setJvm("someJvm");
+
+        ResourceTemplateMetaData mockMetaData = mock(ResourceTemplateMetaData.class);
+        when(mockMetaData.getContentType()).thenReturn("text/plain");
+        when(mockMetaData.getDeployFileName()).thenReturn("sample-resource.txt");
+        when(impl.getFormattedResourceMetaData(anyString(), Matchers.anyObject(), anyString())).thenReturn(mockMetaData);
+
         cut.createResource(attachmentList, createResourceParam, authenticatedUser);
         verify(impl).createResource(any(ResourceIdentifier.class), any(ResourceTemplateMetaData.class), any(InputStream.class));
     }
@@ -361,6 +398,12 @@ public class ResourceServiceRestImplTest {
         attachmentList.add(mockAttachment2);
 
         final CreateResourceParam createResourceParam = new CreateResourceParam();
+
+        ResourceTemplateMetaData mockMetaData = mock(ResourceTemplateMetaData.class);
+        when(mockMetaData.getContentType()).thenReturn("text/plain");
+        when(mockMetaData.getDeployFileName()).thenReturn("sample-resource.txt");
+        when(impl.getFormattedResourceMetaData(anyString(), Matchers.anyObject(), anyString())).thenReturn(mockMetaData);
+
         cut.createResource(attachmentList, createResourceParam, authenticatedUser);
         verify(impl).createResource(any(ResourceIdentifier.class), any(ResourceTemplateMetaData.class), any(InputStream.class));
     }
@@ -504,6 +547,11 @@ public class ResourceServiceRestImplTest {
         final CreateResourceParam createResourceParam = new CreateResourceParam();
         createResourceParam.setGroup("someGroup");
         createResourceParam.setJvm("*");
+
+        ResourceTemplateMetaData mockMetaData = mock(ResourceTemplateMetaData.class);
+        when(mockMetaData.getContentType()).thenReturn("text/plain");
+        when(mockMetaData.getDeployFileName()).thenReturn("sample-resource.txt");
+        when(impl.getFormattedResourceMetaData(anyString(), Matchers.anyObject(), anyString())).thenReturn(mockMetaData);
 
         final Response response = cut.createResource(attachmentList, createResourceParam, authenticatedUser);
         assertEquals("File being uploaded is invalid! The expected file type as indicated in the meta data is text based and should have a TPL extension.",

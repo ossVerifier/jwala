@@ -1,15 +1,5 @@
 package com.cerner.jwala.commandprocessor.impl.jsch;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.PrintStream;
-import java.nio.charset.StandardCharsets;
-
-import org.apache.commons.pool2.impl.GenericKeyedObjectPool;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.cerner.jwala.commandprocessor.CommandProcessor;
 import com.cerner.jwala.commandprocessor.jsch.impl.ChannelSessionKey;
 import com.cerner.jwala.commandprocessor.jsch.impl.ChannelType;
@@ -18,12 +8,16 @@ import com.cerner.jwala.common.exec.RemoteExecCommand;
 import com.cerner.jwala.common.exec.RemoteSystemConnection;
 import com.cerner.jwala.exception.ExitCodeNotAvailableException;
 import com.cerner.jwala.exception.RemoteCommandFailureException;
-import com.jcraft.jsch.Channel;
-import com.jcraft.jsch.ChannelExec;
-import com.jcraft.jsch.ChannelShell;
-import com.jcraft.jsch.JSch;
-import com.jcraft.jsch.JSchException;
-import com.jcraft.jsch.Session;
+import com.jcraft.jsch.*;
+import org.apache.commons.pool2.impl.GenericKeyedObjectPool;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PrintStream;
+import java.nio.charset.StandardCharsets;
 
 public class JschCommandProcessorImpl implements CommandProcessor {
 
@@ -144,6 +138,7 @@ public class JschCommandProcessorImpl implements CommandProcessor {
             session.connect();
             LOGGER.debug("session connected");
             channel = (ChannelExec) session.openChannel(ChannelType.EXEC.getChannelType());
+            LOGGER.debug("executing command: {}", remoteExecCommand.getCommand().toCommandString());
             channel.setCommand(remoteExecCommand.getCommand().toCommandString().getBytes(StandardCharsets.UTF_8));
 
             final InputStream remoteOutput = channel.getInputStream();

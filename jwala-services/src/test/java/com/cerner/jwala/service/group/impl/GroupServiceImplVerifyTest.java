@@ -113,6 +113,10 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
         remoteCommandExecutor = mock(RemoteCommandExecutorImpl.class);
         binaryDistributionService = mock(BinaryDistributionService.class);
 
+        mockGroupPesistenceService = mock(GroupPersistenceService.class);
+        mockJvmPersistenceService = mock(JvmPersistenceService.class);
+        mockAppPersistenceService = mock(ApplicationPersistenceService.class);
+
         resourceContentGeneratorService = new ResourceContentGeneratorServiceImpl(mockGroupPesistenceService, mockWebServerPersistenceService, mockJvmPersistenceService,
                 mockAppPersistenceService, mockHistoryService, mockMessagingService);
 
@@ -555,6 +559,7 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
         assertEquals("hct content ${webApp.name}", content);
 
         when(groupPersistenceService.getGroupAppResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"entity\":{\"target\": \"testApp\"}}");
+        when(groupPersistenceService.getGroups()).thenReturn(Collections.singletonList(mockGroup));
         content = groupService.getGroupAppResourceTemplate("testGroup", "testAppName", "hct.xml", true, new ResourceGroup());
         assertEquals("hct content testApp", content);
 

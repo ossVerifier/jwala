@@ -83,6 +83,7 @@ public class JvmServiceImpl implements JvmService {
     private final ClientFactoryHelper clientFactoryHelper;
     private final JvmControlService jvmControlService;
     private final Map<String, ReentrantReadWriteLock> jvmWriteLocks;
+    private final Map<String, ReentrantReadWriteLock> hostWriteLocks;
     private final BinaryDistributionService binaryDistributionService;
     final String jwalaScriptsPath = ApplicationProperties.get("remote.commands.user-scripts");
 
@@ -101,7 +102,8 @@ public class JvmServiceImpl implements JvmService {
                           final ClientFactoryHelper clientFactoryHelper,
                           final String topicServerStates,
                           final JvmControlService jvmControlService,
-                          final Map<String, ReentrantReadWriteLock> writeLockMap,
+                          final Map<String, ReentrantReadWriteLock> jvmWriteLockMap,
+                          final Map<String, ReentrantReadWriteLock> hostWriteLockMap,
                           final BinaryDistributionService binaryDistributionService) {
         this.jvmPersistenceService = jvmPersistenceService;
         this.groupService = groupService;
@@ -113,7 +115,8 @@ public class JvmServiceImpl implements JvmService {
         this.clientFactoryHelper = clientFactoryHelper;
         this.jvmControlService = jvmControlService;
         this.topicServerStates = topicServerStates;
-        jvmWriteLocks = writeLockMap;
+        jvmWriteLocks = jvmWriteLockMap;
+        hostWriteLocks = hostWriteLockMap;
         this.binaryDistributionService = binaryDistributionService;
     }
 
@@ -164,9 +167,9 @@ public class JvmServiceImpl implements JvmService {
             String templateContent = groupService.getGroupJvmResourceTemplate(groupName, templateName, resourceService.generateResourceGroup(), false);
             String metaDataStr = groupService.getGroupJvmResourceTemplateMetaData(groupName, templateName);
             try {
-                ResourceTemplateMetaData metaData = ResourceTemplateMetaData.createFromJsonStr(metaDataStr);
+                ResourceTemplateMetaData metaData = resourceService.getFormattedResourceMetaData(templateName, jvmPersistenceService.findJvmByExactName(jvmName), metaDataStr);
                 final ResourceIdentifier resourceIdentifier = new ResourceIdentifier.Builder()
-                        .setResourceName(metaData.getTemplateName())
+                        .setResourceName(metaData.getDeployFileName())
                         .setJvmName(jvmName)
                         .setGroupName(groupName)
                         .build();
@@ -297,8 +300,10 @@ public class JvmServiceImpl implements JvmService {
         Jvm jvm = getJvm(jvmName);
 
         // only one at a time per JVM
-        // TODO return error if .jwala directory is already being written to
-        // TODO lock on host name (check performance on 125 JVM env)
+        //TODO return error if .jwala directory is already being written to
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Start generateAndDeployJvm for {} by user {}", jvmName, user.getId());
+        }
         if (!jvmWriteLocks.containsKey(jvm.getId().toString())) {
             jvmWriteLocks.put(jvm.getId().toString(), new ReentrantReadWriteLock());
         }
@@ -310,6 +315,11 @@ public class JvmServiceImpl implements JvmService {
                 throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE,
                         "The target JVM must be stopped before attempting to update the resource files");
             }
+            if (!hostWriteLocks.containsKey(jvm.getHostName())) {
+                hostWriteLocks.put(jvm.getHostName(), new ReentrantReadWriteLock());
+            }
+            hostWriteLocks.get(jvm.getHostName()).writeLock().lock();
+            LOGGER.info("Added write lock for {}", jvm.getHostName());
 
             binaryDistributionService.prepareUnzip(jvm.getHostName());
             binaryDistributionService.distributeJdk(jvm.getHostName());
@@ -356,6 +366,13 @@ public class JvmServiceImpl implements JvmService {
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to generate the JVM config: " + e.getMessage(), e);
         } finally {
             jvmWriteLocks.get(jvm.getId().toString()).writeLock().unlock();
+            if (hostWriteLocks.containsKey(jvm.getHostName())) {
+                hostWriteLocks.get(jvm.getHostName()).writeLock().unlock();
+            }
+            LOGGER.info("Release write lock for {}", jvm.getHostName());
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.info("End generateAndDeployJvm for {} by user {}", jvmName, user.getId());
+            }
         }
         return jvm;
     }
@@ -653,9 +670,7 @@ public class JvmServiceImpl implements JvmService {
             }
 
             String metaDataStr = getResourceTemplateMetaData(jvmName, fileName);
-            final String tokenizedMetaData = resourceService.generateResourceFile(fileName, metaDataStr, resourceService.generateResourceGroup(), jvm, ResourceGeneratorType.METADATA);
-            LOGGER.info("tokenized metadata is : {}", tokenizedMetaData);
-            ResourceTemplateMetaData resourceTemplateMetaData = ResourceTemplateMetaData.createFromJsonStr(tokenizedMetaData);
+            ResourceTemplateMetaData resourceTemplateMetaData = resourceService.getFormattedResourceMetaData(fileName, jvm, metaDataStr);
             String resourceSourceCopy;
             final String deployFileName = resourceTemplateMetaData.getDeployFileName();
             String resourceDestPath = resourceTemplateMetaData.getDeployPath() + "/" + deployFileName;
@@ -670,11 +685,11 @@ public class JvmServiceImpl implements JvmService {
 
             deployJvmConfigFile(deployFileName, jvm, resourceDestPath, resourceSourceCopy, user);
         } catch (IOException e) {
-            String message = "Failed to write file";
+            String message = "Failed to write file " + fileName + " for JVM " + jvmName;
             LOGGER.error(badStreamMessage + message, e);
             throw new InternalErrorException(AemFaultType.BAD_STREAM, message, e);
         } catch (CommandFailureException ce) {
-            String message = "Failed to copy file";
+            String message = "Failed to copy file " + fileName + " for JVM " + jvmName;
             LOGGER.error(badStreamMessage + message, ce);
             throw new InternalErrorException(AemFaultType.BAD_STREAM, message, ce);
         } finally {
@@ -890,8 +905,7 @@ public class JvmServiceImpl implements JvmService {
                 resourceFileGeneratorExceptionString += e.getMessage();
                 resourceFileGeneratorException = true;
             }
-            final ResourceTemplateMetaData resourceTemplateMetaData =
-                    ResourceTemplateMetaData.createFromJsonStr(resourceTemplateMetaDataString);
+            final ResourceTemplateMetaData resourceTemplateMetaData = ResourceTemplateMetaData.createFromJsonStr(resourceTemplateMetaDataString);
             final String deployFileName = resourceTemplateMetaData.getDeployFileName();
             if (generatedFiles == null) {
                 generatedFiles = new HashMap<>();

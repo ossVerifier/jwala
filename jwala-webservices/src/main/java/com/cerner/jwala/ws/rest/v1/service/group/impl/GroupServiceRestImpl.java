@@ -52,8 +52,6 @@ import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.jaxrs.ext.MessageContext;
-import org.codehaus.jackson.JsonParseException;
-import org.codehaus.jackson.map.JsonMappingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -436,7 +434,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
                 response = futureMap.get(keyEntityName).get();
                 if (response.getStatus() > 399) {
                     final String reasonPhrase = response.getStatusInfo().getReasonPhrase();
-                    LOGGER.error("Remote Command Failure for " + keyEntityName + ": " + reasonPhrase );
+                    LOGGER.error("Remote Command Failure for " + keyEntityName + ": " + reasonPhrase);
                     throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, reasonPhrase);
                 }
 
@@ -731,12 +729,10 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         LOGGER.info("Updating the group template {} for {}", resourceTemplateName, groupName);
         LOGGER.debug(content);
 
-        String metaDataStr = groupService.getGroupAppResourceTemplateMetaData(groupName, resourceTemplateName);
         final Group group = groupService.getGroup(groupName);
 
         try {
             final String updatedContent = groupService.updateGroupAppResourceTemplate(groupName, appName, resourceTemplateName, content);
-            ResourceTemplateMetaData metaData = ResourceTemplateMetaData.createFromJsonStr(metaDataStr);
             Set<Jvm> groupJvms = group.getJvms();
             Set<Future<Response>> futureContents = new HashSet<>();
             if (null != groupJvms) {
@@ -765,19 +761,10 @@ public class GroupServiceRestImpl implements GroupServiceRest {
             LOGGER.error("Failed to update the template {}", resourceTemplateName, e);
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
                     AemFaultType.PERSISTENCE_ERROR, e.getMessage()));
-        } catch (JsonMappingException | JsonParseException e) {
-            LOGGER.error("Failed to map meta data object for template {} in group {} :: meta data: {} ", resourceTemplateName, groupName, metaDataStr, e);
-            return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
-                    AemFaultType.BAD_STREAM, e.getMessage()));
         } catch (ResourceFileGeneratorException e) {
             LOGGER.error("Fail to generate the resource file {}", resourceTemplateName, e);
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(AemFaultType.BAD_STREAM, "Fail to generate the resource file " + resourceTemplateName, e));
-        } catch (IOException e) {
-            LOGGER.error("Failed with IOException trying to map meta data object for template {} in group {} :: meta data: {}", resourceTemplateName, groupName, metaDataStr, e);
-            return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
-                    AemFaultType.BAD_STREAM, e.getMessage()));
         }
-
     }
 
     @Override
@@ -789,7 +776,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         final String groupAppMetaData = groupService.getGroupAppResourceTemplateMetaData(groupName, fileName);
         ResourceTemplateMetaData metaData;
         try {
-            metaData = ResourceTemplateMetaData.createFromJsonStr(groupAppMetaData);
+            metaData = resourceService.getFormattedResourceMetaData(fileName, null, groupAppMetaData);
             final String appName = metaData.getEntity().getTarget();
             final ApplicationServiceRest appServiceRest = ApplicationServiceRestImpl.get();
             if (metaData.getEntity().getDeployToJvms()) {

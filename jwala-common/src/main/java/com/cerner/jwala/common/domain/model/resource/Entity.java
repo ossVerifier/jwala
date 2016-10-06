@@ -1,9 +1,9 @@
 package com.cerner.jwala.common.domain.model.resource;
 
 /**
- * Resource entity that wraps type, group and target.
- * <p/>
- * Created by JC043760 on 3/30/2016.
+ * Resource entity that wraps type, group and target
+ *
+ * Created by JC043760 on 3/30/2016
  */
 public class Entity {
 
@@ -53,4 +53,14 @@ public class Entity {
         this.deployToJvms = deployToJvms;
     }
 
+    @Override
+    public String toString() {
+        return "Entity{" +
+                "type='" + type + '\'' +
+                ", group='" + group + '\'' +
+                ", target='" + target + '\'' +
+                ", parentName='" + parentName + '\'' +
+                ", deployToJvms=" + deployToJvms +
+                '}';
+    }
 }
