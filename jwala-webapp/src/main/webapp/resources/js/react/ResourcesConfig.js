@@ -407,7 +407,7 @@ var XmlTabs = React.createClass({
     },
     formatMetaDataCallback: function() {
         try {
-            var metaDataJson = JSON.parse(this.refs.metaDataEditor.getText());
+            var metaDataJson = JSON.parse(this.refs.metaDataEditor.getText().replace(/\\/g, "\\\\"));
             this.refs.metaDataEditor.codeMirror.setValue(JSON.stringify(metaDataJson, null, XmlTabs.SPACING_LEVEL));
         } catch(e) {
             console.log(e);
@@ -582,9 +582,13 @@ var XmlTabs = React.createClass({
             var metaData = response.applicationResponseContent.metaData;
             var readOnly = false;
             if (metaData) {
-                var jsonMetaData = JSON.parse(metaData.replace(/\\/g, "\\\\"));
-                if (jsonMetaData.contentType === "application/binary") {
-                    readOnly = true;
+                try {
+                    var jsonMetaData = JSON.parse(metaData.replace(/\\/g, "\\\\"));
+                    if (jsonMetaData.contentType === "application/binary") {
+                        readOnly = true;
+                    }
+                } catch(e) {
+                    // TODO fail silently? -- resource generation or preview will throw the error for now
                 }
             }
 
