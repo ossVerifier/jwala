@@ -22,7 +22,11 @@ public class ExecCommand implements Serializable {
     }
 
     public ExecCommand(final List<String> theCommandFragments) {
-        commandFragments = Collections.unmodifiableList(new ArrayList<>(theCommandFragments));
+        List<String> formattedFragments = new ArrayList<>();
+        for (String fragment : theCommandFragments) {
+            formattedFragments.add(fragment.replace("\\", "/"));
+        }
+        commandFragments = Collections.unmodifiableList(formattedFragments);
     }
 
     public List<String> getCommandFragments() {
