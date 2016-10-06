@@ -33,6 +33,7 @@ import com.cerner.jwala.service.binarydistribution.BinaryDistributionService;
 import com.cerner.jwala.service.exception.GroupServiceException;
 import com.cerner.jwala.service.group.GroupService;
 import com.cerner.jwala.service.resource.ResourceService;
+import org.apache.commons.io.FilenameUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,6 +61,7 @@ public class GroupServiceImpl implements GroupService {
     private static final String GENERATED_RESOURCE_DIR = "paths.generated.resource.dir";
     private static final Logger LOGGER = LoggerFactory.getLogger(GroupServiceImpl.class);
     private static final String UNZIPEXE = "unzip.exe";
+    private static final String WAR_EXTENSION = ".war";
 
     public GroupServiceImpl(final GroupPersistenceService groupPersistenceService,
                             final WebServerPersistenceService webServerPersistenceService,
@@ -484,18 +486,13 @@ public class GroupServiceImpl implements GroupService {
                     new WindowsApplicationPlatformCommandProvider(),
                     destPath);
             if (commandOutput.getReturnCode().wasSuccessful()) {
-                if (metaData.isUnpack() && !metaData.isOverwrite()) {
-                    standardError = "Destination zip: " + destPath + " exists and isOverwrite = false, so no unzip perform.";
-                    LOGGER.error(standardError);
-                    throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, standardError);
-                }
                 LOGGER.debug("backing up file: {}", destPath);
                 String currentDateSuffix = new SimpleDateFormat(".yyyyMMdd_HHmmss").format(new Date());
                 final String destPathBackup = destPath + currentDateSuffix;
                 commandOutput = remoteCommandExecutor.executeRemoteCommand(
                         jvmName,
                         hostName,
-                        ApplicationControlOperation.BACK_UP_FILE,
+                        ApplicationControlOperation.BACK_UP,
                         new WindowsApplicationPlatformCommandProvider(),
                         destPath,
                         destPathBackup);
@@ -521,17 +518,44 @@ public class GroupServiceImpl implements GroupService {
             }
             if (metaData.isUnpack()) {
                 binaryDistributionService.prepareUnzip(hostName);
+                final String zipDestinationOption = FilenameUtils.removeExtension(destPath);
+                LOGGER.debug("checking if unpacked destination exists: {}", zipDestinationOption);
+                commandOutput = remoteCommandExecutor.executeRemoteCommand(
+                        jvmName,
+                        hostName,
+                        ApplicationControlOperation.CHECK_FILE_EXISTS,
+                        new WindowsApplicationPlatformCommandProvider(),
+                        zipDestinationOption);
+                if (commandOutput.getReturnCode().wasSuccessful()) {
+                    LOGGER.debug("destination {}, exists backing it up", zipDestinationOption);
+                    final String currentDateSuffix = new SimpleDateFormat(".yyyyMMdd_HHmmss").format(new Date());
+                    final String destPathBackup = zipDestinationOption + currentDateSuffix;
+                    commandOutput = remoteCommandExecutor.executeRemoteCommand(
+                            jvmName,
+                            hostName,
+                            ApplicationControlOperation.BACK_UP,
+                            new WindowsApplicationPlatformCommandProvider(),
+                            zipDestinationOption,
+                            destPathBackup);
+                    if (commandOutput.getReturnCode().wasSuccessful()) {
+                        LOGGER.debug("successfully backed up {} to {}", zipDestinationOption, destPathBackup);
+                    } else {
+                        standardError = "Could not back up " + zipDestinationOption + " to " + destPathBackup;
+                        LOGGER.error(standardError);
+                        throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, standardError);
+                    }
+                }
                 commandOutput = remoteCommandExecutor.executeRemoteCommand(null,
                         hostName,
                         BinaryDistributionControlOperation.UNZIP_BINARY,
                         new WindowsBinaryDistributionPlatformCommandProvider(),
                         ApplicationProperties.get("remote.commands.user-scripts") + "/" + UNZIPEXE,
                         destPath,
-                        parentDir,
+                        zipDestinationOption,
                         "");
                 LOGGER.info("commandOutput.getReturnCode().toString(): " + commandOutput.getReturnCode().toString());
                 if (!commandOutput.getReturnCode().wasSuccessful()) {
-                    standardError = "Cannot unzip " + destPath + " to " + parentDir + ", please check the log for more information.";
+                    standardError = "Cannot unzip " + destPath + " to " + zipDestinationOption + ", please check the log for more information.";
                     LOGGER.error(standardError);
                     throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, standardError);
                 }

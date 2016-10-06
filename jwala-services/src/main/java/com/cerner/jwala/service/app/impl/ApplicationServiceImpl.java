@@ -37,6 +37,7 @@ import com.cerner.jwala.service.binarydistribution.BinaryDistributionService;
 import com.cerner.jwala.service.exception.ApplicationServiceException;
 import com.cerner.jwala.service.group.GroupService;
 import com.cerner.jwala.service.resource.ResourceService;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
@@ -62,6 +63,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     private static final Logger LOGGER = LoggerFactory.getLogger(ApplicationServiceImpl.class);
     private static final String GENERATED_RESOURCE_DIR = "paths.generated.resource.dir";
     private static final String JWALA_WEBAPPS_DIR = "remote.jwala.webapps.dir";
+    private static final String WAR_EXTENTION = ".war";
     private final ExecutorService executorService;
     final String jwalaScriptsPath = ApplicationProperties.get("remote.commands.user-scripts");
 
@@ -317,7 +319,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                 commandOutput = applicationCommandExecutor.executeRemoteCommand(
                         deployJvmName,
                         hostName,
-                        ApplicationControlOperation.BACK_UP_FILE,
+                        ApplicationControlOperation.BACK_UP,
                         new WindowsApplicationPlatformCommandProvider(),
                         destPath,
                         destPathBackup);
@@ -491,7 +493,13 @@ public class ApplicationServiceImpl implements ApplicationService {
                     throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, standardError);
                 }
                 LOGGER.info("Copying {} war to host {}", name, host);
-                commandOutput = applicationCommandExecutor.executeRemoteCommand(null, host, ApplicationControlOperation.SECURE_COPY, new WindowsApplicationPlatformCommandProvider(), tempWarFile.getAbsolutePath().replaceAll("\\\\", "/"), destPath);
+                commandOutput = applicationCommandExecutor.executeRemoteCommand(
+                        null,
+                        host,
+                        ApplicationControlOperation.SECURE_COPY,
+                        new WindowsApplicationPlatformCommandProvider(),
+                        tempWarFile.getAbsolutePath().replaceAll("\\\\", "/"),
+                        destPath);
 
                 if (application.isUnpackWar()) {
                     final String warName = application.getWarName();
@@ -512,25 +520,70 @@ public class ApplicationServiceImpl implements ApplicationService {
                     }
 
                     final String unpackWarScriptPath = ApplicationProperties.get("commands.scripts-path") + "/" + AemControl.Properties.UNPACK_BINARY_SCRIPT_NAME;
-                    commandOutput = applicationCommandExecutor.executeRemoteCommand(null, host, ApplicationControlOperation.SECURE_COPY, new WindowsApplicationPlatformCommandProvider(), unpackWarScriptPath, jwalaScriptsPath);
+                    commandOutput = applicationCommandExecutor.executeRemoteCommand(
+                            null,
+                            host,
+                            ApplicationControlOperation.SECURE_COPY,
+                            new WindowsApplicationPlatformCommandProvider(),
+                            unpackWarScriptPath,
+                            jwalaScriptsPath);
                     if (!commandOutput.getReturnCode().wasSuccessful()) {
                         return commandOutput; // return immediately if the copy failed
                     }
 
                     // make sure the scripts are executable
-                    commandOutput = applicationCommandExecutor.executeRemoteCommand(null, host, ApplicationControlOperation.CHANGE_FILE_MODE, new WindowsApplicationPlatformCommandProvider(), "a+x", jwalaScriptsPath, "*.sh");
+                    commandOutput = applicationCommandExecutor.executeRemoteCommand(null,
+                            host,
+                            ApplicationControlOperation.CHANGE_FILE_MODE,
+                            new WindowsApplicationPlatformCommandProvider(),
+                            "a+x",
+                            jwalaScriptsPath,
+                            "*.sh");
                     if (!commandOutput.getReturnCode().wasSuccessful()) {
                         return commandOutput;
                     }
 
                     binaryDistributionService.prepareUnzip(host);
+
+                    final String zipDestinationOption = FilenameUtils.removeExtension(destPath);
+
+                    LOGGER.debug("Checking if previously unpacked: {}", zipDestinationOption);
+                    commandOutput = remoteCommandExecutor.executeRemoteCommand(
+                            null,
+                            host,
+                            ApplicationControlOperation.CHECK_FILE_EXISTS,
+                            new WindowsApplicationPlatformCommandProvider(),
+                            zipDestinationOption);
+
+                    if (commandOutput.getReturnCode().wasSuccessful()) {
+                        final String currentDateSuffix = new SimpleDateFormat(".yyyyMMdd_HHmmss").format(new Date());
+                        final String destPathBackup = zipDestinationOption + currentDateSuffix;
+                        LOGGER.debug("unpacked directory found at {}, backing it up to {}", zipDestinationOption, destPathBackup);
+                        commandOutput = remoteCommandExecutor.executeRemoteCommand(
+                                null,
+                                host,
+                                ApplicationControlOperation.BACK_UP,
+                                new WindowsApplicationPlatformCommandProvider(),
+                                zipDestinationOption,
+                                destPathBackup
+                        );
+
+                        if (commandOutput.getReturnCode().wasSuccessful()) {
+                            LOGGER.debug("successful back up of {}", zipDestinationOption);
+                        } else {
+                            final String standardError = "Could not back up " + zipDestinationOption + " to " + destPathBackup;
+                            LOGGER.error(standardError);
+                            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, standardError);
+                        }
+                    }
+
                     commandOutput = remoteCommandExecutor.executeRemoteCommand(null,
                             host,
                             BinaryDistributionControlOperation.UNZIP_BINARY,
                             new WindowsBinaryDistributionPlatformCommandProvider(),
                             ApplicationProperties.get("remote.commands.user-scripts") + "/" + UNZIPEXE,
-                            ApplicationProperties.get("remote.jwala.webapps.dir")+ "/" + warName,
-                            ApplicationProperties.get("remote.jwala.webapps.dir"),
+                            destPath,
+                            zipDestinationOption,
                             "");
                 }
                 return commandOutput;

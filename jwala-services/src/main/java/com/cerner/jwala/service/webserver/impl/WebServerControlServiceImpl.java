@@ -207,7 +207,7 @@ public class WebServerControlServiceImpl implements WebServerControlService {
             commandOutput = commandExecutor.executeRemoteCommand(
                     aWebServerName,
                     host,
-                    WebServerControlOperation.BACK_UP_CONFIG_FILE,
+                    WebServerControlOperation.BACK_UP,
                     new WindowsWebServerPlatformCommandProvider(),
                     destPath,
                     destPathBackup);

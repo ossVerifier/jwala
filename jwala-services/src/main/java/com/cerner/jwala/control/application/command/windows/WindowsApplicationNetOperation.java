@@ -19,7 +19,7 @@ public enum WindowsApplicationNetOperation implements ServiceCommandBuilder {
             return new ExecCommand(SCP_SCRIPT_NAME.getValue(), configFilePath, destPath);
         }
     },
-    BACK_UP_FILE(ApplicationControlOperation.BACK_UP_FILE) {
+    BACK_UP(ApplicationControlOperation.BACK_UP) {
         @Override
         public ExecCommand buildCommandForService(String aServiceName, String... aParams) {
             final String srcPath = aParams[0];
@@ -46,7 +46,7 @@ public enum WindowsApplicationNetOperation implements ServiceCommandBuilder {
         }
     };
 
-    private static final String USR_BIN_CP = "/usr/bin/cp";
+    private static final String USR_BIN_CP = "/usr/bin/mv";
     private static final String USR_BIN_MKDIR = "/usr/bin/mkdir";
     private static final String USR_BIN_CHMOD = "/usr/bin/chmod";
     private static final String USR_BIN_TEST = "/usr/bin/test";

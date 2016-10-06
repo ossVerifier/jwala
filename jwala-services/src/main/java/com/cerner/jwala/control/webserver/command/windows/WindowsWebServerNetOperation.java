@@ -45,10 +45,10 @@ public enum WindowsWebServerNetOperation implements ServiceCommandBuilder {
             return new ExecCommand(SCP_SCRIPT_NAME.getValue(), aParams[0], aParams[1]);
         }
     },
-    BACK_UP_HTTP_CONFIG_FILE(WebServerControlOperation.BACK_UP_CONFIG_FILE) {
+    BACK_UP_HTTP(WebServerControlOperation.BACK_UP) {
         @Override
         public ExecCommand buildCommandForService(String aServiceName, String... aParams) {
-            return new ExecCommand(USR_BIN_CP, aParams[0], aParams[1]);
+            return new ExecCommand(USR_BIN_MV, aParams[0], aParams[1]);
         }
     },
     DELETE_SERVICE(WebServerControlOperation.DELETE_SERVICE) {
@@ -99,7 +99,7 @@ public enum WindowsWebServerNetOperation implements ServiceCommandBuilder {
 
     public static final String WEBSERVER_CONF_PATH = ApplicationProperties.get("remote.paths.httpd.conf");
     private static final String REMOTE_COMMANDS_USER_SCRIPTS = ApplicationProperties.get("remote.commands.user-scripts");
-    private static final String USR_BIN_CP = "/usr/bin/cp";
+    private static final String USR_BIN_MV = "/usr/bin/mv";
     private static final String USR_BIN_MKDIR = "/usr/bin/mkdir";
     private static final String USR_BIN_CHMOD = "/usr/bin/chmod";
     private static final String USR_BIN_TEST = "/usr/bin/test";

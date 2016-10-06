@@ -784,7 +784,7 @@ public class ResourceServiceImpl implements ResourceService {
             commandOutput = remoteCommandExecutor.executeRemoteCommand(
                     name,
                     hostName,
-                    ApplicationControlOperation.BACK_UP_FILE,
+                    ApplicationControlOperation.BACK_UP,
                     new WindowsApplicationPlatformCommandProvider(),
                     destPath,
                     destPathBackup);

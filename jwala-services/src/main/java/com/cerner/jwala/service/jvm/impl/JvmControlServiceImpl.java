@@ -204,7 +204,7 @@ public class JvmControlServiceImpl implements JvmControlService {
                 case STOP:
                     waitForState(controlJvmRequest, timeout, JvmState.JVM_STOPPED, JvmState.FORCED_STOPPED);
                     break;
-                case BACK_UP_FILE:
+                case BACK_UP:
                 case CHANGE_FILE_MODE:
                 case CHECK_FILE_EXISTS:
                 case CREATE_DIRECTORY:
@@ -309,7 +309,7 @@ public class JvmControlServiceImpl implements JvmControlService {
             commandOutput = remoteCommandExecutor.executeRemoteCommand(
                     name,
                     hostName,
-                    JvmControlOperation.BACK_UP_FILE,
+                    JvmControlOperation.BACK_UP,
                     new WindowsJvmPlatformCommandProvider(),
                     destPath,
                     destPathBackup);

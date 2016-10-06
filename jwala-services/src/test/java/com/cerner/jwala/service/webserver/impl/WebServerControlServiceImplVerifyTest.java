@@ -159,7 +159,7 @@ public class WebServerControlServiceImplVerifyTest extends VerificationBehaviorS
 
         when(commandExecutor.executeRemoteCommand(anyString(), anyString(), any(WebServerControlOperation.class), any(PlatformCommandProvider.class), anyString(), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(0), "Secure copy succeeded", ""));
         when(commandExecutor.executeRemoteCommand(anyString(), anyString(), eq(WebServerControlOperation.CHECK_FILE_EXISTS), any(PlatformCommandProvider.class), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(0), "File does exist", ""));
-        when(commandExecutor.executeRemoteCommand(anyString(), anyString(), eq(WebServerControlOperation.BACK_UP_CONFIG_FILE), any(PlatformCommandProvider.class), anyString(), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(0), "Back up succeeded", ""));
+        when(commandExecutor.executeRemoteCommand(anyString(), anyString(), eq(WebServerControlOperation.BACK_UP), any(PlatformCommandProvider.class), anyString(), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(0), "Back up succeeded", ""));
         when(commandExecutor.executeRemoteCommand(anyString(), anyString(), eq(WebServerControlOperation.CREATE_DIRECTORY), any(PlatformCommandProvider.class), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(0), "Directory Created", ""));
         webServerControlService.secureCopyFile("testWebServer", "./source", "./dest", "user-id");
         verify(commandExecutor).executeRemoteCommand(anyString(), anyString(), eq(WebServerControlOperation.SECURE_COPY), any(WindowsWebServerPlatformCommandProvider.class), anyString(), anyString());
@@ -173,7 +173,7 @@ public class WebServerControlServiceImplVerifyTest extends VerificationBehaviorS
 
         when(commandExecutor.executeRemoteCommand(anyString(), anyString(), any(WebServerControlOperation.class), any(PlatformCommandProvider.class), anyString(), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(0), "Secure copy succeeded", ""));
         when(commandExecutor.executeRemoteCommand(anyString(), anyString(), eq(WebServerControlOperation.CHECK_FILE_EXISTS), any(PlatformCommandProvider.class), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(0), "File does exist", ""));
-        when(commandExecutor.executeRemoteCommand(anyString(), anyString(), eq(WebServerControlOperation.BACK_UP_CONFIG_FILE), any(PlatformCommandProvider.class), anyString(), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(1), "", "Back up failed"));
+        when(commandExecutor.executeRemoteCommand(anyString(), anyString(), eq(WebServerControlOperation.BACK_UP), any(PlatformCommandProvider.class), anyString(), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(1), "", "Back up failed"));
         when(commandExecutor.executeRemoteCommand(anyString(), anyString(), eq(WebServerControlOperation.CREATE_DIRECTORY), any(PlatformCommandProvider.class), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(0), "Directory Created", ""));
         webServerControlService.secureCopyFile("testWebServer", "./source", "./dest", "user-id");
         verify(commandExecutor).executeRemoteCommand(anyString(), anyString(), eq(WebServerControlOperation.SECURE_COPY), any(WindowsWebServerPlatformCommandProvider.class), anyString(), anyString());
@@ -272,7 +272,7 @@ public class WebServerControlServiceImplVerifyTest extends VerificationBehaviorS
     public void testWaitStateForUnexpectedOperation() {
         final ControlWebServerRequest mockControlWebServerRequest = mock(ControlWebServerRequest.class);
         final WebServer mockWebServer = mock(WebServer.class);
-        when(mockControlWebServerRequest.getControlOperation()).thenReturn(WebServerControlOperation.BACK_UP_CONFIG_FILE);
+        when(mockControlWebServerRequest.getControlOperation()).thenReturn(WebServerControlOperation.BACK_UP);
         when(webServerService.getWebServer(any(Identifier.class))).thenReturn(mockWebServer);
         when(mockWebServer.getState()).thenReturn(WebServerReachableState.FORCED_STOPPED);
         webServerControlService.waitForState(mockControlWebServerRequest, 5L);
