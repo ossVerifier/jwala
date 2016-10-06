@@ -113,7 +113,7 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
         initMocks(this);
         jvmServiceImpl = new JvmServiceImpl(mockJvmPersistenceService, mockGroupService, mockApplicationService, mockFileManager,
                 mockMessagingTemplate, mockGroupStateNotificationService, mockResourceService, mockClientFactoryHelper,
-                 "/topic/server-states", mockJvmControlService, lockMap, mockBinaryDistributionService);
+                 "/topic/server-states", mockJvmControlService, lockMap,lockMap, mockBinaryDistributionService);
         jvmService = jvmServiceImpl;
     }
 
@@ -795,7 +795,7 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
         when(mockJvmPersistenceService.findJvmByExactName(anyString())).thenReturn(mockJvm);
         when(mockJvm.getState()).thenReturn(JvmState.JVM_STARTED);
         when(mockJvm.getId()).thenReturn(new Identifier<Jvm>(111L));
-
+        when(mockJvm.getHostName()).thenReturn("testHostName");
         jvmService.generateAndDeployJvm("test-jvm-fails-started", mockUser);
     }
 
