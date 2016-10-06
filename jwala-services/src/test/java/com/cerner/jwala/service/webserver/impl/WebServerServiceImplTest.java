@@ -22,6 +22,7 @@ import com.cerner.jwala.files.TocFile;
 import com.cerner.jwala.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
 import com.cerner.jwala.persistence.service.WebServerPersistenceService;
 import com.cerner.jwala.service.resource.ResourceService;
+import com.cerner.jwala.service.resource.impl.ResourceGeneratorType;
 import com.cerner.jwala.service.webserver.exception.WebServerServiceException;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
@@ -283,7 +284,7 @@ public class WebServerServiceImplTest {
         when(webServerPersistenceService.getResourceTemplate(anyString(), anyString())).thenReturn("httpd.conf template content");
 
         wsService.generateHttpdConfig("Apache2.4", resourceGroup);
-        verify(resourceService).generateResourceFile(eq("httpd.conf"), eq("httpd.conf template content"), any(ResourceGroup.class), any(WebServer.class));
+        verify(resourceService).generateResourceFile(eq("httpd.conf"), eq("httpd.conf template content"), any(ResourceGroup.class), any(WebServer.class), any(ResourceGeneratorType.class));
     }
 
     @Test(expected = InternalErrorException.class)
@@ -333,7 +334,7 @@ public class WebServerServiceImplTest {
         when(webServerPersistenceService.getResourceTemplate(anyString(), anyString())).thenReturn("<template>${webServer.name}</template>");
         when(webServerPersistenceService.findWebServerByName(anyString())).thenReturn(mockWebServer);
         wsService.getResourceTemplate("any", "httpd.conf", true, new ResourceGroup());
-        verify(resourceService).generateResourceFile(anyString(), anyString(), any(ResourceGroup.class), any(WebServer.class));
+        verify(resourceService).generateResourceFile(anyString(), anyString(), any(ResourceGroup.class), any(WebServer.class), any(ResourceGeneratorType.class));
     }
 
     @Test
@@ -343,7 +344,7 @@ public class WebServerServiceImplTest {
         when(webServerPersistenceService.getResourceTemplate(anyString(), anyString())).thenReturn("<template>${webServer.name}</template>");
         when(webServerPersistenceService.findWebServerByName(anyString())).thenReturn(mockWebServer);
         wsService.getResourceTemplate("any", "any-except-httpd.conf", true, new ResourceGroup());
-        verify(resourceService).generateResourceFile(anyString(), anyString(), any(ResourceGroup.class), any(WebServer.class));
+        verify(resourceService).generateResourceFile(anyString(), anyString(), any(ResourceGroup.class), any(WebServer.class), any(ResourceGeneratorType.class));
     }
 
     @Test
@@ -373,7 +374,7 @@ public class WebServerServiceImplTest {
         when(webServerPersistenceService.findJvms(anyString())).thenReturn(jvmList);
         when(webServerPersistenceService.findApplications(anyString())).thenReturn(appList);
         wsService.previewResourceTemplate("myFile","wsName", "groupName", "my template");
-        verify(resourceService).generateResourceFile(eq("myFile"), eq("my template"), any(ResourceGroup.class), any(WebServer.class));
+        verify(resourceService).generateResourceFile(eq("myFile"), eq("my template"), any(ResourceGroup.class), any(WebServer.class), any(ResourceGeneratorType.class));
     }
 
     @Test
@@ -428,7 +429,7 @@ public class WebServerServiceImplTest {
 
     @Test (expected = WebServerServiceException.class)
     public void testGenerateInvokeWSBat() {
-        when(resourceService.generateResourceFile(anyString(), anyString(), any(ResourceGroup.class), eq(mockWebServer))).thenThrow(IOException.class);
+        when(resourceService.generateResourceFile(anyString(), anyString(), any(ResourceGroup.class), eq(mockWebServer), any(ResourceGeneratorType.class))).thenThrow(IOException.class);
         wsService.generateInvokeWSBat(mockWebServer);
     }
 

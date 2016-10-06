@@ -38,9 +38,7 @@ ext {
     ]
 }
 repositories {
-    maven {
-        url 'http://usmlvv1qmp645.usmlvv1d0a.smshsc.net:8081/artifactory/repo/'
-    }
+    mavenCentral()
 }
 
 sonarRunner {
@@ -108,12 +106,7 @@ subprojects {
     }
 
     repositories {
-        maven {
-            url 'http://usmlvv1qmp645.usmlvv1d0a.smshsc.net:8081/artifactory/repo/'
-        }
-        maven {
-            url 'http://usmlvv1qmp645.usmlvv1d0a.smshsc.net:8081/artifactory/jcenter-cache/'
-        }
+        mavenCentral()
     }
 
     dependencies {

@@ -29,6 +29,7 @@ import com.cerner.jwala.service.group.GroupService;
 import com.cerner.jwala.service.group.GroupWebServerControlService;
 import com.cerner.jwala.service.jvm.JvmService;
 import com.cerner.jwala.service.resource.ResourceService;
+import com.cerner.jwala.service.resource.impl.ResourceGeneratorType;
 import com.cerner.jwala.service.webserver.WebServerService;
 import com.cerner.jwala.ws.rest.v1.provider.AuthenticatedUser;
 import com.cerner.jwala.ws.rest.v1.provider.NameSearchParameterProvider;
@@ -244,7 +245,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     }
 
     @Override
-    public Response previewGroupWebServerResourceTemplate(String groupName, String resourceTemplateName,String template) {
+    public Response previewGroupWebServerResourceTemplate(String groupName, String resourceTemplateName, String template) {
         LOGGER.debug("Preview group web server template for group {}", groupName);
         LOGGER.debug(template);
         try {
@@ -376,7 +377,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
             final Group group = groupService.getGroup(groupName);
             final ResourceGroup resourceGroup = resourceService.generateResourceGroup();
             final Set<Jvm> jvms = group.getJvms();
-            return ResponseBuilder.ok(resourceService.generateResourceFile(fileName, template, resourceGroup, (null != jvms && jvms.size() > 0 ? jvms.iterator().next() : null)));
+            return ResponseBuilder.ok(resourceService.generateResourceFile(fileName, template, resourceGroup, (null != jvms && jvms.size() > 0 ? jvms.iterator().next() : null), ResourceGeneratorType.PREVIEW));
         } catch (RuntimeException e) {
             LOGGER.error("Failed to preview the JVM template for {}", groupName, e);
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(

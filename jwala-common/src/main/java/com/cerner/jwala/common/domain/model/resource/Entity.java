@@ -53,4 +53,27 @@ public class Entity {
         this.deployToJvms = deployToJvms;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Entity entity = (Entity) o;
+
+        if (deployToJvms != entity.deployToJvms) return false;
+        if (type != null ? !type.equals(entity.type) : entity.type != null) return false;
+        if (group != null ? !group.equals(entity.group) : entity.group != null) return false;
+        if (target != null ? !target.equals(entity.target) : entity.target != null) return false;
+        return !(parentName != null ? !parentName.equals(entity.parentName) : entity.parentName != null);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = type != null ? type.hashCode() : 0;
+        result = 31 * result + (group != null ? group.hashCode() : 0);
+        result = 31 * result + (target != null ? target.hashCode() : 0);
+        result = 31 * result + (parentName != null ? parentName.hashCode() : 0);
+        result = 31 * result + (deployToJvms ? 1 : 0);
+        return result;
+    }
 }

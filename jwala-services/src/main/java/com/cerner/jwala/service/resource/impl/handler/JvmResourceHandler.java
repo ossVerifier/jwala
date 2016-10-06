@@ -70,7 +70,7 @@ public class JvmResourceHandler extends ResourceHandler {
                     jvm.getEncryptedPassword());
 
             final UploadJvmConfigTemplateRequest uploadJvmTemplateRequest = new UploadJvmConfigTemplateRequest(jvmWithParentGroup, metaData.getTemplateName(),
-                    templateContent, convertResourceTemplateMetaDataToJson(metaData));
+                    templateContent, metaData.getJsonData());
             uploadJvmTemplateRequest.setConfFileName(metaData.getDeployFileName());
             createResourceResponseWrapper = new CreateResourceResponseWrapper(jvmPersistenceService.uploadJvmConfigTemplate(uploadJvmTemplateRequest));
         } else if (successor != null) {

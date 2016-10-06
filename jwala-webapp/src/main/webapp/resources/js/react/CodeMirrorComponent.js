@@ -8,7 +8,8 @@ var CodeMirrorComponent = React.createClass({
         return {data: null};
     },
     render: function() {
-        var metaData = [{ref: "saveBtn", icon: "ui-icon-disk", title: "Save", onClickCallback: this.saveCallback}];
+        var metaData = [{ref: "saveBtn", icon: "ui-icon-disk", title: "Save", onClickCallback: this.saveCallback},
+                        {ref: "formatBtn", icon: "ui-icon-shuffle", title: "Format", onClickCallback: this.props.formatCallback}];
         return React.createElement("div", {ref:"theContainer", className: this.props.className},
                    React.createElement(RToolbar, {ref: "theToolbar" , className: "toolbar-container", metaData: metaData}),
                    React.createElement("div", {ref: "codeMirrorHost"}));
@@ -21,6 +22,9 @@ var CodeMirrorComponent = React.createClass({
         this.codeMirror.on("change", this.onChanged);
         this.resize();
         this.refs.theToolbar.refs.saveBtn.setEnabled(false);
+        if (!this.props.formatCallback) {
+            this.refs.theToolbar.refs.formatBtn.setEnabled(false);
+        }
     },
     componentWillUpdate: function(nextProps, nextState) {
         if (this.props.readOnly !== nextProps.readOnly) {

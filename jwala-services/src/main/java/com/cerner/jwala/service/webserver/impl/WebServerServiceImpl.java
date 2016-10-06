@@ -17,6 +17,7 @@ import com.cerner.jwala.persistence.jpa.service.exception.NonRetrievableResource
 import com.cerner.jwala.persistence.jpa.service.exception.ResourceTemplateUpdateException;
 import com.cerner.jwala.persistence.service.WebServerPersistenceService;
 import com.cerner.jwala.service.resource.ResourceService;
+import com.cerner.jwala.service.resource.impl.ResourceGeneratorType;
 import com.cerner.jwala.service.webserver.WebServerService;
 import com.cerner.jwala.service.webserver.exception.WebServerServiceException;
 import org.apache.commons.io.FileUtils;
@@ -165,7 +166,7 @@ public class WebServerServiceImpl implements WebServerService {
         try {
             // NOTE: invokeWS.bat is internal to Jwala that is why the template is not in Db.
             return resourceService.generateResourceFile("invokeWS.bat", FileUtils.readFileToString(new File(templatePath + INVOKE_WSBAT_TEMPLATE_TPL_PATH)),
-                    resourceService.generateResourceGroup(), webServer);
+                    resourceService.generateResourceGroup(), webServer, ResourceGeneratorType.TEMPLATE);
         } catch (final IOException ioe) {
             throw new WebServerServiceException("Error generating invokeWS.bat!", ioe);
         }
@@ -178,7 +179,7 @@ public class WebServerServiceImpl implements WebServerService {
 
         try {
             String httpdConfText = webServerPersistenceService.getResourceTemplate(aWebServerName, HTTPD_CONF);
-            return resourceService.generateResourceFile(HTTPD_CONF, httpdConfText, resourceGroup, server);
+            return resourceService.generateResourceFile(HTTPD_CONF, httpdConfText, resourceGroup, server, ResourceGeneratorType.TEMPLATE);
         } catch (NonRetrievableResourceTemplateContentException nrtce) {
             LOGGER.error("Failed to retrieve resource template from the database", nrtce);
             throw new InternalErrorException(AemFaultType.TEMPLATE_NOT_FOUND, nrtce.getMessage());
@@ -199,7 +200,7 @@ public class WebServerServiceImpl implements WebServerService {
         final String template = webServerPersistenceService.getResourceTemplate(webServerName, resourceTemplateName);
         if (tokensReplaced) {
             WebServer webServer = webServerPersistenceService.findWebServerByName(webServerName);
-            return resourceService.generateResourceFile(resourceTemplateName,template, resourceService.generateResourceGroup(), webServer);
+            return resourceService.generateResourceFile(resourceTemplateName, template, resourceService.generateResourceGroup(), webServer, ResourceGeneratorType.TEMPLATE);
         }
         return template;
     }
@@ -223,7 +224,7 @@ public class WebServerServiceImpl implements WebServerService {
                     metaData.getDeployFileName(),
                     metaData.getDeployPath() + "/" + metaData.getDeployFileName(),
                     resourceService.generateResourceGroup(),
-                    webServer);
+                    webServer, ResourceGeneratorType.METADATA);
         } catch (IOException e) {
             LOGGER.error("Failed to map meta data when uploading web server config {}", uploadWebServerTemplateRequest, e);
             throw new InternalErrorException(AemFaultType.BAD_STREAM, "Unable to map the meta data for template " + confFileName, e);
@@ -247,7 +248,7 @@ public class WebServerServiceImpl implements WebServerService {
     @Transactional(readOnly = true)
     public String previewResourceTemplate(final String fileName, final String webServerName, final String groupName, final String template) {
         return resourceService.generateResourceFile(fileName, template, resourceService.generateResourceGroup(),
-                webServerPersistenceService.findWebServerByName(webServerName));
+                webServerPersistenceService.findWebServerByName(webServerName), ResourceGeneratorType.PREVIEW);
     }
 
     @Override

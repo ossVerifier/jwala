@@ -56,7 +56,7 @@ public class ExternalPropertiesResourceHandler extends ResourceHandler {
 
             // create the external properties template
             final String deployFileName = metaData.getDeployFileName();
-            createResourceResponseWrapper = new CreateResourceResponseWrapper(resourceDao.createResource(entityId, groupId, appId, entityType, deployFileName, templateContent, convertResourceTemplateMetaDataToJson(metaData)));
+            createResourceResponseWrapper = new CreateResourceResponseWrapper(resourceDao.createResource(entityId, groupId, appId, entityType, deployFileName, templateContent, metaData.getJsonData()));
 
             // apply the external properties
             // TODO make get template content generic for all resources

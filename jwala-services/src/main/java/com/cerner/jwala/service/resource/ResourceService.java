@@ -7,6 +7,7 @@ import com.cerner.jwala.common.domain.model.resource.ResourceTemplateMetaData;
 import com.cerner.jwala.common.domain.model.user.User;
 import com.cerner.jwala.common.exec.CommandOutput;
 import com.cerner.jwala.service.resource.impl.CreateResourceResponseWrapper;
+import com.cerner.jwala.service.resource.impl.ResourceGeneratorType;
 
 import java.io.File;
 import java.io.IOException;
@@ -62,7 +63,7 @@ public interface ResourceService {
      * @param selectedValue the selectedvalue
      * @return the generated resource file string
      */
-    <T> String generateResourceFile(final String fileName, final String template, final ResourceGroup resourceGroup, T selectedValue);
+    <T> String generateResourceFile(final String fileName, final String template, final ResourceGroup resourceGroup, T selectedValue, ResourceGeneratorType resourceGeneratorType);
 
     /**
      * Get an application's resource names.
@@ -278,7 +279,7 @@ public interface ResourceService {
      * @param content                the untokenized template content
      * @return the tokenized template content
      */
-    String previewResourceContent(String fileName, ResourceIdentifier resourceHierarchyParam, String content);
+    String previewResourceContent(ResourceIdentifier resourceHierarchyParam, String content);
 
     /**
      * Deploy the resource to a host

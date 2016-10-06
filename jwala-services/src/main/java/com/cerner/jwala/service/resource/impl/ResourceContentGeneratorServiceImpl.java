@@ -14,6 +14,8 @@ import com.cerner.jwala.service.HistoryService;
 import com.cerner.jwala.service.resource.ResourceContentGeneratorService;
 import com.cerner.jwala.template.ResourceFileGenerator;
 import com.cerner.jwala.template.exception.ResourceFileGeneratorException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -30,6 +32,7 @@ import java.util.List;
 @Service
 public class ResourceContentGeneratorServiceImpl implements ResourceContentGeneratorService {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(ResourceContentGeneratorServiceImpl.class);
     private final GroupPersistenceService groupPersistenceService;
     private final WebServerPersistenceService webServerPersistenceService;
     private final JvmPersistenceService jvmPersistenceService;
@@ -50,12 +53,14 @@ public class ResourceContentGeneratorServiceImpl implements ResourceContentGener
     }
 
     @Override
-    public <T> String generateContent(final String fileName, final String template, final ResourceGroup resourceGroup, final T entity) {
+    public <T> String generateContent(final String fileName, final String template, final ResourceGroup resourceGroup, final T entity, ResourceGeneratorType resourceGeneratorType) {
         try {
             return ResourceFileGenerator.generateResourceConfig(fileName, template, null == resourceGroup ? generateResourceGroup() : resourceGroup, entity);
         } catch (ResourceFileGeneratorException e) {
-            historyService.createHistory("", resourceGroup.getGroups(), e.getMessage(), EventType.USER_ACTION, SecurityContextHolder.getContext().getAuthentication().getName());
-            throw new ResourceFileGeneratorException(e.getMessage(), e);
+            final String logMessage = resourceGeneratorType.name() + ": " + e.getMessage();
+            LOGGER.error(logMessage, e);
+            historyService.createHistory("", resourceGroup.getGroups(), logMessage, EventType.APPLICATION_EVENT, SecurityContextHolder.getContext().getAuthentication().getName());
+            throw new ResourceFileGeneratorException(logMessage, e);
         }
     }
 
