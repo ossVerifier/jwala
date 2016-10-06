@@ -44,6 +44,7 @@ import com.cerner.jwala.service.resource.impl.ResourceGeneratorType;
 import com.cerner.jwala.service.resource.impl.ResourceServiceImpl;
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.groovy.runtime.ResourceGroovyMethods;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.Test;
@@ -51,10 +52,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.internal.verification.Times;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -378,7 +376,7 @@ public class ResourceServiceImplTest {
             output = output.replaceAll("\\r", "").replaceAll("\\n", "");
             String diff = StringUtils.difference(output, expected);
             assertEquals(expected, output);
-        } catch(IOException e ) {
+        } catch (IOException e) {
             fail(e.getMessage());
         }
     }
@@ -580,7 +578,7 @@ public class ResourceServiceImplTest {
         verify(mockRemoteCommandExector, times(2)).executeRemoteCommand(anyString(), anyString(), eq(ApplicationControlOperation.CREATE_DIRECTORY), any(PlatformCommandProvider.class), anyString());
     }
 
-    @Test (expected = InternalErrorException.class)
+    @Test(expected = InternalErrorException.class)
     public void testDeployResourceTemplateToAllHostsFails() throws CommandFailureException {
         ResourceIdentifier mockResourceIdentifier = mock(ResourceIdentifier.class);
         ConfigTemplate mockConfigTemplate = mock(ConfigTemplate.class);
@@ -604,7 +602,7 @@ public class ResourceServiceImplTest {
         resourceService.deployTemplateToAllHosts("external.properties", mockResourceIdentifier);
     }
 
-    @Test (expected = InternalErrorException.class)
+    @Test(expected = InternalErrorException.class)
     public void testDeployResourceTemplateToHostThrowsCommandFailureException() throws CommandFailureException {
         ResourceIdentifier mockResourceIdentifier = mock(ResourceIdentifier.class);
         ConfigTemplate mockConfigTemplate = mock(ConfigTemplate.class);
@@ -639,7 +637,7 @@ public class ResourceServiceImplTest {
         boolean exceptionThrown = false;
         try {
             resourceService.getExternalPropertiesAsFile();
-        } catch (InternalErrorException iee){
+        } catch (InternalErrorException iee) {
             exceptionThrown = true;
         }
         assertTrue(exceptionThrown);
@@ -714,7 +712,7 @@ public class ResourceServiceImplTest {
         assertEquals(createResourceResponseWrapper, resourceService.createResource(resourceIdentifier, resourceTemplateMetaData, inputStream));
     }
 
-    @Test (expected = ResourceServiceException.class)
+    @Test(expected = ResourceServiceException.class)
     public void testCreateResourceFail() {
         ResourceIdentifier resourceIdentifier = mock(ResourceIdentifier.class);
         ResourceTemplateMetaData resourceTemplateMetaData = mock(ResourceTemplateMetaData.class);
@@ -723,7 +721,7 @@ public class ResourceServiceImplTest {
         resourceService.createResource(resourceIdentifier, resourceTemplateMetaData, inputStream);
     }
 
-    @Test (expected = InternalErrorException.class)
+    @Test(expected = InternalErrorException.class)
     public void testDeployTemplateToHostFail() throws CommandFailureException {
         ResourceIdentifier mockResourceIdentifier = mock(ResourceIdentifier.class);
         ConfigTemplate mockConfigTemplate = mock(ConfigTemplate.class);
@@ -808,5 +806,82 @@ public class ResourceServiceImplTest {
         final String metaData = "{\"key\":\"value\"}";
         resourceService.updateResourceMetaData(mockResourceIdentifier, resourceName, metaData);
         verify(mockResourceHandler).updateResourceMetaData(eq(mockResourceIdentifier), eq(resourceName), eq(metaData));
+    }
+
+    @Test
+    public void testGetFormattedMetaData() throws IOException {
+        Properties properties = new Properties();
+        properties.load(new FileInputStream(new File("./src/test/resources/vars.properties")));
+
+        final String rawMetaData = (String) properties.get("test.path.backslash.escaped"); // --> {"deployPath":"\\\\server\\d$"}
+        ResourceTemplateMetaData result = resourceService.getFormattedResourceMetaData("test-file.txt", null, rawMetaData);
+        assertEquals("\\\\server\\d$", result.getDeployPath());
+    }
+
+    @Test
+    public void testMetaDataBackslash() throws IOException {
+        Properties properties = new Properties();
+        properties.load(new FileInputStream(new File("./src/test/resources/vars.properties")));
+        final String testPathBackslash = (String) properties.get("test.path.backslash"); // --> {"deployPath":"\\server\d$"}
+
+        // Throws exception if backslashes are not escaped
+        boolean exceptionThrown = false;
+        Exception exception = null;
+        try {
+            new ObjectMapper().readValue(testPathBackslash, ResourceTemplateMetaData.class);
+        } catch (IOException e) {
+            exceptionThrown = true;
+            exception = e;
+        }
+        assertTrue("Back slashes not escaped", exceptionThrown);
+        assertNotNull(exception);
+        System.out.println(testPathBackslash + " " + exception.getMessage());
+        assertTrue(exception.getMessage().startsWith("Unrecognized character escape"));
+
+        // Escaped backslashes in properties file still fails
+        final String testPathBackslashEscaped = (String) properties.get("test.path.backslash.escaped"); // --> {"deployPath":"\\\\server\\d$"}
+        exceptionThrown = false;
+        exception = null;
+        try {
+            new ObjectMapper().readValue(testPathBackslashEscaped, ResourceTemplateMetaData.class);
+        } catch (IOException e) {
+            exceptionThrown = true;
+            exception = e;
+        }
+        assertTrue("Back slashes escaped", exceptionThrown);
+        assertNotNull(exception);
+        System.out.println(testPathBackslashEscaped + " " + exception.getMessage());
+        assertTrue(exception.getMessage().startsWith("Unrecognized character escape"));
+
+        // More backslashes works
+        final String testPathBackslashThree = (String) properties.get("test.path.backslash.escaped.escaped"); // --> {"deployPath":"\\\\\\\\server\\\\d$"}
+        exceptionThrown = false;
+        exception = null;
+        ResourceTemplateMetaData mappingResult = null;
+        try {
+            mappingResult = new ObjectMapper().readValue(testPathBackslashThree, ResourceTemplateMetaData.class);
+        } catch (IOException e) {
+            exceptionThrown = true;
+            exception = e;
+        }
+        assertFalse("Back slashes three", exceptionThrown);
+        assertNull(exception);
+        System.out.println(testPathBackslashThree + " :: " + mappingResult.getDeployPath());
+
+        // Ok, what we need to do is escape the backslashes before reading the string by the object mapper
+        final String escapedEscapedTestPath = testPathBackslashEscaped.replace("\\", "\\\\"); //{"deployPath":"\\\\server\\d$"}
+        exceptionThrown = false;
+        exception = null;
+        mappingResult = null;
+        try {
+            mappingResult = new ObjectMapper().readValue(escapedEscapedTestPath, ResourceTemplateMetaData.class);
+        } catch (IOException e) {
+            exceptionThrown = true;
+            exception = e;
+        }
+        assertFalse("Back slashes escaped, and then escaped manually", exceptionThrown);
+        assertNull(exception);
+        System.out.println("BEFORE:" + escapedEscapedTestPath + " :: AFTER:" + mappingResult.getDeployPath());
+
     }
 }

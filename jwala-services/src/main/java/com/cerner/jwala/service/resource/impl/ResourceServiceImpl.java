@@ -36,6 +36,7 @@ import com.cerner.jwala.service.resource.impl.handler.exception.ResourceHandlerE
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -145,7 +146,7 @@ public class ResourceServiceImpl implements ResourceService {
         String templateContent = "";
 
         try {
-            resourceTemplateMetaData = ResourceTemplateMetaData.createFromJsonStr(IOUtils.toString(metaData));
+            resourceTemplateMetaData = getFormattedResourceMetaData("createTemplate", null, IOUtils.toString(metaData));
             if (resourceTemplateMetaData.getContentType().equals(ContentType.APPLICATION_BINARY.contentTypeStr)) {
                 templateContent = uploadResource(resourceTemplateMetaData, templateData);
             } else {
@@ -209,6 +210,14 @@ public class ResourceServiceImpl implements ResourceService {
     @Override
     public <T> String generateResourceFile(final String fileName, final String template, final ResourceGroup resourceGroup, T selectedValue, ResourceGeneratorType resourceGeneratorType) {
         return resourceContentGeneratorService.generateContent(fileName, template, resourceGroup, selectedValue, resourceGeneratorType);
+    }
+
+    @Override
+    public <T> ResourceTemplateMetaData getFormattedResourceMetaData(String fileName, T entity, String metaDataStr) throws IOException {
+        String tokenizedMetaData = generateResourceFile(fileName, metaDataStr, generateResourceGroup(), entity, ResourceGeneratorType.METADATA);
+        tokenizedMetaData = tokenizedMetaData.replace("\\", "\\\\");
+        LOGGER.info("tokenized metadata is : {}", tokenizedMetaData);
+        return ResourceTemplateMetaData.createFromJsonStr(tokenizedMetaData);
     }
 
     @Override
@@ -567,7 +576,8 @@ public class ResourceServiceImpl implements ResourceService {
     public ResourceContent getResourceContent(final ResourceIdentifier resourceIdentifier) {
         final ConfigTemplate configTemplate = resourceHandler.fetchResource(resourceIdentifier);
         if (configTemplate != null) {
-            return new ResourceContent(configTemplate.getMetaData(), configTemplate.getTemplateContent());
+            String jsonStrMetaData = configTemplate.getMetaData();
+            return new ResourceContent(jsonStrMetaData, configTemplate.getTemplateContent());
         }
         return null;
     }
@@ -678,10 +688,8 @@ public class ResourceServiceImpl implements ResourceService {
         try {
             final String metaDataPath;
             final ResourceContent resourceContent = getResourceContent(resourceIdentifier);
-            String metaDataStr = resourceContent.getMetaData();
-            final String tokenizedMetaData = this.generateResourceFile(fileName, metaDataStr, generateResourceGroup(), null, ResourceGeneratorType.METADATA);
-            LOGGER.info("tokenized metadata is : {}", tokenizedMetaData);
-            ResourceTemplateMetaData resourceTemplateMetaData = ResourceTemplateMetaData.createFromJsonStr(tokenizedMetaData);
+
+            ResourceTemplateMetaData resourceTemplateMetaData = getFormattedResourceMetaData(fileName, null, resourceContent.getMetaData());
             metaDataPath = resourceTemplateMetaData.getDeployPath();
             String resourceSourceCopy;
             final String deployFileName = resourceTemplateMetaData.getDeployFileName();

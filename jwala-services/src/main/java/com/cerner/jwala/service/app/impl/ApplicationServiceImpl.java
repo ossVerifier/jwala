@@ -271,10 +271,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 
             String metaData = applicationPersistenceService.getMetaData(appName, jvmName, groupName, resourceTemplateName);
             app.setParentJvm(jvm);
-            final String tokenizedMetaData = resourceService.generateResourceFile(resourceTemplateName, metaData, resourceGroup, app, ResourceGeneratorType.METADATA);
-
-            LOGGER.info("tokenized metadata is : {}", tokenizedMetaData);
-            ResourceTemplateMetaData templateMetaData = ResourceTemplateMetaData.createFromJsonStr(tokenizedMetaData);
+            ResourceTemplateMetaData templateMetaData = resourceService.getFormattedResourceMetaData(resourceTemplateName, app, metaData);
             final String deployFileName = templateMetaData.getDeployFileName();
             final String destPath = templateMetaData.getDeployPath() + '/' + deployFileName;
             String srcPath;
@@ -406,7 +403,7 @@ public class ApplicationServiceImpl implements ApplicationService {
             for (String resourceTemplateName : appResourcesNames) {
                 String metaDataStr = groupService.getGroupAppResourceTemplateMetaData(groupName, resourceTemplateName);
                 try {
-                    ResourceTemplateMetaData metaData = ResourceTemplateMetaData.createFromJsonStr(metaDataStr);
+                    ResourceTemplateMetaData metaData = resourceService.getFormattedResourceMetaData(resourceTemplateName, app, metaDataStr);
                     if (jvms != null && jvms.size() > 0 && !metaData.getEntity().getDeployToJvms()) {
                         // still need to iterate through the JVMs to get the host names
                         Set<String> hostNames = new HashSet<>();

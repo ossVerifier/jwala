@@ -50,7 +50,7 @@ public class JschScpCommandProcessorImpl implements CommandProcessor {
 
             LOGGER.debug("scp remote command {} source:{} destination:{}", remoteSystemConnection, commandFragments.get(1), commandFragments.get(2));
 
-            String target = commandFragments.get(2);
+            String target = commandFragments.get(2).replace("\\", "/");
 
             // exec 'scp -t rfile' remotely
             String command = "scp -t " + target;

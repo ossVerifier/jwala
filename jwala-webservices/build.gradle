@@ -25,7 +25,7 @@ dependencies {
 
 	testRuntime group: 'org.apache.tomcat', name: 'tomcat-coyote', version: "$project.versions.tomcat"
 
-    testCompile group: 'org.apache.tomcat', name: 'tomcat-catalina', version: '8.0.33'
+    testCompile group: 'org.apache.tomcat', name: 'tomcat-catalina', version: "$project.versions.tomcat"
 }
 
 test {

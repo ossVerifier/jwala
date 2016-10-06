@@ -108,11 +108,11 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
                 final String groupName = group.getName();
                 for (final String templateName : groupService.getGroupWebServersResourceTemplateNames(groupName)) {
                     String templateContent = groupService.getGroupWebServerResourceTemplate(groupName, templateName, false, new ResourceGroup());
-                    String metaDataStr = groupService.getGroupWebServerResourceTemplateMetaData(groupName, templateName);
                     ResourceTemplateMetaData metaData;
                     try {
-                        metaData = ResourceTemplateMetaData.createFromJsonStr(metaDataStr);
-                        UploadWebServerTemplateRequest uploadWSRequest = new UploadWebServerTemplateRequest(webServer, metaData.getTemplateName(), metaDataStr, templateContent) {
+                        final String metaDataStr = groupService.getGroupWebServerResourceTemplateMetaData(groupName, templateName);
+                        metaData = resourceService.getFormattedResourceMetaData(templateName, webServer, metaDataStr);
+                        UploadWebServerTemplateRequest uploadWSRequest = new UploadWebServerTemplateRequest(webServer, metaData.getDeployFileName(), metaDataStr, templateContent) {
                             @Override
                             public String getConfFileName() {
                                 return templateName;
@@ -131,7 +131,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
             return ResponseBuilder.created(webServer);
 
         } catch (EntityExistsException eee) {
-            LOGGER.error("Web server with name \"{}\" already exists", aWebServerToCreate.toCreateWebServerRequest().getName(), eee);
+            LOGGER.error("Web server \"{}\" already exists", aWebServerToCreate, eee);
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
                     AemFaultType.DUPLICATE_WEBSERVER_NAME, eee.getMessage(), eee));
         }
@@ -221,11 +221,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
 
             // get the meta data
             String metaDataStr = webServerService.getResourceTemplateMetaData(aWebServerName, resourceFileName);
-            final String tokenizedMetaData = resourceService.generateResourceFile(resourceFileName, metaDataStr,
-                    resourceService.generateResourceGroup(),
-                    webServerService.getWebServer(aWebServerName), ResourceGeneratorType.METADATA);
-            LOGGER.info("tokenized metadata is : {}", tokenizedMetaData);
-            ResourceTemplateMetaData metaData = ResourceTemplateMetaData.createFromJsonStr(tokenizedMetaData);
+            ResourceTemplateMetaData metaData = resourceService.getFormattedResourceMetaData(resourceFileName, webServerService.getWebServer(aWebServerName), metaDataStr);
             final String deployFileName = metaData.getDeployFileName();
 
             String configFilePath;

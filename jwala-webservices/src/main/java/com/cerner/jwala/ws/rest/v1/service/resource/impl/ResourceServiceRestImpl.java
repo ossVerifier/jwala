@@ -185,7 +185,7 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
 
         CreateResourceResponseWrapper responseWrapper = null;
         try {
-            final ResourceTemplateMetaData metaData = ResourceTemplateMetaData.createFromJsonStr(IOUtils.toString(metadataIn));
+            final ResourceTemplateMetaData metaData = resourceService.getFormattedResourceMetaData(fileName, null, IOUtils.toString(metadataIn));
 
             // We do the file attachment validation here since this is a REST services affair IMHO.
             // TODO: Use a more sophisticated way of knowing the content type in next releases.
@@ -196,7 +196,7 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
                         new FaultCodeException(AemFaultType.SERVICE_EXCEPTION, UNEXPECTED_CONTENT_TYPE_ERROR_MSG));
             }
 
-            final ResourceIdentifier resourceIdentifier = new ResourceIdentifier.Builder().setResourceName(metaData.getTemplateName())
+            final ResourceIdentifier resourceIdentifier = new ResourceIdentifier.Builder().setResourceName(metaData.getDeployFileName())
                     .setGroupName(createResourceParam.getGroup())
                     .setWebServerName(createResourceParam.getWebServer())
                     .setJvmName(createResourceParam.getJvm())
@@ -252,7 +252,7 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
         CreateResourceResponseWrapper responseWrapper = null;
 
         try {
-            metaData = ResourceTemplateMetaData.createFromJsonStr(EXT_PROPERTIES_RESOURCE_META_DATA);
+            metaData = resourceService.getFormattedResourceMetaData("ext.properties", null, EXT_PROPERTIES_RESOURCE_META_DATA);
             ServletFileUpload sfu = new ServletFileUpload();
             FileItemIterator iter = sfu.getItemIterator(context.getHttpServletRequest());
             FileItemStream fileItemStream = iter.next();
