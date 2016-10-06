@@ -38,6 +38,7 @@ import com.cerner.jwala.service.exception.ApplicationServiceException;
 import com.cerner.jwala.service.group.GroupService;
 import com.cerner.jwala.service.resource.ResourceService;
 import com.cerner.jwala.service.resource.impl.ResourceGeneratorType;
+import com.cerner.jwala.template.exception.ResourceFileGeneratorException;
 import org.apache.commons.lang3.StringUtils;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
@@ -346,6 +347,9 @@ public class ApplicationServiceImpl implements ApplicationService {
             throw new DeployApplicationConfException(ex);
         } catch (JsonMappingException | JsonParseException e) {
             LOGGER.error("Failed to map meta data while deploying config file {} for app {} to jvm {}", resourceTemplateName, appName, jvmName, e);
+            throw new DeployApplicationConfException(e);
+        } catch (ResourceFileGeneratorException e){
+            LOGGER.error("Fail to generate the resource file {}", resourceTemplateName, e);
             throw new DeployApplicationConfException(e);
         } catch (IOException e) {
             LOGGER.error("Failed for IOException while deploying config file {} for app {} to jvm {}", resourceTemplateName, appName, jvmName, e);

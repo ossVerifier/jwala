@@ -127,7 +127,7 @@ public class ResourceServiceImplTest {
         System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, new File(".").getAbsolutePath() + "/src/test/resources");
 
         ResourceContentGeneratorService resourceContentGeneratorService = new ResourceContentGeneratorServiceImpl(mockGroupPesistenceService,
-                mockWebServerPersistenceService, mockJvmPersistenceService, mockAppPersistenceService, mockHistoryService);
+                mockWebServerPersistenceService, mockJvmPersistenceService, mockAppPersistenceService, mockHistoryService, mockMessagingService);
 
         resourceService = new ResourceServiceImpl(mockResourcePersistenceService, mockGroupPesistenceService,
                 mockAppPersistenceService, mockJvmPersistenceService, mockWebServerPersistenceService,

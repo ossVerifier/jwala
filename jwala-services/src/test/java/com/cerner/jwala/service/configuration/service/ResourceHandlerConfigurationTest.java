@@ -14,6 +14,7 @@ import com.cerner.jwala.common.request.webserver.UploadWebServerTemplateRequest;
 import com.cerner.jwala.persistence.jpa.domain.JpaJvm;
 import com.cerner.jwala.persistence.service.*;
 import com.cerner.jwala.service.HistoryService;
+import com.cerner.jwala.service.MessagingService;
 import com.cerner.jwala.service.resource.impl.handler.WebServerResourceHandler;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -275,6 +276,7 @@ public class ResourceHandlerConfigurationTest {
         public static final WebServerPersistenceService MOCK_WEB_SERVER_PERSISTENCE_SERVICE = mock(WebServerPersistenceService.class);
         public static final JvmPersistenceService MOCK_JVM_PERSISTENCE_SERVICE = mock(JvmPersistenceService.class);
         public static final ApplicationPersistenceService MOCK_APPLICATION_PERSISTENCE_SERVICE = mock(ApplicationPersistenceService.class);
+        public static final MessagingService MOCK_MESSAGING_SERICE = mock(MessagingService.class);
         public static final HistoryService MOCK_HISTORY_SERVICE = mock(HistoryService.class);
 
         @Bean
@@ -304,6 +306,11 @@ public class ResourceHandlerConfigurationTest {
         @Bean
         public static ApplicationPersistenceService getMockApplicationPersistenceService() {
             return MOCK_APPLICATION_PERSISTENCE_SERVICE;
+        }
+
+        @Bean
+        public static MessagingService getMockMessagingSerice(){
+            return MOCK_MESSAGING_SERICE;
         }
 
         @Bean

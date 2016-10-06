@@ -31,8 +31,10 @@ import com.cerner.jwala.service.jvm.JvmService;
 import com.cerner.jwala.service.resource.ResourceService;
 import com.cerner.jwala.service.resource.impl.ResourceGeneratorType;
 import com.cerner.jwala.service.webserver.WebServerService;
+import com.cerner.jwala.template.exception.ResourceFileGeneratorException;
 import com.cerner.jwala.ws.rest.v1.provider.AuthenticatedUser;
 import com.cerner.jwala.ws.rest.v1.provider.NameSearchParameterProvider;
+import com.cerner.jwala.ws.rest.v1.response.ApplicationResponse;
 import com.cerner.jwala.ws.rest.v1.response.ResponseBuilder;
 import com.cerner.jwala.ws.rest.v1.service.app.ApplicationServiceRest;
 import com.cerner.jwala.ws.rest.v1.service.app.impl.ApplicationServiceRestImpl;
@@ -247,7 +249,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     }
 
     @Override
-    public Response previewGroupWebServerResourceTemplate(String groupName, String resourceTemplateName,String template) {
+    public Response previewGroupWebServerResourceTemplate(String groupName, String resourceTemplateName, String template) {
         LOGGER.debug("Preview group web server template for group {}", groupName);
         LOGGER.debug(template);
         try {
@@ -434,7 +436,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
                 response = futureMap.get(keyEntityName).get();
                 if (response.getStatus() > 399) {
                     final String reasonPhrase = response.getStatusInfo().getReasonPhrase();
-                    LOGGER.error("Remote Command Failure for " + keyEntityName + ": " + reasonPhrase);
+                    LOGGER.error("Remote Command Failure for " + keyEntityName + ": " + reasonPhrase );
                     throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, reasonPhrase);
                 }
 
@@ -735,7 +737,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         try {
             final String updatedContent = groupService.updateGroupAppResourceTemplate(groupName, appName, resourceTemplateName, content);
             ResourceTemplateMetaData metaData = ResourceTemplateMetaData.createFromJsonStr(metaDataStr);
-                    Set<Jvm> groupJvms = group.getJvms();
+            Set<Jvm> groupJvms = group.getJvms();
             Set<Future<Response>> futureContents = new HashSet<>();
             if (null != groupJvms) {
                 LOGGER.info("Updating the templates for all the JVMs in group {}", groupName);
@@ -767,6 +769,9 @@ public class GroupServiceRestImpl implements GroupServiceRest {
             LOGGER.error("Failed to map meta data object for template {} in group {} :: meta data: {} ", resourceTemplateName, groupName, metaDataStr, e);
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
                     AemFaultType.BAD_STREAM, e.getMessage()));
+        } catch (ResourceFileGeneratorException e) {
+            LOGGER.error("Fail to generate the resource file {}", resourceTemplateName, e);
+            return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(AemFaultType.BAD_STREAM, "Fail to generate the resource file " + resourceTemplateName, e));
         } catch (IOException e) {
             LOGGER.error("Failed with IOException trying to map meta data object for template {} in group {} :: meta data: {}", resourceTemplateName, groupName, metaDataStr, e);
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(

@@ -43,6 +43,7 @@ import com.cerner.jwala.service.jvm.exception.JvmServiceException;
 import com.cerner.jwala.service.resource.ResourceService;
 import com.cerner.jwala.service.resource.impl.ResourceGeneratorType;
 import com.cerner.jwala.service.webserver.component.ClientFactoryHelper;
+import com.cerner.jwala.template.exception.ResourceFileGeneratorException;
 import groovy.text.SimpleTemplateEngine;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -419,10 +420,10 @@ public class JvmServiceImpl implements JvmService {
         String configJarPath;
         try {
             final String destDirPath = generatedDir.getAbsolutePath();
-            LOGGER.debug("Start Unzip Instance Template {} to {} ", binaryDir+"/"+instanceTemplateZipName, unzipDir);
+            LOGGER.debug("Start Unzip Instance Template {} to {} ", binaryDir + "/" + instanceTemplateZipName, unzipDir);
             // Copy the templates that would be included in the zip file.
-            fileManager.unZipFile(new File(binaryDir+"/"+instanceTemplateZipName), unzipDir);
-            LOGGER.debug("End Unzip Instance Template {} to {} ", binaryDir+"/"+instanceTemplateZipName, unzipDir);
+            fileManager.unZipFile(new File(binaryDir + "/" + instanceTemplateZipName), unzipDir);
+            LOGGER.debug("End Unzip Instance Template {} to {} ", binaryDir + "/" + instanceTemplateZipName, unzipDir);
             final String generatedText = generateInvokeBat(jvmName);
             final String invokeBatDir = generatedDir + "/bin";
             LOGGER.debug("generated invoke.bat text: {}", generatedText);
@@ -431,16 +432,16 @@ public class JvmServiceImpl implements JvmService {
             // copy Agent, JodaTime & JGroup Libraries
             // create the lib directory
             final File generatedJvmDestDirLib = new File(jvmName + "/lib");
-            if(!generatedJvmDestDirLib.exists()) {
+            if (!generatedJvmDestDirLib.exists()) {
                 generatedJvmDestDirLib.mkdir();
             }
             LOGGER.debug("Copy agent dir: {} to instance template {}", agentDir, generatedJvmDestDirLib);
             File jwalaAgentDir = new File(agentDir);
-            if(jwalaAgentDir.exists() && jwalaAgentDir.isDirectory()){
-                File[] files  = jwalaAgentDir.listFiles();
-                    for(File file:files) {
-                        FileUtils.copyFileToDirectory(file, generatedJvmDestDirLib);
-                    }
+            if (jwalaAgentDir.exists() && jwalaAgentDir.isDirectory()) {
+                File[] files = jwalaAgentDir.listFiles();
+                for (File file : files) {
+                    FileUtils.copyFileToDirectory(file, generatedJvmDestDirLib);
+                }
             }
             // copy the start and stop scripts to the instances/jvm/bin directory
             final String commandsScriptsPath = ApplicationProperties.get("commands.scripts-path");
@@ -758,7 +759,7 @@ public class JvmServiceImpl implements JvmService {
     @Override
     @Transactional
     public String previewResourceTemplate(String fileName, String jvmName, String groupName, String template) {
-        return resourceService.generateResourceFile(fileName, template, resourceService.generateResourceGroup(), jvmPersistenceService.findJvm(jvmName, groupName), ResourceGeneratorType.TEMPLATE);
+        return resourceService.generateResourceFile(fileName, template, resourceService.generateResourceGroup(), jvmPersistenceService.findJvm(jvmName, groupName), ResourceGeneratorType.PREVIEW);
     }
 
     @Override
@@ -876,10 +877,19 @@ public class JvmServiceImpl implements JvmService {
     public Map<String, String> generateResourceFiles(final String jvmName) throws IOException {
         Map<String, String> generatedFiles = null;
         final List<JpaJvmConfigTemplate> jpaJvmConfigTemplateList = jvmPersistenceService.getConfigTemplates(jvmName);
+        boolean resourceFileGeneratorException = false;
+        String resourceFileGeneratorExceptionString = "";
         for (final JpaJvmConfigTemplate jpaJvmConfigTemplate : jpaJvmConfigTemplateList) {
             final ResourceGroup resourceGroup = resourceService.generateResourceGroup();
             final Jvm jvm = jvmPersistenceService.findJvmByExactName(jvmName);
-            final String resourceTemplateMetaDataString = resourceService.generateResourceFile(jpaJvmConfigTemplate.getTemplateName(), jpaJvmConfigTemplate.getMetaData(), resourceGroup, jvm, ResourceGeneratorType.METADATA);
+            String resourceTemplateMetaDataString = "";
+            try {
+                resourceTemplateMetaDataString = resourceService.generateResourceFile(jpaJvmConfigTemplate.getTemplateName(), jpaJvmConfigTemplate.getMetaData(), resourceGroup, jvm, ResourceGeneratorType.METADATA);
+            } catch (ResourceFileGeneratorException e) {
+                LOGGER.error(e.getMessage(), e);
+                resourceFileGeneratorExceptionString += e.getMessage();
+                resourceFileGeneratorException = true;
+            }
             final ResourceTemplateMetaData resourceTemplateMetaData =
                     ResourceTemplateMetaData.createFromJsonStr(resourceTemplateMetaDataString);
             final String deployFileName = resourceTemplateMetaData.getDeployFileName();
@@ -893,11 +903,20 @@ public class JvmServiceImpl implements JvmService {
                 generatedFiles.put(jpaJvmConfigTemplate.getTemplateContent(),
                         resourceTemplateMetaData.getDeployPath() + "/" + deployFileName);
             } else {
-                final String generatedResourceStr = resourceService.generateResourceFile(jpaJvmConfigTemplate.getTemplateName(), jpaJvmConfigTemplate.getTemplateContent(),
-                        resourceGroup, jvm, ResourceGeneratorType.TEMPLATE);
-                generatedFiles.put(createConfigFile(ApplicationProperties.get("paths.generated.resource.dir") + "/" + jvmName, deployFileName, generatedResourceStr),
-                        resourceTemplateMetaData.getDeployPath() + "/" + deployFileName);
+                try {
+                    final String generatedResourceStr = resourceService.generateResourceFile(jpaJvmConfigTemplate.getTemplateName(), jpaJvmConfigTemplate.getTemplateContent(),
+                            resourceGroup, jvm, ResourceGeneratorType.TEMPLATE);
+                    generatedFiles.put(createConfigFile(ApplicationProperties.get("paths.generated.resource.dir") + "/" + jvmName, deployFileName, generatedResourceStr),
+                            resourceTemplateMetaData.getDeployPath() + "/" + deployFileName);
+                } catch (ResourceFileGeneratorException e) {
+                    LOGGER.error(e.getMessage(), e);
+                    resourceFileGeneratorExceptionString += e.getMessage();
+                    resourceFileGeneratorException = true;
+                }
             }
+        }
+        if (resourceFileGeneratorException) {
+            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, resourceFileGeneratorExceptionString);
         }
         return generatedFiles;
     }
