@@ -385,7 +385,7 @@ public class ApplicationServiceImplTest {
         when(mockMetaData.getDeployFileName()).thenReturn("hct.xml");
         when(mockMetaData.getDeployPath()).thenReturn("./test/deploy-path/conf/CatalinaSSL/localhost");
         when(mockMetaData.getContentType()).thenReturn("text/xml");
-        when(mockResourceService.getFormattedResourceMetaData(anyString(), any(Object.class), anyString())).thenReturn(mockMetaData);
+        when(mockResourceService.getTokenizedMetaData(anyString(), any(Object.class), anyString())).thenReturn(mockMetaData);
         when(mockResourceService.generateResourceFile(anyString(), anyString(), any(ResourceGroup.class), any(), any(ResourceGeneratorType.class))).thenReturn("{\"deployPath\":\"./test/deploy-path/conf/CatalinaSSL/localhost\",\"contentType\":\"text/xml\",\"entity\":{\"type\":\"APPLICATION\",\"target\":\"soarcom-hct\",\"group\":\"soarcom-616\",\"parentName\":null,\"deployToJvms\":true},\"templateName\":\"hctXmlTemplate.tpl\",\"deployFileName\":\"hct.xml\"}");
 
         CommandOutput retExecData = applicationService.deployConf("hct", "hct-group", "jvm-1", "hct.xml", mock(ResourceGroup.class), testUser);
@@ -443,7 +443,7 @@ public class ApplicationServiceImplTest {
         when(mockMetaData.getDeployFileName()).thenReturn("hct.xml");
         when(mockMetaData.getDeployPath()).thenReturn("./test/deploy-path/conf/CatalinaSSL/localhost");
         when(mockMetaData.getContentType()).thenReturn("text/xml");
-        when(mockResourceService.getFormattedResourceMetaData(anyString(), any(Object.class), anyString())).thenReturn(mockMetaData);
+        when(mockResourceService.getTokenizedMetaData(anyString(), any(Object.class), anyString())).thenReturn(mockMetaData);
         when(mockResourceService.generateResourceFile(anyString(), anyString(), any(ResourceGroup.class), any(), any(ResourceGeneratorType.class))).thenReturn("anything");
         final CommandOutput retExecData = applicationService.deployConf("hct", "hct-group", "jvm-1", "hct.xml", mock(ResourceGroup.class), testUser);
     }
@@ -469,7 +469,7 @@ public class ApplicationServiceImplTest {
         when(mockMetaData.getDeployFileName()).thenReturn("hct.xml");
         when(mockMetaData.getDeployPath()).thenReturn("./test/deploy-path/conf/CatalinaSSL/localhost");
         when(mockMetaData.getContentType()).thenReturn("text/xml");
-        when(mockResourceService.getFormattedResourceMetaData(anyString(), any(Object.class), anyString())).thenReturn(mockMetaData);
+        when(mockResourceService.getTokenizedMetaData(anyString(), any(Object.class), anyString())).thenReturn(mockMetaData);
         when(mockResourceService.generateResourceFile(anyString(), anyString(), any(ResourceGroup.class), any(), any(ResourceGeneratorType.class))).thenReturn("anything");
         final CommandOutput retExecData = applicationService.deployConf("hct", "hct-group", "jvm-1", "hct.xml", mock(ResourceGroup.class), testUser);
     }
@@ -495,7 +495,7 @@ public class ApplicationServiceImplTest {
         when(mockMetaData.getDeployFileName()).thenReturn("hct.xml");
         when(mockMetaData.getDeployPath()).thenReturn("./test/deploy-path/conf/CatalinaSSL/localhost");
         when(mockMetaData.getContentType()).thenReturn("text/xml");
-        when(mockResourceService.getFormattedResourceMetaData(anyString(), any(Object.class), anyString())).thenReturn(mockMetaData);
+        when(mockResourceService.getTokenizedMetaData(anyString(), any(Object.class), anyString())).thenReturn(mockMetaData);
         when(mockResourceService.generateResourceFile(anyString(), anyString(), any(ResourceGroup.class), any(), any(ResourceGeneratorType.class))).thenReturn("anything");
         final CommandOutput retExecData = applicationService.deployConf("hct", "hct-group", "jvm-1", "hct.xml", mock(ResourceGroup.class), testUser);
     }

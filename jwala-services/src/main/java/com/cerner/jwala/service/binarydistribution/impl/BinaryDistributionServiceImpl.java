@@ -30,6 +30,7 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
 
     @Override
     public void distributeJdk(final String hostname) {
+        LOGGER.info("Start deploy jdk for {}", hostname);
         File javaHome = new File(ApplicationProperties.get("remote.jwala.java.home"));
         String jdkDir = javaHome.getName();
         String binaryDeployDir = javaHome.getParentFile().getAbsolutePath().replaceAll("\\\\", "/");
@@ -38,10 +39,12 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
         } else {
             LOGGER.warn("JDK dir location is null or empty {}", jdkDir);
         }
+        LOGGER.info("End deploy jdk for {}", hostname);
     }
 
     @Override
     public void distributeTomcat(final String hostname) {
+        LOGGER.info("Start deploy tomcat binaries for {}", hostname);
         File tomcat = new File(ApplicationProperties.get("remote.paths.tomcat.core"));
         String tomcatDir = tomcat.getParentFile().getName();
         String binaryDeployDir = tomcat.getParentFile().getParentFile().getAbsolutePath().replaceAll("\\\\", "/");
@@ -50,6 +53,7 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
         } else {
             LOGGER.warn("Tomcat dir location is null or empty {}", tomcatDir);
         }
+        LOGGER.info("End deploy tomcat binaries for {}", hostname);
     }
 
     @Override
@@ -186,6 +190,7 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
 
     @Override
     public void prepareUnzip(String hostname) {
+        LOGGER.info("Start deploy unzip for {}", hostname);
         final String jwalaScriptsPath = ApplicationProperties.get("remote.commands.user-scripts");
         if (remoteFileCheck(hostname, jwalaScriptsPath)) {
             LOGGER.info(jwalaScriptsPath + " exists at " + hostname);
@@ -201,5 +206,6 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
             remoteSecureCopyFile(hostname, unzipFileSource, unzipFileDestination);
             changeFileMode(hostname, "a+x", jwalaScriptsPath, UNZIPEXE);
         }
+        LOGGER.info("End deploy unzip for {}", hostname);
     }
 }

@@ -107,7 +107,9 @@ public class WebServerStateSetterWorker {
                     if (ioe instanceof ConnectTimeoutException) {
                         LOGGER.debug("{} {}", webServerName, ioe.getMessage(), ioe);
                     } else {
-                        LOGGER.info("{} {}", webServerName, ioe.getMessage(), ioe);
+                        if (!webServerState.equals(WebServerReachableState.WS_UNREACHABLE)) {
+                            LOGGER.info("{} {}", webServerName, ioe.getMessage(), ioe);
+                        }
                     }
                     if (!webServerState.equals(WebServerReachableState.WS_NEW)) {
                         setState(webServer, WebServerReachableState.WS_UNREACHABLE, StringUtils.EMPTY);

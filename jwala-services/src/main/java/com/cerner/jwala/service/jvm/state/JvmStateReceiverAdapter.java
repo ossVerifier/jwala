@@ -114,7 +114,7 @@ public class JvmStateReceiverAdapter extends ReceiverAdapter {
      * @return the id
      */
     private Long getJvmId(final String name) {
-        LOGGER.info("Retrieving JVM id with name = {}...", name);
+        LOGGER.debug("Retrieving JVM id with name = {}...", name);
         try {
             return jvmPersistenceService.getJvmId(name);
         } catch (final RuntimeException e) { // Since the adapter is a critical component used to display the JVM state

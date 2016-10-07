@@ -388,7 +388,7 @@ public class GroupServiceImpl implements GroupService {
         Jvm jvm = jvms != null && jvms.size() > 0 ? jvms.iterator().next() : null;
         String metaDataStr = groupPersistenceService.getGroupAppResourceTemplateMetaData(groupName, resourceTemplateName);
         try {
-            ResourceTemplateMetaData metaData = resourceService.getFormattedResourceMetaData(resourceTemplateName, jvm, metaDataStr);
+            ResourceTemplateMetaData metaData = resourceService.getTokenizedMetaData(resourceTemplateName, jvm, metaDataStr);
             Application app = applicationPersistenceService.getApplication(metaData.getEntity().getTarget());
             app.setParentJvm(jvm);
             return resourceService.generateResourceFile(resourceTemplateName, template, resourceGroup, app, ResourceGeneratorType.TEMPLATE);
@@ -409,7 +409,7 @@ public class GroupServiceImpl implements GroupService {
         final String template = groupPersistenceService.getGroupAppResourceTemplate(groupName, appName, resourceTemplateName);
         if (tokensReplaced) {
             try {
-                ResourceTemplateMetaData metaData = resourceService.getFormattedResourceMetaData(resourceTemplateName, applicationPersistenceService.getApplication(appName), groupPersistenceService.getGroupAppResourceTemplateMetaData(groupName, resourceTemplateName));
+                ResourceTemplateMetaData metaData = resourceService.getTokenizedMetaData(resourceTemplateName, applicationPersistenceService.getApplication(appName), groupPersistenceService.getGroupAppResourceTemplateMetaData(groupName, resourceTemplateName));
                 // TODO: why are we getting the meta data to get the target name when the appName is already passed as a method parameter?
                 Application app = applicationPersistenceService.getApplication(metaData.getEntity().getTarget());
                 return resourceService.generateResourceFile(resourceTemplateName, template, resourceGroup, app, ResourceGeneratorType.TEMPLATE);
@@ -453,7 +453,7 @@ public class GroupServiceImpl implements GroupService {
         String metaDataStr = getGroupAppResourceTemplateMetaData(groupName, fileName);
         ResourceTemplateMetaData metaData;
         try {
-            metaData = resourceService.getFormattedResourceMetaData(fileName, application, metaDataStr);
+            metaData = resourceService.getTokenizedMetaData(fileName, application, metaDataStr);
             final String destPath = metaData.getDeployPath() + '/' + metaData.getDeployFileName();
             File confFile = createConfFile(metaData.getEntity().getTarget(), groupName, metaData.getDeployFileName(), resourceGroup);
             String srcPath, standardError;

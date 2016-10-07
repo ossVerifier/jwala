@@ -361,7 +361,7 @@ public class WebServerServiceImplTest {
         ResourceTemplateMetaData mockMetaData = mock(ResourceTemplateMetaData.class);
         when(mockMetaData.getDeployPath()).thenReturn("d:/httpd-data");
         when(mockMetaData.getDeployFileName()).thenReturn("httpd.conf");
-        when(resourceService.getFormattedResourceMetaData(anyString(), Matchers.anyObject(), anyString())).thenReturn(mockMetaData);
+        when(resourceService.getTokenizedMetaData(anyString(), Matchers.anyObject(), anyString())).thenReturn(mockMetaData);
         wsService.uploadWebServerConfig(request, testUser);
         verify(webServerPersistenceService).uploadWebServerConfigTemplate(eq(request), anyString(), eq("testUser"));
     }
@@ -447,7 +447,7 @@ public class WebServerServiceImplTest {
         when(request.getWebServer()).thenReturn(mockWebServer);
         when(mockWebServer.getName()).thenReturn("testWebServer");
         when(request.getConfFileName()).thenReturn("httpd.conf");
-        when(resourceService.getFormattedResourceMetaData(anyString(), Matchers.anyObject(), anyString())).thenThrow(new IOException("FAIL upload config because of meta data mapping"));
+        when(resourceService.getTokenizedMetaData(anyString(), Matchers.anyObject(), anyString())).thenThrow(new IOException("FAIL upload config because of meta data mapping"));
         wsService.uploadWebServerConfig(request, testUser);
     }
 

@@ -14,7 +14,9 @@ import com.cerner.jwala.common.request.webserver.UploadWebServerTemplateRequest;
 import com.cerner.jwala.persistence.jpa.domain.JpaJvm;
 import com.cerner.jwala.persistence.service.*;
 import com.cerner.jwala.service.HistoryService;
+import com.cerner.jwala.service.MessagingService;
 import com.cerner.jwala.service.resource.impl.handler.WebServerResourceHandler;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -28,10 +30,8 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.io.IOException;
+import java.util.*;
 
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.*;
@@ -61,21 +61,20 @@ public class ResourceHandlerConfigurationTest {
     }
 
     @Before
-    public void setup() {
+    public void setup() throws IOException {
         Mockito.reset(MockConfig.MOCK_APPLICATION_PERSISTENCE_SERVICE);
         Mockito.reset(MockConfig.MOCK_GROUP_PERSISTENCE_SERVICE);
         Mockito.reset(MockConfig.MOCK_JVM_PERSISTENCE_SERVICE);
         Mockito.reset(MockConfig.MOCK_WEB_SERVER_PERSISTENCE_SERVICE);
         Mockito.reset(MockConfig.MOCK_RESOURCE_DAO);
 
-        metaData = new ResourceTemplateMetaData();
-        metaData.setContentType("text/xml");
-        metaData.setDeployPath("any");
-        metaData.setDeployFileName("any");
-        metaData.setTemplateName("any");
-        final Entity entity = new Entity();
-        entity.setGroup("any");
-        metaData.setEntity(entity);
+        metaData = ResourceTemplateMetaData.createFromJsonStr("{\n" +
+                "  \"templateName\" : \"any\",\t\n" +
+                "  \"contentType\" : \"text/xml\",\n" +
+                "  \"deployFileName\" : \"any\",\n" +
+                "  \"deployPath\" : \"any\",\n" +
+                "  \"entity\" : {\"group\": \"any\"}\n" +
+                "}");
     }
 
     @Test
@@ -193,7 +192,8 @@ public class ResourceHandlerConfigurationTest {
     }
 
     @Test
-    public void testCreateGroupLevelWebAppResourceHandler() {
+    @SuppressWarnings("unchecked")
+    public void testCreateGroupLevelWebAppResourceHandler() throws IOException {
         final Group mockGroup = mock(Group.class);
         final Set<Jvm> jvms = new HashSet<>();
         jvms.add(mock(Jvm.class));
@@ -206,7 +206,12 @@ public class ResourceHandlerConfigurationTest {
         when(MockConfig.MOCK_APPLICATION_PERSISTENCE_SERVICE.findApplicationsBelongingTo(anyString())).thenReturn(applications);
         final Entity entity = new Entity();
         entity.setDeployToJvms(true);
-        metaData.setEntity(entity);
+
+        final ObjectMapper objectMapper = new ObjectMapper();
+        final Map<String, Object> metaDataMap = objectMapper.readValue(metaData.getJsonData(), Map.class);
+        metaDataMap.put("entity", entity);
+        metaData = ResourceTemplateMetaData.createFromJsonStr(objectMapper.writeValueAsString(metaDataMap));
+
         resourceHandler.createResource(getGroupLevelAppResourceIdentifier(), metaData, templateContent);
         verify(MockConfig.getMockGroupPersistenceService()).populateGroupAppTemplate(anyString(), anyString(), anyString(),
                 anyString(), anyString());
@@ -214,7 +219,8 @@ public class ResourceHandlerConfigurationTest {
     }
 
     @Test
-    public void testCreateGroupLevelWebAppBinaryResourceHandler() {
+    @SuppressWarnings("unchecked")
+    public void testCreateGroupLevelWebAppBinaryResourceHandler() throws IOException {
         final Group mockGroup = mock(Group.class);
         final Set<Jvm> jvms = new HashSet<>();
         jvms.add(mock(Jvm.class));
@@ -227,8 +233,13 @@ public class ResourceHandlerConfigurationTest {
         when(MockConfig.MOCK_APPLICATION_PERSISTENCE_SERVICE.findApplicationsBelongingTo(anyString())).thenReturn(applications);
         final Entity entity = new Entity();
         entity.setDeployToJvms(true);
-        metaData.setEntity(entity);
-        metaData.setContentType("application/binary");
+
+        final ObjectMapper objectMapper = new ObjectMapper();
+        final Map<String, Object> metaDataMap = objectMapper.readValue(metaData.getJsonData(), Map.class);
+        metaDataMap.put("entity", entity);
+        metaDataMap.put("contentType", "application/binary");
+        metaData = ResourceTemplateMetaData.createFromJsonStr(objectMapper.writeValueAsString(metaDataMap));
+
         when(MockConfig.MOCK_APPLICATION_PERSISTENCE_SERVICE.getApplication(anyString())).thenReturn(mock(Application.class));
         resourceHandler.createResource(getGroupLevelAppResourceIdentifier(), metaData, "some.war");
         verify(MockConfig.getMockGroupPersistenceService()).populateGroupAppTemplate(anyString(), anyString(), anyString(),
@@ -275,6 +286,7 @@ public class ResourceHandlerConfigurationTest {
         public static final WebServerPersistenceService MOCK_WEB_SERVER_PERSISTENCE_SERVICE = mock(WebServerPersistenceService.class);
         public static final JvmPersistenceService MOCK_JVM_PERSISTENCE_SERVICE = mock(JvmPersistenceService.class);
         public static final ApplicationPersistenceService MOCK_APPLICATION_PERSISTENCE_SERVICE = mock(ApplicationPersistenceService.class);
+        public static final MessagingService MOCK_MESSAGING_SERICE = mock(MessagingService.class);
         public static final HistoryService MOCK_HISTORY_SERVICE = mock(HistoryService.class);
 
         @Bean
@@ -304,6 +316,11 @@ public class ResourceHandlerConfigurationTest {
         @Bean
         public static ApplicationPersistenceService getMockApplicationPersistenceService() {
             return MOCK_APPLICATION_PERSISTENCE_SERVICE;
+        }
+
+        @Bean
+        public static MessagingService getMockMessagingSerice(){
+            return MOCK_MESSAGING_SERICE;
         }
 
         @Bean
