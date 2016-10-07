@@ -1,6 +1,7 @@
 package com.cerner.jwala.service.resource.impl;
 
 import com.cerner.jwala.common.domain.model.app.Application;
+import com.cerner.jwala.common.domain.model.app.ApplicationState;
 import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
 import com.cerner.jwala.common.domain.model.jvm.JvmState;
@@ -72,13 +73,17 @@ public class ResourceContentGeneratorServiceImpl implements ResourceContentGener
                 if (entity instanceof WebServer) {
                     WebServer webServer = (WebServer) entity;
                     messagingService.send(new CurrentState<>(webServer.getId(), WebServerReachableState.WS_FAILED, DateTime.now(), StateType.WEB_SERVER, logMessage));
-                    historyService.createHistory("Web Server " + webServer.getName(), resourceGroup.getGroups(), logMessage, EventType.APPLICATION_EVENT, "");
+                    historyService.createHistory("Web Server " + webServer.getName(), new ArrayList<Group>(webServer.getGroups()), logMessage, EventType.APPLICATION_EVENT, "");
                 } else if (entity instanceof Jvm) {
                     Jvm jvm = (Jvm) entity;
                     messagingService.send(new CurrentState<>(jvm.getId(), JvmState.JVM_FAILED, DateTime.now(), StateType.JVM, logMessage));
-                    historyService.createHistory("JVM " + jvm.getJvmName(), resourceGroup.getGroups(), logMessage, EventType.APPLICATION_EVENT, "");
+                    historyService.createHistory("JVM " + jvm.getJvmName(), new ArrayList<Group>(jvm.getGroups()), logMessage, EventType.APPLICATION_EVENT, "");
                 } else {
-                    historyService.createHistory("", resourceGroup.getGroups(), logMessage, EventType.APPLICATION_EVENT, "");
+                    Application application = (Application) entity;
+                    messagingService.send(new CurrentState<>(application.getId(), ApplicationState.FAILED, DateTime.now(), StateType.APPLICATION, logMessage));
+                    ArrayList<Group> groups = new ArrayList<Group>();
+                    groups.add(application.getGroup());
+                    historyService.createHistory("App " + application.getName(), groups, logMessage, EventType.APPLICATION_EVENT, "");
                 }
             }
             throw new ResourceFileGeneratorException(logMessage, e);

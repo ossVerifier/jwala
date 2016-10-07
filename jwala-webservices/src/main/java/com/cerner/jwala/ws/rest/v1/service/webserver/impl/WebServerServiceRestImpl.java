@@ -179,7 +179,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
                 controlWebServerRequest,
                 aUser.getUser());
         if (Boolean.TRUE.equals(wait)) {
-            waitTimeout = waitTimeout == null? DEFAULT_WAIT_TIMEOUT : waitTimeout * 1000; // wait timeout is in seconds converting it to ms
+            waitTimeout = waitTimeout == null ? DEFAULT_WAIT_TIMEOUT : waitTimeout * 1000; // wait timeout is in seconds converting it to ms
         }
         if (Boolean.TRUE.equals(wait) && commandOutput.getReturnCode().wasSuccessful() && webServerControlService.waitForState(controlWebServerRequest, waitTimeout)) {
             return ResponseBuilder.ok(commandOutput.getStandardOutput());
@@ -267,9 +267,9 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
         } catch (IOException e) {
             LOGGER.error("Failed to map meta data because of IOException for {}", aWebServerName, e);
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(AemFaultType.BAD_STREAM, "Failed to map meta data because of IOException for " + aWebServerName, e));
-        } catch (ResourceFileGeneratorException e){
-            LOGGER.error("Fail to generate the httpd.conf {}", aWebServerName, e);
-            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Fail to generate the httpd.conf at " + aWebServerName);
+        } catch (ResourceFileGeneratorException e) {
+            LOGGER.error("Fail to generate the {} {}", resourceFileName, aWebServerName, e);
+            throw new ResourceFileGeneratorException("Fail to generate the " + resourceFileName + " at " + aWebServerName, e);
         } finally {
             wsWriteLocks.get(aWebServerName).writeLock().unlock();
         }
@@ -310,22 +310,32 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
 
             // create the configuration file(s)
             final List<String> templateNames = webServerService.getResourceTemplateNames(aWebServerName);
+            boolean resourceFileGeneratorExceptionFlag = false;
+            String resourceFileGeneratorExceptionMessage = "";
             for (final String templateName : templateNames) {
-                generateAndDeployConfig(aWebServerName, templateName, aUser);
+                try {
+                    generateAndDeployConfig(aWebServerName, templateName, aUser);
+                } catch (ResourceFileGeneratorException e) {
+                    resourceFileGeneratorExceptionFlag = true;
+                    resourceFileGeneratorExceptionMessage += e.getMessage() + " ";
+                }
             }
-
+            if (resourceFileGeneratorExceptionFlag){
+                throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, resourceFileGeneratorExceptionMessage);
+            }
             // re-install the service
             installWebServerWindowsService(aUser, new ControlWebServerRequest(webServer.getId(), WebServerControlOperation.INVOKE_SERVICE), webServer);
 
             webServerService.updateState(webServer.getId(), WebServerReachableState.WS_UNREACHABLE, StringUtils.EMPTY);
 
         } catch (InternalErrorException | CommandFailureException e) {
-            LOGGER.error("Failed to secure copy the invokeWS.bat file for {}", aWebServerName, e);
+            LOGGER.error("Failed for {}", aWebServerName, e);
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
                     AemFaultType.REMOTE_COMMAND_FAILURE, e.getMessage(), e));
         } finally {
             wsWriteLocks.get(aWebServerName).writeLock().unlock();
         }
+
         return ResponseBuilder.ok(webServerService.getWebServer(aWebServerName));
     }
 

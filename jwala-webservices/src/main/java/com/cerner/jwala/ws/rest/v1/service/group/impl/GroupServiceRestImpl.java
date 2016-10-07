@@ -427,6 +427,8 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     }
 
     protected void checkResponsesForErrorStatus(Map<String, Future<Response>> futureMap) {
+        boolean exception = false;
+        String entityList = "";
         for (String keyEntityName : futureMap.keySet()) {
             Response response;
             try {
@@ -434,13 +436,17 @@ public class GroupServiceRestImpl implements GroupServiceRest {
                 if (response.getStatus() > 399) {
                     final String reasonPhrase = response.getStatusInfo().getReasonPhrase();
                     LOGGER.error("Remote Command Failure for " + keyEntityName + ": " + reasonPhrase);
-                    throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, reasonPhrase);
+                    entityList += keyEntityName + " ";
+                    exception = true;
                 }
-
             } catch (InterruptedException | ExecutionException e) {
                 LOGGER.error("FAILURE getting response for {}", keyEntityName, e);
-                throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, e.getMessage());
+                entityList += keyEntityName + " ";
+                exception = true;
             }
+        }
+        if (exception) {
+            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Error for following: " + entityList);
         }
     }
 
