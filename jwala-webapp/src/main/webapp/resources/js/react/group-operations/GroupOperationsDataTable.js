@@ -604,8 +604,6 @@ var GroupOperationsDataTable = React.createClass({
             self.disableEnable(event.data.buttonSelector, function () {
                 return groupControlService.generateWebServers(event.data.id, function (resp) {
                     $.alert("Successfully generated the web servers for " + resp.applicationResponseContent.name, false);
-                }, function (errMsg) {
-                    $.errorAlert(errMsg, "Generate Web Servers Failed", false);
                 });
             }, "ui-icon-stop");
             self.writeWebServerActionToCommandStatusWidget(event.data.id, "INVOKE");
@@ -640,8 +638,6 @@ var GroupOperationsDataTable = React.createClass({
                 self.disableEnable(event.data.buttonSelector, function () {
                     return groupControlService.generateJvms(event.data.id, function (resp) {
                         $.alert("Successfully generated the JVMs for " + resp.applicationResponseContent.name, false);
-                    }, function (errMsg) {
-                        $.errorAlert(errMsg, "Generate JVMs Failed", false);
                     });
                 }, "ui-icon-stop");
             }, true);
@@ -710,7 +706,6 @@ var GroupOperationsDataTable = React.createClass({
 
     generateJvmConfigErrorCallback: function (applicationResponseContent) {
         // TODO: Verify if we need to call done callback here. Eg this.doneCallback[response.applicationResponseContent.jvmName + "__cto" + response.applicationResponseContent.id.id]();
-        $.errorAlert(applicationResponseContent, "Error deploying JVM resource files", false);
     },
 
     confirmJvmWebServerStopGroupDialogBox: function (id, parentItemId, buttonSelector, msg, callbackOnConfirm, cancelCallback) {

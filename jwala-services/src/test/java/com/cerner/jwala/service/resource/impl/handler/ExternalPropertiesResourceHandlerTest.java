@@ -12,6 +12,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -95,7 +96,7 @@ public class ExternalPropertiesResourceHandlerTest {
     }
 
     @Test
-    public void testCreateResource() {
+    public void testCreateResource() throws IOException {
         ResourceIdentifier.Builder resourceIdentifierBuilder = new ResourceIdentifier.Builder();
         resourceIdentifierBuilder.setGroupName(null);
         resourceIdentifierBuilder.setWebAppName(null);
@@ -104,8 +105,9 @@ public class ExternalPropertiesResourceHandlerTest {
         resourceIdentifierBuilder.setResourceName("external.properties");
 
         ResourceIdentifier identifier = resourceIdentifierBuilder.build();
-        ResourceTemplateMetaData metaData = new ResourceTemplateMetaData();
-        metaData.setDeployFileName("external.properties");
+
+        final ResourceTemplateMetaData metaData = ResourceTemplateMetaData.createFromJsonStr("{\"deployFileName\": \"external.properties\"}");
+
         String templateContent = "key=value";
         JpaResourceConfigTemplate mockJpaResourceConfigTemplate = mock(JpaResourceConfigTemplate.class);
 
@@ -119,7 +121,7 @@ public class ExternalPropertiesResourceHandlerTest {
     }
 
     @Test
-    public void testCreateResourceDeletesExistingResource() {
+    public void testCreateResourceDeletesExistingResource() throws IOException {
         ResourceIdentifier.Builder resourceIdentifierBuilder = new ResourceIdentifier.Builder();
         resourceIdentifierBuilder.setGroupName(null);
         resourceIdentifierBuilder.setWebAppName(null);
@@ -128,8 +130,7 @@ public class ExternalPropertiesResourceHandlerTest {
         resourceIdentifierBuilder.setResourceName("external.properties");
 
         ResourceIdentifier identifier = resourceIdentifierBuilder.build();
-        ResourceTemplateMetaData metaData = new ResourceTemplateMetaData();
-        metaData.setDeployFileName("external.properties");
+        final ResourceTemplateMetaData metaData = ResourceTemplateMetaData.createFromJsonStr("{\"deployFileName\": \"external.properties\"}");
         String templateContent = "key=value";
         JpaResourceConfigTemplate mockJpaResourceConfigTemplate = mock(JpaResourceConfigTemplate.class);
         List<String> resourceNames = new ArrayList<>();
@@ -147,7 +148,7 @@ public class ExternalPropertiesResourceHandlerTest {
     }
 
     @Test
-    public void testCreateResourceCallsSuccessor() {
+    public void testCreateResourceCallsSuccessor() throws IOException {
         ResourceIdentifier.Builder resourceIdentifierBuilder = new ResourceIdentifier.Builder();
         resourceIdentifierBuilder.setGroupName("test-group-name");
         resourceIdentifierBuilder.setWebAppName("test-app-name");
@@ -155,8 +156,7 @@ public class ExternalPropertiesResourceHandlerTest {
         resourceIdentifierBuilder.setWebServerName(null);
         resourceIdentifierBuilder.setResourceName("external.properties");
 
-        ResourceTemplateMetaData metaData = new ResourceTemplateMetaData();
-        metaData.setDeployFileName("external.properties");
+        final ResourceTemplateMetaData metaData = ResourceTemplateMetaData.createFromJsonStr("{\"deployFileName\": \"external.properties\"}");
 
         CreateResourceResponseWrapper mockCreateResourceResponseWrapper = mock(CreateResourceResponseWrapper.class);
 

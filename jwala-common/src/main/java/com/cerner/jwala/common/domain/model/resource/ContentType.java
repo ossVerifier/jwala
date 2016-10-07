@@ -1,6 +1,8 @@
 package com.cerner.jwala.common.domain.model.resource;
 
 import org.apache.commons.lang3.StringUtils;
+import org.codehaus.jackson.annotate.JsonValue;
+import org.codehaus.jackson.map.annotate.JsonDeserialize;
 
 /**
  * Content type enumeration e.g. application/xml etc...
@@ -9,6 +11,7 @@ import org.apache.commons.lang3.StringUtils;
  *
  * Created by JC043760 on 3/31/2016.
  */
+@JsonDeserialize(using = ContentTypeStrDeserializer.class)
 public enum ContentType {
     XML_UTF_8("text/xml"), PLAIN_TEXT_UTF_8("text/plain"), APPLICATION_BINARY("application/binary"), UNDEFINED;
 
@@ -20,6 +23,11 @@ public enum ContentType {
 
     ContentType(final String contentTypeStr) {
         this.contentTypeStr = contentTypeStr;
+    }
+
+    @JsonValue
+    public String getContentTypeStr() {
+        return contentTypeStr;
     }
 
     /**

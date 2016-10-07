@@ -725,7 +725,7 @@ var XmlTabs = React.createClass({
         }
     },
     statics: {
-        SPACING_LEVEL: 4
+        SPACING_LEVEL: 2
     }
 });
 

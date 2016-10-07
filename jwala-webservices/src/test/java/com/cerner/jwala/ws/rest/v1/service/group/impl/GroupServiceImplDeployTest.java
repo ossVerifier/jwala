@@ -283,7 +283,7 @@ public class GroupServiceImplDeployTest {
         when(mockMetaData.getEntity()).thenReturn(mockEntity);
         when(mockEntity.getDeployToJvms()).thenReturn(true);
         when(mockEntity.getTarget()).thenReturn("testApp");
-        when(mockResourceService.getFormattedResourceMetaData(anyString(), Matchers.anyObject(), anyString())).thenReturn(mockMetaData);
+        when(mockResourceService.getTokenizedMetaData(anyString(), Matchers.anyObject(), anyString())).thenReturn(mockMetaData);
 
         Response returnResponse = groupServiceRest.generateAndDeployGroupAppFile("testGroup", "hct.xml", mockAuthUser, null);
         assertEquals(200, returnResponse.getStatus());
@@ -358,7 +358,7 @@ public class GroupServiceImplDeployTest {
         when(mockMetaData.getEntity()).thenReturn(mockEntity);
         when(mockEntity.getDeployToJvms()).thenReturn(false);
         when(mockEntity.getTarget()).thenReturn("testApp");
-        when(mockResourceService.getFormattedResourceMetaData(anyString(), Matchers.anyObject(), anyString())).thenReturn(mockMetaData);
+        when(mockResourceService.getTokenizedMetaData(anyString(), Matchers.anyObject(), anyString())).thenReturn(mockMetaData);
         when(mockApplicationService.getApplication(anyString())).thenReturn(mockApp);
         Response returnResponse = groupServiceRest.generateAndDeployGroupAppFile("testGroup", "hct.xml", mockAuthUser, null);
         assertEquals(200, returnResponse.getStatus());
@@ -443,7 +443,7 @@ public class GroupServiceImplDeployTest {
         when(mockMetaData.isUnpack()).thenReturn(false);
         when(mockMetaData.isOverwrite()).thenReturn(false);
         when(mockResourceService.generateResourceFile(anyString(), anyString(), any(ResourceGroup.class), any(), any(ResourceGeneratorType.class))).thenReturn(metaData);
-        when(mockResourceService.getFormattedResourceMetaData(anyString(), Matchers.anyObject(),anyString())).thenReturn(mockMetaData);
+        when(mockResourceService.getTokenizedMetaData(anyString(), Matchers.anyObject(),anyString())).thenReturn(mockMetaData);
         assertEquals(commandOutput, groupServiceImpl.deployGroupAppTemplate(groupName, fileName, resourceGroup, application, jvm));
     }
 

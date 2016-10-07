@@ -193,7 +193,7 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
         when(mockGroupService.getGroupJvmResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"deployPath\":\"c:/fake/path\", \"deployFileName\":\"server-deploy.xml\"}");
         when(mockGroupService.getGroupAppsResourceTemplateNames(anyString())).thenReturn(appTemplateNames);
         when(mockGroupService.getGroupAppResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"deployPath\":\"c:/fake/app/path\", \"deployFileName\":\"app-context.xml\", \"entity\":{\"deployToJvms\":\"true\", \"target\":\"app-target\"}}");
-        when(mockResourceService.getFormattedResourceMetaData(anyString(), Matchers.anyObject(), anyString())).thenReturn(mockMetaData);
+        when(mockResourceService.getTokenizedMetaData(anyString(), Matchers.anyObject(), anyString())).thenReturn(mockMetaData);
 
         jvmService.createJvm(createJvmAndAddToGroupsRequest, mockUser);
 
@@ -253,7 +253,7 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
         when(mockJvmPersistenceService.createJvm(any(CreateJvmRequest.class))).thenReturn(jvm);
         when(mockJvmPersistenceService.getJvm(any(Identifier.class))).thenReturn(jvm);
         when(mockResourceService.generateResourceGroup()).thenReturn(mock(ResourceGroup.class));
-        when(mockResourceService.getFormattedResourceMetaData(anyString(), Matchers.anyObject(), anyString())).thenThrow(new IOException("FAIL converting meta data"));
+        when(mockResourceService.getTokenizedMetaData(anyString(), Matchers.anyObject(), anyString())).thenThrow(new IOException("FAIL converting meta data"));
         when(mockGroup.getName()).thenReturn("mock-group-name");
         when(mockGroupService.getGroupJvmsResourceTemplateNames(anyString())).thenReturn(templateNames);
         when(mockGroupService.getGroupJvmResourceTemplate(anyString(), anyString(), any(ResourceGroup.class), anyBoolean())).thenReturn("<server>xml</server>");
@@ -649,7 +649,7 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
 
         when(mockResourceService.generateResourceGroup()).thenReturn(mockResourceGroup);
         when(mockResourceService.generateResourceFile(anyString(), anyString(), any(ResourceGroup.class), any(Jvm.class), any(ResourceGeneratorType.class))).thenReturn(metadata);
-        when(mockResourceService.getFormattedResourceMetaData(anyString(), Matchers.anyObject(), anyString())).thenReturn(mockMetaData);
+        when(mockResourceService.getMetaData(anyString())).thenReturn(mockMetaData);
         when(mockJvmPersistenceService.getConfigTemplates(jvmName)).thenReturn(jpaJvmConfigTemplates);
 
         Map<String, String> result = jvmService.generateResourceFiles(jvmName);
@@ -676,7 +676,7 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
         when(mockMetaData.getContentType()).thenReturn("application/binary");
         when(mockResourceService.generateResourceGroup()).thenReturn(mockResourceGroup);
         when(mockResourceService.generateResourceFile(anyString(), anyString(), any(ResourceGroup.class), any(Jvm.class), any(ResourceGeneratorType.class))).thenReturn(metadata);
-        when(mockResourceService.getFormattedResourceMetaData(anyString(), Matchers.anyObject(), anyString())).thenReturn(mockMetaData);
+        when(mockResourceService.getMetaData(anyString())).thenReturn(mockMetaData);
         when(mockJvmPersistenceService.getConfigTemplates(jvmName)).thenReturn(jpaJvmConfigTemplates);
 
         Map<String, String> result = jvmService.generateResourceFiles(jvmName);
@@ -907,7 +907,7 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
         when(mockMetaData.getDeployFileName()).thenReturn("server.xml");
         when(mockMetaData.getDeployPath()).thenReturn("/");
         when(mockMetaData.getContentType()).thenReturn("text/plain");
-        when(mockResourceService.getFormattedResourceMetaData(anyString(), Matchers.anyObject(), anyString())).thenReturn(mockMetaData);
+        when(mockResourceService.getTokenizedMetaData(anyString(), Matchers.anyObject(), anyString())).thenReturn(mockMetaData);
         Jvm jvm = jvmService.generateAndDeployFile("test-jvm-deploy-file", "server.xml", mockUser);
         assertEquals(mockJvm, jvm);
 
