@@ -22,7 +22,6 @@ import com.cerner.jwala.exception.CommandFailureException;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionService;
 import com.cerner.jwala.service.group.GroupService;
 import com.cerner.jwala.service.resource.ResourceService;
-import com.cerner.jwala.service.resource.impl.ResourceGeneratorType;
 import com.cerner.jwala.service.webserver.WebServerCommandService;
 import com.cerner.jwala.service.webserver.WebServerControlService;
 import com.cerner.jwala.service.webserver.WebServerService;
@@ -112,7 +111,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
                     ResourceTemplateMetaData metaData;
                     try {
                         final String metaDataStr = groupService.getGroupWebServerResourceTemplateMetaData(groupName, templateName);
-                        metaData = resourceService.getFormattedResourceMetaData(templateName, webServer, metaDataStr);
+                        metaData = resourceService.getTokenizedMetaData(templateName, webServer, metaDataStr);
                         UploadWebServerTemplateRequest uploadWSRequest = new UploadWebServerTemplateRequest(webServer, metaData.getDeployFileName(), metaDataStr, templateContent) {
                             @Override
                             public String getConfFileName() {
@@ -222,7 +221,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
 
             // get the meta data
             String metaDataStr = webServerService.getResourceTemplateMetaData(aWebServerName, resourceFileName);
-            ResourceTemplateMetaData metaData = resourceService.getFormattedResourceMetaData(resourceFileName, webServerService.getWebServer(aWebServerName), metaDataStr);
+            ResourceTemplateMetaData metaData = resourceService.getTokenizedMetaData(resourceFileName, webServerService.getWebServer(aWebServerName), metaDataStr);
             final String deployFileName = metaData.getDeployFileName();
 
             String configFilePath;

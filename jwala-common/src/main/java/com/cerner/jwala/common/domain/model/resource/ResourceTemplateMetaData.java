@@ -86,7 +86,7 @@ public class ResourceTemplateMetaData {
      */
     public static ResourceTemplateMetaData createFromJsonStr(final String jsonData) throws IOException {
         if (StringUtils.isNotEmpty(jsonData)) {
-            final ResourceTemplateMetaData metaData = new ObjectMapper().readValue(jsonData, ResourceTemplateMetaData.class);
+            final ResourceTemplateMetaData metaData = new ObjectMapper().readValue(jsonData.replace("\\", "\\\\"), ResourceTemplateMetaData.class);
             metaData.setJsonData(jsonData);
             return metaData;
         }

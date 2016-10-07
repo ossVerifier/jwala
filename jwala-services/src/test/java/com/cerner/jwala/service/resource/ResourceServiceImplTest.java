@@ -814,7 +814,13 @@ public class ResourceServiceImplTest {
         properties.load(new FileInputStream(new File("./src/test/resources/vars.properties")));
 
         final String rawMetaData = (String) properties.get("test.path.backslash.escaped"); // --> {"deployPath":"\\\\server\\d$"}
-        ResourceTemplateMetaData result = resourceService.getFormattedResourceMetaData("test-file.txt", null, rawMetaData);
+        ResourceTemplateMetaData result = resourceService.getTokenizedMetaData("test-file.txt", null, rawMetaData);
+        assertEquals("\\\\server\\d$", result.getDeployPath());
+    }
+
+    @Test
+    public void testGetMetaData() throws IOException {
+        ResourceTemplateMetaData result = resourceService.getMetaData("{\"deployPath\":\"\\\\server\\d$\"}");
         assertEquals("\\\\server\\d$", result.getDeployPath());
     }
 

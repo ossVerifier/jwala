@@ -219,7 +219,7 @@ public class WebServerServiceImpl implements WebServerService {
         final String metaDataStr = uploadWebServerTemplateRequest.getMetaData();
         final String absoluteDeployPath;
         try{
-            ResourceTemplateMetaData metaData = resourceService.getFormattedResourceMetaData(confFileName, webServer, metaDataStr);
+            ResourceTemplateMetaData metaData = resourceService.getTokenizedMetaData(confFileName, webServer, metaDataStr);
             absoluteDeployPath = resourceService.generateResourceFile(
                     metaData.getDeployFileName(),
                     metaData.getDeployPath() + "/" + metaData.getDeployFileName(),

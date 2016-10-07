@@ -836,7 +836,7 @@ public class GroupServiceRestImplTest {
     public void testGenerateAndDeployGroupAppFileFail() throws IOException {
         when(mockGroupService.getGroup(anyString())).thenReturn(mockGroup);
         when(mockGroupService.getGroupAppResourceTemplateMetaData(anyString(), anyString())).thenReturn("anyString");
-        when(mockResourceService.getFormattedResourceMetaData(anyString(), Matchers.anyObject(), anyString())).thenThrow(new IOException("Cannot parse meta data: \"anyString\""));
+        when(mockResourceService.getTokenizedMetaData(anyString(), Matchers.anyObject(), anyString())).thenThrow(new IOException("Cannot parse meta data: \"anyString\""));
         groupServiceRest.generateAndDeployGroupAppFile("test-group", "anyFile.txt", mockAuthenticatedUser, "anyHost");
     }
 
