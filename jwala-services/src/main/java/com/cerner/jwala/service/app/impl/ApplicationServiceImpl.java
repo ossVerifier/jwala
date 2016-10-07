@@ -65,9 +65,8 @@ public class ApplicationServiceImpl implements ApplicationService {
     private static final Logger LOGGER = LoggerFactory.getLogger(ApplicationServiceImpl.class);
     private static final String GENERATED_RESOURCE_DIR = "paths.generated.resource.dir";
     private static final String JWALA_WEBAPPS_DIR = "remote.jwala.webapps.dir";
-    private static final String WAR_EXTENTION = ".war";
     private final ExecutorService executorService;
-    final String jwalaScriptsPath = ApplicationProperties.get("remote.commands.user-scripts");
+    final String JWALA_SCRIPTS_PATH = ApplicationProperties.get("remote.commands.user-scripts");
 
     @Autowired
     private ApplicationPersistenceService applicationPersistenceService;
@@ -94,7 +93,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     private GroupService groupService;
     private final HistoryService historyService;
     private final MessagingService messagingService;
-    private static final String UNZIPEXE = "unzip.exe";
+    private static final String UNZIP_EXE = "unzip.exe";
 
     public ApplicationServiceImpl(final ApplicationPersistenceService applicationPersistenceService,
                                   final JvmPersistenceService jvmPersistenceService,
@@ -292,13 +291,8 @@ public class ApplicationServiceImpl implements ApplicationService {
             final String deployJvmName = jvm.getJvmName();
             final String hostName = jvm.getHostName();
             final String parentDir = new File(destPath).getParentFile().getAbsolutePath().replaceAll("\\\\", "/");
-            CommandOutput commandOutput = applicationCommandExecutor.executeRemoteCommand(
-                    deployJvmName,
-                    hostName,
-                    ApplicationControlOperation.CREATE_DIRECTORY,
-                    new WindowsApplicationPlatformCommandProvider(),
-                    parentDir
-            );
+            CommandOutput commandOutput = getCreateDirectoryCommand(deployJvmName, hostName, parentDir);
+
             if (commandOutput.getReturnCode().wasSuccessful()) {
                 LOGGER.info("created the parent dir {} successfully", parentDir);
             } else {
@@ -306,35 +300,19 @@ public class ApplicationServiceImpl implements ApplicationService {
                 LOGGER.error("error in creating parent directory {} :: ERROR : ", parentDir, parentDir);
                 throw new DeployApplicationConfException(standardError);
             }
-            commandOutput = applicationCommandExecutor.executeRemoteCommand(
-                    deployJvmName,
-                    hostName,
-                    ApplicationControlOperation.CHECK_FILE_EXISTS,
-                    new WindowsApplicationPlatformCommandProvider(),
-                    destPath);
+            commandOutput = getCheckIfFileExistsCommand(deployJvmName, hostName, destPath);
+
             if (commandOutput.getReturnCode().wasSuccessful()) {
-                String currentDateSuffix = new SimpleDateFormat(".yyyyMMdd_HHmmss").format(new Date());
-                final String destPathBackup = destPath + currentDateSuffix;
-                commandOutput = applicationCommandExecutor.executeRemoteCommand(
-                        deployJvmName,
-                        hostName,
-                        ApplicationControlOperation.BACK_UP,
-                        new WindowsApplicationPlatformCommandProvider(),
-                        destPath,
-                        destPathBackup);
+                commandOutput = getBackUpCommand(deployJvmName, hostName, destPath);
+
                 if (!commandOutput.getReturnCode().wasSuccessful()) {
                     final String standardError = "Failed to back up file " + destPath + " for " + app.getName() + ". Continuing with secure copy.";
                     LOGGER.error(standardError);
                     throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, standardError);
                 }
             }
-            final CommandOutput execData = applicationCommandExecutor.executeRemoteCommand(
-                    deployJvmName,
-                    hostName,
-                    ApplicationControlOperation.SECURE_COPY,
-                    new WindowsApplicationPlatformCommandProvider(),
-                    srcPath,
-                    destPath);
+            final CommandOutput execData = getSecureCopyCommand(deployJvmName, hostName, srcPath, destPath);
+
             if (execData.getReturnCode().wasSuccessful()) {
                 LOGGER.info("Copy of {} successful: {}", deployFileName, confFile.getAbsolutePath());
                 return execData;
@@ -483,12 +461,7 @@ public class ApplicationServiceImpl implements ApplicationService {
             @Override
             public CommandOutput call() throws Exception {
                 final String parentDir = new File(destPath).getParentFile().getAbsolutePath().replaceAll("\\\\", "/");
-                CommandOutput commandOutput = applicationCommandExecutor.executeRemoteCommand(
-                        null,
-                        host,
-                        ApplicationControlOperation.CREATE_DIRECTORY,
-                        new WindowsApplicationPlatformCommandProvider(),
-                        parentDir);
+                CommandOutput commandOutput = getCreateDirectoryCommand(null, host, parentDir);
                 if (commandOutput.getReturnCode().wasSuccessful()) {
                     LOGGER.info("Successfully created parent dir {} on host {}", parentDir, host);
                 } else {
@@ -497,56 +470,35 @@ public class ApplicationServiceImpl implements ApplicationService {
                     throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, standardError);
                 }
                 LOGGER.info("Copying {} war to host {}", name, host);
-                commandOutput = applicationCommandExecutor.executeRemoteCommand(
-                        null,
-                        host,
-                        ApplicationControlOperation.SECURE_COPY,
-                        new WindowsApplicationPlatformCommandProvider(),
-                        tempWarFile.getAbsolutePath().replaceAll("\\\\", "/"),
-                        destPath);
+                commandOutput = getSecureCopyCommand(null, host, tempWarFile.getAbsolutePath().replaceAll("\\\\", "/"), destPath);
 
                 if (application.isUnpackWar()) {
                     final String warName = application.getWarName();
                     LOGGER.info("Unpacking war {} on host {}", warName, host);
 
                     // create the .jwala directory as the destination for the unpack-war script
-                    commandOutput = applicationCommandExecutor.executeRemoteCommand(null,
-                            host,
-                            ApplicationControlOperation.CREATE_DIRECTORY,
-                            new WindowsApplicationPlatformCommandProvider(),
-                            jwalaScriptsPath);
+                    commandOutput = getCreateDirectoryCommand(null, host, JWALA_SCRIPTS_PATH);
                     if (commandOutput.getReturnCode().wasSuccessful()) {
-                        LOGGER.info("Successfully created the parent dir {} on host", jwalaScriptsPath, host);
+                        LOGGER.info("Successfully created the parent dir {} on host", JWALA_SCRIPTS_PATH, host);
                     } else {
                         final String standardError = commandOutput.getStandardError().isEmpty() ? commandOutput.getStandardOutput() : commandOutput.getStandardError();
-                        LOGGER.error("Error in creating parent dir {} on host {}:: ERROR : {}", jwalaScriptsPath, host, standardError);
+                        LOGGER.error("Error in creating parent dir {} on host {}:: ERROR : {}", JWALA_SCRIPTS_PATH, host, standardError);
                         throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, standardError);
                     }
 
                     final String unpackWarScriptPath = ApplicationProperties.get("commands.scripts-path") + "/" + AemControl.Properties.UNPACK_BINARY_SCRIPT_NAME;
-                    final String destinationUnpackWarScriptPath = jwalaScriptsPath + "/" + AemControl.Properties.UNPACK_BINARY_SCRIPT_NAME;
-                    commandOutput = applicationCommandExecutor.executeRemoteCommand(
-                            null,
-                            host,
-                            ApplicationControlOperation.SECURE_COPY,
-                            new WindowsApplicationPlatformCommandProvider(),
-                            unpackWarScriptPath,
-                            destinationUnpackWarScriptPath);
+                    final String destinationUnpackWarScriptPath = JWALA_SCRIPTS_PATH + "/" + AemControl.Properties.UNPACK_BINARY_SCRIPT_NAME;
+                    commandOutput = getSecureCopyCommand(null, host, unpackWarScriptPath, destinationUnpackWarScriptPath);
+
                     if (!commandOutput.getReturnCode().wasSuccessful()) {
                         LOGGER.error("Error in copying the " + unpackWarScriptPath + " to " + destinationUnpackWarScriptPath + " on " + host);
                         return commandOutput; // return immediately if the copy failed
                     }
 
                     // make sure the scripts are executable
-                    commandOutput = applicationCommandExecutor.executeRemoteCommand(null,
-                            host,
-                            ApplicationControlOperation.CHANGE_FILE_MODE,
-                            new WindowsApplicationPlatformCommandProvider(),
-                            "a+x",
-                            jwalaScriptsPath,
-                            "*.sh");
+                    commandOutput = getChangeFileModeCommand(null, host, "a+x", JWALA_SCRIPTS_PATH, "*.sh");
                     if (!commandOutput.getReturnCode().wasSuccessful()) {
-                        LOGGER.error("Error in changing file permissions on " + jwalaScriptsPath + " on host:" + host);
+                        LOGGER.error("Error in changing file permissions on " + JWALA_SCRIPTS_PATH + " on host:" + host);
                         return commandOutput;
                     }
 
@@ -555,48 +507,96 @@ public class ApplicationServiceImpl implements ApplicationService {
                     final String zipDestinationOption = FilenameUtils.removeExtension(destPath);
 
                     LOGGER.debug("Checking if previously unpacked: {}", zipDestinationOption);
-                    commandOutput = remoteCommandExecutor.executeRemoteCommand(
-                            null,
-                            host,
-                            ApplicationControlOperation.CHECK_FILE_EXISTS,
-                            new WindowsApplicationPlatformCommandProvider(),
-                            zipDestinationOption);
+                    commandOutput = getCheckIfFileExistsCommand(null, host, zipDestinationOption);
 
                     if (commandOutput.getReturnCode().wasSuccessful()) {
-                        final String currentDateSuffix = new SimpleDateFormat(".yyyyMMdd_HHmmss").format(new Date());
-                        final String destPathBackup = zipDestinationOption + currentDateSuffix;
-                        LOGGER.debug("unpacked directory found at {}, backing it up to {}", zipDestinationOption, destPathBackup);
-                        commandOutput = remoteCommandExecutor.executeRemoteCommand(
-                                null,
-                                host,
-                                ApplicationControlOperation.BACK_UP,
-                                new WindowsApplicationPlatformCommandProvider(),
-                                zipDestinationOption,
-                                destPathBackup
-                        );
+                        LOGGER.debug("unpacked directory found at {}, backing it up", zipDestinationOption);
+                        commandOutput = getBackUpCommand(null, host, zipDestinationOption);
 
                         if (commandOutput.getReturnCode().wasSuccessful()) {
                             LOGGER.debug("successful back up of {}", zipDestinationOption);
                         } else {
-                            final String standardError = "Could not back up " + zipDestinationOption + " to " + destPathBackup;
+                            final String standardError = "Could not back up " + zipDestinationOption;
                             LOGGER.error(standardError);
                             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, standardError);
                         }
                     }
 
-                    commandOutput = remoteCommandExecutor.executeRemoteCommand(null,
-                            host,
-                            BinaryDistributionControlOperation.UNZIP_BINARY,
-                            new WindowsBinaryDistributionPlatformCommandProvider(),
-                            ApplicationProperties.get("remote.commands.user-scripts") + "/" + UNZIPEXE,
-                            destPath,
-                            zipDestinationOption,
-                            "");
+                    commandOutput = getUnzipBinaryCommand(null, host, destPath, zipDestinationOption, "");
                 }
                 return commandOutput;
             }
         });
         return commandOutputFuture;
+    }
+
+    private CommandOutput getBackUpCommand(final String entity, final String host, final String source) throws CommandFailureException {
+        final String currentDateSuffix = new SimpleDateFormat(".yyyyMMdd_HHmmss").format(new Date());
+        final String destination = source + currentDateSuffix;
+        return remoteCommandExecutor.executeRemoteCommand(
+                entity,
+                host,
+                ApplicationControlOperation.BACK_UP,
+                new WindowsApplicationPlatformCommandProvider(),
+                source,
+                destination
+        );
+    }
+
+    private CommandOutput getCreateDirectoryCommand(final String entity, final String host, final String directoryName) throws CommandFailureException {
+        return remoteCommandExecutor.executeRemoteCommand(
+                entity,
+                host,
+                ApplicationControlOperation.CREATE_DIRECTORY,
+                new WindowsApplicationPlatformCommandProvider(),
+                directoryName
+        );
+    }
+
+    private CommandOutput getSecureCopyCommand(final String entity, final String host, final String source, final String destination) throws CommandFailureException {
+        return remoteCommandExecutor.executeRemoteCommand(
+                entity,
+                host,
+                ApplicationControlOperation.SECURE_COPY,
+                new WindowsApplicationPlatformCommandProvider(),
+                source,
+                destination
+        );
+    }
+
+    private CommandOutput getCheckIfFileExistsCommand(final String entity, final String host, final String fileName) throws CommandFailureException {
+        return  remoteCommandExecutor.executeRemoteCommand(
+                entity,
+                host,
+                ApplicationControlOperation.CHECK_FILE_EXISTS,
+                new WindowsApplicationPlatformCommandProvider(),
+                fileName
+        );
+    }
+
+    private CommandOutput getChangeFileModeCommand(final String entity, final String host, final String mode, final String fileName, final String fileOptions) throws CommandFailureException {
+        return remoteCommandExecutor.executeRemoteCommand(
+                entity,
+                host,
+                ApplicationControlOperation.CHANGE_FILE_MODE,
+                new WindowsApplicationPlatformCommandProvider(),
+                mode,
+                fileName,
+                fileOptions
+        );
+    }
+
+    private CommandOutput getUnzipBinaryCommand(final String entity, final String host, final String fileName, final String destination, final String options) throws CommandFailureException {
+        return  remoteCommandExecutor.executeRemoteCommand(
+                entity,
+                host,
+                BinaryDistributionControlOperation.UNZIP_BINARY,
+                new WindowsBinaryDistributionPlatformCommandProvider(),
+                ApplicationProperties.get("remote.commands.user-scripts") + "/" + UNZIP_EXE,
+                fileName,
+                destination,
+                options
+        );
     }
 
     @Override
