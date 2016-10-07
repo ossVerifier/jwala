@@ -376,7 +376,7 @@ public class JvmServiceImpl implements JvmService {
 
     protected void createScriptsDirectory(Jvm jvm) throws CommandFailureException {
         final String scriptsDir = REMOTE_COMMANDS_USER_SCRIPTS;
-        final CommandOutput commandOutput = jvmControlService.getCreateDirectoryCommand(jvm, scriptsDir);
+        final CommandOutput commandOutput = jvmControlService.executeCreateDirectoryCommand(jvm, scriptsDir);
         ExecReturnCode resultReturnCode = commandOutput.getReturnCode();
         if (!resultReturnCode.wasSuccessful()) {
             LOGGER.error("Creating scripts directory {} FAILED ", scriptsDir);
@@ -412,7 +412,7 @@ public class JvmServiceImpl implements JvmService {
         }
 
         // make sure the scripts are executable
-        if (!jvmControlService.getChangeFileModeCommand(jvm, "a+x", jwalaScriptsPath, "*.sh").getReturnCode().wasSuccessful()) {
+        if (!jvmControlService.executeChangeFileModeCommand(jvm, "a+x", jwalaScriptsPath, "*.sh").getReturnCode().wasSuccessful()) {
             String message = "Failed to change the file permissions in " + jwalaScriptsPath + duringCreationMessage + jvmName;
             LOGGER.error(message);
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, message);
@@ -501,7 +501,7 @@ public class JvmServiceImpl implements JvmService {
     }
 
     protected void createParentDir(final Jvm jvm, final String parentDir) throws CommandFailureException {
-        final CommandOutput commandOutput = jvmControlService.getCreateDirectoryCommand(jvm, parentDir);
+        final CommandOutput commandOutput = jvmControlService.executeCreateDirectoryCommand(jvm, parentDir);
         if (commandOutput.getReturnCode().wasSuccessful()) {
             LOGGER.info("created {} directory successfully", parentDir);
         } else {
@@ -519,7 +519,7 @@ public class JvmServiceImpl implements JvmService {
 
     protected void deployJvmConfigJar(Jvm jvm, User user, String jvmConfigTar) throws CommandFailureException {
         final String parentDir = ApplicationProperties.get("remote.paths.instances");
-        CommandOutput execData = jvmControlService.getCreateDirectoryCommand(jvm, parentDir);
+        CommandOutput execData = jvmControlService.executeCreateDirectoryCommand(jvm, parentDir);
         if (execData.getReturnCode().wasSuccessful()) {
             LOGGER.info("Successfully created the parent directory {}", parentDir);
         } else {
@@ -543,7 +543,7 @@ public class JvmServiceImpl implements JvmService {
         // make sure the start/stop scripts are executable
         String instancesDir = ApplicationProperties.get("remote.paths.instances");
         final String targetAbsoluteDir = instancesDir + "/" + jvm.getJvmName() + "/bin";
-        if (!jvmControlService.getChangeFileModeCommand(jvm, "a+x", targetAbsoluteDir, "*.sh").getReturnCode().wasSuccessful()) {
+        if (!jvmControlService.executeChangeFileModeCommand(jvm, "a+x", targetAbsoluteDir, "*.sh").getReturnCode().wasSuccessful()) {
             String message = "Failed to change the file permissions in " + targetAbsoluteDir + " for " + jvm.getJvmName();
             LOGGER.error(message);
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, message);

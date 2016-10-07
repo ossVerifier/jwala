@@ -257,7 +257,7 @@ public class JvmControlServiceImplVerifyTest extends VerificationBehaviorSupport
         Jvm mockJvm = mock(Jvm.class);
         when(mockJvm.getJvmName()).thenReturn("test-jvm");
         when(mockJvm.getHostName()).thenReturn("test-host");
-        jvmControlService.getChangeFileModeCommand(mockJvm, "777", "./target", "*");
+        jvmControlService.executeChangeFileModeCommand(mockJvm, "777", "./target", "*");
         verify(commandExecutor).executeRemoteCommand(anyString(), anyString(), eq(JvmControlOperation.CHANGE_FILE_MODE), any(WindowsJvmPlatformCommandProvider.class), anyString(), anyString(), anyString());
     }
 
@@ -266,7 +266,7 @@ public class JvmControlServiceImplVerifyTest extends VerificationBehaviorSupport
         Jvm mockJvm = mock(Jvm.class);
         when(mockJvm.getJvmName()).thenReturn("test-jvm");
         when(mockJvm.getHostName()).thenReturn("test-host");
-        jvmControlService.getCreateDirectoryCommand(mockJvm, "./target");
+        jvmControlService.executeCreateDirectoryCommand(mockJvm, "./target");
         verify(commandExecutor).executeRemoteCommand(anyString(), anyString(), eq(JvmControlOperation.CREATE_DIRECTORY), any(WindowsJvmPlatformCommandProvider.class), anyString());
     }
 

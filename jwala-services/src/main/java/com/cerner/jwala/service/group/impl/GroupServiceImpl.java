@@ -461,7 +461,7 @@ public class GroupServiceImpl implements GroupService {
                 srcPath = confFile.getAbsolutePath().replace("\\", "/");
             }
             final String parentDir = new File(destPath).getParentFile().getAbsolutePath().replaceAll("\\\\", "/");
-            CommandOutput commandOutput = getCreateDirectoryCommand(jvmName, hostName, parentDir);
+            CommandOutput commandOutput = executeCreateDirectoryCommand(jvmName, hostName, parentDir);
 
             if (commandOutput.getReturnCode().wasSuccessful()) {
                 LOGGER.info("Successfully created the parent dir {} on host {}", parentDir, hostName);
@@ -471,11 +471,11 @@ public class GroupServiceImpl implements GroupService {
                 throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, stdErr);
             }
             LOGGER.debug("checking if file: {} exists on remote location", destPath);
-            commandOutput = getCheckFileExistsCommand(jvmName, hostName, destPath);
+            commandOutput = executeCheckFileExistsCommand(jvmName, hostName, destPath);
 
             if (commandOutput.getReturnCode().wasSuccessful()) {
                 LOGGER.debug("backing up file: {}", destPath);
-                commandOutput = getBackUpCommand(jvmName, hostName, destPath);
+                commandOutput = executeBackUpCommand(jvmName, hostName, destPath);
 
                 if (!commandOutput.getReturnCode().wasSuccessful()) {
                     standardError = commandOutput.getStandardError().isEmpty() ? commandOutput.getStandardOutput() : commandOutput.getStandardError();
@@ -484,7 +484,7 @@ public class GroupServiceImpl implements GroupService {
                 }
             }
             LOGGER.debug("copying file over to location {}", destPath);
-            commandOutput = getSecureCopyCommand(jvmName, hostName, srcPath, destPath);
+            commandOutput = executeSecureCopyCommand(jvmName, hostName, srcPath, destPath);
 
             if (!commandOutput.getReturnCode().wasSuccessful()) {
                 standardError = commandOutput.getStandardError().isEmpty() ? commandOutput.getStandardOutput() : commandOutput.getStandardError();
@@ -496,11 +496,11 @@ public class GroupServiceImpl implements GroupService {
                 binaryDistributionService.prepareUnzip(hostName);
                 final String zipDestinationOption = FilenameUtils.removeExtension(destPath);
                 LOGGER.debug("checking if unpacked destination exists: {}", zipDestinationOption);
-                commandOutput = getCheckFileExistsCommand(jvmName, hostName, zipDestinationOption);
+                commandOutput = executeCheckFileExistsCommand(jvmName, hostName, zipDestinationOption);
 
                 if (commandOutput.getReturnCode().wasSuccessful()) {
                     LOGGER.debug("destination {}, exists backing it up", zipDestinationOption);
-                    commandOutput = getBackUpCommand(jvmName, hostName, zipDestinationOption);
+                    commandOutput = executeBackUpCommand(jvmName, hostName, zipDestinationOption);
 
                     if (commandOutput.getReturnCode().wasSuccessful()) {
                         LOGGER.debug("successfully backed up {}", zipDestinationOption);
@@ -510,7 +510,7 @@ public class GroupServiceImpl implements GroupService {
                         throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, standardError);
                     }
                 }
-                commandOutput = getUnzipBinaryCommand(null, hostName, destPath, zipDestinationOption, "");
+                commandOutput = executeUnzipBinaryCommand(null, hostName, destPath, zipDestinationOption, "");
 
                 LOGGER.info("commandOutput.getReturnCode().toString(): " + commandOutput.getReturnCode().toString());
                 if (!commandOutput.getReturnCode().wasSuccessful()) {
@@ -529,7 +529,8 @@ public class GroupServiceImpl implements GroupService {
         }
     }
 
-    private CommandOutput getCreateDirectoryCommand(final String entity, final String host, final String directoryName) throws CommandFailureException {
+    @Override
+    public CommandOutput executeCreateDirectoryCommand(final String entity, final String host, final String directoryName) throws CommandFailureException {
         return remoteCommandExecutor.executeRemoteCommand(
                 entity,
                 host,
@@ -539,7 +540,8 @@ public class GroupServiceImpl implements GroupService {
         );
     }
 
-    private CommandOutput getCheckFileExistsCommand(final String entity, final String host, final String fileName) throws CommandFailureException {
+    @Override
+    public CommandOutput executeCheckFileExistsCommand(final String entity, final String host, final String fileName) throws CommandFailureException {
         return remoteCommandExecutor.executeRemoteCommand(
                 entity,
                 host,
@@ -548,7 +550,8 @@ public class GroupServiceImpl implements GroupService {
                 fileName);
     }
 
-    private CommandOutput getSecureCopyCommand(final String entity, final String host, final String source, final String destination) throws CommandFailureException {
+    @Override
+    public CommandOutput executeSecureCopyCommand(final String entity, final String host, final String source, final String destination) throws CommandFailureException {
         return remoteCommandExecutor.executeRemoteCommand(
                 entity,
                 host,
@@ -558,7 +561,8 @@ public class GroupServiceImpl implements GroupService {
                 destination);
     }
 
-    private CommandOutput getBackUpCommand(final String entity, final String host, final String source) throws CommandFailureException {
+    @Override
+    public CommandOutput executeBackUpCommand(final String entity, final String host, final String source) throws CommandFailureException {
         final String currentDateSuffix = new SimpleDateFormat(".yyyyMMdd_HHmmss").format(new Date());
         final String destination = source + currentDateSuffix;
         return remoteCommandExecutor.executeRemoteCommand(
@@ -570,7 +574,8 @@ public class GroupServiceImpl implements GroupService {
                 destination);
     }
 
-    private CommandOutput getUnzipBinaryCommand(final String entity, final String host, final String source, final String destination, final String options) throws CommandFailureException {
+    @Override
+    public CommandOutput executeUnzipBinaryCommand(final String entity, final String host, final String source, final String destination, final String options) throws CommandFailureException {
         return remoteCommandExecutor.executeRemoteCommand(
                 entity,
                 host,

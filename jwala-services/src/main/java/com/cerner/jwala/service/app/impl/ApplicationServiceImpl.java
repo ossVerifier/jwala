@@ -291,7 +291,7 @@ public class ApplicationServiceImpl implements ApplicationService {
             final String deployJvmName = jvm.getJvmName();
             final String hostName = jvm.getHostName();
             final String parentDir = new File(destPath).getParentFile().getAbsolutePath().replaceAll("\\\\", "/");
-            CommandOutput commandOutput = getCreateDirectoryCommand(deployJvmName, hostName, parentDir);
+            CommandOutput commandOutput = executeCreateDirectoryCommand(deployJvmName, hostName, parentDir);
 
             if (commandOutput.getReturnCode().wasSuccessful()) {
                 LOGGER.info("created the parent dir {} successfully", parentDir);
@@ -300,10 +300,10 @@ public class ApplicationServiceImpl implements ApplicationService {
                 LOGGER.error("error in creating parent directory {} :: ERROR : ", parentDir, parentDir);
                 throw new DeployApplicationConfException(standardError);
             }
-            commandOutput = getCheckIfFileExistsCommand(deployJvmName, hostName, destPath);
+            commandOutput = executeCheckIfFileExistsCommand(deployJvmName, hostName, destPath);
 
             if (commandOutput.getReturnCode().wasSuccessful()) {
-                commandOutput = getBackUpCommand(deployJvmName, hostName, destPath);
+                commandOutput = executeBackUpCommand(deployJvmName, hostName, destPath);
 
                 if (!commandOutput.getReturnCode().wasSuccessful()) {
                     final String standardError = "Failed to back up file " + destPath + " for " + app.getName() + ". Continuing with secure copy.";
@@ -311,7 +311,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                     throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, standardError);
                 }
             }
-            final CommandOutput execData = getSecureCopyCommand(deployJvmName, hostName, srcPath, destPath);
+            final CommandOutput execData = executeSecureCopyCommand(deployJvmName, hostName, srcPath, destPath);
 
             if (execData.getReturnCode().wasSuccessful()) {
                 LOGGER.info("Copy of {} successful: {}", deployFileName, confFile.getAbsolutePath());
@@ -461,7 +461,7 @@ public class ApplicationServiceImpl implements ApplicationService {
             @Override
             public CommandOutput call() throws Exception {
                 final String parentDir = new File(destPath).getParentFile().getAbsolutePath().replaceAll("\\\\", "/");
-                CommandOutput commandOutput = getCreateDirectoryCommand(null, host, parentDir);
+                CommandOutput commandOutput = executeCreateDirectoryCommand(null, host, parentDir);
                 if (commandOutput.getReturnCode().wasSuccessful()) {
                     LOGGER.info("Successfully created parent dir {} on host {}", parentDir, host);
                 } else {
@@ -470,14 +470,14 @@ public class ApplicationServiceImpl implements ApplicationService {
                     throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, standardError);
                 }
                 LOGGER.info("Copying {} war to host {}", name, host);
-                commandOutput = getSecureCopyCommand(null, host, tempWarFile.getAbsolutePath().replaceAll("\\\\", "/"), destPath);
+                commandOutput = executeSecureCopyCommand(null, host, tempWarFile.getAbsolutePath().replaceAll("\\\\", "/"), destPath);
 
                 if (application.isUnpackWar()) {
                     final String warName = application.getWarName();
                     LOGGER.info("Unpacking war {} on host {}", warName, host);
 
                     // create the .jwala directory as the destination for the unpack-war script
-                    commandOutput = getCreateDirectoryCommand(null, host, JWALA_SCRIPTS_PATH);
+                    commandOutput = executeCreateDirectoryCommand(null, host, JWALA_SCRIPTS_PATH);
                     if (commandOutput.getReturnCode().wasSuccessful()) {
                         LOGGER.info("Successfully created the parent dir {} on host", JWALA_SCRIPTS_PATH, host);
                     } else {
@@ -488,7 +488,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 
                     final String unpackWarScriptPath = ApplicationProperties.get("commands.scripts-path") + "/" + AemControl.Properties.UNPACK_BINARY_SCRIPT_NAME;
                     final String destinationUnpackWarScriptPath = JWALA_SCRIPTS_PATH + "/" + AemControl.Properties.UNPACK_BINARY_SCRIPT_NAME;
-                    commandOutput = getSecureCopyCommand(null, host, unpackWarScriptPath, destinationUnpackWarScriptPath);
+                    commandOutput = executeSecureCopyCommand(null, host, unpackWarScriptPath, destinationUnpackWarScriptPath);
 
                     if (!commandOutput.getReturnCode().wasSuccessful()) {
                         LOGGER.error("Error in copying the " + unpackWarScriptPath + " to " + destinationUnpackWarScriptPath + " on " + host);
@@ -496,7 +496,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                     }
 
                     // make sure the scripts are executable
-                    commandOutput = getChangeFileModeCommand(null, host, "a+x", JWALA_SCRIPTS_PATH, "*.sh");
+                    commandOutput = executeChangeFileModeCommand(null, host, "a+x", JWALA_SCRIPTS_PATH, "*.sh");
                     if (!commandOutput.getReturnCode().wasSuccessful()) {
                         LOGGER.error("Error in changing file permissions on " + JWALA_SCRIPTS_PATH + " on host:" + host);
                         return commandOutput;
@@ -507,11 +507,11 @@ public class ApplicationServiceImpl implements ApplicationService {
                     final String zipDestinationOption = FilenameUtils.removeExtension(destPath);
 
                     LOGGER.debug("Checking if previously unpacked: {}", zipDestinationOption);
-                    commandOutput = getCheckIfFileExistsCommand(null, host, zipDestinationOption);
+                    commandOutput = executeCheckIfFileExistsCommand(null, host, zipDestinationOption);
 
                     if (commandOutput.getReturnCode().wasSuccessful()) {
                         LOGGER.debug("unpacked directory found at {}, backing it up", zipDestinationOption);
-                        commandOutput = getBackUpCommand(null, host, zipDestinationOption);
+                        commandOutput = executeBackUpCommand(null, host, zipDestinationOption);
 
                         if (commandOutput.getReturnCode().wasSuccessful()) {
                             LOGGER.debug("successful back up of {}", zipDestinationOption);
@@ -522,7 +522,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                         }
                     }
 
-                    commandOutput = getUnzipBinaryCommand(null, host, destPath, zipDestinationOption, "");
+                    commandOutput = executeUnzipBinaryCommand(null, host, destPath, zipDestinationOption, "");
                 }
                 return commandOutput;
             }
@@ -530,7 +530,8 @@ public class ApplicationServiceImpl implements ApplicationService {
         return commandOutputFuture;
     }
 
-    private CommandOutput getBackUpCommand(final String entity, final String host, final String source) throws CommandFailureException {
+    @Override
+    public CommandOutput executeBackUpCommand(final String entity, final String host, final String source) throws CommandFailureException {
         final String currentDateSuffix = new SimpleDateFormat(".yyyyMMdd_HHmmss").format(new Date());
         final String destination = source + currentDateSuffix;
         return remoteCommandExecutor.executeRemoteCommand(
@@ -543,7 +544,8 @@ public class ApplicationServiceImpl implements ApplicationService {
         );
     }
 
-    private CommandOutput getCreateDirectoryCommand(final String entity, final String host, final String directoryName) throws CommandFailureException {
+    @Override
+    public CommandOutput executeCreateDirectoryCommand(final String entity, final String host, final String directoryName) throws CommandFailureException {
         return remoteCommandExecutor.executeRemoteCommand(
                 entity,
                 host,
@@ -553,7 +555,8 @@ public class ApplicationServiceImpl implements ApplicationService {
         );
     }
 
-    private CommandOutput getSecureCopyCommand(final String entity, final String host, final String source, final String destination) throws CommandFailureException {
+    @Override
+    public CommandOutput executeSecureCopyCommand(final String entity, final String host, final String source, final String destination) throws CommandFailureException {
         return remoteCommandExecutor.executeRemoteCommand(
                 entity,
                 host,
@@ -564,7 +567,8 @@ public class ApplicationServiceImpl implements ApplicationService {
         );
     }
 
-    private CommandOutput getCheckIfFileExistsCommand(final String entity, final String host, final String fileName) throws CommandFailureException {
+    @Override
+    public CommandOutput executeCheckIfFileExistsCommand(final String entity, final String host, final String fileName) throws CommandFailureException {
         return  remoteCommandExecutor.executeRemoteCommand(
                 entity,
                 host,
@@ -574,7 +578,8 @@ public class ApplicationServiceImpl implements ApplicationService {
         );
     }
 
-    private CommandOutput getChangeFileModeCommand(final String entity, final String host, final String mode, final String fileName, final String fileOptions) throws CommandFailureException {
+    @Override
+    public CommandOutput executeChangeFileModeCommand(final String entity, final String host, final String mode, final String fileName, final String fileOptions) throws CommandFailureException {
         return remoteCommandExecutor.executeRemoteCommand(
                 entity,
                 host,
@@ -586,7 +591,8 @@ public class ApplicationServiceImpl implements ApplicationService {
         );
     }
 
-    private CommandOutput getUnzipBinaryCommand(final String entity, final String host, final String fileName, final String destination, final String options) throws CommandFailureException {
+    @Override
+    public CommandOutput executeUnzipBinaryCommand(final String entity, final String host, final String fileName, final String destination, final String options) throws CommandFailureException {
         return  remoteCommandExecutor.executeRemoteCommand(
                 entity,
                 host,

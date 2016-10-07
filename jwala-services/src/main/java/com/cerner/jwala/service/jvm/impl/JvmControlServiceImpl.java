@@ -282,14 +282,8 @@ public class JvmControlServiceImpl implements JvmControlService {
         } else {
             parentDir = new File(destPath).getParentFile().getAbsolutePath().replaceAll("\\\\", "/");
         }
-        CommandOutput commandOutput = getCreateDirectoryCommand(jvm, parentDir);
-//        remoteCommandExecutor.executeRemoteCommand(
-//                name,
-//                hostName,
-//                JvmControlOperation.CREATE_DIRECTORY,
-//                new WindowsJvmPlatformCommandProvider(),
-//                parentDir
-//        );
+        CommandOutput commandOutput = executeCreateDirectoryCommand(jvm, parentDir);
+
         if (commandOutput.getReturnCode().wasSuccessful()) {
             LOGGER.info("Successfully created parent dir {} on host {}", parentDir, hostName);
         } else {
@@ -297,25 +291,11 @@ public class JvmControlServiceImpl implements JvmControlService {
             LOGGER.error("create command failed with error trying to create parent directory {} on {} :: ERROR: {}", parentDir, hostName, standardError);
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, standardError.isEmpty() ? CommandOutputReturnCode.fromReturnCode(commandOutput.getReturnCode().getReturnCode()).getDesc() : standardError);
         }
-        commandOutput = getCheckFileExistsCommand(jvm, destPath);
-//        remoteCommandExecutor.executeRemoteCommand(
-//                name,
-//                hostName,
-//                JvmControlOperation.CHECK_FILE_EXISTS,
-//                new WindowsJvmPlatformCommandProvider(),
-//                destPath
-//        );
+        commandOutput = executeCheckFileExistsCommand(jvm, destPath);
+
         if (commandOutput.getReturnCode().wasSuccessful()){
-//            String currentDateSuffix = new SimpleDateFormat(".yyyyMMdd_HHmmss").format(new Date());
-//            final String destPathBackup = destPath + currentDateSuffix;
-            commandOutput = getBackUpCommand(jvm, destPath);
-//            remoteCommandExecutor.executeRemoteCommand(
-//                    name,
-//                    hostName,
-//                    JvmControlOperation.BACK_UP,
-//                    new WindowsJvmPlatformCommandProvider(),
-//                    destPath,
-//                    destPathBackup);
+            commandOutput = executeBackUpCommand(jvm, destPath);
+
             if (!commandOutput.getReturnCode().wasSuccessful()) {
                 final String standardError = "Failed to back up the " + destPath + " for " + name + ".";
                 LOGGER.error(standardError);
@@ -331,7 +311,7 @@ public class JvmControlServiceImpl implements JvmControlService {
     }
 
     @Override
-    public CommandOutput getChangeFileModeCommand(final Jvm jvm, final String modifiedPermissions, final String targetAbsoluteDir, final String targetFile)
+    public CommandOutput executeChangeFileModeCommand(final Jvm jvm, final String modifiedPermissions, final String targetAbsoluteDir, final String targetFile)
             throws CommandFailureException {
         return remoteCommandExecutor.executeRemoteCommand(
                 jvm.getJvmName(),
@@ -344,7 +324,7 @@ public class JvmControlServiceImpl implements JvmControlService {
     }
 
     @Override
-    public CommandOutput getCreateDirectoryCommand(final Jvm jvm, final String dirAbsolutePath) throws CommandFailureException {
+    public CommandOutput executeCreateDirectoryCommand(final Jvm jvm, final String dirAbsolutePath) throws CommandFailureException {
         return remoteCommandExecutor.executeRemoteCommand(
                 jvm.getJvmName(),
                 jvm.getHostName(),
@@ -354,7 +334,7 @@ public class JvmControlServiceImpl implements JvmControlService {
     }
 
     @Override
-    public CommandOutput getCheckFileExistsCommand(final Jvm jvm, final String filename) throws CommandFailureException {
+    public CommandOutput executeCheckFileExistsCommand(final Jvm jvm, final String filename) throws CommandFailureException {
         return remoteCommandExecutor.executeRemoteCommand(
                 jvm.getJvmName(),
                 jvm.getHostName(),
@@ -365,7 +345,7 @@ public class JvmControlServiceImpl implements JvmControlService {
     }
 
     @Override
-    public CommandOutput getBackUpCommand(final Jvm jvm, final String filename) throws CommandFailureException {
+    public CommandOutput executeBackUpCommand(final Jvm jvm, final String filename) throws CommandFailureException {
         final String currentDateSuffix = new SimpleDateFormat(".yyyyMMdd_HHmmss").format(new Date());
         final String destPathBackup = filename + currentDateSuffix;
         return remoteCommandExecutor.executeRemoteCommand(

@@ -14,11 +14,11 @@ public interface JvmControlService {
 
     CommandOutput secureCopyFile(ControlJvmRequest secureCopyRequest, String sourcePath, String destPath, String userId) throws CommandFailureException;
 
-    CommandOutput getCreateDirectoryCommand(Jvm jvm, String dirAbsolutePath) throws CommandFailureException;
+    CommandOutput executeCreateDirectoryCommand(Jvm jvm, String dirAbsolutePath) throws CommandFailureException;
 
-    CommandOutput getChangeFileModeCommand(Jvm jvm, String modifiedPermissions, String targetAbsoluteDir, String targetFile) throws CommandFailureException;
+    CommandOutput executeChangeFileModeCommand(Jvm jvm, String modifiedPermissions, String targetAbsoluteDir, String targetFile) throws CommandFailureException;
 
-    CommandOutput getCheckFileExistsCommand(Jvm jvm, String filename) throws CommandFailureException;
+    CommandOutput executeCheckFileExistsCommand(Jvm jvm, String filename) throws CommandFailureException;
 
-    CommandOutput getBackUpCommand(Jvm jvm, String filename) throws CommandFailureException;
+    CommandOutput executeBackUpCommand(Jvm jvm, String filename) throws CommandFailureException;
 }
