@@ -713,8 +713,8 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
         when(mockResource.getTemplateName()).thenReturn("ServerXMLTemplate.tpl");
         when(mockResource.getConfigFileName()).thenReturn("server.xml");
         when(mockJvmControlService.secureCopyFile(any(ControlJvmRequest.class), anyString(), anyString(), anyString())).thenReturn(commandOutput);
-        when(mockJvmControlService.createDirectory(any(Jvm.class), anyString())).thenReturn(commandOutput);
-        when(mockJvmControlService.changeFileMode(any(Jvm.class), anyString(), anyString(), anyString())).thenReturn(commandOutput);
+        when(mockJvmControlService.getCreateDirectoryCommand(any(Jvm.class), anyString())).thenReturn(commandOutput);
+        when(mockJvmControlService.getChangeFileModeCommand(any(Jvm.class), anyString(), anyString(), anyString())).thenReturn(commandOutput);
 
         when(mockJvmControlService.controlJvm(eq(new ControlJvmRequest(mockJvm.getId(), JvmControlOperation.DELETE_SERVICE)), any(User.class))).thenReturn(commandOutput);
         when(mockJvmControlService.controlJvm(eq(new ControlJvmRequest(mockJvm.getId(), JvmControlOperation.DEPLOY_CONFIG_ARCHIVE)), any(User.class))).thenReturn(commandOutput);
@@ -805,7 +805,7 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
         CommandOutput commandOutputFails = new CommandOutput(new ExecReturnCode(1), "", "Fail creating the directory");
 
         when(mockJvmPersistenceService.findJvmByExactName(anyString())).thenReturn(mockJvm);
-        when(mockJvmControlService.createDirectory(any(Jvm.class), anyString())).thenReturn(commandOutputFails);
+        when(mockJvmControlService.getCreateDirectoryCommand(any(Jvm.class), anyString())).thenReturn(commandOutputFails);
         when(mockJvm.getId()).thenReturn(new Identifier<Jvm>(111L));
         when(mockJvm.getState()).thenReturn(JvmState.JVM_STOPPED);
 
@@ -819,7 +819,7 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
         CommandOutput commandOutputSucceeds = new CommandOutput(new ExecReturnCode(0), "SUCCESS", "");
 
         when(mockJvmPersistenceService.findJvmByExactName(anyString())).thenReturn(mockJvm);
-        when(mockJvmControlService.createDirectory(any(Jvm.class), anyString())).thenReturn(commandOutputSucceeds);
+        when(mockJvmControlService.getCreateDirectoryCommand(any(Jvm.class), anyString())).thenReturn(commandOutputSucceeds);
         when(mockJvmControlService.secureCopyFile(any(ControlJvmRequest.class), contains(AemControl.Properties.DEPLOY_CONFIG_ARCHIVE_SCRIPT_NAME.getValue()), anyString(), anyString())).thenReturn(commandOutputSucceeds);
         when(mockJvmControlService.secureCopyFile(any(ControlJvmRequest.class), contains(AemControl.Properties.INVOKE_SERVICE_SCRIPT_NAME.getValue()), anyString(), anyString())).thenReturn(commandOutputFails);
         when(mockJvm.getId()).thenReturn(new Identifier<Jvm>(111L));
@@ -835,9 +835,9 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
         CommandOutput commandOutputSucceeds = new CommandOutput(new ExecReturnCode(0), "SUCCESS", "");
 
         when(mockJvmPersistenceService.findJvmByExactName(anyString())).thenReturn(mockJvm);
-        when(mockJvmControlService.createDirectory(any(Jvm.class), anyString())).thenReturn(commandOutputSucceeds);
+        when(mockJvmControlService.getCreateDirectoryCommand(any(Jvm.class), anyString())).thenReturn(commandOutputSucceeds);
         when(mockJvmControlService.secureCopyFile(any(ControlJvmRequest.class), anyString(), anyString(), anyString())).thenReturn(commandOutputSucceeds);
-        when(mockJvmControlService.changeFileMode(any(Jvm.class), anyString(), anyString(), anyString())).thenReturn(commandOutputFails);
+        when(mockJvmControlService.getChangeFileModeCommand(any(Jvm.class), anyString(), anyString(), anyString())).thenReturn(commandOutputFails);
         when(mockJvm.getId()).thenReturn(new Identifier<Jvm>(111L));
         when(mockJvm.getState()).thenReturn(JvmState.JVM_STOPPED);
 
@@ -854,8 +854,8 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
         when(jvmService.generateInvokeBat(jvm.getJvmName())).thenReturn("REM invoke service");
         final CommandOutput successCommandOutput = new CommandOutput(new ExecReturnCode(0), "", "");
         when(jvmControlService.secureCopyFile(any(ControlJvmRequest.class), anyString(), anyString(), anyString())).thenReturn(successCommandOutput);
-        when(jvmControlService.createDirectory(any(Jvm.class), anyString())).thenReturn(successCommandOutput);
-        when(jvmControlService.changeFileMode(any(Jvm.class), anyString(), anyString(), anyString())).thenReturn(successCommandOutput);
+        when(jvmControlService.getCreateDirectoryCommand(any(Jvm.class), anyString())).thenReturn(successCommandOutput);
+        when(jvmControlService.getChangeFileModeCommand(any(Jvm.class), anyString(), anyString(), anyString())).thenReturn(successCommandOutput);
 
         when(jvmControlService.controlJvm(any(ControlJvmRequest.class), any(User.class))).thenReturn(new CommandOutput(new ExecReturnCode(1), "", "FAIL CONTROL SERVICE"));
 
@@ -876,8 +876,8 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
         when(jvmService.generateConfigFile(jvm.getJvmName(), "setenv.bat")).thenReturn("SET TEST=xxtestxx");
         when(jvmControlService.secureCopyFile(any(ControlJvmRequest.class), anyString(), anyString(), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(1), "", "FAIL THE SERVICE SECURE COPY TEST"));
         final CommandOutput successCommandOutput = new CommandOutput(new ExecReturnCode(0), "", "");
-        when(jvmControlService.createDirectory(any(Jvm.class), anyString())).thenReturn(successCommandOutput);
-        when(jvmControlService.changeFileMode(any(Jvm.class), anyString(), anyString(), anyString())).thenReturn(successCommandOutput);
+        when(jvmControlService.getCreateDirectoryCommand(any(Jvm.class), anyString())).thenReturn(successCommandOutput);
+        when(jvmControlService.getChangeFileModeCommand(any(Jvm.class), anyString(), anyString(), anyString())).thenReturn(successCommandOutput);
 
         when(jvmControlService.controlJvm(new ControlJvmRequest(jvm.getId(), JvmControlOperation.DELETE_SERVICE), authenticatedUser.getUser())).thenReturn(successCommandOutput);
 
@@ -901,7 +901,7 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
         when(mockJvmPersistenceService.getResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"deployFileName\":\"server.xml\", \"deployPath\":\"/\",\"contentType\":\"text/plain\"}");
         when(mockJvmPersistenceService.getJvmTemplate(anyString(), any(Identifier.class))).thenReturn("<server>xml</server>");
         when(mockJvmControlService.secureCopyFile(any(ControlJvmRequest.class), anyString(), anyString(), anyString())).thenReturn(mockExecData);
-        when(mockJvmControlService.createDirectory(any(Jvm.class), anyString())).thenReturn(mockExecData);
+        when(mockJvmControlService.getCreateDirectoryCommand(any(Jvm.class), anyString())).thenReturn(mockExecData);
         when(mockResourceService.generateResourceGroup()).thenReturn(new ResourceGroup());
         when(mockResourceService.generateResourceFile(anyString(), anyString(), any(ResourceGroup.class), any(), any(ResourceGeneratorType.class))).thenReturn("{\"deployFileName\":\"server.xml\", \"deployPath\":\"/\",\"contentType\":\"text/plain\"}");
         when(mockMetaData.getDeployFileName()).thenReturn("server.xml");

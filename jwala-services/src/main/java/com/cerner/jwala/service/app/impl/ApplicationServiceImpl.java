@@ -321,7 +321,9 @@ public class ApplicationServiceImpl implements ApplicationService {
                         destPath,
                         destPathBackup);
                 if (!commandOutput.getReturnCode().wasSuccessful()) {
-                    LOGGER.error("Failed to back up file {} for {}. Continuing with secure copy.", destPath, app.getName());
+                    final String standardError = "Failed to back up file " + destPath + " for " + app.getName() + ". Continuing with secure copy.";
+                    LOGGER.error(standardError);
+                    throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, standardError);
                 }
             }
             final CommandOutput execData = applicationCommandExecutor.executeRemoteCommand(
@@ -517,14 +519,16 @@ public class ApplicationServiceImpl implements ApplicationService {
                     }
 
                     final String unpackWarScriptPath = ApplicationProperties.get("commands.scripts-path") + "/" + AemControl.Properties.UNPACK_BINARY_SCRIPT_NAME;
+                    final String destinationUnpackWarScriptPath = jwalaScriptsPath + "/" + AemControl.Properties.UNPACK_BINARY_SCRIPT_NAME;
                     commandOutput = applicationCommandExecutor.executeRemoteCommand(
                             null,
                             host,
                             ApplicationControlOperation.SECURE_COPY,
                             new WindowsApplicationPlatformCommandProvider(),
                             unpackWarScriptPath,
-                            jwalaScriptsPath);
+                            destinationUnpackWarScriptPath);
                     if (!commandOutput.getReturnCode().wasSuccessful()) {
+                        LOGGER.error("Error in copying the " + unpackWarScriptPath + " to " + destinationUnpackWarScriptPath + " on " + host);
                         return commandOutput; // return immediately if the copy failed
                     }
 
@@ -537,6 +541,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                             jwalaScriptsPath,
                             "*.sh");
                     if (!commandOutput.getReturnCode().wasSuccessful()) {
+                        LOGGER.error("Error in changing file permissions on " + jwalaScriptsPath + " on host:" + host);
                         return commandOutput;
                     }
 

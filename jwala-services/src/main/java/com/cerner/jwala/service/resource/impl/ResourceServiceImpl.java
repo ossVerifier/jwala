@@ -36,7 +36,6 @@ import com.cerner.jwala.service.resource.impl.handler.exception.ResourceHandlerE
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -773,7 +772,9 @@ public class ResourceServiceImpl implements ResourceService {
                     destPath,
                     destPathBackup);
             if (!commandOutput.getReturnCode().wasSuccessful()) {
-                LOGGER.info("Failed to back up the " + destPath + " for " + name + ". Continuing with secure copy.");
+                final String standardError = "Failed to back up the " + destPath + " for " + name + ". Continuing with secure copy.";
+                LOGGER.error(standardError);
+                throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, standardError);
             } else {
                 LOGGER.info("Successfully backed up " + destPath + " at " + hostName);
             }

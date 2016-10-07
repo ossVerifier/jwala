@@ -522,8 +522,8 @@ public class GroupServiceImplDeployTest {
         when(mockGroupService.getGroup(any(Identifier.class))).thenReturn(mockGroup);
         when(mockJvmService.getJvm(anyString())).thenReturn(mockJvm);
         when(mockJvmControlService.controlJvm(any(ControlJvmRequest.class), any(User.class))).thenReturn(successCommandOutput);
-        when(mockJvmControlService.createDirectory(any(Jvm.class), anyString())).thenReturn(successCommandOutput);
-        when(mockJvmControlService.changeFileMode(any(Jvm.class), anyString(), anyString(), anyString())).thenReturn(successCommandOutput);
+        when(mockJvmControlService.getCreateDirectoryCommand(any(Jvm.class), anyString())).thenReturn(successCommandOutput);
+        when(mockJvmControlService.getChangeFileModeCommand(any(Jvm.class), anyString(), anyString(), anyString())).thenReturn(successCommandOutput);
         when(mockJvmControlService.secureCopyFile(any(ControlJvmRequest.class), anyString(), anyString(), anyString())).thenReturn(successCommandOutput);
 
         Response response = groupServiceRest.generateGroupJvms(new Identifier<Group>(111L), mockAuthUser);

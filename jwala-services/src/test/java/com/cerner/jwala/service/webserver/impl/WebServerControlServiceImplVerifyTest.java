@@ -165,7 +165,7 @@ public class WebServerControlServiceImplVerifyTest extends VerificationBehaviorS
         verify(commandExecutor).executeRemoteCommand(anyString(), anyString(), eq(WebServerControlOperation.SECURE_COPY), any(WindowsWebServerPlatformCommandProvider.class), anyString(), anyString());
     }
 
-    @Test
+    @Test (expected = InternalErrorException.class)
     public void testSecureCopyFailsBackup() throws CommandFailureException {
         final Identifier<WebServer> webServerIdentifier = new Identifier<>(12L);
         WebServer webserver = new WebServer(webServerIdentifier, new HashSet<Group>(), "testWebServer");
@@ -176,7 +176,6 @@ public class WebServerControlServiceImplVerifyTest extends VerificationBehaviorS
         when(commandExecutor.executeRemoteCommand(anyString(), anyString(), eq(WebServerControlOperation.BACK_UP), any(PlatformCommandProvider.class), anyString(), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(1), "", "Back up failed"));
         when(commandExecutor.executeRemoteCommand(anyString(), anyString(), eq(WebServerControlOperation.CREATE_DIRECTORY), any(PlatformCommandProvider.class), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(0), "Directory Created", ""));
         webServerControlService.secureCopyFile("testWebServer", "./source", "./dest", "user-id");
-        verify(commandExecutor).executeRemoteCommand(anyString(), anyString(), eq(WebServerControlOperation.SECURE_COPY), any(WindowsWebServerPlatformCommandProvider.class), anyString(), anyString());
     }
 
     @Test

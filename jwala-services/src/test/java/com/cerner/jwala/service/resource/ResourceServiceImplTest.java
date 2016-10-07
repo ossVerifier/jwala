@@ -532,7 +532,7 @@ public class ResourceServiceImplTest {
         assertEquals(new Integer(0), result.getReturnCode().getReturnCode());
     }
 
-    @Test
+    @Test (expected = InternalErrorException.class)
     public void testDeployResourceTemplateToHostFailsBackup() throws CommandFailureException {
         ResourceIdentifier mockResourceIdentifier = mock(ResourceIdentifier.class);
         ConfigTemplate mockConfigTemplate = mock(ConfigTemplate.class);
@@ -545,8 +545,7 @@ public class ResourceServiceImplTest {
         when(mockRemoteCommandExector.executeRemoteCommand(anyString(), anyString(), eq(ApplicationControlOperation.BACK_UP), any(PlatformCommandProvider.class), anyString(), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(1), "", "FAILED BACK UP BUT CONTINUE WITH COPY"));
         when(mockRemoteCommandExector.executeRemoteCommand(anyString(), anyString(), eq(ApplicationControlOperation.CREATE_DIRECTORY), any(PlatformCommandProvider.class), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(0), "SUCCESS", ""));
 
-        CommandOutput result = resourceService.deployTemplateToHost("external.properties", "test-host", mockResourceIdentifier);
-        assertEquals(new Integer(0), result.getReturnCode().getReturnCode());
+        resourceService.deployTemplateToHost("external.properties", "test-host", mockResourceIdentifier);
     }
 
     @Test

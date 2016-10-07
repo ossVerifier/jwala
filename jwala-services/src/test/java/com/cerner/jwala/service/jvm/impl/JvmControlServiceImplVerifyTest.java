@@ -10,6 +10,7 @@ import com.cerner.jwala.common.domain.model.ssh.SshConfiguration;
 import com.cerner.jwala.common.domain.model.state.CurrentState;
 import com.cerner.jwala.common.domain.model.user.User;
 import com.cerner.jwala.common.exception.ExternalSystemErrorException;
+import com.cerner.jwala.common.exception.InternalErrorException;
 import com.cerner.jwala.common.exec.CommandOutput;
 import com.cerner.jwala.common.exec.ExecReturnCode;
 import com.cerner.jwala.common.exec.RemoteExecCommand;
@@ -231,7 +232,7 @@ public class JvmControlServiceImplVerifyTest extends VerificationBehaviorSupport
         verify(commandExecutor).executeRemoteCommand(anyString(), anyString(), eq(JvmControlOperation.SECURE_COPY), any(WindowsJvmPlatformCommandProvider.class), anyString(), anyString());
     }
 
-    @Test
+    @Test (expected = InternalErrorException.class)
     public void testSecureCopyConfFileFailsBackup() throws CommandFailureException {
         ControlJvmRequest mockControlJvmRequest = mock(ControlJvmRequest.class);
         when(mockControlJvmRequest.getControlOperation()).thenReturn(JvmControlOperation.SECURE_COPY);
@@ -249,8 +250,6 @@ public class JvmControlServiceImplVerifyTest extends VerificationBehaviorSupport
         when(commandExecutor.executeRemoteCommand(anyString(), anyString(), eq(JvmControlOperation.BACK_UP), any(WindowsJvmPlatformCommandProvider.class), anyString(), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(1), "", "Back up failed"));
         when(commandExecutor.executeRemoteCommand(anyString(), anyString(), eq(JvmControlOperation.CREATE_DIRECTORY), any(WindowsJvmPlatformCommandProvider.class), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(0), "Backup succeeded", ""));
         jvmControlService.secureCopyFile(mockControlJvmRequest, "./source/path", "./dest/path", "user-id");
-
-        verify(commandExecutor).executeRemoteCommand(anyString(), anyString(), eq(JvmControlOperation.SECURE_COPY), any(WindowsJvmPlatformCommandProvider.class), anyString(), anyString());
     }
 
     @Test
@@ -258,7 +257,7 @@ public class JvmControlServiceImplVerifyTest extends VerificationBehaviorSupport
         Jvm mockJvm = mock(Jvm.class);
         when(mockJvm.getJvmName()).thenReturn("test-jvm");
         when(mockJvm.getHostName()).thenReturn("test-host");
-        jvmControlService.changeFileMode(mockJvm, "777", "./target", "*");
+        jvmControlService.getChangeFileModeCommand(mockJvm, "777", "./target", "*");
         verify(commandExecutor).executeRemoteCommand(anyString(), anyString(), eq(JvmControlOperation.CHANGE_FILE_MODE), any(WindowsJvmPlatformCommandProvider.class), anyString(), anyString(), anyString());
     }
 
@@ -267,7 +266,7 @@ public class JvmControlServiceImplVerifyTest extends VerificationBehaviorSupport
         Jvm mockJvm = mock(Jvm.class);
         when(mockJvm.getJvmName()).thenReturn("test-jvm");
         when(mockJvm.getHostName()).thenReturn("test-host");
-        jvmControlService.createDirectory(mockJvm, "./target");
+        jvmControlService.getCreateDirectoryCommand(mockJvm, "./target");
         verify(commandExecutor).executeRemoteCommand(anyString(), anyString(), eq(JvmControlOperation.CREATE_DIRECTORY), any(WindowsJvmPlatformCommandProvider.class), anyString());
     }
 
