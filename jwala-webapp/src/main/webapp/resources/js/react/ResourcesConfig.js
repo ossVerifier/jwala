@@ -878,7 +878,10 @@ var SelectTemplateFilesWidget = React.createClass({
     render: function() {
         var warningDisplay = null;
         if (this.props.getResourceOptions().length > 0) {
-            warningDisplay = <div className="Warning"><span className="icon"/><span className="msg">Only one external properties file can be uploaded. Any existing ones file will be overwritten.</span></div>;
+            warningDisplay = <div className="Warning">
+                                 <span className="icon"/>
+                                 <span className="msg">Only one external properties file can be uploaded. Any existing ones will be overwritten.</span>
+                             </div>;
         }
         return <div className="select-meta-data-and-template-files-widget">
                    <form ref="form">
