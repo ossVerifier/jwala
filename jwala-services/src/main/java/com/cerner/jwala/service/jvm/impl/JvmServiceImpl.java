@@ -296,12 +296,10 @@ public class JvmServiceImpl implements JvmService {
 
     @Override
     public Jvm generateAndDeployJvm(String jvmName, User user) {
-
         Jvm jvm = getJvm(jvmName);
-
         // only one at a time per JVM
         //TODO return error if .jwala directory is already being written to
-        if (LOGGER.isDebugEnabled()) {
+        if(LOGGER.isDebugEnabled()) {
             LOGGER.debug("Start generateAndDeployJvm for {} by user {}", jvmName, user.getId());
         }
         if (!jvmWriteLocks.containsKey(jvm.getId().toString())) {
@@ -320,11 +318,9 @@ public class JvmServiceImpl implements JvmService {
             }
             hostWriteLocks.get(jvm.getHostName()).writeLock().lock();
             LOGGER.info("Added write lock for {}", jvm.getHostName());
-
             binaryDistributionService.prepareUnzip(jvm.getHostName());
             binaryDistributionService.distributeJdk(jvm.getHostName());
             binaryDistributionService.distributeTomcat(jvm.getHostName());
-
             // check for setenv.bat
             checkForSetenvBat(jvm.getJvmName());
 
@@ -334,7 +330,7 @@ public class JvmServiceImpl implements JvmService {
             // copy the invoke and deploy scripts
             deployScriptsToUserTocScriptsDir(jvm, user);
 
-            // delete the service
+            // delete the service, needs service.bat
             // TODO make generic to support multiple OSs
             deleteJvmWindowsService(new ControlJvmRequest(jvm.getId(), JvmControlOperation.DELETE_SERVICE), jvm, user);
 
@@ -346,7 +342,7 @@ public class JvmServiceImpl implements JvmService {
             secureCopyJvmConfigJar(jvm, jvmConfigJar, user);
 
             // call script to backup and tar the current directory and
-            // then untar the new tar
+            // then untar the new tar, needs jar
             deployJvmConfigJar(jvm, user, jvmConfigJar);
 
             // copy the individual jvm templates to the destination
@@ -357,6 +353,7 @@ public class JvmServiceImpl implements JvmService {
 
             // re-install the service
             installJvmWindowsService(jvm, user);
+
 
             // set the state to stopped
             updateState(jvm.getId(), JvmState.JVM_STOPPED);
@@ -371,7 +368,7 @@ public class JvmServiceImpl implements JvmService {
             }
             LOGGER.info("Release write lock for {}", jvm.getHostName());
             if (LOGGER.isDebugEnabled()) {
-                LOGGER.info("End generateAndDeployJvm for {} by user {}", jvmName, user.getId());
+                LOGGER.debug("End generateAndDeployJvm for {} by user {}", jvmName, user.getId());
             }
         }
         return jvm;
