@@ -75,7 +75,6 @@ class ResourceFileGenerator {
                        groups    : groups,
                        group     : group,
                        vars      : map];
-        println "SIZE **********---- " + map.size()
         map.each { k, v -> println "${k}:${v}" }
         def properties = ExternalProperties.properties
         if (properties.size() > 0) {

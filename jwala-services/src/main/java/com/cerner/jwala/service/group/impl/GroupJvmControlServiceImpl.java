@@ -14,6 +14,7 @@ import com.cerner.jwala.service.jvm.JvmControlService;
 
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -44,15 +45,7 @@ public class GroupJvmControlServiceImpl implements GroupJvmControlService {
 
         final Set<Jvm> jvms = group.getJvms();
         if (jvms != null) {
-            for (final Jvm jvm : jvms) {
-                executorService.submit(new Callable<CommandOutput>() {
-                    @Override
-                    public CommandOutput call() throws Exception {
-                        ControlJvmRequest controlJvmRequest = new ControlJvmRequest(jvm.getId(), controlGroupJvmRequest.getControlOperation());
-                        return jvmControlService.controlJvm(controlJvmRequest, aUser);
-                    }
-                });
-            }
+            controlJvms(controlGroupJvmRequest, aUser, jvms);
         }
     }
 
@@ -85,9 +78,26 @@ public class GroupJvmControlServiceImpl implements GroupJvmControlService {
 
     @Override
     public void controlAllJvms(final ControlGroupJvmRequest controlGroupJvmRequest, final User user) {
+        Set<Jvm> jvms = new HashSet<>();
         for (Group group : groupService.getGroups()) {
-            ControlGroupJvmRequest controlAllJvmsRequest = new ControlGroupJvmRequest(group.getId(), controlGroupJvmRequest.getControlOperation());
-            controlGroup(controlAllJvmsRequest, user);
+            Set<Jvm> groupsJvms = group.getJvms();
+            if (groupsJvms != null && !groupsJvms.isEmpty()) {
+                jvms.addAll(groupsJvms);
+            }
+        }
+
+        controlJvms(controlGroupJvmRequest, user, jvms);
+    }
+
+    private void controlJvms(final ControlGroupJvmRequest controlGroupJvmRequest, final User user, Set<Jvm> jvms) {
+        for (final Jvm jvm : jvms) {
+            executorService.submit(new Callable<CommandOutput>() {
+                @Override
+                public CommandOutput call() throws Exception {
+                    ControlJvmRequest controlJvmRequest = new ControlJvmRequest(jvm.getId(), controlGroupJvmRequest.getControlOperation());
+                    return jvmControlService.controlJvm(controlJvmRequest, user);
+                }
+            });
         }
     }
 }

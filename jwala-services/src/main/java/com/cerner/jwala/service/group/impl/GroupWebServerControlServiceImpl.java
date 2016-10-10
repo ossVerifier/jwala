@@ -13,6 +13,7 @@ import com.cerner.jwala.service.webserver.WebServerControlService;
 
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -40,22 +41,31 @@ public class GroupWebServerControlServiceImpl implements GroupWebServerControlSe
 
         final Set<WebServer> webServers = group.getWebServers();
         if (webServers != null) {
-            for (final WebServer webServer : webServers) {
-                executorService.submit(new Callable<CommandOutput>() {
-                    @Override
-                    public CommandOutput call() throws Exception {
-                        final ControlWebServerRequest controlWebServerRequest = new ControlWebServerRequest(webServer.getId(), controlGroupWebServerRequest.getControlOperation());
-                        return webServerControlService.controlWebServer(controlWebServerRequest, aUser);
-                    }
-                });
-            }
+            controlWebServers(controlGroupWebServerRequest, aUser, webServers);
         }
     }
 
     @Override
     public void controlAllWebSevers(final ControlGroupWebServerRequest controlGroupWebServerRequest, final User user) {
+        Set<WebServer> webServers = new HashSet<>();
         for (Group group : groupService.getGroups()) {
-            controlGroup(new ControlGroupWebServerRequest(group.getId(), controlGroupWebServerRequest.getControlOperation()), user);
+            final Set<WebServer> groupWebServers = groupService.getGroupWithWebServers(group.getId()).getWebServers();
+            if (groupWebServers != null && !groupWebServers.isEmpty()) {
+                webServers.addAll(groupWebServers);
+            }
+        }
+        controlWebServers(controlGroupWebServerRequest, user, webServers);
+    }
+
+    private void controlWebServers(final ControlGroupWebServerRequest controlGroupWebServerRequest, final User user, Set<WebServer> webServers) {
+        for (final WebServer webServer : webServers) {
+            executorService.submit(new Callable<CommandOutput>() {
+                @Override
+                public CommandOutput call() throws Exception {
+                    final ControlWebServerRequest controlWebServerRequest = new ControlWebServerRequest(webServer.getId(), controlGroupWebServerRequest.getControlOperation());
+                    return webServerControlService.controlWebServer(controlWebServerRequest, user);
+                }
+            });
         }
     }
 
