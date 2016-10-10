@@ -309,9 +309,9 @@ public class JvmServiceImpl implements JvmService {
 
         try {
             if (jvm.getState().isStartedState()) {
-                LOGGER.error("The target JVM {} must be stopped before attempting to update the resource files", jvm.getJvmName());
-                throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE,
-                        "The target JVM must be stopped before attempting to update the resource files");
+                final String errorMessage = "The target JVM " + jvm.getJvmName() + " must be stopped before attempting to update the resource files";
+                LOGGER.error(errorMessage);
+                throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, errorMessage);
             }
             if (!hostWriteLocks.containsKey(jvm.getHostName())) {
                 hostWriteLocks.put(jvm.getHostName(), new ReentrantReadWriteLock());
@@ -359,8 +359,8 @@ public class JvmServiceImpl implements JvmService {
             updateState(jvm.getId(), JvmState.JVM_STOPPED);
 
         } catch (CommandFailureException | IOException e) {
-            LOGGER.error("Failed to generate the JVM config for {} :: ERROR: {}", jvm.getJvmName(), e.getMessage());
-            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to generate the JVM config: " + e.getMessage(), e);
+            LOGGER.error("Failed to generate the JVM config for {} :: ERROR: {}", jvm.getJvmName(), e);
+            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to generate the JVM config: " + jvm.getJvmName(), e);
         } finally {
             jvmWriteLocks.get(jvm.getId().toString()).writeLock().unlock();
             if (hostWriteLocks.containsKey(jvm.getHostName())) {
