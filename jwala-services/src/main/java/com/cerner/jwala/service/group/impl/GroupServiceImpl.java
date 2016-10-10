@@ -34,6 +34,7 @@ import com.cerner.jwala.service.exception.GroupServiceException;
 import com.cerner.jwala.service.group.GroupService;
 import com.cerner.jwala.service.resource.ResourceService;
 import com.cerner.jwala.service.resource.impl.ResourceGeneratorType;
+import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
@@ -59,7 +60,7 @@ public class GroupServiceImpl implements GroupService {
 
     private static final String GENERATED_RESOURCE_DIR = "paths.generated.resource.dir";
     private static final Logger LOGGER = LoggerFactory.getLogger(GroupServiceImpl.class);
-    private static final String UNZIPEXE = "unzip.exe";
+    private static final String UNZIP_EXE = "unzip.exe";
 
     public GroupServiceImpl(final GroupPersistenceService groupPersistenceService,
                             final WebServerPersistenceService webServerPersistenceService,
@@ -460,13 +461,8 @@ public class GroupServiceImpl implements GroupService {
                 srcPath = confFile.getAbsolutePath().replace("\\", "/");
             }
             final String parentDir = new File(destPath).getParentFile().getAbsolutePath().replaceAll("\\\\", "/");
-            CommandOutput commandOutput = remoteCommandExecutor.executeRemoteCommand(
-                    jvmName,
-                    hostName,
-                    ApplicationControlOperation.CREATE_DIRECTORY,
-                    new WindowsApplicationPlatformCommandProvider(),
-                    parentDir
-            );
+            CommandOutput commandOutput = executeCreateDirectoryCommand(jvmName, hostName, parentDir);
+
             if (commandOutput.getReturnCode().wasSuccessful()) {
                 LOGGER.info("Successfully created the parent dir {} on host {}", parentDir, hostName);
             } else {
@@ -475,28 +471,12 @@ public class GroupServiceImpl implements GroupService {
                 throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, stdErr);
             }
             LOGGER.debug("checking if file: {} exists on remote location", destPath);
-            commandOutput = remoteCommandExecutor.executeRemoteCommand(
-                    jvmName,
-                    hostName,
-                    ApplicationControlOperation.CHECK_FILE_EXISTS,
-                    new WindowsApplicationPlatformCommandProvider(),
-                    destPath);
+            commandOutput = executeCheckFileExistsCommand(jvmName, hostName, destPath);
+
             if (commandOutput.getReturnCode().wasSuccessful()) {
-                if (metaData.isUnpack() && !metaData.isOverwrite()) {
-                    standardError = "Destination zip: " + destPath + " exists and isOverwrite = false, so no unzip perform.";
-                    LOGGER.error(standardError);
-                    throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, standardError);
-                }
                 LOGGER.debug("backing up file: {}", destPath);
-                String currentDateSuffix = new SimpleDateFormat(".yyyyMMdd_HHmmss").format(new Date());
-                final String destPathBackup = destPath + currentDateSuffix;
-                commandOutput = remoteCommandExecutor.executeRemoteCommand(
-                        jvmName,
-                        hostName,
-                        ApplicationControlOperation.BACK_UP_FILE,
-                        new WindowsApplicationPlatformCommandProvider(),
-                        destPath,
-                        destPathBackup);
+                commandOutput = executeBackUpCommand(jvmName, hostName, destPath);
+
                 if (!commandOutput.getReturnCode().wasSuccessful()) {
                     standardError = commandOutput.getStandardError().isEmpty() ? commandOutput.getStandardOutput() : commandOutput.getStandardError();
                     LOGGER.error("Error in backing up older file {} :: ERROR: {}", destPath, standardError);
@@ -504,13 +484,8 @@ public class GroupServiceImpl implements GroupService {
                 }
             }
             LOGGER.debug("copying file over to location {}", destPath);
-            commandOutput = remoteCommandExecutor.executeRemoteCommand(
-                    jvmName,
-                    hostName,
-                    ApplicationControlOperation.SECURE_COPY,
-                    new WindowsApplicationPlatformCommandProvider(),
-                    srcPath,
-                    destPath);
+            commandOutput = executeSecureCopyCommand(jvmName, hostName, srcPath, destPath);
+
             if (!commandOutput.getReturnCode().wasSuccessful()) {
                 standardError = commandOutput.getStandardError().isEmpty() ? commandOutput.getStandardOutput() : commandOutput.getStandardError();
                 LOGGER.error("Copy command completed with error trying to copy {} to {} :: ERROR: {}",
@@ -519,17 +494,27 @@ public class GroupServiceImpl implements GroupService {
             }
             if (metaData.isUnpack()) {
                 binaryDistributionService.prepareUnzip(hostName);
-                commandOutput = remoteCommandExecutor.executeRemoteCommand(null,
-                        hostName,
-                        BinaryDistributionControlOperation.UNZIP_BINARY,
-                        new WindowsBinaryDistributionPlatformCommandProvider(),
-                        ApplicationProperties.get("remote.commands.user-scripts") + "/" + UNZIPEXE,
-                        destPath,
-                        parentDir,
-                        "");
+                final String zipDestinationOption = FilenameUtils.removeExtension(destPath);
+                LOGGER.debug("checking if unpacked destination exists: {}", zipDestinationOption);
+                commandOutput = executeCheckFileExistsCommand(jvmName, hostName, zipDestinationOption);
+
+                if (commandOutput.getReturnCode().wasSuccessful()) {
+                    LOGGER.debug("destination {}, exists backing it up", zipDestinationOption);
+                    commandOutput = executeBackUpCommand(jvmName, hostName, zipDestinationOption);
+
+                    if (commandOutput.getReturnCode().wasSuccessful()) {
+                        LOGGER.debug("successfully backed up {}", zipDestinationOption);
+                    } else {
+                        standardError = "Could not back up " + zipDestinationOption;
+                        LOGGER.error(standardError);
+                        throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, standardError);
+                    }
+                }
+                commandOutput = executeUnzipBinaryCommand(null, hostName, destPath, zipDestinationOption, "");
+
                 LOGGER.info("commandOutput.getReturnCode().toString(): " + commandOutput.getReturnCode().toString());
                 if (!commandOutput.getReturnCode().wasSuccessful()) {
-                    standardError = "Cannot unzip " + destPath + " to " + parentDir + ", please check the log for more information.";
+                    standardError = "Cannot unzip " + destPath + " to " + zipDestinationOption + ", please check the log for more information.";
                     LOGGER.error(standardError);
                     throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, standardError);
                 }
@@ -542,6 +527,64 @@ public class GroupServiceImpl implements GroupService {
             LOGGER.error("Failed to execute remote command when deploying {} for group {}", fileName, groupName, e);
             throw new ApplicationException("Failed to execute remote command when deploying " + fileName + " for group " + groupName, e);
         }
+    }
+
+    @Override
+    public CommandOutput executeCreateDirectoryCommand(final String entity, final String host, final String directoryName) throws CommandFailureException {
+        return remoteCommandExecutor.executeRemoteCommand(
+                entity,
+                host,
+                ApplicationControlOperation.CREATE_DIRECTORY,
+                new WindowsApplicationPlatformCommandProvider(),
+                directoryName
+        );
+    }
+
+    @Override
+    public CommandOutput executeCheckFileExistsCommand(final String entity, final String host, final String fileName) throws CommandFailureException {
+        return remoteCommandExecutor.executeRemoteCommand(
+                entity,
+                host,
+                ApplicationControlOperation.CHECK_FILE_EXISTS,
+                new WindowsApplicationPlatformCommandProvider(),
+                fileName);
+    }
+
+    @Override
+    public CommandOutput executeSecureCopyCommand(final String entity, final String host, final String source, final String destination) throws CommandFailureException {
+        return remoteCommandExecutor.executeRemoteCommand(
+                entity,
+                host,
+                ApplicationControlOperation.SECURE_COPY,
+                new WindowsApplicationPlatformCommandProvider(),
+                source,
+                destination);
+    }
+
+    @Override
+    public CommandOutput executeBackUpCommand(final String entity, final String host, final String source) throws CommandFailureException {
+        final String currentDateSuffix = new SimpleDateFormat(".yyyyMMdd_HHmmss").format(new Date());
+        final String destination = source + currentDateSuffix;
+        return remoteCommandExecutor.executeRemoteCommand(
+                entity,
+                host,
+                ApplicationControlOperation.BACK_UP,
+                new WindowsApplicationPlatformCommandProvider(),
+                source,
+                destination);
+    }
+
+    @Override
+    public CommandOutput executeUnzipBinaryCommand(final String entity, final String host, final String source, final String destination, final String options) throws CommandFailureException {
+        return remoteCommandExecutor.executeRemoteCommand(
+                entity,
+                host,
+                BinaryDistributionControlOperation.UNZIP_BINARY,
+                new WindowsBinaryDistributionPlatformCommandProvider(),
+                ApplicationProperties.get("remote.commands.user-scripts") + "/" + UNZIP_EXE,
+                source,
+                destination,
+                options);
     }
 
     protected File createConfFile(final String appName, final String groupName,

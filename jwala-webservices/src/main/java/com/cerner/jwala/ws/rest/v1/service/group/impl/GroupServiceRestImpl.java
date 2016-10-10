@@ -469,11 +469,18 @@ public class GroupServiceRestImpl implements GroupServiceRest {
             Group group = groupService.getGroupWithWebServers(aGroupId);
             Set<WebServer> webServers = group.getWebServers();
             if (null != webServers && webServers.size() > 0) {
+                Set<String> startedWebServers = new HashSet<>();
                 for (WebServer webServer : webServers) {
                     if (webServerService.isStarted(webServer)) {
-                        LOGGER.info("Failed to start generation of web servers for group ID {}: not all web servers were stopped - {} was started", aGroupId, webServer.getName());
-                        throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "All web servers in the group must be stopped before continuing. Operation stopped for web server " + webServer.getName());
+                        LOGGER.warn("Failed to start generation of web servers for group ID {}: not all web servers were stopped - {} was started", aGroupId, webServer.getName());
+                        startedWebServers.add(webServer.getName());
                     }
+                }
+
+                if (!startedWebServers.isEmpty()) {
+                    LOGGER.error("Failed to start generation of web servers for group ID {}: not all web servers were stopped - {} were started", aGroupId, startedWebServers.toString());
+                    throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE,
+                            "All web servers in the group must be stopped before continuing. Operation stopped for web server " + startedWebServers.toString());
                 }
 
                 // generate and deploy the web servers
@@ -510,11 +517,22 @@ public class GroupServiceRestImpl implements GroupServiceRest {
             final Group group = groupService.getGroup(aGroupId);
             Set<Jvm> jvms = group.getJvms();
             if (null != jvms && jvms.size() > 0) {
+                Set<String> starteJvms = new HashSet<>();
                 for (Jvm jvm : jvms) {
                     if (jvm.getState().isStartedState()) {
-                        LOGGER.info("Failed to start generation of JVMs for group ID {}: not all JVMs were stopped - {} was started", aGroupId, jvm.getJvmName());
-                        throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "All JVMs in the group must be stopped before continuing. Operation stopped for JVM " + jvm.getJvmName());
+                        LOGGER.warn("Failed to start generation of JVMs for group ID {}: not all JVMs were stopped - {} was started", aGroupId, jvm.getJvmName());
+                        starteJvms.add(jvm.getJvmName());
                     }
+                }
+
+                if (!starteJvms.isEmpty()) {
+                    LOGGER.error("Failed to start generation of JVMs for group ID {}: not all JVMs were stopped - {} were started", aGroupId, starteJvms.toString());
+                    throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE,
+                            "All JVMs in the group must be stopped before continuing. Operation stopped for JVMs " + starteJvms.toString());
+                }
+
+                for (Jvm jvm : jvms) {
+                    LOGGER.info("Checking if setenv.bat exists for the jvm {}", jvm.getJvmName());
                     jvmService.checkForSetenvBat(jvm.getJvmName());
                 }
 

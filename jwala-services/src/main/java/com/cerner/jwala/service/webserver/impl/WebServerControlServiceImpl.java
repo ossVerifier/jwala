@@ -207,12 +207,14 @@ public class WebServerControlServiceImpl implements WebServerControlService {
             commandOutput = commandExecutor.executeRemoteCommand(
                     aWebServerName,
                     host,
-                    WebServerControlOperation.BACK_UP_CONFIG_FILE,
+                    WebServerControlOperation.BACK_UP,
                     new WindowsWebServerPlatformCommandProvider(),
                     destPath,
                     destPathBackup);
             if (!commandOutput.getReturnCode().wasSuccessful()) {
-                LOGGER.info("Failed to back up the " + destPath + " for " + aWebServerName + ". Continuing with secure copy.");
+                final String standardError = "Failed to back up the " + destPath + " for " + aWebServerName + ". Continuing with secure copy.";
+                LOGGER.error(standardError);
+                throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, standardError);
             } else {
                 LOGGER.info("Successfully backed up " + destPath + " at " + host);
             }
