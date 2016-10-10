@@ -130,10 +130,10 @@ public enum WindowsJvmNetOperation implements ServiceCommandBuilder {
             return new ExecCommand(SCP_SCRIPT_NAME.getValue(), aParams[0], aParams[1]);
         }
     },
-    BACK_UP_FILE(JvmControlOperation.BACK_UP_FILE) {
+    BACK_UP(JvmControlOperation.BACK_UP) {
         @Override
         public ExecCommand buildCommandForService(String aServiceName, String... aParams) {
-            return new ExecCommand("/usr/bin/cp", aParams[0], aParams[1]);
+            return new ExecCommand("/usr/bin/mv", aParams[0], aParams[1]);
         }
     },
     CREATE_DIRECTORY(JvmControlOperation.CREATE_DIRECTORY) {

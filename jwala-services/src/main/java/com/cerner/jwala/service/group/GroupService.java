@@ -12,6 +12,7 @@ import com.cerner.jwala.common.exec.CommandOutput;
 import com.cerner.jwala.common.request.group.*;
 import com.cerner.jwala.common.request.jvm.UploadJvmTemplateRequest;
 import com.cerner.jwala.common.request.webserver.UploadWebServerTemplateRequest;
+import com.cerner.jwala.exception.CommandFailureException;
 
 import java.util.List;
 import java.util.Map;
@@ -126,4 +127,14 @@ public interface GroupService {
      * @return a list of all the unique host names
      */
     List<String> getAllHosts();
+
+    CommandOutput executeCreateDirectoryCommand(String entity, String host, String directoryName) throws CommandFailureException;
+
+    CommandOutput executeCheckFileExistsCommand(String entity, String host, String fileName) throws CommandFailureException;
+
+    CommandOutput executeSecureCopyCommand(String entity, String host, String source, String destination) throws CommandFailureException;
+
+    CommandOutput executeBackUpCommand(String entity, String host, String source) throws CommandFailureException;
+
+    CommandOutput executeUnzipBinaryCommand(String entity, String host, String source, String destination, String options) throws CommandFailureException;
 }

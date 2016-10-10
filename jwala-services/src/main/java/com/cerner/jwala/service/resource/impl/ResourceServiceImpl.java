@@ -772,12 +772,14 @@ public class ResourceServiceImpl implements ResourceService {
             commandOutput = remoteCommandExecutor.executeRemoteCommand(
                     name,
                     hostName,
-                    ApplicationControlOperation.BACK_UP_FILE,
+                    ApplicationControlOperation.BACK_UP,
                     new WindowsApplicationPlatformCommandProvider(),
                     destPath,
                     destPathBackup);
             if (!commandOutput.getReturnCode().wasSuccessful()) {
-                LOGGER.info("Failed to back up the " + destPath + " for " + name + ". Continuing with secure copy.");
+                final String standardError = "Failed to back up the " + destPath + " for " + name + ". Continuing with secure copy.";
+                LOGGER.error(standardError);
+                throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, standardError);
             } else {
                 LOGGER.info("Successfully backed up " + destPath + " at " + hostName);
             }

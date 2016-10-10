@@ -369,21 +369,23 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
         final String webServerName = webServer.getName();
         final String startScriptName = AemControl.Properties.START_SCRIPT_NAME.getValue();
         final String sourceStartServicePath = COMMANDS_SCRIPTS_PATH + "/" + startScriptName;
-        final String destHttpdConfPath = ApplicationProperties.get("remote.paths.httpd.conf") + "/";
-        if (webServerControlService.createDirectory(webServer, destHttpdConfPath).getReturnCode().wasSuccessful()) {
-            LOGGER.info("Successfully created the directory {}", destHttpdConfPath);
+        final String destHttpdConfParentDir = ApplicationProperties.get("remote.paths.httpd.conf");
+        final String destHttpdConfStartScript = destHttpdConfParentDir + "/" + startScriptName;
+        if (webServerControlService.createDirectory(webServer, destHttpdConfParentDir).getReturnCode().wasSuccessful()) {
+            LOGGER.info("Successfully created the directory {}", destHttpdConfParentDir);
         } else {
-            LOGGER.error("Failed to create the directory {} during creation of {}", destHttpdConfPath, webServerName);
+            LOGGER.error("Failed to create the directory {} during creation of {}", destHttpdConfParentDir, webServerName);
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to secure copy file " + sourceStartServicePath + " during the creation of " + webServerName);
         }
-        if (!webServerControlService.secureCopyFile(webServerName, sourceStartServicePath, destHttpdConfPath, userId).getReturnCode().wasSuccessful()) {
+        if (!webServerControlService.secureCopyFile(webServerName, sourceStartServicePath, destHttpdConfStartScript, userId).getReturnCode().wasSuccessful()) {
             LOGGER.error("Failed to secure copy file {} during creation of {}", sourceStartServicePath, webServerName);
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to secure copy file " + sourceStartServicePath + " during the creation of " + webServerName);
         }
 
         final String stopScriptName = AemControl.Properties.STOP_SCRIPT_NAME.getValue();
         final String sourceStopServicePath = COMMANDS_SCRIPTS_PATH + "/" + stopScriptName;
-        if (!webServerControlService.secureCopyFile(webServerName, sourceStopServicePath, destHttpdConfPath, userId).getReturnCode().wasSuccessful()) {
+        final String destHttpdConfStopScript = destHttpdConfParentDir + "/" + stopScriptName;
+        if (!webServerControlService.secureCopyFile(webServerName, sourceStopServicePath, destHttpdConfStopScript, userId).getReturnCode().wasSuccessful()) {
             LOGGER.error("Failed to secure copy file {} during creation of {}", sourceStopServicePath, webServerName);
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to secure copy file " + sourceStopServicePath + " during the creation of " + webServerName);
         }
@@ -391,7 +393,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
         final String invokeWsScriptName = AemControl.Properties.INVOKE_WS_SERVICE_SCRIPT_NAME.getValue();
         final String sourceInvokeWsServicePath = COMMANDS_SCRIPTS_PATH + "/" + invokeWsScriptName;
         final String jwalaScriptsPath = ApplicationProperties.get("remote.commands.user-scripts");
-        if (!webServerControlService.secureCopyFile(webServerName, sourceInvokeWsServicePath, jwalaScriptsPath, userId).getReturnCode().wasSuccessful()) {
+        if (!webServerControlService.secureCopyFile(webServerName, sourceInvokeWsServicePath, jwalaScriptsPath + "/" + invokeWsScriptName, userId).getReturnCode().wasSuccessful()) {
             LOGGER.error("Failed to secure copy file {} during creation of {}", sourceInvokeWsServicePath, webServerName);
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to secure copy file " + sourceInvokeWsServicePath + " during the creation of " + webServerName);
         }
@@ -401,9 +403,9 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
             LOGGER.error("Failed to update the permissions in {} during the creation of {}", jwalaScriptsPath, webServerName);
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to update the permissions in " + sourceInvokeWsServicePath + " during the creation of " + webServerName);
         }
-        if (!webServerControlService.changeFileMode(webServer, "a+x", destHttpdConfPath, "*.sh").getReturnCode().wasSuccessful()) {
-            LOGGER.error("Failed to update the permissions in {} during the creation of {}", destHttpdConfPath, webServerName);
-            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to update the permissions in " + destHttpdConfPath + " during the creation of " + webServerName);
+        if (!webServerControlService.changeFileMode(webServer, "a+x", destHttpdConfParentDir, "*.sh").getReturnCode().wasSuccessful()) {
+            LOGGER.error("Failed to update the permissions in {} during the creation of {}", destHttpdConfParentDir, webServerName);
+            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to update the permissions in " + destHttpdConfParentDir + " during the creation of " + webServerName);
         }
     }
 
