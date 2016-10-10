@@ -289,8 +289,9 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
         try {
             WebServer webServer = webServerService.getWebServer(aWebServerName);
             if (webServerService.isStarted(webServer)) {
-                LOGGER.error("The target Web Server {} must be stopped before attempting to update the resource file", aWebServerName);
-                throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "The target Web Server must be stopped before attempting to update the resource file");
+                final String errorMessage = "The target Web Server " + aWebServerName + " must be stopped before attempting to update the resource file";
+                LOGGER.error(errorMessage);
+                throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, errorMessage);
             }
 
             binaryDistributionService.prepareUnzip(webServer.getHost());
