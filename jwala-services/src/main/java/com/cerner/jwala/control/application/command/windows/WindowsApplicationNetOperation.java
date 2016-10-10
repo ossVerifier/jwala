@@ -24,7 +24,7 @@ public enum WindowsApplicationNetOperation implements ServiceCommandBuilder {
         public ExecCommand buildCommandForService(String aServiceName, String... aParams) {
             final String srcPath = aParams[0];
             final String destPath = aParams[1];
-            return new ExecCommand(USR_BIN_CP, srcPath, destPath);
+            return new ExecCommand(USR_BIN_MV, srcPath, destPath);
         }
     },
     CREATE_DIRECTORY(ApplicationControlOperation.CREATE_DIRECTORY) {
@@ -46,7 +46,7 @@ public enum WindowsApplicationNetOperation implements ServiceCommandBuilder {
         }
     };
 
-    private static final String USR_BIN_CP = "/usr/bin/mv";
+    private static final String USR_BIN_MV = "/usr/bin/mv";
     private static final String USR_BIN_MKDIR = "/usr/bin/mkdir";
     private static final String USR_BIN_CHMOD = "/usr/bin/chmod";
     private static final String USR_BIN_TEST = "/usr/bin/test";
