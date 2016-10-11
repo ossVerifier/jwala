@@ -108,7 +108,7 @@ public class WebServerStateSetterWorker {
                         LOGGER.debug("{} {}", webServerName, ioe.getMessage(), ioe);
                     } else {
                         if (!webServerState.equals(WebServerReachableState.WS_UNREACHABLE)) {
-                            LOGGER.info("{} {}", webServerName, ioe.getMessage(), ioe);
+                            LOGGER.debug("{} {}", webServerName, ioe.getMessage(), ioe);
                         }
                     }
                     if (!webServerState.equals(WebServerReachableState.WS_NEW)) {
