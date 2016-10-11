@@ -122,12 +122,13 @@ public class JvmServiceImpl implements JvmService {
 
 
     protected Jvm createJvm(final CreateJvmRequest aCreateJvmRequest) {
-        aCreateJvmRequest.validate();
         return jvmPersistenceService.createJvm(aCreateJvmRequest);
     }
 
     protected Jvm createAndAssignJvm(final CreateJvmAndAddToGroupsRequest aCreateAndAssignRequest,
                                      final User aCreatingUser) {
+        aCreateAndAssignRequest.validate();
+
         // The commands are validated in createJvm() and groupService.addJvmToGroup()
         final Jvm newJvm = createJvm(aCreateAndAssignRequest.getCreateCommand());
 

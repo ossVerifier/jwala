@@ -131,7 +131,7 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
 
         jvmService.createJvm(createJvmAndAddToGroupsRequest, mockUser);
 
-        verify(createJvmRequest, times(1)).validate();
+        verify(createJvmAndAddToGroupsRequest, times(1)).validate();
         verify(mockJvmPersistenceService, times(1)).createJvm(createJvmRequest);
 
         System.clearProperty(ApplicationProperties.PROPERTIES_ROOT_PATH);
@@ -155,7 +155,7 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
 
         jvmService.createJvm(command, mockUser);
 
-        verify(createJvmRequest, times(1)).validate();
+        verify(command, times(1)).validate();
         verify(mockJvmPersistenceService, times(1)).createJvm(createJvmRequest);
         for (final AddJvmToGroupRequest addCommand : addCommands) {
             verify(mockGroupService, times(1)).addJvmToGroup(matchCommand(addCommand),
@@ -197,7 +197,7 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
 
         jvmService.createJvm(createJvmAndAddToGroupsRequest, mockUser);
 
-        verify(createJvmRequest, times(1)).validate();
+        verify(createJvmAndAddToGroupsRequest, times(1)).validate();
         verify(mockJvmPersistenceService, times(1)).createJvm(createJvmRequest);
 
         System.clearProperty(ApplicationProperties.PROPERTIES_ROOT_PATH);
@@ -229,7 +229,7 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
 
         jvmService.createJvm(createJvmAndAddToGroupsRequest, mockUser);
 
-        verify(createJvmRequest, times(1)).validate();
+        verify(createJvmAndAddToGroupsRequest, times(1)).validate();
         verify(mockJvmPersistenceService, times(1)).createJvm(createJvmRequest);
 
         System.clearProperty(ApplicationProperties.PROPERTIES_ROOT_PATH);
