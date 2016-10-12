@@ -144,13 +144,20 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
         if (!webServerService.isStarted(webServer)) {
             LOGGER.info("Removing web server from the database and deleting the service for id {}", aWsId);
             if (!webServer.getState().equals(WebServerReachableState.WS_NEW)) {
-                deleteWebServerWindowsService(user, new ControlWebServerRequest(aWsId, WebServerControlOperation.DELETE_SERVICE), webServer.getName());
+                try {
+                    deleteWebServerWindowsService(user,
+                            new ControlWebServerRequest(aWsId, WebServerControlOperation.DELETE_SERVICE), webServer.getName());
+                } catch (final RuntimeException e) {
+                    return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR,
+                            new FaultCodeException(AemFaultType.CONTROL_OPERATION_UNSUCCESSFUL, e.getMessage(), e));
+                }
             }
             webServerService.removeWebServer(aWsId);
         } else {
             LOGGER.error("The target web server {} must be stopped before attempting to delete it", webServer.getName());
-            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE,
-                    "The target web server must be stopped before attempting to delete it");
+            return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR,
+                    new FaultCodeException(AemFaultType.CONTROL_OPERATION_UNSUCCESSFUL, "Web server " + webServer.getName() +
+                            " must be stopped before it can be deleted!", null));
         }
 
         return ResponseBuilder.ok();
@@ -440,7 +447,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
                         commandOutput.getStandardError().isEmpty() ?
                                 commandOutput.getStandardOutput() : commandOutput.getStandardError();
                 LOGGER.error("Deleting windows service {} failed :: ERROR: {}", webServerName, standardError);
-                throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, CommandOutputReturnCode.fromReturnCode(commandOutput.getReturnCode().getReturnCode()).getDesc());
+                throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, standardError);
             }
         }
     }
