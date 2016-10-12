@@ -137,6 +137,10 @@ node {
     nodeModulesDir = file("${project.buildDir}")
 }
 
+task buildReactInstalled(type: NodeTask) {
+    script = file("node_modules/babel-cli/bin/babel.js")
+    args = ['src/main/webapp/resources/js/react', '--out-dir', "${buildDir}/react/js", '--blacklist', 'useStrict']
+}
 
 task buildReact(type: NodeTask) {
     script = file("node_modules/babel-cli/bin/babel.js")

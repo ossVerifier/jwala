@@ -386,8 +386,20 @@ var XmlTabs = React.createClass({
                 xmlPreview = <div className="Resource preview msg">A group level web server or JVM template cannot be previewed. Please select a specific web server or JVM instead.</div>;
                 metaDataPreview = <div className="Resource preview msg">A group level web server or JVM template cannot be previewed. Please select a specific web server or JVM instead.</div>;
             } else {
-                xmlPreview = <XmlPreview ref="xmlPreview" mode="xml"/>
-                metaDataPreview = <MetaDataPreview ref="metaDataPreview" mode="application/ld+json"/>
+                if (this.state.metaData && this.state.entityType === "webApps" && !this.state.entityParent.jvmName) {
+                    var parsedMetaData = JSON.parse(this.state.metaData.replace(/\\/g, "\\\\"));
+                    var deployToJvms = parsedMetaData.entity.deployToJvms;
+                    if (deployToJvms !== undefined && (!deployToJvms || deployToJvms === "false")) {
+                        xmlPreview = <XmlPreview ref="xmlPreview" mode="xml"/>
+                        metaDataPreview = <MetaDataPreview ref="metaDataPreview" mode="application/ld+json"/>
+                    } else {
+                        xmlPreview = <div><div className="Resource preview msg resource-preview-br">The template for a Web App template cannot be previewed at this level if it is configured to be deployed to JVMs. </div><div className="Resource preview msg">To preview this template, select a JVM instance from the topology tree that is associated with this Web App and template.</div></div>;
+                        metaDataPreview = <div><div className="Resource preview msg resource-preview-br">The meta data for a Web App template cannot be previewed at this level if it is configured to be deployed to JVMs. </div><div className="Resource preview msg">To preview the meta data, select a JVM instance from the topology tree that is associated with this Web App and meta data.</div></div>;
+                    }
+                } else {
+                    xmlPreview = <XmlPreview ref="xmlPreview" mode="xml"/>
+                    metaDataPreview = <MetaDataPreview ref="metaDataPreview" mode="application/ld+json"/>
+                }
             }
         }
 
@@ -629,24 +641,24 @@ var XmlTabs = React.createClass({
                                                              this.refs.codeMirrorComponent.getText(),
                                                              this.previewSuccessCallback,
                                                              this.previewErrorCallback);
-                } else if (this.state.entityType === "webApps") {
-                    this.props.webAppService.previewResourceFile(this.state.resourceTemplateName,
+                } else if (this.state.entityType === "webApps" && this.state.entityParent.jvmName) {
+                        this.props.webAppService.previewResourceFile(this.state.resourceTemplateName,
                                                                  this.state.entity.name,
                                                                  this.state.entity.group.name,
                                                                  this.state.entityParent.jvmName ? this.state.entityParent.jvmName : "",
                                                                  this.refs.codeMirrorComponent.getText(),
                                                                  this.previewSuccessCallback,
                                                                  this.previewErrorCallback);
-
-
-                }  else if (this.state.entityType === "jvmSection") {
-                    if (this.state.groupJvmEntityType && this.state.groupJvmEntityType === "webApp") {
+                }  else if (this.state.entityType === "webApps" && !this.state.entityParent.jvmName) {
+                    var parsedMetaData = JSON.parse(this.refs.metaDataEditor.getText().replace(/\\/g, "\\\\"));
+                    var deployToJvms = parsedMetaData.entity.deployToJvms;
+                    if (deployToJvms !== undefined && (!deployToJvms || deployToJvms === "false")){
                         this.props.groupService.previewGroupAppResourceFile(this.state.resourceTemplateName,
-                                                                                     this.state.entityGroupName,
-                                                                                     this.state.resourceTemplateName,
-                                                                                     this.refs.codeMirrorComponent.getText(),
-                                                                                     this.previewSuccessCallback,
-                                                                                     this.previewErrorCallback);
+                                                                             this.state.entityGroupName,
+                                                                             this.state.resourceTemplateName,
+                                                                             this.refs.codeMirrorComponent.getText(),
+                                                                             this.previewSuccessCallback,
+                                                                             this.previewErrorCallback);
                     }
                 } else if (this.state.entityType === "extProperties"){
                     this.props.resourceService.previewResourceFile(this.state.resourceTemplateName,
@@ -680,7 +692,10 @@ var XmlTabs = React.createClass({
                                                                    this.previewMetaDataSuccessCallback,
                                                                    this.previewMetaDataErrorCallback);
                 } else if (this.state.entityType === "webApps") {
-                    this.props.resourceService.previewResourceFile(this.state.resourceTemplateName,
+                    var parsedMetaData = JSON.parse(this.refs.metaDataEditor.getText().replace(/\\/g, "\\\\"));
+                    var deployToJvms = parsedMetaData.entity.deployToJvms;
+                    if (deployToJvms !== undefined && (!deployToJvms || deployToJvms === "false")){
+                        this.props.resourceService.previewResourceFile(this.state.resourceTemplateName,
                                                                    this.refs.metaDataEditor.getText(),
                                                                    this.state.entityParent.rtreeListMetaData.parent.name,
                                                                    "",
@@ -688,6 +703,7 @@ var XmlTabs = React.createClass({
                                                                    this.state.entity.name,
                                                                    this.previewMetaDataSuccessCallback,
                                                                    this.previewMetaDataErrorCallback);
+                   }
                 }
             }
         }
