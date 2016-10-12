@@ -95,9 +95,6 @@ var groupService = {
                                      false,
                                      "text/plain; charset=utf-8");
     },
-    deployGroupAppConf: function(groupName, resourceTemplateName) {
-        return serviceFoundation.promisedPut("v1.0/groups/" + groupName + "/apps/conf/" + resourceTemplateName, "json", null, false);
-    },
     uploadGroupJvmTemplateForm: function(groupName, templateName, templateFile, successCallback, errorCallback) {
          return serviceFoundation.post("v1.0/groups/" + encodeURIComponent(groupName) + "/jvms/resources/uploadTemplate?templateName=" + encodeURIComponent(templateName),
                                          "json",
