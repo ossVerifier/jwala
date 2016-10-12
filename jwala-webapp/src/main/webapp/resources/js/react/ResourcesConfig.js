@@ -653,8 +653,7 @@ var XmlTabs = React.createClass({
                     var parsedMetaData = JSON.parse(this.refs.metaDataEditor.getText().replace(/\\/g, "\\\\"));
                     var deployToJvms = parsedMetaData.entity.deployToJvms;
                     if (deployToJvms !== undefined && (!deployToJvms || deployToJvms === "false")){
-                        this.props.groupService.previewGroupAppResourceFile(this.state.resourceTemplateName,
-                                                                             this.state.entityGroupName,
+                        this.props.groupService.previewGroupAppResourceFile( this.state.entity.group.name,
                                                                              this.state.resourceTemplateName,
                                                                              this.refs.codeMirrorComponent.getText(),
                                                                              this.previewSuccessCallback,
