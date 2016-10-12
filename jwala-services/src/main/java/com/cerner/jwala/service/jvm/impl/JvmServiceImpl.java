@@ -389,7 +389,7 @@ public class JvmServiceImpl implements JvmService {
         createParentDir(jvm, jwalaScriptsPath);
         final String failedToCopyMessage = "Failed to secure copy ";
         final String duringCreationMessage = " during the creation of ";
-        final String destinationDeployJarPath = jwalaScriptsPath + "/" + AemControl.Properties.DEPLOY_CONFIG_ARCHIVE_SCRIPT_NAME.getValue();
+        final String destinationDeployJarPath = jwalaScriptsPath + "/" +jvmName+"/"+ AemControl.Properties.DEPLOY_CONFIG_ARCHIVE_SCRIPT_NAME.getValue();
         if (!jvmControlService.secureCopyFile(secureCopyRequest, deployConfigJarPath, destinationDeployJarPath, userId).getReturnCode().wasSuccessful()) {
             String message = failedToCopyMessage + deployConfigJarPath + duringCreationMessage + jvmName;
             LOGGER.error(message);
@@ -397,7 +397,7 @@ public class JvmServiceImpl implements JvmService {
         }
 
         final String invokeServicePath = commandsScriptsPath + "/" + AemControl.Properties.INVOKE_SERVICE_SCRIPT_NAME.getValue();
-        final String destinationInvokeServicePath = jwalaScriptsPath + "/" + AemControl.Properties.INVOKE_SERVICE_SCRIPT_NAME.getValue();
+        final String destinationInvokeServicePath = jwalaScriptsPath + "/" +jvmName+"/"+ AemControl.Properties.INVOKE_SERVICE_SCRIPT_NAME.getValue();
         if (!jvmControlService.secureCopyFile(secureCopyRequest, invokeServicePath, destinationInvokeServicePath, userId).getReturnCode().wasSuccessful()) {
             String message = failedToCopyMessage + invokeServicePath + duringCreationMessage + jvmName;
             LOGGER.error(message);
