@@ -246,11 +246,13 @@ public class WebServerServiceRestImplTest {
         assertNull(applicationResponse);
     }
 
-    @Test(expected = InternalErrorException.class)
+    @Test
     public void testRemoveWebServerWhenWebServerNotStopped() {
         when(impl.getWebServer(any(Identifier.class))).thenReturn(webServer);
         when(impl.isStarted(any(WebServer.class))).thenReturn(true);
-        webServerServiceRest.removeWebServer(Identifier.id(1l, WebServer.class), authenticatedUser);
+        final Response response = webServerServiceRest.removeWebServer(Identifier.id(1l, WebServer.class), authenticatedUser);
+        assertEquals("Web server webserverName must be stopped before it can be deleted!",
+                ((ApplicationResponse) response.getEntity()).getApplicationResponseContent());
     }
 
     @Test

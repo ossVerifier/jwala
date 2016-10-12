@@ -38,3 +38,8 @@ div.login-area {
     left: 65px;
     margin-top: 2px
 }
+
+.LoginDialogBox .status {
+    padding-top: 10px;
+    height: 25px;
+}

@@ -7,6 +7,7 @@ import com.cerner.jwala.common.domain.model.jvm.JvmState;
 import com.cerner.jwala.common.domain.model.path.Path;
 import com.cerner.jwala.common.domain.model.ssh.DecryptPassword;
 import com.cerner.jwala.common.domain.model.user.User;
+import com.cerner.jwala.common.exception.BadRequestException;
 import com.cerner.jwala.common.exec.CommandOutput;
 import com.cerner.jwala.common.exec.CommandOutputReturnCode;
 import com.cerner.jwala.common.exec.ExecReturnCode;
@@ -216,6 +217,7 @@ public class JvmServiceRestImplTest {
     @Test
     public void testUpdateJvm() {
         final Set<String> groupIds = new HashSet<>();
+        groupIds.add("111");
         final JsonUpdateJvm jsonUpdateJvm = new JsonUpdateJvm("1", name, hostName, groupIds, "5", "4", "3", "2", "1",
                 statusPath.getUriPath(), systemProperties, userName, clearTextPassword);
         when(jvmService.updateJvm(any(UpdateJvmRequest.class), any(User.class))).thenReturn(jvm);
@@ -239,7 +241,18 @@ public class JvmServiceRestImplTest {
         assertEquals(jvm, received);
     }
 
-    @Test
+    @Test (expected = BadRequestException.class)
+    public void testNoGroupIdInUpdateRequest() {
+        final Set<String> groupIds = new HashSet<>();
+        final JsonUpdateJvm jsonUpdateJvm = new JsonUpdateJvm("1", name, hostName, groupIds, "5", "4", "3", "2", "1",
+                statusPath.getUriPath(), systemProperties, userName, clearTextPassword);
+
+        // Check rules for the JVM
+        UpdateJvmRequest updateJvmCommand = jsonUpdateJvm.toUpdateJvmRequest();
+        updateJvmCommand.validate();
+    }
+
+        @Test
     public void testRemoveJvm() {
         when(jvmService.getJvm(jvm.getId())).thenReturn(jvm);
         when(jvmService.getJvm(anyString())).thenReturn(jvm);

@@ -1,17 +1,13 @@
 package com.cerner.jwala.common.domain.model.webserver;
 
-import org.junit.Test;
-
 import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.path.Path;
-import com.cerner.jwala.common.domain.model.webserver.WebServerReachableState;
 import com.cerner.jwala.common.exception.BadRequestException;
 import com.cerner.jwala.common.request.webserver.CreateWebServerRequest;
+import org.junit.Test;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 import static org.junit.Assert.assertEquals;
 
@@ -25,14 +21,14 @@ public class CreateWebServerRequestTest {
     private static final Integer portNumber = 10000;
     private static final Integer httpsPort = 20000;
 
-    final List<Identifier<Group>> groupIds = new ArrayList<>();
+    private final List<Identifier<Group>> groupIds = new ArrayList<>();
 
-    final Collection<Identifier<Group>> groupIdsFour = new ArrayList<>();
+    private final Collection<Identifier<Group>> groupIdsFour = Collections.singletonList(new Identifier<Group>(111L));
 
-    final CreateWebServerRequest webServer =
+    private final CreateWebServerRequest webServer =
             new CreateWebServerRequest(groupIds, NAME, HOST, portNumber, httpsPort, STATUS_PATH,
                     SVR_ROOT, DOC_ROOT, WebServerReachableState.WS_UNREACHABLE, null);
-    final CreateWebServerRequest webServerTen =
+    private final CreateWebServerRequest webServerTen =
             new CreateWebServerRequest(groupIdsFour, "otherName", HOST, portNumber, httpsPort,
                     STATUS_PATH, SVR_ROOT, DOC_ROOT, WebServerReachableState.WS_UNREACHABLE, null);
 
@@ -64,6 +60,11 @@ public class CreateWebServerRequestTest {
     @Test
     public void testValidateCommand() {
         webServerTen.validate();
+    }
+
+    @Test (expected = BadRequestException.class)
+    public void testValidateCommandNoGroupIds() {
+        webServer.validate();
     }
 
     @Test(expected = BadRequestException.class)

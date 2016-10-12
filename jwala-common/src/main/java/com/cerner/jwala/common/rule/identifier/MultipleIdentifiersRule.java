@@ -13,7 +13,7 @@ import java.util.Set;
 
 public abstract class MultipleIdentifiersRule<T> implements Rule {
 
-    private final Set<Rule> rules;
+    protected final Set<Rule> rules;
 
     public MultipleIdentifiersRule(final Set<Identifier<T>> theIds) {
         rules = new HashSet<>();
