@@ -117,7 +117,7 @@ public enum WindowsJvmNetOperation implements ServiceCommandBuilder {
             }
             final String decryptedPassword = encryptedPassword != null && encryptedPassword.length() > 0 ? new DecryptPassword().decrypt(encryptedPassword) : "";
             return new ExecCommand(
-                    cygpathWrapper(INVOKE_SERVICE_SCRIPT_NAME, REMOTE_COMMANDS_USER_SCRIPTS + "/"),
+                    cygpathWrapper(INVOKE_SERVICE_SCRIPT_NAME, REMOTE_COMMANDS_USER_SCRIPTS + "/" + aServiceName + "/"),
                     aServiceName,
                     REMOTE_PATHS_INSTANCES,
                     quotedUsername,

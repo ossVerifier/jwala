@@ -64,7 +64,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 
@@ -85,7 +84,7 @@ public class JvmServiceImpl implements JvmService {
     private final ClientFactoryHelper clientFactoryHelper;
     private final JvmControlService jvmControlService;
     private final BinaryDistributionService binaryDistributionService;
-    final String jwalaScriptsPath = ApplicationProperties.get("remote.commands.user-scripts");
+    private static final String JWALA_SCRIPTS_PATH = ApplicationProperties.get("remote.commands.user-scripts");
 
     private static final String DIAGNOSIS_INITIATED = "Diagnosis Initiated on JVM ${jvm.jvmName}, host ${jvm.hostName}";
     private static final String TEMPLATE_DIR = ApplicationProperties.get("paths.tomcat.instance.template");
@@ -386,10 +385,12 @@ public class JvmServiceImpl implements JvmService {
         final String jvmName = jvm.getJvmName();
         final String userId = user.getId();
 
-        createParentDir(jvm, jwalaScriptsPath);
+        final String stagingArea = JWALA_SCRIPTS_PATH + "/" + jvm.getJvmName();
+
+        createParentDir(jvm, stagingArea);
         final String failedToCopyMessage = "Failed to secure copy ";
         final String duringCreationMessage = " during the creation of ";
-        final String destinationDeployJarPath = jwalaScriptsPath + "/" + AemControl.Properties.DEPLOY_CONFIG_ARCHIVE_SCRIPT_NAME.getValue();
+        final String destinationDeployJarPath = stagingArea + "/" + AemControl.Properties.DEPLOY_CONFIG_ARCHIVE_SCRIPT_NAME.getValue();
         if (!jvmControlService.secureCopyFile(secureCopyRequest, deployConfigJarPath, destinationDeployJarPath, userId).getReturnCode().wasSuccessful()) {
             String message = failedToCopyMessage + deployConfigJarPath + duringCreationMessage + jvmName;
             LOGGER.error(message);
@@ -397,7 +398,7 @@ public class JvmServiceImpl implements JvmService {
         }
 
         final String invokeServicePath = commandsScriptsPath + "/" + AemControl.Properties.INVOKE_SERVICE_SCRIPT_NAME.getValue();
-        final String destinationInvokeServicePath = jwalaScriptsPath + "/" + AemControl.Properties.INVOKE_SERVICE_SCRIPT_NAME.getValue();
+        final String destinationInvokeServicePath = stagingArea + "/" + AemControl.Properties.INVOKE_SERVICE_SCRIPT_NAME.getValue();
         if (!jvmControlService.secureCopyFile(secureCopyRequest, invokeServicePath, destinationInvokeServicePath, userId).getReturnCode().wasSuccessful()) {
             String message = failedToCopyMessage + invokeServicePath + duringCreationMessage + jvmName;
             LOGGER.error(message);
@@ -405,8 +406,8 @@ public class JvmServiceImpl implements JvmService {
         }
 
         // make sure the scripts are executable
-        if (!jvmControlService.executeChangeFileModeCommand(jvm, "a+x", jwalaScriptsPath, "*.sh").getReturnCode().wasSuccessful()) {
-            String message = "Failed to change the file permissions in " + jwalaScriptsPath + duringCreationMessage + jvmName;
+        if (!jvmControlService.executeChangeFileModeCommand(jvm, "a+x", stagingArea, "*.sh").getReturnCode().wasSuccessful()) {
+            String message = "Failed to change the file permissions in " + stagingArea + duringCreationMessage + jvmName;
             LOGGER.error(message);
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, message);
         }
