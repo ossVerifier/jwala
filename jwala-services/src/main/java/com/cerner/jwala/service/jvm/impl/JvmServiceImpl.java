@@ -34,6 +34,7 @@ import com.cerner.jwala.persistence.jpa.service.exception.NonRetrievableResource
 import com.cerner.jwala.persistence.jpa.service.exception.ResourceTemplateUpdateException;
 import com.cerner.jwala.persistence.service.JvmPersistenceService;
 import com.cerner.jwala.service.app.ApplicationService;
+import com.cerner.jwala.service.binarydistribution.BinaryDistributionLockManager;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionService;
 import com.cerner.jwala.service.group.GroupService;
 import com.cerner.jwala.service.group.GroupStateNotificationService;
@@ -72,6 +73,7 @@ public class JvmServiceImpl implements JvmService {
     private static final Logger LOGGER = LoggerFactory.getLogger(JvmServiceImpl.class);
     private static final String REMOTE_COMMANDS_USER_SCRIPTS = ApplicationProperties.get("remote.commands.user-scripts");
 
+    private final BinaryDistributionLockManager binaryDistributionLockManager;
     private String topicServerStates;
     private final JvmPersistenceService jvmPersistenceService;
     private final GroupService groupService;
@@ -82,8 +84,6 @@ public class JvmServiceImpl implements JvmService {
     private final ResourceService resourceService;
     private final ClientFactoryHelper clientFactoryHelper;
     private final JvmControlService jvmControlService;
-    private final Map<String, ReentrantReadWriteLock> jvmWriteLocks;
-    private final Map<String, ReentrantReadWriteLock> hostWriteLocks;
     private final BinaryDistributionService binaryDistributionService;
     final String jwalaScriptsPath = ApplicationProperties.get("remote.commands.user-scripts");
 
@@ -102,9 +102,8 @@ public class JvmServiceImpl implements JvmService {
                           final ClientFactoryHelper clientFactoryHelper,
                           final String topicServerStates,
                           final JvmControlService jvmControlService,
-                          final Map<String, ReentrantReadWriteLock> jvmWriteLockMap,
-                          final Map<String, ReentrantReadWriteLock> hostWriteLockMap,
-                          final BinaryDistributionService binaryDistributionService) {
+                          final BinaryDistributionService binaryDistributionService,
+                          final BinaryDistributionLockManager binaryDistributionLockManager) {
         this.jvmPersistenceService = jvmPersistenceService;
         this.groupService = groupService;
         this.applicationService = applicationService;
@@ -115,9 +114,8 @@ public class JvmServiceImpl implements JvmService {
         this.clientFactoryHelper = clientFactoryHelper;
         this.jvmControlService = jvmControlService;
         this.topicServerStates = topicServerStates;
-        jvmWriteLocks = jvmWriteLockMap;
-        hostWriteLocks = hostWriteLockMap;
         this.binaryDistributionService = binaryDistributionService;
+        this.binaryDistributionLockManager = binaryDistributionLockManager;
     }
 
 
@@ -299,13 +297,10 @@ public class JvmServiceImpl implements JvmService {
         Jvm jvm = getJvm(jvmName);
         // only one at a time per JVM
         //TODO return error if .jwala directory is already being written to
-        if(LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Start generateAndDeployJvm for {} by user {}", jvmName, user.getId());
-        }
-        if (!jvmWriteLocks.containsKey(jvm.getId().toString())) {
-            jvmWriteLocks.put(jvm.getId().toString(), new ReentrantReadWriteLock());
-        }
-        jvmWriteLocks.get(jvm.getId().toString()).writeLock().lock();
+        LOGGER.debug("Start generateAndDeployJvm for {} by user {}", jvmName, user.getId());
+        
+        //add write lock for multiple write
+        binaryDistributionLockManager.writeLock(jvm.getId().toString());
 
         try {
             if (jvm.getState().isStartedState()) {
@@ -313,14 +308,7 @@ public class JvmServiceImpl implements JvmService {
                 LOGGER.error(errorMessage);
                 throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, errorMessage);
             }
-            if (!hostWriteLocks.containsKey(jvm.getHostName())) {
-                hostWriteLocks.put(jvm.getHostName(), new ReentrantReadWriteLock());
-            }
-            hostWriteLocks.get(jvm.getHostName()).writeLock().lock();
-            LOGGER.info("Added write lock for {}", jvm.getHostName());
-            binaryDistributionService.prepareUnzip(jvm.getHostName());
-            binaryDistributionService.distributeJdk(jvm.getHostName());
-            binaryDistributionService.distributeTomcat(jvm.getHostName());
+            distributeBinaries(jvm.getHostName());
             // check for setenv.bat
             checkForSetenvBat(jvm.getJvmName());
 
@@ -362,16 +350,21 @@ public class JvmServiceImpl implements JvmService {
             LOGGER.error("Failed to generate the JVM config for {} :: ERROR: {}", jvm.getJvmName(), e);
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to generate the JVM config: " + jvm.getJvmName(), e);
         } finally {
-            jvmWriteLocks.get(jvm.getId().toString()).writeLock().unlock();
-            if (hostWriteLocks.containsKey(jvm.getHostName())) {
-                hostWriteLocks.get(jvm.getHostName()).writeLock().unlock();
-            }
-            LOGGER.info("Release write lock for {}", jvm.getHostName());
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("End generateAndDeployJvm for {} by user {}", jvmName, user.getId());
-            }
+            binaryDistributionLockManager.writeUnlock(jvm.getId().toString());
+            LOGGER.debug("End generateAndDeployJvm for {} by user {}", jvmName, user.getId());
         }
         return jvm;
+    }
+
+    private void distributeBinaries(String hostName){
+        try {
+            binaryDistributionLockManager.writeLock(hostName);
+            binaryDistributionService.prepareUnzip(hostName);
+            binaryDistributionService.distributeJdk(hostName);
+            binaryDistributionService.distributeTomcat(hostName);
+        }finally {
+             binaryDistributionLockManager.writeUnlock(hostName);
+        }
     }
 
     protected void createScriptsDirectory(Jvm jvm) throws CommandFailureException {
@@ -655,10 +648,7 @@ public class JvmServiceImpl implements JvmService {
         Jvm jvm = getJvm(jvmName);
 
         // only one at a time per jvm
-        if (!jvmWriteLocks.containsKey(jvm.getId().getId().toString())) {
-            jvmWriteLocks.put(jvm.getId().getId().toString(), new ReentrantReadWriteLock());
-        }
-        jvmWriteLocks.get(jvm.getId().getId().toString()).writeLock().lock();
+        binaryDistributionLockManager.writeLock(jvm.getId().getId().toString());
 
         final String badStreamMessage = "Bad Stream: ";
         try {
@@ -692,7 +682,7 @@ public class JvmServiceImpl implements JvmService {
             LOGGER.error(badStreamMessage + message, ce);
             throw new InternalErrorException(AemFaultType.BAD_STREAM, message, ce);
         } finally {
-            jvmWriteLocks.get(jvm.getId().getId().toString()).writeLock().unlock();
+            binaryDistributionLockManager.writeUnlock(jvm.getId().getId().toString());
         }
 
         return jvm;

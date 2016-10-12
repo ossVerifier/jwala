@@ -1,10 +1,13 @@
 package com.cerner.jwala.service.binarydistribution.impl;
 
 import com.cerner.jwala.common.domain.model.fault.AemFaultType;
+import com.cerner.jwala.common.domain.model.resource.Entity;
+import com.cerner.jwala.common.domain.model.resource.EntityType;
 import com.cerner.jwala.common.exception.InternalErrorException;
 import com.cerner.jwala.common.properties.ApplicationProperties;
 import com.cerner.jwala.exception.CommandFailureException;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionControlService;
+import com.cerner.jwala.service.binarydistribution.BinaryDistributionLockManager;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,7 +16,6 @@ import org.springframework.stereotype.Service;
 
 import java.io.File;
 
-@Service
 public class BinaryDistributionServiceImpl implements BinaryDistributionService {
     private static final Logger LOGGER = LoggerFactory.getLogger(BinaryDistributionServiceImpl.class);
 
@@ -22,10 +24,11 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
     private static final String APACHE_EXCLUDE = "ReadMe.txt *--";
 
     private final BinaryDistributionControlService binaryDistributionControlService;
+    private final BinaryDistributionLockManager binaryDistributionLockManager;
 
-    @Autowired
-    public BinaryDistributionServiceImpl(BinaryDistributionControlService binaryDistributionControlService) {
+    public BinaryDistributionServiceImpl(BinaryDistributionControlService binaryDistributionControlService, BinaryDistributionLockManager binaryDistributionLockManager) {
         this.binaryDistributionControlService = binaryDistributionControlService;
+        this.binaryDistributionLockManager = binaryDistributionLockManager;
     }
 
     @Override
@@ -58,13 +61,19 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
 
     @Override
     public void distributeWebServer(final String hostname) {
-        File apache = new File(ApplicationProperties.get("remote.paths.apache.httpd"));
-        String webServerDir = apache.getName();
-        String binaryDeployDir = apache.getParentFile().getAbsolutePath().replaceAll("\\\\", "/");
-        if (webServerDir != null && !webServerDir.isEmpty()) {
-            distributeBinary(hostname, webServerDir, binaryDeployDir, APACHE_EXCLUDE);
-        } else {
-            LOGGER.warn("WebServer dir location is null or empty {}", webServerDir);
+        String wrietLockResourceName = hostname+"-"+ EntityType.WEB_SERVER.toString();
+        try {
+            binaryDistributionLockManager.writeLock(wrietLockResourceName);
+            File apache = new File(ApplicationProperties.get("remote.paths.apache.httpd"));
+            String webServerDir = apache.getName();
+            String binaryDeployDir = apache.getParentFile().getAbsolutePath().replaceAll("\\\\", "/");
+            if (webServerDir != null && !webServerDir.isEmpty()) {
+                distributeBinary(hostname, webServerDir, binaryDeployDir, APACHE_EXCLUDE);
+            } else {
+                LOGGER.warn("WebServer dir location is null or empty {}", webServerDir);
+            }
+        }finally {
+            binaryDistributionLockManager.writeUnlock(wrietLockResourceName);
         }
     }
 
