@@ -77,7 +77,7 @@ public enum WindowsJvmNetOperation implements ServiceCommandBuilder {
         public ExecCommand buildCommandForService(String aServiceName, String... aParams) {
 
             return new ExecCommand(
-                    cygpathWrapper(DEPLOY_CONFIG_ARCHIVE_SCRIPT_NAME, REMOTE_COMMANDS_USER_SCRIPTS + "/"),
+                    cygpathWrapper(DEPLOY_CONFIG_ARCHIVE_SCRIPT_NAME, REMOTE_COMMANDS_USER_SCRIPTS + "/" + aServiceName + "/"),
                     REMOTE_COMMANDS_USER_SCRIPTS + "/" + aServiceName + "_config.jar",
                     REMOTE_PATHS_INSTANCES + "/" + aServiceName,
                     REMOTE_JAVA_HOME + "/bin/jar"
