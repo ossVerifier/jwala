@@ -155,8 +155,9 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
             webServerService.removeWebServer(aWsId);
         } else {
             LOGGER.error("The target web server {} must be stopped before attempting to delete it", webServer.getName());
-            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE,
-                    "The target web server must be stopped before attempting to delete it");
+            return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR,
+                    new FaultCodeException(AemFaultType.CONTROL_OPERATION_UNSUCCESSFUL, "Web server " + webServer.getName() +
+                            " must be stopped before it can be deleted!", null));
         }
 
         return ResponseBuilder.ok();
