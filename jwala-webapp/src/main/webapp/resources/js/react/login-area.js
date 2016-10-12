@@ -56,29 +56,25 @@ var LoginArea = React.createClass({
         if (!$("#userName").val().trim() || !$("#password").val()) {
             this.setState({ error: "User name and password are required." });
         } else {
-            this.setState({showLoginBusy: true, error: ""});
-        }
-    },
-    componentDidUpdate: function() {
-        if (this.state.showLoginBusy) {
-            // The timeout makes sure that post is done after the UI has been redrawn.
-            // If login is just called directly, for some reason the page already goes into submission mode without the
-            // busy indicator being displayed.
             var self = this;
-            setTimeout(function(){userService.login($("#logInForm").serialize(), self.successCallback, self.errorCallback);}, 500);
+            self.setState({showLoginBusy: true, error: ""});
+            userService.login($("#logInForm").serialize()).then(function(response){
+                self.loginSuccessHandler();
+            }).caught(function(response){
+                self.loginErrorHandler(response);
+            });
         }
     },
-    successCallback: function() {
+    loginSuccessHandler: function() {
         document.cookie = "userName=" + $("#userName").val(); // This is a quick fix to get the user id to the diagnose and resolve status.
         window.location = window.location.href.replace("/login", "");
     },
-
-    errorCallback: function (e) {
+    loginErrorHandler: function (response) {
         var state = {showLoginBusy: false};
-        if (e !== undefined && e !== null && e.indexOf("error code 49") > -1) {
-            state["error"] = "Your user name or password is incorrect.";
+        if (response.responseJSON) {
+            state["error"] = response.responseJSON.applicationResponseContent;
         } else {
-            state["error"] = e;
+            state["error"] = response.status;
         }
         this.setState(state);
     },

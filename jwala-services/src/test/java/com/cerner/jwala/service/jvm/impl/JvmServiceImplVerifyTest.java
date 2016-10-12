@@ -30,6 +30,7 @@ import com.cerner.jwala.persistence.jpa.service.exception.NonRetrievableResource
 import com.cerner.jwala.persistence.service.JvmPersistenceService;
 import com.cerner.jwala.service.VerificationBehaviorSupport;
 import com.cerner.jwala.service.app.ApplicationService;
+import com.cerner.jwala.service.binarydistribution.BinaryDistributionLockManager;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionService;
 import com.cerner.jwala.service.group.GroupService;
 import com.cerner.jwala.service.group.GroupStateNotificationService;
@@ -101,6 +102,9 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
     @Mock
     private BinaryDistributionService mockBinaryDistributionService;
 
+    @Mock
+    private BinaryDistributionLockManager mockBinaryDistributionLockManager;
+
     private JvmService jvmService;
 
     private JvmServiceImpl jvmServiceImpl;
@@ -109,11 +113,12 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
 
     @Before
     public void setup() {
+
         System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, "./src/test/resources");
         initMocks(this);
         jvmServiceImpl = new JvmServiceImpl(mockJvmPersistenceService, mockGroupService, mockApplicationService, mockFileManager,
                 mockMessagingTemplate, mockGroupStateNotificationService, mockResourceService, mockClientFactoryHelper,
-                 "/topic/server-states", mockJvmControlService, lockMap,lockMap, mockBinaryDistributionService);
+                 "/topic/server-states", mockJvmControlService, mockBinaryDistributionService, mockBinaryDistributionLockManager);
         jvmService = jvmServiceImpl;
     }
 
