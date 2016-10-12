@@ -385,7 +385,7 @@ public class JvmServiceImpl implements JvmService {
         final String jvmName = jvm.getJvmName();
         final String userId = user.getId();
 
-        final String stagingArea = JWALA_SCRIPTS_PATH + "/" + jvm.getJvmName();
+        final String stagingArea = JWALA_SCRIPTS_PATH + "/" + jvmName;
 
         createParentDir(jvm, stagingArea);
         final String failedToCopyMessage = "Failed to secure copy ";
