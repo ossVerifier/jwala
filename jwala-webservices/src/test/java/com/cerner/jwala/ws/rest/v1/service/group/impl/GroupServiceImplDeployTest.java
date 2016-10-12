@@ -29,7 +29,8 @@ import com.cerner.jwala.exception.CommandFailureException;
 import com.cerner.jwala.persistence.jpa.service.exception.ResourceTemplateUpdateException;
 import com.cerner.jwala.persistence.service.ApplicationPersistenceService;
 import com.cerner.jwala.persistence.service.GroupPersistenceService;
-import com.cerner.jwala.persistence.service.WebServerPersistenceService;
+import com.cerner.jwala.service.HistoryService;
+import com.cerner.jwala.service.MessagingService;
 import com.cerner.jwala.service.app.ApplicationService;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionService;
 import com.cerner.jwala.service.group.GroupControlService;
@@ -389,10 +390,11 @@ public class GroupServiceImplDeployTest {
         jvms.add(jvm);
 
         GroupPersistenceService groupPersistenceService = mock(GroupPersistenceService.class);
-        WebServerPersistenceService webServerPersistenceService = mock(WebServerPersistenceService.class);
         ApplicationPersistenceService applicationPersistenceService = mock(ApplicationPersistenceService.class);
         RemoteCommandExecutorImpl remoteCommandExecutorImpl = mock(RemoteCommandExecutorImpl.class);
-        GroupServiceImpl groupServiceImpl = new GroupServiceImpl(groupPersistenceService, webServerPersistenceService, applicationPersistenceService, remoteCommandExecutorImpl, binaryDistributionService, mockResourceService);
+        HistoryService mockHistoryService = mock(HistoryService.class);
+        MessagingService mockMessagingService = mock(MessagingService.class);
+        GroupServiceImpl groupServiceImpl = new GroupServiceImpl(groupPersistenceService, applicationPersistenceService, remoteCommandExecutorImpl, binaryDistributionService, mockResourceService, mockHistoryService, mockMessagingService);
         CommandOutput commandOutput = mock(CommandOutput.class);
 
         String metaData = "{\"templateName\":\"someTemplateName\",\"contentType\":\"application/binary\",\"deployPath\":" +

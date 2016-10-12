@@ -8,6 +8,8 @@ import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.group.GroupState;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
+import com.cerner.jwala.common.domain.model.jvm.JvmControlOperation;
+import com.cerner.jwala.common.domain.model.jvm.message.JvmHistoryEvent;
 import com.cerner.jwala.common.domain.model.resource.ContentType;
 import com.cerner.jwala.common.domain.model.resource.ResourceGroup;
 import com.cerner.jwala.common.domain.model.resource.ResourceTemplateMetaData;
@@ -25,9 +27,11 @@ import com.cerner.jwala.control.application.command.impl.WindowsApplicationPlatf
 import com.cerner.jwala.control.command.RemoteCommandExecutorImpl;
 import com.cerner.jwala.control.command.impl.WindowsBinaryDistributionPlatformCommandProvider;
 import com.cerner.jwala.exception.CommandFailureException;
+import com.cerner.jwala.persistence.jpa.type.EventType;
 import com.cerner.jwala.persistence.service.ApplicationPersistenceService;
 import com.cerner.jwala.persistence.service.GroupPersistenceService;
-import com.cerner.jwala.persistence.service.WebServerPersistenceService;
+import com.cerner.jwala.service.HistoryService;
+import com.cerner.jwala.service.MessagingService;
 import com.cerner.jwala.service.app.impl.DeployApplicationConfException;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionService;
 import com.cerner.jwala.service.exception.GroupServiceException;
@@ -35,8 +39,11 @@ import com.cerner.jwala.service.group.GroupService;
 import com.cerner.jwala.service.resource.ResourceService;
 import com.cerner.jwala.service.resource.impl.ResourceGeneratorType;
 import org.apache.commons.io.FilenameUtils;
+import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.PersistenceException;
@@ -52,28 +59,31 @@ import java.util.*;
 public class GroupServiceImpl implements GroupService {
 
     private final GroupPersistenceService groupPersistenceService;
-    private final WebServerPersistenceService webServerPersistenceService;
     private final RemoteCommandExecutorImpl remoteCommandExecutor;
     private final BinaryDistributionService binaryDistributionService;
     private ApplicationPersistenceService applicationPersistenceService;
     private ResourceService resourceService;
+    private final HistoryService historyService;
+    private final MessagingService messagingService;
 
     private static final String GENERATED_RESOURCE_DIR = "paths.generated.resource.dir";
     private static final Logger LOGGER = LoggerFactory.getLogger(GroupServiceImpl.class);
     private static final String UNZIP_EXE = "unzip.exe";
 
     public GroupServiceImpl(final GroupPersistenceService groupPersistenceService,
-                            final WebServerPersistenceService webServerPersistenceService,
-                            final ApplicationPersistenceService applicationPersistenceService, 
-                            RemoteCommandExecutorImpl remoteCommandExecutor, 
-                            BinaryDistributionService binaryDistributionService,
-                            final ResourceService resourceService) {
+                            final ApplicationPersistenceService applicationPersistenceService,
+                            final RemoteCommandExecutorImpl remoteCommandExecutor,
+                            final BinaryDistributionService binaryDistributionService,
+                            final ResourceService resourceService,
+                            final HistoryService historyService,
+                            final MessagingService messagingService) {
         this.groupPersistenceService = groupPersistenceService;
-        this.webServerPersistenceService = webServerPersistenceService;
         this.applicationPersistenceService = applicationPersistenceService;
         this.remoteCommandExecutor = remoteCommandExecutor;
         this.binaryDistributionService = binaryDistributionService;
         this.resourceService = resourceService;
+        this.historyService = historyService;
+        this.messagingService = messagingService;
     }
 
     @Override
@@ -427,12 +437,12 @@ public class GroupServiceImpl implements GroupService {
 
     @Override
     public CommandOutput deployGroupAppTemplate(String groupName, String fileName, ResourceGroup resourceGroup, Application application, Jvm jvm) {
-        return executeDeployGroupAppTemplate(groupName, fileName, resourceGroup, application, jvm.getJvmName(), jvm.getHostName());
+        return executeDeployGroupAppTemplate(groupName, fileName, resourceGroup, application, jvm.getJvmName(), jvm.getHostName(), jvm.getId());
     }
 
     @Override
     public CommandOutput deployGroupAppTemplate(String groupName, String fileName, ResourceGroup resourceGroup, Application application, String hostName) {
-        return executeDeployGroupAppTemplate(groupName, fileName, resourceGroup, application, null, hostName);
+        return executeDeployGroupAppTemplate(groupName, fileName, resourceGroup, application, null, hostName, null);
     }
 
     /**
@@ -444,10 +454,11 @@ public class GroupServiceImpl implements GroupService {
      * @param application   the application object for the application to deploy the config file too
      * @param jvmName       name of the jvm for which the config file needs to be deployed
      * @param hostName      name of the host which needs the application file
+     * @param id
      * @return returns a command output object
      */
     protected CommandOutput executeDeployGroupAppTemplate(final String groupName, final String fileName, final ResourceGroup resourceGroup,
-                                                          final Application application, final String jvmName, final String hostName) {
+                                                          final Application application, final String jvmName, final String hostName, Identifier<Jvm> id) {
         String metaDataStr = getGroupAppResourceTemplateMetaData(groupName, fileName);
         ResourceTemplateMetaData metaData;
         try {
@@ -484,7 +495,7 @@ public class GroupServiceImpl implements GroupService {
                 }
             }
             LOGGER.debug("copying file over to location {}", destPath);
-            commandOutput = executeSecureCopyCommand(jvmName, hostName, srcPath, destPath);
+            commandOutput = executeSecureCopyCommand(jvmName, hostName, srcPath, destPath, groupName, id);
 
             if (!commandOutput.getReturnCode().wasSuccessful()) {
                 standardError = commandOutput.getStandardError().isEmpty() ? commandOutput.getStandardOutput() : commandOutput.getStandardError();
@@ -551,9 +562,18 @@ public class GroupServiceImpl implements GroupService {
     }
 
     @Override
-    public CommandOutput executeSecureCopyCommand(final String entity, final String host, final String source, final String destination) throws CommandFailureException {
+    public CommandOutput executeSecureCopyCommand(final String jvmName, final String host, final String source, final String destination, String groupName, Identifier<Jvm> id) throws CommandFailureException {
+        final int beginIndex = source.lastIndexOf("/");
+        final String fileName = source.substring(beginIndex + 1, source.length());
+        final List<Group> groupList = Collections.singletonList(groupPersistenceService.getGroup(groupName));
+        final String event = JvmControlOperation.SECURE_COPY.name() + " " + fileName;
+        final Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        final String userName = null != authentication ? authentication.getName() : "";
+        historyService.createHistory(host, groupList, event, EventType.USER_ACTION, userName);
+        messagingService.send(new JvmHistoryEvent(id, event, userName, DateTime.now(), JvmControlOperation.SECURE_COPY));
+
         return remoteCommandExecutor.executeRemoteCommand(
-                entity,
+                jvmName,
                 host,
                 ApplicationControlOperation.SECURE_COPY,
                 new WindowsApplicationPlatformCommandProvider(),
