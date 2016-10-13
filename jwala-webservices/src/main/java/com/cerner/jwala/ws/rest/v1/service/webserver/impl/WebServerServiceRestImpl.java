@@ -430,7 +430,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
         } else {
             final String standardError = invokeResult.getStandardError();
             LOGGER.error("Failed to create windows service for {} :: {}", name, !standardError.isEmpty() ? standardError : invokeResult.getStandardOutput());
-            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to created windows service for " + name);
+            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to create windows service for " + name + ". " + invokeResult.standardErrorOrStandardOut());
         }
     }
 
