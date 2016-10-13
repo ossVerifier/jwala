@@ -417,9 +417,7 @@ public class GroupServiceImpl implements GroupService {
         final String template = groupPersistenceService.getGroupAppResourceTemplate(groupName, appName, resourceTemplateName);
         if (tokensReplaced) {
             try {
-                ResourceTemplateMetaData metaData = resourceService.getTokenizedMetaData(resourceTemplateName, applicationPersistenceService.getApplication(appName), groupPersistenceService.getGroupAppResourceTemplateMetaData(groupName, resourceTemplateName));
-                // TODO: why are we getting the meta data to get the target name when the appName is already passed as a method parameter?
-                Application app = applicationPersistenceService.getApplication(metaData.getEntity().getTarget());
+                Application app = applicationPersistenceService.getApplication(appName);
                 return resourceService.generateResourceFile(resourceTemplateName, template, resourceGroup, app, ResourceGeneratorType.TEMPLATE);
             } catch (Exception x) {
                 LOGGER.error("Failed to tokenize template {} in group {}", resourceTemplateName, groupName, x);
@@ -464,7 +462,7 @@ public class GroupServiceImpl implements GroupService {
         try {
             metaData = resourceService.getTokenizedMetaData(fileName, application, metaDataStr);
             final String destPath = metaData.getDeployPath() + '/' + metaData.getDeployFileName();
-            File confFile = createConfFile(metaData.getEntity().getTarget(), groupName, metaData.getDeployFileName(), resourceGroup);
+            File confFile = createConfFile(application.getName(), groupName, metaData.getDeployFileName(), resourceGroup);
             String srcPath, standardError;
             if (metaData.getContentType().equals(ContentType.APPLICATION_BINARY.contentTypeStr)) {
                 srcPath = getGroupAppResourceTemplate(groupName, application.getName(), fileName, false, resourceGroup);
