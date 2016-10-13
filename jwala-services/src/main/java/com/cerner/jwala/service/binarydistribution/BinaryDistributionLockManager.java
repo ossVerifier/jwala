@@ -8,11 +8,11 @@ public interface BinaryDistributionLockManager {
      *
      * @param resourseName
      */
-    public void writeLock(Object resourseName);
+    public void writeLock(String resourseName);
 
     /**
      *
      * @param resourseName
      */
-    public void writeUnlock(Object resourseName);
+    public void writeUnlock(String resourseName);
 }

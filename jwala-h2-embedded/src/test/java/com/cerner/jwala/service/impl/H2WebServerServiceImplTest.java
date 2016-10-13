@@ -14,10 +14,13 @@ import static org.junit.Assert.assertNotNull;
 public class H2WebServerServiceImplTest {
 
     private H2WebServerServiceImpl service;
+    private static final String DEFAULT_WEBSERVER_PARAM = "-webSSL,-webPort,8888";
+    private static final String DEFAULT_TCPSERVER_PARAM = "-tcpPort,9999";
+
 
     @Before
     public void setUp() {
-        service = new H2WebServerServiceImpl(null);
+        service = new H2WebServerServiceImpl(DEFAULT_WEBSERVER_PARAM);
     }
 
     @Test

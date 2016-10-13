@@ -20,19 +20,19 @@ public class BinaryDistributionLockManagerImpl implements BinaryDistributionLock
     private static final Logger LOGGER = LoggerFactory.getLogger(BinaryDistributionLockManagerImpl.class);
 
     @Override
-    public void writeLock(Object resourceName) {
-        if (!binariesWriteLocks.containsKey(resourceName.toString())) {
-            binariesWriteLocks.put(resourceName.toString(), new ReentrantReadWriteLock());
+    public void writeLock(String resourceName) {
+        if (!binariesWriteLocks.containsKey(resourceName)) {
+            binariesWriteLocks.put(resourceName, new ReentrantReadWriteLock());
         }
-        binariesWriteLocks.get(resourceName.toString()).writeLock().lock();
-        LOGGER.info("Added write lock for resource {}", resourceName.toString());
+        binariesWriteLocks.get(resourceName).writeLock().lock();
+        LOGGER.info("Added write lock for resource {}", resourceName);
     }
 
     @Override
-    public void writeUnlock(Object resourceName) {
-        if (binariesWriteLocks.containsKey(resourceName.toString())) {
-            binariesWriteLocks.get(resourceName.toString()).writeLock().unlock();
-            LOGGER.info("Removed write lock for resource {}", resourceName.toString());
+    public synchronized void writeUnlock(String resourceName) {
+        if (binariesWriteLocks.containsKey(resourceName)) {
+            binariesWriteLocks.get(resourceName).writeLock().unlock();
+            LOGGER.info("Removed write lock for resource {}", resourceName);
         }
     }
 }
