@@ -489,8 +489,8 @@ var GroupOperationsDataTable = React.createClass({
                 }
             },
             open: function () {
-                // Set focus to "No button"
-                $(this).closest('.ui-dialog').find('.ui-dialog-buttonpane button:eq(1)').focus();
+                // Set focus to "Yes button"
+                $(this).closest('.ui-dialog').find('.ui-dialog-buttonpane button:eq(0)').focus();
             }
         });
     },
