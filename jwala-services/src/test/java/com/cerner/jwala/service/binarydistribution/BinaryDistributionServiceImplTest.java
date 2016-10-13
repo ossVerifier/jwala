@@ -32,13 +32,16 @@ public class BinaryDistributionServiceImplTest {
     @Mock
     private BinaryDistributionControlService mockBinaryDistributionControlService;
 
+    @Mock
+    private BinaryDistributionLockManager mockBinaryDistributionLockManager;
+
     private BinaryDistributionServiceImpl binaryDistributionService;
 
     @Before
     public void setup() {
         initMocks(this);
         System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, new File(".").getAbsolutePath() + "/src/test/resources");
-        binaryDistributionService = new BinaryDistributionServiceImpl(mockBinaryDistributionControlService);
+        binaryDistributionService = new BinaryDistributionServiceImpl(mockBinaryDistributionControlService, mockBinaryDistributionLockManager);
     }
 
     @After
