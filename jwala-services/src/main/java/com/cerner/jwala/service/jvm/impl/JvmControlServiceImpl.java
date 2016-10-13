@@ -165,9 +165,9 @@ public class JvmControlServiceImpl implements JvmControlService {
                         }
                         break;
                     default:
-                        final String errorMsg = "JVM control command was not successful! Return code = "
+                        final String errorMsg = "JVM remote command FAILURE. Return code = "
                                 + returnCode.getReturnCode() + ", description = " +
-                                commandOutputReturnDescription;
+                                commandOutputReturnDescription + ", message = " + commandOutput.standardErrorOrStandardOut();
 
                         LOGGER.error(errorMsg);
                         historyService.createHistory(getServerName(jvm), new ArrayList<>(jvm.getGroups()), errorMsg,

@@ -56,7 +56,12 @@ var serviceFoundation = {
                                    }).caught(function(e) {
                                         if ($.isFunction(caughtCallback)) {
                                             try {
-                                                caughtCallback(JSON.parse(e.responseText).applicationResponseContent);
+                                                var jsonResponseText = JSON.parse(e.responseText);
+                                                if (jsonResponseText.applicationResponseContent) {
+                                                    caughtCallback(jsonResponseText.applicationResponseContent);
+                                                } else {
+                                                    caughtCallback(jsonResponseText.message);
+                                                }
                                             }catch(e) {
                                                 caughtCallback("Unexpected content in error response: " + e.responseText);
                                             }
@@ -93,7 +98,13 @@ var serviceFoundation = {
             complete: loadingUiBehavior.hideLoading
         })).caught(function(e){
            if (e.responseText !== undefined && e.status !== 200) {
-               $.errorAlert(JSON.parse(e.responseText).applicationResponseContent, "Error");
+               var jsonResponseText = JSON.parse(e.responseText);
+               if (jsonResponseText.applicationResponseContent) {
+                   $.errorAlert(jsonResponseText.applicationResponseContent, "Error");
+               } else {
+                   $.errorAlert(jsonResponseText.message, "Error");
+               }
+
            } else if (e.status !== 200) {
                $.errorAlert(JSON.stringify(e), "Error");
            }
