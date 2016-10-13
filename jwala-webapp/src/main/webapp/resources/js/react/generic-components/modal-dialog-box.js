@@ -59,8 +59,13 @@ var ModalDialogBox = React.createClass({
                                                     className: "ui-dialog ui-widget ui-widget-content ui-corner-all ui-front ui-dialog-buttons ui-draggable ui-resizable", tabIndex: "-1", onKeyDown: this.keyDownHandler},
                             React.createElement(DialogHeader, {title: this.state.title, closeBtnOnClick: this.closeBtnOnClickHandler, onMouseDown: this.mouseDownHandler, onMouseUp: this.mouseUpHandler}),
                             React.createElement(DialogContent, {content: theContent}),
-                            React.createElement(DialogFooter, {okLabel: this.props.okLabel, cancelLabel: this.props.cancelLabel, okCallback: this.okBtnOnClickHandler, cancelCallback: this.closeBtnOnClickHandler}));
+                            React.createElement(DialogFooter, {okLabel: this.props.okLabel, cancelLabel: this.props.cancelLabel,
+                                                               okCallback: this.okBtnOnClickHandler, cancelCallback: this.closeBtnOnClickHandler,
+                                                               contentHasFocus: this.contentHasFocus}));
         return React.createElement("div", null, React.createElement("div", {className:"ui-widget-overlay ui-front"}), theDialog);
+    },
+    contentHasFocus: function() {
+        return $(this.refs.theDialog.getDOMNode()).find(document.activeElement).length === 1;
     },
     keyDownHandler: function(e) {
         if (e.keyCode === ModalDialogBox.KEY_CODE_ESC) {
@@ -249,5 +254,11 @@ var DialogFooter = React.createClass({
         return React.createElement("div", {className: "ui-dialog-buttonpane ui-widget-content ui-helper-clearfix"},
                    React.createElement("div", {className: "ui-dialog-buttonset"},
                        React.createElement("div", {className: "ui-dialog-buttonset"}, okBtn, cancelBtn)));
+    },
+    componentDidMount: function() {
+        if (this.refs.okBtn && !this.props.contentHasFocus()) {
+            // Focus on ok button by default
+            this.refs.okBtn.getDOMNode().focus();
+        }
     }
 });
