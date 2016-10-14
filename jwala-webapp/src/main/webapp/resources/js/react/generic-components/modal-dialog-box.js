@@ -17,6 +17,7 @@
  * 12. left - the dialog's left position in px. This attribute only accepts a numeric value (no units or auto). If not set left will be computed to position the dialog at the center of the screen.
  * 13. position - position of the dialog's main div element e.g. absolute, fixed, relative etc...search for "div position"
  * 14. contentReferenceName - if specified the content can be referenced outside the ModalDialogBox by this property
+ * 15. hideFooter - if true the buttons at the bottom of the dialog box is not shown (if not set the buttons will show by default)
  *
  * Usage Example (in JSX)
  *
@@ -32,7 +33,7 @@ var ModalDialogBox = React.createClass({
         var top = this.props.top === undefined ? ModalDialogBox.DEFAULT_TOP : this.props.top;
         var left = this.props.left === undefined ? ModalDialogBox.DEFAULT_LEFT : this.props.left;
 
-        return {show: false,
+        return {show: this.props.show,
                 top: top,
                 left: left,
                 title: this.props.title,
@@ -41,7 +42,8 @@ var ModalDialogBox = React.createClass({
                 cancelCallback: this.props.cancelCallback ? this.props.cancelCallback : this.close,
                 mouseDownXDiff: 0,
                 mouseDownYDiff: 0,
-                needsRepositioning: false};
+                needsRepositioning: false,
+                contentHeight: "100%"};
     },
     render: function() {
         if (!this.state.show) {
@@ -54,14 +56,24 @@ var ModalDialogBox = React.createClass({
         var theStyle = {overflow: "visible", zIndex: "998", position: this.props.position ? this.props.position : "absolute",
                         height: height, width: width, top: this.state.top + "px", left: this.state.left + "px", display: "block"};
 
+        if (this.props.maximized) {
+            theStyle["position"] = "fixed";
+            theStyle["top"] = "0";
+            theStyle["left"] = "0";
+            theStyle["height"] = "100%";
+            theStyle["width"] = "100%";
+        }
+
         var theContent = this.props.contentReferenceName ? React.addons.cloneWithProps(this.state.content, {ref: this.props.contentReferenceName}) : this.state.content;
+        var theFooter = this.props.hideFooter ? null : React.createElement(DialogFooter, {ref: "dialogFooter", okLabel: this.props.okLabel, cancelLabel: this.props.cancelLabel,
+                                                                                          okCallback: this.okBtnOnClickHandler, cancelCallback: this.closeBtnOnClickHandler,
+                                                                                          contentHasFocus: this.contentHasFocus});
+
         var theDialog = React.createElement("div", {ref: "theDialog", style: theStyle,
                                                     className: "ui-dialog ui-widget ui-widget-content ui-corner-all ui-front ui-dialog-buttons ui-draggable ui-resizable", tabIndex: "-1", onKeyDown: this.keyDownHandler},
-                            React.createElement(DialogHeader, {title: this.state.title, closeBtnOnClick: this.closeBtnOnClickHandler, onMouseDown: this.mouseDownHandler, onMouseUp: this.mouseUpHandler}),
-                            React.createElement(DialogContent, {content: theContent}),
-                            React.createElement(DialogFooter, {okLabel: this.props.okLabel, cancelLabel: this.props.cancelLabel,
-                                                               okCallback: this.okBtnOnClickHandler, cancelCallback: this.closeBtnOnClickHandler,
-                                                               contentHasFocus: this.contentHasFocus}));
+                            React.createElement(DialogHeader, {ref: "dialogHeader", title: this.state.title, closeBtnOnClick: this.closeBtnOnClickHandler, onMouseDown: this.mouseDownHandler, onMouseUp: this.mouseUpHandler}),
+                            React.createElement("div", {ref: "contentDiv", style: {width: "100%", height: this.state.contentHeight, overflow: "auto"}}, React.createElement(DialogContent, {content: theContent})),
+                            theFooter);
         return React.createElement("div", null, React.createElement("div", {className:"ui-widget-overlay ui-front"}), theDialog);
     },
     contentHasFocus: function() {
@@ -99,6 +111,16 @@ var ModalDialogBox = React.createClass({
             }
             var states = (this.props.top && this.props.left) ? {} : this.computePosition();
             states["needsRepositioning"] = false; // It's very important to set this to false to prevent infinite calling of componentDidUpdate
+
+            // resize content container size
+            if (this.refs.contentDiv) {
+                var newHeight = this.refs.theDialog.getDOMNode().offsetHeight - this.refs.dialogHeader.getDOMNode().offsetHeight;
+                if (this.refs.dialogFooter) {
+                    newHeight = newHeight - this.refs.dialogFooter.getDOMNode().height;
+                }
+                states["contentHeight"] = newHeight;
+            }
+
             this.setState(states);
         }
 
