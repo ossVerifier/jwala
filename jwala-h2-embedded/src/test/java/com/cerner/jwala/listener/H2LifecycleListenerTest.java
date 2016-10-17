@@ -12,10 +12,14 @@ import static org.mockito.Mockito.*;
 public class H2LifecycleListenerTest {
 
     private H2LifecycleListener listener;
+    private static final String DEFAULT_WEBSERVER_PARAM = "-webSSL,-webPort,8888";
+    private static final String DEFAULT_TCPSERVER_PARAM = "-tcpPort,9999";
 
     @Before
     public void setup(){
         listener = new H2LifecycleListener();
+        listener.setTcpServerParam(DEFAULT_TCPSERVER_PARAM);
+        listener.setWebServerParam(DEFAULT_WEBSERVER_PARAM);
     }
 
     @Test

@@ -132,7 +132,7 @@ public interface GroupService {
 
     CommandOutput executeCheckFileExistsCommand(String entity, String host, String fileName) throws CommandFailureException;
 
-    CommandOutput executeSecureCopyCommand(String entity, String host, String source, String destination) throws CommandFailureException;
+    CommandOutput executeSecureCopyCommand(String jvmName, String host, String source, String destination, String groupName, Identifier<Jvm> id) throws CommandFailureException;
 
     CommandOutput executeBackUpCommand(String entity, String host, String source) throws CommandFailureException;
 

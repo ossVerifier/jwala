@@ -14,17 +14,20 @@ import static org.junit.Assert.assertNotNull;
 public class H2WebServerServiceImplTest {
 
     private H2WebServerServiceImpl service;
+    private static final String DEFAULT_WEBSERVER_PARAM = "-webSSL,-webPort,8888";
+    private static final String DEFAULT_TCPSERVER_PARAM = "-tcpPort,9999";
+
 
     @Before
     public void setUp() {
-        service = new H2WebServerServiceImpl(null);
+        service = new H2WebServerServiceImpl(DEFAULT_WEBSERVER_PARAM);
     }
 
     @Test
     public void testCreateServer() {
         String[] params = new String[0];
         Server result = service.createServer(params);
-        assertEquals("default port", 8082, result.getPort());
+        assertNotNull(result.getPort());
         assertEquals("default status", "Not started", result.getStatus());
         // default URL is created using the IP address of the running machine so just test for not null
         assertNotNull("default URL", result.getURL());

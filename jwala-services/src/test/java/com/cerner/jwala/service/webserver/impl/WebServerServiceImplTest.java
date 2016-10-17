@@ -7,6 +7,7 @@ import com.cerner.jwala.common.domain.model.jvm.Jvm;
 import com.cerner.jwala.common.domain.model.path.FileSystemPath;
 import com.cerner.jwala.common.domain.model.path.Path;
 import com.cerner.jwala.common.domain.model.resource.ResourceGroup;
+import com.cerner.jwala.common.domain.model.resource.ResourceIdentifier;
 import com.cerner.jwala.common.domain.model.resource.ResourceTemplateMetaData;
 import com.cerner.jwala.common.domain.model.user.User;
 import com.cerner.jwala.common.domain.model.webserver.WebServer;
@@ -34,10 +35,7 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -357,13 +355,14 @@ public class WebServerServiceImplTest {
     @Test
     public void testUploadWebServerConfig() throws IOException {
         UploadWebServerTemplateRequest request = mock(UploadWebServerTemplateRequest.class);
-        when(request.getMetaData()).thenReturn("{\"deployPath\":\"d:/httpd-data\",\"deployFileName\":\"httpd.conf\"}");
+        final String metaData = "{\"deployPath\":\"d:/httpd-data\",\"deployFileName\":\"httpd.conf\"}";
+        when(request.getMetaData()).thenReturn(metaData);
         ResourceTemplateMetaData mockMetaData = mock(ResourceTemplateMetaData.class);
         when(mockMetaData.getDeployPath()).thenReturn("d:/httpd-data");
         when(mockMetaData.getDeployFileName()).thenReturn("httpd.conf");
         when(resourceService.getTokenizedMetaData(anyString(), Matchers.anyObject(), anyString())).thenReturn(mockMetaData);
-        wsService.uploadWebServerConfig(request, testUser);
-        verify(webServerPersistenceService).uploadWebServerConfigTemplate(eq(request), anyString(), eq("testUser"));
+        wsService.uploadWebServerConfig(mockWebServer, "httpd.conf", "test content", metaData, group.getName(), testUser);
+        verify(resourceService).createResource(any(ResourceIdentifier.class), any(ResourceTemplateMetaData.class), any(InputStream.class));
     }
 
     @Test
@@ -443,12 +442,13 @@ public class WebServerServiceImplTest {
     @Test (expected = InternalErrorException.class)
     public void testUploadWebServerConfigFail() throws IOException {
         UploadWebServerTemplateRequest request = mock(UploadWebServerTemplateRequest.class);
-        when(request.getMetaData()).thenReturn("\"deployPath\":\"d:/httpd-data\",\"deployFileName\":\"httpd.conf\"}");
+        final String metaData = "\"deployPath\":\"d:/httpd-data\",\"deployFileName\":\"httpd.conf\"}";
+        when(request.getMetaData()).thenReturn(metaData);
         when(request.getWebServer()).thenReturn(mockWebServer);
         when(mockWebServer.getName()).thenReturn("testWebServer");
         when(request.getConfFileName()).thenReturn("httpd.conf");
         when(resourceService.getTokenizedMetaData(anyString(), Matchers.anyObject(), anyString())).thenThrow(new IOException("FAIL upload config because of meta data mapping"));
-        wsService.uploadWebServerConfig(request, testUser);
+        wsService.uploadWebServerConfig(mockWebServer, "httpd.conf", "test content", metaData, group.getName(), testUser);
     }
 
     private String removeCarriageReturnsAndNewLines(String s) {

@@ -40,7 +40,6 @@
 <script src="public-resources/js/jwala/v1/service/webServerControlService.js"></script>
 <script src="public-resources/js/jwala/v1/service/userService.js"></script>
 <script src="public-resources/js/jwala/v1/service/PollerForAPromise.js"></script>
-<script src="public-resources/js/jwala/v1/service/stateService.js"></script>
 <script src="public-resources/js/jwala/v1/service/resourceService.js"></script>
 <script src="public-resources/js/jwala/group-operations-helper.js"></script>
 

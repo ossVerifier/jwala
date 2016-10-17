@@ -3,7 +3,7 @@
  */
 var CommandStatusWidget = React.createClass({
     getInitialState: function() {
-        return {statusRows: [], isOpen: this.props.isOpen === undefined ? true : this.props.isOpen};
+        return {statusRows: [], isOpen: this.props.isOpen === undefined ? true : this.props.isOpen, fullPreviewMode: false, data: null};
     },
     render: function() {
         var self = this;
@@ -19,19 +19,30 @@ var CommandStatusWidget = React.createClass({
                       </div>;
         }
 
-        return  <div ref="commandStatusContainer" className="command-status-widget container ui-dialog ui-widget ui-widget-content ui-front title-container-style">
+        var fullPreviewComponent = this.state.fullPreviewMode ? <ModalDialogBox ref="previewDlg" title="Preview" maximized={true} show={true} cancelCallback={this.onCloseFullPreviewWindowHandler} hideFooter={true}/> : null;
+
+        return  <div ref="commandStatusContainer" className="CommandStatusWidget container ui-dialog ui-widget ui-widget-content ui-front title-container-style">
+                    {fullPreviewComponent}
                     <div className="title accordion-title nowrap ui-accordion-header ui-state-default ui-corner-all ui-accordion-icons">
                         <span className={"ui-accordion-header-icon ui-icon " + openCloseBtnClassName} style={{display:"inline-block"}} onClick={this.clickOpenCloseWindowHandler}></span>
                         <span className="ui-dialog-title" style={{display:"inline-block", float:"none", width:"auto"}}>Action and Event Logs</span>
+                        <span className="ui-icon ui-icon-newwin" style={{display:"inline-block", float:"right", cursor: "pointer"}}
+                                                                         onClick={this.clickOpenInNewWindowHandler}/>
                     </div>
+                    <img ref="processingIcon" style={{visibility: "hidden", position: "absolute", zIndex: 10, top: 65, left: 525}} src="public-resources/img/blue-and-light-blue-gears.gif"/>
                     {content}
                 </div>;
 
+    },
+    onCloseFullPreviewWindowHandler: function() {
+        this.refs.processingIcon.getDOMNode().style.visibility = "hidden";
+        this.setState({fullPreviewMode: false});
     },
     componentDidMount: function() {
         var self = this;
         historyService.read(this.props.groupName, this.props.serverName).then(
             function(data) {
+                 var statusArray = [];
                  for (var i = data.length - 1; i >= 0; i--) {
                     var status = {};
                     status["from"] = data[i].serverName;
@@ -40,16 +51,32 @@ var CommandStatusWidget = React.createClass({
                     status["message"] = data[i].event;
                     self.push(status, data[i].eventType === "USER_ACTION" ? "action-status-font" : "error-status-font",
                         (i === 0));
+                    statusArray.push(status);
                 }
+                self.state.data = statusArray;
             }).caught(function(response) {console.log(response)});
     },
     componentDidUpdate: function(prevProps, prevState) {
         if (this.refs.content) {
             this.refs.content.getDOMNode().scrollTop = this.refs.content.getDOMNode().scrollHeight;
         }
+
+        if (this.refs.previewDlg) {
+           this.refs.previewDlg.setState({content: <JQueryDataTableComponent data={this.state.data}/>});
+           document.body.style.overflow = "hidden";
+        } else {
+            document.body.style.overflow = "scroll";
+        }
     },
     clickOpenCloseWindowHandler: function() {
         this.setState({isOpen: !this.state.isOpen});
+    },
+    clickOpenInNewWindowHandler: function() {
+        this.refs.processingIcon.getDOMNode().style.visibility = "visible";
+
+        // wait for the processing icon to get drawn before letting react do its thing by state setting
+        var self = this;
+        setTimeout(function(){self.setState({fullPreviewMode: true})}, 100);
     },
     showDetails: function(msg) {
         var myWindow = window.open("", "Error Details", "width=500, height=500");
@@ -91,5 +118,38 @@ var CommandStatusWidget = React.createClass({
         if (forceUpdate === undefined || forceUpdate === true) {
             this.forceUpdate();
         }
+    }
+});
+
+var JQueryDataTableComponent = React.createClass({
+    render: function() {
+        var headerArray = [];
+        var rowArray = [];
+        for (var rowKey in this.props.data) {
+            var colArray = [];
+            for (var colKey in this.props.data[rowKey]) {
+                if (rowArray.length === 0) {
+                    headerArray.push(<th>{colKey}</th>);
+                }
+
+                // TODO: Refactor - specific code should not be defined here
+                if (colKey === "asOf") {
+                    colArray.push(<td>{moment(this.props.data[rowKey][colKey]).format("MM/DD/YYYY hh:mm:ss")}</td>);
+                } else {
+                    colArray.push(<td>{this.props.data[rowKey][colKey]}</td>);
+                }
+            }
+            rowArray.push(<tr>{colArray}</tr>);
+        }
+
+        return <div style={{width: "100%", height: "100%", overflow: "auto"}}><table ref="dataTable"><thead>{headerArray}</thead><tbody>{rowArray}</tbody></table></div>;
+    },
+    componentDidMount: function() {
+        // TODO: Refactor - specific code should not be defined here
+        var colDefs = [{sWidth: "150px", aTargets: [2]}];
+
+        // TODO: aaSorting should not be hard coded
+        $(this.refs.dataTable.getDOMNode()).dataTable({bJQueryUI: true, iDisplayLength: -1, aLengthMenu: [[25, 50, 100, 200, -1],
+                                                       [25, 50, 100, 200, "All"]], aaSorting: [[2, "asc"]], aoColumnDefs: colDefs});
     }
 });

@@ -187,7 +187,7 @@ var ResourcePane = React.createClass({
                     });
             } else if (data.rtreeListMetaData.entity === "webApps" && data.rtreeListMetaData.parent.rtreeListMetaData.entity === "webAppSection") {
                 var groupName = this.state.data.rtreeListMetaData.parent.rtreeListMetaData.parent.name;
-                ServiceFactory.getResourceService().deployGroupAppResourceToHost(groupName, this.state.rightClickedItem, "")
+                ServiceFactory.getResourceService().deployGroupAppResourceToHost(groupName, this.state.rightClickedItem, "", this.state.data.name)
                     .then(function(response){
                         $.alert("Deploy successful!", ResourcePane.DEPLOY_RESOURCE_TITLE, true);
                     }).caught(function(response){
@@ -239,7 +239,7 @@ var ResourcePane = React.createClass({
                 });
         } else {
             var groupName = this.state.data.rtreeListMetaData.parent.rtreeListMetaData.parent.name;
-            ServiceFactory.getResourceService().deployGroupAppResourceToHost(groupName, this.state.rightClickedItem, this.state.host)
+            ServiceFactory.getResourceService().deployGroupAppResourceToHost(groupName, this.state.rightClickedItem, this.state.host, this.state.data.name)
                 .then(function(response){
                     $.alert("Deploy successful!", ResourcePane.DEPLOY_RESOURCE_TITLE, true);
                 }).caught(function(response){

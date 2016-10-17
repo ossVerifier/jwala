@@ -1,6 +1,7 @@
 package com.cerner.jwala.service;
 
 import com.cerner.jwala.service.impl.H2TcpServerServiceImpl;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -13,10 +14,11 @@ import static junit.framework.TestCase.assertTrue;
 public class H2ServerTest {
 
     private H2TcpServerServiceImpl service;
+    private static final String DEFAULT_TCPSERVER_PARAM = "-tcpPort,9999,-tcpAllowOthers";
 
     @Before
     public void setUp() {
-        service = new H2TcpServerServiceImpl(null);
+        service = new H2TcpServerServiceImpl(DEFAULT_TCPSERVER_PARAM);
     }
 
     @Test
@@ -33,6 +35,7 @@ public class H2ServerTest {
         H2TcpServerServiceImpl badService = new H2TcpServerServiceImpl("-tcpPort,ERROR");
         badService.startServer();
     }
+
 }
 
 

@@ -120,7 +120,8 @@ public class WebServerControlServiceImpl implements WebServerControlService {
                     default:
                         final String errorMsg = "Web Server control command was not successful! Return code = "
                                 + commandOutput.getReturnCode().getReturnCode() + ", description = " +
-                                CommandOutputReturnCode.fromReturnCode(commandOutput.getReturnCode().getReturnCode()).getDesc();
+                                CommandOutputReturnCode.fromReturnCode(commandOutput.getReturnCode().getReturnCode()).getDesc() +
+                                ", message = " + commandOutput.standardErrorOrStandardOut();
 
                         LOGGER.error(errorMsg);
                         historyService.createHistory(getServerName(webServer), new ArrayList<>(webServer.getGroups()), errorMsg,

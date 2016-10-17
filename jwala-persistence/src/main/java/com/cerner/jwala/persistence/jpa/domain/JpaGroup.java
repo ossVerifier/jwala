@@ -54,8 +54,9 @@ public class JpaGroup extends AbstractEntity<JpaGroup> {
 
     @ManyToMany
     @JoinTable(name = "WEBSERVER_GRP",
-            joinColumns = {@JoinColumn(name = "GROUP_ID")},
-            inverseJoinColumns = {@JoinColumn(name = "WEBSERVER_ID")})
+               joinColumns = {@JoinColumn(name = "GROUP_ID", referencedColumnName = "ID")},
+               inverseJoinColumns = {@JoinColumn(name = "WEBSERVER_ID", referencedColumnName = "ID")},
+               uniqueConstraints = @UniqueConstraint(columnNames = {"GROUP_ID", "WEBSERVER_ID"}))
     private List<JpaWebServer> webServers = new ArrayList<>();
 
     @OneToMany(cascade = CascadeType.ALL)

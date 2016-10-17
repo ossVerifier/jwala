@@ -791,7 +791,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     }
 
     @Override
-    public Response generateAndDeployGroupAppFile(final String groupName, final String fileName, final AuthenticatedUser aUser, final String hostName) {
+    public Response generateAndDeployGroupAppFile(final String groupName, final String fileName, final String appName, final AuthenticatedUser aUser, final String hostName) {
 
         LOGGER.info("Generate and deploy group app file {} for group {} by user {} to host {}", fileName, groupName, aUser.getUser().getId(), hostName);
 
@@ -799,8 +799,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         final String groupAppMetaData = groupService.getGroupAppResourceTemplateMetaData(groupName, fileName);
         ResourceTemplateMetaData metaData;
         try {
-            metaData = resourceService.getTokenizedMetaData(fileName, null, groupAppMetaData);
-            final String appName = metaData.getEntity().getTarget();
+            metaData = resourceService.getMetaData(groupAppMetaData);
             final ApplicationServiceRest appServiceRest = ApplicationServiceRestImpl.get();
             if (metaData.getEntity().getDeployToJvms()) {
                 // deploy to all jvms in group

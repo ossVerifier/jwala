@@ -180,9 +180,10 @@ public interface GroupServiceRest {
                                           @QueryParam("templateName") final String templateName);
 
     @PUT
-    @Path("/{groupName}/apps/conf/{fileName}")
+    @Path("/{groupName}/apps/conf/{fileName}/{appName}")
     Response generateAndDeployGroupAppFile(@PathParam("groupName") final String groupName,
                                            @PathParam("fileName") final String fileName,
+                                           @PathParam("appName") final String appName,
                                            @BeanParam final AuthenticatedUser aUser,
                                            @QueryParam("hostName") final String hostName);
 

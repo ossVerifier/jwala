@@ -4,6 +4,7 @@ import com.cerner.jwala.common.domain.model.fault.AemFaultType;
 import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.resource.ResourceGroup;
+import com.cerner.jwala.common.domain.model.resource.ResourceIdentifier;
 import com.cerner.jwala.common.domain.model.resource.ResourceTemplateMetaData;
 import com.cerner.jwala.common.domain.model.user.User;
 import com.cerner.jwala.common.domain.model.webserver.WebServer;
@@ -11,7 +12,6 @@ import com.cerner.jwala.common.domain.model.webserver.WebServerReachableState;
 import com.cerner.jwala.common.exception.InternalErrorException;
 import com.cerner.jwala.common.request.webserver.CreateWebServerRequest;
 import com.cerner.jwala.common.request.webserver.UpdateWebServerRequest;
-import com.cerner.jwala.common.request.webserver.UploadWebServerTemplateRequest;
 import com.cerner.jwala.files.FileManager;
 import com.cerner.jwala.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
 import com.cerner.jwala.persistence.jpa.service.exception.ResourceTemplateUpdateException;
@@ -21,6 +21,7 @@ import com.cerner.jwala.service.resource.impl.ResourceGeneratorType;
 import com.cerner.jwala.service.webserver.WebServerService;
 import com.cerner.jwala.service.webserver.exception.WebServerServiceException;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Propagation;
@@ -212,24 +213,20 @@ public class WebServerServiceImpl implements WebServerService {
 
     @Override
     @Transactional
-    public void uploadWebServerConfig(UploadWebServerTemplateRequest uploadWebServerTemplateRequest, User user) {
-        uploadWebServerTemplateRequest.validate();
-        final String confFileName = uploadWebServerTemplateRequest.getConfFileName();
-        final WebServer webServer = uploadWebServerTemplateRequest.getWebServer();
-        final String metaDataStr = uploadWebServerTemplateRequest.getMetaData();
-        final String absoluteDeployPath;
+    public void uploadWebServerConfig(WebServer webServer, String templateName, String templateContent, String metaDataStr, String groupName, User user) {
         try{
-            ResourceTemplateMetaData metaData = resourceService.getTokenizedMetaData(confFileName, webServer, metaDataStr);
-            absoluteDeployPath = resourceService.generateResourceFile(
-                    metaData.getDeployFileName(),
-                    metaData.getDeployPath() + "/" + metaData.getDeployFileName(),
-                    resourceService.generateResourceGroup(),
-                    webServer, ResourceGeneratorType.METADATA);
+
+            ResourceTemplateMetaData metaData = resourceService.getTokenizedMetaData(templateName, webServer, metaDataStr);
+            ResourceIdentifier resourceId = new ResourceIdentifier.Builder()
+                    .setResourceName(metaData.getDeployFileName())
+                    .setGroupName(groupName)
+                    .setWebServerName(webServer.getName()). build();
+            resourceService.createResource(resourceId, metaData, IOUtils.toInputStream(templateContent));
+
         } catch (IOException e) {
-            LOGGER.error("Failed to map meta data when uploading web server config {}", uploadWebServerTemplateRequest, e);
-            throw new InternalErrorException(AemFaultType.BAD_STREAM, "Unable to map the meta data for template " + confFileName, e);
+            LOGGER.error("Failed to map meta data when uploading web server config {} for {}", templateName, webServer, e);
+            throw new InternalErrorException(AemFaultType.BAD_STREAM, "Unable to map the meta data for template " + templateName, e);
         }
-        webServerPersistenceService.uploadWebServerConfigTemplate(uploadWebServerTemplateRequest, absoluteDeployPath, user.getId());
     }
 
     @Override
