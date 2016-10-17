@@ -46,10 +46,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private static final String GEN_PUBLIC_RESOURCES = "/gen-public-resources/**";
     private static final String PUBLIC_RESOURCES = "/public-resources/**";
     private static final String PAGE_CONSTANTS = "/page-constants";
-    private static final String  WEBSERVER_CONF_URL = "/**/webservers/**/conf/deploy";
-    private static final String  WEBSERVER_GENERATE_URL = "/**/**/groups/**/webservers/conf/deploy";
-    private static final String  JVM_CONF_URL = "/**/jvms/**/conf";
-    private static final String  IDP_URL = "/idp";
     /*
      * (non-Javadoc)
      * 
@@ -62,11 +58,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         final String ADMIN = ApplicationProperties.get("jwala.role.admin");
         final String AUTH = ApplicationProperties.get(JWALA_AUTH_ENABLED, "true");
-        // ACL check
-        if (!"false".equalsIgnoreCase(AUTH)) {
-            http.authorizeRequests().antMatchers(IDP_URL, WEBSERVER_GENERATE_URL, WEBSERVER_CONF_URL, JVM_CONF_URL)
-                    .hasAnyAuthority(ADMIN);
-        }
+
         http.authorizeRequests().antMatchers(GEN_PUBLIC_RESOURCES, PUBLIC_RESOURCES, LOGIN_PAGE, LOGIN_API, LOGOUT_API)
                 .permitAll().and().formLogin().loginPage(LOGIN_PAGE).permitAll().and().authorizeRequests().anyRequest()
                 .authenticated();
