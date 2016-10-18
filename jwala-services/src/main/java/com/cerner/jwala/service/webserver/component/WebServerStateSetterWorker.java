@@ -87,6 +87,7 @@ public class WebServerStateSetterWorker {
             final WebServerReachableState webServerState = webServer.getState();
             if (!isWebServerBusy(webServer) && inMemoryStateManagerService.get(webServer.getId()) != WebServerReachableState.WS_NEW) {
                 final String webServerName = webServer.getName();
+                LOGGER.debug(">>>> Send ping for web server {}", webServerName);
                 try {
                     final ClientHttpRequest request = httpRequestFactory.createRequest(webServer.getStatusUri(), HttpMethod.GET);
                     response = request.execute();
