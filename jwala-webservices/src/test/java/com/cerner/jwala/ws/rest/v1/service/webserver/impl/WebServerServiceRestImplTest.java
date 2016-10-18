@@ -238,7 +238,7 @@ public class WebServerServiceRestImplTest {
         when(webServerControlService.controlWebServer(any(ControlWebServerRequest.class), any(User.class))).thenReturn(new CommandOutput(new ExecReturnCode(0), "SUCCESS", ""));
         when(impl.getWebServer(any(Identifier.class))).thenReturn(webServer);
         when(impl.getWebServer(anyString())).thenReturn(webServer);
-        final Response response = webServerServiceRest.removeWebServer(Identifier.id(1l, WebServer.class), authenticatedUser, "yes");
+        final Response response = webServerServiceRest.removeWebServer(Identifier.id(1l, WebServer.class), authenticatedUser, true);
         verify(impl, atLeastOnce()).removeWebServer(any(Identifier.class));
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
 
@@ -250,7 +250,7 @@ public class WebServerServiceRestImplTest {
     public void testRemoveWebServerWhenWebServerNotStopped() {
         when(impl.getWebServer(any(Identifier.class))).thenReturn(webServer);
         when(impl.isStarted(any(WebServer.class))).thenReturn(true);
-        final Response response = webServerServiceRest.removeWebServer(Identifier.id(1l, WebServer.class), authenticatedUser, "yes");
+        final Response response = webServerServiceRest.removeWebServer(Identifier.id(1l, WebServer.class), authenticatedUser, true);
         assertEquals("Web server webserverName must be stopped before it can be deleted!",
                 ((ApplicationResponse) response.getEntity()).getApplicationResponseContent());
     }

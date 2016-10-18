@@ -48,7 +48,7 @@ var webServerService = {
 				                     errorCallback);
 	},
     deleteWebServer : function(id, forceDelete) {
-    	    var qryParam = (forceDelete=="yes") ? "?forceDelete=yes" : "";
+    	    var qryParam = forceDelete ? "?forceDelete=true" : "?forceDelete=false";
             return serviceFoundation.promisedDel("v1.0/webservers/" + id + qryParam, "json");
     },
 	getWebServer : function(id, responseCallback) {

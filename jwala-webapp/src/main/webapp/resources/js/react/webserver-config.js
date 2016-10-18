@@ -157,7 +157,7 @@ var WebServerConfig = React.createClass({
     },
     confirmDeleteCallback: function() {
         var self = this;
-        this.props.service.deleteWebServer(this.selectedWebServer.id.id).then(
+        this.props.service.deleteWebServer(this.selectedWebServer.id.id, false).then(
             function(response){
             self.refreshData({showDeleteConfirmDialog: false}, function(){self.selectedWebServer = null});
         }).caught(
@@ -179,7 +179,7 @@ var WebServerConfig = React.createClass({
     },
     confirmDeleteCallbackContinue: function() {
         var self = this;
-        this.props.service.deleteWebServer(this.selectedWebServer.id.id, "yes").then(
+        this.props.service.deleteWebServer(this.selectedWebServer.id.id, true).then(
             function(response){
             self.refreshData({showDeleteConfirmDialogContinue: false}, function(){self.selectedWebServer = null});
         }).caught(
