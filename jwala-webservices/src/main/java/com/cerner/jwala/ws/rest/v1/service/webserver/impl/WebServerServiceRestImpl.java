@@ -138,12 +138,12 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
     }
 
     @Override
-    public Response removeWebServer(final Identifier<WebServer> aWsId, final AuthenticatedUser user) {
-        LOGGER.info("Delete WS requested: {} by user {}", aWsId, user.getUser().getId());
+    public Response removeWebServer(final Identifier<WebServer> aWsId, final AuthenticatedUser user, final String forceDelete) {
+        LOGGER.info("Delete WS requested: {} by user {} and forceDelete {}", aWsId, user.getUser().getId(), forceDelete);
         final WebServer webServer = webServerService.getWebServer(aWsId);
         if (!webServerService.isStarted(webServer)) {
             LOGGER.info("Removing web server from the database and deleting the service for id {}", aWsId);
-            if (!webServer.getState().equals(WebServerReachableState.WS_NEW)) {
+            if (!webServer.getState().equals(WebServerReachableState.WS_NEW) && forceDelete == null) {
                 try {
                     deleteWebServerWindowsService(user,
                             new ControlWebServerRequest(aWsId, WebServerControlOperation.DELETE_SERVICE), webServer.getName());
@@ -159,8 +159,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
                     new FaultCodeException(AemFaultType.CONTROL_OPERATION_UNSUCCESSFUL, "Web server " + webServer.getName() +
                             " must be stopped before it can be deleted!", null));
         }
-
-        return ResponseBuilder.ok();
+        return ResponseBuilder.ok("successful");
     }
 
     @Override

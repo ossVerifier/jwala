@@ -114,7 +114,16 @@ var serviceFoundation = {
            }
         });
     },
-
+    promisedDel : function(url, dataType) {
+        var loadingUiBehavior = serviceFoundationUi.visibleLoading(true);
+        var ajaxParams = {url: url,
+                          dataType: dataType,
+                          type: 'DELETE',
+                          cache: false,
+                          beforeSend: loadingUiBehavior.showLoading,
+                          complete: loadingUiBehavior.hideLoading};
+        return Promise.cast($.ajax(ajaxParams));
+    },
     put : function(url, dataType, content, thenCallback, caughtCallback, showLoading, contentType) {
         var loadingUiBehavior = serviceFoundationUi.visibleLoading(showLoading === undefined ? true : showLoading);
         return Promise.cast($.ajax({url: url,
