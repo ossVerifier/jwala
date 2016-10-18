@@ -124,6 +124,7 @@ public class WebServerServiceRestImplTest {
 
     @Before
     public void setUp() {
+        System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, "./src/test/resources");
         webServerServiceRest = new WebServerServiceRestImpl(impl, webServerControlService, commandImpl, writeLockMap, resourceService, groupService, binaryDistributionService);
         when(authenticatedUser.getUser()).thenReturn(new User("Unused"));
 
@@ -137,7 +138,6 @@ public class WebServerServiceRestImplTest {
             assertTrue("This should not fail, but ... " + e.getMessage(), false);
         }
 
-        System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, "./src/test/resources");
         generatedResourceDir = ApplicationProperties.get("paths.generated.resource.dir");
 
         assertTrue(new File(generatedResourceDir).mkdirs());
@@ -238,19 +238,19 @@ public class WebServerServiceRestImplTest {
         when(webServerControlService.controlWebServer(any(ControlWebServerRequest.class), any(User.class))).thenReturn(new CommandOutput(new ExecReturnCode(0), "SUCCESS", ""));
         when(impl.getWebServer(any(Identifier.class))).thenReturn(webServer);
         when(impl.getWebServer(anyString())).thenReturn(webServer);
-        final Response response = webServerServiceRest.removeWebServer(Identifier.id(1l, WebServer.class), authenticatedUser);
+        final Response response = webServerServiceRest.removeWebServer(Identifier.id(1l, WebServer.class), authenticatedUser, true);
         verify(impl, atLeastOnce()).removeWebServer(any(Identifier.class));
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
 
         final ApplicationResponse applicationResponse = (ApplicationResponse) response.getEntity();
-        assertNull(applicationResponse);
+        assertEquals("successful", applicationResponse.getApplicationResponseContent());
     }
 
     @Test
     public void testRemoveWebServerWhenWebServerNotStopped() {
         when(impl.getWebServer(any(Identifier.class))).thenReturn(webServer);
         when(impl.isStarted(any(WebServer.class))).thenReturn(true);
-        final Response response = webServerServiceRest.removeWebServer(Identifier.id(1l, WebServer.class), authenticatedUser);
+        final Response response = webServerServiceRest.removeWebServer(Identifier.id(1l, WebServer.class), authenticatedUser, true);
         assertEquals("Web server webserverName must be stopped before it can be deleted!",
                 ((ApplicationResponse) response.getEntity()).getApplicationResponseContent());
     }

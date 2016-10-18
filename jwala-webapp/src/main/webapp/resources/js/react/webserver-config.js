@@ -28,6 +28,7 @@ var WebServerConfig = React.createClass({
             showModalFormAddDialog: false,
             showModalFormEditDialog: false,
             showDeleteConfirmDialog: false,
+            showDeleteConfirmDialogContinue: false,
             selectedWebServerForEditing: null,
             webServerTableData: []
         }
@@ -52,6 +53,7 @@ var WebServerConfig = React.createClass({
                                                         editCallback={this.editCallback}
                                                         noUpdateWhen={this.state.showModalFormAddDialog ||
                                                                       this.state.showDeleteConfirmDialog ||
+                                                                      this.state.showDeleteConfirmDialogContinue ||
                                                                       this.state.showModalFormEditDialog ||
                                                                       this.cancelFlag.check()
                                                         }/>
@@ -83,6 +85,14 @@ var WebServerConfig = React.createClass({
                                     content={<div className="text-align-center"><br/><b>Are you sure you want to delete the selected item ?</b><br/><br/></div>}
                                     okLabel="Yes"
                                     cancelLabel="No" />
+
+                   <ModalDialogBox ref="forceDeleteConfirmDlg"
+                                   title="Confirmation Dialog Box"
+                                   show={this.state.showDeleteConfirmDialogContinue}
+                                   okCallback={this.confirmDeleteCallbackContinue}
+                                   cancelCallback={this.cancelDeleteCallbackContinue}
+                                   okLabel="Yes"
+                                   cancelLabel="No" />
                </div>
     },
     cancelAddCallback: function() {
@@ -147,15 +157,54 @@ var WebServerConfig = React.createClass({
     },
     confirmDeleteCallback: function() {
         var self = this;
-        this.props.service.deleteWebServer(this.selectedWebServer.id.id,
-                                           this.refreshData.bind(this,
-                                                                 {showDeleteConfirmDialog: false},
-                                                                 function(){self.selectedWebServer = null}));
+        this.props.service.deleteWebServer(this.selectedWebServer.id.id, false).then(
+            function(response){
+            self.refreshData({showDeleteConfirmDialog: false}, function(){self.selectedWebServer = null});
+        }).caught(
+            function(e) {
+                self.setState({showDeleteConfirmDialog: false})
+                if (e.responseText !== undefined && e.status !== 200) {
+                    var jsonResponseText = JSON.parse(e.responseText);
+                    if (jsonResponseText.applicationResponseContent) {
+                        self.refs.forceDeleteConfirmDlg.setState({content: jsonResponseText.applicationResponseContent + ", are you sure you want to continue delete without remove windows services?"})
+                        self.setState({showDeleteConfirmDialogContinue: true})
+                    } else {
+                        $.errorAlert(jsonResponseText.message, "Error");
+                    }
+                } else if (e.status !== 200) {
+                  $.errorAlert(JSON.stringify(e), "Error");
+                }
+            }
+        )
+    },
+    confirmDeleteCallbackContinue: function() {
+        var self = this;
+        this.props.service.deleteWebServer(this.selectedWebServer.id.id, true).then(
+            function(response){
+            self.refreshData({showDeleteConfirmDialogContinue: false}, function(){self.selectedWebServer = null});
+        }).caught(
+            function(e){
+                if (e.responseText !== undefined && e.status !== 200) {
+                    var jsonResponseText = JSON.parse(e.responseText);
+                    if (jsonResponseText.applicationResponseContent) {
+                        $.errorAlert(jsonResponseText.applicationResponseContent, "Error");
+                    } else {
+                        $.errorAlert(jsonResponseText.message, "Error");
+                    }
+                } else if (e.status !== 200) {
+                    $.errorAlert(JSON.stringify(e), "Error");
+                }
+            }
+        )
     },
     cancelDeleteCallback: function() {
         this.cancelFlag.set();
         this.setState({showDeleteConfirmDialog: false});
     },
+    cancelDeleteCallbackContinue: function() {
+            this.cancelFlag.set();
+            this.setState({showDeleteConfirmDialogContinue: false});
+        },
     selectItemCallback: function(item) {
         this.selectedWebServer = item;
     },
