@@ -53,6 +53,9 @@ public class WebServerControlServiceImpl implements WebServerControlService {
     private final SshConfiguration sshConfig;
     private static final int SLEEP_DURATION = 1000;
 
+    private static final String MSG_SERVICE_ALREADY_STARTED = "Service already started";
+    private static final String MSG_SERVICE_ALREADY_STOPPED = "Service already stopped";
+
     public WebServerControlServiceImpl(final WebServerService webServerService,
                                        final RemoteCommandExecutor<WebServerControlOperation> commandExecutor,
                                        final HistoryService historyService,
@@ -84,7 +87,7 @@ public class WebServerControlServiceImpl implements WebServerControlService {
                         aUser.getId(), DateTime.now(), StateType.WEB_SERVER));
             } else if (controlOperation.equals(WebServerControlOperation.DELETE_SERVICE)
                     || controlOperation.equals(WebServerControlOperation.INVOKE_SERVICE)
-                    || controlOperation.equals(WebServerControlOperation.SECURE_COPY)){
+                    || controlOperation.equals(WebServerControlOperation.SECURE_COPY)) {
                 messagingService.send(new WebServerHistoryEvent(webServer.getId(), controlOperation.name(), aUser.getId(), DateTime.now(), controlOperation));
             }
 
@@ -108,19 +111,43 @@ public class WebServerControlServiceImpl implements WebServerControlService {
 
             // Process non successful return codes...
             if (!commandOutput.getReturnCode().wasSuccessful()) {
-                switch (commandOutput.getReturnCode().getReturnCode()) {
+                final Integer returnCode = commandOutput.getReturnCode().getReturnCode();
+                String commandOutputReturnDescription = CommandOutputReturnCode.fromReturnCode(returnCode).getDesc();
+                switch (returnCode) {
                     case ExecReturnCode.JWALA_EXIT_PROCESS_KILLED:
                         commandOutput = new CommandOutput(new ExecReturnCode(0), FORCED_STOPPED, commandOutput.getStandardError());
                         webServerService.updateState(webServer.getId(), WebServerReachableState.FORCED_STOPPED, "");
                         break;
                     case ExecReturnCode.JWALA_EXIT_CODE_ABNORMAL_SUCCESS:
-                        LOGGER.warn(CommandOutputReturnCode.fromReturnCode(commandOutput.getReturnCode().getReturnCode()).getDesc());
-                        commandOutput = new CommandOutput(new ExecReturnCode(0), null, null);
+                        int retCode = 0;
+                        switch (controlWebServerRequest.getControlOperation()) {
+                            case START:
+                                commandOutputReturnDescription = MSG_SERVICE_ALREADY_STARTED;
+                                break;
+                            case STOP:
+                                commandOutputReturnDescription = MSG_SERVICE_ALREADY_STOPPED;
+                                break;
+                            default:
+                                retCode = returnCode;
+                                break;
+                        }
+
+                        LOGGER.warn(commandOutputReturnDescription);
+                        historyService.createHistory(getServerName(webServer), new ArrayList<>(webServer.getGroups()), commandOutputReturnDescription, EventType.APPLICATION_EVENT, aUser.getId());
+
+                        // Send as a failure to make the UI display it in the history window
+                        // TODO: Sending a failure state so that the commandOutputReturnDescription will be shown in the UI is not the proper way to do this, refactor this in the future
+                        messagingService.send(new CurrentState<>(webServer.getId(), WebServerReachableState.WS_FAILED, DateTime.now(), StateType.WEB_SERVER,
+                                commandOutputReturnDescription));
+
+                        if (retCode == 0) {
+                            commandOutput = new CommandOutput(new ExecReturnCode(retCode), commandOutputReturnDescription, null);
+                        }
                         break;
                     default:
                         final String errorMsg = "Web Server control command was not successful! Return code = "
-                                + commandOutput.getReturnCode().getReturnCode() + ", description = " +
-                                CommandOutputReturnCode.fromReturnCode(commandOutput.getReturnCode().getReturnCode()).getDesc() +
+                                + returnCode + ", description = " +
+                                CommandOutputReturnCode.fromReturnCode(returnCode).getDesc() +
                                 ", message = " + commandOutput.standardErrorOrStandardOut();
 
                         LOGGER.error(errorMsg);
