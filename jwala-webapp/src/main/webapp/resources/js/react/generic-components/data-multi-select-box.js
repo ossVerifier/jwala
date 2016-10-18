@@ -37,7 +37,7 @@ var DataMultiSelectBox = React.createClass({
     render: function() {
         var self = this;
         var options = [];
-       for (var i = 0; i < this.props.data.length; i++) {
+        for (var i = 0; i < this.props.data.length; i++) {
             var props = {name:this.props.name,type:"checkbox",
                          value:this.getVal(this.props.data[i]),
                          checked:this.state.checkBoxData[i].checked,
@@ -50,26 +50,34 @@ var DataMultiSelectBox = React.createClass({
         return React.DOM.div({className:this.props.className}, options);
     },
     changeHandler: function(i) {
-        if (this.state.checkBoxData[i].checked === "") {
-            this.state.checkBoxData[i].checked = "checked";
+        var checkBoxData = jQuery.extend(true, {}, this.state.checkBoxData);
+        if (this.props.singleSelect) {
+            for (var key in checkBoxData) {
+                checkBoxData[key].checked = "";
+            }
+            checkBoxData[i].checked = "checked";
         } else {
-            this.state.checkBoxData[i].checked = "";
+            if (checkBoxData[i].checked === "") {
+                checkBoxData[i].checked = "checked";
+            } else {
+                checkBoxData[i].checked = "";
+            }
         }
-        this.setState({checkBoxData:this.state.checkBoxData});
 
         var selectedValIds = [];
-        for (var i = 0; i < this.state.checkBoxData.length; i++) {
-            if (this.state.checkBoxData[i].checked === "checked") {
-                var obj = {id: this.state.checkBoxData[i].valId};
+        for (var key in checkBoxData) {
+            if (checkBoxData[key].checked === "checked") {
+                var obj = {id: checkBoxData[key].valId};
 
                 // this is for the insert part since the rest service
                 // post and get do not have the same name for the id
-                obj[this.props.idKey] = this.state.checkBoxData[i].valId;
+                obj[this.props.idKey] = checkBoxData[key].valId;
 
                 selectedValIds.push(obj);
             }
         }
 
         this.props.onSelectCallback(selectedValIds);
+        this.setState({checkBoxData: checkBoxData});
     }
 })
