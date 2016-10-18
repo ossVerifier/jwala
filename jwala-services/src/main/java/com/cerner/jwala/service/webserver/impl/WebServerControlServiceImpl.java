@@ -37,6 +37,9 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
+import static com.cerner.jwala.common.domain.model.webserver.WebServerControlOperation.START;
+import static com.cerner.jwala.common.domain.model.webserver.WebServerControlOperation.STOP;
+
 public class WebServerControlServiceImpl implements WebServerControlService {
 
     @Value("${spring.messaging.topic.serverStates:/topic/server-states}")
@@ -75,15 +78,15 @@ public class WebServerControlServiceImpl implements WebServerControlService {
         final WebServerControlOperation controlOperation = controlWebServerRequest.getControlOperation();
         final WebServer webServer = webServerService.getWebServer(controlWebServerRequest.getWebServerId());
         try {
-            final String event = controlWebServerRequest.getControlOperation().getOperationState() == null ?
-                    controlWebServerRequest.getControlOperation().name() : controlWebServerRequest.getControlOperation().getOperationState().toStateLabel();
+            final String event = controlOperation.getOperationState() == null ?
+                    controlOperation.name() : controlOperation.getOperationState().toStateLabel();
 
             historyService.createHistory(getServerName(webServer), new ArrayList<>(webServer.getGroups()), event, EventType.USER_ACTION,
                     aUser.getId());
 
             // Send a message to the UI about the control operation.
             if (controlOperation.getOperationState() != null) {
-                messagingService.send(new CurrentState<>(webServer.getId(), controlWebServerRequest.getControlOperation().getOperationState(),
+                messagingService.send(new CurrentState<>(webServer.getId(), controlOperation.getOperationState(),
                         aUser.getId(), DateTime.now(), StateType.WEB_SERVER));
             } else if (controlOperation.equals(WebServerControlOperation.DELETE_SERVICE)
                     || controlOperation.equals(WebServerControlOperation.INVOKE_SERVICE)
@@ -103,8 +106,8 @@ public class WebServerControlServiceImpl implements WebServerControlService {
                     remoteCommandReturnInfo.standardOuput, remoteCommandReturnInfo.errorOupout);
 
             final String standardOutput = commandOutput.getStandardOutput();
-            if (StringUtils.isNotEmpty(standardOutput) && (WebServerControlOperation.START.equals(controlOperation) ||
-                    WebServerControlOperation.STOP.equals(controlOperation))) {
+            if (StringUtils.isNotEmpty(standardOutput) && (START.equals(controlOperation) ||
+                    STOP.equals(controlOperation))) {
                 commandOutput.cleanStandardOutput();
                 LOGGER.info("shell command output{}", standardOutput);
             }
@@ -120,7 +123,7 @@ public class WebServerControlServiceImpl implements WebServerControlService {
                         break;
                     case ExecReturnCode.JWALA_EXIT_CODE_ABNORMAL_SUCCESS:
                         int retCode = 0;
-                        switch (controlWebServerRequest.getControlOperation()) {
+                        switch (controlOperation) {
                             case START:
                                 commandOutputReturnDescription = MSG_SERVICE_ALREADY_STARTED;
                                 break;
@@ -132,29 +135,24 @@ public class WebServerControlServiceImpl implements WebServerControlService {
                                 break;
                         }
 
-                        LOGGER.warn(commandOutputReturnDescription);
-                        historyService.createHistory(getServerName(webServer), new ArrayList<>(webServer.getGroups()), commandOutputReturnDescription, EventType.APPLICATION_EVENT, aUser.getId());
-
-                        // Send as a failure to make the UI display it in the history window
-                        // TODO: Sending a failure state so that the commandOutputReturnDescription will be shown in the UI is not the proper way to do this, refactor this in the future
-                        messagingService.send(new CurrentState<>(webServer.getId(), WebServerReachableState.WS_FAILED, DateTime.now(), StateType.WEB_SERVER,
-                                commandOutputReturnDescription));
+                        sendMessageToActionEventLogs(aUser, webServer, commandOutputReturnDescription);
 
                         if (retCode == 0) {
                             commandOutput = new CommandOutput(new ExecReturnCode(retCode), commandOutputReturnDescription, null);
                         }
                         break;
-                    default:
-                        final String errorMsg = "Web Server control command was not successful! Return code = "
-                                + returnCode + ", description = " +
-                                CommandOutputReturnCode.fromReturnCode(returnCode).getDesc() +
-                                ", message = " + commandOutput.standardErrorOrStandardOut();
+                    case ExecReturnCode.JWALA_EXIT_NO_SUCH_SERVICE:
+                        if (controlOperation.equals(START) || controlOperation.equals(STOP)) {
+                            sendMessageToActionEventLogs(aUser, webServer, commandOutputReturnDescription);
+                        } else {
+                            final String errorMsg = createCommandErrorMessage(commandOutput, returnCode);
+                            sendMessageToActionEventLogs(aUser, webServer, errorMsg);
+                        }
 
-                        LOGGER.error(errorMsg);
-                        historyService.createHistory(getServerName(webServer), new ArrayList<>(webServer.getGroups()), errorMsg,
-                                EventType.APPLICATION_EVENT, aUser.getId());
-                        messagingService.send(new CurrentState<>(webServer.getId(), WebServerReachableState.WS_FAILED,
-                                DateTime.now(), StateType.WEB_SERVER, errorMsg));
+                        break;
+                    default:
+                        final String errorMsg = createCommandErrorMessage(commandOutput, returnCode);
+                        sendMessageToActionEventLogs(aUser, webServer, errorMsg);
                         break;
                 }
             }
@@ -168,6 +166,23 @@ public class WebServerControlServiceImpl implements WebServerControlService {
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE,
                     "CommandFailureException when attempting to control a JVM: " + controlWebServerRequest, e);
         }
+    }
+
+    private String createCommandErrorMessage(CommandOutput commandOutput, Integer returnCode) {
+        return "Web Server control command was not successful! Return code = "
+                                        + returnCode + ", description = " +
+                                        CommandOutputReturnCode.fromReturnCode(returnCode).getDesc() +
+                                        ", message = " + commandOutput.standardErrorOrStandardOut();
+    }
+
+    private void sendMessageToActionEventLogs(User aUser, WebServer webServer, String commandOutputReturnDescription) {
+        LOGGER.error(commandOutputReturnDescription);
+        historyService.createHistory(getServerName(webServer), new ArrayList<>(webServer.getGroups()), commandOutputReturnDescription, EventType.APPLICATION_EVENT, aUser.getId());
+
+        // Send as a failure to make the UI display it in the history window
+        // TODO: Sending a failure state so that the commandOutputReturnDescription will be shown in the UI is not the proper way to do this, refactor this in the future
+        messagingService.send(new CurrentState<>(webServer.getId(), WebServerReachableState.WS_FAILED, DateTime.now(), StateType.WEB_SERVER,
+                commandOutputReturnDescription));
     }
 
     /**
