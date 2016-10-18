@@ -62,6 +62,14 @@ public class WebServerServiceImpl implements WebServerService {
         this.inMemoryStateManagerService = inMemoryStateManagerService;
         this.templatePath = templatePath;
         this.resourceService = resourceService;
+
+        initInMemoryStateService();
+    }
+
+    private void initInMemoryStateService() {
+        for(WebServer webServer : webServerPersistenceService.getWebServers()){
+            inMemoryStateManagerService.put(webServer.getId(), webServer.getState());
+        }
     }
 
     @Override

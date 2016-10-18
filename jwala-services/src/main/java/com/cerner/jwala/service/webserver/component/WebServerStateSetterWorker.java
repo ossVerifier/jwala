@@ -104,7 +104,7 @@ public class WebServerStateSetterWorker {
                         LOGGER.debug("{} {}", webServerName, ioe.getMessage(), ioe);
                     } else {
                         if (!webServerState.equals(WebServerReachableState.WS_UNREACHABLE)) {
-                            LOGGER.info("Web Server {} changing state to {}", webServerName, WebServerReachableState.WS_UNREACHABLE.toStateLabel());
+                            LOGGER.info("Web Server {} changing state from {} to {}", webServerName, webServer.getState().toStateLabel(), WebServerReachableState.WS_UNREACHABLE.toStateLabel());
                             LOGGER.debug("{} {}", webServerName, ioe.getMessage(), ioe);
                         }
                     }
