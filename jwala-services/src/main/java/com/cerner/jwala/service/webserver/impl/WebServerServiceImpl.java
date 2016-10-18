@@ -18,12 +18,14 @@ import com.cerner.jwala.persistence.jpa.service.exception.ResourceTemplateUpdate
 import com.cerner.jwala.persistence.service.WebServerPersistenceService;
 import com.cerner.jwala.service.resource.ResourceService;
 import com.cerner.jwala.service.resource.impl.ResourceGeneratorType;
+import com.cerner.jwala.service.state.InMemoryStateManagerService;
 import com.cerner.jwala.service.webserver.WebServerService;
 import com.cerner.jwala.service.webserver.exception.WebServerServiceException;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -45,12 +47,19 @@ public class WebServerServiceImpl implements WebServerService {
 
     private final ResourceService resourceService;
 
+    private InMemoryStateManagerService<Identifier<WebServer>, WebServerReachableState> inMemoryStateManagerService;
+
     private final String templatePath;
 
-    public WebServerServiceImpl(final WebServerPersistenceService webServerPersistenceService, final FileManager fileManager,
-                                final ResourceService resourceService, final String templatePath) {
+    public WebServerServiceImpl(final WebServerPersistenceService webServerPersistenceService,
+                                final FileManager fileManager,
+                                final ResourceService resourceService,
+                                @Qualifier("webServerInMemoryStateManagerService")
+                                final InMemoryStateManagerService<Identifier<WebServer>, WebServerReachableState> inMemoryStateManagerService,
+                                final String templatePath) {
         this.webServerPersistenceService = webServerPersistenceService;
         this.fileManager = fileManager;
+        this.inMemoryStateManagerService = inMemoryStateManagerService;
         this.templatePath = templatePath;
         this.resourceService = resourceService;
     }
@@ -78,7 +87,9 @@ public class WebServerServiceImpl implements WebServerService {
                 createWebServerRequest.getState(),
                 createWebServerRequest.getErrorStatus());
 
-        return webServerPersistenceService.createWebServer(webServer, aCreatingUser.getId());
+        final WebServer wsReturnValue = webServerPersistenceService.createWebServer(webServer, aCreatingUser.getId());
+        inMemoryStateManagerService.put(wsReturnValue.getId(), wsReturnValue.getState());
+        return wsReturnValue;
     }
 
     @Override
@@ -142,6 +153,7 @@ public class WebServerServiceImpl implements WebServerService {
     @Transactional
     public void removeWebServer(final Identifier<WebServer> aWebServerId) {
         webServerPersistenceService.removeWebServer(aWebServerId);
+        inMemoryStateManagerService.remove(aWebServerId);
     }
 
     @Override
@@ -160,6 +172,7 @@ public class WebServerServiceImpl implements WebServerService {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void updateState(final Identifier<WebServer> id, final WebServerReachableState state, final String errorStatus) {
         webServerPersistenceService.updateState(id, state, errorStatus);
+        inMemoryStateManagerService.put(id, state);
     }
 
     @Override
@@ -214,13 +227,13 @@ public class WebServerServiceImpl implements WebServerService {
     @Override
     @Transactional
     public void uploadWebServerConfig(WebServer webServer, String templateName, String templateContent, String metaDataStr, String groupName, User user) {
-        try{
+        try {
 
             ResourceTemplateMetaData metaData = resourceService.getTokenizedMetaData(templateName, webServer, metaDataStr);
             ResourceIdentifier resourceId = new ResourceIdentifier.Builder()
                     .setResourceName(metaData.getDeployFileName())
                     .setGroupName(groupName)
-                    .setWebServerName(webServer.getName()). build();
+                    .setWebServerName(webServer.getName()).build();
             resourceService.createResource(resourceId, metaData, IOUtils.toInputStream(templateContent));
 
         } catch (IOException e) {
@@ -234,7 +247,7 @@ public class WebServerServiceImpl implements WebServerService {
     public String updateResourceTemplate(final String wsName, final String resourceTemplateName, final String template) {
         try {
             webServerPersistenceService.updateResourceTemplate(wsName, resourceTemplateName, template);
-        } catch (ResourceTemplateUpdateException | NonRetrievableResourceTemplateContentException e){
+        } catch (ResourceTemplateUpdateException | NonRetrievableResourceTemplateContentException e) {
             LOGGER.error("Failed to update resource template {}", resourceTemplateName, e);
             return null;
         }

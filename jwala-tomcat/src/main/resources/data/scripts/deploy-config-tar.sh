@@ -8,7 +8,7 @@ JWALA_EXIT_CODE_SUCCESS=0
 JWALA_EXIT_CODE_FAILED=1
 
 if [ "$1" = "" -o "$2" = "" -o "$3" = "" ]; then
-    echo $0 not invoked with tar name or folder to untar or the jar executable path
+    /usr/bin/echo $0 not invoked with tar name or folder to untar or the jar executable path
     exit $JWALA_EXIT_CODE_NO_OP;
 fi
 export JAR_FILE=`/usr/bin/basename $1`
@@ -24,9 +24,10 @@ fi
 
 # extract the new configuration files
 if [ ! -e "$3.exe" ]; then
-  echo JVM version not installed: $3 does not exist on this host
+  /usr/bin/echo JVM version not installed: $3 does not exist on this host
   exit $JWALA_EXIT_CODE_FAILED
 fi
 $3 xf `cygpath -wa $1`
 /usr/bin/rm $1
+/usr/bin/echo Deploy of $1 was successful
 exit 0

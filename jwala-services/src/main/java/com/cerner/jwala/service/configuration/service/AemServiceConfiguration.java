@@ -85,7 +85,6 @@ import org.apache.commons.pool2.impl.GenericKeyedObjectPoolConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -220,9 +219,15 @@ public class AemServiceConfiguration {
 
     @Bean(name = "webServerService")
     public WebServerService getWebServerService(final ResourceService resourceService,
+                                                @Qualifier("webServerInMemoryStateManagerService")
+                                                final InMemoryStateManagerService<Identifier<WebServer>, WebServerReachableState> inMemoryStateManagerService,
                                                 @Value("${paths.resource-templates:../data/templates}") final String templatePath) {
-        return new WebServerServiceImpl(persistenceServiceConfiguration.getWebServerPersistenceService(),
-                fileManager, resourceService, templatePath);
+        return new WebServerServiceImpl(
+                persistenceServiceConfiguration.getWebServerPersistenceService(),
+                fileManager,
+                resourceService,
+                inMemoryStateManagerService,
+                templatePath);
     }
 
     @Bean

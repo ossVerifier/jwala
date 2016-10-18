@@ -3,6 +3,7 @@ package com.cerner.jwala.service.webserver.impl;
 import com.cerner.jwala.common.configuration.TestExecutionProfile;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.webserver.WebServer;
+import com.cerner.jwala.common.domain.model.webserver.WebServerReachableState;
 import com.cerner.jwala.common.exception.NotFoundException;
 import com.cerner.jwala.files.FileManager;
 import com.cerner.jwala.files.configuration.TocFileManagerConfigReference;
@@ -14,6 +15,8 @@ import com.cerner.jwala.persistence.service.WebServerPersistenceService;
 import com.cerner.jwala.persistence.service.impl.WebServerPersistenceServiceImpl;
 import com.cerner.jwala.service.configuration.TestJpaConfiguration;
 import com.cerner.jwala.service.resource.ResourceService;
+import com.cerner.jwala.service.state.InMemoryStateManagerService;
+import com.cerner.jwala.service.state.impl.InMemoryStateManagerServiceImpl;
 import com.cerner.jwala.service.webserver.WebServerService;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -37,6 +40,8 @@ import org.springframework.transaction.annotation.Transactional;
 @EnableTransactionManagement
 @Transactional
 public class WebServerServiceImplIntegrationTest {
+
+    private InMemoryStateManagerService<Identifier<WebServer>, WebServerReachableState> inMemService = new InMemoryStateManagerServiceImpl<>();
 
     @Configuration
     static class CommonConfiguration {
@@ -71,7 +76,7 @@ public class WebServerServiceImplIntegrationTest {
 
     @Before
     public void setup() {
-        webServerService = new WebServerServiceImpl(webServerPersistenceService, fileManager, resourceService,"d:/jwala/app/data/types");
+        webServerService = new WebServerServiceImpl(webServerPersistenceService, fileManager, resourceService, inMemService, "d:/jwala/app/data/types");
     }
 
     @Test(expected = NotFoundException.class)
