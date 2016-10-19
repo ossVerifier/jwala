@@ -256,6 +256,33 @@ public class WebServerServiceRestImplTest {
     }
 
     @Test
+    public void testRemoveWebServerForceDelete() {
+        when(webServerControlService.controlWebServer(any(ControlWebServerRequest.class), any(User.class))).thenReturn(new CommandOutput(new ExecReturnCode(0), "SUCCESS", ""));
+        when(impl.getWebServer(any(Identifier.class))).thenReturn(webServer);
+        when(impl.getWebServer(anyString())).thenReturn(webServer);
+        final Response response = webServerServiceRest.removeWebServer(Identifier.id(1l, WebServer.class), authenticatedUser, false);
+        verify(impl, atLeastOnce()).removeWebServer(any(Identifier.class));
+        assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
+
+        final ApplicationResponse applicationResponse = (ApplicationResponse) response.getEntity();
+        assertEquals("successful", applicationResponse.getApplicationResponseContent());
+    }
+
+    @Test
+    public void testRemoveWebServerException() {
+        when(webServerControlService.controlWebServer(any(ControlWebServerRequest.class), any(User.class))).thenThrow(new RuntimeException("java.net.UnknownHostException"));
+        when(impl.getWebServer(any(Identifier.class))).thenReturn(webServer);
+        when(impl.getWebServer(anyString())).thenReturn(webServer);
+        final Response response = webServerServiceRest.removeWebServer(Identifier.id(1l, WebServer.class), authenticatedUser, false);
+        System.out.println(response.getStatus());
+        System.out.println(response.getStatusInfo().toString());
+        assertEquals(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), response.getStatus());
+
+        final ApplicationResponse applicationResponse = (ApplicationResponse) response.getEntity();
+        assertEquals("java.net.UnknownHostException", applicationResponse.getApplicationResponseContent());
+    }
+
+    @Test
     public void testControlWebServer() {
 
         final CommandOutput execData = mock(CommandOutput.class);
