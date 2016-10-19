@@ -82,6 +82,14 @@ public class JvmStateServiceImpl implements JvmStateService {
         this.remoteCommandExecutorService = remoteCommandExecutorService;
         this.sshConfig = sshConfig;
         lockManager = new StripedKeyLockManager(lockTimeout, TimeUnit.MILLISECONDS, keyLockStripeCount);
+
+        initInMemoryStateService();
+    }
+
+    private void initInMemoryStateService() {
+        for (Jvm jvm : jvmPersistenceService.getJvms()){
+            inMemoryStateManagerService.put(jvm.getId(), new CurrentState<Jvm, JvmState>(jvm.getId(), jvm.getState(), DateTime.now(), StateType.JVM));
+        }
     }
 
     @Override

@@ -59,7 +59,7 @@ public abstract class AbstractCrudServiceImpl<T extends AbstractEntity<T>> imple
     public void remove(final T entity) {
         entityManager.remove(entityManager.find(entityClass, entity.getId()));
         entityManager.flush();
-        entityManager.getEntityManagerFactory().getCache().evict(entityClass, entity.getId());
+        entityManager.getEntityManagerFactory().getCache().evictAll();
     }
 
     @Override
@@ -67,7 +67,7 @@ public abstract class AbstractCrudServiceImpl<T extends AbstractEntity<T>> imple
     public void remove(Long id) {
         entityManager.remove(entityManager.find(entityClass, id));
         entityManager.flush();
-        entityManager.getEntityManagerFactory().getCache().evict(entityClass, id);
+        entityManager.getEntityManagerFactory().getCache().evictAll();
     }
 
     @Override

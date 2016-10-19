@@ -37,12 +37,12 @@ import java.util.concurrent.Future;
 /**
  * Sets a web server's state. This class is meant to be a spring bean wherein its "work" method pingWebServer
  * is ran asynchronously as a spun up thread.
- *
+ * <p>
  * Note!!! This class has be given its own package named "component" to denote it as a Spring component
  * that is subject to component scanning. In addition, this was also done to avoid the problem of it's unit test
  * which uses Spring config and component scanning from picking up other Spring components that it does not need
  * which also results to spring bean definition problems.
- *
+ * <p>
  * Created by Z003BPEJ on 6/25/2015.
  */
 @Service
@@ -84,9 +84,10 @@ public class WebServerStateSetterWorker {
     public Future<?> pingWebServer(final WebServer webServer) {
         ClientHttpResponse response = null;
         synchronized (webServer) {
-            if (!isWebServerBusy(webServer)) {
+            final WebServerReachableState webServerState = webServer.getState();
+            if (!isWebServerBusy(webServer) && inMemoryStateManagerService.get(webServer.getId()) != WebServerReachableState.WS_NEW) {
                 final String webServerName = webServer.getName();
-                final WebServerReachableState webServerState = webServer.getState();
+                LOGGER.debug(">>>> Send ping for web server {}", webServerName);
                 try {
                     final ClientHttpRequest request = httpRequestFactory.createRequest(webServer.getStatusUri(), HttpMethod.GET);
                     response = request.execute();
@@ -95,27 +96,20 @@ public class WebServerStateSetterWorker {
                     if (response.getStatusCode() == HttpStatus.OK) {
                         setState(webServer, WebServerReachableState.WS_REACHABLE, StringUtils.EMPTY);
                     } else {
-                        if (!webServerState.equals(WebServerReachableState.WS_NEW)) {
-                            setState(webServer, WebServerReachableState.WS_UNREACHABLE,
-                                    "Request for '" + webServer.getStatusUri() + "' failed with a response code of '" +
-                                            response.getStatusCode() + "'");
-                        } else {
-                            LOGGER.debug("Not setting web server state to WS_UNREACHABLE because still in WS_NEW state for {}", webServerName);
-                        }
+                        setState(webServer, WebServerReachableState.WS_UNREACHABLE,
+                                "Request for '" + webServer.getStatusUri() + "' failed with a response code of '" +
+                                        response.getStatusCode() + "'");
                     }
                 } catch (final IOException ioe) {
                     if (ioe instanceof ConnectTimeoutException) {
                         LOGGER.debug("{} {}", webServerName, ioe.getMessage(), ioe);
                     } else {
                         if (!webServerState.equals(WebServerReachableState.WS_UNREACHABLE)) {
+                            LOGGER.info("Web Server {} changing state from {} to {}", webServerName, webServer.getState().toStateLabel(), WebServerReachableState.WS_UNREACHABLE.toStateLabel());
                             LOGGER.debug("{} {}", webServerName, ioe.getMessage(), ioe);
                         }
                     }
-                    if (!webServerState.equals(WebServerReachableState.WS_NEW)) {
-                        setState(webServer, WebServerReachableState.WS_UNREACHABLE, StringUtils.EMPTY);
-                    } else {
-                        LOGGER.debug("Not setting web server state to WS_UNREACHABLE because still in WS_NEW state for {}", webServerName);
-                    }
+                    setState(webServer, WebServerReachableState.WS_UNREACHABLE, StringUtils.EMPTY);
                 } catch (final RuntimeException rte) {
                     LOGGER.error(rte.getMessage(), rte);
                 } finally {
@@ -158,9 +152,10 @@ public class WebServerStateSetterWorker {
 
     /**
      * Check if state has changed or if message is not empty. Sets WEB_SERVER_LAST_PERSISTED_STATE_MAP and WEB_SERVER_LAST_PERSISTED_ERROR_STATUS_MAP.
-     * @param webServer {@link WebServer}
+     *
+     * @param webServer               {@link WebServer}
      * @param webServerReachableState {@link WebServerReachableState}
-     * @param msg a message (usually an error message)
+     * @param msg                     a message (usually an error message)
      * @return true of the state is not the same compared to the previous state or if there's a message (error message)
      */
     private boolean checkStateChangedAndOrMsgNotEmpty(final WebServer webServer, final WebServerReachableState webServerReachableState, final String msg) {
