@@ -21,16 +21,18 @@ var CommandStatusWidget = React.createClass({
 
         var fullPreviewComponent = this.state.fullPreviewMode ? <ModalDialogBox ref="previewDlg" title="Preview" maximized={true} show={true} cancelCallback={this.onCloseFullPreviewWindowHandler} hideFooter={true}/> : null;
 
-        return  <div ref="commandStatusContainer" className="CommandStatusWidget container ui-dialog ui-widget ui-widget-content ui-front title-container-style">
+        return  <div>
                     {fullPreviewComponent}
-                    <div className="title accordion-title nowrap ui-accordion-header ui-state-default ui-corner-all ui-accordion-icons">
-                        <span className={"ui-accordion-header-icon ui-icon " + openCloseBtnClassName} style={{display:"inline-block"}} onClick={this.clickOpenCloseWindowHandler}></span>
-                        <span className="ui-dialog-title" style={{display:"inline-block", float:"none", width:"auto"}}>Action and Event Logs</span>
-                        <span className="ui-icon ui-icon-newwin" style={{display:"inline-block", float:"right", cursor: "pointer"}}
-                                                                         onClick={this.clickOpenInNewWindowHandler}/>
+                    <div ref="commandStatusContainer" className="CommandStatusWidget container ui-dialog ui-widget ui-widget-content ui-front title-container-style">
+                        <div className="title accordion-title nowrap ui-accordion-header ui-state-default ui-corner-all ui-accordion-icons">
+                            <span className={"ui-accordion-header-icon ui-icon " + openCloseBtnClassName} style={{display:"inline-block"}} onClick={this.clickOpenCloseWindowHandler}></span>
+                            <span className="ui-dialog-title" style={{display:"inline-block", float:"none", width:"auto"}}>Action and Event Logs</span>
+                            <span className="ui-icon ui-icon-newwin" style={{display:"inline-block", float:"right", cursor: "pointer"}}
+                                                                             onClick={this.clickOpenInNewWindowHandler}/>
+                        </div>
+                        <img ref="processingIcon" style={{visibility: "hidden", position: "absolute", zIndex: 10, top: 65, left: 525}} src="public-resources/img/blue-and-light-blue-gears.gif"/>
+                        {content}
                     </div>
-                    <img ref="processingIcon" style={{visibility: "hidden", position: "absolute", zIndex: 10, top: 65, left: 525}} src="public-resources/img/blue-and-light-blue-gears.gif"/>
-                    {content}
                 </div>;
 
     },
