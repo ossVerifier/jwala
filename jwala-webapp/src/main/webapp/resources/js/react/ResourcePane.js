@@ -156,8 +156,12 @@ var ResourcePane = React.createClass({
 
         this.refs.confirmDeployResourceDlg.show("Deploy resource confirmation", msg);
     },
+    displayDeployErrorMessage: function(response){
+        $.errorAlert(ResourcePane.parseDetailedErrorMsg(response, ResourcePane.DEFAULT_DEPLOY_ERR_MSG), "", undefined, response.responseJSON.content);
+    },
     deployResourceCallback: function() {
         var data = this.state.data;
+        var self = this;
         if (data !== null) {
             if (data.rtreeListMetaData.entity === "jvms") {
                 ServiceFactory.getResourceService().deployJvmResource(data.jvmName, this.state.rightClickedItem)
@@ -165,7 +169,7 @@ var ResourcePane = React.createClass({
                         $.alert("Deploy successful!", ResourcePane.DEPLOY_RESOURCE_TITLE, true);
                     }).caught(function(response){
                         console.log(response);
-                        $.errorAlert(ResourcePane.parseDetailedErrorMsg(response, ResourcePane.DEFAULT_DEPLOY_ERR_MSG));
+                        self.displayDeployErrorMessage(response);
                     });
             } else if (data.rtreeListMetaData.entity === "webServers") {
                 ServiceFactory.getResourceService().deployWebServerResource(data.name, this.state.rightClickedItem)
@@ -173,7 +177,7 @@ var ResourcePane = React.createClass({
                         $.alert("Deploy successful!", ResourcePane.DEPLOY_RESOURCE_TITLE, true);
                     }).caught(function(response) {
                         console.log(response);
-                        $.errorAlert(ResourcePane.parseDetailedErrorMsg(response, ResourcePane.DEFAULT_DEPLOY_ERR_MSG));
+                        self.displayDeployErrorMessage(response);
                     });
             } else if (data.rtreeListMetaData.entity === "webApps" && data.rtreeListMetaData.parent.rtreeListMetaData.entity === "jvms") {
                 var groupName = this.state.data.rtreeListMetaData.parent.rtreeListMetaData.parent.rtreeListMetaData.parent.name;
@@ -183,7 +187,7 @@ var ResourcePane = React.createClass({
                         $.alert("Deploy successful!", ResourcePane.DEPLOY_RESOURCE_TITLE, true);
                     }).caught(function(response){
                         console.log(response);
-                        $.errorAlert(ResourcePane.parseDetailedErrorMsg(response, ResourcePane.DEFAULT_DEPLOY_ERR_MSG));
+                        self.displayDeployErrorMessage(response);
                     });
             } else if (data.rtreeListMetaData.entity === "webApps" && data.rtreeListMetaData.parent.rtreeListMetaData.entity === "webAppSection") {
                 var groupName = this.state.data.rtreeListMetaData.parent.rtreeListMetaData.parent.name;
@@ -192,7 +196,7 @@ var ResourcePane = React.createClass({
                         $.alert("Deploy successful!", ResourcePane.DEPLOY_RESOURCE_TITLE, true);
                     }).caught(function(response){
                         console.log(response);
-                        $.errorAlert(ResourcePane.parseDetailedErrorMsg(response, ResourcePane.DEFAULT_DEPLOY_ERR_MSG));
+                        self.displayDeployErrorMessage(response);
                     });
             } else if (data.rtreeListMetaData.entity === "webServerSection") {
                 ServiceFactory.getResourceService().deployGroupLevelWebServerResource(this.state.data.rtreeListMetaData.parent.name,
@@ -201,7 +205,7 @@ var ResourcePane = React.createClass({
                             $.alert("Deploy successful!", ResourcePane.DEPLOY_RESOURCE_TITLE, true);
                         }).caught(function(response){
                             console.log(response);
-                            $.errorAlert(ResourcePane.parseDetailedErrorMsg(response, ResourcePane.DEFAULT_DEPLOY_ERR_MSG));
+                            self.displayDeployErrorMessage(response);
                         });
             } else if (data.rtreeListMetaData.entity === "jvmSection") {
                 ServiceFactory.getResourceService().deployGroupLevelJvmResource(this.state.data.rtreeListMetaData.parent.name,
@@ -210,7 +214,7 @@ var ResourcePane = React.createClass({
                             $.alert("Deploy successful!", ResourcePane.DEPLOY_RESOURCE_TITLE, true);
                         }).caught(function(response){
                             console.log(response);
-                            $.errorAlert(ResourcePane.parseDetailedErrorMsg(response, ResourcePane.DEFAULT_DEPLOY_ERR_MSG));
+                            self.displayDeployErrorMessage(response);
                         });
             } else if (data.rtreeListMetaData.entity === "extProperties") {
                 ServiceFactory.getResourceService().deployResourceToAllHosts(this.state.rightClickedItem)
@@ -218,7 +222,7 @@ var ResourcePane = React.createClass({
                             $.alert("Deploy successful!", ResourcePane.DEPLOY_RESOURCE_TITLE, true);
                         }).caught(function(response){
                             console.log(response);
-                            $.errorAlert(ResourcePane.parseDetailedErrorMsg(response, ResourcePane.DEFAULT_DEPLOY_ERR_MSG));
+                            self.displayDeployErrorMessage(response);
                         });
             }
         }
@@ -228,6 +232,7 @@ var ResourcePane = React.createClass({
         this.state.host = host;
     },
     selectHostDlgOkClickCallback: function() {
+        var self = this;
         this.refs.selectHostDlg.close();
         if (this.state.data.rtreeListMetaData.entity === "extProperties"){
             ServiceFactory.getResourceService().deployResourceToHost(this.state.rightClickedItem, this.state.host)
@@ -235,7 +240,7 @@ var ResourcePane = React.createClass({
                     $.alert("Deploy successful!", ResourcePane.DEPLOY_RESOURCE_TITLE, true);
                 }).caught(function(response){
                     console.log(response);
-                    $.errorAlert(ResourcePane.parseDetailedErrorMsg(response, ResourcePane.DEFAULT_DEPLOY_ERR_MSG));
+                    self.displayDeployErrorMessage(response);
                 });
         } else {
             var groupName = this.state.data.rtreeListMetaData.parent.rtreeListMetaData.parent.name;
@@ -244,7 +249,7 @@ var ResourcePane = React.createClass({
                     $.alert("Deploy successful!", ResourcePane.DEPLOY_RESOURCE_TITLE, true);
                 }).caught(function(response){
                     console.log(response);
-                    $.errorAlert(ResourcePane.parseDetailedErrorMsg(response, ResourcePane.DEFAULT_DEPLOY_ERR_MSG));
+                    self.displayDeployErrorMessage(response);
                 });
         }
     },
