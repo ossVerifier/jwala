@@ -387,14 +387,19 @@ var XmlTabs = React.createClass({
                 metaDataPreview = <div className="Resource preview msg">A group level web server or JVM template cannot be previewed. Please select a specific web server or JVM instead.</div>;
             } else {
                 if (this.state.metaData && this.state.entityType === "webApps" && !this.state.entityParent.jvmName) {
-                    var parsedMetaData = JSON.parse(this.state.metaData.replace(/\\/g, "\\\\"));
-                    var deployToJvms = parsedMetaData.entity.deployToJvms;
-                    if (deployToJvms !== undefined && (!deployToJvms || deployToJvms === "false")) {
-                        xmlPreview = <XmlPreview ref="xmlPreview" mode="xml"/>
-                        metaDataPreview = <MetaDataPreview ref="metaDataPreview" mode="application/ld+json"/>
-                    } else {
-                        xmlPreview = <div><div className="Resource preview msg resource-preview-br">The template for a Web App template cannot be previewed at this level if it is configured to be deployed to JVMs. </div><div className="Resource preview msg">To preview this template, select a JVM instance from the topology tree that is associated with this Web App and template.</div></div>;
-                        metaDataPreview = <div><div className="Resource preview msg resource-preview-br">The meta data for a Web App template cannot be previewed at this level if it is configured to be deployed to JVMs. </div><div className="Resource preview msg">To preview the meta data, select a JVM instance from the topology tree that is associated with this Web App and meta data.</div></div>;
+                    try {
+                        var parsedMetaData = JSON.parse(this.state.metaData.replace(/\\/g, "\\\\"));
+                        var deployToJvms = parsedMetaData.entity.deployToJvms;
+                        if (deployToJvms !== undefined && (!deployToJvms || deployToJvms === "false")) {
+                            xmlPreview = <XmlPreview ref="xmlPreview" mode="xml"/>
+                            metaDataPreview = <MetaDataPreview ref="metaDataPreview" mode="application/ld+json"/>
+                        } else {
+                            xmlPreview = <div><div className="Resource preview msg resource-preview-br">The template for a Web App template cannot be previewed at this level if it is configured to be deployed to JVMs. </div><div className="Resource preview msg">To preview this template, select a JVM instance from the topology tree that is associated with this Web App and template.</div></div>;
+                            metaDataPreview = <div><div className="Resource preview msg resource-preview-br">The meta data for a Web App template cannot be previewed at this level if it is configured to be deployed to JVMs. </div><div className="Resource preview msg">To preview the meta data, select a JVM instance from the topology tree that is associated with this Web App and meta data.</div></div>;
+                        }
+                    } catch (e) {
+                        xmlPreview = <div className="Resource preview msg">Error parsing the meta data: unable to provide a preview until the meta data is corrected.</div>;
+                        metaDataPreview = <div className="Resource preview msg">Error parsing the meta data: unable to provide a preview until the meta data is corrected.</div>;
                     }
                 } else {
                     xmlPreview = <XmlPreview ref="xmlPreview" mode="xml"/>
@@ -650,14 +655,18 @@ var XmlTabs = React.createClass({
                                                                  this.previewSuccessCallback,
                                                                  this.previewErrorCallback);
                 }  else if (this.state.entityType === "webApps" && !this.state.entityParent.jvmName) {
-                    var parsedMetaData = JSON.parse(this.refs.metaDataEditor.getText().replace(/\\/g, "\\\\"));
-                    var deployToJvms = parsedMetaData.entity.deployToJvms;
-                    if (deployToJvms !== undefined && (!deployToJvms || deployToJvms === "false")){
-                        this.props.groupService.previewGroupAppResourceFile( this.state.entity.group.name,
-                                                                             this.state.resourceTemplateName,
-                                                                             this.refs.codeMirrorComponent.getText(),
-                                                                             this.previewSuccessCallback,
-                                                                             this.previewErrorCallback);
+                    try {
+                        var parsedMetaData = JSON.parse(this.refs.metaDataEditor.getText().replace(/\\/g, "\\\\"));
+                        var deployToJvms = parsedMetaData.entity.deployToJvms;
+                        if (deployToJvms !== undefined && (!deployToJvms || deployToJvms === "false")){
+                            this.props.groupService.previewGroupAppResourceFile( this.state.entity.group.name,
+                                                                                 this.state.resourceTemplateName,
+                                                                                 this.refs.codeMirrorComponent.getText(),
+                                                                                 this.previewSuccessCallback,
+                                                                                 this.previewErrorCallback);
+                        }
+                    } catch (e) {
+                            // TODO fail silently for now - render() should be displaying a message in the preview tab
                     }
                 } else if (this.state.entityType === "extProperties"){
                     this.props.resourceService.previewResourceFile(this.state.resourceTemplateName,
@@ -691,17 +700,21 @@ var XmlTabs = React.createClass({
                                                                    this.previewMetaDataSuccessCallback,
                                                                    this.previewMetaDataErrorCallback);
                 } else if (this.state.entityType === "webApps") {
-                    var parsedMetaData = JSON.parse(this.refs.metaDataEditor.getText().replace(/\\/g, "\\\\"));
-                    var deployToJvms = parsedMetaData.entity.deployToJvms;
-                    if (deployToJvms !== undefined && (!deployToJvms || deployToJvms === "false")){
-                        this.props.resourceService.previewResourceFile(this.state.resourceTemplateName,
-                                                                   this.refs.metaDataEditor.getText(),
-                                                                   this.state.entityParent.rtreeListMetaData.parent.name,
-                                                                   "",
-                                                                   "",
-                                                                   this.state.entity.name,
-                                                                   this.previewMetaDataSuccessCallback,
-                                                                   this.previewMetaDataErrorCallback);
+                    try {
+                        var parsedMetaData = JSON.parse(this.refs.metaDataEditor.getText().replace(/\\/g, "\\\\"));
+                        var deployToJvms = parsedMetaData.entity.deployToJvms;
+                        if (deployToJvms !== undefined && (!deployToJvms || deployToJvms === "false")){
+                            this.props.resourceService.previewResourceFile(this.state.resourceTemplateName,
+                                                                       this.refs.metaDataEditor.getText(),
+                                                                       this.state.entityParent.rtreeListMetaData.parent.name,
+                                                                       "",
+                                                                       "",
+                                                                       this.state.entity.name,
+                                                                       this.previewMetaDataSuccessCallback,
+                                                                       this.previewMetaDataErrorCallback);
+                       }
+                   } catch (e) {
+                        // TODO fail silently - render() should be displaying a message in the preview tab
                    }
                 }
             }
