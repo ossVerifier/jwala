@@ -42,8 +42,11 @@ import com.cerner.jwala.service.balancermanager.impl.BalancerManagerHtmlParser;
 import com.cerner.jwala.service.balancermanager.impl.BalancerManagerHttpClient;
 import com.cerner.jwala.service.balancermanager.impl.BalancerManagerServiceImpl;
 import com.cerner.jwala.service.balancermanager.impl.BalancerManagerXmlParser;
+import com.cerner.jwala.service.binarydistribution.BinaryDistributionControlService;
+import com.cerner.jwala.service.binarydistribution.BinaryDistributionLockManager;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionService;
 import com.cerner.jwala.service.binarydistribution.impl.BinaryDistributionControlServiceImpl;
+import com.cerner.jwala.service.binarydistribution.impl.BinaryDistributionLockManagerImpl;
 import com.cerner.jwala.service.binarydistribution.impl.BinaryDistributionServiceImpl;
 import com.cerner.jwala.service.group.*;
 import com.cerner.jwala.service.group.impl.GroupControlServiceImpl;
@@ -155,10 +158,10 @@ public class AemServiceConfiguration {
     @Autowired
     private ResourceService resourceService;
 
-    private final Map<String, ReentrantReadWriteLock> resourceWriteLockMap = new HashMap<>();
+    @Autowired
+    private BinaryDistributionLockManager binaryDistributionLockManager;
 
-    private final Map<String, ReentrantReadWriteLock> jvmWriteLockMap = new HashMap<>();
-    private final Map<String, ReentrantReadWriteLock> hostWriteLockMap = new HashMap<>();
+    private final Map<String, ReentrantReadWriteLock> binaryWriteLockMap = new HashMap<>();
 
     /**
      * Make vars.properties available to spring integration configuration
@@ -174,9 +177,15 @@ public class AemServiceConfiguration {
     }
 
     @Bean
-    public GroupService getGroupService(final WebServerPersistenceService webServerPersistenceService) {
-        return new GroupServiceImpl(persistenceServiceConfiguration.getGroupPersistenceService(), webServerPersistenceService,
-                persistenceServiceConfiguration.getApplicationPersistenceService(), aemCommandExecutorConfig.getRemoteCommandExecutor(), binaryDistributionService, resourceService);
+    public GroupService getGroupService(final HistoryCrudService historyCrudService, final MessagingService messagingService) {
+        return new GroupServiceImpl(
+                persistenceServiceConfiguration.getGroupPersistenceService(),
+                persistenceServiceConfiguration.getApplicationPersistenceService(),
+                aemCommandExecutorConfig.getRemoteCommandExecutor(),
+                binaryDistributionService,
+                resourceService,
+                getHistoryService(historyCrudService),
+                messagingService);
     }
 
     @Bean(name = "jvmService")
@@ -188,7 +197,12 @@ public class AemServiceConfiguration {
         final JvmPersistenceService jvmPersistenceService = persistenceServiceConfiguration.getJvmPersistenceService();
         return new JvmServiceImpl(jvmPersistenceService, groupService, applicationService,
                 fileManager, messagingTemplate, groupStateNotificationService, resourceService,
-                clientFactoryHelper, topicServerStates, jvmControlService, jvmWriteLockMap, hostWriteLockMap, binaryDistributionService);
+                clientFactoryHelper, topicServerStates, jvmControlService, binaryDistributionService, binaryDistributionLockManager);
+    }
+
+    @Bean(name = "binaryDistributionLockManager")
+    public BinaryDistributionLockManager getBinaryDistributionLockManager() {
+        return new BinaryDistributionLockManagerImpl();
     }
 
     @Bean(name = "balancermanagerService")
@@ -205,9 +219,15 @@ public class AemServiceConfiguration {
 
     @Bean(name = "webServerService")
     public WebServerService getWebServerService(final ResourceService resourceService,
+                                                @Qualifier("webServerInMemoryStateManagerService")
+                                                final InMemoryStateManagerService<Identifier<WebServer>, WebServerReachableState> inMemoryStateManagerService,
                                                 @Value("${paths.resource-templates:../data/templates}") final String templatePath) {
-        return new WebServerServiceImpl(persistenceServiceConfiguration.getWebServerPersistenceService(),
-                fileManager, resourceService, templatePath);
+        return new WebServerServiceImpl(
+                persistenceServiceConfiguration.getWebServerPersistenceService(),
+                fileManager,
+                resourceService,
+                inMemoryStateManagerService,
+                templatePath);
     }
 
     @Bean
@@ -307,7 +327,7 @@ public class AemServiceConfiguration {
         return new ResourceServiceImpl(persistenceServiceConfiguration.getResourcePersistenceService(),
                 persistenceServiceConfiguration.getGroupPersistenceService(), applicationPersistenceService,
                 jvmPersistenceService, webServerPersistenceService, getPrivateApplicationService(), resourceDao,
-                webArchiveManager, webServerResourceHandler, aemCommandExecutorConfig.getRemoteCommandExecutor(), resourceWriteLockMap,
+                webArchiveManager, webServerResourceHandler, aemCommandExecutorConfig.getRemoteCommandExecutor(), binaryWriteLockMap,
                 resourceContentGeneratorService);
     }
 
@@ -438,13 +458,13 @@ public class AemServiceConfiguration {
         return tf;
     }
 
-    @Bean
+    @Bean(name = "binaryDistributionControlService")
     public BinaryDistributionControlServiceImpl getBinaryDistributionControlService(RemoteCommandExecutor<BinaryDistributionControlOperation> remoteCommandExecutor) {
         return new BinaryDistributionControlServiceImpl(remoteCommandExecutor);
     }
 
-    @Bean
-    public BinaryDistributionService getBinaryDistributionService(BinaryDistributionControlServiceImpl binaryDistributionControlService) {
-        return new BinaryDistributionServiceImpl(binaryDistributionControlService);
+    @Bean(name = "binaryDistributionService")
+    public BinaryDistributionService getBinaryDistributionService(BinaryDistributionControlService binaryDistributionControlService) {
+        return new BinaryDistributionServiceImpl(binaryDistributionControlService, getBinaryDistributionLockManager());
     }
 }

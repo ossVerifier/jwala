@@ -124,6 +124,7 @@ public class WebServerServiceRestImplTest {
 
     @Before
     public void setUp() {
+        System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, "./src/test/resources");
         webServerServiceRest = new WebServerServiceRestImpl(impl, webServerControlService, commandImpl, writeLockMap, resourceService, groupService, binaryDistributionService);
         when(authenticatedUser.getUser()).thenReturn(new User("Unused"));
 
@@ -137,7 +138,6 @@ public class WebServerServiceRestImplTest {
             assertTrue("This should not fail, but ... " + e.getMessage(), false);
         }
 
-        System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, "./src/test/resources");
         generatedResourceDir = ApplicationProperties.get("paths.generated.resource.dir");
 
         assertTrue(new File(generatedResourceDir).mkdirs());
@@ -211,7 +211,7 @@ public class WebServerServiceRestImplTest {
         when(groupService.getGroupWebServerResourceTemplateMetaData(anyString(), anyString())).thenReturn("{}");
         ResourceTemplateMetaData mockMetaData = mock(ResourceTemplateMetaData.class);
         when(mockMetaData.getDeployFileName()).thenReturn("httpd.conf");
-        when(resourceService.getFormattedResourceMetaData(anyString(), Matchers.anyObject(), anyString())).thenReturn(mockMetaData);
+        when(resourceService.getTokenizedMetaData(anyString(), Matchers.anyObject(), anyString())).thenReturn(mockMetaData);
         final Response response = webServerServiceRest.createWebServer(jsonCreateWebServer, authenticatedUser);
         assertEquals(Response.Status.EXPECTATION_FAILED.getStatusCode(), response.getStatus());
     }
@@ -238,19 +238,21 @@ public class WebServerServiceRestImplTest {
         when(webServerControlService.controlWebServer(any(ControlWebServerRequest.class), any(User.class))).thenReturn(new CommandOutput(new ExecReturnCode(0), "SUCCESS", ""));
         when(impl.getWebServer(any(Identifier.class))).thenReturn(webServer);
         when(impl.getWebServer(anyString())).thenReturn(webServer);
-        final Response response = webServerServiceRest.removeWebServer(Identifier.id(1l, WebServer.class), authenticatedUser);
+        final Response response = webServerServiceRest.removeWebServer(Identifier.id(1l, WebServer.class), authenticatedUser, true);
         verify(impl, atLeastOnce()).removeWebServer(any(Identifier.class));
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
 
         final ApplicationResponse applicationResponse = (ApplicationResponse) response.getEntity();
-        assertNull(applicationResponse);
+        assertEquals("successful", applicationResponse.getApplicationResponseContent());
     }
 
-    @Test(expected = InternalErrorException.class)
+    @Test
     public void testRemoveWebServerWhenWebServerNotStopped() {
         when(impl.getWebServer(any(Identifier.class))).thenReturn(webServer);
         when(impl.isStarted(any(WebServer.class))).thenReturn(true);
-        webServerServiceRest.removeWebServer(Identifier.id(1l, WebServer.class), authenticatedUser);
+        final Response response = webServerServiceRest.removeWebServer(Identifier.id(1l, WebServer.class), authenticatedUser, true);
+        assertEquals("Web server webserverName must be stopped before it can be deleted!",
+                ((ApplicationResponse) response.getEntity()).getApplicationResponseContent());
     }
 
     @Test
@@ -321,7 +323,7 @@ public class WebServerServiceRestImplTest {
         when(mockMetaData.getDeployFileName()).thenReturn("httpd.conf");
         when(mockMetaData.getDeployPath()).thenReturn("./anyPath");
         when(mockMetaData.getContentType()).thenReturn("text/plain");
-        when(resourceService.getFormattedResourceMetaData(anyString(), Matchers.anyObject(), anyString())).thenReturn(mockMetaData);
+        when(resourceService.getTokenizedMetaData(anyString(), Matchers.anyObject(), anyString())).thenReturn(mockMetaData);
         Response response = webServerServiceRest.generateAndDeployConfig(webServer.getName(), "httpd.conf", authenticatedUser);
         assertTrue(response.hasEntity());
     }
@@ -342,7 +344,7 @@ public class WebServerServiceRestImplTest {
         when(mockMetaData.getDeployFileName()).thenReturn("httpd.conf");
         when(mockMetaData.getDeployPath()).thenReturn("./anyPath");
         when(mockMetaData.getContentType()).thenReturn("text/plain");
-        when(resourceService.getFormattedResourceMetaData(anyString(), Matchers.anyObject(), anyString())).thenReturn(mockMetaData);
+        when(resourceService.getTokenizedMetaData(anyString(), Matchers.anyObject(), anyString())).thenReturn(mockMetaData);
         Response response = webServerServiceRest.generateAndDeployConfig(webServer.getName(), "httpd.exe", authenticatedUser);
         assertTrue(response.hasEntity());
     }
@@ -379,7 +381,7 @@ public class WebServerServiceRestImplTest {
         when(mockMetaData.getDeployFileName()).thenReturn("httpd.conf");
         when(mockMetaData.getDeployPath()).thenReturn("./anyPath");
         when(mockMetaData.getContentType()).thenReturn("text/plain");
-        when(resourceService.getFormattedResourceMetaData(anyString(), Matchers.anyObject(), anyString())).thenReturn(mockMetaData);
+        when(resourceService.getTokenizedMetaData(anyString(), Matchers.anyObject(), anyString())).thenReturn(mockMetaData);
         boolean failedSecureCopy = false;
         Response response = null;
         try {
@@ -408,7 +410,7 @@ public class WebServerServiceRestImplTest {
         when(mockMetaData.getDeployFileName()).thenReturn("httpd.conf");
         when(mockMetaData.getDeployPath()).thenReturn("./anyPath");
         when(mockMetaData.getContentType()).thenReturn("text/plain");
-        when(resourceService.getFormattedResourceMetaData(anyString(), Matchers.anyObject(), anyString())).thenReturn(mockMetaData);
+        when(resourceService.getTokenizedMetaData(anyString(), Matchers.anyObject(), anyString())).thenReturn(mockMetaData);
         response = webServerServiceRest.generateAndDeployConfig(webServer.getName(), "httpd.conf", authenticatedUser);
         assertNotNull(response);
         assertEquals(webServer.getName(), ((Map) ((ApplicationResponse) response.getEntity()).getApplicationResponseContent()).get("webServerName"));
@@ -445,7 +447,7 @@ public class WebServerServiceRestImplTest {
         when(mockMetaData.getDeployFileName()).thenReturn("httpd.conf");
         when(mockMetaData.getDeployPath()).thenReturn("./anyPath");
         when(mockMetaData.getContentType()).thenReturn("text/plain");
-        when(resourceService.getFormattedResourceMetaData(anyString(), Matchers.anyObject(), anyString())).thenReturn(mockMetaData);
+        when(resourceService.getTokenizedMetaData(anyString(), Matchers.anyObject(), anyString())).thenReturn(mockMetaData);
 
         Response response = null;
         response = webServerServiceRest.generateAndDeployWebServer(webServer.getName(), authenticatedUser);
@@ -572,7 +574,7 @@ public class WebServerServiceRestImplTest {
         when(mockMetaData.getDeployFileName()).thenReturn("httpd.conf");
         when(mockMetaData.getDeployPath()).thenReturn("./anyPath");
         when(mockMetaData.getContentType()).thenReturn("text/plain");
-        when(resourceService.getFormattedResourceMetaData(anyString(), Matchers.anyObject(), anyString())).thenReturn(mockMetaData);
+        when(resourceService.getTokenizedMetaData(anyString(), Matchers.anyObject(), anyString())).thenReturn(mockMetaData);
 
         Response actual = webServerServiceRest.generateAndDeployWebServer(webServer.getName(), authenticatedUser);
         assertEquals(statusNotOk.getStatus(), actual.getStatus());
@@ -602,7 +604,7 @@ public class WebServerServiceRestImplTest {
         when(mockMetaData.getDeployFileName()).thenReturn("httpd.conf");
         when(mockMetaData.getDeployPath()).thenReturn("./anyPath");
         when(mockMetaData.getContentType()).thenReturn("text/plain");
-        when(resourceService.getFormattedResourceMetaData(anyString(), Matchers.anyObject(), anyString())).thenReturn(mockMetaData);
+        when(resourceService.getTokenizedMetaData(anyString(), Matchers.anyObject(), anyString())).thenReturn(mockMetaData);
 
         Response actual = webServerServiceRest.generateAndDeployWebServer(webServer.getName(), authenticatedUser);
         assertEquals(statusNotOk.getStatus(), actual.getStatus());
@@ -631,7 +633,7 @@ public class WebServerServiceRestImplTest {
         when(mockMetaData.getDeployFileName()).thenReturn("httpd.conf");
         when(mockMetaData.getDeployPath()).thenReturn("./anyPath");
         when(mockMetaData.getContentType()).thenReturn("text/plain");
-        when(resourceService.getFormattedResourceMetaData(anyString(), Matchers.anyObject(), anyString())).thenReturn(mockMetaData);
+        when(resourceService.getTokenizedMetaData(anyString(), Matchers.anyObject(), anyString())).thenReturn(mockMetaData);
 
         Response response = webServerServiceRest.generateAndDeployWebServer(webServer.getName(), authenticatedUser);
         assertNotNull(response);
@@ -680,7 +682,7 @@ public class WebServerServiceRestImplTest {
         when(mockMetaData.getDeployFileName()).thenReturn("httpd.conf");
         when(mockMetaData.getDeployPath()).thenReturn("./anyPath");
         when(mockMetaData.getContentType()).thenReturn("text/plain");
-        when(resourceService.getFormattedResourceMetaData(anyString(), Matchers.anyObject(), anyString())).thenReturn(mockMetaData);
+        when(resourceService.getTokenizedMetaData(anyString(), Matchers.anyObject(), anyString())).thenReturn(mockMetaData);
 
         Response response = webServerServiceRest.generateAndDeployConfig(webServer.getName(), "${webServer.name}.txt", authenticatedUser);
         assertTrue(response.hasEntity());

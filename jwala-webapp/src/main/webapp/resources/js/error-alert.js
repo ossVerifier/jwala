@@ -2,7 +2,7 @@
  * sources: http://coding.abel.nu/2012/01/jquery-ui-replacement-for-alert/
             http://stackoverflow.com/questions/702510/jquery-dialog-theme-and-style
  */
-$.extend({ errorAlert: function (message, dlgTitle, modal) {
+$.extend({ errorAlert: function (message, dlgTitle, modal, content) {
         /**
          * Exclude React minified exceptions since it is not very informative.
          * It only says there was an error in the minified React source code.
@@ -18,6 +18,18 @@ $.extend({ errorAlert: function (message, dlgTitle, modal) {
                 }
             }
 
+            if (content) {
+                message += "<div class='textAlignLeft'><ul>";
+                for (var property in content) {
+                    if (content.hasOwnProperty(property)) {
+                        message += "<li>";
+                        message += property + ": " + content[property];
+                        message += "</li>"
+                    }
+                }
+                message += "</ul></div>"
+            }
+
             $("<div style='font-size:14px'></div>").dialog( {
                 buttons: { "Ok": function () { $(this).dialog("close"); } },
                 close: function (event, ui) { $(this).remove(); },
@@ -28,7 +40,7 @@ $.extend({ errorAlert: function (message, dlgTitle, modal) {
                 open: function () {
                     $(this).parents(".ui-dialog:first").find(".ui-dialog-titlebar").addClass("ui-state-error");
                     $(this).parents(".ui-dialog:first").zIndex(999);
-                }}).text(message);
+                }}).html($.parseHTML(message));
         }
     }
 });

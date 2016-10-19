@@ -77,7 +77,7 @@ public enum WindowsJvmNetOperation implements ServiceCommandBuilder {
         public ExecCommand buildCommandForService(String aServiceName, String... aParams) {
 
             return new ExecCommand(
-                    cygpathWrapper(DEPLOY_CONFIG_ARCHIVE_SCRIPT_NAME, REMOTE_COMMANDS_USER_SCRIPTS + "/"),
+                    cygpathWrapper(DEPLOY_CONFIG_ARCHIVE_SCRIPT_NAME, REMOTE_COMMANDS_USER_SCRIPTS + "/" + aServiceName + "/"),
                     REMOTE_COMMANDS_USER_SCRIPTS + "/" + aServiceName + "_config.jar",
                     REMOTE_PATHS_INSTANCES + "/" + aServiceName,
                     REMOTE_JAVA_HOME + "/bin/jar"
@@ -117,7 +117,7 @@ public enum WindowsJvmNetOperation implements ServiceCommandBuilder {
             }
             final String decryptedPassword = encryptedPassword != null && encryptedPassword.length() > 0 ? new DecryptPassword().decrypt(encryptedPassword) : "";
             return new ExecCommand(
-                    cygpathWrapper(INVOKE_SERVICE_SCRIPT_NAME, REMOTE_COMMANDS_USER_SCRIPTS + "/"),
+                    cygpathWrapper(INVOKE_SERVICE_SCRIPT_NAME, REMOTE_COMMANDS_USER_SCRIPTS + "/" + aServiceName + "/"),
                     aServiceName,
                     REMOTE_PATHS_INSTANCES,
                     quotedUsername,
@@ -130,10 +130,10 @@ public enum WindowsJvmNetOperation implements ServiceCommandBuilder {
             return new ExecCommand(SCP_SCRIPT_NAME.getValue(), aParams[0], aParams[1]);
         }
     },
-    BACK_UP_FILE(JvmControlOperation.BACK_UP_FILE) {
+    BACK_UP(JvmControlOperation.BACK_UP) {
         @Override
         public ExecCommand buildCommandForService(String aServiceName, String... aParams) {
-            return new ExecCommand("/usr/bin/cp", aParams[0], aParams[1]);
+            return new ExecCommand("/usr/bin/mv", aParams[0], aParams[1]);
         }
     },
     CREATE_DIRECTORY(JvmControlOperation.CREATE_DIRECTORY) {

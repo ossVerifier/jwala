@@ -220,7 +220,6 @@ var WebAppConfigForm = React.createClass({
             WebAppId: "",
             WebAppName: "",
             WebAppContext: "",
-            GroupId: "",
             groupIds: [],
             secure: true,
             unpackWar: false,
@@ -256,7 +255,7 @@ var WebAppConfigForm = React.createClass({
           { WebAppId:this.getWebAppIdProp(nextProps),
             WebAppName:this.getWebAppProp(nextProps, "name", ""),
             WebAppContext:this.getWebAppProp(nextProps, "webAppContext", ""),
-            GroupId:this.getWebAppGroupIdProp(nextProps, "id"),
+            groupIds:[{id: this.getWebAppGroupIdProp(nextProps, "id")}],
             GroupName:this.getWebAppGroupProp(nextProps, "name"),
             secure:this.getWebAppProp(nextProps, "secure", true),
             unpackWar:this.getWebAppProp(nextProps, "unpackWar", false),
@@ -311,15 +310,17 @@ var WebAppConfigForm = React.createClass({
                             </tr>
                             <tr>
                                 <td>
-                                <DataCombobox name="groupId"
-                                              data={this.props.groupSelectData}
-                                              selectedVal={this.state.GroupId}
-                                              dataField="id.id"
-                                              val="name"
-                                              onChange={this.onSelectGroup}/>
+                                 <DataMultiSelectBox name="groupId"
+                                                     data={this.props.groupSelectData}
+                                                     selectedValIds={this.state.groupIds}
+                                                     dataField="id.id"
+                                                     val="name"
+                                                     className="data-multi-select-box"
+                                                     onSelectCallback={this.onSelectGroups}
+                                                     idKey="groupId"
+                                                     singleSelect={true}/>
                                 </td>
                             </tr>
-
                             <tr>
                                 <td>Secure</td>
                             </tr>
@@ -372,28 +373,21 @@ var WebAppConfigForm = React.createClass({
     onLbLocallyCheckboxChanged: function() {
         this.setState({loadBalanceAcrossServers: false});
     },
-    /*                                    <DataMultiSelectBox name="groupSelector[]"
-                                                        data={this.props.groupSelectData}
-                                                        selectedValIds={this.state.groupIds}
-                                                        key="id"
-                                                        keyPropertyName="id"
-                                                        val="name"
-                                                        className="data-multi-select-box"
-                                                        onSelectCallback={this.onSelectGroups}
-                                                        idKey="groupId"/>*/
-
     onSelectGroups: function(groupIds) {
-        this.setState({groupIds:groupIds});
-    },
-    onSelectGroup: function(e) {
-        this.setState({GroupId:e.target.value});
+        this.setState({groupIds: groupIds});
     },
     onChangeWebAppName: function(event) {
         this.setState({WebAppName:event.target.value});
     },
     componentDidMount: function() {
         if (this.validator === null) {
-            this.validator = $(this.getDOMNode().children[0]).validate({ignore: ":hidden"});
+            this.validator = $(this.getDOMNode().children[0])
+                .validate({ignore: ":hidden", rules: {"groupId": {required: true}},
+                           messages: {
+                               "groupId": {
+                                   required: "Please select at least 1 group"
+                               }
+                           }});
         }
     },
     componentDidUpdate: function() {

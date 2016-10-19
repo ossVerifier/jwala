@@ -86,17 +86,14 @@ var groupService = {
                                      false,
                                      "text/plain; charset=utf-8");
     },
-    previewGroupAppResourceFile: function(jvmName, templateName, template, successCallback, errorCallback) {
-        return serviceFoundation.put("v1.0/groups/" + encodeURIComponent(jvmName) + "/apps/resources/preview/" + encodeURIComponent(templateName),
+    previewGroupAppResourceFile: function(groupName, templateName, template, successCallback, errorCallback) {
+        return serviceFoundation.put("v1.0/groups/" + encodeURIComponent(groupName) + "/apps/resources/preview/" + encodeURIComponent(templateName),
                                      "json",
                                      template,
                                      successCallback,
                                      errorCallback,
                                      false,
                                      "text/plain; charset=utf-8");
-    },
-    deployGroupAppConf: function(groupName, resourceTemplateName) {
-        return serviceFoundation.promisedPut("v1.0/groups/" + groupName + "/apps/conf/" + resourceTemplateName, "json", null, false);
     },
     uploadGroupJvmTemplateForm: function(groupName, templateName, templateFile, successCallback, errorCallback) {
          return serviceFoundation.post("v1.0/groups/" + encodeURIComponent(groupName) + "/jvms/resources/uploadTemplate?templateName=" + encodeURIComponent(templateName),

@@ -386,8 +386,25 @@ var XmlTabs = React.createClass({
                 xmlPreview = <div className="Resource preview msg">A group level web server or JVM template cannot be previewed. Please select a specific web server or JVM instead.</div>;
                 metaDataPreview = <div className="Resource preview msg">A group level web server or JVM template cannot be previewed. Please select a specific web server or JVM instead.</div>;
             } else {
-                xmlPreview = <XmlPreview ref="xmlPreview" mode="xml"/>
-                metaDataPreview = <MetaDataPreview ref="metaDataPreview" mode="application/ld+json"/>
+                if (this.state.metaData && this.state.entityType === "webApps" && !this.state.entityParent.jvmName) {
+                    try {
+                        var parsedMetaData = JSON.parse(this.state.metaData.replace(/\\/g, "\\\\"));
+                        var deployToJvms = parsedMetaData.entity.deployToJvms;
+                        if (deployToJvms !== undefined && (!deployToJvms || deployToJvms === "false")) {
+                            xmlPreview = <XmlPreview ref="xmlPreview" mode="xml"/>
+                            metaDataPreview = <MetaDataPreview ref="metaDataPreview" mode="application/ld+json"/>
+                        } else {
+                            xmlPreview = <div><div className="Resource preview msg resource-preview-br">The template for a Web App template cannot be previewed at this level if it is configured to be deployed to JVMs. </div><div className="Resource preview msg">To preview this template, select a JVM instance from the topology tree that is associated with this Web App and template.</div></div>;
+                            metaDataPreview = <div><div className="Resource preview msg resource-preview-br">The meta data for a Web App template cannot be previewed at this level if it is configured to be deployed to JVMs. </div><div className="Resource preview msg">To preview the meta data, select a JVM instance from the topology tree that is associated with this Web App and meta data.</div></div>;
+                        }
+                    } catch (e) {
+                        xmlPreview = <div className="Resource preview msg">Error parsing the meta data: unable to provide a preview until the meta data is corrected.</div>;
+                        metaDataPreview = <div className="Resource preview msg">Error parsing the meta data: unable to provide a preview until the meta data is corrected.</div>;
+                    }
+                } else {
+                    xmlPreview = <XmlPreview ref="xmlPreview" mode="xml"/>
+                    metaDataPreview = <MetaDataPreview ref="metaDataPreview" mode="application/ld+json"/>
+                }
             }
         }
 
@@ -407,7 +424,7 @@ var XmlTabs = React.createClass({
     },
     formatMetaDataCallback: function() {
         try {
-            var metaDataJson = JSON.parse(this.refs.metaDataEditor.getText());
+            var metaDataJson = JSON.parse(this.refs.metaDataEditor.getText().replace(/\\/g, "\\\\"));
             this.refs.metaDataEditor.codeMirror.setValue(JSON.stringify(metaDataJson, null, XmlTabs.SPACING_LEVEL));
         } catch(e) {
             console.log(e);
@@ -583,9 +600,13 @@ var XmlTabs = React.createClass({
             var metaData = response.applicationResponseContent.metaData;
             var readOnly = false;
             if (metaData) {
-                var jsonMetaData = JSON.parse(metaData.replace(/\\/g, "\\\\")); // escape any backslashes before parsing
-                if (jsonMetaData.contentType === "application/binary") {
-                    readOnly = true;
+                try {
+                    var jsonMetaData = JSON.parse(metaData.replace(/\\/g, "\\\\"));
+                    if (jsonMetaData.contentType === "application/binary") {
+                        readOnly = true;
+                    }
+                } catch(e) {
+                    // TODO fail silently? -- resource generation or preview will throw the error for now
                 }
             }
 
@@ -626,24 +647,27 @@ var XmlTabs = React.createClass({
                                                              this.refs.codeMirrorComponent.getText(),
                                                              this.previewSuccessCallback,
                                                              this.previewErrorCallback);
-                } else if (this.state.entityType === "webApps") {
-                    this.props.webAppService.previewResourceFile(this.state.resourceTemplateName,
+                } else if (this.state.entityType === "webApps" && this.state.entityParent.jvmName) {
+                        this.props.webAppService.previewResourceFile(this.state.resourceTemplateName,
                                                                  this.state.entity.name,
                                                                  this.state.entity.group.name,
                                                                  this.state.entityParent.jvmName ? this.state.entityParent.jvmName : "",
                                                                  this.refs.codeMirrorComponent.getText(),
                                                                  this.previewSuccessCallback,
                                                                  this.previewErrorCallback);
-
-
-                }  else if (this.state.entityType === "jvmSection") {
-                    if (this.state.groupJvmEntityType && this.state.groupJvmEntityType === "webApp") {
-                        this.props.groupService.previewGroupAppResourceFile(this.state.resourceTemplateName,
-                                                                                     this.state.entityGroupName,
-                                                                                     this.state.resourceTemplateName,
-                                                                                     this.refs.codeMirrorComponent.getText(),
-                                                                                     this.previewSuccessCallback,
-                                                                                     this.previewErrorCallback);
+                }  else if (this.state.entityType === "webApps" && !this.state.entityParent.jvmName) {
+                    try {
+                        var parsedMetaData = JSON.parse(this.refs.metaDataEditor.getText().replace(/\\/g, "\\\\"));
+                        var deployToJvms = parsedMetaData.entity.deployToJvms;
+                        if (deployToJvms !== undefined && (!deployToJvms || deployToJvms === "false")){
+                            this.props.groupService.previewGroupAppResourceFile( this.state.entity.group.name,
+                                                                                 this.state.resourceTemplateName,
+                                                                                 this.refs.codeMirrorComponent.getText(),
+                                                                                 this.previewSuccessCallback,
+                                                                                 this.previewErrorCallback);
+                        }
+                    } catch (e) {
+                            // TODO fail silently for now - render() should be displaying a message in the preview tab
                     }
                 } else if (this.state.entityType === "extProperties"){
                     this.props.resourceService.previewResourceFile(this.state.resourceTemplateName,
@@ -677,14 +701,22 @@ var XmlTabs = React.createClass({
                                                                    this.previewMetaDataSuccessCallback,
                                                                    this.previewMetaDataErrorCallback);
                 } else if (this.state.entityType === "webApps") {
-                    this.props.resourceService.previewResourceFile(this.state.resourceTemplateName,
-                                                                   this.refs.metaDataEditor.getText(),
-                                                                   this.state.entityParent.rtreeListMetaData.parent.name,
-                                                                   "",
-                                                                   "",
-                                                                   this.state.entity.name,
-                                                                   this.previewMetaDataSuccessCallback,
-                                                                   this.previewMetaDataErrorCallback);
+                    try {
+                        var parsedMetaData = JSON.parse(this.refs.metaDataEditor.getText().replace(/\\/g, "\\\\"));
+                        var deployToJvms = parsedMetaData.entity.deployToJvms;
+                        if (deployToJvms !== undefined && (!deployToJvms || deployToJvms === "false")){
+                            this.props.resourceService.previewResourceFile(this.state.resourceTemplateName,
+                                                                       this.refs.metaDataEditor.getText(),
+                                                                       this.state.entityParent.rtreeListMetaData.parent.name,
+                                                                       "",
+                                                                       "",
+                                                                       this.state.entity.name,
+                                                                       this.previewMetaDataSuccessCallback,
+                                                                       this.previewMetaDataErrorCallback);
+                       }
+                   } catch (e) {
+                        // TODO fail silently - render() should be displaying a message in the preview tab
+                   }
                 }
             }
         }
@@ -722,7 +754,7 @@ var XmlTabs = React.createClass({
         }
     },
     statics: {
-        SPACING_LEVEL: 4
+        SPACING_LEVEL: 2
     }
 });
 
@@ -834,8 +866,6 @@ var SelectMetaDataAndTemplateFilesWidget = React.createClass({
     render: function() {
         return <div className="select-meta-data-and-template-files-widget">
                    <form ref="form">
-                       <p className="note">Note: The resource template that is about to be created will not follow the<br/>
-                          selected topology since the meta data (*.json) file is the one that determines it.</p>
                        <div className={(!this.state.invalidMetaFile ? "hide " : "") + "error"}>Please select a meta data file (*.json)</div>
                        <div className="file-input-container">
                            <input type="file" ref="metaDataFile" name="metaDataFile" accept=".json" onChange={this.onMetaDataFileChange}>Meta Data File</input>
@@ -875,7 +905,10 @@ var SelectTemplateFilesWidget = React.createClass({
     render: function() {
         var warningDisplay = null;
         if (this.props.getResourceOptions().length > 0) {
-            warningDisplay = <div className="Warning"><span className="icon"/><span className="msg">Only one external properties file can be uploaded. Any existing ones file will be overwritten.</span></div>;
+            warningDisplay = <div className="Warning">
+                                 <span className="icon"/>
+                                 <span className="msg">Only one external properties file can be uploaded. Any existing ones will be overwritten.</span>
+                             </div>;
         }
         return <div className="select-meta-data-and-template-files-widget">
                    <form ref="form">

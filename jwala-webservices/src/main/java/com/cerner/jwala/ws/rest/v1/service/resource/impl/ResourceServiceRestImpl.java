@@ -185,7 +185,7 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
 
         CreateResourceResponseWrapper responseWrapper = null;
         try {
-            final ResourceTemplateMetaData metaData = resourceService.getFormattedResourceMetaData(fileName, null, IOUtils.toString(metadataIn));
+            final ResourceTemplateMetaData metaData = resourceService.getMetaData(IOUtils.toString(metadataIn));
 
             // We do the file attachment validation here since this is a REST services affair IMHO.
             // TODO: Use a more sophisticated way of knowing the content type in next releases.
@@ -252,7 +252,7 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
         CreateResourceResponseWrapper responseWrapper = null;
 
         try {
-            metaData = resourceService.getFormattedResourceMetaData("ext.properties", null, EXT_PROPERTIES_RESOURCE_META_DATA);
+            metaData = resourceService.getMetaData(EXT_PROPERTIES_RESOURCE_META_DATA);
             ServletFileUpload sfu = new ServletFileUpload();
             FileItemIterator iter = sfu.getItemIterator(context.getHttpServletRequest());
             FileItemStream fileItemStream = iter.next();

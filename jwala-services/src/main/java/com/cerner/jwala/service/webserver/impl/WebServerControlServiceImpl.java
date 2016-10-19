@@ -37,6 +37,9 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
+import static com.cerner.jwala.common.domain.model.webserver.WebServerControlOperation.START;
+import static com.cerner.jwala.common.domain.model.webserver.WebServerControlOperation.STOP;
+
 public class WebServerControlServiceImpl implements WebServerControlService {
 
     @Value("${spring.messaging.topic.serverStates:/topic/server-states}")
@@ -52,6 +55,9 @@ public class WebServerControlServiceImpl implements WebServerControlService {
     private final RemoteCommandExecutorService remoteCommandExecutorService;
     private final SshConfiguration sshConfig;
     private static final int SLEEP_DURATION = 1000;
+
+    private static final String MSG_SERVICE_ALREADY_STARTED = "Service already started";
+    private static final String MSG_SERVICE_ALREADY_STOPPED = "Service already stopped";
 
     public WebServerControlServiceImpl(final WebServerService webServerService,
                                        final RemoteCommandExecutor<WebServerControlOperation> commandExecutor,
@@ -72,19 +78,19 @@ public class WebServerControlServiceImpl implements WebServerControlService {
         final WebServerControlOperation controlOperation = controlWebServerRequest.getControlOperation();
         final WebServer webServer = webServerService.getWebServer(controlWebServerRequest.getWebServerId());
         try {
-            final String event = controlWebServerRequest.getControlOperation().getOperationState() == null ?
-                    controlWebServerRequest.getControlOperation().name() : controlWebServerRequest.getControlOperation().getOperationState().toStateLabel();
+            final String event = controlOperation.getOperationState() == null ?
+                    controlOperation.name() : controlOperation.getOperationState().toStateLabel();
 
             historyService.createHistory(getServerName(webServer), new ArrayList<>(webServer.getGroups()), event, EventType.USER_ACTION,
                     aUser.getId());
 
             // Send a message to the UI about the control operation.
             if (controlOperation.getOperationState() != null) {
-                messagingService.send(new CurrentState<>(webServer.getId(), controlWebServerRequest.getControlOperation().getOperationState(),
+                messagingService.send(new CurrentState<>(webServer.getId(), controlOperation.getOperationState(),
                         aUser.getId(), DateTime.now(), StateType.WEB_SERVER));
             } else if (controlOperation.equals(WebServerControlOperation.DELETE_SERVICE)
                     || controlOperation.equals(WebServerControlOperation.INVOKE_SERVICE)
-                    || controlOperation.equals(WebServerControlOperation.SECURE_COPY)){
+                    || controlOperation.equals(WebServerControlOperation.SECURE_COPY)) {
                 messagingService.send(new WebServerHistoryEvent(webServer.getId(), controlOperation.name(), aUser.getId(), DateTime.now(), controlOperation));
             }
 
@@ -100,33 +106,53 @@ public class WebServerControlServiceImpl implements WebServerControlService {
                     remoteCommandReturnInfo.standardOuput, remoteCommandReturnInfo.errorOupout);
 
             final String standardOutput = commandOutput.getStandardOutput();
-            if (StringUtils.isNotEmpty(standardOutput) && (WebServerControlOperation.START.equals(controlOperation) ||
-                    WebServerControlOperation.STOP.equals(controlOperation))) {
+            if (StringUtils.isNotEmpty(standardOutput) && (START.equals(controlOperation) ||
+                    STOP.equals(controlOperation))) {
                 commandOutput.cleanStandardOutput();
                 LOGGER.info("shell command output{}", standardOutput);
             }
 
             // Process non successful return codes...
             if (!commandOutput.getReturnCode().wasSuccessful()) {
-                switch (commandOutput.getReturnCode().getReturnCode()) {
+                final Integer returnCode = commandOutput.getReturnCode().getReturnCode();
+                String commandOutputReturnDescription = CommandOutputReturnCode.fromReturnCode(returnCode).getDesc();
+                switch (returnCode) {
                     case ExecReturnCode.JWALA_EXIT_PROCESS_KILLED:
                         commandOutput = new CommandOutput(new ExecReturnCode(0), FORCED_STOPPED, commandOutput.getStandardError());
                         webServerService.updateState(webServer.getId(), WebServerReachableState.FORCED_STOPPED, "");
                         break;
                     case ExecReturnCode.JWALA_EXIT_CODE_ABNORMAL_SUCCESS:
-                        LOGGER.warn(CommandOutputReturnCode.fromReturnCode(commandOutput.getReturnCode().getReturnCode()).getDesc());
-                        commandOutput = new CommandOutput(new ExecReturnCode(0), null, null);
+                        int retCode = 0;
+                        switch (controlOperation) {
+                            case START:
+                                commandOutputReturnDescription = MSG_SERVICE_ALREADY_STARTED;
+                                break;
+                            case STOP:
+                                commandOutputReturnDescription = MSG_SERVICE_ALREADY_STOPPED;
+                                break;
+                            default:
+                                retCode = returnCode;
+                                break;
+                        }
+
+                        sendMessageToActionEventLogs(aUser, webServer, commandOutputReturnDescription);
+
+                        if (retCode == 0) {
+                            commandOutput = new CommandOutput(new ExecReturnCode(retCode), commandOutputReturnDescription, null);
+                        }
+                        break;
+                    case ExecReturnCode.JWALA_EXIT_NO_SUCH_SERVICE:
+                        if (controlOperation.equals(START) || controlOperation.equals(STOP)) {
+                            sendMessageToActionEventLogs(aUser, webServer, commandOutputReturnDescription);
+                        } else {
+                            final String errorMsg = createCommandErrorMessage(commandOutput, returnCode);
+                            sendMessageToActionEventLogs(aUser, webServer, errorMsg);
+                        }
+
                         break;
                     default:
-                        final String errorMsg = "Web Server control command was not successful! Return code = "
-                                + commandOutput.getReturnCode().getReturnCode() + ", description = " +
-                                CommandOutputReturnCode.fromReturnCode(commandOutput.getReturnCode().getReturnCode()).getDesc();
-
-                        LOGGER.error(errorMsg);
-                        historyService.createHistory(getServerName(webServer), new ArrayList<>(webServer.getGroups()), errorMsg,
-                                EventType.APPLICATION_EVENT, aUser.getId());
-                        messagingService.send(new CurrentState<>(webServer.getId(), WebServerReachableState.WS_FAILED,
-                                DateTime.now(), StateType.WEB_SERVER, errorMsg));
+                        final String errorMsg = createCommandErrorMessage(commandOutput, returnCode);
+                        sendMessageToActionEventLogs(aUser, webServer, errorMsg);
                         break;
                 }
             }
@@ -140,6 +166,23 @@ public class WebServerControlServiceImpl implements WebServerControlService {
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE,
                     "CommandFailureException when attempting to control a JVM: " + controlWebServerRequest, e);
         }
+    }
+
+    private String createCommandErrorMessage(CommandOutput commandOutput, Integer returnCode) {
+        return "Web Server control command was not successful! Return code = "
+                                        + returnCode + ", description = " +
+                                        CommandOutputReturnCode.fromReturnCode(returnCode).getDesc() +
+                                        ", message = " + commandOutput.standardErrorOrStandardOut();
+    }
+
+    private void sendMessageToActionEventLogs(User aUser, WebServer webServer, String commandOutputReturnDescription) {
+        LOGGER.error(commandOutputReturnDescription);
+        historyService.createHistory(getServerName(webServer), new ArrayList<>(webServer.getGroups()), commandOutputReturnDescription, EventType.APPLICATION_EVENT, aUser.getId());
+
+        // Send as a failure to make the UI display it in the history window
+        // TODO: Sending a failure state so that the commandOutputReturnDescription will be shown in the UI is not the proper way to do this, refactor this in the future
+        messagingService.send(new CurrentState<>(webServer.getId(), WebServerReachableState.WS_FAILED, DateTime.now(), StateType.WEB_SERVER,
+                commandOutputReturnDescription));
     }
 
     /**
@@ -207,12 +250,14 @@ public class WebServerControlServiceImpl implements WebServerControlService {
             commandOutput = commandExecutor.executeRemoteCommand(
                     aWebServerName,
                     host,
-                    WebServerControlOperation.BACK_UP_CONFIG_FILE,
+                    WebServerControlOperation.BACK_UP,
                     new WindowsWebServerPlatformCommandProvider(),
                     destPath,
                     destPathBackup);
             if (!commandOutput.getReturnCode().wasSuccessful()) {
-                LOGGER.info("Failed to back up the " + destPath + " for " + aWebServerName + ". Continuing with secure copy.");
+                final String standardError = "Failed to back up the " + destPath + " for " + aWebServerName + ". Continuing with secure copy.";
+                LOGGER.error(standardError);
+                throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, standardError);
             } else {
                 LOGGER.info("Successfully backed up " + destPath + " at " + host);
             }

@@ -489,8 +489,8 @@ var GroupOperationsDataTable = React.createClass({
                 }
             },
             open: function () {
-                // Set focus to "No button"
-                $(this).closest('.ui-dialog').find('.ui-dialog-buttonpane button:eq(1)').focus();
+                // Set focus to "Yes button"
+                $(this).closest('.ui-dialog').find('.ui-dialog-buttonpane button:eq(0)').focus();
             }
         });
     },
@@ -640,7 +640,7 @@ var GroupOperationsDataTable = React.createClass({
                 self.disableEnable(event.data.buttonSelector, function () {
                     return groupControlService.generateJvms(event.data.id, function (resp) {
                         $.alert("Successfully generated the JVMs for " + resp.applicationResponseContent.name, false);
-                    }, function (errMsg) {
+                        }, function (errMsg) {
                         $.errorAlert(errMsg, "Generate JVMs Failed", false);
                     });
                 }, "ui-icon-stop");

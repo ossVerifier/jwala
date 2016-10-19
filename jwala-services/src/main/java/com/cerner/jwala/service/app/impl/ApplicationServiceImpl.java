@@ -38,9 +38,12 @@ import com.cerner.jwala.service.exception.ApplicationServiceException;
 import com.cerner.jwala.service.group.GroupService;
 import com.cerner.jwala.service.resource.ResourceService;
 import com.cerner.jwala.service.resource.impl.ResourceGeneratorType;
+import com.cerner.jwala.template.exception.ResourceFileGeneratorException;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,7 +66,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     private static final String GENERATED_RESOURCE_DIR = "paths.generated.resource.dir";
     private static final String JWALA_WEBAPPS_DIR = "remote.jwala.webapps.dir";
     private final ExecutorService executorService;
-    final String jwalaScriptsPath = ApplicationProperties.get("remote.commands.user-scripts");
+    final String JWALA_SCRIPTS_PATH = ApplicationProperties.get("remote.commands.user-scripts");
 
     @Autowired
     private ApplicationPersistenceService applicationPersistenceService;
@@ -90,7 +93,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     private GroupService groupService;
     private final HistoryService historyService;
     private final MessagingService messagingService;
-    private static final String UNZIPEXE = "unzip.exe";
+    private static final String UNZIP_EXE = "unzip.exe";
 
     public ApplicationServiceImpl(final ApplicationPersistenceService applicationPersistenceService,
                                   final JvmPersistenceService jvmPersistenceService,
@@ -269,7 +272,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 
             String metaData = applicationPersistenceService.getMetaData(appName, jvmName, groupName, resourceTemplateName);
             app.setParentJvm(jvm);
-            ResourceTemplateMetaData templateMetaData = resourceService.getFormattedResourceMetaData(resourceTemplateName, app, metaData);
+            ResourceTemplateMetaData templateMetaData = resourceService.getTokenizedMetaData(resourceTemplateName, app, metaData);
             final String deployFileName = templateMetaData.getDeployFileName();
             final String destPath = templateMetaData.getDeployPath() + '/' + deployFileName;
             String srcPath;
@@ -288,13 +291,8 @@ public class ApplicationServiceImpl implements ApplicationService {
             final String deployJvmName = jvm.getJvmName();
             final String hostName = jvm.getHostName();
             final String parentDir = new File(destPath).getParentFile().getAbsolutePath().replaceAll("\\\\", "/");
-            CommandOutput commandOutput = applicationCommandExecutor.executeRemoteCommand(
-                    deployJvmName,
-                    hostName,
-                    ApplicationControlOperation.CREATE_DIRECTORY,
-                    new WindowsApplicationPlatformCommandProvider(),
-                    parentDir
-            );
+            CommandOutput commandOutput = executeCreateDirectoryCommand(deployJvmName, hostName, parentDir);
+
             if (commandOutput.getReturnCode().wasSuccessful()) {
                 LOGGER.info("created the parent dir {} successfully", parentDir);
             } else {
@@ -302,33 +300,19 @@ public class ApplicationServiceImpl implements ApplicationService {
                 LOGGER.error("error in creating parent directory {} :: ERROR : ", parentDir, parentDir);
                 throw new DeployApplicationConfException(standardError);
             }
-            commandOutput = applicationCommandExecutor.executeRemoteCommand(
-                    deployJvmName,
-                    hostName,
-                    ApplicationControlOperation.CHECK_FILE_EXISTS,
-                    new WindowsApplicationPlatformCommandProvider(),
-                    destPath);
+            commandOutput = executeCheckIfFileExistsCommand(deployJvmName, hostName, destPath);
+
             if (commandOutput.getReturnCode().wasSuccessful()) {
-                String currentDateSuffix = new SimpleDateFormat(".yyyyMMdd_HHmmss").format(new Date());
-                final String destPathBackup = destPath + currentDateSuffix;
-                commandOutput = applicationCommandExecutor.executeRemoteCommand(
-                        deployJvmName,
-                        hostName,
-                        ApplicationControlOperation.BACK_UP_FILE,
-                        new WindowsApplicationPlatformCommandProvider(),
-                        destPath,
-                        destPathBackup);
+                commandOutput = executeBackUpCommand(deployJvmName, hostName, destPath);
+
                 if (!commandOutput.getReturnCode().wasSuccessful()) {
-                    LOGGER.error("Failed to back up file {} for {}. Continuing with secure copy.", destPath, app.getName());
+                    final String standardError = "Failed to back up file " + destPath + " for " + app.getName() + ". Continuing with secure copy.";
+                    LOGGER.error(standardError);
+                    throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, standardError);
                 }
             }
-            final CommandOutput execData = applicationCommandExecutor.executeRemoteCommand(
-                    deployJvmName,
-                    hostName,
-                    ApplicationControlOperation.SECURE_COPY,
-                    new WindowsApplicationPlatformCommandProvider(),
-                    srcPath,
-                    destPath);
+            final CommandOutput execData = executeSecureCopyCommand(deployJvmName, hostName, srcPath, destPath);
+
             if (execData.getReturnCode().wasSuccessful()) {
                 LOGGER.info("Copy of {} successful: {}", deployFileName, confFile.getAbsolutePath());
                 return execData;
@@ -343,6 +327,9 @@ public class ApplicationServiceImpl implements ApplicationService {
             throw new DeployApplicationConfException(ex);
         } catch (JsonMappingException | JsonParseException e) {
             LOGGER.error("Failed to map meta data while deploying config file {} for app {} to jvm {}", resourceTemplateName, appName, jvmName, e);
+            throw new DeployApplicationConfException(e);
+        } catch (ResourceFileGeneratorException e){
+            LOGGER.error("Fail to generate the resource file {}", resourceTemplateName, e);
             throw new DeployApplicationConfException(e);
         } catch (IOException e) {
             LOGGER.error("Failed for IOException while deploying config file {} for app {} to jvm {}", resourceTemplateName, appName, jvmName, e);
@@ -401,7 +388,7 @@ public class ApplicationServiceImpl implements ApplicationService {
             for (String resourceTemplateName : appResourcesNames) {
                 String metaDataStr = groupService.getGroupAppResourceTemplateMetaData(groupName, resourceTemplateName);
                 try {
-                    ResourceTemplateMetaData metaData = resourceService.getFormattedResourceMetaData(resourceTemplateName, app, metaDataStr);
+                    ResourceTemplateMetaData metaData = resourceService.getTokenizedMetaData(resourceTemplateName, app, metaDataStr);
                     if (jvms != null && jvms.size() > 0 && !metaData.getEntity().getDeployToJvms()) {
                         // still need to iterate through the JVMs to get the host names
                         Set<String> hostNames = new HashSet<>();
@@ -474,12 +461,7 @@ public class ApplicationServiceImpl implements ApplicationService {
             @Override
             public CommandOutput call() throws Exception {
                 final String parentDir = new File(destPath).getParentFile().getAbsolutePath().replaceAll("\\\\", "/");
-                CommandOutput commandOutput = applicationCommandExecutor.executeRemoteCommand(
-                        null,
-                        host,
-                        ApplicationControlOperation.CREATE_DIRECTORY,
-                        new WindowsApplicationPlatformCommandProvider(),
-                        parentDir);
+                CommandOutput commandOutput = executeCreateDirectoryCommand(null, host, parentDir);
                 if (commandOutput.getReturnCode().wasSuccessful()) {
                     LOGGER.info("Successfully created parent dir {} on host {}", parentDir, host);
                 } else {
@@ -488,52 +470,139 @@ public class ApplicationServiceImpl implements ApplicationService {
                     throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, standardError);
                 }
                 LOGGER.info("Copying {} war to host {}", name, host);
-                commandOutput = applicationCommandExecutor.executeRemoteCommand(null, host, ApplicationControlOperation.SECURE_COPY, new WindowsApplicationPlatformCommandProvider(), tempWarFile.getAbsolutePath().replaceAll("\\\\", "/"), destPath);
+                commandOutput = executeSecureCopyCommand(null, host, tempWarFile.getAbsolutePath().replaceAll("\\\\", "/"), destPath);
 
                 if (application.isUnpackWar()) {
                     final String warName = application.getWarName();
                     LOGGER.info("Unpacking war {} on host {}", warName, host);
 
                     // create the .jwala directory as the destination for the unpack-war script
-                    commandOutput = applicationCommandExecutor.executeRemoteCommand(null,
-                            host,
-                            ApplicationControlOperation.CREATE_DIRECTORY,
-                            new WindowsApplicationPlatformCommandProvider(),
-                            jwalaScriptsPath);
+                    commandOutput = executeCreateDirectoryCommand(null, host, JWALA_SCRIPTS_PATH);
                     if (commandOutput.getReturnCode().wasSuccessful()) {
-                        LOGGER.info("Successfully created the parent dir {} on host", jwalaScriptsPath, host);
+                        LOGGER.info("Successfully created the parent dir {} on host", JWALA_SCRIPTS_PATH, host);
                     } else {
                         final String standardError = commandOutput.getStandardError().isEmpty() ? commandOutput.getStandardOutput() : commandOutput.getStandardError();
-                        LOGGER.error("Error in creating parent dir {} on host {}:: ERROR : {}", jwalaScriptsPath, host, standardError);
+                        LOGGER.error("Error in creating parent dir {} on host {}:: ERROR : {}", JWALA_SCRIPTS_PATH, host, standardError);
                         throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, standardError);
                     }
 
                     final String unpackWarScriptPath = ApplicationProperties.get("commands.scripts-path") + "/" + AemControl.Properties.UNPACK_BINARY_SCRIPT_NAME;
-                    commandOutput = applicationCommandExecutor.executeRemoteCommand(null, host, ApplicationControlOperation.SECURE_COPY, new WindowsApplicationPlatformCommandProvider(), unpackWarScriptPath, jwalaScriptsPath);
+                    final String destinationUnpackWarScriptPath = JWALA_SCRIPTS_PATH + "/" + AemControl.Properties.UNPACK_BINARY_SCRIPT_NAME;
+                    commandOutput = executeSecureCopyCommand(null, host, unpackWarScriptPath, destinationUnpackWarScriptPath);
+
                     if (!commandOutput.getReturnCode().wasSuccessful()) {
+                        LOGGER.error("Error in copying the " + unpackWarScriptPath + " to " + destinationUnpackWarScriptPath + " on " + host);
                         return commandOutput; // return immediately if the copy failed
                     }
 
                     // make sure the scripts are executable
-                    commandOutput = applicationCommandExecutor.executeRemoteCommand(null, host, ApplicationControlOperation.CHANGE_FILE_MODE, new WindowsApplicationPlatformCommandProvider(), "a+x", jwalaScriptsPath, "*.sh");
+                    commandOutput = executeChangeFileModeCommand(null, host, "a+x", JWALA_SCRIPTS_PATH, "*.sh");
                     if (!commandOutput.getReturnCode().wasSuccessful()) {
+                        LOGGER.error("Error in changing file permissions on " + JWALA_SCRIPTS_PATH + " on host:" + host);
                         return commandOutput;
                     }
 
                     binaryDistributionService.prepareUnzip(host);
-                    commandOutput = remoteCommandExecutor.executeRemoteCommand(null,
-                            host,
-                            BinaryDistributionControlOperation.UNZIP_BINARY,
-                            new WindowsBinaryDistributionPlatformCommandProvider(),
-                            ApplicationProperties.get("remote.commands.user-scripts") + "/" + UNZIPEXE,
-                            ApplicationProperties.get("remote.jwala.webapps.dir")+ "/" + warName,
-                            ApplicationProperties.get("remote.jwala.webapps.dir"),
-                            "");
+
+                    final String zipDestinationOption = FilenameUtils.removeExtension(destPath);
+
+                    LOGGER.debug("Checking if previously unpacked: {}", zipDestinationOption);
+                    commandOutput = executeCheckIfFileExistsCommand(null, host, zipDestinationOption);
+
+                    if (commandOutput.getReturnCode().wasSuccessful()) {
+                        LOGGER.debug("unpacked directory found at {}, backing it up", zipDestinationOption);
+                        commandOutput = executeBackUpCommand(null, host, zipDestinationOption);
+
+                        if (commandOutput.getReturnCode().wasSuccessful()) {
+                            LOGGER.debug("successful back up of {}", zipDestinationOption);
+                        } else {
+                            final String standardError = "Could not back up " + zipDestinationOption;
+                            LOGGER.error(standardError);
+                            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, standardError);
+                        }
+                    }
+
+                    commandOutput = executeUnzipBinaryCommand(null, host, destPath, zipDestinationOption, "");
                 }
                 return commandOutput;
             }
         });
         return commandOutputFuture;
+    }
+
+    @Override
+    public CommandOutput executeBackUpCommand(final String entity, final String host, final String source) throws CommandFailureException {
+        final String currentDateSuffix = new SimpleDateFormat(".yyyyMMdd_HHmmss").format(new Date());
+        final String destination = source + currentDateSuffix;
+        return remoteCommandExecutor.executeRemoteCommand(
+                entity,
+                host,
+                ApplicationControlOperation.BACK_UP,
+                new WindowsApplicationPlatformCommandProvider(),
+                source,
+                destination
+        );
+    }
+
+    @Override
+    public CommandOutput executeCreateDirectoryCommand(final String entity, final String host, final String directoryName) throws CommandFailureException {
+        return remoteCommandExecutor.executeRemoteCommand(
+                entity,
+                host,
+                ApplicationControlOperation.CREATE_DIRECTORY,
+                new WindowsApplicationPlatformCommandProvider(),
+                directoryName
+        );
+    }
+
+    @Override
+    public CommandOutput executeSecureCopyCommand(final String entity, final String host, final String source, final String destination) throws CommandFailureException {
+        return remoteCommandExecutor.executeRemoteCommand(
+                entity,
+                host,
+                ApplicationControlOperation.SECURE_COPY,
+                new WindowsApplicationPlatformCommandProvider(),
+                source,
+                destination
+        );
+    }
+
+    @Override
+    public CommandOutput executeCheckIfFileExistsCommand(final String entity, final String host, final String fileName) throws CommandFailureException {
+        return  remoteCommandExecutor.executeRemoteCommand(
+                entity,
+                host,
+                ApplicationControlOperation.CHECK_FILE_EXISTS,
+                new WindowsApplicationPlatformCommandProvider(),
+                fileName
+        );
+    }
+
+    @Override
+    public CommandOutput executeChangeFileModeCommand(final String entity, final String host, final String mode, final String fileName, final String fileOptions) throws CommandFailureException {
+        return remoteCommandExecutor.executeRemoteCommand(
+                entity,
+                host,
+                ApplicationControlOperation.CHANGE_FILE_MODE,
+                new WindowsApplicationPlatformCommandProvider(),
+                mode,
+                fileName,
+                fileOptions
+        );
+    }
+
+    @Override
+    public CommandOutput executeUnzipBinaryCommand(final String entity, final String host, final String fileName, final String destination, final String options) throws CommandFailureException {
+        return  remoteCommandExecutor.executeRemoteCommand(
+                entity,
+                host,
+                BinaryDistributionControlOperation.UNZIP_BINARY,
+                new WindowsBinaryDistributionPlatformCommandProvider(),
+                ApplicationProperties.get("remote.commands.user-scripts") + "/" + UNZIP_EXE,
+                fileName,
+                destination,
+                options
+        );
     }
 
     @Override
@@ -638,28 +707,33 @@ public class ApplicationServiceImpl implements ApplicationService {
     @Transactional
     public Application uploadWebArchive(final Identifier<Application> appId, final String warName, final byte[] war,
                                         final String deployPath) throws IOException {
+
+        final Map<String, Object> metaDataMap = new HashMap<>();
+
         if (warName != null && warName.toLowerCase().endsWith(".war")) {
 
             final Application application = applicationPersistenceService.getApplication(appId);
-            final ResourceTemplateMetaData metaData = new ResourceTemplateMetaData();
 
-            metaData.setContentType(ContentType.APPLICATION_BINARY.contentTypeStr);
-            metaData.setDeployPath(StringUtils.isEmpty(deployPath) ?
-                                                   ApplicationProperties.get(JWALA_WEBAPPS_DIR) : deployPath);
-            metaData.setDeployFileName(warName);
-            metaData.setTemplateName(warName);
+            metaDataMap.put("contentType", ContentType.APPLICATION_BINARY.contentTypeStr);
+            metaDataMap.put("deployPath", StringUtils.isEmpty(deployPath) ? ApplicationProperties.get(JWALA_WEBAPPS_DIR)
+                                                                          : deployPath);
+            metaDataMap.put("deployFileName", warName);
+            metaDataMap.put("templateName", warName);
 
             final Entity entity = new Entity();
             entity.setGroup(application.getGroup().getName());
             entity.setDeployToJvms(false);
-            metaData.setUnpack(application.isUnpackWar());
-            metaData.setOverwrite(false);
+            metaDataMap.put("unpack", application.isUnpackWar());
+            metaDataMap.put("overwrite", false);
 
             // Note: This is for backward compatibility.
             entity.setTarget(application.getName());
             entity.setType(EntityType.GROUPED_APPS.toString());
 
-            metaData.setEntity(entity);
+            metaDataMap.put("entity", entity);
+
+            final ResourceTemplateMetaData metaData =
+                    ResourceTemplateMetaData.createFromJsonStr(new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(metaDataMap));
 
             InputStream resourceDataIn = new ByteArrayInputStream(war);
             resourceDataIn = new ByteArrayInputStream(resourceService.uploadResource(metaData, resourceDataIn).getBytes());

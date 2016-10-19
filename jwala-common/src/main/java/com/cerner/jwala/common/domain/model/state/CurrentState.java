@@ -66,6 +66,15 @@ public class CurrentState<S, T extends OperationalState> implements KeyValueStat
         this.message = message;
     }
 
+    public CurrentState(final Identifier<S> id, final T state, final DateTime asOf, final StateType type, final String message, final String userId) {
+        this.id = id;
+        this.state = state;
+        this.asOf = asOf;
+        this.type = type;
+        this.message = message;
+        setUserId(userId);
+    }
+
     public Identifier<S> getId() {
         return id;
     }

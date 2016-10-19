@@ -1,10 +1,13 @@
 package com.cerner.jwala.service.binarydistribution.impl;
 
 import com.cerner.jwala.common.domain.model.fault.AemFaultType;
+import com.cerner.jwala.common.domain.model.resource.Entity;
+import com.cerner.jwala.common.domain.model.resource.EntityType;
 import com.cerner.jwala.common.exception.InternalErrorException;
 import com.cerner.jwala.common.properties.ApplicationProperties;
 import com.cerner.jwala.exception.CommandFailureException;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionControlService;
+import com.cerner.jwala.service.binarydistribution.BinaryDistributionLockManager;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,7 +16,6 @@ import org.springframework.stereotype.Service;
 
 import java.io.File;
 
-@Service
 public class BinaryDistributionServiceImpl implements BinaryDistributionService {
     private static final Logger LOGGER = LoggerFactory.getLogger(BinaryDistributionServiceImpl.class);
 
@@ -22,14 +24,16 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
     private static final String APACHE_EXCLUDE = "ReadMe.txt *--";
 
     private final BinaryDistributionControlService binaryDistributionControlService;
+    private final BinaryDistributionLockManager binaryDistributionLockManager;
 
-    @Autowired
-    public BinaryDistributionServiceImpl(BinaryDistributionControlService binaryDistributionControlService) {
+    public BinaryDistributionServiceImpl(BinaryDistributionControlService binaryDistributionControlService, BinaryDistributionLockManager binaryDistributionLockManager) {
         this.binaryDistributionControlService = binaryDistributionControlService;
+        this.binaryDistributionLockManager = binaryDistributionLockManager;
     }
 
     @Override
     public void distributeJdk(final String hostname) {
+        LOGGER.info("Start deploy jdk for {}", hostname);
         File javaHome = new File(ApplicationProperties.get("remote.jwala.java.home"));
         String jdkDir = javaHome.getName();
         String binaryDeployDir = javaHome.getParentFile().getAbsolutePath().replaceAll("\\\\", "/");
@@ -38,10 +42,12 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
         } else {
             LOGGER.warn("JDK dir location is null or empty {}", jdkDir);
         }
+        LOGGER.info("End deploy jdk for {}", hostname);
     }
 
     @Override
     public void distributeTomcat(final String hostname) {
+        LOGGER.info("Start deploy tomcat binaries for {}", hostname);
         File tomcat = new File(ApplicationProperties.get("remote.paths.tomcat.core"));
         String tomcatDir = tomcat.getParentFile().getName();
         String binaryDeployDir = tomcat.getParentFile().getParentFile().getAbsolutePath().replaceAll("\\\\", "/");
@@ -50,17 +56,24 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
         } else {
             LOGGER.warn("Tomcat dir location is null or empty {}", tomcatDir);
         }
+        LOGGER.info("End deploy tomcat binaries for {}", hostname);
     }
 
     @Override
     public void distributeWebServer(final String hostname) {
-        File apache = new File(ApplicationProperties.get("remote.paths.apache.httpd"));
-        String webServerDir = apache.getName();
-        String binaryDeployDir = apache.getParentFile().getAbsolutePath().replaceAll("\\\\", "/");
-        if (webServerDir != null && !webServerDir.isEmpty()) {
-            distributeBinary(hostname, webServerDir, binaryDeployDir, APACHE_EXCLUDE);
-        } else {
-            LOGGER.warn("WebServer dir location is null or empty {}", webServerDir);
+        String wrietLockResourceName = hostname+"-"+ EntityType.WEB_SERVER.toString();
+        try {
+            binaryDistributionLockManager.writeLock(wrietLockResourceName);
+            File apache = new File(ApplicationProperties.get("remote.paths.apache.httpd"));
+            String webServerDir = apache.getName();
+            String binaryDeployDir = apache.getParentFile().getAbsolutePath().replaceAll("\\\\", "/");
+            if (webServerDir != null && !webServerDir.isEmpty()) {
+                distributeBinary(hostname, webServerDir, binaryDeployDir, APACHE_EXCLUDE);
+            } else {
+                LOGGER.warn("WebServer dir location is null or empty {}", webServerDir);
+            }
+        }finally {
+            binaryDistributionLockManager.writeUnlock(wrietLockResourceName);
         }
     }
 
@@ -186,6 +199,7 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
 
     @Override
     public void prepareUnzip(String hostname) {
+        LOGGER.info("Start deploy unzip for {}", hostname);
         final String jwalaScriptsPath = ApplicationProperties.get("remote.commands.user-scripts");
         if (remoteFileCheck(hostname, jwalaScriptsPath)) {
             LOGGER.info(jwalaScriptsPath + " exists at " + hostname);
@@ -201,5 +215,6 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
             remoteSecureCopyFile(hostname, unzipFileSource, unzipFileDestination);
             changeFileMode(hostname, "a+x", jwalaScriptsPath, UNZIPEXE);
         }
+        LOGGER.info("End deploy unzip for {}", hostname);
     }
 }

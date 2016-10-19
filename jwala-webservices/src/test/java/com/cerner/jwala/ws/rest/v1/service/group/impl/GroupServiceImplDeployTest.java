@@ -29,7 +29,8 @@ import com.cerner.jwala.exception.CommandFailureException;
 import com.cerner.jwala.persistence.jpa.service.exception.ResourceTemplateUpdateException;
 import com.cerner.jwala.persistence.service.ApplicationPersistenceService;
 import com.cerner.jwala.persistence.service.GroupPersistenceService;
-import com.cerner.jwala.persistence.service.WebServerPersistenceService;
+import com.cerner.jwala.service.HistoryService;
+import com.cerner.jwala.service.MessagingService;
 import com.cerner.jwala.service.app.ApplicationService;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionService;
 import com.cerner.jwala.service.group.GroupControlService;
@@ -263,6 +264,7 @@ public class GroupServiceImplDeployTest {
         Collection<ResourceType> resourcesList = new ArrayList<>();
         resourcesList.add(mockResourceType);
 
+        when(mockApp.getName()).thenReturn("testApp");
         when(mockGroup.getJvms()).thenReturn(jvmSet);
         when(mockJvm.getJvmName()).thenReturn("testJvm");
         when(mockJvm.getId()).thenReturn(new Identifier<Jvm>(99L));
@@ -282,30 +284,29 @@ public class GroupServiceImplDeployTest {
         Entity mockEntity = mock(Entity.class);
         when(mockMetaData.getEntity()).thenReturn(mockEntity);
         when(mockEntity.getDeployToJvms()).thenReturn(true);
-        when(mockEntity.getTarget()).thenReturn("testApp");
-        when(mockResourceService.getFormattedResourceMetaData(anyString(), Matchers.anyObject(), anyString())).thenReturn(mockMetaData);
+        when(mockResourceService.getMetaData(anyString())).thenReturn(mockMetaData);
 
-        Response returnResponse = groupServiceRest.generateAndDeployGroupAppFile("testGroup", "hct.xml", mockAuthUser, null);
+        Response returnResponse = groupServiceRest.generateAndDeployGroupAppFile("testGroup", "hct.xml", "testApp", mockAuthUser, null);
         assertEquals(200, returnResponse.getStatus());
 
         when(mockJvm.getHostName()).thenReturn("TestHost");
-        returnResponse = groupServiceRest.generateAndDeployGroupAppFile("testGroup", "hct.xml", mockAuthUser, hostName);
+        returnResponse = groupServiceRest.generateAndDeployGroupAppFile("testGroup", "hct.xml", "testApp", mockAuthUser, hostName);
         assertEquals(200, returnResponse.getStatus());
 
         when(mockJvm.getHostName()).thenReturn("otherhostname");
-        returnResponse = groupServiceRest.generateAndDeployGroupAppFile("testGroup", "hct.xml", mockAuthUser, hostName);
+        returnResponse = groupServiceRest.generateAndDeployGroupAppFile("testGroup", "hct.xml", "testApp", mockAuthUser, hostName);
         assertEquals(200, returnResponse.getStatus());
 
         when(mockGroupService.getGroupAppResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"entity\":{\"target\": \"testApp\", \"deployToJvms\": false}}");
         when(mockJvm.getHostName()).thenReturn("TestHost");
         when(mockGroupService.deployGroupAppTemplate(anyString(), anyString(), any(ResourceGroup.class), any(Application.class), anyString())).thenReturn(
                 new CommandOutput(new ExecReturnCode(0), "SUCCESS", ""));
-        returnResponse = groupServiceRest.generateAndDeployGroupAppFile("testGroup", "hct.xml", mockAuthUser, hostName);
+        returnResponse = groupServiceRest.generateAndDeployGroupAppFile("testGroup", "hct.xml", "testApp", mockAuthUser, hostName);
         assertEquals(200, returnResponse.getStatus());
 
         when(mockApplicationService.deployConf(anyString(), anyString(), anyString(), anyString(), any(ResourceGroup.class), any(User.class))).thenReturn(new CommandOutput(new ExecReturnCode(1), "", "NOT OK"));
         try {
-            groupServiceRest.generateAndDeployGroupAppFile("testGroup", "hct.xml", mockAuthUser, null);
+            groupServiceRest.generateAndDeployGroupAppFile("testGroup", "hct.xml", "testApp", mockAuthUser, null);
         } catch (InternalErrorException ie) {
             assertEquals(AemFaultType.REMOTE_COMMAND_FAILURE, ie.getMessageResponseStatus());
         }
@@ -313,7 +314,7 @@ public class GroupServiceImplDeployTest {
         boolean internalErrorException = false;
         when(mockJvm.getState()).thenReturn(JvmState.JVM_STARTED);
         try {
-            groupServiceRest.generateAndDeployGroupAppFile("testGroup", "hct.xml", mockAuthUser, null);
+            groupServiceRest.generateAndDeployGroupAppFile("testGroup", "hct.xml", "testApp", mockAuthUser, null);
         } catch (InternalErrorException ie) {
             internalErrorException = true;
             assertTrue(ie.getMessage().contains("All JVMs in the group must be stopped"));
@@ -337,6 +338,7 @@ public class GroupServiceImplDeployTest {
         resourcesList.add(mockResourceType);
 
         reset(mockResourceService);
+        when(mockApp.getName()).thenReturn("testApp");
         when(mockGroup.getJvms()).thenReturn(jvmSet);
         when(mockJvm.getJvmName()).thenReturn("testJvm");
         when(mockJvm.getId()).thenReturn(new Identifier<Jvm>(99L));
@@ -358,15 +360,14 @@ public class GroupServiceImplDeployTest {
         when(mockMetaData.getEntity()).thenReturn(mockEntity);
         when(mockEntity.getDeployToJvms()).thenReturn(false);
         when(mockEntity.getTarget()).thenReturn("testApp");
-        when(mockResourceService.getFormattedResourceMetaData(anyString(), Matchers.anyObject(), anyString())).thenReturn(mockMetaData);
-        when(mockApplicationService.getApplication(anyString())).thenReturn(mockApp);
-        Response returnResponse = groupServiceRest.generateAndDeployGroupAppFile("testGroup", "hct.xml", mockAuthUser, null);
+        when(mockResourceService.getMetaData(anyString())).thenReturn(mockMetaData);
+        Response returnResponse = groupServiceRest.generateAndDeployGroupAppFile("testGroup", "hct.xml", "testApp", mockAuthUser, null);
         assertEquals(200, returnResponse.getStatus());
 
         when(mockJvm.getState()).thenReturn(JvmState.JVM_STARTED);
         boolean internalErrorExceptionThrown = false;
         try {
-            groupServiceRest.generateAndDeployGroupAppFile("testGroup", "hct.xml", mockAuthUser, null);
+            groupServiceRest.generateAndDeployGroupAppFile("testGroup", "hct.xml", "testApp", mockAuthUser, null);
         } catch (InternalErrorException e) {
             internalErrorExceptionThrown = true;
         }
@@ -389,10 +390,11 @@ public class GroupServiceImplDeployTest {
         jvms.add(jvm);
 
         GroupPersistenceService groupPersistenceService = mock(GroupPersistenceService.class);
-        WebServerPersistenceService webServerPersistenceService = mock(WebServerPersistenceService.class);
         ApplicationPersistenceService applicationPersistenceService = mock(ApplicationPersistenceService.class);
         RemoteCommandExecutorImpl remoteCommandExecutorImpl = mock(RemoteCommandExecutorImpl.class);
-        GroupServiceImpl groupServiceImpl = new GroupServiceImpl(groupPersistenceService, webServerPersistenceService, applicationPersistenceService, remoteCommandExecutorImpl, binaryDistributionService, mockResourceService);
+        HistoryService mockHistoryService = mock(HistoryService.class);
+        MessagingService mockMessagingService = mock(MessagingService.class);
+        GroupServiceImpl groupServiceImpl = new GroupServiceImpl(groupPersistenceService, applicationPersistenceService, remoteCommandExecutorImpl, binaryDistributionService, mockResourceService, mockHistoryService, mockMessagingService);
         CommandOutput commandOutput = mock(CommandOutput.class);
 
         String metaData = "{\"templateName\":\"someTemplateName\",\"contentType\":\"application/binary\",\"deployPath\":" +
@@ -418,7 +420,7 @@ public class GroupServiceImplDeployTest {
         when(resourceGroup.getGroups()).thenReturn(groups);
         when(remoteCommandExecutorImpl.executeRemoteCommand(eq(jvmName), eq(hostName), eq(ApplicationControlOperation.CHECK_FILE_EXISTS),
                 any(WindowsApplicationPlatformCommandProvider.class), anyString())).thenReturn(commandOutput);
-        when(remoteCommandExecutorImpl.executeRemoteCommand(eq(jvmName), eq(hostName), eq(ApplicationControlOperation.BACK_UP_FILE),
+        when(remoteCommandExecutorImpl.executeRemoteCommand(eq(jvmName), eq(hostName), eq(ApplicationControlOperation.BACK_UP),
                 any(WindowsApplicationPlatformCommandProvider.class), anyString(), anyString())).thenReturn(commandOutput);
         when(remoteCommandExecutorImpl.executeRemoteCommand(eq(jvmName), eq(hostName), eq(ApplicationControlOperation.SECURE_COPY),
                 any(WindowsApplicationPlatformCommandProvider.class), anyString(), anyString())).thenReturn(commandOutput);
@@ -443,7 +445,7 @@ public class GroupServiceImplDeployTest {
         when(mockMetaData.isUnpack()).thenReturn(false);
         when(mockMetaData.isOverwrite()).thenReturn(false);
         when(mockResourceService.generateResourceFile(anyString(), anyString(), any(ResourceGroup.class), any(), any(ResourceGeneratorType.class))).thenReturn(metaData);
-        when(mockResourceService.getFormattedResourceMetaData(anyString(), Matchers.anyObject(),anyString())).thenReturn(mockMetaData);
+        when(mockResourceService.getTokenizedMetaData(anyString(), Matchers.anyObject(),anyString())).thenReturn(mockMetaData);
         assertEquals(commandOutput, groupServiceImpl.deployGroupAppTemplate(groupName, fileName, resourceGroup, application, jvm));
     }
 
@@ -522,8 +524,8 @@ public class GroupServiceImplDeployTest {
         when(mockGroupService.getGroup(any(Identifier.class))).thenReturn(mockGroup);
         when(mockJvmService.getJvm(anyString())).thenReturn(mockJvm);
         when(mockJvmControlService.controlJvm(any(ControlJvmRequest.class), any(User.class))).thenReturn(successCommandOutput);
-        when(mockJvmControlService.createDirectory(any(Jvm.class), anyString())).thenReturn(successCommandOutput);
-        when(mockJvmControlService.changeFileMode(any(Jvm.class), anyString(), anyString(), anyString())).thenReturn(successCommandOutput);
+        when(mockJvmControlService.executeCreateDirectoryCommand(any(Jvm.class), anyString())).thenReturn(successCommandOutput);
+        when(mockJvmControlService.executeChangeFileModeCommand(any(Jvm.class), anyString(), anyString(), anyString())).thenReturn(successCommandOutput);
         when(mockJvmControlService.secureCopyFile(any(ControlJvmRequest.class), anyString(), anyString(), anyString())).thenReturn(successCommandOutput);
 
         Response response = groupServiceRest.generateGroupJvms(new Identifier<Group>(111L), mockAuthUser);

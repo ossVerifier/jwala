@@ -118,7 +118,7 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
         mockAppPersistenceService = mock(ApplicationPersistenceService.class);
 
         resourceContentGeneratorService = new ResourceContentGeneratorServiceImpl(mockGroupPesistenceService, mockWebServerPersistenceService, mockJvmPersistenceService,
-                mockAppPersistenceService, mockHistoryService);
+                mockAppPersistenceService, mockHistoryService, mockMessagingService);
 
         resourceService = new ResourceServiceImpl(mockResourcePersistenceService, mockGroupPesistenceService,
                 mockAppPersistenceService, mockJvmPersistenceService, mockWebServerPersistenceService,
@@ -126,10 +126,9 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
                 resourceContentGeneratorService);
 
         groupService = new GroupServiceImpl(groupPersistenceService,
-                webServerPersistenceService,
                 applicationPersistenceService,
                 remoteCommandExecutor, binaryDistributionService,
-                resourceService);
+                resourceService, mockHistoryService, mockMessagingService);
         user = new User("unused");
 
     }

@@ -12,7 +12,7 @@ public enum WebServerControlOperation {
     STOP("stop", WebServerReachableState.WS_STOP_SENT),
     VIEW_HTTP_CONFIG_FILE("viewHttpConfigFile", null),
     SECURE_COPY("secureCopy", null),
-    BACK_UP_CONFIG_FILE("backUpConfigFile", null),
+    BACK_UP("backUpConfigFile", null),
     DELETE_SERVICE("deleteService", null),
     INVOKE_SERVICE("invokeService", null),
     CREATE_DIRECTORY("mkdir", null),

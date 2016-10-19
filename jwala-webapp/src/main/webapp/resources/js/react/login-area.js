@@ -2,12 +2,13 @@
 var LoginArea = React.createClass({
     getInitialState: function () {
         return {
-            error: ""
+            error: "", showLoginBusy: false
         }
     },
 
     render: function() {
-         return <div className={this.props.className}>
+         var loginBusyImg = this.state.showLoginBusy ? <img src="public-resources/img/busy-circular.gif"/> : null;
+         return <div className={"LoginDialogBox " + this.props.className}>
                    <form id="logInForm">
                       <br/>
                       <span className="title">TOMCAT</span><br/>
@@ -23,9 +24,10 @@ var LoginArea = React.createClass({
                       <br/>
                       <TextBox id="password" name="password" isPassword={true} className="input" hint="Password"
                               hintClassName="hint" onKeyPress={this.passwordTextKeyPress}/>
-                      <br/>
-                      <MessageLabel msg={this.state.error} className="login-error-msg"/>
-                      <br/>
+                      <div className="status">
+                          {loginBusyImg}
+                          <MessageLabel msg={this.state.error} className="login-error-msg"/>
+                      </div>
                       <input type="button" value="Log In" onClick={this.logIn} />
                   </form>
               </div>
@@ -54,21 +56,27 @@ var LoginArea = React.createClass({
         if (!$("#userName").val().trim() || !$("#password").val()) {
             this.setState({ error: "User name and password are required." });
         } else {
-            userService.login($("#logInForm").serialize(), this.successCallback, this.errorCallback);
+            var self = this;
+            self.setState({showLoginBusy: true, error: ""});
+            userService.login($("#logInForm").serialize()).then(function(response){
+                self.loginSuccessHandler();
+            }).caught(function(response){
+                self.loginErrorHandler(response);
+            });
         }
     },
-
-    successCallback: function() {
+    loginSuccessHandler: function() {
         document.cookie = "userName=" + $("#userName").val(); // This is a quick fix to get the user id to the diagnose and resolve status.
         window.location = window.location.href.replace("/login", "");
     },
-
-    errorCallback: function (e) {
-        if (e !== undefined && e !== null && e.indexOf("error code 49") > -1) {
-            this.setState({ error: "Your user name or password is incorrect." });
+    loginErrorHandler: function (response) {
+        var state = {showLoginBusy: false};
+        if (response.responseJSON) {
+            state["error"] = response.responseJSON.applicationResponseContent;
         } else {
-            this.setState({ error: e });
+            state["error"] = response.status;
         }
+        this.setState(state);
     },
     statics: {
         isAdminRole: false

@@ -8,7 +8,6 @@ import com.cerner.jwala.common.domain.model.webserver.WebServer;
 import com.cerner.jwala.common.domain.model.webserver.WebServerReachableState;
 import com.cerner.jwala.common.request.webserver.CreateWebServerRequest;
 import com.cerner.jwala.common.request.webserver.UpdateWebServerRequest;
-import com.cerner.jwala.common.request.webserver.UploadWebServerTemplateRequest;
 
 import java.util.List;
 
@@ -36,7 +35,7 @@ public interface WebServerService {
 
     String getResourceTemplate(final String webServerName, final String resourceTemplateName, final boolean tokensReplaced, ResourceGroup resourceGroup);
 
-    void uploadWebServerConfig(UploadWebServerTemplateRequest uploadWebServerTemplateCommand, User user);
+    void uploadWebServerConfig(WebServer webServer, String templateName, String templateContent, String metaDataStr, String groupName, User user);
 
     String updateResourceTemplate(final String wsName, final String resourceTemplateName, final String template);
 
@@ -57,5 +56,4 @@ public interface WebServerService {
     Long getWebServerStoppedCount(String groupName);
 
     String getResourceTemplateMetaData(String aWebServerName, String resourceTemplateName);
-
 }

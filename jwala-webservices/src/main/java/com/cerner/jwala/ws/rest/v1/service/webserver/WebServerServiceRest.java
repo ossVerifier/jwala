@@ -37,7 +37,8 @@ public interface WebServerServiceRest extends InitializingBean {
 
     @DELETE
     @Path("/{webserverId}")
-    Response removeWebServer(@PathParam("webserverId") final Identifier<WebServer> aWebServerId, @BeanParam final AuthenticatedUser user);
+    Response removeWebServer(@PathParam("webserverId") final Identifier<WebServer> aWebServerId, @BeanParam final AuthenticatedUser user,
+                             @QueryParam("forceDelete") final boolean forceDelete);
 
     @POST
     @Path("/{webServerId}/commands")

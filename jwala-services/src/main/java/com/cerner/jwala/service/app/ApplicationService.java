@@ -11,6 +11,7 @@ import com.cerner.jwala.common.request.app.CreateApplicationRequest;
 import com.cerner.jwala.common.request.app.UpdateApplicationRequest;
 import com.cerner.jwala.common.request.app.UploadAppTemplateRequest;
 import com.cerner.jwala.common.request.app.UploadWebArchiveRequest;
+import com.cerner.jwala.exception.CommandFailureException;
 import com.cerner.jwala.persistence.jpa.domain.JpaApplicationConfigTemplate;
 
 import java.io.IOException;
@@ -86,4 +87,16 @@ public interface ApplicationService {
      * @param deployPath @return {@link Application}
      */
     Application uploadWebArchive(final Identifier<Application> appId, String warName, byte[] war, String deployPath) throws IOException;
+
+    CommandOutput executeBackUpCommand(String entity, String host, String source) throws CommandFailureException;
+
+    CommandOutput executeCreateDirectoryCommand(String entity, String host, String directoryName) throws CommandFailureException;
+
+    CommandOutput executeSecureCopyCommand(String entity, String host, String source, String destination) throws CommandFailureException;
+
+    CommandOutput executeCheckIfFileExistsCommand(String entity, String host, String fileName) throws CommandFailureException;
+
+    CommandOutput executeChangeFileModeCommand(String entity, String host, String mode, String fileName, String fileOptions) throws CommandFailureException;
+
+    CommandOutput executeUnzipBinaryCommand(String entity, String host, String fileName, String destination, String options) throws CommandFailureException;
 }
