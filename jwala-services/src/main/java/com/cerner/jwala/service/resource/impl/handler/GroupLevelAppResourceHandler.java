@@ -19,6 +19,7 @@ import com.cerner.jwala.service.resource.impl.CreateResourceResponseWrapper;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * Handler for a group level application resource identified by a "resource identifier" {@link ResourceIdentifier}
@@ -124,7 +125,15 @@ public class GroupLevelAppResourceHandler extends ResourceHandler {
     @Override
     public String updateResourceMetaData(ResourceIdentifier resourceIdentifier, String resourceName, String metaData) {
         if (canHandle(resourceIdentifier)) {
-            return groupPersistenceService.updateGroupAppResourceMetaData(resourceIdentifier.groupName, resourceIdentifier.webAppName, resourceName, metaData);
+            final String updatedMetaData = groupPersistenceService.updateGroupAppResourceMetaData(resourceIdentifier.groupName, resourceIdentifier.webAppName, resourceName, metaData);
+            Set<Jvm> jvmSet = groupPersistenceService.getGroup(resourceIdentifier.groupName).getJvms();
+            for (Jvm jvm : jvmSet) {
+                List<String> resourceNames = applicationPersistenceService.getResourceTemplateNames(resourceIdentifier.webAppName, jvm.getJvmName());
+                if (resourceNames.contains(resourceName)){
+                    applicationPersistenceService.updateResourceMetaData(resourceIdentifier.webAppName, resourceName, metaData, jvm.getJvmName(), resourceIdentifier.groupName);
+                }
+            }
+            return updatedMetaData;
         } else {
             return successor.updateResourceMetaData(resourceIdentifier, resourceName, metaData);
         }

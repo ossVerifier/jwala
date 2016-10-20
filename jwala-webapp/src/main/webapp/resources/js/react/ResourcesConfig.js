@@ -154,7 +154,7 @@ var ResourcesConfig = React.createClass({
                                       });
     },
     okUpdateGroupMetaDataCallback: function(metaData) {
-        this.refs.xmlTabs.saveResourceMetaDataPromise(metaData);
+        this.refs.xmlTabs.saveGroupMetaData(metaData);
         this.refs.metaDataUpdateGroupModal.close();
     },
     cancelUpdateGroupMetaDataCallback: function() {
@@ -451,11 +451,16 @@ var XmlTabs = React.createClass({
     },
     /*** Save and Deploy methods: Start ***/
     saveResource: function(template) {
-        var parsedMetaData = JSON.parse(this.state.metaData.replace(/\\/g, "\\\\")); // escape any backslashes before parsing
-        if (this.state.entityType === "jvmSection" || this.state.entityType === "webServerSection" || (this.state.entityType === "webApps" && parsedMetaData.entity.deployToJvms)){
-            this.props.updateGroupTemplateCallback(template);
-        } else {
-            this.saveResourcePromise(template).then(this.savedResourceCallback).caught(this.failed.bind(this, "Save Resource Template"));
+        try {
+            var parsedMetaData = JSON.parse(this.state.metaData.replace(/\\/g, "\\\\")); // escape any backslashes before parsing
+            var deployToJvms = parsedMetaData.entity.deployToJvms;
+            if (this.state.entityType === "jvmSection" || this.state.entityType === "webServerSection" || (this.state.entityType === "webApps" && (deployToJvms === undefined || deployToJvms === "true" || deployToJvms === true))){
+                this.props.updateGroupTemplateCallback(template);
+            } else {
+                this.saveResourcePromise(template).then(this.savedResourceCallback).caught(this.failed.bind(this, "Save Resource Template"));
+            }
+        } catch(e) {
+            $.errorAlert("Unable to save changes until the meta data errors are fixed: " + e.message, "", false);
         }
     },
     saveResourcePromise: function(template) {
@@ -493,7 +498,7 @@ var XmlTabs = React.createClass({
         } else {
             thePromise = this.props.groupService.updateGroupJvmResourceTemplate(this.state.entityGroupName, this.state.resourceTemplateName, template);
         }
-        thePromise.then(this.savedResourceCallback).caught(this.failed.bind(this, "Save Resource Template"));
+        thePromise.then(this.savedResourceCallback).caught(this.failed.bind(this, "Save Group Resource Template"));
     },
     savedResourceCallback: function(response) {
         if (response.message === "SUCCESS") {
@@ -524,10 +529,16 @@ var XmlTabs = React.createClass({
         }
     },
     saveResourceMetaData: function(metaData) {
-        if (this.state.entityType === "jvmSection" || this.state.entityType === "webServerSection"){
-            this.props.updateGroupMetaDataCallback(metaData);
-        } else {
-            this.saveResourceMetaDataPromise(metaData).then(this.savedResourceMetaDataCallback).caught(this.failed.bind(this, "Save Resource Meta Data"));
+        try {
+            var parsedMetaData = JSON.parse(this.refs.metaDataEditor.getText().replace(/\\/g, "\\\\")); // escape any backslashes before parsing
+            var deployToJvms = parsedMetaData.entity.deployToJvms;
+            if (this.state.entityType === "jvmSection" || this.state.entityType === "webServerSection" || (this.state.entityType === "webApps" && (deployToJvms === undefined || deployToJvms === "true" || deployToJvms === true))){
+                this.props.updateGroupMetaDataCallback(metaData);
+            } else {
+                this.saveResourceMetaDataPromise(metaData).then(this.savedResourceMetaDataCallback).caught(this.failed.bind(this, "Save Resource Meta Data"));
+            }
+        } catch(e) {
+            $.errorAlert("Unable to save changes until the meta data errors are fixed: " + e.message, "", false);
         }
     },
     saveResourceMetaDataPromise: function(metaData) {
@@ -564,6 +575,33 @@ var XmlTabs = React.createClass({
             if (this.state.entity === "extProperties"){
                 this.props.updateExtPropsAttributesCallback();
             }
+        } else {
+            throw response;
+        }
+    },
+    saveGroupMetaData: function(metaData){
+        var jvmName, webServerName, webAppName, groupName;
+        var entityType = this.state.entityType;
+        if (entityType === "jvmSection") {
+            jvmName = "*";
+            groupName = this.state.entityGroupName;
+        } else if (entityType === "webServerSection") {
+            webServerName = "*";
+            groupName = this.state.entityGroupName;
+        } else {
+            webAppName = this.state.entity.name;
+            groupName = this.state.entity.group.name;
+        }
+
+        var thePromise = this.props.resourceService.updateResourceMetaData(jvmName, webServerName, groupName, webAppName, this.state.resourceTemplateName, metaData);
+        thePromise.then(this.savedMetaDataCallback).caught(this.failed.bind(this, "Save Group Resource Meta Data"));
+    },
+    savedMetaDataCallback: function(response) {
+        if (response.message === "SUCCESS") {
+            console.log("Save success!");
+            MainArea.unsavedChanges = false;
+            this.showFadingStatus("Saved", this.refs.metaDataEditor.getDOMNode());
+            this.setState({metaData:response.applicationResponseContent, lastSaved: "Meta Data"});
         } else {
             throw response;
         }
