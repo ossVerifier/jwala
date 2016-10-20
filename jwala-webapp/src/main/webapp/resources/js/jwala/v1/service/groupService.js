@@ -51,8 +51,8 @@ var groupService = {
                                              false,
                                              "text/plain; charset=utf-8");
     },
-    updateGroupAppResourceTemplate: function(groupName, resourceTemplateName, resourceTemplateContent) {
-        return serviceFoundation.promisedPut("v1.0/groups/" + encodeURIComponent(groupName) + "/apps/resources/template/" + encodeURIComponent(resourceTemplateName),
+    updateGroupAppResourceTemplate: function(groupName, appName, resourceTemplateName, resourceTemplateContent) {
+        return serviceFoundation.promisedPut("v1.0/groups/" + encodeURIComponent(groupName) + "/" + encodeURIComponent(appName) + "/apps/resources/template/" + encodeURIComponent(resourceTemplateName),
                                              "json",
                                              resourceTemplateContent,
                                              false,

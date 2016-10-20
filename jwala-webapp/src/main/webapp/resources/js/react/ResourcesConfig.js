@@ -154,7 +154,7 @@ var ResourcesConfig = React.createClass({
                                       });
     },
     okUpdateGroupMetaDataCallback: function(metaData) {
-        this.refs.xmlTabs.saveResourceMetaDataPromise(metaData);
+        this.refs.xmlTabs.saveGroupMetaData(metaData);
         this.refs.metaDataUpdateGroupModal.close();
     },
     cancelUpdateGroupMetaDataCallback: function() {
@@ -387,14 +387,19 @@ var XmlTabs = React.createClass({
                 metaDataPreview = <div className="Resource preview msg">A group level web server or JVM template cannot be previewed. Please select a specific web server or JVM instead.</div>;
             } else {
                 if (this.state.metaData && this.state.entityType === "webApps" && !this.state.entityParent.jvmName) {
-                    var parsedMetaData = JSON.parse(this.state.metaData.replace(/\\/g, "\\\\"));
-                    var deployToJvms = parsedMetaData.entity.deployToJvms;
-                    if (deployToJvms !== undefined && (!deployToJvms || deployToJvms === "false")) {
-                        xmlPreview = <XmlPreview ref="xmlPreview" mode="xml"/>
-                        metaDataPreview = <MetaDataPreview ref="metaDataPreview" mode="application/ld+json"/>
-                    } else {
-                        xmlPreview = <div><div className="Resource preview msg resource-preview-br">The template for a Web App template cannot be previewed at this level if it is configured to be deployed to JVMs. </div><div className="Resource preview msg">To preview this template, select a JVM instance from the topology tree that is associated with this Web App and template.</div></div>;
-                        metaDataPreview = <div><div className="Resource preview msg resource-preview-br">The meta data for a Web App template cannot be previewed at this level if it is configured to be deployed to JVMs. </div><div className="Resource preview msg">To preview the meta data, select a JVM instance from the topology tree that is associated with this Web App and meta data.</div></div>;
+                    try {
+                        var parsedMetaData = JSON.parse(this.state.metaData.replace(/\\/g, "\\\\"));
+                        var deployToJvms = parsedMetaData.entity.deployToJvms;
+                        if (deployToJvms !== undefined && (!deployToJvms || deployToJvms === "false")) {
+                            xmlPreview = <XmlPreview ref="xmlPreview" mode="xml"/>
+                            metaDataPreview = <MetaDataPreview ref="metaDataPreview" mode="application/ld+json"/>
+                        } else {
+                            xmlPreview = <div><div className="Resource preview msg resource-preview-br">The template for a Web App template cannot be previewed at this level if it is configured to be deployed to JVMs. </div><div className="Resource preview msg">To preview this template, select a JVM instance from the topology tree that is associated with this Web App and template.</div></div>;
+                            metaDataPreview = <div><div className="Resource preview msg resource-preview-br">The meta data for a Web App template cannot be previewed at this level if it is configured to be deployed to JVMs. </div><div className="Resource preview msg">To preview the meta data, select a JVM instance from the topology tree that is associated with this Web App and meta data.</div></div>;
+                        }
+                    } catch (e) {
+                        xmlPreview = <div className="Resource preview msg">Error parsing the meta data: unable to provide a preview until the meta data is corrected.</div>;
+                        metaDataPreview = <div className="Resource preview msg">Error parsing the meta data: unable to provide a preview until the meta data is corrected.</div>;
                     }
                 } else {
                     xmlPreview = <XmlPreview ref="xmlPreview" mode="xml"/>
@@ -446,10 +451,16 @@ var XmlTabs = React.createClass({
     },
     /*** Save and Deploy methods: Start ***/
     saveResource: function(template) {
-        if (this.state.entityType === "jvmSection" || this.state.entityType === "webServerSection"){
-            this.props.updateGroupTemplateCallback(template);
-        } else {
-            this.saveResourcePromise(template).then(this.savedResourceCallback).caught(this.failed.bind(this, "Save Resource Template"));
+        try {
+            var parsedMetaData = JSON.parse(this.state.metaData.replace(/\\/g, "\\\\")); // escape any backslashes before parsing
+            var deployToJvms = parsedMetaData.entity.deployToJvms;
+            if (this.state.entityType === "jvmSection" || this.state.entityType === "webServerSection" || (this.state.entityType === "webApps" && (deployToJvms === undefined || deployToJvms === "true" || deployToJvms === true))){
+                this.props.updateGroupTemplateCallback(template);
+            } else {
+                this.saveResourcePromise(template).then(this.savedResourceCallback).caught(this.failed.bind(this, "Save Resource Template"));
+            }
+        } catch(e) {
+            $.errorAlert("Unable to save changes until the meta data errors are fixed: " + e.message, "", false);
         }
     },
     saveResourcePromise: function(template) {
@@ -480,14 +491,14 @@ var XmlTabs = React.createClass({
     saveGroupTemplate: function(template){
         var thePromise;
         var self = this;
-        if (this.state.groupJvmEntityType && this.state.groupJvmEntityType === "webApp") {
-            thePromise = this.props.groupService.updateGroupAppResourceTemplate(this.state.entityGroupName, this.state.resourceTemplateName, template);
+        if (this.state.entityType === "webApps") {
+            thePromise = this.props.groupService.updateGroupAppResourceTemplate(this.state.entity.group.name, this.state.entity.name, this.state.resourceTemplateName, template);
         }  else if (this.state.entityType === "webServerSection") {
             thePromise = this.props.groupService.updateGroupWebServerResourceTemplate(this.state.entityGroupName, this.state.resourceTemplateName, template);
         } else {
             thePromise = this.props.groupService.updateGroupJvmResourceTemplate(this.state.entityGroupName, this.state.resourceTemplateName, template);
         }
-        thePromise.then(this.savedResourceCallback).caught(this.failed.bind(this, "Save Resource Template"));
+        thePromise.then(this.savedResourceCallback).caught(this.failed.bind(this, "Save Group Resource Template"));
     },
     savedResourceCallback: function(response) {
         if (response.message === "SUCCESS") {
@@ -518,10 +529,16 @@ var XmlTabs = React.createClass({
         }
     },
     saveResourceMetaData: function(metaData) {
-        if (this.state.entityType === "jvmSection" || this.state.entityType === "webServerSection"){
-            this.props.updateGroupMetaDataCallback(metaData);
-        } else {
-            this.saveResourceMetaDataPromise(metaData).then(this.savedResourceMetaDataCallback).caught(this.failed.bind(this, "Save Resource Meta Data"));
+        try {
+            var parsedMetaData = JSON.parse(this.refs.metaDataEditor.getText().replace(/\\/g, "\\\\")); // escape any backslashes before parsing
+            var deployToJvms = parsedMetaData.entity.deployToJvms;
+            if (this.state.entityType === "jvmSection" || this.state.entityType === "webServerSection" || (this.state.entityType === "webApps" && (deployToJvms === undefined || deployToJvms === "true" || deployToJvms === true))){
+                this.props.updateGroupMetaDataCallback(metaData);
+            } else {
+                this.saveResourceMetaDataPromise(metaData).then(this.savedResourceMetaDataCallback).caught(this.failed.bind(this, "Save Resource Meta Data"));
+            }
+        } catch(e) {
+            $.errorAlert("Unable to save changes until the meta data errors are fixed: " + e.message, "", false);
         }
     },
     saveResourceMetaDataPromise: function(metaData) {
@@ -558,6 +575,33 @@ var XmlTabs = React.createClass({
             if (this.state.entity === "extProperties"){
                 this.props.updateExtPropsAttributesCallback();
             }
+        } else {
+            throw response;
+        }
+    },
+    saveGroupMetaData: function(metaData){
+        var jvmName, webServerName, webAppName, groupName;
+        var entityType = this.state.entityType;
+        if (entityType === "jvmSection") {
+            jvmName = "*";
+            groupName = this.state.entityGroupName;
+        } else if (entityType === "webServerSection") {
+            webServerName = "*";
+            groupName = this.state.entityGroupName;
+        } else {
+            webAppName = this.state.entity.name;
+            groupName = this.state.entity.group.name;
+        }
+
+        var thePromise = this.props.resourceService.updateResourceMetaData(jvmName, webServerName, groupName, webAppName, this.state.resourceTemplateName, metaData);
+        thePromise.then(this.savedMetaDataCallback).caught(this.failed.bind(this, "Save Group Resource Meta Data"));
+    },
+    savedMetaDataCallback: function(response) {
+        if (response.message === "SUCCESS") {
+            console.log("Save success!");
+            MainArea.unsavedChanges = false;
+            this.showFadingStatus("Saved", this.refs.metaDataEditor.getDOMNode());
+            this.setState({metaData:response.applicationResponseContent, lastSaved: "Meta Data"});
         } else {
             throw response;
         }
@@ -650,14 +694,19 @@ var XmlTabs = React.createClass({
                                                                  this.previewSuccessCallback,
                                                                  this.previewErrorCallback);
                 }  else if (this.state.entityType === "webApps" && !this.state.entityParent.jvmName) {
-                    var parsedMetaData = JSON.parse(this.refs.metaDataEditor.getText().replace(/\\/g, "\\\\"));
-                    var deployToJvms = parsedMetaData.entity.deployToJvms;
-                    if (deployToJvms !== undefined && (!deployToJvms || deployToJvms === "false")){
-                        this.props.groupService.previewGroupAppResourceFile( this.state.entity.group.name,
-                                                                             this.state.resourceTemplateName,
-                                                                             this.refs.codeMirrorComponent.getText(),
-                                                                             this.previewSuccessCallback,
-                                                                             this.previewErrorCallback);
+                    try {
+                        var parsedMetaData = JSON.parse(this.refs.metaDataEditor.getText().replace(/\\/g, "\\\\"));
+                        var deployToJvms = parsedMetaData.entity.deployToJvms;
+                        if (deployToJvms !== undefined && (!deployToJvms || deployToJvms === "false")){
+                            this.props.groupService.previewGroupAppResourceFile( this.state.entity.group.name,
+                                                                                 this.state.resourceTemplateName,
+                                                                                 this.refs.codeMirrorComponent.getText(),
+                                                                                 this.previewSuccessCallback,
+                                                                                 this.previewErrorCallback);
+                        }
+                    } catch (e) {
+                        $.errorAlert("Unable to preview template until the meta data errors are fixed: " + e.message, "", false);
+                        this.setState({metaData: this.refs.metaDataEditor.getText()});
                     }
                 } else if (this.state.entityType === "extProperties"){
                     this.props.resourceService.previewResourceFile(this.state.resourceTemplateName,
@@ -691,17 +740,22 @@ var XmlTabs = React.createClass({
                                                                    this.previewMetaDataSuccessCallback,
                                                                    this.previewMetaDataErrorCallback);
                 } else if (this.state.entityType === "webApps") {
-                    var parsedMetaData = JSON.parse(this.refs.metaDataEditor.getText().replace(/\\/g, "\\\\"));
-                    var deployToJvms = parsedMetaData.entity.deployToJvms;
-                    if (deployToJvms !== undefined && (!deployToJvms || deployToJvms === "false")){
-                        this.props.resourceService.previewResourceFile(this.state.resourceTemplateName,
-                                                                   this.refs.metaDataEditor.getText(),
-                                                                   this.state.entityParent.rtreeListMetaData.parent.name,
-                                                                   "",
-                                                                   "",
-                                                                   this.state.entity.name,
-                                                                   this.previewMetaDataSuccessCallback,
-                                                                   this.previewMetaDataErrorCallback);
+                    try {
+                        var parsedMetaData = JSON.parse(this.refs.metaDataEditor.getText().replace(/\\/g, "\\\\"));
+                        var deployToJvms = parsedMetaData.entity.deployToJvms;
+                        if (deployToJvms !== undefined && (!deployToJvms || deployToJvms === "false")){
+                            this.props.resourceService.previewResourceFile(this.state.resourceTemplateName,
+                                                                       this.refs.metaDataEditor.getText(),
+                                                                       this.state.entityParent.rtreeListMetaData.parent.name,
+                                                                       "",
+                                                                       "",
+                                                                       this.state.entity.name,
+                                                                       this.previewMetaDataSuccessCallback,
+                                                                       this.previewMetaDataErrorCallback);
+                       }
+                   } catch (e) {
+                        $.errorAlert("Unable to preview changes until the meta data errors are fixed: " + e.message, "", false);
+                        this.setState({metaData: this.refs.metaDataEditor.getText()});
                    }
                 }
             }
