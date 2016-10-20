@@ -88,7 +88,8 @@ public class JvmStateServiceImpl implements JvmStateService {
 
     private void initInMemoryStateService() {
         for (Jvm jvm : jvmPersistenceService.getJvms()){
-            inMemoryStateManagerService.put(jvm.getId(), new CurrentState<Jvm, JvmState>(jvm.getId(), jvm.getState(), DateTime.now(), StateType.JVM));
+            final Date lastUpdateDate = jvmPersistenceService.getJpaJvm(jvm.getId(), false).getLastUpdateDate().getTime();
+            inMemoryStateManagerService.put(jvm.getId(), new CurrentState<Jvm, JvmState>(jvm.getId(), jvm.getState(), new DateTime(lastUpdateDate), StateType.JVM));
         }
     }
 

@@ -145,13 +145,13 @@ public class WebServerControlServiceImpl implements WebServerControlService {
                         if (controlOperation.equals(START) || controlOperation.equals(STOP)) {
                             sendMessageToActionEventLogs(aUser, webServer, commandOutputReturnDescription);
                         } else {
-                            final String errorMsg = createCommandErrorMessage(commandOutput, returnCode);
+                            final String errorMsg = createCommandErrorMessage(commandOutput, returnCode, controlOperation.getExternalValue());
                             sendMessageToActionEventLogs(aUser, webServer, errorMsg);
                         }
 
                         break;
                     default:
-                        final String errorMsg = createCommandErrorMessage(commandOutput, returnCode);
+                        final String errorMsg = createCommandErrorMessage(commandOutput, returnCode, controlOperation.getExternalValue());
                         sendMessageToActionEventLogs(aUser, webServer, errorMsg);
                         break;
                 }
@@ -168,8 +168,8 @@ public class WebServerControlServiceImpl implements WebServerControlService {
         }
     }
 
-    private String createCommandErrorMessage(CommandOutput commandOutput, Integer returnCode) {
-        return "Web Server control command was not successful! Return code = "
+    private String createCommandErrorMessage(CommandOutput commandOutput, Integer returnCode, String commandName) {
+        return "Web Server control command [" + commandName + "] was not successful! Return code = "
                                         + returnCode + ", description = " +
                                         CommandOutputReturnCode.fromReturnCode(returnCode).getDesc() +
                                         ", message = " + commandOutput.standardErrorOrStandardOut();
