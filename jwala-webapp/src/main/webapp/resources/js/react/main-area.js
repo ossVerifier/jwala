@@ -55,7 +55,7 @@ var MainArea = React.createClass({
 var Banner = React.createClass({
     render: function() {
         return <div className="banner-container ui-widget-header">
-                   <img src="public-resources/img/jwala-logo-gears-fade-right.png"/>
+                   <img src="public-resources/img/jwala-banner.png"/>
                    <span className="banner-logout"><a href="#" onClick={this.handleLogoutClick}>Logout</a></span>
                </div>
     },
