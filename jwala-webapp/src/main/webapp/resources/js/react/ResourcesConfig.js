@@ -705,7 +705,8 @@ var XmlTabs = React.createClass({
                                                                                  this.previewErrorCallback);
                         }
                     } catch (e) {
-                            // TODO fail silently for now - render() should be displaying a message in the preview tab
+                        $.errorAlert("Unable to preview template until the meta data errors are fixed: " + e.message, "", false);
+                        this.setState({metaData: this.refs.metaDataEditor.getText()});
                     }
                 } else if (this.state.entityType === "extProperties"){
                     this.props.resourceService.previewResourceFile(this.state.resourceTemplateName,
@@ -753,7 +754,8 @@ var XmlTabs = React.createClass({
                                                                        this.previewMetaDataErrorCallback);
                        }
                    } catch (e) {
-                        // TODO fail silently - render() should be displaying a message in the preview tab
+                        $.errorAlert("Unable to preview changes until the meta data errors are fixed: " + e.message, "", false);
+                        this.setState({metaData: this.refs.metaDataEditor.getText()});
                    }
                 }
             }
