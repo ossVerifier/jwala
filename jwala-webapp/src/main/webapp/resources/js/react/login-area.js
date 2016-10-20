@@ -11,12 +11,8 @@ var LoginArea = React.createClass({
          return <div className={"LoginDialogBox " + this.props.className}>
                    <form id="logInForm">
                       <br/>
-                      <span className="title">TOMCAT</span><br/>
-                      <div className="gear-position">
-                           <img src="public-resources/img/react/gear.gif"/>
-                      </div>
-                      <span className="title margin-left-17px">PERATIONS</span><br/>
-                      <span className="title">CENTER</span>
+                      <br/>
+                      <img src="public-resources/img/jwala-logo.png"/>
                       <br/>
                       <br/>
                       <TextBox ref="userName" id="userName" name="userName" className="input" hint="User Name" hintClassName="hint"
