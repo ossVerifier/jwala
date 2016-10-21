@@ -142,7 +142,7 @@ public class GroupLevelAppResourceHandler extends ResourceHandler {
     @Override
     public Object getSelectedValue(ResourceIdentifier resourceIdentifier) {
         if (canHandle(resourceIdentifier)){
-            return null;
+            return applicationPersistenceService.getApplication(resourceIdentifier.webAppName);
         } else {
             return successor.getSelectedValue(resourceIdentifier);
         }

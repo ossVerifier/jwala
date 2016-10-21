@@ -92,11 +92,13 @@ var ResourcesConfig = React.createClass({
         this.refs.xmlTabs.refreshTemplateDisplay(template);
     },
     selectEntityCallback: function(data, entity, parent) {
-        if (this.refs.xmlTabs.refs.codeMirrorComponent !== undefined && this.refs.xmlTabs.refs.codeMirrorComponent.isContentChanged()) {
+        if (this.refs.xmlTabs.refs.codeMirrorComponent !== undefined && this.refs.xmlTabs.refs.codeMirrorComponent.isContentChanged() ||
+            this.refs.xmlTabs.refs.metaDataEditor !== undefined && this.refs.xmlTabs.refs.metaDataEditor.isContentChanged()) {
             var ans = confirm("All your changes won't be saved if you view another resource. Are you sure you want to proceed ?");
             if (!ans) {
                 return false;
             }
+            MainArea.unsavedChanges = false;
         }
 
         this.refs.xmlTabs.setState({entityType: data.rtreeListMetaData.entity,
@@ -108,11 +110,13 @@ var ResourcesConfig = React.createClass({
         return true;
     },
     selectResourceTemplateCallback: function(entity, resourceName, groupJvmEntityType) {
-        if (this.refs.xmlTabs.refs.codeMirrorComponent !== undefined && this.refs.xmlTabs.refs.codeMirrorComponent.isContentChanged()) {
+        if (this.refs.xmlTabs.refs.codeMirrorComponent !== undefined && this.refs.xmlTabs.refs.codeMirrorComponent.isContentChanged() ||
+            this.refs.xmlTabs.refs.metaDataEditor !== undefined && this.refs.xmlTabs.refs.metaDataEditor.isContentChanged()) {
             var ans = confirm("All your changes won't be saved if you view another resource. Are you sure you want to proceed ?");
             if (!ans) {
                 return false;
             }
+            MainArea.unsavedChanges = false;
         }
 
         this.refs.xmlTabs.setState({groupJvmEntityType: groupJvmEntityType});
