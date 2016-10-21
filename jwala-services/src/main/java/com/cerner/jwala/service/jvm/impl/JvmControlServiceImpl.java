@@ -1,6 +1,7 @@
 package com.cerner.jwala.service.jvm.impl;
 
 import com.cerner.jwala.common.domain.model.fault.AemFaultType;
+import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
 import com.cerner.jwala.common.domain.model.jvm.JvmControlOperation;
@@ -38,6 +39,7 @@ import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 public class JvmControlServiceImpl implements JvmControlService {
 
@@ -367,5 +369,15 @@ public class JvmControlServiceImpl implements JvmControlService {
                 new WindowsJvmPlatformCommandProvider(),
                 filename,
                 destPathBackup);
+    }
+
+    @Override
+    public void createJvmHistory(String jvmName, List<Group> groups, String event, EventType eventType, String user) {
+        historyService.createHistory(JVM + " " + jvmName, groups, event, eventType, user);
+    }
+
+    @Override
+    public void sendJvmMessage(Object object) {
+        messagingService.send(object);
     }
 }

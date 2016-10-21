@@ -18,13 +18,21 @@ public class JvmHistoryEvent implements Serializable {
     private final String stateString;
 
     public JvmHistoryEvent(Identifier<Jvm> id, String eventDescription, String userId, DateTime now, JvmControlOperation operation) {
-
         this.id = id;
         this.message = eventDescription;
         this.userId = userId;
         this.asOf = now;
         this.type = StateType.JVM;
         this.stateString = operation.getExternalValue();
+    }
+
+    public JvmHistoryEvent(Identifier<Jvm> id, String message, String userId, DateTime asOf, String stateString) {
+        this.id = id;
+        this.message = message;
+        this.userId = userId;
+        this.asOf = asOf;
+        this.type = StateType.JVM;
+        this.stateString = stateString;
     }
 
     public Identifier<Jvm> getId() {

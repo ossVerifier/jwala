@@ -491,11 +491,12 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
         when(mockResponse.getStatusCode()).thenReturn(HttpStatus.OK);
         when(mockClientFactoryHelper.requestGet(any(URI.class))).thenReturn(mockResponse);
 
-        String diagnosis = jvmService.performDiagnosis(aJvmId);
+        when(jvm.getState()).thenReturn(JvmState.JVM_START);
+        String diagnosis = jvmService.performDiagnosis(aJvmId,mockUser);
         assertTrue(!diagnosis.isEmpty());
 
         when(mockResponse.getStatusCode()).thenReturn(HttpStatus.REQUEST_TIMEOUT);
-        diagnosis = jvmService.performDiagnosis(aJvmId);
+        diagnosis = jvmService.performDiagnosis(aJvmId, mockUser);
         assertTrue(!diagnosis.isEmpty());
     }
 
@@ -508,7 +509,8 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
         when(mockJvmPersistenceService.getJvm(aJvmId)).thenReturn(jvm);
 
         when(mockClientFactoryHelper.requestGet(any(URI.class))).thenThrow(new IOException("TEST IO EXCEPTION"));
-        String diagnosis = jvmService.performDiagnosis(aJvmId);
+        when(jvm.getState()).thenReturn(JvmState.JVM_STARTED);
+        String diagnosis = jvmService.performDiagnosis(aJvmId, mockUser);
         assertTrue(!diagnosis.isEmpty());
     }
 
@@ -521,7 +523,8 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
         when(mockJvmPersistenceService.getJvm(aJvmId)).thenReturn(jvm);
 
         when(mockClientFactoryHelper.requestGet(any(URI.class))).thenThrow(new RuntimeException("RUN!!"));
-        String diagnosis = jvmService.performDiagnosis(aJvmId);
+        when(jvm.getState()).thenReturn(JvmState.JVM_STARTED);
+        String diagnosis = jvmService.performDiagnosis(aJvmId, mockUser);
         assertTrue(!diagnosis.isEmpty());
     }
 

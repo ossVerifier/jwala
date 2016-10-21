@@ -35,7 +35,7 @@ public interface JvmService {
 
     Jvm generateAndDeployFile(String jvmName, String fileName, User user);
 
-    String performDiagnosis(Identifier<Jvm> aJvmId);
+    String performDiagnosis(Identifier<Jvm> aJvmId, User user);
 
     List<String> getResourceTemplateNames(final String jvmName);
 

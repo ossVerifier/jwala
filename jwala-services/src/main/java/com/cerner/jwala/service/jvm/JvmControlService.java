@@ -1,10 +1,14 @@
 package com.cerner.jwala.service.jvm;
 
+import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
 import com.cerner.jwala.common.domain.model.user.User;
 import com.cerner.jwala.common.exec.CommandOutput;
 import com.cerner.jwala.common.request.jvm.ControlJvmRequest;
 import com.cerner.jwala.exception.CommandFailureException;
+import com.cerner.jwala.persistence.jpa.type.EventType;
+
+import java.util.List;
 
 public interface JvmControlService {
 
@@ -21,4 +25,8 @@ public interface JvmControlService {
     CommandOutput executeCheckFileExistsCommand(Jvm jvm, String filename) throws CommandFailureException;
 
     CommandOutput executeBackUpCommand(Jvm jvm, String filename) throws CommandFailureException;
+
+    void createJvmHistory(String jvmName, List<Group> groups, String event, EventType eventType, String user);
+
+    void sendJvmMessage(Object object);
 }
