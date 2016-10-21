@@ -753,4 +753,78 @@ public class ApplicationServiceImpl implements ApplicationService {
             throw new ApplicationServiceException("Invalid war file!");
         }
     }
+
+    @Override
+    public void deployConf(final String appName, final List<String> fileNames, final List<String> hostNames, final User user) {
+        if (fileNames == null || fileNames.isEmpty()) {
+            throw new InternalErrorException(AemFaultType.INVALID_TEMPLATE_NAME, "Please pass a minimum of 1 filename");
+        }
+        if (hostNames == null || hostNames.isEmpty()) {
+            throw new InternalErrorException(AemFaultType.INVALID_HOST_NAME, "Please pass a minimum of 1 hostname");
+        }
+        final Application application = applicationPersistenceService.getApplication(appName);
+        final Group group = application.getGroup();
+        final String groupName = group.getName();
+        Set<String> resourceSet = new HashSet<>();
+        Set<String> errorSet = new HashSet<>();
+        for (String file : fileNames) {
+            if (!resourceSet.contains(file)) {
+                if (groupService.checkGroupAppResourceFileName(groupName, file)) {
+                    LOGGER.info("Template {} found for application {}, belonging to group {}", file, appName, groupName);
+                    resourceSet.add(file);
+                } else {
+                    if (!errorSet.contains(file)) {
+                        errorSet.add(file);
+                    }
+                }
+            }
+        }
+        if (!errorSet.isEmpty()) {
+            LOGGER.error("Files: {} not found for app: {} belonging to group: {}", errorSet.toString(), appName, groupName);
+            throw new InternalErrorException(AemFaultType.INVALID_TEMPLATE_NAME,
+                    "Templates " + errorSet.toString() + " not found. Make sure the templates have been uploaded");
+        }
+        Set<String> availableHosts = new HashSet<>();
+        for (Jvm jvm : group.getJvms()) {
+            if (!availableHosts.contains(jvm.getHostName())) {
+                availableHosts.add(jvm.getHostName().toLowerCase());
+            }
+        }
+        Set<String> hostSet = new HashSet<>();
+        for (String host : hostNames) {
+            if (availableHosts.contains(host.toLowerCase())) {
+                if (!hostSet.contains(host.toLowerCase())) {
+                    hostSet.add(host.toLowerCase());
+                }
+            } else {
+                if (!errorSet.contains(host)) {
+                    errorSet.add(host);
+                }
+            }
+        }
+        if (!errorSet.isEmpty()) {
+            LOGGER.error("Invalid host name passed {}", errorSet.toString());
+            throw new InternalErrorException(AemFaultType.INVALID_HOST_NAME,
+                    "The host/hosts " + errorSet.toString() + " do not belong to the group " + groupName + " make sure you have a Jvm on the host.");
+        }
+        final ResourceGroup resourceGroup = resourceService.generateResourceGroup();
+        for (String resource : resourceSet) {
+            String metaDataStr = groupService.getGroupAppResourceTemplateMetaData(groupName, resource);
+            try {
+                ResourceTemplateMetaData metaData = resourceService.getTokenizedMetaData(resource, application, metaDataStr);
+                if (metaData.getEntity().getDeployToJvms()) {
+                    LOGGER.error("Template {} is deploy to Jvm", resource);
+                    throw new InternalErrorException(AemFaultType.INVALID_TEMPLATE,
+                            "Template " + resource + " is deployToJvms. Make sure the templates do not belong to JVMs.");
+                }
+                for (String host : hostSet) {
+                    LOGGER.debug("Deploying {} to host {}", resource, host);
+                    groupService.deployGroupAppTemplate(groupName, resource, resourceGroup, application, host);
+                }
+            } catch (IOException e) {
+                LOGGER.error("Failed to map meta data for template {} in group {}", resource, groupName, e);
+                throw new InternalErrorException(AemFaultType.BAD_STREAM, "Failed to read meta data for template " + resource + " in group " + groupName, e);
+            }
+        }
+    }
 }
