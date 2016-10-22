@@ -92,6 +92,18 @@ public interface ResourceServiceRest extends InitializingBean {
     Response createResource(List<Attachment> attachments, @MatrixParam("") CreateResourceParam createResourceParam,
                             @BeanParam AuthenticatedUser user);
 
+    /**
+     * Creates a resource
+     * @param deployFilename the name of the resource when deployed*
+     * @param createResourceParam contains information on who owns the resource to be created  @return {@link Response}
+     * @param attachments a list of attached data (deploy filename, deploy path , content type and template data)
+     */
+    @POST
+    @Path("/{deployFilename}")
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    Response createResource(@PathParam("deployFilename") String deployFilename, @MatrixParam("") CreateResourceParam createResourceParam,
+                            List<Attachment> attachments);
+
     @DELETE
     @Path("/template/{name}")
     @Deprecated

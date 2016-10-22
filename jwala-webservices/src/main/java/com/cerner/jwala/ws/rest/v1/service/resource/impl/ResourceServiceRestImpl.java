@@ -26,6 +26,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.jaxrs.ext.MessageContext;
 import org.apache.cxf.jaxrs.ext.multipart.Attachment;
 import org.apache.cxf.jaxrs.impl.ResponseImpl;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,6 +55,7 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
     public static final String TPL_FILE_EXTENSION = ".tpl";
     public static final String EXT_PROPERTIES_RESOURCE_NAME = "ext.properties";
     public static final String EXT_PROPERTIES_RESOURCE_META_DATA = "{\"contentType\":\"text/plain\", \"templateName\":\"external.properties\", \"deployPath\":\"\", \"deployFileName\":\"" + EXT_PROPERTIES_RESOURCE_NAME + "\"}";
+    public static final int CREATE_RESOURCE_ATTACHMENT_SIZE = 3;
 
     private final ResourceService resourceService;
 
@@ -224,6 +226,52 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
                     new FaultCodeException(AemFaultType.SERVICE_EXCEPTION, rse.getMessage()));
         }
         return ResponseBuilder.ok(responseWrapper);
+    }
+
+    @Override
+    public Response createResource(final String deployFilename, final CreateResourceParam createResourceParam,
+                                   final List<Attachment> attachments) {
+        final CreateResourceResponseWrapper createResourceResponseWrapper;
+
+        if (attachments.size() != CREATE_RESOURCE_ATTACHMENT_SIZE) {
+            return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
+                    AemFaultType.INVALID_NUMBER_OF_ATTACHMENTS,
+                    "Invalid number of attachments! " + CREATE_RESOURCE_ATTACHMENT_SIZE + " attachments is expected by the service."));
+        }
+
+        try {
+            final Map<String, Object> metaDataMap = new HashMap<>();
+            InputStream template = null;
+            String templateName = null;
+            for (final Attachment attachment : attachments) {
+                if ("application/octet-stream".equalsIgnoreCase(attachment.getHeader("Content-Type"))) {
+                    templateName = attachment.getDataHandler().getName();
+                    template = attachment.getDataHandler().getInputStream();
+                } else {
+                    metaDataMap.put(attachment.getDataHandler().getName(),
+                            IOUtils.toString(attachment.getDataHandler().getInputStream()));
+                }
+            }
+
+            metaDataMap.put("deployFileName", deployFilename);
+            metaDataMap.put("templateName", templateName);
+            final ResourceTemplateMetaData resourceTemplateMetaData = ResourceTemplateMetaData
+                    .createFromJsonStr(new ObjectMapper().writeValueAsString(metaDataMap));
+
+            final ResourceIdentifier resourceIdentifier = new ResourceIdentifier.Builder().setResourceName(templateName)
+                    .setGroupName(createResourceParam.getGroup())
+                    .setWebServerName(createResourceParam.getWebServer())
+                    .setJvmName(createResourceParam.getJvm())
+                    .setWebAppName(createResourceParam.getWebApp()).build();
+
+            createResourceResponseWrapper = resourceService.createResource(resourceIdentifier, resourceTemplateMetaData,
+                                                                           template);
+        } catch (final IOException e) {
+            LOGGER.error("Failed to create resource {}!", deployFilename, e);
+            return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(AemFaultType.IO_EXCEPTION, e.getMessage()));
+        }
+
+        return ResponseBuilder.ok(createResourceResponseWrapper);
     }
 
     @Context
