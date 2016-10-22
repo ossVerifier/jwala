@@ -54,6 +54,8 @@ import org.apache.cxf.jaxrs.ext.MessageContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import javax.persistence.EntityExistsException;
 import javax.ws.rs.core.Context;
@@ -270,7 +272,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         Group group = groupService.getGroup(groupName);
         final boolean doNotReplaceTokens = false;
         final String groupJvmTemplateContent = groupService.getGroupJvmResourceTemplate(groupName, fileName, resourceService.generateResourceGroup(), doNotReplaceTokens);
-        Set<Future<Response>> futures = new HashSet<>();
+        Map<String, Future<Response>> futures = new HashMap<>();
         final JvmServiceRest jvmServiceRest = JvmServiceRestImpl.get();
         final Set<Jvm> jvms = group.getJvms();
         if (null != jvms && jvms.size() > 0) {
@@ -282,17 +284,20 @@ public class GroupServiceRestImpl implements GroupServiceRest {
             }
             for (final Jvm jvm : jvms) {
                 final String jvmName = jvm.getJvmName();
+                final Authentication auth = SecurityContextHolder.getContext().getAuthentication();
                 Future<Response> responseFuture = executorService.submit(new Callable<Response>() {
                     @Override
                     public Response call() throws Exception {
+                        SecurityContextHolder.getContext().setAuthentication(auth);
                         jvmServiceRest.updateResourceTemplate(jvmName, fileName, groupJvmTemplateContent);
                         return jvmServiceRest.generateAndDeployFile(jvmName, fileName, aUser);
 
                     }
                 });
-                futures.add(responseFuture);
+                futures.put(jvmName, responseFuture);
             }
-            waitForDeployToComplete(futures);
+            waitForDeployToComplete(new HashSet<>(futures.values()));
+            checkResponsesForErrorStatus(futures);
         } else {
             LOGGER.info("No JVMs in group {}", groupName);
         }
@@ -441,7 +446,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
                 }
             } catch (InterruptedException | ExecutionException e) {
                 LOGGER.error("FAILURE getting response for {}", keyEntityName, e);
-                entityDetailsMap.put(keyEntityName,e.getMessage());
+                entityDetailsMap.put(keyEntityName, e.getCause().getMessage());
                 exception = true;
             }
         }

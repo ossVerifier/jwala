@@ -23,7 +23,7 @@ $.extend({ errorAlert: function (message, dlgTitle, modal, content) {
                 for (var property in content) {
                     if (content.hasOwnProperty(property)) {
                         message += "<li>";
-                        message += property + ": " + content[property];
+                        message += property + ":<ul>" + content[property].replace(/\n/g, "<br>") + "</ul>";
                         message += "</li>"
                     }
                 }

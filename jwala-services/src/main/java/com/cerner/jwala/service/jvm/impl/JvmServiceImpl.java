@@ -683,6 +683,9 @@ public class JvmServiceImpl implements JvmService {
             String message = "Failed to copy file " + fileName + " for JVM " + jvmName;
             LOGGER.error(badStreamMessage + message, ce);
             throw new InternalErrorException(AemFaultType.BAD_STREAM, message, ce);
+        } catch(ResourceFileGeneratorException rfge) {
+            LOGGER.error("Failed to generate and deploy file {} to JVM {}", fileName, jvmName, rfge);
+            throw new InternalErrorException(AemFaultType.RESOURCE_GENERATION_FAILED, rfge.getMessage());
         } finally {
             binaryDistributionLockManager.writeUnlock(jvm.getId().getId().toString());
         }
