@@ -7,7 +7,7 @@
  */
 var ResourcePane = React.createClass({
     getInitialState: function() {
-        return {resourceOptions: [], showModalResourceTemplateMetaData: false, data: null, rightClickedItem: null, host: null}
+        return ResourcePane.INITIAL_STATES;
     },
     render: function() {
         var metaData = [{ref: "createBtn", icon: "ui-icon-plusthick", title: "create", onClickCallback: this.createResource},
@@ -65,6 +65,9 @@ var ResourcePane = React.createClass({
             } else if (data.rtreeListMetaData.entity === "extProperties") {
                 this.props.resourceService.getExternalPropertiesFile(this.getDataCallback);
             }
+        } else {
+            // Reset states
+            this.setState(ResourcePane.INITIAL_STATES);
         }
     },
     getDataCallback: function(response) {
@@ -260,6 +263,7 @@ var ResourcePane = React.createClass({
         }
     },
     statics: {
+        INITIAL_STATES: {resourceOptions: [], showModalResourceTemplateMetaData: false, data: null, rightClickedItem: null, host: null},
         parseDetailedErrorMsg: function(response, defaultErrMsg) {
             try {
                 return JSON.parse(response.responseText).message;

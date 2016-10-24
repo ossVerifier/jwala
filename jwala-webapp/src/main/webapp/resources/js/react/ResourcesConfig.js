@@ -49,11 +49,16 @@ var ResourcesConfig = React.createClass({
                                                         show={false}
                                                         okCallback={this.onCreateResourceOkClicked}
                                                         content={<SelectTemplateFilesWidget ref="selectTemplateFileWidget" getResourceOptions={this.getResourceOptions}/>}/>
-                    <ModalDialogBox ref="selectMetaDataAndTemplateFilesModalDlg"
+                    <ModalDialogBox ref="createResourceModalDlg"
                                     title="Create Resource Template"
                                     show={false}
                                     okCallback={this.onCreateResourceOkClicked}
                                     content={<SelectMetaDataAndTemplateFilesWidget ref="selectMetaDataAndTemplateFilesWidget" uploadMetaData={false} />}/>
+                    <ModalDialogBox ref="selectMetaDataAndTemplateFilesModalDlg"
+                                    title="Create Resource Template"
+                                    show={false}
+                                    okCallback={this.onCreateResourceOkClicked}
+                                    content={<SelectMetaDataAndTemplateFilesWidget ref="selectMetaDataAndTemplateFilesWidget" uploadMetaData={true} hideUploadMetaDataOption={true} />}/>
                     <ModalDialogBox ref="confirmDeleteResourceModalDlg"
                                     title="Confirm Resource Template Deletion"
                                     show={false}
@@ -102,11 +107,11 @@ var ResourcesConfig = React.createClass({
             MainArea.unsavedChanges = false;
         }
 
-        this.refs.xmlTabs.setState({entityType: data.rtreeListMetaData.entity,
+        this.refs.xmlTabs.setState({entityType: data ? data.rtreeListMetaData.entity : null,
                                     entity: data,
-                                    entityGroupName: data.rtreeListMetaData.parent.name,
+                                    entityGroupName: data ? data.rtreeListMetaData.parent.name : null,
                                     resourceTemplateName: null,
-                                    entityParent: data.rtreeListMetaData.parent,
+                                    entityParent: data ? data.rtreeListMetaData.parent : null,
                                     template: ""});
         return true;
     },
@@ -195,8 +200,10 @@ var ResourcesConfig = React.createClass({
         $(".xml-editor-preview-tab-component").not(".content").css("cssText", "height:" + tabContentHeight + "px !important;");
     },
     createResourceCallback: function(data) {
-        if (data.rtreeListMetaData.entity === "extProperties") {
+        if (data && data.rtreeListMetaData.entity === "extProperties") {
             this.refs.selectTemplateFilesModalDlg.show();
+        } else if (data) {
+            this.refs.createResourceModalDlg.show();
         } else {
             this.refs.selectMetaDataAndTemplateFilesModalDlg.show();
         }
@@ -332,7 +339,7 @@ var ResourcesConfig = React.createClass({
                 then(function(response){
 
                 if(!isExtProperties){
-                    self.refs.selectMetaDataAndTemplateFilesModalDlg.close();
+                    self.refs.createResourceModalDlg.close();
                 } else {
                     self.refs.selectTemplateFilesModalDlg.close();
                 }
@@ -462,7 +469,7 @@ var XmlTabs = React.createClass({
     },
     componentWillUpdate: function(nextProps, nextState) {
         this.refs.tabs.setState({activeHash: "#/Configuration/Resources/" + this.state.lastSaved + "/",
-            entityGroupName: nextState.entityParent.name});
+            entityGroupName: nextState.entityParent ? nextState.entityParent.name : null});
     },
     onChangeCallback: function() {
         if ((this.refs.codeMirrorComponent !== undefined && this.refs.codeMirrorComponent.isContentChanged())
@@ -942,10 +949,12 @@ var SelectMetaDataAndTemplateFilesWidget = React.createClass({
                                                                      </div>
                                                                  </div>
                                                                : <MetaDataEntryForm ref="metaDataEntryForm"/>
-
-        var uploadMetaDataCheckbox = this.state.uploadMetaData ?
-            <input type="checkbox" onChange={this.onUploadMetaDataCheckboxChange} checked>Upload Meta Data File</input> :
-            <input type="checkbox" onChange={this.onUploadMetaDataCheckboxChange}>Upload Meta Data File</input>;
+        var uploadMetaDataCheckbox = null;
+        if (!this.props.hideUploadMetaDataOption) {
+            uploadMetaDataCheckbox = this.state.uploadMetaData ?
+                <input type="checkbox" onChange={this.onUploadMetaDataCheckboxChange} checked>Upload Meta Data File</input> :
+                <input type="checkbox" onChange={this.onUploadMetaDataCheckboxChange}>Upload Meta Data File</input>;
+        }
 
         return <div className="select-meta-data-and-template-files-widget">
                    {uploadMetaDataCheckbox}
