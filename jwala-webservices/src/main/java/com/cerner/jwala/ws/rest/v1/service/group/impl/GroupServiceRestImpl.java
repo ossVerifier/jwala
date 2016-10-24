@@ -282,9 +282,9 @@ public class GroupServiceRestImpl implements GroupServiceRest {
                     throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "All JVMs in the group must be stopped before continuing. Operation stopped for JVM " + jvm.getJvmName());
                 }
             }
+            final Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             for (final Jvm jvm : jvms) {
                 final String jvmName = jvm.getJvmName();
-                final Authentication auth = SecurityContextHolder.getContext().getAuthentication();
                 Future<Response> responseFuture = executorService.submit(new Callable<Response>() {
                     @Override
                     public Response call() throws Exception {
@@ -411,11 +411,13 @@ public class GroupServiceRestImpl implements GroupServiceRest {
             }
 
             final Map<String, Future<Response>> futureMap = new HashMap<>();
+            final Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             for (final WebServer webserver : webServers) {
                 final String name = webserver.getName();
                 Future<Response> responseFuture = executorService.submit(new Callable<Response>() {
                     @Override
                     public Response call() throws Exception {
+                        SecurityContextHolder.getContext().setAuthentication(auth);
                         webServerServiceRest.updateResourceTemplate(name, resourceFileName, httpdTemplateContent);
                         return webServerServiceRest.generateAndDeployConfig(name, resourceFileName, aUser);
 
@@ -433,7 +435,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
 
     protected void checkResponsesForErrorStatus(Map<String, Future<Response>> futureMap) {
         boolean exception = false;
-        Map <String,String> entityDetailsMap = new HashMap<>();
+        Map<String, String> entityDetailsMap = new HashMap<>();
         for (String keyEntityName : futureMap.keySet()) {
             Response response;
             try {
