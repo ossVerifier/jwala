@@ -7,6 +7,7 @@ import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
 import com.cerner.jwala.common.domain.model.jvm.JvmControlOperation;
 import com.cerner.jwala.common.domain.model.jvm.JvmState;
+import com.cerner.jwala.common.domain.model.jvm.message.JvmHistoryEvent;
 import com.cerner.jwala.common.domain.model.resource.ContentType;
 import com.cerner.jwala.common.domain.model.resource.ResourceGroup;
 import com.cerner.jwala.common.domain.model.resource.ResourceIdentifier;
@@ -69,6 +70,7 @@ public class JvmServiceImpl implements JvmService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JvmServiceImpl.class);
     private static final String REMOTE_COMMANDS_USER_SCRIPTS = ApplicationProperties.get("remote.commands.user-scripts");
+    private static final String MSG_TYPE_HISTORY = "history";
 
     private final BinaryDistributionLockManager binaryDistributionLockManager;
     private String topicServerStates;
@@ -720,8 +722,7 @@ public class JvmServiceImpl implements JvmService {
 
         final String message = "Diagnose and resolve state";
         jvmControlService.createJvmHistory(jvm.getJvmName(), new ArrayList<>(jvm.getGroups()), message, EventType.USER_ACTION, user.getId());
-//        jvmControlService.sendJvmMessage(new CurrentState<>(jvm.getId(), jvm.getState(), DateTime.now(), StateType.JVM, message, user.getId()));
-//        jvmControlService.sendJvmMessage(new JvmHistoryEvent(jvm.getId(), message, user.getId(), DateTime.now(), "history"));
+        jvmControlService.sendJvmMessage(new JvmHistoryEvent(jvm.getId(), message, user.getId(), DateTime.now(), MSG_TYPE_HISTORY));
 
         SimpleTemplateEngine engine = new SimpleTemplateEngine();
         Map<String, Object> binding = new HashMap<>();
