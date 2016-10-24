@@ -7,6 +7,7 @@ import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
 import com.cerner.jwala.common.domain.model.jvm.JvmControlOperation;
 import com.cerner.jwala.common.domain.model.jvm.JvmState;
+import com.cerner.jwala.common.domain.model.jvm.message.JvmHistoryEvent;
 import com.cerner.jwala.common.domain.model.resource.ContentType;
 import com.cerner.jwala.common.domain.model.resource.ResourceGroup;
 import com.cerner.jwala.common.domain.model.resource.ResourceIdentifier;
@@ -32,6 +33,7 @@ import com.cerner.jwala.files.FileManager;
 import com.cerner.jwala.persistence.jpa.domain.resource.config.template.JpaJvmConfigTemplate;
 import com.cerner.jwala.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
 import com.cerner.jwala.persistence.jpa.service.exception.ResourceTemplateUpdateException;
+import com.cerner.jwala.persistence.jpa.type.EventType;
 import com.cerner.jwala.persistence.service.JvmPersistenceService;
 import com.cerner.jwala.service.app.ApplicationService;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionLockManager;
@@ -60,10 +62,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.*;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 
@@ -71,6 +70,7 @@ public class JvmServiceImpl implements JvmService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JvmServiceImpl.class);
     private static final String REMOTE_COMMANDS_USER_SCRIPTS = ApplicationProperties.get("remote.commands.user-scripts");
+    private static final String MSG_TYPE_HISTORY = "history";
 
     private final BinaryDistributionLockManager binaryDistributionLockManager;
     private String topicServerStates;
@@ -714,11 +714,15 @@ public class JvmServiceImpl implements JvmService {
 
     @Override
     @Transactional
-    public String performDiagnosis(Identifier<Jvm> aJvmId) {
+    public String performDiagnosis(Identifier<Jvm> aJvmId, final User user) {
         // if the Jvm does not exist, we'll get a 404 NotFoundException
         Jvm jvm = jvmPersistenceService.getJvm(aJvmId);
 
         pingAndUpdateJvmState(jvm);
+
+        final String message = "Diagnose and resolve state";
+        jvmControlService.createJvmHistory(jvm.getJvmName(), new ArrayList<>(jvm.getGroups()), message, EventType.USER_ACTION, user.getId());
+        jvmControlService.sendJvmMessage(new JvmHistoryEvent(jvm.getId(), message, user.getId(), DateTime.now(), MSG_TYPE_HISTORY));
 
         SimpleTemplateEngine engine = new SimpleTemplateEngine();
         Map<String, Object> binding = new HashMap<>();

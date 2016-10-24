@@ -277,7 +277,7 @@ var GroupOperations = React.createClass({
                 if (webServerStatusWidget !== undefined) {
                     if (newWebServerState.id.id === webServer.id.id) {
                         if (newWebServerState.stateString === GroupOperations.FAILED || newWebServerState.stateString === GroupOperations.START_SENT || newWebServerState.stateString === GroupOperations.STOP_SENT ||
-                            newWebServerState.stateString === GroupOperations.MSG_TYPE) {
+                            newWebServerState.stateString === GroupOperations.MSG_TYPE_HISTORY) {
 
                             if (newWebServerState.stateString === GroupOperations.STARTING) {
                                 newWebServerState.stateString = GroupOperations.START_SENT;
@@ -338,7 +338,8 @@ var GroupOperations = React.createClass({
                     if (newJvmState.id.id === jvm.jvmId.id) {
                         if (newJvmState.stateString === GroupOperations.FAILED ||
                             newJvmState.stateString === GroupOperations.START_SENT ||
-                            newJvmState.stateString === GroupOperations.STOP_SENT) {
+                            newJvmState.stateString === GroupOperations.STOP_SENT ||
+                            newJvmState.stateString === GroupOperations.MSG_TYPE_HISTORY) {
 
                             var commandStatusWidget = self.commandStatusWidgetMap[GroupOperations.getExtDivCompId(jvm.groupId.id)];
                             if (commandStatusWidget !== undefined) {
@@ -435,7 +436,7 @@ var GroupOperations = React.createClass({
         INVOKE_SERVICE: "invokeService",
         DELETE_SERVICE: "deleteService",
         DRAIN_USER: "drainUser",
-        MSG_TYPE: "history",
+        MSG_TYPE_HISTORY: "history",
         getExtDivCompId: function(groupId) {
             return "ext-comp-div-group-operations-table_" + groupId;
         },

@@ -87,7 +87,7 @@ public interface JvmServiceRest extends InitializingBean{
      */
     @GET
     @Path("/{jvmId}/diagnosis")
-    Response diagnoseJvm(@PathParam("jvmId") final Identifier<Jvm> aJvmId);
+    Response diagnoseJvm(@PathParam("jvmId") final Identifier<Jvm> aJvmId, @BeanParam final AuthenticatedUser aUser);
 
     @GET
     @Path("/{jvmName}/resources/name")
