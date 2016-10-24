@@ -81,12 +81,12 @@ var Option = React.createClass({
         if (this.props.checkBoxEnabled === true) {
             listItems.push(React.createElement("input", {key: "checkBox", type: "checkbox", className: "noSelect", onChange: this.onCheckBoxChange, checked: this.state.checked}));
         }
-        listItems.push(React.createElement("span", {key: "label", onClick: this.onClick}, this.props.label));
+        listItems.push(React.createElement("span", {key: "label"}, this.props.label));
 
         return React.createElement("li", {className: stateClassName,
                                           onContextMenu: this.onContextMenu,
                                           onMouseOver: this.onMouseOver,
-                                          onMouseOut: this.onMouseOut}, listItems);
+                                          onMouseOut: this.onMouseOut, onClick: this.onClick}, listItems);
     },
     onClick: function() {
         this.props.onClick(this.props.value);

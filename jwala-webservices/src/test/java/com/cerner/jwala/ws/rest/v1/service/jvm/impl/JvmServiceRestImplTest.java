@@ -313,8 +313,11 @@ public class JvmServiceRestImplTest {
 
     @Test
     public void testDiagnoseJvm() {
-        when(jvmService.performDiagnosis(jvm.getId())).thenReturn("Good Diagnosis!");
-        Response response = jvmServiceRest.diagnoseJvm(jvm.getId());
+        User user = mock(User.class);
+        when(authenticatedUser.getUser()).thenReturn(user);
+        when(user.getId()).thenReturn("testUser");
+        when(jvmService.performDiagnosis(jvm.getId(), user)).thenReturn("Good Diagnosis!");
+        Response response = jvmServiceRest.diagnoseJvm(jvm.getId(),authenticatedUser);
         assertTrue(response.hasEntity());
     }
 
