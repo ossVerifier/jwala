@@ -269,7 +269,7 @@ var ResourcesConfig = React.createClass({
         if(!isExtProperties){
             if (this.refs.selectMetaDataAndTemplateFilesWidget.refs.metaDataFile) {
                 metaDataFile = this.refs.selectMetaDataAndTemplateFilesWidget.refs.metaDataFile.getDOMNode().files[0];
-                this.refs.selectMetaDataAndTemplateFilesWidget.setState({invalidMetaFile: !metaData});
+                this.refs.selectMetaDataAndTemplateFilesWidget.setState({invalidMetaFile: !metaDataFile});
             }
 
             templateFile = this.refs.selectMetaDataAndTemplateFilesWidget.refs.templateFile.getDOMNode().files[0];
@@ -325,8 +325,10 @@ var ResourcesConfig = React.createClass({
             }
 
             var self = this;
+            var deployFilename = this.refs.selectMetaDataAndTemplateFilesWidget.refs.metaDataEntryForm ?
+                this.refs.selectMetaDataAndTemplateFilesWidget.refs.metaDataEntryForm.getDeployFilename() : null;
             this.props.resourceService.createResource(groupName, webServerName, jvmName, webAppName, formData,
-                metaDataFile, this.refs.selectMetaDataAndTemplateFilesWidget.refs.metaDataEntryForm.getDeployFilename()).
+                metaDataFile, deployFilename).
                 then(function(response){
 
                 if(!isExtProperties){
@@ -928,20 +930,25 @@ var SelectMetaDataAndTemplateFilesWidget = React.createClass({
     getInitialState: function() {
         // Let's not use jQuery form validation since we only need to check if the user has chosen files to use in creating the resource.
         // Besides, this is doing it the React way. :)
-        return {invalidMetaFile: false};
+        return {uploadMetaData: this.props.uploadMetaData};
     },
     render: function() {
 
-        var metaDataEntryComponent = this.props.uploadMetaData ? <div>
-                                                                     <label>Meta Data File</label>
-                                                                     <div className={(!this.state.invalidMetaFile ? "hide " : "") + "error"}>Please select a meta data file (*.json)</div>
+        var metaDataEntryComponent = this.state.uploadMetaData ? <div>
+                                                                     <label>*Meta Data File</label>
+                                                                     <label ref="metaDataFileErrorLabel" htmlFor="metaDataFile" className="error"/>
                                                                      <div className="file-input-container">
-                                                                         <input type="file" ref="metaDataFile" name="metaDataFile" accept=".json" onChange={this.onMetaDataFileChange}/>
+                                                                         <input type="file" ref="metaDataFile" name="metaDataFile" required accept=".json" onChange={this.onMetaDataFileChange}/>
                                                                      </div>
                                                                  </div>
                                                                : <MetaDataEntryForm ref="metaDataEntryForm"/>
 
+        var uploadMetaDataCheckbox = this.state.uploadMetaData ?
+            <input type="checkbox" onChange={this.onUploadMetaDataCheckboxChange} checked>Upload Meta Data File</input> :
+            <input type="checkbox" onChange={this.onUploadMetaDataCheckboxChange}>Upload Meta Data File</input>;
+
         return <div className="select-meta-data-and-template-files-widget">
+                   {uploadMetaDataCheckbox}
                    <form ref="form" className="testForm">
                        {metaDataEntryComponent}
                        <label>*Resource Template File</label>
@@ -952,6 +959,9 @@ var SelectMetaDataAndTemplateFilesWidget = React.createClass({
                    </form>
                </div>
     },
+    onUploadMetaDataCheckboxChange: function() {
+        this.setState({uploadMetaData: !this.state.uploadMetaData});
+    },
     componentDidMount: function() {
         $(this.refs.form.getDOMNode()).submit(function(e) {
                                                   console.log("Submit!");
@@ -959,15 +969,19 @@ var SelectMetaDataAndTemplateFilesWidget = React.createClass({
                                               });
     },
     onMetaDataFileChange: function(e) {
-        if(this.refs.metaDataFile.getDOMNode().files[0]) {
-            this.setState({invalidMetaFile: false});
+        // This is necessary since jquery validate does not clear the error
+        // after user specifies a file not unless user clicks on something
+        // Note: We are not modifying the DOM here in such a way that will affect React
+        if ($(this.refs.metaDataFileErrorLabel.getDOMNode()).hasClass("error")) {
+            $(this.refs.metaDataFileErrorLabel.getDOMNode()).removeClass("error");
+            $(this.refs.metaDataFileErrorLabel.getDOMNode()).html("");
+            $(this.refs.metaDataFile.getDOMNode()).removeClass("error");
         }
     },
     onTemplateFileChange: function(e) {
         // This is necessary since jquery validate does not clear the error
         // after user specifies a file not unless user clicks on something
         // Note: We are not modifying the DOM here in such a way that will affect React
-        console.log($(this.refs.templateFileErrorLabel.getDOMNode()).hasClass("error"));
         if ($(this.refs.templateFileErrorLabel.getDOMNode()).hasClass("error")) {
             $(this.refs.templateFileErrorLabel.getDOMNode()).removeClass("error");
             $(this.refs.templateFileErrorLabel.getDOMNode()).html("");
