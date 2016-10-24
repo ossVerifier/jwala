@@ -763,12 +763,6 @@ var GroupOperationsDataTable = React.createClass({
     },
     jvmDiagnose: function (data, buttonSelector, cancelCallback) {
         var commandStatusWidget = this.props.commandStatusWidgetMap[GroupOperations.getExtDivCompId(data.parentItemId)];
-//        if (commandStatusWidget !== undefined) {
-//            commandStatusWidget.push({ stateString: "Diagnose and resolve state",
-//                asOf: new Date().getTime(),
-//                message: "",
-//                from: "JVM " + data.jvmName, userId: AdminTab.getCookie("userName") }, "action-status-font");
-//        }
         ServiceFactory.getJvmService().diagnoseJvm(data.id.id);
     },
     webServerStart: function (id, buttonSelector, data, parentItemId, cancelCallback) {
