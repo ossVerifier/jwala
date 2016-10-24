@@ -309,7 +309,7 @@ var ResourcesConfig = React.createClass({
             var webAppName;
             var node = this.refs.resourceEditor.refs.treeList.getSelectedNodeData();
 
-            if (!isExtProperties) {
+            if (node && !isExtProperties) {
                 if (node.rtreeListMetaData.entity === "webApps") {
                     webAppName = node.name;
                     if (node.rtreeListMetaData.parent.rtreeListMetaData.entity === "jvms") {
@@ -332,8 +332,15 @@ var ResourcesConfig = React.createClass({
             }
 
             var self = this;
-            var deployFilename = this.refs.selectMetaDataAndTemplateFilesWidget.refs.metaDataEntryForm ?
-                this.refs.selectMetaDataAndTemplateFilesWidget.refs.metaDataEntryForm.getDeployFilename() : null;
+
+            var deployFilename = null;
+            if (this.refs.selectMetaDataAndTemplateFilesWidget.refs.metaDataEntryForm) { // user form was used
+                deployFilename = this.refs.selectMetaDataAndTemplateFilesWidget.refs.metaDataEntryForm.getDeployFilename()
+            } else { // upload meta data was used
+                deployFilename = $(this.refs.selectMetaDataAndTemplateFilesWidget.refs.templateFile.getDOMNode()).val();
+                deployFilename = deployFilename.substr(deployFilename.lastIndexOf("\\") + 1);
+            }
+
             this.props.resourceService.createResource(groupName, webServerName, jvmName, webAppName, formData,
                 metaDataFile, deployFilename).
                 then(function(response){
