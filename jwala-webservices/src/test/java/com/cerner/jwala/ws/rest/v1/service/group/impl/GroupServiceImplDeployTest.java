@@ -113,11 +113,9 @@ public class GroupServiceImplDeployTest {
     private AuthenticatedUser mockAuthUser = mock(AuthenticatedUser.class);
     private User mockUser = mock(User.class);
     private String httpdConfDirPath;
-    private String generatedResourceDir;
 
     public GroupServiceImplDeployTest() {
-        System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH,
-                this.getClass().getClassLoader().getResource("vars.properties").getPath().replace("vars.properties", ""));
+        System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, "./src/test/resources");
     }
 
     @Before
@@ -128,7 +126,6 @@ public class GroupServiceImplDeployTest {
         httpdConfDirPath = ApplicationProperties.get("remote.paths.httpd.conf");
         // assertTrue(new File(httpdConfDirPath).mkdirs());
         new File(httpdConfDirPath).mkdirs();
-        generatedResourceDir = ApplicationProperties.get("paths.generated.resource.dir");
         // assertTrue(new File(generatedResourceDir).mkdirs());
         new File(httpdConfDirPath).mkdirs();
     }
@@ -136,7 +133,6 @@ public class GroupServiceImplDeployTest {
     @After
     public void tearDown() throws IOException {
         FileUtils.deleteDirectory(new File(httpdConfDirPath));
-        FileUtils.deleteDirectory(new File(generatedResourceDir));
         System.clearProperty(ApplicationProperties.PROPERTIES_ROOT_PATH);
     }
 

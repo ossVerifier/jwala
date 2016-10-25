@@ -458,7 +458,7 @@ var XmlTabs = React.createClass({
         try {
             var parsedMetaData = JSON.parse(this.state.metaData.replace(/\\/g, "\\\\")); // escape any backslashes before parsing
             var deployToJvms = parsedMetaData.entity.deployToJvms;
-            if (this.state.entityType === "jvmSection" || this.state.entityType === "webServerSection" || (this.state.entityType === "webApps" && (deployToJvms === undefined || deployToJvms === "true" || deployToJvms === true))){
+            if (this.state.entityType === "jvmSection" || this.state.entityType === "webServerSection" || (this.state.entityType === "webApps" && this.state.entityParent.name === "Web Apps" && (deployToJvms === undefined || deployToJvms === "true" || deployToJvms === true))){
                 this.props.updateGroupTemplateCallback(template);
             } else {
                 this.saveResourcePromise(template).then(this.savedResourceCallback).caught(this.failed.bind(this, "Save Resource Template"));
@@ -536,7 +536,7 @@ var XmlTabs = React.createClass({
         try {
             var parsedMetaData = JSON.parse(this.refs.metaDataEditor.getText().replace(/\\/g, "\\\\")); // escape any backslashes before parsing
             var deployToJvms = parsedMetaData.entity.deployToJvms;
-            if (this.state.entityType === "jvmSection" || this.state.entityType === "webServerSection" || (this.state.entityType === "webApps" && (deployToJvms === undefined || deployToJvms === "true" || deployToJvms === true))){
+            if (this.state.entityType === "jvmSection" || this.state.entityType === "webServerSection" || (this.state.entityType === "webApps" && this.state.entityParent.name === "Web Apps" && (deployToJvms === undefined || deployToJvms === "true" || deployToJvms === true))){
                 this.props.updateGroupMetaDataCallback(metaData);
             } else {
                 this.saveResourceMetaDataPromise(metaData).then(this.savedResourceMetaDataCallback).caught(this.failed.bind(this, "Save Resource Meta Data"));

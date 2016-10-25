@@ -8,6 +8,7 @@ import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
 import com.cerner.jwala.common.domain.model.jvm.JvmControlOperation;
 import com.cerner.jwala.common.domain.model.resource.ResourceGroup;
+import com.cerner.jwala.common.domain.model.resource.ResourceIdentifier;
 import com.cerner.jwala.common.domain.model.resource.ResourceTemplateMetaData;
 import com.cerner.jwala.common.domain.model.webserver.WebServer;
 import com.cerner.jwala.common.domain.model.webserver.WebServerControlOperation;
@@ -272,6 +273,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         Group group = groupService.getGroup(groupName);
         final boolean doNotReplaceTokens = false;
         final String groupJvmTemplateContent = groupService.getGroupJvmResourceTemplate(groupName, fileName, resourceService.generateResourceGroup(), doNotReplaceTokens);
+        final String groupJvmResourceTemplateMetaData = groupService.getGroupJvmResourceTemplateMetaData(groupName, fileName);
         Map<String, Future<Response>> futures = new HashMap<>();
         final JvmServiceRest jvmServiceRest = JvmServiceRestImpl.get();
         final Set<Jvm> jvms = group.getJvms();
@@ -290,6 +292,11 @@ public class GroupServiceRestImpl implements GroupServiceRest {
                     public Response call() throws Exception {
                         SecurityContextHolder.getContext().setAuthentication(auth);
                         jvmServiceRest.updateResourceTemplate(jvmName, fileName, groupJvmTemplateContent);
+                        ResourceIdentifier resourceId = new ResourceIdentifier.Builder()
+                                .setResourceName(fileName)
+                                .setGroupName(groupName)
+                                .setJvmName(jvmName).build();
+                        resourceService.updateResourceMetaData(resourceId, fileName, groupJvmResourceTemplateMetaData);
                         return jvmServiceRest.generateAndDeployFile(jvmName, fileName, aUser);
 
                     }
@@ -397,6 +404,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         Group group = groupService.getGroup(groupName);
         group = groupService.getGroupWithWebServers(group.getId());
         final String httpdTemplateContent = groupService.getGroupWebServerResourceTemplate(groupName, resourceFileName, false, resourceService.generateResourceGroup());
+        final String resourceMetaData = groupService.getGroupWebServerResourceTemplateMetaData(groupName, resourceFileName);
         final WebServerServiceRestImpl webServerServiceRest = WebServerServiceRestImpl.get();
         final Set<WebServer> webServers = group.getWebServers();
         if (null != webServers && webServers.size() > 0) {
@@ -419,6 +427,12 @@ public class GroupServiceRestImpl implements GroupServiceRest {
                     public Response call() throws Exception {
                         SecurityContextHolder.getContext().setAuthentication(auth);
                         webServerServiceRest.updateResourceTemplate(name, resourceFileName, httpdTemplateContent);
+                        ResourceIdentifier resourceId = new ResourceIdentifier.Builder()
+                                .setGroupName(groupName)
+                                .setWebServerName(name)
+                                .setResourceName(resourceFileName)
+                                .build();
+                        resourceService.updateResourceMetaData(resourceId, resourceFileName, resourceMetaData);
                         return webServerServiceRest.generateAndDeployConfig(name, resourceFileName, aUser);
 
                     }
