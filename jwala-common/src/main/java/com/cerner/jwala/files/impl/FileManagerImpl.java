@@ -27,8 +27,8 @@ public class FileManagerImpl implements FileManager {
     private ResourceTypeDeserializer resourceTypeDeserializer;
 
     @Override
-    public String getAbsoluteLocation(TocFile templateName) throws IOException {
-        return fileSystemStorage.find(TocPath.TEMPLATES, FileSystems.getDefault().getPath(templateName.getFileName())).getFoundPath().toString();
+    public String getAbsoluteLocation(JwalaFile templateName) throws IOException {
+        return fileSystemStorage.find(JwalaPath.TEMPLATES, FileSystems.getDefault().getPath(templateName.getFileName())).getFoundPath().toString();
     }
 
     @Override
@@ -48,7 +48,7 @@ public class FileManagerImpl implements FileManager {
         try {
             // TODO: Figure out if this the best way to derive at the template name (by getting the resource type name and removing the spaces and assuming that the they would be the same as that of the file name).
             String resourceTypeNameNoWS = StringUtils.replace(resourceTypeName, " ", "");
-            RepositoryFileInformation fileInformation = fileSystemStorage.find(TocPath.RESOURCE_TEMPLATES, Paths.get(resourceTypeNameNoWS + TEMPLATE_TPL));
+            RepositoryFileInformation fileInformation = fileSystemStorage.find(JwalaPath.RESOURCE_TEMPLATES, Paths.get(resourceTypeNameNoWS + TEMPLATE_TPL));
             if (fileInformation.getType().equals(Type.FOUND)) {
                 return this.readFile(fileInformation.getPath());
             }
@@ -71,7 +71,7 @@ public class FileManagerImpl implements FileManager {
     @Override
     public InputStream getMasterTemplateByStream(String masterTemplateName) {
         try {
-            RepositoryFileInformation fileInformation = fileSystemStorage.find(TocPath.TEMPLATES, Paths.get(masterTemplateName + ".tpl"));
+            RepositoryFileInformation fileInformation = fileSystemStorage.find(JwalaPath.TEMPLATES, Paths.get(masterTemplateName + ".tpl"));
             if (fileInformation.getType().equals(Type.FOUND)) {
                 return readFile(fileInformation.getPath());
             }

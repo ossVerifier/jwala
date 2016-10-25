@@ -5,7 +5,7 @@ import org.springframework.context.annotation.Import;
 
 
 @Configuration
-@Import({TocFileManagerConfiguration.class})
-public class TocFileManagerConfigReference {
+@Import({JwalaFileManagerConfiguration.class})
+public class JwalaFileManagerConfigReference {
 
 }

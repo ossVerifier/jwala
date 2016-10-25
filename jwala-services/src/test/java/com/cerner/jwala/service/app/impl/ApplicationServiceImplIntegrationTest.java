@@ -15,7 +15,7 @@ import com.cerner.jwala.control.configuration.AemSshConfig;
 import com.cerner.jwala.files.FileManager;
 import com.cerner.jwala.files.FilesConfiguration;
 import com.cerner.jwala.files.RepositoryService;
-import com.cerner.jwala.files.TocPath;
+import com.cerner.jwala.files.JwalaPath;
 import com.cerner.jwala.files.impl.FileManagerImpl;
 import com.cerner.jwala.files.impl.LocalFileSystemRepositoryServiceImpl;
 import com.cerner.jwala.files.resources.ResourceTypeDeserializer;
@@ -145,7 +145,7 @@ public class ApplicationServiceImplIntegrationTest {
         public FilesConfiguration getFilesConfiguration() {
             return new FilesConfiguration() {
                 @Override
-                public Path getConfiguredPath(TocPath webArchive) {
+                public Path getConfiguredPath(JwalaPath webArchive) {
                     // Implement this when the need arises...
                     return null;
                 }

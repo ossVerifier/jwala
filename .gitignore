@@ -6,10 +6,6 @@ classes
 .classpath
 .project
 
-/toc-build/jacoco.exec
-/toc-build/toc-tomcat/logs
-/toc-build/work
-/toc-build/toc-tomcat/webapps
 /jwala-webapp/src/main/webapp/gen
 /jwala-services/logs/PropertiesStore
 /jwala-webapp/node_modules
@@ -28,3 +24,8 @@ find.xmlgradle.run.settings.xml
 gradle.run.settings.xml
 ui.lnf.xml
 /gradle/wrapper/gradle-wrapper.properties
+mavenVersion.xml
+markdown_navigator.shared.xml
+mavenVersion.xml
+multimarkdown.shared.xml
+find.xml

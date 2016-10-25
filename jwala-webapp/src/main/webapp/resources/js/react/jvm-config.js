@@ -493,7 +493,7 @@ var JvmConfigDataTable = React.createClass({
                         {sTitle:"Shutd", mData:"shutdownPort"},
                         {sTitle:"AJP", mData:"ajpPort"},
                         {sTitle:"Username", mData: "userName"}];
-        return <TocDataTable tableId="jvm-config-datatable"
+        return <JwalaDataTable tableId="jvm-config-datatable"
                              tableDef={tableDef}
                              data={this.props.data}
                              selectItemCallback={this.props.selectItemCallback}

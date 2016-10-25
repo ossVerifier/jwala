@@ -706,7 +706,7 @@ public class ApplicationServiceImplTest {
     public void testUploadWebArchiveWithWarName() throws IOException {
         Identifier<Application> id = new Identifier<>("1");
         Group mockGroup = mock(Group.class);
-        Application app = new Application(id, "testApp", "D:/stp/app/webapps", "/test", mockGroup, false, false, false, "test.war");
+        Application app = new Application(id, "testApp", "D:/ctp/app/webapps", "/test", mockGroup, false, false, false, "test.war");
         Application returnApp = new Application(id, "testApp", null, "/test", mockGroup, false, false, false, null);
         when(applicationPersistenceService.getApplication(any(Identifier.class))).thenReturn(returnApp);
         when(mockGroup.getName()).thenReturn("testGroup");

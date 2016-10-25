@@ -26,7 +26,7 @@ public class WebArchiveManagerImpl implements WebArchiveManager {
     @Override
     public RepositoryFileInformation store(UploadWebArchiveRequest uploadWebArchiveRequest) throws IOException {
         Path place = synth.unique(platformFileSystem.getPath(uploadWebArchiveRequest.getFilename()));
-        RepositoryFileInformation writeResult = fileSystemStorage.writeStream(TocPath.WEB_ARCHIVE, place, uploadWebArchiveRequest.getTransientData());
+        RepositoryFileInformation writeResult = fileSystemStorage.writeStream(JwalaPath.WEB_ARCHIVE, place, uploadWebArchiveRequest.getTransientData());
         return writeResult;        
     }
 
@@ -39,7 +39,7 @@ public class WebArchiveManagerImpl implements WebArchiveManager {
         String existing = app.getWarPath();
         
         if(StringUtils.hasText(existing)) {
-            action = fileSystemStorage.deleteIfExisting(TocPath.WEB_ARCHIVE, platformFileSystem.getPath(existing), action);
+            action = fileSystemStorage.deleteIfExisting(JwalaPath.WEB_ARCHIVE, platformFileSystem.getPath(existing), action);
         }
         
         return action;

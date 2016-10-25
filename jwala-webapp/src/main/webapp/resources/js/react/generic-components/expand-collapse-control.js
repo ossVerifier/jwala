@@ -210,7 +210,7 @@ var ExpandCollapseControl = React.createClass({
         if(Object.prototype.toString.call(this.props.childTableDetails) === "[object Array]") {
             var jwalaDataTables = [];
             for (var i = 0; i < this.props.childTableDetails.length; i++) {
-                jwalaDataTables[i] = new TocDataTable({tableId:this.props.childTableDetails[i].tableIdPrefix + this.props.id,
+                jwalaDataTables[i] = new JwalaDataTable({tableId:this.props.childTableDetails[i].tableIdPrefix + this.props.id,
                                                      tableDef:this.props.childTableDetails[i].tableDef,
                                                      className:this.props.childTableDetails[i].className,
                                                      title:this.props.childTableDetails[i].title,
@@ -220,7 +220,7 @@ var ExpandCollapseControl = React.createClass({
             }
             return externalComponentContainer + React.renderComponentToStaticMarkup(new React.DOM.div("", jwalaDataTables));
         } else {
-            return externalComponentContainer + React.renderComponentToStaticMarkup(<TocDataTable tableId={this.props.childTableDetails.tableIdPrefix + this.props.id}
+            return externalComponentContainer + React.renderComponentToStaticMarkup(<JwalaDataTable tableId={this.props.childTableDetails.tableIdPrefix + this.props.id}
                                                                      tableDef={this.props.childTableDetails.tableDef}
                                                                      className={this.props.childTableDetails.className}
                                                                      title={this.props.childTableDetails.title}

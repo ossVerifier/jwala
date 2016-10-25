@@ -6,7 +6,7 @@ import com.cerner.jwala.common.domain.model.webserver.WebServer;
 import com.cerner.jwala.common.domain.model.webserver.WebServerReachableState;
 import com.cerner.jwala.common.exception.NotFoundException;
 import com.cerner.jwala.files.FileManager;
-import com.cerner.jwala.files.configuration.TocFileManagerConfigReference;
+import com.cerner.jwala.files.configuration.JwalaFileManagerConfigReference;
 import com.cerner.jwala.persistence.jpa.service.GroupCrudService;
 import com.cerner.jwala.persistence.jpa.service.WebServerCrudService;
 import com.cerner.jwala.persistence.jpa.service.impl.GroupCrudServiceImpl;
@@ -34,7 +34,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @ContextConfiguration(loader = AnnotationConfigContextLoader.class, classes = {
         WebServerServiceImplIntegrationTest.CommonConfiguration.class,
-        TestJpaConfiguration.class, TocFileManagerConfigReference.class})
+        TestJpaConfiguration.class, JwalaFileManagerConfigReference.class})
 @IfProfileValue(name = TestExecutionProfile.RUN_TEST_TYPES, value = TestExecutionProfile.INTEGRATION)
 @RunWith(SpringJUnit4ClassRunner.class)
 @EnableTransactionManagement

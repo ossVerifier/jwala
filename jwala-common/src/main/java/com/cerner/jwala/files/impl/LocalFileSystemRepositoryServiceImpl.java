@@ -7,7 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.cerner.jwala.files.FilesConfiguration;
 import com.cerner.jwala.files.RepositoryFileInformation;
 import com.cerner.jwala.files.RepositoryService;
-import com.cerner.jwala.files.TocPath;
+import com.cerner.jwala.files.JwalaPath;
 import com.cerner.jwala.files.RepositoryFileInformation.Type;
 
 import java.io.IOException;
@@ -31,7 +31,7 @@ public class LocalFileSystemRepositoryServiceImpl implements RepositoryService {
     FilesConfiguration filesConfiguration;
     
     @Override
-    public RepositoryFileInformation writeStream(TocPath refPlace, Path partialPath, InputStream transientData, RepositoryFileInformation... relatedHistory) throws IOException {
+    public RepositoryFileInformation writeStream(JwalaPath refPlace, Path partialPath, InputStream transientData, RepositoryFileInformation... relatedHistory) throws IOException {
         Path place = filesConfiguration.getConfiguredPath(refPlace);
         Path resolvedPath = place.resolve(partialPath).toAbsolutePath().normalize();
         long copied = 0;
@@ -56,7 +56,7 @@ public class LocalFileSystemRepositoryServiceImpl implements RepositoryService {
     }
 
     @Override
-    public RepositoryFileInformation deleteIfExisting(TocPath refPlace, Path partialPath, RepositoryFileInformation... relatedHistory) throws IOException {
+    public RepositoryFileInformation deleteIfExisting(JwalaPath refPlace, Path partialPath, RepositoryFileInformation... relatedHistory) throws IOException {
         RepositoryFileInformation res1 = find(refPlace, partialPath, relatedHistory);
         if(res1.getType() == Type.FOUND) {
             Files.delete(res1.getPath());
@@ -67,7 +67,7 @@ public class LocalFileSystemRepositoryServiceImpl implements RepositoryService {
     }
 
     @Override
-    public RepositoryFileInformation find(TocPath refPlace, Path partialPath, RepositoryFileInformation... relatedHistory) throws IOException {
+    public RepositoryFileInformation find(JwalaPath refPlace, Path partialPath, RepositoryFileInformation... relatedHistory) throws IOException {
         Path place = filesConfiguration.getConfiguredPath(refPlace);
         Path resolvedPath = place.resolve(partialPath);
         if(Files.exists(resolvedPath)) {
@@ -77,7 +77,7 @@ public class LocalFileSystemRepositoryServiceImpl implements RepositoryService {
     }
 
     @Override
-    public RepositoryFileInformation findAll(TocPath refPlace, String pattern, RepositoryFileInformation... relatedHistory) throws IOException {
+    public RepositoryFileInformation findAll(JwalaPath refPlace, String pattern, RepositoryFileInformation... relatedHistory) throws IOException {
         Path place = filesConfiguration.getConfiguredPath(refPlace);
         List<Path> results = new LinkedList<Path>();
 

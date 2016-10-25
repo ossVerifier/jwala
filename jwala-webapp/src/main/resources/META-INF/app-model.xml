@@ -2,5 +2,5 @@
 <properties>
     <propertyset name="log4jproperties" />
     <propertyset name="CommonSecurity" />
-    <propertyset name="TocFiles" />
+    <propertyset name="JwalaFiles" />
 </properties>

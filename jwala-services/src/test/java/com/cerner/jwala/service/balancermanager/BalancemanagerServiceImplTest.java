@@ -137,19 +137,19 @@ public class BalancemanagerServiceImplTest {
 
         ClientHttpResponse mockWorkerResponse = mock(ClientHttpResponse.class);
         when(mockWorkerResponse.getStatusCode()).thenReturn(HttpStatus.OK);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://usmlvv1cds0057:9101/hct"))).thenReturn(mockWorkerResponse);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://usmlvv1cds0058:9101/hct"))).thenReturn(mockWorkerResponse);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://usmlvv1cds0057:9111/hct"))).thenReturn(mockWorkerResponse);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://usmlvv1cds0058:9111/hct"))).thenReturn(mockWorkerResponse);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://usmlvv1cds0057:9121/hct"))).thenReturn(mockWorkerResponse);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://usmlvv1cds0058:9121/hct"))).thenReturn(mockWorkerResponse);
+        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0057:9101/hct"))).thenReturn(mockWorkerResponse);
+        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0058:9101/hct"))).thenReturn(mockWorkerResponse);
+        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0057:9111/hct"))).thenReturn(mockWorkerResponse);
+        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0058:9111/hct"))).thenReturn(mockWorkerResponse);
+        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0057:9121/hct"))).thenReturn(mockWorkerResponse);
+        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0058:9121/hct"))).thenReturn(mockWorkerResponse);
 
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost2/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://usmlvv1cds0057:9101/hct"))).thenReturn(mockWorkerResponse);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost2/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://usmlvv1cds0058:9101/hct"))).thenReturn(mockWorkerResponse);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost2/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://usmlvv1cds0057:9111/hct"))).thenReturn(mockWorkerResponse);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost2/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://usmlvv1cds0058:9111/hct"))).thenReturn(mockWorkerResponse);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost2/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://usmlvv1cds0057:9121/hct"))).thenReturn(mockWorkerResponse);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost2/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://usmlvv1cds0058:9121/hct"))).thenReturn(mockWorkerResponse);
+        when(mockClientFactoryHelper.requestGet(new URI("https://localhost2/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0057:9101/hct"))).thenReturn(mockWorkerResponse);
+        when(mockClientFactoryHelper.requestGet(new URI("https://localhost2/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0058:9101/hct"))).thenReturn(mockWorkerResponse);
+        when(mockClientFactoryHelper.requestGet(new URI("https://localhost2/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0057:9111/hct"))).thenReturn(mockWorkerResponse);
+        when(mockClientFactoryHelper.requestGet(new URI("https://localhost2/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0058:9111/hct"))).thenReturn(mockWorkerResponse);
+        when(mockClientFactoryHelper.requestGet(new URI("https://localhost2/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0057:9121/hct"))).thenReturn(mockWorkerResponse);
+        when(mockClientFactoryHelper.requestGet(new URI("https://localhost2/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0058:9121/hct"))).thenReturn(mockWorkerResponse);
         when(mockWorkerResponse.getBody()).thenReturn(new ByteArrayInputStream(getWorkerHtml().getBytes()));
 
         BalancerManagerState balancerManagerState = balancerManagerServiceImpl.drainUserGroup("mygroupName", "", getUser());
@@ -188,12 +188,12 @@ public class BalancemanagerServiceImplTest {
 
         ClientHttpResponse mockWorkerResponse = mock(ClientHttpResponse.class);
         when(mockWorkerResponse.getStatusCode()).thenReturn(HttpStatus.OK);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://usmlvv1cds0057:9101/hct"))).thenReturn(mockWorkerResponse);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://usmlvv1cds0058:9101/hct"))).thenReturn(mockWorkerResponse);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://usmlvv1cds0057:9111/hct"))).thenReturn(mockWorkerResponse);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://usmlvv1cds0058:9111/hct"))).thenReturn(mockWorkerResponse);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://usmlvv1cds0057:9121/hct"))).thenReturn(mockWorkerResponse);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://usmlvv1cds0058:9121/hct"))).thenReturn(mockWorkerResponse);
+        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0057:9101/hct"))).thenReturn(mockWorkerResponse);
+        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0058:9101/hct"))).thenReturn(mockWorkerResponse);
+        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0057:9111/hct"))).thenReturn(mockWorkerResponse);
+        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0058:9111/hct"))).thenReturn(mockWorkerResponse);
+        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0057:9121/hct"))).thenReturn(mockWorkerResponse);
+        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0058:9121/hct"))).thenReturn(mockWorkerResponse);
         when(mockWorkerResponse.getBody()).thenReturn(new ByteArrayInputStream(getWorkerHtml().getBytes()));
 
         when(mockBalancerManagerHttpClient.doHttpClientPost(any(String.class), anyListOf(NameValuePair.class))).thenReturn(mockResponse);
@@ -243,12 +243,12 @@ public class BalancemanagerServiceImplTest {
 
         ClientHttpResponse mockWorkerResponse = mock(ClientHttpResponse.class);
         when(mockWorkerResponse.getStatusCode()).thenReturn(HttpStatus.OK);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://usmlvv1cds0057:9101/hct"))).thenReturn(mockWorkerResponse);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://usmlvv1cds0058:9101/hct"))).thenReturn(mockWorkerResponse);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://usmlvv1cds0057:9111/hct"))).thenReturn(mockWorkerResponse);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://usmlvv1cds0058:9111/hct"))).thenReturn(mockWorkerResponse);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://usmlvv1cds0057:9121/hct"))).thenReturn(mockWorkerResponse);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://usmlvv1cds0058:9121/hct"))).thenReturn(mockWorkerResponse);
+        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0057:9101/hct"))).thenReturn(mockWorkerResponse);
+        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0058:9101/hct"))).thenReturn(mockWorkerResponse);
+        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0057:9111/hct"))).thenReturn(mockWorkerResponse);
+        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0058:9111/hct"))).thenReturn(mockWorkerResponse);
+        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0057:9121/hct"))).thenReturn(mockWorkerResponse);
+        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0058:9121/hct"))).thenReturn(mockWorkerResponse);
         when(mockWorkerResponse.getBody()).thenReturn(new ByteArrayInputStream(getWorkerHtml().getBytes()));
 
         when(mockBalancerManagerHttpClient.doHttpClientPost(any(String.class), anyListOf(NameValuePair.class))).thenReturn(mockResponse);
@@ -319,19 +319,19 @@ public class BalancemanagerServiceImplTest {
 
         ClientHttpResponse mockWorkerResponse = mock(ClientHttpResponse.class);
         when(mockWorkerResponse.getStatusCode()).thenReturn(HttpStatus.OK);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://usmlvv1cds0057:9101/hct"))).thenReturn(mockWorkerResponse);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://usmlvv1cds0058:9101/hct"))).thenReturn(mockWorkerResponse);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://usmlvv1cds0057:9111/hct"))).thenReturn(mockWorkerResponse);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://usmlvv1cds0058:9111/hct"))).thenReturn(mockWorkerResponse);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://usmlvv1cds0057:9121/hct"))).thenReturn(mockWorkerResponse);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://usmlvv1cds0058:9121/hct"))).thenReturn(mockWorkerResponse);
+        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0057:9101/hct"))).thenReturn(mockWorkerResponse);
+        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0058:9101/hct"))).thenReturn(mockWorkerResponse);
+        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0057:9111/hct"))).thenReturn(mockWorkerResponse);
+        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0058:9111/hct"))).thenReturn(mockWorkerResponse);
+        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0057:9121/hct"))).thenReturn(mockWorkerResponse);
+        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0058:9121/hct"))).thenReturn(mockWorkerResponse);
 
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost2/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://usmlvv1cds0057:9101/hct"))).thenReturn(mockWorkerResponse);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost2/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://usmlvv1cds0058:9101/hct"))).thenReturn(mockWorkerResponse);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost2/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://usmlvv1cds0057:9111/hct"))).thenReturn(mockWorkerResponse);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost2/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://usmlvv1cds0058:9111/hct"))).thenReturn(mockWorkerResponse);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost2/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://usmlvv1cds0057:9121/hct"))).thenReturn(mockWorkerResponse);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost2/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://usmlvv1cds0058:9121/hct"))).thenReturn(mockWorkerResponse);
+        when(mockClientFactoryHelper.requestGet(new URI("https://localhost2/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0057:9101/hct"))).thenReturn(mockWorkerResponse);
+        when(mockClientFactoryHelper.requestGet(new URI("https://localhost2/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0058:9101/hct"))).thenReturn(mockWorkerResponse);
+        when(mockClientFactoryHelper.requestGet(new URI("https://localhost2/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0057:9111/hct"))).thenReturn(mockWorkerResponse);
+        when(mockClientFactoryHelper.requestGet(new URI("https://localhost2/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0058:9111/hct"))).thenReturn(mockWorkerResponse);
+        when(mockClientFactoryHelper.requestGet(new URI("https://localhost2/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0057:9121/hct"))).thenReturn(mockWorkerResponse);
+        when(mockClientFactoryHelper.requestGet(new URI("https://localhost2/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0058:9121/hct"))).thenReturn(mockWorkerResponse);
         when(mockWorkerResponse.getBody()).thenReturn(new ByteArrayInputStream(getWorkerHtml().getBytes()));
 
         BalancerManagerState balancerManagerState = balancerManagerServiceImpl.getGroupDrainStatus("mygroupName", getUser());
@@ -538,7 +538,7 @@ public class BalancemanagerServiceImplTest {
         final MockGroup mockGroup = new MockGroup();
         mockGroup.getGroup();
         when(mockApplicationService.getApplications()).thenReturn(mockGroup.getApplicationsMulti());
-        final String worker = "https://usmlvv1cds0052:9111/slpa-test/slum/ws";
+        final String worker = "https://somehost0052:9111/slpa-test/slum/ws";
         assertEquals("SLPA-WS-4.0.0800.02", balancerManagerServiceImpl.findApplicationNameByWorker(worker));
     }
 
@@ -547,7 +547,7 @@ public class BalancemanagerServiceImplTest {
         final MockGroup mockGroup = new MockGroup();
         mockGroup.getGroup();
         when(mockJvmService.getJvms()).thenReturn(mockGroup.getJvms());
-        final String worker = "https://USMLVV1CDS0057:9101/mywebAppContext";
+        final String worker = "https://somehost0057:9101/mywebAppContext";
         assertEquals("jvmname", balancerManagerXmlParser.findJvmNameByWorker(worker));
     }
 
@@ -556,7 +556,7 @@ public class BalancemanagerServiceImplTest {
         final MockGroup mockGroup = new MockGroup();
         mockGroup.getGroup();
         when(mockJvmService.getJvms()).thenReturn(mockGroup.getJvms());
-        final String worker = "ajp://USMLVV1CDS0057:9103/mywebAppContext";
+        final String worker = "ajp://somehost0057:9103/mywebAppContext";
         assertEquals("jvmname", balancerManagerXmlParser.findJvmNameByWorker(worker));
     }
 
@@ -574,7 +574,7 @@ public class BalancemanagerServiceImplTest {
         final MockGroup mockGroup = new MockGroup();
         mockGroup.getGroup();
         when(mockApplicationService.getApplications()).thenReturn(mockGroup.getApplications());
-        assertEquals("https://USMLVV1CDS0057:9101/hct", balancerManagerServiceImpl.findJvmUrl("jvmname"));
+        assertEquals("https://somehost0057:9101/hct", balancerManagerServiceImpl.findJvmUrl("jvmname"));
     }
 
     @Test
@@ -614,19 +614,19 @@ public class BalancemanagerServiceImplTest {
 
         ClientHttpResponse mockWorkerResponse = mock(ClientHttpResponse.class);
         when(mockWorkerResponse.getStatusCode()).thenReturn(HttpStatus.OK);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://usmlvv1cds0057:9101/hct"))).thenReturn(mockWorkerResponse);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://usmlvv1cds0058:9101/hct"))).thenReturn(mockWorkerResponse);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://usmlvv1cds0057:9111/hct"))).thenReturn(mockWorkerResponse);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://usmlvv1cds0058:9111/hct"))).thenReturn(mockWorkerResponse);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://usmlvv1cds0057:9121/hct"))).thenReturn(mockWorkerResponse);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://usmlvv1cds0058:9121/hct"))).thenReturn(mockWorkerResponse);
+        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0057:9101/hct"))).thenReturn(mockWorkerResponse);
+        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0058:9101/hct"))).thenReturn(mockWorkerResponse);
+        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0057:9111/hct"))).thenReturn(mockWorkerResponse);
+        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0058:9111/hct"))).thenReturn(mockWorkerResponse);
+        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0057:9121/hct"))).thenReturn(mockWorkerResponse);
+        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0058:9121/hct"))).thenReturn(mockWorkerResponse);
 
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost2/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://usmlvv1cds0057:9101/hct"))).thenReturn(mockWorkerResponse);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost2/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://usmlvv1cds0058:9101/hct"))).thenReturn(mockWorkerResponse);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost2/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://usmlvv1cds0057:9111/hct"))).thenReturn(mockWorkerResponse);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost2/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://usmlvv1cds0058:9111/hct"))).thenReturn(mockWorkerResponse);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost2/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://usmlvv1cds0057:9121/hct"))).thenReturn(mockWorkerResponse);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost2/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://usmlvv1cds0058:9121/hct"))).thenReturn(mockWorkerResponse);
+        when(mockClientFactoryHelper.requestGet(new URI("https://localhost2/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0057:9101/hct"))).thenReturn(mockWorkerResponse);
+        when(mockClientFactoryHelper.requestGet(new URI("https://localhost2/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0058:9101/hct"))).thenReturn(mockWorkerResponse);
+        when(mockClientFactoryHelper.requestGet(new URI("https://localhost2/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0057:9111/hct"))).thenReturn(mockWorkerResponse);
+        when(mockClientFactoryHelper.requestGet(new URI("https://localhost2/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0058:9111/hct"))).thenReturn(mockWorkerResponse);
+        when(mockClientFactoryHelper.requestGet(new URI("https://localhost2/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0057:9121/hct"))).thenReturn(mockWorkerResponse);
+        when(mockClientFactoryHelper.requestGet(new URI("https://localhost2/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0058:9121/hct"))).thenReturn(mockWorkerResponse);
         when(mockWorkerResponse.getBody()).thenReturn(new ByteArrayInputStream(getWorkerHtml().getBytes()));
 
         when(mockJvmService.getJvm("jvmname")).thenReturn(mockGroup.getJvm("jvmname"));
@@ -683,19 +683,19 @@ public class BalancemanagerServiceImplTest {
 
         ClientHttpResponse mockWorkerResponse = mock(ClientHttpResponse.class);
         when(mockWorkerResponse.getStatusCode()).thenReturn(HttpStatus.OK);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://usmlvv1cds0057:9101/hct"))).thenReturn(mockWorkerResponse);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://usmlvv1cds0058:9101/hct"))).thenReturn(mockWorkerResponse);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://usmlvv1cds0057:9111/hct"))).thenReturn(mockWorkerResponse);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://usmlvv1cds0058:9111/hct"))).thenReturn(mockWorkerResponse);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://usmlvv1cds0057:9121/hct"))).thenReturn(mockWorkerResponse);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://usmlvv1cds0058:9121/hct"))).thenReturn(mockWorkerResponse);
+        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0057:9101/hct"))).thenReturn(mockWorkerResponse);
+        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0058:9101/hct"))).thenReturn(mockWorkerResponse);
+        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0057:9111/hct"))).thenReturn(mockWorkerResponse);
+        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0058:9111/hct"))).thenReturn(mockWorkerResponse);
+        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0057:9121/hct"))).thenReturn(mockWorkerResponse);
+        when(mockClientFactoryHelper.requestGet(new URI("https://localhost/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0058:9121/hct"))).thenReturn(mockWorkerResponse);
 
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost2/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://usmlvv1cds0057:9101/hct"))).thenReturn(mockWorkerResponse);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost2/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://usmlvv1cds0058:9101/hct"))).thenReturn(mockWorkerResponse);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost2/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://usmlvv1cds0057:9111/hct"))).thenReturn(mockWorkerResponse);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost2/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://usmlvv1cds0058:9111/hct"))).thenReturn(mockWorkerResponse);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost2/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://usmlvv1cds0057:9121/hct"))).thenReturn(mockWorkerResponse);
-        when(mockClientFactoryHelper.requestGet(new URI("https://localhost2/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://usmlvv1cds0058:9121/hct"))).thenReturn(mockWorkerResponse);
+        when(mockClientFactoryHelper.requestGet(new URI("https://localhost2/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0057:9101/hct"))).thenReturn(mockWorkerResponse);
+        when(mockClientFactoryHelper.requestGet(new URI("https://localhost2/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0058:9101/hct"))).thenReturn(mockWorkerResponse);
+        when(mockClientFactoryHelper.requestGet(new URI("https://localhost2/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0057:9111/hct"))).thenReturn(mockWorkerResponse);
+        when(mockClientFactoryHelper.requestGet(new URI("https://localhost2/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0058:9111/hct"))).thenReturn(mockWorkerResponse);
+        when(mockClientFactoryHelper.requestGet(new URI("https://localhost2/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0057:9121/hct"))).thenReturn(mockWorkerResponse);
+        when(mockClientFactoryHelper.requestGet(new URI("https://localhost2/balancer-manager?b=lb-health-check-4.0&nonce=7bbf520f-8454-7b47-8edc-d5ade6c31357&w=https://somehost0058:9121/hct"))).thenReturn(mockWorkerResponse);
         when(mockWorkerResponse.getBody()).thenReturn(new ByteArrayInputStream(getWorkerHtml().getBytes()));
 
         when(mockJvmService.getJvm("jvmname")).thenReturn(mockGroup.getJvm("jvmname"));
@@ -713,7 +713,7 @@ public class BalancemanagerServiceImplTest {
                 System.out.println(groupDrainStatus.getwebServers().toString());
                 assertEquals(1, webServerDrainStatus.getjvms().size());
                 for(BalancerManagerState.GroupDrainStatus.WebServerDrainStatus.JvmDrainStatus jvmDrainStatus : webServerDrainStatus.getjvms()){
-                    assertEquals("JvmDrainStatus{jvmName='jvmname', ignoreError='Off', drainingMode='On', disabled='Off', hotStandby='Off', appName='HEALTH-CHECK-4.0', workerUrl='https://usmlvv1cds0057:9101/hct'}",
+                    assertEquals("JvmDrainStatus{jvmName='jvmname', ignoreError='Off', drainingMode='On', disabled='Off', hotStandby='Off', appName='HEALTH-CHECK-4.0', workerUrl='https://somehost0057:9101/hct'}",
                             jvmDrainStatus.toString());
                 }
 
