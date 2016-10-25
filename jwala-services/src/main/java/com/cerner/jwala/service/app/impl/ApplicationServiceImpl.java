@@ -770,12 +770,14 @@ public class ApplicationServiceImpl implements ApplicationService {
         }
         if (hostName == null || hostName.isEmpty()) {
             LOGGER.info("Hostname not passed, deploying to all hosts");
-            hostNames.addAll(allHosts);
+            for (String host : allHosts) {
+                hostNames.add(host.toLowerCase());
+            }
         } else {
             LOGGER.info("host name provided {}", hostName);
             for (final String host : allHosts) {
                 if (hostName.toLowerCase().equals(host.toLowerCase())) {
-                    hostNames.add(host);
+                    hostNames.add(host.toLowerCase());
                 }
             }
             if (hostNames == null || hostNames.isEmpty()) {
@@ -786,7 +788,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         LOGGER.debug("deploying templates to hosts: {}", hostNames.toString());
         Set<String> errorJvms = new HashSet<>();
         for (Jvm jvm : group.getJvms()) {
-            if (hostNames.contains(jvm.getHostName()) && jvm.getState().isStartedState()) {
+            if (hostNames.contains(jvm.getHostName().toLowerCase()) && jvm.getState().isStartedState()) {
                 errorJvms.add(jvm.getJvmName());
             }
         }
