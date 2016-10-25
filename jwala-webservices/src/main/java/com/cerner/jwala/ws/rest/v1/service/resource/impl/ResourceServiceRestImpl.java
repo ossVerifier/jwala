@@ -255,8 +255,8 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
 
             metaDataMap.put("deployFileName", deployFilename);
             metaDataMap.put("templateName", templateName);
-            final ResourceTemplateMetaData resourceTemplateMetaData = ResourceTemplateMetaData
-                    .createFromJsonStr(new ObjectMapper().writeValueAsString(metaDataMap));
+            final ResourceTemplateMetaData resourceTemplateMetaData =
+                    resourceService.getMetaData(new ObjectMapper().writeValueAsString(metaDataMap));
 
             final ResourceIdentifier resourceIdentifier = new ResourceIdentifier.Builder().setResourceName(templateName)
                     .setGroupName(createResourceParam.getGroup())

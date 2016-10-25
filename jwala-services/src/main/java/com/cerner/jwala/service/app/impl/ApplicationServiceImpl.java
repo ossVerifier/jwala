@@ -720,20 +720,15 @@ public class ApplicationServiceImpl implements ApplicationService {
             metaDataMap.put("deployFileName", warName);
             metaDataMap.put("templateName", warName);
 
-            final Entity entity = new Entity();
-            entity.setGroup(application.getGroup().getName());
-            entity.setDeployToJvms(false);
+            final Entity entity = new Entity(EntityType.GROUPED_APPS.toString(), application.getGroup().getName(),
+                    application.getName(), null, false);
+
             metaDataMap.put("unpack", application.isUnpackWar());
             metaDataMap.put("overwrite", false);
-
-            // Note: This is for backward compatibility.
-            entity.setTarget(application.getName());
-            entity.setType(EntityType.GROUPED_APPS.toString());
-
             metaDataMap.put("entity", entity);
 
             final ResourceTemplateMetaData metaData =
-                    ResourceTemplateMetaData.createFromJsonStr(new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(metaDataMap));
+                    resourceService.getMetaData(new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(metaDataMap));
 
             InputStream resourceDataIn = new ByteArrayInputStream(war);
             resourceDataIn = new ByteArrayInputStream(resourceService.uploadResource(metaData, resourceDataIn).getBytes());

@@ -44,6 +44,7 @@ import com.cerner.jwala.service.resource.impl.ResourceGeneratorType;
 import com.cerner.jwala.service.webserver.component.ClientFactoryHelper;
 import com.jcraft.jsch.JSchException;
 import org.apache.commons.io.FileUtils;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Matchers;
@@ -201,8 +202,10 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
         when(mockGroupService.getGroupJvmResourceTemplate(anyString(), anyString(), any(ResourceGroup.class), anyBoolean())).thenReturn("<server>xml</server>");
         when(mockGroupService.getGroupJvmResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"deployPath\":\"c:/fake/path\", \"deployFileName\":\"server-deploy.xml\"}");
         when(mockGroupService.getGroupAppsResourceTemplateNames(anyString())).thenReturn(appTemplateNames);
-        when(mockGroupService.getGroupAppResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"deployPath\":\"c:/fake/app/path\", \"deployFileName\":\"app-context.xml\", \"entity\":{\"deployToJvms\":\"true\", \"target\":\"app-target\"}}");
+        final String jsonMetaData = "{\"deployPath\":\"c:/fake/app/path\", \"deployFileName\":\"app-context.xml\", \"entity\":{\"deployToJvms\":\"true\", \"target\":\"app-target\"}}";
+        when(mockGroupService.getGroupAppResourceTemplateMetaData(anyString(), anyString())).thenReturn(jsonMetaData);
         when(mockResourceService.getTokenizedMetaData(anyString(), Matchers.anyObject(), anyString())).thenReturn(mockMetaData);
+        when(mockResourceService.getMetaData(anyString())).thenReturn(new ObjectMapper().readValue(jsonMetaData, ResourceTemplateMetaData.class));
 
         jvmService.createJvm(createJvmAndAddToGroupsRequest, mockUser);
 
@@ -299,8 +302,7 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
         when(mockGroup.getName()).thenReturn("mock-group-name");
         when(mockGroupService.getGroupJvmsResourceTemplateNames(anyString())).thenReturn(templateNames);
         when(mockGroupService.getGroupAppsResourceTemplateNames(anyString())).thenReturn(appTemplateNames);
-        when(mockGroupService.getGroupAppResourceTemplateMetaData(anyString(), anyString())).thenReturn("{deployPath:c:/fake/app/path}");
-
+        when(mockResourceService.getMetaData(anyString())).thenThrow(new IOException());
         jvmService.createJvm(createJvmAndAddToGroupsRequest, mockUser);
 
         verify(createJvmRequest, times(1)).validate();

@@ -37,6 +37,7 @@ import com.cerner.jwala.template.exception.ResourceFileGeneratorException;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -291,14 +292,20 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Override
     public <T> ResourceTemplateMetaData getTokenizedMetaData(String fileName, T entity, String metaDataStr) throws IOException {
-        String tokenizedMetaData = generateResourceFile(fileName, metaDataStr, generateResourceGroup(), entity, ResourceGeneratorType.METADATA);
-        LOGGER.info("tokenized metadata is : {}", tokenizedMetaData);
-        return ResourceTemplateMetaData.createFromJsonStr(tokenizedMetaData);
+            String tokenizedMetaData = generateResourceFile(fileName, metaDataStr, generateResourceGroup(), entity, ResourceGeneratorType.METADATA);
+            LOGGER.info("tokenized metadata is : {}", tokenizedMetaData);
+            return getMetaData(tokenizedMetaData);
     }
 
     @Override
-    public ResourceTemplateMetaData getMetaData(String rawMetaData) throws IOException {
-        return ResourceTemplateMetaData.createFromJsonStr(rawMetaData);
+    public ResourceTemplateMetaData getMetaData(final String jsonMetaData) throws IOException {
+        if (StringUtils.isNotEmpty(jsonMetaData)) {
+            final ResourceTemplateMetaData metaData = new ObjectMapper().readValue(jsonMetaData.replace("\\", "\\\\"),
+                    ResourceTemplateMetaData.class);
+            metaData.setJsonData(jsonMetaData);
+            return metaData;
+        }
+        return null;
     }
 
     @Override

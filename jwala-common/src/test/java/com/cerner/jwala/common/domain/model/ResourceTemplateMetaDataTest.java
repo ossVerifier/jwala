@@ -42,10 +42,8 @@ public class ResourceTemplateMetaDataTest {
 
     @Test
     public void testCreateMetaData() throws IOException {
-        final ResourceTemplateMetaData metaData = ResourceTemplateMetaData.createFromJsonStr(META_DATA_JSON);
+        final ResourceTemplateMetaData metaData = new ObjectMapper().readValue(META_DATA_JSON.replace("\\", "\\\\"),
+                ResourceTemplateMetaData.class);
         assertEquals(EXPECTED_META_DATA_STR, metaData.toString());
-
-        // test serialization too!
-        assertEquals(EXPECTED_META_DATA_JSON, new ObjectMapper().writeValueAsString(metaData));
     }
 }

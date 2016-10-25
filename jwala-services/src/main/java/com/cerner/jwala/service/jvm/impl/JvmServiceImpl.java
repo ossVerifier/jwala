@@ -183,7 +183,7 @@ public class JvmServiceImpl implements JvmService {
         for (String templateName : templateNames) {
             String metaDataStr = groupService.getGroupAppResourceTemplateMetaData(groupName, templateName);
             try {
-                ResourceTemplateMetaData metaData = ResourceTemplateMetaData.createFromJsonStr(metaDataStr);
+                ResourceTemplateMetaData metaData = resourceService.getMetaData(metaDataStr);
                 if (metaData.getEntity().getDeployToJvms()) {
                     final String template = resourceService.getAppTemplate(groupName, metaData.getEntity().getTarget(), templateName);
                     final ResourceIdentifier resourceIdentifier = new ResourceIdentifier.Builder()
