@@ -316,7 +316,7 @@ var renderButton = function(tableId, item, data, type, full, parentItemId) {
                                         parentItemId:parentItemId,
                                         disabled:item.disabled});
 
-    TocPager.allButtons[id] = reactBtn;
+    JwalaPager.allButtons[id] = reactBtn;
 
     return React.renderComponentToStaticMarkup(reactBtn);
 

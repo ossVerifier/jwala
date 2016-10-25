@@ -704,12 +704,12 @@ var GroupOperationsDataTable = React.createClass({
         this.disableEnableJvmGenerateConfigButton(selector, requestJvmGenerateConfig, this.generateJvmConfigSucccessCallback, this.generateJvmConfigErrorCallback);
     },
     generateJvmConfigSucccessCallback: function (response) {
-        // TODO: Verify if we need to call done callback here. Eg this.doneCallback[response.applicationResponseContent.jvmName + "__cto" + response.applicationResponseContent.id.id]();
+        // TODO: Verify if we need to call done callback here. Eg this.doneCallback[response.applicationResponseContent.jvmName + "__jwala" + response.applicationResponseContent.id.id]();
         $.alert("Successfully generated and deployed JVM resource files", response.applicationResponseContent.jvmName, false);
     },
 
     generateJvmConfigErrorCallback: function (applicationResponseContent) {
-        // TODO: Verify if we need to call done callback here. Eg this.doneCallback[response.applicationResponseContent.jvmName + "__cto" + response.applicationResponseContent.id.id]();
+        // TODO: Verify if we need to call done callback here. Eg this.doneCallback[response.applicationResponseContent.jvmName + "__jwala" + response.applicationResponseContent.id.id]();
         $.errorAlert(applicationResponseContent, "Error deploying JVM resource files", false);
     },
 

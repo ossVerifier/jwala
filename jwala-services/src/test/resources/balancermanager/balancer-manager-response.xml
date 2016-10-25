@@ -27,7 +27,7 @@
                     <httpd:transferred>0</httpd:transferred>
                     <httpd:read>0</httpd:read>
                     <httpd:elected>0</httpd:elected>
-                    <httpd:route>CTO-N9SF-LTST-HEALTH-CHECK-4.0-somehost0057-1</httpd:route>
+                    <httpd:route>SOMEHOST-HEALTH-CHECK-4.0-somehost0057-1</httpd:route>
                     <httpd:redirect></httpd:redirect>
                     <httpd:busy>0</httpd:busy>
                     <httpd:lbset>0</httpd:lbset>
@@ -51,7 +51,7 @@
                     <httpd:transferred>0</httpd:transferred>
                     <httpd:read>0</httpd:read>
                     <httpd:elected>0</httpd:elected>
-                    <httpd:route>CTO-N9SF-LTST-HEALTH-CHECK-4.0-somehost0057-2</httpd:route>
+                    <httpd:route>SOMEHOST-HEALTH-CHECK-4.0-somehost0057-2</httpd:route>
                     <httpd:redirect></httpd:redirect>
                     <httpd:busy>0</httpd:busy>
                     <httpd:lbset>0</httpd:lbset>
@@ -75,7 +75,7 @@
                     <httpd:transferred>0</httpd:transferred>
                     <httpd:read>0</httpd:read>
                     <httpd:elected>0</httpd:elected>
-                    <httpd:route>CTO-N9SF-LTST-HEALTH-CHECK-4.0-somehost0057-3</httpd:route>
+                    <httpd:route>SOMEHOST-HEALTH-CHECK-4.0-somehost0057-3</httpd:route>
                     <httpd:redirect></httpd:redirect>
                     <httpd:busy>0</httpd:busy>
                     <httpd:lbset>0</httpd:lbset>
@@ -99,7 +99,7 @@
                     <httpd:transferred>0</httpd:transferred>
                     <httpd:read>0</httpd:read>
                     <httpd:elected>0</httpd:elected>
-                    <httpd:route>CTO-N9SF-LTST-HEALTH-CHECK-4.0-somehost0058-1</httpd:route>
+                    <httpd:route>SOMEHOST-HEALTH-CHECK-4.0-somehost0058-1</httpd:route>
                     <httpd:redirect></httpd:redirect>
                     <httpd:busy>0</httpd:busy>
                     <httpd:lbset>0</httpd:lbset>
@@ -123,7 +123,7 @@
                     <httpd:transferred>0</httpd:transferred>
                     <httpd:read>0</httpd:read>
                     <httpd:elected>0</httpd:elected>
-                    <httpd:route>CTO-N9SF-LTST-HEALTH-CHECK-4.0-somehost0058-2</httpd:route>
+                    <httpd:route>SOMEHOST-HEALTH-CHECK-4.0-somehost0058-2</httpd:route>
                     <httpd:redirect></httpd:redirect>
                     <httpd:busy>0</httpd:busy>
                     <httpd:lbset>0</httpd:lbset>
@@ -147,7 +147,7 @@
                     <httpd:transferred>0</httpd:transferred>
                     <httpd:read>0</httpd:read>
                     <httpd:elected>0</httpd:elected>
-                    <httpd:route>CTO-N9SF-LTST-HEALTH-CHECK-4.0-somehost0058-3</httpd:route>
+                    <httpd:route>SOMEHOST-HEALTH-CHECK-4.0-somehost0058-3</httpd:route>
                     <httpd:redirect></httpd:redirect>
                     <httpd:busy>0</httpd:busy>
                     <httpd:lbset>0</httpd:lbset>
