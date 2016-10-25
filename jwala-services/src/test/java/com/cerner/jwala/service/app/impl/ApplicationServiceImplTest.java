@@ -751,7 +751,7 @@ public class ApplicationServiceImplTest {
         when(mockGroup.getJvms()).thenReturn(jvms);
         when(mockJvm.getHostName()).thenReturn("testserver");
         when(mockJvm.getState()).thenReturn(JvmState.JVM_NEW);
-        when(groupService.getAllHosts()).thenReturn(hosts);
+        when(groupService.getHosts(anyString())).thenReturn(hosts);
         when(groupService.getGroupAppResourceTemplateMetaData(anyString(), anyString())).thenReturn("");
         when(mockResourceService.getMetaData(anyString())).thenReturn(mockMetaData);
         when(mockMetaData.getEntity()).thenReturn(mockEntity);
@@ -785,7 +785,7 @@ public class ApplicationServiceImplTest {
         when(mockGroup.getJvms()).thenReturn(jvms);
         when(mockJvm.getHostName()).thenReturn("testserver");
         when(mockJvm.getState()).thenReturn(JvmState.JVM_NEW);
-        when(groupService.getAllHosts()).thenReturn(hosts);
+        when(groupService.getHosts(anyString())).thenReturn(hosts);
         when(groupService.getGroupAppResourceTemplateMetaData(anyString(), anyString())).thenReturn("");
         when(mockResourceService.getMetaData(anyString())).thenReturn(mockMetaData);
         when(mockMetaData.getEntity()).thenReturn(mockEntity);
@@ -802,7 +802,7 @@ public class ApplicationServiceImplTest {
         when(applicationPersistenceService.getApplication(eq(appName))).thenReturn(mockApplication);
         when(groupService.getGroup(any(Identifier.class))).thenReturn(group);
         when(mockApplication.getGroup()).thenReturn(group);
-        when(groupService.getAllHosts()).thenReturn(null);
+        when(groupService.getHosts(anyString())).thenReturn(null);
         applicationService.deployConf(appName, null, testUser);
     }
 
@@ -823,7 +823,7 @@ public class ApplicationServiceImplTest {
         when(mockGroup.getJvms()).thenReturn(jvms);
         when(mockJvm.getHostName()).thenReturn("testserver");
         when(mockJvm.getState()).thenReturn(JvmState.JVM_STARTED);
-        when(groupService.getAllHosts()).thenReturn(hosts);
+        when(groupService.getHosts(anyString())).thenReturn(hosts);
         applicationService.deployConf(appName, null, testUser);
     }
 
@@ -836,7 +836,7 @@ public class ApplicationServiceImplTest {
         when(applicationPersistenceService.getApplication(eq(appName))).thenReturn(mockApplication);
         when(groupService.getGroup(any(Identifier.class))).thenReturn(group);
         when(mockApplication.getGroup()).thenReturn(group);
-        when(groupService.getAllHosts()).thenReturn(hosts);
+        when(groupService.getHosts(anyString())).thenReturn(hosts);
         applicationService.deployConf(appName, "test", testUser);
     }
 
@@ -859,7 +859,7 @@ public class ApplicationServiceImplTest {
         when(mockGroup.getJvms()).thenReturn(jvms);
         when(mockJvm.getHostName()).thenReturn("testserver");
         when(mockJvm.getState()).thenReturn(JvmState.JVM_NEW);
-        when(groupService.getAllHosts()).thenReturn(hosts);
+        when(groupService.getHosts(anyString())).thenReturn(hosts);
         when(groupService.getGroupAppResourceTemplateMetaData(anyString(), anyString())).thenReturn("");
         when(mockResourceService.getMetaData(anyString())).thenThrow(IOException.class);
         when(groupService.getGroupAppsResourceTemplateNames(anyString())).thenReturn(templateNames);

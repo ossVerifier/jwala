@@ -763,7 +763,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         final String groupName = group.getName();
         final Set<String> resourceSet = new HashSet<>();
         final List<String> hostNames = new ArrayList<>();
-        final List<String> allHosts = groupService.getAllHosts();
+        final List<String> allHosts = groupService.getHosts(groupName);
         if (allHosts == null || allHosts.isEmpty()) {
             LOGGER.error("No hosts found for the group: {} and application: {}", groupName, appName);
             throw new InternalErrorException(AemFaultType.GROUP_MISSING_HOSTS, "No host found for the application " + appName);
