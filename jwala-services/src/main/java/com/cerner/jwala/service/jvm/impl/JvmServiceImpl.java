@@ -316,7 +316,7 @@ public class JvmServiceImpl implements JvmService {
             createScriptsDirectory(jvm);
 
             // copy the invoke and deploy scripts
-            deployScriptsToUserTocScriptsDir(jvm, user);
+            deployScriptsToUserJwalaScriptsDir(jvm, user);
 
             // delete the service, needs service.bat
             // TODO make generic to support multiple OSs
@@ -378,7 +378,7 @@ public class JvmServiceImpl implements JvmService {
 
     }
 
-    protected void deployScriptsToUserTocScriptsDir(Jvm jvm, User user) throws CommandFailureException, IOException {
+    protected void deployScriptsToUserJwalaScriptsDir(Jvm jvm, User user) throws CommandFailureException, IOException {
         final ControlJvmRequest secureCopyRequest = new ControlJvmRequest(jvm.getId(), JvmControlOperation.SECURE_COPY);
         final String commandsScriptsPath = ApplicationProperties.get("commands.scripts-path");
 
