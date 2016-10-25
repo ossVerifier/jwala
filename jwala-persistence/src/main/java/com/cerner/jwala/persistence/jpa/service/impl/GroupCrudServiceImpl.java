@@ -97,7 +97,7 @@ public class GroupCrudServiceImpl extends AbstractCrudServiceImpl<JpaGroup> impl
     public List<JpaGroup> findGroups(final String aName) {
 
         final Query query = entityManager.createQuery("SELECT g FROM JpaGroup g WHERE g.name LIKE :groupName");
-        query.setParameter("groupName", "%" + aName + "%");
+        query.setParameter("groupName", aName);
 
         return query.getResultList();
     }

@@ -48,6 +48,8 @@ import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.FileCopyUtils;
 
@@ -755,75 +757,106 @@ public class ApplicationServiceImpl implements ApplicationService {
     }
 
     @Override
-    public void deployConf(final String appName, final List<String> fileNames, final List<String> hostNames, final User user) {
-        if (fileNames == null || fileNames.isEmpty()) {
-            throw new InternalErrorException(AemFaultType.INVALID_TEMPLATE_NAME, "Please pass a minimum of 1 filename");
-        }
-        if (hostNames == null || hostNames.isEmpty()) {
-            throw new InternalErrorException(AemFaultType.INVALID_HOST_NAME, "Please pass a minimum of 1 hostname");
-        }
+    public void deployConf(final String appName, final String hostName, final User user) {
         final Application application = applicationPersistenceService.getApplication(appName);
-        final Group group = application.getGroup();
+        final Group group = groupService.getGroup(application.getGroup().getId());
         final String groupName = group.getName();
-        Set<String> resourceSet = new HashSet<>();
-        Set<String> errorSet = new HashSet<>();
-        for (String file : fileNames) {
-            if (!resourceSet.contains(file)) {
-                if (groupService.checkGroupAppResourceFileName(groupName, file)) {
-                    LOGGER.info("Template {} found for application {}, belonging to group {}", file, appName, groupName);
-                    resourceSet.add(file);
-                } else {
-                    if (!errorSet.contains(file)) {
-                        errorSet.add(file);
-                    }
+        final Set<String> resourceSet = new HashSet<>();
+        final List<String> hostNames = new ArrayList<>();
+        final List<String> allHosts = groupService.getAllHosts();
+        if (allHosts == null || allHosts.isEmpty()) {
+            LOGGER.error("No hosts found for the group: {} and application: {}", groupName, appName);
+            throw new InternalErrorException(AemFaultType.GROUP_MISSING_HOSTS, "No host found for the application " + appName);
+        }
+        if (hostName == null || hostName.isEmpty()) {
+            LOGGER.info("Hostname not passed, deploying to all hosts");
+            hostNames.addAll(allHosts);
+        } else {
+            LOGGER.info("host name provided {}", hostName);
+            for (final String host : allHosts) {
+                if (hostName.toLowerCase().equals(host.toLowerCase())) {
+                    hostNames.add(host);
                 }
             }
+            if (hostNames == null || hostNames.isEmpty()) {
+                LOGGER.error("Hostname {} does not belong to the group {}", hostName, groupName);
+                throw new InternalErrorException(AemFaultType.INVALID_HOST_NAME, "The hostname: " + hostName + " does not belong to the group " + groupName);
+            }
         }
-        if (!errorSet.isEmpty()) {
-            LOGGER.error("Files: {} not found for app: {} belonging to group: {}", errorSet.toString(), appName, groupName);
-            throw new InternalErrorException(AemFaultType.INVALID_TEMPLATE_NAME,
-                    "Templates " + errorSet.toString() + " not found. Make sure the templates have been uploaded");
-        }
-        Set<String> availableHosts = new HashSet<>();
+        LOGGER.debug("deploying templates to hosts: {}", hostNames.toString());
+        Set<String> errorJvms = new HashSet<>();
         for (Jvm jvm : group.getJvms()) {
-            if (!availableHosts.contains(jvm.getHostName())) {
-                availableHosts.add(jvm.getHostName().toLowerCase());
+            if (hostNames.contains(jvm.getHostName()) && jvm.getState().isStartedState()) {
+                errorJvms.add(jvm.getJvmName());
             }
         }
-        Set<String> hostSet = new HashSet<>();
-        for (String host : hostNames) {
-            if (availableHosts.contains(host.toLowerCase())) {
-                if (!hostSet.contains(host.toLowerCase())) {
-                    hostSet.add(host.toLowerCase());
-                }
-            } else {
-                if (!errorSet.contains(host)) {
-                    errorSet.add(host);
-                }
-            }
+        if (!errorJvms.isEmpty()) {
+            LOGGER.error("Jvms {} not stopped, make sure the jvms are stopped before deploying", errorJvms.toString());
+            throw new InternalErrorException(AemFaultType.RESOURCE_DEPLOY_FAILURE,
+                    "Make sure the following Jvms " + errorJvms.toString() + " are completely stopped before deploying.");
         }
-        if (!errorSet.isEmpty()) {
-            LOGGER.error("Invalid host name passed {}", errorSet.toString());
-            throw new InternalErrorException(AemFaultType.INVALID_HOST_NAME,
-                    "The host/hosts " + errorSet.toString() + " do not belong to the group " + groupName + " make sure you have a Jvm on the host.");
-        }
-        final ResourceGroup resourceGroup = resourceService.generateResourceGroup();
-        for (String resource : resourceSet) {
-            String metaDataStr = groupService.getGroupAppResourceTemplateMetaData(groupName, resource);
+        List<String> resourceTemplates = groupService.getGroupAppsResourceTemplateNames(groupName);
+        for (String resourceTemplate : resourceTemplates) {
+            String metaDataStr = groupService.getGroupAppResourceTemplateMetaData(groupName, resourceTemplate);
+            LOGGER.debug("metadata for template: {} is {}", resourceTemplate, metaDataStr);
             try {
-                ResourceTemplateMetaData metaData = resourceService.getTokenizedMetaData(resource, application, metaDataStr);
-                if (metaData.getEntity().getDeployToJvms()) {
-                    LOGGER.error("Template {} is deploy to Jvm", resource);
-                    throw new InternalErrorException(AemFaultType.INVALID_TEMPLATE,
-                            "Template " + resource + " is deployToJvms. Make sure the templates do not belong to JVMs.");
-                }
-                for (String host : hostSet) {
-                    LOGGER.debug("Deploying {} to host {}", resource, host);
-                    groupService.deployGroupAppTemplate(groupName, resource, resourceGroup, application, host);
+                ResourceTemplateMetaData metaData = resourceService.getMetaData(metaDataStr);
+                if (!metaData.getEntity().getDeployToJvms() && !resourceSet.contains(resourceTemplate)) {
+                    LOGGER.info("Template {} needs to be deployed adding it to the list", resourceTemplate);
+                    resourceSet.add(resourceTemplate);
                 }
             } catch (IOException e) {
-                LOGGER.error("Failed to map meta data for template {} in group {}", resource, groupName, e);
-                throw new InternalErrorException(AemFaultType.BAD_STREAM, "Failed to read meta data for template " + resource + " in group " + groupName, e);
+                LOGGER.error("Error in templatizing the metadata file", e);
+                throw new InternalErrorException(AemFaultType.IO_EXCEPTION, "Error in templatizing the metadata for resource " + resourceTemplate);
+            }
+        }
+        final ResourceGroup resourceGroup = resourceService.generateResourceGroup();
+        final Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Map<String, Future<Map<String, CommandOutput>>> futures = new HashMap<>();
+        for (final String host : hostNames) {
+            final String key = application.getName() + "/" + host;
+            if (!writeLock.containsKey(key)) {
+                writeLock.put(key, new ReentrantReadWriteLock());
+            }
+                if (writeLock.get(key).isWriteLocked()) {
+                    throw new InternalErrorException(AemFaultType.SERVICE_EXCEPTION, "Current resource is being deployed, wait for deploy to complete.");
+                }
+                Future<Map<String, CommandOutput>> commandOutputFutureMap = executorService.submit(new Callable<Map<String, CommandOutput>>() {
+                    @Override
+                    public Map<String, CommandOutput> call() throws Exception {
+                        writeLock.get(key).writeLock().lock();
+                        try {
+                            Map<String, CommandOutput> commandOutputs = new HashMap<>();
+                            SecurityContextHolder.getContext().setAuthentication(authentication);
+                            for (final String resource : resourceSet) {
+                                LOGGER.info("Deploying {} to host {}", resource, host);
+                                commandOutputs.put(resource, groupService.deployGroupAppTemplate(groupName, resource, resourceGroup, application, host));
+                            }
+                            return commandOutputs;
+                        } finally {
+                            writeLock.get(key).writeLock().unlock();
+                        }
+                    }
+                }
+                );
+                futures.put(key, commandOutputFutureMap);
+        }
+
+        for (Entry<String, Future<Map<String, CommandOutput>>> entry : futures.entrySet()) {
+            try {
+                String[] resourceData = entry.getKey().split("/");
+                Map<String, CommandOutput> commandOutputMap = entry.getValue().get();
+                for (Entry<String, CommandOutput> commandOutput : commandOutputMap.entrySet()) {
+                    if (!commandOutput.getValue().getReturnCode().wasSuccessful()) {
+                        final String errorMessage = "Error in deploying resource " + commandOutput.getKey() +
+                                " to host " + resourceData[1] + " for application " + resourceData[0];
+                        LOGGER.error(errorMessage);
+                        throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, errorMessage);
+                    }
+                }
+            } catch (InterruptedException | ExecutionException e) {
+                LOGGER.error("Error in executing deploy", e);
+                throw new InternalErrorException(AemFaultType.RESOURCE_DEPLOY_FAILURE, e.getMessage());
             }
         }
     }

@@ -266,10 +266,10 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
     }
 
     @Override
-    public Response deployConf(final String appName, final JsonDeployApplication jsonDeployApplication, final AuthenticatedUser aUser) {
+    public Response deployConf(final String appName, final AuthenticatedUser aUser, final String hostName) {
         try {
             LOGGER.info("Deploying application {} initiated by user {}", appName, aUser.getUser().getId());
-            service.deployConf(appName, jsonDeployApplication.getFileNames(), jsonDeployApplication.getHostNames(), aUser.getUser());
+            service.deployConf(appName, hostName, aUser.getUser());
             return ResponseBuilder.ok(appName);
         } catch (RuntimeException e) {
             LOGGER.error("Error in deploying resource", e);

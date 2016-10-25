@@ -100,5 +100,5 @@ public interface ApplicationService {
 
     CommandOutput executeUnzipBinaryCommand(String entity, String host, String fileName, String destination, String options) throws CommandFailureException;
 
-    void deployConf(String appName, List<String> fileNames, List<String> hostNames, User user);
+    void deployConf(String appName, String hostName, User user);
 }

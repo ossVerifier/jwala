@@ -6,7 +6,6 @@ import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
 import com.cerner.jwala.ws.rest.v1.provider.AuthenticatedUser;
 import com.cerner.jwala.ws.rest.v1.service.app.impl.JsonCreateApplication;
-import com.cerner.jwala.ws.rest.v1.service.app.impl.JsonDeployApplication;
 import com.cerner.jwala.ws.rest.v1.service.app.impl.JsonUpdateApplication;
 import org.apache.cxf.jaxrs.ext.MessageContext;
 import org.springframework.beans.factory.InitializingBean;
@@ -115,7 +114,6 @@ public interface ApplicationServiceRest extends InitializingBean {
 
     @PUT
     @Path("/{appName}/conf")
-    @Consumes(MediaType.APPLICATION_JSON)
-    Response deployConf(@PathParam("appName") String appName, final JsonDeployApplication jsonDeployApplication, @BeanParam AuthenticatedUser aUser);
+    Response deployConf(@PathParam("appName") String appName, @BeanParam AuthenticatedUser aUser, @QueryParam("hostName") String hostName);
 
 }
