@@ -70,7 +70,7 @@
         so you may not define subcomponents such as "Valves" at this level.
         Documentation at /docs/config/service.html
     -->
-    <!-- Soarian Tomcat Platform Service
+    <!-- Cerner Tomcat Platform Service
         Features: SSL enabled, AJP disabled, HTTP disabled
         Exploded apps: sslwebapps
         Archived apps: by context.xmls in conf/jwala/localhost

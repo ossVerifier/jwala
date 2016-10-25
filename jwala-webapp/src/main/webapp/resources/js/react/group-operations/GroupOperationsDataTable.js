@@ -215,7 +215,7 @@ var GroupOperationsDataTable = React.createClass({
 
         var childTableDetailsArray = [webServerOfGrpChildTableDetails, jvmChildTableDetails, webAppOfGrpChildTableDetails];
 
-        return TocDataTable({ tableId: "group-operations-table",
+        return JwalaDataTable({ tableId: "group-operations-table",
             className: "dataTable hierarchical",
             tableDef: groupTableDef,
             data: this.props.data,

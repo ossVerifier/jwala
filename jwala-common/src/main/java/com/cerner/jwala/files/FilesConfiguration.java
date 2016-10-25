@@ -4,7 +4,7 @@ import java.nio.file.Path;
 
 public interface FilesConfiguration {
 
-    Path getConfiguredPath(TocPath webArchive);
+    Path getConfiguredPath(JwalaPath webArchive);
 
     void reload();
 

@@ -38,7 +38,7 @@ public class MockGroup {
         List<Jvm> jvms = new LinkedList<>();
         Jvm jvm = new Jvm(id(0L, Jvm.class),
                 "jvmname",
-                "USMLVV1CDS0057",
+                "somehost0057",
                 groups,
                 9100,
                 9101,
@@ -61,7 +61,7 @@ public class MockGroup {
     public Jvm getJvm(final String jvmName) {
         Jvm jvm = new Jvm(id(0L, Jvm.class),
                 jvmName,
-                "USMLVV1CDS0057",
+                "somehost0057",
                 groups,
                 9100,
                 9101,

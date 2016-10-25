@@ -6,11 +6,11 @@ import java.nio.file.Path;
 
 public interface RepositoryService {
 
-    RepositoryFileInformation find(TocPath refPlace, Path partialPath, RepositoryFileInformation... relatedHistory) throws IOException;
+    RepositoryFileInformation find(JwalaPath refPlace, Path partialPath, RepositoryFileInformation... relatedHistory) throws IOException;
 
-    RepositoryFileInformation writeStream(TocPath refPlace, Path partialPath, InputStream transientData, RepositoryFileInformation... relatedHistory) throws IOException;
+    RepositoryFileInformation writeStream(JwalaPath refPlace, Path partialPath, InputStream transientData, RepositoryFileInformation... relatedHistory) throws IOException;
     
-    RepositoryFileInformation deleteIfExisting(TocPath refPlace, Path partialPath, RepositoryFileInformation... relatedHistory) throws IOException;
+    RepositoryFileInformation deleteIfExisting(JwalaPath refPlace, Path partialPath, RepositoryFileInformation... relatedHistory) throws IOException;
 
-    RepositoryFileInformation findAll(TocPath refPlace, String pattern, RepositoryFileInformation... relatedHistory) throws IOException;
+    RepositoryFileInformation findAll(JwalaPath refPlace, String pattern, RepositoryFileInformation... relatedHistory) throws IOException;
 }

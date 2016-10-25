@@ -14,7 +14,7 @@ import org.springframework.context.annotation.ScopedProxyMode;
 import java.io.IOException;
 
 @Configuration
-public class TocFileManagerConfiguration {
+public class JwalaFileManagerConfiguration {
     
     /**
      * Look up path properties from the application properties

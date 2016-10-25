@@ -185,7 +185,7 @@ var decorateTableAsDataTable = function(tableId,
         return decorated;
 };
 
-var TocPager = {
+var JwalaPager = {
 
     init: function() {
         $.fn.dataTableExt.oPagination.jwala = this;
@@ -232,7 +232,7 @@ var TocPager = {
     allButtons : {}
 };
 
-TocPager.init();
+JwalaPager.init();
 
 var renderComponents = function(tableId,
                                 parentItemId,

@@ -1,5 +1,5 @@
 /** @jsx React.DOM */
-var TocDataTable = React.createClass({
+var JwalaDataTable = React.createClass({
     getInitialState: function () {
         return { displayLength: null };
     },

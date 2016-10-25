@@ -10,9 +10,9 @@
             <httpd:scolonpathdelim>On</httpd:scolonpathdelim>
             <httpd:workers>
                 <httpd:worker>
-                    <httpd:name>https://usmlvv1cds0057:9101/hct</httpd:name>
+                    <httpd:name>https://somehost0057:9101/hct</httpd:name>
                     <httpd:scheme>https</httpd:scheme>
-                    <httpd:hostname>usmlvv1cds0057</httpd:hostname>
+                    <httpd:hostname>somehost0057</httpd:hostname>
                     <httpd:loadfactor>1</httpd:loadfactor>
                     <httpd:port>9101</httpd:port>
                     <httpd:min>0</httpd:min>
@@ -27,16 +27,16 @@
                     <httpd:transferred>0</httpd:transferred>
                     <httpd:read>0</httpd:read>
                     <httpd:elected>0</httpd:elected>
-                    <httpd:route>CTO-N9SF-LTST-HEALTH-CHECK-4.0-USMLVV1CDS0057-1</httpd:route>
+                    <httpd:route>CTO-N9SF-LTST-HEALTH-CHECK-4.0-somehost0057-1</httpd:route>
                     <httpd:redirect></httpd:redirect>
                     <httpd:busy>0</httpd:busy>
                     <httpd:lbset>0</httpd:lbset>
                     <httpd:retry>0</httpd:retry>
                 </httpd:worker>
                 <httpd:worker>
-                    <httpd:name>https://usmlvv1cds0057:9111/hct</httpd:name>
+                    <httpd:name>https://somehost0057:9111/hct</httpd:name>
                     <httpd:scheme>https</httpd:scheme>
-                    <httpd:hostname>usmlvv1cds0057</httpd:hostname>
+                    <httpd:hostname>somehost0057</httpd:hostname>
                     <httpd:loadfactor>1</httpd:loadfactor>
                     <httpd:port>9111</httpd:port>
                     <httpd:min>0</httpd:min>
@@ -51,16 +51,16 @@
                     <httpd:transferred>0</httpd:transferred>
                     <httpd:read>0</httpd:read>
                     <httpd:elected>0</httpd:elected>
-                    <httpd:route>CTO-N9SF-LTST-HEALTH-CHECK-4.0-USMLVV1CDS0057-2</httpd:route>
+                    <httpd:route>CTO-N9SF-LTST-HEALTH-CHECK-4.0-somehost0057-2</httpd:route>
                     <httpd:redirect></httpd:redirect>
                     <httpd:busy>0</httpd:busy>
                     <httpd:lbset>0</httpd:lbset>
                     <httpd:retry>0</httpd:retry>
                 </httpd:worker>
                 <httpd:worker>
-                    <httpd:name>https://usmlvv1cds0057:9121/hct</httpd:name>
+                    <httpd:name>https://somehost0057:9121/hct</httpd:name>
                     <httpd:scheme>https</httpd:scheme>
-                    <httpd:hostname>usmlvv1cds0057</httpd:hostname>
+                    <httpd:hostname>somehost0057</httpd:hostname>
                     <httpd:loadfactor>1</httpd:loadfactor>
                     <httpd:port>9121</httpd:port>
                     <httpd:min>0</httpd:min>
@@ -75,16 +75,16 @@
                     <httpd:transferred>0</httpd:transferred>
                     <httpd:read>0</httpd:read>
                     <httpd:elected>0</httpd:elected>
-                    <httpd:route>CTO-N9SF-LTST-HEALTH-CHECK-4.0-USMLVV1CDS0057-3</httpd:route>
+                    <httpd:route>CTO-N9SF-LTST-HEALTH-CHECK-4.0-somehost0057-3</httpd:route>
                     <httpd:redirect></httpd:redirect>
                     <httpd:busy>0</httpd:busy>
                     <httpd:lbset>0</httpd:lbset>
                     <httpd:retry>0</httpd:retry>
                 </httpd:worker>
                 <httpd:worker>
-                    <httpd:name>https://usmlvv1cds0058:9101/hct</httpd:name>
+                    <httpd:name>https://somehost0058:9101/hct</httpd:name>
                     <httpd:scheme>https</httpd:scheme>
-                    <httpd:hostname>usmlvv1cds0058</httpd:hostname>
+                    <httpd:hostname>somehost0058</httpd:hostname>
                     <httpd:loadfactor>1</httpd:loadfactor>
                     <httpd:port>9101</httpd:port>
                     <httpd:min>0</httpd:min>
@@ -99,16 +99,16 @@
                     <httpd:transferred>0</httpd:transferred>
                     <httpd:read>0</httpd:read>
                     <httpd:elected>0</httpd:elected>
-                    <httpd:route>CTO-N9SF-LTST-HEALTH-CHECK-4.0-USMLVV1CDS0058-1</httpd:route>
+                    <httpd:route>CTO-N9SF-LTST-HEALTH-CHECK-4.0-somehost0058-1</httpd:route>
                     <httpd:redirect></httpd:redirect>
                     <httpd:busy>0</httpd:busy>
                     <httpd:lbset>0</httpd:lbset>
                     <httpd:retry>0</httpd:retry>
                 </httpd:worker>
                 <httpd:worker>
-                    <httpd:name>https://usmlvv1cds0058:9111/hct</httpd:name>
+                    <httpd:name>https://somehost0058:9111/hct</httpd:name>
                     <httpd:scheme>https</httpd:scheme>
-                    <httpd:hostname>usmlvv1cds0058</httpd:hostname>
+                    <httpd:hostname>somehost0058</httpd:hostname>
                     <httpd:loadfactor>1</httpd:loadfactor>
                     <httpd:port>9111</httpd:port>
                     <httpd:min>0</httpd:min>
@@ -123,16 +123,16 @@
                     <httpd:transferred>0</httpd:transferred>
                     <httpd:read>0</httpd:read>
                     <httpd:elected>0</httpd:elected>
-                    <httpd:route>CTO-N9SF-LTST-HEALTH-CHECK-4.0-USMLVV1CDS0058-2</httpd:route>
+                    <httpd:route>CTO-N9SF-LTST-HEALTH-CHECK-4.0-somehost0058-2</httpd:route>
                     <httpd:redirect></httpd:redirect>
                     <httpd:busy>0</httpd:busy>
                     <httpd:lbset>0</httpd:lbset>
                     <httpd:retry>0</httpd:retry>
                 </httpd:worker>
                 <httpd:worker>
-                    <httpd:name>https://usmlvv1cds0058:9121/hct</httpd:name>
+                    <httpd:name>https://somehost0058:9121/hct</httpd:name>
                     <httpd:scheme>https</httpd:scheme>
-                    <httpd:hostname>usmlvv1cds0058</httpd:hostname>
+                    <httpd:hostname>somehost0058</httpd:hostname>
                     <httpd:loadfactor>1</httpd:loadfactor>
                     <httpd:port>9121</httpd:port>
                     <httpd:min>0</httpd:min>
@@ -147,7 +147,7 @@
                     <httpd:transferred>0</httpd:transferred>
                     <httpd:read>0</httpd:read>
                     <httpd:elected>0</httpd:elected>
-                    <httpd:route>CTO-N9SF-LTST-HEALTH-CHECK-4.0-USMLVV1CDS0058-3</httpd:route>
+                    <httpd:route>CTO-N9SF-LTST-HEALTH-CHECK-4.0-somehost0058-3</httpd:route>
                     <httpd:redirect></httpd:redirect>
                     <httpd:busy>0</httpd:busy>
                     <httpd:lbset>0</httpd:lbset>

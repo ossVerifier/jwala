@@ -4,13 +4,6 @@ import com.cerner.jwala.common.domain.model.app.Application;
 import com.cerner.jwala.common.domain.model.user.User;
 import com.cerner.jwala.common.request.app.RemoveWebArchiveRequest;
 import com.cerner.jwala.common.request.app.UploadWebArchiveRequest;
-import com.cerner.jwala.files.FilesConfiguration;
-import com.cerner.jwala.files.NameSynthesizer;
-import com.cerner.jwala.files.RepositoryFileInformation;
-import com.cerner.jwala.files.RepositoryService;
-import com.cerner.jwala.files.TocPath;
-import com.cerner.jwala.files.WebArchiveManager;
-import com.cerner.jwala.files.RepositoryFileInformation.Type;
 import com.cerner.jwala.files.impl.LocalFileSystemRepositoryServiceImpl;
 import com.cerner.jwala.files.impl.PropertyFilesConfigurationImpl;
 import com.cerner.jwala.files.impl.WebArchiveManagerImpl;
@@ -81,7 +74,7 @@ public class WebArchiveManagerTest {
             Path storageFolder = Files.createTempDirectory("archives");
             
             Properties p = new Properties();
-            p.put(TocPath.WEB_ARCHIVE.getProperty(), storageFolder.toString());
+            p.put(JwalaPath.WEB_ARCHIVE.getProperty(), storageFolder.toString());
 
             return new PropertyFilesConfigurationImpl(p);
         }
@@ -142,7 +135,7 @@ public class WebArchiveManagerTest {
     }
     @Before
     public void setup() throws IOException {
-        filesConfiguration.getConfiguredPath(TocPath.WEB_ARCHIVE);
+        filesConfiguration.getConfiguredPath(JwalaPath.WEB_ARCHIVE);
 
         ByteBuffer buf = java.nio.ByteBuffer.allocate(1*1024*1024); // 1 Mb file
         buf.asShortBuffer().put((short)0xc0de);
@@ -154,7 +147,7 @@ public class WebArchiveManagerTest {
     
     @After
     public void tearDown() throws IOException {
-        cleanupPath = filesConfiguration.getConfiguredPath(TocPath.WEB_ARCHIVE);
+        cleanupPath = filesConfiguration.getConfiguredPath(JwalaPath.WEB_ARCHIVE);
     }
     
     private void testResults(long expectedSize, RepositoryFileInformation result) throws IOException {
@@ -165,7 +158,7 @@ public class WebArchiveManagerTest {
         
         Path storedPath = ((MemoryNameSynthesizer)nameSynthesizer).pop();
         
-        FileChannel fc = FileChannel.open(filesConfiguration.getConfiguredPath(TocPath.WEB_ARCHIVE).resolve(storedPath), StandardOpenOption.READ, preserve==false?StandardOpenOption.DELETE_ON_CLOSE:StandardOpenOption.READ );
+        FileChannel fc = FileChannel.open(filesConfiguration.getConfiguredPath(JwalaPath.WEB_ARCHIVE).resolve(storedPath), StandardOpenOption.READ, preserve==false?StandardOpenOption.DELETE_ON_CLOSE:StandardOpenOption.READ );
         
         assertNotNull(fc);
         

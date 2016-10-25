@@ -157,7 +157,7 @@
     </category>
     -->
 
-    <category name="com.siemens">
+    <category name="com.cerner">
         <priority value="DEBUG"/>
     </category>
 

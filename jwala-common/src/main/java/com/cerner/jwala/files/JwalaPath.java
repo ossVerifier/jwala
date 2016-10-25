@@ -2,7 +2,7 @@ package com.cerner.jwala.files;
 
 import java.nio.file.Path;
 
-public enum TocPath {
+public enum JwalaPath {
 
     WEB_ARCHIVE("paths.web-archive"),
     TEMPLATES("paths.templates"), 
@@ -13,7 +13,7 @@ public enum TocPath {
     final String property;
     final Path defaultPath;
 
-    TocPath(final String property) {
+    JwalaPath(final String property) {
         this.property = property;
         this.defaultPath = null;
     }

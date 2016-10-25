@@ -1,6 +1,6 @@
 package com.cerner.jwala.files;
 
-public interface TocFile {
+public interface JwalaFile {
 
     String getFileName();
     

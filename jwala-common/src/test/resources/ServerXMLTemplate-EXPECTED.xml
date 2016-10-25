@@ -70,7 +70,7 @@
         so you may not define subcomponents such as "Valves" at this level.
         Documentation at /docs/config/service.html
     -->
-    <!-- Soarian Tomcat Platform Service
+    <!-- Cerner Tomcat Platform Service
         Features: SSL enabled, AJP disabled, HTTP disabled
         Exploded apps: sslwebapps
         Archived apps: by context.xmls in conf/jwala/localhost
@@ -90,8 +90,8 @@
 
         <Connector
                 port="11011"
-                SSLCertificateFile="d:\jwala\app\data\security\id\usmlvv1ctoGenerateMe.cer"
-                SSLCertificateKeyFile="d:\jwala\app\data\security\id\usmlvv1ctoGenerateMe.key"
+                SSLCertificateFile="d:\jwala\app\data\security\id\someHostGenerateMe.cer"
+                SSLCertificateKeyFile="d:\jwala\app\data\security\id\someHostGenerateMe.key"
                 SSLEnabled="true"
                 SSLPassword=""
                 acceptCount="100"
@@ -117,7 +117,7 @@
         on to the appropriate Host (virtual host).
         Documentation at /docs/config/engine.html -->
 
-        <!-- The STP Engine is the normal standalone Tomcat host
+        <!-- The CTP Engine is the normal standalone Tomcat host
             Warning: potential name conflict on jvmRoute -->
         <Engine name="jwala" defaultHost="localhost" jvmRoute="tc1">
 
@@ -142,7 +142,7 @@
                   errorReportValveClass="org.apache.catalina.valves.ErrorReportValve">
 
                 <!-- Attempt to ensure we 'could' identify ourselves properly over SSL -->
-                <Alias>usmlvv1ctoGenerateMe</Alias>
+                <Alias>someHostGenerateMe</Alias>
 
                 <!-- Access log processes all example.
                      Documentation at: /docs/config/valve.html
@@ -201,7 +201,7 @@
         <!-- You should set jvmRoute to support load-balancing via AJP ie :
         <Engine name="Catalina" defaultHost="localhost" jvmRoute="jvm1">
         -->
-        <Engine name="Catalina" defaultHost="localhost" jvmRoute="CTO-N9SF-LTST-JWALA">
+        <Engine name="Catalina" defaultHost="localhost" jvmRoute="SOMEHOST-JWALA">
 
             <!--For clustering, please take a look at documentation at:
                 /docs/cluster-howto.html  (simple how to)
