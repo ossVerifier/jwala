@@ -1,5 +1,6 @@
 package com.cerner.jwala.ws.rest.v1.service.balancermanager;
 
+import com.cerner.jwala.ws.rest.v1.provider.AuthUser;
 import org.springframework.beans.factory.InitializingBean;
 
 import javax.ws.rs.*;
@@ -12,26 +13,26 @@ public interface BalancerManagerServiceRest extends InitializingBean {
 
     @POST
     @Path("/{groupName}")
-    Response drainUserGroup(@PathParam("groupName") final String groupName,
-                            final String webServerNames);
+    Response drainUserGroup(@PathParam("groupName") String groupName, String webServerNames,
+                            @BeanParam final AuthUser authUser);
 
     @POST
     @Path("/{groupName}/{webServerName}")
-    Response drainUserWebServer(@PathParam("groupName") final String groupName,
-                                @PathParam("webServerName") final String webServerName,
-                                final String jvmNames);
+    Response drainUserWebServer(@PathParam("groupName") String groupName, @PathParam("webServerName") String webServerName,
+                                String jvmNames, @BeanParam AuthUser authUser);
 
     @POST
     @Path("/jvm/{jvmName}")
-    Response drainUserJvm(@PathParam("jvmName") final String jvmName);
+    Response drainUserJvm(@PathParam("jvmName") String jvmName, @BeanParam AuthUser authUser);
 
     @POST
     @Path("/jvm/{groupName}/{jvmName}")
-    Response drainUserGroupJvm(@PathParam("groupName") final String groupName,
-                               @PathParam("jvmName") final String jvmName);
+    Response drainUserGroupJvm(@PathParam("groupName") String groupName, @PathParam("jvmName") String jvmName,
+                               @BeanParam AuthUser authUser);
 
     @GET
     @Path("/{groupName}")
-    Response getGroup(@PathParam("groupName") final String groupName);
+    // TODO: The path should be /{groupName}/drainStatus
+    Response getGroupDrainStatus(@PathParam("groupName") String groupName, @BeanParam AuthUser authUser);
 
 }
