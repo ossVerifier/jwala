@@ -8,7 +8,7 @@ var WebAppControlPanelWidget = React.createClass({
                    <RButton className="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only ui-button-height"
                             spanClassName="ui-icon ui-icon-gear-custom"
                             onClick={this.generateConf}
-                            title="Generate the httpd.conf and deploy as a service"
+                            title="Generate and deploy the webapp resources."
                             disabled = {!MainArea.isAdminRole}
                             disabledTitle="Resource generation is disabled for this version"
                             busyClassName="busy-button"/>
@@ -24,7 +24,7 @@ var WebAppControlPanelWidget = React.createClass({
             });
     },
     generateConfSuccessCallback: function(response) {
-        this.doneCallback[response.applicationResponseContent.name]();
+        this.doneCallback[this.props.data.name]();
         $.alert(this.props.data.name + " resource files deployed successfully", false);
     },
     generateConfErrorCallback: function(applicationResponseContent, doneCallback) {
