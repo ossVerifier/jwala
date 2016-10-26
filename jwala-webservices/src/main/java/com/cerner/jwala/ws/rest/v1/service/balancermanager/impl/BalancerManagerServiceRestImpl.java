@@ -5,18 +5,18 @@ import com.cerner.jwala.common.domain.model.fault.AemFaultType;
 import com.cerner.jwala.common.exception.FaultCodeException;
 import com.cerner.jwala.common.exception.InternalErrorException;
 import com.cerner.jwala.service.balancermanager.BalancerManagerService;
+import com.cerner.jwala.ws.rest.v1.provider.AuthUser;
 import com.cerner.jwala.ws.rest.v1.response.ResponseBuilder;
 import com.cerner.jwala.ws.rest.v1.service.balancermanager.BalancerManagerServiceRest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 
 import javax.ws.rs.core.Response;
 
 public class BalancerManagerServiceRestImpl implements BalancerManagerServiceRest {
 
     final BalancerManagerService balancerManagerService;
+
     private static final Logger LOGGER = LoggerFactory.getLogger(BalancerManagerServiceRestImpl.class);
 
     public BalancerManagerServiceRestImpl(final BalancerManagerService balancerManagerService) {
@@ -24,9 +24,10 @@ public class BalancerManagerServiceRestImpl implements BalancerManagerServiceRes
     }
 
     @Override
-    public Response drainUserGroup(final String groupName, final String webServerNames) {
+    public Response drainUserGroup(final String groupName, final String webServerNames, final AuthUser authUser) {
         try {
-            BalancerManagerState balancerManagerState = balancerManagerService.drainUserGroup(groupName, webServerNames, getUser());
+            BalancerManagerState balancerManagerState = balancerManagerService.drainUserGroup(groupName, webServerNames,
+                    authUser.getUserName());
             return ResponseBuilder.ok(balancerManagerState);
         } catch (InternalErrorException iee) {
             LOGGER.error("Failed to drain web servers {} of group {}!", webServerNames, groupName, iee);
@@ -37,9 +38,11 @@ public class BalancerManagerServiceRestImpl implements BalancerManagerServiceRes
     }
 
     @Override
-    public Response drainUserWebServer(final String groupName, final String webServerName, final String jvmNames) {
+    public Response drainUserWebServer(final String groupName, final String webServerName, final String jvmNames,
+                                       final AuthUser authUser) {
         try {
-            BalancerManagerState balancerManagerState = balancerManagerService.drainUserWebServer(groupName, webServerName, jvmNames, getUser());
+            BalancerManagerState balancerManagerState = balancerManagerService
+                    .drainUserWebServer(groupName, webServerName, jvmNames, authUser.getUserName());
             return ResponseBuilder.ok(balancerManagerState);
         } catch (InternalErrorException iee) {
             LOGGER.error("Drain web server error ", iee.getMessage());
@@ -49,15 +52,16 @@ public class BalancerManagerServiceRestImpl implements BalancerManagerServiceRes
     }
 
     @Override
-    public Response drainUserJvm(final String jvmName) {
-        BalancerManagerState balancerManagerState = balancerManagerService.drainUserJvm(jvmName, getUser());
+    public Response drainUserJvm(final String jvmName, final AuthUser authUser) {
+        BalancerManagerState balancerManagerState = balancerManagerService.drainUserJvm(jvmName, authUser.getUserName());
         return ResponseBuilder.ok(balancerManagerState);
     }
 
     @Override
-    public Response drainUserGroupJvm(final String groupName, final String jvmName) {
+    public Response drainUserGroupJvm(final String groupName, final String jvmName, final AuthUser authUser) {
         try {
-            BalancerManagerState balancerManagerState = balancerManagerService.drainUserGroupJvm(groupName, jvmName, getUser());
+            BalancerManagerState balancerManagerState = balancerManagerService.drainUserGroupJvm(groupName, jvmName,
+                    authUser.getUserName());
             return ResponseBuilder.ok(balancerManagerState);
         } catch (InternalErrorException iee) {
             LOGGER.error("Drain jvm error ", iee.getMessage());
@@ -67,17 +71,12 @@ public class BalancerManagerServiceRestImpl implements BalancerManagerServiceRes
     }
 
     @Override
-    public Response getGroup(final String groupName) {
-        BalancerManagerState balancerManagerState = balancerManagerService.getGroupDrainStatus(groupName, getUser());
+    public Response getGroupDrainStatus(final String groupName, final AuthUser authUser) {
+        BalancerManagerState balancerManagerState = balancerManagerService.getGroupDrainStatus(groupName, authUser.getUserName());
         return ResponseBuilder.ok(balancerManagerState);
     }
 
     @Override
     public void afterPropertiesSet() throws Exception {
-    }
-
-    public String getUser() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        return auth.getName();
     }
 }
