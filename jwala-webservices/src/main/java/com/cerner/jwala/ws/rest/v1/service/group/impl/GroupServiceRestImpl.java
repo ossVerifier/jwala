@@ -222,12 +222,14 @@ public class GroupServiceRestImpl implements GroupServiceRest {
             Set<Future<Response>> futureContents = new HashSet<>();
             if (null != groupWebServers) {
                 LOGGER.info("Updating the templates for all the Web Servers in group {}", groupName);
+                final Authentication auth = SecurityContextHolder.getContext().getAuthentication();
                 for (final WebServer webServer : groupWebServers) {
                     final String webServerName = webServer.getName();
                     LOGGER.info("Updating Web Server {} template {}", webServerName, resourceTemplateName);
                     Future<Response> futureContent = executorService.submit(new Callable<Response>() {
                         @Override
                         public Response call() throws Exception {
+                            SecurityContextHolder.getContext().setAuthentication(auth);
                             return ResponseBuilder.ok(webServerService.updateResourceTemplate(webServerName, resourceTemplateName, updatedContent));
                         }
                     });
@@ -356,12 +358,14 @@ public class GroupServiceRestImpl implements GroupServiceRest {
             Set<Future<Response>> futureContents = new HashSet<>();
             if (null != groupJvms) {
                 LOGGER.info("Updating the templates for all the JVMs in group {}", groupName);
+                final Authentication auth = SecurityContextHolder.getContext().getAuthentication();
                 for (final Jvm jvm : groupJvms) {
                     final String jvmName = jvm.getJvmName();
                     LOGGER.info("Updating JVM {} template {}", jvmName, resourceTemplateName);
                     Future<Response> futureContent = executorService.submit(new Callable<Response>() {
                         @Override
                         public Response call() throws Exception {
+                            SecurityContextHolder.getContext().setAuthentication(auth);
                             return ResponseBuilder.ok(jvmService.updateResourceTemplate(jvmName, resourceTemplateName, updatedContent));
                         }
                     });
@@ -507,11 +511,13 @@ public class GroupServiceRestImpl implements GroupServiceRest {
                 // generate and deploy the web servers
                 final WebServerServiceRestImpl webServerServiceRest = WebServerServiceRestImpl.get();
                 Map<String, Future<Response>> futuresMap = new HashMap<>();
+                final Authentication auth = SecurityContextHolder.getContext().getAuthentication();
                 for (final WebServer webServer : webServers) {
                     final String webServerName = webServer.getName();
                     Future<Response> responseFuture = executorService.submit(new Callable<Response>() {
                         @Override
                         public Response call() throws Exception {
+                            SecurityContextHolder.getContext().setAuthentication(auth);
                             return webServerServiceRest.generateAndDeployWebServer(webServerName, aUser);
                         }
                     });
@@ -561,11 +567,13 @@ public class GroupServiceRestImpl implements GroupServiceRest {
 
                 // generate and deploy the JVMs
                 Map<String, Future<Response>> futuresMap = new HashMap<>();
+                final Authentication auth = SecurityContextHolder.getContext().getAuthentication();
                 for (final Jvm jvm : jvms) {
                     final String jvmName = jvm.getJvmName();
                     Future<Response> responseFuture = executorService.submit(new Callable<Response>() {
                         @Override
                         public Response call() throws Exception {
+                            SecurityContextHolder.getContext().setAuthentication(auth);
                             return jvmServiceRest.generateAndDeployJvm(jvmName, aUser);
                         }
                     });
@@ -782,12 +790,14 @@ public class GroupServiceRestImpl implements GroupServiceRest {
             if (null != groupJvms) {
                 LOGGER.info("Updating the templates for all the JVMs in group {}", groupName);
                 final ApplicationServiceRest appServiceRest = ApplicationServiceRestImpl.get();
+                final Authentication auth = SecurityContextHolder.getContext().getAuthentication();
                 for (final Jvm jvm : groupJvms) {
                     final String jvmName = jvm.getJvmName();
                     LOGGER.info("Updating JVM {} template {}", jvmName, resourceTemplateName);
                     Future<Response> futureContent = executorService.submit(new Callable<Response>() {
                         @Override
                         public Response call() throws Exception {
+                            SecurityContextHolder.getContext().setAuthentication(auth);
                             return appServiceRest.updateResourceTemplate(appName, resourceTemplateName, jvmName, groupName, updatedContent);
                         }
                     });
@@ -902,11 +912,13 @@ public class GroupServiceRestImpl implements GroupServiceRest {
                 }
             }
             final String groupAppTemplateContent = groupService.getGroupAppResourceTemplate(groupName, appName, fileName, false, new ResourceGroup());
+            final Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             for (Jvm jvm : jvms) {
                 final String jvmName = jvm.getJvmName();
                 Future<Response> responseFuture = executorService.submit(new Callable<Response>() {
                     @Override
                     public Response call() throws Exception {
+                        SecurityContextHolder.getContext().setAuthentication(auth);
                         appServiceRest.updateResourceTemplate(appName, fileName, jvmName, groupName, groupAppTemplateContent);
                         return appServiceRest.deployConf(appName, groupName, jvmName, fileName, aUser);
                     }
@@ -931,9 +943,11 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     protected Future<Response> createFutureResponseForAppDeploy(final String groupName, final String fileName, final String appName, final Jvm jvm, final String hostName) {
         final ResourceGroup resourceGroup = resourceService.generateResourceGroup();
         final Application application = applicationService.getApplication(appName);
+        final Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Future<Response> responseFuture = executorService.submit(new Callable<Response>() {
             @Override
             public Response call() throws Exception {
+                SecurityContextHolder.getContext().setAuthentication(auth);
                 CommandOutput commandOutput = null;
                 if (jvm != null) {
                     LOGGER.debug("got jvm object with id {}, creating command output with jvm", jvm.getId().getId());

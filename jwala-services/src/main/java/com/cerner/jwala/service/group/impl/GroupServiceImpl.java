@@ -38,6 +38,7 @@ import com.cerner.jwala.service.exception.GroupServiceException;
 import com.cerner.jwala.service.group.GroupService;
 import com.cerner.jwala.service.resource.ResourceService;
 import com.cerner.jwala.service.resource.impl.ResourceGeneratorType;
+import com.cerner.jwala.template.exception.ResourceFileGeneratorException;
 import org.apache.commons.io.FilenameUtils;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
@@ -419,6 +420,9 @@ public class GroupServiceImpl implements GroupService {
             try {
                 Application app = applicationPersistenceService.getApplication(appName);
                 return resourceService.generateResourceFile(resourceTemplateName, template, resourceGroup, app, ResourceGeneratorType.TEMPLATE);
+            } catch(ResourceFileGeneratorException rfge) {
+                LOGGER.error("Failed to generate and deploy file {} to Web App {}", resourceTemplateName, appName, rfge);
+                throw new InternalErrorException(AemFaultType.RESOURCE_GENERATION_FAILED, rfge.getMessage());
             } catch (Exception x) {
                 LOGGER.error("Failed to tokenize template {} in group {}", resourceTemplateName, groupName, x);
                 throw new ApplicationException("Template token replacement failed.", x);
