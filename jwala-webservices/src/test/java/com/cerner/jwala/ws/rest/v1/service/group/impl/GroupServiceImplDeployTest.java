@@ -478,7 +478,7 @@ public class GroupServiceImplDeployTest {
         assertNotNull(response);
     }
 
-    @Test
+    @Test (expected = InternalErrorException.class)
     public void testGenerateGroupWebServersWithWebServerStarted() {
         Group mockGroup = mock(Group.class);
         Set<WebServer> webServersSet = new HashSet<>();
@@ -538,7 +538,7 @@ public class GroupServiceImplDeployTest {
 
     }
 
-    @Test
+    @Test (expected = InternalErrorException.class)
     public void testGenerateGroupJvmsWithJvmStarted() {
         Group mockGroup = mock(Group.class);
         Set<Jvm> jvmSet = new HashSet<>();
@@ -547,8 +547,7 @@ public class GroupServiceImplDeployTest {
         when(mockJvm.getState()).thenReturn(JvmState.JVM_STARTED);
         when(mockGroup.getJvms()).thenReturn(jvmSet);
         when(mockGroupService.getGroup(any(Identifier.class))).thenReturn(mockGroup);
-        Response response = groupServiceRest.generateGroupJvms(new Identifier<Group>(111L), mockAuthUser);
-        assertEquals(500, response.getStatus());
+        groupServiceRest.generateGroupJvms(new Identifier<Group>(111L), mockAuthUser);
     }
 
     @Test

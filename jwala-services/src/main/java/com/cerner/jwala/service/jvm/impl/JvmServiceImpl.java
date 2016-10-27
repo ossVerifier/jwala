@@ -298,7 +298,7 @@ public class JvmServiceImpl implements JvmService {
         // only one at a time per JVM
         //TODO return error if .jwala directory is already being written to
         LOGGER.debug("Start generateAndDeployJvm for {} by user {}", jvmName, user.getId());
-        
+
         //add write lock for multiple write
         binaryDistributionLockManager.writeLock(jvm.getId().toString());
 
@@ -308,6 +308,8 @@ public class JvmServiceImpl implements JvmService {
                 LOGGER.error(errorMessage);
                 throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, errorMessage);
             }
+            validateJvmAndAppResources(jvm);
+
             distributeBinaries(jvm.getHostName());
             // check for setenv.bat
             checkForSetenvBat(jvm.getJvmName());
@@ -356,14 +358,62 @@ public class JvmServiceImpl implements JvmService {
         return jvm;
     }
 
-    private void distributeBinaries(String hostName){
+    private void validateJvmAndAppResources(Jvm jvm) {
+        boolean exceptionThrown = false;
+        String jvmName = jvm.getJvmName();
+        Map<String, List<String>> jvmAndAppResourcesExceptions = new HashMap<>();
+
+        // validate the JVM resources
+        try {
+            final ResourceIdentifier resourceIdentifier = new ResourceIdentifier.Builder()
+                    .setJvmName(jvmName)
+                    .setResourceName("*")
+                    .build();
+            resourceService.validateResourceGeneration(resourceIdentifier);
+        } catch (InternalErrorException iee) {
+            LOGGER.info("Catching known JVM resource generation exception, and now validating application resources");
+            LOGGER.debug("This JVM resource generation exception should have already been logged previously", iee);
+            exceptionThrown = true;
+            jvmAndAppResourcesExceptions.putAll(iee.getErrorDetails());
+        }
+
+        // now validate and app resources for the JVM
+        List<Group> groupList = jvmPersistenceService.findGroupsByJvm(jvm.getId());
+        for (Group group : groupList) {
+            for (Application app : applicationService.findApplications(group.getId())) {
+                final String appName = app.getName();
+                for (String templateName : applicationService.getResourceTemplateNames(appName, jvmName)) {
+                    try {
+                        final ResourceIdentifier resourceIdentifier = new ResourceIdentifier.Builder()
+                                .setResourceName(templateName)
+                                .setGroupName(group.getName())
+                                .setJvmName(jvmName)
+                                .setWebAppName(appName)
+                                .build();
+                        resourceService.validateResourceGeneration(resourceIdentifier);
+                    } catch (InternalErrorException iee){
+                        LOGGER.info("Catching known app resource generation exception, and now consolidating with the JVM resource exceptions");
+                        LOGGER.debug("This application resource generation exception should have already been logged previously", iee);
+                        exceptionThrown = true;
+                        jvmAndAppResourcesExceptions.putAll(iee.getErrorDetails());
+                    }
+                }
+            }
+        }
+
+        if (exceptionThrown) {
+            throw new InternalErrorException(AemFaultType.RESOURCE_GENERATION_FAILED, "Failed to generate the resources for JVM " + jvmName, null, jvmAndAppResourcesExceptions);
+        }
+    }
+
+    private void distributeBinaries(String hostName) {
         try {
             binaryDistributionLockManager.writeLock(hostName);
             binaryDistributionService.prepareUnzip(hostName);
             binaryDistributionService.distributeJdk(hostName);
             binaryDistributionService.distributeTomcat(hostName);
-        }finally {
-             binaryDistributionLockManager.writeUnlock(hostName);
+        } finally {
+            binaryDistributionLockManager.writeUnlock(hostName);
         }
     }
 
@@ -683,9 +733,11 @@ public class JvmServiceImpl implements JvmService {
             String message = "Failed to copy file " + fileName + " for JVM " + jvmName;
             LOGGER.error(badStreamMessage + message, ce);
             throw new InternalErrorException(AemFaultType.BAD_STREAM, message, ce);
-        } catch(ResourceFileGeneratorException rfge) {
+        } catch (ResourceFileGeneratorException rfge) {
             LOGGER.error("Failed to generate and deploy file {} to JVM {}", fileName, jvmName, rfge);
-            throw new InternalErrorException(AemFaultType.RESOURCE_GENERATION_FAILED, rfge.getMessage());
+            Map<String, List<String>> errorDetails = new HashMap<>();
+            errorDetails.put(jvmName, Collections.singletonList(rfge.getMessage()));
+            throw new InternalErrorException(AemFaultType.RESOURCE_GENERATION_FAILED, "Failed to generate and deploy file " + fileName + " to JVM " + jvmName, null, errorDetails);
         } finally {
             binaryDistributionLockManager.writeUnlock(jvm.getId().getId().toString());
         }
@@ -890,19 +942,11 @@ public class JvmServiceImpl implements JvmService {
     public Map<String, String> generateResourceFiles(final String jvmName) throws IOException {
         Map<String, String> generatedFiles = null;
         final List<JpaJvmConfigTemplate> jpaJvmConfigTemplateList = jvmPersistenceService.getConfigTemplates(jvmName);
-        boolean resourceFileGeneratorException = false;
-        String resourceFileGeneratorExceptionString = "";
         for (final JpaJvmConfigTemplate jpaJvmConfigTemplate : jpaJvmConfigTemplateList) {
             final ResourceGroup resourceGroup = resourceService.generateResourceGroup();
             final Jvm jvm = jvmPersistenceService.findJvmByExactName(jvmName);
             String resourceTemplateMetaDataString = "";
-            try {
-                resourceTemplateMetaDataString = resourceService.generateResourceFile(jpaJvmConfigTemplate.getTemplateName(), jpaJvmConfigTemplate.getMetaData(), resourceGroup, jvm, ResourceGeneratorType.METADATA);
-            } catch (ResourceFileGeneratorException e) {
-                LOGGER.error(e.getMessage(), e);
-                resourceFileGeneratorExceptionString += e.getMessage();
-                resourceFileGeneratorException = true;
-            }
+            resourceTemplateMetaDataString = resourceService.generateResourceFile(jpaJvmConfigTemplate.getTemplateName(), jpaJvmConfigTemplate.getMetaData(), resourceGroup, jvm, ResourceGeneratorType.METADATA);
             final ResourceTemplateMetaData resourceTemplateMetaData = resourceService.getMetaData(resourceTemplateMetaDataString);
             final String deployFileName = resourceTemplateMetaData.getDeployFileName();
             if (generatedFiles == null) {
@@ -915,20 +959,11 @@ public class JvmServiceImpl implements JvmService {
                 generatedFiles.put(jpaJvmConfigTemplate.getTemplateContent(),
                         resourceTemplateMetaData.getDeployPath() + "/" + deployFileName);
             } else {
-                try {
-                    final String generatedResourceStr = resourceService.generateResourceFile(jpaJvmConfigTemplate.getTemplateName(), jpaJvmConfigTemplate.getTemplateContent(),
-                            resourceGroup, jvm, ResourceGeneratorType.TEMPLATE);
-                    generatedFiles.put(createConfigFile(ApplicationProperties.get("paths.generated.resource.dir") + "/" + jvmName, deployFileName, generatedResourceStr),
-                            resourceTemplateMetaData.getDeployPath() + "/" + deployFileName);
-                } catch (ResourceFileGeneratorException e) {
-                    LOGGER.error(e.getMessage(), e);
-                    resourceFileGeneratorExceptionString += e.getMessage();
-                    resourceFileGeneratorException = true;
-                }
+                final String generatedResourceStr = resourceService.generateResourceFile(jpaJvmConfigTemplate.getTemplateName(), jpaJvmConfigTemplate.getTemplateContent(),
+                        resourceGroup, jvm, ResourceGeneratorType.TEMPLATE);
+                generatedFiles.put(createConfigFile(ApplicationProperties.get("paths.generated.resource.dir") + "/" + jvmName, deployFileName, generatedResourceStr),
+                        resourceTemplateMetaData.getDeployPath() + "/" + deployFileName);
             }
-        }
-        if (resourceFileGeneratorException) {
-            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, resourceFileGeneratorExceptionString);
         }
         return generatedFiles;
     }

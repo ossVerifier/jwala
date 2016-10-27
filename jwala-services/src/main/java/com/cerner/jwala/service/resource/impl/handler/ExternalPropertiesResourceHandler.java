@@ -48,7 +48,7 @@ public class ExternalPropertiesResourceHandler extends ResourceHandler {
 
             // remove any existing template
             List<String> existingTemplateNames = resourceDao.getResourceNames(resourceIdentifier, EntityType.EXT_PROPERTIES);
-            if (existingTemplateNames.size() > 0){
+            if (existingTemplateNames.size() > 0) {
                 resourceDao.deleteExternalProperties();
                 ExternalProperties.reset();
                 // TODO clean up any deployed files on desk (don't delete - just rename with timestamp)
@@ -96,10 +96,20 @@ public class ExternalPropertiesResourceHandler extends ResourceHandler {
 
     @Override
     public Object getSelectedValue(ResourceIdentifier resourceIdentifier) {
-        if (canHandle(resourceIdentifier)){
+        if (canHandle(resourceIdentifier)) {
             return null;
         } else {
             return successor.getSelectedValue(resourceIdentifier);
+        }
+    }
+
+    @Override
+    public List<String> getResourceNames(ResourceIdentifier resourceIdentifier) {
+        if (canHandle(resourceIdentifier)) {
+            // TODO implement me !!!!
+            throw new UnsupportedOperationException();
+        } else {
+            return successor.getResourceNames(resourceIdentifier);
         }
     }
 }

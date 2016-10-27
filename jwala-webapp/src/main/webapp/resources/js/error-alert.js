@@ -23,7 +23,15 @@ $.extend({ errorAlert: function (message, dlgTitle, modal, content) {
                 for (var property in content) {
                     if (content.hasOwnProperty(property)) {
                         message += "<li>";
-                        message += property + ":<ul>" + content[property] + "</ul>";
+                        message += property;
+                        var exceptionList = content[property];
+                        for (var exception in exceptionList) {
+                            if (exceptionList.hasOwnProperty(exception)){
+                                message += "<ul>";
+                                message += "<li>" + exceptionList[exception] + "</li>";
+                                message += "</ul>"
+                            }
+                        }
                         message += "</li>"
                     }
                 }

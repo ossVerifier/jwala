@@ -32,6 +32,7 @@ import com.cerner.jwala.files.RepositoryFileInformation;
 import com.cerner.jwala.files.WebArchiveManager;
 import com.cerner.jwala.persistence.jpa.domain.JpaJvm;
 import com.cerner.jwala.persistence.jpa.domain.resource.config.template.ConfigTemplate;
+import com.cerner.jwala.persistence.jpa.type.EventType;
 import com.cerner.jwala.persistence.service.*;
 import com.cerner.jwala.service.HistoryService;
 import com.cerner.jwala.service.MessagingService;
@@ -48,9 +49,12 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.internal.verification.Times;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.io.*;
 import java.nio.file.Path;
@@ -888,5 +892,117 @@ public class ResourceServiceImplTest {
         assertNull(exception);
         System.out.println("BEFORE:" + escapedEscapedTestPath + " :: AFTER:" + mappingResult.getDeployPath());
 
+    }
+
+    @Test
+    public void testResourceValidation() {
+        ResourceIdentifier resourceIdentifier = new ResourceIdentifier.Builder()
+                .setGroupName("test-group-name")
+                .setJvmName("test-jvm-name")
+                .setResourceName("*")
+                .build();
+        ResourceIdentifier resourceIdentifierServerXml = new ResourceIdentifier.Builder()
+                .setGroupName("test-group-name")
+                .setJvmName("test-jvm-name")
+                .setResourceName("test-server.xml")
+                .build();
+        ResourceIdentifier resourceIdentifierSetenvBat = new ResourceIdentifier.Builder()
+                .setGroupName("test-group-name")
+                .setJvmName("test-jvm-name")
+                .setResourceName("test-setenv.bat")
+                .build();
+        ResourceIdentifier resourceIdentifierCatalinaProperties = new ResourceIdentifier.Builder()
+                .setGroupName("test-group-name")
+                .setJvmName("test-jvm-name")
+                .setResourceName("test-catalina.properties")
+                .build();
+
+        List<String> resourcesNames = Arrays.asList("test-server.xml", "test-setenv.bat", "test-catalina.properties");
+
+        ConfigTemplate configTemplateCatalinaProps = new ConfigTemplate();
+        configTemplateCatalinaProps.setTemplateContent("fake catalina.properties content");
+        configTemplateCatalinaProps.setMetaData("{}");
+        ConfigTemplate configTemplateServerXml = new ConfigTemplate();
+        configTemplateServerXml.setTemplateContent("fake server.xml content");
+        configTemplateServerXml.setMetaData("{}");
+        ConfigTemplate configTemplateSetenvBat = new ConfigTemplate();
+        configTemplateSetenvBat.setTemplateContent("fake setenv.bat content");
+        configTemplateSetenvBat.setMetaData("{}");
+
+        Jvm mockJvm = mock(Jvm.class);
+
+        when(mockResourceHandler.getResourceNames(eq(resourceIdentifier))).thenReturn(resourcesNames);
+        when(mockResourceHandler.getSelectedValue(eq(resourceIdentifier))).thenReturn(mockJvm);
+        when(mockResourceHandler.fetchResource(eq(resourceIdentifierCatalinaProperties))).thenReturn(configTemplateCatalinaProps);
+        when(mockResourceHandler.fetchResource(eq(resourceIdentifierServerXml))).thenReturn(configTemplateServerXml);
+        when(mockResourceHandler.fetchResource(eq(resourceIdentifierSetenvBat))).thenReturn(configTemplateSetenvBat);
+
+        resourceService.validateResourceGeneration(resourceIdentifier);
+        verify(mockHistoryService, never()).createHistory(anyString(), anyList(), anyString(), any(EventType.class), anyString());
+        verify(mockMessagingService, never()).send(Matchers.anyObject());
+    }
+
+    @Test
+    public void testResourceValidationFails() {
+        ResourceIdentifier resourceIdentifier = new ResourceIdentifier.Builder()
+                .setGroupName("test-group-name")
+                .setJvmName("test-jvm-name")
+                .setResourceName("*")
+                .build();
+        ResourceIdentifier resourceIdentifierServerXml = new ResourceIdentifier.Builder()
+                .setGroupName("test-group-name")
+                .setJvmName("test-jvm-name")
+                .setResourceName("test-server.xml")
+                .build();
+        ResourceIdentifier resourceIdentifierSetenvBat = new ResourceIdentifier.Builder()
+                .setGroupName("test-group-name")
+                .setJvmName("test-jvm-name")
+                .setResourceName("test-setenv.bat")
+                .build();
+        ResourceIdentifier resourceIdentifierCatalinaProperties = new ResourceIdentifier.Builder()
+                .setGroupName("test-group-name")
+                .setJvmName("test-jvm-name")
+                .setResourceName("test-catalina.properties")
+                .build();
+
+        List<String> resourcesNames = Arrays.asList("test-server.xml", "test-setenv.bat", "test-catalina.properties");
+
+        ConfigTemplate configTemplateCatalinaProps = new ConfigTemplate();
+        configTemplateCatalinaProps.setTemplateContent("fake catalina.properties content\n${property.does.not.exist}\nfake properties");
+        configTemplateCatalinaProps.setMetaData("{${property.does.not.exist}}");
+        ConfigTemplate configTemplateServerXml = new ConfigTemplate();
+        configTemplateServerXml.setTemplateContent("fake server.xml content\n${property.does.not.exist}\nfake properties");
+        configTemplateServerXml.setMetaData("{${property.does.not.exist}}");
+        ConfigTemplate configTemplateSetenvBat = new ConfigTemplate();
+        configTemplateSetenvBat.setTemplateContent("fake setenv.bat content\n${property.does.not.exist}\nfake properties");
+        configTemplateSetenvBat.setMetaData("{${property.does.not.exist}}");
+
+        Jvm mockJvm = mock(Jvm.class);
+        Authentication mockAuthentication = mock(Authentication.class);
+
+        SecurityContextHolder.getContext().setAuthentication(mockAuthentication);
+
+        when(mockAuthentication.getName()).thenReturn("test-user-name");
+        when(mockResourceHandler.getResourceNames(eq(resourceIdentifier))).thenReturn(resourcesNames);
+        when(mockResourceHandler.getSelectedValue(eq(resourceIdentifier))).thenReturn(mockJvm);
+        when(mockResourceHandler.fetchResource(eq(resourceIdentifierCatalinaProperties))).thenReturn(configTemplateCatalinaProps);
+        when(mockResourceHandler.fetchResource(eq(resourceIdentifierServerXml))).thenReturn(configTemplateServerXml);
+        when(mockResourceHandler.fetchResource(eq(resourceIdentifierSetenvBat))).thenReturn(configTemplateSetenvBat);
+
+        InternalErrorException iee = null;
+        try {
+            resourceService.validateResourceGeneration(resourceIdentifier);
+        } catch (InternalErrorException e) {
+            iee = e;
+        }
+        assertNotNull(iee);
+        final Map<String, List<String>> errorDetails = iee.getErrorDetails();
+        verify(mockHistoryService, times(6)).createHistory(anyString(), anyList(), anyString(), any(EventType.class), anyString());
+        verify(mockMessagingService, times(6)).send(Matchers.anyObject());
+        assertEquals(1, errorDetails.size());
+        final List<String> exceptionList = errorDetails.get("test-jvm-name");
+        assertEquals(6, exceptionList.size());
+        assertEquals("METADATA: Failed to bind data and properties to : test-server.xml for Jvm: null. Cause(s) of the failure is/are: Template execution error at line 1:\n", exceptionList.get(0));
+        assertTrue(exceptionList.get(1).contains("--> 2: ${property.does.not.exist}"));
     }
 }

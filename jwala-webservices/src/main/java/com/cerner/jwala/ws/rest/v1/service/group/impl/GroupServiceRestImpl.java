@@ -452,8 +452,10 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     }
 
     protected void checkResponsesForErrorStatus(Map<String, Future<Response>> futureMap) {
-        boolean exception = false;
-        Map<String, String> entityDetailsMap = new HashMap<>();
+        boolean isInternalErrorException = false;
+        boolean isException  = false;
+        String isExceptionReason = "";
+        Map<String, List<String>> entityDetailsMap = new HashMap<>();
         for (String keyEntityName : futureMap.keySet()) {
             Response response;
             try {
@@ -461,17 +463,25 @@ public class GroupServiceRestImpl implements GroupServiceRest {
                 if (response.getStatus() > 399) {
                     final String reasonPhrase = response.getStatusInfo().getReasonPhrase();
                     LOGGER.error("Remote Command Failure for " + keyEntityName + ": " + reasonPhrase);
-                    entityDetailsMap.put(keyEntityName, reasonPhrase);
-                    exception = true;
+                    isException = true;
+                    isExceptionReason = reasonPhrase;
                 }
             } catch (InterruptedException | ExecutionException e) {
+                isException = true;
+                isExceptionReason = e.getMessage();
                 LOGGER.error("FAILURE getting response for {}", keyEntityName, e);
-                entityDetailsMap.put(keyEntityName, e.getCause().getMessage());
-                exception = true;
+                final Throwable cause = e.getCause();
+                if (cause instanceof InternalErrorException){
+                    isInternalErrorException = true;
+                    entityDetailsMap.putAll(((InternalErrorException) cause).getErrorDetails());
+                }
             }
         }
-        if (exception) {
+
+        if (isInternalErrorException) {
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Request failed for the following errors:", null, entityDetailsMap);
+        } else if (isException){
+            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Request failed: " + isExceptionReason);
         }
     }
 
@@ -490,108 +500,97 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     @Override
     public Response generateGroupWebservers(Identifier<Group> aGroupId, final AuthenticatedUser aUser) {
         LOGGER.info("Starting group generation of web servers for group ID {} by user {}", aGroupId, aUser.getUser().getId());
-        try {
-            Group group = groupService.getGroupWithWebServers(aGroupId);
-            Set<WebServer> webServers = group.getWebServers();
-            if (null != webServers && webServers.size() > 0) {
-                Set<String> startedWebServers = new HashSet<>();
-                for (WebServer webServer : webServers) {
-                    if (webServerService.isStarted(webServer)) {
-                        LOGGER.warn("Failed to start generation of web servers for group ID {}: not all web servers were stopped - {} was started", aGroupId, webServer.getName());
-                        startedWebServers.add(webServer.getName());
-                    }
+        Group group = groupService.getGroupWithWebServers(aGroupId);
+        Set<WebServer> webServers = group.getWebServers();
+        if (null != webServers && webServers.size() > 0) {
+            Set<String> startedWebServers = new HashSet<>();
+            for (WebServer webServer : webServers) {
+                if (webServerService.isStarted(webServer)) {
+                    LOGGER.warn("Failed to start generation of web servers for group ID {}: not all web servers were stopped - {} was started", aGroupId, webServer.getName());
+                    startedWebServers.add(webServer.getName());
                 }
-
-                if (!startedWebServers.isEmpty()) {
-                    LOGGER.error("Failed to start generation of web servers for group ID {}: not all web servers were stopped - {} were started", aGroupId, startedWebServers.toString());
-                    throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE,
-                            "All web servers in the group must be stopped before continuing. Operation stopped for web server " + startedWebServers.toString());
-                }
-
-                // generate and deploy the web servers
-                final WebServerServiceRestImpl webServerServiceRest = WebServerServiceRestImpl.get();
-                Map<String, Future<Response>> futuresMap = new HashMap<>();
-                final Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-                for (final WebServer webServer : webServers) {
-                    final String webServerName = webServer.getName();
-                    Future<Response> responseFuture = executorService.submit(new Callable<Response>() {
-                        @Override
-                        public Response call() throws Exception {
-                            SecurityContextHolder.getContext().setAuthentication(auth);
-                            return webServerServiceRest.generateAndDeployWebServer(webServerName, aUser);
-                        }
-                    });
-                    futuresMap.put(webServerName, responseFuture);
-                }
-
-                waitForDeployToComplete(new HashSet<>(futuresMap.values()));
-                checkResponsesForErrorStatus(futuresMap);
-            } else {
-                LOGGER.info("No web servers in group {}", aGroupId);
             }
-            return ResponseBuilder.ok(group);
-        } catch (InternalErrorException iee) {
-            LOGGER.error("Generate group web servers error {}", iee.getMessage());
-            return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
-                    AemFaultType.INVALID_WEBSERVER_OPERATION, iee.getMessage(), iee));
+
+            if (!startedWebServers.isEmpty()) {
+                LOGGER.error("Failed to start generation of web servers for group ID {}: not all web servers were stopped - {} were started", aGroupId, startedWebServers.toString());
+                throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE,
+                        "All web servers in the group must be stopped before continuing. Operation stopped for web server " + startedWebServers.toString());
+            }
+
+            // generate and deploy the web servers
+            final WebServerServiceRestImpl webServerServiceRest = WebServerServiceRestImpl.get();
+            Map<String, Future<Response>> futuresMap = new HashMap<>();
+            final Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            for (final WebServer webServer : webServers) {
+                final String webServerName = webServer.getName();
+                Future<Response> responseFuture = executorService.submit(new Callable<Response>() {
+                    @Override
+                    public Response call() throws Exception {
+                        SecurityContextHolder.getContext().setAuthentication(auth);
+                        return webServerServiceRest.generateAndDeployWebServer(webServerName, aUser);
+                    }
+                });
+                futuresMap.put(webServerName, responseFuture);
+            }
+
+            waitForDeployToComplete(new HashSet<>(futuresMap.values()));
+            checkResponsesForErrorStatus(futuresMap);
+        } else {
+            LOGGER.info("No web servers in group {}", aGroupId);
         }
+        return ResponseBuilder.ok(group);
     }
 
     @Override
     public Response generateGroupJvms(final Identifier<Group> aGroupId, final AuthenticatedUser aUser) {
         LOGGER.info("Starting group generation of JVMs for group ID {} by user {}", aGroupId, aUser.getUser().getId());
-        try {
-            final Group group = groupService.getGroup(aGroupId);
-            Set<Jvm> jvms = group.getJvms();
-            if (null != jvms && jvms.size() > 0) {
-                Set<String> starteJvms = new HashSet<>();
-                for (Jvm jvm : jvms) {
-                    if (jvm.getState().isStartedState()) {
-                        LOGGER.warn("Failed to start generation of JVMs for group ID {}: not all JVMs were stopped - {} was started", aGroupId, jvm.getJvmName());
-                        starteJvms.add(jvm.getJvmName());
-                    }
+
+        final Group group = groupService.getGroup(aGroupId);
+        Set<Jvm> jvms = group.getJvms();
+        if (null != jvms && jvms.size() > 0) {
+            Set<String> starteJvms = new HashSet<>();
+            for (Jvm jvm : jvms) {
+                if (jvm.getState().isStartedState()) {
+                    LOGGER.warn("Failed to start generation of JVMs for group ID {}: not all JVMs were stopped - {} was started", aGroupId, jvm.getJvmName());
+                    starteJvms.add(jvm.getJvmName());
                 }
-
-                if (!starteJvms.isEmpty()) {
-                    LOGGER.error("Failed to start generation of JVMs for group ID {}: not all JVMs were stopped - {} were started", aGroupId, starteJvms.toString());
-                    throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE,
-                            "All JVMs in the group must be stopped before continuing. Operation stopped for JVMs " + starteJvms.toString());
-                }
-
-                for (Jvm jvm : jvms) {
-                    LOGGER.info("Checking if setenv.bat exists for the jvm {}", jvm.getJvmName());
-                    jvmService.checkForSetenvBat(jvm.getJvmName());
-                }
-
-                final JvmServiceRest jvmServiceRest = JvmServiceRestImpl.get();
-
-                // generate and deploy the JVMs
-                Map<String, Future<Response>> futuresMap = new HashMap<>();
-                final Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-                for (final Jvm jvm : jvms) {
-                    final String jvmName = jvm.getJvmName();
-                    Future<Response> responseFuture = executorService.submit(new Callable<Response>() {
-                        @Override
-                        public Response call() throws Exception {
-                            SecurityContextHolder.getContext().setAuthentication(auth);
-                            return jvmServiceRest.generateAndDeployJvm(jvmName, aUser);
-                        }
-                    });
-                    futuresMap.put(jvmName, responseFuture);
-                }
-
-                waitForDeployToComplete(new HashSet<>(futuresMap.values()));
-                checkResponsesForErrorStatus(futuresMap);
-            } else {
-                LOGGER.info("No JVMs in group {}", aGroupId);
             }
 
-            return ResponseBuilder.ok(group);
-        } catch (InternalErrorException iee) {
-            LOGGER.error("Generate group jvms error ", iee.getMessage());
-            return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
-                    AemFaultType.INVALID_WEBSERVER_OPERATION, iee.getMessage(), iee));
+            if (!starteJvms.isEmpty()) {
+                LOGGER.error("Failed to start generation of JVMs for group ID {}: not all JVMs were stopped - {} were started", aGroupId, starteJvms.toString());
+                throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE,
+                        "All JVMs in the group must be stopped before continuing. Operation stopped for JVMs " + starteJvms.toString());
+            }
+
+            for (Jvm jvm : jvms) {
+                LOGGER.info("Checking if setenv.bat exists for the jvm {}", jvm.getJvmName());
+                jvmService.checkForSetenvBat(jvm.getJvmName());
+            }
+
+            final JvmServiceRest jvmServiceRest = JvmServiceRestImpl.get();
+
+            // generate and deploy the JVMs
+            Map<String, Future<Response>> futuresMap = new HashMap<>();
+            final Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            for (final Jvm jvm : jvms) {
+                final String jvmName = jvm.getJvmName();
+                Future<Response> responseFuture = executorService.submit(new Callable<Response>() {
+                    @Override
+                    public Response call() throws Exception {
+                        SecurityContextHolder.getContext().setAuthentication(auth);
+                        return jvmServiceRest.generateAndDeployJvm(jvmName, aUser);
+                    }
+                });
+                futuresMap.put(jvmName, responseFuture);
+            }
+
+            waitForDeployToComplete(new HashSet<>(futuresMap.values()));
+            checkResponsesForErrorStatus(futuresMap);
+        } else {
+            LOGGER.info("No JVMs in group {}", aGroupId);
         }
+
+        return ResponseBuilder.ok(group);
     }
 
     @Override

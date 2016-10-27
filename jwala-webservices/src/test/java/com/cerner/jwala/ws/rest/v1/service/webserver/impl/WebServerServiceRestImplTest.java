@@ -436,14 +436,11 @@ public class WebServerServiceRestImplTest {
         assertEquals(webServer.getName(), ((Map) ((ApplicationResponse) response.getEntity()).getApplicationResponseContent()).get("webServerName"));
     }
 
-    @Test
+    @Test (expected = InternalErrorException.class)
     public void testGenerateAndDeployWebServerWithNoHttpdConfTemplate() {
         when(impl.getWebServer(anyString())).thenReturn(webServer);
         when(impl.isStarted(any(WebServer.class))).thenReturn(false);
-        Response actual = webServerServiceRest.generateAndDeployWebServer(webServer.getName(), authenticatedUser);
-
-        assertEquals(statusNotOk.getStatus(), actual.getStatus());
-
+        webServerServiceRest.generateAndDeployWebServer(webServer.getName(), authenticatedUser);
     }
 
     @Test
@@ -479,7 +476,7 @@ public class WebServerServiceRestImplTest {
         assertNotNull(response);
     }
 
-    @Test
+    @Test (expected = InternalErrorException.class)
     public void testGenerateAndDeployWebServerFailsMakeDirectory() throws CommandFailureException, IOException {
         List<String> resourceTemplateNames = new ArrayList<>();
         resourceTemplateNames.add("httpd.conf");
@@ -490,13 +487,11 @@ public class WebServerServiceRestImplTest {
         when(impl.isStarted(any(WebServer.class))).thenReturn(false);
         when(impl.getResourceTemplateNames(anyString())).thenReturn(resourceTemplateNames);
 
-        Response actual = webServerServiceRest.generateAndDeployWebServer(webServer.getName(), authenticatedUser);
-
-        assertEquals(statusNotOk.getStatus(), actual.getStatus());
+        webServerServiceRest.generateAndDeployWebServer(webServer.getName(), authenticatedUser);
 
     }
 
-    @Test
+    @Test (expected = InternalErrorException.class)
     public void testGenerateAndDeployWebServerFailsSecureCopyScriptsStartScript() throws CommandFailureException, IOException {
         List<String> resourceTemplateNames = new ArrayList<>();
         resourceTemplateNames.add("httpd.conf");
@@ -509,12 +504,11 @@ public class WebServerServiceRestImplTest {
         when(impl.isStarted(any(WebServer.class))).thenReturn(false);
         when(impl.getResourceTemplateNames(anyString())).thenReturn(resourceTemplateNames);
 
-        Response actual = webServerServiceRest.generateAndDeployWebServer(webServer.getName(), authenticatedUser);
+        webServerServiceRest.generateAndDeployWebServer(webServer.getName(), authenticatedUser);
 
-        assertEquals(statusNotOk.getStatus(), actual.getStatus());
     }
 
-    @Test
+    @Test (expected = InternalErrorException.class)
     public void testGenerateAndDeployWebServerFailsSecureCopyScriptsStopScript() throws CommandFailureException, IOException {
         List<String> resourceTemplateNames = new ArrayList<>();
         resourceTemplateNames.add("httpd.conf");
@@ -528,11 +522,10 @@ public class WebServerServiceRestImplTest {
         when(impl.isStarted(any(WebServer.class))).thenReturn(false);
         when(impl.getResourceTemplateNames(anyString())).thenReturn(resourceTemplateNames);
 
-        Response actual = webServerServiceRest.generateAndDeployWebServer(webServer.getName(), authenticatedUser);
-        assertEquals(statusNotOk.getStatus(), actual.getStatus());
+        webServerServiceRest.generateAndDeployWebServer(webServer.getName(), authenticatedUser);
     }
 
-    @Test
+    @Test (expected = InternalErrorException.class)
     public void testGenerateAndDeployWebServerFailsSecureCopyScriptsInvokeScript() throws CommandFailureException, IOException {
         List<String> resourceTemplateNames = new ArrayList<>();
         resourceTemplateNames.add("httpd.conf");
@@ -547,11 +540,10 @@ public class WebServerServiceRestImplTest {
         when(impl.isStarted(any(WebServer.class))).thenReturn(false);
         when(impl.getResourceTemplateNames(anyString())).thenReturn(resourceTemplateNames);
 
-        Response actual = webServerServiceRest.generateAndDeployWebServer(webServer.getName(), authenticatedUser);
-        assertEquals(statusNotOk.getStatus(), actual.getStatus());
+        webServerServiceRest.generateAndDeployWebServer(webServer.getName(), authenticatedUser);
     }
 
-    @Test
+    @Test (expected = InternalErrorException.class)
     public void testGenerateAndDeployWebServerFailsChangeFileMode() throws CommandFailureException, IOException {
         List<String> resourceTemplateNames = new ArrayList<>();
         resourceTemplateNames.add("httpd.conf");
@@ -567,11 +559,10 @@ public class WebServerServiceRestImplTest {
         when(impl.isStarted(any(WebServer.class))).thenReturn(false);
         when(impl.getResourceTemplateNames(anyString())).thenReturn(resourceTemplateNames);
 
-        Response actual = webServerServiceRest.generateAndDeployWebServer(webServer.getName(), authenticatedUser);
-        assertEquals(statusNotOk.getStatus(), actual.getStatus());
+        webServerServiceRest.generateAndDeployWebServer(webServer.getName(), authenticatedUser);
     }
 
-    @Test
+    @Test (expected = InternalErrorException.class)
     public void testGenerateAndDeployWebServerSecureCopyInvokeWSServiceFails() throws CommandFailureException, IOException {
         List<String> webServerResourceNames = new ArrayList<>();
         webServerResourceNames.add("httpd.conf");
@@ -596,12 +587,11 @@ public class WebServerServiceRestImplTest {
         when(mockMetaData.getContentType()).thenReturn("text/plain");
         when(resourceService.getTokenizedMetaData(anyString(), Matchers.anyObject(), anyString())).thenReturn(mockMetaData);
 
-        Response actual = webServerServiceRest.generateAndDeployWebServer(webServer.getName(), authenticatedUser);
-        assertEquals(statusNotOk.getStatus(), actual.getStatus());
+        webServerServiceRest.generateAndDeployWebServer(webServer.getName(), authenticatedUser);
 
     }
 
-    @Test
+    @Test (expected = InternalErrorException.class)
     public void testGenerateAndDeployWebServerCallInvokeWSFails() throws CommandFailureException, IOException {
         List<String> webServerResourceNames = new ArrayList<>();
         webServerResourceNames.add("httpd.conf");
@@ -626,8 +616,7 @@ public class WebServerServiceRestImplTest {
         when(mockMetaData.getContentType()).thenReturn("text/plain");
         when(resourceService.getTokenizedMetaData(anyString(), Matchers.anyObject(), anyString())).thenReturn(mockMetaData);
 
-        Response actual = webServerServiceRest.generateAndDeployWebServer(webServer.getName(), authenticatedUser);
-        assertEquals(statusNotOk.getStatus(), actual.getStatus());
+        webServerServiceRest.generateAndDeployWebServer(webServer.getName(), authenticatedUser);
     }
 
     @Test
@@ -660,7 +649,7 @@ public class WebServerServiceRestImplTest {
 
     }
 
-    @Test
+    @Test (expected = InternalErrorException.class)
     public void testGenerateAndDeployWebServerDeleteServiceFails() throws CommandFailureException, IOException {
         List<String> webServerResourceNames = new ArrayList<>();
         webServerResourceNames.add("httpd.conf");
@@ -680,8 +669,7 @@ public class WebServerServiceRestImplTest {
         when(resourceService.generateResourceGroup()).thenReturn(new ResourceGroup());
         when(resourceService.generateResourceFile(anyString(), anyString(), any(ResourceGroup.class), any(), any(ResourceGeneratorType.class))).thenReturn("{\"contentType\":\"text/plain\",\"deployPath\":\"./anyPath\",\"deployFileName\":\"httpd.conf\"}");
 
-        Response actual = webServerServiceRest.generateAndDeployWebServer(webServer.getName(), authenticatedUser);
-        assertEquals(statusNotOk.getStatus(), actual.getStatus());
+        webServerServiceRest.generateAndDeployWebServer(webServer.getName(), authenticatedUser);
     }
 
     @Test
@@ -708,13 +696,11 @@ public class WebServerServiceRestImplTest {
         assertTrue(response.hasEntity());
     }
 
-    @Test
+    @Test (expected = InternalErrorException.class)
     public void testGenerateAndDeployWebServerWhenWebServerNotStopped() {
         when(impl.getWebServer(anyString())).thenReturn(webServer);
         when(impl.isStarted(any(WebServer.class))).thenReturn(true);
-        Response actual = webServerServiceRest.generateAndDeployWebServer(webServer.getName(), authenticatedUser);
-
-        assertEquals(statusNotOk.getStatus(), actual.getStatus());
+        webServerServiceRest.generateAndDeployWebServer(webServer.getName(), authenticatedUser);
     }
 
     @Test
