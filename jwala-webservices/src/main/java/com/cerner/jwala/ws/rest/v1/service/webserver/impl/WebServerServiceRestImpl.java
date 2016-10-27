@@ -310,6 +310,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
                 try {
                     generateAndDeployConfig(aWebServerName, templateName, aUser);
                 } catch (ResourceFileGeneratorException e) {
+                    LOGGER.error("Failed to generate and deploy configuration!", e);
                     resourceFileGeneratorExceptionFlag = true;
                     resourceFileGeneratorExceptionMessage += e.getMessage() + " ";
                 }
