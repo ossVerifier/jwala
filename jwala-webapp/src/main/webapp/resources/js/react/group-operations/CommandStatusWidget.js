@@ -41,22 +41,7 @@ var CommandStatusWidget = React.createClass({
         this.setState({fullPreviewMode: false});
     },
     componentDidMount: function() {
-        var self = this;
-        historyService.read(this.props.groupName, this.props.serverName).then(
-            function(data) {
-                 var statusArray = [];
-                 for (var i = data.length - 1; i >= 0; i--) {
-                    var status = {};
-                    status["from"] = data[i].serverName;
-                    status["userId"] = data[i].createBy;
-                    status["asOf"] = data[i].createDate;
-                    status["message"] = data[i].event;
-                    self.push(status, data[i].eventType === "USER_ACTION" ? "action-status-font" : "error-status-font",
-                        (i === 0));
-                    statusArray.push(status);
-                }
-                self.state.data = statusArray;
-            }).caught(function(response) {console.log(response)});
+        this.readHistory();
     },
     componentDidUpdate: function(prevProps, prevState) {
         if (this.refs.content) {
@@ -70,15 +55,38 @@ var CommandStatusWidget = React.createClass({
             document.body.style.overflow = "scroll";
         }
     },
+    readHistory: function(readSuccessfulCallback) {
+        var self = this;
+        historyService.read(this.props.groupName, this.props.serverName)
+            .then(function(data) {
+                      var statusArray = [];
+                      for (var i = data.length - 1; i >= 0; i--) {
+                          var status = {};
+                          status["from"] = data[i].serverName;
+                          status["userId"] = data[i].createBy;
+                          status["asOf"] = data[i].createDate;
+                          status["message"] = data[i].event;
+                          self.push(status, data[i].eventType === "USER_ACTION" ? "action-status-font" : "error-status-font",
+                              (i === 0));
+                          statusArray.push(status);
+                      }
+                      self.state.data = statusArray;
+
+                      if ($.isFunction(readSuccessfulCallback)) {
+                        readSuccessfulCallback();
+                      }
+            }).caught(function(response) {console.log(response)});
+    },
     clickOpenCloseWindowHandler: function() {
         this.setState({isOpen: !this.state.isOpen});
     },
     clickOpenInNewWindowHandler: function() {
-        this.refs.processingIcon.getDOMNode().style.visibility = "visible";
-
-        // wait for the processing icon to get drawn before letting react do its thing by state setting
         var self = this;
-        setTimeout(function(){self.setState({fullPreviewMode: true})}, 100);
+        this.readHistory(function(){
+            self.refs.processingIcon.getDOMNode().style.visibility = "visible";
+            // wait for the processing icon to get drawn before letting react do its thing by state setting
+            setTimeout(function(){self.setState({fullPreviewMode: true})}, 100);
+        });
     },
     showDetails: function(msg) {
         var myWindow = window.open("", "Error Details", "width=500, height=500");
