@@ -266,12 +266,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
         } catch (IOException e) {
             LOGGER.error("Failed to map meta data because of IOException for {}", aWebServerName, e);
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(AemFaultType.BAD_STREAM, "Failed to map meta data because of IOException for " + aWebServerName, e));
-        } /*catch (ResourceFileGeneratorException e) {
-            LOGGER.error("Fail to generate the {} {}", resourceFileName, aWebServerName, e);
-            Map<String, List<String>> errorDetails = new HashMap<>();
-            errorDetails.put(aWebServerName, Collections.singletonList(e.getMessage()));
-            throw new InternalErrorException(AemFaultType.RESOURCE_GENERATION_FAILED, "Failed to generate " + resourceFileName + " for " + aWebServerName, null, errorDetails);
-        } */finally {
+        } finally {
             wsWriteLocks.get(aWebServerName).writeLock().unlock();
         }
         return ResponseBuilder.ok(webServerService.getResourceTemplate(aWebServerName, resourceFileName, false, new ResourceGroup()));

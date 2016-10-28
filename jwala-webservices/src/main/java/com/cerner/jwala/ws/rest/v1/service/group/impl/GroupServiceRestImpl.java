@@ -286,6 +286,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
                     throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "All JVMs in the group must be stopped before continuing. Operation stopped for JVM " + jvm.getJvmName());
                 }
             }
+            validateGroupResource(jvms, fileName, groupName);
             final Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             for (final Jvm jvm : jvms) {
                 final String jvmName = jvm.getJvmName();
@@ -421,7 +422,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
                                     + webServer.getName());
                 }
             }
-            validateWebServerResource(webServers, resourceFileName, groupName);
+            validateGroupResource(webServers, resourceFileName, groupName);
 
             final Map<String, Future<Response>> futureMap = new HashMap<>();
             final Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -452,26 +453,32 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         return ResponseBuilder.ok(httpdTemplateContent);
     }
 
-    private void validateWebServerResource(Set<WebServer> webServers, String resourceFileName, String groupName) {
+    private <T> void validateGroupResource(Set<T> entitySet, String resourceFileName, String groupName) {
         boolean exceptionThrown = false;
+        String entityType = "web server";
         Map<String, List<String>> webServerResourceExceptions = new HashMap<>();
-        for (WebServer webServer : webServers){
+        for (T entity : entitySet){
             try {
-                ResourceIdentifier resourceIdentifier = new ResourceIdentifier.Builder()
+                ResourceIdentifier.Builder resourceIdentifierBuilder = new ResourceIdentifier.Builder()
                         .setResourceName(resourceFileName)
-                        .setWebServerName(webServer.getName())
-                        .setGroupName(groupName)
-                        .build();
-                resourceService.validateResourceGeneration(resourceIdentifier);
+                        .setGroupName(groupName);
+                if (entity instanceof WebServer){
+                    resourceIdentifierBuilder = resourceIdentifierBuilder.setWebServerName(((WebServer)entity).getName());
+                    entityType = "web server";
+                } else if (entity instanceof Jvm) {
+                    resourceIdentifierBuilder = resourceIdentifierBuilder.setJvmName(((Jvm)entity).getJvmName());
+                    entityType = "JVM";
+                }
+                resourceService.validateResourceGeneration(resourceIdentifierBuilder.build());
             } catch (InternalErrorException iee) {
-                LOGGER.info("Catching known web server resource generation exception, and now consolidating with the other web server resource exceptions");
-                LOGGER.debug("This web server resource generation exception should have already been logged previously", iee);
+                LOGGER.info("Catching known "  + entityType + " resource generation exception, and now consolidating with the other " + entityType + " resource exceptions");
+                LOGGER.debug("This " + entityType + " resource generation exception should have already been logged previously", iee);
                 exceptionThrown = true;
                 webServerResourceExceptions.putAll(iee.getErrorDetails());
             }
         }
         if (exceptionThrown) {
-            throw new InternalErrorException(AemFaultType.RESOURCE_GENERATION_FAILED, "Failed to deploy the web server resources for " + resourceFileName + " in group " + groupName, null, webServerResourceExceptions);
+            throw new InternalErrorException(AemFaultType.RESOURCE_GENERATION_FAILED, "Failed to deploy the " + entityType + " resources for " + resourceFileName + " in group " + groupName, null, webServerResourceExceptions);
         }
     }
 

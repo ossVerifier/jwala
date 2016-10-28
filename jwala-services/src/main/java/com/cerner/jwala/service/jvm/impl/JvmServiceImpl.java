@@ -46,7 +46,6 @@ import com.cerner.jwala.service.jvm.exception.JvmServiceException;
 import com.cerner.jwala.service.resource.ResourceService;
 import com.cerner.jwala.service.resource.impl.ResourceGeneratorType;
 import com.cerner.jwala.service.webserver.component.ClientFactoryHelper;
-import com.cerner.jwala.template.exception.ResourceFileGeneratorException;
 import groovy.text.SimpleTemplateEngine;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -709,6 +708,11 @@ public class JvmServiceImpl implements JvmService {
                 throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE,
                         "The target JVM must be stopped before attempting to update the resource files");
             }
+            ResourceIdentifier resourceIdentifier = new ResourceIdentifier.Builder()
+                    .setResourceName(fileName)
+                    .setJvmName(jvmName)
+                    .build();
+            resourceService.validateResourceGeneration(resourceIdentifier);
 
             String metaDataStr = getResourceTemplateMetaData(jvmName, fileName);
             ResourceTemplateMetaData resourceTemplateMetaData = resourceService.getTokenizedMetaData(fileName, jvm, metaDataStr);
@@ -733,11 +737,6 @@ public class JvmServiceImpl implements JvmService {
             String message = "Failed to copy file " + fileName + " for JVM " + jvmName;
             LOGGER.error(badStreamMessage + message, ce);
             throw new InternalErrorException(AemFaultType.BAD_STREAM, message, ce);
-        } catch (ResourceFileGeneratorException rfge) {
-            LOGGER.error("Failed to generate and deploy file {} to JVM {}", fileName, jvmName, rfge);
-            Map<String, List<String>> errorDetails = new HashMap<>();
-            errorDetails.put(jvmName, Collections.singletonList(rfge.getMessage()));
-            throw new InternalErrorException(AemFaultType.RESOURCE_GENERATION_FAILED, "Failed to generate and deploy file " + fileName + " to JVM " + jvmName, null, errorDetails);
         } finally {
             binaryDistributionLockManager.writeUnlock(jvm.getId().getId().toString());
         }
