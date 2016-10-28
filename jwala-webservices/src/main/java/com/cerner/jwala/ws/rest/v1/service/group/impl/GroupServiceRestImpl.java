@@ -421,6 +421,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
                                     + webServer.getName());
                 }
             }
+            validateWebServerResource(webServers, resourceFileName, groupName);
 
             final Map<String, Future<Response>> futureMap = new HashMap<>();
             final Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -449,6 +450,29 @@ public class GroupServiceRestImpl implements GroupServiceRest {
             LOGGER.info("No web servers in group {}", groupName);
         }
         return ResponseBuilder.ok(httpdTemplateContent);
+    }
+
+    private void validateWebServerResource(Set<WebServer> webServers, String resourceFileName, String groupName) {
+        boolean exceptionThrown = false;
+        Map<String, List<String>> webServerResourceExceptions = new HashMap<>();
+        for (WebServer webServer : webServers){
+            try {
+                ResourceIdentifier resourceIdentifier = new ResourceIdentifier.Builder()
+                        .setResourceName(resourceFileName)
+                        .setWebServerName(webServer.getName())
+                        .setGroupName(groupName)
+                        .build();
+                resourceService.validateResourceGeneration(resourceIdentifier);
+            } catch (InternalErrorException iee) {
+                LOGGER.info("Catching known web server resource generation exception, and now consolidating with the other web server resource exceptions");
+                LOGGER.debug("This web server resource generation exception should have already been logged previously", iee);
+                exceptionThrown = true;
+                webServerResourceExceptions.putAll(iee.getErrorDetails());
+            }
+        }
+        if (exceptionThrown) {
+            throw new InternalErrorException(AemFaultType.RESOURCE_GENERATION_FAILED, "Failed to deploy the web server resources for " + resourceFileName + " in group " + groupName, null, webServerResourceExceptions);
+        }
     }
 
     protected void checkResponsesForErrorStatus(Map<String, Future<Response>> futureMap) {

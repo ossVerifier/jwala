@@ -25,7 +25,6 @@ import com.cerner.jwala.service.resource.ResourceService;
 import com.cerner.jwala.service.webserver.WebServerCommandService;
 import com.cerner.jwala.service.webserver.WebServerControlService;
 import com.cerner.jwala.service.webserver.WebServerService;
-import com.cerner.jwala.template.exception.ResourceFileGeneratorException;
 import com.cerner.jwala.ws.rest.v1.provider.AuthenticatedUser;
 import com.cerner.jwala.ws.rest.v1.response.ResponseBuilder;
 import com.cerner.jwala.ws.rest.v1.service.webserver.WebServerServiceRest;
@@ -213,6 +212,12 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
                 throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "The target Web Server must be stopped before attempting to update the resource file");
             }
 
+            ResourceIdentifier resourceIdentifier = new ResourceIdentifier.Builder()
+                    .setWebServerName(aWebServerName)
+                    .setResourceName(resourceFileName)
+                    .build();
+            resourceService.validateResourceGeneration(resourceIdentifier);
+
             // get the meta data
             String metaDataStr = webServerService.getResourceTemplateMetaData(aWebServerName, resourceFileName);
             ResourceTemplateMetaData metaData = resourceService.getTokenizedMetaData(resourceFileName, webServerService.getWebServer(aWebServerName), metaDataStr);
@@ -261,12 +266,12 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
         } catch (IOException e) {
             LOGGER.error("Failed to map meta data because of IOException for {}", aWebServerName, e);
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(AemFaultType.BAD_STREAM, "Failed to map meta data because of IOException for " + aWebServerName, e));
-        } catch (ResourceFileGeneratorException e) {
+        } /*catch (ResourceFileGeneratorException e) {
             LOGGER.error("Fail to generate the {} {}", resourceFileName, aWebServerName, e);
             Map<String, List<String>> errorDetails = new HashMap<>();
             errorDetails.put(aWebServerName, Collections.singletonList(e.getMessage()));
             throw new InternalErrorException(AemFaultType.RESOURCE_GENERATION_FAILED, "Failed to generate " + resourceFileName + " for " + aWebServerName, null, errorDetails);
-        } finally {
+        } */finally {
             wsWriteLocks.get(aWebServerName).writeLock().unlock();
         }
         return ResponseBuilder.ok(webServerService.getResourceTemplate(aWebServerName, resourceFileName, false, new ResourceGroup()));
