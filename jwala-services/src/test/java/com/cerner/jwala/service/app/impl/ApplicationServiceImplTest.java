@@ -747,6 +747,7 @@ public class ApplicationServiceImplTest {
         when(mockApplication.getName()).thenReturn(appName);
         when(groupService.getGroup(any(Identifier.class))).thenReturn(mockGroup);
         when(mockApplication.getGroup()).thenReturn(mockGroup);
+        when(mockGroup.getName()).thenReturn("test-group");
         when(mockGroup.getId()).thenReturn(new Identifier<Group>(1L));
         when(mockGroup.getJvms()).thenReturn(jvms);
         when(mockJvm.getHostName()).thenReturn("testserver");
@@ -760,6 +761,7 @@ public class ApplicationServiceImplTest {
         when(groupService.deployGroupAppTemplate(anyString(), anyString(), any(ResourceGroup.class), any(Application.class), anyString())).thenReturn(mockCommandOutput);
         when(mockCommandOutput.getReturnCode()).thenReturn(new ExecReturnCode(0));
         applicationService.deployConf(appName, null, testUser);
+        verify(groupService, times(2)).deployGroupAppTemplate(eq("test-group"), anyString(), any(ResourceGroup.class), eq(mockApplication), anyString());
     }
 
     @Test (expected = InternalErrorException.class)
