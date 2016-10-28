@@ -760,8 +760,21 @@ public class ApplicationServiceImpl implements ApplicationService {
     public void deployConf(final String appName, final String hostName, final User user) {
         final Application application = applicationPersistenceService.getApplication(appName);
         final Group group = groupService.getGroup(application.getGroup().getId());
+        final List<String> hostNames = getDeployHostList(hostName, group, application);
+        LOGGER.debug("deploying templates to hosts: {}", hostNames.toString());
+
+        checkStartedJvms(group, hostNames);
+
+        Set<String> resourceSet = getWebAppOnlyResources(group);
+
+        Map<String, Future<Map<String, CommandOutput>>> futures = getFutureCommands(hostNames, group, application, resourceSet);
+
+        waitForDeploy(futures);
+    }
+
+    protected List<String> getDeployHostList(final String hostName, final Group group, final Application application) {
         final String groupName = group.getName();
-        final Set<String> resourceSet = new HashSet<>();
+        final String appName = application.getName();
         final List<String> hostNames = new ArrayList<>();
         final List<String> allHosts = groupService.getHosts(groupName);
         if (allHosts == null || allHosts.isEmpty()) {
@@ -785,7 +798,10 @@ public class ApplicationServiceImpl implements ApplicationService {
                 throw new InternalErrorException(AemFaultType.INVALID_HOST_NAME, "The hostname: " + hostName + " does not belong to the group " + groupName);
             }
         }
-        LOGGER.debug("deploying templates to hosts: {}", hostNames.toString());
+        return hostNames;
+    }
+
+    protected void checkStartedJvms(final Group group, final List<String> hostNames) {
         Set<String> errorJvms = new HashSet<>();
         for (Jvm jvm : group.getJvms()) {
             if (hostNames.contains(jvm.getHostName().toLowerCase()) && jvm.getState().isStartedState()) {
@@ -797,6 +813,11 @@ public class ApplicationServiceImpl implements ApplicationService {
             throw new InternalErrorException(AemFaultType.RESOURCE_DEPLOY_FAILURE,
                     "Make sure the following Jvms " + errorJvms.toString() + " are completely stopped before deploying.");
         }
+    }
+
+    protected Set<String> getWebAppOnlyResources(final Group group) {
+        final String groupName = group.getName();
+        final Set<String> resourceSet = new HashSet<>();
         List<String> resourceTemplates = groupService.getGroupAppsResourceTemplateNames(groupName);
         for (String resourceTemplate : resourceTemplates) {
             String metaDataStr = groupService.getGroupAppResourceTemplateMetaData(groupName, resourceTemplate);
@@ -812,7 +833,13 @@ public class ApplicationServiceImpl implements ApplicationService {
                 throw new InternalErrorException(AemFaultType.IO_EXCEPTION, "Error in templatizing the metadata for resource " + resourceTemplate);
             }
         }
+        return resourceSet;
+    }
+
+    protected Map<String, Future<Map<String, CommandOutput>>> getFutureCommands(
+            final List<String> hostNames, final Group group, final Application application, final Set<String> resourceSet) {
         final ResourceGroup resourceGroup = resourceService.generateResourceGroup();
+        final String groupName = group.getName();
         final Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         Map<String, Future<Map<String, CommandOutput>>> futures = new HashMap<>();
         for (final String host : hostNames) {
@@ -820,45 +847,51 @@ public class ApplicationServiceImpl implements ApplicationService {
             if (!writeLock.containsKey(key)) {
                 writeLock.put(key, new ReentrantReadWriteLock());
             }
-                if (writeLock.get(key).isWriteLocked()) {
-                    throw new InternalErrorException(AemFaultType.SERVICE_EXCEPTION, "Current resource is being deployed, wait for deploy to complete.");
-                }
-                Future<Map<String, CommandOutput>> commandOutputFutureMap = executorService.submit(new Callable<Map<String, CommandOutput>>() {
-                    @Override
-                    public Map<String, CommandOutput> call() throws Exception {
-                        writeLock.get(key).writeLock().lock();
-                        try {
-                            Map<String, CommandOutput> commandOutputs = new HashMap<>();
-                            SecurityContextHolder.getContext().setAuthentication(authentication);
-                            for (final String resource : resourceSet) {
-                                LOGGER.info("Deploying {} to host {}", resource, host);
-                                commandOutputs.put(resource, groupService.deployGroupAppTemplate(groupName, resource, resourceGroup, application, host));
+            if (writeLock.get(key).isWriteLocked()) {
+                throw new InternalErrorException(AemFaultType.SERVICE_EXCEPTION, "Current resource is being deployed, wait for deploy to complete.");
+            }
+            Future<Map<String, CommandOutput>> commandOutputFutureMap = executorService.submit
+                    (new Callable<Map<String, CommandOutput>>() {
+                        @Override
+                        public Map<String, CommandOutput> call() throws Exception {
+                            writeLock.get(key).writeLock().lock();
+                            try {
+                                Map<String, CommandOutput> commandOutputs = new HashMap<>();
+                                SecurityContextHolder.getContext().setAuthentication(authentication);
+                                for (final String resource : resourceSet) {
+                                    LOGGER.info("Deploying {} to host {}", resource, host);
+                                    commandOutputs.put(resource, groupService.deployGroupAppTemplate(groupName, resource, resourceGroup, application, host));
+                                }
+                                return commandOutputs;
+                            } finally {
+                                writeLock.get(key).writeLock().unlock();
                             }
-                            return commandOutputs;
-                        } finally {
-                            writeLock.get(key).writeLock().unlock();
                         }
                     }
-                }
-                );
-                futures.put(key, commandOutputFutureMap);
+                    );
+            futures.put(key, commandOutputFutureMap);
         }
+        return futures;
+    }
 
-        for (Entry<String, Future<Map<String, CommandOutput>>> entry : futures.entrySet()) {
-            try {
-                String[] resourceData = entry.getKey().split("/");
-                Map<String, CommandOutput> commandOutputMap = entry.getValue().get();
-                for (Entry<String, CommandOutput> commandOutput : commandOutputMap.entrySet()) {
-                    if (!commandOutput.getValue().getReturnCode().wasSuccessful()) {
-                        final String errorMessage = "Error in deploying resource " + commandOutput.getKey() +
-                                " to host " + resourceData[1] + " for application " + resourceData[0];
-                        LOGGER.error(errorMessage);
-                        throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, errorMessage);
+    protected void waitForDeploy(final Map<String, Future<Map<String, CommandOutput>>> futures) {
+        if (futures != null) {
+            for (Entry<String, Future<Map<String, CommandOutput>>> entry : futures.entrySet()) {
+                try {
+                    String[] resourceData = entry.getKey().split("/");
+                    Map<String, CommandOutput> commandOutputMap = entry.getValue().get();
+                    for (Entry<String, CommandOutput> commandOutput : commandOutputMap.entrySet()) {
+                        if (!commandOutput.getValue().getReturnCode().wasSuccessful()) {
+                            final String errorMessage = "Error in deploying resource " + commandOutput.getKey() +
+                                    " to host " + resourceData[1] + " for application " + resourceData[0];
+                            LOGGER.error(errorMessage);
+                            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, errorMessage);
+                        }
                     }
+                } catch (InterruptedException | ExecutionException e) {
+                    LOGGER.error("Error in executing deploy", e);
+                    throw new InternalErrorException(AemFaultType.RESOURCE_DEPLOY_FAILURE, e.getMessage());
                 }
-            } catch (InterruptedException | ExecutionException e) {
-                LOGGER.error("Error in executing deploy", e);
-                throw new InternalErrorException(AemFaultType.RESOURCE_DEPLOY_FAILURE, e.getMessage());
             }
         }
     }
