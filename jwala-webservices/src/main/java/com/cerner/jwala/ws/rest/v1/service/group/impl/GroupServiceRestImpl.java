@@ -202,12 +202,6 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     }
 
     @Override
-    public Response uploadGroupWebServerConfigTemplate(String groupName, AuthenticatedUser aUser, String templateName) {
-        LOGGER.info("Uploading group web server template {} to {} by user {}", templateName, groupName, aUser.getUser().getId());
-        return uploadConfigTemplate(groupName, null, aUser, templateName, GroupResourceType.WEBSERVER);
-    }
-
-    @Override
     public Response updateGroupWebServerResourceTemplate(final String groupName, final String resourceTemplateName, final String content) {
         LOGGER.info("update group web server resource template {} for group {}", resourceTemplateName, groupName);
         try {
@@ -428,7 +422,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
 
     protected void checkResponsesForErrorStatus(Map<String, Future<Response>> futureMap) {
         boolean exception = false;
-        Map <String,String> entityDetailsMap = new HashMap<>();
+        Map<String, String> entityDetailsMap = new HashMap<>();
         for (String keyEntityName : futureMap.keySet()) {
             Response response;
             try {
@@ -441,7 +435,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
                 }
             } catch (InterruptedException | ExecutionException e) {
                 LOGGER.error("FAILURE getting response for {}", keyEntityName, e);
-                entityDetailsMap.put(keyEntityName,e.getMessage());
+                entityDetailsMap.put(keyEntityName, e.getMessage());
                 exception = true;
             }
         }
