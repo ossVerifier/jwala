@@ -6,7 +6,6 @@ import com.cerner.jwala.common.domain.model.resource.ResourceContent;
 import com.cerner.jwala.common.domain.model.resource.ResourceIdentifier;
 import com.cerner.jwala.common.domain.model.resource.ResourceTemplateMetaData;
 import com.cerner.jwala.common.exception.FaultCodeException;
-import com.cerner.jwala.common.exec.CommandOutput;
 import com.cerner.jwala.common.properties.ExternalProperties;
 import com.cerner.jwala.persistence.jpa.service.exception.ResourceTemplateMetaDataUpdateException;
 import com.cerner.jwala.service.exception.ResourceServiceException;
@@ -441,21 +440,6 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
     }
 
     @Override
-    public Response updateResourceContent(String resourceName, ResourceHierarchyParam
-            resourceHierarchyParam, String templateContent) {
-        LOGGER.info("Update the resource {} with hierarchy {}", resourceName, resourceHierarchyParam);
-        LOGGER.debug("Updated content: {}", templateContent);
-
-        final ResourceIdentifier resourceIdentifier = new ResourceIdentifier.Builder().setResourceName(resourceName)
-                .setGroupName(resourceHierarchyParam.getGroup())
-                .setWebServerName(resourceHierarchyParam.getWebServer())
-                .setJvmName(resourceHierarchyParam.getJvm())
-                .setWebAppName(resourceHierarchyParam.getWebApp()).build();
-
-        return ResponseBuilder.ok(resourceService.updateResourceContent(resourceIdentifier, templateContent));
-    }
-
-    @Override
     public Response updateResourceMetaData(String resourceName, ResourceHierarchyParam resourceHierarchyParam, String metaData) {
         LOGGER.info("Update the meta data for resource {} with hierarchy {}", resourceName, resourceHierarchyParam);
         LOGGER.debug("Updated content: {}", metaData);
@@ -483,40 +467,6 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
                 .setJvmName(resourceHierarchyParam.getJvm())
                 .setWebAppName(resourceHierarchyParam.getWebApp()).build();
         return ResponseBuilder.ok(resourceService.previewResourceContent(resourceIdentifier, content));
-    }
-
-    @Override
-    public Response deployTemplateToAllHosts(String fileName, ResourceHierarchyParam
-            resourceHierarchyParam, AuthenticatedUser authenticatedUser) {
-        LOGGER.info("Deploy the template {} to all hosts with resource ID {} by user {}", fileName, resourceHierarchyParam, authenticatedUser.getUser().getId());
-        final ResourceIdentifier resourceIdentifier = new ResourceIdentifier.Builder()
-                .setResourceName(fileName)
-                .setGroupName(resourceHierarchyParam.getGroup())
-                .setWebServerName(resourceHierarchyParam.getWebServer())
-                .setJvmName(resourceHierarchyParam.getJvm())
-                .setWebAppName(resourceHierarchyParam.getWebApp()).build();
-
-        resourceService.deployTemplateToAllHosts(fileName, resourceIdentifier);
-
-        return ResponseBuilder.ok();
-    }
-
-    @Override
-    public Response deployTemplateToHost(String fileName, String hostName, ResourceHierarchyParam
-            resourceHierarchyParam, AuthenticatedUser user) {
-        LOGGER.info("Deploy the template {} to host {} with resource ID {} by user {}", fileName, hostName, resourceHierarchyParam, user.getUser().getId());
-        final ResourceIdentifier resourceIdentifier = new ResourceIdentifier.Builder()
-                .setResourceName(fileName)
-                .setGroupName(resourceHierarchyParam.getGroup())
-                .setWebServerName(resourceHierarchyParam.getWebServer())
-                .setJvmName(resourceHierarchyParam.getJvm())
-                .setWebAppName(resourceHierarchyParam.getWebApp()).build();
-        CommandOutput commandOutput = resourceService.deployTemplateToHost(fileName, hostName, resourceIdentifier);
-        if (commandOutput.getReturnCode().wasSuccessful()) {
-            return ResponseBuilder.ok();
-        } else {
-            return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(AemFaultType.CONTROL_OPERATION_UNSUCCESSFUL, commandOutput.standardErrorOrStandardOut()));
-        }
     }
 
     @Override

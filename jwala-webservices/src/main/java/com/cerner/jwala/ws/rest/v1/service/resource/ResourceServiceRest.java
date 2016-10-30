@@ -121,18 +121,6 @@ public interface ResourceServiceRest extends InitializingBean {
     Response getResourceContent(@PathParam("resourceName") String resourceName, @MatrixParam("") ResourceHierarchyParam resourceHierarchyParam);
 
     /**
-     * Update the template content
-     *
-     * @param resourceName           the template name
-     * @param resourceHierarchyParam the group, JVM, web server, web app hierarchy info
-     * @return the saved content
-     */
-    @PUT
-    @Path("/template/{resourceName}")
-    @Consumes(MediaType.TEXT_PLAIN)
-    Response updateResourceContent(@PathParam("resourceName") String resourceName, @MatrixParam("") ResourceHierarchyParam resourceHierarchyParam, final String content);
-
-    /**
      * Update the template meta data
      *
      * @param resourceName           the template name
@@ -199,13 +187,5 @@ public interface ResourceServiceRest extends InitializingBean {
     @GET
     @Path("templates/names")
     Response getResourcesFileNames(@MatrixParam("") final ResourceHierarchyParam resourceHierarchyParam);
-
-    @PUT
-    @Path("/template/{fileName}/deploy/host/{hostName}")
-    Response deployTemplateToHost(@PathParam("fileName") final String fileName, @PathParam("hostName") final String hostName, @MatrixParam("") final ResourceHierarchyParam resourceHierarchyParam, @BeanParam AuthenticatedUser authenticatedUser);
-
-    @PUT
-    @Path("/template/{fileName}/deploy/hosts")
-    Response deployTemplateToAllHosts(@PathParam("fileName") final String fileName, @MatrixParam("") final ResourceHierarchyParam resourceHierarchyParam, @BeanParam AuthenticatedUser authenticatedUser);
 }
 
