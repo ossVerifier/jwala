@@ -344,7 +344,11 @@ var ResourcesConfig = React.createClass({
             this.props.resourceService.createResource(groupName, webServerName, jvmName, webAppName, formData,
                 metaDataFile, deployFilename).then(function(response){
                     if(!isExtProperties){
-                        self.refs.createResourceModalDlg.close();
+                        if (self.refs.selectMetaDataAndTemplateFilesModalDlg.isShown()) {
+                            self.refs.selectMetaDataAndTemplateFilesModalDlg.close();
+                        } else {
+                            self.refs.createResourceModalDlg.close();
+                        }
                     } else {
                         self.refs.selectTemplateFilesModalDlg.close();
                     }
