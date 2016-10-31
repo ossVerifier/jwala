@@ -1,6 +1,7 @@
 package com.cerner.jwala.service.jvm.impl;
 
 import com.cerner.jwala.common.domain.model.app.Application;
+import com.cerner.jwala.common.domain.model.fault.AemFaultType;
 import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
@@ -8,6 +9,7 @@ import com.cerner.jwala.common.domain.model.jvm.JvmControlOperation;
 import com.cerner.jwala.common.domain.model.jvm.JvmState;
 import com.cerner.jwala.common.domain.model.path.Path;
 import com.cerner.jwala.common.domain.model.resource.ResourceGroup;
+import com.cerner.jwala.common.domain.model.resource.ResourceIdentifier;
 import com.cerner.jwala.common.domain.model.resource.ResourceTemplateMetaData;
 import com.cerner.jwala.common.domain.model.resource.ResourceType;
 import com.cerner.jwala.common.domain.model.user.User;
@@ -36,6 +38,7 @@ import com.cerner.jwala.service.group.GroupService;
 import com.cerner.jwala.service.group.GroupStateNotificationService;
 import com.cerner.jwala.service.jvm.JvmControlService;
 import com.cerner.jwala.service.jvm.JvmService;
+import com.cerner.jwala.service.jvm.exception.JvmServiceException;
 import com.cerner.jwala.service.resource.ResourceService;
 import com.cerner.jwala.service.resource.impl.ResourceGeneratorType;
 import com.cerner.jwala.service.webserver.component.ClientFactoryHelper;
@@ -57,6 +60,7 @@ import java.util.*;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
@@ -118,7 +122,7 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
         initMocks(this);
         jvmServiceImpl = new JvmServiceImpl(mockJvmPersistenceService, mockGroupService, mockApplicationService, mockFileManager,
                 mockMessagingTemplate, mockGroupStateNotificationService, mockResourceService, mockClientFactoryHelper,
-                 "/topic/server-states", mockJvmControlService, mockBinaryDistributionService, mockBinaryDistributionLockManager);
+                "/topic/server-states", mockJvmControlService, mockBinaryDistributionService, mockBinaryDistributionLockManager);
         jvmService = jvmServiceImpl;
     }
 
@@ -240,7 +244,7 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
         System.clearProperty(ApplicationProperties.PROPERTIES_ROOT_PATH);
     }
 
-    @Test (expected = InternalErrorException.class)
+    @Test(expected = InternalErrorException.class)
     public void testCreateValidateInheritsDefaultTemplatesJvmTemplateThrowsIOException() throws IOException {
         System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, "./src/test/resources");
 
@@ -272,7 +276,7 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
         System.clearProperty(ApplicationProperties.PROPERTIES_ROOT_PATH);
     }
 
-    @Test (expected = InternalErrorException.class)
+    @Test(expected = InternalErrorException.class)
     public void testCreateValidateInheritsDefaultTemplatesAppTemplateThrowsIOException() {
         System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, "./src/test/resources");
 
@@ -340,7 +344,7 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
         verify(mockJvmPersistenceService, times(1)).removeJvm(eq(id));
     }
 
-    @Test (expected = InternalErrorException.class)
+    @Test(expected = InternalErrorException.class)
     public void testRemoveJvmInStartedState() {
         final Identifier<Jvm> id = new Identifier<>(-123456L);
         Jvm mockJvm = mockJvmWithId(id);
@@ -359,12 +363,12 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
         when(mockJvm.getState()).thenReturn(JvmState.JVM_STOPPED);
         when(mockJvm.getJvmName()).thenReturn("jvm-name-delete-service");
         when(mockJvmControlService.controlJvm(eq(controlJvmRequest), any(User.class))).thenReturn(commandOutput);
-        
+
         jvmService.deleteJvmWindowsService(controlJvmRequest, mockJvm, mockUser);
         verify(mockJvmControlService).controlJvm(eq(controlJvmRequest), eq(mockUser));
     }
 
-    @Test (expected = InternalErrorException.class)
+    @Test(expected = InternalErrorException.class)
     public void testDeleteJvmWindowsServiceFailsForOtherErrorCode() {
         Jvm mockJvm = mock(Jvm.class);
         ControlJvmRequest controlJvmRequest = new ControlJvmRequest(new Identifier<Jvm>(123L), JvmControlOperation.DELETE_SERVICE);
@@ -492,7 +496,7 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
         when(mockClientFactoryHelper.requestGet(any(URI.class))).thenReturn(mockResponse);
 
         when(jvm.getState()).thenReturn(JvmState.JVM_START);
-        String diagnosis = jvmService.performDiagnosis(aJvmId,mockUser);
+        String diagnosis = jvmService.performDiagnosis(aJvmId, mockUser);
         assertTrue(!diagnosis.isEmpty());
 
         when(mockResponse.getStatusCode()).thenReturn(HttpStatus.REQUEST_TIMEOUT);
@@ -662,7 +666,7 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
 
         Map<String, String> result = jvmService.generateResourceFiles(jvmName);
         assertEquals(result.size(), 1);
-        for(Map.Entry<String, String> entry:result.entrySet()) {
+        for (Map.Entry<String, String> entry : result.entrySet()) {
             FileUtils.forceDelete(new File(entry.getKey()));
         }
     }
@@ -691,7 +695,7 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
         assertEquals(result.size(), 1);
     }
 
-    @Test (expected = InternalErrorException.class)
+    @Test(expected = InternalErrorException.class)
     public void testCheckSetenvBat() {
         final String jvmName = "test-jvm-check-for-setenvbat";
         when(mockJvmPersistenceService.getResourceTemplate(jvmName, "setenv.bat")).thenReturn("ignore template content, just need to check no exception is thrown");
@@ -796,7 +800,7 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
     }
 
 
-    @Test (expected = InternalErrorException.class)
+    @Test(expected = InternalErrorException.class)
     public void testGenerateAndDeployJVMFailsJVMStarted() {
         Jvm mockJvm = mock(Jvm.class);
 
@@ -807,7 +811,55 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
         jvmService.generateAndDeployJvm("test-jvm-fails-started", mockUser);
     }
 
-    @Test (expected = InternalErrorException.class)
+    @Test
+    public void testGenerateAndDeplyJVMFailsForResourceGeneration() {
+        Jvm mockJvm = mock(Jvm.class);
+        when(mockJvm.getState()).thenReturn(JvmState.JVM_STOPPED);
+        when(mockJvm.getId()).thenReturn(new Identifier<Jvm>(111L));
+        when(mockJvm.getHostName()).thenReturn("test-host-name");
+
+        Group mockGroup = mock(Group.class);
+        when(mockGroup.getId()).thenReturn(new Identifier<Group>(111L));
+        when(mockGroup.getName()).thenReturn("test-group-for-failed-resource-generation");
+        List<Group> groupList = Collections.singletonList(mockGroup);
+
+        Application mockApp = mock(Application.class);
+        when(mockApp.getName()).thenReturn("test-application-for-failed-resource-generation");
+        List<Application> appList = Collections.singletonList(mockApp);
+
+        Map<String, List<String>> jvmErrorMap = new HashMap<>();
+        List<String> errorList = Arrays.asList("failed generation server.xml", "failed generation context.xml", "failed generation setenv.bat");
+        jvmErrorMap.put("test-jvm-fails-resource-generation", errorList);
+
+        Map<String, List<String>> appErrorMap = new HashMap<>();
+        List<String> appErrorList = Arrays.asList("failed generation app-context.xml", "failed generation app-properties.properties");
+        appErrorMap.put("test-jvm-app-fails-resource-generation", appErrorList);
+
+        List<String> appResourceNamesList = Collections.singletonList("test-app-context.xml");
+
+        when(mockApplicationService.getResourceTemplateNames(anyString(), anyString())).thenReturn(appResourceNamesList);
+        when(mockApplicationService.findApplications(any(Identifier.class))).thenReturn(appList);
+        when(mockJvmPersistenceService.findJvmByExactName(anyString())).thenReturn(mockJvm);
+        when(mockJvmPersistenceService.findGroupsByJvm(any(Identifier.class))).thenReturn(groupList);
+        doThrow(new InternalErrorException(AemFaultType.RESOURCE_GENERATION_FAILED, "Test for failing JVM resource generation", null, jvmErrorMap)).when(mockResourceService).validateAllResourcesForGeneration(any(ResourceIdentifier.class));
+        doThrow(new InternalErrorException(AemFaultType.RESOURCE_GENERATION_FAILED, "Test failing for Web App resource generation", null, appErrorMap)).when(mockResourceService).validateSingleResourceForGeneration(any(ResourceIdentifier.class));
+
+        InternalErrorException caughtException = null;
+        try {
+            jvmService.generateAndDeployJvm("test-jvm-fails-resource-generation", mockUser);
+        } catch (InternalErrorException iee) {
+            caughtException = iee;
+        }
+        verify(mockResourceService).validateSingleResourceForGeneration(any(ResourceIdentifier.class));
+        verify(mockResourceService).validateAllResourcesForGeneration(any(ResourceIdentifier.class));
+
+        assertNotNull(caughtException);
+        assertEquals(2, caughtException.getErrorDetails().size());
+        assertEquals(3, caughtException.getErrorDetails().get("test-jvm-fails-resource-generation").size());
+        assertEquals(2, caughtException.getErrorDetails().get("test-jvm-app-fails-resource-generation").size());
+    }
+
+    @Test(expected = InternalErrorException.class)
     public void testGenerateAndDeployJVMFailsCreateDirectory() throws CommandFailureException {
         Jvm mockJvm = mock(Jvm.class);
         CommandOutput commandOutputFails = new CommandOutput(new ExecReturnCode(1), "", "Fail creating the directory");
@@ -820,7 +872,7 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
         jvmService.generateAndDeployJvm("test-jvm-fails-started", mockUser);
     }
 
-    @Test (expected = InternalErrorException.class)
+    @Test(expected = InternalErrorException.class)
     public void testGenerateAndDeployJVMFailsDeployingInvokeService() throws CommandFailureException {
         Jvm mockJvm = mock(Jvm.class);
         CommandOutput commandOutputFails = new CommandOutput(new ExecReturnCode(1), "", "Fail creating the directory");
@@ -836,7 +888,7 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
         jvmService.generateAndDeployJvm("test-jvm-fails-started", mockUser);
     }
 
-    @Test (expected = InternalErrorException.class)
+    @Test(expected = InternalErrorException.class)
     public void testGenerateAndDeployJVMFailsChangeFileMode() throws CommandFailureException {
         Jvm mockJvm = mock(Jvm.class);
         CommandOutput commandOutputFails = new CommandOutput(new ExecReturnCode(1), "", "Fail creating the directory");
@@ -851,49 +903,47 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
 
         jvmService.generateAndDeployJvm("test-jvm-fails-started", mockUser);
     }
-    /*
+
     @Test
-    public void testGenerateAndDeployConfigFailControlService() throws CommandFailureException {
-        System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, "./src/test/resources");
-        when(jvmService.getJvm(jvm.getJvmName())).thenReturn(jvm);
-        when(jvmService.generateConfigFile(jvm.getJvmName(), "server.xml")).thenReturn("<server>xml-content</server>");
-        when(jvmService.generateConfigFile(jvm.getJvmName(), "context.xml")).thenReturn("<content>xml-content</content>");
-        when(jvmService.generateConfigFile(jvm.getJvmName(), "setenv.bat")).thenReturn("SET TEST=xxtestxx");
-        when(jvmService.generateInvokeBat(jvm.getJvmName())).thenReturn("REM invoke service");
-        final CommandOutput successCommandOutput = new CommandOutput(new ExecReturnCode(0), "", "");
-        when(jvmControlService.secureCopyFile(any(ControlJvmRequest.class), anyString(), anyString(), anyString())).thenReturn(successCommandOutput);
-        when(jvmControlService.executeCreateDirectoryCommand(any(Jvm.class), anyString())).thenReturn(successCommandOutput);
-        when(jvmControlService.executeChangeFileModeCommand(any(Jvm.class), anyString(), anyString(), anyString())).thenReturn(successCommandOutput);
+    public void testJvmCounts() {
+        when(mockJvmPersistenceService.getJvmStartedCount(anyString())).thenReturn(1L);
+        when(mockJvmPersistenceService.getJvmCount(anyString())).thenReturn(6L);
+        when(mockJvmPersistenceService.getJvmStoppedCount(anyString())).thenReturn(2L);
+        when(mockJvmPersistenceService.getJvmForciblyStoppedCount(anyString())).thenReturn(3L);
 
-        when(jvmControlService.controlJvm(any(ControlJvmRequest.class), any(User.class))).thenReturn(new CommandOutput(new ExecReturnCode(1), "", "FAIL CONTROL SERVICE"));
+        Long startedCount = jvmService.getJvmStartedCount("anyGroupName");
+        Long jvmCount = jvmService.getJvmCount("anyGroupName");
+        Long jvmStoppedCount = jvmService.getJvmStoppedCount("anyGroupName");
+        Long jvmForciblyStoppedCount = jvmService.getJvmForciblyStoppedCount("anyGroupName");
 
-        ControlJvmRequest deleteServiceRequest = new ControlJvmRequest(jvm.getId(), JvmControlOperation.DELETE_SERVICE);
-        when(jvmControlService.controlJvm(eq(deleteServiceRequest), any(User.class))).thenReturn(new CommandOutput(new ExecReturnCode(0), "DELETE SUCCESS", ""));
-
-        final Response response = jvmService.generateAndDeployJvm(jvm.getJvmName(), authenticatedUser);
-        System.err.println("JMJM " + ((ApplicationResponse) response.getEntity()).getApplicationResponseContent());
-        assertEquals(CommandOutputReturnCode.FAILED.getDesc(), ((Map) (((ApplicationResponse) response.getEntity()).getApplicationResponseContent())).get("message"));
+        assertEquals(new Long(1L), startedCount);
+        assertEquals(new Long(2L), jvmStoppedCount);
+        assertEquals(new Long(3L), jvmForciblyStoppedCount);
+        assertEquals(new Long(6L), jvmCount);
     }
 
     @Test
-    public void testGenerateAndDeployConfigFailSecureCopyService() throws CommandFailureException {
-        System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, "./src/test/resources");
-        when(jvmService.getJvm(jvm.getJvmName())).thenReturn(jvm);
-        when(jvmService.generateConfigFile(jvm.getJvmName(), "server.xml")).thenReturn("<server>xml-content</server>");
-        when(jvmService.generateConfigFile(jvm.getJvmName(), "context.xml")).thenReturn("<content>xml-content</content>");
-        when(jvmService.generateConfigFile(jvm.getJvmName(), "setenv.bat")).thenReturn("SET TEST=xxtestxx");
-        when(jvmControlService.secureCopyFile(any(ControlJvmRequest.class), anyString(), anyString(), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(1), "", "FAIL THE SERVICE SECURE COPY TEST"));
-        final CommandOutput successCommandOutput = new CommandOutput(new ExecReturnCode(0), "", "");
-        when(jvmControlService.executeCreateDirectoryCommand(any(Jvm.class), anyString())).thenReturn(successCommandOutput);
-        when(jvmControlService.executeChangeFileModeCommand(any(Jvm.class), anyString(), anyString(), anyString())).thenReturn(successCommandOutput);
+    public void testDeleteJvm() {
+        Jvm mockJvm = mock(Jvm.class);
+        when(mockJvm.getState()).thenReturn(JvmState.JVM_STARTED);
+        when(mockJvm.getId()).thenReturn(new Identifier<Jvm>(111L));
+        when(mockJvm.getJvmName()).thenReturn("test-delete-jvm");
 
-        when(jvmControlService.controlJvm(new ControlJvmRequest(jvm.getId(), JvmControlOperation.DELETE_SERVICE), authenticatedUser.getUser())).thenReturn(successCommandOutput);
+        when(mockJvmPersistenceService.findJvmByExactName(anyString())).thenReturn(mockJvm);
 
-        final Response response = jvmServiceRest.generateAndDeployJvm(jvm.getJvmName(), authenticatedUser);
-        assertEquals("Failed to secure copy ./src/test/resources/deploy-config-tar.sh during the creation of jvmName", ((Map) (((ApplicationResponse) response.getEntity()).getApplicationResponseContent())).get("message"));
+        boolean exceptionCaught = false;
+        try {
+            jvmService.deleteJvm("test-delete-jvm", "test-user-deletes-jvm");
+        } catch (JvmServiceException jse){
+            exceptionCaught = true;
+        }
+        assertTrue(exceptionCaught);
+
+        when(mockJvm.getState()).thenReturn(JvmState.JVM_STOPPED);
+        when(mockJvmControlService.controlJvm(any(ControlJvmRequest.class), any(User.class))).thenReturn(new CommandOutput(new ExecReturnCode(0), "SUCCESS", ""));
+        jvmService.deleteJvm("test-delete-jvm", "test-user-deletes-jvm");
+        verify(mockJvmPersistenceService).removeJvm(any(Identifier.class));
     }
-*/
-
 
     @Test
     public void testGenerateAndDeployFile() throws CommandFailureException, IOException {

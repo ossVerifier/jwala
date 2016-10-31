@@ -536,7 +536,7 @@ public class ResourceServiceImplTest {
         assertEquals(new Integer(0), result.getReturnCode().getReturnCode());
     }
 
-    @Test (expected = InternalErrorException.class)
+    @Test(expected = InternalErrorException.class)
     public void testDeployResourceTemplateToHostFailsBackup() throws CommandFailureException {
         ResourceIdentifier mockResourceIdentifier = mock(ResourceIdentifier.class);
         ConfigTemplate mockConfigTemplate = mock(ConfigTemplate.class);
@@ -1005,4 +1005,67 @@ public class ResourceServiceImplTest {
         assertEquals("METADATA: Failed to bind data and properties to : test-server.xml for Jvm: null. Cause(s) of the failure is/are: Template execution error at line 1:\n", exceptionList.get(0));
         assertTrue(exceptionList.get(1).contains("--> 2: ${property.does.not.exist}"));
     }
+
+    @Test
+    public void testSingleResourceValidation() {
+
+        ResourceIdentifier resourceIdentifier = new ResourceIdentifier.Builder()
+                .setResourceName("test-resource.xml")
+                .setJvmName("test-jvm")
+                .build();
+
+        Jvm mockJvm = mock(Jvm.class);
+        Group mockGroup = mock(Group.class);
+        when(mockJvm.getJvmName()).thenReturn("test-jvm-resource-validation");
+        when(mockJvm.getParentGroup()).thenReturn(mockGroup);
+
+        ConfigTemplate mockConfigTemplate = mock(ConfigTemplate.class);
+        when(mockConfigTemplate.getMetaData()).thenReturn("{\"deployFileName\":\"\test-deploy-name.xml\", \"deployPath\":\"./fake/test/path\"}");
+        when(mockConfigTemplate.getTemplateContent()).thenReturn("template${nope}template");
+
+        when(mockResourceHandler.fetchResource(any(ResourceIdentifier.class))).thenReturn(mockConfigTemplate);
+        when(mockResourceHandler.getSelectedValue(any(ResourceIdentifier.class))).thenReturn(mockJvm);
+
+        resourceService.validateSingleResourceForGeneration(resourceIdentifier);
+
+
+        verify(mockHistoryService, never()).createHistory(anyString(), anyList(), anyString(), any(EventType.class), anyString());
+        verify(mockMessagingService, never()).send(Matchers.anyObject());
+    }
+
+    @Test
+    public void testSingleResourceValidationFails() {
+
+        Authentication mockAuth = mock(Authentication.class);
+        when(mockAuth.getName()).thenReturn("test-user-resource-validation");
+        SecurityContextHolder.getContext().setAuthentication(mockAuth);
+
+        ResourceIdentifier resourceIdentifier = new ResourceIdentifier.Builder()
+                .setResourceName("test-resource.xml")
+                .setJvmName("test-jvm-resource-validation")
+                .build();
+
+        Jvm mockJvm = mock(Jvm.class);
+        Group mockGroup = mock(Group.class);
+        when(mockJvm.getJvmName()).thenReturn("test-jvm-resource-validation");
+        when(mockJvm.getParentGroup()).thenReturn(mockGroup);
+
+        ConfigTemplate mockConfigTemplate = mock(ConfigTemplate.class);
+        when(mockConfigTemplate.getMetaData()).thenReturn("{\"deployFileName\":\"${fail.fail}-test-deploy-name.xml\", \"deployPath\":\"./fake/test/path\"}");
+        when(mockConfigTemplate.getTemplateContent()).thenReturn("template${nope.fail}template");
+
+        when(mockResourceHandler.fetchResource(any(ResourceIdentifier.class))).thenReturn(mockConfigTemplate);
+        when(mockResourceHandler.getSelectedValue(any(ResourceIdentifier.class))).thenReturn(mockJvm);
+
+        InternalErrorException caughtException = null;
+        try {
+            resourceService.validateSingleResourceForGeneration(resourceIdentifier);
+        } catch (InternalErrorException iee) {
+            caughtException = iee;
+        }
+
+        assertNotNull(caughtException);
+        assertEquals(2, caughtException.getErrorDetails().get("test-jvm-resource-validation").size());
+    }
+
 }
