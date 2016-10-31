@@ -1,14 +1,10 @@
 var resourceService = {
     createResource: function(groupName, webServerName, jvmName, webAppName, formData, metaDataFile, deployFilename) {
-        if (!groupName && !webServerName && !jvmName && !webAppName) {
+        if (metaDataFile) {
             return serviceFoundation.promisedPost("v1.0/resources/template/" + deployFilename, "json", formData, null, true);
-        } else {
-            var matrixParam = this.createMatrixParam(groupName, webServerName, jvmName, webAppName);
-            if (metaDataFile) {
-                return serviceFoundation.promisedPost("v1.0/resources/data" + matrixParam, "json", formData, null, true);
-            }
-            return serviceFoundation.promisedPost("v1.0/resources/" + deployFilename + matrixParam, "json", formData, null, true);
         }
+        var matrixParam = this.createMatrixParam(groupName, webServerName, jvmName, webAppName);
+        return serviceFoundation.promisedPost("v1.0/resources/" + deployFilename + matrixParam, "json", formData, null, true);
     },
     deleteAllResource: function(resourceName) {
         return serviceFoundation.del("v1.0/resources/template/" + resourceName);

@@ -45,7 +45,6 @@ public interface ResourceService {
      * @param targetName
      * @param user
      */
-    @Deprecated
     CreateResourceResponseWrapper createTemplate(InputStream metaDataInputStream, InputStream templateData, String targetName, User user);
 
     /**
