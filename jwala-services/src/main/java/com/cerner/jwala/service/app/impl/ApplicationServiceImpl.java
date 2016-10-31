@@ -879,7 +879,8 @@ public class ApplicationServiceImpl implements ApplicationService {
             for (Entry<String, Future<Map<String, CommandOutput>>> entry : futures.entrySet()) {
                 try {
                     String[] resourceData = entry.getKey().split("/");
-                    Map<String, CommandOutput> commandOutputMap = entry.getValue().get();
+                    Map<String, CommandOutput> commandOutputMap = entry.getValue().get(
+                            ApplicationProperties.getAsInteger("remote.jwala.execution.timeout.seconds"), TimeUnit.SECONDS);
                     for (Entry<String, CommandOutput> commandOutput : commandOutputMap.entrySet()) {
                         if (!commandOutput.getValue().getReturnCode().wasSuccessful()) {
                             final String errorMessage = "Error in deploying resource " + commandOutput.getKey() +
@@ -888,7 +889,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, errorMessage);
                         }
                     }
-                } catch (InterruptedException | ExecutionException e) {
+                } catch (InterruptedException | ExecutionException | TimeoutException e) {
                     LOGGER.error("Error in executing deploy", e);
                     throw new InternalErrorException(AemFaultType.RESOURCE_DEPLOY_FAILURE, e.getMessage());
                 }
