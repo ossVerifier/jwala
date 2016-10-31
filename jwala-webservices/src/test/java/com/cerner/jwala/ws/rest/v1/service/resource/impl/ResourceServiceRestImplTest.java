@@ -182,23 +182,8 @@ public class ResourceServiceRestImplTest {
 
     @Test
     public void testCreateResourceWithMissingAttachment() throws IOException {
-        final CreateResourceParam createResourceParam = new CreateResourceParam();
-        createResourceParam.setGroup("Group A");
-        createResourceParam.setWebServer("Webserver 1");
-
-        // File attachment
-        final DataHandler fileAttachmentDataHandler = mock(DataHandler.class);
-        when(fileAttachmentDataHandler.getName()).thenReturn("sample-resource.tpl");
-        when(fileAttachmentDataHandler.getInputStream()).thenReturn(this.getClass().getClassLoader().getResourceAsStream("sample-resource.tpl"));
-
-        final Attachment fileAttachment = mock(Attachment.class);
-        when(fileAttachment.getDataHandler()).thenReturn(fileAttachmentDataHandler);
-        when(fileAttachment.getHeader(eq("Content-Type"))).thenReturn("application/octet-stream");
-
         final List<Attachment> attachmentList = new ArrayList<>();
-        attachmentList.add(fileAttachment);
-
-        final Response response = cut.createResource("httpd.conf", createResourceParam, attachmentList);
+        final Response response = cut.createResource("httpd.conf", null, attachmentList);
         assertEquals("AEM61", ((ApplicationResponse) response.getEntity()).getMsgCode());
     }
 
