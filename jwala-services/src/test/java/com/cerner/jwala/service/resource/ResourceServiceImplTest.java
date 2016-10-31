@@ -937,7 +937,7 @@ public class ResourceServiceImplTest {
         when(mockResourceHandler.fetchResource(eq(resourceIdentifierServerXml))).thenReturn(configTemplateServerXml);
         when(mockResourceHandler.fetchResource(eq(resourceIdentifierSetenvBat))).thenReturn(configTemplateSetenvBat);
 
-        resourceService.validateResourceGeneration(resourceIdentifier);
+        resourceService.validateAllResourcesForGeneration(resourceIdentifier);
         verify(mockHistoryService, never()).createHistory(anyString(), anyList(), anyString(), any(EventType.class), anyString());
         verify(mockMessagingService, never()).send(Matchers.anyObject());
     }
@@ -991,7 +991,7 @@ public class ResourceServiceImplTest {
 
         InternalErrorException iee = null;
         try {
-            resourceService.validateResourceGeneration(resourceIdentifier);
+            resourceService.validateAllResourcesForGeneration(resourceIdentifier);
         } catch (InternalErrorException e) {
             iee = e;
         }

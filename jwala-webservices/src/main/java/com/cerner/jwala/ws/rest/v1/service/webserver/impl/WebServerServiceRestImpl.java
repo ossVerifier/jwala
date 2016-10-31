@@ -216,7 +216,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
                     .setWebServerName(aWebServerName)
                     .setResourceName(resourceFileName)
                     .build();
-            resourceService.validateResourceGeneration(resourceIdentifier);
+            resourceService.validateSingleResourceForGeneration(resourceIdentifier);
 
             // get the meta data
             String metaDataStr = webServerService.getResourceTemplateMetaData(aWebServerName, resourceFileName);
@@ -293,7 +293,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
                     .setWebServerName(webServer.getName())
                     .setResourceName("*")
                     .build();
-            resourceService.validateResourceGeneration(resourceIdentifier);
+            resourceService.validateAllResourcesForGeneration(resourceIdentifier);
 
             binaryDistributionService.prepareUnzip(webServer.getHost());
             binaryDistributionService.distributeWebServer(webServer.getHost());

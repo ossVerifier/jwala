@@ -309,5 +309,7 @@ public interface ResourceService {
 
     ResourceTemplateMetaData getMetaData(String rawMetaData) throws IOException;
 
-    void validateResourceGeneration(ResourceIdentifier resourceIdentifier);
+    void validateAllResourcesForGeneration(ResourceIdentifier resourceIdentifier);
+
+    void validateSingleResourceForGeneration(ResourceIdentifier resourceIdentifier);
 }

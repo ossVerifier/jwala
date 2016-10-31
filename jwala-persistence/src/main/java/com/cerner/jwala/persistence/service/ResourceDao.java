@@ -203,4 +203,6 @@ public interface ResourceDao {
      * @param templateContent the updated content of the template
      */
     void updateResource(ResourceIdentifier resourceIdentifier, EntityType entityType, String templateContent);
+
+    List<String> getAppResourceNames(String groupName, String webAppName);
 }

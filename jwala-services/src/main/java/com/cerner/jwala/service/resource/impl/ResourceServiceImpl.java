@@ -214,7 +214,7 @@ public class ResourceServiceImpl implements ResourceService {
     }
 
     @Override
-    public void validateResourceGeneration(ResourceIdentifier resourceIdentifier) {
+    public void validateAllResourcesForGeneration(ResourceIdentifier resourceIdentifier) {
         Map<String, List<String>> resourceExceptionMap = new HashMap<>();
         List<String> exceptionList = new ArrayList<>();
         boolean resourceExceptionThrown = false;
@@ -248,6 +248,38 @@ public class ResourceServiceImpl implements ResourceService {
 
         }
 
+        checkForResourceGenerationException(resourceIdentifier, resourceExceptionMap, exceptionList, resourceExceptionThrown, entity);
+    }
+
+    @Override
+    public void validateSingleResourceForGeneration(ResourceIdentifier resourceIdentifier) {
+        Map<String, List<String>> resourceExceptionMap = new HashMap<>();
+        List<String> exceptionList = new ArrayList<>();
+        boolean resourceExceptionThrown = false;
+        ConfigTemplate resource = resourceHandler.fetchResource(resourceIdentifier);
+        Object entity = resourceHandler.getSelectedValue(resourceIdentifier);
+        final ResourceGroup resourceGroup = generateResourceGroup();
+
+        try {
+            generateResourceFile(resourceIdentifier.resourceName, resource.getMetaData(), resourceGroup, entity, ResourceGeneratorType.METADATA);
+        } catch (ResourceFileGeneratorException e) {
+            LOGGER.error("Failed to generate {} {} for {}", resourceIdentifier.resourceName, ResourceGeneratorType.METADATA, entity, e);
+            resourceExceptionThrown = true;
+            exceptionList.add(e.getMessage());
+        }
+
+        try {
+            generateResourceFile(resourceIdentifier.resourceName, resource.getTemplateContent(), resourceGroup, entity, ResourceGeneratorType.TEMPLATE);
+        } catch (ResourceFileGeneratorException e) {
+            LOGGER.error("Failed to generate {} {} for {}", resourceIdentifier.resourceName, ResourceGeneratorType.TEMPLATE, entity, e);
+            resourceExceptionThrown = true;
+            exceptionList.add(e.getMessage());
+        }
+
+        checkForResourceGenerationException(resourceIdentifier, resourceExceptionMap, exceptionList, resourceExceptionThrown, entity);
+    }
+
+    private void checkForResourceGenerationException(ResourceIdentifier resourceIdentifier, Map<String, List<String>> resourceExceptionMap, List<String> exceptionList, boolean resourceExceptionThrown, Object entity) {
         if (resourceExceptionThrown) {
             final String resourceName = resourceIdentifier.jvmName != null ? resourceIdentifier.jvmName : resourceIdentifier.webServerName != null ? resourceIdentifier.webServerName : resourceIdentifier.webAppName;
             resourceExceptionMap.put(resourceName, exceptionList);

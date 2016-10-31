@@ -326,7 +326,16 @@ var ResourcesConfig = React.createClass({
                 }
             }).caught(function(response){
                 console.log(response);
-                var errMsg = response.responseJSON ? response.responseJSON.applicationResponseContent : "";
+                var errMsg = "Unexpected error. Please check log for error details.";
+                var responseJson = response.responseJSON
+                if (responseJson) {
+                    if (responseJson.message) {
+                        errMsg = responseJson.message;
+                    } else if (responseJson.applicationResponseContent) {
+                        errMsg = responseJson.applicationResponseContent;
+                    }
+                }
+
                 $.errorAlert("Error creating resource template! " + errMsg, "Error", true);
             });
         }

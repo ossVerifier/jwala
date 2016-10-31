@@ -368,7 +368,7 @@ public class JvmServiceImpl implements JvmService {
                     .setJvmName(jvmName)
                     .setResourceName("*")
                     .build();
-            resourceService.validateResourceGeneration(resourceIdentifier);
+            resourceService.validateAllResourcesForGeneration(resourceIdentifier);
         } catch (InternalErrorException iee) {
             LOGGER.info("Catching known JVM resource generation exception, and now validating application resources");
             LOGGER.debug("This JVM resource generation exception should have already been logged previously", iee);
@@ -389,7 +389,7 @@ public class JvmServiceImpl implements JvmService {
                                 .setJvmName(jvmName)
                                 .setWebAppName(appName)
                                 .build();
-                        resourceService.validateResourceGeneration(resourceIdentifier);
+                        resourceService.validateSingleResourceForGeneration(resourceIdentifier);
                     } catch (InternalErrorException iee){
                         LOGGER.info("Catching known app resource generation exception, and now consolidating with the JVM resource exceptions");
                         LOGGER.debug("This application resource generation exception should have already been logged previously", iee);
@@ -712,7 +712,7 @@ public class JvmServiceImpl implements JvmService {
                     .setResourceName(fileName)
                     .setJvmName(jvmName)
                     .build();
-            resourceService.validateResourceGeneration(resourceIdentifier);
+            resourceService.validateSingleResourceForGeneration(resourceIdentifier);
 
             String metaDataStr = getResourceTemplateMetaData(jvmName, fileName);
             ResourceTemplateMetaData resourceTemplateMetaData = resourceService.getTokenizedMetaData(fileName, jvm, metaDataStr);

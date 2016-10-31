@@ -286,7 +286,6 @@ public class GroupServiceRestImpl implements GroupServiceRest {
                     throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "All JVMs in the group must be stopped before continuing. Operation stopped for JVM " + jvm.getJvmName());
                 }
             }
-            validateGroupResource(jvms, fileName, groupName);
             final Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             for (final Jvm jvm : jvms) {
                 final String jvmName = jvm.getJvmName();
@@ -422,7 +421,6 @@ public class GroupServiceRestImpl implements GroupServiceRest {
                                     + webServer.getName());
                 }
             }
-            validateGroupResource(webServers, resourceFileName, groupName);
 
             final Map<String, Future<Response>> futureMap = new HashMap<>();
             final Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -453,38 +451,9 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         return ResponseBuilder.ok(httpdTemplateContent);
     }
 
-    private <T> void validateGroupResource(Set<T> entitySet, String resourceFileName, String groupName) {
-        boolean exceptionThrown = false;
-        String entityType = "web server";
-        Map<String, List<String>> webServerResourceExceptions = new HashMap<>();
-        for (T entity : entitySet){
-            try {
-                ResourceIdentifier.Builder resourceIdentifierBuilder = new ResourceIdentifier.Builder()
-                        .setResourceName(resourceFileName)
-                        .setGroupName(groupName);
-                if (entity instanceof WebServer){
-                    resourceIdentifierBuilder = resourceIdentifierBuilder.setWebServerName(((WebServer)entity).getName());
-                    entityType = "web server";
-                } else if (entity instanceof Jvm) {
-                    resourceIdentifierBuilder = resourceIdentifierBuilder.setJvmName(((Jvm)entity).getJvmName());
-                    entityType = "JVM";
-                }
-                resourceService.validateResourceGeneration(resourceIdentifierBuilder.build());
-            } catch (InternalErrorException iee) {
-                LOGGER.info("Catching known "  + entityType + " resource generation exception, and now consolidating with the other " + entityType + " resource exceptions");
-                LOGGER.debug("This " + entityType + " resource generation exception should have already been logged previously", iee);
-                exceptionThrown = true;
-                webServerResourceExceptions.putAll(iee.getErrorDetails());
-            }
-        }
-        if (exceptionThrown) {
-            throw new InternalErrorException(AemFaultType.RESOURCE_GENERATION_FAILED, "Failed to deploy the " + entityType + " resources for " + resourceFileName + " in group " + groupName, null, webServerResourceExceptions);
-        }
-    }
-
     protected void checkResponsesForErrorStatus(Map<String, Future<Response>> futureMap) {
         boolean isInternalErrorException = false;
-        boolean isException  = false;
+        boolean isException = false;
         String isExceptionReason = "";
         Map<String, List<String>> entityDetailsMap = new HashMap<>();
         for (String keyEntityName : futureMap.keySet()) {
@@ -502,7 +471,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
                 isExceptionReason = e.getMessage();
                 LOGGER.error("FAILURE getting response for {}", keyEntityName, e);
                 final Throwable cause = e.getCause();
-                if (cause instanceof InternalErrorException){
+                if (cause instanceof InternalErrorException) {
                     isInternalErrorException = true;
                     entityDetailsMap.putAll(((InternalErrorException) cause).getErrorDetails());
                 }
@@ -511,7 +480,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
 
         if (isInternalErrorException) {
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Request failed for the following errors:", null, entityDetailsMap);
-        } else if (isException){
+        } else if (isException) {
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Request failed: " + isExceptionReason);
         }
     }
@@ -865,12 +834,20 @@ public class GroupServiceRestImpl implements GroupServiceRest {
             if (metaData.getEntity().getDeployToJvms()) {
                 // deploy to all jvms in group
                 performGroupAppDeployToJvms(groupName, fileName, aUser, group, appName, appServiceRest, hostName);
-            } else if (hostName != null && !hostName.isEmpty()) {
-                // deploy to particular host
-                performGroupAppDeployToHost(groupName, fileName, appName, hostName);
             } else {
-                // deploy to all hosts in group
-                performGroupAppDeployToHosts(groupName, fileName, appName);
+                ResourceIdentifier resourceIdentifier = new ResourceIdentifier.Builder()
+                        .setGroupName(groupName)
+                        .setWebAppName(appName)
+                        .setResourceName(fileName)
+                        .build();
+                resourceService.validateSingleResourceForGeneration(resourceIdentifier);
+                if (hostName != null && !hostName.isEmpty()) {
+                    // deploy to particular host
+                    performGroupAppDeployToHost(groupName, fileName, appName, hostName);
+                } else {
+                    // deploy to all hosts in group
+                    performGroupAppDeployToHosts(groupName, fileName, appName);
+                }
             }
         } catch (IOException e) {
             LOGGER.error("Failed to map meta data for resource template {} in group {} :: meta data: {} ", fileName, groupName, groupAppMetaData, e);
