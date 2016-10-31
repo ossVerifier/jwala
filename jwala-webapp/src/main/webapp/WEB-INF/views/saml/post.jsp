@@ -80,7 +80,7 @@ function poponload()
 	</form>
 </c:if>
 
-<small>Copyright Siemens Healthcare 2011</small>
+<small>Copyright Cerner Healthcare 2011</small>
 
 </font>
 

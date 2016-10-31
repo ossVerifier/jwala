@@ -498,7 +498,7 @@ var RDataTableFooter = React.createClass({
         return React.createElement("div",
                                    {className:"fg-toolbar ui-toolbar ui-widget-header ui-corner-bl ui-corner-br ui-helper-clearfix"},
                                    React.createElement("div", {className:"dataTables_info"}, countDetailStr),
-                                   React.createElement("div", {className:"dataTables_paginate fg-buttonset ui-buttonset fg-buttonset-multi ui-buttonset-multi paging_toc"},
+                                   React.createElement("div", {className:"dataTables_paginate fg-buttonset ui-buttonset fg-buttonset-multi ui-buttonset-multi paging_jwala"},
                                                        React.createElement("a", {ref:"prevPage", className:"fg-button ui-button ui-state-default ui-corner-left " + prevClass, onClick:this.handlePrevPageClick},
                                                                            React.createElement("span", {className:"ui-icon ui-icon-circle-arrow-w"}, "")),
                                                        React.createElement("a", {ref:"nextPage", className:"fg-button ui-button ui-state-default ui-corner-right " + nextClass, onClick:this.handleNextPageClick},

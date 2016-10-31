@@ -314,7 +314,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
             final List<String> templateNames = webServerService.getResourceTemplateNames(aWebServerName);
             boolean resourceFileGeneratorExceptionFlag = false;
             for (final String templateName : templateNames) {
-                    generateAndDeployConfig(aWebServerName, templateName, aUser);
+                generateAndDeployConfig(aWebServerName, templateName, aUser);
             }
 
             // re-install the service

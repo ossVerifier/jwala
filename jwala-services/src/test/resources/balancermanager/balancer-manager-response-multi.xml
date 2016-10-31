@@ -10,9 +10,9 @@
             <httpd:scolonpathdelim>On</httpd:scolonpathdelim>
             <httpd:workers>
                 <httpd:worker>
-                    <httpd:name>https://usmlvv1cds0052:9101/slpa-test/slum</httpd:name>
+                    <httpd:name>https://somehost0052:9101/slpa-test/slum</httpd:name>
                     <httpd:scheme>https</httpd:scheme>
-                    <httpd:hostname>usmlvv1cds0052</httpd:hostname>
+                    <httpd:hostname>somehost0052</httpd:hostname>
                     <httpd:loadfactor>1</httpd:loadfactor>
                     <httpd:port>9101</httpd:port>
                     <httpd:min>0</httpd:min>
@@ -26,15 +26,15 @@
                     <httpd:transferred>43043</httpd:transferred>
                     <httpd:read>244602</httpd:read>
                     <httpd:elected>58</httpd:elected>
-                    <httpd:route>slpa_4.0.0800.02_slum_test_usmlvv1cds0052-1</httpd:route>
+                    <httpd:route>slpa_4.0.0800.02_slum_test_somehost0052-1</httpd:route>
                     <httpd:redirect></httpd:redirect>
                     <httpd:busy>0</httpd:busy>
                     <httpd:lbset>0</httpd:lbset>
                 </httpd:worker>
                 <httpd:worker>
-                    <httpd:name>https://usmlvv1cds0052:9111/slpa-test/slum</httpd:name>
+                    <httpd:name>https://somehost0052:9111/slpa-test/slum</httpd:name>
                     <httpd:scheme>https</httpd:scheme>
-                    <httpd:hostname>usmlvv1cds0052</httpd:hostname>
+                    <httpd:hostname>somehost0052</httpd:hostname>
                     <httpd:loadfactor>1</httpd:loadfactor>
                     <httpd:port>9111</httpd:port>
                     <httpd:min>0</httpd:min>
@@ -48,7 +48,7 @@
                     <httpd:transferred>16384</httpd:transferred>
                     <httpd:read>140038</httpd:read>
                     <httpd:elected>22</httpd:elected>
-                    <httpd:route>slpa_4.0.0800.02_slum_test_usmlvv1cds0052-2</httpd:route>
+                    <httpd:route>slpa_4.0.0800.02_slum_test_somehost0052-2</httpd:route>
                     <httpd:redirect></httpd:redirect>
                     <httpd:busy>0</httpd:busy>
                     <httpd:lbset>0</httpd:lbset>
@@ -64,9 +64,9 @@
             <httpd:scolonpathdelim>On</httpd:scolonpathdelim>
             <httpd:workers>
                 <httpd:worker>
-                    <httpd:name>https://usmlvv1cds0052:9101/slpa-test/slum/ws</httpd:name>
+                    <httpd:name>https://somehost0052:9101/slpa-test/slum/ws</httpd:name>
                     <httpd:scheme>https</httpd:scheme>
-                    <httpd:hostname>usmlvv1cds0052</httpd:hostname>
+                    <httpd:hostname>somehost0052</httpd:hostname>
                     <httpd:loadfactor>1</httpd:loadfactor>
                     <httpd:port>9101</httpd:port>
                     <httpd:min>0</httpd:min>
@@ -80,15 +80,15 @@
                     <httpd:transferred>0</httpd:transferred>
                     <httpd:read>0</httpd:read>
                     <httpd:elected>0</httpd:elected>
-                    <httpd:route>slpa_4.0.0800.02_slum_test_usmlvv1cds0052-1</httpd:route>
+                    <httpd:route>slpa_4.0.0800.02_slum_test_somehost0052-1</httpd:route>
                     <httpd:redirect></httpd:redirect>
                     <httpd:busy>0</httpd:busy>
                     <httpd:lbset>0</httpd:lbset>
                 </httpd:worker>
                 <httpd:worker>
-                    <httpd:name>https://usmlvv1cds0052:9111/slpa-test/slum/ws</httpd:name>
+                    <httpd:name>https://somehost0052:9111/slpa-test/slum/ws</httpd:name>
                     <httpd:scheme>https</httpd:scheme>
-                    <httpd:hostname>usmlvv1cds0052</httpd:hostname>
+                    <httpd:hostname>somehost0052</httpd:hostname>
                     <httpd:loadfactor>1</httpd:loadfactor>
                     <httpd:port>9111</httpd:port>
                     <httpd:min>0</httpd:min>
@@ -102,7 +102,7 @@
                     <httpd:transferred>0</httpd:transferred>
                     <httpd:read>0</httpd:read>
                     <httpd:elected>0</httpd:elected>
-                    <httpd:route>slpa_4.0.0800.02_slum_test_usmlvv1cds0052-2</httpd:route>
+                    <httpd:route>slpa_4.0.0800.02_slum_test_somehost0052-2</httpd:route>
                     <httpd:redirect></httpd:redirect>
                     <httpd:busy>0</httpd:busy>
                     <httpd:lbset>0</httpd:lbset>
@@ -118,9 +118,9 @@
             <httpd:scolonpathdelim>On</httpd:scolonpathdelim>
             <httpd:workers>
                 <httpd:worker>
-                    <httpd:name>ajp://usmlvv1cds0052:9103/</httpd:name>
+                    <httpd:name>ajp://somehost0052:9103/</httpd:name>
                     <httpd:scheme>ajp</httpd:scheme>
-                    <httpd:hostname>usmlvv1cds0052</httpd:hostname>
+                    <httpd:hostname>somehost0052</httpd:hostname>
                     <httpd:loadfactor>1</httpd:loadfactor>
                     <httpd:port>9103</httpd:port>
                     <httpd:min>0</httpd:min>
@@ -134,16 +134,16 @@
                     <httpd:transferred>0</httpd:transferred>
                     <httpd:read>0</httpd:read>
                     <httpd:elected>0</httpd:elected>
-                    <httpd:route>slpa_4.0.0800.02_slum_test_usmlvv1cds0052-1</httpd:route>
+                    <httpd:route>slpa_4.0.0800.02_slum_test_somehost0052-1</httpd:route>
                     <httpd:redirect></httpd:redirect>
                     <httpd:busy>0</httpd:busy>
                     <httpd:lbset>0</httpd:lbset>
                     <httpd:flushpackets>Off</httpd:flushpackets>
                 </httpd:worker>
                 <httpd:worker>
-                    <httpd:name>ajp://usmlvv1cds0052:9113/</httpd:name>
+                    <httpd:name>ajp://somehost0052:9113/</httpd:name>
                     <httpd:scheme>ajp</httpd:scheme>
-                    <httpd:hostname>usmlvv1cds0052</httpd:hostname>
+                    <httpd:hostname>somehost0052</httpd:hostname>
                     <httpd:loadfactor>1</httpd:loadfactor>
                     <httpd:port>9113</httpd:port>
                     <httpd:min>0</httpd:min>
@@ -157,7 +157,7 @@
                     <httpd:transferred>0</httpd:transferred>
                     <httpd:read>0</httpd:read>
                     <httpd:elected>0</httpd:elected>
-                    <httpd:route>slpa_4.0.0800.02_slum_test_usmlvv1cds0052-2</httpd:route>
+                    <httpd:route>slpa_4.0.0800.02_slum_test_somehost0052-2</httpd:route>
                     <httpd:redirect></httpd:redirect>
                     <httpd:busy>0</httpd:busy>
                     <httpd:lbset>0</httpd:lbset>

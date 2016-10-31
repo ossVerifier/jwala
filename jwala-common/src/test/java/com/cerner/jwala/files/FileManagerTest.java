@@ -2,11 +2,6 @@ package com.cerner.jwala.files;
 
 import com.cerner.jwala.common.domain.model.app.Application;
 import com.cerner.jwala.common.properties.ApplicationProperties;
-import com.cerner.jwala.files.FileManager;
-import com.cerner.jwala.files.FilesConfiguration;
-import com.cerner.jwala.files.RepositoryService;
-import com.cerner.jwala.files.TocFile;
-import com.cerner.jwala.files.TocPath;
 import com.cerner.jwala.files.impl.FileManagerImpl;
 import com.cerner.jwala.files.impl.LocalFileSystemRepositoryServiceImpl;
 import com.cerner.jwala.files.impl.PropertyFilesConfigurationImpl;
@@ -61,8 +56,8 @@ public class FileManagerTest {
             Path storageFolder = Files.createTempDirectory("archives");            
             
             Properties p = new Properties();
-            p.put(TocPath.TEMPLATES.getProperty(), storageFolder.toString());
-            p.put(TocPath.RESOURCE_TEMPLATES.getProperty(), storageFolder.toString());
+            p.put(JwalaPath.TEMPLATES.getProperty(), storageFolder.toString());
+            p.put(JwalaPath.RESOURCE_TEMPLATES.getProperty(), storageFolder.toString());
 
             return new PropertyFilesConfigurationImpl(p);
         }
@@ -91,7 +86,7 @@ public class FileManagerTest {
 
     @Test
     public void testGetResourceTypeTemplate() throws IOException {
-        Path storageFolder = filesConfiguration.getConfiguredPath(TocPath.RESOURCE_TEMPLATES);
+        Path storageFolder = filesConfiguration.getConfiguredPath(JwalaPath.RESOURCE_TEMPLATES);
         try(BufferedWriter writer = Files.newBufferedWriter(storageFolder.resolve("ResourceInstanceTestTemplate.tpl"), Charset.defaultCharset(), StandardOpenOption.CREATE)) {
 
             writer.write("${replacementTest}");
@@ -104,14 +99,14 @@ public class FileManagerTest {
     }
     @Test
     public void testFindCurrent() throws IOException {
-        String  result = fileManager.getAbsoluteLocation(new TocFile()  {
+        String  result = fileManager.getAbsoluteLocation(new JwalaFile()  {
 
             @Override
             public String getFileName() {
                 return ".";
             }} );
         
-        assertEquals(filesConfiguration.getConfiguredPath(TocPath.TEMPLATES) + "\\.", result);
+        assertEquals(filesConfiguration.getConfiguredPath(JwalaPath.TEMPLATES) + "\\.", result);
     }
     @Test
     public void testUnZip() throws IOException{

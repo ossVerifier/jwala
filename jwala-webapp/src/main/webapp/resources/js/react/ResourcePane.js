@@ -284,7 +284,6 @@ SelectHostWidget = React.createClass({
     render: function() {
         var self = this;
         var options = [];
-        var selectHostStyle = {width:'100%',marginRight:'10px',display:'block'};
         if ($.isArray(this.props.children)) {
             this.props.children.forEach(function(host){
                 if (self.state.host === host) {
@@ -293,7 +292,7 @@ SelectHostWidget = React.createClass({
                     options.push(<option value={host}>{host}</option>);
                 }
             });
-            return <select style={selectHostStyle} ref="select" onChange={this.onSelectChange}>{options}</select>;
+            return <select className="selectHostStyle" ref="select" onChange={this.onSelectChange}>{options}</select>;
         }
         return null;
     },

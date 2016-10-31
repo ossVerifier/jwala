@@ -439,7 +439,7 @@ var WebServerDataTable = React.createClass({
                          jwalaType:"array",
                          displayProperty:"name",
                          sWidth: "40%", maxDisplayTextLen:20}];
-        return <TocDataTable tableId="webserver-config-datatable"
+        return <JwalaDataTable tableId="webserver-config-datatable"
                              tableDef={tableDef}
                              colHeaders={["JVM Name", "Host Name"]}
                              data={this.props.data}

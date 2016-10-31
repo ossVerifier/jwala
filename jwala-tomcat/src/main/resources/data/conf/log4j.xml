@@ -13,7 +13,7 @@
         <param name="File" value="${catalina.base}/logs/jwala.log" />
         <param name="DateFormat" value="yyyyMMdd" />
         <param name="HeaderDateFormat" value="yyyy-MM-dd HH:mm:ss" />
-        <param name="Header" value="CTO Jwala Log file\n" />
+        <param name="Header" value="Jwala Log file\n" />
         <param name="MaxFileSizeBeforeRoll" value="100000000" />
         <param name="MaxBackupIndex" value="5" />
         <!-- specify the layout -->
@@ -22,7 +22,7 @@
         </layout>
     </appender>
 
-    <!-- CTO TCO logger -->
+    <!-- Jwala logger -->
     <logger name="com.cerner.jwala" additivity="false">
         <level value="WARN" />
         <appender-ref ref="TRACE_JWALA" />

@@ -16,6 +16,8 @@ dependencies {
     compile group: "org.springframework", name: "spring-webmvc", version: "$project.versions.spring"
     compile group: "org.springframework", name: "spring-messaging", version: "$project.versions.spring"
     compile group: "org.springframework", name: "spring-websocket", version: "$project.versions.spring"
+    compile group: 'org.springframework', name: 'spring-aop', version: "$project.versions.spring"
+
     compile group: "javax.servlet", name: "jstl", version: "$localVersions.jstl"
     compile group: "org.codehaus.jackson", name: "jackson-mapper-asl", version: "$project.versions.jackson"
     compile(group: 'org.apache.commons', name: 'commons-pool2', version: '2.4.2')
@@ -198,17 +200,6 @@ war {
         delete "${extractedWarPath}"
     }
 
-// TODO: User jwala.xml located in [workspace]\jwala\jwala-tomcat\src\main\resources\conf\stp\localhost
-//    task deployContext(type: Copy) {
-//        from "${templatePath}"
-//        into "${appInstanceConfPath}"
-//        include "${appContext}.tpl"
-//        rename { file -> "${appContext}" }
-//        expand(deployPath: "${deployPath}", warName: project.name + "-${buildVersion}.war", jmsStatusAddr: "${jmsStatusAddr}",
-//                jmsStateNotificationAddr: "${jmsStateNotificationAddr}")
-//    }
-//
-//    deployWar.dependsOn deployContext, deleteWar, deleteExtractedWarPath
     deployWar.dependsOn deleteWar, deleteExtractedWarPath
 }
 

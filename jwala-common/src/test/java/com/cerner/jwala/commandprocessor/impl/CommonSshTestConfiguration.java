@@ -29,7 +29,7 @@ public class CommonSshTestConfiguration {
         channelPool = new GenericKeyedObjectPool(new KeyedPooledJschChannelFactory(builder.build()));
         remoteSystemConnection = new RemoteSystemConnection("N9SFGLabTomcatAdmin",
                                                             "Passw0rd1",
-                                                            "usmlvv1cds0005",
+                                                            "somehost0005",
                                                             22);
     }
 

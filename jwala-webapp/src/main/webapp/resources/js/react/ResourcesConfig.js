@@ -407,8 +407,8 @@ var XmlTabs = React.createClass({
                             xmlPreview = <XmlPreview ref="xmlPreview" mode="xml"/>
                             metaDataPreview = <MetaDataPreview ref="metaDataPreview" mode="application/ld+json"/>
                         } else {
-                            xmlPreview = <div><div className="Resource preview msg resource-preview-br">The template for a Web App template cannot be previewed at this level if it is configured to be deployed to JVMs. </div><div className="Resource preview msg">To preview this template, select a JVM instance from the topology tree that is associated with this Web App and template.</div></div>;
-                            metaDataPreview = <div><div className="Resource preview msg resource-preview-br">The meta data for a Web App template cannot be previewed at this level if it is configured to be deployed to JVMs. </div><div className="Resource preview msg">To preview the meta data, select a JVM instance from the topology tree that is associated with this Web App and meta data.</div></div>;
+                            xmlPreview = <div><div className="Resource preview msg resource-preview-br">{this.state.resourceTemplateName} cannot be previewed at this level since it is configured to be deployed to JVMs. </div><div className="Resource preview msg">To preview this template, select a JVM instance from the topology tree that is associated with this Web App and template.</div></div>;
+                            metaDataPreview = <div><div className="Resource preview msg resource-preview-br">The meta data for {this.state.resourceTemplateName} cannot be previewed at this level since it is configured to be deployed to JVMs. </div><div className="Resource preview msg">To preview the meta data of this template, select a JVM instance from the topology tree that is associated with this Web App and meta data.</div></div>;
                         }
                     } catch (e) {
                         xmlPreview = <div className="Resource preview msg">Error parsing the meta data: unable to provide a preview until the meta data is corrected.</div>;

@@ -19,7 +19,7 @@ import com.cerner.jwala.common.request.webserver.UpdateWebServerRequest;
 import com.cerner.jwala.common.request.webserver.UploadWebServerTemplateRequest;
 import com.cerner.jwala.files.FileManager;
 import com.cerner.jwala.files.RepositoryFileInformation;
-import com.cerner.jwala.files.TocFile;
+import com.cerner.jwala.files.JwalaFile;
 import com.cerner.jwala.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
 import com.cerner.jwala.persistence.service.WebServerPersistenceService;
 import com.cerner.jwala.service.resource.ResourceService;
@@ -144,11 +144,11 @@ public class WebServerServiceImplTest {
         wsService = new WebServerServiceImpl(webServerPersistenceService, fileManager, resourceService, inMemService, StringUtils.EMPTY);
 
         when(repositoryFileInformation.getType()).thenReturn(RepositoryFileInformation.Type.NONE);
-        when(fileManager.getAbsoluteLocation(any(TocFile.class))).thenAnswer(new Answer<String>() {
+        when(fileManager.getAbsoluteLocation(any(JwalaFile.class))).thenAnswer(new Answer<String>() {
 
             @Override
             public String answer(InvocationOnMock invocation) throws Throwable {
-                TocFile file = (TocFile) invocation.getArguments()[0];
+                JwalaFile file = (JwalaFile) invocation.getArguments()[0];
                 if (file != null) {
                     return "/" + file.getFileName();
                 }

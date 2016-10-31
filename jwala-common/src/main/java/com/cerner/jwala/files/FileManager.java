@@ -6,7 +6,7 @@ import java.io.InputStream;
 
 public interface FileManager {
 
-    String getAbsoluteLocation(TocFile templateName) throws IOException;
+    String getAbsoluteLocation(JwalaFile templateName) throws IOException;
 
     /**
      *

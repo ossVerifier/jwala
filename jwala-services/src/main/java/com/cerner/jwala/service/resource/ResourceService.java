@@ -38,7 +38,7 @@ public interface ResourceService {
      *                            "entity": {
      *                            "type": "jvm",
      *                            "group": "HEALTH CHECK 4.0",
-     *                            "target": "CTO-N9SF-LTST-HEALTH-CHECK-4.0-USMLVV1CTO4900-2"
+     *                            "target": "HEALTH-CHECK-4.0-someHost4900-2"
      *                            }
      *                            }
      * @param templateData        the template data
