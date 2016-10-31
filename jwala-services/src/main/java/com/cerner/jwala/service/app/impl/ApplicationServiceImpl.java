@@ -793,7 +793,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                     hostNames.add(host.toLowerCase());
                 }
             }
-            if (hostNames == null || hostNames.isEmpty()) {
+            if (hostNames.isEmpty()) {
                 LOGGER.error("Hostname {} does not belong to the group {}", hostName, groupName);
                 throw new InternalErrorException(AemFaultType.INVALID_HOST_NAME, "The hostname: " + hostName + " does not belong to the group " + groupName);
             }
@@ -844,11 +844,14 @@ public class ApplicationServiceImpl implements ApplicationService {
         Map<String, Future<Map<String, CommandOutput>>> futures = new HashMap<>();
         for (final String host : hostNames) {
             final String key = application.getName() + "/" + host;
+            if (writeLock.containsKey(key) && writeLock.get(key).isWriteLocked()) {
+                throw new InternalErrorException(AemFaultType.SERVICE_EXCEPTION, "Current resource is being deployed, wait for deploy to complete.");
+            }
+        }
+        for (final String host : hostNames) {
+            final String key = application.getName() + "/" + host;
             if (!writeLock.containsKey(key)) {
                 writeLock.put(key, new ReentrantReadWriteLock());
-            }
-            if (writeLock.get(key).isWriteLocked()) {
-                throw new InternalErrorException(AemFaultType.SERVICE_EXCEPTION, "Current resource is being deployed, wait for deploy to complete.");
             }
             Future<Map<String, CommandOutput>> commandOutputFutureMap = executorService.submit
                     (new Callable<Map<String, CommandOutput>>() {
