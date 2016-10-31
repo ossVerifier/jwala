@@ -824,7 +824,7 @@ public class ApplicationServiceImpl implements ApplicationService {
             LOGGER.debug("metadata for template: {} is {}", resourceTemplate, metaDataStr);
             try {
                 ResourceTemplateMetaData metaData = resourceService.getMetaData(metaDataStr);
-                if (!metaData.getEntity().getDeployToJvms() && !resourceSet.contains(resourceTemplate)) {
+                if (!metaData.getEntity().getDeployToJvms()) {
                     LOGGER.info("Template {} needs to be deployed adding it to the list", resourceTemplate);
                     resourceSet.add(resourceTemplate);
                 }
