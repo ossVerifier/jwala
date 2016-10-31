@@ -1,9 +1,11 @@
 # _About_
 
-This project is a template for a shell around an open source project. This about section should be replaced with some text
-that describes what your project does.
+Jwala is a web application that provides management for a group of Tomcat servers. Jwala is capable of creating and persisting definitions of Group instances, and exposes a RESTful interface to do so. The definition of a Group includes Web Apps, JVMs, Web Servers, and Resources.
 
-# _Usage_
+Once defined, a Group may also be managed through Jwala’s REST API, to perform management operations on the group. The management operations are listed under Component Responsibilities below. The primary user of Jwala will be the enterprise package manager application, which will interact with Jwala using the REST API.
+
+Jwala utilizes the defined file system structure and SSH agents on each machine to manage running Tomcat instances on remote Windows Servers. Jwala utilizes the STP application deployment model to know how to request current status from each Tomcat instance and HTTPD instance. Jwala is also able to update each instance as changes are made to the configuration, and allows maintenance operations to be executed from a central console.
+
 
 Sections in this readme that are marked with _italics_ require review and action when utilizing the template. Additional sections
 may be added.
@@ -17,9 +19,7 @@ independent functional piece of software.
 
 # _Building_
 
-Describe how to build and test your project here. This can serve as a guideline for potentially contributors reducing questions
-about how to build and test your project. Additionally it can cut back on the number of pull requests you may receive that start
-failing tests and keep your project from building.
+Jwala can be build by using gradle. to build the project run the gradle build command. This runs the build and test tasks. 
 
 # _Availability_
 
