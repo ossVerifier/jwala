@@ -342,18 +342,16 @@ var ResourcesConfig = React.createClass({
             }
 
             this.props.resourceService.createResource(groupName, webServerName, jvmName, webAppName, formData,
-                metaDataFile, deployFilename).
-                then(function(response){
-
-                if(!isExtProperties){
-                    self.refs.createResourceModalDlg.close();
-                } else {
-                    self.refs.selectTemplateFilesModalDlg.close();
-                }
-                self.refreshResourcePane();
-                if (isExtProperties){
-                    self.updateExtPropsAttributesCallback();
-                }
+                metaDataFile, deployFilename).then(function(response){
+                    if(!isExtProperties){
+                        self.refs.createResourceModalDlg.close();
+                    } else {
+                        self.refs.selectTemplateFilesModalDlg.close();
+                    }
+                    self.refreshResourcePane();
+                    if (isExtProperties){
+                        self.updateExtPropsAttributesCallback();
+                    }
             }).caught(function(response){
                 console.log(response);
                 var errMsg = "Unexpected error. Please check log for error details.";
