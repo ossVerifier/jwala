@@ -203,6 +203,12 @@ public class ResourceServiceRestImplTest {
     }
 
     @Test
+    public void testCreateResourceWithNullAttachment() throws IOException {
+        final Response response = cut.createResource("httpd.conf", null, null);
+        assertEquals("AEM61", ((ApplicationResponse) response.getEntity()).getMsgCode());
+    }
+
+    @Test
     public void testCreateResourceWithIOException() throws IOException {
         // Deploy path
         final DataHandler deployPathDataHandler = mock(DataHandler.class);

@@ -140,7 +140,7 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
                                    final List<Attachment> attachments) {
         final CreateResourceResponseWrapper createResourceResponseWrapper;
 
-        if (attachments.size() != CREATE_RESOURCE_ATTACHMENT_SIZE) {
+        if (attachments == null || attachments.size() != CREATE_RESOURCE_ATTACHMENT_SIZE) {
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
                     AemFaultType.INVALID_NUMBER_OF_ATTACHMENTS,
                     "Invalid number of attachments! " + CREATE_RESOURCE_ATTACHMENT_SIZE + " attachments is expected by the service."));
