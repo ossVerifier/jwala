@@ -605,11 +605,6 @@ public class GroupServiceImpl implements GroupService {
                 options);
     }
 
-    @Override
-    public boolean checkGroupAppResourceFileName(final String groupName, final String fileName) {
-        return groupPersistenceService.checkGroupAppResourceFileName(groupName, fileName);
-    }
-
     protected File createConfFile(final String appName, final String groupName,
                                   final String resourceTemplateName, final ResourceGroup resourceGroup)
             throws FileNotFoundException {

@@ -137,6 +137,4 @@ public interface GroupService {
     CommandOutput executeBackUpCommand(String entity, String host, String source) throws CommandFailureException;
 
     CommandOutput executeUnzipBinaryCommand(String entity, String host, String source, String destination, String options) throws CommandFailureException;
-
-    boolean checkGroupAppResourceFileName(String groupName, String fileName);
 }
