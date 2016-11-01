@@ -99,4 +99,14 @@ public class GroupLevelJvmResourceHandlerTest {
         groupLevelJvmResourceHandler.getSelectedValue(notMeResourceIdentifier);
         verify(mockSuccessor).getSelectedValue(notMeResourceIdentifier);
     }
+
+    @Test (expected = UnsupportedOperationException.class)
+    public void testGetResourceNames() {
+        ResourceIdentifier notMeResourceIdentifier = new ResourceIdentifier.Builder().setResourceName("what-group-level-jvm").setGroupName("not-a-jvm").build();
+        groupLevelJvmResourceHandler.getResourceNames(notMeResourceIdentifier);
+        verify(mockSuccessor).getResourceNames(notMeResourceIdentifier);
+
+        groupLevelJvmResourceHandler.getResourceNames(resourceIdentifier);
+    }
+
 }

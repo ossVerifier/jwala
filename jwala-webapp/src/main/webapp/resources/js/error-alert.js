@@ -23,7 +23,15 @@ $.extend({ errorAlert: function (message, dlgTitle, modal, content) {
                 for (var property in content) {
                     if (content.hasOwnProperty(property)) {
                         message += "<li>";
-                        message += property + ": " + content[property];
+                        message += property;
+                        var exceptionList = content[property];
+                        for (var exception in exceptionList) {
+                            if (exceptionList.hasOwnProperty(exception)){
+                                message += "<ul>";
+                                message += "<li>" + exceptionList[exception] + "</li>";
+                                message += "</ul>"
+                            }
+                        }
                         message += "</li>"
                     }
                 }
@@ -40,7 +48,7 @@ $.extend({ errorAlert: function (message, dlgTitle, modal, content) {
                 open: function () {
                     $(this).parents(".ui-dialog:first").find(".ui-dialog-titlebar").addClass("ui-state-error");
                     $(this).parents(".ui-dialog:first").zIndex(999);
-                }}).html($.parseHTML(message));
+                }}).html($.parseHTML(message.replace(/\n/g, "<br>")));
         }
     }
 });

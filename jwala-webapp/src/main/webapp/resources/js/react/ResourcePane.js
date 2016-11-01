@@ -152,9 +152,15 @@ var ResourcePane = React.createClass({
     },
     onDeployResourceContextMenuItemClick: function(val) {
         var name = this.state.data.name ? this.state.data.name : this.state.data.jvmName;
-        var msg = 'Are you sure you want to deploy "' + this.state.rightClickedItem + '" to "' + name + '" ?';
-
-        this.refs.confirmDeployResourceDlg.show("Deploy resource confirmation", msg);
+        var resourceName = this.state.rightClickedItem;
+        var entityNode = this.state.data.rtreeListMetaData.entity;
+        if ( entityNode === "webServerSection" || entityNode === "jvmSection"){
+            var htmlMsg = <div>Are you sure you want to deploy {'"' + resourceName + '"'} to {'"' + name + '"'}? <br/><br/> Any previous customizations to an individual instance of {'"' + resourceName + '"'} will be overwritten.</div>;
+            this.refs.confirmDeployResourceDlg.show("Deploy resource confirmation", htmlMsg);
+        } else {
+            var msg = 'Are you sure you want to deploy "' + resourceName + '" to "' + name + '"?';
+            this.refs.confirmDeployResourceDlg.show("Deploy resource confirmation", msg);
+        }
     },
     displayDeployErrorMessage: function(response){
         $.errorAlert(ResourcePane.parseDetailedErrorMsg(response, ResourcePane.DEFAULT_DEPLOY_ERR_MSG), "", undefined, response.responseJSON.content);

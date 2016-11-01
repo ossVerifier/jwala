@@ -8,6 +8,7 @@ import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
 import com.cerner.jwala.common.domain.model.jvm.JvmControlOperation;
 import com.cerner.jwala.common.domain.model.resource.ResourceGroup;
+import com.cerner.jwala.common.domain.model.resource.ResourceIdentifier;
 import com.cerner.jwala.common.domain.model.resource.ResourceTemplateMetaData;
 import com.cerner.jwala.common.domain.model.webserver.WebServer;
 import com.cerner.jwala.common.domain.model.webserver.WebServerControlOperation;
@@ -54,6 +55,8 @@ import org.apache.cxf.jaxrs.ext.MessageContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import javax.persistence.EntityExistsException;
 import javax.ws.rs.core.Context;
@@ -219,12 +222,14 @@ public class GroupServiceRestImpl implements GroupServiceRest {
             Set<Future<Response>> futureContents = new HashSet<>();
             if (null != groupWebServers) {
                 LOGGER.info("Updating the templates for all the Web Servers in group {}", groupName);
+                final Authentication auth = SecurityContextHolder.getContext().getAuthentication();
                 for (final WebServer webServer : groupWebServers) {
                     final String webServerName = webServer.getName();
                     LOGGER.info("Updating Web Server {} template {}", webServerName, resourceTemplateName);
                     Future<Response> futureContent = executorService.submit(new Callable<Response>() {
                         @Override
                         public Response call() throws Exception {
+                            SecurityContextHolder.getContext().setAuthentication(auth);
                             return ResponseBuilder.ok(webServerService.updateResourceTemplate(webServerName, resourceTemplateName, updatedContent));
                         }
                     });
@@ -270,7 +275,8 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         Group group = groupService.getGroup(groupName);
         final boolean doNotReplaceTokens = false;
         final String groupJvmTemplateContent = groupService.getGroupJvmResourceTemplate(groupName, fileName, resourceService.generateResourceGroup(), doNotReplaceTokens);
-        Set<Future<Response>> futures = new HashSet<>();
+        final String groupJvmResourceTemplateMetaData = groupService.getGroupJvmResourceTemplateMetaData(groupName, fileName);
+        Map<String, Future<Response>> futures = new HashMap<>();
         final JvmServiceRest jvmServiceRest = JvmServiceRestImpl.get();
         final Set<Jvm> jvms = group.getJvms();
         if (null != jvms && jvms.size() > 0) {
@@ -280,19 +286,27 @@ public class GroupServiceRestImpl implements GroupServiceRest {
                     throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "All JVMs in the group must be stopped before continuing. Operation stopped for JVM " + jvm.getJvmName());
                 }
             }
+            final Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             for (final Jvm jvm : jvms) {
                 final String jvmName = jvm.getJvmName();
                 Future<Response> responseFuture = executorService.submit(new Callable<Response>() {
                     @Override
                     public Response call() throws Exception {
+                        SecurityContextHolder.getContext().setAuthentication(auth);
                         jvmServiceRest.updateResourceTemplate(jvmName, fileName, groupJvmTemplateContent);
+                        ResourceIdentifier resourceId = new ResourceIdentifier.Builder()
+                                .setResourceName(fileName)
+                                .setGroupName(groupName)
+                                .setJvmName(jvmName).build();
+                        resourceService.updateResourceMetaData(resourceId, fileName, groupJvmResourceTemplateMetaData);
                         return jvmServiceRest.generateAndDeployFile(jvmName, fileName, aUser);
 
                     }
                 });
-                futures.add(responseFuture);
+                futures.put(jvmName, responseFuture);
             }
-            waitForDeployToComplete(futures);
+            waitForDeployToComplete(new HashSet<>(futures.values()));
+            checkResponsesForErrorStatus(futures);
         } else {
             LOGGER.info("No JVMs in group {}", groupName);
         }
@@ -344,12 +358,14 @@ public class GroupServiceRestImpl implements GroupServiceRest {
             Set<Future<Response>> futureContents = new HashSet<>();
             if (null != groupJvms) {
                 LOGGER.info("Updating the templates for all the JVMs in group {}", groupName);
+                final Authentication auth = SecurityContextHolder.getContext().getAuthentication();
                 for (final Jvm jvm : groupJvms) {
                     final String jvmName = jvm.getJvmName();
                     LOGGER.info("Updating JVM {} template {}", jvmName, resourceTemplateName);
                     Future<Response> futureContent = executorService.submit(new Callable<Response>() {
                         @Override
                         public Response call() throws Exception {
+                            SecurityContextHolder.getContext().setAuthentication(auth);
                             return ResponseBuilder.ok(jvmService.updateResourceTemplate(jvmName, resourceTemplateName, updatedContent));
                         }
                     });
@@ -392,6 +408,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         Group group = groupService.getGroup(groupName);
         group = groupService.getGroupWithWebServers(group.getId());
         final String httpdTemplateContent = groupService.getGroupWebServerResourceTemplate(groupName, resourceFileName, false, resourceService.generateResourceGroup());
+        final String resourceMetaData = groupService.getGroupWebServerResourceTemplateMetaData(groupName, resourceFileName);
         final WebServerServiceRestImpl webServerServiceRest = WebServerServiceRestImpl.get();
         final Set<WebServer> webServers = group.getWebServers();
         if (null != webServers && webServers.size() > 0) {
@@ -406,12 +423,20 @@ public class GroupServiceRestImpl implements GroupServiceRest {
             }
 
             final Map<String, Future<Response>> futureMap = new HashMap<>();
+            final Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             for (final WebServer webserver : webServers) {
                 final String name = webserver.getName();
                 Future<Response> responseFuture = executorService.submit(new Callable<Response>() {
                     @Override
                     public Response call() throws Exception {
+                        SecurityContextHolder.getContext().setAuthentication(auth);
                         webServerServiceRest.updateResourceTemplate(name, resourceFileName, httpdTemplateContent);
+                        ResourceIdentifier resourceId = new ResourceIdentifier.Builder()
+                                .setGroupName(groupName)
+                                .setWebServerName(name)
+                                .setResourceName(resourceFileName)
+                                .build();
+                        resourceService.updateResourceMetaData(resourceId, resourceFileName, resourceMetaData);
                         return webServerServiceRest.generateAndDeployConfig(name, resourceFileName, aUser);
 
                     }
@@ -427,8 +452,10 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     }
 
     protected void checkResponsesForErrorStatus(Map<String, Future<Response>> futureMap) {
-        boolean exception = false;
-        Map <String,String> entityDetailsMap = new HashMap<>();
+        boolean isInternalErrorException = false;
+        boolean isException = false;
+        String isExceptionReason = "";
+        Map<String, List<String>> entityDetailsMap = new HashMap<>();
         for (String keyEntityName : futureMap.keySet()) {
             Response response;
             try {
@@ -436,17 +463,25 @@ public class GroupServiceRestImpl implements GroupServiceRest {
                 if (response.getStatus() > 399) {
                     final String reasonPhrase = response.getStatusInfo().getReasonPhrase();
                     LOGGER.error("Remote Command Failure for " + keyEntityName + ": " + reasonPhrase);
-                    entityDetailsMap.put(keyEntityName, reasonPhrase);
-                    exception = true;
+                    isException = true;
+                    isExceptionReason = reasonPhrase;
                 }
             } catch (InterruptedException | ExecutionException e) {
+                isException = true;
+                isExceptionReason = e.getMessage();
                 LOGGER.error("FAILURE getting response for {}", keyEntityName, e);
-                entityDetailsMap.put(keyEntityName,e.getMessage());
-                exception = true;
+                final Throwable cause = e.getCause();
+                if (cause instanceof InternalErrorException) {
+                    isInternalErrorException = true;
+                    entityDetailsMap.putAll(((InternalErrorException) cause).getErrorDetails());
+                }
             }
         }
-        if (exception) {
+
+        if (isInternalErrorException) {
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Request failed for the following errors:", null, entityDetailsMap);
+        } else if (isException) {
+            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Request failed: " + isExceptionReason);
         }
     }
 
@@ -465,104 +500,97 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     @Override
     public Response generateGroupWebservers(Identifier<Group> aGroupId, final AuthenticatedUser aUser) {
         LOGGER.info("Starting group generation of web servers for group ID {} by user {}", aGroupId, aUser.getUser().getId());
-        try {
-            Group group = groupService.getGroupWithWebServers(aGroupId);
-            Set<WebServer> webServers = group.getWebServers();
-            if (null != webServers && webServers.size() > 0) {
-                Set<String> startedWebServers = new HashSet<>();
-                for (WebServer webServer : webServers) {
-                    if (webServerService.isStarted(webServer)) {
-                        LOGGER.warn("Failed to start generation of web servers for group ID {}: not all web servers were stopped - {} was started", aGroupId, webServer.getName());
-                        startedWebServers.add(webServer.getName());
-                    }
+        Group group = groupService.getGroupWithWebServers(aGroupId);
+        Set<WebServer> webServers = group.getWebServers();
+        if (null != webServers && webServers.size() > 0) {
+            Set<String> startedWebServers = new HashSet<>();
+            for (WebServer webServer : webServers) {
+                if (webServerService.isStarted(webServer)) {
+                    LOGGER.warn("Failed to start generation of web servers for group ID {}: not all web servers were stopped - {} was started", aGroupId, webServer.getName());
+                    startedWebServers.add(webServer.getName());
                 }
-
-                if (!startedWebServers.isEmpty()) {
-                    LOGGER.error("Failed to start generation of web servers for group ID {}: not all web servers were stopped - {} were started", aGroupId, startedWebServers.toString());
-                    throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE,
-                            "All web servers in the group must be stopped before continuing. Operation stopped for web server " + startedWebServers.toString());
-                }
-
-                // generate and deploy the web servers
-                final WebServerServiceRestImpl webServerServiceRest = WebServerServiceRestImpl.get();
-                Map<String, Future<Response>> futuresMap = new HashMap<>();
-                for (final WebServer webServer : webServers) {
-                    final String webServerName = webServer.getName();
-                    Future<Response> responseFuture = executorService.submit(new Callable<Response>() {
-                        @Override
-                        public Response call() throws Exception {
-                            return webServerServiceRest.generateAndDeployWebServer(webServerName, aUser);
-                        }
-                    });
-                    futuresMap.put(webServerName, responseFuture);
-                }
-
-                waitForDeployToComplete(new HashSet<>(futuresMap.values()));
-                checkResponsesForErrorStatus(futuresMap);
-            } else {
-                LOGGER.info("No web servers in group {}", aGroupId);
             }
-            return ResponseBuilder.ok(group);
-        } catch (InternalErrorException iee) {
-            LOGGER.error("Generate group web servers error {}", iee.getMessage());
-            return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
-                    AemFaultType.INVALID_WEBSERVER_OPERATION, iee.getMessage(), iee));
+
+            if (!startedWebServers.isEmpty()) {
+                LOGGER.error("Failed to start generation of web servers for group ID {}: not all web servers were stopped - {} were started", aGroupId, startedWebServers.toString());
+                throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE,
+                        "All web servers in the group must be stopped before continuing. Operation stopped for web server " + startedWebServers.toString());
+            }
+
+            // generate and deploy the web servers
+            final WebServerServiceRestImpl webServerServiceRest = WebServerServiceRestImpl.get();
+            Map<String, Future<Response>> futuresMap = new HashMap<>();
+            final Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            for (final WebServer webServer : webServers) {
+                final String webServerName = webServer.getName();
+                Future<Response> responseFuture = executorService.submit(new Callable<Response>() {
+                    @Override
+                    public Response call() throws Exception {
+                        SecurityContextHolder.getContext().setAuthentication(auth);
+                        return webServerServiceRest.generateAndDeployWebServer(webServerName, aUser);
+                    }
+                });
+                futuresMap.put(webServerName, responseFuture);
+            }
+
+            waitForDeployToComplete(new HashSet<>(futuresMap.values()));
+            checkResponsesForErrorStatus(futuresMap);
+        } else {
+            LOGGER.info("No web servers in group {}", aGroupId);
         }
+        return ResponseBuilder.ok(group);
     }
 
     @Override
     public Response generateGroupJvms(final Identifier<Group> aGroupId, final AuthenticatedUser aUser) {
         LOGGER.info("Starting group generation of JVMs for group ID {} by user {}", aGroupId, aUser.getUser().getId());
-        try {
-            final Group group = groupService.getGroup(aGroupId);
-            Set<Jvm> jvms = group.getJvms();
-            if (null != jvms && jvms.size() > 0) {
-                Set<String> starteJvms = new HashSet<>();
-                for (Jvm jvm : jvms) {
-                    if (jvm.getState().isStartedState()) {
-                        LOGGER.warn("Failed to start generation of JVMs for group ID {}: not all JVMs were stopped - {} was started", aGroupId, jvm.getJvmName());
-                        starteJvms.add(jvm.getJvmName());
-                    }
+
+        final Group group = groupService.getGroup(aGroupId);
+        Set<Jvm> jvms = group.getJvms();
+        if (null != jvms && jvms.size() > 0) {
+            Set<String> starteJvms = new HashSet<>();
+            for (Jvm jvm : jvms) {
+                if (jvm.getState().isStartedState()) {
+                    LOGGER.warn("Failed to start generation of JVMs for group ID {}: not all JVMs were stopped - {} was started", aGroupId, jvm.getJvmName());
+                    starteJvms.add(jvm.getJvmName());
                 }
-
-                if (!starteJvms.isEmpty()) {
-                    LOGGER.error("Failed to start generation of JVMs for group ID {}: not all JVMs were stopped - {} were started", aGroupId, starteJvms.toString());
-                    throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE,
-                            "All JVMs in the group must be stopped before continuing. Operation stopped for JVMs " + starteJvms.toString());
-                }
-
-                for (Jvm jvm : jvms) {
-                    LOGGER.info("Checking if setenv.bat exists for the jvm {}", jvm.getJvmName());
-                    jvmService.checkForSetenvBat(jvm.getJvmName());
-                }
-
-                final JvmServiceRest jvmServiceRest = JvmServiceRestImpl.get();
-
-                // generate and deploy the JVMs
-                Map<String, Future<Response>> futuresMap = new HashMap<>();
-                for (final Jvm jvm : jvms) {
-                    final String jvmName = jvm.getJvmName();
-                    Future<Response> responseFuture = executorService.submit(new Callable<Response>() {
-                        @Override
-                        public Response call() throws Exception {
-                            return jvmServiceRest.generateAndDeployJvm(jvmName, aUser);
-                        }
-                    });
-                    futuresMap.put(jvmName, responseFuture);
-                }
-
-                waitForDeployToComplete(new HashSet<>(futuresMap.values()));
-                checkResponsesForErrorStatus(futuresMap);
-            } else {
-                LOGGER.info("No JVMs in group {}", aGroupId);
             }
 
-            return ResponseBuilder.ok(group);
-        } catch (InternalErrorException iee) {
-            LOGGER.error("Generate group jvms error ", iee.getMessage());
-            return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
-                    AemFaultType.INVALID_WEBSERVER_OPERATION, iee.getMessage(), iee));
+            if (!starteJvms.isEmpty()) {
+                LOGGER.error("Failed to start generation of JVMs for group ID {}: not all JVMs were stopped - {} were started", aGroupId, starteJvms.toString());
+                throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE,
+                        "All JVMs in the group must be stopped before continuing. Operation stopped for JVMs " + starteJvms.toString());
+            }
+
+            for (Jvm jvm : jvms) {
+                LOGGER.info("Checking if setenv.bat exists for the jvm {}", jvm.getJvmName());
+                jvmService.checkForSetenvBat(jvm.getJvmName());
+            }
+
+            final JvmServiceRest jvmServiceRest = JvmServiceRestImpl.get();
+
+            // generate and deploy the JVMs
+            Map<String, Future<Response>> futuresMap = new HashMap<>();
+            final Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            for (final Jvm jvm : jvms) {
+                final String jvmName = jvm.getJvmName();
+                Future<Response> responseFuture = executorService.submit(new Callable<Response>() {
+                    @Override
+                    public Response call() throws Exception {
+                        SecurityContextHolder.getContext().setAuthentication(auth);
+                        return jvmServiceRest.generateAndDeployJvm(jvmName, aUser);
+                    }
+                });
+                futuresMap.put(jvmName, responseFuture);
+            }
+
+            waitForDeployToComplete(new HashSet<>(futuresMap.values()));
+            checkResponsesForErrorStatus(futuresMap);
+        } else {
+            LOGGER.info("No JVMs in group {}", aGroupId);
         }
+
+        return ResponseBuilder.ok(group);
     }
 
     @Override
@@ -761,12 +789,14 @@ public class GroupServiceRestImpl implements GroupServiceRest {
             if (null != groupJvms) {
                 LOGGER.info("Updating the templates for all the JVMs in group {}", groupName);
                 final ApplicationServiceRest appServiceRest = ApplicationServiceRestImpl.get();
+                final Authentication auth = SecurityContextHolder.getContext().getAuthentication();
                 for (final Jvm jvm : groupJvms) {
                     final String jvmName = jvm.getJvmName();
                     LOGGER.info("Updating JVM {} template {}", jvmName, resourceTemplateName);
                     Future<Response> futureContent = executorService.submit(new Callable<Response>() {
                         @Override
                         public Response call() throws Exception {
+                            SecurityContextHolder.getContext().setAuthentication(auth);
                             return appServiceRest.updateResourceTemplate(appName, resourceTemplateName, jvmName, groupName, updatedContent);
                         }
                     });
@@ -804,12 +834,20 @@ public class GroupServiceRestImpl implements GroupServiceRest {
             if (metaData.getEntity().getDeployToJvms()) {
                 // deploy to all jvms in group
                 performGroupAppDeployToJvms(groupName, fileName, aUser, group, appName, appServiceRest, hostName);
-            } else if (hostName != null && !hostName.isEmpty()) {
-                // deploy to particular host
-                performGroupAppDeployToHost(groupName, fileName, appName, hostName);
             } else {
-                // deploy to all hosts in group
-                performGroupAppDeployToHosts(groupName, fileName, appName);
+                ResourceIdentifier resourceIdentifier = new ResourceIdentifier.Builder()
+                        .setGroupName(groupName)
+                        .setWebAppName(appName)
+                        .setResourceName(fileName)
+                        .build();
+                resourceService.validateSingleResourceForGeneration(resourceIdentifier);
+                if (hostName != null && !hostName.isEmpty()) {
+                    // deploy to particular host
+                    performGroupAppDeployToHost(groupName, fileName, appName, hostName);
+                } else {
+                    // deploy to all hosts in group
+                    performGroupAppDeployToHosts(groupName, fileName, appName);
+                }
             }
         } catch (IOException e) {
             LOGGER.error("Failed to map meta data for resource template {} in group {} :: meta data: {} ", fileName, groupName, groupAppMetaData, e);
@@ -881,11 +919,13 @@ public class GroupServiceRestImpl implements GroupServiceRest {
                 }
             }
             final String groupAppTemplateContent = groupService.getGroupAppResourceTemplate(groupName, appName, fileName, false, new ResourceGroup());
+            final Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             for (Jvm jvm : jvms) {
                 final String jvmName = jvm.getJvmName();
                 Future<Response> responseFuture = executorService.submit(new Callable<Response>() {
                     @Override
                     public Response call() throws Exception {
+                        SecurityContextHolder.getContext().setAuthentication(auth);
                         appServiceRest.updateResourceTemplate(appName, fileName, jvmName, groupName, groupAppTemplateContent);
                         return appServiceRest.deployConf(appName, groupName, jvmName, fileName, aUser);
                     }
@@ -910,9 +950,11 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     protected Future<Response> createFutureResponseForAppDeploy(final String groupName, final String fileName, final String appName, final Jvm jvm, final String hostName) {
         final ResourceGroup resourceGroup = resourceService.generateResourceGroup();
         final Application application = applicationService.getApplication(appName);
+        final Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Future<Response> responseFuture = executorService.submit(new Callable<Response>() {
             @Override
             public Response call() throws Exception {
+                SecurityContextHolder.getContext().setAuthentication(auth);
                 CommandOutput commandOutput = null;
                 if (jvm != null) {
                     LOGGER.debug("got jvm object with id {}, creating command output with jvm", jvm.getId().getId());

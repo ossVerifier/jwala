@@ -1,11 +1,12 @@
 package com.cerner.jwala.common.exception;
 
+import java.util.List;
 import java.util.Map;
 
 public class InternalErrorException extends FaultCodeException {
 
     private static final long serialVersionUID = 1L;
-    private Map<String, String> errorDetails = null;
+    private Map<String, List<String>> errorDetails = null;
 
     public InternalErrorException(final MessageResponseStatus theMessageResponseStatus,
                                   final String theMessage) {
@@ -25,14 +26,14 @@ public class InternalErrorException extends FaultCodeException {
     public InternalErrorException(final MessageResponseStatus theMessageResponseStatus,
                                   final String theMessage,
                                   final Throwable theCause,
-                                  final Map<String, String> entityDetailsMap) {
+                                  final Map<String, List<String>> entityDetailsMap) {
         this(theMessageResponseStatus,
                 theMessage,
                 theCause);
         errorDetails = entityDetailsMap;
     }
 
-    public Map<String, String> getErrorDetails() {
+    public Map<String, List<String>> getErrorDetails() {
         return errorDetails;
     }
 }

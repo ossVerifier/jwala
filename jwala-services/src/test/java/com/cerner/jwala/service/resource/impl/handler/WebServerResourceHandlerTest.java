@@ -86,4 +86,14 @@ public class WebServerResourceHandlerTest {
         webServerResourceHandler.getSelectedValue(notMeResourceIdentifier);
         verify(mockSuccessor).getSelectedValue(notMeResourceIdentifier);
     }
+
+    @Test
+    public void testGetResourceNames() {
+        webServerResourceHandler.getResourceNames(resourceIdentifier);
+        verify(mockWebServerPersistence).getResourceTemplateNames(anyString());
+
+        ResourceIdentifier notMeResourceIdentifier = new ResourceIdentifier.Builder().setResourceName("what-webserver").setGroupName("not-a-web-server").build();
+        webServerResourceHandler.getResourceNames(notMeResourceIdentifier);
+        verify(mockSuccessor).getResourceNames(notMeResourceIdentifier);
+    }
 }

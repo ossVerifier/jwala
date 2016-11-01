@@ -308,4 +308,8 @@ public interface ResourceService {
     <T> ResourceTemplateMetaData getTokenizedMetaData(String fileName, T entity, String metaDataStr) throws IOException;
 
     ResourceTemplateMetaData getMetaData(String rawMetaData) throws IOException;
+
+    void validateAllResourcesForGeneration(ResourceIdentifier resourceIdentifier);
+
+    void validateSingleResourceForGeneration(ResourceIdentifier resourceIdentifier);
 }

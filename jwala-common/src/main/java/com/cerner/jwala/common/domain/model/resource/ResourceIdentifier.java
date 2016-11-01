@@ -1,5 +1,8 @@
 package com.cerner.jwala.common.domain.model.resource;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+
 /**
  * Contains parameters that identify a resource
  *
@@ -56,6 +59,34 @@ public class ResourceIdentifier {
         public ResourceIdentifier build() {
             return new ResourceIdentifier(this);
         }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+
+        if (o == null || getClass() != o.getClass()) return false;
+
+        ResourceIdentifier that = (ResourceIdentifier) o;
+
+        return new EqualsBuilder()
+                .append(resourceName, that.resourceName)
+                .append(groupName, that.groupName)
+                .append(webServerName, that.webServerName)
+                .append(jvmName, that.jvmName)
+                .append(webAppName, that.webAppName)
+                .isEquals();
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder(17, 37)
+                .append(resourceName)
+                .append(groupName)
+                .append(webServerName)
+                .append(jvmName)
+                .append(webAppName)
+                .toHashCode();
     }
 
     @Override

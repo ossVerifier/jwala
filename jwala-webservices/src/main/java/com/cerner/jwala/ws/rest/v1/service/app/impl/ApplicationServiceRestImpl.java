@@ -5,6 +5,7 @@ import com.cerner.jwala.common.domain.model.fault.AemFaultType;
 import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
+import com.cerner.jwala.common.domain.model.resource.ResourceIdentifier;
 import com.cerner.jwala.common.exception.FaultCodeException;
 import com.cerner.jwala.common.exec.CommandOutput;
 import com.cerner.jwala.common.exec.CommandOutputReturnCode;
@@ -238,6 +239,14 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
 
         LOGGER.info("Deploying the application conf file {} for app {} to JVM {} in group {} by ", resourceTemplateName, appName, jvmName, groupName, authUser.getUser().getId());
 
+        ResourceIdentifier resourceIdentifier = new ResourceIdentifier.Builder()
+                .setResourceName(resourceTemplateName)
+                .setGroupName(groupName)
+                .setWebAppName(appName)
+                .setJvmName(jvmName)
+                .build();
+        resourceService.validateSingleResourceForGeneration(resourceIdentifier);
+        
         final CommandOutput execData =
                 service.deployConf(appName, groupName, jvmName, resourceTemplateName, resourceService.generateResourceGroup(), authUser.getUser());
         if (execData.getReturnCode().wasSuccessful()) {
