@@ -20,6 +20,18 @@
     margin-left: 3px !important;
 }
 
+.WebAppControlPanelWidget {
+    width: 100%;
+    padding-right: 0px;
+    text-align: right;
+}
+
+.WebAppControlPanelWidget > button {
+    display: inline-block;
+    float: left;
+    margin-left: 3px !important;
+}
+
 .jvm-control-panel-widget {
     width: 100%;
     padding-right: 0px;

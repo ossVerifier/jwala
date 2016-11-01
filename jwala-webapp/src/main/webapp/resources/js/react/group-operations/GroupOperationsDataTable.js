@@ -130,7 +130,10 @@ var GroupOperationsDataTable = React.createClass({
         { mData: null, colWidth: "10px" },
         { sTitle: "Name", mData: "name" },
         { sTitle: "War Name", mData: "warName" },
-        { sTitle: "Context", mData: "webAppContext" }];
+        { sTitle: "Context", mData: "webAppContext", colWidth: "150px"},
+        { mData: null,
+          jwalaType: "custom",
+          jwalaRenderCfgFn: this.renderWebAppControlPanelWidget.bind(this, "grp", "webApp") }];
 
         webAppOfGrpChildTableDetails["tableDef"] = webAppOfGrpChildTableDef;
 
@@ -324,6 +327,15 @@ var GroupOperationsDataTable = React.createClass({
                 webServerService: webServerService,
                 webServerStartCallback: this.webServerStart,
                 webServerStopCallback: this.webServerStop }), nTd, function () {});
+        }.bind(this);
+    },
+    renderWebAppControlPanelWidget: function (parentPrefix, type, dataTable, data, aoColumnDefs, itemIndex, parentId, parentName) {
+        var self = this;
+        aoColumnDefs[itemIndex].fnCreatedCell = function (nTd, sData, oData, iRow, iCol) {
+            var newData = $.extend({}, oData); // do a shallow clone so we don't mutate the source data
+            newData["parentGroup"] = parentName;
+            return React.render(WebAppControlPanelWidget({data: newData, parentGroup: parentName,
+                                webAppService: webAppService}), nTd, function () {});
         }.bind(this);
     },
     renderWebServerStateRowData: function (parentPrefix, type, dataTable, data, aoColumnDefs, itemIndex, parentId) {

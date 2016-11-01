@@ -566,8 +566,9 @@ public class GroupServiceImpl implements GroupService {
     }
 
     @Override
-    public CommandOutput executeSecureCopyCommand(final String jvmName, final String host, final String source, final String destination, String groupName, Identifier<Jvm> id) throws CommandFailureException {
-        final String fileName = new File(source).getName();
+    public CommandOutput executeSecureCopyCommand(final String jvmName, final String host, final String source, final String destination,
+                                                  String groupName, Identifier<Jvm> id) throws CommandFailureException {
+        final String fileName = new File(destination).getName();
         final List<Group> groupList = Collections.singletonList(groupPersistenceService.getGroup(groupName));
         final String event = JvmControlOperation.SECURE_COPY.name() + " " + fileName;
         final Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
