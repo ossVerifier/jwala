@@ -19,7 +19,7 @@ independent functional piece of software.
 
 # _Building_
 
-Jwala can be build by using gradle. to build the project run the gradle build command. This runs the build and test tasks. 
+Jwala can be build by using gradle. To build the jwala project run the "gradle build" command. This runs the build and test tasks. This task creates the jwala-tomcat.war file, which can be run bt dropping it in Apache Tomcat application server. 
 
 # _Availability_
 
@@ -28,16 +28,11 @@ Artifacts or running software associated with this project and where to access t
 In the open source community provided pre-built artifacts for your project can greatly assist in adoption and building
 good will.
 
-# _Conventions_
-
-Define testing, code conventions, and code formatting standards for the project. If no such standards are desired, please remove
-this section.
 
 # _Communication_
 
-Define how consumers and contributors should communicate with others on the project. This may include information from mailing
-lists to where bugs are logged. Github issues are a great way to track bugs and enhancements with the project. You may think
-about conventions that you'd like issues that are logged to follow. For example, noting an enhancement vs a bug.
+Please use github issues to track and open new issues related to Jwala
+See [issues]() [issues]
 
 # Contributing
 
@@ -45,7 +40,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md)
 
 # LICENSE
 
-Copyright <%= currentYear %> Cerner Innovation, Inc.
+Copyright 2016 Cerner Innovation, Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
 
