@@ -14,6 +14,8 @@ import com.cerner.jwala.service.resource.impl.CreateResourceResponseWrapper;
 
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.List;
+
 /**
  * Handler for a jvm resource identified by a "resource identifier" {@link ResourceIdentifier}
  *
@@ -89,7 +91,6 @@ public class JvmResourceHandler extends ResourceHandler {
         return StringUtils.isNotEmpty(resourceIdentifier.resourceName) &&
                StringUtils.isNotEmpty(resourceIdentifier.jvmName) &&
                !"*".equalsIgnoreCase(resourceIdentifier.jvmName) &&
-               /*StringUtils.isEmpty(resourceIdentifier.groupName) &&*/
                StringUtils.isEmpty(resourceIdentifier.webAppName) &&
                StringUtils.isEmpty(resourceIdentifier.webServerName);
     }
@@ -109,6 +110,15 @@ public class JvmResourceHandler extends ResourceHandler {
             return jvmPersistenceService.findJvmByExactName(resourceIdentifier.jvmName);
         } else {
             return successor.getSelectedValue(resourceIdentifier);
+        }
+    }
+
+    @Override
+    public List<String> getResourceNames(ResourceIdentifier resourceIdentifier) {
+        if (canHandle(resourceIdentifier)){
+            return jvmPersistenceService.getResourceTemplateNames(resourceIdentifier.jvmName);
+        } else {
+            return successor.getResourceNames(resourceIdentifier);
         }
     }
 }

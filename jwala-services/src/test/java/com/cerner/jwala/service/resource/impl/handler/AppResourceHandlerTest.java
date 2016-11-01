@@ -88,4 +88,14 @@ public class AppResourceHandlerTest {
         Application app = (Application) appResourceHandler.getSelectedValue(notMeResourceIdentifier);
         verify(mockSuccessor).getSelectedValue(notMeResourceIdentifier);
     }
+
+    @Test
+    public void testGetResourceNames() {
+        appResourceHandler.getResourceNames(resourceIdentifier);
+        verify(mockAppPersistence).getResourceTemplateNames(anyString(), anyString());
+
+        ResourceIdentifier notMeResourceIdentifier = new ResourceIdentifier.Builder().setResourceName("whats-app-amiright").setGroupName("not-a-web-app").build();
+        appResourceHandler.getResourceNames(notMeResourceIdentifier);
+        verify(mockSuccessor).getResourceNames(notMeResourceIdentifier);
+    }
 }

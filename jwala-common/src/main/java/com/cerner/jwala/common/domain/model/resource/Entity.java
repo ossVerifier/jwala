@@ -1,56 +1,51 @@
 package com.cerner.jwala.common.domain.model.resource;
 
+import org.codehaus.jackson.annotate.JsonCreator;
+import org.codehaus.jackson.annotate.JsonProperty;
+
 /**
  * Resource entity that wraps type, group and target
  *
  * Created by JC043760 on 3/30/2016
  */
 public class Entity {
+    private final String type;
+    private final String group;
+    private final String target;
+    private final String parentName;
+    private final boolean deployToJvms;
 
-    private String type;
-    private String group;
-    private String target;
-    private String parentName;
-    private boolean deployToJvms = true;
+    @JsonCreator
+    public Entity(@JsonProperty("type") final String type,
+                  @JsonProperty("group") final String group,
+                  @JsonProperty("target") final String target,
+                  @JsonProperty("parentName") final String parentName,
+                  @JsonProperty("deployToJvms") final Boolean deployToJvms) {
+        this.type = type;
+        this.group = group;
+        this.target = target;
+        this.parentName = parentName;
+        this.deployToJvms = deployToJvms == null ? true : deployToJvms;
+    }
 
     public String getType() {
         return type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
     }
 
     public String getGroup() {
         return group;
     }
 
-    public void setGroup(String group) {
-        this.group = group;
-    }
-
     public String getTarget() {
         return target;
-    }
-
-    public void setTarget(String target) {
-        this.target = target;
     }
 
     public String getParentName() {
         return parentName;
     }
 
-    public void setParentName(String parentName) {
-        this.parentName = parentName;
-    }
-
     public boolean getDeployToJvms() {
         return deployToJvms;
-    }
-
-    public void setDeployToJvms(boolean deployToJvms){
-        this.deployToJvms = deployToJvms;
     }
 
     @Override

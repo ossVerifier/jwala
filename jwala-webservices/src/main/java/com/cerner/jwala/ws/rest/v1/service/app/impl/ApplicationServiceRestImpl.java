@@ -5,6 +5,7 @@ import com.cerner.jwala.common.domain.model.fault.AemFaultType;
 import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
+import com.cerner.jwala.common.domain.model.resource.ResourceIdentifier;
 import com.cerner.jwala.common.exception.FaultCodeException;
 import com.cerner.jwala.common.exec.CommandOutput;
 import com.cerner.jwala.common.exec.CommandOutputReturnCode;
@@ -238,6 +239,14 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
 
         LOGGER.info("Deploying the application conf file {} for app {} to JVM {} in group {} by ", resourceTemplateName, appName, jvmName, groupName, authUser.getUser().getId());
 
+        ResourceIdentifier resourceIdentifier = new ResourceIdentifier.Builder()
+                .setResourceName(resourceTemplateName)
+                .setGroupName(groupName)
+                .setWebAppName(appName)
+                .setJvmName(jvmName)
+                .build();
+        resourceService.validateSingleResourceForGeneration(resourceIdentifier);
+        
         final CommandOutput execData =
                 service.deployConf(appName, groupName, jvmName, resourceTemplateName, resourceService.generateResourceGroup(), authUser.getUser());
         if (execData.getReturnCode().wasSuccessful()) {
@@ -262,6 +271,19 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
             LOGGER.debug("Error previewing template.", rte);
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
                     AemFaultType.INVALID_TEMPLATE, rte.getMessage()));
+        }
+    }
+
+    @Override
+    public Response deployConf(final String appName, final AuthenticatedUser aUser, final String hostName) {
+        try {
+            LOGGER.info("Deploying application {} initiated by user {}", appName, aUser.getUser().getId());
+            service.deployConf(appName, hostName, aUser.getUser());
+            return ResponseBuilder.ok(appName);
+        } catch (RuntimeException e) {
+            LOGGER.error("Error in deploying resource", e);
+            return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR,
+                    new FaultCodeException(AemFaultType.REMOTE_COMMAND_FAILURE, e.getMessage()));
         }
     }
 

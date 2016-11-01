@@ -38,6 +38,7 @@ import com.cerner.jwala.service.exception.GroupServiceException;
 import com.cerner.jwala.service.group.GroupService;
 import com.cerner.jwala.service.resource.ResourceService;
 import com.cerner.jwala.service.resource.impl.ResourceGeneratorType;
+import com.cerner.jwala.template.exception.ResourceFileGeneratorException;
 import org.apache.commons.io.FilenameUtils;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
@@ -419,6 +420,11 @@ public class GroupServiceImpl implements GroupService {
             try {
                 Application app = applicationPersistenceService.getApplication(appName);
                 return resourceService.generateResourceFile(resourceTemplateName, template, resourceGroup, app, ResourceGeneratorType.TEMPLATE);
+            } catch(ResourceFileGeneratorException rfge) {
+                LOGGER.error("Failed to generate and deploy file {} to Web App {}", resourceTemplateName, appName, rfge);
+                Map<String, List<String>> errorDetails = new HashMap<>();
+                errorDetails.put(appName, Collections.singletonList(rfge.getMessage()));
+                throw new InternalErrorException(AemFaultType.RESOURCE_GENERATION_FAILED, "Failed to generate and deploy file " + resourceTemplateName + " to Web App " + appName, null, errorDetails);
             } catch (Exception x) {
                 LOGGER.error("Failed to tokenize template {} in group {}", resourceTemplateName, groupName, x);
                 throw new ApplicationException("Template token replacement failed.", x);
@@ -560,8 +566,9 @@ public class GroupServiceImpl implements GroupService {
     }
 
     @Override
-    public CommandOutput executeSecureCopyCommand(final String jvmName, final String host, final String source, final String destination, String groupName, Identifier<Jvm> id) throws CommandFailureException {
-        final String fileName = new File(source).getName();
+    public CommandOutput executeSecureCopyCommand(final String jvmName, final String host, final String source, final String destination,
+                                                  String groupName, Identifier<Jvm> id) throws CommandFailureException {
+        final String fileName = new File(destination).getName();
         final List<Group> groupList = Collections.singletonList(groupPersistenceService.getGroup(groupName));
         final String event = JvmControlOperation.SECURE_COPY.name() + " " + fileName;
         final Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

@@ -25,6 +25,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.jaxrs.ext.MessageContext;
 import org.apache.cxf.jaxrs.ext.multipart.Attachment;
 import org.apache.cxf.jaxrs.impl.ResponseImpl;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,6 +54,7 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
     public static final String TPL_FILE_EXTENSION = ".tpl";
     public static final String EXT_PROPERTIES_RESOURCE_NAME = "ext.properties";
     public static final String EXT_PROPERTIES_RESOURCE_META_DATA = "{\"contentType\":\"text/plain\", \"templateName\":\"external.properties\", \"deployPath\":\"\", \"deployFileName\":\"" + EXT_PROPERTIES_RESOURCE_NAME + "\"}";
+    public static final int CREATE_RESOURCE_ATTACHMENT_SIZE = 3;
 
     private final ResourceService resourceService;
 
@@ -133,96 +135,49 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
     }
 
     @Override
-// TODO: Re validation, maybe we can use CXF bean validation ?
-    public Response createResource(final List<Attachment> attachments, final CreateResourceParam createResourceParam,
-                                   final AuthenticatedUser user) {
+    public Response createResource(final String deployFilename, final CreateResourceParam createResourceParam,
+                                   final List<Attachment> attachments) {
+        final CreateResourceResponseWrapper createResourceResponseWrapper;
 
-        LOGGER.info("Create resource with parameters {} by user {} and attachments {}", createResourceParam, user.getUser().getId(), attachments);
-
-        InputStream metadataIn = null;
-        InputStream resourceDataIn = null;
-
-        String fileName = StringUtils.EMPTY;
-        // TODO pass down single param from UI to designate external properties
-        final boolean isExternalProperty = createResourceParam.getGroup() == null && createResourceParam.getJvm() == null && createResourceParam.getWebApp() == null && createResourceParam.getWebServer() == null;
-
-        final List<Attachment> filteredAttachments = new ArrayList<>();
-        for (Attachment attachment : attachments) {
-            if (attachment.getDataHandler().getName() != null) {
-                filteredAttachments.add(attachment);
-            }
-        }
-
-        if (filteredAttachments.size() == CREATE_TEMPLATE_EXPECTED_NUM_OF_ATTACHMENTS) {
-            for (Attachment attachment : filteredAttachments) {
-                final DataHandler handler = attachment.getDataHandler();
-                try {
-                    LOGGER.debug("filename is {}", handler.getName());
-                    if (handler.getName().toLowerCase().endsWith(JSON_FILE_EXTENSION)) {
-                        metadataIn = attachment.getDataHandler().getInputStream();
-                    } else {
-                        fileName = attachment.getDataHandler().getName();
-                        resourceDataIn = attachment.getDataHandler().getInputStream();
-                    }
-
-                    if (isExternalProperty) {
-                        metadataIn = new ByteArrayInputStream(EXT_PROPERTIES_RESOURCE_META_DATA.getBytes());
-                    }
-
-                } catch (final IOException ioe) {
-                    LOGGER.error("Create template failed!", ioe);
-                    return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR,
-                            new FaultCodeException(AemFaultType.IO_EXCEPTION, ioe.getMessage()));
-                }
-            }
-        } else {
+        if (attachments == null || attachments.size() != CREATE_RESOURCE_ATTACHMENT_SIZE) {
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
                     AemFaultType.INVALID_NUMBER_OF_ATTACHMENTS,
-                    "Invalid number of attachments! 2 attachments is expected by the service."));
+                    "Invalid number of attachments! " + CREATE_RESOURCE_ATTACHMENT_SIZE + " attachments is expected by the service."));
         }
 
-
-        CreateResourceResponseWrapper responseWrapper = null;
         try {
-            final ResourceTemplateMetaData metaData = resourceService.getMetaData(IOUtils.toString(metadataIn));
-
-            // We do the file attachment validation here since this is a REST services affair IMHO.
-            // TODO: Use a more sophisticated way of knowing the content type in next releases.
-            if (!ContentType.APPLICATION_BINARY.contentTypeStr.equalsIgnoreCase(metaData.getContentType()) &&
-                    !(fileName.toLowerCase().endsWith(TPL_FILE_EXTENSION)) && !isExternalProperty) {
-                LOGGER.error(UNEXPECTED_CONTENT_TYPE_ERROR_MSG);
-                return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR,
-                        new FaultCodeException(AemFaultType.SERVICE_EXCEPTION, UNEXPECTED_CONTENT_TYPE_ERROR_MSG));
+            final Map<String, Object> metaDataMap = new HashMap<>();
+            InputStream template = null;
+            String templateName = null;
+            for (final Attachment attachment : attachments) {
+                if ("application/octet-stream".equalsIgnoreCase(attachment.getHeader("Content-Type"))) {
+                    templateName = attachment.getDataHandler().getName();
+                    template = attachment.getDataHandler().getInputStream();
+                } else {
+                    metaDataMap.put(attachment.getDataHandler().getName(),
+                            IOUtils.toString(attachment.getDataHandler().getInputStream()));
+                }
             }
 
-            final ResourceIdentifier resourceIdentifier = new ResourceIdentifier.Builder().setResourceName(metaData.getDeployFileName())
+            metaDataMap.put("deployFileName", deployFilename);
+            metaDataMap.put("templateName", templateName);
+            final ResourceTemplateMetaData resourceTemplateMetaData =
+                    resourceService.getMetaData(new ObjectMapper().writeValueAsString(metaDataMap));
+
+            final ResourceIdentifier resourceIdentifier = new ResourceIdentifier.Builder().setResourceName(templateName)
                     .setGroupName(createResourceParam.getGroup())
                     .setWebServerName(createResourceParam.getWebServer())
                     .setJvmName(createResourceParam.getJvm())
                     .setWebAppName(createResourceParam.getWebApp()).build();
 
-            // Upload the attached file if the resource is binary to the archive location
-            if (metaData.getContentType().equals(ContentType.APPLICATION_BINARY.contentTypeStr)) {
-                resourceDataIn = new ByteArrayInputStream(resourceService.uploadResource(metaData, resourceDataIn).getBytes());
-            }
-
-            responseWrapper = resourceService.createResource(resourceIdentifier, metaData, resourceDataIn);
-            if (responseWrapper == null) {
-                // TODO: Review response...
-                return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR,
-                        new FaultCodeException(AemFaultType.INVALID_REST_SERVICE_PARAMETER,
-                                "There was no resource handler to process the request!"));
-            }
-        } catch (final IOException ioe) {
-            LOGGER.error("IOException thrown in CreateResource", ioe);
-            return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR,
-                    new FaultCodeException(AemFaultType.SERVICE_EXCEPTION, ioe.getMessage()));
-        } catch (final ResourceServiceException rse) {
-            LOGGER.error("ResourceServiceException thrown in CreateResource", rse);
-            return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR,
-                    new FaultCodeException(AemFaultType.SERVICE_EXCEPTION, rse.getMessage()));
+            createResourceResponseWrapper = resourceService.createResource(resourceIdentifier, resourceTemplateMetaData,
+                                                                           template);
+        } catch (final IOException e) {
+            LOGGER.error("Failed to create resource {}!", deployFilename, e);
+            return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(AemFaultType.IO_EXCEPTION, e.getMessage()));
         }
-        return ResponseBuilder.ok(responseWrapper);
+
+        return ResponseBuilder.ok(createResourceResponseWrapper);
     }
 
     @Context

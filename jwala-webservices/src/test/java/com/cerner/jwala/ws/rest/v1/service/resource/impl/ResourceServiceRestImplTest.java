@@ -17,6 +17,7 @@ import com.cerner.jwala.ws.rest.v1.response.ApplicationResponse;
 import com.cerner.jwala.ws.rest.v1.service.resource.CreateResourceParam;
 import com.cerner.jwala.ws.rest.v1.service.resource.ResourceHierarchyParam;
 import junit.framework.Assert;
+import org.apache.commons.io.IOUtils;
 import org.apache.cxf.jaxrs.ext.MessageContext;
 import org.apache.cxf.jaxrs.ext.multipart.Attachment;
 import org.junit.Before;
@@ -68,12 +69,10 @@ public class ResourceServiceRestImplTest {
     private JsonResourceInstance jsonResourceInstance;
     private ResourceServiceRestImpl cut;
     private Group group;
-    private ResourceInstance resourceInstance;
 
     @Before
     public void setUp() {
         group = new Group(new Identifier<Group>(1L), "theGroup");
-        resourceInstance = new ResourceInstance(new Identifier<ResourceInstance>(1L), "resourceName", "resourceType", new LiteGroup(group.getId(), group.getName()), new HashMap<String, String>());
         cut = new ResourceServiceRestImpl(impl);
         when(authenticatedUser.getUser()).thenReturn(new User("Unused"));
         when(jsonResourceInstance.getCommand()).thenReturn(new ResourceInstanceRequest("resourceType", "resourceName", group.getName(), new HashMap<String, String>()));
@@ -141,6 +140,96 @@ public class ResourceServiceRestImplTest {
     }
 
     @Test
+    public void testCreateResource() throws IOException {
+        final CreateResourceParam createResourceParam = new CreateResourceParam();
+        createResourceParam.setWebServer("someWebServer");
+
+        // Deploy path
+        final DataHandler deployPathDataHandler = mock(DataHandler.class);
+        when(deployPathDataHandler.getName()).thenReturn("deployPath");
+        when(deployPathDataHandler.getInputStream()).thenReturn(IOUtils.toInputStream("c:/tmp"));
+
+        final Attachment deployPathAttachment = mock(Attachment.class);
+        when(deployPathAttachment.getDataHandler()).thenReturn(deployPathDataHandler);
+
+        // Content type
+        final DataHandler contentTypeDataHandler = mock(DataHandler.class);
+        when(contentTypeDataHandler.getName()).thenReturn("contentType");
+        when(contentTypeDataHandler.getInputStream()).thenReturn(IOUtils.toInputStream("text/plain"));
+
+        final Attachment contentTypeAttachment = mock(Attachment.class);
+        when(contentTypeAttachment.getDataHandler()).thenReturn(contentTypeDataHandler);
+
+        // File attachment
+        final DataHandler fileAttachmentDataHandler = mock(DataHandler.class);
+        when(fileAttachmentDataHandler.getName()).thenReturn("sample-resource.tpl");
+        when(fileAttachmentDataHandler.getInputStream()).thenReturn(this.getClass().getClassLoader().getResourceAsStream("sample-resource.tpl"));
+
+        final Attachment fileAttachment = mock(Attachment.class);
+        when(fileAttachment.getDataHandler()).thenReturn(fileAttachmentDataHandler);
+        when(fileAttachment.getHeader(eq("Content-Type"))).thenReturn("application/octet-stream");
+
+        final List<Attachment> attachmentList = new ArrayList<>();
+        attachmentList.add(fileAttachment);
+        attachmentList.add(deployPathAttachment);
+        attachmentList.add(contentTypeAttachment);
+
+        final Response response = cut.createResource("httpd.conf", createResourceParam, attachmentList);
+        assertEquals("0", ((ApplicationResponse) response.getEntity()).getMsgCode());
+    }
+
+    @Test
+    public void testCreateResourceWithMissingAttachment() throws IOException {
+        final List<Attachment> attachmentList = new ArrayList<>();
+        final Response response = cut.createResource("httpd.conf", null, attachmentList);
+        assertEquals("AEM61", ((ApplicationResponse) response.getEntity()).getMsgCode());
+    }
+
+    @Test
+    public void testCreateResourceWithNullAttachment() throws IOException {
+        final Response response = cut.createResource("httpd.conf", null, null);
+        assertEquals("AEM61", ((ApplicationResponse) response.getEntity()).getMsgCode());
+    }
+
+    @Test
+    public void testCreateResourceWithIOException() throws IOException {
+        // Deploy path
+        final DataHandler deployPathDataHandler = mock(DataHandler.class);
+        when(deployPathDataHandler.getName()).thenReturn("deployPath");
+        when(deployPathDataHandler.getInputStream()).thenReturn(IOUtils.toInputStream("c:/tmp"));
+
+        final Attachment deployPathAttachment = mock(Attachment.class);
+        when(deployPathAttachment.getDataHandler()).thenReturn(deployPathDataHandler);
+
+        // Content type
+        final DataHandler contentTypeDataHandler = mock(DataHandler.class);
+        when(contentTypeDataHandler.getName()).thenReturn("contentType");
+        when(contentTypeDataHandler.getInputStream()).thenReturn(IOUtils.toInputStream("text/plain"));
+
+        final Attachment contentTypeAttachment = mock(Attachment.class);
+        when(contentTypeAttachment.getDataHandler()).thenReturn(contentTypeDataHandler);
+
+        // File attachment
+        final DataHandler fileAttachmentDataHandler = mock(DataHandler.class);
+        when(fileAttachmentDataHandler.getName()).thenReturn("sample-resource.tpl");
+        when(fileAttachmentDataHandler.getInputStream()).thenReturn(this.getClass().getClassLoader().getResourceAsStream("sample-resource.tpl"));
+
+        final Attachment fileAttachment = mock(Attachment.class);
+        when(fileAttachment.getDataHandler()).thenReturn(fileAttachmentDataHandler);
+        when(fileAttachment.getHeader(eq("Content-Type"))).thenReturn("application/octet-stream");
+
+        final List<Attachment> attachmentList = new ArrayList<>();
+        attachmentList.add(fileAttachment);
+        attachmentList.add(deployPathAttachment);
+        attachmentList.add(contentTypeAttachment);
+
+        when(impl.getMetaData(anyString())).thenThrow(new IOException());
+
+        final Response response = cut.createResource("httpd.conf", null, attachmentList);
+        assertEquals("AEM60", ((ApplicationResponse) response.getEntity()).getMsgCode());
+    }
+
+    @Test
     public void testGetResourceAttributeData() {
         when(impl.generateResourceGroup()).thenReturn(new ResourceGroup());
         Response response = cut.getResourceAttrData();
@@ -155,307 +244,6 @@ public class ResourceServiceRestImplTest {
         when(impl.checkFileExists(anyString(), anyString(), anyString(), anyString(), anyString())).thenReturn(new HashMap<String, String>());
         Response response = cut.checkFileExists("test", "test", null, null, "test");
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
-    }
-
-    @Test
-    public void testCreateGroupLevelWebAppResource() throws IOException {
-        final DataHandler mockDataHandler1 = mock(DataHandler.class);
-        when(mockDataHandler1.getName()).thenReturn("sample-resource.json");
-
-        this.getClass().getClassLoader()
-                .getResourceAsStream("sample-resource.json");
-
-        when(mockDataHandler1.getInputStream()).thenReturn(this.getClass().getClassLoader()
-                .getResourceAsStream("sample-resource.json"));
-        final DataHandler mockDataHandler2 = mock(DataHandler.class);
-        when(mockDataHandler2.getName()).thenReturn("sample-resource.tpl");
-        when(mockDataHandler2.getInputStream()).thenReturn(this.getClass().getClassLoader()
-                .getResourceAsStream("sample-resource.tpl"));
-
-        final Attachment mockAttachment1 = mock(Attachment.class);
-        when(mockAttachment1.getDataHandler()).thenReturn(mockDataHandler1);
-        final Attachment mockAttachment2 = mock(Attachment.class);
-        when(mockAttachment2.getDataHandler()).thenReturn(mockDataHandler2);
-        final List<Attachment> attachmentList = new ArrayList<>();
-        attachmentList.add(mockAttachment1);
-        attachmentList.add(mockAttachment2);
-
-        final CreateResourceParam createResourceParam = new CreateResourceParam();
-        createResourceParam.setGroup("someGroup");
-        createResourceParam.setWebApp("someWebApp");
-
-        ResourceTemplateMetaData mockMetaData = mock(ResourceTemplateMetaData.class);
-        when(mockMetaData.getContentType()).thenReturn("text/plain");
-        when(mockMetaData.getDeployFileName()).thenReturn("sample-resource.txt");
-        when(impl.getMetaData(anyString())).thenReturn(mockMetaData);
-
-        cut.createResource(attachmentList, createResourceParam, authenticatedUser);
-        verify(impl).createResource(any(ResourceIdentifier.class), any(ResourceTemplateMetaData.class), any(InputStream.class));
-    }
-
-    @Test
-    public void testCreateWebAppResource() throws IOException {
-        final DataHandler mockDataHandler1 = mock(DataHandler.class);
-        when(mockDataHandler1.getName()).thenReturn("sample-resource.json");
-
-        this.getClass().getClassLoader()
-                .getResourceAsStream("sample-resource.json");
-
-        when(mockDataHandler1.getInputStream()).thenReturn(this.getClass().getClassLoader()
-                .getResourceAsStream("sample-resource.json"));
-        final DataHandler mockDataHandler2 = mock(DataHandler.class);
-        when(mockDataHandler2.getName()).thenReturn("sample-resource.tpl");
-        when(mockDataHandler2.getInputStream()).thenReturn(this.getClass().getClassLoader()
-                .getResourceAsStream("sample-resource.tpl"));
-
-        final Attachment mockAttachment1 = mock(Attachment.class);
-        when(mockAttachment1.getDataHandler()).thenReturn(mockDataHandler1);
-        final Attachment mockAttachment2 = mock(Attachment.class);
-        when(mockAttachment2.getDataHandler()).thenReturn(mockDataHandler2);
-        final List<Attachment> attachmentList = new ArrayList<>();
-        attachmentList.add(mockAttachment1);
-        attachmentList.add(mockAttachment2);
-
-        final CreateResourceParam createResourceParam = new CreateResourceParam();
-        createResourceParam.setJvm("someJvm");
-        createResourceParam.setWebApp("someWebApp");
-
-        ResourceTemplateMetaData mockMetaData = mock(ResourceTemplateMetaData.class);
-        when(mockMetaData.getContentType()).thenReturn("text/plain");
-        when(mockMetaData.getDeployFileName()).thenReturn("sample-resource.txt");
-        when(impl.getMetaData(anyString())).thenReturn(mockMetaData);
-
-        cut.createResource(attachmentList, createResourceParam, authenticatedUser);
-        verify(impl).createResource(any(ResourceIdentifier.class), any(ResourceTemplateMetaData.class), any(InputStream.class));
-    }
-
-    @Test
-    public void testCreateGroupLevelWebServerResource() throws IOException {
-        final DataHandler mockDataHandler1 = mock(DataHandler.class);
-        when(mockDataHandler1.getName()).thenReturn("sample-resource.json");
-
-        this.getClass().getClassLoader()
-                .getResourceAsStream("sample-resource.json");
-
-        when(mockDataHandler1.getInputStream()).thenReturn(this.getClass().getClassLoader()
-                .getResourceAsStream("sample-resource.json"));
-        final DataHandler mockDataHandler2 = mock(DataHandler.class);
-        when(mockDataHandler2.getName()).thenReturn("sample-resource.tpl");
-        when(mockDataHandler2.getInputStream()).thenReturn(this.getClass().getClassLoader()
-                .getResourceAsStream("sample-resource.tpl"));
-
-        final Attachment mockAttachment1 = mock(Attachment.class);
-        when(mockAttachment1.getDataHandler()).thenReturn(mockDataHandler1);
-        final Attachment mockAttachment2 = mock(Attachment.class);
-        when(mockAttachment2.getDataHandler()).thenReturn(mockDataHandler2);
-        final List<Attachment> attachmentList = new ArrayList<>();
-        attachmentList.add(mockAttachment1);
-        attachmentList.add(mockAttachment2);
-
-        final CreateResourceParam createResourceParam = new CreateResourceParam();
-        createResourceParam.setGroup("someGroup");
-        createResourceParam.setWebServer("*");
-
-        ResourceTemplateMetaData mockMetaData = mock(ResourceTemplateMetaData.class);
-        when(mockMetaData.getContentType()).thenReturn("text/plain");
-        when(mockMetaData.getDeployFileName()).thenReturn("sample-resource.txt");
-        when(impl.getMetaData(anyString())).thenReturn(mockMetaData);
-
-        cut.createResource(attachmentList, createResourceParam, authenticatedUser);
-        verify(impl).createResource(any(ResourceIdentifier.class), any(ResourceTemplateMetaData.class), any(InputStream.class));
-    }
-
-    @Test
-    public void testCreateWebServerResource() throws IOException {
-        final DataHandler mockDataHandler1 = mock(DataHandler.class);
-        when(mockDataHandler1.getName()).thenReturn("sample-resource.json");
-
-        this.getClass().getClassLoader()
-                .getResourceAsStream("sample-resource.json");
-
-        when(mockDataHandler1.getInputStream()).thenReturn(this.getClass().getClassLoader()
-                .getResourceAsStream("sample-resource.json"));
-        final DataHandler mockDataHandler2 = mock(DataHandler.class);
-        when(mockDataHandler2.getName()).thenReturn("sample-resource.tpl");
-        when(mockDataHandler2.getInputStream()).thenReturn(this.getClass().getClassLoader()
-                .getResourceAsStream("sample-resource.tpl"));
-
-        final Attachment mockAttachment1 = mock(Attachment.class);
-        when(mockAttachment1.getDataHandler()).thenReturn(mockDataHandler1);
-        final Attachment mockAttachment2 = mock(Attachment.class);
-        when(mockAttachment2.getDataHandler()).thenReturn(mockDataHandler2);
-        final List<Attachment> attachmentList = new ArrayList<>();
-        attachmentList.add(mockAttachment1);
-        attachmentList.add(mockAttachment2);
-
-        final CreateResourceParam createResourceParam = new CreateResourceParam();
-        createResourceParam.setWebServer("someWebServer");
-
-        ResourceTemplateMetaData mockMetaData = mock(ResourceTemplateMetaData.class);
-        when(mockMetaData.getContentType()).thenReturn("text/plain");
-        when(mockMetaData.getDeployFileName()).thenReturn("sample-resource.txt");
-        when(impl.getMetaData(anyString())).thenReturn(mockMetaData);
-
-        cut.createResource(attachmentList, createResourceParam, authenticatedUser);
-        verify(impl).createResource(any(ResourceIdentifier.class), any(ResourceTemplateMetaData.class), any(InputStream.class));
-    }
-
-    @Test
-    public void testCreateGroupLevelJvmResource() throws IOException {
-        final DataHandler mockDataHandler1 = mock(DataHandler.class);
-        when(mockDataHandler1.getName()).thenReturn("sample-resource.json");
-
-        this.getClass().getClassLoader()
-                .getResourceAsStream("sample-resource.json");
-
-        when(mockDataHandler1.getInputStream()).thenReturn(this.getClass().getClassLoader()
-                .getResourceAsStream("sample-resource.json"));
-        final DataHandler mockDataHandler2 = mock(DataHandler.class);
-        when(mockDataHandler2.getName()).thenReturn("sample-resource.tpl");
-        when(mockDataHandler2.getInputStream()).thenReturn(this.getClass().getClassLoader()
-                .getResourceAsStream("sample-resource.tpl"));
-
-        final Attachment mockAttachment1 = mock(Attachment.class);
-        when(mockAttachment1.getDataHandler()).thenReturn(mockDataHandler1);
-        final Attachment mockAttachment2 = mock(Attachment.class);
-        when(mockAttachment2.getDataHandler()).thenReturn(mockDataHandler2);
-        final List<Attachment> attachmentList = new ArrayList<>();
-        attachmentList.add(mockAttachment1);
-        attachmentList.add(mockAttachment2);
-
-        final CreateResourceParam createResourceParam = new CreateResourceParam();
-        createResourceParam.setGroup("someGroup");
-        createResourceParam.setJvm("*");
-
-        ResourceTemplateMetaData mockMetaData = mock(ResourceTemplateMetaData.class);
-        when(mockMetaData.getContentType()).thenReturn("text/plain");
-        when(mockMetaData.getDeployFileName()).thenReturn("sample-resource.txt");
-        when(impl.getMetaData(anyString())).thenReturn(mockMetaData);
-
-        cut.createResource(attachmentList, createResourceParam, authenticatedUser);
-        verify(impl).createResource(any(ResourceIdentifier.class), any(ResourceTemplateMetaData.class), any(InputStream.class));
-    }
-
-    @Test
-    public void testCreateJvmResource() throws IOException {
-        final DataHandler mockDataHandler1 = mock(DataHandler.class);
-        when(mockDataHandler1.getName()).thenReturn("sample-resource.json");
-
-        this.getClass().getClassLoader()
-                .getResourceAsStream("sample-resource.json");
-
-        when(mockDataHandler1.getInputStream()).thenReturn(this.getClass().getClassLoader()
-                .getResourceAsStream("sample-resource.json"));
-        final DataHandler mockDataHandler2 = mock(DataHandler.class);
-        when(mockDataHandler2.getName()).thenReturn("sample-resource.tpl");
-        when(mockDataHandler2.getInputStream()).thenReturn(this.getClass().getClassLoader()
-                .getResourceAsStream("sample-resource.tpl"));
-
-        final Attachment mockAttachment1 = mock(Attachment.class);
-        when(mockAttachment1.getDataHandler()).thenReturn(mockDataHandler1);
-        final Attachment mockAttachment2 = mock(Attachment.class);
-        when(mockAttachment2.getDataHandler()).thenReturn(mockDataHandler2);
-        final List<Attachment> attachmentList = new ArrayList<>();
-        attachmentList.add(mockAttachment1);
-        attachmentList.add(mockAttachment2);
-
-        final CreateResourceParam createResourceParam = new CreateResourceParam();
-        createResourceParam.setJvm("someJvm");
-
-        ResourceTemplateMetaData mockMetaData = mock(ResourceTemplateMetaData.class);
-        when(mockMetaData.getContentType()).thenReturn("text/plain");
-        when(mockMetaData.getDeployFileName()).thenReturn("sample-resource.txt");
-        when(impl.getMetaData(anyString())).thenReturn(mockMetaData);
-
-        cut.createResource(attachmentList, createResourceParam, authenticatedUser);
-        verify(impl).createResource(any(ResourceIdentifier.class), any(ResourceTemplateMetaData.class), any(InputStream.class));
-    }
-
-    @Test
-    public void testCreateResourceNoParamsSpecified() throws IOException {
-        final DataHandler mockDataHandler1 = mock(DataHandler.class);
-        when(mockDataHandler1.getName()).thenReturn("sample-resource.json");
-
-        this.getClass().getClassLoader()
-                .getResourceAsStream("sample-resource.json");
-
-        when(mockDataHandler1.getInputStream()).thenReturn(this.getClass().getClassLoader()
-                .getResourceAsStream("sample-resource.json"));
-        final DataHandler mockDataHandler2 = mock(DataHandler.class);
-        when(mockDataHandler2.getName()).thenReturn("sample-resource.tpl");
-        when(mockDataHandler2.getInputStream()).thenReturn(this.getClass().getClassLoader()
-                .getResourceAsStream("sample-resource.tpl"));
-
-        final Attachment mockAttachment1 = mock(Attachment.class);
-        when(mockAttachment1.getDataHandler()).thenReturn(mockDataHandler1);
-        final Attachment mockAttachment2 = mock(Attachment.class);
-        when(mockAttachment2.getDataHandler()).thenReturn(mockDataHandler2);
-        final List<Attachment> attachmentList = new ArrayList<>();
-        attachmentList.add(mockAttachment1);
-        attachmentList.add(mockAttachment2);
-
-        final CreateResourceParam createResourceParam = new CreateResourceParam();
-
-        ResourceTemplateMetaData mockMetaData = mock(ResourceTemplateMetaData.class);
-        when(mockMetaData.getContentType()).thenReturn("text/plain");
-        when(mockMetaData.getDeployFileName()).thenReturn("sample-resource.txt");
-        when(impl.getMetaData(anyString())).thenReturn(mockMetaData);
-
-        cut.createResource(attachmentList, createResourceParam, authenticatedUser);
-        verify(impl).createResource(any(ResourceIdentifier.class), any(ResourceTemplateMetaData.class), any(InputStream.class));
-    }
-
-    @Test
-    public void testCreateResourceWithMissingAttachment() throws IOException {
-        final DataHandler mockDataHandler1 = mock(DataHandler.class);
-        when(mockDataHandler1.getName()).thenReturn("sample-resource.json");
-
-        this.getClass().getClassLoader()
-                .getResourceAsStream("sample-resource.json");
-
-        when(mockDataHandler1.getInputStream()).thenReturn(this.getClass().getClassLoader()
-                .getResourceAsStream("sample-resource.json"));
-        final DataHandler mockDataHandler2 = mock(DataHandler.class);
-        when(mockDataHandler2.getName()).thenReturn("sample-resource.tpl");
-        when(mockDataHandler2.getInputStream()).thenReturn(this.getClass().getClassLoader()
-                .getResourceAsStream("sample-resource.tpl"));
-
-        final Attachment mockAttachment1 = mock(Attachment.class);
-        when(mockAttachment1.getDataHandler()).thenReturn(mockDataHandler1);
-        final Attachment mockAttachment2 = mock(Attachment.class);
-        when(mockAttachment2.getDataHandler()).thenReturn(mockDataHandler2);
-        final List<Attachment> attachmentList = new ArrayList<>();
-        attachmentList.add(mockAttachment1);
-
-        final CreateResourceParam createResourceParam = new CreateResourceParam();
-        final Response response = cut.createResource(attachmentList, createResourceParam, authenticatedUser);
-        assertEquals("AEM61", ((ApplicationResponse) response.getEntity()).getMsgCode());
-    }
-
-    @Test
-    public void testCreateResourceWithIoException() throws IOException {
-        final DataHandler mockDataHandler1 = mock(DataHandler.class);
-        when(mockDataHandler1.getName()).thenReturn("sample-resource.json");
-
-        this.getClass().getClassLoader()
-                .getResourceAsStream("sample-resource.json");
-
-        when(mockDataHandler1.getInputStream()).thenReturn(this.getClass().getClassLoader()
-                .getResourceAsStream("sample-resource.json"));
-        final DataHandler mockDataHandler2 = mock(DataHandler.class);
-        when(mockDataHandler2.getName()).thenReturn("sample-resource.tpl");
-        doThrow(new IOException()).when(mockDataHandler2).getInputStream();
-
-        final Attachment mockAttachment1 = mock(Attachment.class);
-        when(mockAttachment1.getDataHandler()).thenReturn(mockDataHandler1);
-        final Attachment mockAttachment2 = mock(Attachment.class);
-        when(mockAttachment2.getDataHandler()).thenReturn(mockDataHandler2);
-        final List<Attachment> attachmentList = new ArrayList<>();
-        attachmentList.add(mockAttachment1);
-        attachmentList.add(mockAttachment2);
-        final CreateResourceParam createResourceParam = new CreateResourceParam();
-        final Response response = cut.createResource(attachmentList, createResourceParam, authenticatedUser);
-        assertEquals("AEM60", ((ApplicationResponse) response.getEntity()).getMsgCode());
     }
 
     @Test
@@ -515,45 +303,6 @@ public class ResourceServiceRestImplTest {
         final ResourceHierarchyParam resourceHierarchyParam = new ResourceHierarchyParam();
         final Response response = cut.deleteResource("someResource", resourceHierarchyParam, authenticatedUser);
         assertEquals("AEM64", ((ApplicationResponse) response.getEntity()).getMsgCode());
-    }
-
-    @Test
-    public void testUploadIncorrectFile() throws IOException {
-        final DataHandler mockDataHandler1 = mock(DataHandler.class);
-        when(mockDataHandler1.getName()).thenReturn("sample-resource.json");
-
-        this.getClass().getClassLoader()
-                .getResourceAsStream("sample-resource.json");
-
-        when(mockDataHandler1.getInputStream()).thenReturn(this.getClass().getClassLoader()
-                .getResourceAsStream("sample-resource.json"));
-        final DataHandler mockDataHandler2 = mock(DataHandler.class);
-        when(mockDataHandler2.getName()).thenReturn("sample-resource.war");
-        when(mockDataHandler2.getInputStream()).thenReturn(this.getClass().getClassLoader()
-                .getResourceAsStream("sample-resource.tpl"));
-
-        final Attachment mockAttachment1 = mock(Attachment.class);
-        when(mockAttachment1.getDataHandler()).thenReturn(mockDataHandler1);
-        final Attachment mockAttachment2 = mock(Attachment.class);
-        when(mockAttachment2.getDataHandler()).thenReturn(mockDataHandler2);
-
-        final List<Attachment> attachmentList = new ArrayList<>();
-        attachmentList.add(mockAttachment1);
-        attachmentList.add(mockAttachment2);
-
-        final CreateResourceParam createResourceParam = new CreateResourceParam();
-        createResourceParam.setGroup("someGroup");
-        createResourceParam.setJvm("*");
-
-        ResourceTemplateMetaData mockMetaData = mock(ResourceTemplateMetaData.class);
-        when(mockMetaData.getContentType()).thenReturn("text/plain");
-        when(mockMetaData.getDeployFileName()).thenReturn("sample-resource.txt");
-        when(impl.getMetaData(anyString())).thenReturn(mockMetaData);
-
-        final Response response = cut.createResource(attachmentList, createResourceParam, authenticatedUser);
-        assertEquals("File being uploaded is invalid! The expected file type as indicated in the meta data is text based and should have a TPL extension.",
-                ((ApplicationResponse) response.getEntity()).getApplicationResponseContent());
-        verify(impl, never()).createResource(any(ResourceIdentifier.class), any(ResourceTemplateMetaData.class), any(InputStream.class));
     }
 
     @Test

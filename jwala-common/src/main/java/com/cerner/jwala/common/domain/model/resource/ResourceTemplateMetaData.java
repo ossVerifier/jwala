@@ -1,10 +1,9 @@
 package com.cerner.jwala.common.domain.model.resource;
 
 import org.apache.commons.lang3.StringUtils;
+import org.codehaus.jackson.annotate.JsonCreator;
 import org.codehaus.jackson.annotate.JsonIgnore;
-import org.codehaus.jackson.map.ObjectMapper;
-
-import java.io.IOException;
+import org.codehaus.jackson.annotate.JsonProperty;
 
 /**
  * Resource template meta data.
@@ -12,20 +11,32 @@ import java.io.IOException;
  * Created by JC043760 on 3/30/2016.
  */
 public class ResourceTemplateMetaData {
-    private String templateName;
-    private ContentType contentType;
-    private String deployFileName;
-    private String deployPath;
-    private Entity entity;
+    private final String templateName;
+    private final ContentType contentType;
+    private final String deployFileName;
+    private final String deployPath;
+    private final Entity entity;
     private boolean unpack = false;
     private boolean overwrite = false;
 
     @JsonIgnore
     private String jsonData;
 
-    protected ResourceTemplateMetaData() {
-        // Protected constructor to force developers to use createFromJsonStr
-        // We want this POJO immutable
+    @JsonCreator
+    public ResourceTemplateMetaData(@JsonProperty("templateName") final String templateName,
+                                    @JsonProperty("contentType") final ContentType contentType,
+                                    @JsonProperty("deployFileName") final String deployFileName,
+                                    @JsonProperty("deployPath") final String deployPath,
+                                    @JsonProperty("entity") final Entity entity,
+                                    @JsonProperty("unpack") final boolean unpack,
+                                    @JsonProperty("overwrite") boolean overwrite) {
+        this.templateName = templateName;
+        this.contentType = contentType;
+        this.deployFileName = deployFileName;
+        this.deployPath = deployPath;
+        this.entity = entity;
+        this.unpack = unpack;
+        this.overwrite = overwrite;
     }
 
     public String getTemplateName() {
@@ -76,20 +87,5 @@ public class ResourceTemplateMetaData {
                 ", unpack=" + unpack +
                 ", overwrite=" + overwrite +
                 '}';
-    }
-
-    /**
-     * Creates a resource meta data from a json string
-     * @param jsonData the json resource meta data string
-     * @return {@link ResourceTemplateMetaData}
-     * @throws IOException
-     */
-    public static ResourceTemplateMetaData createFromJsonStr(final String jsonData) throws IOException {
-        if (StringUtils.isNotEmpty(jsonData)) {
-            final ResourceTemplateMetaData metaData = new ObjectMapper().readValue(jsonData.replace("\\", "\\\\"), ResourceTemplateMetaData.class);
-            metaData.setJsonData(jsonData);
-            return metaData;
-        }
-        return new ResourceTemplateMetaData();
     }
 }

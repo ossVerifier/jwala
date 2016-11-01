@@ -7,7 +7,9 @@ import com.cerner.jwala.persistence.jpa.domain.resource.config.template.ConfigTe
 import com.cerner.jwala.persistence.jpa.domain.resource.config.template.JpaResourceConfigTemplate;
 import com.cerner.jwala.persistence.service.ResourceDao;
 import com.cerner.jwala.service.resource.ResourceHandler;
+import com.cerner.jwala.service.resource.ResourceService;
 import com.cerner.jwala.service.resource.impl.CreateResourceResponseWrapper;
+import com.cerner.jwala.service.resource.impl.ResourceServiceImpl;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -35,6 +37,8 @@ public class ExternalPropertiesResourceHandlerTest {
     @Mock
     private ResourceDao mockResourceDao;
 
+    private ResourceService resourceService = new ResourceServiceImpl(null, null, null, null, null, null, null, null,
+                                                                      null, null, null, null);
     @Before
     public void setup(){
         mockResourceDao = mock(ResourceDao.class);
@@ -106,7 +110,8 @@ public class ExternalPropertiesResourceHandlerTest {
 
         ResourceIdentifier identifier = resourceIdentifierBuilder.build();
 
-        final ResourceTemplateMetaData metaData = ResourceTemplateMetaData.createFromJsonStr("{\"deployFileName\": \"external.properties\"}");
+        final ResourceTemplateMetaData metaData =
+                resourceService.getMetaData("{\"deployFileName\": \"external.properties\"}");
 
         String templateContent = "key=value";
         JpaResourceConfigTemplate mockJpaResourceConfigTemplate = mock(JpaResourceConfigTemplate.class);
@@ -130,7 +135,8 @@ public class ExternalPropertiesResourceHandlerTest {
         resourceIdentifierBuilder.setResourceName("external.properties");
 
         ResourceIdentifier identifier = resourceIdentifierBuilder.build();
-        final ResourceTemplateMetaData metaData = ResourceTemplateMetaData.createFromJsonStr("{\"deployFileName\": \"external.properties\"}");
+        final ResourceTemplateMetaData metaData =
+                resourceService.getMetaData("{\"deployFileName\": \"external.properties\"}");
         String templateContent = "key=value";
         JpaResourceConfigTemplate mockJpaResourceConfigTemplate = mock(JpaResourceConfigTemplate.class);
         List<String> resourceNames = new ArrayList<>();
@@ -156,7 +162,8 @@ public class ExternalPropertiesResourceHandlerTest {
         resourceIdentifierBuilder.setWebServerName(null);
         resourceIdentifierBuilder.setResourceName("external.properties");
 
-        final ResourceTemplateMetaData metaData = ResourceTemplateMetaData.createFromJsonStr("{\"deployFileName\": \"external.properties\"}");
+        final ResourceTemplateMetaData metaData =
+                resourceService.getMetaData("{\"deployFileName\": \"external.properties\"}");
 
         CreateResourceResponseWrapper mockCreateResourceResponseWrapper = mock(CreateResourceResponseWrapper.class);
 

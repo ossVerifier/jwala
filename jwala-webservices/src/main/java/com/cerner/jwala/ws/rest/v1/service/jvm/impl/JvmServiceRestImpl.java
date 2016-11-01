@@ -134,12 +134,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
     @Override
     public Response generateAndDeployJvm(final String jvmName, final AuthenticatedUser user) {
         LOGGER.info("Generate and deploy JVM {} by user {}", jvmName, user.getUser().getId());
-        try {
-            return ResponseBuilder.ok(jvmService.generateAndDeployJvm(jvmName, user.getUser()));
-        } catch (InternalErrorException iee) {
-            return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
-                    AemFaultType.REMOTE_COMMAND_FAILURE, iee.getMessage(), iee));
-        }
+        return ResponseBuilder.ok(jvmService.generateAndDeployJvm(jvmName, user.getUser()));
     }
 
     @Override

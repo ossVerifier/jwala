@@ -86,4 +86,14 @@ public class JvmResourceHandlerTest {
         jvmResourceHandler.getSelectedValue(notMeResourceIdentifier);
         verify(mockSuccessor).getSelectedValue(notMeResourceIdentifier);
     }
+
+    @Test
+    public void testGetResourceNames() {
+        jvmResourceHandler.getResourceNames(resourceIdentifier);
+        verify(mockJvmPersistence).getResourceTemplateNames(anyString());
+
+        ResourceIdentifier notMeResourceIdentifier = new ResourceIdentifier.Builder().setResourceName("what-jvm").setGroupName("not-a-jvm").build();
+        jvmResourceHandler.getResourceNames(notMeResourceIdentifier);
+        verify(mockSuccessor).getResourceNames(notMeResourceIdentifier);
+    }
 }
