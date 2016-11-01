@@ -280,7 +280,7 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
     }
 
     @Test(expected = InternalErrorException.class)
-    public void testCreateValidateInheritsDefaultTemplatesAppTemplateThrowsIOException() {
+    public void testCreateValidateInheritsDefaultTemplatesAppTemplateThrowsIOException() throws IOException {
         System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, "./src/test/resources");
 
         final CreateJvmRequest createJvmRequest = mock(CreateJvmRequest.class);
