@@ -45,31 +45,23 @@ buildscript {
 }
 
 task downloadDeploymentBinaries(type: Download) {
-    doLast{
         src([jdkBinaryUrl, apachehttpdBinaryUrl, apachetomcatDeploymentBinaryUrl, unZipExeBinaryUrl, apachetomcattBinaryDeploymenTemplatUrl])
         dest "$buildDir/$tomcatDir/data/binaries"
-    }
 }
 
 task downloadTomcat(dependsOn: downloadDeploymentBinaries, type: Download) {
-    doLast {
         src "${tomcatBinaryUrl}"
         dest new File(buildDir, new File("${tomcatBinaryUrl}").getName())
-    }
 }
 
 task downloadAndUnzipTomcat(dependsOn: downloadTomcat, type: Copy) {
-    doLast {
         from zipTree(downloadTomcat.dest)
         into buildDir
-    }
 }
 
 task deleteDownloadedZip(dependsOn: downloadAndUnzipTomcat, type: Delete) {
-    doLast {
         delete new File("$buildDir", new File("${tomcatBinaryUrl}").getName())
         delete new File("$buildDir/$tomcatDir", 'webapps')
-    }
 }
 
 task copyConfigurationOverrides(dependsOn: deleteDownloadedZip, type: Copy) {
