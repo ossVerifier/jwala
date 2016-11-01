@@ -765,11 +765,17 @@ public class ApplicationServiceImpl implements ApplicationService {
 
         checkStartedJvms(group, hostNames);
 
-        Set<String> resourceSet = getWebAppOnlyResources(group);
+        final Set<String> resourceSet = getWebAppOnlyResources(group);
 
-        Map<String, Future<Map<String, CommandOutput>>> futures = getFutureCommands(hostNames, group, application, resourceSet);
+        final List<String> keys = getKeysAndAcquireWriteLock(appName, hostNames);
 
-        waitForDeploy(futures);
+        try {
+            final Map<String, Future<Set<CommandOutput>>> futures = getFutureCommands(hostNames, group, application, resourceSet);
+
+            waitForDeploy(appName, futures);
+        } finally {
+            releaseWriteLocks(keys);
+        }
     }
 
     protected List<String> getDeployHostList(final String hostName, final Group group, final Application application) {
@@ -836,58 +842,41 @@ public class ApplicationServiceImpl implements ApplicationService {
         return resourceSet;
     }
 
-    protected Map<String, Future<Map<String, CommandOutput>>> getFutureCommands(
+    protected Map<String, Future<Set<CommandOutput>>> getFutureCommands(
             final List<String> hostNames, final Group group, final Application application, final Set<String> resourceSet) {
         final ResourceGroup resourceGroup = resourceService.generateResourceGroup();
-        final String groupName = group.getName();
         final Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Map<String, Future<Map<String, CommandOutput>>> futures = new HashMap<>();
+        final Map<String, Future<Set<CommandOutput>>> futures = new HashMap<>();
         for (final String host : hostNames) {
-            final String key = application.getName() + "/" + host;
-            if (writeLock.containsKey(key) && writeLock.get(key).isWriteLocked()) {
-                throw new InternalErrorException(AemFaultType.SERVICE_EXCEPTION, "Current resource is being deployed, wait for deploy to complete.");
-            }
-        }
-        for (final String host : hostNames) {
-            final String key = application.getName() + "/" + host;
-            if (!writeLock.containsKey(key)) {
-                writeLock.put(key, new ReentrantReadWriteLock());
-            }
-            Future<Map<String, CommandOutput>> commandOutputFutureMap = executorService.submit
-                    (new Callable<Map<String, CommandOutput>>() {
+            Future<Set<CommandOutput>> commandOutputFutureSet = executorService.submit
+                    (new Callable<Set<CommandOutput>>() {
                         @Override
-                        public Map<String, CommandOutput> call() throws Exception {
-                            writeLock.get(key).writeLock().lock();
-                            try {
-                                Map<String, CommandOutput> commandOutputs = new HashMap<>();
-                                SecurityContextHolder.getContext().setAuthentication(authentication);
-                                for (final String resource : resourceSet) {
-                                    LOGGER.info("Deploying {} to host {}", resource, host);
-                                    commandOutputs.put(resource, groupService.deployGroupAppTemplate(groupName, resource, resourceGroup, application, host));
-                                }
-                                return commandOutputs;
-                            } finally {
-                                writeLock.get(key).writeLock().unlock();
+                        public Set<CommandOutput> call() throws Exception {
+                            Set<CommandOutput> commandOutputs = new HashSet<>();
+                            SecurityContextHolder.getContext().setAuthentication(authentication);
+                            for (final String resource : resourceSet) {
+                                LOGGER.info("Deploying {} to host {}", resource, host);
+                                commandOutputs.add(groupService.deployGroupAppTemplate(group.getName(), resource, resourceGroup, application, host));
                             }
+                            return commandOutputs;
                         }
                     }
                     );
-            futures.put(key, commandOutputFutureMap);
+            futures.put(host, commandOutputFutureSet);
         }
         return futures;
     }
 
-    protected void waitForDeploy(final Map<String, Future<Map<String, CommandOutput>>> futures) {
+    protected void waitForDeploy(final String appName, final Map<String, Future<Set<CommandOutput>>> futures) {
         if (futures != null) {
-            for (Entry<String, Future<Map<String, CommandOutput>>> entry : futures.entrySet()) {
+            for (Entry<String, Future<Set<CommandOutput>>> entry : futures.entrySet()) {
                 try {
-                    String[] resourceData = entry.getKey().split("/");
-                    Map<String, CommandOutput> commandOutputMap = entry.getValue().get(
+                    Set<CommandOutput> commandOutputSet = entry.getValue().get(
                             ApplicationProperties.getAsInteger("remote.jwala.execution.timeout.seconds"), TimeUnit.SECONDS);
-                    for (Entry<String, CommandOutput> commandOutput : commandOutputMap.entrySet()) {
-                        if (!commandOutput.getValue().getReturnCode().wasSuccessful()) {
-                            final String errorMessage = "Error in deploying resource " + commandOutput.getKey() +
-                                    " to host " + resourceData[1] + " for application " + resourceData[0];
+                    for (CommandOutput commandOutput : commandOutputSet) {
+                        if (!commandOutput.getReturnCode().wasSuccessful()) {
+                            final String errorMessage = "Error in deploying resources to host " + entry.getKey() +
+                                    " for application " + appName;
                             LOGGER.error(errorMessage);
                             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, errorMessage);
                         }
@@ -896,6 +885,33 @@ public class ApplicationServiceImpl implements ApplicationService {
                     LOGGER.error("Error in executing deploy", e);
                     throw new InternalErrorException(AemFaultType.RESOURCE_DEPLOY_FAILURE, e.getMessage());
                 }
+            }
+        }
+    }
+
+    protected List<String> getKeysAndAcquireWriteLock(String appName, List<String> hostNames) {
+        List<String> keys = new ArrayList<>();
+        for (final String host : hostNames) {
+            final String key = appName + "/" + host;
+            if (!writeLock.containsKey(key)) {
+                writeLock.put(key, new ReentrantReadWriteLock());
+            }
+            boolean gotLock = writeLock.get(key).writeLock().tryLock();
+            if (!gotLock) {
+                LOGGER.error("Could not get lock for host: {} and app: {}", host, appName);
+                releaseWriteLocks(keys);
+                throw new InternalErrorException(AemFaultType.SERVICE_EXCEPTION, "Current resource is being deployed, wait for deploy to complete.");
+            } else {
+                keys.add(key);
+            }
+        }
+        return keys;
+    }
+
+    protected void releaseWriteLocks(List<String> keys) {
+        for (String key : keys) {
+            if (writeLock.containsKey(key) && writeLock.get(key).isWriteLocked()) {
+                writeLock.get(key).writeLock().unlock();
             }
         }
     }
