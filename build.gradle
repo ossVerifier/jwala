@@ -43,15 +43,15 @@ repositories {
 
 sonarRunner {
     sonarProperties {
-        property 'sonar.host.url', 'http://localhost:9000'
-        property 'sonar.jdbc.url', 'jdbc:h2:tcp://localhost:9092/sonar'
-        property 'sonar.jdbc.driverClassName', 'org.h2.Driver'
+        property 'sonar.host.url',  project.properties['sonarHostUrl']
+        property 'sonar.jdbc.url', project.properties['sonarJDBCUrl']
+        property 'sonar.jdbc.driverClassName', 'com.mysql.jdbc.Driver'
         property 'sonar.jdbc.username', 'sonar'
         property 'sonar.jdbc.password', 'sonar'
         property 'sonar.dynamicAnalysis', 'reuseReports'
-        properties ["sonar.projectKey"] = 'cto.tco.classloader'
-        properties ["sonar.projectName"] = 'tomcat operation center'
-        properties ["sonar.projectVersion"] = '1.0.0'
+        properties["sonar.projectKey"] = 'com.cerner.jwala'
+        properties["sonar.projectName"] = 'Jwala'
+        properties["sonar.projectVersion"] =  project.properties['buildVersion']
     }
 }
 
@@ -198,7 +198,7 @@ subprojects {
         sonarProperties {
             property "sonar.junit.reportsPath", test.reports.junitXml.destination   // will be fixed in Gradle 1.12
             property "sonar.jacoco.reportPath", project.rootProject.buildDir.path + "/jacoco/" + "accum.exec"
-            property "sonar.jacoco.itReportPath", "C:/Users/RS045609/Desktop/" + "integration_test_jwala.exec"
+            property "sonar.jacoco.itReportPath", project.rootProject.buildDir.path + "/jacoco/" + "integration_test_jwala.exec"
         }
     }
 }
@@ -243,12 +243,12 @@ task(createSnapshot) << {
 }
 
 buildscript {
-	repositories {
-		jcenter()
-	}
-	dependencies {
-		classpath 'de.undercouch:gradle-download-task:3.1.1'
-	}
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath 'de.undercouch:gradle-download-task:3.1.1'
+    }
 }
 
 
