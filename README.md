@@ -7,16 +7,6 @@ Once defined, a Group may also be managed through Jwala’s REST API, to perform
 Jwala utilizes the defined file system structure and SSH agents on each machine to manage running Tomcat instances on remote Windows Servers. Jwala utilizes the Cerner Tomcat Platform application deployment model to know how to request current status from each Tomcat instance and HTTPD instance. Jwala is also able to update each instance as changes are made to the configuration, and allows maintenance operations to be executed from a central console.
 
 
-Sections in this readme that are marked with _italics_ require review and action when utilizing the template. Additional sections
-may be added.
-
-Generally speaking, the LICENSE.txt file, Contributing, and License sections should be left alone. The
-CONTRIBUTORS.md, CONTRIBUTING.md, and NOTICE.txt should be left in place but may need to be enhanced
-with additional details, and signed with initial contributor names.
-
-This usage section should be removed or replaced with details around the usage of your project. As a library and/or an
-independent functional piece of software.
-
 # _Building_
 
 Jwala can be build by using gradle. To build the jwala project run the "gradle build" command. This runs the build and test tasks. This task creates the jwala-tomcat.war file, which can be run bt dropping it in Apache Tomcat application server. 
