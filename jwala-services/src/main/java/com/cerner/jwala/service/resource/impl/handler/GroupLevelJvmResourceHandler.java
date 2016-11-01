@@ -115,4 +115,13 @@ public class GroupLevelJvmResourceHandler extends ResourceHandler {
             return successor.getSelectedValue(resourceIdentifier);
         }
     }
+
+    @Override
+    public List<String> getResourceNames(ResourceIdentifier resourceIdentifier) {
+        if (canHandle(resourceIdentifier)){
+            throw new UnsupportedOperationException();
+        } else {
+            return successor.getResourceNames(resourceIdentifier);
+        }
+    }
 }

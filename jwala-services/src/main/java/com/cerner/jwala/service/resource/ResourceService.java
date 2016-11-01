@@ -45,7 +45,6 @@ public interface ResourceService {
      * @param targetName
      * @param user
      */
-    @Deprecated
     CreateResourceResponseWrapper createTemplate(InputStream metaDataInputStream, InputStream templateData, String targetName, User user);
 
     /**
@@ -307,5 +306,9 @@ public interface ResourceService {
 
     <T> ResourceTemplateMetaData getTokenizedMetaData(String fileName, T entity, String metaDataStr) throws IOException;
 
-    ResourceTemplateMetaData getMetaData(String rawMetaData) throws IOException;
+    ResourceTemplateMetaData getMetaData(String jsonMetaData) throws IOException;
+
+    void validateAllResourcesForGeneration(ResourceIdentifier resourceIdentifier);
+
+    void validateSingleResourceForGeneration(ResourceIdentifier resourceIdentifier);
 }

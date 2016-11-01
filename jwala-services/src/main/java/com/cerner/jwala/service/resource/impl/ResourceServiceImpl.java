@@ -33,9 +33,11 @@ import com.cerner.jwala.service.resource.ResourceContentGeneratorService;
 import com.cerner.jwala.service.resource.ResourceHandler;
 import com.cerner.jwala.service.resource.ResourceService;
 import com.cerner.jwala.service.resource.impl.handler.exception.ResourceHandlerException;
+import com.cerner.jwala.template.exception.ResourceFileGeneratorException;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -213,15 +215,97 @@ public class ResourceServiceImpl implements ResourceService {
     }
 
     @Override
-    public <T> ResourceTemplateMetaData getTokenizedMetaData(String fileName, T entity, String metaDataStr) throws IOException {
-            String tokenizedMetaData = generateResourceFile(fileName, metaDataStr, generateResourceGroup(), entity, ResourceGeneratorType.METADATA);
-            LOGGER.info("tokenized metadata is : {}", tokenizedMetaData);
-            return ResourceTemplateMetaData.createFromJsonStr(tokenizedMetaData);
+    public void validateAllResourcesForGeneration(ResourceIdentifier resourceIdentifier) {
+        Map<String, List<String>> resourceExceptionMap = new HashMap<>();
+        List<String> exceptionList = new ArrayList<>();
+        boolean resourceExceptionThrown = false;
+        List<String> resourceNames = resourceHandler.getResourceNames(resourceIdentifier);
+        Object entity = resourceHandler.getSelectedValue(resourceIdentifier);
+        final ResourceGroup resourceGroup = generateResourceGroup();
+        for (String resourceName : resourceNames) {
+            ResourceIdentifier resourceIdentifierWithResource = new ResourceIdentifier.Builder()
+                    .setResourceName(resourceName)
+                    .setGroupName(resourceIdentifier.groupName)
+                    .setJvmName(resourceIdentifier.jvmName)
+                    .setWebAppName(resourceIdentifier.webAppName)
+                    .setWebServerName(resourceIdentifier.webServerName)
+                    .build();
+            ResourceContent resourceContent = getResourceContent(resourceIdentifierWithResource);
+            try {
+                generateResourceFile(resourceName, resourceContent.getMetaData(), resourceGroup, entity, ResourceGeneratorType.METADATA);
+            } catch (ResourceFileGeneratorException e) {
+                LOGGER.error("Failed to generate {} {} for {}", resourceName, ResourceGeneratorType.METADATA, entity, e);
+                resourceExceptionThrown = true;
+                exceptionList.add(e.getMessage());
+            }
+
+            try {
+                generateResourceFile(resourceName, resourceContent.getContent(), resourceGroup, entity, ResourceGeneratorType.TEMPLATE);
+            } catch (ResourceFileGeneratorException e) {
+                LOGGER.error("Failed to generate {} {} for {}", resourceName, ResourceGeneratorType.TEMPLATE, entity, e);
+                resourceExceptionThrown = true;
+                exceptionList.add(e.getMessage());
+            }
+
+        }
+
+        checkForResourceGenerationException(resourceIdentifier, resourceExceptionMap, exceptionList, resourceExceptionThrown, entity);
     }
 
     @Override
-    public ResourceTemplateMetaData getMetaData(String rawMetaData) throws IOException {
-        return ResourceTemplateMetaData.createFromJsonStr(rawMetaData);
+    public void validateSingleResourceForGeneration(ResourceIdentifier resourceIdentifier) {
+        Map<String, List<String>> resourceExceptionMap = new HashMap<>();
+        List<String> exceptionList = new ArrayList<>();
+        boolean resourceExceptionThrown = false;
+        ConfigTemplate resource = resourceHandler.fetchResource(resourceIdentifier);
+        Object entity = resourceHandler.getSelectedValue(resourceIdentifier);
+        final ResourceGroup resourceGroup = generateResourceGroup();
+
+        try {
+            generateResourceFile(resourceIdentifier.resourceName, resource.getMetaData(), resourceGroup, entity, ResourceGeneratorType.METADATA);
+        } catch (ResourceFileGeneratorException e) {
+            LOGGER.error("Failed to generate {} {} for {}", resourceIdentifier.resourceName, ResourceGeneratorType.METADATA, entity, e);
+            resourceExceptionThrown = true;
+            exceptionList.add(e.getMessage());
+        }
+
+        try {
+            generateResourceFile(resourceIdentifier.resourceName, resource.getTemplateContent(), resourceGroup, entity, ResourceGeneratorType.TEMPLATE);
+        } catch (ResourceFileGeneratorException e) {
+            LOGGER.error("Failed to generate {} {} for {}", resourceIdentifier.resourceName, ResourceGeneratorType.TEMPLATE, entity, e);
+            resourceExceptionThrown = true;
+            exceptionList.add(e.getMessage());
+        }
+
+        checkForResourceGenerationException(resourceIdentifier, resourceExceptionMap, exceptionList, resourceExceptionThrown, entity);
+    }
+
+    private void checkForResourceGenerationException(ResourceIdentifier resourceIdentifier, Map<String, List<String>> resourceExceptionMap, List<String> exceptionList, boolean resourceExceptionThrown, Object entity) {
+        if (resourceExceptionThrown) {
+            final String resourceName = resourceIdentifier.jvmName != null ? resourceIdentifier.jvmName : resourceIdentifier.webServerName != null ? resourceIdentifier.webServerName : resourceIdentifier.webAppName;
+            resourceExceptionMap.put(resourceName, exceptionList);
+            throw new InternalErrorException(AemFaultType.RESOURCE_GENERATION_FAILED, "Failed to validate the following resources.", null, resourceExceptionMap);
+        } else {
+            LOGGER.info("Resources passed validation for {}", entity);
+        }
+    }
+
+    @Override
+    public <T> ResourceTemplateMetaData getTokenizedMetaData(String fileName, T entity, String metaDataStr) throws IOException {
+            String tokenizedMetaData = generateResourceFile(fileName, metaDataStr, generateResourceGroup(), entity, ResourceGeneratorType.METADATA);
+            LOGGER.info("tokenized metadata is : {}", tokenizedMetaData);
+            return getMetaData(tokenizedMetaData);
+    }
+
+    @Override
+    public ResourceTemplateMetaData getMetaData(final String jsonMetaData) throws IOException {
+        if (StringUtils.isNotEmpty(jsonMetaData)) {
+            final ResourceTemplateMetaData metaData = new ObjectMapper().readValue(jsonMetaData.replace("\\", "\\\\"),
+                    ResourceTemplateMetaData.class);
+            metaData.setJsonData(jsonMetaData);
+            return metaData;
+        }
+        return null;
     }
 
     @Override

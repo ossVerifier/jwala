@@ -138,3 +138,14 @@
 .resource-preview-br {
     height: 20px;
 }
+
+.select-meta-data-and-template-files-widget label {
+    display: block;
+    margin-top: 5px;
+    margin-bottom: 2px;
+}
+
+.MetaDataEntryForm input {
+    display: block;
+    width: 320px;
+}

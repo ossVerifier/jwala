@@ -44,6 +44,7 @@ import com.cerner.jwala.service.group.GroupService;
 import com.cerner.jwala.service.resource.ResourceService;
 import com.cerner.jwala.service.resource.impl.CreateResourceResponseWrapper;
 import com.cerner.jwala.service.resource.impl.ResourceGeneratorType;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -718,6 +719,25 @@ public class ApplicationServiceImplTest {
         CreateResourceResponseWrapper createResourceResponseWrapper = mock(CreateResourceResponseWrapper.class);
         when(mockResourceService.createResource(any(ResourceIdentifier.class), any(ResourceTemplateMetaData.class), any(InputStream.class))).thenReturn(createResourceResponseWrapper);
         when(mockResourceService.getAppTemplate(anyString(), anyString(), anyString())).thenReturn("");
+
+        final ResourceTemplateMetaData resourceTemplateMetaData = new ObjectMapper().readValue("{\n" +
+                                                                        "  \"unpack\" : false,\n" +
+                                                                        "  \"deployPath\" : \"D:/stp/app/webapps\",\n" +
+                                                                        "  \"entity\" : {\n" +
+                                                                        "    \"type\" : \"GROUPED_APPS\",\n" +
+                                                                        "    \"group\" : \"testGroup\",\n" +
+                                                                        "    \"target\" : \"testApp\",\n" +
+                                                                        "    \"parentName\" : null,\n" +
+                                                                        "    \"deployToJvms\" : false\n" +
+                                                                        "  },\n" +
+                                                                        "  \"overwrite\" : false,\n" +
+                                                                        "  \"contentType\" : \"application/binary\",\n" +
+                                                                        "  \"deployFileName\" : \"test.war\",\n" +
+                                                                        "  \"templateName\" : \"test.war\"\n" +
+                                                                        "}", ResourceTemplateMetaData.class);
+
+        when(mockResourceService.getMetaData(anyString())).thenReturn(resourceTemplateMetaData);
+
         Application app2 = applicationService.uploadWebArchive(app.getId(), app.getWarName(), bytes, app.getWarPath());
         assertEquals(app.getWarName(), app2.getWarName());
         assertEquals(app.getWarPath(), app.getWarPath());

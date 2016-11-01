@@ -57,10 +57,11 @@ var serviceFoundation = {
                                         if ($.isFunction(caughtCallback)) {
                                             try {
                                                 var jsonResponseText = JSON.parse(e.responseText);
+                                                var errorDetails = jsonResponseText.content;
                                                 if (jsonResponseText.applicationResponseContent) {
-                                                    caughtCallback(jsonResponseText.applicationResponseContent);
+                                                    caughtCallback(jsonResponseText.applicationResponseContent, errorDetails);
                                                 } else {
-                                                    caughtCallback(jsonResponseText.message);
+                                                    caughtCallback(jsonResponseText.message, errorDetails);
                                                 }
                                             }catch(e) {
                                                 caughtCallback("Unexpected content in error response: " + e.responseText);
@@ -142,10 +143,11 @@ var serviceFoundation = {
                                         if ($.isFunction(caughtCallback)) {
                                             try {
                                                 var jsonResponseText = JSON.parse(e.responseText);
+                                                var errorDetails = jsonResponseText.content;
                                                 if (jsonResponseText.applicationResponseContent) {
-                                                    caughtCallback(jsonResponseText.applicationResponseContent);
+                                                    caughtCallback(jsonResponseText.applicationResponseContent, errorDetails);
                                                 } else {
-                                                    caughtCallback(jsonResponseText.message);
+                                                    caughtCallback(jsonResponseText.message, errorDetails);
                                                 }
                                             }catch(e) {
                                                 caughtCallback("Unexpected content in error response: " + e.responseText);

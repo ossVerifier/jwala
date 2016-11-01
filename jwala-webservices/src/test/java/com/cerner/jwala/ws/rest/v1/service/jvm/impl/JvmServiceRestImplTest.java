@@ -83,7 +83,6 @@ public class JvmServiceRestImplTest {
     private JvmStateReceiverAdapter jvmStateReceiverAdapter;
 
     private JvmServiceRestImpl jvmServiceRest;
-    private String generatedResourceDir;
 
     private static List<Jvm> createDecryptedList(List<Jvm> inList) {
         final List<Jvm> result = new ArrayList<>();
@@ -123,17 +122,10 @@ public class JvmServiceRestImplTest {
         } catch (Exception e) {
             assertTrue("This should not fail, but ... " + e.getMessage(), false);
         }
-
-        generatedResourceDir = ApplicationProperties.get("paths.generated.resource.dir");
-        assertTrue(new File(generatedResourceDir).mkdirs());
     }
 
     @After
     public void cleanUp() throws IOException {
-        generatedResourceDir = ApplicationProperties.get("paths.generated.resource.dir");
-        final File file = new File(generatedResourceDir);
-        FileUtils.deleteDirectory(new File(generatedResourceDir));
-        assertFalse(file.exists());
         System.clearProperty(ApplicationProperties.PROPERTIES_ROOT_PATH);
     }
 

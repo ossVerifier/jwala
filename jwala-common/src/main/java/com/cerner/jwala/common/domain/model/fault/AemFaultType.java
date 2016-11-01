@@ -142,6 +142,8 @@ public enum AemFaultType implements MessageResponseStatus {
 
     RESOURCE_META_DATA_UPDATE_FAILED("AEM68", "ResourceMetaDataUpdateFailed"),
 
+    RESOURCE_GENERATION_FAILED("AEM69", "ResourceGenerationFailed");
+
     RESOURCE_DEPLOY_FAILURE("AEM70", "ResourceDeployFailed"),
 
     GROUP_MISSING_HOSTS("AEM71", "GroupMissingHosts");

@@ -49,11 +49,16 @@ var ResourcesConfig = React.createClass({
                                                         show={false}
                                                         okCallback={this.onCreateResourceOkClicked}
                                                         content={<SelectTemplateFilesWidget ref="selectTemplateFileWidget" getResourceOptions={this.getResourceOptions}/>}/>
+                    <ModalDialogBox ref="createResourceModalDlg"
+                                    title="Create Resource Template"
+                                    show={false}
+                                    okCallback={this.onCreateResourceOkClicked}
+                                    content={<SelectMetaDataAndTemplateFilesWidget ref="selectMetaDataAndTemplateFilesWidget" uploadMetaData={false} />}/>
                     <ModalDialogBox ref="selectMetaDataAndTemplateFilesModalDlg"
                                     title="Create Resource Template"
                                     show={false}
                                     okCallback={this.onCreateResourceOkClicked}
-                                    content={<SelectMetaDataAndTemplateFilesWidget ref="selectMetaDataAndTemplateFilesWidget"/>}/>
+                                    content={<SelectMetaDataAndTemplateFilesWidget ref="selectMetaDataAndTemplateFilesWidget" uploadMetaData={true} hideUploadMetaDataOption={true} />}/>
                     <ModalDialogBox ref="confirmDeleteResourceModalDlg"
                                     title="Confirm Resource Template Deletion"
                                     show={false}
@@ -70,6 +75,7 @@ var ResourcesConfig = React.createClass({
                                     cancelLabel="No" />
                 </div>
     },
+    validator: null,
     getResourceOptions: function() {
         return this.refs.resourceEditor.refs.resourcePane.state.resourceOptions;
     },
@@ -101,11 +107,11 @@ var ResourcesConfig = React.createClass({
             MainArea.unsavedChanges = false;
         }
 
-        this.refs.xmlTabs.setState({entityType: data.rtreeListMetaData.entity,
+        this.refs.xmlTabs.setState({entityType: data ? data.rtreeListMetaData.entity : null,
                                     entity: data,
-                                    entityGroupName: data.rtreeListMetaData.parent.name,
+                                    entityGroupName: data ? data.rtreeListMetaData.parent.name : null,
                                     resourceTemplateName: null,
-                                    entityParent: data.rtreeListMetaData.parent,
+                                    entityParent: data ? data.rtreeListMetaData.parent : null,
                                     template: ""});
         return true;
     },
@@ -194,8 +200,10 @@ var ResourcesConfig = React.createClass({
         $(".xml-editor-preview-tab-component").not(".content").css("cssText", "height:" + tabContentHeight + "px !important;");
     },
     createResourceCallback: function(data) {
-        if (data.rtreeListMetaData.entity === "extProperties") {
+        if (data && data.rtreeListMetaData.entity === "extProperties") {
             this.refs.selectTemplateFilesModalDlg.show();
+        } else if (data) {
+            this.refs.createResourceModalDlg.show();
         } else {
             this.refs.selectMetaDataAndTemplateFilesModalDlg.show();
         }
@@ -258,31 +266,41 @@ var ResourcesConfig = React.createClass({
 
     },
     onCreateResourceOkClicked: function() {
+        if (!$(this.refs.selectMetaDataAndTemplateFilesWidget.refs.form.getDOMNode()).validate().form()) {
+            return;
+        }
+
         var isExtProperties = this.refs.xmlTabs.state.entityType === "extProperties";
         var metaDataFile,templateFile;
 
         if(!isExtProperties){
-            metaDataFile = this.refs.selectMetaDataAndTemplateFilesWidget.refs.metaDataFile.getDOMNode().files[0];
-            templateFile = this.refs.selectMetaDataAndTemplateFilesWidget.refs.templateFile.getDOMNode().files[0];
-            if (metaDataFile === undefined) {
-                        this.refs.selectMetaDataAndTemplateFilesWidget.setState({invalidMetaFile: true});
+            if (this.refs.selectMetaDataAndTemplateFilesWidget.refs.metaDataFile) {
+                metaDataFile = this.refs.selectMetaDataAndTemplateFilesWidget.refs.metaDataFile.getDOMNode().files[0];
+                this.refs.selectMetaDataAndTemplateFilesWidget.setState({invalidMetaFile: !metaDataFile});
             }
+
+            templateFile = this.refs.selectMetaDataAndTemplateFilesWidget.refs.templateFile.getDOMNode().files[0];
             if (templateFile === undefined) {
-                        this.refs.selectMetaDataAndTemplateFilesWidget.setState({invalidTemplateFile: true});
+                this.refs.selectMetaDataAndTemplateFilesWidget.setState({invalidTemplateFile: true});
             }
         } else {
-//            metaDataFile = undefined;
             templateFile = this.refs.selectTemplateFileWidget.refs.templateFile.getDOMNode().files[0];
             if (templateFile === undefined) {
                 this.refs.selectTemplateFileWidget.setState({invalidTemplateFile: true});
             }
         }
 
-        if ((isExtProperties && templateFile) || (metaDataFile && templateFile)) {
+        if ((isExtProperties && templateFile) || templateFile) {
             // Submit!
             var formData = new FormData();
             var self = this;
-            formData.append("metaData", metaDataFile);
+
+            if (metaDataFile) {
+                formData.append("metaData", metaDataFile);
+            } else {
+                formData.append("deployPath", this.refs.selectMetaDataAndTemplateFilesWidget.refs.metaDataEntryForm.getDeployPath());
+                formData.append("contentType", this.refs.selectMetaDataAndTemplateFilesWidget.refs.metaDataEntryForm.getContentType());
+            }
             formData.append("templateFile", templateFile);
 
             var groupName;
@@ -291,7 +309,7 @@ var ResourcesConfig = React.createClass({
             var webAppName;
             var node = this.refs.resourceEditor.refs.treeList.getSelectedNodeData();
 
-            if (!isExtProperties) {
+            if (node && !isExtProperties) {
                 if (node.rtreeListMetaData.entity === "webApps") {
                     webAppName = node.name;
                     if (node.rtreeListMetaData.parent.rtreeListMetaData.entity === "jvms") {
@@ -314,21 +332,45 @@ var ResourcesConfig = React.createClass({
             }
 
             var self = this;
-            this.props.resourceService.createResource(groupName, webServerName, jvmName, webAppName, formData).then(function(response){
-                if(!isExtProperties){
-                    self.refs.selectMetaDataAndTemplateFilesModalDlg.close();
-                } else {
-                    self.refs.selectTemplateFilesModalDlg.close();
-                }
-                self.refreshResourcePane();
-                if (isExtProperties){
-                    self.updateExtPropsAttributesCallback();
-                }
+
+            var deployFilename = null;
+            if (this.refs.selectMetaDataAndTemplateFilesWidget.refs.metaDataEntryForm) { // user form was used
+                deployFilename = this.refs.selectMetaDataAndTemplateFilesWidget.refs.metaDataEntryForm.getDeployFilename()
+            } else { // upload meta data was used
+                deployFilename = $(this.refs.selectMetaDataAndTemplateFilesWidget.refs.templateFile.getDOMNode()).val();
+                deployFilename = deployFilename.substr(deployFilename.lastIndexOf("\\") + 1);
+            }
+
+            $("body").css("cursor", "progress");
+            this.props.resourceService.createResource(groupName, webServerName, jvmName, webAppName, formData,
+                metaDataFile, deployFilename).then(function(response){
+                    if(!isExtProperties){
+                        if (self.refs.selectMetaDataAndTemplateFilesModalDlg.isShown()) {
+                            self.refs.selectMetaDataAndTemplateFilesModalDlg.close();
+                        } else {
+                            self.refs.createResourceModalDlg.close();
+                        }
+                    } else {
+                        self.refs.selectTemplateFilesModalDlg.close();
+                    }
+                    self.refreshResourcePane();
+                    if (isExtProperties){
+                        self.updateExtPropsAttributesCallback();
+                    }
             }).caught(function(response){
                 console.log(response);
-                var errMsg = response.responseJSON ? response.responseJSON.applicationResponseContent : "";
+                var errMsg = "Unexpected error. Please check log for error details.";
+                var responseJson = response.responseJSON
+                if (responseJson) {
+                    if (responseJson.message) {
+                        errMsg = responseJson.message;
+                    } else if (responseJson.applicationResponseContent) {
+                        errMsg = responseJson.applicationResponseContent;
+                    }
+                }
+
                 $.errorAlert("Error creating resource template! " + errMsg, "Error", true);
-            });
+            }).lastly(function(){$("body").css("cursor", "default");});
         }
     },
     refreshResourcePane: function() {
@@ -437,7 +479,7 @@ var XmlTabs = React.createClass({
     },
     componentWillUpdate: function(nextProps, nextState) {
         this.refs.tabs.setState({activeHash: "#/Configuration/Resources/" + this.state.lastSaved + "/",
-            entityGroupName: nextState.entityParent.name});
+            entityGroupName: nextState.entityParent ? nextState.entityParent.name : null});
     },
     onChangeCallback: function() {
         if ((this.refs.codeMirrorComponent !== undefined && this.refs.codeMirrorComponent.isContentChanged())
@@ -458,7 +500,7 @@ var XmlTabs = React.createClass({
         try {
             var parsedMetaData = JSON.parse(this.state.metaData.replace(/\\/g, "\\\\")); // escape any backslashes before parsing
             var deployToJvms = parsedMetaData.entity.deployToJvms;
-            if (this.state.entityType === "jvmSection" || this.state.entityType === "webServerSection" || (this.state.entityType === "webApps" && (deployToJvms === undefined || deployToJvms === "true" || deployToJvms === true))){
+            if (this.state.entityType === "jvmSection" || this.state.entityType === "webServerSection" || (this.state.entityType === "webApps" && this.state.entityParent.name === "Web Apps" && (deployToJvms === undefined || deployToJvms === "true" || deployToJvms === true))){
                 this.props.updateGroupTemplateCallback(template);
             } else {
                 this.saveResourcePromise(template).then(this.savedResourceCallback).caught(this.failed.bind(this, "Save Resource Template"));
@@ -536,7 +578,7 @@ var XmlTabs = React.createClass({
         try {
             var parsedMetaData = JSON.parse(this.refs.metaDataEditor.getText().replace(/\\/g, "\\\\")); // escape any backslashes before parsing
             var deployToJvms = parsedMetaData.entity.deployToJvms;
-            if (this.state.entityType === "jvmSection" || this.state.entityType === "webServerSection" || (this.state.entityType === "webApps" && (deployToJvms === undefined || deployToJvms === "true" || deployToJvms === true))){
+            if (this.state.entityType === "jvmSection" || this.state.entityType === "webServerSection" || (this.state.entityType === "webApps" && this.state.entityParent.name === "Web Apps" && (deployToJvms === undefined || deployToJvms === "true" || deployToJvms === true))){
                 this.props.updateGroupMetaDataCallback(metaData);
             } else {
                 this.saveResourceMetaDataPromise(metaData).then(this.savedResourceMetaDataCallback).caught(this.failed.bind(this, "Save Resource Meta Data"));
@@ -905,21 +947,39 @@ var SelectMetaDataAndTemplateFilesWidget = React.createClass({
     getInitialState: function() {
         // Let's not use jQuery form validation since we only need to check if the user has chosen files to use in creating the resource.
         // Besides, this is doing it the React way. :)
-        return {invalidMetaFile: false, invalidTemplateFile: false};
+        return {uploadMetaData: this.props.uploadMetaData};
     },
     render: function() {
+
+        var metaDataEntryComponent = this.state.uploadMetaData ? <div>
+                                                                     <label>*Meta Data File</label>
+                                                                     <label ref="metaDataFileErrorLabel" htmlFor="metaDataFile" className="error"/>
+                                                                     <div className="file-input-container">
+                                                                         <input type="file" ref="metaDataFile" name="metaDataFile" required accept=".json" onChange={this.onMetaDataFileChange}/>
+                                                                     </div>
+                                                                 </div>
+                                                               : <MetaDataEntryForm ref="metaDataEntryForm"/>
+        var uploadMetaDataCheckbox = null;
+        if (!this.props.hideUploadMetaDataOption) {
+            uploadMetaDataCheckbox = this.state.uploadMetaData ?
+                <input type="checkbox" onChange={this.onUploadMetaDataCheckboxChange} checked>Upload Meta Data File</input> :
+                <input type="checkbox" onChange={this.onUploadMetaDataCheckboxChange}>Upload Meta Data File</input>;
+        }
+
         return <div className="select-meta-data-and-template-files-widget">
-                   <form ref="form">
-                       <div className={(!this.state.invalidMetaFile ? "hide " : "") + "error"}>Please select a meta data file (*.json)</div>
-                       <div className="file-input-container">
-                           <input type="file" ref="metaDataFile" name="metaDataFile" accept=".json" onChange={this.onMetaDataFileChange}>Meta Data File</input>
-                       </div>
-                       <div className={(!this.state.invalidTemplateFile ? "hide " : "") + "error"}>Please select a resource template file (*.tpl)</div>
+                   {uploadMetaDataCheckbox}
+                   <form ref="form" className="testForm">
+                       {metaDataEntryComponent}
+                       <label>*Resource Template File</label>
+                       <label ref="templateFileErrorLabel" htmlFor="templateFile" className="error"/>
                        <div>
-                           <input type="file" ref="templateFile" name="templateFile" accept=".tpl" onChange={this.onTemplateFileChange}>Template File</input>
+                           <input ref="templateFile" name="templateFile" type="file" required onChange={this.onTemplateFileChange}/>
                        </div>
                    </form>
                </div>
+    },
+    onUploadMetaDataCheckboxChange: function() {
+        this.setState({uploadMetaData: !this.state.uploadMetaData});
     },
     componentDidMount: function() {
         $(this.refs.form.getDOMNode()).submit(function(e) {
@@ -928,17 +988,61 @@ var SelectMetaDataAndTemplateFilesWidget = React.createClass({
                                               });
     },
     onMetaDataFileChange: function(e) {
-        if(this.refs.metaDataFile.getDOMNode().files[0]) {
-            this.setState({invalidMetaFile: false});
+        // This is necessary since jquery validate does not clear the error
+        // after user specifies a file not unless user clicks on something
+        // Note: We are not modifying the DOM here in such a way that will affect React
+        if ($(this.refs.metaDataFileErrorLabel.getDOMNode()).hasClass("error")) {
+            $(this.refs.metaDataFileErrorLabel.getDOMNode()).removeClass("error");
+            $(this.refs.metaDataFileErrorLabel.getDOMNode()).html("");
+            $(this.refs.metaDataFile.getDOMNode()).removeClass("error");
         }
     },
     onTemplateFileChange: function(e) {
-        if(this.refs.templateFile.getDOMNode().files[0]) {
-            this.setState({invalidTemplateFile: false});
+        // This is necessary since jquery validate does not clear the error
+        // after user specifies a file not unless user clicks on something
+        // Note: We are not modifying the DOM here in such a way that will affect React
+        if ($(this.refs.templateFileErrorLabel.getDOMNode()).hasClass("error")) {
+            $(this.refs.templateFileErrorLabel.getDOMNode()).removeClass("error");
+            $(this.refs.templateFileErrorLabel.getDOMNode()).html("");
+            $(this.refs.templateFile.getDOMNode()).removeClass("error");
         }
     }
 });
 
+var MetaDataEntryForm = React.createClass({
+    getInitialState: function() {
+        return {deployPath: null, deployFilename: null, contentType: null};
+    },
+    render: function() {
+        return <div className="MetaDataEntryForm">
+                   <label>*Deploy Name</label>
+                   <label htmlFor="deployFilename" className="error"/>
+                   <input ref="deployFilename" name="deployFilename" type="text" required valueLink={this.linkState("deployFilename")}/>
+                   <label>Deploy Path</label>
+                   <input ref="deployPath" type="text"  valueLink={this.linkState("deployPath")}/>
+                   <label>Content Type</label>
+                   <select ref="contentType"  valueLink={this.linkState("contentType")}>
+                       <option value="undefined"></option>
+                       <option value="text/xml">text/xml</option>
+                       <option value="text/plain">text/plain</option>
+                       <option value="application/binary">application/binary</option>
+                   </select>
+               </div>
+    },
+    mixins: [React.addons.LinkedStateMixin],
+    componentDidMount: function() {
+        this.refs.deployFilename.getDOMNode().focus();
+    },
+    getDeployPath: function() {
+        return this.state.deployPath;
+    },
+    getDeployFilename: function() {
+        return this.state.deployFilename;
+    },
+    getContentType: function() {
+        return this.state.contentType;
+    }
+})
 
 var SelectTemplateFilesWidget = React.createClass({
     getInitialState: function() {

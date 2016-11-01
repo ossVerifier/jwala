@@ -102,4 +102,14 @@ public class GroupLevelWebServerResourceHandlerTest {
         groupLevelWebServerResourceHandler.getSelectedValue(notMeResourceIdentifier);
         verify(mockSuccessor).getSelectedValue(notMeResourceIdentifier);
     }
+
+    @Test (expected = UnsupportedOperationException.class)
+    public void testGetResourceNames() {
+        ResourceIdentifier notMeResourceIdentifier = new ResourceIdentifier.Builder().setResourceName("what-group-level-web-server").setGroupName("not-a-web-server").build();
+        groupLevelWebServerResourceHandler.getResourceNames(notMeResourceIdentifier);
+        verify(mockSuccessor).getResourceNames(notMeResourceIdentifier);
+
+        groupLevelWebServerResourceHandler.getResourceNames(resourceIdentifier);
+    }
+
 }
