@@ -341,6 +341,7 @@ var ResourcesConfig = React.createClass({
                 deployFilename = deployFilename.substr(deployFilename.lastIndexOf("\\") + 1);
             }
 
+            $("body").css("cursor", "progress");
             this.props.resourceService.createResource(groupName, webServerName, jvmName, webAppName, formData,
                 metaDataFile, deployFilename).then(function(response){
                     if(!isExtProperties){
@@ -369,7 +370,7 @@ var ResourcesConfig = React.createClass({
                 }
 
                 $.errorAlert("Error creating resource template! " + errMsg, "Error", true);
-            });
+            }).lastly(function(){$("body").css("cursor", "default");});
         }
     },
     refreshResourcePane: function() {
