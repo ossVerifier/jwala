@@ -7,7 +7,6 @@ import com.cerner.jwala.common.domain.model.jvm.Jvm;
 import com.cerner.jwala.ws.rest.v1.provider.AuthenticatedUser;
 import com.cerner.jwala.ws.rest.v1.service.app.impl.JsonCreateApplication;
 import com.cerner.jwala.ws.rest.v1.service.app.impl.JsonUpdateApplication;
-
 import org.apache.cxf.jaxrs.ext.MessageContext;
 import org.springframework.beans.factory.InitializingBean;
 
@@ -112,5 +111,9 @@ public interface ApplicationServiceRest extends InitializingBean {
                                      @MatrixParam("jvmName") String jvmName,
                                      @PathParam("resourceTemplateName") String resourceTemplateName,
                                      String template);
+
+    @PUT
+    @Path("/{appName}/conf")
+    Response deployConf(@PathParam("appName") String appName, @BeanParam AuthenticatedUser aUser, @QueryParam("hostName") String hostName);
 
 }

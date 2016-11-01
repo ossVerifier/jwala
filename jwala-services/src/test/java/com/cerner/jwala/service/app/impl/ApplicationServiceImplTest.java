@@ -7,6 +7,7 @@ import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
 import com.cerner.jwala.common.domain.model.jvm.JvmState;
+import com.cerner.jwala.common.domain.model.resource.Entity;
 import com.cerner.jwala.common.domain.model.resource.ResourceGroup;
 import com.cerner.jwala.common.domain.model.resource.ResourceIdentifier;
 import com.cerner.jwala.common.domain.model.resource.ResourceTemplateMetaData;
@@ -93,8 +94,7 @@ public class ApplicationServiceImplTest {
 
     @Mock
     private FileManager fileManager;
-    @InjectMocks
-    @Spy
+
     private ApplicationServiceImpl applicationService;
 
     @Mock
@@ -177,6 +177,9 @@ public class ApplicationServiceImplTest {
         when(fileManager.getResourceTypeTemplate(eq("AppContextXMLTemplate.tpl"))).thenReturn("The application context template.");
         when(fileManager.getResourceTypeTemplate(eq("RoleMappingTemplate.tpl"))).thenReturn("The role mapping properties template.");
 
+        applicationService = new ApplicationServiceImpl(applicationPersistenceService,
+                jvmPersistenceService, remoteCommandExecutor, groupService, webArchiveManager, privateApplicationService,
+                mockHistoryService, mockMessagingService, mockResourceService, remoteCommandExecutorImpl, binaryDistributionService);
     }
 
     @SuppressWarnings("unchecked")
@@ -743,6 +746,146 @@ public class ApplicationServiceImplTest {
     @Test (expected = ApplicationServiceException.class)
     public void testUploadWebArchiveWithWarNameFail() throws IOException {
         applicationService.uploadWebArchive(new Identifier<Application>("1"), null, new byte[0], new String());
+    }
+
+    @Test
+    public void testAppDeployConf() throws IOException {
+        final String appName = "test-app";
+        List<String> hosts = new ArrayList<>();
+        hosts.add("testServer");
+        hosts.add("testServer2");
+        List<String> templateNames = new ArrayList<>();
+        templateNames.add("");
+        Set<Jvm> jvms = new HashSet<>();
+        ResourceTemplateMetaData mockMetaData = mock(ResourceTemplateMetaData.class);
+        Entity mockEntity = mock(Entity.class);
+        Jvm mockJvm = mock(Jvm.class);
+        jvms.add(mockJvm);
+        Group mockGroup = mock(Group.class);
+        CommandOutput mockCommandOutput = mock(CommandOutput.class);
+        when(applicationPersistenceService.getApplication(eq(appName))).thenReturn(mockApplication);
+        when(mockApplication.getName()).thenReturn(appName);
+        when(groupService.getGroup(any(Identifier.class))).thenReturn(mockGroup);
+        when(mockApplication.getGroup()).thenReturn(mockGroup);
+        when(mockGroup.getName()).thenReturn("test-group");
+        when(mockGroup.getId()).thenReturn(new Identifier<Group>(1L));
+        when(mockGroup.getJvms()).thenReturn(jvms);
+        when(mockJvm.getHostName()).thenReturn("testserver");
+        when(mockJvm.getState()).thenReturn(JvmState.JVM_NEW);
+        when(groupService.getHosts(anyString())).thenReturn(hosts);
+        when(groupService.getGroupAppResourceTemplateMetaData(anyString(), anyString())).thenReturn("");
+        when(mockResourceService.getMetaData(anyString())).thenReturn(mockMetaData);
+        when(mockMetaData.getEntity()).thenReturn(mockEntity);
+        when(mockEntity.getDeployToJvms()).thenReturn(false);
+        when(groupService.getGroupAppsResourceTemplateNames(anyString())).thenReturn(templateNames);
+        when(groupService.deployGroupAppTemplate(anyString(), anyString(), any(ResourceGroup.class), any(Application.class), anyString())).thenReturn(mockCommandOutput);
+        when(mockCommandOutput.getReturnCode()).thenReturn(new ExecReturnCode(0));
+        applicationService.deployConf(appName, null, testUser);
+        verify(groupService, times(2)).deployGroupAppTemplate(eq("test-group"), anyString(), any(ResourceGroup.class), eq(mockApplication), anyString());
+    }
+
+    @Test (expected = InternalErrorException.class)
+    public void testAppDeployConfCommandFailure() throws IOException {
+        final String appName = "test-app";
+        List<String> hosts = new ArrayList<>();
+        hosts.add("testServer");
+        hosts.add("testServer2");
+        List<String> templateNames = new ArrayList<>();
+        templateNames.add("");
+        Set<Jvm> jvms = new HashSet<>();
+        ResourceTemplateMetaData mockMetaData = mock(ResourceTemplateMetaData.class);
+        Entity mockEntity = mock(Entity.class);
+        Jvm mockJvm = mock(Jvm.class);
+        jvms.add(mockJvm);
+        Group mockGroup = mock(Group.class);
+        CommandOutput mockCommandOutput = mock(CommandOutput.class);
+        when(applicationPersistenceService.getApplication(eq(appName))).thenReturn(mockApplication);
+        when(mockApplication.getName()).thenReturn(appName);
+        when(groupService.getGroup(any(Identifier.class))).thenReturn(mockGroup);
+        when(mockApplication.getGroup()).thenReturn(mockGroup);
+        when(mockGroup.getId()).thenReturn(new Identifier<Group>(1L));
+        when(mockGroup.getJvms()).thenReturn(jvms);
+        when(mockJvm.getHostName()).thenReturn("testserver");
+        when(mockJvm.getState()).thenReturn(JvmState.JVM_NEW);
+        when(groupService.getHosts(anyString())).thenReturn(hosts);
+        when(groupService.getGroupAppResourceTemplateMetaData(anyString(), anyString())).thenReturn("");
+        when(mockResourceService.getMetaData(anyString())).thenReturn(mockMetaData);
+        when(mockMetaData.getEntity()).thenReturn(mockEntity);
+        when(mockEntity.getDeployToJvms()).thenReturn(false);
+        when(groupService.getGroupAppsResourceTemplateNames(anyString())).thenReturn(templateNames);
+        when(groupService.deployGroupAppTemplate(anyString(), anyString(), any(ResourceGroup.class), any(Application.class), anyString())).thenReturn(mockCommandOutput);
+        when(mockCommandOutput.getReturnCode()).thenReturn(new ExecReturnCode(1));
+        applicationService.deployConf(appName, null, testUser);
+    }
+
+    @Test (expected = InternalErrorException.class)
+    public void testAppDeployConfNoHostFailure() {
+        final String appName = "test-app";
+        when(applicationPersistenceService.getApplication(eq(appName))).thenReturn(mockApplication);
+        when(groupService.getGroup(any(Identifier.class))).thenReturn(group);
+        when(mockApplication.getGroup()).thenReturn(group);
+        when(groupService.getHosts(anyString())).thenReturn(null);
+        applicationService.deployConf(appName, null, testUser);
+    }
+
+    @Test (expected = InternalErrorException.class)
+    public void testAppDeployConfJvmStatedFailure() {
+        final String appName = "test-app";
+        List<String> hosts = new ArrayList<>();
+        hosts.add("testServer");
+        hosts.add("testServer2");
+        Set<Jvm> jvms = new HashSet<>();
+        Jvm mockJvm = mock(Jvm.class);
+        jvms.add(mockJvm);
+        Group mockGroup = mock(Group.class);
+        when(applicationPersistenceService.getApplication(eq(appName))).thenReturn(mockApplication);
+        when(groupService.getGroup(any(Identifier.class))).thenReturn(mockGroup);
+        when(mockApplication.getGroup()).thenReturn(mockGroup);
+        when(mockGroup.getId()).thenReturn(new Identifier<Group>(1L));
+        when(mockGroup.getJvms()).thenReturn(jvms);
+        when(mockJvm.getHostName()).thenReturn("testserver");
+        when(mockJvm.getState()).thenReturn(JvmState.JVM_STARTED);
+        when(groupService.getHosts(anyString())).thenReturn(hosts);
+        applicationService.deployConf(appName, null, testUser);
+    }
+
+    @Test (expected = InternalErrorException.class)
+    public void testAppDeployConfIncorrectHostFailure() {
+        final String appName = "test-app";
+        List<String> hosts = new ArrayList<>();
+        hosts.add("testServer");
+        hosts.add("testServer2");
+        when(applicationPersistenceService.getApplication(eq(appName))).thenReturn(mockApplication);
+        when(groupService.getGroup(any(Identifier.class))).thenReturn(group);
+        when(mockApplication.getGroup()).thenReturn(group);
+        when(groupService.getHosts(anyString())).thenReturn(hosts);
+        applicationService.deployConf(appName, "test", testUser);
+    }
+
+    @Test (expected = InternalErrorException.class)
+    public void testAppDeployConfResourceTemplateFailure() throws IOException {
+        final String appName = "test-app";
+        List<String> hosts = new ArrayList<>();
+        hosts.add("testServer");
+        hosts.add("testServer2");
+        List<String> templateNames = new ArrayList<>();
+        templateNames.add("");
+        Set<Jvm> jvms = new HashSet<>();
+        Jvm mockJvm = mock(Jvm.class);
+        jvms.add(mockJvm);
+        Group mockGroup = mock(Group.class);
+        when(applicationPersistenceService.getApplication(eq(appName))).thenReturn(mockApplication);
+        when(groupService.getGroup(any(Identifier.class))).thenReturn(mockGroup);
+        when(mockApplication.getGroup()).thenReturn(mockGroup);
+        when(mockGroup.getId()).thenReturn(new Identifier<Group>(1L));
+        when(mockGroup.getJvms()).thenReturn(jvms);
+        when(mockJvm.getHostName()).thenReturn("testserver");
+        when(mockJvm.getState()).thenReturn(JvmState.JVM_NEW);
+        when(groupService.getHosts(anyString())).thenReturn(hosts);
+        when(groupService.getGroupAppResourceTemplateMetaData(anyString(), anyString())).thenReturn("");
+        when(mockResourceService.getMetaData(anyString())).thenThrow(IOException.class);
+        when(groupService.getGroupAppsResourceTemplateNames(anyString())).thenReturn(templateNames);
+        applicationService.deployConf(appName, "testserver", testUser);
     }
 
 }

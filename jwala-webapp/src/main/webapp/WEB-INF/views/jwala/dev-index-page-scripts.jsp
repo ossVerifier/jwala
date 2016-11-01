@@ -79,6 +79,7 @@
 <script type="text/jsx" src="public-resources/js/react/group-operations/ServerStateWidget.js"></script>
 <script type="text/jsx" src="public-resources/js/react/group-operations/JvmControlPanelWidget.js"></script>
 <script type="text/jsx" src="public-resources/js/react/group-operations/WebServerControlPanelWidget.js"></script>
+<script type="text/jsx" src="public-resources/js/react/group-operations/WebAppControlPanelWidget.js"></script>
 <script type="text/jsx" src="public-resources/js/react/admin-tab.js"></script>
 <script type="text/jsx" src="public-resources/js/react/jvm-config.js"></script>
 <script type="text/jsx" src="public-resources/js/react/group-config.js"></script>

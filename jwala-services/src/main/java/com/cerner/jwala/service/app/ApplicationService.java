@@ -99,4 +99,6 @@ public interface ApplicationService {
     CommandOutput executeChangeFileModeCommand(String entity, String host, String mode, String fileName, String fileOptions) throws CommandFailureException;
 
     CommandOutput executeUnzipBinaryCommand(String entity, String host, String fileName, String destination, String options) throws CommandFailureException;
+
+    void deployConf(String appName, String hostName, User user);
 }

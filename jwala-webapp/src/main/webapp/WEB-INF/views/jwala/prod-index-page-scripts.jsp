@@ -80,6 +80,7 @@
 <script src="gen-public-resources/js/react/group-operations/ServerStateWidget.js"></script>
 <script src="gen-public-resources/js/react/group-operations/JvmControlPanelWidget.js"></script>
 <script src="gen-public-resources/js/react/group-operations/WebServerControlPanelWidget.js"></script>
+<script src="gen-public-resources/js/react/group-operations/WebAppControlPanelWidget.js"></script>
 <script src="gen-public-resources/js/react/admin-tab.js"></script>
 <script src="gen-public-resources/js/react/jvm-config.js"></script>
 <script src="gen-public-resources/js/react/group-config.js"></script>
