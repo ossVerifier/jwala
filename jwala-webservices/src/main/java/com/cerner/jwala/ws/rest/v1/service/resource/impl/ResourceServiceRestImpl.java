@@ -1,7 +1,6 @@
 package com.cerner.jwala.ws.rest.v1.service.resource.impl;
 
 import com.cerner.jwala.common.domain.model.fault.AemFaultType;
-import com.cerner.jwala.common.domain.model.resource.ContentType;
 import com.cerner.jwala.common.domain.model.resource.ResourceContent;
 import com.cerner.jwala.common.domain.model.resource.ResourceIdentifier;
 import com.cerner.jwala.common.domain.model.resource.ResourceTemplateMetaData;
@@ -21,7 +20,6 @@ import org.apache.commons.fileupload.FileItemStream;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.jaxrs.ext.MessageContext;
 import org.apache.cxf.jaxrs.ext.multipart.Attachment;
 import org.apache.cxf.jaxrs.impl.ResponseImpl;
@@ -379,20 +377,6 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
         return ResponseBuilder.ok(deletedRecCount);
     }
 
-    @Override
-    public Response getResourceContent(final String resourceName, final ResourceHierarchyParam param) {
-        LOGGER.debug("Get the resource content for {} with hierarchy {}", resourceName, param);
-        final ResourceIdentifier resourceIdentifier = new ResourceIdentifier.Builder().setResourceName(resourceName)
-                .setGroupName(param.getGroup())
-                .setWebServerName(param.getWebServer())
-                .setJvmName(param.getJvm())
-                .setWebAppName(param.getWebApp()).build();
-        final ResourceContent resourceContent = resourceService.getResourceContent(resourceIdentifier);
-        if (resourceContent == null) {
-            return Response.noContent().build();
-        }
-        return ResponseBuilder.ok(resourceContent);
-    }
 
     @Override
     public Response updateResourceMetaData(String resourceName, ResourceHierarchyParam resourceHierarchyParam, String metaData) {

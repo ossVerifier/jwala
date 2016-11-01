@@ -1,9 +1,11 @@
 package com.cerner.jwala.ws.rest.v1.service.resource.impl;
 
 import com.cerner.jwala.common.domain.model.group.Group;
-import com.cerner.jwala.common.domain.model.group.LiteGroup;
 import com.cerner.jwala.common.domain.model.id.Identifier;
-import com.cerner.jwala.common.domain.model.resource.*;
+import com.cerner.jwala.common.domain.model.resource.ResourceContent;
+import com.cerner.jwala.common.domain.model.resource.ResourceGroup;
+import com.cerner.jwala.common.domain.model.resource.ResourceIdentifier;
+import com.cerner.jwala.common.domain.model.resource.ResourceTemplateMetaData;
 import com.cerner.jwala.common.domain.model.user.User;
 import com.cerner.jwala.common.request.resource.ResourceInstanceRequest;
 import com.cerner.jwala.persistence.jpa.domain.resource.config.template.ConfigTemplate;
@@ -303,34 +305,6 @@ public class ResourceServiceRestImplTest {
         final ResourceHierarchyParam resourceHierarchyParam = new ResourceHierarchyParam();
         final Response response = cut.deleteResource("someResource", resourceHierarchyParam, authenticatedUser);
         assertEquals("AEM64", ((ApplicationResponse) response.getEntity()).getMsgCode());
-    }
-
-    @Test
-    public void testGetResourceContent() {
-        ResourceHierarchyParam param = new ResourceHierarchyParam();
-        param.setGroup("test-group");
-        param.setJvm("test-jvm");
-        param.setWebApp("test-app");
-        param.setWebServer("test-webserver");
-
-        when(impl.getResourceContent(any(ResourceIdentifier.class))).thenReturn(new ResourceContent("{}", "key=value"));
-
-        Response response = cut.getResourceContent("external.properties", param);
-        assertEquals(200, response.getStatus());
-    }
-
-    @Test
-    public void testGetResourceContentReturnsNull() {
-        ResourceHierarchyParam param = new ResourceHierarchyParam();
-        param.setGroup("test-group");
-        param.setJvm("test-jvm");
-        param.setWebApp("test-app");
-        param.setWebServer("test-webserver");
-
-        when(impl.getResourceContent(any(ResourceIdentifier.class))).thenReturn(null);
-
-        Response response = cut.getResourceContent("external.properties", param);
-        assertEquals(204, response.getStatus());
     }
 
     @Test

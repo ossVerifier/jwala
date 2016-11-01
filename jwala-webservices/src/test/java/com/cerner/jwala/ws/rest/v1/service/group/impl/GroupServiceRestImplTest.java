@@ -49,7 +49,6 @@ import com.cerner.jwala.ws.rest.v1.service.jvm.impl.JsonControlJvm;
 import com.cerner.jwala.ws.rest.v1.service.webserver.WebServerServiceRest;
 import com.cerner.jwala.ws.rest.v1.service.webserver.impl.JsonControlWebServer;
 import com.cerner.jwala.ws.rest.v1.service.webserver.impl.WebServerServiceRestImpl;
-import org.apache.commons.fileupload.FileUploadBase;
 import org.apache.cxf.jaxrs.ext.MessageContext;
 import org.apache.openjpa.persistence.EntityExistsException;
 import org.junit.After;
@@ -67,7 +66,6 @@ import javax.ws.rs.core.SecurityContext;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
@@ -514,25 +512,6 @@ public class GroupServiceRestImplTest {
     }
 
     @Test
-    public void testUpdateJvmTemplate() {
-        Group mockGroupWithJvms = mock(Group.class);
-        Set<Jvm> mockJvms = new HashSet<>();
-        mockJvms.add(mockJvm);
-
-        when(mockGroupService.getGroup(anyString())).thenReturn(mockGroupWithJvms);
-        when(mockGroupWithJvms.getJvms()).thenReturn(mockJvms);
-
-        Response response = groupServiceRest.updateGroupJvmResourceTemplate(group.getName(), "server.xml", "test server.xml content");
-        assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
-
-        when(mockGroupService.updateGroupJvmResourceTemplate(anyString(), anyString(), anyString())).thenThrow(new ResourceTemplateUpdateException("test jvm", "server.xml"));
-
-        response = groupServiceRest.updateGroupJvmResourceTemplate(group.getName(), "server.xml", "server.xml content for testing");
-        assertEquals(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), response.getStatus());
-
-    }
-
-    @Test
     public void testPreviewGroupJvmTemplate() {
         Set<Jvm> jvmSet = new HashSet<>();
         Jvm mockPreviewJvm = mock(Jvm.class);
@@ -573,21 +552,6 @@ public class GroupServiceRestImplTest {
         assertEquals(500, response.getStatus());
     }
 
-    @Test(expected = InternalErrorException.class)
-    public void testUploadJvmTemplate() {
-        final MessageContext mockContext = mock(MessageContext.class);
-        final HttpHeaders mockHttpHeaders = mock(HttpHeaders.class);
-        when(mockContext.getHttpHeaders()).thenReturn(mockHttpHeaders);
-        final ArrayList<MediaType> mediaList = new ArrayList<>();
-        mediaList.add(MediaType.APPLICATION_JSON_TYPE);
-        when(mockHttpHeaders.getAcceptableMediaTypes()).thenReturn(mediaList);
-        HttpServletRequest mockServletRequest = mock(HttpServletRequest.class);
-        when(mockServletRequest.getContentType()).thenReturn("text");
-        when(mockContext.getHttpServletRequest()).thenReturn(mockServletRequest);
-        groupServiceRest.setMessageContext(mockContext);
-        Response response = groupServiceRest.uploadGroupJvmConfigTemplate(group.getName(), mockAuthenticatedUser, "server.xml");
-        assertNotNull(response);
-    }
 
     @Test
     public void testGetJvmTemplate() {
@@ -639,37 +603,6 @@ public class GroupServiceRestImplTest {
         verify(mockGroupService).populateGroupAppTemplate(anyString(), anyString(), anyString(), anyString(), anyString());
     }
 
-    @Test
-    public void testUploadGroupJvmConfigTemplate() throws Exception {
-        final MessageContext msgContextMock = mock(MessageContext.class);
-        final HttpHeaders httpHeadersMock = mock(HttpHeaders.class);
-        final List<MediaType> mediaTypeList = new ArrayList<>();
-        final HttpServletRequest httpServletRequestMock = mock(HttpServletRequest.class);
-        final HttpServletResponse httpServletResponseMock = mock(HttpServletResponse.class);
-        when(httpHeadersMock.getAcceptableMediaTypes()).thenReturn(mediaTypeList);
-        when(msgContextMock.getHttpHeaders()).thenReturn(httpHeadersMock);
-        when(msgContextMock.getHttpServletRequest()).thenReturn(httpServletRequestMock);
-        when(msgContextMock.getHttpServletResponse()).thenReturn(httpServletResponseMock);
-        when(httpServletRequestMock.getContentType()).thenReturn("multipart/form-data; boundary=----WebKitFormBoundaryXRxegBGqTe4gApI2");
-        when(httpServletRequestMock.getInputStream()).thenReturn(new DelegatingServletInputStream());
-        groupServiceRest.setMessageContext(msgContextMock);
-
-        final SecurityContext securityContextMock = mock(SecurityContext.class);
-        final AuthenticatedUser authenticatedUser = new AuthenticatedUser(securityContextMock);
-
-        groupServiceRest.uploadGroupJvmConfigTemplate("any", authenticatedUser, "any");
-        verify(mockGroupService).populateGroupJvmTemplates(anyString(), anyList(), any(User.class));
-    }
-
-    @Test
-    public void testTestUpdateGroupJvmTemplateNoJvms() {
-        when(mockGroupService.updateGroupJvmResourceTemplate(anyString(), anyString(), anyString())).thenReturn("no content updated");
-        Group mockGroupNoJvms = mock(Group.class);
-        when(mockGroupNoJvms.getJvms()).thenReturn(null);
-        when(mockGroupService.getGroup(anyString())).thenReturn(mockGroupNoJvms);
-        Response response = groupServiceRest.updateGroupJvmResourceTemplate("groupName", "resourceTemplateName.xml", "no content");
-        assertTrue(response.getStatus() > 199 && response.getStatus() < 300);
-    }
 
     @Test
     public void testPreviewGroupAppResourceTemplate() {
@@ -695,35 +628,6 @@ public class GroupServiceRestImplTest {
         verify(mockGroupService).getGroupAppsResourceTemplateNames("testGroup");
     }
 
-    @Test
-    public void testUploadConfigNoContent() throws IOException {
-
-        verify(mockGroupService, never()).populateGroupJvmTemplates(anyString(), anyList(), any(User.class));
-
-        // ISO8859-1
-        String boundary = "--WebKitFormBoundarywBZFyEeqG5xW80nx";
-
-        String content = "";
-
-        String charsetBin = "ISO-8859-1";
-        ByteBuffer bbBuffer = Charset.forName(charsetBin).encode(content);
-        final HttpServletRequest mockHsr = mock(HttpServletRequest.class);
-        final MessageContext msgContextMock = mock(MessageContext.class);
-        final HttpServletResponse httpServletResponseMock = mock(HttpServletResponse.class);
-        final HttpHeaders httpHeadersMock = mock(HttpHeaders.class);
-        final List<MediaType> mediaTypeList = new ArrayList<>();
-        when(httpHeadersMock.getAcceptableMediaTypes()).thenReturn(mediaTypeList);
-        when(msgContextMock.getHttpHeaders()).thenReturn(httpHeadersMock);
-        when(msgContextMock.getHttpServletRequest()).thenReturn(mockHsr);
-        when(msgContextMock.getHttpServletResponse()).thenReturn(httpServletResponseMock);
-        when(mockHsr.getCharacterEncoding()).thenReturn(charsetBin);
-        when(mockHsr.getInputStream()).thenReturn(new MyIS(new ByteArrayInputStream(bbBuffer.array())));
-        when(mockHsr.getContentType()).thenReturn(FileUploadBase.MULTIPART_FORM_DATA + ";boundary=" + boundary);
-        groupServiceRest.setMessageContext(msgContextMock);
-
-        Response resp = groupServiceRest.uploadGroupJvmConfigTemplate(group.getName(), mockAuthenticatedUser, "ServerXMLTemplate.tpl");
-        assertEquals(Response.Status.NO_CONTENT.getStatusCode(), resp.getStatus());
-    }
 
     @Test
     public void testGetStartedWebServersAndJvmCounts() {

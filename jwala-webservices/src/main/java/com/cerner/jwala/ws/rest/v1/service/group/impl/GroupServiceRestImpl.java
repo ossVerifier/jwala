@@ -332,53 +332,6 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         return ResponseBuilder.ok(groupService.getGroupJvmResourceTemplate(groupName, resourceTemplateName, resourceService.generateResourceGroup(), tokensReplaced));
     }
 
-    @Override
-    public Response uploadGroupJvmConfigTemplate(String groupName, AuthenticatedUser aUser, String templateName) {
-        LOGGER.info("upload group jvm template {} to group {} by user {}", templateName, groupName, aUser.getUser().getId());
-        return uploadConfigTemplate(groupName, null, aUser, templateName, GroupResourceType.JVM);
-    }
-
-    @Override
-    public Response updateGroupJvmResourceTemplate(final String groupName, final String resourceTemplateName, final String content) {
-        LOGGER.info("Updating the group template {} for {}", resourceTemplateName, groupName);
-        LOGGER.debug(content);
-
-        try {
-
-            final String updatedContent = groupService.updateGroupJvmResourceTemplate(groupName, resourceTemplateName, content);
-            final Group group = groupService.getGroup(groupName);
-
-            Set<Jvm> groupJvms = group.getJvms();
-            Set<Future<Response>> futureContents = new HashSet<>();
-            if (null != groupJvms) {
-                LOGGER.info("Updating the templates for all the JVMs in group {}", groupName);
-                final Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-                for (final Jvm jvm : groupJvms) {
-                    final String jvmName = jvm.getJvmName();
-                    LOGGER.info("Updating JVM {} template {}", jvmName, resourceTemplateName);
-                    Future<Response> futureContent = executorService.submit(new Callable<Response>() {
-                        @Override
-                        public Response call() throws Exception {
-                            SecurityContextHolder.getContext().setAuthentication(auth);
-                            return ResponseBuilder.ok(jvmService.updateResourceTemplate(jvmName, resourceTemplateName, updatedContent));
-                        }
-                    });
-                    futureContents.add(futureContent);
-                }
-                waitForDeployToComplete(futureContents);
-            } else {
-                LOGGER.info("No JVMs to update in group {}", groupName);
-            }
-
-            LOGGER.info("Update SUCCESSFUL");
-            return ResponseBuilder.ok(updatedContent);
-
-        } catch (ResourceTemplateUpdateException | NonRetrievableResourceTemplateContentException e) {
-            LOGGER.error("Failed to update the template {}", resourceTemplateName, e);
-            return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
-                    AemFaultType.PERSISTENCE_ERROR, e.getMessage()));
-        }
-    }
 
     @Override
     public Response previewGroupJvmResourceTemplate(String groupName, String fileName, String template) {
@@ -449,15 +402,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         boolean isInternalErrorException = false;
         boolean isException = false;
         String isExceptionReason = "";
-        Map<String, List<String>> entityDetailsMap = new HashMap<>();<<<<<<< .mine
-        Map<String, String> entityDetailsMap = new HashMap<>();
-
-
-=======
-        boolean isException = false;
-        String isExceptionReason = "";
         Map<String, List<String>> entityDetailsMap = new HashMap<>();
->>>>>>> .theirs
         for (String keyEntityName : futureMap.keySet()) {
             Response response;
             try {
@@ -472,21 +417,11 @@ public class GroupServiceRestImpl implements GroupServiceRest {
                 isException = true;
                 isExceptionReason = e.getMessage();
                 LOGGER.error("FAILURE getting response for {}", keyEntityName, e);
-				final Throwable cause = e.getCause();
-                if (cause instanceof InternalErrorException) {
-                    isInternalErrorException = true;
-                    entityDetailsMap.putAll(((InternalErrorException) cause).getErrorDetails());
-                }<<<<<<< .mine
-                exception = true;
-
-
-
-=======
+                final Throwable cause = e.getCause();
                 if (cause instanceof InternalErrorException) {
                     isInternalErrorException = true;
                     entityDetailsMap.putAll(((InternalErrorException) cause).getErrorDetails());
                 }
->>>>>>> .theirs
             }
         }
 

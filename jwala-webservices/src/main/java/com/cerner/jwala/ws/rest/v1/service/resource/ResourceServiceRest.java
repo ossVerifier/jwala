@@ -108,17 +108,6 @@ public interface ResourceServiceRest extends InitializingBean {
     Response deleteResources(@MatrixParam("name") String[] templateNameArray, @MatrixParam("") ResourceHierarchyParam resourceHierarchyParam, @BeanParam AuthenticatedUser user);
 
     /**
-     * Get the template content
-     *
-     * @param resourceName           the template name
-     * @param resourceHierarchyParam the group, JVM, webserver, web app hierarchy info
-     * @return the content of the template
-     */
-    @GET
-    @Path("/{resourceName}/content")
-    Response getResourceContent(@PathParam("resourceName") String resourceName, @MatrixParam("") ResourceHierarchyParam resourceHierarchyParam);
-
-    /**
      * Update the template meta data
      *
      * @param resourceName           the template name
