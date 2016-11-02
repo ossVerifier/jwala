@@ -22,7 +22,7 @@ public interface HistoryService {
      * @param eventType @{link EventType}
      * @param user the user name/id
      */
-    void createHistory(String serverName, List<Group> groups, String event, EventType eventType, String user);
+    List<JpaHistory> createHistory(String serverName, List<Group> groups, String event, EventType eventType, String user);
 
     /**
      * Retrieve history data.

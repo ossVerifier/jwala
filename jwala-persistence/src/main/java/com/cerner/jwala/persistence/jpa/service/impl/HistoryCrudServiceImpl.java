@@ -1,13 +1,8 @@
 package com.cerner.jwala.persistence.jpa.service.impl;
 
-import com.cerner.jwala.common.domain.model.app.Application;
 import com.cerner.jwala.common.domain.model.group.Group;
-import com.cerner.jwala.common.domain.model.group.History;
-import com.cerner.jwala.common.domain.model.group.LiteGroup;
-import com.cerner.jwala.persistence.jpa.domain.JpaApplication;
 import com.cerner.jwala.persistence.jpa.domain.JpaGroup;
 import com.cerner.jwala.persistence.jpa.domain.JpaHistory;
-import com.cerner.jwala.persistence.jpa.service.ApplicationCrudService;
 import com.cerner.jwala.persistence.jpa.service.HistoryCrudService;
 import com.cerner.jwala.persistence.jpa.type.EventType;
 
@@ -15,8 +10,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import java.util.List;
 
@@ -33,15 +26,15 @@ public class HistoryCrudServiceImpl extends AbstractCrudServiceImpl<JpaHistory> 
     private final static Logger LOGGER = LoggerFactory.getLogger(HistoryCrudServiceImpl.class);
 
     @Override
-    public void createHistory(final String serverName, final Group group, final String event, EventType eventType, final String user) {
+    public JpaHistory createHistory(final String serverName, final Group group, final String event, EventType eventType, final String user) {
         if (group == null) {
             LOGGER.warn("Attempting to insert a history row without an associated group.");
-            return;
+            return null;
         }
 
         //TODO: Inject GroupCrudService to find the group
         JpaGroup jpaGroup = entityManager.find(JpaGroup.class, group.getId().getId());
-        create(new JpaHistory(serverName, jpaGroup, event, eventType, user));
+        return create(new JpaHistory(serverName, jpaGroup, event, eventType, user));
     }
 
     @Override

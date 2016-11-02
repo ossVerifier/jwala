@@ -1,8 +1,6 @@
 package com.cerner.jwala.persistence.jpa.service;
 
 import com.cerner.jwala.common.domain.model.group.Group;
-import com.cerner.jwala.common.domain.model.group.History;
-import com.cerner.jwala.common.domain.model.group.LiteGroup;
 import com.cerner.jwala.persistence.jpa.domain.JpaGroup;
 import com.cerner.jwala.persistence.jpa.domain.JpaHistory;
 import com.cerner.jwala.persistence.jpa.type.EventType;
@@ -24,7 +22,7 @@ public interface HistoryCrudService extends CrudService<JpaHistory> {
      * @param eventType {@link EventType}
      * @param user the user name/id
      */
-    void createHistory(String serverName, Group group, String event, EventType eventType, String user);
+    JpaHistory createHistory(String serverName, Group group, String event, EventType eventType, String user);
 
     /**
      * Retrieve history data.

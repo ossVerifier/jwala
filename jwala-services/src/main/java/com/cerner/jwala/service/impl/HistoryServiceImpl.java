@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -28,13 +29,15 @@ public class HistoryServiceImpl implements HistoryService {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW) // Write history independent of any transaction.
-    public void createHistory(final String serverName, final List<Group> groups, final String event,
-                              final EventType eventType, final String user) {
+    public List<JpaHistory> createHistory(final String serverName, final List<Group> groups, final String event,
+                                          final EventType eventType, final String user) {
+        final List<JpaHistory> jpaHistoryList = new ArrayList<>();
         if (groups != null) {
             for (Group group : groups) {
-                historyCrudService.createHistory(serverName, group, event, eventType, user);
+                jpaHistoryList.add(historyCrudService.createHistory(serverName, group, event, eventType, user));
             }
         }
+        return jpaHistoryList;
     }
 
     @Override

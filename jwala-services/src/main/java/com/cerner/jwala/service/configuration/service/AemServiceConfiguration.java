@@ -28,6 +28,7 @@ import com.cerner.jwala.persistence.service.ResourceDao;
 import com.cerner.jwala.persistence.service.WebServerPersistenceService;
 import com.cerner.jwala.persistence.service.impl.JpaJvmPersistenceServiceImpl;
 import com.cerner.jwala.persistence.service.impl.ResourceDaoImpl;
+import com.cerner.jwala.service.HistoryFacade;
 import com.cerner.jwala.service.HistoryService;
 import com.cerner.jwala.service.MessagingService;
 import com.cerner.jwala.service.RemoteCommandExecutorService;
@@ -286,12 +287,10 @@ public class AemServiceConfiguration {
     @Bean(name = "webServerControlService")
     public WebServerControlService getWebServerControlService(final WebServerService webServerService,
                                                               final RemoteCommandExecutor<WebServerControlOperation> commandExecutor,
-                                                              final HistoryService historyService,
-                                                              final MessagingService messagingService,
                                                               final RemoteCommandExecutorService remoteCommandExecutorService,
-                                                              final SshConfiguration sshConfig) {
-        return new WebServerControlServiceImpl(webServerService, commandExecutor, historyService,
-                messagingService, remoteCommandExecutorService, sshConfig);
+                                                              final SshConfiguration sshConfig, final HistoryFacade historyFacade) {
+        return new WebServerControlServiceImpl(webServerService, commandExecutor, remoteCommandExecutorService, sshConfig,
+                                               historyFacade);
     }
 
     @Bean(name = "webServerCommandService")
@@ -466,5 +465,10 @@ public class AemServiceConfiguration {
     @Bean(name = "binaryDistributionService")
     public BinaryDistributionService getBinaryDistributionService(BinaryDistributionControlService binaryDistributionControlService) {
         return new BinaryDistributionServiceImpl(binaryDistributionControlService, getBinaryDistributionLockManager());
+    }
+
+    @Bean
+    public HistoryFacade getHistoryFacade(final HistoryService historyService, final MessagingService messagingService) {
+        return new HistoryFacade(historyService, messagingService);
     }
 }
