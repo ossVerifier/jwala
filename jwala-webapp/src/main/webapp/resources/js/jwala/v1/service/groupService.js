@@ -95,16 +95,6 @@ var groupService = {
                                      false,
                                      "text/plain; charset=utf-8");
     },
-    uploadGroupJvmTemplateForm: function(groupName, templateName, templateFile, successCallback, errorCallback) {
-         return serviceFoundation.post("v1.0/groups/" + encodeURIComponent(groupName) + "/jvms/resources/uploadTemplate?templateName=" + encodeURIComponent(templateName),
-                                         "json",
-                                         templateFile,
-                                         successCallback,
-                                         errorCallback,
-                                         false,
-                                         "multipart/form-data",
-                                         true);
-    },
     uploadGroupAppTemplateForm: function(groupName, templateName, templateFile, successCallback, errorCallback) {
           return serviceFoundation.post("v1.0/groups/" + encodeURIComponent(groupName) + "/apps/resources/uploadTemplate?templateName=" + encodeURIComponent(templateName),
                                           "json",
@@ -115,16 +105,6 @@ var groupService = {
                                           "multipart/form-data",
                                           true);
       },
-      uploadGroupWebServerTemplateForm: function(groupName, templateName, templateFile, successCallback, errorCallback) {
-        return serviceFoundation.post("v1.0/groups/" + encodeURIComponent(groupName) + "/webservers/resources/uploadTemplate?templateName=" + encodeURIComponent(templateName),
-                                        "json",
-                                        templateFile,
-                                        successCallback,
-                                        errorCallback,
-                                        false,
-                                        "multipart/form-data",
-                                        true);
-    },
     getStartedWebServersAndJvmsCount: function(groupName) {
         if (groupName) {
             return serviceFoundation.promisedGet("v1.0/groups/" + encodeURIComponent(groupName) + "/children/startedCount");
