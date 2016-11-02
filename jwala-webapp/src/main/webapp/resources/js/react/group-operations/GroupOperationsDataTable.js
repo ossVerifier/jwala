@@ -254,7 +254,8 @@ var GroupOperationsDataTable = React.createClass({
         mountingNode.empty(); // Remove the node. TODO: Use react's unmount.
         React.render(CommandStatusWidget({ key: key, groupName: groupName, serverName: serverName,
             isOpen: jwalaVars["opsGrpChildrenViewOpen"] === "true" }), mountingNode.get(0), function () {
-            self.props.commandStatusWidgetMap[key] = this;
+            self.props.commandStatusWidgetMap[key] = this; // TODO: Deprecate this!
+            self.props.commandStatusWidgetMap[groupName] = this;
         });
 
         // Update web servers and JVMs header states.
