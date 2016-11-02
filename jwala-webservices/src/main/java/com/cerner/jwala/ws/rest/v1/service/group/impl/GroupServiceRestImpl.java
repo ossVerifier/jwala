@@ -635,48 +635,6 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         context = testContext;
     }
 
-    protected Response uploadConfigTemplate(final String groupName, final String targetEntityName, final AuthenticatedUser aUser,
-                                            final String templateName, final GroupResourceType uploadType) {
-        LOGGER.debug("Upload Archive {} requested: {} streaming (no size, count yet) : target {} upload type {} by user {}", templateName, groupName, targetEntityName, uploadType, aUser.getUser().getId());
-
-        // iframe uploads from IE do not understand application/json
-        // as a response and will prompt for download. Fix: return
-        // text/html
-        if (!context.getHttpHeaders().getAcceptableMediaTypes().contains(MediaType.APPLICATION_JSON_TYPE)) {
-            context.getHttpServletResponse().setContentType(MediaType.TEXT_HTML);
-        }
-
-        ServletFileUpload sfu = new ServletFileUpload();
-        InputStream data = null;
-        try {
-            FileItemIterator iter = sfu.getItemIterator(context.getHttpServletRequest());
-            FileItemStream file1;
-
-            while (iter.hasNext()) {
-                file1 = iter.next();
-                try {
-                    data = file1.openStream();
-                    if (uploadType.equals(GroupResourceType.JVM)) {
-                        return doGroupJvmTemplateUpload(groupName, aUser, templateName, data, file1);
-                    } else if (uploadType.equals(GroupResourceType.WEBSERVER)) {
-                        return doGroupWebServerTemplateUpload(groupName, aUser, templateName, data, file1);
-                    } else if (uploadType.equals(GroupResourceType.WEBAPP)) {
-                        return doGroupAppTemplateUpload(groupName, targetEntityName, templateName, data);
-                    }
-                } finally {
-                    assert data != null;
-                    data.close();
-                }
-            }
-            LOGGER.info("Failed to upload template {} to group {}: No Data", templateName, groupName);
-            return ResponseBuilder.notOk(Response.Status.NO_CONTENT, new FaultCodeException(
-                    AemFaultType.INVALID_JVM_OPERATION, "No data"));
-        } catch (IOException | FileUploadException e) {
-            LOGGER.error("Bad Stream: Error receiving data", e);
-            throw new InternalErrorException(AemFaultType.BAD_STREAM, "Error receiving data", e);
-        }
-    }
-
     protected Response doGroupWebServerTemplateUpload(String groupName, AuthenticatedUser aUser, final String templateName, final InputStream data, FileItemStream file1) {
         final WebServer dummyWebServer = new WebServer(new Identifier<WebServer>(0L), new HashSet<Group>(), "");
         Scanner scanner = new Scanner(data).useDelimiter("\\A");
@@ -918,13 +876,6 @@ public class GroupServiceRestImpl implements GroupServiceRest {
             }
         });
         return responseFuture;
-    }
-
-    @Override
-    public Response uploadGroupAppConfigTemplate(final String groupName, final String appName, final AuthenticatedUser aUser,
-                                                 final String templateName) {
-        LOGGER.info("Upload group app config template {} for app {} in group {} by user {}", templateName, appName, groupName, aUser.getUser().getId());
-        return uploadConfigTemplate(groupName, appName, aUser, templateName, GroupResourceType.WEBAPP);
     }
 
     @Override

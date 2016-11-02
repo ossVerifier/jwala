@@ -151,14 +151,6 @@ public interface GroupServiceRest {
                                              @PathParam("resourceTemplateName") String resourceTemplateName,
                                              String template);
 
-
-    @POST
-    @Path("/{groupName}/{appName}/resources/uploadTemplate")
-    @Consumes(MediaType.MULTIPART_FORM_DATA)
-    Response uploadGroupAppConfigTemplate(@PathParam("groupName") final String groupName,
-                                          @PathParam("appName") String appName, @BeanParam final AuthenticatedUser aUser,
-                                          @QueryParam("templateName") final String templateName);
-
     @PUT
     @Path("/{groupName}/apps/conf/{fileName}/{appName}")
     Response generateAndDeployGroupAppFile(@PathParam("groupName") final String groupName,

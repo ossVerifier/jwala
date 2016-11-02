@@ -49,7 +49,6 @@ import com.cerner.jwala.ws.rest.v1.service.jvm.impl.JsonControlJvm;
 import com.cerner.jwala.ws.rest.v1.service.webserver.WebServerServiceRest;
 import com.cerner.jwala.ws.rest.v1.service.webserver.impl.JsonControlWebServer;
 import com.cerner.jwala.ws.rest.v1.service.webserver.impl.WebServerServiceRestImpl;
-import org.apache.cxf.jaxrs.ext.MessageContext;
 import org.apache.openjpa.persistence.EntityExistsException;
 import org.junit.After;
 import org.junit.Before;
@@ -57,12 +56,7 @@ import org.junit.Test;
 import org.mockito.*;
 
 import javax.servlet.ServletInputStream;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.SecurityContext;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -578,29 +572,6 @@ public class GroupServiceRestImplTest {
         when(mockGroupService.getGroupWithWebServers(any(Identifier.class))).thenReturn(mockGroupNoWebServers);
         Response response = groupServiceRest.updateGroupWebServerResourceTemplate("groupName", "resourceTemplateName.txt", "no content");
         assertTrue(response.getStatus() > 199 && response.getStatus() < 300);
-    }
-
-
-    @Test
-    public void testUploadGroupAppConfigTemplate() throws Exception {
-        final MessageContext msgContextMock = mock(MessageContext.class);
-        final HttpHeaders httpHeadersMock = mock(HttpHeaders.class);
-        final List<MediaType> mediaTypeList = new ArrayList<>();
-        final HttpServletRequest httpServletRequestMock = mock(HttpServletRequest.class);
-        final HttpServletResponse httpServletResponseMock = mock(HttpServletResponse.class);
-        when(httpHeadersMock.getAcceptableMediaTypes()).thenReturn(mediaTypeList);
-        when(msgContextMock.getHttpHeaders()).thenReturn(httpHeadersMock);
-        when(msgContextMock.getHttpServletRequest()).thenReturn(httpServletRequestMock);
-        when(msgContextMock.getHttpServletResponse()).thenReturn(httpServletResponseMock);
-        when(httpServletRequestMock.getContentType()).thenReturn("multipart/form-data; boundary=----WebKitFormBoundaryXRxegBGqTe4gApI2");
-        when(httpServletRequestMock.getInputStream()).thenReturn(new DelegatingServletInputStream());
-        groupServiceRest.setMessageContext(msgContextMock);
-
-        final SecurityContext securityContextMock = mock(SecurityContext.class);
-        final AuthenticatedUser authenticatedUser = new AuthenticatedUser(securityContextMock);
-
-        groupServiceRest.uploadGroupAppConfigTemplate("any", "any", authenticatedUser, "any");
-        verify(mockGroupService).populateGroupAppTemplate(anyString(), anyString(), anyString(), anyString(), anyString());
     }
 
 
