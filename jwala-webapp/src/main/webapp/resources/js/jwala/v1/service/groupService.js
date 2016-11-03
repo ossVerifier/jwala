@@ -95,16 +95,6 @@ var groupService = {
                                      false,
                                      "text/plain; charset=utf-8");
     },
-    uploadGroupAppTemplateForm: function(groupName, templateName, templateFile, successCallback, errorCallback) {
-          return serviceFoundation.post("v1.0/groups/" + encodeURIComponent(groupName) + "/apps/resources/uploadTemplate?templateName=" + encodeURIComponent(templateName),
-                                          "json",
-                                          templateFile,
-                                          successCallback,
-                                          errorCallback,
-                                          false,
-                                          "multipart/form-data",
-                                          true);
-      },
     getStartedWebServersAndJvmsCount: function(groupName) {
         if (groupName) {
             return serviceFoundation.promisedGet("v1.0/groups/" + encodeURIComponent(groupName) + "/children/startedCount");
