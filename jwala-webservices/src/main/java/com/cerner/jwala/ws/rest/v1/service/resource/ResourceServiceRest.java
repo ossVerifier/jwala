@@ -80,9 +80,10 @@ public interface ResourceServiceRest extends InitializingBean {
 
     /**
      * Creates a resource
-     * @param deployFilename the name of the resource when deployed*
+     *
+     * @param deployFilename      the name of the resource when deployed*
      * @param createResourceParam contains information on who owns the resource to be created  @return {@link Response}
-     * @param attachments a list of attached data (deploy filename, deploy path , content type and template data)
+     * @param attachments         a list of attached data (deploy filename, deploy path , content type and template data)
      */
     @POST
     @Path("/{deployFilename}")
@@ -106,6 +107,29 @@ public interface ResourceServiceRest extends InitializingBean {
     @DELETE
     @Path("/templates")
     Response deleteResources(@MatrixParam("name") String[] templateNameArray, @MatrixParam("") ResourceHierarchyParam resourceHierarchyParam, @BeanParam AuthenticatedUser user);
+
+    /**
+     * Get the template content
+     *
+     * @param resourceName           the template name
+     * @param resourceHierarchyParam the group, JVM, webserver, web app hierarchy info
+     * @return the content of the template
+     */
+    @GET
+    @Path("/{resourceName}/content")
+    Response getResourceContent(@PathParam("resourceName") String resourceName, @MatrixParam("") ResourceHierarchyParam resourceHierarchyParam);
+
+    /**
+     * Update the template content
+     *
+     * @param resourceName           the template name
+     * @param resourceHierarchyParam the group, JVM, web server, web app hierarchy info
+     * @return the saved content
+     */
+    @PUT
+    @Path("/template/{resourceName}")
+    @Consumes(MediaType.TEXT_PLAIN)
+    Response updateResourceContent(@PathParam("resourceName") String resourceName, @MatrixParam("") ResourceHierarchyParam resourceHierarchyParam, final String content);
 
     /**
      * Update the template meta data
@@ -175,4 +199,3 @@ public interface ResourceServiceRest extends InitializingBean {
     @Path("templates/names")
     Response getResourcesFileNames(@MatrixParam("") final ResourceHierarchyParam resourceHierarchyParam);
 }
-

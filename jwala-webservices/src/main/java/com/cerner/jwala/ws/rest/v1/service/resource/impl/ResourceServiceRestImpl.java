@@ -169,7 +169,7 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
                     .setWebAppName(createResourceParam.getWebApp()).build();
 
             createResourceResponseWrapper = resourceService.createResource(resourceIdentifier, resourceTemplateMetaData,
-                                                                           template);
+                    template);
         } catch (final IOException e) {
             LOGGER.error("Failed to create resource {}!", deployFilename, e);
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(AemFaultType.IO_EXCEPTION, e.getMessage()));
@@ -377,6 +377,35 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
         return ResponseBuilder.ok(deletedRecCount);
     }
 
+    @Override
+    public Response getResourceContent(final String resourceName, final ResourceHierarchyParam param) {
+        LOGGER.debug("Get the resource content for {} with hierarchy {}", resourceName, param);
+        final ResourceIdentifier resourceIdentifier = new ResourceIdentifier.Builder().setResourceName(resourceName)
+                .setGroupName(param.getGroup())
+                .setWebServerName(param.getWebServer())
+                .setJvmName(param.getJvm())
+                .setWebAppName(param.getWebApp()).build();
+        final ResourceContent resourceContent = resourceService.getResourceContent(resourceIdentifier);
+        if (resourceContent == null) {
+            return Response.noContent().build();
+        }
+        return ResponseBuilder.ok(resourceContent);
+    }
+
+    @Override
+    public Response updateResourceContent(String resourceName, ResourceHierarchyParam
+            resourceHierarchyParam, String templateContent) {
+        LOGGER.info("Update the resource {} with hierarchy {}", resourceName, resourceHierarchyParam);
+        LOGGER.debug("Updated content: {}", templateContent);
+
+        final ResourceIdentifier resourceIdentifier = new ResourceIdentifier.Builder().setResourceName(resourceName)
+                .setGroupName(resourceHierarchyParam.getGroup())
+                .setWebServerName(resourceHierarchyParam.getWebServer())
+                .setJvmName(resourceHierarchyParam.getJvm())
+                .setWebAppName(resourceHierarchyParam.getWebApp()).build();
+
+        return ResponseBuilder.ok(resourceService.updateResourceContent(resourceIdentifier, templateContent));
+    }
 
     @Override
     public Response updateResourceMetaData(String resourceName, ResourceHierarchyParam resourceHierarchyParam, String metaData) {
