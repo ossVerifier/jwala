@@ -246,7 +246,7 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
                 .setJvmName(jvmName)
                 .build();
         resourceService.validateSingleResourceForGeneration(resourceIdentifier);
-        
+
         final CommandOutput execData =
                 service.deployConf(appName, groupName, jvmName, resourceTemplateName, resourceService.generateResourceGroup(), authUser.getUser());
         if (execData.getReturnCode().wasSuccessful()) {
@@ -276,15 +276,9 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
 
     @Override
     public Response deployConf(final String appName, final AuthenticatedUser aUser, final String hostName) {
-        try {
-            LOGGER.info("Deploying application {} initiated by user {}", appName, aUser.getUser().getId());
-            service.deployConf(appName, hostName, aUser.getUser());
-            return ResponseBuilder.ok(appName);
-        } catch (RuntimeException e) {
-            LOGGER.error("Error in deploying resource", e);
-            return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR,
-                    new FaultCodeException(AemFaultType.REMOTE_COMMAND_FAILURE, e.getMessage()));
-        }
+        LOGGER.info("Deploying application {} initiated by user {}", appName, aUser.getUser().getId());
+        service.deployConf(appName, hostName, aUser.getUser());
+        return ResponseBuilder.ok(appName);
     }
 
     @Override

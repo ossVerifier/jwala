@@ -219,7 +219,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
             group = groupService.getGroupWithWebServers(group.getId());
 
             Set<WebServer> groupWebServers = group.getWebServers();
-            Set<Future<Response>> futureContents = new HashSet<>();
+            Map<String,Future<Response>> futureContents = new HashMap<>();
             if (null != groupWebServers) {
                 LOGGER.info("Updating the templates for all the Web Servers in group {}", groupName);
                 final Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -233,9 +233,9 @@ public class GroupServiceRestImpl implements GroupServiceRest {
                             return ResponseBuilder.ok(webServerService.updateResourceTemplate(webServerName, resourceTemplateName, updatedContent));
                         }
                     });
-                    futureContents.add(futureContent);
+                    futureContents.put(webServerName, futureContent);
                 }
-                waitForDeployToComplete(futureContents);
+                checkResponsesForErrorStatus(futureContents);
             } else {
                 LOGGER.info("No Web Servers to update in group {}", groupName);
             }
@@ -305,29 +305,11 @@ public class GroupServiceRestImpl implements GroupServiceRest {
                 });
                 futures.put(jvmName, responseFuture);
             }
-            waitForDeployToComplete(new HashSet<>(futures.values()));
             checkResponsesForErrorStatus(futures);
         } else {
             LOGGER.info("No JVMs in group {}", groupName);
         }
         return ResponseBuilder.ok(group);
-    }
-
-    protected void waitForDeployToComplete(Set<Future<Response>> futures) {
-        final int size = futures.size();
-        if (size > 0) {
-            LOGGER.info("Check to see if all {} tasks completed", size);
-            boolean allDone = false;
-            // TODO think about adding a manual timeout
-            while (!allDone) {
-                boolean isDone = true;
-                for (Future<Response> isDoneFuture : futures) {
-                    isDone = isDone && isDoneFuture.isDone();
-                }
-                allDone = isDone;
-            }
-            LOGGER.info("Tasks complete: {}", size);
-        }
     }
 
     @Override
@@ -355,7 +337,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
             final Group group = groupService.getGroup(groupName);
 
             Set<Jvm> groupJvms = group.getJvms();
-            Set<Future<Response>> futureContents = new HashSet<>();
+            Map<String,Future<Response>> futureContents = new HashMap<>();
             if (null != groupJvms) {
                 LOGGER.info("Updating the templates for all the JVMs in group {}", groupName);
                 final Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -369,9 +351,9 @@ public class GroupServiceRestImpl implements GroupServiceRest {
                             return ResponseBuilder.ok(jvmService.updateResourceTemplate(jvmName, resourceTemplateName, updatedContent));
                         }
                     });
-                    futureContents.add(futureContent);
+                    futureContents.put(jvmName, futureContent);
                 }
-                waitForDeployToComplete(futureContents);
+                checkResponsesForErrorStatus(futureContents);
             } else {
                 LOGGER.info("No JVMs to update in group {}", groupName);
             }
@@ -443,7 +425,6 @@ public class GroupServiceRestImpl implements GroupServiceRest {
                 });
                 futureMap.put(name, responseFuture);
             }
-            waitForDeployToComplete(new HashSet<>(futureMap.values()));
             checkResponsesForErrorStatus(futureMap);
         } else {
             LOGGER.info("No web servers in group {}", groupName);
@@ -459,7 +440,8 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         for (String keyEntityName : futureMap.keySet()) {
             Response response;
             try {
-                response = futureMap.get(keyEntityName).get();
+                long timeout = Long.parseLong(ApplicationProperties.get("remote.jwala.execution.timeout.seconds", "300"));
+                response = futureMap.get(keyEntityName).get(timeout, TimeUnit.SECONDS);
                 if (response.getStatus() > 399) {
                     final String reasonPhrase = response.getStatusInfo().getReasonPhrase();
                     LOGGER.error("Remote Command Failure for " + keyEntityName + ": " + reasonPhrase);
@@ -475,6 +457,10 @@ public class GroupServiceRestImpl implements GroupServiceRest {
                     isInternalErrorException = true;
                     entityDetailsMap.putAll(((InternalErrorException) cause).getErrorDetails());
                 }
+            } catch (TimeoutException e) {
+                LOGGER.error("Timed out getting response.", e);
+                isException = true;
+                isExceptionReason = e.getMessage();
             }
         }
 
@@ -533,7 +519,6 @@ public class GroupServiceRestImpl implements GroupServiceRest {
                 futuresMap.put(webServerName, responseFuture);
             }
 
-            waitForDeployToComplete(new HashSet<>(futuresMap.values()));
             checkResponsesForErrorStatus(futuresMap);
         } else {
             LOGGER.info("No web servers in group {}", aGroupId);
@@ -584,7 +569,6 @@ public class GroupServiceRestImpl implements GroupServiceRest {
                 futuresMap.put(jvmName, responseFuture);
             }
 
-            waitForDeployToComplete(new HashSet<>(futuresMap.values()));
             checkResponsesForErrorStatus(futuresMap);
         } else {
             LOGGER.info("No JVMs in group {}", aGroupId);
@@ -785,7 +769,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         try {
             final String updatedContent = groupService.updateGroupAppResourceTemplate(groupName, appName, resourceTemplateName, content);
             Set<Jvm> groupJvms = group.getJvms();
-            Set<Future<Response>> futureContents = new HashSet<>();
+            Map<String,Future<Response>> futureContents = new HashMap<>();
             if (null != groupJvms) {
                 LOGGER.info("Updating the templates for all the JVMs in group {}", groupName);
                 final ApplicationServiceRest appServiceRest = ApplicationServiceRestImpl.get();
@@ -800,9 +784,9 @@ public class GroupServiceRestImpl implements GroupServiceRest {
                             return appServiceRest.updateResourceTemplate(appName, resourceTemplateName, jvmName, groupName, updatedContent);
                         }
                     });
-                    futureContents.add(futureContent);
+                    futureContents.put(jvmName, futureContent);
                 }
-                waitForDeployToComplete(futureContents);
+                checkResponsesForErrorStatus(futureContents);
             } else {
                 LOGGER.info("No JVMs to update in group {}", groupName);
             }
@@ -867,7 +851,6 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     protected void performGroupAppDeployToHost(final String groupName, final String fileName, final String appName, final String hostName) {
         Map<String, Future<Response>> futureMap = new HashMap<>();
         futureMap.put(hostName, createFutureResponseForAppDeploy(groupName, fileName, appName, null, hostName));
-        waitForDeployToComplete(new HashSet<>(futureMap.values()));
         checkResponsesForErrorStatus(futureMap);
     }
 
@@ -889,7 +872,6 @@ public class GroupServiceRestImpl implements GroupServiceRest {
                     futureMap.put(hostName, createFutureResponseForAppDeploy(groupName, fileName, appName, jvm, null));
                 }
             }
-            waitForDeployToComplete(new HashSet<>(futureMap.values()));
             checkResponsesForErrorStatus(futureMap);
         }
     }
@@ -932,7 +914,6 @@ public class GroupServiceRestImpl implements GroupServiceRest {
                 });
                 futureMap.put(jvmName, responseFuture);
             }
-            waitForDeployToComplete(new HashSet<>(futureMap.values()));
             checkResponsesForErrorStatus(futureMap);
         }
     }

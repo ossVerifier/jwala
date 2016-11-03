@@ -182,6 +182,14 @@ public class ResourceDaoImpl implements ResourceDao {
     }
 
     @Override
+    public List<String> getGroupLevelAppResourceNames(String groupName, String webAppName) {
+        final Query q = em.createNamedQuery(JpaGroupAppConfigTemplate.QUERY_APP_RESOURCE_NAMES);
+        q.setParameter("grpName", groupName);
+        q.setParameter("appName", webAppName);
+        return q.getResultList();
+    }
+
+    @Override
     public JpaResourceConfigTemplate getExternalPropertiesResource(String resourceName) {
         // TODO make generic for all resources
         final Query q = em.createNamedQuery(JpaResourceConfigTemplate.GET_RESOURCE_TEMPLATE_CONTENT);

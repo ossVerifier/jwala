@@ -385,6 +385,11 @@ public class GroupServiceImpl implements GroupService {
     }
 
     @Override
+    public List<String> getGroupAppsResourceTemplateNames(String groupName, String appName) {
+        return groupPersistenceService.getGroupAppsResourceTemplateNames(groupName, appName);
+    }
+
+    @Override
     @Transactional
     public String updateGroupAppResourceTemplate(String groupName, String appName, String resourceTemplateName, String content) {
         return groupPersistenceService.updateGroupAppResourceTemplate(groupName, appName, resourceTemplateName, content);

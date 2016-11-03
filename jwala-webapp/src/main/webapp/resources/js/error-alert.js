@@ -20,20 +20,26 @@ $.extend({ errorAlert: function (message, dlgTitle, modal, content) {
 
             if (content) {
                 message += "<div class='textAlignLeft'><ul>";
+                var sortedContent = [];
                 for (var property in content) {
                     if (content.hasOwnProperty(property)) {
-                        message += "<li>";
-                        message += property;
-                        var exceptionList = content[property];
-                        for (var exception in exceptionList) {
-                            if (exceptionList.hasOwnProperty(exception)){
-                                message += "<ul>";
-                                message += "<li>" + exceptionList[exception] + "</li>";
-                                message += "</ul>"
-                            }
-                        }
-                        message += "</li>"
+                        sortedContent.push(property);
                     }
+                }
+                sortedContent.sort();
+
+                for (var i=0; i<sortedContent.length; i++) {
+                    message += "<li>";
+                    message += sortedContent[i];
+                    var exceptionList = content[sortedContent[i]];
+                    for (var exception in exceptionList) {
+                        if (exceptionList.hasOwnProperty(exception)){
+                            message += "<ul>";
+                            message += "<li>" + exceptionList[exception] + "</li>";
+                            message += "</ul>"
+                        }
+                    }
+                    message += "</li>"
                 }
                 message += "</ul></div>"
             }

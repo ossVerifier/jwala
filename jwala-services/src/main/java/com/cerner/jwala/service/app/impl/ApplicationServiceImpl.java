@@ -760,7 +760,9 @@ public class ApplicationServiceImpl implements ApplicationService {
 
         checkStartedJvms(group, hostNames);
 
-        final Set<String> resourceSet = getWebAppOnlyResources(group);
+        validateApplicationResources(appName, group);
+
+        final Set<String> resourceSet = getWebAppOnlyResources(group, appName);
 
         final List<String> keys = getKeysAndAcquireWriteLock(appName, hostNames);
 
@@ -771,6 +773,15 @@ public class ApplicationServiceImpl implements ApplicationService {
         } finally {
             releaseWriteLocks(keys);
         }
+    }
+
+    private void validateApplicationResources(String appName, Group group) {
+        ResourceIdentifier resourceIdentifier = new ResourceIdentifier.Builder()
+                .setResourceName("*")
+                .setGroupName(group.getName())
+                .setWebAppName(appName)
+                .build();
+        resourceService.validateAllResourcesForGeneration(resourceIdentifier);
     }
 
     protected List<String> getDeployHostList(final String hostName, final Group group, final Application application) {
@@ -803,23 +814,23 @@ public class ApplicationServiceImpl implements ApplicationService {
     }
 
     protected void checkStartedJvms(final Group group, final List<String> hostNames) {
-        Set<String> errorJvms = new HashSet<>();
+        Map<String, List<String>> errorJvms = new HashMap<>();
         for (Jvm jvm : group.getJvms()) {
             if (hostNames.contains(jvm.getHostName().toLowerCase()) && jvm.getState().isStartedState()) {
-                errorJvms.add(jvm.getJvmName());
+                errorJvms.put(jvm.getJvmName(), null);
             }
         }
         if (!errorJvms.isEmpty()) {
             LOGGER.error("Jvms {} not stopped, make sure the jvms are stopped before deploying", errorJvms.toString());
             throw new InternalErrorException(AemFaultType.RESOURCE_DEPLOY_FAILURE,
-                    "Make sure the following Jvms " + errorJvms.toString() + " are completely stopped before deploying.");
+                    "Make sure the following JVMs are completely stopped before deploying." , null, errorJvms);
         }
     }
 
-    protected Set<String> getWebAppOnlyResources(final Group group) {
+    protected Set<String> getWebAppOnlyResources(final Group group, String appName) {
         final String groupName = group.getName();
         final Set<String> resourceSet = new HashSet<>();
-        List<String> resourceTemplates = groupService.getGroupAppsResourceTemplateNames(groupName);
+        List<String> resourceTemplates = groupService.getGroupAppsResourceTemplateNames(groupName, appName);
         for (String resourceTemplate : resourceTemplates) {
             String metaDataStr = groupService.getGroupAppResourceTemplateMetaData(groupName, resourceTemplate);
             LOGGER.debug("metadata for template: {} is {}", resourceTemplate, metaDataStr);
@@ -828,6 +839,8 @@ public class ApplicationServiceImpl implements ApplicationService {
                 if (!metaData.getEntity().getDeployToJvms()) {
                     LOGGER.info("Template {} needs to be deployed adding it to the list", resourceTemplate);
                     resourceSet.add(resourceTemplate);
+                } else {
+                    LOGGER.info("Not deploying {} because deployToJvms=true", resourceTemplate);
                 }
             } catch (IOException e) {
                 LOGGER.error("Error in templatizing the metadata file", e);
@@ -866,8 +879,8 @@ public class ApplicationServiceImpl implements ApplicationService {
         if (futures != null) {
             for (Entry<String, Future<Set<CommandOutput>>> entry : futures.entrySet()) {
                 try {
-                    Set<CommandOutput> commandOutputSet = entry.getValue().get(
-                            ApplicationProperties.getAsInteger("remote.jwala.execution.timeout.seconds"), TimeUnit.SECONDS);
+                    long timeout = Long.parseLong(ApplicationProperties.get("remote.jwala.execution.timeout.seconds", "300"));
+                    Set<CommandOutput> commandOutputSet = entry.getValue().get(timeout, TimeUnit.SECONDS);
                     for (CommandOutput commandOutput : commandOutputSet) {
                         if (!commandOutput.getReturnCode().wasSuccessful()) {
                             final String errorMessage = "Error in deploying resources to host " + entry.getKey() +

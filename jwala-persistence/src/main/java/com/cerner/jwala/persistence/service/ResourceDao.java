@@ -168,6 +168,8 @@ public interface ResourceDao {
      */
     JpaGroupAppConfigTemplate getGroupLevelAppResource(String resourceName, String appName, String groupName);
 
+    List<String> getGroupLevelAppResourceNames(String groupName, String webAppName);
+
     /**
      * Get the content of the external properties resource
      * @param resourceName the name of the file that was uploaded with the external properties
