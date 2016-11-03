@@ -308,6 +308,48 @@ public class ResourceServiceRestImplTest {
     }
 
     @Test
+    public void testGetResourceContent() {
+        ResourceHierarchyParam param = new ResourceHierarchyParam();
+        param.setGroup("test-group");
+        param.setJvm("test-jvm");
+        param.setWebApp("test-app");
+        param.setWebServer("test-webserver");
+
+        when(impl.getResourceContent(any(ResourceIdentifier.class))).thenReturn(new ResourceContent("{}", "key=value"));
+
+        Response response = cut.getResourceContent("external.properties", param);
+        assertEquals(200, response.getStatus());
+    }
+
+    @Test
+    public void testGetResourceContentReturnsNull() {
+        ResourceHierarchyParam param = new ResourceHierarchyParam();
+        param.setGroup("test-group");
+        param.setJvm("test-jvm");
+        param.setWebApp("test-app");
+        param.setWebServer("test-webserver");
+
+        when(impl.getResourceContent(any(ResourceIdentifier.class))).thenReturn(null);
+
+        Response response = cut.getResourceContent("external.properties", param);
+        assertEquals(204, response.getStatus());
+    }
+
+    @Test
+    public void testUpdateResourceContent() {
+        ResourceHierarchyParam param = new ResourceHierarchyParam();
+        param.setGroup("test-group");
+        param.setJvm("test-jvm");
+        param.setWebApp("test-app");
+        param.setWebServer("test-webserver");
+
+        when(impl.updateResourceContent(any(ResourceIdentifier.class), anyString())).thenReturn("newkey=newvalue");
+
+        Response response = cut.updateResourceContent("external.properties", param, "newkey=newvalue");
+        assertEquals(200, response.getStatus());
+    }
+
+    @Test
     public void testGetExternalProperties() {
         cut.getExternalProperties();
         verify(impl).getExternalProperties();
@@ -450,7 +492,7 @@ public class ResourceServiceRestImplTest {
         Response response = cut.updateResourceMetaData(resourceName, resourceHierarchyParam, updatedMetadata);
 
         assertEquals(500, response.getStatus());
-        assertEquals("test-resource.txt of failed-entity meta data update failed!", ((ApplicationResponse) response.getEntity()).getApplicationResponseContent());
+        assertEquals("test-resource.txt of failed-entity meta data update failed!", ((ApplicationResponse)response.getEntity()).getApplicationResponseContent());
     }
 
     /**
