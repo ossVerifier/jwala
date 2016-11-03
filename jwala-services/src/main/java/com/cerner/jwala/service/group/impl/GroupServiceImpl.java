@@ -557,7 +557,7 @@ public class GroupServiceImpl implements GroupService {
         final String event = JvmControlOperation.SECURE_COPY.name() + " " + fileName;
         final Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         final String userName = null != authentication ? authentication.getName() : "";
-        historyService.createHistory(host, groupList, event, EventType.USER_ACTION, userName);
+        historyService.createHistory(host, groupList, event, EventType.USER_ACTION_INFO, userName);
         messagingService.send(new JvmHistoryEvent(id, event, userName, DateTime.now(), JvmControlOperation.SECURE_COPY));
 
         return remoteCommandExecutor.executeRemoteCommand(

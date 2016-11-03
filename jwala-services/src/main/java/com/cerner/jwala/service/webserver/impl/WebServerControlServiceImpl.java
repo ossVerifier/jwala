@@ -73,7 +73,7 @@ public class WebServerControlServiceImpl implements WebServerControlService {
             final String event = controlOperation.getOperationState() == null ?
                     controlOperation.name() : controlOperation.getOperationState().toStateLabel();
 
-            historyFacade.write(getServerName(webServer), new ArrayList<>(webServer.getGroups()), event, EventType.USER_ACTION, aUser.getId());
+            historyFacade.write(getServerName(webServer), new ArrayList<>(webServer.getGroups()), event, EventType.USER_ACTION_INFO, aUser.getId());
 
             final WindowsWebServerPlatformCommandProvider windowsJvmPlatformCommandProvider = new WindowsWebServerPlatformCommandProvider();
             final ServiceCommandBuilder serviceCommandBuilder = windowsJvmPlatformCommandProvider.getServiceCommandBuilderFor(controlOperation);
@@ -142,7 +142,7 @@ public class WebServerControlServiceImpl implements WebServerControlService {
             LOGGER.error(e.getMessage(), e);
 
             historyFacade.write(getServerName(webServer), new ArrayList<>(webServer.getGroups()), e.getMessage(),
-                    EventType.APPLICATION_EVENT, aUser.getId());
+                    EventType.SYSTEM_ERROR, aUser.getId());
 
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE,
                     "CommandFailureException when attempting to control a JVM: " + controlWebServerRequest, e);
@@ -159,7 +159,7 @@ public class WebServerControlServiceImpl implements WebServerControlService {
     private void sendMessageToActionEventLogs(User aUser, WebServer webServer, String commandOutputReturnDescription) {
         LOGGER.error(commandOutputReturnDescription);
         historyFacade.write(getServerName(webServer), new ArrayList<>(webServer.getGroups()), commandOutputReturnDescription,
-                EventType.APPLICATION_EVENT, aUser.getId());
+                EventType.SYSTEM_ERROR, aUser.getId());
     }
 
     /**
@@ -179,7 +179,7 @@ public class WebServerControlServiceImpl implements WebServerControlService {
         final String fileName = new File(destPath).getName();
         if (!ApplicationProperties.get("remote.commands.user-scripts").endsWith(fileName)) {
             historyFacade.write(getServerName(aWebServer), new ArrayList<>(aWebServer.getGroups()),
-                    WindowsWebServerNetOperation.SECURE_COPY.name() + " " + fileName, EventType.USER_ACTION, userId);
+                    WindowsWebServerNetOperation.SECURE_COPY.name() + " " + fileName, EventType.USER_ACTION_INFO, userId);
         }
 
         // back up the original file first

@@ -404,7 +404,7 @@ public class BalancerManagerServiceImpl implements BalancerManagerService {
     public void sendMessage(final WebServer webServer, final String message) {
         LOGGER.info(message);
         messagingService.send(new WebServerHistoryEvent(webServer.getId(), "history", getUser(), message));
-        historyService.createHistory(webServer.getName(), new ArrayList<>(webServer.getGroups()), message, EventType.USER_ACTION, getUser());
+        historyService.createHistory(webServer.getName(), new ArrayList<>(webServer.getGroups()), message, EventType.USER_ACTION_INFO, getUser());
     }
 
     public List<NameValuePair> getNvp(final String worker, final String balancerName, final String nonce) {

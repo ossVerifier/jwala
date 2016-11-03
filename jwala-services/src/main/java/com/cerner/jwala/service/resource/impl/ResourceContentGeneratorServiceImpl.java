@@ -74,17 +74,17 @@ public class ResourceContentGeneratorServiceImpl implements ResourceContentGener
                 if (entity instanceof WebServer) {
                     WebServer webServer = (WebServer) entity;
                     messagingService.send(new CurrentState<>(webServer.getId(), WebServerReachableState.WS_FAILED, DateTime.now(), StateType.WEB_SERVER, logMessage, userName));
-                    historyService.createHistory("Web Server " + webServer.getName(), new ArrayList<Group>(webServer.getGroups()), logMessage, EventType.APPLICATION_EVENT, userName);
+                    historyService.createHistory("Web Server " + webServer.getName(), new ArrayList<Group>(webServer.getGroups()), logMessage, EventType.SYSTEM_ERROR, userName);
                 } else if (entity instanceof Jvm) {
                     Jvm jvm = (Jvm) entity;
                     messagingService.send(new CurrentState<>(jvm.getId(), JvmState.JVM_FAILED, DateTime.now(), StateType.JVM, logMessage, userName));
-                    historyService.createHistory("JVM " + jvm.getJvmName(), new ArrayList<Group>(jvm.getGroups()), logMessage, EventType.APPLICATION_EVENT, userName);
+                    historyService.createHistory("JVM " + jvm.getJvmName(), new ArrayList<Group>(jvm.getGroups()), logMessage, EventType.SYSTEM_ERROR, userName);
                 } else {
                     Application application = (Application) entity;
                     messagingService.send(new CurrentState<>(application.getId(), ApplicationState.FAILED, DateTime.now(), StateType.APPLICATION, logMessage, userName));
                     ArrayList<Group> groups = new ArrayList<Group>();
                     groups.add(application.getGroup());
-                    historyService.createHistory("App " + application.getName(), groups, logMessage, EventType.APPLICATION_EVENT, userName);
+                    historyService.createHistory("App " + application.getName(), groups, logMessage, EventType.SYSTEM_ERROR, userName);
                 }
             }
             throw new ResourceFileGeneratorException(logMessage, e);

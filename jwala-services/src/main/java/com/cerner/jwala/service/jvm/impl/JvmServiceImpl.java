@@ -772,7 +772,7 @@ public class JvmServiceImpl implements JvmService {
         pingAndUpdateJvmState(jvm);
 
         final String message = "Diagnose and resolve state";
-        jvmControlService.createJvmHistory(jvm.getJvmName(), new ArrayList<>(jvm.getGroups()), message, EventType.USER_ACTION, user.getId());
+        jvmControlService.createJvmHistory(jvm.getJvmName(), new ArrayList<>(jvm.getGroups()), message, EventType.USER_ACTION_INFO, user.getId());
         jvmControlService.sendJvmMessage(new JvmHistoryEvent(jvm.getId(), message, user.getId(), DateTime.now(), MSG_TYPE_HISTORY));
 
         SimpleTemplateEngine engine = new SimpleTemplateEngine();

@@ -1,13 +1,22 @@
 package com.cerner.jwala.persistence.jpa.type;
 
 /**
- * List of history event types.
+ * This enum lists events classified by source and severity level
  *
- * Created by JC043760 on 12/9/2015.
+ * Note: Initially the event type would only identify an event by source but later on it became evident that the event
+ *       should also be classified by severity level but since adding severity level to
+ *       {@link com.cerner.jwala.persistence.jpa.domain.JpaHistory} will require existing Cerner installations to update
+ *       their db, a decision was made to have the event type describe both instead. Anyhow this can change in the near
+ *       future on subsequent team design/code review.
+ *
+ * Created by JC043760 on 12/9/2015
  */
 public enum EventType {
 
-    USER_ACTION("A"), APPLICATION_EVENT("E"), UNKNOWN(null);
+    USER_ACTION_INFO("UI"), SYSTEM_ERROR("SE"), SYSTEM_INFO("SI"),
+    @Deprecated USER_ACTION("A") /* Kept for backward compatibility */,
+    @Deprecated APPLICATION_EVENT("E")  /* Kept for backward compatibility */,
+    UNKNOWN(null);
 
     private final String abbrev;
 

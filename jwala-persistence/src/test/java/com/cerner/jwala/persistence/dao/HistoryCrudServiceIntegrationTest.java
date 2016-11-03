@@ -68,11 +68,11 @@ public class HistoryCrudServiceIntegrationTest {
         final JpaGroup jpaGroup = new JpaGroup();
         jpaGroup.setName("zGroup");
         groupCrudService.create(jpaGroup);
-        historyCrudService.createHistory(SERVER_NAME, new Group(new Identifier<Group>(jpaGroup.getId()), "zGroup"), "Testing...", EventType.USER_ACTION, "any");
+        historyCrudService.createHistory(SERVER_NAME, new Group(new Identifier<Group>(jpaGroup.getId()), "zGroup"), "Testing...", EventType.USER_ACTION_INFO, "any");
 
         List<JpaHistory> jpaHistoryList = historyCrudService.findHistory(jpaGroup.getName(), SERVER_NAME, 1);
         assertEquals(1, jpaHistoryList.size());
-        assertEquals(EventType.USER_ACTION, jpaHistoryList.get(0).getEventType());
+        assertEquals(EventType.USER_ACTION_INFO, jpaHistoryList.get(0).getEventType());
 
         jpaHistoryList = historyCrudService.findHistory(jpaGroup.getName(), SERVER_NAME, null);
         assertEquals(1, jpaHistoryList.size());

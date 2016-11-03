@@ -87,7 +87,7 @@ public class JvmControlServiceImpl implements JvmControlService {
             final JvmControlOperation ctrlOp = controlOperation;
             final String event = ctrlOp.getOperationState() == null ? ctrlOp.name() : ctrlOp.getOperationState().toStateLabel();
 
-            historyService.createHistory(getServerName(jvm), new ArrayList<>(jvm.getGroups()), event, EventType.USER_ACTION, aUser.getId());
+            historyService.createHistory(getServerName(jvm), new ArrayList<>(jvm.getGroups()), event, EventType.USER_ACTION_INFO, aUser.getId());
 
             // Send a message to the UI about the control operation.
             // Note: Sending the details of the control operation to a topic will enable the application to display
@@ -177,7 +177,7 @@ public class JvmControlServiceImpl implements JvmControlService {
             return commandOutput;
         } catch (final RemoteCommandExecutorServiceException e) {
             LOGGER.error(e.getMessage(), e);
-            historyService.createHistory(getServerName(jvm), new ArrayList<>(jvm.getGroups()), e.getMessage(), EventType.APPLICATION_EVENT,
+            historyService.createHistory(getServerName(jvm), new ArrayList<>(jvm.getGroups()), e.getMessage(), EventType.SYSTEM_ERROR,
                     aUser.getId());
             messagingService.send(new CurrentState<>(jvm.getId(), JvmState.JVM_FAILED, DateTime.now(), StateType.JVM, e.getMessage()));
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE,
@@ -194,7 +194,7 @@ public class JvmControlServiceImpl implements JvmControlService {
     private void sendMessageToActionEventLog(User aUser, Jvm jvm, String commandOutputReturnDescription) {
         LOGGER.error(commandOutputReturnDescription);
         historyService.createHistory(getServerName(jvm), new ArrayList<>(jvm.getGroups()), commandOutputReturnDescription,
-                EventType.APPLICATION_EVENT, aUser.getId());
+                EventType.SYSTEM_ERROR, aUser.getId());
 
         // Send as a failure to make the UI display it in the history window
         // TODO: Sending a failure state so that the commandOutputReturnDescription will be shown in the UI is not the proper way to do this, refactor this in the future
@@ -285,7 +285,7 @@ public class JvmControlServiceImpl implements JvmControlService {
         // don't add any usage of the jwala user internal directory to the history
         if (!ApplicationProperties.get("remote.commands.user-scripts").endsWith(fileName)) {
             final String eventDescription = event + " " + fileName;
-            historyService.createHistory(getServerName(jvm), new ArrayList<>(jvm.getGroups()), eventDescription, EventType.USER_ACTION, userId);
+            historyService.createHistory(getServerName(jvm), new ArrayList<>(jvm.getGroups()), eventDescription, EventType.USER_ACTION_INFO, userId);
             messagingService.send(new JvmHistoryEvent(jvm.getId(), eventDescription, userId, DateTime.now(), JvmControlOperation.SECURE_COPY));
         }
         final String name = jvm.getJvmName();
