@@ -60,9 +60,7 @@ import java.net.URISyntaxException;
 import java.util.*;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
@@ -933,13 +931,12 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
 
         when(mockJvmPersistenceService.findJvmByExactName(anyString())).thenReturn(mockJvm);
 
-        boolean exceptionCaught = false;
         try {
             jvmService.deleteJvm("test-delete-jvm", "test-user-deletes-jvm");
+            fail("Expecting a JvmServiceException");
         } catch (JvmServiceException jse){
-            exceptionCaught = true;
+            assertEquals("The target JVM must be stopped before attempting to delete it", jse.getMessage());
         }
-        assertTrue(exceptionCaught);
 
         when(mockJvm.getState()).thenReturn(JvmState.JVM_STOPPED);
         when(mockJvmControlService.controlJvm(any(ControlJvmRequest.class), any(User.class))).thenReturn(new CommandOutput(new ExecReturnCode(0), "SUCCESS", ""));

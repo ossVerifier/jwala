@@ -358,7 +358,6 @@ public class JvmServiceImpl implements JvmService {
     }
 
     private void validateJvmAndAppResources(Jvm jvm) {
-        boolean exceptionThrown = false;
         String jvmName = jvm.getJvmName();
         Map<String, List<String>> jvmAndAppResourcesExceptions = new HashMap<>();
 
@@ -372,7 +371,6 @@ public class JvmServiceImpl implements JvmService {
         } catch (InternalErrorException iee) {
             LOGGER.info("Catching known JVM resource generation exception, and now validating application resources");
             LOGGER.debug("This JVM resource generation exception should have already been logged previously", iee);
-            exceptionThrown = true;
             jvmAndAppResourcesExceptions.putAll(iee.getErrorDetails());
         }
 
@@ -393,14 +391,13 @@ public class JvmServiceImpl implements JvmService {
                     } catch (InternalErrorException iee){
                         LOGGER.info("Catching known app resource generation exception, and now consolidating with the JVM resource exceptions");
                         LOGGER.debug("This application resource generation exception should have already been logged previously", iee);
-                        exceptionThrown = true;
                         jvmAndAppResourcesExceptions.putAll(iee.getErrorDetails());
                     }
                 }
             }
         }
 
-        if (exceptionThrown) {
+        if (!jvmAndAppResourcesExceptions.isEmpty()) {
             throw new InternalErrorException(AemFaultType.RESOURCE_GENERATION_FAILED, "Failed to generate the resources for JVM " + jvmName, null, jvmAndAppResourcesExceptions);
         }
     }

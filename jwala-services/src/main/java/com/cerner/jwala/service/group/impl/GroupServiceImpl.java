@@ -425,7 +425,7 @@ public class GroupServiceImpl implements GroupService {
             try {
                 Application app = applicationPersistenceService.getApplication(appName);
                 return resourceService.generateResourceFile(resourceTemplateName, template, resourceGroup, app, ResourceGeneratorType.TEMPLATE);
-            } catch(ResourceFileGeneratorException rfge) {
+            } catch (ResourceFileGeneratorException rfge) {
                 LOGGER.error("Failed to generate and deploy file {} to Web App {}", resourceTemplateName, appName, rfge);
                 Map<String, List<String>> errorDetails = new HashMap<>();
                 errorDetails.put(appName, Collections.singletonList(rfge.getMessage()));

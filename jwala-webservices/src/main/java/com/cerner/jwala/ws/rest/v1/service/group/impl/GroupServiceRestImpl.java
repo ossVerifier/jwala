@@ -433,9 +433,6 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     }
 
     protected void checkResponsesForErrorStatus(Map<String, Future<Response>> futureMap) {
-        boolean isInternalErrorException = false;
-        boolean isException = false;
-        String isExceptionReason = "";
         Map<String, List<String>> entityDetailsMap = new HashMap<>();
         for (String keyEntityName : futureMap.keySet()) {
             Response response;
@@ -445,29 +442,26 @@ public class GroupServiceRestImpl implements GroupServiceRest {
                 if (response.getStatus() > 399) {
                     final String reasonPhrase = response.getStatusInfo().getReasonPhrase();
                     LOGGER.error("Remote Command Failure for " + keyEntityName + ": " + reasonPhrase);
-                    isException = true;
-                    isExceptionReason = reasonPhrase;
+                    entityDetailsMap.put(keyEntityName, Collections.singletonList(reasonPhrase));
                 }
             } catch (InterruptedException | ExecutionException e) {
-                isException = true;
-                isExceptionReason = e.getMessage();
                 LOGGER.error("FAILURE getting response for {}", keyEntityName, e);
                 final Throwable cause = e.getCause();
                 if (cause instanceof InternalErrorException) {
-                    isInternalErrorException = true;
                     entityDetailsMap.putAll(((InternalErrorException) cause).getErrorDetails());
+                } else {
+                    entityDetailsMap.put(keyEntityName, Collections.singletonList(e.getMessage()));
                 }
             } catch (TimeoutException e) {
                 LOGGER.error("Timed out getting response.", e);
-                isException = true;
-                isExceptionReason = e.getMessage();
+                entityDetailsMap.put(keyEntityName, Collections.singletonList(e.getMessage()));
             }
         }
 
-        if (isInternalErrorException) {
+        if (!entityDetailsMap.isEmpty()) {
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Request failed for the following errors:", null, entityDetailsMap);
-        } else if (isException) {
-            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Request failed: " + isExceptionReason);
+        } else {
+            LOGGER.info("Finished checking requests for error statuses.");
         }
     }
 

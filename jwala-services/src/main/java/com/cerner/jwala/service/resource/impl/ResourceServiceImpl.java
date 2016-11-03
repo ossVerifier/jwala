@@ -218,7 +218,6 @@ public class ResourceServiceImpl implements ResourceService {
     public void validateAllResourcesForGeneration(ResourceIdentifier resourceIdentifier) {
         Map<String, List<String>> resourceExceptionMap = new HashMap<>();
         List<String> exceptionList = new ArrayList<>();
-        boolean resourceExceptionThrown = false;
         List<String> resourceNames = resourceHandler.getResourceNames(resourceIdentifier);
         Object entity = resourceHandler.getSelectedValue(resourceIdentifier);
         final ResourceGroup resourceGroup = generateResourceGroup();
@@ -235,7 +234,6 @@ public class ResourceServiceImpl implements ResourceService {
                 generateResourceFile(resourceName, resourceContent.getMetaData(), resourceGroup, entity, ResourceGeneratorType.METADATA);
             } catch (ResourceFileGeneratorException e) {
                 LOGGER.error("Failed to generate {} {} for {}", resourceName, ResourceGeneratorType.METADATA, entity, e);
-                resourceExceptionThrown = true;
                 exceptionList.add(e.getMessage());
             }
 
@@ -243,13 +241,12 @@ public class ResourceServiceImpl implements ResourceService {
                 generateResourceFile(resourceName, resourceContent.getContent(), resourceGroup, entity, ResourceGeneratorType.TEMPLATE);
             } catch (ResourceFileGeneratorException e) {
                 LOGGER.error("Failed to generate {} {} for {}", resourceName, ResourceGeneratorType.TEMPLATE, entity, e);
-                resourceExceptionThrown = true;
                 exceptionList.add(e.getMessage());
             }
 
         }
 
-        checkForResourceGenerationException(resourceIdentifier, resourceExceptionMap, exceptionList, resourceExceptionThrown, entity);
+        checkForResourceGenerationException(resourceIdentifier, resourceExceptionMap, exceptionList, entity);
     }
 
     @Override
@@ -277,11 +274,11 @@ public class ResourceServiceImpl implements ResourceService {
             exceptionList.add(e.getMessage());
         }
 
-        checkForResourceGenerationException(resourceIdentifier, resourceExceptionMap, exceptionList, resourceExceptionThrown, entity);
+        checkForResourceGenerationException(resourceIdentifier, resourceExceptionMap, exceptionList, entity);
     }
 
-    private void checkForResourceGenerationException(ResourceIdentifier resourceIdentifier, Map<String, List<String>> resourceExceptionMap, List<String> exceptionList, boolean resourceExceptionThrown, Object entity) {
-        if (resourceExceptionThrown) {
+    private void checkForResourceGenerationException(ResourceIdentifier resourceIdentifier, Map<String, List<String>> resourceExceptionMap, List<String> exceptionList, Object entity) {
+        if (!resourceExceptionMap.isEmpty()) {
             final String resourceName = resourceIdentifier.jvmName != null ? resourceIdentifier.jvmName : resourceIdentifier.webServerName != null ? resourceIdentifier.webServerName : resourceIdentifier.webAppName;
             resourceExceptionMap.put(resourceName, exceptionList);
             throw new InternalErrorException(AemFaultType.RESOURCE_GENERATION_FAILED, "Failed to validate the following resources.", null, resourceExceptionMap);
