@@ -205,13 +205,13 @@ public class ApplicationServiceImpl implements ApplicationService {
                 // If the physical file can't be deleted for some reason don't throw an exception since there's no
                 // outright ill effect if the war file is not removed in the file system.
                 // The said file might not exist anymore also which is the reason for the error.
-                LOGGER.error("Failed to delete the archive {}! WebArchiveManager remove result type = {}" , app.getWarPath(),
+                LOGGER.error("Failed to delete the archive {}! WebArchiveManager remove result type = {}", app.getWarPath(),
                         result.getType());
             }
         } catch (final IOException ioe) {
             // If the physical file can't be deleted for some reason don't throw an exception since there's no
             // outright ill effect if the war file is not removed in the file system.
-            LOGGER.error("Failed to delete the archive {}!" , app.getWarPath(), ioe);
+            LOGGER.error("Failed to delete the archive {}!", app.getWarPath(), ioe);
         }
 
         return updatedApp;
@@ -330,7 +330,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         } catch (JsonMappingException | JsonParseException e) {
             LOGGER.error("Failed to map meta data while deploying config file {} for app {} to jvm {}", resourceTemplateName, appName, jvmName, e);
             throw new DeployApplicationConfException(e);
-        } catch (ResourceFileGeneratorException e){
+        } catch (ResourceFileGeneratorException e) {
             LOGGER.error("Fail to generate the resource file {}", resourceTemplateName, e);
             throw new DeployApplicationConfException(e);
         } catch (IOException e) {
@@ -382,7 +382,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     @Override
     @Transactional
-    public void deployApplicationResourcesToGroupHosts(String groupName, Application app, ResourceGroup resourceGroup){
+    public void deployApplicationResourcesToGroupHosts(String groupName, Application app, ResourceGroup resourceGroup) {
         List<String> appResourcesNames = groupService.getGroupAppsResourceTemplateNames(groupName);
         Group group = groupService.getGroup(app.getGroup().getId());
         final Set<Jvm> jvms = group.getJvms();
@@ -415,7 +415,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     @Override
     @Transactional
     public void copyApplicationWarToHost(Application application, String hostName) {
-        if(hostName != null && !hostName.isEmpty()) {
+        if (hostName != null && !hostName.isEmpty()) {
             Set<String> hostNames = new HashSet<>();
             hostNames.add(hostName);
             copyAndExecuteCommand(application, hostNames);
@@ -430,11 +430,11 @@ public class ApplicationServiceImpl implements ApplicationService {
         try {
             FileCopyUtils.copy(applicationWar, tempWarFile);
             final String destPath = ApplicationProperties.get("remote.jwala.webapps.dir");
-            for(String hostName: hostNames) {
+            for (String hostName : hostNames) {
                 Future<CommandOutput> commandOutputFuture = executeCopyCommand(application, tempWarFile, destPath, null, hostName);
                 futures.put(hostName, commandOutputFuture);
             }
-            for(Entry<String, Future<CommandOutput>> entry:futures.entrySet()) {
+            for (Entry<String, Future<CommandOutput>> entry : futures.entrySet()) {
                 CommandOutput execData = entry.getValue().get();
                 if (execData.getReturnCode().wasSuccessful()) {
                     LOGGER.info("Copy of application war {} to {} was successful", applicationWar.getName(), entry.getKey());
@@ -571,7 +571,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     @Override
     public CommandOutput executeCheckIfFileExistsCommand(final String entity, final String host, final String fileName) throws CommandFailureException {
-        return  remoteCommandExecutor.executeRemoteCommand(
+        return remoteCommandExecutor.executeRemoteCommand(
                 entity,
                 host,
                 ApplicationControlOperation.CHECK_FILE_EXISTS,
@@ -595,7 +595,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     @Override
     public CommandOutput executeUnzipBinaryCommand(final String entity, final String host, final String fileName, final String destination, final String options) throws CommandFailureException {
-        return  remoteCommandExecutor.executeRemoteCommand(
+        return remoteCommandExecutor.executeRemoteCommand(
                 entity,
                 host,
                 BinaryDistributionControlOperation.UNZIP_BINARY,
@@ -718,7 +718,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 
             metaDataMap.put("contentType", ContentType.APPLICATION_BINARY.contentTypeStr);
             metaDataMap.put("deployPath", StringUtils.isEmpty(deployPath) ? ApplicationProperties.get(JWALA_WEBAPPS_DIR)
-                                                                          : deployPath);
+                    : deployPath);
             metaDataMap.put("deployFileName", warName);
             metaDataMap.put("templateName", warName);
 
@@ -756,7 +756,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         final Application application = applicationPersistenceService.getApplication(appName);
         final Group group = groupService.getGroup(application.getGroup().getId());
         final List<String> hostNames = getDeployHostList(hostName, group, application);
-        LOGGER.debug("deploying templates to hosts: {}", hostNames.toString());
+        LOGGER.info("deploying templates to hosts: {}", hostNames.toString());
 
         checkStartedJvms(group, hostNames);
 
@@ -767,8 +767,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         final List<String> keys = getKeysAndAcquireWriteLock(appName, hostNames);
 
         try {
-            final Map<String, Future<Set<CommandOutput>>> futures = getFutureCommands(hostNames, group, application, resourceSet);
-
+            final Map<String, Future<Set<CommandOutput>>> futures = deployApplicationResourcesForHosts(hostNames, group, application, resourceSet);
             waitForDeploy(appName, futures);
         } finally {
             releaseWriteLocks(keys);
@@ -776,12 +775,14 @@ public class ApplicationServiceImpl implements ApplicationService {
     }
 
     private void validateApplicationResources(String appName, Group group) {
+        final String groupName = group.getName();
         ResourceIdentifier resourceIdentifier = new ResourceIdentifier.Builder()
                 .setResourceName("*")
-                .setGroupName(group.getName())
+                .setGroupName(groupName)
                 .setWebAppName(appName)
                 .build();
         resourceService.validateAllResourcesForGeneration(resourceIdentifier);
+        LOGGER.info("Application {} in group {} passed resource validation", appName, groupName);
     }
 
     protected List<String> getDeployHostList(final String hostName, final Group group, final Application application) {
@@ -823,7 +824,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         if (!errorJvms.isEmpty()) {
             LOGGER.error("Jvms {} not stopped, make sure the jvms are stopped before deploying", errorJvms.toString());
             throw new InternalErrorException(AemFaultType.RESOURCE_DEPLOY_FAILURE,
-                    "Make sure the following JVMs are completely stopped before deploying." , null, errorJvms);
+                    "Make sure the following JVMs are completely stopped before deploying.", null, errorJvms);
         }
     }
 
@@ -850,7 +851,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         return resourceSet;
     }
 
-    protected Map<String, Future<Set<CommandOutput>>> getFutureCommands(
+    protected Map<String, Future<Set<CommandOutput>>> deployApplicationResourcesForHosts(
             final List<String> hostNames, final Group group, final Application application, final Set<String> resourceSet) {
         final ResourceGroup resourceGroup = resourceService.generateResourceGroup();
         final Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -858,17 +859,17 @@ public class ApplicationServiceImpl implements ApplicationService {
         for (final String host : hostNames) {
             Future<Set<CommandOutput>> commandOutputFutureSet = executorService.submit
                     (new Callable<Set<CommandOutput>>() {
-                        @Override
-                        public Set<CommandOutput> call() throws Exception {
-                            Set<CommandOutput> commandOutputs = new HashSet<>();
-                            SecurityContextHolder.getContext().setAuthentication(authentication);
-                            for (final String resource : resourceSet) {
-                                LOGGER.info("Deploying {} to host {}", resource, host);
-                                commandOutputs.add(groupService.deployGroupAppTemplate(group.getName(), resource, resourceGroup, application, host));
-                            }
-                            return commandOutputs;
-                        }
-                    }
+                         @Override
+                         public Set<CommandOutput> call() throws Exception {
+                             Set<CommandOutput> commandOutputs = new HashSet<>();
+                             SecurityContextHolder.getContext().setAuthentication(authentication);
+                             for (final String resource : resourceSet) {
+                                 LOGGER.info("Deploying {} to host {}", resource, host);
+                                 commandOutputs.add(groupService.deployGroupAppTemplate(group.getName(), resource, resourceGroup, application, host));
+                             }
+                             return commandOutputs;
+                         }
+                     }
                     );
             futures.put(host, commandOutputFutureSet);
         }
