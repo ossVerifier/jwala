@@ -97,7 +97,7 @@ public class JvmControlServiceImpl implements JvmControlService {
                 messagingService.send(new CurrentState<>(jvm.getId(), ctrlOp.getOperationState(), aUser.getId(), DateTime.now(),
                         StateType.JVM));
             } else if (controlOperation.equals(JvmControlOperation.DELETE_SERVICE)
-                    || controlOperation.equals(JvmControlOperation.INVOKE_SERVICE)
+                    || controlOperation.equals(JvmControlOperation.INSTALL_SERVICE)
                     || controlOperation.equals(JvmControlOperation.SECURE_COPY)) {
                 messagingService.send(new JvmHistoryEvent(jvm.getId(), controlOperation.name(), aUser.getId(), DateTime.now(), controlOperation));
             }
@@ -223,7 +223,7 @@ public class JvmControlServiceImpl implements JvmControlService {
                 case DELETE_SERVICE:
                 case DEPLOY_CONFIG_ARCHIVE:
                 case HEAP_DUMP:
-                case INVOKE_SERVICE:
+                case INSTALL_SERVICE:
                 case SECURE_COPY:
                 case THREAD_DUMP:
                     throw new UnsupportedOperationException();

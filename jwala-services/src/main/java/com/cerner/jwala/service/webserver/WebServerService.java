@@ -27,7 +27,7 @@ public interface WebServerService {
 
     void removeWebServer(final Identifier<WebServer> aWebServerId);
 
-    String generateInvokeWSBat(WebServer webServer);
+    String generateInstallServiceWSBat(WebServer webServer);
 
     String generateHttpdConfig(final String aWebServerName, ResourceGroup resourceGroup);
 

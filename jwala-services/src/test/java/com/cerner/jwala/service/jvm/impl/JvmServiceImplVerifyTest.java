@@ -568,7 +568,7 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
     }
 
     @Test
-    public void testGenerateInvokeBat() {
+    public void testGenerateInstallServiceBat() {
         final Jvm jvm = mock(Jvm.class);
         final List<Jvm> jvms = new ArrayList<>();
         jvms.add(jvm);
@@ -577,7 +577,7 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
         when(mockFileManager.getResourceTypeTemplate(anyString())).thenReturn(expectedValue);
         when(mockResourceService.generateResourceGroup()).thenReturn(new ResourceGroup());
         when(mockResourceService.generateResourceFile(anyString(), anyString(), any(ResourceGroup.class), eq(jvm), any(ResourceGeneratorType.class))).thenReturn(expectedValue);
-        final String result = jvmService.generateInvokeBat(anyString());
+        final String result = jvmService.generateInstallServiceBat(anyString());
         assertEquals(expectedValue, result);
     }
 
@@ -726,7 +726,7 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
 
         when(mockJvmControlService.controlJvm(eq(new ControlJvmRequest(mockJvm.getId(), JvmControlOperation.DELETE_SERVICE)), any(User.class))).thenReturn(commandOutput);
         when(mockJvmControlService.controlJvm(eq(new ControlJvmRequest(mockJvm.getId(), JvmControlOperation.DEPLOY_CONFIG_ARCHIVE)), any(User.class))).thenReturn(commandOutput);
-        when(mockJvmControlService.controlJvm(eq(new ControlJvmRequest(mockJvm.getId(), JvmControlOperation.INVOKE_SERVICE)), any(User.class))).thenReturn(commandOutput);
+        when(mockJvmControlService.controlJvm(eq(new ControlJvmRequest(mockJvm.getId(), JvmControlOperation.INSTALL_SERVICE)), any(User.class))).thenReturn(commandOutput);
 
         when(mockJvmPersistenceService.getResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"deployFileName\":\"server-test-deploy-config.xml\", \"deployPath\":\"c:/fake/test/path\"}");
         when(mockJvmPersistenceService.findJvmByExactName(anyString())).thenReturn(mockJvm);
@@ -743,7 +743,7 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
         when(mockExecDataFail.getReturnCode()).thenReturn(new ExecReturnCode(1));
         when(mockExecDataFail.getStandardError()).thenReturn("ERROR");
 
-        when(mockJvmControlService.controlJvm(eq(new ControlJvmRequest(mockJvm.getId(), JvmControlOperation.INVOKE_SERVICE)), any(User.class))).thenReturn(mockExecDataFail);
+        when(mockJvmControlService.controlJvm(eq(new ControlJvmRequest(mockJvm.getId(), JvmControlOperation.INSTALL_SERVICE)), any(User.class))).thenReturn(mockExecDataFail);
 
         boolean exceptionThrown = false;
         try {
@@ -829,7 +829,7 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
         when(mockJvmPersistenceService.findJvmByExactName(anyString())).thenReturn(mockJvm);
         when(mockJvmControlService.executeCreateDirectoryCommand(any(Jvm.class), anyString())).thenReturn(commandOutputSucceeds);
         when(mockJvmControlService.secureCopyFile(any(ControlJvmRequest.class), contains(AemControl.Properties.DEPLOY_CONFIG_ARCHIVE_SCRIPT_NAME.getValue()), anyString(), anyString())).thenReturn(commandOutputSucceeds);
-        when(mockJvmControlService.secureCopyFile(any(ControlJvmRequest.class), contains(AemControl.Properties.INVOKE_SERVICE_SCRIPT_NAME.getValue()), anyString(), anyString())).thenReturn(commandOutputFails);
+        when(mockJvmControlService.secureCopyFile(any(ControlJvmRequest.class), contains(AemControl.Properties.INSTALL_SERVICE_SCRIPT_NAME.getValue()), anyString(), anyString())).thenReturn(commandOutputFails);
         when(mockJvm.getId()).thenReturn(new Identifier<Jvm>(111L));
         when(mockJvm.getState()).thenReturn(JvmState.JVM_STOPPED);
 

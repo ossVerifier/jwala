@@ -319,7 +319,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
                 throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, resourceFileGeneratorExceptionMessage);
             }
             // re-install the service
-            installWebServerWindowsService(aUser, new ControlWebServerRequest(webServer.getId(), WebServerControlOperation.INVOKE_SERVICE), webServer);
+            installWebServerWindowsService(aUser, new ControlWebServerRequest(webServer.getId(), WebServerControlOperation.INSTALL_SERVICE), webServer);
 
             webServerService.updateState(webServer.getId(), WebServerReachableState.WS_UNREACHABLE, StringUtils.EMPTY);
 
@@ -385,18 +385,18 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to secure copy file " + sourceStopServicePath + " during the creation of " + webServerName);
         }
 
-        final String invokeWsScriptName = AemControl.Properties.INVOKE_WS_SERVICE_SCRIPT_NAME.getValue();
-        final String sourceInvokeWsServicePath = COMMANDS_SCRIPTS_PATH + "/" + invokeWsScriptName;
+        final String installServiceWsScriptName = AemControl.Properties.INSTALL_SERVICE_WS_SERVICE_SCRIPT_NAME.getValue();
+        final String sourceInstallServiceWsServicePath = COMMANDS_SCRIPTS_PATH + "/" + installServiceWsScriptName;
         final String jwalaScriptsPath = ApplicationProperties.get("remote.commands.user-scripts");
-        if (!webServerControlService.secureCopyFile(webServerName, sourceInvokeWsServicePath, jwalaScriptsPath + "/" + invokeWsScriptName, userId).getReturnCode().wasSuccessful()) {
-            LOGGER.error("Failed to secure copy file {} during creation of {}", sourceInvokeWsServicePath, webServerName);
-            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to secure copy file " + sourceInvokeWsServicePath + " during the creation of " + webServerName);
+        if (!webServerControlService.secureCopyFile(webServerName, sourceInstallServiceWsServicePath, jwalaScriptsPath + "/" + installServiceWsScriptName, userId).getReturnCode().wasSuccessful()) {
+            LOGGER.error("Failed to secure copy file {} during creation of {}", sourceInstallServiceWsServicePath, webServerName);
+            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to secure copy file " + sourceInstallServiceWsServicePath + " during the creation of " + webServerName);
         }
 
         // make sure the scripts are executable
         if (!webServerControlService.changeFileMode(webServer, "a+x", jwalaScriptsPath, "*.sh").getReturnCode().wasSuccessful()) {
             LOGGER.error("Failed to update the permissions in {} during the creation of {}", jwalaScriptsPath, webServerName);
-            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to update the permissions in " + sourceInvokeWsServicePath + " during the creation of " + webServerName);
+            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to update the permissions in " + sourceInstallServiceWsServicePath + " during the creation of " + webServerName);
         }
         if (!webServerControlService.changeFileMode(webServer, "a+x", destHttpdConfParentDir, "*.sh").getReturnCode().wasSuccessful()) {
             LOGGER.error("Failed to update the permissions in {} during the creation of {}", destHttpdConfParentDir, webServerName);
@@ -404,33 +404,33 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
         }
     }
 
-    protected void installWebServerWindowsService(final AuthenticatedUser user, final ControlWebServerRequest invokeWSBatRequest, final WebServer webServer) throws CommandFailureException {
+    protected void installWebServerWindowsService(final AuthenticatedUser user, final ControlWebServerRequest installServiceWSBatRequest, final WebServer webServer) throws CommandFailureException {
 
-        // create the invokeWs.bat file
-        String invokeWSBatText = webServerService.generateInvokeWSBat(webServer);
+        // create the install_serviceWS.bat file
+        String installserviceWSBatText = webServerService.generateInstallServiceWSBat(webServer);
         final String jwalaGeneratedResourcesDir = ApplicationProperties.get(PATHS_GENERATED_RESOURCE_DIR);
         final String httpdDataDir = ApplicationProperties.get("remote.paths.httpd.conf");
         final String name = webServer.getName();
-        final File invokeWsBatFile = createTempWebServerResourceFile(name, jwalaGeneratedResourcesDir, "invokeWS", "bat", invokeWSBatText);
+        final File install_serviceWsBatFile = createTempWebServerResourceFile(name, jwalaGeneratedResourcesDir, "install_serviceWS", "bat", installserviceWSBatText);
 
-        // copy the invokeWs.bat file
-        final String invokeWsBatFileAbsolutePath = invokeWsBatFile.getAbsolutePath().replaceAll("\\\\", "/");
-        CommandOutput copyResult = webServerControlService.secureCopyFile(name, invokeWsBatFileAbsolutePath, httpdDataDir + "/invokeWS.bat", user.getUser().getId());
+        // copy the install_serviceWS.bat file
+        final String install_serviceWsBatFileAbsolutePath = install_serviceWsBatFile.getAbsolutePath().replaceAll("\\\\", "/");
+        CommandOutput copyResult = webServerControlService.secureCopyFile(name, install_serviceWsBatFileAbsolutePath, httpdDataDir + "/install_serviceWS.bat", user.getUser().getId());
         if (copyResult.getReturnCode().wasSuccessful()) {
-            LOGGER.info("Successfully copied {} to {}", invokeWsBatFileAbsolutePath, webServer.getHost());
+            LOGGER.info("Successfully copied {} to {}", install_serviceWsBatFileAbsolutePath, webServer.getHost());
         } else {
-            LOGGER.error("Failed to copy {} to {} ", invokeWsBatFileAbsolutePath, webServer.getHost());
-            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to copy " + invokeWsBatFileAbsolutePath + " to " + webServer.getHost());
+            LOGGER.error("Failed to copy {} to {} ", install_serviceWsBatFileAbsolutePath, webServer.getHost());
+            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to copy " + install_serviceWsBatFileAbsolutePath + " to " + webServer.getHost());
         }
 
-        // call the invokeWs.bat file
-        CommandOutput invokeResult = webServerControlService.controlWebServer(invokeWSBatRequest, user.getUser());
-        if (invokeResult.getReturnCode().wasSuccessful()) {
+        // call the install_serviceWs.bat file
+        CommandOutput installserviceResult = webServerControlService.controlWebServer(installServiceWSBatRequest, user.getUser());
+        if (installserviceResult.getReturnCode().wasSuccessful()) {
             LOGGER.info("Successfully invoked service {}", name);
         } else {
-            final String standardError = invokeResult.getStandardError();
-            LOGGER.error("Failed to create windows service for {} :: {}", name, !standardError.isEmpty() ? standardError : invokeResult.getStandardOutput());
-            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to create windows service for " + name + ". " + invokeResult.standardErrorOrStandardOut());
+            final String standardError = installserviceResult.getStandardError();
+            LOGGER.error("Failed to create windows service for {} :: {}", name, !standardError.isEmpty() ? standardError : installserviceResult.getStandardOutput());
+            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to create windows service for " + name + ". " + installserviceResult.standardErrorOrStandardOut());
         }
     }
 

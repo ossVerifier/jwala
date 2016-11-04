@@ -88,7 +88,7 @@ public class JvmServiceImpl implements JvmService {
 
     private static final String DIAGNOSIS_INITIATED = "Diagnosis Initiated on JVM ${jvm.jvmName}, host ${jvm.hostName}";
     private static final String TEMPLATE_DIR = ApplicationProperties.get("paths.tomcat.instance.template");
-    public static final String CONFIG_FILENAME_INVOKE_BAT = "invoke.bat";
+    public static final String CONFIG_FILENAME_INSTALL_SERVICE_BAT = "install_service.bat";
     public static final String CONFIG_JAR = "_config.jar";
 
     public JvmServiceImpl(final JvmPersistenceService jvmPersistenceService,
@@ -315,7 +315,7 @@ public class JvmServiceImpl implements JvmService {
             // create the scripts directory if it doesn't exist
             createScriptsDirectory(jvm);
 
-            // copy the invoke and deploy scripts
+            // copy the install and deploy scripts
             deployScriptsToUserJwalaScriptsDir(jvm, user);
 
             // delete the service, needs service.bat
@@ -398,10 +398,10 @@ public class JvmServiceImpl implements JvmService {
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, message);
         }
 
-        final String invokeServicePath = commandsScriptsPath + "/" + AemControl.Properties.INVOKE_SERVICE_SCRIPT_NAME.getValue();
-        final String destinationInvokeServicePath = stagingArea + "/" + AemControl.Properties.INVOKE_SERVICE_SCRIPT_NAME.getValue();
-        if (!jvmControlService.secureCopyFile(secureCopyRequest, invokeServicePath, destinationInvokeServicePath, userId).getReturnCode().wasSuccessful()) {
-            String message = failedToCopyMessage + invokeServicePath + duringCreationMessage + jvmName;
+        final String installServicePath = commandsScriptsPath + "/" + AemControl.Properties.INSTALL_SERVICE_SCRIPT_NAME.getValue();
+        final String destinationInstallServicePath = stagingArea + "/" + AemControl.Properties.INSTALL_SERVICE_SCRIPT_NAME.getValue();
+        if (!jvmControlService.secureCopyFile(secureCopyRequest, installServicePath, destinationInstallServicePath, userId).getReturnCode().wasSuccessful()) {
+            String message = failedToCopyMessage + installServicePath + duringCreationMessage + jvmName;
             LOGGER.error(message);
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, message);
         }
@@ -435,11 +435,11 @@ public class JvmServiceImpl implements JvmService {
             // Copy the templates that would be included in the zip file.
             fileManager.unZipFile(new File(binaryDir + "/" + instanceTemplateZipName), unzipDir);
             LOGGER.debug("End Unzip Instance Template {} to {} ", binaryDir + "/" + instanceTemplateZipName, unzipDir);
-            final String generatedText = generateInvokeBat(jvmName);
-            final String invokeBatDir = generatedDir + "/bin";
-            LOGGER.debug("generated invoke.bat text: {}", generatedText);
-            LOGGER.debug("generating template in location: {}", invokeBatDir + "/" + CONFIG_FILENAME_INVOKE_BAT);
-            createConfigFile(invokeBatDir + "/", CONFIG_FILENAME_INVOKE_BAT, generatedText);
+            final String generatedText = generateInstallServiceBat(jvmName);
+            final String install_serviceBatDir = generatedDir + "/bin";
+            LOGGER.debug("generated install_service.bat text: {}", generatedText);
+            LOGGER.debug("generating template in location: {}", install_serviceBatDir + "/" + CONFIG_FILENAME_INSTALL_SERVICE_BAT);
+            createConfigFile(install_serviceBatDir + "/", CONFIG_FILENAME_INSTALL_SERVICE_BAT, generatedText);
             // copy Agent, JodaTime & JGroup Libraries
             // create the lib directory
             final File generatedJvmDestDirLib = new File(jvmName + "/lib");
@@ -556,14 +556,14 @@ public class JvmServiceImpl implements JvmService {
     }
 
     protected void installJvmWindowsService(Jvm jvm, User user) {
-        CommandOutput execData = jvmControlService.controlJvm(new ControlJvmRequest(jvm.getId(), JvmControlOperation.INVOKE_SERVICE),
+        CommandOutput execData = jvmControlService.controlJvm(new ControlJvmRequest(jvm.getId(), JvmControlOperation.INSTALL_SERVICE),
                 user);
         if (execData.getReturnCode().wasSuccessful()) {
-            LOGGER.info("Invoke of windows service {} was successful", jvm.getJvmName());
+            LOGGER.info("Install of windows service {} was successful", jvm.getJvmName());
         } else {
             String standardError =
                     execData.getStandardError().isEmpty() ? execData.getStandardOutput() : execData.getStandardError();
-            LOGGER.error("Invoking windows service {} failed :: ERROR: {}", jvm.getJvmName(), standardError);
+            LOGGER.error("Installing windows service {} failed :: ERROR: {}", jvm.getJvmName(), standardError);
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, standardError.isEmpty() ? CommandOutputReturnCode.fromReturnCode(execData.getReturnCode().getReturnCode()).getDesc() : standardError);
         }
     }
@@ -809,9 +809,9 @@ public class JvmServiceImpl implements JvmService {
 
     @Override
     @Transactional
-    public String generateInvokeBat(String jvmName) {
-        final String invokeBatTemplateContent = fileManager.getResourceTypeTemplate("InvokeBat");
-        return resourceService.generateResourceFile("invoke.bat", invokeBatTemplateContent, resourceService.generateResourceGroup(), jvmPersistenceService.findJvmByExactName(jvmName), ResourceGeneratorType.TEMPLATE);
+    public String generateInstallServiceBat(String jvmName) {
+        final String installServiceBatTemplateContent = fileManager.getResourceTypeTemplate("Install_Service");
+        return resourceService.generateResourceFile("install_service.bat", installServiceBatTemplateContent, resourceService.generateResourceGroup(), jvmPersistenceService.findJvmByExactName(jvmName), ResourceGeneratorType.TEMPLATE);
     }
 
     @Override

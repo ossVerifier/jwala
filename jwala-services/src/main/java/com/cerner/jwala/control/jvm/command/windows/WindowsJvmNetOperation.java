@@ -96,7 +96,7 @@ public enum WindowsJvmNetOperation implements ServiceCommandBuilder {
             );
         }
     },
-    INVOKE_SERVICE(JvmControlOperation.INVOKE_SERVICE) {
+    INSTALL_SERVICE(JvmControlOperation.INSTALL_SERVICE) {
         @Override
         public ExecCommand buildCommandForService(String aServiceName, String... aParams) {
             final String userName;
@@ -118,7 +118,7 @@ public enum WindowsJvmNetOperation implements ServiceCommandBuilder {
                 quotedUsername = "";
             }
             final String decryptedPassword = encryptedPassword != null && encryptedPassword.length() > 0 ? new DecryptPassword().decrypt(encryptedPassword) : "";
-            List<String> formatStrings = Arrays.asList(cygpathWrapper(INVOKE_SERVICE_SCRIPT_NAME, REMOTE_COMMANDS_USER_SCRIPTS + "/" + aServiceName + "/"),
+            List<String> formatStrings = Arrays.asList(cygpathWrapper(INSTALL_SERVICE_SCRIPT_NAME, REMOTE_COMMANDS_USER_SCRIPTS + "/" + aServiceName + "/"),
                     aServiceName, REMOTE_PATHS_INSTANCES);
             List<String> unformatStrings = Arrays.asList(quotedUsername, decryptedPassword);
             return new ExecCommand(

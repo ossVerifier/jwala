@@ -43,7 +43,7 @@ public interface JvmService {
 
     String updateResourceTemplate(final String jvmName, final String resourceTemplateName, final String template);
 
-    String generateInvokeBat(String jvmName);
+    String generateInstallServiceBat(String jvmName);
 
     String previewResourceTemplate(String fileName, String jvmName, String groupName, String template);
 

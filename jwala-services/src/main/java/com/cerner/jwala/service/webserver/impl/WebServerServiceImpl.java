@@ -37,7 +37,7 @@ import java.util.List;
 public class WebServerServiceImpl implements WebServerService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(WebServerServiceImpl.class);
-    private static final String INVOKE_WSBAT_TEMPLATE_TPL_PATH = "/InvokeWSBatTemplate.tpl";
+    private static final String INSTALL_SERVICE_WSBAT_TEMPLATE_TPL_PATH = "/Install_ServiceWSBatTemplate.tpl";
 
     private final WebServerPersistenceService webServerPersistenceService;
 
@@ -184,13 +184,13 @@ public class WebServerServiceImpl implements WebServerService {
     }
 
     @Override
-    public String generateInvokeWSBat(WebServer webServer) {
+    public String generateInstallServiceWSBat(WebServer webServer) {
         try {
-            // NOTE: invokeWS.bat is internal to Jwala that is why the template is not in Db.
-            return resourceService.generateResourceFile("invokeWS.bat", FileUtils.readFileToString(new File(templatePath + INVOKE_WSBAT_TEMPLATE_TPL_PATH)),
+            // NOTE: install_serviceWS.bat is internal to Jwala that is why the template is not in Db.
+            return resourceService.generateResourceFile("install_serviceWS.bat", FileUtils.readFileToString(new File(templatePath + INSTALL_SERVICE_WSBAT_TEMPLATE_TPL_PATH)),
                     resourceService.generateResourceGroup(), webServer, ResourceGeneratorType.TEMPLATE);
         } catch (final IOException ioe) {
-            throw new WebServerServiceException("Error generating invokeWS.bat!", ioe);
+            throw new WebServerServiceException("Error generating install_serviceWS.bat!", ioe);
         }
     }
 

@@ -91,19 +91,19 @@ println f.exists()
         assertEquals(removeCarriageReturnsAndNewLines(expectedText), removeCarriageReturnsAndNewLines(generatedText));
     }
 
-    void testGenerateInvokeBatConfigFile(){
-        File httpdTemplate = new File("./src/test/resources/InvokeBatTemplate.tpl");
+    void testGenerateInstallServiceBatConfigFile(){
+        File httpdTemplate = new File("./src/test/resources/Install_ServiceBatTemplate.tpl");
         resourceGroup = new ResourceGroup(new ArrayList<Group>(groupHashSet));
         def generatedText = ResourceFileGenerator.generateResourceConfig(httpdTemplate.getName(), httpdTemplate.text, resourceGroup, jvm);
-        def expectedText = new File("./src/test/resources/InvokeBatTemplate-EXPECTED.bat").text
+        def expectedText = new File("./src/test/resources/Install_ServiceBatTemplate-EXPECTED.bat").text
         assertEquals(removeCarriageReturnsAndNewLines(expectedText), removeCarriageReturnsAndNewLines(generatedText));
     }
 
-    void testGenerateInvokeWSBatConfigFile() {
-        File httpdTemplate = new File("./src/test/resources/InvokeWSBatTemplate.tpl");
+    void testGenerateInstallServiceWSBatConfigFile() {
+        File httpdTemplate = new File("./src/test/resources/Install_ServiceWSBatTemplate.tpl");
         resourceGroup = new ResourceGroup(new ArrayList<Group>(groupHashSet));
         def generatedText = ResourceFileGenerator.generateResourceConfig(httpdTemplate.getName(), httpdTemplate.text, resourceGroup, webServer);
-        def expectedText = new File("./src/test/resources/InvokeWSBatTemplate-EXPECTED.bat").text
+        def expectedText = new File("./src/test/resources/Install_ServiceWSBatTemplate-EXPECTED.bat").text
         assertEquals(removeCarriageReturnsAndNewLines(expectedText), removeCarriageReturnsAndNewLines(generatedText));
     }
 //TODO: Fix this test case
