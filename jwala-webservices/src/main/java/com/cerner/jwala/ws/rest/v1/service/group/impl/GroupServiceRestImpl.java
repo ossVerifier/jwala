@@ -437,7 +437,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         for (String keyEntityName : futureMap.keySet()) {
             Response response;
             try {
-                long timeout = Long.parseLong(ApplicationProperties.get("remote.jwala.execution.timeout.seconds", "300"));
+                long timeout = Long.parseLong(ApplicationProperties.get("remote.jwala.execution.timeout.seconds", "600"));
                 response = futureMap.get(keyEntityName).get(timeout, TimeUnit.SECONDS);
                 if (response.getStatus() > 399) {
                     final String reasonPhrase = response.getStatusInfo().getReasonPhrase();

@@ -880,7 +880,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         if (futures != null) {
             for (Entry<String, Future<Set<CommandOutput>>> entry : futures.entrySet()) {
                 try {
-                    long timeout = Long.parseLong(ApplicationProperties.get("remote.jwala.execution.timeout.seconds", "300"));
+                    long timeout = Long.parseLong(ApplicationProperties.get("remote.jwala.execution.timeout.seconds", "600"));
                     Set<CommandOutput> commandOutputSet = entry.getValue().get(timeout, TimeUnit.SECONDS);
                     for (CommandOutput commandOutput : commandOutputSet) {
                         if (!commandOutput.getReturnCode().wasSuccessful()) {
