@@ -246,10 +246,11 @@ public class AemServiceConfiguration {
 
     @Bean
     public ApplicationService getApplicationService(final JvmPersistenceService jvmPersistenceService, final GroupService groupService,
-                                                    final HistoryCrudService historyCrudService, final MessagingService messagingService, final ResourceService resourceService) {
+                                                    final HistoryCrudService historyCrudService, final MessagingService messagingService,
+                                                    final ResourceService resourceService, final HistoryFacade historyFacade) {
         return new ApplicationServiceImpl(persistenceServiceConfiguration.getApplicationPersistenceService(),
                 jvmPersistenceService, aemCommandExecutorConfig.getRemoteCommandExecutor(), groupService, null, null,
-                getHistoryService(historyCrudService), messagingService, resourceService, aemCommandExecutorConfig.getRemoteCommandExecutor(), binaryDistributionService);
+                resourceService, aemCommandExecutorConfig.getRemoteCommandExecutor(), binaryDistributionService, historyFacade);
     }
 
     @Bean

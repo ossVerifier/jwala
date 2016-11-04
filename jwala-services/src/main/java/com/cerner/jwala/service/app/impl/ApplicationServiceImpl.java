@@ -29,6 +29,7 @@ import com.cerner.jwala.persistence.jpa.domain.JpaJvm;
 import com.cerner.jwala.persistence.jpa.type.EventType;
 import com.cerner.jwala.persistence.service.ApplicationPersistenceService;
 import com.cerner.jwala.persistence.service.JvmPersistenceService;
+import com.cerner.jwala.service.HistoryFacade;
 import com.cerner.jwala.service.HistoryService;
 import com.cerner.jwala.service.MessagingService;
 import com.cerner.jwala.service.app.ApplicationService;
@@ -93,8 +94,9 @@ public class ApplicationServiceImpl implements ApplicationService {
     private final BinaryDistributionService binaryDistributionService;
 
     private GroupService groupService;
-    private final HistoryService historyService;
-    private final MessagingService messagingService;
+
+    private final HistoryFacade historyFacade;
+
     private static final String UNZIP_EXE = "unzip.exe";
 
     public ApplicationServiceImpl(final ApplicationPersistenceService applicationPersistenceService,
@@ -103,19 +105,17 @@ public class ApplicationServiceImpl implements ApplicationService {
                                   final GroupService groupService,
                                   final WebArchiveManager webArchiveManager,
                                   final PrivateApplicationService privateApplicationService,
-                                  final HistoryService historyService,
-                                  final MessagingService messagingService,
                                   final ResourceService resourceService,
                                   final RemoteCommandExecutorImpl remoteCommandExecutor,
-                                  final BinaryDistributionService binaryDistributionService) {
+                                  final BinaryDistributionService binaryDistributionService,
+                                  final HistoryFacade historyFacade) {
         this.applicationPersistenceService = applicationPersistenceService;
         this.jvmPersistenceService = jvmPersistenceService;
         this.applicationCommandExecutor = applicationCommandService;
         this.groupService = groupService;
         this.webArchiveManager = webArchiveManager;
         this.privateApplicationService = privateApplicationService;
-        this.historyService = historyService;
-        this.messagingService = messagingService;
+        this.historyFacade = historyFacade;
         this.resourceService = resourceService;
         this.remoteCommandExecutor = remoteCommandExecutor;
         this.binaryDistributionService = binaryDistributionService;
@@ -287,8 +287,7 @@ public class ApplicationServiceImpl implements ApplicationService {
             final String eventDescription = WindowsJvmNetOperation.SECURE_COPY.name() + " " + deployFileName;
             final String id = user.getId();
 
-            historyService.createHistory("JVM " + jvm.getJvmName(), new ArrayList<Group>(jvm.getGroups()), eventDescription, EventType.USER_ACTION_INFO, id);
-            messagingService.send(new JvmHistoryEvent(jvm.getId(), eventDescription, id, DateTime.now(), JvmControlOperation.SECURE_COPY));
+            historyFacade.write("JVM " + jvm.getJvmName(), new ArrayList<>(jvm.getGroups()), eventDescription, EventType.USER_ACTION_INFO, id);
 
             final String deployJvmName = jvm.getJvmName();
             final String hostName = jvm.getHostName();
