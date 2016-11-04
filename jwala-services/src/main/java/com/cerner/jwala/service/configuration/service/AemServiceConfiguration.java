@@ -192,11 +192,12 @@ public class AemServiceConfiguration {
                                     final ApplicationService applicationService,
                                     final ResourceService resourceService, final ClientFactoryHelper clientFactoryHelper,
                                     @Value("${spring.messaging.topic.serverStates:/topic/server-states}") final String topicServerStates,
-                                    final JvmControlService jvmControlService) {
+                                    final JvmControlService jvmControlService, final HistoryFacade historyFacade) {
         final JvmPersistenceService jvmPersistenceService = persistenceServiceConfiguration.getJvmPersistenceService();
         return new JvmServiceImpl(jvmPersistenceService, groupService, applicationService,
                 fileManager, messagingTemplate, groupStateNotificationService, resourceService,
-                clientFactoryHelper, topicServerStates, jvmControlService, binaryDistributionService, binaryDistributionLockManager);
+                clientFactoryHelper, topicServerStates, jvmControlService, binaryDistributionService, binaryDistributionLockManager,
+                historyFacade);
     }
 
     @Bean(name = "binaryDistributionLockManager")
@@ -261,10 +262,11 @@ public class AemServiceConfiguration {
                                                   final MessagingService messagingService,
                                                   final JvmStateService jvmStateService,
                                                   final RemoteCommandExecutorService remoteCommandExecutorService,
-                                                  final SshConfiguration sshConfig) {
+                                                  final SshConfiguration sshConfig,
+                                                  final HistoryFacade historyFacade) {
         return new JvmControlServiceImpl(persistenceServiceConfiguration.getJvmPersistenceService(), aemCommandExecutorConfig.getRemoteCommandExecutor(),
-                getHistoryService(historyCrudService), messagingService, jvmStateService, remoteCommandExecutorService,
-                sshConfig);
+                jvmStateService, remoteCommandExecutorService,
+                sshConfig, historyFacade);
     }
 
     @Bean(name = "groupControlService")

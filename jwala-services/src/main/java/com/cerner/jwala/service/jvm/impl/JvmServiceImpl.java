@@ -7,7 +7,6 @@ import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
 import com.cerner.jwala.common.domain.model.jvm.JvmControlOperation;
 import com.cerner.jwala.common.domain.model.jvm.JvmState;
-import com.cerner.jwala.common.domain.model.jvm.message.JvmHistoryEvent;
 import com.cerner.jwala.common.domain.model.resource.ContentType;
 import com.cerner.jwala.common.domain.model.resource.ResourceGroup;
 import com.cerner.jwala.common.domain.model.resource.ResourceIdentifier;
@@ -35,6 +34,7 @@ import com.cerner.jwala.persistence.jpa.service.exception.NonRetrievableResource
 import com.cerner.jwala.persistence.jpa.service.exception.ResourceTemplateUpdateException;
 import com.cerner.jwala.persistence.jpa.type.EventType;
 import com.cerner.jwala.persistence.service.JvmPersistenceService;
+import com.cerner.jwala.service.HistoryFacade;
 import com.cerner.jwala.service.app.ApplicationService;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionLockManager;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionService;
@@ -82,6 +82,7 @@ public class JvmServiceImpl implements JvmService {
     private final ResourceService resourceService;
     private final ClientFactoryHelper clientFactoryHelper;
     private final JvmControlService jvmControlService;
+    private final HistoryFacade historyFacade;
     private final BinaryDistributionService binaryDistributionService;
     private static final String JWALA_SCRIPTS_PATH = ApplicationProperties.get("remote.commands.user-scripts");
 
@@ -101,7 +102,8 @@ public class JvmServiceImpl implements JvmService {
                           final String topicServerStates,
                           final JvmControlService jvmControlService,
                           final BinaryDistributionService binaryDistributionService,
-                          final BinaryDistributionLockManager binaryDistributionLockManager) {
+                          final BinaryDistributionLockManager binaryDistributionLockManager,
+                          final HistoryFacade historyFacade) {
         this.jvmPersistenceService = jvmPersistenceService;
         this.groupService = groupService;
         this.applicationService = applicationService;
@@ -114,6 +116,7 @@ public class JvmServiceImpl implements JvmService {
         this.topicServerStates = topicServerStates;
         this.binaryDistributionService = binaryDistributionService;
         this.binaryDistributionLockManager = binaryDistributionLockManager;
+        this.historyFacade = historyFacade;
     }
 
 
@@ -772,9 +775,7 @@ public class JvmServiceImpl implements JvmService {
         pingAndUpdateJvmState(jvm);
 
         final String message = "Diagnose and resolve state";
-        jvmControlService.createJvmHistory(jvm.getJvmName(), new ArrayList<>(jvm.getGroups()), message, EventType.USER_ACTION_INFO, user.getId());
-        jvmControlService.sendJvmMessage(new JvmHistoryEvent(jvm.getId(), message, user.getId(), DateTime.now(), MSG_TYPE_HISTORY));
-
+        historyFacade.write(jvm.getJvmName(), new ArrayList<>(jvm.getGroups()), message, EventType.USER_ACTION_INFO, user.getId());
         SimpleTemplateEngine engine = new SimpleTemplateEngine();
         Map<String, Object> binding = new HashMap<>();
         binding.put("jvm", jvm);

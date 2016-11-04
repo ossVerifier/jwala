@@ -7,7 +7,6 @@ import com.cerner.jwala.common.domain.model.jvm.Jvm;
 import com.cerner.jwala.common.domain.model.jvm.JvmControlOperation;
 import com.cerner.jwala.common.domain.model.jvm.JvmState;
 import com.cerner.jwala.common.domain.model.ssh.SshConfiguration;
-import com.cerner.jwala.common.domain.model.state.CurrentState;
 import com.cerner.jwala.common.domain.model.user.User;
 import com.cerner.jwala.common.exception.ExternalSystemErrorException;
 import com.cerner.jwala.common.exception.InternalErrorException;
@@ -23,9 +22,11 @@ import com.cerner.jwala.persistence.jpa.domain.JpaGroup;
 import com.cerner.jwala.persistence.jpa.domain.JpaJvm;
 import com.cerner.jwala.persistence.jpa.type.EventType;
 import com.cerner.jwala.persistence.service.JvmPersistenceService;
-import com.cerner.jwala.service.*;
+import com.cerner.jwala.service.HistoryFacade;
+import com.cerner.jwala.service.RemoteCommandExecutorService;
+import com.cerner.jwala.service.RemoteCommandReturnInfo;
+import com.cerner.jwala.service.VerificationBehaviorSupport;
 import com.cerner.jwala.service.jvm.JvmStateService;
-
 import com.cerner.jwala.service.jvm.exception.JvmControlServiceException;
 import org.junit.Before;
 import org.junit.Test;
@@ -49,10 +50,7 @@ public class JvmControlServiceImplVerifyTest extends VerificationBehaviorSupport
     private User user;
 
     @Mock
-    private HistoryService mockHistoryService;
-
-    @Mock
-    private MessagingService mockMessagingService;
+    private HistoryFacade mockHistoryFacade;
 
     @Mock
     private JvmStateService mockJvmStateService;
@@ -76,8 +74,8 @@ public class JvmControlServiceImplVerifyTest extends VerificationBehaviorSupport
     public void setup() {
         System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, new File(".").getAbsolutePath() + "/src/test/resources");
         commandExecutor = mock(RemoteCommandExecutor.class);
-        jvmControlService = new JvmControlServiceImpl(mockJvmPersistenceService, commandExecutor, mockHistoryService, mockMessagingService,
-                mockJvmStateService, mockRemoteCommandExecutorService, mockSshConfig);
+        jvmControlService = new JvmControlServiceImpl(mockJvmPersistenceService, commandExecutor,  mockJvmStateService,
+                mockRemoteCommandExecutorService, mockSshConfig, mockHistoryFacade);
         user = new User("unused");
     }
 
@@ -106,9 +104,7 @@ public class JvmControlServiceImplVerifyTest extends VerificationBehaviorSupport
         verify(mockJvmPersistenceService, times(1)).getJvm(eq(jvmId));
         verify(mockRemoteCommandExecutorService, times(1)).executeCommand(any(RemoteExecCommand.class));
         verify(mockJvmStateService, times(1)).updateState(any(Identifier.class), any(JvmState.class));
-        verify(mockHistoryService).createHistory(anyString(), anyList(), anyString(), any(EventType.class), anyString());
-        verify(mockMessagingService).send(any(CurrentState.class));
-
+        verify(mockHistoryFacade).write(anyString(), anyList(), anyString(), any(EventType.class), anyString());
 
         // test other command codes
         when(mockRemoteCommandExecutorService.executeCommand(any(RemoteExecCommand.class))).thenReturn(new RemoteCommandReturnInfo(ExecReturnCode.JWALA_EXIT_CODE_ABNORMAL_SUCCESS, "Abnormal success", ""));
@@ -174,7 +170,7 @@ public class JvmControlServiceImplVerifyTest extends VerificationBehaviorSupport
         when(mockRemoteCommandExecutorService.executeCommand(any(RemoteExecCommand.class))).thenReturn(new RemoteCommandReturnInfo(ExecReturnCode.JWALA_EXIT_CODE_FAST_FAIL, "Test standard out when START or STOP", "Test standard error"));
 
         jvmControlService.controlJvm(controlCommand, user);
-        verify(mockHistoryService, times(2)).createHistory(anyString(), anyList(), anyString(), any(EventType.class), anyString());
+        verify(mockHistoryFacade, times(2)).write(anyString(), anyList(), anyString(), any(EventType.class), anyString());
 
         when(mockRemoteCommandExecutorService.executeCommand(any(RemoteExecCommand.class))).thenReturn(new RemoteCommandReturnInfo(ExecReturnCode.JWALA_EXIT_NO_SUCH_SERVICE, "Test standard out when START or STOP", "Test standard error"));
         jvmControlService.controlJvm(controlCommand, user);
