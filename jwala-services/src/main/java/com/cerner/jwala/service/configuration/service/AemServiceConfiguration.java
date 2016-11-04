@@ -178,15 +178,13 @@ public class AemServiceConfiguration {
     }
 
     @Bean
-    public GroupService getGroupService(final HistoryCrudService historyCrudService, final MessagingService messagingService) {
-        return new GroupServiceImpl(
-                persistenceServiceConfiguration.getGroupPersistenceService(),
-                persistenceServiceConfiguration.getApplicationPersistenceService(),
-                aemCommandExecutorConfig.getRemoteCommandExecutor(),
-                binaryDistributionService,
-                resourceService,
-                getHistoryService(historyCrudService),
-                messagingService);
+    public GroupService getGroupService(final HistoryFacade historyFacade) {
+        return new GroupServiceImpl(persistenceServiceConfiguration.getGroupPersistenceService(),
+                                    persistenceServiceConfiguration.getApplicationPersistenceService(),
+                                    aemCommandExecutorConfig.getRemoteCommandExecutor(),
+                                    binaryDistributionService,
+                                    resourceService,
+                                    historyFacade);
     }
 
     @Bean(name = "jvmService")
