@@ -212,10 +212,10 @@ public class AemServiceConfiguration {
                                                             final WebServerService webServerService,
                                                             final JvmService jvmService,
                                                             final ClientFactoryHelper clientFactoryHelper,
-                                                            final MessagingService messagingService,
-                                                            final HistoryService historyService) {
-        return new BalancerManagerServiceImpl(groupService, applicationService, webServerService, jvmService, clientFactoryHelper, messagingService,
-                historyService, new BalancerManagerHtmlParser(), new BalancerManagerXmlParser(jvmService), new BalancerManagerHttpClient());
+                                                            final HistoryFacade historyFacade) {
+        return new BalancerManagerServiceImpl(groupService, applicationService, webServerService, jvmService, clientFactoryHelper,
+                                              new BalancerManagerHtmlParser(), new BalancerManagerXmlParser(jvmService),
+                                              new BalancerManagerHttpClient(), historyFacade);
     }
 
     @Bean(name = "webServerService")
