@@ -178,7 +178,7 @@ public class ApplicationServiceImplTest {
 
         applicationService = new ApplicationServiceImpl(applicationPersistenceService,
                 jvmPersistenceService, remoteCommandExecutor, groupService, webArchiveManager, privateApplicationService,
-                mockHistoryService, mockMessagingService, mockResourceService, remoteCommandExecutorImpl, binaryDistributionService);
+                mockResourceService, remoteCommandExecutorImpl, binaryDistributionService, mockHistoryFacade);
     }
 
     @SuppressWarnings("unchecked")
