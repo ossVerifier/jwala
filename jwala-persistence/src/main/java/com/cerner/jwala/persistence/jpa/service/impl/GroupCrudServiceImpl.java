@@ -96,8 +96,8 @@ public class GroupCrudServiceImpl extends AbstractCrudServiceImpl<JpaGroup> impl
     @SuppressWarnings("unchecked")
     public List<JpaGroup> findGroups(final String aName) {
 
-        final Query query = entityManager.createQuery("SELECT g FROM JpaGroup g WHERE g.name LIKE :groupName");
-        query.setParameter("groupName", "%" + aName + "%");
+        final Query query = entityManager.createQuery("SELECT g FROM JpaGroup g WHERE g.name=:groupName");
+        query.setParameter("groupName", aName);
 
         return query.getResultList();
     }
@@ -304,6 +304,14 @@ public class GroupCrudServiceImpl extends AbstractCrudServiceImpl<JpaGroup> impl
         final Query query = entityManager.createNamedQuery(JpaGroupAppConfigTemplate.GET_GROUP_APP_TEMPLATE_RESOURCE_NAMES);
         query.setParameter("grpName", groupName);
         return query.getResultList();
+    }
+
+    @Override
+    public List<String> getGroupAppsResourceTemplateNames(String groupName, String appName) {
+        final Query q = entityManager.createNamedQuery(JpaGroupAppConfigTemplate.QUERY_APP_RESOURCE_NAMES);
+        q.setParameter("grpName", groupName);
+        q.setParameter("appName", appName);
+        return q.getResultList();
     }
 
     @Override

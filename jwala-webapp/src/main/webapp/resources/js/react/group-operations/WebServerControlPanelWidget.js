@@ -92,9 +92,9 @@ var WebServerControlPanelWidget = React.createClass({
                  "Deploy " + response.applicationResponseContent.name, false);
     },
 
-    generateServiceAndHttpdConfErrorCallback: function(applicationResponseContent, doneCallback) {
+    generateServiceAndHttpdConfErrorCallback: function(applicationResponseContent, errDetails) {
         this.doneCallback[this.props.data.name]();
-        $.errorAlert(applicationResponseContent, "Deploy " + this.props.data.name +  "", false);
+        $.errorAlert(applicationResponseContent, "Deploy " + this.props.data.name +  "", false, errDetails);
     },
 
     onClickStatusLink: function(e) {

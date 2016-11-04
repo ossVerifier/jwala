@@ -45,23 +45,23 @@ buildscript {
 }
 
 task downloadDeploymentBinaries(type: Download) {
-    src ([jdkBinaryUrl,apachehttpdBinaryUrl, apachetomcatDeploymentBinaryUrl, unZipExeBinaryUrl, apachetomcattBinaryDeploymenTemplatUrl])
-    dest "$buildDir/$tomcatDir/data/binaries"
+        src([jdkBinaryUrl, apachehttpdBinaryUrl, apachetomcatDeploymentBinaryUrl, unZipExeBinaryUrl, apachetomcattBinaryDeploymenTemplatUrl])
+        dest "$buildDir/$tomcatDir/data/binaries"
 }
 
 task downloadTomcat(dependsOn: downloadDeploymentBinaries, type: Download) {
-    src "${tomcatBinaryUrl}"
-    dest new File(buildDir, new File("${tomcatBinaryUrl}").getName())
+        src "${tomcatBinaryUrl}"
+        dest new File(buildDir, new File("${tomcatBinaryUrl}").getName())
 }
 
 task downloadAndUnzipTomcat(dependsOn: downloadTomcat, type: Copy) {
-    from zipTree(downloadTomcat.dest)
-    into buildDir
+        from zipTree(downloadTomcat.dest)
+        into buildDir
 }
 
 task deleteDownloadedZip(dependsOn: downloadAndUnzipTomcat, type: Delete) {
-    delete new File("$buildDir", new File("${tomcatBinaryUrl}").getName())
-    delete new File("$buildDir/$tomcatDir", 'webapps')
+        delete new File("$buildDir", new File("${tomcatBinaryUrl}").getName())
+        delete new File("$buildDir/$tomcatDir", 'webapps')
 }
 
 task copyConfigurationOverrides(dependsOn: deleteDownloadedZip, type: Copy) {

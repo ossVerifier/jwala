@@ -32,7 +32,12 @@ var RTreeList = React.createClass({
     },
     render: function() {
         var nodes = this.createTreeNodes(this.props.data, this.props.treeMetaData, 0, null, "");
-        return React.createElement("ul", {className: "RTreeList root-node-ul"}, nodes);
+        return React.createElement("ul", {className: "RTreeList root-node-ul", onClick: this.onClickUl}, nodes);
+    },
+    onClickUl: function() {
+        if (this.props.selectNodeCallback(null, null, null)) {
+            this.setState({selectedNode: null});
+        }
     },
     onSelectNode: function(data, entityName, parent) {
         return this.props.selectNodeCallback(data, entityName, parent);
@@ -138,7 +143,8 @@ var Node = React.createClass({
     onClickIconHandler: function() {
         this.setState({isCollapsed:!this.state.isCollapsed});
     },
-    onClickNodeHandler: function() {
+    onClickNodeHandler: function(e) {
+        e.stopPropagation();
         if (this.props.theTree.state.selectedNode !== null) {
             // Check if node is clicked is the selected node, if it is, do nothing because it's already selected.
             if (this.props.theTree.state.selectedNode.isMounted() &&

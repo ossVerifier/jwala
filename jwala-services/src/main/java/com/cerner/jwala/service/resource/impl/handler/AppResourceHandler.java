@@ -14,6 +14,8 @@ import com.cerner.jwala.service.resource.impl.CreateResourceResponseWrapper;
 
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.List;
+
 /**
  * Handler for an application resource identified by a "resource identifier" {@link ResourceIdentifier}
  *
@@ -72,7 +74,6 @@ public class AppResourceHandler extends ResourceHandler {
         return StringUtils.isNotEmpty(resourceIdentifier.resourceName) &&
                StringUtils.isNotEmpty(resourceIdentifier.webAppName) &&
                StringUtils.isNotEmpty(resourceIdentifier.jvmName) &&
-               /*StringUtils.isEmpty(resourceIdentifier.groupName) &&*/
                StringUtils.isEmpty(resourceIdentifier.webServerName);
     }
 
@@ -93,6 +94,15 @@ public class AppResourceHandler extends ResourceHandler {
             return application;
         } else {
             return successor.getSelectedValue(resourceIdentifier);
+        }
+    }
+
+    @Override
+    public List<String> getResourceNames(ResourceIdentifier resourceIdentifier) {
+        if (canHandle(resourceIdentifier)){
+            return applicationPersistenceService.getResourceTemplateNames(resourceIdentifier.webAppName, resourceIdentifier.jvmName);
+        } else {
+            return successor.getResourceNames(resourceIdentifier);
         }
     }
 }

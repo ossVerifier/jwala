@@ -5,6 +5,7 @@ import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.resource.ContentType;
 import com.cerner.jwala.common.domain.model.resource.ResourceGroup;
+import com.cerner.jwala.common.domain.model.resource.ResourceIdentifier;
 import com.cerner.jwala.common.domain.model.resource.ResourceTemplateMetaData;
 import com.cerner.jwala.common.domain.model.webserver.WebServer;
 import com.cerner.jwala.common.domain.model.webserver.WebServerControlOperation;
@@ -24,7 +25,6 @@ import com.cerner.jwala.service.resource.ResourceService;
 import com.cerner.jwala.service.webserver.WebServerCommandService;
 import com.cerner.jwala.service.webserver.WebServerControlService;
 import com.cerner.jwala.service.webserver.WebServerService;
-import com.cerner.jwala.template.exception.ResourceFileGeneratorException;
 import com.cerner.jwala.ws.rest.v1.provider.AuthenticatedUser;
 import com.cerner.jwala.ws.rest.v1.response.ResponseBuilder;
 import com.cerner.jwala.ws.rest.v1.service.webserver.WebServerServiceRest;
@@ -212,6 +212,12 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
                 throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "The target Web Server must be stopped before attempting to update the resource file");
             }
 
+            ResourceIdentifier resourceIdentifier = new ResourceIdentifier.Builder()
+                    .setWebServerName(aWebServerName)
+                    .setResourceName(resourceFileName)
+                    .build();
+            resourceService.validateSingleResourceForGeneration(resourceIdentifier);
+
             // get the meta data
             String metaDataStr = webServerService.getResourceTemplateMetaData(aWebServerName, resourceFileName);
             ResourceTemplateMetaData metaData = resourceService.getTokenizedMetaData(resourceFileName, webServerService.getWebServer(aWebServerName), metaDataStr);
@@ -260,9 +266,6 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
         } catch (IOException e) {
             LOGGER.error("Failed to map meta data because of IOException for {}", aWebServerName, e);
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(AemFaultType.BAD_STREAM, "Failed to map meta data because of IOException for " + aWebServerName, e));
-        } catch (ResourceFileGeneratorException e) {
-            LOGGER.error("Fail to generate the {} {}", resourceFileName, aWebServerName, e);
-            throw new ResourceFileGeneratorException("Fail to generate the " + resourceFileName + " at " + aWebServerName, e);
         } finally {
             wsWriteLocks.get(aWebServerName).writeLock().unlock();
         }
@@ -286,6 +289,11 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
                 LOGGER.error(errorMessage);
                 throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, errorMessage);
             }
+            ResourceIdentifier resourceIdentifier = new ResourceIdentifier.Builder()
+                    .setWebServerName(webServer.getName())
+                    .setResourceName("*")
+                    .build();
+            resourceService.validateAllResourcesForGeneration(resourceIdentifier);
 
             binaryDistributionService.prepareUnzip(webServer.getHost());
             binaryDistributionService.distributeWebServer(webServer.getHost());
@@ -305,25 +313,16 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
             // create the configuration file(s)
             final List<String> templateNames = webServerService.getResourceTemplateNames(aWebServerName);
             boolean resourceFileGeneratorExceptionFlag = false;
-            String resourceFileGeneratorExceptionMessage = "";
             for (final String templateName : templateNames) {
-                try {
-                    generateAndDeployConfig(aWebServerName, templateName, aUser);
-                } catch (ResourceFileGeneratorException e) {
-                    LOGGER.error("Failed to generate and deploy configuration!", e);
-                    resourceFileGeneratorExceptionFlag = true;
-                    resourceFileGeneratorExceptionMessage += e.getMessage() + " ";
-                }
+                generateAndDeployConfig(aWebServerName, templateName, aUser);
             }
-            if (resourceFileGeneratorExceptionFlag) {
-                throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, resourceFileGeneratorExceptionMessage);
-            }
+
             // re-install the service
             installWebServerWindowsService(aUser, new ControlWebServerRequest(webServer.getId(), WebServerControlOperation.INSTALL_SERVICE), webServer);
 
             webServerService.updateState(webServer.getId(), WebServerReachableState.WS_UNREACHABLE, StringUtils.EMPTY);
 
-        } catch (InternalErrorException | CommandFailureException e) {
+        } catch (CommandFailureException e) {
             LOGGER.error("Failed for {}", aWebServerName, e);
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
                     AemFaultType.REMOTE_COMMAND_FAILURE, e.getMessage(), e));

@@ -48,6 +48,8 @@ import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.FileCopyUtils;
 
@@ -203,13 +205,13 @@ public class ApplicationServiceImpl implements ApplicationService {
                 // If the physical file can't be deleted for some reason don't throw an exception since there's no
                 // outright ill effect if the war file is not removed in the file system.
                 // The said file might not exist anymore also which is the reason for the error.
-                LOGGER.error("Failed to delete the archive {}! WebArchiveManager remove result type = {}" , app.getWarPath(),
+                LOGGER.error("Failed to delete the archive {}! WebArchiveManager remove result type = {}", app.getWarPath(),
                         result.getType());
             }
         } catch (final IOException ioe) {
             // If the physical file can't be deleted for some reason don't throw an exception since there's no
             // outright ill effect if the war file is not removed in the file system.
-            LOGGER.error("Failed to delete the archive {}!" , app.getWarPath(), ioe);
+            LOGGER.error("Failed to delete the archive {}!", app.getWarPath(), ioe);
         }
 
         return updatedApp;
@@ -328,7 +330,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         } catch (JsonMappingException | JsonParseException e) {
             LOGGER.error("Failed to map meta data while deploying config file {} for app {} to jvm {}", resourceTemplateName, appName, jvmName, e);
             throw new DeployApplicationConfException(e);
-        } catch (ResourceFileGeneratorException e){
+        } catch (ResourceFileGeneratorException e) {
             LOGGER.error("Fail to generate the resource file {}", resourceTemplateName, e);
             throw new DeployApplicationConfException(e);
         } catch (IOException e) {
@@ -380,7 +382,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     @Override
     @Transactional
-    public void deployApplicationResourcesToGroupHosts(String groupName, Application app, ResourceGroup resourceGroup){
+    public void deployApplicationResourcesToGroupHosts(String groupName, Application app, ResourceGroup resourceGroup) {
         List<String> appResourcesNames = groupService.getGroupAppsResourceTemplateNames(groupName);
         Group group = groupService.getGroup(app.getGroup().getId());
         final Set<Jvm> jvms = group.getJvms();
@@ -413,7 +415,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     @Override
     @Transactional
     public void copyApplicationWarToHost(Application application, String hostName) {
-        if(hostName != null && !hostName.isEmpty()) {
+        if (hostName != null && !hostName.isEmpty()) {
             Set<String> hostNames = new HashSet<>();
             hostNames.add(hostName);
             copyAndExecuteCommand(application, hostNames);
@@ -428,11 +430,11 @@ public class ApplicationServiceImpl implements ApplicationService {
         try {
             FileCopyUtils.copy(applicationWar, tempWarFile);
             final String destPath = ApplicationProperties.get("remote.jwala.webapps.dir");
-            for(String hostName: hostNames) {
+            for (String hostName : hostNames) {
                 Future<CommandOutput> commandOutputFuture = executeCopyCommand(application, tempWarFile, destPath, null, hostName);
                 futures.put(hostName, commandOutputFuture);
             }
-            for(Entry<String, Future<CommandOutput>> entry:futures.entrySet()) {
+            for (Entry<String, Future<CommandOutput>> entry : futures.entrySet()) {
                 CommandOutput execData = entry.getValue().get();
                 if (execData.getReturnCode().wasSuccessful()) {
                     LOGGER.info("Copy of application war {} to {} was successful", applicationWar.getName(), entry.getKey());
@@ -569,7 +571,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     @Override
     public CommandOutput executeCheckIfFileExistsCommand(final String entity, final String host, final String fileName) throws CommandFailureException {
-        return  remoteCommandExecutor.executeRemoteCommand(
+        return remoteCommandExecutor.executeRemoteCommand(
                 entity,
                 host,
                 ApplicationControlOperation.CHECK_FILE_EXISTS,
@@ -593,7 +595,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     @Override
     public CommandOutput executeUnzipBinaryCommand(final String entity, final String host, final String fileName, final String destination, final String options) throws CommandFailureException {
-        return  remoteCommandExecutor.executeRemoteCommand(
+        return remoteCommandExecutor.executeRemoteCommand(
                 entity,
                 host,
                 BinaryDistributionControlOperation.UNZIP_BINARY,
@@ -716,24 +718,19 @@ public class ApplicationServiceImpl implements ApplicationService {
 
             metaDataMap.put("contentType", ContentType.APPLICATION_BINARY.contentTypeStr);
             metaDataMap.put("deployPath", StringUtils.isEmpty(deployPath) ? ApplicationProperties.get(JWALA_WEBAPPS_DIR)
-                                                                          : deployPath);
+                    : deployPath);
             metaDataMap.put("deployFileName", warName);
             metaDataMap.put("templateName", warName);
 
-            final Entity entity = new Entity();
-            entity.setGroup(application.getGroup().getName());
-            entity.setDeployToJvms(false);
+            final Entity entity = new Entity(EntityType.GROUPED_APPS.toString(), application.getGroup().getName(),
+                    application.getName(), null, false);
+
             metaDataMap.put("unpack", application.isUnpackWar());
             metaDataMap.put("overwrite", false);
-
-            // Note: This is for backward compatibility.
-            entity.setTarget(application.getName());
-            entity.setType(EntityType.GROUPED_APPS.toString());
-
             metaDataMap.put("entity", entity);
 
             final ResourceTemplateMetaData metaData =
-                    ResourceTemplateMetaData.createFromJsonStr(new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(metaDataMap));
+                    resourceService.getMetaData(new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(metaDataMap));
 
             InputStream resourceDataIn = new ByteArrayInputStream(war);
             resourceDataIn = new ByteArrayInputStream(resourceService.uploadResource(metaData, resourceDataIn).getBytes());
@@ -751,6 +748,180 @@ public class ApplicationServiceImpl implements ApplicationService {
             return application;
         } else {
             throw new ApplicationServiceException("Invalid war file!");
+        }
+    }
+
+    @Override
+    public void deployConf(final String appName, final String hostName, final User user) {
+        final Application application = applicationPersistenceService.getApplication(appName);
+        final Group group = groupService.getGroup(application.getGroup().getId());
+        final List<String> hostNames = getDeployHostList(hostName, group, application);
+        LOGGER.info("deploying templates to hosts: {}", hostNames.toString());
+
+        checkStartedJvms(group, hostNames);
+
+        validateApplicationResources(appName, group);
+
+        final Set<String> resourceSet = getWebAppOnlyResources(group, appName);
+
+        final List<String> keys = getKeysAndAcquireWriteLock(appName, hostNames);
+
+        try {
+            final Map<String, Future<Set<CommandOutput>>> futures = deployApplicationResourcesForHosts(hostNames, group, application, resourceSet);
+            waitForDeploy(appName, futures);
+        } finally {
+            releaseWriteLocks(keys);
+        }
+    }
+
+    private void validateApplicationResources(String appName, Group group) {
+        final String groupName = group.getName();
+        ResourceIdentifier resourceIdentifier = new ResourceIdentifier.Builder()
+                .setResourceName("*")
+                .setGroupName(groupName)
+                .setWebAppName(appName)
+                .build();
+        resourceService.validateAllResourcesForGeneration(resourceIdentifier);
+        LOGGER.info("Application {} in group {} passed resource validation", appName, groupName);
+    }
+
+    protected List<String> getDeployHostList(final String hostName, final Group group, final Application application) {
+        final String groupName = group.getName();
+        final String appName = application.getName();
+        final List<String> hostNames = new ArrayList<>();
+        final List<String> allHosts = groupService.getHosts(groupName);
+        if (allHosts == null || allHosts.isEmpty()) {
+            LOGGER.error("No hosts found for the group: {} and application: {}", groupName, appName);
+            throw new InternalErrorException(AemFaultType.GROUP_MISSING_HOSTS, "No host found for the application " + appName);
+        }
+        if (hostName == null || hostName.isEmpty()) {
+            LOGGER.info("Hostname not passed, deploying to all hosts");
+            for (String host : allHosts) {
+                hostNames.add(host.toLowerCase());
+            }
+        } else {
+            LOGGER.info("host name provided {}", hostName);
+            for (final String host : allHosts) {
+                if (hostName.toLowerCase().equals(host.toLowerCase())) {
+                    hostNames.add(host.toLowerCase());
+                }
+            }
+            if (hostNames.isEmpty()) {
+                LOGGER.error("Hostname {} does not belong to the group {}", hostName, groupName);
+                throw new InternalErrorException(AemFaultType.INVALID_HOST_NAME, "The hostname: " + hostName + " does not belong to the group " + groupName);
+            }
+        }
+        return hostNames;
+    }
+
+    protected void checkStartedJvms(final Group group, final List<String> hostNames) {
+        Map<String, List<String>> errorJvms = new HashMap<>();
+        for (Jvm jvm : group.getJvms()) {
+            if (hostNames.contains(jvm.getHostName().toLowerCase()) && jvm.getState().isStartedState()) {
+                errorJvms.put(jvm.getJvmName(), null);
+            }
+        }
+        if (!errorJvms.isEmpty()) {
+            LOGGER.error("Jvms {} not stopped, make sure the jvms are stopped before deploying", errorJvms.toString());
+            throw new InternalErrorException(AemFaultType.RESOURCE_DEPLOY_FAILURE,
+                    "Make sure the following JVMs are completely stopped before deploying.", null, errorJvms);
+        }
+    }
+
+    protected Set<String> getWebAppOnlyResources(final Group group, String appName) {
+        final String groupName = group.getName();
+        final Set<String> resourceSet = new HashSet<>();
+        List<String> resourceTemplates = groupService.getGroupAppsResourceTemplateNames(groupName, appName);
+        for (String resourceTemplate : resourceTemplates) {
+            String metaDataStr = groupService.getGroupAppResourceTemplateMetaData(groupName, resourceTemplate);
+            LOGGER.debug("metadata for template: {} is {}", resourceTemplate, metaDataStr);
+            try {
+                ResourceTemplateMetaData metaData = resourceService.getMetaData(metaDataStr);
+                if (!metaData.getEntity().getDeployToJvms()) {
+                    LOGGER.info("Template {} needs to be deployed adding it to the list", resourceTemplate);
+                    resourceSet.add(resourceTemplate);
+                } else {
+                    LOGGER.info("Not deploying {} because deployToJvms=true", resourceTemplate);
+                }
+            } catch (IOException e) {
+                LOGGER.error("Error in templatizing the metadata file", e);
+                throw new InternalErrorException(AemFaultType.IO_EXCEPTION, "Error in templatizing the metadata for resource " + resourceTemplate);
+            }
+        }
+        return resourceSet;
+    }
+
+    protected Map<String, Future<Set<CommandOutput>>> deployApplicationResourcesForHosts(
+            final List<String> hostNames, final Group group, final Application application, final Set<String> resourceSet) {
+        final ResourceGroup resourceGroup = resourceService.generateResourceGroup();
+        final Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        final Map<String, Future<Set<CommandOutput>>> futures = new HashMap<>();
+        for (final String host : hostNames) {
+            Future<Set<CommandOutput>> commandOutputFutureSet = executorService.submit
+                    (new Callable<Set<CommandOutput>>() {
+                         @Override
+                         public Set<CommandOutput> call() throws Exception {
+                             Set<CommandOutput> commandOutputs = new HashSet<>();
+                             SecurityContextHolder.getContext().setAuthentication(authentication);
+                             for (final String resource : resourceSet) {
+                                 LOGGER.info("Deploying {} to host {}", resource, host);
+                                 commandOutputs.add(groupService.deployGroupAppTemplate(group.getName(), resource, resourceGroup, application, host));
+                             }
+                             return commandOutputs;
+                         }
+                     }
+                    );
+            futures.put(host, commandOutputFutureSet);
+        }
+        return futures;
+    }
+
+    protected void waitForDeploy(final String appName, final Map<String, Future<Set<CommandOutput>>> futures) {
+        if (futures != null) {
+            for (Entry<String, Future<Set<CommandOutput>>> entry : futures.entrySet()) {
+                try {
+                    long timeout = Long.parseLong(ApplicationProperties.get("remote.jwala.execution.timeout.seconds", "300"));
+                    Set<CommandOutput> commandOutputSet = entry.getValue().get(timeout, TimeUnit.SECONDS);
+                    for (CommandOutput commandOutput : commandOutputSet) {
+                        if (!commandOutput.getReturnCode().wasSuccessful()) {
+                            final String errorMessage = "Error in deploying resources to host " + entry.getKey() +
+                                    " for application " + appName;
+                            LOGGER.error(errorMessage);
+                            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, errorMessage);
+                        }
+                    }
+                } catch (InterruptedException | ExecutionException | TimeoutException e) {
+                    LOGGER.error("Error in executing deploy", e);
+                    throw new InternalErrorException(AemFaultType.RESOURCE_DEPLOY_FAILURE, e.getMessage());
+                }
+            }
+        }
+    }
+
+    protected List<String> getKeysAndAcquireWriteLock(String appName, List<String> hostNames) {
+        List<String> keys = new ArrayList<>();
+        for (final String host : hostNames) {
+            final String key = appName + "/" + host;
+            if (!writeLock.containsKey(key)) {
+                writeLock.put(key, new ReentrantReadWriteLock());
+            }
+            boolean gotLock = writeLock.get(key).writeLock().tryLock();
+            if (!gotLock) {
+                LOGGER.error("Could not get lock for host: {} and app: {}", host, appName);
+                releaseWriteLocks(keys);
+                throw new InternalErrorException(AemFaultType.SERVICE_EXCEPTION, "Current resource is being deployed, wait for deploy to complete.");
+            } else {
+                keys.add(key);
+            }
+        }
+        return keys;
+    }
+
+    protected void releaseWriteLocks(List<String> keys) {
+        for (String key : keys) {
+            if (writeLock.containsKey(key) && writeLock.get(key).isWriteLocked()) {
+                writeLock.get(key).writeLock().unlock();
+            }
         }
     }
 }

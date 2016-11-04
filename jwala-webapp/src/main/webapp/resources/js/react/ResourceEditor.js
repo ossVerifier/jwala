@@ -108,6 +108,8 @@ var ResourceEditor = React.createClass({
             this.refs.resourceAttrPane.setCurrentlySelectedEntityData(data, entity, parent);
             return true;
         }
+        this.refs.resourcePane.getData(null);
+        this.refs.resourceAttrPane.setCurrentlySelectedEntityData(null, null, null);
         return false;
     },
     selectResourceCallback: function(value, groupJvmEntityType) {

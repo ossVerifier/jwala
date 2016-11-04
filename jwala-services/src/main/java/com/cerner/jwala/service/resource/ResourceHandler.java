@@ -6,6 +6,8 @@ import com.cerner.jwala.persistence.jpa.domain.resource.config.template.ConfigTe
 import com.cerner.jwala.persistence.service.ResourceDao;
 import com.cerner.jwala.service.resource.impl.CreateResourceResponseWrapper;
 
+import java.util.List;
+
 /**
  * Outlines what a concrete resource handler should look like and what it can do.
  * This abstract class is also the corner stone for implementing a chain or responsibility pattern.
@@ -28,4 +30,6 @@ public abstract class ResourceHandler {
     public abstract String updateResourceMetaData(ResourceIdentifier resourceIdentifier, String resourceName, String metaData);
 
     public abstract Object getSelectedValue(ResourceIdentifier resourceIdentifier);
+
+    public abstract List<String> getResourceNames(ResourceIdentifier resourceIdentifier);
 }

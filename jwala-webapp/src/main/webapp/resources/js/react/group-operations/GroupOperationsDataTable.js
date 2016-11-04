@@ -130,7 +130,10 @@ var GroupOperationsDataTable = React.createClass({
         { mData: null, colWidth: "10px" },
         { sTitle: "Name", mData: "name" },
         { sTitle: "War Name", mData: "warName" },
-        { sTitle: "Context", mData: "webAppContext" }];
+        { sTitle: "Context", mData: "webAppContext", colWidth: "150px"},
+        { mData: null,
+          jwalaType: "custom",
+          jwalaRenderCfgFn: this.renderWebAppControlPanelWidget.bind(this, "grp", "webApp") }];
 
         webAppOfGrpChildTableDetails["tableDef"] = webAppOfGrpChildTableDef;
 
@@ -324,6 +327,15 @@ var GroupOperationsDataTable = React.createClass({
                 webServerService: webServerService,
                 webServerStartCallback: this.webServerStart,
                 webServerStopCallback: this.webServerStop }), nTd, function () {});
+        }.bind(this);
+    },
+    renderWebAppControlPanelWidget: function (parentPrefix, type, dataTable, data, aoColumnDefs, itemIndex, parentId, parentName) {
+        var self = this;
+        aoColumnDefs[itemIndex].fnCreatedCell = function (nTd, sData, oData, iRow, iCol) {
+            var newData = $.extend({}, oData); // do a shallow clone so we don't mutate the source data
+            newData["parentGroup"] = parentName;
+            return React.render(WebAppControlPanelWidget({data: newData, parentGroup: parentName,
+                                webAppService: webAppService}), nTd, function () {});
         }.bind(this);
     },
     renderWebServerStateRowData: function (parentPrefix, type, dataTable, data, aoColumnDefs, itemIndex, parentId) {
@@ -604,8 +616,8 @@ var GroupOperationsDataTable = React.createClass({
             self.disableEnable(event.data.buttonSelector, function () {
                 return groupControlService.generateWebServers(event.data.id, function (resp) {
                     $.alert("Successfully generated the web servers for " + resp.applicationResponseContent.name, false);
-                }, function (errMsg) {
-                    $.errorAlert(errMsg, "Generate Web Servers Failed", false);
+                }, function (errMsg, errDetails) {
+                    $.errorAlert(errMsg, "Generate Web Servers Failed", false, errDetails);
                 });
             }, "ui-icon-stop");
             self.writeWebServerActionToCommandStatusWidget(event.data.id, "INVOKE");
@@ -640,8 +652,8 @@ var GroupOperationsDataTable = React.createClass({
                 self.disableEnable(event.data.buttonSelector, function () {
                     return groupControlService.generateJvms(event.data.id, function (resp) {
                         $.alert("Successfully generated the JVMs for " + resp.applicationResponseContent.name, false);
-                        }, function (errMsg) {
-                        $.errorAlert(errMsg, "Generate JVMs Failed", false);
+                        }, function (errMsg, errDetails) {
+                        $.errorAlert(errMsg, "Generate JVMs Failed", false, errDetails);
                     });
                 }, "ui-icon-stop");
             }, true);
@@ -704,13 +716,11 @@ var GroupOperationsDataTable = React.createClass({
         this.disableEnableJvmGenerateConfigButton(selector, requestJvmGenerateConfig, this.generateJvmConfigSucccessCallback, this.generateJvmConfigErrorCallback);
     },
     generateJvmConfigSucccessCallback: function (response) {
-        // TODO: Verify if we need to call done callback here. Eg this.doneCallback[response.applicationResponseContent.jvmName + "__jwala" + response.applicationResponseContent.id.id]();
         $.alert("Successfully generated and deployed JVM resource files", response.applicationResponseContent.jvmName, false);
     },
 
-    generateJvmConfigErrorCallback: function (applicationResponseContent) {
-        // TODO: Verify if we need to call done callback here. Eg this.doneCallback[response.applicationResponseContent.jvmName + "__jwala" + response.applicationResponseContent.id.id]();
-        $.errorAlert(applicationResponseContent, "Error deploying JVM resource files", false);
+    generateJvmConfigErrorCallback: function (applicationResponseContent, errDetails) {
+        $.errorAlert(applicationResponseContent, "Error deploying JVM resource files", false, errDetails);
     },
 
     confirmJvmWebServerStopGroupDialogBox: function (id, parentItemId, buttonSelector, msg, callbackOnConfirm, cancelCallback) {

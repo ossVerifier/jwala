@@ -210,6 +210,9 @@ var ModalDialogBox = React.createClass({
         e.stopPropagation();
         this.setState({top: e.pageY - this.state.mouseDownYDiff, left: e.pageX - this.state.mouseDownXDiff});
     },
+    isShown: function() {
+        return this.state.show;
+    },
     statics: {
         DEFAULT_TOP: -10000,
         DEFAULT_LEFT: -10000,

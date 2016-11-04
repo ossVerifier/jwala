@@ -88,6 +88,8 @@ var webAppService = {
                                      errorCallback,
                                      false,
                                      "text/plain; charset=utf-8");
+    },
+    deployConf: function(appName) {
+        return serviceFoundation.promisedPut("v1.0/applications/" + appName + "/conf");
     }
-
 };

@@ -20,12 +20,26 @@ $.extend({ errorAlert: function (message, dlgTitle, modal, content) {
 
             if (content) {
                 message += "<div class='textAlignLeft'><ul>";
+                var sortedContent = [];
                 for (var property in content) {
                     if (content.hasOwnProperty(property)) {
-                        message += "<li>";
-                        message += property + ": " + content[property];
-                        message += "</li>"
+                        sortedContent.push(property);
                     }
+                }
+                sortedContent.sort();
+
+                for (var i=0; i<sortedContent.length; i++) {
+                    message += "<li>";
+                    message += sortedContent[i];
+                    var exceptionList = content[sortedContent[i]];
+                    for (var exception in exceptionList) {
+                        if (exceptionList.hasOwnProperty(exception)){
+                            message += "<ul>";
+                            message += "<li>" + exceptionList[exception] + "</li>";
+                            message += "</ul>"
+                        }
+                    }
+                    message += "</li>"
                 }
                 message += "</ul></div>"
             }
@@ -40,7 +54,7 @@ $.extend({ errorAlert: function (message, dlgTitle, modal, content) {
                 open: function () {
                     $(this).parents(".ui-dialog:first").find(".ui-dialog-titlebar").addClass("ui-state-error");
                     $(this).parents(".ui-dialog:first").zIndex(999);
-                }}).html($.parseHTML(message));
+                }}).html($.parseHTML(message.replace(/\n/g, "<br>")));
         }
     }
 });

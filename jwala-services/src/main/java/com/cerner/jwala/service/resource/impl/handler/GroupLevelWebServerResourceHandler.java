@@ -16,6 +16,7 @@ import com.cerner.jwala.service.resource.impl.ResourceGeneratorType;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -134,6 +135,15 @@ public class GroupLevelWebServerResourceHandler extends ResourceHandler {
             return null;
         } else {
             return successor.getSelectedValue(resourceIdentifier);
+        }
+    }
+
+    @Override
+    public List<String> getResourceNames(ResourceIdentifier resourceIdentifier) {
+        if (canHandle(resourceIdentifier)){
+            throw new UnsupportedOperationException();
+        } else {
+            return successor.getResourceNames(resourceIdentifier);
         }
     }
 }

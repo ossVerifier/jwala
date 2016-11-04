@@ -147,4 +147,13 @@ public class GroupLevelAppResourceHandler extends ResourceHandler {
             return successor.getSelectedValue(resourceIdentifier);
         }
     }
+
+    @Override
+    public List<String> getResourceNames(ResourceIdentifier resourceIdentifier) {
+        if (canHandle(resourceIdentifier)) {
+            return resourceDao.getGroupLevelAppResourceNames(resourceIdentifier.groupName, resourceIdentifier.webAppName);
+        } else {
+            return successor.getResourceNames(resourceIdentifier);
+        }
+    }
 }

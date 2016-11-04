@@ -103,4 +103,16 @@ public class GroupLevelAppResourceHandlerTest {
         groupAppResourceHandler.getSelectedValue(notMeResourceIdentifier);
         verify(mockSuccessor).getSelectedValue(notMeResourceIdentifier);
     }
+
+    @Test
+    public void testGetResourceNames() {
+        groupAppResourceHandler.getResourceNames(resourceIdentifier);
+        verify(mockResourceDao).getGroupLevelAppResourceNames(eq(resourceIdentifier.groupName), eq(resourceIdentifier.webAppName));
+
+        ResourceIdentifier notMeResourceIdentifier = new ResourceIdentifier.Builder().setResourceName("whats-app-amiright").setGroupName("not-a-web-app").build();
+        groupAppResourceHandler.getResourceNames(notMeResourceIdentifier);
+        verify(mockSuccessor).getResourceNames(notMeResourceIdentifier);
+
+    }
+
 }

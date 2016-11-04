@@ -113,11 +113,9 @@ public class GroupServiceImplDeployTest {
     private AuthenticatedUser mockAuthUser = mock(AuthenticatedUser.class);
     private User mockUser = mock(User.class);
     private String httpdConfDirPath;
-    private String generatedResourceDir;
 
     public GroupServiceImplDeployTest() {
-        System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH,
-                this.getClass().getClassLoader().getResource("vars.properties").getPath().replace("vars.properties", ""));
+        System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, "./src/test/resources");
     }
 
     @Before
@@ -128,7 +126,6 @@ public class GroupServiceImplDeployTest {
         httpdConfDirPath = ApplicationProperties.get("remote.paths.httpd.conf");
         // assertTrue(new File(httpdConfDirPath).mkdirs());
         new File(httpdConfDirPath).mkdirs();
-        generatedResourceDir = ApplicationProperties.get("paths.generated.resource.dir");
         // assertTrue(new File(generatedResourceDir).mkdirs());
         new File(httpdConfDirPath).mkdirs();
     }
@@ -136,7 +133,6 @@ public class GroupServiceImplDeployTest {
     @After
     public void tearDown() throws IOException {
         FileUtils.deleteDirectory(new File(httpdConfDirPath));
-        FileUtils.deleteDirectory(new File(generatedResourceDir));
         System.clearProperty(ApplicationProperties.PROPERTIES_ROOT_PATH);
     }
 
@@ -482,7 +478,7 @@ public class GroupServiceImplDeployTest {
         assertNotNull(response);
     }
 
-    @Test
+    @Test (expected = InternalErrorException.class)
     public void testGenerateGroupWebServersWithWebServerStarted() {
         Group mockGroup = mock(Group.class);
         Set<WebServer> webServersSet = new HashSet<>();
@@ -542,7 +538,7 @@ public class GroupServiceImplDeployTest {
 
     }
 
-    @Test
+    @Test (expected = InternalErrorException.class)
     public void testGenerateGroupJvmsWithJvmStarted() {
         Group mockGroup = mock(Group.class);
         Set<Jvm> jvmSet = new HashSet<>();
@@ -551,8 +547,7 @@ public class GroupServiceImplDeployTest {
         when(mockJvm.getState()).thenReturn(JvmState.JVM_STARTED);
         when(mockGroup.getJvms()).thenReturn(jvmSet);
         when(mockGroupService.getGroup(any(Identifier.class))).thenReturn(mockGroup);
-        Response response = groupServiceRest.generateGroupJvms(new Identifier<Group>(111L), mockAuthUser);
-        assertEquals(500, response.getStatus());
+        groupServiceRest.generateGroupJvms(new Identifier<Group>(111L), mockAuthUser);
     }
 
     @Test

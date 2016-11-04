@@ -101,6 +101,8 @@ public class GroupCrudServiceImplTest {
 
     private JpaApplication jpaApplication;
 
+    private JpaApplication jpaOtherApplication;
+
     @Autowired
     WebServerCrudService webServerCrudService;
 
@@ -114,11 +116,14 @@ public class GroupCrudServiceImplTest {
 
         jpaApplication = applicationCrudService.createApplication(new CreateApplicationRequest(groupId, "some-app-name", "", false, false, false),
                 testGroup);
+        jpaOtherApplication = applicationCrudService.createApplication(new CreateApplicationRequest(groupId, "some-other-app-name", "", false, false, false),
+                testGroup);
     }
 
     @After
     public void tearDown() {
         applicationCrudService.removeApplication(new Identifier<Application>(jpaApplication.getId()));
+        applicationCrudService.removeApplication(new Identifier<Application>(jpaOtherApplication.getId()));
         groupCrudService.removeGroup(groupId);
         User.getThreadLocalUser().invalidate();
     }
@@ -297,6 +302,15 @@ public class GroupCrudServiceImplTest {
     public void testGetGroupAppResourceTemplateNames() {
         List<String> templateNames = groupCrudService.getGroupAppsResourceTemplateNames(groupName);
         assertEquals(0, templateNames.size());
+    }
+
+    @Test
+    public void testGetGroupAppResourceTemplateNamesWithAppName() {
+        groupCrudService.populateGroupAppTemplate(groupName, "some-app-name", "hct.xml", "hct meta data", "old hct.xml template");
+        groupCrudService.populateGroupAppTemplate(groupName, "some-other-app-name", "other-hct.xml", "other hct meta data", "old other hct.xml template");
+
+        List<String> templateNames = groupCrudService.getGroupAppsResourceTemplateNames(groupName, "some-app-name");
+        assertEquals(1, templateNames.size());
     }
 
     @Test

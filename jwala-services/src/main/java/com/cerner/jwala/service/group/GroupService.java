@@ -86,6 +86,8 @@ public interface GroupService {
 
     List<String> getGroupAppsResourceTemplateNames(String groupName);
 
+    List<String> getGroupAppsResourceTemplateNames(String groupName, String appName);
+
     String getGroupAppResourceTemplate(String groupName, String appName, String resourceTemplateName, boolean tokensReplaced, ResourceGroup resourceGroup);
 
     String getGroupAppResourceTemplateMetaData(String groupName, String fileName);
