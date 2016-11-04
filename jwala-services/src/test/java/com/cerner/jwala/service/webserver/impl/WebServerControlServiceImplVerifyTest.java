@@ -43,7 +43,6 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
-@Ignore // TODO: Fix test!
 public class WebServerControlServiceImplVerifyTest extends VerificationBehaviorSupport {
 
     private WebServerControlServiceImpl webServerControlService;
@@ -56,9 +55,6 @@ public class WebServerControlServiceImplVerifyTest extends VerificationBehaviorS
 
     @Captor
     private ArgumentCaptor<SetStateRequest<WebServer, WebServerReachableState>> setStateCommandCaptor;
-
-    @Mock
-    private HistoryService mockHistoryService;
 
     @Mock
     private MessagingService mockMessagingService;
@@ -110,6 +106,8 @@ public class WebServerControlServiceImplVerifyTest extends VerificationBehaviorS
     }
 
     @Test
+    @Ignore
+    // TODO: Fix this!
     public void testStart() throws CommandFailureException {
         final Identifier<WebServer> webServerIdentifier = new Identifier<>(12L);
         WebServer webserver = new WebServer(webServerIdentifier, new HashSet<Group>(), "testWebServer");
@@ -133,7 +131,7 @@ public class WebServerControlServiceImplVerifyTest extends VerificationBehaviorS
 
         when(remoteCommandExecutorService.executeCommand(any(RemoteExecCommand.class))).thenReturn(new RemoteCommandReturnInfo(1, "", "ABNORMAL SUCCESS"));
         webServerControlService.controlWebServer(controlWSRequest, user);
-        verify(mockHistoryService, times(2)).createHistory(anyString(), anyList(), anyString(), eq(EventType.SYSTEM_ERROR), anyString());
+        verify(mockHistoryFacade, times(2)).write(anyString(), anyList(), anyString(), eq(EventType.SYSTEM_ERROR), anyString());
         verify(mockMessagingService, times(2)).send(any(CurrentState.class));
         reset(mockMessagingService);
 
