@@ -88,6 +88,13 @@ public interface GroupServiceRest {
                                              @PathParam("resourceTemplateName") final String resourceTemplateName,
                                              String template);
 
+    @PUT
+    @Path("/{groupName}/jvms/resources/template/{resourceTemplateName}")
+    @Consumes(MediaType.TEXT_PLAIN)
+    Response updateGroupJvmResourceTemplate(@PathParam("groupName") final String groupName,
+                                            @PathParam("resourceTemplateName") final String resourceTemplateName,
+                                            final String content);
+
 
     /****************************
      * ** Web Server Templates ***
@@ -189,12 +196,12 @@ public interface GroupServiceRest {
     @POST
     @Path("/{groupId}/webservers/conf/deploy")
     Response generateGroupWebservers(@PathParam("groupId") final Identifier<Group> aGroupId,
-                                    @BeanParam final AuthenticatedUser aUser);
+                                     @BeanParam final AuthenticatedUser aUser);
 
     @POST
     @Path("/{groupId}/jvms/conf/deploy")
     Response generateGroupJvms(@PathParam("groupId") final Identifier<Group> aGroupId,
-                                     @BeanParam final AuthenticatedUser aUser);
+                               @BeanParam final AuthenticatedUser aUser);
 
     /**
      * Gets the membership details of a group's children in other groups (e.g. jvm1 is a member of group2, group3)

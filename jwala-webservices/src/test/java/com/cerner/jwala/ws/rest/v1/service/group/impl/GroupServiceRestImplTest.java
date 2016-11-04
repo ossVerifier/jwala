@@ -506,6 +506,25 @@ public class GroupServiceRestImplTest {
     }
 
     @Test
+    public void testUpdateJvmTemplate() {
+        Group mockGroupWithJvms = mock(Group.class);
+        Set<Jvm> mockJvms = new HashSet<>();
+        mockJvms.add(mockJvm);
+
+        when(mockGroupService.getGroup(anyString())).thenReturn(mockGroupWithJvms);
+        when(mockGroupWithJvms.getJvms()).thenReturn(mockJvms);
+
+        Response response = groupServiceRest.updateGroupJvmResourceTemplate(group.getName(), "server.xml", "test server.xml content");
+        assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
+
+        when(mockGroupService.updateGroupJvmResourceTemplate(anyString(), anyString(), anyString())).thenThrow(new ResourceTemplateUpdateException("test jvm", "server.xml"));
+
+        response = groupServiceRest.updateGroupJvmResourceTemplate(group.getName(), "server.xml", "server.xml content for testing");
+        assertEquals(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), response.getStatus());
+
+    }
+
+    @Test
     public void testPreviewGroupJvmTemplate() {
         Set<Jvm> jvmSet = new HashSet<>();
         Jvm mockPreviewJvm = mock(Jvm.class);
@@ -546,7 +565,6 @@ public class GroupServiceRestImplTest {
         assertEquals(500, response.getStatus());
     }
 
-
     @Test
     public void testGetJvmTemplate() {
         Response response = groupServiceRest.getGroupJvmResourceTemplate(group.getName(), "server.xml", false);
@@ -574,6 +592,15 @@ public class GroupServiceRestImplTest {
         assertTrue(response.getStatus() > 199 && response.getStatus() < 300);
     }
 
+    @Test
+    public void testTestUpdateGroupJvmTemplateNoJvms() {
+        when(mockGroupService.updateGroupJvmResourceTemplate(anyString(), anyString(), anyString())).thenReturn("no content updated");
+        Group mockGroupNoJvms = mock(Group.class);
+        when(mockGroupNoJvms.getJvms()).thenReturn(null);
+        when(mockGroupService.getGroup(anyString())).thenReturn(mockGroupNoJvms);
+        Response response = groupServiceRest.updateGroupJvmResourceTemplate("groupName", "resourceTemplateName.xml", "no content");
+        assertTrue(response.getStatus() > 199 && response.getStatus() < 300);
+    }
 
     @Test
     public void testPreviewGroupAppResourceTemplate() {
@@ -598,7 +625,6 @@ public class GroupServiceRestImplTest {
         groupServiceRest.getGroupAppResourceNames("testGroup");
         verify(mockGroupService).getGroupAppsResourceTemplateNames("testGroup");
     }
-
 
     @Test
     public void testGetStartedWebServersAndJvmCounts() {
