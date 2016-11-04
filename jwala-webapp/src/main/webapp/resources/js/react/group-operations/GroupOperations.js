@@ -159,7 +159,7 @@ var GroupOperations = React.createClass({
                                           userId: msg.body.createBy,
                                           message: msg.body.event,
                                           from: msg.body.serverName},
-                                          msg.body.eventType === "APPLICATION_EVENT" ? "error-status-font": "action-status-font");
+                                          msg.body.eventType === "SYSTEM_ERROR" ? "error-status-font": "action-status-font");
             }
         } else {
             if (msg.type === "JVM") {
