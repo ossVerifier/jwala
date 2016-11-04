@@ -37,6 +37,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -208,6 +209,12 @@ public class ResourceDaoImplTest {
         final JpaGroupAppConfigTemplate jpaGroupAppConfigTemplate
                 = resourceDao.getGroupLevelAppResource("someFileName", "someApp", "someGroup");
         assertEquals("someMetaData", jpaGroupAppConfigTemplate.getMetaData());
+    }
+
+    @Test
+    public void testGetGroupLevelAppResourceNames() {
+        List<String> names = resourceDao.getGroupLevelAppResourceNames("someGroup", "someApp");
+        assertEquals(Arrays.asList("someFileName"), names);
     }
 
     @Test

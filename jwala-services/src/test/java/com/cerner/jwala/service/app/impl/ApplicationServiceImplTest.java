@@ -777,7 +777,7 @@ public class ApplicationServiceImplTest {
         when(mockResourceService.getMetaData(anyString())).thenReturn(mockMetaData);
         when(mockMetaData.getEntity()).thenReturn(mockEntity);
         when(mockEntity.getDeployToJvms()).thenReturn(false);
-        when(groupService.getGroupAppsResourceTemplateNames(anyString())).thenReturn(templateNames);
+        when(groupService.getGroupAppsResourceTemplateNames(anyString(), anyString())).thenReturn(templateNames);
         when(groupService.deployGroupAppTemplate(anyString(), anyString(), any(ResourceGroup.class), any(Application.class), anyString())).thenReturn(mockCommandOutput);
         when(mockCommandOutput.getReturnCode()).thenReturn(new ExecReturnCode(0));
         applicationService.deployConf(appName, null, testUser);
@@ -812,7 +812,7 @@ public class ApplicationServiceImplTest {
         when(mockResourceService.getMetaData(anyString())).thenReturn(mockMetaData);
         when(mockMetaData.getEntity()).thenReturn(mockEntity);
         when(mockEntity.getDeployToJvms()).thenReturn(false);
-        when(groupService.getGroupAppsResourceTemplateNames(anyString())).thenReturn(templateNames);
+        when(groupService.getGroupAppsResourceTemplateNames(anyString(), anyString())).thenReturn(templateNames);
         when(groupService.deployGroupAppTemplate(anyString(), anyString(), any(ResourceGroup.class), any(Application.class), anyString())).thenReturn(mockCommandOutput);
         when(mockCommandOutput.getReturnCode()).thenReturn(new ExecReturnCode(1));
         applicationService.deployConf(appName, null, testUser);
@@ -884,7 +884,7 @@ public class ApplicationServiceImplTest {
         when(groupService.getHosts(anyString())).thenReturn(hosts);
         when(groupService.getGroupAppResourceTemplateMetaData(anyString(), anyString())).thenReturn("");
         when(mockResourceService.getMetaData(anyString())).thenThrow(IOException.class);
-        when(groupService.getGroupAppsResourceTemplateNames(anyString())).thenReturn(templateNames);
+        when(groupService.getGroupAppsResourceTemplateNames(anyString(), anyString())).thenReturn(templateNames);
         applicationService.deployConf(appName, "testserver", testUser);
     }
 

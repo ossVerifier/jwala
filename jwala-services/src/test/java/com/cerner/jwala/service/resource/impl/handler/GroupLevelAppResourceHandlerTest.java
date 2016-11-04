@@ -104,13 +104,15 @@ public class GroupLevelAppResourceHandlerTest {
         verify(mockSuccessor).getSelectedValue(notMeResourceIdentifier);
     }
 
-    @Test (expected = UnsupportedOperationException.class)
+    @Test
     public void testGetResourceNames() {
+        groupAppResourceHandler.getResourceNames(resourceIdentifier);
+        verify(mockResourceDao).getGroupLevelAppResourceNames(eq(resourceIdentifier.groupName), eq(resourceIdentifier.webAppName));
+
         ResourceIdentifier notMeResourceIdentifier = new ResourceIdentifier.Builder().setResourceName("whats-app-amiright").setGroupName("not-a-web-app").build();
         groupAppResourceHandler.getResourceNames(notMeResourceIdentifier);
         verify(mockSuccessor).getResourceNames(notMeResourceIdentifier);
 
-        groupAppResourceHandler.getResourceNames(resourceIdentifier);
     }
 
 }

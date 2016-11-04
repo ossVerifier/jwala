@@ -60,11 +60,11 @@ public enum WindowsWebServerNetOperation implements ServiceCommandBuilder {
             );
         }
     },
-    INVOKE_SERVICE(WebServerControlOperation.INVOKE_SERVICE) {
+    INSTALL_SERVICE(WebServerControlOperation.INSTALL_SERVICE) {
         @Override
         public ExecCommand buildCommandForService(String aServiceName, String... aParams) {
             return new ExecCommand(
-                    cygpathWrapper(INVOKE_WS_SERVICE_SCRIPT_NAME, REMOTE_COMMANDS_USER_SCRIPTS + "/"),
+                    cygpathWrapper(INSTALL_SERVICE_WS_SERVICE_SCRIPT_NAME, REMOTE_COMMANDS_USER_SCRIPTS + "/"),
                     aServiceName,
                     WEBSERVER_CONF_PATH
             );

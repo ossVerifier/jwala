@@ -471,7 +471,7 @@ public class GroupServiceImplDeployTest {
         when(mockWebServerControlService.changeFileMode(any(WebServer.class), anyString(), anyString(), anyString())).thenReturn(successCommandOutput);
         when(mockWebServerService.generateHttpdConfig(anyString(), any(ResourceGroup.class))).thenReturn("httpd.conf content");
         when(mockWebServerControlService.secureCopyFile(anyString(), anyString(), anyString(), anyString())).thenReturn(successCommandOutput);
-        when(mockWebServerService.generateInvokeWSBat(any(WebServer.class))).thenReturn("invokeWS.bat content");
+        when(mockWebServerService.generateInstallServiceWSBat(any(WebServer.class))).thenReturn("install_ServiceWS.bat content");
         when(mockWebServerService.getResourceTemplateNames(anyString())).thenReturn(resourceTemplateNames);
 
         Response response = groupServiceRest.generateGroupWebservers(mockGroup.getId(), mockAuthUser);

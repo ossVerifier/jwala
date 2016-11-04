@@ -89,7 +89,7 @@ public class WebServerControlServiceImpl implements WebServerControlService {
                 messagingService.send(new CurrentState<>(webServer.getId(), controlOperation.getOperationState(),
                         aUser.getId(), DateTime.now(), StateType.WEB_SERVER));
             } else if (controlOperation.equals(WebServerControlOperation.DELETE_SERVICE)
-                    || controlOperation.equals(WebServerControlOperation.INVOKE_SERVICE)
+                    || controlOperation.equals(WebServerControlOperation.INSTALL_SERVICE)
                     || controlOperation.equals(WebServerControlOperation.SECURE_COPY)) {
                 messagingService.send(new WebServerHistoryEvent(webServer.getId(), controlOperation.name(), aUser.getId(), DateTime.now(), controlOperation));
             }

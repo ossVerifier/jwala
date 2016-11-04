@@ -13,12 +13,12 @@ if [ "$1" = "" -o "$2" = "" ]; then
 fi
 export JVMINST=`sc queryex $1 | head -1 | awk '{ sub(/:/,"",$4); print $4 }'`
 if [ "$JVMINST" = "1060" ]; then
-    echo Service $1 not installed on server, continuing with invoke 
+    echo Service $1 not installed on server, continuing with invoke
 else
     /usr/bin/echo Service $1 already exists
     exit $JWALA_EXIT_CODE_FAILED
 fi
-cygstart $2/$1/bin/invoke.bat "$3" "$4"
+cygstart $2/$1/bin/install_service.bat "$3" "$4"
 for (( c=1; c<=5; c++ ))
 do
     /usr/bin/sleep 1

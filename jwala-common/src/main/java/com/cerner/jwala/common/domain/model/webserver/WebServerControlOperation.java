@@ -14,7 +14,7 @@ public enum WebServerControlOperation {
     SECURE_COPY("secureCopy", null),
     BACK_UP("backUpConfigFile", null),
     DELETE_SERVICE("deleteService", null),
-    INVOKE_SERVICE("invokeService", null),
+    INSTALL_SERVICE("installService", null),
     CREATE_DIRECTORY("mkdir", null),
     CHANGE_FILE_MODE("chmod", null),
     CHECK_FILE_EXISTS("test", null);

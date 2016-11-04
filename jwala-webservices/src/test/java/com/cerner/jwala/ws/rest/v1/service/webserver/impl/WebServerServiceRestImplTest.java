@@ -455,7 +455,7 @@ public class WebServerServiceRestImplTest {
         when(webServerControlService.changeFileMode(any(WebServer.class), anyString(), anyString(), anyString())).thenReturn(retSuccessExecData);
         when(impl.getWebServer(anyString())).thenReturn(webServer);
         when(impl.generateHttpdConfig(anyString(), any(ResourceGroup.class))).thenReturn("innocuous content");
-        when(impl.generateInvokeWSBat(any(WebServer.class))).thenReturn("invoke me");
+        when(impl.generateInstallServiceWSBat(any(WebServer.class))).thenReturn("invoke me");
         when(impl.getResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"contentType\":\"text/plain\",\"deployPath\":\"./anyPath\",\"deployFileName\":\"httpd.conf\"}");
         when(impl.getResourceTemplateNames(anyString())).thenReturn(webServerResourceNames);
         when(resourceService.generateResourceGroup()).thenReturn(new ResourceGroup());
@@ -535,7 +535,7 @@ public class WebServerServiceRestImplTest {
         when(webServerControlService.createDirectory(any(WebServer.class), anyString())).thenReturn(retSuccessExecData);
         when(webServerControlService.secureCopyFile(eq(webServer.getName()), eq(ApplicationProperties.get("commands.scripts-path") + "/" + AemControl.Properties.START_SCRIPT_NAME.getValue()), anyString(), anyString())).thenReturn(retSuccessExecData);
         when(webServerControlService.secureCopyFile(eq(webServer.getName()), eq(ApplicationProperties.get("commands.scripts-path") + "/" + AemControl.Properties.STOP_SCRIPT_NAME.getValue()), anyString(), anyString())).thenReturn(retSuccessExecData);
-        when(webServerControlService.secureCopyFile(eq(webServer.getName()), eq(ApplicationProperties.get("commands.scripts-path") + "/" + AemControl.Properties.INVOKE_WS_SERVICE_SCRIPT_NAME.getValue()), anyString(), anyString())).thenReturn(retFailExecData);
+        when(webServerControlService.secureCopyFile(eq(webServer.getName()), eq(ApplicationProperties.get("commands.scripts-path") + "/" + AemControl.Properties.INSTALL_SERVICE_WS_SERVICE_SCRIPT_NAME.getValue()), anyString(), anyString())).thenReturn(retFailExecData);
         when(impl.getWebServer(anyString())).thenReturn(webServer);
         when(impl.isStarted(any(WebServer.class))).thenReturn(false);
         when(impl.getResourceTemplateNames(anyString())).thenReturn(resourceTemplateNames);
@@ -553,7 +553,7 @@ public class WebServerServiceRestImplTest {
         when(webServerControlService.createDirectory(any(WebServer.class), anyString())).thenReturn(retSuccessExecData);
         when(webServerControlService.secureCopyFile(eq(webServer.getName()), eq(ApplicationProperties.get("commands.scripts-path") + "/" + AemControl.Properties.START_SCRIPT_NAME.getValue()), anyString(), anyString())).thenReturn(retSuccessExecData);
         when(webServerControlService.secureCopyFile(eq(webServer.getName()), eq(ApplicationProperties.get("commands.scripts-path") + "/" + AemControl.Properties.STOP_SCRIPT_NAME.getValue()), anyString(), anyString())).thenReturn(retSuccessExecData);
-        when(webServerControlService.secureCopyFile(eq(webServer.getName()), eq(ApplicationProperties.get("commands.scripts-path") + "/" + AemControl.Properties.INVOKE_WS_SERVICE_SCRIPT_NAME.getValue()), anyString(), anyString())).thenReturn(retSuccessExecData);
+        when(webServerControlService.secureCopyFile(eq(webServer.getName()), eq(ApplicationProperties.get("commands.scripts-path") + "/" + AemControl.Properties.INSTALL_SERVICE_WS_SERVICE_SCRIPT_NAME.getValue()), anyString(), anyString())).thenReturn(retSuccessExecData);
         when(webServerControlService.changeFileMode(any(WebServer.class), anyString(), anyString(), anyString())).thenReturn(retFailExecData);
         when(impl.getWebServer(anyString())).thenReturn(webServer);
         when(impl.isStarted(any(WebServer.class))).thenReturn(false);
@@ -563,7 +563,7 @@ public class WebServerServiceRestImplTest {
     }
 
     @Test (expected = InternalErrorException.class)
-    public void testGenerateAndDeployWebServerSecureCopyInvokeWSServiceFails() throws CommandFailureException, IOException {
+    public void testGenerateAndDeployWebServerSecureCopyInstallServiceWSServiceFails() throws CommandFailureException, IOException {
         List<String> webServerResourceNames = new ArrayList<>();
         webServerResourceNames.add("httpd.conf");
 
@@ -571,12 +571,12 @@ public class WebServerServiceRestImplTest {
         CommandOutput retFailExecData = new CommandOutput(new ExecReturnCode(1), "", "Failed secure copy");
         when(webServerControlService.controlWebServer(any(ControlWebServerRequest.class), any(User.class))).thenReturn(retSuccessExecData);
         when(webServerControlService.secureCopyFile(anyString(), anyString(), anyString(), anyString())).thenReturn(retSuccessExecData);
-        when(webServerControlService.secureCopyFile(anyString(), contains("invokeWS"), anyString(), anyString())).thenReturn(retFailExecData);
+        when(webServerControlService.secureCopyFile(anyString(), contains("install_serviceWS"), anyString(), anyString())).thenReturn(retFailExecData);
         when(webServerControlService.createDirectory(any(WebServer.class), anyString())).thenReturn(retSuccessExecData);
         when(webServerControlService.changeFileMode(any(WebServer.class), anyString(), anyString(), anyString())).thenReturn(retSuccessExecData);
         when(impl.getWebServer(anyString())).thenReturn(webServer);
         when(impl.generateHttpdConfig(anyString(), any(ResourceGroup.class))).thenReturn("innocuous content");
-        when(impl.generateInvokeWSBat(any(WebServer.class))).thenReturn("invoke me");
+        when(impl.generateInstallServiceWSBat(any(WebServer.class))).thenReturn("invoke me");
         when(impl.getResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"contentType\":\"text/plain\",\"deployPath\":\"./anyPath\",\"deployFileName\":\"httpd.conf\"}");
         when(impl.getResourceTemplateNames(anyString())).thenReturn(webServerResourceNames);
         when(resourceService.generateResourceGroup()).thenReturn(new ResourceGroup());
@@ -592,7 +592,7 @@ public class WebServerServiceRestImplTest {
     }
 
     @Test (expected = InternalErrorException.class)
-    public void testGenerateAndDeployWebServerCallInvokeWSFails() throws CommandFailureException, IOException {
+    public void testGenerateAndDeployWebServerCallInstallServiceWSFails() throws CommandFailureException, IOException {
         List<String> webServerResourceNames = new ArrayList<>();
         webServerResourceNames.add("httpd.conf");
 
@@ -600,12 +600,12 @@ public class WebServerServiceRestImplTest {
         CommandOutput retFailExecData = new CommandOutput(new ExecReturnCode(1), "", "Failed secure copy");
         when(webServerControlService.controlWebServer(any(ControlWebServerRequest.class), any(User.class))).thenReturn(retSuccessExecData);
         when(webServerControlService.secureCopyFile(anyString(), anyString(), anyString(), anyString())).thenReturn(retSuccessExecData);
-        when(webServerControlService.controlWebServer(eq(new ControlWebServerRequest(webServer.getId(), WebServerControlOperation.INVOKE_SERVICE)), any(User.class))).thenReturn(retFailExecData);
+        when(webServerControlService.controlWebServer(eq(new ControlWebServerRequest(webServer.getId(), WebServerControlOperation.INSTALL_SERVICE)), any(User.class))).thenReturn(retFailExecData);
         when(webServerControlService.createDirectory(any(WebServer.class), anyString())).thenReturn(retSuccessExecData);
         when(webServerControlService.changeFileMode(any(WebServer.class), anyString(), anyString(), anyString())).thenReturn(retSuccessExecData);
         when(impl.getWebServer(anyString())).thenReturn(webServer);
         when(impl.generateHttpdConfig(anyString(), any(ResourceGroup.class))).thenReturn("innocuous content");
-        when(impl.generateInvokeWSBat(any(WebServer.class))).thenReturn("invoke me");
+        when(impl.generateInstallServiceWSBat(any(WebServer.class))).thenReturn("invoke me");
         when(impl.getResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"contentType\":\"text/plain\",\"deployPath\":\"./anyPath\",\"deployFileName\":\"httpd.conf\"}");
         when(impl.getResourceTemplateNames(anyString())).thenReturn(webServerResourceNames);
         when(resourceService.generateResourceGroup()).thenReturn(new ResourceGroup());
@@ -633,7 +633,7 @@ public class WebServerServiceRestImplTest {
         when(webServerControlService.changeFileMode(any(WebServer.class), anyString(), anyString(), anyString())).thenReturn(retSuccessExecData);
         when(impl.getWebServer(anyString())).thenReturn(webServer);
         when(impl.generateHttpdConfig(anyString(), any(ResourceGroup.class))).thenReturn("innocuous content");
-        when(impl.generateInvokeWSBat(any(WebServer.class))).thenReturn("invoke me");
+        when(impl.generateInstallServiceWSBat(any(WebServer.class))).thenReturn("invoke me");
         when(impl.getResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"contentType\":\"text/plain\",\"deployPath\":\"./anyPath\",\"deployFileName\":\"httpd.conf\"}");
         when(impl.getResourceTemplateNames(anyString())).thenReturn(webServerResourceNames);
         when(resourceService.generateResourceGroup()).thenReturn(new ResourceGroup());
@@ -663,7 +663,7 @@ public class WebServerServiceRestImplTest {
         when(webServerControlService.changeFileMode(any(WebServer.class), anyString(), anyString(), anyString())).thenReturn(retSuccessExecData);
         when(impl.getWebServer(anyString())).thenReturn(webServer);
         when(impl.generateHttpdConfig(anyString(), any(ResourceGroup.class))).thenReturn("innocuous content");
-        when(impl.generateInvokeWSBat(any(WebServer.class))).thenReturn("invoke me");
+        when(impl.generateInstallServiceWSBat(any(WebServer.class))).thenReturn("invoke me");
         when(impl.getResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"contentType\":\"text/plain\",\"deployPath\":\"./anyPath\",\"deployFileName\":\"httpd.conf\"}");
         when(impl.getResourceTemplateNames(anyString())).thenReturn(webServerResourceNames);
         when(resourceService.generateResourceGroup()).thenReturn(new ResourceGroup());

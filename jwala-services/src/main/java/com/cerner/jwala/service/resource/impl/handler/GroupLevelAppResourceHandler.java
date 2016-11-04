@@ -151,7 +151,7 @@ public class GroupLevelAppResourceHandler extends ResourceHandler {
     @Override
     public List<String> getResourceNames(ResourceIdentifier resourceIdentifier) {
         if (canHandle(resourceIdentifier)) {
-            throw new UnsupportedOperationException();
+            return resourceDao.getGroupLevelAppResourceNames(resourceIdentifier.groupName, resourceIdentifier.webAppName);
         } else {
             return successor.getResourceNames(resourceIdentifier);
         }
