@@ -173,7 +173,7 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
                     .setWebAppName(createResourceParam.getWebApp()).build();
 
             createResourceResponseWrapper = resourceService.createResource(resourceIdentifier, resourceTemplateMetaData,
-                                                                           template);
+                    template);
         } catch (final IOException e) {
             LOGGER.error("Failed to create resource {}!", deployFilename, e);
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(AemFaultType.IO_EXCEPTION, e.getMessage()));
