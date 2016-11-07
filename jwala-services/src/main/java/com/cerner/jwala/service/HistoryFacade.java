@@ -4,6 +4,7 @@ import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.persistence.jpa.domain.JpaHistory;
 import com.cerner.jwala.persistence.jpa.type.EventType;
 
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -28,5 +29,11 @@ public class HistoryFacade {
         for (JpaHistory jpaHistory : jpaHistoryList) {
             messagingService.send(new Message<>(jpaHistory.getGroup().getName(), SUBJECT_HISTORY, jpaHistory));
         }
+    }
+
+    public void write(final String serverName, final Group group, final String event, final EventType eventType,
+                      final String user) {
+        final List<Group> groupList = Arrays.asList(new Group[]{group});
+        write(serverName, groupList, event, eventType, user);
     }
 }

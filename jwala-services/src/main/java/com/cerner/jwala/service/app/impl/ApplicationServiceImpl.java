@@ -750,7 +750,9 @@ public class ApplicationServiceImpl implements ApplicationService {
         final Application application = applicationPersistenceService.getApplication(appName);
         final Group group = groupService.getGroup(application.getGroup().getId());
         final List<String> hostNames = getDeployHostList(hostName, group, application);
+
         LOGGER.info("deploying templates to hosts: {}", hostNames.toString());
+        historyFacade.write(hostName, group, "Deploy \"" + appName + "\" resources",  EventType.USER_ACTION_INFO, user.getId());
 
         checkStartedJvms(group, hostNames);
 
