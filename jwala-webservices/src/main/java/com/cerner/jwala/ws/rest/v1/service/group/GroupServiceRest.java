@@ -95,12 +95,6 @@ public interface GroupServiceRest {
                                             @PathParam("resourceTemplateName") final String resourceTemplateName,
                                             final String content);
 
-    @POST
-    @Path("/{groupName}/jvms/resources/uploadTemplate")
-    @Consumes(MediaType.MULTIPART_FORM_DATA)
-    Response uploadGroupJvmConfigTemplate(@PathParam("groupName") final String groupName,
-                                          @BeanParam final AuthenticatedUser aUser,
-                                          @QueryParam("templateName") final String templateName);
 
     /****************************
      * ** Web Server Templates ***
@@ -136,13 +130,6 @@ public interface GroupServiceRest {
                                                   @PathParam("resourceTemplateName") final String resourceTemplateName,
                                                   final String content);
 
-    @POST
-    @Path("/{groupName}/webservers/resources/uploadTemplate")
-    @Consumes(MediaType.MULTIPART_FORM_DATA)
-    Response uploadGroupWebServerConfigTemplate(@PathParam("groupName") final String groupName,
-                                                @BeanParam final AuthenticatedUser aUser,
-                                                @QueryParam("templateName") final String templateName);
-
     /********************
      * ** App Template ***
      ********************/
@@ -170,14 +157,6 @@ public interface GroupServiceRest {
     Response previewGroupAppResourceTemplate(@PathParam("groupName") String groupName,
                                              @PathParam("resourceTemplateName") String resourceTemplateName,
                                              String template);
-
-
-    @POST
-    @Path("/{groupName}/{appName}/resources/uploadTemplate")
-    @Consumes(MediaType.MULTIPART_FORM_DATA)
-    Response uploadGroupAppConfigTemplate(@PathParam("groupName") final String groupName,
-                                          @PathParam("appName") String appName, @BeanParam final AuthenticatedUser aUser,
-                                          @QueryParam("templateName") final String templateName);
 
     @PUT
     @Path("/{groupName}/apps/conf/{fileName}/{appName}")
@@ -217,12 +196,12 @@ public interface GroupServiceRest {
     @POST
     @Path("/{groupId}/webservers/conf/deploy")
     Response generateGroupWebservers(@PathParam("groupId") final Identifier<Group> aGroupId,
-                                    @BeanParam final AuthenticatedUser aUser);
+                                     @BeanParam final AuthenticatedUser aUser);
 
     @POST
     @Path("/{groupId}/jvms/conf/deploy")
     Response generateGroupJvms(@PathParam("groupId") final Identifier<Group> aGroupId,
-                                     @BeanParam final AuthenticatedUser aUser);
+                               @BeanParam final AuthenticatedUser aUser);
 
     /**
      * Gets the membership details of a group's children in other groups (e.g. jvm1 is a member of group2, group3)
