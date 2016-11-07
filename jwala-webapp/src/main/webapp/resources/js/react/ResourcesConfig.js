@@ -266,7 +266,7 @@ var ResourcesConfig = React.createClass({
 
     },
     onCreateResourceOkClicked: function() {
-        if (!$(this.refs.selectMetaDataAndTemplateFilesWidget.refs.form.getDOMNode()).validate().form()) {
+        if (this.refs.selectMetaDataAndTemplateFilesWidget && !$(this.refs.selectMetaDataAndTemplateFilesWidget.refs.form.getDOMNode()).validate().form()) {
             return;
         }
 
@@ -297,7 +297,7 @@ var ResourcesConfig = React.createClass({
 
             if (metaDataFile) {
                 formData.append("metaData", metaDataFile);
-            } else {
+            } else if (!isExtProperties){
                 formData.append("deployPath", this.refs.selectMetaDataAndTemplateFilesWidget.refs.metaDataEntryForm.getDeployPath());
                 formData.append("contentType", this.refs.selectMetaDataAndTemplateFilesWidget.refs.metaDataEntryForm.getContentType());
             }
@@ -334,11 +334,13 @@ var ResourcesConfig = React.createClass({
             var self = this;
 
             var deployFilename = null;
-            if (this.refs.selectMetaDataAndTemplateFilesWidget.refs.metaDataEntryForm) { // user form was used
+            if (this.refs.selectMetaDataAndTemplateFilesWidget && this.refs.selectMetaDataAndTemplateFilesWidget.refs.metaDataEntryForm) { // user form was used
                 deployFilename = this.refs.selectMetaDataAndTemplateFilesWidget.refs.metaDataEntryForm.getDeployFilename()
-            } else { // upload meta data was used
+            } else if (this.refs.selectMetaDataAndTemplateFilesWidget) { // upload meta data was used
                 deployFilename = $(this.refs.selectMetaDataAndTemplateFilesWidget.refs.templateFile.getDOMNode()).val();
                 deployFilename = deployFilename.substr(deployFilename.lastIndexOf("\\") + 1);
+            } else {
+                deployFilename = "ext.properties"
             }
 
             $("body").css("cursor", "progress");
