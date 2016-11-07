@@ -7,6 +7,8 @@ import com.cerner.jwala.common.domain.model.resource.ResourceGroup;
 import com.cerner.jwala.common.domain.model.resource.ResourceIdentifier;
 import com.cerner.jwala.common.domain.model.resource.ResourceTemplateMetaData;
 import com.cerner.jwala.common.domain.model.user.User;
+import com.cerner.jwala.common.exec.CommandOutput;
+import com.cerner.jwala.common.exec.ExecReturnCode;
 import com.cerner.jwala.common.request.resource.ResourceInstanceRequest;
 import com.cerner.jwala.persistence.jpa.domain.resource.config.template.ConfigTemplate;
 import com.cerner.jwala.persistence.jpa.service.exception.ResourceTemplateMetaDataUpdateException;
@@ -432,6 +434,33 @@ public class ResourceServiceRestImplTest {
 
         verify(impl).getResourceNames(any(ResourceIdentifier.class));
         verify(impl).getResourceContent(any(ResourceIdentifier.class));
+    }
+
+    @Test
+    public void testDeployTemplate() {
+        AuthenticatedUser mockAuthUser = mock(AuthenticatedUser.class);
+        when(mockAuthUser.getUser()).thenReturn(new User("test-user"));
+
+        ResourceHierarchyParam param = new ResourceHierarchyParam();
+
+        when(impl.deployTemplateToHost(anyString(), anyString(), any(ResourceIdentifier.class))).thenReturn(new CommandOutput(new ExecReturnCode(0), "SUCCESS", ""));
+        Response result = cut.deployTemplateToHost("external.properties", "test-host", param, mockAuthUser);
+        assertEquals(200, result.getStatus());
+
+        when(impl.deployTemplateToHost(anyString(), anyString(), any(ResourceIdentifier.class))).thenReturn(new CommandOutput(new ExecReturnCode(1), "", "FAILED"));
+        result = cut.deployTemplateToHost("external.properties", "test-host", param, mockAuthUser);
+        assertEquals(500, result.getStatus());
+    }
+
+    @Test
+    public void testDeployTemplateToAllHosts() {
+        AuthenticatedUser mockAuthUser = mock(AuthenticatedUser.class);
+        ResourceHierarchyParam param = new ResourceHierarchyParam();
+
+        when(mockAuthUser.getUser()).thenReturn(new User("test-user"));
+
+        Response result = cut.deployTemplateToAllHosts("external.properties", param, mockAuthUser);
+        assertEquals(200, result.getStatus());
     }
 
     @Test

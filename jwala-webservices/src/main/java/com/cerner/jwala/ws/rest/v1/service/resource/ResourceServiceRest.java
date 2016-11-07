@@ -80,10 +80,9 @@ public interface ResourceServiceRest extends InitializingBean {
 
     /**
      * Creates a resource
-     *
-     * @param deployFilename      the name of the resource when deployed*
+     * @param deployFilename the name of the resource when deployed*
      * @param createResourceParam contains information on who owns the resource to be created  @return {@link Response}
-     * @param attachments         a list of attached data (deploy filename, deploy path , content type and template data)
+     * @param attachments a list of attached data (deploy filename, deploy path , content type and template data)
      */
     @POST
     @Path("/{deployFilename}")
@@ -198,4 +197,12 @@ public interface ResourceServiceRest extends InitializingBean {
     @GET
     @Path("templates/names")
     Response getResourcesFileNames(@MatrixParam("") final ResourceHierarchyParam resourceHierarchyParam);
+
+    @PUT
+    @Path("/template/{fileName}/deploy/host/{hostName}")
+    Response deployTemplateToHost(@PathParam("fileName") final String fileName, @PathParam("hostName") final String hostName, @MatrixParam("") final ResourceHierarchyParam resourceHierarchyParam, @BeanParam AuthenticatedUser authenticatedUser);
+
+    @PUT
+    @Path("/template/{fileName}/deploy/hosts")
+    Response deployTemplateToAllHosts(@PathParam("fileName") final String fileName, @MatrixParam("") final ResourceHierarchyParam resourceHierarchyParam, @BeanParam AuthenticatedUser authenticatedUser);
 }

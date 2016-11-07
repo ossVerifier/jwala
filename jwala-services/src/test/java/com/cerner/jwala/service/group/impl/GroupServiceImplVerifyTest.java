@@ -13,7 +13,6 @@ import com.cerner.jwala.common.exception.BadRequestException;
 import com.cerner.jwala.common.properties.ApplicationProperties;
 import com.cerner.jwala.common.request.group.*;
 import com.cerner.jwala.common.request.jvm.UploadJvmTemplateRequest;
-import com.cerner.jwala.common.request.webserver.UploadWebServerTemplateRequest;
 import com.cerner.jwala.control.command.RemoteCommandExecutorImpl;
 import com.cerner.jwala.files.WebArchiveManager;
 import com.cerner.jwala.persistence.jpa.domain.resource.config.template.ConfigTemplate;
@@ -33,10 +32,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.InputStream;
 import java.util.*;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -308,42 +304,6 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
     }
 
     @Test
-    public void testPopulateGroupJvmTemplates() throws FileNotFoundException {
-        List<UploadJvmTemplateRequest> uploadRequests = new ArrayList<>();
-        String templateContent = "<server>content</server>";
-
-        UploadJvmTemplateRequest uploadJvmRequest = new UploadJvmTemplateRequest(new Jvm(new Identifier<Jvm>(11L), "testJvm",
-                new HashSet<Group>()), "ServerXMLTemplate.tpl", templateContent, StringUtils.EMPTY) {
-            @Override
-            public String getConfFileName() {
-                return "server.xml";
-            }
-        };
-        uploadRequests.add(uploadJvmRequest);
-        groupService.populateGroupJvmTemplates("testGroupName", uploadRequests, user);
-        verify(groupPersistenceService, times(1)).populateGroupJvmTemplates("testGroupName", uploadRequests);
-    }
-
-    @Test
-    public void testPopulateGroupWebServerTemplates() throws FileNotFoundException {
-        Map<String, UploadWebServerTemplateRequest> uploadRequests = new HashMap<>();
-        InputStream data = new FileInputStream(new File("./src/test/resources/HttpdSslConfTemplate.tpl"));
-        Scanner scanner = new Scanner(data).useDelimiter("\\A");
-        String templateContent = scanner.hasNext() ? scanner.next() : "";
-
-        UploadWebServerTemplateRequest uploadWSRequest = new UploadWebServerTemplateRequest(new WebServer(new Identifier<WebServer>(11L),
-                new HashSet<Group>(), "testWebServer"), "HttpdSslConfTemplate.tpl", StringUtils.EMPTY, templateContent) {
-            @Override
-            public String getConfFileName() {
-                return "httpd.conf";
-            }
-        };
-        uploadRequests.put("httpd.conf", uploadWSRequest);
-        groupService.populateGroupWebServerTemplates("testGroupName", uploadRequests, user);
-        verify(groupPersistenceService, times(1)).populateGroupWebServerTemplates("testGroupName", uploadRequests);
-    }
-
-    @Test
     public void testGroupJvmsResourceTemplateNames() {
         groupService.getGroupJvmsResourceTemplateNames("testGroupName");
         verify(groupPersistenceService, times(1)).getGroupJvmsResourceTemplateNames("testGroupName");
@@ -474,14 +434,6 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
                 eq("properties content meta data"), eq("properties content"));
     }
 
-    @Test
-    public void testPopulateGroupAppTemplate() {
-        when(groupPersistenceService.populateGroupAppTemplate(anyString(), anyString(), anyString(), anyString(), anyString())).thenReturn(mock(ConfigTemplate.class));
-        when(groupPersistenceService.getGroupAppResourceTemplate(anyString(), anyString(), anyString())).thenReturn("template content");
-        groupService.populateGroupAppTemplate("testGroupName", "testAppName", "hct.xml", "hct meta data", "template content");
-
-        verify(groupPersistenceService).populateGroupAppTemplate(anyString(), anyString(), eq("hct.xml"), eq("hct meta data"), eq("template content"));
-    }
 
     @Test
     public void testGetGroupAppTemplateNames() {

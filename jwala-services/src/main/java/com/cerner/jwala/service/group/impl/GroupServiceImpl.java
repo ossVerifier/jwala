@@ -21,7 +21,6 @@ import com.cerner.jwala.common.exec.CommandOutput;
 import com.cerner.jwala.common.properties.ApplicationProperties;
 import com.cerner.jwala.common.request.group.*;
 import com.cerner.jwala.common.request.jvm.UploadJvmTemplateRequest;
-import com.cerner.jwala.common.request.webserver.UploadWebServerTemplateRequest;
 import com.cerner.jwala.common.rule.group.GroupNameRule;
 import com.cerner.jwala.control.application.command.impl.WindowsApplicationPlatformCommandProvider;
 import com.cerner.jwala.control.command.RemoteCommandExecutorImpl;
@@ -253,18 +252,6 @@ public class GroupServiceImpl implements GroupService {
     }
 
     @Override
-    @Transactional
-    public Group populateGroupJvmTemplates(String groupName, List<UploadJvmTemplateRequest> uploadJvmTemplateCommands, User user) {
-        return groupPersistenceService.populateGroupJvmTemplates(groupName, uploadJvmTemplateCommands);
-    }
-
-    @Override
-    @Transactional
-    public Group populateGroupWebServerTemplates(String groupName, Map<String, UploadWebServerTemplateRequest> uploadWSTemplateCommands, User user) {
-        return groupPersistenceService.populateGroupWebServerTemplates(groupName, uploadWSTemplateCommands);
-    }
-
-    @Override
     @Transactional(readOnly = true)
     public List<String> getGroupJvmsResourceTemplateNames(String groupName) {
         List<String> retVal = new ArrayList<>();
@@ -368,14 +355,6 @@ public class GroupServiceImpl implements GroupService {
         final String appContextFileName = resourceName + ".xml";
         groupPersistenceService.populateGroupAppTemplate(application.getGroup().getName(), application.getName(),
                 appContextFileName, appContextMetaData, appContext);
-    }
-
-    @Override
-    @Transactional
-    public String populateGroupAppTemplate(final String groupName, String appName, final String templateName,
-                                           final String metaData, final String content) {
-        groupPersistenceService.populateGroupAppTemplate(groupName, appName, templateName, metaData, content);
-        return groupPersistenceService.getGroupAppResourceTemplate(groupName, appName, templateName);
     }
 
     @Override
