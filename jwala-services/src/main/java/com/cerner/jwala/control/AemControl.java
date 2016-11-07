@@ -23,7 +23,7 @@ public class AemControl {
         DEPLOY_CONFIG_ARCHIVE_SCRIPT_NAME("commands.cygwin.deploy-config-tar", "deploy-config-tar.sh"),
         DELETE_SERVICE_SCRIPT_NAME("commands.cygwin.delete-service", "delete-service.sh"),
         INSTALL_SERVICE_SCRIPT_NAME("commands.cygwin.install-service", "install-service.sh"),
-        INSTALL_SERVICE_WS_SERVICE_SCRIPT_NAME("commands.cygwin.install-ws-service", "invoke-ws-service.sh"),
+        INSTALL_SERVICE_WS_SERVICE_SCRIPT_NAME("commands.cygwin.install-ws-service", "install-ws-service.sh"),
         UNPACK_BINARY_SCRIPT_NAME("commands.cygwin.unpack.sh", "unpack.sh"),
         SLEEP_TIME("net.stop.sleep.time.seconds", NET_STOP_SLEEP_TIME_SECONDS_DEFAULT);
 
