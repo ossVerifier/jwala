@@ -206,4 +206,3 @@ public interface ResourceServiceRest extends InitializingBean {
     @Path("/template/{fileName}/deploy/hosts")
     Response deployTemplateToAllHosts(@PathParam("fileName") final String fileName, @MatrixParam("") final ResourceHierarchyParam resourceHierarchyParam, @BeanParam AuthenticatedUser authenticatedUser);
 }
-

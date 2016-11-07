@@ -1,9 +1,11 @@
 package com.cerner.jwala.ws.rest.v1.service.resource.impl;
 
 import com.cerner.jwala.common.domain.model.group.Group;
-import com.cerner.jwala.common.domain.model.group.LiteGroup;
 import com.cerner.jwala.common.domain.model.id.Identifier;
-import com.cerner.jwala.common.domain.model.resource.*;
+import com.cerner.jwala.common.domain.model.resource.ResourceContent;
+import com.cerner.jwala.common.domain.model.resource.ResourceGroup;
+import com.cerner.jwala.common.domain.model.resource.ResourceIdentifier;
+import com.cerner.jwala.common.domain.model.resource.ResourceTemplateMetaData;
 import com.cerner.jwala.common.domain.model.user.User;
 import com.cerner.jwala.common.exec.CommandOutput;
 import com.cerner.jwala.common.exec.ExecReturnCode;
@@ -36,17 +38,16 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
 import static junit.framework.Assert.assertTrue;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
@@ -183,14 +184,35 @@ public class ResourceServiceRestImplTest {
     @Test
     public void testCreateResourceWithMissingAttachment() throws IOException {
         final List<Attachment> attachmentList = new ArrayList<>();
-        final Response response = cut.createResource("httpd.conf", null, attachmentList);
+        CreateResourceParam createResourceParam = new CreateResourceParam();
+        createResourceParam.setJvm("sampleJvm");
+        final Response response = cut.createResource("httpd.conf", createResourceParam, attachmentList);
         assertEquals("AEM61", ((ApplicationResponse) response.getEntity()).getMsgCode());
     }
 
     @Test
     public void testCreateResourceWithNullAttachment() throws IOException {
-        final Response response = cut.createResource("httpd.conf", null, null);
+        CreateResourceParam createResourceParam = new CreateResourceParam();
+        createResourceParam.setJvm("sampleJvm");
+        final Response response = cut.createResource("httpd.conf", createResourceParam, null);
         assertEquals("AEM61", ((ApplicationResponse) response.getEntity()).getMsgCode());
+    }
+
+    @Test
+    public void testCreateExternalPropertiesResource() throws IOException {
+
+        Attachment extPropMockAttachment = mock(Attachment.class);
+        DataHandler extPropMockDataHandler = mock(DataHandler.class);
+        when(extPropMockAttachment.getDataHandler()).thenReturn(extPropMockDataHandler);
+        when(extPropMockAttachment.getHeader(eq("Content-Type"))).thenReturn("application/octet-stream");
+        when(extPropMockDataHandler.getName()).thenReturn("ext.properties.tpl");
+        when(extPropMockDataHandler.getInputStream()).thenReturn(new ByteArrayInputStream("key=value".getBytes()));
+
+        CreateResourceParam createExtPropertiesParam = new CreateResourceParam();
+        Response response = cut.createResource("ext.properties", createExtPropertiesParam, Arrays.asList(extPropMockAttachment));
+
+        assertNotNull(response);
+        assertEquals("0", ((ApplicationResponse) response.getEntity()).getMsgCode());
     }
 
     @Test
@@ -227,7 +249,9 @@ public class ResourceServiceRestImplTest {
 
         when(impl.getMetaData(anyString())).thenThrow(new IOException());
 
-        final Response response = cut.createResource("httpd.conf", null, attachmentList);
+        CreateResourceParam createResourceParam = new CreateResourceParam();
+        createResourceParam.setJvm("sampleJvm");
+        final Response response = cut.createResource("httpd.conf", createResourceParam, attachmentList);
         assertEquals("AEM60", ((ApplicationResponse) response.getEntity()).getMsgCode());
     }
 

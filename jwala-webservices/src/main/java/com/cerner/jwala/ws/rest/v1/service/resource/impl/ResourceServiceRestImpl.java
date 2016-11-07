@@ -1,7 +1,6 @@
 package com.cerner.jwala.ws.rest.v1.service.resource.impl;
 
 import com.cerner.jwala.common.domain.model.fault.AemFaultType;
-import com.cerner.jwala.common.domain.model.resource.ContentType;
 import com.cerner.jwala.common.domain.model.resource.ResourceContent;
 import com.cerner.jwala.common.domain.model.resource.ResourceIdentifier;
 import com.cerner.jwala.common.domain.model.resource.ResourceTemplateMetaData;
@@ -22,7 +21,6 @@ import org.apache.commons.fileupload.FileItemStream;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.jaxrs.ext.MessageContext;
 import org.apache.cxf.jaxrs.ext.multipart.Attachment;
 import org.apache.cxf.jaxrs.impl.ResponseImpl;
@@ -140,7 +138,10 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
                                    final List<Attachment> attachments) {
         final CreateResourceResponseWrapper createResourceResponseWrapper;
 
-        if (attachments == null || attachments.size() != CREATE_RESOURCE_ATTACHMENT_SIZE) {
+        // TODO pass down single param from UI to designate external properties
+        final boolean isExternalProperty = createResourceParam.getGroup() == null && createResourceParam.getJvm() == null && createResourceParam.getWebApp() == null && createResourceParam.getWebServer() == null;
+
+        if (attachments == null || !isExternalProperty && attachments.size() != CREATE_RESOURCE_ATTACHMENT_SIZE) {
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
                     AemFaultType.INVALID_NUMBER_OF_ATTACHMENTS,
                     "Invalid number of attachments! " + CREATE_RESOURCE_ATTACHMENT_SIZE + " attachments is expected by the service."));
@@ -172,7 +173,7 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
                     .setWebAppName(createResourceParam.getWebApp()).build();
 
             createResourceResponseWrapper = resourceService.createResource(resourceIdentifier, resourceTemplateMetaData,
-                                                                           template);
+                    template);
         } catch (final IOException e) {
             LOGGER.error("Failed to create resource {}!", deployFilename, e);
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(AemFaultType.IO_EXCEPTION, e.getMessage()));

@@ -11,11 +11,9 @@ import com.cerner.jwala.common.domain.model.webserver.WebServer;
 import com.cerner.jwala.common.exec.CommandOutput;
 import com.cerner.jwala.common.request.group.*;
 import com.cerner.jwala.common.request.jvm.UploadJvmTemplateRequest;
-import com.cerner.jwala.common.request.webserver.UploadWebServerTemplateRequest;
 import com.cerner.jwala.exception.CommandFailureException;
 
 import java.util.List;
-import java.util.Map;
 
 public interface GroupService {
 
@@ -63,10 +61,6 @@ public interface GroupService {
 
     Group populateJvmConfig(Identifier<Group> aGroupId, List<UploadJvmTemplateRequest> uploadJvmTemplateCommands, User user, boolean overwriteExisting);
 
-    Group populateGroupJvmTemplates(String groupName, List<UploadJvmTemplateRequest> uploadJvmTemplateCommands, User user);
-
-    Group populateGroupWebServerTemplates(String groupName, Map<String, UploadWebServerTemplateRequest> uploadWebServerTemplateRequests, User user);
-
     List<String> getGroupJvmsResourceTemplateNames(String groupName);
 
     List<String> getGroupWebServersResourceTemplateNames(String groupName);
@@ -100,25 +94,25 @@ public interface GroupService {
 
     String previewGroupAppResourceTemplate(String groupName, String resourceTemplateName, String template, ResourceGroup resourceGroup);
 
-    String populateGroupAppTemplate(String groupName, String appName, String templateName, String metaData, String content);
-
     void updateState(Identifier<Group> id, GroupState state);
 
     CommandOutput deployGroupAppTemplate(String groupName, String fileName, ResourceGroup resourceGroup, Application application, Jvm jvm);
 
     /**
      * This method deploys a group application config template to a particular host.
-     * @param groupName name of the group in which the application exists
-     * @param fileName name of the file that needs to be deployed
+     *
+     * @param groupName     name of the group in which the application exists
+     * @param fileName      name of the file that needs to be deployed
      * @param resourceGroup this is the resourcegroup object that contains data about all groups, jvms, webservers and webapps
-     * @param application this is the application object
-     * @param hostName this is the host name, where we want to deploy the config file
+     * @param application   this is the application object
+     * @param hostName      this is the host name, where we want to deploy the config file
      * @return returns a commandoutput object
      */
     CommandOutput deployGroupAppTemplate(String groupName, String fileName, ResourceGroup resourceGroup, Application application, String hostName);
 
     /**
      * Get hosts of a group.
+     *
      * @param groupName the group's name
      * @return all the host names of a group
      */
@@ -126,6 +120,7 @@ public interface GroupService {
 
     /**
      * Return all the unique host names configured for all the groups
+     *
      * @return a list of all the unique host names
      */
     List<String> getAllHosts();

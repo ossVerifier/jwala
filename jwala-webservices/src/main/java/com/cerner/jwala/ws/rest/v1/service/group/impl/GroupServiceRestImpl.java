@@ -17,9 +17,7 @@ import com.cerner.jwala.common.exception.InternalErrorException;
 import com.cerner.jwala.common.exec.CommandOutput;
 import com.cerner.jwala.common.properties.ApplicationProperties;
 import com.cerner.jwala.common.request.group.*;
-import com.cerner.jwala.common.request.jvm.UploadJvmTemplateRequest;
 import com.cerner.jwala.common.request.webserver.ControlGroupWebServerRequest;
-import com.cerner.jwala.common.request.webserver.UploadWebServerTemplateRequest;
 import com.cerner.jwala.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
 import com.cerner.jwala.persistence.jpa.service.exception.ResourceTemplateUpdateException;
 import com.cerner.jwala.service.app.ApplicationService;
@@ -46,11 +44,6 @@ import com.cerner.jwala.ws.rest.v1.service.jvm.impl.JsonControlJvm;
 import com.cerner.jwala.ws.rest.v1.service.jvm.impl.JvmServiceRestImpl;
 import com.cerner.jwala.ws.rest.v1.service.webserver.impl.JsonControlWebServer;
 import com.cerner.jwala.ws.rest.v1.service.webserver.impl.WebServerServiceRestImpl;
-import org.apache.commons.fileupload.FileItemIterator;
-import org.apache.commons.fileupload.FileItemStream;
-import org.apache.commons.fileupload.FileUploadException;
-import org.apache.commons.fileupload.servlet.ServletFileUpload;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.jaxrs.ext.MessageContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,10 +53,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 
 import javax.persistence.EntityExistsException;
 import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.*;
 import java.util.concurrent.*;
 
@@ -204,11 +195,6 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         return ResponseBuilder.ok();
     }
 
-    @Override
-    public Response uploadGroupWebServerConfigTemplate(String groupName, AuthenticatedUser aUser, String templateName) {
-        LOGGER.info("Uploading group web server template {} to {} by user {}", templateName, groupName, aUser.getUser().getId());
-        return uploadConfigTemplate(groupName, null, aUser, templateName, GroupResourceType.WEBSERVER);
-    }
 
     @Override
     public Response updateGroupWebServerResourceTemplate(final String groupName, final String resourceTemplateName, final String content) {
@@ -318,12 +304,6 @@ public class GroupServiceRestImpl implements GroupServiceRest {
                                                 final boolean tokensReplaced) {
         LOGGER.debug("Get group JVM resource template {} for group {} : tokens replaced={}", resourceTemplateName, groupName, tokensReplaced);
         return ResponseBuilder.ok(groupService.getGroupJvmResourceTemplate(groupName, resourceTemplateName, resourceService.generateResourceGroup(), tokensReplaced));
-    }
-
-    @Override
-    public Response uploadGroupJvmConfigTemplate(String groupName, AuthenticatedUser aUser, String templateName) {
-        LOGGER.info("upload group jvm template {} to group {} by user {}", templateName, groupName, aUser.getUser().getId());
-        return uploadConfigTemplate(groupName, null, aUser, templateName, GroupResourceType.JVM);
     }
 
     @Override
@@ -666,92 +646,6 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         context = testContext;
     }
 
-    protected Response uploadConfigTemplate(final String groupName, final String targetEntityName, final AuthenticatedUser aUser,
-                                            final String templateName, final GroupResourceType uploadType) {
-        LOGGER.debug("Upload Archive {} requested: {} streaming (no size, count yet) : target {} upload type {} by user {}", templateName, groupName, targetEntityName, uploadType, aUser.getUser().getId());
-
-        // iframe uploads from IE do not understand application/json
-        // as a response and will prompt for download. Fix: return
-        // text/html
-        if (!context.getHttpHeaders().getAcceptableMediaTypes().contains(MediaType.APPLICATION_JSON_TYPE)) {
-            context.getHttpServletResponse().setContentType(MediaType.TEXT_HTML);
-        }
-
-        ServletFileUpload sfu = new ServletFileUpload();
-        InputStream data = null;
-        try {
-            FileItemIterator iter = sfu.getItemIterator(context.getHttpServletRequest());
-            FileItemStream file1;
-
-            while (iter.hasNext()) {
-                file1 = iter.next();
-                try {
-                    data = file1.openStream();
-                    if (uploadType.equals(GroupResourceType.JVM)) {
-                        return doGroupJvmTemplateUpload(groupName, aUser, templateName, data, file1);
-                    } else if (uploadType.equals(GroupResourceType.WEBSERVER)) {
-                        return doGroupWebServerTemplateUpload(groupName, aUser, templateName, data, file1);
-                    } else if (uploadType.equals(GroupResourceType.WEBAPP)) {
-                        return doGroupAppTemplateUpload(groupName, targetEntityName, templateName, data);
-                    }
-                } finally {
-                    assert data != null;
-                    data.close();
-                }
-            }
-            LOGGER.info("Failed to upload template {} to group {}: No Data", templateName, groupName);
-            return ResponseBuilder.notOk(Response.Status.NO_CONTENT, new FaultCodeException(
-                    AemFaultType.INVALID_JVM_OPERATION, "No data"));
-        } catch (IOException | FileUploadException e) {
-            LOGGER.error("Bad Stream: Error receiving data", e);
-            throw new InternalErrorException(AemFaultType.BAD_STREAM, "Error receiving data", e);
-        }
-    }
-
-    protected Response doGroupWebServerTemplateUpload(String groupName, AuthenticatedUser aUser, final String templateName, final InputStream data, FileItemStream file1) {
-        final WebServer dummyWebServer = new WebServer(new Identifier<WebServer>(0L), new HashSet<Group>(), "");
-        Scanner scanner = new Scanner(data).useDelimiter("\\A");
-        String templateContent = scanner.hasNext() ? scanner.next() : "";
-
-        UploadWebServerTemplateRequest uploadWSTemplateRequest = new UploadWebServerTemplateRequest(dummyWebServer, file1.getName(), templateContent) {
-            @Override
-            public String getConfFileName() {
-                return templateName;
-            }
-        };
-        Map<String, UploadWebServerTemplateRequest> uploadWSTemplateCommands = new HashMap<>();
-        uploadWSTemplateCommands.put(templateName, uploadWSTemplateRequest);
-        return ResponseBuilder.created(groupService.populateGroupWebServerTemplates(groupName, uploadWSTemplateCommands, aUser.getUser()));
-    }
-
-    protected Response doGroupJvmTemplateUpload(String groupName, AuthenticatedUser aUser, final String templateName, final InputStream data, final FileItemStream file1) {
-        Jvm dummyJvm = new Jvm(new Identifier<Jvm>(0L), "", new HashSet());
-        Scanner scanner = new Scanner(data).useDelimiter("\\A");
-        String templateContent = scanner.hasNext() ? scanner.next() : "";
-
-        UploadJvmTemplateRequest uploadJvmTemplateRequest = new UploadJvmTemplateRequest(dummyJvm, file1.getName(), templateContent) {
-            @Override
-            public String getConfFileName() {
-                return templateName;
-            }
-        };
-
-        final ArrayList<UploadJvmTemplateRequest> uploadJvmTemplateCommands = new ArrayList<>();
-        uploadJvmTemplateCommands.add(uploadJvmTemplateRequest);
-        return ResponseBuilder.created(groupService.populateGroupJvmTemplates(groupName, uploadJvmTemplateCommands, aUser.getUser()));
-    }
-
-    protected Response doGroupAppTemplateUpload(final String groupName, final String appName, final String templateName,
-                                                final InputStream data) {
-        Scanner scanner = new Scanner(data).useDelimiter("\\A");
-        String content = scanner.hasNext() ? scanner.next() : "";
-
-        // meta data can be empty since the method below (I assume based on the usage) updates an existing template rather
-        // than creating a new one.
-        return ResponseBuilder.created(groupService.populateGroupAppTemplate(groupName, appName, templateName,
-                StringUtils.EMPTY, content));
-    }
-
     @Override
     public Response updateGroupAppResourceTemplate(final String groupName, final String appName, final String resourceTemplateName, final String content) {
 
@@ -946,13 +840,6 @@ public class GroupServiceRestImpl implements GroupServiceRest {
             }
         });
         return responseFuture;
-    }
-
-    @Override
-    public Response uploadGroupAppConfigTemplate(final String groupName, final String appName, final AuthenticatedUser aUser,
-                                                 final String templateName) {
-        LOGGER.info("Upload group app config template {} for app {} in group {} by user {}", templateName, appName, groupName, aUser.getUser().getId());
-        return uploadConfigTemplate(groupName, appName, aUser, templateName, GroupResourceType.WEBAPP);
     }
 
     @Override
