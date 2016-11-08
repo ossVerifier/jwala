@@ -827,7 +827,7 @@ public class ApplicationServiceImplTest {
         applicationService.deployConf(appName, null, testUser);
     }
 
-    @Test (expected = InternalErrorException.class)
+    @Test (expected = ApplicationServiceException.class)
     public void testAppDeployConfJvmStatedFailure() {
         final String appName = "test-app";
         List<String> hosts = new ArrayList<>();

@@ -754,7 +754,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         LOGGER.info("deploying templates to hosts: {}", hostNames.toString());
         historyFacade.write(hostName, group, "Deploy \"" + appName + "\" resources",  EventType.USER_ACTION_INFO, user.getId());
 
-        checkStartedJvms(group, hostNames);
+        checkForRunningJvms(group, hostNames, user);
 
         validateApplicationResources(appName, group);
 
@@ -810,17 +810,25 @@ public class ApplicationServiceImpl implements ApplicationService {
         return hostNames;
     }
 
-    protected void checkStartedJvms(final Group group, final List<String> hostNames) {
-        Map<String, List<String>> errorJvms = new HashMap<>();
-        for (Jvm jvm : group.getJvms()) {
+    // TODO: See if we can implement method chaining for resource deployment which can be used by other resource related service
+    protected void checkForRunningJvms(final Group group, final List<String> hostNames, final User user) {
+        final List<Jvm> runningJvmList = new ArrayList<>();
+        for (final Jvm jvm: group.getJvms()) {
             if (hostNames.contains(jvm.getHostName().toLowerCase()) && jvm.getState().isStartedState()) {
-                errorJvms.put(jvm.getJvmName(), null);
+                runningJvmList.add(jvm);
             }
         }
-        if (!errorJvms.isEmpty()) {
-            LOGGER.error("Jvms {} not stopped, make sure the jvms are stopped before deploying", errorJvms.toString());
-            throw new InternalErrorException(AemFaultType.RESOURCE_DEPLOY_FAILURE,
-                    "Make sure the following JVMs are completely stopped before deploying.", null, errorJvms);
+
+        if (!runningJvmList.isEmpty()) {
+            final String errMsg = "Cannot deploy web app resources to the following JVMs " +
+                    StringUtils.join(runningJvmList, ',') + " since they are currently running!";
+            LOGGER.error(errMsg);
+            for (final Jvm jvm: runningJvmList) {
+                historyFacade.write(Jvm.class.getSimpleName() + " " + jvm.getJvmName(), jvm.getGroups(),
+                        "Web app resource(s) cannot be deployed on a running JVM!",
+                        EventType.SYSTEM_ERROR, user.getId());
+            }
+            throw new ApplicationServiceException(errMsg);
         }
     }
 
