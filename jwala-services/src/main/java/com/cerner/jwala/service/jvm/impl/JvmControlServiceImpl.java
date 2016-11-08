@@ -1,15 +1,11 @@
 package com.cerner.jwala.service.jvm.impl;
 
 import com.cerner.jwala.common.domain.model.fault.AemFaultType;
-import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
 import com.cerner.jwala.common.domain.model.jvm.JvmControlOperation;
 import com.cerner.jwala.common.domain.model.jvm.JvmState;
-import com.cerner.jwala.common.domain.model.jvm.message.JvmHistoryEvent;
 import com.cerner.jwala.common.domain.model.ssh.SshConfiguration;
-import com.cerner.jwala.common.domain.model.state.CurrentState;
-import com.cerner.jwala.common.domain.model.state.StateType;
 import com.cerner.jwala.common.domain.model.user.User;
 import com.cerner.jwala.common.exception.InternalErrorException;
 import com.cerner.jwala.common.exec.*;
@@ -21,8 +17,7 @@ import com.cerner.jwala.control.jvm.command.impl.WindowsJvmPlatformCommandProvid
 import com.cerner.jwala.exception.CommandFailureException;
 import com.cerner.jwala.persistence.jpa.type.EventType;
 import com.cerner.jwala.persistence.service.JvmPersistenceService;
-import com.cerner.jwala.service.HistoryService;
-import com.cerner.jwala.service.MessagingService;
+import com.cerner.jwala.service.HistoryFacade;
 import com.cerner.jwala.service.RemoteCommandExecutorService;
 import com.cerner.jwala.service.RemoteCommandReturnInfo;
 import com.cerner.jwala.service.exception.RemoteCommandExecutorServiceException;
@@ -39,7 +34,6 @@ import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
 public class JvmControlServiceImpl implements JvmControlService {
 
@@ -51,8 +45,7 @@ public class JvmControlServiceImpl implements JvmControlService {
     private static final String FORCED_STOPPED = "FORCED STOPPED";
     private static final String JVM = "JVM";
     private final RemoteCommandExecutor<JvmControlOperation> remoteCommandExecutor;
-    private final HistoryService historyService;
-    private final MessagingService messagingService;
+    private final HistoryFacade historyFacade;
     private final RemoteCommandExecutorService remoteCommandExecutorService;
     private final SshConfiguration sshConfig;
     private final JvmStateService jvmStateService;
@@ -64,18 +57,16 @@ public class JvmControlServiceImpl implements JvmControlService {
 
     public JvmControlServiceImpl(final JvmPersistenceService jvmPersistenceService,
                                  final RemoteCommandExecutor<JvmControlOperation> theExecutor,
-                                 final HistoryService historyService,
-                                 final MessagingService messagingService,
                                  final JvmStateService jvmStateService,
                                  final RemoteCommandExecutorService remoteCommandExecutorService,
-                                 final SshConfiguration sshConfig) {
+                                 final SshConfiguration sshConfig,
+                                 final HistoryFacade historyFacade) {
         this.jvmPersistenceService = jvmPersistenceService;
         remoteCommandExecutor = theExecutor;
-        this.historyService = historyService;
-        this.messagingService = messagingService;
         this.jvmStateService = jvmStateService;
         this.remoteCommandExecutorService = remoteCommandExecutorService;
         this.sshConfig = sshConfig;
+        this.historyFacade = historyFacade;
     }
 
     @Override
@@ -87,20 +78,7 @@ public class JvmControlServiceImpl implements JvmControlService {
             final JvmControlOperation ctrlOp = controlOperation;
             final String event = ctrlOp.getOperationState() == null ? ctrlOp.name() : ctrlOp.getOperationState().toStateLabel();
 
-            historyService.createHistory(getServerName(jvm), new ArrayList<>(jvm.getGroups()), event, EventType.USER_ACTION, aUser.getId());
-
-            // Send a message to the UI about the control operation.
-            // Note: Sending the details of the control operation to a topic will enable the application to display
-            //       the control event to all the UI's opened in different browsers.
-            // TODO: We should also be able to send info to the UI about the other control operations e.g. thread dump, heap dump etc...
-            if (ctrlOp.getOperationState() != null) {
-                messagingService.send(new CurrentState<>(jvm.getId(), ctrlOp.getOperationState(), aUser.getId(), DateTime.now(),
-                        StateType.JVM));
-            } else if (controlOperation.equals(JvmControlOperation.DELETE_SERVICE)
-                    || controlOperation.equals(JvmControlOperation.INSTALL_SERVICE)
-                    || controlOperation.equals(JvmControlOperation.SECURE_COPY)) {
-                messagingService.send(new JvmHistoryEvent(jvm.getId(), controlOperation.name(), aUser.getId(), DateTime.now(), controlOperation));
-            }
+            historyFacade.write(getServerName(jvm), new ArrayList<>(jvm.getGroups()), event, EventType.USER_ACTION_INFO, aUser.getId());
 
             final WindowsJvmPlatformCommandProvider windowsJvmPlatformCommandProvider = new WindowsJvmPlatformCommandProvider();
             final ServiceCommandBuilder serviceCommandBuilder = windowsJvmPlatformCommandProvider.getServiceCommandBuilderFor(controlOperation);
@@ -177,9 +155,8 @@ public class JvmControlServiceImpl implements JvmControlService {
             return commandOutput;
         } catch (final RemoteCommandExecutorServiceException e) {
             LOGGER.error(e.getMessage(), e);
-            historyService.createHistory(getServerName(jvm), new ArrayList<>(jvm.getGroups()), e.getMessage(), EventType.APPLICATION_EVENT,
+            historyFacade.write(getServerName(jvm), new ArrayList<>(jvm.getGroups()), e.getMessage(), EventType.SYSTEM_ERROR,
                     aUser.getId());
-            messagingService.send(new CurrentState<>(jvm.getId(), JvmState.JVM_FAILED, DateTime.now(), StateType.JVM, e.getMessage()));
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE,
                     "CommandFailureException when attempting to control a JVM: " + controlJvmRequest, e);
         }
@@ -193,13 +170,8 @@ public class JvmControlServiceImpl implements JvmControlService {
 
     private void sendMessageToActionEventLog(User aUser, Jvm jvm, String commandOutputReturnDescription) {
         LOGGER.error(commandOutputReturnDescription);
-        historyService.createHistory(getServerName(jvm), new ArrayList<>(jvm.getGroups()), commandOutputReturnDescription,
-                EventType.APPLICATION_EVENT, aUser.getId());
-
-        // Send as a failure to make the UI display it in the history window
-        // TODO: Sending a failure state so that the commandOutputReturnDescription will be shown in the UI is not the proper way to do this, refactor this in the future
-        messagingService.send(new CurrentState<>(jvm.getId(), JvmState.JVM_FAILED, DateTime.now(), StateType.JVM,
-                commandOutputReturnDescription));
+        historyFacade.write(getServerName(jvm), new ArrayList<>(jvm.getGroups()), commandOutputReturnDescription,
+                EventType.SYSTEM_ERROR, aUser.getId());
     }
 
     @Override
@@ -285,8 +257,8 @@ public class JvmControlServiceImpl implements JvmControlService {
         // don't add any usage of the jwala user internal directory to the history
         if (!ApplicationProperties.get("remote.commands.user-scripts").endsWith(fileName)) {
             final String eventDescription = event + " " + fileName;
-            historyService.createHistory(getServerName(jvm), new ArrayList<>(jvm.getGroups()), eventDescription, EventType.USER_ACTION, userId);
-            messagingService.send(new JvmHistoryEvent(jvm.getId(), eventDescription, userId, DateTime.now(), JvmControlOperation.SECURE_COPY));
+            historyFacade.write(getServerName(jvm), new ArrayList<>(jvm.getGroups()), eventDescription,
+                                EventType.USER_ACTION_INFO, userId);
         }
         final String name = jvm.getJvmName();
         final String hostName = jvm.getHostName();
@@ -369,15 +341,5 @@ public class JvmControlServiceImpl implements JvmControlService {
                 new WindowsJvmPlatformCommandProvider(),
                 filename,
                 destPathBackup);
-    }
-
-    @Override
-    public void createJvmHistory(String jvmName, List<Group> groups, String event, EventType eventType, String user) {
-        historyService.createHistory(JVM + " " + jvmName, groups, event, eventType, user);
-    }
-
-    @Override
-    public void sendJvmMessage(Object object) {
-        messagingService.send(object);
     }
 }

@@ -28,6 +28,7 @@ import com.cerner.jwala.persistence.service.ResourceDao;
 import com.cerner.jwala.persistence.service.WebServerPersistenceService;
 import com.cerner.jwala.persistence.service.impl.JpaJvmPersistenceServiceImpl;
 import com.cerner.jwala.persistence.service.impl.ResourceDaoImpl;
+import com.cerner.jwala.service.HistoryFacade;
 import com.cerner.jwala.service.HistoryService;
 import com.cerner.jwala.service.MessagingService;
 import com.cerner.jwala.service.RemoteCommandExecutorService;
@@ -177,15 +178,13 @@ public class AemServiceConfiguration {
     }
 
     @Bean
-    public GroupService getGroupService(final HistoryCrudService historyCrudService, final MessagingService messagingService) {
-        return new GroupServiceImpl(
-                persistenceServiceConfiguration.getGroupPersistenceService(),
-                persistenceServiceConfiguration.getApplicationPersistenceService(),
-                aemCommandExecutorConfig.getRemoteCommandExecutor(),
-                binaryDistributionService,
-                resourceService,
-                getHistoryService(historyCrudService),
-                messagingService);
+    public GroupService getGroupService(final HistoryFacade historyFacade) {
+        return new GroupServiceImpl(persistenceServiceConfiguration.getGroupPersistenceService(),
+                                    persistenceServiceConfiguration.getApplicationPersistenceService(),
+                                    aemCommandExecutorConfig.getRemoteCommandExecutor(),
+                                    binaryDistributionService,
+                                    resourceService,
+                                    historyFacade);
     }
 
     @Bean(name = "jvmService")
@@ -193,11 +192,12 @@ public class AemServiceConfiguration {
                                     final ApplicationService applicationService,
                                     final ResourceService resourceService, final ClientFactoryHelper clientFactoryHelper,
                                     @Value("${spring.messaging.topic.serverStates:/topic/server-states}") final String topicServerStates,
-                                    final JvmControlService jvmControlService) {
+                                    final JvmControlService jvmControlService, final HistoryFacade historyFacade) {
         final JvmPersistenceService jvmPersistenceService = persistenceServiceConfiguration.getJvmPersistenceService();
         return new JvmServiceImpl(jvmPersistenceService, groupService, applicationService,
                 fileManager, messagingTemplate, groupStateNotificationService, resourceService,
-                clientFactoryHelper, topicServerStates, jvmControlService, binaryDistributionService, binaryDistributionLockManager);
+                clientFactoryHelper, topicServerStates, jvmControlService, binaryDistributionService, binaryDistributionLockManager,
+                historyFacade);
     }
 
     @Bean(name = "binaryDistributionLockManager")
@@ -211,10 +211,10 @@ public class AemServiceConfiguration {
                                                             final WebServerService webServerService,
                                                             final JvmService jvmService,
                                                             final ClientFactoryHelper clientFactoryHelper,
-                                                            final MessagingService messagingService,
-                                                            final HistoryService historyService) {
-        return new BalancerManagerServiceImpl(groupService, applicationService, webServerService, jvmService, clientFactoryHelper, messagingService,
-                historyService, new BalancerManagerHtmlParser(), new BalancerManagerXmlParser(jvmService), new BalancerManagerHttpClient());
+                                                            final HistoryFacade historyFacade) {
+        return new BalancerManagerServiceImpl(groupService, applicationService, webServerService, jvmService, clientFactoryHelper,
+                                              new BalancerManagerHtmlParser(), new BalancerManagerXmlParser(jvmService),
+                                              new BalancerManagerHttpClient(), historyFacade);
     }
 
     @Bean(name = "webServerService")
@@ -245,10 +245,11 @@ public class AemServiceConfiguration {
 
     @Bean
     public ApplicationService getApplicationService(final JvmPersistenceService jvmPersistenceService, final GroupService groupService,
-                                                    final HistoryCrudService historyCrudService, final MessagingService messagingService, final ResourceService resourceService) {
+                                                    final HistoryCrudService historyCrudService, final MessagingService messagingService,
+                                                    final ResourceService resourceService, final HistoryFacade historyFacade) {
         return new ApplicationServiceImpl(persistenceServiceConfiguration.getApplicationPersistenceService(),
                 jvmPersistenceService, aemCommandExecutorConfig.getRemoteCommandExecutor(), groupService, null, null,
-                getHistoryService(historyCrudService), messagingService, resourceService, aemCommandExecutorConfig.getRemoteCommandExecutor(), binaryDistributionService);
+                resourceService, aemCommandExecutorConfig.getRemoteCommandExecutor(), binaryDistributionService, historyFacade);
     }
 
     @Bean
@@ -261,10 +262,11 @@ public class AemServiceConfiguration {
                                                   final MessagingService messagingService,
                                                   final JvmStateService jvmStateService,
                                                   final RemoteCommandExecutorService remoteCommandExecutorService,
-                                                  final SshConfiguration sshConfig) {
+                                                  final SshConfiguration sshConfig,
+                                                  final HistoryFacade historyFacade) {
         return new JvmControlServiceImpl(persistenceServiceConfiguration.getJvmPersistenceService(), aemCommandExecutorConfig.getRemoteCommandExecutor(),
-                getHistoryService(historyCrudService), messagingService, jvmStateService, remoteCommandExecutorService,
-                sshConfig);
+                jvmStateService, remoteCommandExecutorService,
+                sshConfig, historyFacade);
     }
 
     @Bean(name = "groupControlService")
@@ -286,12 +288,10 @@ public class AemServiceConfiguration {
     @Bean(name = "webServerControlService")
     public WebServerControlService getWebServerControlService(final WebServerService webServerService,
                                                               final RemoteCommandExecutor<WebServerControlOperation> commandExecutor,
-                                                              final HistoryService historyService,
-                                                              final MessagingService messagingService,
                                                               final RemoteCommandExecutorService remoteCommandExecutorService,
-                                                              final SshConfiguration sshConfig) {
-        return new WebServerControlServiceImpl(webServerService, commandExecutor, historyService,
-                messagingService, remoteCommandExecutorService, sshConfig);
+                                                              final SshConfiguration sshConfig, final HistoryFacade historyFacade) {
+        return new WebServerControlServiceImpl(webServerService, commandExecutor, remoteCommandExecutorService, sshConfig,
+                                               historyFacade);
     }
 
     @Bean(name = "webServerCommandService")
@@ -466,5 +466,10 @@ public class AemServiceConfiguration {
     @Bean(name = "binaryDistributionService")
     public BinaryDistributionService getBinaryDistributionService(BinaryDistributionControlService binaryDistributionControlService) {
         return new BinaryDistributionServiceImpl(binaryDistributionControlService, getBinaryDistributionLockManager());
+    }
+
+    @Bean
+    public HistoryFacade getHistoryFacade(final HistoryService historyService, final MessagingService messagingService) {
+        return new HistoryFacade(historyService, messagingService);
     }
 }

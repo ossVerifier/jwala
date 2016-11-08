@@ -1,26 +1,19 @@
 package com.cerner.jwala.service.resource.impl;
 
 import com.cerner.jwala.common.domain.model.app.Application;
-import com.cerner.jwala.common.domain.model.app.ApplicationState;
 import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
-import com.cerner.jwala.common.domain.model.jvm.JvmState;
 import com.cerner.jwala.common.domain.model.resource.ResourceGroup;
-import com.cerner.jwala.common.domain.model.state.CurrentState;
-import com.cerner.jwala.common.domain.model.state.StateType;
 import com.cerner.jwala.common.domain.model.webserver.WebServer;
-import com.cerner.jwala.common.domain.model.webserver.WebServerReachableState;
 import com.cerner.jwala.persistence.jpa.type.EventType;
 import com.cerner.jwala.persistence.service.ApplicationPersistenceService;
 import com.cerner.jwala.persistence.service.GroupPersistenceService;
 import com.cerner.jwala.persistence.service.JvmPersistenceService;
 import com.cerner.jwala.persistence.service.WebServerPersistenceService;
-import com.cerner.jwala.service.HistoryService;
-import com.cerner.jwala.service.MessagingService;
+import com.cerner.jwala.service.HistoryFacade;
 import com.cerner.jwala.service.resource.ResourceContentGeneratorService;
 import com.cerner.jwala.template.ResourceFileGenerator;
 import com.cerner.jwala.template.exception.ResourceFileGeneratorException;
-import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,22 +37,19 @@ public class ResourceContentGeneratorServiceImpl implements ResourceContentGener
     private final WebServerPersistenceService webServerPersistenceService;
     private final JvmPersistenceService jvmPersistenceService;
     private final ApplicationPersistenceService applicationPersistenceService;
-    private final HistoryService historyService;
-    private final MessagingService messagingService;
+    private final HistoryFacade historyFacade;
 
     @Autowired
     public ResourceContentGeneratorServiceImpl(final GroupPersistenceService groupPersistenceService,
                                                final WebServerPersistenceService webServerPersistenceService,
                                                final JvmPersistenceService jvmPersistenceService,
                                                final ApplicationPersistenceService applicationPersistenceService,
-                                               final HistoryService historyService,
-                                               final MessagingService messagingService) {
+                                               final HistoryFacade historyFacade) {
         this.groupPersistenceService = groupPersistenceService;
         this.webServerPersistenceService = webServerPersistenceService;
         this.jvmPersistenceService = jvmPersistenceService;
         this.applicationPersistenceService = applicationPersistenceService;
-        this.historyService = historyService;
-        this.messagingService = messagingService;
+        this.historyFacade = historyFacade;
     }
 
     @Override
@@ -73,18 +63,15 @@ public class ResourceContentGeneratorServiceImpl implements ResourceContentGener
             if (!resourceGeneratorType.equals(ResourceGeneratorType.PREVIEW)) {
                 if (entity instanceof WebServer) {
                     WebServer webServer = (WebServer) entity;
-                    messagingService.send(new CurrentState<>(webServer.getId(), WebServerReachableState.WS_FAILED, DateTime.now(), StateType.WEB_SERVER, logMessage, userName));
-                    historyService.createHistory("Web Server " + webServer.getName(), new ArrayList<Group>(webServer.getGroups()), logMessage, EventType.APPLICATION_EVENT, userName);
+                    historyFacade.write("Web Server " + webServer.getName(), new ArrayList<>(webServer.getGroups()), logMessage, EventType.SYSTEM_ERROR, userName);
                 } else if (entity instanceof Jvm) {
                     Jvm jvm = (Jvm) entity;
-                    messagingService.send(new CurrentState<>(jvm.getId(), JvmState.JVM_FAILED, DateTime.now(), StateType.JVM, logMessage, userName));
-                    historyService.createHistory("JVM " + jvm.getJvmName(), new ArrayList<Group>(jvm.getGroups()), logMessage, EventType.APPLICATION_EVENT, userName);
+                    historyFacade.write("JVM " + jvm.getJvmName(), new ArrayList<>(jvm.getGroups()), logMessage, EventType.SYSTEM_ERROR, userName);
                 } else {
                     Application application = (Application) entity;
-                    messagingService.send(new CurrentState<>(application.getId(), ApplicationState.FAILED, DateTime.now(), StateType.APPLICATION, logMessage, userName));
-                    ArrayList<Group> groups = new ArrayList<Group>();
+                    ArrayList<Group> groups = new ArrayList<>();
                     groups.add(application.getGroup());
-                    historyService.createHistory("App " + application.getName(), groups, logMessage, EventType.APPLICATION_EVENT, userName);
+                    historyFacade.write("App " + application.getName(), groups, logMessage, EventType.SYSTEM_ERROR, userName);
                 }
             }
             throw new ResourceFileGeneratorException(logMessage, e);

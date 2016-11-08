@@ -2,11 +2,9 @@ package com.cerner.jwala.service.impl;
 
 import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.id.Identifier;
-import com.cerner.jwala.persistence.jpa.domain.JpaGroup;
 import com.cerner.jwala.persistence.jpa.service.HistoryCrudService;
 import com.cerner.jwala.persistence.jpa.type.EventType;
 import com.cerner.jwala.service.HistoryService;
-import com.cerner.jwala.service.impl.HistoryServiceImpl;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -43,9 +41,9 @@ public class HistoryServiceImplTest {
     public void testWrite() {
         final List<Group> groups = new ArrayList<>();
         groups.add(new Group(Identifier.<Group>id(1L), "testGroup"));
-        historyService.createHistory("any", groups, "Testing...", EventType.USER_ACTION, "user");
+        historyService.createHistory("any", groups, "Testing...", EventType.USER_ACTION_INFO, "user");
         verify(mockHistoryCrudService).createHistory(eq("any"), any(Group.class), eq("Testing..."),
-                eq(EventType.USER_ACTION), eq("user"));
+                eq(EventType.USER_ACTION_INFO), eq("user"));
     }
 
     @Test

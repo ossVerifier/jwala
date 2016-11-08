@@ -7,8 +7,6 @@ import com.cerner.jwala.common.domain.model.fault.AemFaultType;
 import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
-import com.cerner.jwala.common.domain.model.jvm.JvmControlOperation;
-import com.cerner.jwala.common.domain.model.jvm.message.JvmHistoryEvent;
 import com.cerner.jwala.common.domain.model.resource.*;
 import com.cerner.jwala.common.domain.model.user.User;
 import com.cerner.jwala.common.exception.InternalErrorException;
@@ -29,8 +27,7 @@ import com.cerner.jwala.persistence.jpa.domain.JpaJvm;
 import com.cerner.jwala.persistence.jpa.type.EventType;
 import com.cerner.jwala.persistence.service.ApplicationPersistenceService;
 import com.cerner.jwala.persistence.service.JvmPersistenceService;
-import com.cerner.jwala.service.HistoryService;
-import com.cerner.jwala.service.MessagingService;
+import com.cerner.jwala.service.HistoryFacade;
 import com.cerner.jwala.service.app.ApplicationService;
 import com.cerner.jwala.service.app.PrivateApplicationService;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionService;
@@ -44,7 +41,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
-import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -93,8 +89,9 @@ public class ApplicationServiceImpl implements ApplicationService {
     private final BinaryDistributionService binaryDistributionService;
 
     private GroupService groupService;
-    private final HistoryService historyService;
-    private final MessagingService messagingService;
+
+    private final HistoryFacade historyFacade;
+
     private static final String UNZIP_EXE = "unzip.exe";
 
     public ApplicationServiceImpl(final ApplicationPersistenceService applicationPersistenceService,
@@ -103,19 +100,17 @@ public class ApplicationServiceImpl implements ApplicationService {
                                   final GroupService groupService,
                                   final WebArchiveManager webArchiveManager,
                                   final PrivateApplicationService privateApplicationService,
-                                  final HistoryService historyService,
-                                  final MessagingService messagingService,
                                   final ResourceService resourceService,
                                   final RemoteCommandExecutorImpl remoteCommandExecutor,
-                                  final BinaryDistributionService binaryDistributionService) {
+                                  final BinaryDistributionService binaryDistributionService,
+                                  final HistoryFacade historyFacade) {
         this.applicationPersistenceService = applicationPersistenceService;
         this.jvmPersistenceService = jvmPersistenceService;
         this.applicationCommandExecutor = applicationCommandService;
         this.groupService = groupService;
         this.webArchiveManager = webArchiveManager;
         this.privateApplicationService = privateApplicationService;
-        this.historyService = historyService;
-        this.messagingService = messagingService;
+        this.historyFacade = historyFacade;
         this.resourceService = resourceService;
         this.remoteCommandExecutor = remoteCommandExecutor;
         this.binaryDistributionService = binaryDistributionService;
@@ -287,8 +282,7 @@ public class ApplicationServiceImpl implements ApplicationService {
             final String eventDescription = WindowsJvmNetOperation.SECURE_COPY.name() + " " + deployFileName;
             final String id = user.getId();
 
-            historyService.createHistory("JVM " + jvm.getJvmName(), new ArrayList<Group>(jvm.getGroups()), eventDescription, EventType.USER_ACTION, id);
-            messagingService.send(new JvmHistoryEvent(jvm.getId(), eventDescription, id, DateTime.now(), JvmControlOperation.SECURE_COPY));
+            historyFacade.write("JVM " + jvm.getJvmName(), new ArrayList<>(jvm.getGroups()), eventDescription, EventType.USER_ACTION_INFO, id);
 
             final String deployJvmName = jvm.getJvmName();
             final String hostName = jvm.getHostName();
@@ -756,9 +750,11 @@ public class ApplicationServiceImpl implements ApplicationService {
         final Application application = applicationPersistenceService.getApplication(appName);
         final Group group = groupService.getGroup(application.getGroup().getId());
         final List<String> hostNames = getDeployHostList(hostName, group, application);
-        LOGGER.info("deploying templates to hosts: {}", hostNames.toString());
 
-        checkStartedJvms(group, hostNames);
+        LOGGER.info("deploying templates to hosts: {}", hostNames.toString());
+        historyFacade.write("", group, "Deploy \"" + appName + "\" resources",  EventType.USER_ACTION_INFO, user.getId());
+
+        checkForRunningJvms(group, hostNames, user);
 
         validateApplicationResources(appName, group);
 
@@ -814,17 +810,30 @@ public class ApplicationServiceImpl implements ApplicationService {
         return hostNames;
     }
 
-    protected void checkStartedJvms(final Group group, final List<String> hostNames) {
-        Map<String, List<String>> errorJvms = new HashMap<>();
-        for (Jvm jvm : group.getJvms()) {
+    // TODO: See if we can implement method chaining for resource deployment which can be used by other resource related service
+    protected void checkForRunningJvms(final Group group, final List<String> hostNames, final User user) {
+        final List<Jvm> runningJvmList = new ArrayList<>();
+        final StringBuilder runningJvmNamesBuilder = new StringBuilder();
+        for (final Jvm jvm: group.getJvms()) {
             if (hostNames.contains(jvm.getHostName().toLowerCase()) && jvm.getState().isStartedState()) {
-                errorJvms.put(jvm.getJvmName(), null);
+                runningJvmList.add(jvm);
+                if (runningJvmNamesBuilder.length() > 0) {
+                    runningJvmNamesBuilder.append(", ");
+                }
+                runningJvmNamesBuilder.append(jvm.getJvmName());
             }
         }
-        if (!errorJvms.isEmpty()) {
-            LOGGER.error("Jvms {} not stopped, make sure the jvms are stopped before deploying", errorJvms.toString());
-            throw new InternalErrorException(AemFaultType.RESOURCE_DEPLOY_FAILURE,
-                    "Make sure the following JVMs are completely stopped before deploying.", null, errorJvms);
+
+        if (!runningJvmList.isEmpty()) {
+            final String errMsg = "Cannot deploy web app resources to the following JVMs " +
+                    runningJvmNamesBuilder.toString() + " since they are currently running!";
+            LOGGER.error(errMsg);
+            for (final Jvm jvm: runningJvmList) {
+                historyFacade.write(Jvm.class.getSimpleName() + " " + jvm.getJvmName(), jvm.getGroups(),
+                        "Web app resource(s) cannot be deployed on a running JVM!",
+                        EventType.SYSTEM_ERROR, user.getId());
+            }
+            throw new ApplicationServiceException(errMsg);
         }
     }
 

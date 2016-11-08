@@ -14,8 +14,8 @@ import com.cerner.jwala.control.command.RemoteCommandExecutorImpl;
 import com.cerner.jwala.control.configuration.AemSshConfig;
 import com.cerner.jwala.files.FileManager;
 import com.cerner.jwala.files.FilesConfiguration;
-import com.cerner.jwala.files.RepositoryService;
 import com.cerner.jwala.files.JwalaPath;
+import com.cerner.jwala.files.RepositoryService;
 import com.cerner.jwala.files.impl.FileManagerImpl;
 import com.cerner.jwala.files.impl.LocalFileSystemRepositoryServiceImpl;
 import com.cerner.jwala.files.resources.ResourceTypeDeserializer;
@@ -29,8 +29,7 @@ import com.cerner.jwala.persistence.service.JvmPersistenceService;
 import com.cerner.jwala.persistence.service.ResourceDao;
 import com.cerner.jwala.persistence.service.impl.JpaApplicationPersistenceServiceImpl;
 import com.cerner.jwala.persistence.service.impl.JpaJvmPersistenceServiceImpl;
-import com.cerner.jwala.service.HistoryService;
-import com.cerner.jwala.service.MessagingService;
+import com.cerner.jwala.service.HistoryFacade;
 import com.cerner.jwala.service.app.ApplicationCommandService;
 import com.cerner.jwala.service.app.ApplicationService;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionService;
@@ -79,10 +78,7 @@ public class ApplicationServiceImplIntegrationTest {
     private GroupService groupService;
 
     @Mock
-    private HistoryService historyService;
-
-    @Mock
-    private MessagingService messagingService;
+    private HistoryFacade mockHistoryFacade;
 
     @Mock
     private ResourceDao mockResourceDao;
@@ -210,9 +206,8 @@ public class ApplicationServiceImplIntegrationTest {
                 groupService,
                 null,
                 null,
-                historyService,
-                messagingService, mockResourceService,
-                remoteCommandExecutorImpl, binaryDistributionService);
+                mockResourceService,
+                remoteCommandExecutorImpl, binaryDistributionService, mockHistoryFacade);
     }
 
     @After

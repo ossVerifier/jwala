@@ -17,7 +17,7 @@ import com.cerner.jwala.control.command.RemoteCommandExecutorImpl;
 import com.cerner.jwala.files.WebArchiveManager;
 import com.cerner.jwala.persistence.jpa.domain.resource.config.template.ConfigTemplate;
 import com.cerner.jwala.persistence.service.*;
-import com.cerner.jwala.service.HistoryService;
+import com.cerner.jwala.service.HistoryFacade;
 import com.cerner.jwala.service.MessagingService;
 import com.cerner.jwala.service.VerificationBehaviorSupport;
 import com.cerner.jwala.service.app.PrivateApplicationService;
@@ -87,7 +87,7 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
     private MessagingService mockMessagingService;
 
     @Mock
-    private HistoryService mockHistoryService;
+    private HistoryFacade mockHistoryFacade;
 
     private ResourceContentGeneratorService resourceContentGeneratorService;
 
@@ -114,7 +114,7 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
         mockAppPersistenceService = mock(ApplicationPersistenceService.class);
 
         resourceContentGeneratorService = new ResourceContentGeneratorServiceImpl(mockGroupPesistenceService, mockWebServerPersistenceService, mockJvmPersistenceService,
-                mockAppPersistenceService, mockHistoryService, mockMessagingService);
+                mockAppPersistenceService, mockHistoryFacade);
 
         resourceService = new ResourceServiceImpl(mockResourcePersistenceService, mockGroupPesistenceService,
                 mockAppPersistenceService, mockJvmPersistenceService, mockWebServerPersistenceService,
@@ -124,7 +124,7 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
         groupService = new GroupServiceImpl(groupPersistenceService,
                 applicationPersistenceService,
                 remoteCommandExecutor, binaryDistributionService,
-                resourceService, mockHistoryService, mockMessagingService);
+                resourceService, mockHistoryFacade);
         user = new User("unused");
 
     }

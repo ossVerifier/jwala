@@ -13,7 +13,7 @@ import com.cerner.jwala.common.request.jvm.UploadJvmConfigTemplateRequest;
 import com.cerner.jwala.common.request.webserver.UploadWebServerTemplateRequest;
 import com.cerner.jwala.persistence.jpa.domain.JpaJvm;
 import com.cerner.jwala.persistence.service.*;
-import com.cerner.jwala.service.HistoryService;
+import com.cerner.jwala.service.HistoryFacade;
 import com.cerner.jwala.service.MessagingService;
 import com.cerner.jwala.service.resource.ResourceService;
 import com.cerner.jwala.service.resource.impl.ResourceServiceImpl;
@@ -290,7 +290,7 @@ public class ResourceHandlerConfigurationTest {
         public static final JvmPersistenceService MOCK_JVM_PERSISTENCE_SERVICE = mock(JvmPersistenceService.class);
         public static final ApplicationPersistenceService MOCK_APPLICATION_PERSISTENCE_SERVICE = mock(ApplicationPersistenceService.class);
         public static final MessagingService MOCK_MESSAGING_SERICE = mock(MessagingService.class);
-        public static final HistoryService MOCK_HISTORY_SERVICE = mock(HistoryService.class);
+        public static final HistoryFacade HISTORY_FACADE = mock(HistoryFacade.class);
 
         @Bean
         public ResourceDao resourceDao() {
@@ -327,6 +327,6 @@ public class ResourceHandlerConfigurationTest {
         }
 
         @Bean
-        public static HistoryService getMockHistoryService() { return MOCK_HISTORY_SERVICE;}
+        public static HistoryFacade getHistoryFacade() { return HISTORY_FACADE;}
     }
 }

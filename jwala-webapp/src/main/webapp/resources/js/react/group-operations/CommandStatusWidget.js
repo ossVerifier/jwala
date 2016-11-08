@@ -66,7 +66,8 @@ var CommandStatusWidget = React.createClass({
                           status["userId"] = data[i].createBy;
                           status["asOf"] = data[i].createDate;
                           status["message"] = data[i].event;
-                          self.push(status, data[i].eventType === "USER_ACTION" ? "action-status-font" : "error-status-font",
+                          self.push(status, data[i].eventType === "APPLICATION_EVENT" || data[i].eventType ===  "SYSTEM_ERROR"
+                                                                      ? "error-status-font" : "action-status-font",
                               (i === 0));
                           statusArray.push(status);
                       }

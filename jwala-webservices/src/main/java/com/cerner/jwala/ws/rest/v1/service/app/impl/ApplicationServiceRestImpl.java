@@ -277,8 +277,13 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
     @Override
     public Response deployConf(final String appName, final AuthenticatedUser aUser, final String hostName) {
         LOGGER.info("Deploying application {} initiated by user {}", appName, aUser.getUser().getId());
-        service.deployConf(appName, hostName, aUser.getUser());
-        return ResponseBuilder.ok(appName);
+        try {
+            service.deployConf(appName, hostName, aUser.getUser());
+            return ResponseBuilder.ok(appName);
+        } catch (final ApplicationServiceException e) {
+            return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR,
+                    new FaultCodeException(AemFaultType.RESOURCE_DEPLOY_FAILURE, e.getMessage(), e));
+        }
     }
 
     @Override

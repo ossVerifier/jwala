@@ -9,7 +9,6 @@ import com.cerner.jwala.common.domain.model.group.GroupState;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
 import com.cerner.jwala.common.domain.model.jvm.JvmControlOperation;
-import com.cerner.jwala.common.domain.model.jvm.message.JvmHistoryEvent;
 import com.cerner.jwala.common.domain.model.resource.ContentType;
 import com.cerner.jwala.common.domain.model.resource.ResourceGroup;
 import com.cerner.jwala.common.domain.model.resource.ResourceTemplateMetaData;
@@ -29,8 +28,7 @@ import com.cerner.jwala.exception.CommandFailureException;
 import com.cerner.jwala.persistence.jpa.type.EventType;
 import com.cerner.jwala.persistence.service.ApplicationPersistenceService;
 import com.cerner.jwala.persistence.service.GroupPersistenceService;
-import com.cerner.jwala.service.HistoryService;
-import com.cerner.jwala.service.MessagingService;
+import com.cerner.jwala.service.HistoryFacade;
 import com.cerner.jwala.service.app.impl.DeployApplicationConfException;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionService;
 import com.cerner.jwala.service.exception.GroupServiceException;
@@ -39,7 +37,6 @@ import com.cerner.jwala.service.resource.ResourceService;
 import com.cerner.jwala.service.resource.impl.ResourceGeneratorType;
 import com.cerner.jwala.template.exception.ResourceFileGeneratorException;
 import org.apache.commons.io.FilenameUtils;
-import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
@@ -63,8 +60,7 @@ public class GroupServiceImpl implements GroupService {
     private final BinaryDistributionService binaryDistributionService;
     private ApplicationPersistenceService applicationPersistenceService;
     private ResourceService resourceService;
-    private final HistoryService historyService;
-    private final MessagingService messagingService;
+    private HistoryFacade historyFacade;
 
     private static final String GENERATED_RESOURCE_DIR = "paths.generated.resource.dir";
     private static final Logger LOGGER = LoggerFactory.getLogger(GroupServiceImpl.class);
@@ -75,15 +71,13 @@ public class GroupServiceImpl implements GroupService {
                             final RemoteCommandExecutorImpl remoteCommandExecutor,
                             final BinaryDistributionService binaryDistributionService,
                             final ResourceService resourceService,
-                            final HistoryService historyService,
-                            final MessagingService messagingService) {
+                            final HistoryFacade historyFacade) {
         this.groupPersistenceService = groupPersistenceService;
         this.applicationPersistenceService = applicationPersistenceService;
         this.remoteCommandExecutor = remoteCommandExecutor;
         this.binaryDistributionService = binaryDistributionService;
         this.resourceService = resourceService;
-        this.historyService = historyService;
-        this.messagingService = messagingService;
+        this.historyFacade = historyFacade;
     }
 
     @Override
@@ -557,8 +551,8 @@ public class GroupServiceImpl implements GroupService {
         final String event = JvmControlOperation.SECURE_COPY.name() + " " + fileName;
         final Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         final String userName = null != authentication ? authentication.getName() : "";
-        historyService.createHistory(host, groupList, event, EventType.USER_ACTION, userName);
-        messagingService.send(new JvmHistoryEvent(id, event, userName, DateTime.now(), JvmControlOperation.SECURE_COPY));
+
+        historyFacade.write(host, groupList, event, EventType.USER_ACTION_INFO, userName);
 
         return remoteCommandExecutor.executeRemoteCommand(
                 jvmName,

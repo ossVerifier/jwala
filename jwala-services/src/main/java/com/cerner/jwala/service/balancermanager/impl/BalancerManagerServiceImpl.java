@@ -7,12 +7,10 @@ import com.cerner.jwala.common.domain.model.fault.AemFaultType;
 import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
 import com.cerner.jwala.common.domain.model.webserver.WebServer;
-import com.cerner.jwala.common.domain.model.webserver.message.WebServerHistoryEvent;
 import com.cerner.jwala.common.exception.ApplicationException;
 import com.cerner.jwala.common.exception.InternalErrorException;
 import com.cerner.jwala.persistence.jpa.type.EventType;
-import com.cerner.jwala.service.HistoryService;
-import com.cerner.jwala.service.MessagingService;
+import com.cerner.jwala.service.HistoryFacade;
 import com.cerner.jwala.service.app.ApplicationService;
 import com.cerner.jwala.service.balancermanager.BalancerManagerService;
 import com.cerner.jwala.service.balancermanager.impl.xml.data.Manager;
@@ -44,8 +42,7 @@ public class BalancerManagerServiceImpl implements BalancerManagerService {
     private JvmService jvmService;
 
     private ClientFactoryHelper clientFactoryHelper;
-    private MessagingService messagingService;
-    private HistoryService historyService;
+    private HistoryFacade historyFacade;
     private BalancerManagerHtmlParser balancerManagerHtmlParser;
     private BalancerManagerXmlParser balancerManagerXmlParser;
     private BalancerManagerHttpClient balancerManagerHttpClient;
@@ -59,18 +56,16 @@ public class BalancerManagerServiceImpl implements BalancerManagerService {
                                       final WebServerService webServerService,
                                       final JvmService jvmService,
                                       final ClientFactoryHelper clientFactoryHelper,
-                                      final MessagingService messagingService,
-                                      final HistoryService historyService,
                                       final BalancerManagerHtmlParser balancerManagerHtmlParser,
                                       final BalancerManagerXmlParser balancerManagerXmlParser,
-                                      final BalancerManagerHttpClient balancerManagerHttpClient) {
+                                      final BalancerManagerHttpClient balancerManagerHttpClient,
+                                      final HistoryFacade historyFacade) {
         this.groupService = groupService;
         this.applicationService = applicationService;
         this.webServerService = webServerService;
         this.jvmService = jvmService;
         this.clientFactoryHelper = clientFactoryHelper;
-        this.messagingService = messagingService;
-        this.historyService = historyService;
+        this.historyFacade = historyFacade;
         this.balancerManagerHtmlParser = balancerManagerHtmlParser;
         this.balancerManagerXmlParser = balancerManagerXmlParser;
         this.balancerManagerHttpClient = balancerManagerHttpClient;
@@ -403,8 +398,8 @@ public class BalancerManagerServiceImpl implements BalancerManagerService {
 
     public void sendMessage(final WebServer webServer, final String message) {
         LOGGER.info(message);
-        messagingService.send(new WebServerHistoryEvent(webServer.getId(), "history", getUser(), message));
-        historyService.createHistory(webServer.getName(), new ArrayList<>(webServer.getGroups()), message, EventType.USER_ACTION, getUser());
+        historyFacade.write(webServer.getName(), new ArrayList<>(webServer.getGroups()), message, EventType.USER_ACTION_INFO, getUser());
+
     }
 
     public List<NameValuePair> getNvp(final String worker, final String balancerName, final String nonce) {

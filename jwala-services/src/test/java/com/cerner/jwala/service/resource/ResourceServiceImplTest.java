@@ -34,8 +34,7 @@ import com.cerner.jwala.persistence.jpa.domain.JpaJvm;
 import com.cerner.jwala.persistence.jpa.domain.resource.config.template.ConfigTemplate;
 import com.cerner.jwala.persistence.jpa.type.EventType;
 import com.cerner.jwala.persistence.service.*;
-import com.cerner.jwala.service.HistoryService;
-import com.cerner.jwala.service.MessagingService;
+import com.cerner.jwala.service.HistoryFacade;
 import com.cerner.jwala.service.app.ApplicationService;
 import com.cerner.jwala.service.app.PrivateApplicationService;
 import com.cerner.jwala.service.exception.ResourceServiceException;
@@ -49,7 +48,6 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.internal.verification.Times;
@@ -114,10 +112,7 @@ public class ResourceServiceImplTest {
     private RemoteCommandExecutorImpl mockRemoteCommandExector;
 
     @Mock
-    private MessagingService mockMessagingService;
-
-    @Mock
-    private HistoryService mockHistoryService;
+    private HistoryFacade mockHistoryFacade;
 
     Map<String, ReentrantReadWriteLock> resourceWriteLockMap = new HashMap<>();
 
@@ -129,7 +124,7 @@ public class ResourceServiceImplTest {
         System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, new File(".").getAbsolutePath() + "/src/test/resources");
 
         ResourceContentGeneratorService resourceContentGeneratorService = new ResourceContentGeneratorServiceImpl(mockGroupPesistenceService,
-                mockWebServerPersistenceService, mockJvmPersistenceService, mockAppPersistenceService, mockHistoryService, mockMessagingService);
+                mockWebServerPersistenceService, mockJvmPersistenceService, mockAppPersistenceService, mockHistoryFacade);
 
         resourceService = new ResourceServiceImpl(mockResourcePersistenceService, mockGroupPesistenceService,
                 mockAppPersistenceService, mockJvmPersistenceService, mockWebServerPersistenceService,
@@ -938,8 +933,7 @@ public class ResourceServiceImplTest {
         when(mockResourceHandler.fetchResource(eq(resourceIdentifierSetenvBat))).thenReturn(configTemplateSetenvBat);
 
         resourceService.validateAllResourcesForGeneration(resourceIdentifier);
-        verify(mockHistoryService, never()).createHistory(anyString(), anyList(), anyString(), any(EventType.class), anyString());
-        verify(mockMessagingService, never()).send(Matchers.anyObject());
+        verify(mockHistoryFacade, never()).write(anyString(), anyList(), anyString(), any(EventType.class), anyString());
     }
 
     @Test
@@ -997,8 +991,7 @@ public class ResourceServiceImplTest {
         }
         assertNotNull(iee);
         final Map<String, List<String>> errorDetails = iee.getErrorDetails();
-        verify(mockHistoryService, times(6)).createHistory(anyString(), anyList(), anyString(), any(EventType.class), anyString());
-        verify(mockMessagingService, times(6)).send(Matchers.anyObject());
+        verify(mockHistoryFacade, times(6)).write(anyString(), anyList(), anyString(), any(EventType.class), anyString());
         assertEquals(1, errorDetails.size());
         final List<String> exceptionList = errorDetails.get("test-jvm-name");
         assertEquals(6, exceptionList.size());
@@ -1029,8 +1022,7 @@ public class ResourceServiceImplTest {
         resourceService.validateSingleResourceForGeneration(resourceIdentifier);
 
 
-        verify(mockHistoryService, never()).createHistory(anyString(), anyList(), anyString(), any(EventType.class), anyString());
-        verify(mockMessagingService, never()).send(Matchers.anyObject());
+        verify(mockHistoryFacade, never()).write(anyString(), anyList(), anyString(), any(EventType.class), anyString());
     }
 
     @Test

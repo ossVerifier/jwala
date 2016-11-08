@@ -813,7 +813,7 @@ public class ResourceServiceImpl implements ResourceService {
         // don't add any usage of the Jwala user internal directory to the history
         /*if (!AemControl.Properties.USER_JWALA_SCRIPTS_PATH.getValue().endsWith(fileName)) {
             final String eventDescription = "SECURE COPY " + fileName;
-            historyService.createHistory(hostName, new ArrayList<>(*//*jvm.getGroups()*//*), eventDescription, EventType.USER_ACTION, userId);
+            historyService.createHistory(hostName, new ArrayList<>(*//*jvm.getGroups()*//*), eventDescription, EventType.USER_ACTION_INFO, userId);
             messagingService.send(new JvmHistoryEvent(jvm.getId(), eventDescription, userId, DateTime.now(), JvmControlOperation.SECURE_COPY));
         }*/
 
