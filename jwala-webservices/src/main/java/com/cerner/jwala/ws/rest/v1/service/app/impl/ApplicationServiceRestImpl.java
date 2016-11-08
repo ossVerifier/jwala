@@ -282,7 +282,7 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
             return ResponseBuilder.ok(appName);
         } catch (final ApplicationServiceException e) {
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR,
-                    new FaultCodeException(AemFaultType.DUPLICATE_APPLICATION, e.getMessage(), e));
+                    new FaultCodeException(AemFaultType.RESOURCE_DEPLOY_FAILURE, e.getMessage(), e));
         }
     }
 
