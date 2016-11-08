@@ -813,27 +813,23 @@ public class ApplicationServiceImpl implements ApplicationService {
     // TODO: See if we can implement method chaining for resource deployment which can be used by other resource related service
     protected void checkForRunningJvms(final Group group, final List<String> hostNames, final User user) {
         final List<Jvm> runningJvmList = new ArrayList<>();
-        final StringBuilder runningJvmNamesBuilder = new StringBuilder();
+        final List<String> runningJvmNameList = new ArrayList<>();
         for (final Jvm jvm: group.getJvms()) {
             if (hostNames.contains(jvm.getHostName().toLowerCase()) && jvm.getState().isStartedState()) {
                 runningJvmList.add(jvm);
-                if (runningJvmNamesBuilder.length() > 0) {
-                    runningJvmNamesBuilder.append(", ");
-                }
-                runningJvmNamesBuilder.append(jvm.getJvmName());
+                runningJvmNameList.add(jvm.getJvmName());
             }
         }
 
         if (!runningJvmList.isEmpty()) {
-            final String errMsg = "Cannot deploy web app resources to the following JVMs " +
-                    runningJvmNamesBuilder.toString() + " since they are currently running!";
-            LOGGER.error(errMsg);
+            final String errMsg = "Make sure the following JVMs are completely stopped before deploying.";
+            LOGGER.error(errMsg + " {}", runningJvmNameList);
             for (final Jvm jvm: runningJvmList) {
                 historyFacade.write(Jvm.class.getSimpleName() + " " + jvm.getJvmName(), jvm.getGroups(),
                         "Web app resource(s) cannot be deployed on a running JVM!",
                         EventType.SYSTEM_ERROR, user.getId());
             }
-            throw new ApplicationServiceException(errMsg);
+            throw new ApplicationServiceException(AemFaultType.RESOURCE_DEPLOY_FAILURE, errMsg, runningJvmNameList);
         }
     }
 
