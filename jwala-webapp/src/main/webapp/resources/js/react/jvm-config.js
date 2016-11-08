@@ -47,8 +47,7 @@ var JvmConfig = React.createClass({
                         <tr>
                             <td>
                                 <div>
-                                    <JvmConfigDataTable ref="jvmConfigDataTable"
-                                                        data={this.state.jvmTableData}
+                                    <JvmConfigDataTable data={this.state.jvmTableData}
                                                         selectItemCallback={this.selectItemCallback}
                                                         editCallback={this.editCallback}
                                                         noUpdateWhen={this.state.showModalFormAddDialog ||
@@ -111,7 +110,6 @@ var JvmConfig = React.createClass({
                                             this.refs.jvmAddForm.state.userName,
                                             this.refs.jvmAddForm.state.encryptedPassword,
                                             function(){
-                                                self.refs.jvmConfigDataTable.getDataTableWrapper().deselectAllRows();
                                                 self.selectedJvm = null;
                                                 self.refreshData({showModalFormAddDialog:false});
                                             },
@@ -497,7 +495,6 @@ var JvmConfigDataTable = React.createClass({
                         {sTitle:"AJP", mData:"ajpPort"},
                         {sTitle:"Username", mData: "userName"}];
         return <JwalaDataTable tableId="jvm-config-datatable"
-                               ref="dataTableWrapper"
                                tableDef={tableDef}
                                data={this.props.data}
                                selectItemCallback={this.props.selectItemCallback}
@@ -511,8 +508,5 @@ var JvmConfigDataTable = React.createClass({
                 $(this.getDOMNode()).click(oData, self.props.editCallback);
             });
         };
-   },
-   getDataTableWrapper: function() {
-       return this.refs.dataTableWrapper;
    }
 });
