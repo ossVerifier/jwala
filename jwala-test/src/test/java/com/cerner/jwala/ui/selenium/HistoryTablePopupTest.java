@@ -35,9 +35,9 @@ public class HistoryTablePopupTest {
 
     @Test
     public void testHistoryTablePopup() throws Exception {
-        driver.get(baseUrl + "/toc/login");
-        driver.findElement(By.id("userName")).sendKeys("jwala");
-        driver.findElement(By.id("password")).sendKeys("jwala");
+        driver.get(baseUrl + "/login");
+        driver.findElement(By.id("userName")).sendKeys(properties.getProperty("jwala.user.name"));
+        driver.findElement(By.id("password")).sendKeys(properties.getProperty("jwala.user.password"));
         driver.findElement(By.cssSelector("input[type=\"button\"]")).click();
         for (int second = 0;; second++) {
             if (second >= 60) fail("timeout");
