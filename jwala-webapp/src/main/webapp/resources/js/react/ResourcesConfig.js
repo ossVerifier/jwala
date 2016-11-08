@@ -499,16 +499,20 @@ var XmlTabs = React.createClass({
     },
     /*** Save and Deploy methods: Start ***/
     saveResource: function(template) {
-        try {
-            var parsedMetaData = JSON.parse(this.state.metaData.replace(/\\/g, "\\\\")); // escape any backslashes before parsing
-            var deployToJvms = parsedMetaData.entity.deployToJvms;
-            if (this.state.entityType === "jvmSection" || this.state.entityType === "webServerSection" || (this.state.entityType === "webApps" && this.state.entityParent.name === "Web Apps" && (deployToJvms === undefined || deployToJvms === "true" || deployToJvms === true))){
-                this.props.updateGroupTemplateCallback(template);
-            } else {
-                this.saveResourcePromise(template).then(this.savedResourceCallback).caught(this.failed.bind(this, "Save Resource Template"));
+        if (this.state.entityType !== "extProperties") {
+            try {
+                var parsedMetaData = JSON.parse(this.state.metaData.replace(/\\/g, "\\\\")); // escape any backslashes before parsing
+                var deployToJvms = parsedMetaData.entity.deployToJvms;
+                if (this.state.entityType === "jvmSection" || this.state.entityType === "webServerSection" || (this.state.entityType === "webApps" && this.state.entityParent.name === "Web Apps" && (deployToJvms === undefined || deployToJvms === "true" || deployToJvms === true))){
+                    this.props.updateGroupTemplateCallback(template);
+                } else {
+                    this.saveResourcePromise(template).then(this.savedResourceCallback).caught(this.failed.bind(this, "Save Resource Template"));
+                }
+            } catch(e) {
+                $.errorAlert("Unable to save changes until the meta data errors are fixed: " + e.message, "", false);
             }
-        } catch(e) {
-            $.errorAlert("Unable to save changes until the meta data errors are fixed: " + e.message, "", false);
+        } else {
+            this.saveResourcePromise(template).then(this.savedResourceCallback).caught(this.failed.bind(this, "Save External Properties"));
         }
     },
     saveResourcePromise: function(template) {
