@@ -813,15 +813,20 @@ public class ApplicationServiceImpl implements ApplicationService {
     // TODO: See if we can implement method chaining for resource deployment which can be used by other resource related service
     protected void checkForRunningJvms(final Group group, final List<String> hostNames, final User user) {
         final List<Jvm> runningJvmList = new ArrayList<>();
+        final StringBuilder runningJvmNamesBuilder = new StringBuilder();
         for (final Jvm jvm: group.getJvms()) {
             if (hostNames.contains(jvm.getHostName().toLowerCase()) && jvm.getState().isStartedState()) {
                 runningJvmList.add(jvm);
+                if (runningJvmNamesBuilder.length() > 0) {
+                    runningJvmNamesBuilder.append(", ");
+                }
+                runningJvmNamesBuilder.append(jvm.getJvmName());
             }
         }
 
         if (!runningJvmList.isEmpty()) {
             final String errMsg = "Cannot deploy web app resources to the following JVMs " +
-                    StringUtils.join(runningJvmList, ',') + " since they are currently running!";
+                    runningJvmNamesBuilder.toString() + " since they are currently running!";
             LOGGER.error(errMsg);
             for (final Jvm jvm: runningJvmList) {
                 historyFacade.write(Jvm.class.getSimpleName() + " " + jvm.getJvmName(), jvm.getGroups(),
