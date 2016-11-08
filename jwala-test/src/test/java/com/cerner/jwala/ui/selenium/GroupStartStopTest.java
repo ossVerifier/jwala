@@ -4,184 +4,193 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.openqa.selenium.*;
-import org.openqa.selenium.firefox.FirefoxDriver;
 
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.fail;
 
 public class GroupStartStopTest {
-  private WebDriver driver;
-  private String baseUrl;
-  private boolean acceptNextAlert = true;
-  private StringBuffer verificationErrors = new StringBuffer();
+    private WebDriver driver;
+    private String baseUrl;
+    private boolean acceptNextAlert = true;
+    private StringBuffer verificationErrors = new StringBuffer();
+    private InputStream inputStream;
+    private Properties properties;
 
-  @Before
-  public void setUp() throws Exception {
-    driver = new FirefoxDriver();
-    baseUrl = "https://localhost:8001/";
-    driver.manage().timeouts().implicitlyWait(30, TimeUnit.SECONDS);
-  }
-
-  @Test
-  public void testGroupStartStop() throws Exception {
-    driver.get(baseUrl + "/jwala/login");
-    driver.findElement(By.id("userName")).clear();
-    driver.findElement(By.id("userName")).sendKeys("jwala");
-    driver.findElement(By.id("password")).clear();
-    driver.findElement(By.id("password")).sendKeys("jwala");
-    driver.findElement(By.cssSelector("input[type=\"button\"]")).click();
-    for (int second = 0;; second++) {
-    	if (second >= 60) fail("timeout");
-    	if ("Start Group".equals(driver.findElement(By.id("group-operations-tablebtnstartGroup1")).getText())) break;
-    	Thread.sleep(1000);
+    @Before
+    public void setUp() throws Exception {
+        properties = new Properties();
+        inputStream = System.getProperty("selenium.property.file") == null ?
+                ClassLoader.getSystemResourceAsStream("test.properties") : new FileInputStream(System.getProperty("selenium.property.file"));
+        properties.load(inputStream);
+        System.setProperty(properties.getProperty("webdriver.name"), properties.getProperty("webdriver.value"));
+        driver = (WebDriver) Class.forName(properties.getProperty("webdriver.class")).getConstructor().newInstance();
+        baseUrl = properties.getProperty("jwala.base.url");
+        driver.manage().timeouts().implicitlyWait(30, TimeUnit.SECONDS);
     }
 
-    driver.findElement(By.id("group-operations-tablebtnstartGroup1")).click();
-    for (int second = 0;; second++) {
-    	if (second >= 60) fail("timeout");
-    	if (isElementPresent(By.id("ui-id-2"))) break;
-    	Thread.sleep(1000);
+    @Test
+    public void testGroupStartStop() throws Exception {
+        driver.get(baseUrl + "/jwala/login");
+        driver.findElement(By.id("userName")).clear();
+        driver.findElement(By.id("userName")).sendKeys("jwala");
+        driver.findElement(By.id("password")).clear();
+        driver.findElement(By.id("password")).sendKeys("jwala");
+        driver.findElement(By.cssSelector("input[type=\"button\"]")).click();
+        for (int second = 0;; second++) {
+            if (second >= 60) fail("timeout");
+            if ("Start Group".equals(driver.findElement(By.id("group-operations-tablebtnstartGroup1")).getText())) break;
+            Thread.sleep(1000);
+        }
+
+        driver.findElement(By.id("group-operations-tablebtnstartGroup1")).click();
+        for (int second = 0;; second++) {
+            if (second >= 60) fail("timeout");
+            if (isElementPresent(By.id("ui-id-2"))) break;
+            Thread.sleep(1000);
+        }
+
+        driver.findElement(By.xpath("(//button[@type='button'])[8]")).click();
+        driver.findElement(By.id("group-operations-table_1")).click();
+        for (int second = 0;; second++) {
+            if (second >= 60) fail("timeout");
+            if ("STARTED".equals(driver.findElement(By.xpath("//table[@id='ws-child-table_group-operations-table_1']/tbody/tr/td[8]/div")).getText())) break;
+            Thread.sleep(1000);
+        }
+
+        for (int second = 0;; second++) {
+            if (second >= 60) fail("timeout");
+            if ("STARTED".equals(driver.findElement(By.xpath("//table[@id='ws-child-table_group-operations-table_1']/tbody/tr[2]/td[8]/div")).getText())) break;
+            Thread.sleep(1000);
+        }
+
+        for (int second = 0;; second++) {
+            if (second >= 60) fail("timeout");
+            if ("STARTED".equals(driver.findElement(By.xpath("//table[@id='jvm-child-table_group-operations-table_1']/tbody/tr/td[8]/div")).getText())) break;
+            Thread.sleep(1000);
+        }
+
+        for (int second = 0;; second++) {
+            if (second >= 60) fail("timeout");
+            if ("STARTED".equals(driver.findElement(By.xpath("//table[@id='jvm-child-table_group-operations-table_1']/tbody/tr[2]/td[8]/div")).getText())) break;
+            Thread.sleep(1000);
+        }
+
+        for (int second = 0;; second++) {
+            if (second >= 60) fail("timeout");
+            if ("STARTED".equals(driver.findElement(By.xpath("//table[@id='jvm-child-table_group-operations-table_1']/tbody/tr[3]/td[8]/div")).getText())) break;
+            Thread.sleep(1000);
+        }
+
+        for (int second = 0;; second++) {
+            if (second >= 60) fail("timeout");
+            if ("STARTED".equals(driver.findElement(By.xpath("//table[@id='jvm-child-table_group-operations-table_1']/tbody/tr[4]/td[8]/div")).getText())) break;
+            Thread.sleep(1000);
+        }
+
+        for (int second = 0;; second++) {
+            if (second >= 60) fail("timeout");
+            if ("STARTED".equals(driver.findElement(By.xpath("//table[@id='jvm-child-table_group-operations-table_1']/tbody/tr[5]/td[8]/div")).getText())) break;
+            Thread.sleep(1000);
+        }
+
+        for (int second = 0;; second++) {
+            if (second >= 60) fail("timeout");
+            if ("STARTED".equals(driver.findElement(By.xpath("//table[@id='jvm-child-table_group-operations-table_1']/tbody/tr[6]/td[8]/div")).getText())) break;
+            Thread.sleep(1000);
+        }
+
+        driver.findElement(By.id("group-operations-tablebtnstopGroup1")).click();
+        for (int second = 0;; second++) {
+            if (second >= 60) fail("timeout");
+            if (isElementPresent(By.id("ui-id-5"))) break;
+            Thread.sleep(1000);
+        }
+
+        driver.findElement(By.xpath("(//button[@type='button'])[65]")).click();
+        // ERROR: Caught exception [ERROR: Unsupported command [getTable | id=ws-child-table_group-operations-table_1.1.7 | ]]
+        // ERROR: Caught exception [ERROR: Unsupported command [getTable | id=ws-child-table_group-operations-table_1.2.7 | ]]
+        for (int second = 0;; second++) {
+            if (second >= 60) fail("timeout");
+            if ("STOPPED".equals(driver.findElement(By.xpath("//table[@id='jvm-child-table_group-operations-table_1']/tbody/tr/td[8]/div/span")).getText())) break;
+            Thread.sleep(1000);
+        }
+
+        for (int second = 0;; second++) {
+            if (second >= 60) fail("timeout");
+            if ("STOPPED".equals(driver.findElement(By.xpath("//table[@id='jvm-child-table_group-operations-table_1']/tbody/tr[2]/td[8]/div/span")).getText())) break;
+            Thread.sleep(1000);
+        }
+
+        for (int second = 0;; second++) {
+            if (second >= 60) fail("timeout");
+            if ("STOPPED".equals(driver.findElement(By.xpath("//table[@id='jvm-child-table_group-operations-table_1']/tbody/tr[3]/td[8]/div/span")).getText())) break;
+            Thread.sleep(1000);
+        }
+
+        for (int second = 0;; second++) {
+            if (second >= 60) fail("timeout");
+            if ("STOPPED".equals(driver.findElement(By.xpath("//table[@id='jvm-child-table_group-operations-table_1']/tbody/tr[4]/td[8]/div")).getText())) break;
+            Thread.sleep(1000);
+        }
+
+        for (int second = 0;; second++) {
+            if (second >= 60) fail("timeout");
+            if ("STOPPED".equals(driver.findElement(By.xpath("//table[@id='jvm-child-table_group-operations-table_1']/tbody/tr[5]/td[8]/div")).getText())) break;
+            Thread.sleep(1000);
+        }
+
+        for (int second = 0;; second++) {
+            if (second >= 60) fail("timeout");
+            if ("STOPPED".equals(driver.findElement(By.xpath("//table[@id='jvm-child-table_group-operations-table_1']/tbody/tr[6]/td[8]/div/span")).getText())) break;
+            Thread.sleep(1000);
+        }
+
+        driver.findElement(By.linkText("Logout")).click();
     }
 
-    driver.findElement(By.xpath("(//button[@type='button'])[8]")).click();
-    driver.findElement(By.id("group-operations-table_1")).click();
-    for (int second = 0;; second++) {
-    	if (second >= 60) fail("timeout");
-    	if ("STARTED".equals(driver.findElement(By.xpath("//table[@id='ws-child-table_group-operations-table_1']/tbody/tr/td[8]/div")).getText())) break;
-    	Thread.sleep(1000);
+    @After
+    public void tearDown() throws Exception {
+        driver.quit();
+        String verificationErrorString = verificationErrors.toString();
+        if (!"".equals(verificationErrorString)) {
+            fail(verificationErrorString);
+        }
     }
 
-    for (int second = 0;; second++) {
-    	if (second >= 60) fail("timeout");
-    	if ("STARTED".equals(driver.findElement(By.xpath("//table[@id='ws-child-table_group-operations-table_1']/tbody/tr[2]/td[8]/div")).getText())) break;
-    	Thread.sleep(1000);
+    private boolean isElementPresent(By by) {
+        try {
+            driver.findElement(by);
+            return true;
+        } catch (NoSuchElementException e) {
+            return false;
+        }
     }
 
-    for (int second = 0;; second++) {
-    	if (second >= 60) fail("timeout");
-    	if ("STARTED".equals(driver.findElement(By.xpath("//table[@id='jvm-child-table_group-operations-table_1']/tbody/tr/td[8]/div")).getText())) break;
-    	Thread.sleep(1000);
+    private boolean isAlertPresent() {
+        try {
+            driver.switchTo().alert();
+            return true;
+        } catch (NoAlertPresentException e) {
+            return false;
+        }
     }
 
-    for (int second = 0;; second++) {
-    	if (second >= 60) fail("timeout");
-    	if ("STARTED".equals(driver.findElement(By.xpath("//table[@id='jvm-child-table_group-operations-table_1']/tbody/tr[2]/td[8]/div")).getText())) break;
-    	Thread.sleep(1000);
+    private String closeAlertAndGetItsText() {
+        try {
+            Alert alert = driver.switchTo().alert();
+            String alertText = alert.getText();
+            if (acceptNextAlert) {
+                alert.accept();
+            } else {
+                alert.dismiss();
+            }
+            return alertText;
+        } finally {
+            acceptNextAlert = true;
+        }
     }
-
-    for (int second = 0;; second++) {
-    	if (second >= 60) fail("timeout");
-    	if ("STARTED".equals(driver.findElement(By.xpath("//table[@id='jvm-child-table_group-operations-table_1']/tbody/tr[3]/td[8]/div")).getText())) break;
-    	Thread.sleep(1000);
-    }
-
-    for (int second = 0;; second++) {
-    	if (second >= 60) fail("timeout");
-    	if ("STARTED".equals(driver.findElement(By.xpath("//table[@id='jvm-child-table_group-operations-table_1']/tbody/tr[4]/td[8]/div")).getText())) break;
-    	Thread.sleep(1000);
-    }
-
-    for (int second = 0;; second++) {
-    	if (second >= 60) fail("timeout");
-    	if ("STARTED".equals(driver.findElement(By.xpath("//table[@id='jvm-child-table_group-operations-table_1']/tbody/tr[5]/td[8]/div")).getText())) break;
-    	Thread.sleep(1000);
-    }
-
-    for (int second = 0;; second++) {
-    	if (second >= 60) fail("timeout");
-    	if ("STARTED".equals(driver.findElement(By.xpath("//table[@id='jvm-child-table_group-operations-table_1']/tbody/tr[6]/td[8]/div")).getText())) break;
-    	Thread.sleep(1000);
-    }
-
-    driver.findElement(By.id("group-operations-tablebtnstopGroup1")).click();
-    for (int second = 0;; second++) {
-    	if (second >= 60) fail("timeout");
-    	if (isElementPresent(By.id("ui-id-5"))) break;
-    	Thread.sleep(1000);
-    }
-
-    driver.findElement(By.xpath("(//button[@type='button'])[65]")).click();
-    // ERROR: Caught exception [ERROR: Unsupported command [getTable | id=ws-child-table_group-operations-table_1.1.7 | ]]
-    // ERROR: Caught exception [ERROR: Unsupported command [getTable | id=ws-child-table_group-operations-table_1.2.7 | ]]
-    for (int second = 0;; second++) {
-    	if (second >= 60) fail("timeout");
-    	if ("STOPPED".equals(driver.findElement(By.xpath("//table[@id='jvm-child-table_group-operations-table_1']/tbody/tr/td[8]/div/span")).getText())) break;
-    	Thread.sleep(1000);
-    }
-
-    for (int second = 0;; second++) {
-    	if (second >= 60) fail("timeout");
-    	if ("STOPPED".equals(driver.findElement(By.xpath("//table[@id='jvm-child-table_group-operations-table_1']/tbody/tr[2]/td[8]/div/span")).getText())) break;
-    	Thread.sleep(1000);
-    }
-
-    for (int second = 0;; second++) {
-    	if (second >= 60) fail("timeout");
-    	if ("STOPPED".equals(driver.findElement(By.xpath("//table[@id='jvm-child-table_group-operations-table_1']/tbody/tr[3]/td[8]/div/span")).getText())) break;
-    	Thread.sleep(1000);
-    }
-
-    for (int second = 0;; second++) {
-    	if (second >= 60) fail("timeout");
-    	if ("STOPPED".equals(driver.findElement(By.xpath("//table[@id='jvm-child-table_group-operations-table_1']/tbody/tr[4]/td[8]/div")).getText())) break;
-    	Thread.sleep(1000);
-    }
-
-    for (int second = 0;; second++) {
-    	if (second >= 60) fail("timeout");
-    	if ("STOPPED".equals(driver.findElement(By.xpath("//table[@id='jvm-child-table_group-operations-table_1']/tbody/tr[5]/td[8]/div")).getText())) break;
-    	Thread.sleep(1000);
-    }
-
-    for (int second = 0;; second++) {
-    	if (second >= 60) fail("timeout");
-    	if ("STOPPED".equals(driver.findElement(By.xpath("//table[@id='jvm-child-table_group-operations-table_1']/tbody/tr[6]/td[8]/div/span")).getText())) break;
-    	Thread.sleep(1000);
-    }
-
-    driver.findElement(By.linkText("Logout")).click();
-  }
-
-  @After
-  public void tearDown() throws Exception {
-    driver.quit();
-    String verificationErrorString = verificationErrors.toString();
-    if (!"".equals(verificationErrorString)) {
-      fail(verificationErrorString);
-    }
-  }
-
-  private boolean isElementPresent(By by) {
-    try {
-      driver.findElement(by);
-      return true;
-    } catch (NoSuchElementException e) {
-      return false;
-    }
-  }
-
-  private boolean isAlertPresent() {
-    try {
-      driver.switchTo().alert();
-      return true;
-    } catch (NoAlertPresentException e) {
-      return false;
-    }
-  }
-
-  private String closeAlertAndGetItsText() {
-    try {
-      Alert alert = driver.switchTo().alert();
-      String alertText = alert.getText();
-      if (acceptNextAlert) {
-        alert.accept();
-      } else {
-        alert.dismiss();
-      }
-      return alertText;
-    } finally {
-      acceptNextAlert = true;
-    }
-  }
 }
