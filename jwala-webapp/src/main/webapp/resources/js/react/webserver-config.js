@@ -115,6 +115,7 @@ var WebServerConfig = React.createClass({
                                                   this.refs.webServerAddForm.state.svrRoot,
                                                   this.refs.webServerAddForm.state.docRoot,
                                                   function(){
+                                                      self.selectedWebServer = null;
                                                       self.refreshData({showModalFormAddDialog:false});
                                                   },
                                                   function(errMsg) {
