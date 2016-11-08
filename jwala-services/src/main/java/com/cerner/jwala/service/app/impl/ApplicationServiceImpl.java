@@ -752,7 +752,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         final List<String> hostNames = getDeployHostList(hostName, group, application);
 
         LOGGER.info("deploying templates to hosts: {}", hostNames.toString());
-        historyFacade.write(hostName, group, "Deploy \"" + appName + "\" resources",  EventType.USER_ACTION_INFO, user.getId());
+        historyFacade.write("", group, "Deploy \"" + appName + "\" resources",  EventType.USER_ACTION_INFO, user.getId());
 
         checkForRunningJvms(group, hostNames, user);
 
