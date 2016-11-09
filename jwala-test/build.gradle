@@ -11,10 +11,6 @@ dependencies {
     testCompile group: 'org.seleniumhq.selenium', name: 'selenium-remote-driver', version: '3.0.1'
 }
 
-build {
-    systemProperties = System.properties
-}
-
 test {
     systemProperties = System.properties
 }
