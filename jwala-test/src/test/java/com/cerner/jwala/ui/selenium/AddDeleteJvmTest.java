@@ -23,8 +23,9 @@ public class AddDeleteJvmTest {
     @Before
     public void setUp() throws Exception {
         properties = new Properties();
-        inputStream = System.getProperty("selenium.property.file") == null ?
-                ClassLoader.getSystemResourceAsStream("test.properties") : new FileInputStream(System.getProperty("selenium.property.file"));
+        final String propertyFile = System.getProperty("selenium.property.file");
+        inputStream = (propertyFile == null || propertyFile.isEmpty()) ?
+                ClassLoader.getSystemResourceAsStream("test.properties") : new FileInputStream(propertyFile);
         properties.load(inputStream);
         System.setProperty(properties.getProperty("webdriver.name"), properties.getProperty("webdriver.value"));
         driver = (WebDriver) Class.forName(properties.getProperty("webdriver.class")).getConstructor().newInstance();
@@ -91,6 +92,7 @@ public class AddDeleteJvmTest {
                 if ("test-jvm-1".equals(driver.findElement(By.xpath("//table[@id='jvm-config-datatable']/tbody/tr[7]/td")).getText()))
                     break;
             } catch (Exception e) {
+                e.printStackTrace();
             }
             Thread.sleep(1000);
         }
