@@ -80,7 +80,7 @@ var JvmConfig = React.createClass({
                                     show={this.state.showDeleteConfirmDialog}
                                     okCallback={this.confirmDeleteCallback}
                                     cancelCallback={this.cancelDeleteCallback}
-                                    content={<div className="text-align-center"><br/><b>Are you sure you want to delete the selected item ?</b><br/><br/></div>}
+                                    content={<div className="text-align-center"><br/><b>Are you sure you want to delete {this.selectedJvm ? this.selectedJvm.jvmName : "the selected item"}  ?</b><br/><br/></div>}
                                     okLabel="Yes"
                                     cancelLabel="No" />
                </div>
