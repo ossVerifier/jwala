@@ -9,7 +9,10 @@ dependencies {
     testCompile group: 'org.seleniumhq.selenium', name: 'selenium-java', version: '3.0.1'
     testCompile group: 'org.seleniumhq.selenium', name: 'selenium-firefox-driver', version: '3.0.1'
     testCompile group: 'org.seleniumhq.selenium', name: 'selenium-remote-driver', version: '3.0.1'
-    testCompile group: 'org.jacoco', name: 'jacoco-maven-plugin', version: '0.7.7.201606060606'
+}
+
+build {
+    systemProperties = System.properties
 }
 
 test {
