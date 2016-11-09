@@ -8,10 +8,7 @@ import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
 import com.cerner.jwala.common.domain.model.jvm.JvmState;
-import com.cerner.jwala.common.domain.model.resource.Entity;
-import com.cerner.jwala.common.domain.model.resource.ResourceGroup;
-import com.cerner.jwala.common.domain.model.resource.ResourceTemplateMetaData;
-import com.cerner.jwala.common.domain.model.resource.ResourceType;
+import com.cerner.jwala.common.domain.model.resource.*;
 import com.cerner.jwala.common.domain.model.user.User;
 import com.cerner.jwala.common.domain.model.webserver.WebServer;
 import com.cerner.jwala.common.domain.model.webserver.WebServerReachableState;
@@ -367,6 +364,27 @@ public class GroupServiceImplDeployTest {
             internalErrorExceptionThrown = true;
         }
         assertTrue(internalErrorExceptionThrown);
+    }
+
+    @Test (expected = InternalErrorException.class)
+    public void testGroupAppDeployToHostsFailedForStartedJvm() throws IOException {
+        Group mockGroup = mock(Group.class);
+        Jvm mockJvm = mock(Jvm.class);
+        when(mockJvm.getHostName()).thenReturn("test-host-name");
+        when(mockJvm.getState()).thenReturn(JvmState.JVM_STARTED);
+        when(mockJvm.getJvmName()).thenReturn("test-jvm-name");
+        when(mockGroup.getJvms()).thenReturn(Collections.singleton(mockJvm));
+
+        when(mockGroupService.getGroup(anyString())).thenReturn(mockGroup);
+        when(mockGroupService.getGroupAppResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"entity\":{\"target\": \"testApp\", \"deployToJvms\":false}}");
+
+        ResourceTemplateMetaData mockMetaData = mock(ResourceTemplateMetaData.class);
+        Entity mockMetaDataEntity = mock(Entity.class);
+        when(mockMetaData.getEntity()).thenReturn(mockMetaDataEntity);
+        when(mockMetaDataEntity.getDeployToJvms()).thenReturn(false);
+        when(mockResourceService.getMetaData(anyString())).thenReturn(mockMetaData);
+
+        groupServiceRest.generateAndDeployGroupAppFile("test-group-name", "test.properties", "test-app-name", mockAuthUser, "test-host-name");
     }
 
     @Test

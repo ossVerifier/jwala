@@ -205,7 +205,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
             group = groupService.getGroupWithWebServers(group.getId());
 
             Set<WebServer> groupWebServers = group.getWebServers();
-            Map<String,Future<Response>> futureContents = new HashMap<>();
+            Map<String, Future<Response>> futureContents = new HashMap<>();
             if (null != groupWebServers) {
                 LOGGER.info("Updating the templates for all the Web Servers in group {}", groupName);
                 final Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -317,7 +317,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
             final Group group = groupService.getGroup(groupName);
 
             Set<Jvm> groupJvms = group.getJvms();
-            Map<String,Future<Response>> futureContents = new HashMap<>();
+            Map<String, Future<Response>> futureContents = new HashMap<>();
             if (null != groupJvms) {
                 LOGGER.info("Updating the templates for all the JVMs in group {}", groupName);
                 final Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -657,7 +657,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         try {
             final String updatedContent = groupService.updateGroupAppResourceTemplate(groupName, appName, resourceTemplateName, content);
             Set<Jvm> groupJvms = group.getJvms();
-            Map<String,Future<Response>> futureContents = new HashMap<>();
+            Map<String, Future<Response>> futureContents = new HashMap<>();
             if (null != groupJvms) {
                 LOGGER.info("Updating the templates for all the JVMs in group {}", groupName);
                 final ApplicationServiceRest appServiceRest = ApplicationServiceRestImpl.get();
@@ -738,8 +738,17 @@ public class GroupServiceRestImpl implements GroupServiceRest {
      */
     protected void performGroupAppDeployToHost(final String groupName, final String fileName, final String appName, final String hostName) {
         Map<String, Future<Response>> futureMap = new HashMap<>();
-        futureMap.put(hostName, createFutureResponseForAppDeploy(groupName, fileName, appName, null, hostName));
-        checkResponsesForErrorStatus(futureMap);
+        Set<Jvm> jvms = groupService.getGroup(groupName).getJvms();
+        if (null != jvms && jvms.size() > 0) {
+            for (Jvm jvm : jvms) {
+                if (jvm.getHostName().equalsIgnoreCase(hostName) && jvm.getState().isStartedState()) {
+                    LOGGER.info("Failed to deploy file {} for group {} on host {}: not all JVMs were stopped - {} was started", fileName, groupName, hostName, jvm.getJvmName());
+                    throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "All JVMs on the host " + hostName + " must be stopped before continuing. Operation stopped for JVM " + jvm.getJvmName());
+                }
+            }
+            futureMap.put(hostName, createFutureResponseForAppDeploy(groupName, fileName, appName, null, hostName));
+            checkResponsesForErrorStatus(futureMap);
+        }
     }
 
     protected void performGroupAppDeployToHosts(final String groupName, final String fileName, final String appName) {
