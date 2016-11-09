@@ -28,7 +28,7 @@ import com.cerner.jwala.exception.CommandFailureException;
 import com.cerner.jwala.persistence.jpa.type.EventType;
 import com.cerner.jwala.persistence.service.ApplicationPersistenceService;
 import com.cerner.jwala.persistence.service.GroupPersistenceService;
-import com.cerner.jwala.service.HistoryFacade;
+import com.cerner.jwala.service.HistoryFacadeService;
 import com.cerner.jwala.service.app.impl.DeployApplicationConfException;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionService;
 import com.cerner.jwala.service.exception.GroupServiceException;
@@ -60,7 +60,7 @@ public class GroupServiceImpl implements GroupService {
     private final BinaryDistributionService binaryDistributionService;
     private ApplicationPersistenceService applicationPersistenceService;
     private ResourceService resourceService;
-    private HistoryFacade historyFacade;
+    private HistoryFacadeService historyFacadeService;
 
     private static final String GENERATED_RESOURCE_DIR = "paths.generated.resource.dir";
     private static final Logger LOGGER = LoggerFactory.getLogger(GroupServiceImpl.class);
@@ -71,13 +71,13 @@ public class GroupServiceImpl implements GroupService {
                             final RemoteCommandExecutorImpl remoteCommandExecutor,
                             final BinaryDistributionService binaryDistributionService,
                             final ResourceService resourceService,
-                            final HistoryFacade historyFacade) {
+                            final HistoryFacadeService historyFacadeService) {
         this.groupPersistenceService = groupPersistenceService;
         this.applicationPersistenceService = applicationPersistenceService;
         this.remoteCommandExecutor = remoteCommandExecutor;
         this.binaryDistributionService = binaryDistributionService;
         this.resourceService = resourceService;
-        this.historyFacade = historyFacade;
+        this.historyFacadeService = historyFacadeService;
     }
 
     @Override
@@ -552,7 +552,7 @@ public class GroupServiceImpl implements GroupService {
         final Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         final String userName = null != authentication ? authentication.getName() : "";
 
-        historyFacade.write(host, groupList, event, EventType.USER_ACTION_INFO, userName);
+        historyFacadeService.write(host, groupList, event, EventType.USER_ACTION_INFO, userName);
 
         return remoteCommandExecutor.executeRemoteCommand(
                 jvmName,

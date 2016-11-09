@@ -6,7 +6,7 @@ import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.webserver.WebServer;
 import com.cerner.jwala.common.properties.ApplicationProperties;
-import com.cerner.jwala.service.HistoryFacade;
+import com.cerner.jwala.service.HistoryFacadeService;
 import com.cerner.jwala.service.app.ApplicationService;
 import com.cerner.jwala.service.balancermanager.impl.BalancerManagerHtmlParser;
 import com.cerner.jwala.service.balancermanager.impl.BalancerManagerHttpClient;
@@ -65,7 +65,7 @@ public class BalancemanagerServiceImplTest {
     private ClientFactoryHelper mockClientFactoryHelper;
 
     @Mock
-    private HistoryFacade mockHistoryFacade;
+    private HistoryFacadeService mockHistoryFacadeService;
 
     @Mock
     private BalancerManagerHttpClient mockBalancerManagerHttpClient;
@@ -77,7 +77,7 @@ public class BalancemanagerServiceImplTest {
     public void setup() {
         MockitoAnnotations.initMocks(this);
         this.balancerManagerServiceImpl = new BalancerManagerServiceImpl(mockGroupService, mockApplicationService, mockWebServerService, mockJvmService,
-                mockClientFactoryHelper, balancerManagerHtmlParser, new BalancerManagerXmlParser(mockJvmService), mockBalancerManagerHttpClient, mockHistoryFacade) {
+                mockClientFactoryHelper, balancerManagerHtmlParser, new BalancerManagerXmlParser(mockJvmService), mockBalancerManagerHttpClient, mockHistoryFacadeService) {
             public void sendMessage(final WebServer webServer, final String message) {
 
             }

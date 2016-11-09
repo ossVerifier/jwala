@@ -29,7 +29,7 @@ import com.cerner.jwala.persistence.service.JvmPersistenceService;
 import com.cerner.jwala.persistence.service.ResourceDao;
 import com.cerner.jwala.persistence.service.impl.JpaApplicationPersistenceServiceImpl;
 import com.cerner.jwala.persistence.service.impl.JpaJvmPersistenceServiceImpl;
-import com.cerner.jwala.service.HistoryFacade;
+import com.cerner.jwala.service.HistoryFacadeService;
 import com.cerner.jwala.service.app.ApplicationCommandService;
 import com.cerner.jwala.service.app.ApplicationService;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionService;
@@ -78,7 +78,7 @@ public class ApplicationServiceImplIntegrationTest {
     private GroupService groupService;
 
     @Mock
-    private HistoryFacade mockHistoryFacade;
+    private HistoryFacadeService mockHistoryFacadeService;
 
     @Mock
     private ResourceDao mockResourceDao;
@@ -207,7 +207,7 @@ public class ApplicationServiceImplIntegrationTest {
                 null,
                 null,
                 mockResourceService,
-                remoteCommandExecutorImpl, binaryDistributionService, mockHistoryFacade);
+                remoteCommandExecutorImpl, binaryDistributionService, mockHistoryFacadeService);
     }
 
     @After

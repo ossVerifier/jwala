@@ -34,7 +34,7 @@ import com.cerner.jwala.persistence.jpa.domain.JpaJvm;
 import com.cerner.jwala.persistence.jpa.domain.resource.config.template.ConfigTemplate;
 import com.cerner.jwala.persistence.jpa.type.EventType;
 import com.cerner.jwala.persistence.service.*;
-import com.cerner.jwala.service.HistoryFacade;
+import com.cerner.jwala.service.HistoryFacadeService;
 import com.cerner.jwala.service.app.ApplicationService;
 import com.cerner.jwala.service.app.PrivateApplicationService;
 import com.cerner.jwala.service.exception.ResourceServiceException;
@@ -112,7 +112,7 @@ public class ResourceServiceImplTest {
     private RemoteCommandExecutorImpl mockRemoteCommandExector;
 
     @Mock
-    private HistoryFacade mockHistoryFacade;
+    private HistoryFacadeService mockHistoryFacadeService;
 
     Map<String, ReentrantReadWriteLock> resourceWriteLockMap = new HashMap<>();
 
@@ -124,7 +124,7 @@ public class ResourceServiceImplTest {
         System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, new File(".").getAbsolutePath() + "/src/test/resources");
 
         ResourceContentGeneratorService resourceContentGeneratorService = new ResourceContentGeneratorServiceImpl(mockGroupPesistenceService,
-                mockWebServerPersistenceService, mockJvmPersistenceService, mockAppPersistenceService, mockHistoryFacade);
+                mockWebServerPersistenceService, mockJvmPersistenceService, mockAppPersistenceService, mockHistoryFacadeService);
 
         resourceService = new ResourceServiceImpl(mockResourcePersistenceService, mockGroupPesistenceService,
                 mockAppPersistenceService, mockJvmPersistenceService, mockWebServerPersistenceService,
@@ -933,7 +933,7 @@ public class ResourceServiceImplTest {
         when(mockResourceHandler.fetchResource(eq(resourceIdentifierSetenvBat))).thenReturn(configTemplateSetenvBat);
 
         resourceService.validateAllResourcesForGeneration(resourceIdentifier);
-        verify(mockHistoryFacade, never()).write(anyString(), anyList(), anyString(), any(EventType.class), anyString());
+        verify(mockHistoryFacadeService, never()).write(anyString(), anyList(), anyString(), any(EventType.class), anyString());
     }
 
     @Test
@@ -991,7 +991,7 @@ public class ResourceServiceImplTest {
         }
         assertNotNull(iee);
         final Map<String, List<String>> errorDetails = iee.getErrorDetails();
-        verify(mockHistoryFacade, times(6)).write(anyString(), anyList(), anyString(), any(EventType.class), anyString());
+        verify(mockHistoryFacadeService, times(6)).write(anyString(), anyList(), anyString(), any(EventType.class), anyString());
         assertEquals(1, errorDetails.size());
         final List<String> exceptionList = errorDetails.get("test-jvm-name");
         assertEquals(6, exceptionList.size());
@@ -1022,7 +1022,7 @@ public class ResourceServiceImplTest {
         resourceService.validateSingleResourceForGeneration(resourceIdentifier);
 
 
-        verify(mockHistoryFacade, never()).write(anyString(), anyList(), anyString(), any(EventType.class), anyString());
+        verify(mockHistoryFacadeService, never()).write(anyString(), anyList(), anyString(), any(EventType.class), anyString());
     }
 
     @Test

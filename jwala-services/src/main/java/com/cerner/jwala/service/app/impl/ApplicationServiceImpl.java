@@ -27,7 +27,7 @@ import com.cerner.jwala.persistence.jpa.domain.JpaJvm;
 import com.cerner.jwala.persistence.jpa.type.EventType;
 import com.cerner.jwala.persistence.service.ApplicationPersistenceService;
 import com.cerner.jwala.persistence.service.JvmPersistenceService;
-import com.cerner.jwala.service.HistoryFacade;
+import com.cerner.jwala.service.HistoryFacadeService;
 import com.cerner.jwala.service.app.ApplicationService;
 import com.cerner.jwala.service.app.PrivateApplicationService;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionService;
@@ -90,7 +90,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     private GroupService groupService;
 
-    private final HistoryFacade historyFacade;
+    private final HistoryFacadeService historyFacadeService;
 
     private static final String UNZIP_EXE = "unzip.exe";
 
@@ -103,14 +103,14 @@ public class ApplicationServiceImpl implements ApplicationService {
                                   final ResourceService resourceService,
                                   final RemoteCommandExecutorImpl remoteCommandExecutor,
                                   final BinaryDistributionService binaryDistributionService,
-                                  final HistoryFacade historyFacade) {
+                                  final HistoryFacadeService historyFacadeService) {
         this.applicationPersistenceService = applicationPersistenceService;
         this.jvmPersistenceService = jvmPersistenceService;
         this.applicationCommandExecutor = applicationCommandService;
         this.groupService = groupService;
         this.webArchiveManager = webArchiveManager;
         this.privateApplicationService = privateApplicationService;
-        this.historyFacade = historyFacade;
+        this.historyFacadeService = historyFacadeService;
         this.resourceService = resourceService;
         this.remoteCommandExecutor = remoteCommandExecutor;
         this.binaryDistributionService = binaryDistributionService;
@@ -282,7 +282,7 @@ public class ApplicationServiceImpl implements ApplicationService {
             final String eventDescription = WindowsJvmNetOperation.SECURE_COPY.name() + " " + deployFileName;
             final String id = user.getId();
 
-            historyFacade.write("JVM " + jvm.getJvmName(), new ArrayList<>(jvm.getGroups()), eventDescription, EventType.USER_ACTION_INFO, id);
+            historyFacadeService.write("JVM " + jvm.getJvmName(), new ArrayList<>(jvm.getGroups()), eventDescription, EventType.USER_ACTION_INFO, id);
 
             final String deployJvmName = jvm.getJvmName();
             final String hostName = jvm.getHostName();
@@ -752,7 +752,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         final List<String> hostNames = getDeployHostList(hostName, group, application);
 
         LOGGER.info("deploying templates to hosts: {}", hostNames.toString());
-        historyFacade.write("", group, "Deploy \"" + appName + "\" resources",  EventType.USER_ACTION_INFO, user.getId());
+        historyFacadeService.write("", group, "Deploy \"" + appName + "\" resources",  EventType.USER_ACTION_INFO, user.getId());
 
         checkForRunningJvms(group, hostNames, user);
 
@@ -825,7 +825,7 @@ public class ApplicationServiceImpl implements ApplicationService {
             final String errMsg = "Make sure the following JVMs are completely stopped before deploying.";
             LOGGER.error(errMsg + " {}", runningJvmNameList);
             for (final Jvm jvm: runningJvmList) {
-                historyFacade.write(Jvm.class.getSimpleName() + " " + jvm.getJvmName(), jvm.getGroups(),
+                historyFacadeService.write(Jvm.class.getSimpleName() + " " + jvm.getJvmName(), jvm.getGroups(),
                         "Web app resource(s) cannot be deployed on a running JVM!",
                         EventType.SYSTEM_ERROR, user.getId());
             }

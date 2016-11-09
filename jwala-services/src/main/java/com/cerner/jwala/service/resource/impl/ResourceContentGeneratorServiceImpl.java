@@ -10,7 +10,7 @@ import com.cerner.jwala.persistence.service.ApplicationPersistenceService;
 import com.cerner.jwala.persistence.service.GroupPersistenceService;
 import com.cerner.jwala.persistence.service.JvmPersistenceService;
 import com.cerner.jwala.persistence.service.WebServerPersistenceService;
-import com.cerner.jwala.service.HistoryFacade;
+import com.cerner.jwala.service.HistoryFacadeService;
 import com.cerner.jwala.service.resource.ResourceContentGeneratorService;
 import com.cerner.jwala.template.ResourceFileGenerator;
 import com.cerner.jwala.template.exception.ResourceFileGeneratorException;
@@ -37,19 +37,19 @@ public class ResourceContentGeneratorServiceImpl implements ResourceContentGener
     private final WebServerPersistenceService webServerPersistenceService;
     private final JvmPersistenceService jvmPersistenceService;
     private final ApplicationPersistenceService applicationPersistenceService;
-    private final HistoryFacade historyFacade;
+    private final HistoryFacadeService historyFacadeService;
 
     @Autowired
     public ResourceContentGeneratorServiceImpl(final GroupPersistenceService groupPersistenceService,
                                                final WebServerPersistenceService webServerPersistenceService,
                                                final JvmPersistenceService jvmPersistenceService,
                                                final ApplicationPersistenceService applicationPersistenceService,
-                                               final HistoryFacade historyFacade) {
+                                               final HistoryFacadeService historyFacadeService) {
         this.groupPersistenceService = groupPersistenceService;
         this.webServerPersistenceService = webServerPersistenceService;
         this.jvmPersistenceService = jvmPersistenceService;
         this.applicationPersistenceService = applicationPersistenceService;
-        this.historyFacade = historyFacade;
+        this.historyFacadeService = historyFacadeService;
     }
 
     @Override
@@ -63,15 +63,15 @@ public class ResourceContentGeneratorServiceImpl implements ResourceContentGener
             if (!resourceGeneratorType.equals(ResourceGeneratorType.PREVIEW)) {
                 if (entity instanceof WebServer) {
                     WebServer webServer = (WebServer) entity;
-                    historyFacade.write("Web Server " + webServer.getName(), new ArrayList<>(webServer.getGroups()), logMessage, EventType.SYSTEM_ERROR, userName);
+                    historyFacadeService.write("Web Server " + webServer.getName(), new ArrayList<>(webServer.getGroups()), logMessage, EventType.SYSTEM_ERROR, userName);
                 } else if (entity instanceof Jvm) {
                     Jvm jvm = (Jvm) entity;
-                    historyFacade.write("JVM " + jvm.getJvmName(), new ArrayList<>(jvm.getGroups()), logMessage, EventType.SYSTEM_ERROR, userName);
+                    historyFacadeService.write("JVM " + jvm.getJvmName(), new ArrayList<>(jvm.getGroups()), logMessage, EventType.SYSTEM_ERROR, userName);
                 } else {
                     Application application = (Application) entity;
                     ArrayList<Group> groups = new ArrayList<>();
                     groups.add(application.getGroup());
-                    historyFacade.write("App " + application.getName(), groups, logMessage, EventType.SYSTEM_ERROR, userName);
+                    historyFacadeService.write("App " + application.getName(), groups, logMessage, EventType.SYSTEM_ERROR, userName);
                 }
             }
             throw new ResourceFileGeneratorException(logMessage, e);

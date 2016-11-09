@@ -17,7 +17,7 @@ import com.cerner.jwala.control.jvm.command.impl.WindowsJvmPlatformCommandProvid
 import com.cerner.jwala.exception.CommandFailureException;
 import com.cerner.jwala.persistence.jpa.type.EventType;
 import com.cerner.jwala.persistence.service.JvmPersistenceService;
-import com.cerner.jwala.service.HistoryFacade;
+import com.cerner.jwala.service.HistoryFacadeService;
 import com.cerner.jwala.service.RemoteCommandExecutorService;
 import com.cerner.jwala.service.RemoteCommandReturnInfo;
 import com.cerner.jwala.service.exception.RemoteCommandExecutorServiceException;
@@ -45,7 +45,7 @@ public class JvmControlServiceImpl implements JvmControlService {
     private static final String FORCED_STOPPED = "FORCED STOPPED";
     private static final String JVM = "JVM";
     private final RemoteCommandExecutor<JvmControlOperation> remoteCommandExecutor;
-    private final HistoryFacade historyFacade;
+    private final HistoryFacadeService historyFacadeService;
     private final RemoteCommandExecutorService remoteCommandExecutorService;
     private final SshConfiguration sshConfig;
     private final JvmStateService jvmStateService;
@@ -60,13 +60,13 @@ public class JvmControlServiceImpl implements JvmControlService {
                                  final JvmStateService jvmStateService,
                                  final RemoteCommandExecutorService remoteCommandExecutorService,
                                  final SshConfiguration sshConfig,
-                                 final HistoryFacade historyFacade) {
+                                 final HistoryFacadeService historyFacadeService) {
         this.jvmPersistenceService = jvmPersistenceService;
         remoteCommandExecutor = theExecutor;
         this.jvmStateService = jvmStateService;
         this.remoteCommandExecutorService = remoteCommandExecutorService;
         this.sshConfig = sshConfig;
-        this.historyFacade = historyFacade;
+        this.historyFacadeService = historyFacadeService;
     }
 
     @Override
@@ -78,7 +78,7 @@ public class JvmControlServiceImpl implements JvmControlService {
             final JvmControlOperation ctrlOp = controlOperation;
             final String event = ctrlOp.getOperationState() == null ? ctrlOp.name() : ctrlOp.getOperationState().toStateLabel();
 
-            historyFacade.write(getServerName(jvm), new ArrayList<>(jvm.getGroups()), event, EventType.USER_ACTION_INFO, aUser.getId());
+            historyFacadeService.write(getServerName(jvm), new ArrayList<>(jvm.getGroups()), event, EventType.USER_ACTION_INFO, aUser.getId());
 
             final WindowsJvmPlatformCommandProvider windowsJvmPlatformCommandProvider = new WindowsJvmPlatformCommandProvider();
             final ServiceCommandBuilder serviceCommandBuilder = windowsJvmPlatformCommandProvider.getServiceCommandBuilderFor(controlOperation);
@@ -155,7 +155,7 @@ public class JvmControlServiceImpl implements JvmControlService {
             return commandOutput;
         } catch (final RemoteCommandExecutorServiceException e) {
             LOGGER.error(e.getMessage(), e);
-            historyFacade.write(getServerName(jvm), new ArrayList<>(jvm.getGroups()), e.getMessage(), EventType.SYSTEM_ERROR,
+            historyFacadeService.write(getServerName(jvm), new ArrayList<>(jvm.getGroups()), e.getMessage(), EventType.SYSTEM_ERROR,
                     aUser.getId());
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE,
                     "CommandFailureException when attempting to control a JVM: " + controlJvmRequest, e);
@@ -170,7 +170,7 @@ public class JvmControlServiceImpl implements JvmControlService {
 
     private void sendMessageToActionEventLog(User aUser, Jvm jvm, String commandOutputReturnDescription) {
         LOGGER.error(commandOutputReturnDescription);
-        historyFacade.write(getServerName(jvm), new ArrayList<>(jvm.getGroups()), commandOutputReturnDescription,
+        historyFacadeService.write(getServerName(jvm), new ArrayList<>(jvm.getGroups()), commandOutputReturnDescription,
                 EventType.SYSTEM_ERROR, aUser.getId());
     }
 
@@ -257,7 +257,7 @@ public class JvmControlServiceImpl implements JvmControlService {
         // don't add any usage of the jwala user internal directory to the history
         if (!ApplicationProperties.get("remote.commands.user-scripts").endsWith(fileName)) {
             final String eventDescription = event + " " + fileName;
-            historyFacade.write(getServerName(jvm), new ArrayList<>(jvm.getGroups()), eventDescription,
+            historyFacadeService.write(getServerName(jvm), new ArrayList<>(jvm.getGroups()), eventDescription,
                                 EventType.USER_ACTION_INFO, userId);
         }
         final String name = jvm.getJvmName();
