@@ -99,6 +99,7 @@ var GroupConfig = React.createClass({
             this.props.service.insertNewGroup(groupName,
                                               function(){
                                                   self.refs.modalAddGroupDlg.close();
+                                                  self.state.selectedGroup = {"str-name": null};
                                                   self.props.service.getGroups().then(self.getGroupsCallback);
                                               },
                                               function(errMsg) {
