@@ -467,9 +467,4 @@ public class AemServiceConfiguration {
     public BinaryDistributionService getBinaryDistributionService(BinaryDistributionControlService binaryDistributionControlService) {
         return new BinaryDistributionServiceImpl(binaryDistributionControlService, getBinaryDistributionLockManager());
     }
-
-    @Bean
-    public HistoryFacadeService getHistoryFacade(final HistoryService historyService, final MessagingService messagingService) {
-        return new HistoryFacadeService(historyService, messagingService);
-    }
 }
