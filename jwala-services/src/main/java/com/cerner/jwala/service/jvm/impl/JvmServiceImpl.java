@@ -34,7 +34,7 @@ import com.cerner.jwala.persistence.jpa.service.exception.NonRetrievableResource
 import com.cerner.jwala.persistence.jpa.service.exception.ResourceTemplateUpdateException;
 import com.cerner.jwala.persistence.jpa.type.EventType;
 import com.cerner.jwala.persistence.service.JvmPersistenceService;
-import com.cerner.jwala.service.HistoryFacade;
+import com.cerner.jwala.service.HistoryFacadeService;
 import com.cerner.jwala.service.app.ApplicationService;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionLockManager;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionService;
@@ -82,7 +82,7 @@ public class JvmServiceImpl implements JvmService {
     private final ResourceService resourceService;
     private final ClientFactoryHelper clientFactoryHelper;
     private final JvmControlService jvmControlService;
-    private final HistoryFacade historyFacade;
+    private final HistoryFacadeService historyFacadeService;
     private final BinaryDistributionService binaryDistributionService;
     private static final String JWALA_SCRIPTS_PATH = ApplicationProperties.get("remote.commands.user-scripts");
 
@@ -103,7 +103,7 @@ public class JvmServiceImpl implements JvmService {
                           final JvmControlService jvmControlService,
                           final BinaryDistributionService binaryDistributionService,
                           final BinaryDistributionLockManager binaryDistributionLockManager,
-                          final HistoryFacade historyFacade) {
+                          final HistoryFacadeService historyFacadeService) {
         this.jvmPersistenceService = jvmPersistenceService;
         this.groupService = groupService;
         this.applicationService = applicationService;
@@ -116,7 +116,7 @@ public class JvmServiceImpl implements JvmService {
         this.topicServerStates = topicServerStates;
         this.binaryDistributionService = binaryDistributionService;
         this.binaryDistributionLockManager = binaryDistributionLockManager;
-        this.historyFacade = historyFacade;
+        this.historyFacadeService = historyFacadeService;
     }
 
 
@@ -775,7 +775,7 @@ public class JvmServiceImpl implements JvmService {
         pingAndUpdateJvmState(jvm);
 
         final String message = "Diagnose and resolve state";
-        historyFacade.write(jvm.getJvmName(), new ArrayList<>(jvm.getGroups()), message, EventType.USER_ACTION_INFO, user.getId());
+        historyFacadeService.write(jvm.getJvmName(), new ArrayList<>(jvm.getGroups()), message, EventType.USER_ACTION_INFO, user.getId());
         SimpleTemplateEngine engine = new SimpleTemplateEngine();
         Map<String, Object> binding = new HashMap<>();
         binding.put("jvm", jvm);
