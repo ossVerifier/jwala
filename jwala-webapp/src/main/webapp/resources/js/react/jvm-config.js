@@ -110,6 +110,7 @@ var JvmConfig = React.createClass({
                                             this.refs.jvmAddForm.state.userName,
                                             this.refs.jvmAddForm.state.encryptedPassword,
                                             function(){
+                                                self.selectedJvm = null;
                                                 self.refreshData({showModalFormAddDialog:false});
                                             },
                                             function(errMsg) {
@@ -494,11 +495,11 @@ var JvmConfigDataTable = React.createClass({
                         {sTitle:"AJP", mData:"ajpPort"},
                         {sTitle:"Username", mData: "userName"}];
         return <JwalaDataTable tableId="jvm-config-datatable"
-                             tableDef={tableDef}
-                             data={this.props.data}
-                             selectItemCallback={this.props.selectItemCallback}
-                             editCallback={this.props.editCallback}
-                             isColResizable={true}/>
+                               tableDef={tableDef}
+                               data={this.props.data}
+                               selectItemCallback={this.props.selectItemCallback}
+                               editCallback={this.props.editCallback}
+                               isColResizable={true}/>
     },
     renderNameLink:function(dataTable, data, aoColumnDefs, itemIndex) {
         var self = this;
