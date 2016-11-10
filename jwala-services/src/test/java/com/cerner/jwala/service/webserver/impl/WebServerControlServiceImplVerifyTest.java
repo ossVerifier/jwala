@@ -21,6 +21,7 @@ import com.cerner.jwala.control.webserver.command.impl.WindowsWebServerPlatformC
 import com.cerner.jwala.exception.CommandFailureException;
 import com.cerner.jwala.persistence.jpa.type.EventType;
 import com.cerner.jwala.service.*;
+import com.cerner.jwala.service.HistoryFacadeService;
 import com.cerner.jwala.service.webserver.WebServerService;
 import org.junit.Before;
 import org.junit.Ignore;

@@ -5,27 +5,26 @@ package com.cerner.jwala.service;
  *
  * Created by JC043760 on 11/2/2016
  */
-public class Message<R, B> {
+public class Message<B> {
 
-    private R recipient;
-    private String subject;
+    private Type type;
     private B body;
 
-    public Message(final R recipient, final String subject, final B body) {
-        this.recipient = recipient;
-        this.subject = subject;
+    public Message(final Type type, final B body) {
+        this.type = type;
         this.body = body;
     }
 
-    public R getRecipient() {
-        return recipient;
-    }
-
-    public String getSubject() {
-        return subject;
+    public Type getType() {
+        return type;
     }
 
     public B getBody() {
         return body;
+    }
+
+    // Create additional types if needed
+    public enum Type {
+        HISTORY, STATE
     }
 }
