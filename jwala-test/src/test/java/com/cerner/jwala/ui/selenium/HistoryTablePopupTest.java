@@ -1,5 +1,6 @@
 package com.cerner.jwala.ui.selenium;
 
+import com.cerner.jwala.ui.selenium.util.SeleniumTestCaseUtility;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -52,6 +53,8 @@ public class HistoryTablePopupTest {
             Thread.sleep(1000);
         }
 
+        SeleniumTestCaseUtility.waitABit();
+
         driver.findElement(By.cssSelector("span.ui-icon.ui-icon-newwin")).click();
         for (int second = 0;; second++) {
             if (second >= 60) fail("timeout");
@@ -64,7 +67,13 @@ public class HistoryTablePopupTest {
         } catch (Error e) {
             verificationErrors.append(e.toString());
         }
+
+        SeleniumTestCaseUtility.waitABit();
+
         driver.findElement(By.xpath("(//button[@type='button'])[5]")).click();
+
+        SeleniumTestCaseUtility.waitABit();
+
         for (int second = 0;; second++) {
             if (second >= 60) fail("timeout");
             if ("HEALTH CHECK 4.0".equals(driver.findElement(By.cssSelector("tr.even > td.adj-col.sorting_1")).getText())) break;

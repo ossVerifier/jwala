@@ -1,5 +1,6 @@
 package com.cerner.jwala.ui.selenium;
 
+import com.cerner.jwala.ui.selenium.util.SeleniumTestCaseUtility;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -50,6 +51,8 @@ public class AddDeleteJvmTest {
             Thread.sleep(1000);
         }
 
+        SeleniumTestCaseUtility.waitABit();
+
         driver.findElement(By.linkText("Configuration")).click();
         for (int second = 0; ; second++) {
             if (second >= 60) fail("timeout");
@@ -61,6 +64,8 @@ public class AddDeleteJvmTest {
             }
             Thread.sleep(1000);
         }
+
+        SeleniumTestCaseUtility.waitABit();
 
         driver.findElement(By.xpath("(//button[@type='button'])[2]")).click();
         for (int second = 0; ; second++) {
@@ -121,6 +126,8 @@ public class AddDeleteJvmTest {
             }
             Thread.sleep(1000);
         }
+
+        SeleniumTestCaseUtility.waitABit();
 
         driver.findElement(By.linkText("Operations")).click();
         for (int second = 0; ; second++) {
