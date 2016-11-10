@@ -12,5 +12,7 @@ dependencies {
 }
 
 test {
-    systemProperties = System.properties
+    systemProperties = [
+            "selenium.property.file": System.getProperty("selenium.property.file")
+    ]
 }
