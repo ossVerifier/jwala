@@ -52,6 +52,7 @@ var GroupConfig = React.createClass({
         this.refs.groupConfigTable.refresh(response.applicationResponseContent);
         if (selectedGroup !== null) {
             this.refs.groupConfigTable.selectRow(selectedGroup);
+            this.state.selectedGroup["str-name"] = selectedGroup;
         }
     },
     selectItemCallback: function(group) {
