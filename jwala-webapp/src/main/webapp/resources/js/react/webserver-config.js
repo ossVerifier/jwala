@@ -20,9 +20,6 @@ var WebServerConfig = React.createClass({
             return prevFlag;
         }
     },
-
-
-    selectedWebServer: null,
     getInitialState: function() {
         return {
             showModalFormAddDialog: false,
@@ -30,7 +27,8 @@ var WebServerConfig = React.createClass({
             showDeleteConfirmDialog: false,
             showDeleteConfirmDialogContinue: false,
             selectedWebServerForEditing: null,
-            webServerTableData: []
+            webServerTableData: [],
+            selectedWebServer: null
         }
     },
     render: function() {
@@ -48,7 +46,8 @@ var WebServerConfig = React.createClass({
                         <tr>
                             <td>
                                 <div>
-                                    <WebServerDataTable data={this.state.webServerTableData}
+                                    <WebServerDataTable ref="webServerConfigDataTable"
+                                                        data={this.state.webServerTableData}
                                                         selectItemCallback={this.selectItemCallback}
                                                         editCallback={this.editCallback}
                                                         noUpdateWhen={this.state.showModalFormAddDialog ||
@@ -82,7 +81,7 @@ var WebServerConfig = React.createClass({
                                     show={this.state.showDeleteConfirmDialog}
                                     okCallback={this.confirmDeleteCallback}
                                     cancelCallback={this.cancelDeleteCallback}
-                                    content={<div className="text-align-center"><br/><b>Are you sure you want to delete {this.selectedWebServer ? this.selectedWebServer.name : "the selected item"} ?</b><br/><br/></div>}
+                                    content={<div className="text-align-center"><br/><b>Are you sure you want to delete {this.state.selectedWebServer ? this.state.selectedWebServer.name : "the selected item"} ?</b><br/><br/></div>}
                                     okLabel="Yes"
                                     cancelLabel="No" />
 
@@ -115,7 +114,7 @@ var WebServerConfig = React.createClass({
                                                   this.refs.webServerAddForm.state.svrRoot,
                                                   this.refs.webServerAddForm.state.docRoot,
                                                   function(){
-                                                      self.selectedWebServer = null;
+                                                      self.state.selectedWebServer = null;
                                                       self.refreshData({showModalFormAddDialog:false});
                                                   },
                                                   function(errMsg) {
@@ -130,8 +129,9 @@ var WebServerConfig = React.createClass({
         if (this.refs.webServerEditForm.isValid()) {
             var self = this;
             this.props.service.updateWebServer($(this.refs.webServerEditForm.getDOMNode().children[0]).serializeArray(),
-                                                 function(){
+                                                 function(response){
                                                     self.refreshData({showModalFormEditDialog:false});
+                                                    self.state.selectedWebServer = response.applicationResponseContent;
                                                  },
                                                  function(errMsg) {
                                                      $.errorAlert(errMsg, "Error");
@@ -152,15 +152,15 @@ var WebServerConfig = React.createClass({
         this.setState({showModalFormAddDialog: true})
     },
     delBtnCallback: function() {
-        if (this.selectedWebServer !== null) {
+        if (this.state.selectedWebServer !== null) {
             this.setState({showDeleteConfirmDialog: true});
         }
     },
     confirmDeleteCallback: function() {
         var self = this;
-        this.props.service.deleteWebServer(this.selectedWebServer.id.id, false).then(
+        this.props.service.deleteWebServer(this.state.selectedWebServer.id.id, false).then(
             function(response){
-            self.refreshData({showDeleteConfirmDialog: false}, function(){self.selectedWebServer = null});
+            self.refreshData({showDeleteConfirmDialog: false}, function(){self.state.selectedWebServer = null});
         }).caught(
             function(e) {
                 self.setState({showDeleteConfirmDialog: false})
@@ -180,9 +180,9 @@ var WebServerConfig = React.createClass({
     },
     confirmDeleteCallbackContinue: function() {
         var self = this;
-        this.props.service.deleteWebServer(this.selectedWebServer.id.id, true).then(
+        this.props.service.deleteWebServer(this.state.selectedWebServer.id.id, true).then(
             function(response){
-            self.refreshData({showDeleteConfirmDialogContinue: false}, function(){self.selectedWebServer = null});
+            self.refreshData({showDeleteConfirmDialogContinue: false}, function(){self.state.selectedWebServer = null});
         }).caught(
             function(e){
                 if (e.responseText !== undefined && e.status !== 200) {
@@ -207,7 +207,7 @@ var WebServerConfig = React.createClass({
             this.setState({showDeleteConfirmDialogContinue: false});
         },
     selectItemCallback: function(item) {
-        this.selectedWebServer = item;
+        this.state.selectedWebServer = item;
     },
     editCallback: function(e) {
         var self = this;
@@ -221,7 +221,13 @@ var WebServerConfig = React.createClass({
     componentDidMount: function() {
         this.refreshData({});
     },
-
+    componentDidUpdate: function() {
+        // When the data table is refreshed the row gets deselected even if there's a currently
+        // selected web server. The code below makes sure that the row is reselected again.
+        if (this.state.selectedWebServer && !this.refs.webServerConfigDataTable.refs.dataTableWrapper.getVisibleSelectedRowCount()) {
+            this.refs.webServerConfigDataTable.refs.dataTableWrapper.selectRow(this.state.selectedWebServer.name);
+        }
+    }
 });
 
 /**
@@ -440,14 +446,15 @@ var WebServerDataTable = React.createClass({
                          jwalaType:"array",
                          displayProperty:"name",
                          sWidth: "40%", maxDisplayTextLen:20}];
-        return <JwalaDataTable tableId="webserver-config-datatable"
-                             tableDef={tableDef}
-                             colHeaders={["JVM Name", "Host Name"]}
-                             data={this.props.data}
-                             selectItemCallback={this.props.selectItemCallback}
-                             editCallback={this.props.editCallback}
-                             rowSubComponentContainerClassName="row-sub-component-container"
-                             isColResizable={true}/>
+        return <JwalaDataTable ref="dataTableWrapper"
+                               tableId="webserver-config-datatable"
+                               tableDef={tableDef}
+                               colHeaders={["JVM Name", "Host Name"]}
+                               data={this.props.data}
+                               selectItemCallback={this.props.selectItemCallback}
+                               editCallback={this.props.editCallback}
+                               rowSubComponentContainerClassName="row-sub-component-container"
+                               isColResizable={true}/>
     },
     renderNameLink:function(dataTable, data, aoColumnDefs, itemIndex) {
         var self = this;
