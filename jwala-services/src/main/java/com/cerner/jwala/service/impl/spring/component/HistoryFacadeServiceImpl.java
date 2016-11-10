@@ -22,7 +22,6 @@ import java.util.List;
 @Service
 public class HistoryFacadeServiceImpl implements HistoryFacadeService {
 
-    public static final String SUBJECT_HISTORY = "HISTORY";
     private final HistoryService historyService;
     private final MessagingService messagingService;
 
@@ -36,15 +35,15 @@ public class HistoryFacadeServiceImpl implements HistoryFacadeService {
                       final String user) {
         final List<JpaHistory> jpaHistoryList = historyService.createHistory(serverName, new ArrayList<>(groups), event, eventType, user);
         for (JpaHistory jpaHistory : jpaHistoryList) {
-            messagingService.send(new Message<>(jpaHistory.getGroup().getName(), SUBJECT_HISTORY, jpaHistory));
+            messagingService.send(new Message<>(Message.Type.HISTORY, jpaHistory));
         }
     }
 
     @Override
+    @SuppressWarnings("all")
     public void write(final String serverName, final Group group, final String event, final EventType eventType,
                       final String user) {
-        final List<Group> groupList = Arrays.asList(new Group[]{group});
-        write(serverName, groupList, event, eventType, user);
+        write(serverName, Arrays.asList(group), event, eventType, user);
     }
 
 }

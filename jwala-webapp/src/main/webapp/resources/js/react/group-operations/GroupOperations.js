@@ -152,8 +152,8 @@ var GroupOperations = React.createClass({
                                                     []);
     },
     msgHandler: function(msg) {
-        if (msg.subject === "HISTORY") {
-            var commandStatusWidget = this.commandStatusWidgetMap[msg.recipient];
+        if (msg.type === "HISTORY") {
+            var commandStatusWidget = this.commandStatusWidgetMap[msg.body.group.name];
             if (commandStatusWidget) {
                 commandStatusWidget.push({asOf: msg.body.createDate,
                                           userId: msg.body.createBy,
@@ -161,14 +161,12 @@ var GroupOperations = React.createClass({
                                           from: msg.body.serverName},
                                           msg.body.eventType === "SYSTEM_ERROR" ? "error-status-font": "action-status-font");
             }
-        } else {
-            if (msg.type === "JVM") {
+        } else if (msg.type === "JVM") {
                 this.updateJvmStateData(msg);
-            } else if (msg.type === "WEB_SERVER") {
-                this.updateWebServerStateData(msg);
-            } else if (msg.type === "GROUP") {
-                this.updateGroupsStateData(msg);
-            }
+        } else if (msg.type === "WEB_SERVER") {
+            this.updateWebServerStateData(msg);
+        } else if (msg.type === "GROUP") {
+            this.updateGroupsStateData(msg);
         }
     },
 
