@@ -1,20 +1,7 @@
 package com.cerner.jwala.ui.selenium;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.openqa.selenium.*;
-
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.util.Properties;
-import java.util.concurrent.TimeUnit;
-
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 public class HistoryTablePopupTest {
-    private WebDriver driver;
+    /*private WebDriver driver;
     private String baseUrl;
     private boolean acceptNextAlert = true;
     private StringBuffer verificationErrors = new StringBuffer();
@@ -114,5 +101,5 @@ public class HistoryTablePopupTest {
         } finally {
             acceptNextAlert = true;
         }
-    }
+    }*/
 }
