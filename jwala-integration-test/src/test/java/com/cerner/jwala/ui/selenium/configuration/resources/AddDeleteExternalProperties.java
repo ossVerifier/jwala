@@ -1,6 +1,6 @@
-package com.cerner.jwala.ui.selenium;
+package com.cerner.jwala.ui.selenium.configuration.resources;
 
-import com.cerner.jwala.ui.selenium.util.SeleniumTestCase;
+import com.cerner.jwala.ui.selenium.SeleniumTestCase;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -14,7 +14,7 @@ import static org.junit.Assert.fail;
 /**
  * Created on 11/9/2016.
  */
-public class AddDeleteExternalProperties extends SeleniumTestCase{
+public class AddDeleteExternalProperties extends SeleniumTestCase {
     private boolean acceptNextAlert = true;
     private StringBuffer verificationErrors = new StringBuffer();
 

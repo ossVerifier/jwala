@@ -1,6 +1,6 @@
-package com.cerner.jwala.ui.selenium;
+package com.cerner.jwala.ui.selenium.configuration.jvm;
 
-import com.cerner.jwala.ui.selenium.util.SeleniumTestCase;
+import com.cerner.jwala.ui.selenium.SeleniumTestCase;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -11,7 +11,7 @@ import org.openqa.selenium.NoSuchElementException;
 
 import static org.junit.Assert.fail;
 
-public class AddDeleteJvmTest extends SeleniumTestCase{
+public class AddDeleteJvmTest extends SeleniumTestCase {
     private boolean acceptNextAlert = true;
     private StringBuffer verificationErrors = new StringBuffer();
 

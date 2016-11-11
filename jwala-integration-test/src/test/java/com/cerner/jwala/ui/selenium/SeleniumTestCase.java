@@ -1,4 +1,4 @@
-package com.cerner.jwala.ui.selenium.util;
+package com.cerner.jwala.ui.selenium;
 
 import org.openqa.selenium.WebDriver;
 

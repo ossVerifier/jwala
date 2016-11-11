@@ -1,6 +1,6 @@
-package com.cerner.jwala.ui.selenium;
+package com.cerner.jwala.ui.selenium.operations;
 
-import com.cerner.jwala.ui.selenium.util.SeleniumTestCase;
+import com.cerner.jwala.ui.selenium.SeleniumTestCase;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;

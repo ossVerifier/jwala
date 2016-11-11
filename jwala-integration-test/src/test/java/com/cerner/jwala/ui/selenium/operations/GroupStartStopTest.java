@@ -1,8 +1,8 @@
-package com.cerner.jwala.ui.selenium;
+package com.cerner.jwala.ui.selenium.operations;
 
-import com.cerner.jwala.ui.selenium.util.SeleniumTestCase;
+import com.cerner.jwala.ui.selenium.SeleniumTestCase;
 
-public class GroupStartStopTest extends SeleniumTestCase{
+public class GroupStartStopTest extends SeleniumTestCase {
     /*private WebDriver driver;
     private String baseUrl;
     private boolean acceptNextAlert = true;
