@@ -1,6 +1,8 @@
 package com.cerner.jwala.ui.selenium;
 
-public class GroupStartStopTest {
+import com.cerner.jwala.ui.selenium.util.SeleniumTestCase;
+
+public class GroupStartStopTest extends SeleniumTestCase{
     /*private WebDriver driver;
     private String baseUrl;
     private boolean acceptNextAlert = true;
@@ -10,14 +12,7 @@ public class GroupStartStopTest {
 
     @Before
     public void setUp() throws Exception {
-        properties = new Properties();
-        inputStream = System.getProperty("selenium.property.file") == null ?
-                ClassLoader.getSystemResourceAsStream("test.properties") : new FileInputStream(System.getProperty("selenium.property.file"));
-        properties.load(inputStream);
-        System.setProperty(properties.getProperty("webdriver.name"), properties.getProperty("webdriver.value"));
-        driver = (WebDriver) Class.forName(properties.getProperty("webdriver.class")).getConstructor().newInstance();
-        baseUrl = properties.getProperty("jwala.base.url");
-        driver.manage().timeouts().implicitlyWait(30, TimeUnit.SECONDS);
+        setUpSeleniumDrivers();
     }
 
     @Test

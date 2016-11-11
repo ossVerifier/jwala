@@ -1,39 +1,26 @@
 package com.cerner.jwala.ui.selenium;
 
-import com.cerner.jwala.ui.selenium.util.SeleniumTestCaseUtility;
+import com.cerner.jwala.ui.selenium.util.SeleniumTestCase;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.openqa.selenium.*;
-
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.util.Properties;
-import java.util.concurrent.TimeUnit;
+import org.openqa.selenium.Alert;
+import org.openqa.selenium.By;
+import org.openqa.selenium.NoAlertPresentException;
+import org.openqa.selenium.NoSuchElementException;
 
 import static org.junit.Assert.fail;
 
 /**
  * Created on 11/9/2016.
  */
-public class AddDeleteExternalProperties {
-    private WebDriver driver;
-    private String baseUrl;
+public class AddDeleteExternalProperties extends SeleniumTestCase{
     private boolean acceptNextAlert = true;
     private StringBuffer verificationErrors = new StringBuffer();
-    private InputStream inputStream;
-    private Properties properties;
 
     @Before
     public void setUp() throws Exception {
-        properties = new Properties();
-        inputStream = System.getProperty("selenium.property.file") == null ?
-                ClassLoader.getSystemResourceAsStream("test.properties") : new FileInputStream(System.getProperty("selenium.property.file"));
-        properties.load(inputStream);
-        System.setProperty(properties.getProperty("webdriver.name"), properties.getProperty("webdriver.value"));
-        driver = (WebDriver) Class.forName(properties.getProperty("webdriver.class")).getConstructor().newInstance();
-        baseUrl = properties.getProperty("jwala.base.url");
-        driver.manage().timeouts().implicitlyWait(30, TimeUnit.SECONDS);
+        setUpSeleniumDrivers();
     }
 
     @Test
@@ -53,7 +40,7 @@ public class AddDeleteExternalProperties {
             Thread.sleep(1000);
         }
 
-        SeleniumTestCaseUtility.waitABit();
+        waitABit();
 
         driver.findElement(By.linkText("Configuration")).click();
         for (int second = 0; ; second++) {
@@ -67,12 +54,12 @@ public class AddDeleteExternalProperties {
             Thread.sleep(1000);
         }
 
-        SeleniumTestCaseUtility.waitABit();
+        waitABit();
 
         driver.findElement(By.linkText("Resources")).click();
         driver.findElement(By.xpath("//div[2]/div/span")).click();
 
-        SeleniumTestCaseUtility.waitABit();
+        waitABit();
 
         driver.findElement(By.cssSelector("span.ui-icon.ui-icon-plusthick")).click();
         driver.findElement(By.name("templateFile")).clear();

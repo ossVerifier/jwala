@@ -1,23 +1,24 @@
 package com.cerner.jwala.ui.selenium;
 
-public class HistoryTablePopupTest {
-    /*private WebDriver driver;
-    private String baseUrl;
+import com.cerner.jwala.ui.selenium.util.SeleniumTestCase;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.openqa.selenium.Alert;
+import org.openqa.selenium.By;
+import org.openqa.selenium.NoAlertPresentException;
+import org.openqa.selenium.NoSuchElementException;
+
+import static junit.framework.TestCase.assertTrue;
+import static org.junit.Assert.fail;
+
+public class HistoryTablePopupTest extends SeleniumTestCase {
     private boolean acceptNextAlert = true;
     private StringBuffer verificationErrors = new StringBuffer();
-    private InputStream inputStream;
-    private Properties properties;
 
     @Before
     public void setUp() throws Exception {
-        properties = new Properties();
-        inputStream = System.getProperty("selenium.property.file") == null ?
-                ClassLoader.getSystemResourceAsStream("test.properties") : new FileInputStream(System.getProperty("selenium.property.file"));
-        properties.load(inputStream);
-        System.setProperty(properties.getProperty("webdriver.name"), properties.getProperty("webdriver.value"));
-        driver = (WebDriver) Class.forName(properties.getProperty("webdriver.class")).getConstructor().newInstance();
-        baseUrl = properties.getProperty("jwala.base.url");
-        driver.manage().timeouts().implicitlyWait(30, TimeUnit.SECONDS);
+        setUpSeleniumDrivers();
     }
 
     @Test
@@ -26,23 +27,23 @@ public class HistoryTablePopupTest {
         driver.findElement(By.id("userName")).sendKeys(properties.getProperty("jwala.user.name"));
         driver.findElement(By.id("password")).sendKeys(properties.getProperty("jwala.user.password"));
         driver.findElement(By.cssSelector("input[type=\"button\"]")).click();
-        for (int second = 0;; second++) {
+        for (int second = 0; ; second++) {
             if (second >= 60) fail("timeout");
             if (isElementPresent(By.xpath("//div[@id='group-operations-table_wrapper']/div"))) break;
             Thread.sleep(1000);
         }
 
         driver.findElement(By.id("group-operations-table_1")).click();
-        for (int second = 0;; second++) {
+        for (int second = 0; ; second++) {
             if (second >= 60) fail("timeout");
             if (isElementPresent(By.xpath("//div[@id='ext-comp-div-group-operations-table_1']/div/div/div"))) break;
             Thread.sleep(1000);
         }
 
-        SeleniumTestCaseUtility.waitABit();
+        waitABit();
 
         driver.findElement(By.cssSelector("span.ui-icon.ui-icon-newwin")).click();
-        for (int second = 0;; second++) {
+        for (int second = 0; ; second++) {
             if (second >= 60) fail("timeout");
             if (isElementPresent(By.cssSelector("span.ui-dialog-title.text-align-center"))) break;
             Thread.sleep(1000);
@@ -54,17 +55,11 @@ public class HistoryTablePopupTest {
             verificationErrors.append(e.toString());
         }
 
-        SeleniumTestCaseUtility.waitABit();
+        waitABit();
 
         driver.findElement(By.xpath("(//button[@type='button'])[5]")).click();
 
-        SeleniumTestCaseUtility.waitABit();
-
-        for (int second = 0;; second++) {
-            if (second >= 60) fail("timeout");
-            if ("HEALTH CHECK 4.0".equals(driver.findElement(By.cssSelector("tr.even > td.adj-col.sorting_1")).getText())) break;
-            Thread.sleep(1000);
-        }
+        waitABit();
 
         driver.findElement(By.linkText("Logout")).click();
     }
@@ -109,5 +104,5 @@ public class HistoryTablePopupTest {
         } finally {
             acceptNextAlert = true;
         }
-    }*/
+    }
 }
