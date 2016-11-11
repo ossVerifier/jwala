@@ -14,6 +14,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class SeleniumTestCase {
 
+    // setup properties
     private static final String PROPERTY_JWALA_BASE_URL = "jwala.base.url";
     private static final String PROPERTY_JWALA_WAIT_BETWEEN_STEPS_TIME_MS = "jwala.wait.between.steps.time.ms";
     private static final String PROPERTY_JWALA_WAIT_BETWEEN_STEPS = "jwala.wait.between.steps";
@@ -23,6 +24,12 @@ public class SeleniumTestCase {
     private static final String PROPERTY_WEBDRIVER_CLASS = "webdriver.class";
 
     private static final String JWALA_INTEGRATION_TEST_PROPERTIES = "jwala-integration-test.properties";
+
+    // shared properties
+    protected static final String PROPERTY_JWALA_RESOURCES_UPLOAD_DIR = "jwala.resources.upload.dir";
+    protected static final String PROPERTY_JWALA_PATH_SEPARATOR = "jwala.path.separator";
+
+    protected static final String EXTERNAL_PROPERTIES_FILE_NAME = "external.properties";
 
     protected Properties properties;
     protected WebDriver driver;
