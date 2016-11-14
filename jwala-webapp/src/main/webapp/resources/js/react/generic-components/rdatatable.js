@@ -393,9 +393,21 @@ var RDataTable = React.createClass({
         this.setState({data:data});
     },
 
+    /**
+     * Get selected row data
+     */
+    getSelectedItem: function() {
+        var selectedRow = this.refs[RDataTable.ROW_INDEX_PREFIX + this.state.selectedRowIdx];
+        if (selectedRow) {
+            return selectedRow.props.rowItem;
+        }
+        return null;
+    },
+
     statics: {
 
         EXPANDED_ROW: "expandedRow",
+        ROW_INDEX_PREFIX: "row",
         columnType: {EXPAND_COLLAPSE_CONTROL: "expandCollapseControl"},
 
         /**
