@@ -11,7 +11,7 @@ var WebAppConfig = React.createClass({
                    </div>
 
                    <RDataTable ref="dataTable"
-                               tableIndex="name"
+                               tableIndex="id.id"
                                colDefinitions={[{key: "id", isVisible: false},
                                                 {key: "secure", renderCallback: this.renderSecureColumn, sortable: false},
                                                 {title: "WebApp Name", key: "name", renderCallback: this.renderWebAppNameCallback},
@@ -53,10 +53,13 @@ var WebAppConfig = React.createClass({
     componentDidMount: function() {
         this.loadTableData();
     },
-    loadTableData: function() {
+    loadTableData: function(afterLoadCallback) {
         var self = this;
         this.props.service.getWebApps(function(response){
                                           self.refs.dataTable.refresh(response.applicationResponseContent);
+                                          if ($.isFunction(afterLoadCallback)) {
+                                            afterLoadCallback();
+                                          }
                                       });
     },
     renderWebAppNameCallback: function(name) {
@@ -98,9 +101,10 @@ var WebAppConfig = React.createClass({
             var serializedData = $(this.refs.modalEditWebAppDlg.refs.webAppEditForm.refs.form.getDOMNode()).serializeArray();
             this.props.service.updateWebApp(serializedData,
                                             function(response){
-                                                console.log(response.applicationResponseContent);
                                                 self.refs.modalEditWebAppDlg.close();
-                                                self.loadTableData();
+                                                self.loadTableData(function(){
+                                                    self.state.selectedWebApp = self.refs.dataTable.getSelectedItem();
+                                                });
                                             },
                                             function(errMsg) {
                                                 $.errorAlert(errMsg, "Error");
