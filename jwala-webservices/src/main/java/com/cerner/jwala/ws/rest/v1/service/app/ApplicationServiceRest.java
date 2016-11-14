@@ -27,6 +27,10 @@ public interface ApplicationServiceRest extends InitializingBean {
     Response getApplication(@PathParam("applicationId") final Identifier<Application> anAppId);
 
     @GET
+    @Path("/application")
+    Response getApplicationByName(@MatrixParam("name") String name);
+
+    @GET
     @Path("/jvm/{jvmId}")
     Response findApplicationsByJvmId(@PathParam("jvmId") final Identifier<Jvm> aJvmId);
 
