@@ -19,7 +19,8 @@ var WebAppConfig = React.createClass({
                                                 {title: "Web Archive", key: "warName"},
                                                 {key: "actionIcons", renderCallback: this.renderActionIcons, sortable: false},
                                                 {title: "Group", key:"group.name"}]}
-                               selectItemCallback={this.selectItemCallback} />
+                               selectItemCallback={this.selectItemCallback}
+                               deselectAllRowsCallback={this.deselectAllRowsCallback}/>
 
                    <ModalDialogBox ref="modalAddWebAppDlg"
                                    title="Add Web Application"
@@ -88,7 +89,9 @@ var WebAppConfig = React.createClass({
                 serializedData,
                 function(){
                     self.refs.modalAddWebAppDlg.close();
-                    self.loadTableData();
+                    self.loadTableData(function(){
+                        self.refs.dataTable.deselectAllRows();
+                    });
                 },
                 function(errMsg){
                     $.errorAlert(errMsg, "Error");
@@ -113,6 +116,9 @@ var WebAppConfig = React.createClass({
     },
     selectItemCallback: function(item) {
         this.state.selectedWebApp = item;
+    },
+    deselectAllRowsCallback: function() {
+        this.state.selectedWebApp = null;
     },
     delBtnCallback: function() {
         if (this.state.selectedWebApp) {
