@@ -387,6 +387,16 @@ var RDataTable = React.createClass({
     },
 
     /**
+     * Deselect all rows
+     */
+    deselectAllRows: function() {
+        if ($.isFunction(this.props.deselectAllRowsCallback)) {
+            this.props.deselectAllRowsCallback();
+        }
+        this.setState({selectedRowIdx: null});
+    },
+
+    /**
      * Reloads data and updates the datable..
      */
     refresh: function(data) {
