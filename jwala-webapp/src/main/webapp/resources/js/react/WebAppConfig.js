@@ -129,8 +129,9 @@ var WebAppConfig = React.createClass({
         var self = this;
         ServiceFactory.getWebAppService().deleteWebApp(this.state.selectedWebApp.id.id).then(function(){
             self.refs.confirmDeleteWebAppDlg.close();
-            self.state.selectedWebApp = null;
-            self.loadTableData();
+            self.loadTableData(function(){
+                self.state.selectedWebApp = null;
+            });
         });
     },
     onWebAppNameClick: function(name) {
@@ -170,13 +171,6 @@ var WebAppConfig = React.createClass({
         var self = this;
         this.props.service.deleteWar(data.id.id).then(function(){
             self.refs.confirmDeleteWarDlg.close();
-            self.loadTableData();
-        });
-    },
-    confirmDeleteCallback: function() {
-        var self = this;
-        this.props.service.deleteWebApp(this.state.selectedWebApp.id.id).then(function(){
-            self.refs.confirmDeleteWebAppDlg.close();
             self.loadTableData();
         });
     }
