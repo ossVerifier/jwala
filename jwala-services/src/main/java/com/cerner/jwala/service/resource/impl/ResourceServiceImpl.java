@@ -701,32 +701,6 @@ public class ResourceServiceImpl implements ResourceService {
         return generateResourceFile(resourceIdentifier.resourceName, content, generateResourceGroup(), resourceHandler.getSelectedValue(resourceIdentifier), ResourceGeneratorType.PREVIEW);
     }
 
-    @Override
-    public void deployTemplateToAllHosts(final String fileName, final ResourceIdentifier resourceIdentifier) {
-        Set<String> allHosts = new TreeSet<>();
-        for (Group group : groupPersistenceService.getGroups()) {
-            allHosts.addAll(groupPersistenceService.getHosts(group.getName()));
-        }
-        Map<String, Future<CommandOutput>> deployFutures = new HashMap<>();
-        for (final String hostName : new ArrayList<>(allHosts)) {
-            Future<CommandOutput> futureContent = executorService.submit(new Callable<CommandOutput>() {
-                @Override
-                public CommandOutput call() throws Exception {
-                    return deployTemplateToHost(fileName, hostName, resourceIdentifier);
-
-                }
-            });
-            deployFutures.put(hostName, futureContent);
-        }
-        waitForDeployToComplete(deployFutures);
-        try {
-            checkFuturesResults(deployFutures, fileName);
-        } catch (ExecutionException | InterruptedException e) {
-            LOGGER.error("Failed getting output status after deploying resource {} to all hosts", fileName, e);
-            throw new InternalErrorException(AemFaultType.CONTROL_OPERATION_UNSUCCESSFUL, "Failed getting output status after deploying resource " + fileName + " to all hosts");
-        }
-    }
-
     protected void checkFuturesResults(Map<String, Future<CommandOutput>> futures, String fileName) throws ExecutionException, InterruptedException {
         for (String hostName : futures.keySet()) {
             Future<CommandOutput> deployFuture = futures.get(hostName);
@@ -752,57 +726,6 @@ public class ResourceServiceImpl implements ResourceService {
             }
             LOGGER.info("Tasks complete: {}", size);
         }
-    }
-
-
-    @Override
-    public CommandOutput deployTemplateToHost(String fileName, String hostName, ResourceIdentifier
-            resourceIdentifier) {
-        // only one at a time per jvm
-        if (!resourceWriteLockMap.containsKey(hostName)) {
-            resourceWriteLockMap.put(hostName, new ReentrantReadWriteLock());
-        }
-        resourceWriteLockMap.get(hostName).writeLock().lock();
-
-        final String badStreamMessage = "Bad Stream: ";
-        CommandOutput commandOutput;
-        try {
-            final String metaDataPath;
-            final ResourceContent resourceContent = getResourceContent(resourceIdentifier);
-
-            ResourceTemplateMetaData resourceTemplateMetaData = getMetaData(resourceContent.getMetaData());
-            metaDataPath = resourceTemplateMetaData.getDeployPath();
-            String resourceSourceCopy;
-            final String deployFileName = resourceTemplateMetaData.getDeployFileName();
-            // TODO set the selected entity value, for now make it null for the external properties
-            String resourceDestPath = metaDataPath + "/" + deployFileName;
-            if (resourceTemplateMetaData.getContentType().equals(ContentType.APPLICATION_BINARY.contentTypeStr)) {
-                resourceSourceCopy = resourceContent.getContent();
-            } else {
-                String fileContent = resourceContent.getContent();
-                // TODO make the copy source generic (not external-properties directory)
-                String jvmResourcesNameDir = ApplicationProperties.get("paths.generated.resource.dir") + "/external-properties";
-                resourceSourceCopy = jvmResourcesNameDir + "/" + deployFileName;
-                createConfigFile(jvmResourcesNameDir + "/", deployFileName, fileContent);
-            }
-
-            LOGGER.info("Copying {} to {} on host {}", resourceSourceCopy, resourceDestPath, hostName);
-            // TODO replace ApplicationControlOperation (and all operation classes) with ResourceControlOperation
-            // TODO replace WindowsApplicationPlatformCommandProvider (and all platform command provider) with WindowsResourcePlatformCommandProvider
-            commandOutput = secureCopyFile(hostName, resourceSourceCopy, resourceDestPath);
-
-        } catch (IOException e) {
-            String message = "Failed to write file";
-            LOGGER.error(badStreamMessage + message, e);
-            throw new InternalErrorException(AemFaultType.BAD_STREAM, message, e);
-        } catch (CommandFailureException ce) {
-            String message = "Failed to copy file";
-            LOGGER.error(badStreamMessage + message, ce);
-            throw new InternalErrorException(AemFaultType.BAD_STREAM, message, ce);
-        } finally {
-            resourceWriteLockMap.get(hostName).writeLock().unlock();
-        }
-        return commandOutput;
     }
 
     protected CommandOutput secureCopyFile(final String hostName, final String sourcePath, final String destPath) throws CommandFailureException {
