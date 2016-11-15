@@ -219,10 +219,15 @@ var WebAppConfigForm = React.createClass({
                                            idKey="groupId"
                                            singleSelect={true}/>
                        <label>Secure</label>
+                       <br/>
                        <input name="secure" type="checkbox" checked={this.state.secure} onChange={this.onSecureCheckBoxChange}/>
+                       <br/>
                        <label>Unpack WAR</label>
+                       <br/>
                        <input name="unpackWar" type="checkbox" checked={this.state.unpackWar} onChange={this.onUnpackWarCheckboxChange}/>
+                       <br/>
                        <label>Load Balance</label>
+                       <br/>
                        <input type="radio"
                               name="loadBalance"
                               value="acrossServers"
