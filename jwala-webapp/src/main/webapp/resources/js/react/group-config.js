@@ -15,35 +15,34 @@ var GroupConfig = React.createClass({
                                     <GenericButton label="Delete" accessKey="d" callback={this.delBtnCallback}/>
                                     <GenericButton label="Add" accessKey="a" callback={this.addBtnCallback}/>
                                 </div>
-                                </td>
-                                       </tr>
-                                       <tr>
-                                           <td>
-                                               <div>
-                                                   <RDataTable ref="groupConfigTable"
-                                                               colDefinitions={this.getColDef()}
-                                                               data={this.state.groupData}
-                                                               selectItemCallback={this.selectItemCallback}
-                                                               tableIndex="id.id"/>
-                                               </div>
-                                           </td>
-                                       </tr>
-                                  </table>
-                                  <ModalDialogBox ref="modalAddGroupDlg"
-                                                  title="Add Group"
-                                                  okCallback={this.okAddCallback}
-                                                  content={<GroupConfigForm ref="groupAddForm" />}/>
-                                  <ModalDialogBox ref="modalEditGroupDlg"
-                                                  title="Edit Group"
-                                                  okCallback={this.okEditCallback}
-                                                  content={<GroupConfigForm ref="groupEditForm"
-                                                            data={this.state.selectedGroupForEditing}/>}/>
-                                  <ModalDialogBox ref="modalDeleteDlg"
-                                                  okLabel="Yes"
-                                                  cancelLabel="No"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div>
+                                    <RDataTable ref="groupConfigTable"
+                                                colDefinitions={this.getColDef()}
+                                                data={this.state.groupData}
+                                                selectItemCallback={this.selectItemCallback}
+                                                tableIndex="id.id"/>
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
 
+                    <ModalDialogBox ref="modalAddGroupDlg"
+                                    title="Add Group"
+                                    okCallback={this.okAddCallback}
+                                    content={<GroupConfigForm ref="groupAddForm" />}/>
+                    <ModalDialogBox ref="modalEditGroupDlg"
+                                    title="Edit Group"
+                                    okCallback={this.okEditCallback}
+                                    content={<GroupConfigForm ref="groupEditForm"
+                                                              data={this.state.selectedGroupForEditing}/>}/>
+                    <ModalDialogBox ref="modalDeleteDlg"
+                                    okLabel="Yes"
+                                    cancelLabel="No"/>
                 </div>
-
     },
     componentDidMount: function() {
         this.loadTableData();
