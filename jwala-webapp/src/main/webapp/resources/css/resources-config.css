@@ -149,3 +149,7 @@
     display: block;
     width: 320px;
 }
+
+.MetaDataEntryForm select {
+    width: 150px;
+}
