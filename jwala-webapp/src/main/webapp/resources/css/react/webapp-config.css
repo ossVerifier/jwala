@@ -1,91 +1,18 @@
-.war-upload-component {
-    width: 100%;
+.WebAppConfig {
+    position: relative;
 }
 
-.war-upload-component div.archive-file {
-    float: left;
-}
-
-.war-upload-component div.eject-icon {
+.WebAppConfig > .btnContainer {
     float: right;
-}
-
-.war-upload-component div.file-upload {
-    padding: 10px 0 0 0;
-    width: 100%;
-}
-
-.webapp-config > table {
-    width: 100%;
-}
-
-.war-upload-component .fileUploadContainer {
-    display: inline-block;
-    padding-bottom: 5px;
-}
-
-.war-upload-component .deployPath {
-    width: 100%;
-}
-
-.war-upload-component .deployPath > input {
-    margin-top: 2px;
-    margin-right: 2px;
-    width: 100%;
-}
-
-.war-upload-component .deployPath .openCloseProperties {
-    padding-top: 3px;
-    max-height:
-}
-
-.war-upload-component .deployPath .openCloseProperties > span {
-    display: inline-block;
-    vertical-align: top;
-    height: 16px;
-}
-
-.war-upload-component .deployPath .openCloseProperties > .ui-icon {
-    display: inline-block;
-    margin-left: -5px !important;
-    cursor: pointer;
-    margin-top: -1px;
-}
-
-.war-upload-component .deployPath .openCloseProperties .ui-icon-plus {
-    cursor: pointer;
-}
-
-.war-upload-component .deployPath .openCloseProperties table {
-    font-style: italic;
-    font-family: Consolas, Tahoma, Helvetica, sans-serif;
-    white-space: nowrap;
-}
-
-.war-upload-component .deployPath .openCloseProperties table .key {
-    color: #881391;
+    margin-bottom: 2px;
 }
 
 .upArrowIconBtn {
-    padding-left: 2px;
+    padding-left: 0;
     padding-right: 0;
 }
 
 .trashIconBtn {
     padding-left: 0;
     padding-right: 0;
-}
-
-.war-upload-component .progressBar {
-    clear: left;
-    height: 10px;
-    width: 100%;
-    padding-top: 0.5em;
-}
-
-.war-upload-component .progressBar > .inner {
-    clear: left;
-    height: 10px;
-    width: 0%;
-    backgroundColor: green;
 }

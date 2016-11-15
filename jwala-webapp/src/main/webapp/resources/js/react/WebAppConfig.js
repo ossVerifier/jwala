@@ -1,129 +1,154 @@
 /** @jsx React.DOM */
 var WebAppConfig = React.createClass({
     getInitialState: function() {
-        return {
-            showModalFormAddDialog: false,
-            showModalFormEditDialog: false,
-            WebAppFormData: {},
-            WebAppTableData: [],
-            groupSelectData: [],
-            selectedWebApp: null
-        }
-    },
-    shouldComponentUpdate: function(nextProps, nextState) {
-        if(
-          (!nextState.showModalFormAddDialog && this.state.showModalFormAddDialog)
-        ||(!nextState.showModalFormEditDialog && this.state.showModalFormEditDialog)
-        ){
-          return false;
-        }
-        return true;
+        return {selectedWebApp: null};
     },
     render: function() {
-        var btnDivClassName = this.props.className + "-btn-div";
-        return  <div className={this.props.className}>
-                    <table>
-                        <tr>
-                            <td>
-                                <div style={{float:"right"}}>
-                                    <GenericButton label="Delete" accessKey="d" callback={this.delBtnCallback}/>
-                                    <GenericButton label="Add" accessKey="a" callback={this.addBtnCallback}/>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <div>
-                                    <RDataTable colDefinitions={[{key: "id", isVisible: false},
-                                                                 {key: "secure", renderCallback: this.renderSecureColumn, sortable: false},
-                                                                 {title: "WebApp Name", key: "name", renderCallback: this.renderWebAppNameCallback},
-                                                                 {title: "Context", key: "webAppContext"},
-                                                                 {title: "Web Archive", key: "warName"},
-                                                                 {key: "actionIcons", renderCallback: this.renderActionIcons, sortable: false},
-                                                                 {title: "Group", key:"group.name"}]}
-                                                data={this.state.WebAppTableData}
-                                                selectItemCallback={this.selectItemCallback} />
-                                </div>
-                            </td>
-                        </tr>
-                   </table>
-                   <WebAppConfigForm title="Add WebApp"
-                                    show={this.state.showModalFormAddDialog}
-                                    groupSelectData={this.state.groupSelectData}
-                                    service={this.props.service}
-                                    successCallback={this.addSuccessCallback}
-                                    destroyCallback={this.closeModalFormAddDialog}
-                                    className="textAlignLeft"
-                                    noUpdateWhen={
-                                        this.state.showModalFormEditDialog
-                                    }/>
-                  <WebAppConfigForm title="Edit WebApp"
-                                  show={this.state.showModalFormEditDialog}
-                                  service={this.props.service}
-                                  data={this.state.WebAppFormData}
-                                  groupSelectData={this.state.groupSelectData}
-                                  successCallback={this.editSuccessCallback}
-                                  destroyCallback={this.closeModalFormEditDialog}
-                                  className="textAlignLeft"
-                                  noUpdateWhen={
-                                      this.state.showModalFormAddDialog
-                                  }/>
+        return <div className="WebAppConfig">
+                   <div className="btnContainer">
+                       <GenericButton label="Delete" accessKey="d" callback={this.delBtnCallback}/>
+                       <GenericButton label="Add" accessKey="a" callback={this.addBtnCallback}/>
+                   </div>
 
-                  <ModalDialogBox ref="confirmDeleteWebAppDlg"
-                                  okLabel="Yes"
-                                  okCallback={this.confirmDeleteCallback}
-                                  cancelLabel="No"/>
+                   <RDataTable ref="dataTable"
+                               tableIndex="id.id"
+                               colDefinitions={[{key: "id", isVisible: false},
+                                                {key: "secure", renderCallback: this.renderSecureColumn, sortable: false},
+                                                {title: "WebApp Name", key: "name", renderCallback: this.renderWebAppNameCallback},
+                                                {title: "Context", key: "webAppContext"},
+                                                {title: "Web Archive", key: "warName"},
+                                                {key: "actionIcons", renderCallback: this.renderActionIcons, sortable: false},
+                                                {title: "Group", key:"group.name"}]}
+                               selectItemCallback={this.selectItemCallback}
+                               deselectAllRowsCallback={this.deselectAllRowsCallback}/>
 
-                  <ModalDialogBox title="Upload WAR"
-                                  ref="uploadWarDlg"
-                                  okLabel="Upload"
-                                  okCallback={this.uploadCallback}
-                                  cancelCallback={this.uploadWarDlgCancelCallback}
-                                  cancelLabel="Close"
-                                  contentReferenceName="uploadWarWidget" />
+                   <ModalDialogBox ref="modalAddWebAppDlg"
+                                   title="Add Web Application"
+                                   okCallback={this.okAddCallback}
+                                   content={<WebAppConfigForm ref="webAppAddForm"/>}/>
 
-                  <ModalDialogBox ref="confirmDeleteWarDlg"
-                                  okLabel="Yes"
-                                  okCallback={this.deleteWarCallback}
-                                  cancelLabel="No"/>
+                   <ModalDialogBox ref="modalEditWebAppDlg"
+                                   title="Edit Web Application"
+                                   contentReferenceName="webAppEditForm"
+                                   okCallback={this.okEditCallback}/>
 
-               </div>
+                   <ModalDialogBox ref="confirmDeleteWebAppDlg"
+                                   okLabel="Yes"
+                                   okCallback={this.confirmDeleteCallback}
+                                   cancelLabel="No"/>
+
+                   <ModalDialogBox title="Upload WAR"
+                                   ref="uploadWarDlg"
+                                   okLabel="Upload"
+                                   okCallback={this.uploadCallback}
+                                   cancelCallback={this.uploadWarDlgCancelCallback}
+                                   cancelLabel="Close"
+                                   contentReferenceName="uploadWarWidget" />
+
+                   <ModalDialogBox ref="confirmDeleteWarDlg"
+                                   okLabel="Yes"
+                                   okCallback={this.deleteWarCallback}
+                                   cancelLabel="No"/>
+               </div>;
+    },
+    componentDidMount: function() {
+        this.loadTableData();
+    },
+    loadTableData: function(afterLoadCallback) {
+        var self = this;
+        this.props.service.getWebApps(function(response){
+                                          self.refs.dataTable.refresh(response.applicationResponseContent);
+                                          if ($.isFunction(afterLoadCallback)) {
+                                            afterLoadCallback();
+                                          }
+                                      });
     },
     renderWebAppNameCallback: function(name) {
         var self = this;
         return <button className="button-link" onClick={function(){self.onWebAppNameClick(name)}}>{name}</button>
     },
-    onWebAppNameClick: function(name) {
-        var self = this;
-        this.state.WebAppTableData.forEach(function(data){
-            if (data.name === name) {
-                console.log(data.id);
-                self.props.service.getWebApp(data.id.id,
-                    function(response){
-                        self.setState({WebAppFormData: response.applicationResponseContent,
-                                       showModalFormEditDialog: true})
-                    }
-                );
-                return;
-            }
-        });
-    },
-    renderSecureColumn: function(secure) {
-        if (secure) {
-            return <span className="ui-icon ui-icon-locked"></span>;
-        }
-        return <span className="ui-icon ui-icon-unlocked"></span>;
-    },
     renderActionIcons: function(id, data) {
         var self = this;
         var uploadBtn = data.warName ? null : <RButton title="Upload WAR" className="upArrowIconBtn ui-widget ui-state-default ui-corner-all ui-button-text-only ui-button-height"
-                                                       hoverClassName="ui-state-hover" spanClassName="ui-icon ui-icon-arrowthick-1-n" onClick={function(){self.onUploadWarBtnClicked(data)}} />
+                                                       hoverClassName="ui-state-hover" spanClassName="ui-icon ui-icon-arrowreturnthick-1-n" onClick={function(){self.onUploadWarBtnClicked(data)}} />
         var deleteBtn = data.warName ? <RButton title="Delete WAR" className="trashIconBtn ui-widget ui-state-default ui-corner-all ui-button-text-only ui-button-height"
                                                 hoverClassName="ui-state-hover" spanClassName="ui-icon ui-icon-trash" onClick={function(){self.onDeleteWarBtnClicked(data)}} /> : null;
         return <div>
                    {uploadBtn}
                    {deleteBtn}
                </div>
+    },
+    addBtnCallback: function() {
+        this.refs.modalAddWebAppDlg.show();
+    },
+    okAddCallback: function() {
+        var self = this;
+        if (this.refs.webAppAddForm.isValid()) {
+            var serializedData = $(this.refs.webAppAddForm.refs.form.getDOMNode()).serializeArray();
+            ServiceFactory.getWebAppService().insertNewWebApp(
+                serializedData,
+                function(){
+                    self.refs.modalAddWebAppDlg.close();
+                    self.loadTableData(function(){
+                        self.refs.dataTable.deselectAllRows();
+                    });
+                },
+                function(errMsg){
+                    $.errorAlert(errMsg, "Error");
+                });
+        }
+    },
+    okEditCallback: function() {
+        var self = this;
+        if (this.refs.modalEditWebAppDlg.refs.webAppEditForm.isValid()) {
+            var serializedData = $(this.refs.modalEditWebAppDlg.refs.webAppEditForm.refs.form.getDOMNode()).serializeArray();
+            this.props.service.updateWebApp(serializedData,
+                                            function(response){
+                                                self.refs.modalEditWebAppDlg.close();
+                                                self.loadTableData(function(){
+                                                    self.state.selectedWebApp = self.refs.dataTable.getSelectedItem();
+                                                });
+                                            },
+                                            function(errMsg) {
+                                                $.errorAlert(errMsg, "Error");
+                                            });
+        }
+    },
+    selectItemCallback: function(item) {
+        this.state.selectedWebApp = item;
+    },
+    deselectAllRowsCallback: function() {
+        this.state.selectedWebApp = null;
+    },
+    delBtnCallback: function() {
+        if (this.state.selectedWebApp) {
+            this.refs.confirmDeleteWebAppDlg.show("Delete Web Application", "Are you sure you want to delete " + this.state.selectedWebApp["str-name"] + " ?");
+        }
+    },
+    confirmDeleteCallback: function() {
+        var self = this;
+        ServiceFactory.getWebAppService().deleteWebApp(this.state.selectedWebApp.id.id).then(function(){
+            self.refs.confirmDeleteWebAppDlg.close();
+            self.loadTableData(function(){
+                self.state.selectedWebApp = null;
+            });
+        });
+    },
+    onWebAppNameClick: function(name) {
+        var self = this;
+        ServiceFactory.getWebAppService().getWebAppByName(name).then(function(response){
+            var formData = {};
+            formData["id"] = response.applicationResponseContent.id;
+            formData["name"] = response.applicationResponseContent.name;
+            formData["context"] = response.applicationResponseContent.webAppContext;
+            formData["groupIds"] = [response.applicationResponseContent.group.id];
+            formData["secure"] = response.applicationResponseContent.unpackWar;
+            formData["unpackWar"] = response.applicationResponseContent.unpackWar;
+            formData["loadBalance"] = response.applicationResponseContent.loadBalance;
+            formData["loadBalanceAcrossServers"] = response.applicationResponseContent.loadBalanceAcrossServers;
+            self.refs.modalEditWebAppDlg.show("Edit Web Application",
+                <WebAppConfigForm formData={formData}/>);
+        });
     },
     onUploadWarBtnClicked: function(data) {
         this.refs.uploadWarDlg.show("Upload WAR", <UploadWarWidget service={this.props.service} data={data}
@@ -133,7 +158,7 @@ var WebAppConfig = React.createClass({
         this.refs.uploadWarDlg.refs.uploadWarWidget.performUpload();
     },
     afterUploadCallback: function(files) {
-        this.retrieveData();
+        this.loadTableData();
         this.refs.uploadWarDlg.close();
         $.alert(files[0].name + " upload successful!");
     },
@@ -146,265 +171,107 @@ var WebAppConfig = React.createClass({
         var self = this;
         this.props.service.deleteWar(data.id.id).then(function(){
             self.refs.confirmDeleteWarDlg.close();
-            self.retrieveData();
+            self.loadTableData();
         });
-    },
-    confirmDeleteCallback: function() {
-        var self = this;
-        this.props.service.deleteWebApp(this.state.selectedWebApp.id.id).then(function(){
-            self.refs.confirmDeleteWebAppDlg.close();
-            self.retrieveData();
-        });
-    },
-    retrieveData: function() {
-        var self = this;
-        this.props.service.getWebApps(function(response){
-                                        self.setState({WebAppTableData:response.applicationResponseContent});
-                                     });
-        this.props.groupService.getGroups().then(
-            function(response){
-                self.setState({groupSelectData:response.applicationResponseContent});
-            }
-        );
-    },
-    addSuccessCallback: function() {
-        this.retrieveData();
-        this.closeModalFormAddDialog();
-    },
-    editSuccessCallback: function() {
-        this.retrieveData();
-        this.closeModalFormEditDialog();
-    },
-    addBtnCallback: function() {
-        this.setState({showModalFormAddDialog: true})
-    },
-    delBtnCallback: function() {
-        if (this.state.selectedWebApp) {
-            this.refs.confirmDeleteWebAppDlg.show("Confirm delete Web App", "Are you sure you want to delete " +
-                                                  this.state.selectedWebApp["str-name"] + " ?");
-        }
-    },
-    selectItemCallback: function(item) {
-        this.state["selectedWebApp"] = item; // let's not use setState because we don't want to trigger re rendering
-    },
-    editCallback: function(e) {
-        var thisComponent = this;
-        this.props.service.getWebApp(e.data.id.id,
-            function(response){
-                thisComponent.setState({WebAppFormData: response.applicationResponseContent,
-                                        showModalFormEditDialog: true})
-            }
-        );
-    },
-    closeModalFormAddDialog: function() {
-        this.setState({showModalFormAddDialog: false})
-    },
-    closeModalFormEditDialog: function() {
-        this.setState({showModalFormEditDialog: false})
-    },
-    componentDidMount: function() {
-        this.retrieveData();
     }
-});
+})
 
 var WebAppConfigForm = React.createClass({
     mixins: [
-      React.addons.LinkedStateMixin
+        React.addons.LinkedStateMixin
     ],
-    validator: null,
-    shouldComponentUpdate: function(nextProps, nextState) {
-        return !nextProps.noUpdateWhen;
-    },
     getInitialState: function() {
-        return {
-            WebAppId: "",
-            WebAppName: "",
-            WebAppContext: "",
-            groupIds: [],
-            secure: true,
-            unpackWar: false,
-            loadBalanceAcrossServers: true
-        }
-    },
-    getWebAppIdProp: function(props) {
-        if (props.data !== undefined && props.data.id !== undefined) {
-            return props.data.id.id;
-        }
-        return "";
-    },
-    getWebAppProp: function(props, name, defaultVal) {
-        if (props.data !== undefined) {
-            return props.data[name];
-        }
-        return defaultVal;
-    },
-    getWebAppGroupIdProp: function(props) {
-        if (props.data !== undefined && props.data.group !== undefined && props.data.group.id !== undefined) {
-            return props.data.group.id.id;
-        }
-        return "";
-    },
-    getWebAppGroupProp: function(props, name) {
-        if (props.data !== undefined && props.data.group !== undefined ) {
-            return props.data.group[name];
-        }
-        return "";
-    },
-    componentWillReceiveProps: function(nextProps) {
-        this.setState(
-          { WebAppId:this.getWebAppIdProp(nextProps),
-            WebAppName:this.getWebAppProp(nextProps, "name", ""),
-            WebAppContext:this.getWebAppProp(nextProps, "webAppContext", ""),
-            groupIds:[{id: this.getWebAppGroupIdProp(nextProps, "id")}],
-            GroupName:this.getWebAppGroupProp(nextProps, "name"),
-            secure:this.getWebAppProp(nextProps, "secure", true),
-            unpackWar:this.getWebAppProp(nextProps, "unpackWar", false),
-            loadBalanceAcrossServers:this.getWebAppProp(nextProps, "loadBalanceAcrossServers", true)
-          });
+        var name = this.props.formData && this.props.formData.name ? this.props.formData.name : null;
+        var context = this.props.formData && this.props.formData.context ? this.props.formData.context : null;
+        var groupIds = this.props.formData && this.props.formData.groupIds && this.props.formData.groupIds instanceof Array ? this.props.formData.groupIds : [];
+        var secure = this.props.formData && this.props.formData.secure ? this.props.formData.secure : false;
+        var unpackWar = this.props.formData && this.props.formData.unpackWar ? this.props.formData.unpackWar : false;
+        var loadBalanceAcrossServers = this.props.formData && this.props.formData.loadBalanceAcrossServers ? this.props.formData.loadBalanceAcrossServers : false;
+        return {groupData: {}, name: name, context: context, groupIds: groupIds, secure: secure, unpackWar: unpackWar,
+                loadBalanceAcrossServers: loadBalanceAcrossServers};
     },
     render: function() {
-        return <div className={this.props.className} style={{display:"none"}}>
-                    <form>
-                        <input name="webappId" type="hidden" value={this.state.WebAppId} />
-                        <table>
-                            <tr>
-                                <td>Name</td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <label htmlFor="name" className="error"></label>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td><input name="name"
-                                           type="text"
-                                           value={this.state.WebAppName}
-                                           onChange={this.onChangeWebAppName}
-                                           maxLength="255"
-                                           required
-                                           className="width-max"/></td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    *Context path
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <label htmlFor="webappContext" className="error"></label>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td><input name="webappContext" type="text" valueLink={this.linkState("WebAppContext")}
-                                           required maxLength="255" className="width-max"/></td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    *Associated Group
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <label htmlFor="groupId" className="error"></label>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                 <DataMultiSelectBox name="groupId"
-                                                     data={this.props.groupSelectData}
-                                                     selectedValIds={this.state.groupIds}
-                                                     dataField="id.id"
-                                                     val="name"
-                                                     className="data-multi-select-box"
-                                                     onSelectCallback={this.onSelectGroups}
-                                                     idKey="groupId"
-                                                     singleSelect={true}/>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>Secure</td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <input name="secure" type="checkbox" checked={this.state.secure} onChange={this.onSecureCheckboxChanged}/>
-                                </td>
-                            </tr>
+        var idTextHidden = null;
+        if (this.props.formData && this.props.formData.id) {
+            idTextHidden = <input type="hidden" name="webappId" value={this.props.formData.id.id}/>;
+        }
 
-                            <tr>
-                                <td>Unpack War</td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <input name="unpackWar" type="checkbox" checked={this.state.unpackWar} onChange={this.onUnpackWarCheckboxChanged}/>
-                                </td>
-                            </tr>
-
-                            <tr>
-                                <td>Load Balance</td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <input type="radio"
-                                           name="loadBalance"
-                                           value="acrossServers"
-                                           checked={this.state.loadBalanceAcrossServers}
-                                           onClick={this.onLbAcrossServersCheckboxChanged}>Across Servers</input>
-                                    <input type="radio"
-                                           name="loadBalance"
-                                           value="locally"
-                                           checked={!this.state.loadBalanceAcrossServers}
-                                           onClick={this.onLbLocallyCheckboxChanged}>Local Only</input>
-                                </td>
-                            </tr>
-
-                        </table>
-                    </form>
+        return <div>
+                   <form ref="form">
+                       {idTextHidden}
+                       <label>*Name</label><br/>
+                       <label htmlFor="name" className="error"/>
+                       <input name="name" type="text" valueLink={this.linkState("name")} maxLength="255" required
+                              className="width-max"/>
+                       <label>*Context path</label><br/>
+                       <label htmlFor="webappContext" className="error"/>
+                       <input name="webappContext" type="text" valueLink={this.linkState("context")}
+                              required maxLength="255" className="width-max"/>
+                       <label>*Associated Group</label><br/>
+                       <label htmlFor="groupId" className="error"/>
+                       <DataMultiSelectBox name="groupId"
+                                           data={this.state.groupData}
+                                           selectedValIds={this.state.groupIds}
+                                           dataField="id.id"
+                                           val="name"
+                                           className="data-multi-select-box"
+                                           onSelectCallback={this.onSelectGroups}
+                                           idKey="groupId"
+                                           singleSelect={true}/>
+                       <label>Secure</label>
+                       <br/>
+                       <input name="secure" type="checkbox" checked={this.state.secure} onChange={this.onSecureCheckBoxChange}/>
+                       <br/>
+                       <label>Unpack WAR</label>
+                       <br/>
+                       <input name="unpackWar" type="checkbox" checked={this.state.unpackWar} onChange={this.onUnpackWarCheckboxChange}/>
+                       <br/>
+                       <label>Load Balance</label>
+                       <br/>
+                       <input type="radio"
+                              name="loadBalance"
+                              value="acrossServers"
+                              checked={this.state.loadBalanceAcrossServers}
+                              onClick={this.onLbAcrossServersCheckboxChange}>Across Servers</input>
+                       <input type="radio"
+                              name="loadBalance"
+                              value="locally"
+                              checked={!this.state.loadBalanceAcrossServers}
+                              onClick={this.onLbLocallyCheckboxChange}>Local Only</input>
+                   </form>
                </div>
     },
-    onSecureCheckboxChanged: function() {
-        this.setState({secure:!this.state.secure});
+    validator: null,
+    componentDidMount: function() {
+        var self = this;
+        ServiceFactory.getGroupService().getGroups().then(function(response){
+            self.setState({groupData: response.applicationResponseContent});
+        }).lastly(function(){
+            if (self.validator === null) {
+                self.validator = $(self.getDOMNode().children[0])
+                    .validate({ignore: ":hidden", rules: {"groupId": {required: true}},
+                               messages: {
+                                   "groupId": {
+                                       required: "Please select at least 1 group"
+                                   }
+                               }});
+                    }
+        });
     },
-    onUnpackWarCheckboxChanged: function() {
-        this.setState({unpackWar:!this.state.unpackWar});
+    onSecureCheckBoxChange: function() {
+        this.setState({secure: !this.state.secure});
     },
-    onLbAcrossServersCheckboxChanged: function() {
+    onUnpackWarCheckboxChange: function() {
+        this.setState({unpackWar: !this.state.unpackWar});
+    },
+    onLbAcrossServersCheckboxChange: function() {
         this.setState({loadBalanceAcrossServers: true});
     },
-    onLbLocallyCheckboxChanged: function() {
+    onLbLocallyCheckboxChange: function() {
         this.setState({loadBalanceAcrossServers: false});
     },
     onSelectGroups: function(groupIds) {
         this.setState({groupIds: groupIds});
-    },
-    onChangeWebAppName: function(event) {
-        this.setState({WebAppName:event.target.value});
-    },
-    componentDidMount: function() {
-        if (this.validator === null) {
-            this.validator = $(this.getDOMNode().children[0])
-                .validate({ignore: ":hidden", rules: {"groupId": {required: true}},
-                           messages: {
-                               "groupId": {
-                                   required: "Please select at least 1 group"
-                               }
-                           }});
-        }
-    },
-    componentDidUpdate: function() {
-        if (this.props.show === true) {
-
-            // Check first if this component has been decorated already.
-            // Decorate only once!
-            if (!$(this.getDOMNode()).hasClass("ui-dialog-content")) {
-                var okCallback = this.props.data === undefined ? this.insertNewWebApp : this.updateWebApp;
-                decorateNodeAsModalFormDialog(this.getDOMNode(),
-                                              this.props.title,
-                                              okCallback,
-                                              this.destroy,
-                                              this.destroy);
-            }
-
-        }
     },
     isValid: function() {
         if (this.validator !== null) {
@@ -416,44 +283,8 @@ var WebAppConfigForm = React.createClass({
             alert("There is no validator for the form!");
         }
         return false;
-    },
-    insertNewWebApp: function() {
-        var self = this;
-        if (this.isValid()) {
-            this.props.service.insertNewWebApp($(this.getDOMNode().children[0]).serializeArray(),
-                                              function(){
-                                                self.props.successCallback();
-                                                $(self.getDOMNode()).dialog("destroy");
-                                              },
-                                              function(errMsg) {
-                                                    $.errorAlert(errMsg, "Error");
-                                              });
-            return true;
-        }
-        return false;
-    },
-    updateWebApp: function() {
-        var self = this;
-        if (this.isValid()) {
-            this.props.service.updateWebApp($(this.getDOMNode().children[0]).serializeArray(),
-                                           function(){
-                                                self.props.successCallback();
-                                                $(self.getDOMNode()).dialog("destroy");
-                                           },
-                                           function(errMsg) {
-                                                $.errorAlert(errMsg, "Error");
-                                           });
-            return true;
-        }
-        return false;
-    },
-    destroy: function() {
-        this.validator.resetForm();
-        $(this.getDOMNode()).dialog("destroy");
-        this.props.destroyCallback();
     }
 });
-
 
 /**
  * Upload WAR widget.

@@ -5,7 +5,6 @@ import com.cerner.jwala.common.domain.model.resource.ResourceGroup;
 import com.cerner.jwala.common.domain.model.resource.ResourceIdentifier;
 import com.cerner.jwala.common.domain.model.resource.ResourceTemplateMetaData;
 import com.cerner.jwala.common.domain.model.user.User;
-import com.cerner.jwala.common.exec.CommandOutput;
 import com.cerner.jwala.service.resource.impl.CreateResourceResponseWrapper;
 import com.cerner.jwala.service.resource.impl.ResourceGeneratorType;
 
@@ -279,23 +278,6 @@ public interface ResourceService {
      * @return the tokenized template content
      */
     String previewResourceContent(ResourceIdentifier resourceHierarchyParam, String content);
-
-    /**
-     * Deploy the resource to a host
-     *
-     * @param fileName           the name of the template to be deployed
-     * @param hostName           the name of the host where the template will be deployed
-     * @param resourceIdentifier the group, JVM, web server, and web application names that identify the resource
-     */
-    CommandOutput deployTemplateToHost(String fileName, String hostName, ResourceIdentifier resourceIdentifier);
-
-    /**
-     * Deploy the resource to all the hosts configured in Jwala
-     *
-     * @param fileName           the name of the template to be deployed
-     * @param resourceIdentifier the group, JVM, web server, and web application names that identify the resource
-     */
-    void deployTemplateToAllHosts(String fileName, ResourceIdentifier resourceIdentifier);
 
     /**
      * Get the external properties as a string

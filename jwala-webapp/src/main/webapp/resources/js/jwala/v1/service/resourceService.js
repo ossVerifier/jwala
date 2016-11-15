@@ -46,10 +46,6 @@ var resourceService = {
         var matrixParam = this.createMatrixParam(groupName, webServerName, jvmName, webAppName);
         return serviceFoundation.promisedPut("v1.0/resources/template/" + encodeURIComponent(fileName) + "/deploy/host/" + encodeURIComponent(host) + matrixParam);
     },
-    deployResourceToAllHosts: function(fileName, groupName, webServerName, jvmName, webAppName){
-        var matrixParam = this.createMatrixParam(groupName, webServerName, jvmName, webAppName);
-        return serviceFoundation.promisedPut("v1.0/resources/template/" + encodeURIComponent(fileName) + "/deploy/hosts" + matrixParam);
-    },
     deployWebServerResource: function(webServerName, fileName) {
         return serviceFoundation.promisedPut("v1.0/webservers/" + encodeURIComponent(webServerName) + "/conf/" + encodeURIComponent(fileName));
     },

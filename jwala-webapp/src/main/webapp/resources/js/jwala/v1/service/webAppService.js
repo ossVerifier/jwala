@@ -59,6 +59,9 @@ var webAppService = {
 	getWebApp : function(id, responseCallback) {
 		return serviceFoundation.get("v1.0/applications/" + id, "json", responseCallback);
 	},
+	getWebAppByName : function(name) {
+        return serviceFoundation.promisedGet("v1.0/applications/application;name=" + name, "json");
+    },
 	getWebApps : function(responseCallback) {
 		return serviceFoundation.get("v1.0/applications?all", "json", responseCallback);
 	},

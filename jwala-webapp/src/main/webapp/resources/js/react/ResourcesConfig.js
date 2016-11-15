@@ -1027,7 +1027,7 @@ var MetaDataEntryForm = React.createClass({
                    <label>Deploy Path</label>
                    <input ref="deployPath" type="text"  valueLink={this.linkState("deployPath")}/>
                    <label>Content Type</label>
-                   <select ref="contentType"  valueLink={this.linkState("contentType")}>
+                   <select ref="contentType" valueLink={this.linkState("contentType")}>
                        <option value="undefined"></option>
                        <option value="text/xml">text/xml</option>
                        <option value="text/plain">text/plain</option>

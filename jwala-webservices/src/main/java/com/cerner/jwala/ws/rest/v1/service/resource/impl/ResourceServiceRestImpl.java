@@ -442,40 +442,6 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
     }
 
     @Override
-    public Response deployTemplateToAllHosts(String fileName, ResourceHierarchyParam
-            resourceHierarchyParam, AuthenticatedUser authenticatedUser) {
-        LOGGER.info("Deploy the template {} to all hosts with resource ID {} by user {}", fileName, resourceHierarchyParam, authenticatedUser.getUser().getId());
-        final ResourceIdentifier resourceIdentifier = new ResourceIdentifier.Builder()
-                .setResourceName(fileName)
-                .setGroupName(resourceHierarchyParam.getGroup())
-                .setWebServerName(resourceHierarchyParam.getWebServer())
-                .setJvmName(resourceHierarchyParam.getJvm())
-                .setWebAppName(resourceHierarchyParam.getWebApp()).build();
-
-        resourceService.deployTemplateToAllHosts(fileName, resourceIdentifier);
-
-        return ResponseBuilder.ok();
-    }
-
-    @Override
-    public Response deployTemplateToHost(String fileName, String hostName, ResourceHierarchyParam
-            resourceHierarchyParam, AuthenticatedUser user) {
-        LOGGER.info("Deploy the template {} to host {} with resource ID {} by user {}", fileName, hostName, resourceHierarchyParam, user.getUser().getId());
-        final ResourceIdentifier resourceIdentifier = new ResourceIdentifier.Builder()
-                .setResourceName(fileName)
-                .setGroupName(resourceHierarchyParam.getGroup())
-                .setWebServerName(resourceHierarchyParam.getWebServer())
-                .setJvmName(resourceHierarchyParam.getJvm())
-                .setWebAppName(resourceHierarchyParam.getWebApp()).build();
-        CommandOutput commandOutput = resourceService.deployTemplateToHost(fileName, hostName, resourceIdentifier);
-        if (commandOutput.getReturnCode().wasSuccessful()) {
-            return ResponseBuilder.ok();
-        } else {
-            return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(AemFaultType.CONTROL_OPERATION_UNSUCCESSFUL, commandOutput.standardErrorOrStandardOut()));
-        }
-    }
-
-    @Override
     public Response getResourcesFileNames(ResourceHierarchyParam resourceHierarchyParam) {
         LOGGER.debug("Get the external properties file name");
         final ResourceIdentifier resourceIdentifier = new ResourceIdentifier.Builder()
