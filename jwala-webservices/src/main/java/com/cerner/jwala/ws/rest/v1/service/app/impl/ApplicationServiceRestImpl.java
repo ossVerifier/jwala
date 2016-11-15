@@ -64,6 +64,11 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
     }
 
     @Override
+    public Response getApplicationByName(final String name) {
+        return ResponseBuilder.ok(service.getApplication(name));
+    }
+
+    @Override
     public Response getApplications(Identifier<Group> aGroupId) {
         LOGGER.debug("Get Apps requested with groupId: {}", aGroupId != null ? aGroupId : "null");
         final List<Application> apps;

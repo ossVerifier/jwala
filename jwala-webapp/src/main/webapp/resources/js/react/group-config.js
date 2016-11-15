@@ -4,7 +4,7 @@ var GroupConfig = React.createClass({
         return [{title:"Group Name", key:"name", renderCallback: this.renderNameCallback}];
     },
     getInitialState: function() {
-        return {showModalFormEditDialog: false, selectedGroup: {"str-name": null}};
+        return {showModalFormEditDialog: false, selectedGroup: null};
     },
     render: function() {
         return  <div className={"dataTables_wrapper " + this.props.className}>
@@ -24,7 +24,7 @@ var GroupConfig = React.createClass({
                                                                colDefinitions={this.getColDef()}
                                                                data={this.state.groupData}
                                                                selectItemCallback={this.selectItemCallback}
-                                                               tableIndex="name"/>
+                                                               tableIndex="id.id"/>
                                                </div>
                                            </td>
                                        </tr>
@@ -46,14 +46,7 @@ var GroupConfig = React.createClass({
 
     },
     componentDidMount: function() {
-        this.props.service.getGroups().then(this.getGroupsCallback);
-    },
-    getGroupsCallback: function(response, selectedGroup) {
-        this.refs.groupConfigTable.refresh(response.applicationResponseContent);
-        if (selectedGroup !== null) {
-            this.refs.groupConfigTable.selectRow(selectedGroup);
-            this.state.selectedGroup["str-name"] = selectedGroup;
-        }
+        this.loadTableData();
     },
     selectItemCallback: function(group) {
         this.setState({selectedGroup: group});
@@ -75,7 +68,7 @@ var GroupConfig = React.createClass({
         this.refs.modalAddGroupDlg.show();
     },
     delBtnCallback: function() {
-        if (this.state.selectedGroup["str-name"] !== null) {
+        if (this.state.selectedGroup) {
             this.refs.modalDeleteDlg.show("Confirmation Dialog Box",
                                           <div className="text-align-center"><br/><b>Are you sure you want to delete {this.state.selectedGroup["str-name"]} ?</b><br/><br/></div>,
                                           this.confirmDeleteCallback);
@@ -86,7 +79,9 @@ var GroupConfig = React.createClass({
         this.props.service.deleteGroup(this.state.selectedGroup["str-name"],
                                        function() {
                                            self.refs.modalDeleteDlg.close();
-                                           self.props.service.getGroups().then(self.getGroupsCallback);
+                                           self.loadTableData(function(){
+                                               self.state.selectedGroup = null;
+                                           });
                                        },
                                        function(errMsg) {
                                           $.errorAlert(errMsg, "Error");
@@ -100,24 +95,36 @@ var GroupConfig = React.createClass({
             this.props.service.insertNewGroup(groupName,
                                               function(){
                                                   self.refs.modalAddGroupDlg.close();
-                                                  self.state.selectedGroup = {"str-name": null};
-                                                  self.props.service.getGroups().then(self.getGroupsCallback);
+                                                  self.loadTableData(function(){
+                                                      self.refs.groupConfigTable.deselectAllRows();
+                                                      self.state.selectedGroup = null;
+                                                  });
                                               },
                                               function(errMsg) {
                                                   $.errorAlert(errMsg, "Error");
                                               });
         }
     },
+
+    loadTableData: function(afterLoadCallback) {
+        var self = this;
+        this.props.service.getGroups().then(function(response){
+                                                self.refs.groupConfigTable.refresh(response.applicationResponseContent);
+                                                if ($.isFunction(afterLoadCallback)) {
+                                                    afterLoadCallback();
+                                                }
+                                            });
+    },
+
     okEditCallback: function() {
         if (this.refs.groupEditForm.isValid()) {
             var self = this;
             this.props.service.updateGroup($(this.refs.groupEditForm.getDOMNode().children[0]).serializeArray(),
                                                  function(){
-                                                     var currentGroupName = self.refs.groupEditForm.state.groupName;
-                                                     self.props.service.getGroups().then(function(response){
-                                                        self.getGroupsCallback(response, currentGroupName);
-                                                     });
                                                      self.refs.modalEditGroupDlg.close();
+                                                     self.loadTableData(function(){
+                                                         self.state.selectedGroup = self.refs.groupConfigTable.getSelectedItem();
+                                                     });
                                                  },
                                                  function(errMsg) {
                                                      $.errorAlert(errMsg, "Error");
