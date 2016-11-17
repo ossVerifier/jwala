@@ -16,7 +16,6 @@ import com.cerner.jwala.service.resource.ResourceService;
 import com.cerner.jwala.ws.rest.v1.provider.AuthenticatedUser;
 import com.cerner.jwala.ws.rest.v1.response.ResponseBuilder;
 import com.cerner.jwala.ws.rest.v1.service.jvm.JvmServiceRest;
-import org.apache.commons.io.FileUtils;
 import org.apache.cxf.jaxrs.ext.MessageContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,8 +23,6 @@ import org.slf4j.LoggerFactory;
 import javax.persistence.EntityExistsException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -146,14 +143,6 @@ public class JvmServiceRestImpl implements JvmServiceRest {
     public Response generateAndDeployFile(final String jvmName, final String fileName, AuthenticatedUser user) {
         LOGGER.info("Generate and deploy file {} to JVM {} by user {}", fileName, jvmName, user.getUser().getId());
         return ResponseBuilder.ok(jvmService.generateAndDeployFile(jvmName, fileName, user.getUser()));
-    }
-
-    protected void createConfigFile(String path, String configFileName, String templateContent) throws IOException {
-        File configFile = new File(path + configFileName);
-        if (configFileName.endsWith(".bat")) {
-            templateContent = templateContent.replaceAll("\n", "\r\n");
-        }
-        FileUtils.writeStringToFile(configFile, templateContent);
     }
 
     @Override

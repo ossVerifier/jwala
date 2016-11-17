@@ -333,25 +333,6 @@ public class GroupServiceImpl implements GroupService {
     }
 
     @Override
-    @Transactional
-    public void populateGroupAppTemplates(final Application application, final String appContextMetaData, final String appContext,
-                                          final String roleMappingPropsMetaData, final String roleMappingProperties,
-                                          final String appPropsMetaData, final String appProperties) {
-        final int idx = application.getWebAppContext().lastIndexOf('/');
-        final String resourceName = idx == -1 ? application.getWebAppContext() : application.getWebAppContext().substring(idx + 1);
-
-        final String appRoleMappingPropertiesFileName = resourceName + "RoleMapping.properties";
-        groupPersistenceService.populateGroupAppTemplate(application.getGroup().getName(), application.getName(),
-                appRoleMappingPropertiesFileName, roleMappingPropsMetaData, roleMappingProperties);
-        final String appPropertiesFileName = resourceName + ".properties";
-        groupPersistenceService.populateGroupAppTemplate(application.getGroup().getName(), application.getName(),
-                appPropertiesFileName, appPropsMetaData, appProperties);
-        final String appContextFileName = resourceName + ".xml";
-        groupPersistenceService.populateGroupAppTemplate(application.getGroup().getName(), application.getName(),
-                appContextFileName, appContextMetaData, appContext);
-    }
-
-    @Override
     @Transactional(readOnly = true)
     public List<String> getGroupAppsResourceTemplateNames(String groupName) {
         return groupPersistenceService.getGroupAppsResourceTemplateNames(groupName);
