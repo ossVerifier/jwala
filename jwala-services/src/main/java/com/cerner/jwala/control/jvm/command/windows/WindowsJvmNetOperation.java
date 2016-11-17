@@ -12,7 +12,9 @@ import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.springframework.util.StringUtils;
 
+import java.util.Arrays;
 import java.util.EnumMap;
+import java.util.List;
 import java.util.Map;
 
 import static com.cerner.jwala.control.AemControl.Properties.*;
@@ -116,12 +118,12 @@ public enum WindowsJvmNetOperation implements ServiceCommandBuilder {
                 quotedUsername = "";
             }
             final String decryptedPassword = encryptedPassword != null && encryptedPassword.length() > 0 ? new DecryptPassword().decrypt(encryptedPassword) : "";
+            List<String> formatStrings = Arrays.asList(cygpathWrapper(INVOKE_SERVICE_SCRIPT_NAME, REMOTE_COMMANDS_USER_SCRIPTS + "/" + aServiceName + "/"),
+                    aServiceName, REMOTE_PATHS_INSTANCES);
+            List<String> unformatStrings = Arrays.asList(quotedUsername, decryptedPassword);
             return new ExecCommand(
-                    cygpathWrapper(INVOKE_SERVICE_SCRIPT_NAME, REMOTE_COMMANDS_USER_SCRIPTS + "/" + aServiceName + "/"),
-                    aServiceName,
-                    REMOTE_PATHS_INSTANCES,
-                    quotedUsername,
-                    decryptedPassword);
+                    formatStrings,
+                    unformatStrings);
         }
     },
     SECURE_COPY(JvmControlOperation.SECURE_COPY) {

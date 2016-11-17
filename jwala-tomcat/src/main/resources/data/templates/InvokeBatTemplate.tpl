@@ -13,7 +13,7 @@ CMD /C ${vars['remote.paths.tomcat.core']}\bin\tomcat7 //US//${jvm.jvmName} ++Jv
 ECHO Change the service to automatically start
 SC CONFIG ${jvm.jvmName} start= auto
 
-if %svc_username%=="" goto :no_user
+if "%svc_username%"=="" goto :no_user
 
 SC CONFIG ${jvm.jvmName} obj=%svc_username% password=%svc_password%
 
