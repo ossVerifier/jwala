@@ -40,10 +40,13 @@ import com.cerner.jwala.service.resource.ResourceHandler;
 import com.cerner.jwala.service.resource.ResourceService;
 import com.cerner.jwala.service.resource.impl.handler.exception.ResourceHandlerException;
 import com.cerner.jwala.template.exception.ResourceFileGeneratorException;
+import opennlp.tools.util.StringUtil;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.tika.Tika;
+import org.apache.tika.mime.MediaType;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,6 +60,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
@@ -68,7 +72,8 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 public class ResourceServiceImpl implements ResourceService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ResourceServiceImpl.class);
-    public static final String WAR_FILE_EXTENSION = ".war";
+    private static final String WAR_FILE_EXTENSION = ".war";
+    private static final String MEDIA_TYPE_TEXT = "text";
 
     private final SpelExpressionParser expressionParser;
     private final Expression encryptExpression;
@@ -103,6 +108,8 @@ public class ResourceServiceImpl implements ResourceService {
 
     private static final String UNZIP_EXE = "unzip.exe";
 
+    private final Tika fileTypeDetector;
+
     @Value("${paths.resource-templates}")
     private String templatePath;
 
@@ -118,7 +125,8 @@ public class ResourceServiceImpl implements ResourceService {
                                final RemoteCommandExecutorImpl remoteCommandExecutor,
                                final Map<String, ReentrantReadWriteLock> resourceWriteLockMap,
                                final ResourceContentGeneratorService resourceContentGeneratorService,
-                               final BinaryDistributionService binaryDistributionService) {
+                               final BinaryDistributionService binaryDistributionService,
+                               final Tika fileTypeDetector) {
         this.resourcePersistenceService = resourcePersistenceService;
         this.groupPersistenceService = groupPersistenceService;
         this.privateApplicationService = privateApplicationService;
@@ -136,6 +144,7 @@ public class ResourceServiceImpl implements ResourceService {
         executorService = Executors.newFixedThreadPool(Integer.parseInt(ApplicationProperties.get("resources.thread-task-executor.pool.size", "25")));
         this.resourceContentGeneratorService = resourceContentGeneratorService;
         this.binaryDistributionService = binaryDistributionService;
+        this.fileTypeDetector = fileTypeDetector;
     }
 
     @Override
@@ -156,19 +165,36 @@ public class ResourceServiceImpl implements ResourceService {
     @Transactional
     public CreateResourceResponseWrapper createTemplate(final InputStream metaData,
                                                         InputStream templateData,
-                                                        final String targetName,
+                                                        String targetName,
                                                         final User user) {
         final ResourceTemplateMetaData resourceTemplateMetaData;
         final CreateResourceResponseWrapper responseWrapper;
-        String templateContent = "";
+        String templateContent;
 
         try {
-            resourceTemplateMetaData = getMetaData(IOUtils.toString(metaData));
-            if (resourceTemplateMetaData.getContentType().equals(ContentType.APPLICATION_BINARY.contentTypeStr)) {
-                templateContent = uploadResource(resourceTemplateMetaData, templateData);
-            } else {
+
+            // This legacy method required the user to specify the content type in the JSON meta data but
+            // since we now have mime type detection capability, it would be prudent to use it here also.
+            // I don't like to make ResourceTemplateMetaData contentType property mutable just to accommodate
+            // this legacy method's short comings therefore we do it by converting the JSON string to a map,
+            // change the content type then convert it back again to String. In addition the ResourceTemplateMetaData
+            // keeps a copy of the JSON String so the JSON String should match the property values.
+            final ObjectMapper objectMapper = new ObjectMapper();
+            final String jsonStr = IOUtils.toString(metaData, Charset.defaultCharset());
+            final HashMap<String,Object> jsonMap = objectMapper.readValue(jsonStr, HashMap.class);
+            jsonMap.put("contentType",  getResourceMimeType(templateData));
+
+            resourceTemplateMetaData = getMetaData(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(jsonMap));
+            if (MEDIA_TYPE_TEXT.equalsIgnoreCase(resourceTemplateMetaData.getContentType().getType()) ||
+                    MediaType.APPLICATION_XML.equals(resourceTemplateMetaData.getContentType())) {
                 Scanner scanner = new Scanner(templateData).useDelimiter("\\A");
                 templateContent = scanner.hasNext() ? scanner.next() : "";
+            } else {
+                templateContent = uploadResource(resourceTemplateMetaData, templateData);
+            }
+
+            if (StringUtil.isEmpty(targetName)) {
+                targetName = resourceTemplateMetaData.getEntity().getTarget();
             }
 
             // Let's create the template!
@@ -288,7 +314,6 @@ public class ResourceServiceImpl implements ResourceService {
 
         checkForResourceGenerationException(resourceIdentifier, resourceExceptionMap, exceptionList, entity);
     }
-
 
     private void checkForResourceGenerationException(ResourceIdentifier resourceIdentifier, Map<String, List<String>> resourceExceptionMap, List<String> exceptionList, Object entity) {
         if (!exceptionList.isEmpty()) {
@@ -567,7 +592,7 @@ public class ResourceServiceImpl implements ResourceService {
         final List<Application> applications = applicationPersistenceService.findApplicationsBelongingTo(groupName);
         ConfigTemplate createdConfigTemplate = null;
 
-        if (ContentType.APPLICATION_BINARY.contentTypeStr.equalsIgnoreCase(metaData.getContentType()) &&
+        if (MediaType.APPLICATION_ZIP.equals(metaData.getContentType()) &&
                 metaData.getTemplateName().toLowerCase().endsWith(WAR_FILE_EXTENSION)) {
             applicationPersistenceService.updateWarInfo(targetAppName, metaData.getTemplateName(), templateContent);
         }
@@ -882,8 +907,14 @@ public class ResourceServiceImpl implements ResourceService {
                                                         final ResourceTemplateMetaData metaData,
                                                         final InputStream templateData) {
 
-        Scanner scanner = new Scanner(templateData).useDelimiter("\\A");
-        String templateContent = scanner.hasNext() ? scanner.next() : "";
+        String templateContent;
+        if (MEDIA_TYPE_TEXT.equalsIgnoreCase(metaData.getContentType().getType()) || metaData.getContentType().equals(MediaType.APPLICATION_XML)) {
+            Scanner scanner = new Scanner(templateData).useDelimiter("\\A");
+            templateContent = scanner.hasNext() ? scanner.next() : "";
+        } else {
+            templateContent = uploadResource(metaData, templateData);
+        }
+
         LOGGER.debug("Creating resource content for {} :: Content={}", resourceIdentifier, templateContent);
 
         try {
@@ -1084,4 +1115,13 @@ public class ResourceServiceImpl implements ResourceService {
                 destination,
                 options);
     }
+    @Override
+    public String getResourceMimeType(final InputStream in) {
+        try {
+            return fileTypeDetector.detect(in);
+        } catch (IOException e) {
+            throw new ResourceServiceException("Failed to detect resource file type!", e);
+        }
+    }
+
 }

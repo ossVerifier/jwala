@@ -156,14 +156,6 @@ public class ResourceServiceRestImplTest {
         final Attachment deployPathAttachment = mock(Attachment.class);
         when(deployPathAttachment.getDataHandler()).thenReturn(deployPathDataHandler);
 
-        // Content type
-        final DataHandler contentTypeDataHandler = mock(DataHandler.class);
-        when(contentTypeDataHandler.getName()).thenReturn("contentType");
-        when(contentTypeDataHandler.getInputStream()).thenReturn(IOUtils.toInputStream("text/plain"));
-
-        final Attachment contentTypeAttachment = mock(Attachment.class);
-        when(contentTypeAttachment.getDataHandler()).thenReturn(contentTypeDataHandler);
-
         // File attachment
         final DataHandler fileAttachmentDataHandler = mock(DataHandler.class);
         when(fileAttachmentDataHandler.getName()).thenReturn("sample-resource.tpl");
@@ -176,7 +168,6 @@ public class ResourceServiceRestImplTest {
         final List<Attachment> attachmentList = new ArrayList<>();
         attachmentList.add(fileAttachment);
         attachmentList.add(deployPathAttachment);
-        attachmentList.add(contentTypeAttachment);
 
         final Response response = cut.createResource("httpd.conf", createResourceParam, attachmentList);
         assertEquals("0", ((ApplicationResponse) response.getEntity()).getMsgCode());
@@ -226,14 +217,6 @@ public class ResourceServiceRestImplTest {
         final Attachment deployPathAttachment = mock(Attachment.class);
         when(deployPathAttachment.getDataHandler()).thenReturn(deployPathDataHandler);
 
-        // Content type
-        final DataHandler contentTypeDataHandler = mock(DataHandler.class);
-        when(contentTypeDataHandler.getName()).thenReturn("contentType");
-        when(contentTypeDataHandler.getInputStream()).thenReturn(IOUtils.toInputStream("text/plain"));
-
-        final Attachment contentTypeAttachment = mock(Attachment.class);
-        when(contentTypeAttachment.getDataHandler()).thenReturn(contentTypeDataHandler);
-
         // File attachment
         final DataHandler fileAttachmentDataHandler = mock(DataHandler.class);
         when(fileAttachmentDataHandler.getName()).thenReturn("sample-resource.tpl");
@@ -246,7 +229,6 @@ public class ResourceServiceRestImplTest {
         final List<Attachment> attachmentList = new ArrayList<>();
         attachmentList.add(fileAttachment);
         attachmentList.add(deployPathAttachment);
-        attachmentList.add(contentTypeAttachment);
 
         when(impl.getMetaData(anyString())).thenThrow(new IOException());
 

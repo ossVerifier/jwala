@@ -3,7 +3,6 @@ package com.cerner.jwala.service.resource.impl.handler;
 import com.cerner.jwala.common.domain.model.app.Application;
 import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
-import com.cerner.jwala.common.domain.model.resource.ContentType;
 import com.cerner.jwala.common.domain.model.resource.ResourceIdentifier;
 import com.cerner.jwala.common.domain.model.resource.ResourceTemplateMetaData;
 import com.cerner.jwala.common.request.app.UploadAppTemplateRequest;
@@ -17,6 +16,7 @@ import com.cerner.jwala.service.exception.ResourceServiceException;
 import com.cerner.jwala.service.resource.ResourceHandler;
 import com.cerner.jwala.service.resource.impl.CreateResourceResponseWrapper;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.tika.mime.MediaType;
 
 import java.util.List;
 import java.util.Set;
@@ -71,7 +71,7 @@ public class GroupLevelAppResourceHandler extends ResourceHandler {
             final Group group = groupPersistenceService.getGroup(groupName);
             final ConfigTemplate createdConfigTemplate;
 
-            if (metaData.getContentType().equals(ContentType.APPLICATION_BINARY.contentTypeStr) &&
+            if (metaData.getContentType().equals(MediaType.APPLICATION_ZIP) &&
                     templateContent.toLowerCase().endsWith(WAR_FILE_EXTENSION)) {
                 final Application app = applicationPersistenceService.getApplication(resourceIdentifier.webAppName);
                 if (StringUtils.isEmpty(app.getWarName())) {

@@ -52,6 +52,7 @@ import com.cerner.jwala.ws.rest.v1.service.webserver.WebServerServiceRest;
 import com.cerner.jwala.ws.rest.v1.service.webserver.impl.WebServerServiceRestImpl;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.io.FileUtils;
+import org.apache.tika.mime.MediaType;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -450,7 +451,7 @@ public class GroupServiceImplDeployTest {
         ResourceTemplateMetaData mockMetaData = mock(ResourceTemplateMetaData.class);
         when(mockMetaData.getDeployFileName()).thenReturn("group-app-resource.war");
         when(mockMetaData.getDeployPath()).thenReturn("./group/app/resource/deploy/path");
-        when(mockMetaData.getContentType()).thenReturn("application/binary");
+        when(mockMetaData.getContentType()).thenReturn(MediaType.APPLICATION_ZIP);
         Entity mockEntity = mock(Entity.class);
         when(mockEntity.getTarget()).thenReturn("group-app");
         when(mockMetaData.getEntity()).thenReturn(mockEntity);

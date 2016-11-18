@@ -38,6 +38,8 @@ import com.cerner.jwala.service.resource.impl.ResourceContentGeneratorServiceImp
 import com.cerner.jwala.service.resource.impl.ResourceGeneratorType;
 import com.cerner.jwala.service.resource.impl.ResourceServiceImpl;
 import org.apache.commons.lang.StringUtils;
+import org.apache.tika.Tika;
+import org.apache.tika.mime.MediaType;
 import org.codehaus.groovy.runtime.ResourceGroovyMethods;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.joda.time.DateTime;
@@ -127,7 +129,7 @@ public class ResourceServiceImplTest {
         resourceService = new ResourceServiceImpl(mockResourcePersistenceService, mockGroupPesistenceService,
                 mockAppPersistenceService, mockJvmPersistenceService, mockWebServerPersistenceService,
                 mockPrivateApplicationService, mockResourceDao, mockWebArchiveManager, mockResourceHandler, mockRemoteCommandExector, resourceWriteLockMap,
-                resourceContentGeneratorService, mockBinaryDistributionService);
+                resourceContentGeneratorService, mockBinaryDistributionService, new Tika());
 
         when(mockJvmPersistenceService.findJvmByExactName(eq("someJvm"))).thenReturn(mock(Jvm.class));
 
@@ -598,9 +600,10 @@ public class ResourceServiceImplTest {
 
     @Test
     public void testCreateResource() {
-        ResourceIdentifier resourceIdentifier = mock(ResourceIdentifier.class);
-        ResourceTemplateMetaData resourceTemplateMetaData = mock(ResourceTemplateMetaData.class);
-        InputStream inputStream = mock(InputStream.class);
+        final ResourceIdentifier resourceIdentifier = mock(ResourceIdentifier.class);
+        final ResourceTemplateMetaData resourceTemplateMetaData = mock(ResourceTemplateMetaData.class);
+        when(resourceTemplateMetaData.getContentType()).thenReturn(MediaType.TEXT_PLAIN);
+        final InputStream inputStream = mock(InputStream.class);
         CreateResourceResponseWrapper createResourceResponseWrapper = mock(CreateResourceResponseWrapper.class);
         when(mockResourceHandler.createResource(eq(resourceIdentifier), eq(resourceTemplateMetaData), anyString())).thenReturn(createResourceResponseWrapper);
         assertEquals(createResourceResponseWrapper, resourceService.createResource(resourceIdentifier, resourceTemplateMetaData, inputStream));
@@ -608,9 +611,10 @@ public class ResourceServiceImplTest {
 
     @Test(expected = ResourceServiceException.class)
     public void testCreateResourceFail() {
-        ResourceIdentifier resourceIdentifier = mock(ResourceIdentifier.class);
-        ResourceTemplateMetaData resourceTemplateMetaData = mock(ResourceTemplateMetaData.class);
-        InputStream inputStream = mock(InputStream.class);
+        final ResourceIdentifier resourceIdentifier = mock(ResourceIdentifier.class);
+        final ResourceTemplateMetaData resourceTemplateMetaData = mock(ResourceTemplateMetaData.class);
+        when(resourceTemplateMetaData.getContentType()).thenReturn(MediaType.TEXT_PLAIN);
+        final InputStream inputStream = mock(InputStream.class);
         when(mockResourceHandler.createResource(eq(resourceIdentifier), eq(resourceTemplateMetaData), anyString())).thenThrow(ResourceServiceException.class);
         resourceService.createResource(resourceIdentifier, resourceTemplateMetaData, inputStream);
     }
@@ -938,6 +942,53 @@ public class ResourceServiceImplTest {
 
         assertNotNull(caughtException);
         assertEquals(2, caughtException.getErrorDetails().get("test-jvm-resource-validation").size());
+    }
+
+    @Test
+    public void testGetResourceMimeTypes() {
+        // jpg
+        assertEquals("image/jpeg", resourceService.getResourceMimeType(this.getClass()
+                .getResourceAsStream("/get-resource-mime-type-test-files/jpg")));
+        assertEquals("image/jpeg", resourceService.getResourceMimeType(this.getClass()
+                .getResourceAsStream("/get-resource-mime-type-test-files/jpg.jpg")));
+        assertEquals("image/jpeg", resourceService.getResourceMimeType(this.getClass()
+                .getResourceAsStream("/get-resource-mime-type-test-files/jpg.txt")));
+
+        // xml
+        assertEquals("application/xml", resourceService.getResourceMimeType(this.getClass()
+                .getResourceAsStream("/get-resource-mime-type-test-files/xml-tpl")));
+        assertEquals("application/xml", resourceService.getResourceMimeType(this.getClass()
+                .getResourceAsStream("/get-resource-mime-type-test-files/xml-tpl.tpl")));
+        assertEquals("application/xml", resourceService.getResourceMimeType(this.getClass()
+                .getResourceAsStream("/get-resource-mime-type-test-files/xml-tpl.war")));
+        assertEquals("application/xml", resourceService.getResourceMimeType(this.getClass()
+                .getResourceAsStream("/get-resource-mime-type-test-files/xml-tpl.zip")));
+
+        // war
+        assertEquals("application/zip", resourceService.getResourceMimeType(this.getClass()
+                .getResourceAsStream("/get-resource-mime-type-test-files/war")));
+        assertEquals("application/zip", resourceService.getResourceMimeType(this.getClass()
+                .getResourceAsStream("/get-resource-mime-type-test-files/war.txt")));
+        assertEquals("application/zip", resourceService.getResourceMimeType(this.getClass()
+                .getResourceAsStream("/get-resource-mime-type-test-files/war.war")));
+        assertEquals("application/zip", resourceService.getResourceMimeType(this.getClass()
+                .getResourceAsStream("/get-resource-mime-type-test-files/war.zip")));
+
+        // zip
+        assertEquals("application/zip", resourceService.getResourceMimeType(this.getClass()
+                .getResourceAsStream("/get-resource-mime-type-test-files/zip")));
+        assertEquals("application/zip", resourceService.getResourceMimeType(this.getClass()
+                .getResourceAsStream("/get-resource-mime-type-test-files/zip.txt")));
+        assertEquals("application/zip", resourceService.getResourceMimeType(this.getClass()
+                .getResourceAsStream("/get-resource-mime-type-test-files/zip.zip")));
+
+        // properties file/text
+        assertEquals("text/plain", resourceService.getResourceMimeType(this.getClass()
+                .getResourceAsStream("/get-resource-mime-type-test-files/properties-file-tpl")));
+        assertEquals("text/plain", resourceService.getResourceMimeType(this.getClass()
+                .getResourceAsStream("/get-resource-mime-type-test-files/properties-file-tpl.tpl")));
+        assertEquals("text/plain", resourceService.getResourceMimeType(this.getClass()
+                .getResourceAsStream("/get-resource-mime-type-test-files/properties-file-tpl.war")));
     }
 
 }
