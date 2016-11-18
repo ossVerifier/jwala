@@ -950,14 +950,17 @@ public class ResourceServiceImpl implements ResourceService {
             String resourceSourceCopy;
             final String deployFileName = resourceTemplateMetaData.getDeployFileName();
             String resourceDestPath = resourceTemplateMetaData.getDeployPath() + "/" + deployFileName;
-            if (resourceTemplateMetaData.getContentType().equals(ContentType.APPLICATION_BINARY.contentTypeStr)) {
-                resourceSourceCopy = getResponseTemplate(resourceHandler.getSelectedValue(resourceIdentifier), fileName, false);
-            } else {
+
+            if (MEDIA_TYPE_TEXT.equalsIgnoreCase(resourceTemplateMetaData.getContentType().getType()) ||
+                    MediaType.APPLICATION_XML.equals(resourceTemplateMetaData.getContentType())) {
                 String fileContent = generateConfigFile(resourceHandler.getSelectedValue(resourceIdentifier), fileName);
                 String resourcesNameDir = ApplicationProperties.get("paths.generated.resource.dir") + "/" + entity;
                 resourceSourceCopy = resourcesNameDir + "/" + deployFileName;
                 createConfigFile(resourcesNameDir + "/", deployFileName, fileContent);
+            } else {
+                resourceSourceCopy = getResponseTemplate(resourceHandler.getSelectedValue(resourceIdentifier), fileName, false);
             }
+
             commandOutput = deployConfigFile(deployFileName, entity, resourceDestPath, resourceSourceCopy, hostName);
             if (resourceTemplateMetaData.isUnpack()) {
                 commandOutput = doUnpack(entity, hostName, resourceTemplateMetaData.getDeployPath() + "/" + resourceTemplateMetaData.getDeployFileName());
