@@ -76,8 +76,6 @@ public interface GroupService {
 
     String updateGroupWebServerResourceTemplate(String groupName, String resourceTemplateName, String content);
 
-    void populateGroupAppTemplates(Application application, String appContextMetaData, String appContext, String roleMappingPropsMetaData, String roleMappingProperties, String appPropsMetaData, String appProperties);
-
     List<String> getGroupAppsResourceTemplateNames(String groupName);
 
     List<String> getGroupAppsResourceTemplateNames(String groupName, String appName);
