@@ -6,6 +6,7 @@ import com.cerner.jwala.common.domain.model.resource.ResourceIdentifier;
 import com.cerner.jwala.common.domain.model.resource.ResourceTemplateMetaData;
 import com.cerner.jwala.common.domain.model.user.User;
 import com.cerner.jwala.common.exec.CommandOutput;
+import com.cerner.jwala.exception.CommandFailureException;
 import com.cerner.jwala.service.resource.impl.CreateResourceResponseWrapper;
 import com.cerner.jwala.service.resource.impl.ResourceGeneratorType;
 
@@ -281,23 +282,6 @@ public interface ResourceService {
     String previewResourceContent(ResourceIdentifier resourceHierarchyParam, String content);
 
     /**
-     * Deploy the resource to a host
-     *
-     * @param fileName           the name of the template to be deployed
-     * @param hostName           the name of the host where the template will be deployed
-     * @param resourceIdentifier the group, JVM, web server, and web application names that identify the resource
-     */
-    CommandOutput deployTemplateToHost(String fileName, String hostName, ResourceIdentifier resourceIdentifier);
-
-    /**
-     * Deploy the resource to all the hosts configured in Jwala
-     *
-     * @param fileName           the name of the template to be deployed
-     * @param resourceIdentifier the group, JVM, web server, and web application names that identify the resource
-     */
-    void deployTemplateToAllHosts(String fileName, ResourceIdentifier resourceIdentifier);
-
-    /**
      * Get the external properties as a string
      *
      * @return the external properties as a string
@@ -311,4 +295,12 @@ public interface ResourceService {
     void validateAllResourcesForGeneration(ResourceIdentifier resourceIdentifier);
 
     void validateSingleResourceForGeneration(ResourceIdentifier resourceIdentifier);
+
+    <T> CommandOutput generateAndDeployFile(ResourceIdentifier resourceIdentifier, String name, String fileName, String hostName);
+
+    CommandOutput executeCheckFileExistsCommand(String entity, String host, String fileName) throws CommandFailureException;
+
+    CommandOutput executeBackUpCommand(String entity, String host, String source) throws CommandFailureException;
+
+    CommandOutput executeUnzipBinaryCommand(String entity, String host, String source, String destination, String options) throws CommandFailureException;
 }

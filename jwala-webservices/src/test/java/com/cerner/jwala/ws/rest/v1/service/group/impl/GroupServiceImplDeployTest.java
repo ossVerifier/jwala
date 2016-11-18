@@ -26,7 +26,7 @@ import com.cerner.jwala.exception.CommandFailureException;
 import com.cerner.jwala.persistence.jpa.service.exception.ResourceTemplateUpdateException;
 import com.cerner.jwala.persistence.service.ApplicationPersistenceService;
 import com.cerner.jwala.persistence.service.GroupPersistenceService;
-import com.cerner.jwala.service.HistoryFacade;
+import com.cerner.jwala.service.HistoryFacadeService;
 import com.cerner.jwala.service.app.ApplicationService;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionService;
 import com.cerner.jwala.service.group.GroupControlService;
@@ -291,7 +291,7 @@ public class GroupServiceImplDeployTest {
 
         when(mockGroupService.getGroupAppResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"entity\":{\"target\": \"testApp\", \"deployToJvms\": false}}");
         when(mockJvm.getHostName()).thenReturn("TestHost");
-        when(mockGroupService.deployGroupAppTemplate(anyString(), anyString(), any(ResourceGroup.class), any(Application.class), anyString())).thenReturn(
+        when(mockGroupService.deployGroupAppTemplate(anyString(), anyString(), any(Application.class), anyString())).thenReturn(
                 new CommandOutput(new ExecReturnCode(0), "SUCCESS", ""));
         returnResponse = groupServiceRest.generateAndDeployGroupAppFile("testGroup", "hct.xml", "testApp", mockAuthUser, hostName);
         assertEquals(200, returnResponse.getStatus());
@@ -343,7 +343,7 @@ public class GroupServiceImplDeployTest {
         when(mockGroupService.getGroup(anyString())).thenReturn(mockGroup);
         when(mockGroupService.getGroupAppResourceTemplate(anyString(), anyString(), anyString(), anyBoolean(), any(ResourceGroup.class))).thenReturn("new hct.xml content");
         when(mockGroupService.getGroupAppResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"entity\":{\"target\": \"testApp\", \"deployToJvms\":false}}");
-        when(mockGroupService.deployGroupAppTemplate(anyString(), anyString(), any(ResourceGroup.class), any(Application.class), any(Jvm.class))).thenReturn(new CommandOutput(new ExecReturnCode(0), "SUCCESS", ""));
+        when(mockGroupService.deployGroupAppTemplate(anyString(), anyString(), any(Application.class), any(Jvm.class))).thenReturn(new CommandOutput(new ExecReturnCode(0), "SUCCESS", ""));
         when(mockJvmService.getJvm(anyString())).thenReturn(mockJvm);
         when(mockApplicationService.updateResourceTemplate(anyString(), anyString(), anyString(), anyString(), anyString())).thenReturn("new hct.xml content");
         when(mockResourceService.generateResourceGroup()).thenReturn(new ResourceGroup());
@@ -405,7 +405,7 @@ public class GroupServiceImplDeployTest {
         GroupPersistenceService groupPersistenceService = mock(GroupPersistenceService.class);
         ApplicationPersistenceService applicationPersistenceService = mock(ApplicationPersistenceService.class);
         RemoteCommandExecutorImpl remoteCommandExecutorImpl = mock(RemoteCommandExecutorImpl.class);
-        HistoryFacade mockHistoryService = mock(HistoryFacade.class);
+        HistoryFacadeService mockHistoryService = mock(HistoryFacadeService.class);
         GroupServiceImpl groupServiceImpl = new GroupServiceImpl(groupPersistenceService, applicationPersistenceService, remoteCommandExecutorImpl, binaryDistributionService, mockResourceService, mockHistoryService);
         CommandOutput commandOutput = mock(CommandOutput.class);
 
@@ -458,7 +458,8 @@ public class GroupServiceImplDeployTest {
         when(mockMetaData.isOverwrite()).thenReturn(false);
         when(mockResourceService.generateResourceFile(anyString(), anyString(), any(ResourceGroup.class), any(), any(ResourceGeneratorType.class))).thenReturn(metaData);
         when(mockResourceService.getTokenizedMetaData(anyString(), Matchers.anyObject(),anyString())).thenReturn(mockMetaData);
-        assertEquals(commandOutput, groupServiceImpl.deployGroupAppTemplate(groupName, fileName, resourceGroup, application, jvm));
+        when(mockResourceService.generateAndDeployFile(any(ResourceIdentifier.class), anyString(), anyString(), anyString())).thenReturn(commandOutput);
+        assertEquals(commandOutput, groupServiceImpl.deployGroupAppTemplate(groupName, fileName, application, jvm));
     }
 
     @Test

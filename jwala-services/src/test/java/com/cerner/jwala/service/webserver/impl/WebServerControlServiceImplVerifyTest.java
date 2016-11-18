@@ -21,6 +21,7 @@ import com.cerner.jwala.control.webserver.command.impl.WindowsWebServerPlatformC
 import com.cerner.jwala.exception.CommandFailureException;
 import com.cerner.jwala.persistence.jpa.type.EventType;
 import com.cerner.jwala.service.*;
+import com.cerner.jwala.service.HistoryFacadeService;
 import com.cerner.jwala.service.webserver.WebServerService;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -60,7 +61,7 @@ public class WebServerControlServiceImplVerifyTest extends VerificationBehaviorS
     private MessagingService mockMessagingService;
 
     @Mock
-    private HistoryFacade mockHistoryFacade;
+    private HistoryFacadeService mockHistoryFacadeService;
 
     @Mock
     RemoteCommandExecutorService remoteCommandExecutorService;
@@ -74,7 +75,7 @@ public class WebServerControlServiceImplVerifyTest extends VerificationBehaviorS
     public void setup() {
         System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, new File(".").getAbsolutePath() + "/src/test/resources");
         webServerControlService = new WebServerControlServiceImpl(webServerService, commandExecutor,
-                remoteCommandExecutorService, mockSshConfig, mockHistoryFacade);
+                remoteCommandExecutorService, mockSshConfig, mockHistoryFacadeService);
 
         user = new User("unused");
     }
@@ -131,7 +132,7 @@ public class WebServerControlServiceImplVerifyTest extends VerificationBehaviorS
 
         when(remoteCommandExecutorService.executeCommand(any(RemoteExecCommand.class))).thenReturn(new RemoteCommandReturnInfo(1, "", "ABNORMAL SUCCESS"));
         webServerControlService.controlWebServer(controlWSRequest, user);
-        verify(mockHistoryFacade, times(2)).write(anyString(), anyList(), anyString(), eq(EventType.SYSTEM_ERROR), anyString());
+        verify(mockHistoryFacadeService, times(2)).write(anyString(), anyList(), anyString(), eq(EventType.SYSTEM_ERROR), anyString());
         verify(mockMessagingService, times(2)).send(any(CurrentState.class));
         reset(mockMessagingService);
 

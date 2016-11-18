@@ -387,15 +387,37 @@ var RDataTable = React.createClass({
     },
 
     /**
+     * Deselect all rows
+     */
+    deselectAllRows: function() {
+        if ($.isFunction(this.props.deselectAllRowsCallback)) {
+            this.props.deselectAllRowsCallback();
+        }
+        this.setState({selectedRowIdx: null});
+    },
+
+    /**
      * Reloads data and updates the datable..
      */
     refresh: function(data) {
         this.setState({data:data});
     },
 
+    /**
+     * Get selected row data
+     */
+    getSelectedItem: function() {
+        var selectedRow = this.refs[RDataTable.ROW_INDEX_PREFIX + this.state.selectedRowIdx];
+        if (selectedRow) {
+            return selectedRow.props.rowItem;
+        }
+        return null;
+    },
+
     statics: {
 
         EXPANDED_ROW: "expandedRow",
+        ROW_INDEX_PREFIX: "row",
         columnType: {EXPAND_COLLAPSE_CONTROL: "expandCollapseControl"},
 
         /**

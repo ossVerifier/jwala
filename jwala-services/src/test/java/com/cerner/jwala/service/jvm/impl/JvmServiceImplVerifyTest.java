@@ -30,7 +30,7 @@ import com.cerner.jwala.files.FileManager;
 import com.cerner.jwala.persistence.jpa.domain.resource.config.template.JpaJvmConfigTemplate;
 import com.cerner.jwala.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
 import com.cerner.jwala.persistence.service.JvmPersistenceService;
-import com.cerner.jwala.service.HistoryFacade;
+import com.cerner.jwala.service.HistoryFacadeService;
 import com.cerner.jwala.service.VerificationBehaviorSupport;
 import com.cerner.jwala.service.app.ApplicationService;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionLockManager;
@@ -110,7 +110,7 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
     private BinaryDistributionLockManager mockBinaryDistributionLockManager;
 
     @Mock
-    private HistoryFacade mockHistoryFacade;
+    private HistoryFacadeService mockHistoryFacadeService;
 
     private JvmService jvmService;
 
@@ -126,7 +126,7 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
         jvmServiceImpl = new JvmServiceImpl(mockJvmPersistenceService, mockGroupService, mockApplicationService, mockFileManager,
                 mockMessagingTemplate, mockGroupStateNotificationService, mockResourceService, mockClientFactoryHelper,
                 "/topic/server-states", mockJvmControlService, mockBinaryDistributionService, mockBinaryDistributionLockManager,
-                mockHistoryFacade);
+                mockHistoryFacadeService);
         jvmService = jvmServiceImpl;
     }
 
@@ -975,7 +975,8 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
 
         when(mockExecData.getReturnCode()).thenReturn(new ExecReturnCode(1));
         when(mockExecData.getStandardError()).thenReturn("ERROR");
-        when(mockJvmControlService.secureCopyFile(any(ControlJvmRequest.class), anyString(), anyString(), anyString())).thenReturn(mockExecData);
+        when(mockResourceService.generateAndDeployFile(any(ResourceIdentifier.class), anyString(), anyString(), anyString())).thenThrow(new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "xxx"));
+
         boolean exceptionThrown = false;
         try {
             jvmService.generateAndDeployFile(jvm.getJvmName(), "server.xml", mockUser);

@@ -225,14 +225,6 @@ var ResourcePane = React.createClass({
                             console.log(response);
                             self.displayDeployErrorMessage(response);
                         });
-            } else if (data.rtreeListMetaData.entity === "extProperties") {
-                ServiceFactory.getResourceService().deployResourceToAllHosts(this.state.rightClickedItem)
-                        .then(function(response){
-                            $.alert("Deploy successful!", ResourcePane.DEPLOY_RESOURCE_TITLE, true);
-                        }).caught(function(response){
-                            console.log(response);
-                            self.displayDeployErrorMessage(response);
-                        });
             }
         }
         this.refs.confirmDeployResourceDlg.close();

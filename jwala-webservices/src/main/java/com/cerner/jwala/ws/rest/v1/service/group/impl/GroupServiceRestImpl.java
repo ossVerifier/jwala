@@ -836,10 +836,10 @@ public class GroupServiceRestImpl implements GroupServiceRest {
                 CommandOutput commandOutput = null;
                 if (jvm != null) {
                     LOGGER.debug("got jvm object with id {}, creating command output with jvm", jvm.getId().getId());
-                    commandOutput = groupService.deployGroupAppTemplate(groupName, fileName, resourceGroup, application, jvm);
+                    commandOutput = groupService.deployGroupAppTemplate(groupName, fileName, application, jvm);
                 } else {
                     LOGGER.debug("got jvm as null creating app templates for hostname {}", hostName);
-                    commandOutput = groupService.deployGroupAppTemplate(groupName, fileName, resourceGroup, application, hostName);
+                    commandOutput = groupService.deployGroupAppTemplate(groupName, fileName, application, hostName);
                 }
                 if (commandOutput.getReturnCode().wasSuccessful()) {
                     return ResponseBuilder.ok(commandOutput);

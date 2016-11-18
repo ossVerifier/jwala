@@ -7,8 +7,6 @@ import com.cerner.jwala.common.domain.model.resource.ResourceGroup;
 import com.cerner.jwala.common.domain.model.resource.ResourceIdentifier;
 import com.cerner.jwala.common.domain.model.resource.ResourceTemplateMetaData;
 import com.cerner.jwala.common.domain.model.user.User;
-import com.cerner.jwala.common.exec.CommandOutput;
-import com.cerner.jwala.common.exec.ExecReturnCode;
 import com.cerner.jwala.common.request.resource.ResourceInstanceRequest;
 import com.cerner.jwala.persistence.jpa.domain.resource.config.template.ConfigTemplate;
 import com.cerner.jwala.persistence.jpa.service.exception.ResourceTemplateMetaDataUpdateException;
@@ -38,7 +36,10 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -55,7 +56,7 @@ import static org.mockito.Mockito.*;
 
 /**
  * Unit test for {@link ResourceServiceRestImpl}.
- * <p/>
+ * <p>
  * Created by z0033r5b on 9/29/2015.
  */
 @RunWith(MockitoJUnitRunner.class)
@@ -459,33 +460,6 @@ public class ResourceServiceRestImplTest {
     }
 
     @Test
-    public void testDeployTemplate() {
-        AuthenticatedUser mockAuthUser = mock(AuthenticatedUser.class);
-        when(mockAuthUser.getUser()).thenReturn(new User("test-user"));
-
-        ResourceHierarchyParam param = new ResourceHierarchyParam();
-
-        when(impl.deployTemplateToHost(anyString(), anyString(), any(ResourceIdentifier.class))).thenReturn(new CommandOutput(new ExecReturnCode(0), "SUCCESS", ""));
-        Response result = cut.deployTemplateToHost("external.properties", "test-host", param, mockAuthUser);
-        assertEquals(200, result.getStatus());
-
-        when(impl.deployTemplateToHost(anyString(), anyString(), any(ResourceIdentifier.class))).thenReturn(new CommandOutput(new ExecReturnCode(1), "", "FAILED"));
-        result = cut.deployTemplateToHost("external.properties", "test-host", param, mockAuthUser);
-        assertEquals(500, result.getStatus());
-    }
-
-    @Test
-    public void testDeployTemplateToAllHosts() {
-        AuthenticatedUser mockAuthUser = mock(AuthenticatedUser.class);
-        ResourceHierarchyParam param = new ResourceHierarchyParam();
-
-        when(mockAuthUser.getUser()).thenReturn(new User("test-user"));
-
-        Response result = cut.deployTemplateToAllHosts("external.properties", param, mockAuthUser);
-        assertEquals(200, result.getStatus());
-    }
-
-    @Test
     public void testGetExternalPropertiesAsFile() throws IOException {
         when(impl.getExternalPropertiesAsFile()).thenReturn(new File("./src/test/resources/vars.properties"));
         Response result = cut.getExternalPropertiesDownload();
@@ -543,7 +517,7 @@ public class ResourceServiceRestImplTest {
         Response response = cut.updateResourceMetaData(resourceName, resourceHierarchyParam, updatedMetadata);
 
         assertEquals(500, response.getStatus());
-        assertEquals("test-resource.txt of failed-entity meta data update failed!", ((ApplicationResponse)response.getEntity()).getApplicationResponseContent());
+        assertEquals("test-resource.txt of failed-entity meta data update failed!", ((ApplicationResponse) response.getEntity()).getApplicationResponseContent());
     }
 
     /**

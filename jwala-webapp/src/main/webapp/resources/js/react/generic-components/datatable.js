@@ -121,5 +121,23 @@ var JwalaDataTable = React.createClass({
         return {
             initialSortColumn: []
         };
+    },
+    deselectAllRows: function() {
+        var rows = $(this.getDOMNode()).find("tr");
+        if (rows.length > 0) {
+            rows.removeClass("row_selected");
+        }
+    },
+    selectRow: function(value) {
+        var td = $(this.getDOMNode()).find("td").filter(function() {
+            return $(this).text() == value;
+        });
+
+        if (td.length > 0) {
+            td.parent().addClass("row_selected");
+        }
+    },
+    getVisibleSelectedRowCount: function() {
+        return $(this.getDOMNode()).find(".row_selected").length;
     }
 });

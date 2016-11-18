@@ -16,7 +16,7 @@ import com.cerner.jwala.control.webserver.command.impl.WindowsWebServerPlatformC
 import com.cerner.jwala.control.webserver.command.windows.WindowsWebServerNetOperation;
 import com.cerner.jwala.exception.CommandFailureException;
 import com.cerner.jwala.persistence.jpa.type.EventType;
-import com.cerner.jwala.service.HistoryFacade;
+import com.cerner.jwala.service.HistoryFacadeService;
 import com.cerner.jwala.service.RemoteCommandExecutorService;
 import com.cerner.jwala.service.RemoteCommandReturnInfo;
 import com.cerner.jwala.service.exception.RemoteCommandExecutorServiceException;
@@ -47,7 +47,7 @@ public class WebServerControlServiceImpl implements WebServerControlService {
     private final RemoteCommandExecutor<WebServerControlOperation> commandExecutor;
     private static final Logger LOGGER = LoggerFactory.getLogger(WebServerControlServiceImpl.class);
     private final RemoteCommandExecutorService remoteCommandExecutorService;
-    private final HistoryFacade historyFacade;
+    private final HistoryFacadeService historyFacadeService;
     private final SshConfiguration sshConfig;
     private static final int SLEEP_DURATION = 1000;
 
@@ -57,12 +57,12 @@ public class WebServerControlServiceImpl implements WebServerControlService {
     public WebServerControlServiceImpl(final WebServerService webServerService,
                                        final RemoteCommandExecutor<WebServerControlOperation> commandExecutor,
                                        final RemoteCommandExecutorService remoteCommandExecutorService,
-                                       final SshConfiguration sshConfig, HistoryFacade historyFacade) {
+                                       final SshConfiguration sshConfig, HistoryFacadeService historyFacadeService) {
         this.webServerService = webServerService;
         this.commandExecutor = commandExecutor;
         this.remoteCommandExecutorService = remoteCommandExecutorService;
         this.sshConfig = sshConfig;
-        this.historyFacade = historyFacade;
+        this.historyFacadeService = historyFacadeService;
     }
 
     @Override
@@ -73,7 +73,7 @@ public class WebServerControlServiceImpl implements WebServerControlService {
             final String event = controlOperation.getOperationState() == null ?
                     controlOperation.name() : controlOperation.getOperationState().toStateLabel();
 
-            historyFacade.write(getServerName(webServer), new ArrayList<>(webServer.getGroups()), event, EventType.USER_ACTION_INFO, aUser.getId());
+            historyFacadeService.write(getServerName(webServer), new ArrayList<>(webServer.getGroups()), event, EventType.USER_ACTION_INFO, aUser.getId());
 
             final WindowsWebServerPlatformCommandProvider windowsJvmPlatformCommandProvider = new WindowsWebServerPlatformCommandProvider();
             final ServiceCommandBuilder serviceCommandBuilder = windowsJvmPlatformCommandProvider.getServiceCommandBuilderFor(controlOperation);
@@ -141,7 +141,7 @@ public class WebServerControlServiceImpl implements WebServerControlService {
         } catch (final RemoteCommandExecutorServiceException e) {
             LOGGER.error(e.getMessage(), e);
 
-            historyFacade.write(getServerName(webServer), new ArrayList<>(webServer.getGroups()), e.getMessage(),
+            historyFacadeService.write(getServerName(webServer), new ArrayList<>(webServer.getGroups()), e.getMessage(),
                     EventType.SYSTEM_ERROR, aUser.getId());
 
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE,
@@ -158,7 +158,7 @@ public class WebServerControlServiceImpl implements WebServerControlService {
 
     private void sendMessageToActionEventLogs(User aUser, WebServer webServer, String commandOutputReturnDescription) {
         LOGGER.error(commandOutputReturnDescription);
-        historyFacade.write(getServerName(webServer), new ArrayList<>(webServer.getGroups()), commandOutputReturnDescription,
+        historyFacadeService.write(getServerName(webServer), new ArrayList<>(webServer.getGroups()), commandOutputReturnDescription,
                 EventType.SYSTEM_ERROR, aUser.getId());
     }
 
@@ -178,7 +178,7 @@ public class WebServerControlServiceImpl implements WebServerControlService {
         final WebServer aWebServer = webServerService.getWebServer(aWebServerName);
         final String fileName = new File(destPath).getName();
         if (!ApplicationProperties.get("remote.commands.user-scripts").endsWith(fileName)) {
-            historyFacade.write(getServerName(aWebServer), new ArrayList<>(aWebServer.getGroups()),
+            historyFacadeService.write(getServerName(aWebServer), new ArrayList<>(aWebServer.getGroups()),
                     WindowsWebServerNetOperation.SECURE_COPY.name() + " " + fileName, EventType.USER_ACTION_INFO, userId);
         }
 

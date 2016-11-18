@@ -10,7 +10,7 @@ import com.cerner.jwala.common.domain.model.webserver.WebServer;
 import com.cerner.jwala.common.exception.ApplicationException;
 import com.cerner.jwala.common.exception.InternalErrorException;
 import com.cerner.jwala.persistence.jpa.type.EventType;
-import com.cerner.jwala.service.HistoryFacade;
+import com.cerner.jwala.service.HistoryFacadeService;
 import com.cerner.jwala.service.app.ApplicationService;
 import com.cerner.jwala.service.balancermanager.BalancerManagerService;
 import com.cerner.jwala.service.balancermanager.impl.xml.data.Manager;
@@ -42,7 +42,7 @@ public class BalancerManagerServiceImpl implements BalancerManagerService {
     private JvmService jvmService;
 
     private ClientFactoryHelper clientFactoryHelper;
-    private HistoryFacade historyFacade;
+    private HistoryFacadeService historyFacadeService;
     private BalancerManagerHtmlParser balancerManagerHtmlParser;
     private BalancerManagerXmlParser balancerManagerXmlParser;
     private BalancerManagerHttpClient balancerManagerHttpClient;
@@ -59,13 +59,13 @@ public class BalancerManagerServiceImpl implements BalancerManagerService {
                                       final BalancerManagerHtmlParser balancerManagerHtmlParser,
                                       final BalancerManagerXmlParser balancerManagerXmlParser,
                                       final BalancerManagerHttpClient balancerManagerHttpClient,
-                                      final HistoryFacade historyFacade) {
+                                      final HistoryFacadeService historyFacadeService) {
         this.groupService = groupService;
         this.applicationService = applicationService;
         this.webServerService = webServerService;
         this.jvmService = jvmService;
         this.clientFactoryHelper = clientFactoryHelper;
-        this.historyFacade = historyFacade;
+        this.historyFacadeService = historyFacadeService;
         this.balancerManagerHtmlParser = balancerManagerHtmlParser;
         this.balancerManagerXmlParser = balancerManagerXmlParser;
         this.balancerManagerHttpClient = balancerManagerHttpClient;
@@ -398,7 +398,7 @@ public class BalancerManagerServiceImpl implements BalancerManagerService {
 
     public void sendMessage(final WebServer webServer, final String message) {
         LOGGER.info(message);
-        historyFacade.write(webServer.getName(), new ArrayList<>(webServer.getGroups()), message, EventType.USER_ACTION_INFO, getUser());
+        historyFacadeService.write(webServer.getName(), new ArrayList<>(webServer.getGroups()), message, EventType.USER_ACTION_INFO, getUser());
 
     }
 

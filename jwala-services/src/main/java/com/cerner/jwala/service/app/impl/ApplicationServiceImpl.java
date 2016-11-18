@@ -27,7 +27,7 @@ import com.cerner.jwala.persistence.jpa.domain.JpaJvm;
 import com.cerner.jwala.persistence.jpa.type.EventType;
 import com.cerner.jwala.persistence.service.ApplicationPersistenceService;
 import com.cerner.jwala.persistence.service.JvmPersistenceService;
-import com.cerner.jwala.service.HistoryFacade;
+import com.cerner.jwala.service.HistoryFacadeService;
 import com.cerner.jwala.service.app.ApplicationService;
 import com.cerner.jwala.service.app.PrivateApplicationService;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionService;
@@ -90,7 +90,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     private GroupService groupService;
 
-    private final HistoryFacade historyFacade;
+    private final HistoryFacadeService historyFacadeService;
 
     private static final String UNZIP_EXE = "unzip.exe";
 
@@ -103,14 +103,14 @@ public class ApplicationServiceImpl implements ApplicationService {
                                   final ResourceService resourceService,
                                   final RemoteCommandExecutorImpl remoteCommandExecutor,
                                   final BinaryDistributionService binaryDistributionService,
-                                  final HistoryFacade historyFacade) {
+                                  final HistoryFacadeService historyFacadeService) {
         this.applicationPersistenceService = applicationPersistenceService;
         this.jvmPersistenceService = jvmPersistenceService;
         this.applicationCommandExecutor = applicationCommandService;
         this.groupService = groupService;
         this.webArchiveManager = webArchiveManager;
         this.privateApplicationService = privateApplicationService;
-        this.historyFacade = historyFacade;
+        this.historyFacadeService = historyFacadeService;
         this.resourceService = resourceService;
         this.remoteCommandExecutor = remoteCommandExecutor;
         this.binaryDistributionService = binaryDistributionService;
@@ -282,7 +282,7 @@ public class ApplicationServiceImpl implements ApplicationService {
             final String eventDescription = WindowsJvmNetOperation.SECURE_COPY.name() + " " + deployFileName;
             final String id = user.getId();
 
-            historyFacade.write("JVM " + jvm.getJvmName(), new ArrayList<>(jvm.getGroups()), eventDescription, EventType.USER_ACTION_INFO, id);
+            historyFacadeService.write("JVM " + jvm.getJvmName(), new ArrayList<>(jvm.getGroups()), eventDescription, EventType.USER_ACTION_INFO, id);
 
             final String deployJvmName = jvm.getJvmName();
             final String hostName = jvm.getHostName();
@@ -392,7 +392,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                             final String host = jvm.getHostName().toLowerCase();
                             if (!hostNames.contains(host)) {
                                 hostNames.add(host);
-                                groupService.deployGroupAppTemplate(groupName, resourceTemplateName, resourceGroup, app, jvm);
+                                groupService.deployGroupAppTemplate(groupName, resourceTemplateName, app, jvm);
                             }
                         }
 
@@ -752,7 +752,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         final List<String> hostNames = getDeployHostList(hostName, group, application);
 
         LOGGER.info("deploying templates to hosts: {}", hostNames.toString());
-        historyFacade.write("", group, "Deploy \"" + appName + "\" resources",  EventType.USER_ACTION_INFO, user.getId());
+        historyFacadeService.write("", group, "Deploy \"" + appName + "\" resources",  EventType.USER_ACTION_INFO, user.getId());
 
         checkForRunningJvms(group, hostNames, user);
 
@@ -813,27 +813,23 @@ public class ApplicationServiceImpl implements ApplicationService {
     // TODO: See if we can implement method chaining for resource deployment which can be used by other resource related service
     protected void checkForRunningJvms(final Group group, final List<String> hostNames, final User user) {
         final List<Jvm> runningJvmList = new ArrayList<>();
-        final StringBuilder runningJvmNamesBuilder = new StringBuilder();
+        final List<String> runningJvmNameList = new ArrayList<>();
         for (final Jvm jvm: group.getJvms()) {
             if (hostNames.contains(jvm.getHostName().toLowerCase()) && jvm.getState().isStartedState()) {
                 runningJvmList.add(jvm);
-                if (runningJvmNamesBuilder.length() > 0) {
-                    runningJvmNamesBuilder.append(", ");
-                }
-                runningJvmNamesBuilder.append(jvm.getJvmName());
+                runningJvmNameList.add(jvm.getJvmName());
             }
         }
 
         if (!runningJvmList.isEmpty()) {
-            final String errMsg = "Cannot deploy web app resources to the following JVMs " +
-                    runningJvmNamesBuilder.toString() + " since they are currently running!";
-            LOGGER.error(errMsg);
+            final String errMsg = "Make sure the following JVMs are completely stopped before deploying.";
+            LOGGER.error(errMsg + " {}", runningJvmNameList);
             for (final Jvm jvm: runningJvmList) {
-                historyFacade.write(Jvm.class.getSimpleName() + " " + jvm.getJvmName(), jvm.getGroups(),
+                historyFacadeService.write(Jvm.class.getSimpleName() + " " + jvm.getJvmName(), jvm.getGroups(),
                         "Web app resource(s) cannot be deployed on a running JVM!",
                         EventType.SYSTEM_ERROR, user.getId());
             }
-            throw new ApplicationServiceException(errMsg);
+            throw new ApplicationServiceException(AemFaultType.RESOURCE_DEPLOY_FAILURE, errMsg, runningJvmNameList);
         }
     }
 
@@ -874,7 +870,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                              SecurityContextHolder.getContext().setAuthentication(authentication);
                              for (final String resource : resourceSet) {
                                  LOGGER.info("Deploying {} to host {}", resource, host);
-                                 commandOutputs.add(groupService.deployGroupAppTemplate(group.getName(), resource, resourceGroup, application, host));
+                                 commandOutputs.add(groupService.deployGroupAppTemplate(group.getName(), resource, application, host));
                              }
                              return commandOutputs;
                          }

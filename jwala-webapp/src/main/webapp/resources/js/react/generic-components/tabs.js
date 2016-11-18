@@ -67,7 +67,7 @@ var Tabs = React.createClass({displayName:"Tabs",
         if(history.pushState) {
         	history.pushState(null,title, newhash);
         } else {
-        	window.location.hash = newhash;
+        	window.location.hash = newhash; // TODO: Refactor, vulnerable to x-site scripting as indicated by fortify
         }
         return true;
     },

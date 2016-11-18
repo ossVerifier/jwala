@@ -34,7 +34,7 @@ import com.cerner.jwala.persistence.jpa.domain.JpaJvm;
 import com.cerner.jwala.persistence.service.ApplicationPersistenceService;
 import com.cerner.jwala.persistence.service.JvmPersistenceService;
 import com.cerner.jwala.persistence.service.ResourceDao;
-import com.cerner.jwala.service.HistoryFacade;
+import com.cerner.jwala.service.HistoryFacadeService;
 import com.cerner.jwala.service.app.PrivateApplicationService;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionControlService;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionService;
@@ -48,10 +48,8 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import java.io.ByteArrayInputStream;
@@ -105,7 +103,7 @@ public class ApplicationServiceImplTest {
     private Application mockApplication2;
 
     @Mock
-    private HistoryFacade mockHistoryFacade;
+    private HistoryFacadeService mockHistoryFacadeService;
 
     @Mock
     private ResourceDao mockResourceDao;
@@ -178,7 +176,7 @@ public class ApplicationServiceImplTest {
 
         applicationService = new ApplicationServiceImpl(applicationPersistenceService,
                 jvmPersistenceService, remoteCommandExecutor, groupService, webArchiveManager, privateApplicationService,
-                mockResourceService, remoteCommandExecutorImpl, binaryDistributionService, mockHistoryFacade);
+                mockResourceService, remoteCommandExecutorImpl, binaryDistributionService, mockHistoryFacadeService);
     }
 
     @SuppressWarnings("unchecked")
@@ -585,7 +583,7 @@ public class ApplicationServiceImplTest {
 
         ApplicationServiceImpl mockApplicationService = new ApplicationServiceImpl(applicationPersistenceService,
                 jvmPersistenceService, remoteCommandExecutor, mockGroupService, webArchiveManager, privateApplicationService,
-                mockResourceService, remoteCommandExecutorImpl, binaryDistributionService, mockHistoryFacade);
+                mockResourceService, remoteCommandExecutorImpl, binaryDistributionService, mockHistoryFacadeService);
 
         try {
             CommandOutput successCommandOutput = new CommandOutput(new ExecReturnCode(0), "SUCCESS", "");
@@ -637,7 +635,7 @@ public class ApplicationServiceImplTest {
 
         ApplicationServiceImpl mockApplicationService = new ApplicationServiceImpl(applicationPersistenceService,
                 jvmPersistenceService, remoteCommandExecutor, null, webArchiveManager, privateApplicationService,
-                mockResourceService, remoteCommandExecutorImpl, binaryDistributionService, mockHistoryFacade);
+                mockResourceService, remoteCommandExecutorImpl, binaryDistributionService, mockHistoryFacadeService);
 
         try {
             when(remoteCommandExecutor.executeRemoteCommand(anyString(), anyString(), any(ApplicationControlOperation.class), any(PlatformCommandProvider.class), anyString())).thenReturn(successCommandOutput);
@@ -700,7 +698,7 @@ public class ApplicationServiceImplTest {
 
         ApplicationServiceImpl mockApplicationService = new ApplicationServiceImpl(applicationPersistenceService,
                 jvmPersistenceService, remoteCommandExecutor, mockGroupService, webArchiveManager, privateApplicationService,
-                mockResourceService, remoteCommandExecutorImpl, binaryDistributionService, mockHistoryFacade);
+                mockResourceService, remoteCommandExecutorImpl, binaryDistributionService, mockHistoryFacadeService);
         mockApplicationService.copyApplicationConfigToGroupJvms(mockGroup, "testApp", mock(ResourceGroup.class), testUser);
 
     }
@@ -777,10 +775,10 @@ public class ApplicationServiceImplTest {
         when(mockMetaData.getEntity()).thenReturn(mockEntity);
         when(mockEntity.getDeployToJvms()).thenReturn(false);
         when(groupService.getGroupAppsResourceTemplateNames(anyString(), anyString())).thenReturn(templateNames);
-        when(groupService.deployGroupAppTemplate(anyString(), anyString(), any(ResourceGroup.class), any(Application.class), anyString())).thenReturn(mockCommandOutput);
+        when(groupService.deployGroupAppTemplate(anyString(), anyString(), any(Application.class), anyString())).thenReturn(mockCommandOutput);
         when(mockCommandOutput.getReturnCode()).thenReturn(new ExecReturnCode(0));
         applicationService.deployConf(appName, null, testUser);
-        verify(groupService, times(2)).deployGroupAppTemplate(eq("test-group"), anyString(), any(ResourceGroup.class), eq(mockApplication), anyString());
+        verify(groupService, times(2)).deployGroupAppTemplate(eq("test-group"), anyString(), eq(mockApplication), anyString());
     }
 
     @Test (expected = InternalErrorException.class)
@@ -812,7 +810,7 @@ public class ApplicationServiceImplTest {
         when(mockMetaData.getEntity()).thenReturn(mockEntity);
         when(mockEntity.getDeployToJvms()).thenReturn(false);
         when(groupService.getGroupAppsResourceTemplateNames(anyString(), anyString())).thenReturn(templateNames);
-        when(groupService.deployGroupAppTemplate(anyString(), anyString(), any(ResourceGroup.class), any(Application.class), anyString())).thenReturn(mockCommandOutput);
+        when(groupService.deployGroupAppTemplate(anyString(), anyString(), any(Application.class), anyString())).thenReturn(mockCommandOutput);
         when(mockCommandOutput.getReturnCode()).thenReturn(new ExecReturnCode(1));
         applicationService.deployConf(appName, null, testUser);
     }

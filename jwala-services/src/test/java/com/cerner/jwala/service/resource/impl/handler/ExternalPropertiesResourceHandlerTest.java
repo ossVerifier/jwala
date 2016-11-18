@@ -38,7 +38,7 @@ public class ExternalPropertiesResourceHandlerTest {
     private ResourceDao mockResourceDao;
 
     private ResourceService resourceService = new ResourceServiceImpl(null, null, null, null, null, null, null, null,
-                                                                      null, null, null, null);
+                                                                      null, null, null, null, null);
     @Before
     public void setup(){
         mockResourceDao = mock(ResourceDao.class);

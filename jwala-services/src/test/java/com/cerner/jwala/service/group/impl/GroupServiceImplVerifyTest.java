@@ -15,9 +15,8 @@ import com.cerner.jwala.common.request.group.*;
 import com.cerner.jwala.common.request.jvm.UploadJvmTemplateRequest;
 import com.cerner.jwala.control.command.RemoteCommandExecutorImpl;
 import com.cerner.jwala.files.WebArchiveManager;
-import com.cerner.jwala.persistence.jpa.domain.resource.config.template.ConfigTemplate;
 import com.cerner.jwala.persistence.service.*;
-import com.cerner.jwala.service.HistoryFacade;
+import com.cerner.jwala.service.HistoryFacadeService;
 import com.cerner.jwala.service.MessagingService;
 import com.cerner.jwala.service.VerificationBehaviorSupport;
 import com.cerner.jwala.service.app.PrivateApplicationService;
@@ -87,7 +86,7 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
     private MessagingService mockMessagingService;
 
     @Mock
-    private HistoryFacade mockHistoryFacade;
+    private HistoryFacadeService mockHistoryFacadeService;
 
     private ResourceContentGeneratorService resourceContentGeneratorService;
 
@@ -113,18 +112,19 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
         mockJvmPersistenceService = mock(JvmPersistenceService.class);
         mockAppPersistenceService = mock(ApplicationPersistenceService.class);
 
+
         resourceContentGeneratorService = new ResourceContentGeneratorServiceImpl(mockGroupPesistenceService, mockWebServerPersistenceService, mockJvmPersistenceService,
-                mockAppPersistenceService, mockHistoryFacade);
+                mockAppPersistenceService, mockHistoryFacadeService);
 
         resourceService = new ResourceServiceImpl(mockResourcePersistenceService, mockGroupPesistenceService,
                 mockAppPersistenceService, mockJvmPersistenceService, mockWebServerPersistenceService,
                 mockPrivateApplicationService, mockResourceDao, mockWebArchiveManager, mockResourceHandler, mockRemoteCommandExector, resourceWriteLockMap,
-                resourceContentGeneratorService);
+                resourceContentGeneratorService, binaryDistributionService);
 
         groupService = new GroupServiceImpl(groupPersistenceService,
                 applicationPersistenceService,
                 remoteCommandExecutor, binaryDistributionService,
-                resourceService, mockHistoryFacade);
+                resourceService, mockHistoryFacadeService);
         user = new User("unused");
 
     }
@@ -380,11 +380,11 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
         when(groupPersistenceService.getGroup(anyString())).thenReturn(mockGroup);
         when(groupPersistenceService.getGroupWithWebServers(any(Identifier.class))).thenReturn(mockGroup);
         when(mockGroup.getWebServers()).thenReturn(wsList);
-        String template = groupService.previewGroupWebServerResourceTemplate("myFile","testGroupName", "${webServer.name}", new ResourceGroup());
+        String template = groupService.previewGroupWebServerResourceTemplate("myFile", "testGroupName", "${webServer.name}", new ResourceGroup());
         assertEquals("${webServer.name}", template);
 
         wsList.add(webServer);
-        template = groupService.previewGroupWebServerResourceTemplate("myFile","testGroupName", "${webServer.name}", new ResourceGroup());
+        template = groupService.previewGroupWebServerResourceTemplate("myFile", "testGroupName", "${webServer.name}", new ResourceGroup());
         assertEquals("testWebServerName", template);
     }
 
@@ -414,26 +414,6 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
         groupService.removeGroup(testGroupName);
         verify(groupPersistenceService).removeGroup(testGroupName);
     }
-
-    @Test
-    public void testPopulateGroupAppTemplates() {
-        Application mockApplication = mock(Application.class);
-        when(mockApplication.getWebAppContext()).thenReturn("/testApp");
-        when(mockApplication.getGroup()).thenReturn(mock(Group.class));
-        when(groupPersistenceService.populateGroupAppTemplate(anyString(), anyString(), anyString(), anyString(), anyString()))
-                .thenReturn(mock(ConfigTemplate.class));
-
-        groupService.populateGroupAppTemplates(mockApplication, "app content meta data", "app content", "role mapping content meta data",
-                "role mapping content", "properties content meta data" ,"properties content");
-
-        verify(groupPersistenceService).populateGroupAppTemplate(anyString(), anyString(), eq("testApp.xml"),
-                eq("app content meta data"), eq("app content"));
-        verify(groupPersistenceService).populateGroupAppTemplate(anyString(), anyString(),
-                eq("testAppRoleMapping.properties"), eq("role mapping content meta data"), eq("role mapping content"));
-        verify(groupPersistenceService).populateGroupAppTemplate(anyString(), anyString(), eq("testApp.properties"),
-                eq("properties content meta data"), eq("properties content"));
-    }
-
 
     @Test
     public void testGetGroupAppTemplateNames() {

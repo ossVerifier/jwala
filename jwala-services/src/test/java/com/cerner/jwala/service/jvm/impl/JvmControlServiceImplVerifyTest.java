@@ -22,7 +22,7 @@ import com.cerner.jwala.persistence.jpa.domain.JpaGroup;
 import com.cerner.jwala.persistence.jpa.domain.JpaJvm;
 import com.cerner.jwala.persistence.jpa.type.EventType;
 import com.cerner.jwala.persistence.service.JvmPersistenceService;
-import com.cerner.jwala.service.HistoryFacade;
+import com.cerner.jwala.service.HistoryFacadeService;
 import com.cerner.jwala.service.RemoteCommandExecutorService;
 import com.cerner.jwala.service.RemoteCommandReturnInfo;
 import com.cerner.jwala.service.VerificationBehaviorSupport;
@@ -50,7 +50,7 @@ public class JvmControlServiceImplVerifyTest extends VerificationBehaviorSupport
     private User user;
 
     @Mock
-    private HistoryFacade mockHistoryFacade;
+    private HistoryFacadeService mockHistoryFacadeService;
 
     @Mock
     private JvmStateService mockJvmStateService;
@@ -75,7 +75,7 @@ public class JvmControlServiceImplVerifyTest extends VerificationBehaviorSupport
         System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, new File(".").getAbsolutePath() + "/src/test/resources");
         commandExecutor = mock(RemoteCommandExecutor.class);
         jvmControlService = new JvmControlServiceImpl(mockJvmPersistenceService, commandExecutor,  mockJvmStateService,
-                mockRemoteCommandExecutorService, mockSshConfig, mockHistoryFacade);
+                mockRemoteCommandExecutorService, mockSshConfig, mockHistoryFacadeService);
         user = new User("unused");
     }
 
@@ -104,7 +104,7 @@ public class JvmControlServiceImplVerifyTest extends VerificationBehaviorSupport
         verify(mockJvmPersistenceService, times(1)).getJvm(eq(jvmId));
         verify(mockRemoteCommandExecutorService, times(1)).executeCommand(any(RemoteExecCommand.class));
         verify(mockJvmStateService, times(1)).updateState(any(Identifier.class), any(JvmState.class));
-        verify(mockHistoryFacade).write(anyString(), anyList(), anyString(), any(EventType.class), anyString());
+        verify(mockHistoryFacadeService).write(anyString(), anyList(), anyString(), any(EventType.class), anyString());
 
         // test other command codes
         when(mockRemoteCommandExecutorService.executeCommand(any(RemoteExecCommand.class))).thenReturn(new RemoteCommandReturnInfo(ExecReturnCode.JWALA_EXIT_CODE_ABNORMAL_SUCCESS, "Abnormal success", ""));
@@ -170,7 +170,7 @@ public class JvmControlServiceImplVerifyTest extends VerificationBehaviorSupport
         when(mockRemoteCommandExecutorService.executeCommand(any(RemoteExecCommand.class))).thenReturn(new RemoteCommandReturnInfo(ExecReturnCode.JWALA_EXIT_CODE_FAST_FAIL, "Test standard out when START or STOP", "Test standard error"));
 
         jvmControlService.controlJvm(controlCommand, user);
-        verify(mockHistoryFacade, times(2)).write(anyString(), anyList(), anyString(), any(EventType.class), anyString());
+        verify(mockHistoryFacadeService, times(2)).write(anyString(), anyList(), anyString(), any(EventType.class), anyString());
 
         when(mockRemoteCommandExecutorService.executeCommand(any(RemoteExecCommand.class))).thenReturn(new RemoteCommandReturnInfo(ExecReturnCode.JWALA_EXIT_NO_SUCH_SERVICE, "Test standard out when START or STOP", "Test standard error"));
         jvmControlService.controlJvm(controlCommand, user);

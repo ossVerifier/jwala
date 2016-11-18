@@ -20,16 +20,14 @@ var JvmConfig = React.createClass({
             return prevFlag;
         }
     },
-
-
-    selectedJvm: null,
     getInitialState: function() {
         return {
             showModalFormAddDialog: false,
             showModalFormEditDialog: false,
             showDeleteConfirmDialog: false,
             selectedJvmForEditing: null,
-            jvmTableData: [{"jvmName":"","id":{"id":0},"hostName":"b","groups":[]}]
+            jvmTableData: [{"jvmName":"","id":{"id":0},"hostName":"b","groups":[]}],
+            selectedJvm: null
         }
     },
     render: function() {
@@ -47,7 +45,8 @@ var JvmConfig = React.createClass({
                         <tr>
                             <td>
                                 <div>
-                                    <JvmConfigDataTable data={this.state.jvmTableData}
+                                    <JvmConfigDataTable ref="jvmConfigDataTable"
+                                                        data={this.state.jvmTableData}
                                                         selectItemCallback={this.selectItemCallback}
                                                         editCallback={this.editCallback}
                                                         noUpdateWhen={this.state.showModalFormAddDialog ||
@@ -80,7 +79,7 @@ var JvmConfig = React.createClass({
                                     show={this.state.showDeleteConfirmDialog}
                                     okCallback={this.confirmDeleteCallback}
                                     cancelCallback={this.cancelDeleteCallback}
-                                    content={<div className="text-align-center"><br/><b>Are you sure you want to delete the selected item ?</b><br/><br/></div>}
+                                    content={<div className="text-align-center"><br/><b>Are you sure you want to delete {this.state.selectedJvm ? this.state.selectedJvm.jvmName : "the selected item"}  ?</b><br/><br/></div>}
                                     okLabel="Yes"
                                     cancelLabel="No" />
                </div>
@@ -110,6 +109,7 @@ var JvmConfig = React.createClass({
                                             this.refs.jvmAddForm.state.userName,
                                             this.refs.jvmAddForm.state.encryptedPassword,
                                             function(){
+                                                self.state.selectedJvm = null;
                                                 self.refreshData({showModalFormAddDialog:false});
                                             },
                                             function(errMsg) {
@@ -124,7 +124,8 @@ var JvmConfig = React.createClass({
         if (this.refs.jvmEditForm.isValid()) {
             var self = this;
             this.props.service.updateJvm($(this.refs.jvmEditForm.getDOMNode().children[0]).serializeArray(),
-                                           function(){
+                                           function(response){
+                                               self.state.selectedJvm = response.applicationResponseContent;
                                                self.refreshData({showModalFormEditDialog:false});
                                            },
                                            function(errMsg) {
@@ -146,23 +147,23 @@ var JvmConfig = React.createClass({
         this.setState({showModalFormAddDialog: true})
     },
     delBtnCallback: function() {
-        if (this.selectedJvm !== null) {
+        if (this.state.selectedJvm !== null) {
             this.setState({showDeleteConfirmDialog: true});
         }
     },
     confirmDeleteCallback: function() {
         var self = this;
-        this.props.service.deleteJvm(this.selectedJvm.id.id,
+        this.props.service.deleteJvm(this.state.selectedJvm.id.id,
                                        this.refreshData.bind(this,
                                                              {showDeleteConfirmDialog: false},
-                                                             function(){self.selectedJvm = null}));
+                                                             function(){self.state.selectedJvm = null}));
     },
     cancelDeleteCallback: function() {
         this.cancelFlag.set();
         this.setState({showDeleteConfirmDialog: false});
     },
     selectItemCallback: function(item) {
-        this.selectedJvm = item;
+        this.state.selectedJvm = item;
     },
     editCallback: function(e) {
         var self = this;
@@ -176,7 +177,13 @@ var JvmConfig = React.createClass({
     componentDidMount: function() {
         this.refreshData({});
     },
-
+    componentDidUpdate: function() {
+        // When the data table is refreshed the row gets deselected even if there's a currently
+        // selected JVM. The code below makes sure that the row is reselected again.
+        if (this.state.selectedJvm && !this.refs.jvmConfigDataTable.refs.dataTableWrapper.getVisibleSelectedRowCount()) {
+            this.refs.jvmConfigDataTable.refs.dataTableWrapper.selectRow(this.state.selectedJvm.jvmName);
+        }
+    }
 });
 
 /**
@@ -493,12 +500,13 @@ var JvmConfigDataTable = React.createClass({
                         {sTitle:"Shutd", mData:"shutdownPort"},
                         {sTitle:"AJP", mData:"ajpPort"},
                         {sTitle:"Username", mData: "userName"}];
-        return <JwalaDataTable tableId="jvm-config-datatable"
-                             tableDef={tableDef}
-                             data={this.props.data}
-                             selectItemCallback={this.props.selectItemCallback}
-                             editCallback={this.props.editCallback}
-                             isColResizable={true}/>
+        return <JwalaDataTable ref="dataTableWrapper"
+                               tableId="jvm-config-datatable"
+                               tableDef={tableDef}
+                               data={this.props.data}
+                               selectItemCallback={this.props.selectItemCallback}
+                               editCallback={this.props.editCallback}
+                               isColResizable={true}/>
     },
     renderNameLink:function(dataTable, data, aoColumnDefs, itemIndex) {
         var self = this;

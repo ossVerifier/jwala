@@ -34,7 +34,7 @@ import com.cerner.jwala.persistence.jpa.service.exception.NonRetrievableResource
 import com.cerner.jwala.persistence.jpa.service.exception.ResourceTemplateUpdateException;
 import com.cerner.jwala.persistence.jpa.type.EventType;
 import com.cerner.jwala.persistence.service.JvmPersistenceService;
-import com.cerner.jwala.service.HistoryFacade;
+import com.cerner.jwala.service.HistoryFacadeService;
 import com.cerner.jwala.service.app.ApplicationService;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionLockManager;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionService;
@@ -82,7 +82,7 @@ public class JvmServiceImpl implements JvmService {
     private final ResourceService resourceService;
     private final ClientFactoryHelper clientFactoryHelper;
     private final JvmControlService jvmControlService;
-    private final HistoryFacade historyFacade;
+    private final HistoryFacadeService historyFacadeService;
     private final BinaryDistributionService binaryDistributionService;
     private static final String JWALA_SCRIPTS_PATH = ApplicationProperties.get("remote.commands.user-scripts");
 
@@ -103,7 +103,7 @@ public class JvmServiceImpl implements JvmService {
                           final JvmControlService jvmControlService,
                           final BinaryDistributionService binaryDistributionService,
                           final BinaryDistributionLockManager binaryDistributionLockManager,
-                          final HistoryFacade historyFacade) {
+                          final HistoryFacadeService historyFacadeService) {
         this.jvmPersistenceService = jvmPersistenceService;
         this.groupService = groupService;
         this.applicationService = applicationService;
@@ -116,7 +116,7 @@ public class JvmServiceImpl implements JvmService {
         this.topicServerStates = topicServerStates;
         this.binaryDistributionService = binaryDistributionService;
         this.binaryDistributionLockManager = binaryDistributionLockManager;
-        this.historyFacade = historyFacade;
+        this.historyFacadeService = historyFacadeService;
     }
 
 
@@ -391,7 +391,7 @@ public class JvmServiceImpl implements JvmService {
                                 .setWebAppName(appName)
                                 .build();
                         resourceService.validateSingleResourceForGeneration(resourceIdentifier);
-                    } catch (InternalErrorException iee){
+                    } catch (InternalErrorException iee) {
                         LOGGER.info("Catching known app resource generation exception, and now consolidating with the JVM resource exceptions");
                         LOGGER.debug("This application resource generation exception should have already been logged previously", iee);
                         jvmAndAppResourcesExceptions.putAll(iee.getErrorDetails());
@@ -697,74 +697,22 @@ public class JvmServiceImpl implements JvmService {
     @Override
     public Jvm generateAndDeployFile(String jvmName, String fileName, User user) {
         Jvm jvm = getJvm(jvmName);
-
         // only one at a time per jvm
         binaryDistributionLockManager.writeLock(jvm.getId().getId().toString());
-
-        final String badStreamMessage = "Bad Stream: ";
-        try {
-            if (jvm.getState().isStartedState()) {
-                LOGGER.error("The target JVM {} must be stopped before attempting to update the resource files", jvm.getJvmName());
-                throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE,
-                        "The target JVM must be stopped before attempting to update the resource files");
-            }
-            ResourceIdentifier resourceIdentifier = new ResourceIdentifier.Builder()
-                    .setResourceName(fileName)
-                    .setJvmName(jvmName)
-                    .build();
-            resourceService.validateSingleResourceForGeneration(resourceIdentifier);
-
-            String metaDataStr = getResourceTemplateMetaData(jvmName, fileName);
-            ResourceTemplateMetaData resourceTemplateMetaData = resourceService.getTokenizedMetaData(fileName, jvm, metaDataStr);
-            String resourceSourceCopy;
-            final String deployFileName = resourceTemplateMetaData.getDeployFileName();
-            String resourceDestPath = resourceTemplateMetaData.getDeployPath() + "/" + deployFileName;
-            if (resourceTemplateMetaData.getContentType().equals(ContentType.APPLICATION_BINARY.contentTypeStr)) {
-                resourceSourceCopy = getResourceTemplate(jvmName, fileName, false);
-            } else {
-                String fileContent = generateConfigFile(jvmName, fileName);
-                String jvmResourcesNameDir = ApplicationProperties.get("paths.generated.resource.dir") + "/" + jvmName;
-                resourceSourceCopy = jvmResourcesNameDir + "/" + deployFileName;
-                createConfigFile(jvmResourcesNameDir + "/", deployFileName, fileContent);
-            }
-
-            deployJvmConfigFile(deployFileName, jvm, resourceDestPath, resourceSourceCopy, user);
-        } catch (IOException e) {
-            String message = "Failed to write file " + fileName + " for JVM " + jvmName;
-            LOGGER.error(badStreamMessage + message, e);
-            throw new InternalErrorException(AemFaultType.BAD_STREAM, message, e);
-        } catch (CommandFailureException ce) {
-            String message = "Failed to copy file " + fileName + " for JVM " + jvmName;
-            LOGGER.error(badStreamMessage + message, ce);
-            throw new InternalErrorException(AemFaultType.BAD_STREAM, message, ce);
-        } finally {
-            binaryDistributionLockManager.writeUnlock(jvm.getId().getId().toString());
+        if (jvm.getState().isStartedState()) {
+            LOGGER.error("The target JVM {} must be stopped before attempting to update the resource files", jvm.getJvmName());
+            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE,
+                    "The target JVM must be stopped before attempting to update the resource files");
         }
-
+        ResourceIdentifier resourceIdentifier = new ResourceIdentifier.Builder()
+                .setResourceName(fileName)
+                .setJvmName(jvmName)
+                .build();
+        resourceService.validateSingleResourceForGeneration(resourceIdentifier);
+        resourceService.generateAndDeployFile(resourceIdentifier, jvm.getJvmName(), fileName, jvm.getHostName());
+        binaryDistributionLockManager.writeUnlock(jvm.getId().getId().toString());
         return jvm;
     }
-
-    protected void deployJvmConfigFile(String fileName, Jvm jvm, String destPath, String sourcePath, User user)
-            throws CommandFailureException {
-        final String parentDir;
-        if (destPath.startsWith("~")) {
-            parentDir = destPath.substring(0, destPath.lastIndexOf("/"));
-        } else {
-            parentDir = new File(destPath).getParentFile().getAbsolutePath().replaceAll("\\\\", "/");
-        }
-        createParentDir(jvm, parentDir);
-        CommandOutput result =
-                jvmControlService.secureCopyFile(new ControlJvmRequest(jvm.getId(), JvmControlOperation.SECURE_COPY), sourcePath, destPath, user.getId());
-        if (result.getReturnCode().wasSuccessful()) {
-            LOGGER.info("Successful generation and deploy of {} to {}", fileName, jvm.getJvmName());
-        } else {
-            String standardError =
-                    result.getStandardError().isEmpty() ? result.getStandardOutput() : result.getStandardError();
-            LOGGER.error("Copying config file {} failed :: ERROR: {}", fileName, standardError);
-            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, CommandOutputReturnCode.fromReturnCode(result.getReturnCode().getReturnCode()).getDesc());
-        }
-    }
-
 
     @Override
     @Transactional
@@ -775,7 +723,7 @@ public class JvmServiceImpl implements JvmService {
         pingAndUpdateJvmState(jvm);
 
         final String message = "Diagnose and resolve state";
-        historyFacade.write(jvm.getJvmName(), new ArrayList<>(jvm.getGroups()), message, EventType.USER_ACTION_INFO, user.getId());
+        historyFacadeService.write(jvm.getJvmName(), new ArrayList<>(jvm.getGroups()), message, EventType.USER_ACTION_INFO, user.getId());
         SimpleTemplateEngine engine = new SimpleTemplateEngine();
         Map<String, Object> binding = new HashMap<>();
         binding.put("jvm", jvm);
