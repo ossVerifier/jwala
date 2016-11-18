@@ -392,7 +392,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                             final String host = jvm.getHostName().toLowerCase();
                             if (!hostNames.contains(host)) {
                                 hostNames.add(host);
-                                groupService.deployGroupAppTemplate(groupName, resourceTemplateName, resourceGroup, app, jvm);
+                                groupService.deployGroupAppTemplate(groupName, resourceTemplateName, app, jvm);
                             }
                         }
 
@@ -870,7 +870,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                              SecurityContextHolder.getContext().setAuthentication(authentication);
                              for (final String resource : resourceSet) {
                                  LOGGER.info("Deploying {} to host {}", resource, host);
-                                 commandOutputs.add(groupService.deployGroupAppTemplate(group.getName(), resource, resourceGroup, application, host));
+                                 commandOutputs.add(groupService.deployGroupAppTemplate(group.getName(), resource, application, host));
                              }
                              return commandOutputs;
                          }

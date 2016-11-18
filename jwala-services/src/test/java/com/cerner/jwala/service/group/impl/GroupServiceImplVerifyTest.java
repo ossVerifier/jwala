@@ -113,13 +113,14 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
         mockJvmPersistenceService = mock(JvmPersistenceService.class);
         mockAppPersistenceService = mock(ApplicationPersistenceService.class);
 
+
         resourceContentGeneratorService = new ResourceContentGeneratorServiceImpl(mockGroupPesistenceService, mockWebServerPersistenceService, mockJvmPersistenceService,
                 mockAppPersistenceService, mockHistoryFacadeService);
 
         resourceService = new ResourceServiceImpl(mockResourcePersistenceService, mockGroupPesistenceService,
                 mockAppPersistenceService, mockJvmPersistenceService, mockWebServerPersistenceService,
                 mockPrivateApplicationService, mockResourceDao, mockWebArchiveManager, mockResourceHandler, mockRemoteCommandExector, resourceWriteLockMap,
-                resourceContentGeneratorService);
+                resourceContentGeneratorService, binaryDistributionService);
 
         groupService = new GroupServiceImpl(groupPersistenceService,
                 applicationPersistenceService,

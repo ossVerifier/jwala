@@ -2,6 +2,7 @@ package com.cerner.jwala.service.resource.impl;
 
 import com.cerner.jwala.common.domain.model.app.Application;
 import com.cerner.jwala.common.domain.model.app.ApplicationControlOperation;
+import com.cerner.jwala.common.domain.model.binarydistribution.BinaryDistributionControlOperation;
 import com.cerner.jwala.common.domain.model.fault.AemFaultType;
 import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.id.Identifier;
@@ -9,8 +10,11 @@ import com.cerner.jwala.common.domain.model.jvm.Jvm;
 import com.cerner.jwala.common.domain.model.resource.*;
 import com.cerner.jwala.common.domain.model.user.User;
 import com.cerner.jwala.common.domain.model.webserver.WebServer;
+import com.cerner.jwala.common.exception.ApplicationException;
+import com.cerner.jwala.common.exception.BadRequestException;
 import com.cerner.jwala.common.exception.InternalErrorException;
 import com.cerner.jwala.common.exec.CommandOutput;
+import com.cerner.jwala.common.exec.CommandOutputReturnCode;
 import com.cerner.jwala.common.properties.ApplicationProperties;
 import com.cerner.jwala.common.properties.ExternalProperties;
 import com.cerner.jwala.common.request.app.RemoveWebArchiveRequest;
@@ -21,6 +25,7 @@ import com.cerner.jwala.common.request.jvm.UploadJvmTemplateRequest;
 import com.cerner.jwala.common.request.webserver.UploadWebServerTemplateRequest;
 import com.cerner.jwala.control.application.command.impl.WindowsApplicationPlatformCommandProvider;
 import com.cerner.jwala.control.command.RemoteCommandExecutorImpl;
+import com.cerner.jwala.control.command.impl.WindowsBinaryDistributionPlatformCommandProvider;
 import com.cerner.jwala.exception.CommandFailureException;
 import com.cerner.jwala.files.RepositoryFileInformation;
 import com.cerner.jwala.files.WebArchiveManager;
@@ -28,6 +33,7 @@ import com.cerner.jwala.persistence.jpa.domain.JpaJvm;
 import com.cerner.jwala.persistence.jpa.domain.resource.config.template.ConfigTemplate;
 import com.cerner.jwala.persistence.service.*;
 import com.cerner.jwala.service.app.PrivateApplicationService;
+import com.cerner.jwala.service.binarydistribution.BinaryDistributionService;
 import com.cerner.jwala.service.exception.ResourceServiceException;
 import com.cerner.jwala.service.resource.ResourceContentGeneratorService;
 import com.cerner.jwala.service.resource.ResourceHandler;
@@ -35,6 +41,7 @@ import com.cerner.jwala.service.resource.ResourceService;
 import com.cerner.jwala.service.resource.impl.handler.exception.ResourceHandlerException;
 import com.cerner.jwala.template.exception.ResourceFileGeneratorException;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -52,7 +59,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class ResourceServiceImpl implements ResourceService {
@@ -68,7 +78,7 @@ public class ResourceServiceImpl implements ResourceService {
     private final ExecutorService executorService;
     private PrivateApplicationService privateApplicationService;
     // TODO replace ApplicationControlOperation (and all operation classes) with ResourceControlOperation
-    private RemoteCommandExecutorImpl<ApplicationControlOperation> remoteCommandExecutor;
+    private RemoteCommandExecutorImpl remoteCommandExecutor;
     private Map<String, ReentrantReadWriteLock> resourceWriteLockMap;
 
     private final String encryptExpressionString = ApplicationProperties.get("encryptExpression");
@@ -89,6 +99,10 @@ public class ResourceServiceImpl implements ResourceService {
 
     private final ResourceContentGeneratorService resourceContentGeneratorService;
 
+    private final BinaryDistributionService binaryDistributionService;
+
+    private static final String UNZIP_EXE = "unzip.exe";
+
     @Value("${paths.resource-templates}")
     private String templatePath;
 
@@ -103,7 +117,8 @@ public class ResourceServiceImpl implements ResourceService {
                                final ResourceHandler resourceHandler,
                                final RemoteCommandExecutorImpl remoteCommandExecutor,
                                final Map<String, ReentrantReadWriteLock> resourceWriteLockMap,
-                               final ResourceContentGeneratorService resourceContentGeneratorService) {
+                               final ResourceContentGeneratorService resourceContentGeneratorService,
+                               final BinaryDistributionService binaryDistributionService) {
         this.resourcePersistenceService = resourcePersistenceService;
         this.groupPersistenceService = groupPersistenceService;
         this.privateApplicationService = privateApplicationService;
@@ -120,6 +135,7 @@ public class ResourceServiceImpl implements ResourceService {
         this.resourceHandler = resourceHandler;
         executorService = Executors.newFixedThreadPool(Integer.parseInt(ApplicationProperties.get("resources.thread-task-executor.pool.size", "25")));
         this.resourceContentGeneratorService = resourceContentGeneratorService;
+        this.binaryDistributionService = binaryDistributionService;
     }
 
     @Override
@@ -273,6 +289,7 @@ public class ResourceServiceImpl implements ResourceService {
         checkForResourceGenerationException(resourceIdentifier, resourceExceptionMap, exceptionList, entity);
     }
 
+
     private void checkForResourceGenerationException(ResourceIdentifier resourceIdentifier, Map<String, List<String>> resourceExceptionMap, List<String> exceptionList, Object entity) {
         if (!exceptionList.isEmpty()) {
             final String resourceName = resourceIdentifier.jvmName != null ? resourceIdentifier.jvmName : resourceIdentifier.webServerName != null ? resourceIdentifier.webServerName : resourceIdentifier.webAppName;
@@ -285,9 +302,9 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Override
     public <T> ResourceTemplateMetaData getTokenizedMetaData(String fileName, T entity, String metaDataStr) throws IOException {
-            String tokenizedMetaData = generateResourceFile(fileName, metaDataStr, generateResourceGroup(), entity, ResourceGeneratorType.METADATA);
-            LOGGER.info("tokenized metadata is : {}", tokenizedMetaData);
-            return getMetaData(tokenizedMetaData);
+        String tokenizedMetaData = generateResourceFile(fileName, metaDataStr, generateResourceGroup(), entity, ResourceGeneratorType.METADATA);
+        LOGGER.info("tokenized metadata is : {}", tokenizedMetaData);
+        return getMetaData(tokenizedMetaData);
     }
 
     @Override
@@ -888,4 +905,183 @@ public class ResourceServiceImpl implements ResourceService {
         return fileInfo.getPath().toString();
     }
 
+    @Override
+    public <T> CommandOutput generateAndDeployFile(final ResourceIdentifier resourceIdentifier, final String entity, final String fileName, final String hostName) {
+        CommandOutput commandOutput;
+        final String badStreamMessage = "Bad Stream: ";
+        String metaDataStr;
+        ResourceTemplateMetaData resourceTemplateMetaData;
+        try {
+            validateSingleResourceForGeneration(resourceIdentifier);
+            ConfigTemplate configTemplate = resourceHandler.fetchResource(resourceIdentifier);
+            metaDataStr = configTemplate.getMetaData();
+            resourceTemplateMetaData = getTokenizedMetaData(fileName, resourceHandler.getSelectedValue(resourceIdentifier), metaDataStr);
+            String resourceSourceCopy;
+            final String deployFileName = resourceTemplateMetaData.getDeployFileName();
+            String resourceDestPath = resourceTemplateMetaData.getDeployPath() + "/" + deployFileName;
+            if (resourceTemplateMetaData.getContentType().equals(ContentType.APPLICATION_BINARY.contentTypeStr)) {
+                resourceSourceCopy = getResponseTemplate(resourceHandler.getSelectedValue(resourceIdentifier), fileName, false);
+            } else {
+                String fileContent = generateConfigFile(resourceHandler.getSelectedValue(resourceIdentifier), fileName);
+                String resourcesNameDir = ApplicationProperties.get("paths.generated.resource.dir") + "/" + entity;
+                resourceSourceCopy = resourcesNameDir + "/" + deployFileName;
+                createConfigFile(resourcesNameDir + "/", deployFileName, fileContent);
+            }
+            commandOutput = deployConfigFile(deployFileName, entity, resourceDestPath, resourceSourceCopy, hostName);
+            if (resourceTemplateMetaData.isUnpack()) {
+                commandOutput = doUnpack(entity, hostName, resourceTemplateMetaData.getDeployPath() + "/" + resourceTemplateMetaData.getDeployFileName());
+            }
+        } catch (IOException e) {
+            String message = "Failed to write file " + fileName;
+            LOGGER.error(badStreamMessage + message, e);
+            throw new InternalErrorException(AemFaultType.BAD_STREAM, message, e);
+        } catch (CommandFailureException ce) {
+            String message = "Failed to copy file " + fileName;
+            LOGGER.error(badStreamMessage + message, ce);
+            throw new InternalErrorException(AemFaultType.BAD_STREAM, message, ce);
+        }
+        return commandOutput;
+    }
+
+    public CommandOutput doUnpack(final String entity, final String hostName, final String destPath) {
+        CommandOutput commandOutput;
+        try {
+            String standardError;
+            binaryDistributionService.prepareUnzip(hostName);
+            final String zipDestinationOption = FilenameUtils.removeExtension(destPath);
+            LOGGER.debug("checking if unpacked destination exists: {}", zipDestinationOption);
+            commandOutput = executeCheckFileExistsCommand(entity, hostName, zipDestinationOption);
+
+            if (commandOutput.getReturnCode().wasSuccessful()) {
+                LOGGER.debug("destination {}, exists backing it up", zipDestinationOption);
+                commandOutput = executeBackUpCommand(entity, hostName, zipDestinationOption);
+
+                if (commandOutput.getReturnCode().wasSuccessful()) {
+                    LOGGER.debug("successfully backed up {}", zipDestinationOption);
+                } else {
+                    standardError = "Could not back up " + zipDestinationOption;
+                    LOGGER.error(standardError);
+                    throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, standardError);
+                }
+            }
+            commandOutput = executeUnzipBinaryCommand(null, hostName, destPath, zipDestinationOption, "");
+            LOGGER.info("commandOutput.getReturnCode().toString(): " + commandOutput.getReturnCode().toString());
+            if (!commandOutput.getReturnCode().wasSuccessful()) {
+                standardError = "Cannot unzip " + destPath + " to " + zipDestinationOption + ", please check the log for more information.";
+                LOGGER.error(standardError);
+                throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, standardError);
+            }
+        } catch (CommandFailureException e) {
+            LOGGER.error("Failed to execute remote command when unpack to {} ", destPath, e);
+            throw new ApplicationException("Failed to execute remote command when unpack to  " + destPath, e);
+        }
+        return commandOutput;
+    }
+
+    public CommandOutput deployConfigFile(final String fileName, final String entity, final String destPath, final String sourcePath, final String hostName) throws CommandFailureException {
+        final String parentDir;
+        if (destPath.startsWith("~")) {
+            parentDir = destPath.substring(0, destPath.lastIndexOf("/"));
+        } else {
+            parentDir = new File(destPath).getParentFile().getAbsolutePath().replaceAll("\\\\", "/");
+        }
+        createDir(entity, hostName, parentDir);
+        CommandOutput result = secureCopyFile(hostName, sourcePath, destPath);
+        if (result.getReturnCode().wasSuccessful()) {
+            LOGGER.info("Successful generation and deploy of {} to {}", fileName, entity);
+        } else {
+            String standardError =
+                    result.getStandardError().isEmpty() ? result.getStandardOutput() : result.getStandardError();
+            LOGGER.error("Copying config file {} failed :: ERROR: {}", fileName, standardError);
+            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, CommandOutputReturnCode.fromReturnCode(result.getReturnCode().getReturnCode()).getDesc());
+        }
+        return result;
+    }
+
+    public CommandOutput createDir(final String entity, final String hostName, final String dir) throws CommandFailureException {
+        CommandOutput commandOutput = remoteCommandExecutor.executeRemoteCommand(
+                entity,
+                hostName,
+                ApplicationControlOperation.CREATE_DIRECTORY,
+                new WindowsApplicationPlatformCommandProvider(),
+                dir
+        );
+        if (commandOutput.getReturnCode().wasSuccessful()) {
+            LOGGER.info("Successfully created the parent dir {} on host {}", dir, hostName);
+        } else {
+            final String stdErr = commandOutput.getStandardError().isEmpty() ? commandOutput.getStandardOutput() : commandOutput.getStandardError();
+            LOGGER.error("Error in creating parent dir {} on host {}:: ERROR : {}", dir, hostName, stdErr);
+            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, stdErr);
+        }
+        return commandOutput;
+    }
+
+    public <T> String getResponseTemplate(final T entity, final String fileName, final boolean isApplicationBinary) {
+        String template = "";
+        if (entity instanceof Jvm) {
+            template = jvmPersistenceService.getResourceTemplate(((Jvm) entity).getJvmName(), fileName);
+            if (isApplicationBinary) {
+                return generateResourceFile(fileName, template, generateResourceGroup(), jvmPersistenceService.findJvmByExactName(((Jvm) entity).getJvmName()), ResourceGeneratorType.TEMPLATE);
+            }
+        } else if (entity instanceof Application) {
+            template = groupPersistenceService.getGroupAppResourceTemplate(((Application) entity).getGroup().getName(), ((Application) entity).getName(), fileName);
+        }
+        return template;
+    }
+
+    public <T> String generateConfigFile(final T entity, final String fileName) {
+        String resourceFileString = "";
+        if (entity instanceof Jvm) {
+            final String templateContent = jvmPersistenceService.getJvmTemplate(fileName, ((Jvm) entity).getId());
+            if (!templateContent.isEmpty()) {
+                resourceFileString = generateResourceFile(fileName, templateContent, generateResourceGroup(), entity, ResourceGeneratorType.TEMPLATE);
+            } else {
+                throw new BadRequestException(AemFaultType.JVM_TEMPLATE_NOT_FOUND, "Failed to find the template in the database or on the file system");
+            }
+        } else if (entity instanceof Application) {
+            final String templateContentApplication = groupPersistenceService.getGroupAppResourceTemplate(((Application) entity).getGroup().getName(), ((Application) entity).getName(), fileName);
+            if (!templateContentApplication.isEmpty()) {
+                resourceFileString = generateResourceFile(fileName, templateContentApplication, generateResourceGroup(), entity, ResourceGeneratorType.TEMPLATE);
+            } else {
+                throw new BadRequestException(AemFaultType.APP_TEMPLATE_NOT_FOUND, "Failed to find the template in the database or on the file system");
+            }
+        }
+        return resourceFileString;
+    }
+
+    @Override
+    public CommandOutput executeCheckFileExistsCommand(final String entity, final String host, final String fileName) throws CommandFailureException {
+        return remoteCommandExecutor.executeRemoteCommand(
+                entity,
+                host,
+                ApplicationControlOperation.CHECK_FILE_EXISTS,
+                new WindowsApplicationPlatformCommandProvider(),
+                fileName);
+    }
+
+    @Override
+    public CommandOutput executeBackUpCommand(final String entity, final String host, final String source) throws CommandFailureException {
+        final String currentDateSuffix = new SimpleDateFormat(".yyyyMMdd_HHmmss").format(new Date());
+        final String destination = source + currentDateSuffix;
+        return remoteCommandExecutor.executeRemoteCommand(
+                entity,
+                host,
+                ApplicationControlOperation.BACK_UP,
+                new WindowsApplicationPlatformCommandProvider(),
+                source,
+                destination);
+    }
+
+    @Override
+    public CommandOutput executeUnzipBinaryCommand(final String entity, final String host, final String source, final String destination, final String options) throws CommandFailureException {
+        return remoteCommandExecutor.executeRemoteCommand(
+                entity,
+                host,
+                BinaryDistributionControlOperation.UNZIP_BINARY,
+                new WindowsBinaryDistributionPlatformCommandProvider(),
+                ApplicationProperties.get("remote.commands.user-scripts") + "/" + UNZIP_EXE,
+                source,
+                destination,
+                options);
+    }
 }

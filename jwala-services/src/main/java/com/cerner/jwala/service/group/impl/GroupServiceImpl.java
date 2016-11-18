@@ -11,6 +11,7 @@ import com.cerner.jwala.common.domain.model.jvm.Jvm;
 import com.cerner.jwala.common.domain.model.jvm.JvmControlOperation;
 import com.cerner.jwala.common.domain.model.resource.ContentType;
 import com.cerner.jwala.common.domain.model.resource.ResourceGroup;
+import com.cerner.jwala.common.domain.model.resource.ResourceIdentifier;
 import com.cerner.jwala.common.domain.model.resource.ResourceTemplateMetaData;
 import com.cerner.jwala.common.domain.model.user.User;
 import com.cerner.jwala.common.domain.model.webserver.WebServer;
@@ -418,13 +419,13 @@ public class GroupServiceImpl implements GroupService {
     }
 
     @Override
-    public CommandOutput deployGroupAppTemplate(String groupName, String fileName, ResourceGroup resourceGroup, Application application, Jvm jvm) {
-        return executeDeployGroupAppTemplate(groupName, fileName, resourceGroup, application, jvm.getJvmName(), jvm.getHostName(), jvm.getId());
+    public CommandOutput deployGroupAppTemplate(String groupName, String fileName, Application application, Jvm jvm) {
+        return executeDeployGroupAppTemplate(groupName, fileName, application, jvm.getHostName());
     }
 
     @Override
-    public CommandOutput deployGroupAppTemplate(String groupName, String fileName, ResourceGroup resourceGroup, Application application, String hostName) {
-        return executeDeployGroupAppTemplate(groupName, fileName, resourceGroup, application, null, hostName, null);
+    public CommandOutput deployGroupAppTemplate(String groupName, String fileName, Application application, String hostName) {
+        return executeDeployGroupAppTemplate(groupName, fileName, application, hostName);
     }
 
     /**
@@ -432,199 +433,17 @@ public class GroupServiceImpl implements GroupService {
      *
      * @param groupName     name of the group in which the application can be found
      * @param fileName      name of the file that needs to deployed
-     * @param resourceGroup the resource group object that contains all the groups, jvms, webservers and webapps
      * @param application   the application object for the application to deploy the config file too
-     * @param jvmName       name of the jvm for which the config file needs to be deployed
      * @param hostName      name of the host which needs the application file
-     * @param id
      * @return returns a command output object
      */
-    protected CommandOutput executeDeployGroupAppTemplate(final String groupName, final String fileName, final ResourceGroup resourceGroup,
-                                                          final Application application, final String jvmName, final String hostName, Identifier<Jvm> id) {
-        String metaDataStr = getGroupAppResourceTemplateMetaData(groupName, fileName);
-        ResourceTemplateMetaData metaData;
-        try {
-            metaData = resourceService.getTokenizedMetaData(fileName, application, metaDataStr);
-            final String destPath = metaData.getDeployPath() + '/' + metaData.getDeployFileName();
-            File confFile = createConfFile(application.getName(), groupName, metaData.getDeployFileName(), resourceGroup);
-            String srcPath, standardError;
-            if (metaData.getContentType().equals(ContentType.APPLICATION_BINARY.contentTypeStr)) {
-                srcPath = getGroupAppResourceTemplate(groupName, application.getName(), fileName, false, resourceGroup);
-            } else {
-                srcPath = confFile.getAbsolutePath().replace("\\", "/");
-            }
-            final String parentDir = new File(destPath).getParentFile().getAbsolutePath().replaceAll("\\\\", "/");
-            CommandOutput commandOutput = executeCreateDirectoryCommand(jvmName, hostName, parentDir);
-
-            if (commandOutput.getReturnCode().wasSuccessful()) {
-                LOGGER.info("Successfully created the parent dir {} on host {}", parentDir, hostName);
-            } else {
-                final String stdErr = commandOutput.getStandardError().isEmpty() ? commandOutput.getStandardOutput() : commandOutput.getStandardError();
-                LOGGER.error("Error in creating parent dir {} on host {}:: ERROR : {}", parentDir, hostName, stdErr);
-                throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, stdErr);
-            }
-            LOGGER.debug("checking if file: {} exists on remote location", destPath);
-            commandOutput = executeCheckFileExistsCommand(jvmName, hostName, destPath);
-
-            if (commandOutput.getReturnCode().wasSuccessful()) {
-                LOGGER.debug("backing up file: {}", destPath);
-                commandOutput = executeBackUpCommand(jvmName, hostName, destPath);
-
-                if (!commandOutput.getReturnCode().wasSuccessful()) {
-                    standardError = commandOutput.getStandardError().isEmpty() ? commandOutput.getStandardOutput() : commandOutput.getStandardError();
-                    LOGGER.error("Error in backing up older file {} :: ERROR: {}", destPath, standardError);
-                    throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to back up " + destPath + " for " + jvmName);
-                }
-            }
-            LOGGER.debug("copying file over to location {}", destPath);
-            commandOutput = executeSecureCopyCommand(jvmName, hostName, srcPath, destPath, groupName, id);
-
-            if (!commandOutput.getReturnCode().wasSuccessful()) {
-                standardError = commandOutput.getStandardError().isEmpty() ? commandOutput.getStandardOutput() : commandOutput.getStandardError();
-                LOGGER.error("Copy command completed with error trying to copy {} to {} :: ERROR: {}",
-                        metaData.getDeployFileName(), application.getName(), standardError);
-                throw new DeployApplicationConfException(standardError);
-            }
-            if (metaData.isUnpack()) {
-                binaryDistributionService.prepareUnzip(hostName);
-                final String zipDestinationOption = FilenameUtils.removeExtension(destPath);
-                LOGGER.debug("checking if unpacked destination exists: {}", zipDestinationOption);
-                commandOutput = executeCheckFileExistsCommand(jvmName, hostName, zipDestinationOption);
-
-                if (commandOutput.getReturnCode().wasSuccessful()) {
-                    LOGGER.debug("destination {}, exists backing it up", zipDestinationOption);
-                    commandOutput = executeBackUpCommand(jvmName, hostName, zipDestinationOption);
-
-                    if (commandOutput.getReturnCode().wasSuccessful()) {
-                        LOGGER.debug("successfully backed up {}", zipDestinationOption);
-                    } else {
-                        standardError = "Could not back up " + zipDestinationOption;
-                        LOGGER.error(standardError);
-                        throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, standardError);
-                    }
-                }
-                commandOutput = executeUnzipBinaryCommand(null, hostName, destPath, zipDestinationOption, "");
-
-                LOGGER.info("commandOutput.getReturnCode().toString(): " + commandOutput.getReturnCode().toString());
-                if (!commandOutput.getReturnCode().wasSuccessful()) {
-                    standardError = "Cannot unzip " + destPath + " to " + zipDestinationOption + ", please check the log for more information.";
-                    LOGGER.error(standardError);
-                    throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, standardError);
-                }
-            }
-            return commandOutput;
-        } catch (IOException e) {
-            LOGGER.error("Failed to deploy file {} in group {}", fileName, groupName, e);
-            throw new ApplicationException("Failed to deploy " + fileName + " in group " + groupName, e);
-        } catch (CommandFailureException e) {
-            LOGGER.error("Failed to execute remote command when deploying {} for group {}", fileName, groupName, e);
-            throw new ApplicationException("Failed to execute remote command when deploying " + fileName + " for group " + groupName, e);
-        }
-    }
-
-    @Override
-    public CommandOutput executeCreateDirectoryCommand(final String entity, final String host, final String directoryName) throws CommandFailureException {
-        return remoteCommandExecutor.executeRemoteCommand(
-                entity,
-                host,
-                ApplicationControlOperation.CREATE_DIRECTORY,
-                new WindowsApplicationPlatformCommandProvider(),
-                directoryName
-        );
-    }
-
-    @Override
-    public CommandOutput executeCheckFileExistsCommand(final String entity, final String host, final String fileName) throws CommandFailureException {
-        return remoteCommandExecutor.executeRemoteCommand(
-                entity,
-                host,
-                ApplicationControlOperation.CHECK_FILE_EXISTS,
-                new WindowsApplicationPlatformCommandProvider(),
-                fileName);
-    }
-
-    @Override
-    public CommandOutput executeSecureCopyCommand(final String jvmName, final String host, final String source, final String destination,
-                                                  String groupName, Identifier<Jvm> id) throws CommandFailureException {
-        final String fileName = new File(destination).getName();
-        final List<Group> groupList = Collections.singletonList(groupPersistenceService.getGroup(groupName));
-        final String event = JvmControlOperation.SECURE_COPY.name() + " " + fileName;
-        final Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        final String userName = null != authentication ? authentication.getName() : "";
-
-        historyFacadeService.write(host, groupList, event, EventType.USER_ACTION_INFO, userName);
-
-        return remoteCommandExecutor.executeRemoteCommand(
-                jvmName,
-                host,
-                ApplicationControlOperation.SECURE_COPY,
-                new WindowsApplicationPlatformCommandProvider(),
-                source,
-                destination);
-    }
-
-    @Override
-    public CommandOutput executeBackUpCommand(final String entity, final String host, final String source) throws CommandFailureException {
-        final String currentDateSuffix = new SimpleDateFormat(".yyyyMMdd_HHmmss").format(new Date());
-        final String destination = source + currentDateSuffix;
-        return remoteCommandExecutor.executeRemoteCommand(
-                entity,
-                host,
-                ApplicationControlOperation.BACK_UP,
-                new WindowsApplicationPlatformCommandProvider(),
-                source,
-                destination);
-    }
-
-    @Override
-    public CommandOutput executeUnzipBinaryCommand(final String entity, final String host, final String source, final String destination, final String options) throws CommandFailureException {
-        return remoteCommandExecutor.executeRemoteCommand(
-                entity,
-                host,
-                BinaryDistributionControlOperation.UNZIP_BINARY,
-                new WindowsBinaryDistributionPlatformCommandProvider(),
-                ApplicationProperties.get("remote.commands.user-scripts") + "/" + UNZIP_EXE,
-                source,
-                destination,
-                options);
-    }
-
-    protected File createConfFile(final String appName, final String groupName,
-                                  final String resourceTemplateName, final ResourceGroup resourceGroup)
-            throws FileNotFoundException {
-        PrintWriter out = null;
-        final StringBuilder fileNameBuilder = new StringBuilder();
-
-        createPathIfItDoesNotExists(ApplicationProperties.get(GENERATED_RESOURCE_DIR));
-        createPathIfItDoesNotExists(ApplicationProperties.get(GENERATED_RESOURCE_DIR) + "/"
-                + groupName.replace(" ", "-"));
-
-        fileNameBuilder.append(ApplicationProperties.get(GENERATED_RESOURCE_DIR))
-                .append('/')
-                .append(groupName.replace(" ", "-"))
-                .append('/')
-                .append(appName.replace(" ", "-"))
-                .append('.')
-                .append(new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date()))
-                .append('_')
-                .append(resourceTemplateName);
-
-        final File appConfFile = new File(fileNameBuilder.toString());
-        try {
-            out = new PrintWriter(appConfFile.getAbsolutePath());
-            out.println(getGroupAppResourceTemplate(groupName, appName, resourceTemplateName, true, resourceGroup));
-        } finally {
-            if (out != null) {
-                out.close();
-            }
-        }
-        return appConfFile;
-    }
-
-    protected static void createPathIfItDoesNotExists(String path) {
-        if (!Files.exists(Paths.get(path))) {
-            new File(path).mkdir();
-        }
+    protected CommandOutput executeDeployGroupAppTemplate(final String groupName, final String fileName, final Application application, final String hostName) {
+        ResourceIdentifier resourceIdentifier = new ResourceIdentifier.Builder()
+                .setResourceName(fileName)
+                .setGroupName(groupName)
+                .setWebAppName(application.getName())
+                .build();
+        return resourceService.generateAndDeployFile(resourceIdentifier, application.getName(), fileName, hostName);
     }
 
     @Override

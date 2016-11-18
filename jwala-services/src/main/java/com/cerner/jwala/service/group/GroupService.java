@@ -96,19 +96,18 @@ public interface GroupService {
 
     void updateState(Identifier<Group> id, GroupState state);
 
-    CommandOutput deployGroupAppTemplate(String groupName, String fileName, ResourceGroup resourceGroup, Application application, Jvm jvm);
+    CommandOutput deployGroupAppTemplate(String groupName, String fileName, Application application, Jvm jvm);
 
     /**
      * This method deploys a group application config template to a particular host.
      *
      * @param groupName     name of the group in which the application exists
      * @param fileName      name of the file that needs to be deployed
-     * @param resourceGroup this is the resourcegroup object that contains data about all groups, jvms, webservers and webapps
      * @param application   this is the application object
      * @param hostName      this is the host name, where we want to deploy the config file
      * @return returns a commandoutput object
      */
-    CommandOutput deployGroupAppTemplate(String groupName, String fileName, ResourceGroup resourceGroup, Application application, String hostName);
+    CommandOutput deployGroupAppTemplate(String groupName, String fileName, Application application, String hostName);
 
     /**
      * Get hosts of a group.
@@ -125,13 +124,4 @@ public interface GroupService {
      */
     List<String> getAllHosts();
 
-    CommandOutput executeCreateDirectoryCommand(String entity, String host, String directoryName) throws CommandFailureException;
-
-    CommandOutput executeCheckFileExistsCommand(String entity, String host, String fileName) throws CommandFailureException;
-
-    CommandOutput executeSecureCopyCommand(String jvmName, String host, String source, String destination, String groupName, Identifier<Jvm> id) throws CommandFailureException;
-
-    CommandOutput executeBackUpCommand(String entity, String host, String source) throws CommandFailureException;
-
-    CommandOutput executeUnzipBinaryCommand(String entity, String host, String source, String destination, String options) throws CommandFailureException;
 }

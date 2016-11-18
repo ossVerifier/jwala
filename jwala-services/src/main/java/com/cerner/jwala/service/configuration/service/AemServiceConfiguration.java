@@ -328,7 +328,7 @@ public class AemServiceConfiguration {
                 persistenceServiceConfiguration.getGroupPersistenceService(), applicationPersistenceService,
                 jvmPersistenceService, webServerPersistenceService, getPrivateApplicationService(), resourceDao,
                 webArchiveManager, webServerResourceHandler, aemCommandExecutorConfig.getRemoteCommandExecutor(), binaryWriteLockMap,
-                resourceContentGeneratorService);
+                resourceContentGeneratorService, binaryDistributionService);
     }
 
     @Bean

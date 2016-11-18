@@ -5,6 +5,8 @@ import com.cerner.jwala.common.domain.model.resource.ResourceGroup;
 import com.cerner.jwala.common.domain.model.resource.ResourceIdentifier;
 import com.cerner.jwala.common.domain.model.resource.ResourceTemplateMetaData;
 import com.cerner.jwala.common.domain.model.user.User;
+import com.cerner.jwala.common.exec.CommandOutput;
+import com.cerner.jwala.exception.CommandFailureException;
 import com.cerner.jwala.service.resource.impl.CreateResourceResponseWrapper;
 import com.cerner.jwala.service.resource.impl.ResourceGeneratorType;
 
@@ -293,4 +295,12 @@ public interface ResourceService {
     void validateAllResourcesForGeneration(ResourceIdentifier resourceIdentifier);
 
     void validateSingleResourceForGeneration(ResourceIdentifier resourceIdentifier);
+
+    <T> CommandOutput generateAndDeployFile(ResourceIdentifier resourceIdentifier, String name, String fileName, String hostName);
+
+    CommandOutput executeCheckFileExistsCommand(String entity, String host, String fileName) throws CommandFailureException;
+
+    CommandOutput executeBackUpCommand(String entity, String host, String source) throws CommandFailureException;
+
+    CommandOutput executeUnzipBinaryCommand(String entity, String host, String source, String destination, String options) throws CommandFailureException;
 }

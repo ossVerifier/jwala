@@ -31,6 +31,7 @@ import com.cerner.jwala.persistence.service.*;
 import com.cerner.jwala.service.HistoryFacadeService;
 import com.cerner.jwala.service.app.ApplicationService;
 import com.cerner.jwala.service.app.PrivateApplicationService;
+import com.cerner.jwala.service.binarydistribution.BinaryDistributionService;
 import com.cerner.jwala.service.exception.ResourceServiceException;
 import com.cerner.jwala.service.resource.impl.CreateResourceResponseWrapper;
 import com.cerner.jwala.service.resource.impl.ResourceContentGeneratorServiceImpl;
@@ -108,6 +109,9 @@ public class ResourceServiceImplTest {
     @Mock
     private HistoryFacadeService mockHistoryFacadeService;
 
+    @Mock
+    private BinaryDistributionService mockBinaryDistributionService;
+
     Map<String, ReentrantReadWriteLock> resourceWriteLockMap = new HashMap<>();
 
     @Before
@@ -123,7 +127,7 @@ public class ResourceServiceImplTest {
         resourceService = new ResourceServiceImpl(mockResourcePersistenceService, mockGroupPesistenceService,
                 mockAppPersistenceService, mockJvmPersistenceService, mockWebServerPersistenceService,
                 mockPrivateApplicationService, mockResourceDao, mockWebArchiveManager, mockResourceHandler, mockRemoteCommandExector, resourceWriteLockMap,
-                resourceContentGeneratorService);
+                resourceContentGeneratorService, mockBinaryDistributionService);
 
         when(mockJvmPersistenceService.findJvmByExactName(eq("someJvm"))).thenReturn(mock(Jvm.class));
 

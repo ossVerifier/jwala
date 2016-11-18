@@ -58,7 +58,7 @@ public class ResourceHandlerConfigurationTest {
     private ResourceTemplateMetaData metaData;
 
     private ResourceService resourceService = new ResourceServiceImpl(null, null, null, null, null, null, null, null,
-            null, null, null, null);
+            null, null, null, null, null);
 
     @BeforeClass
     public static void init() {
