@@ -38,6 +38,7 @@ import com.cerner.jwala.service.resource.impl.ResourceGeneratorType;
 import com.cerner.jwala.template.exception.ResourceFileGeneratorException;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.tika.mime.MediaType;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -63,6 +64,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     private static final Logger LOGGER = LoggerFactory.getLogger(ApplicationServiceImpl.class);
     private static final String GENERATED_RESOURCE_DIR = "paths.generated.resource.dir";
     private static final String JWALA_WEBAPPS_DIR = "remote.jwala.webapps.dir";
+    private static final String MEDIA_TYPE_TEXT = "text";
     private final ExecutorService executorService;
     final String JWALA_SCRIPTS_PATH = ApplicationProperties.get("remote.commands.user-scripts");
 
@@ -273,10 +275,12 @@ public class ApplicationServiceImpl implements ApplicationService {
             final String deployFileName = templateMetaData.getDeployFileName();
             final String destPath = templateMetaData.getDeployPath() + '/' + deployFileName;
             String srcPath;
-            if (templateMetaData.getContentType().equals(ContentType.APPLICATION_BINARY.contentTypeStr)) {
-                srcPath = applicationPersistenceService.getResourceTemplate(appName, resourceTemplateName, jvmName, groupName);
-            } else {
+
+            if (templateMetaData.getContentType().getType().equalsIgnoreCase(MEDIA_TYPE_TEXT) ||
+                    MediaType.APPLICATION_XML.equals(templateMetaData.getContentType())) {
                 srcPath = confFile.getAbsolutePath().replace("\\", "/");
+            } else {
+                srcPath = applicationPersistenceService.getResourceTemplate(appName, resourceTemplateName, jvmName, groupName);
             }
 
             final String eventDescription = WindowsJvmNetOperation.SECURE_COPY.name() + " " + deployFileName;
@@ -710,7 +714,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 
             final Application application = applicationPersistenceService.getApplication(appId);
 
-            metaDataMap.put("contentType", ContentType.APPLICATION_BINARY.contentTypeStr);
+            metaDataMap.put("contentType", MediaType.APPLICATION_ZIP.toString());
             metaDataMap.put("deployPath", StringUtils.isEmpty(deployPath) ? ApplicationProperties.get(JWALA_WEBAPPS_DIR)
                     : deployPath);
             metaDataMap.put("deployFileName", warName);

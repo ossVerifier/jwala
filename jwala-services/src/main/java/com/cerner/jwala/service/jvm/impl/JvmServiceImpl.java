@@ -7,7 +7,6 @@ import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
 import com.cerner.jwala.common.domain.model.jvm.JvmControlOperation;
 import com.cerner.jwala.common.domain.model.jvm.JvmState;
-import com.cerner.jwala.common.domain.model.resource.ContentType;
 import com.cerner.jwala.common.domain.model.resource.ResourceGroup;
 import com.cerner.jwala.common.domain.model.resource.ResourceIdentifier;
 import com.cerner.jwala.common.domain.model.resource.ResourceTemplateMetaData;
@@ -50,6 +49,7 @@ import groovy.text.SimpleTemplateEngine;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.tika.mime.MediaType;
 import org.codehaus.groovy.control.CompilationFailedException;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
@@ -70,6 +70,7 @@ public class JvmServiceImpl implements JvmService {
     private static final Logger LOGGER = LoggerFactory.getLogger(JvmServiceImpl.class);
     private static final String REMOTE_COMMANDS_USER_SCRIPTS = ApplicationProperties.get("remote.commands.user-scripts");
     private static final String MSG_TYPE_HISTORY = "history";
+    private static final String MEDIA_TYPE_TEXT = "text";
 
     private final BinaryDistributionLockManager binaryDistributionLockManager;
     private String topicServerStates;
@@ -897,16 +898,18 @@ public class JvmServiceImpl implements JvmService {
             if (generatedFiles == null) {
                 generatedFiles = new HashMap<>();
             }
-            if (resourceTemplateMetaData.getContentType().equals(ContentType.APPLICATION_BINARY.contentTypeStr)) {
+
+            if (resourceTemplateMetaData.getContentType().getType().equalsIgnoreCase(MEDIA_TYPE_TEXT) ||
+                    MediaType.APPLICATION_XML.equals(resourceTemplateMetaData.getContentType())) {
+                final String generatedResourceStr = resourceService.generateResourceFile(jpaJvmConfigTemplate.getTemplateName(), jpaJvmConfigTemplate.getTemplateContent(),
+                        resourceGroup, jvm, ResourceGeneratorType.TEMPLATE);
+                generatedFiles.put(createConfigFile(ApplicationProperties.get("paths.generated.resource.dir") + "/" + jvmName, deployFileName, generatedResourceStr),
+                        resourceTemplateMetaData.getDeployPath() + "/" + deployFileName);
+            }  else {
                 if (generatedFiles == null) {
                     generatedFiles = new HashMap<>();
                 }
                 generatedFiles.put(jpaJvmConfigTemplate.getTemplateContent(),
-                        resourceTemplateMetaData.getDeployPath() + "/" + deployFileName);
-            } else {
-                final String generatedResourceStr = resourceService.generateResourceFile(jpaJvmConfigTemplate.getTemplateName(), jpaJvmConfigTemplate.getTemplateContent(),
-                        resourceGroup, jvm, ResourceGeneratorType.TEMPLATE);
-                generatedFiles.put(createConfigFile(ApplicationProperties.get("paths.generated.resource.dir") + "/" + jvmName, deployFileName, generatedResourceStr),
                         resourceTemplateMetaData.getDeployPath() + "/" + deployFileName);
             }
         }

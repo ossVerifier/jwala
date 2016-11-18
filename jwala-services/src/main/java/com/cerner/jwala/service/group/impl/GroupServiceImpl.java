@@ -9,7 +9,6 @@ import com.cerner.jwala.common.domain.model.group.GroupState;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
 import com.cerner.jwala.common.domain.model.jvm.JvmControlOperation;
-import com.cerner.jwala.common.domain.model.resource.ContentType;
 import com.cerner.jwala.common.domain.model.resource.ResourceGroup;
 import com.cerner.jwala.common.domain.model.resource.ResourceIdentifier;
 import com.cerner.jwala.common.domain.model.resource.ResourceTemplateMetaData;
@@ -38,6 +37,7 @@ import com.cerner.jwala.service.resource.ResourceService;
 import com.cerner.jwala.service.resource.impl.ResourceGeneratorType;
 import com.cerner.jwala.template.exception.ResourceFileGeneratorException;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.tika.mime.MediaType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
@@ -56,6 +56,7 @@ import java.util.*;
 
 public class GroupServiceImpl implements GroupService {
 
+    private static final String MEDIA_TYPE_TEXT = "text";
     private final GroupPersistenceService groupPersistenceService;
     private final RemoteCommandExecutorImpl remoteCommandExecutor;
     private final BinaryDistributionService binaryDistributionService;

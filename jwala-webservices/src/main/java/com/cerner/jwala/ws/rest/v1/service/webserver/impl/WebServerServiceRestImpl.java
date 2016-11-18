@@ -3,7 +3,6 @@ package com.cerner.jwala.ws.rest.v1.service.webserver.impl;
 import com.cerner.jwala.common.domain.model.fault.AemFaultType;
 import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.id.Identifier;
-import com.cerner.jwala.common.domain.model.resource.ContentType;
 import com.cerner.jwala.common.domain.model.resource.ResourceGroup;
 import com.cerner.jwala.common.domain.model.resource.ResourceIdentifier;
 import com.cerner.jwala.common.domain.model.resource.ResourceTemplateMetaData;
@@ -30,6 +29,7 @@ import com.cerner.jwala.ws.rest.v1.response.ResponseBuilder;
 import com.cerner.jwala.ws.rest.v1.service.webserver.WebServerServiceRest;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.jaxrs.ext.MessageContext;
+import org.apache.tika.mime.MediaType;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.slf4j.Logger;
@@ -51,6 +51,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
     private static final Logger LOGGER = LoggerFactory.getLogger(WebServerServiceRestImpl.class);
     public static final String PATHS_GENERATED_RESOURCE_DIR = "paths.generated.resource.dir";
     private static final String COMMANDS_SCRIPTS_PATH = ApplicationProperties.get("commands.scripts-path");
+    private static final String MEDIA_TYPE_TEXT = "text";
 
     private final WebServerService webServerService;
     private final WebServerControlService webServerControlService;
@@ -224,9 +225,9 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
             final String deployFileName = metaData.getDeployFileName();
 
             String configFilePath;
-            if (metaData.getContentType().equals(ContentType.APPLICATION_BINARY.contentTypeStr)) {
-                configFilePath = webServerService.getResourceTemplate(aWebServerName, resourceFileName, false, resourceService.generateResourceGroup());
-            } else {
+
+            if (metaData.getContentType().getType().equalsIgnoreCase(MEDIA_TYPE_TEXT) ||
+                    MediaType.APPLICATION_XML.equals(metaData.getContentType())) {
                 // create the file
                 final String jwalaGeneratedResourcesDir = ApplicationProperties.get(PATHS_GENERATED_RESOURCE_DIR);
                 final String generatedHttpdConf = webServerService.getResourceTemplate(aWebServerName, resourceFileName, true,
@@ -236,7 +237,10 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
 
                 // copy the file
                 configFilePath = configFile.getAbsolutePath().replace("\\", "/");
+            } else {
+                configFilePath = webServerService.getResourceTemplate(aWebServerName, resourceFileName, false, resourceService.generateResourceGroup());
             }
+
             //String destinationPath = resourceService.generateResourceFile(resourceFileName,metaData.getDeployPath(), resourceService.generateResourceGroup(), webServerService.getWebServer(aWebServerName)) + "/" + resourceFileName;
             String destinationPath = metaData.getDeployPath() + "/" + deployFileName;
             final CommandOutput execData;
