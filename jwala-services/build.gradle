@@ -29,6 +29,8 @@ dependencies {
 
     compile group: "de.jkeylockmanager", name: "jkeylockmanager", version: "$project.versions.jkeylockmanager"
 
+    compile group: "org.apache.tika", name: "tika-parsers", version: "$project.versions.tika"
+
     testCompile project(path: ":jwala-common", configuration: "commonTest")
     testCompile group: "org.springframework", name: "spring-test", version: "$project.versions.spring"
     testCompile group: "org.springframework", name: "spring-orm", version: "$project.versions.spring"

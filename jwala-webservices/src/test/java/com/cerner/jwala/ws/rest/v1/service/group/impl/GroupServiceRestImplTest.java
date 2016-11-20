@@ -50,6 +50,7 @@ import com.cerner.jwala.ws.rest.v1.service.webserver.WebServerServiceRest;
 import com.cerner.jwala.ws.rest.v1.service.webserver.impl.JsonControlWebServer;
 import com.cerner.jwala.ws.rest.v1.service.webserver.impl.WebServerServiceRestImpl;
 import org.apache.openjpa.persistence.EntityExistsException;
+import org.apache.tika.mime.MediaType;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -469,7 +470,7 @@ public class GroupServiceRestImplTest {
         final String rawMetaData = "{\"deployPath\":\"/some/test/path\",\"contentType\":\"text/plain\",\"deployFileName\":\"httpd.conf\"}";
         final String httpdConfTemplateContent = "fake httpd.conf content for testing";
         ResourceTemplateMetaData mockMetaData = mock(ResourceTemplateMetaData.class);
-        when(mockMetaData.getContentType()).thenReturn("text/plain");
+        when(mockMetaData.getContentType()).thenReturn(MediaType.TEXT_PLAIN);
         when(mockMetaData.getDeployFileName()).thenReturn("httpd.conf");
         when(mockMetaData.getDeployPath()).thenReturn("/some/test/path");
 

@@ -27,6 +27,7 @@ import com.cerner.jwala.service.resource.ResourceService;
 import com.cerner.jwala.service.resource.impl.ResourceContentGeneratorServiceImpl;
 import com.cerner.jwala.service.resource.impl.ResourceServiceImpl;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.tika.Tika;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -119,7 +120,7 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
         resourceService = new ResourceServiceImpl(mockResourcePersistenceService, mockGroupPesistenceService,
                 mockAppPersistenceService, mockJvmPersistenceService, mockWebServerPersistenceService,
                 mockPrivateApplicationService, mockResourceDao, mockWebArchiveManager, mockResourceHandler, mockRemoteCommandExector, resourceWriteLockMap,
-                resourceContentGeneratorService, binaryDistributionService);
+                resourceContentGeneratorService, binaryDistributionService, new Tika());
 
         groupService = new GroupServiceImpl(groupPersistenceService,
                 applicationPersistenceService,

@@ -45,6 +45,8 @@ public interface ResourceService {
      * @param templateData        the template data
      * @param targetName
      * @param user
+     *
+     * NOTE: This is a legacy method!
      */
     CreateResourceResponseWrapper createTemplate(InputStream metaDataInputStream, InputStream templateData, String targetName, User user);
 
@@ -303,4 +305,6 @@ public interface ResourceService {
     CommandOutput executeBackUpCommand(String entity, String host, String source) throws CommandFailureException;
 
     CommandOutput executeUnzipBinaryCommand(String entity, String host, String source, String destination, String options) throws CommandFailureException;
+
+    String getResourceMimeType(InputStream in);
 }

@@ -15,4 +15,8 @@ public class ResourceServiceException extends RuntimeException {
         super(s);
     }
 
+    public ResourceServiceException(final String msg, final Throwable throwable) {
+        super(msg, throwable);
+    }
+
 }

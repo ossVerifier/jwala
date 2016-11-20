@@ -1,7 +1,7 @@
 package com.cerner.jwala.common.domain.model.resource;
 
+import org.apache.tika.mime.MediaType;
 import org.codehaus.jackson.JsonParser;
-import org.codehaus.jackson.JsonProcessingException;
 import org.codehaus.jackson.map.DeserializationContext;
 import org.codehaus.jackson.map.deser.std.StdDeserializer;
 
@@ -10,9 +10,9 @@ import java.io.IOException;
 /**
  * Custom JSON deserializer from content type string to {@link ContentType}
  *
- * Created by JC043760 on 10/6/2016.
+ * Created by JC043760 on 10/6/2016
  */
-public class ContentTypeStrDeserializer extends StdDeserializer<ContentType> {
+public class ContentTypeStrDeserializer extends StdDeserializer<MediaType> {
 
     // This constructor is required because we extended StdDeserializer
     public ContentTypeStrDeserializer() {
@@ -24,8 +24,8 @@ public class ContentTypeStrDeserializer extends StdDeserializer<ContentType> {
     }
 
     @Override
-    public ContentType deserialize(JsonParser jp, DeserializationContext ctxt)
-            throws IOException, JsonProcessingException {
-        return ContentType.fromContentTypeStr(jp.getText());
+    public MediaType deserialize(JsonParser jp, DeserializationContext ctxt)
+            throws IOException {
+        return MediaType.parse(jp.getText());
     }
 }

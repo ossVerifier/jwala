@@ -36,6 +36,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.Charset;
 import java.util.*;
 
 /**
@@ -53,7 +54,7 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
     public static final String TPL_FILE_EXTENSION = ".tpl";
     public static final String EXT_PROPERTIES_RESOURCE_NAME = "ext.properties";
     public static final String EXT_PROPERTIES_RESOURCE_META_DATA = "{\"contentType\":\"text/plain\", \"templateName\":\"external.properties\", \"deployPath\":\"\", \"deployFileName\":\"" + EXT_PROPERTIES_RESOURCE_NAME + "\"}";
-    public static final int CREATE_RESOURCE_ATTACHMENT_SIZE = 3;
+    public static final int CREATE_RESOURCE_ATTACHMENT_SIZE = 2;
 
     private final ResourceService resourceService;
 
@@ -152,19 +153,20 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
             InputStream template = null;
             String templateName = null;
             for (final Attachment attachment : attachments) {
-                if ("application/octet-stream".equalsIgnoreCase(attachment.getHeader("Content-Type"))) {
+                if (attachment.getHeader("Content-Type") == null) {
+                    metaDataMap.put(attachment.getDataHandler().getName(),
+                            IOUtils.toString(attachment.getDataHandler().getInputStream(), Charset.defaultCharset()));
+                } else {
                     templateName = attachment.getDataHandler().getName();
                     template = attachment.getDataHandler().getInputStream();
-                } else {
-                    metaDataMap.put(attachment.getDataHandler().getName(),
-                            IOUtils.toString(attachment.getDataHandler().getInputStream()));
                 }
             }
 
             metaDataMap.put("deployFileName", deployFilename);
             metaDataMap.put("templateName", templateName);
+            metaDataMap.put("contentType", resourceService.getResourceMimeType(template));
             final ResourceTemplateMetaData resourceTemplateMetaData =
-                    resourceService.getMetaData(new ObjectMapper().writeValueAsString(metaDataMap));
+                    resourceService.getMetaData(new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(metaDataMap));
 
             final ResourceIdentifier resourceIdentifier = new ResourceIdentifier.Builder().setResourceName(templateName)
                     .setGroupName(createResourceParam.getGroup())

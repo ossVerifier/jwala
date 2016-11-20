@@ -26,7 +26,7 @@ public interface ResourceServiceRest extends InitializingBean {
      * @return {@link Response}
      */
     @POST
-    @Path("/template/{targetName}")
+    @Path("/template/{targetName: .*}")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     Response createTemplate(List<Attachment> attachments, @PathParam("targetName") final String targetName, @BeanParam AuthenticatedUser user);
 
