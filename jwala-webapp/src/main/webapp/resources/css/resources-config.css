@@ -150,6 +150,11 @@
     width: 320px;
 }
 
+.MetaDataEntryForm input[type=checkbox] {
+    margin-top: 10px;
+    margin-bottom: 5px;
+}
+
 .MetaDataEntryForm select {
     width: 150px;
 }

@@ -53,7 +53,7 @@ var ResourcesConfig = React.createClass({
                                     title="Create Resource Template"
                                     show={false}
                                     okCallback={this.onCreateResourceOkClicked}
-                                    content={<SelectMetaDataAndTemplateFilesWidget ref="selectMetaDataAndTemplateFilesWidget" uploadMetaData={false} />}/>
+                                    content={<SelectMetaDataAndTemplateFilesWidget ref="selectMetaDataAndTemplateFilesWidget" uploadMetaData={false} parent={this} />}/>
                     <ModalDialogBox ref="selectMetaDataAndTemplateFilesModalDlg"
                                     title="Create Resource Template"
                                     show={false}
@@ -956,6 +956,13 @@ var SelectMetaDataAndTemplateFilesWidget = React.createClass({
         return {uploadMetaData: this.props.uploadMetaData};
     },
     render: function() {
+        var selectedEntity = this.props.parent.refs.resourceEditor.refs.treeList.getSelectedNodeData();
+
+        var groupLevelWebApp = false;
+        if (selectedEntity.rtreeListMetaData.entity === "webApps" &&
+            selectedEntity.rtreeListMetaData.parent.rtreeListMetaData.entity === "webAppSection") {
+            groupLevelWebApp = true;
+        }
 
         var metaDataEntryComponent = this.state.uploadMetaData ? <div>
                                                                      <label>*Meta Data File</label>
@@ -964,7 +971,7 @@ var SelectMetaDataAndTemplateFilesWidget = React.createClass({
                                                                          <input type="file" ref="metaDataFile" name="metaDataFile" required accept=".json" onChange={this.onMetaDataFileChange}/>
                                                                      </div>
                                                                  </div>
-                                                               : <MetaDataEntryForm ref="metaDataEntryForm"/>
+                                                               : <MetaDataEntryForm ref="metaDataEntryForm" groupLevelWebApp={groupLevelWebApp}/>
         var uploadMetaDataCheckbox = null;
         if (!this.props.hideUploadMetaDataOption) {
             uploadMetaDataCheckbox = this.state.uploadMetaData ?
@@ -1020,19 +1027,20 @@ var MetaDataEntryForm = React.createClass({
         return {deployPath: null, deployFilename: null, assignToJvms: false};
     },
     render: function() {
-        var assignToJvmsCheckbox = this.state.assignToJvms === false ?
-            <input ref="assignToJvms" name="assignToJvms" type="checkbox" onChange={this.onChangeAssignToJvms}>Assign to JVMs</input> :
-            <input ref="assignToJvms" name="assignToJvms" type="checkbox" checked onChange={this.onChangeAssignToJvms}>Assign to JVMs</input>;
+        var assignToJvmsCheckbox = null;
+        if (this.props.groupLevelWebApp) {
+            assignToJvmsCheckbox = this.state.assignToJvms === false ?
+                <input ref="assignToJvms" name="assignToJvms" type="checkbox" onChange={this.onChangeAssignToJvms}>Assign to JVMs</input> :
+                <input ref="assignToJvms" name="assignToJvms" type="checkbox" checked onChange={this.onChangeAssignToJvms}>Assign to JVMs</input>;
+        }
+
         return <div className="MetaDataEntryForm">
                    <label>*Deploy Name</label>
                    <label htmlFor="deployFilename" className="error"/>
                    <input ref="deployFilename" name="deployFilename" type="text" required valueLink={this.linkState("deployFilename")}/>
                    <label>Deploy Path</label>
                    <input ref="deployPath" type="text"  valueLink={this.linkState("deployPath")}/>
-                   <br/>
                    {assignToJvmsCheckbox}
-                   <br/>
-                   <br/>
                </div>
     },
     mixins: [React.addons.LinkedStateMixin],
