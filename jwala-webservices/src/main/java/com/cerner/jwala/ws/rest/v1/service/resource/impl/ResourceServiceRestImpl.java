@@ -1,6 +1,7 @@
 package com.cerner.jwala.ws.rest.v1.service.resource.impl;
 
 import com.cerner.jwala.common.domain.model.fault.AemFaultType;
+import com.cerner.jwala.common.domain.model.resource.Entity;
 import com.cerner.jwala.common.domain.model.resource.ResourceContent;
 import com.cerner.jwala.common.domain.model.resource.ResourceIdentifier;
 import com.cerner.jwala.common.domain.model.resource.ResourceTemplateMetaData;
@@ -54,7 +55,7 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
     public static final String TPL_FILE_EXTENSION = ".tpl";
     public static final String EXT_PROPERTIES_RESOURCE_NAME = "ext.properties";
     public static final String EXT_PROPERTIES_RESOURCE_META_DATA = "{\"contentType\":\"text/plain\", \"templateName\":\"external.properties\", \"deployPath\":\"\", \"deployFileName\":\"" + EXT_PROPERTIES_RESOURCE_NAME + "\"}";
-    public static final int CREATE_RESOURCE_ATTACHMENT_SIZE = 2;
+    public static final int CREATE_RESOURCE_ATTACHMENT_SIZE = 3;
 
     private final ResourceService resourceService;
 
@@ -165,6 +166,17 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
             metaDataMap.put("deployFileName", deployFilename);
             metaDataMap.put("templateName", templateName);
             metaDataMap.put("contentType", resourceService.getResourceMimeType(template));
+
+            // Note: In the create resource UI "assign to JVMs" makes more sense than "deploy to JVMs" e.g.
+            //       one create's a resource that will be assigned to JVMs.
+            //       We have to put it in its meta data counter part which is deployToJvms.
+            //       IMHO meta data's deployToJvms should be renamed to assignToJvms but it can't be changed just yet
+            //       not until an impact analysis has been made.
+            // TODO: Discuss with the team about renaming meta data's deployToJvms to assignToJvms
+            final Entity entity = new Entity(null, null, null, null, Boolean.parseBoolean((String) metaDataMap.get("assignToJvms")));
+            metaDataMap.remove("assignToJvms");
+            metaDataMap.put("entity", entity);
+
             final ResourceTemplateMetaData resourceTemplateMetaData =
                     resourceService.getMetaData(new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(metaDataMap));
 
