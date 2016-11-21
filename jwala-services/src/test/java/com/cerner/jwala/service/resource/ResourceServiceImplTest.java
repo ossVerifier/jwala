@@ -989,6 +989,10 @@ public class ResourceServiceImplTest {
                 .getResourceAsStream("/get-resource-mime-type-test-files/properties-file-tpl.tpl")));
         assertEquals("text/plain", resourceService.getResourceMimeType(this.getClass()
                 .getResourceAsStream("/get-resource-mime-type-test-files/properties-file-tpl.war")));
+
+        // jar
+        assertEquals("application/zip", resourceService.getResourceMimeType(this.getClass()
+                .getResourceAsStream("/get-resource-mime-type-test-files/jar.jar")));
     }
 
 }
