@@ -164,7 +164,7 @@ public class ResourceServiceImpl implements ResourceService {
     @Override
     @Transactional
     public CreateResourceResponseWrapper createTemplate(final InputStream metaData,
-                                                        InputStream templateData,
+                                                        final InputStream templateData,
                                                         String targetName,
                                                         final User user) {
         final ResourceTemplateMetaData resourceTemplateMetaData;
@@ -182,15 +182,19 @@ public class ResourceServiceImpl implements ResourceService {
             final ObjectMapper objectMapper = new ObjectMapper();
             final String jsonStr = IOUtils.toString(metaData, Charset.defaultCharset());
             final HashMap<String,Object> jsonMap = objectMapper.readValue(jsonStr, HashMap.class);
-            jsonMap.put("contentType",  getResourceMimeType(templateData));
+
+            // Read input stream into a byte array and use the byte array going forward so we don't need to deal
+            // with resetting the input stream
+            final byte [] bytes = IOUtils.toByteArray(templateData);
+            jsonMap.put("contentType",  getResourceMimeType(bytes));
 
             resourceTemplateMetaData = getMetaData(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(jsonMap));
             if (MEDIA_TYPE_TEXT.equalsIgnoreCase(resourceTemplateMetaData.getContentType().getType()) ||
                     MediaType.APPLICATION_XML.equals(resourceTemplateMetaData.getContentType())) {
-                Scanner scanner = new Scanner(templateData).useDelimiter("\\A");
+                Scanner scanner = new Scanner(new ByteArrayInputStream(bytes)).useDelimiter("\\A");
                 templateContent = scanner.hasNext() ? scanner.next() : "";
             } else {
-                templateContent = uploadResource(resourceTemplateMetaData, templateData);
+                templateContent = uploadResource(resourceTemplateMetaData, new ByteArrayInputStream(bytes));
             }
 
             if (StringUtil.isEmpty(targetName)) {
@@ -1118,13 +1122,10 @@ public class ResourceServiceImpl implements ResourceService {
                 destination,
                 options);
     }
+
     @Override
-    public String getResourceMimeType(final InputStream in) {
-        try {
-            return fileTypeDetector.detect(in);
-        } catch (IOException e) {
-            throw new ResourceServiceException("Failed to detect resource file type!", e);
-        }
+    public String getResourceMimeType(final byte [] bytes) {
+        return fileTypeDetector.detect(bytes);
     }
 
 }

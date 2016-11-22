@@ -151,7 +151,7 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
 
         try {
             final Map<String, Object> metaDataMap = new HashMap<>();
-            InputStream template = null;
+            byte [] bytes = {};
             String templateName = null;
             for (final Attachment attachment : attachments) {
                 if (attachment.getHeader("Content-Type") == null) {
@@ -159,13 +159,13 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
                             IOUtils.toString(attachment.getDataHandler().getInputStream(), Charset.defaultCharset()));
                 } else {
                     templateName = attachment.getDataHandler().getName();
-                    template = attachment.getDataHandler().getInputStream();
+                    bytes = IOUtils.toByteArray(attachment.getDataHandler().getInputStream());
                 }
             }
 
             metaDataMap.put("deployFileName", deployFilename);
             metaDataMap.put("templateName", templateName);
-            metaDataMap.put("contentType", resourceService.getResourceMimeType(template));
+            metaDataMap.put("contentType", resourceService.getResourceMimeType(bytes));
 
             // Note: In the create resource UI "assign to JVMs" makes more sense than "deploy to JVMs" e.g.
             //       one create's a resource that will be assigned to JVMs.
@@ -186,8 +186,9 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
                     .setJvmName(createResourceParam.getJvm())
                     .setWebAppName(createResourceParam.getWebApp()).build();
 
+            // TODO: ResourceService's createResource should take byte array
             createResourceResponseWrapper = resourceService.createResource(resourceIdentifier, resourceTemplateMetaData,
-                    template);
+                    new ByteArrayInputStream(bytes));
         } catch (final IOException e) {
             LOGGER.error("Failed to create resource {}!", deployFilename, e);
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(AemFaultType.IO_EXCEPTION, e.getMessage()));
