@@ -181,8 +181,8 @@ public class ResourceServiceImpl implements ResourceService {
             // keeps a copy of the JSON String so the JSON String should match the property values.
             final ObjectMapper objectMapper = new ObjectMapper();
             final String jsonStr = IOUtils.toString(metaData, Charset.defaultCharset());
-            final HashMap<String,Object> jsonMap = objectMapper.readValue(jsonStr, HashMap.class);
-            jsonMap.put("contentType",  getResourceMimeType(templateData));
+            final HashMap<String, Object> jsonMap = objectMapper.readValue(jsonStr, HashMap.class);
+            jsonMap.put("contentType", getResourceMimeType(templateData));
 
             resourceTemplateMetaData = getMetaData(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(jsonMap));
             if (MEDIA_TYPE_TEXT.equalsIgnoreCase(resourceTemplateMetaData.getContentType().getType()) ||
@@ -770,7 +770,7 @@ public class ResourceServiceImpl implements ResourceService {
         }
     }
 
-    protected CommandOutput secureCopyFile(final String hostName, final String sourcePath, final String destPath) throws CommandFailureException {
+    public CommandOutput secureCopyFile(final String hostName, final String sourcePath, final String destPath) throws CommandFailureException {
         final int beginIndex = destPath.lastIndexOf("/");
         final String fileName = destPath.substring(beginIndex + 1, destPath.length());
 
@@ -961,7 +961,7 @@ public class ResourceServiceImpl implements ResourceService {
                 resourceSourceCopy = getResponseTemplate(resourceHandler.getSelectedValue(resourceIdentifier), fileName, false);
             }
 
-            commandOutput = deployConfigFile(deployFileName, entity, resourceDestPath, resourceSourceCopy, hostName);
+            commandOutput= secureCopyFile(hostName, resourceSourceCopy, resourceDestPath);
             if (resourceTemplateMetaData.isUnpack()) {
                 commandOutput = doUnpack(entity, hostName, resourceTemplateMetaData.getDeployPath() + "/" + resourceTemplateMetaData.getDeployFileName());
             }
@@ -1012,7 +1012,7 @@ public class ResourceServiceImpl implements ResourceService {
         return commandOutput;
     }
 
-    public CommandOutput deployConfigFile(final String fileName, final String entity, final String destPath, final String sourcePath, final String hostName) throws CommandFailureException {
+    /*public CommandOutput deployConfigFile(final String fileName, final String entity, final String destPath, final String sourcePath, final String hostName) throws CommandFailureException {
         final String parentDir;
         if (destPath.startsWith("~")) {
             parentDir = destPath.substring(0, destPath.lastIndexOf("/"));
@@ -1030,9 +1030,9 @@ public class ResourceServiceImpl implements ResourceService {
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, CommandOutputReturnCode.fromReturnCode(result.getReturnCode().getReturnCode()).getDesc());
         }
         return result;
-    }
+    }*/
 
-    public CommandOutput createDir(final String entity, final String hostName, final String dir) throws CommandFailureException {
+    /*public CommandOutput createDir(final String entity, final String hostName, final String dir) throws CommandFailureException {
         CommandOutput commandOutput = remoteCommandExecutor.executeRemoteCommand(
                 entity,
                 hostName,
@@ -1040,15 +1040,15 @@ public class ResourceServiceImpl implements ResourceService {
                 new WindowsApplicationPlatformCommandProvider(),
                 dir
         );
-        if (commandOutput.getReturnCode().wasSuccessful()) {
+        *//*if (commandOutput.getReturnCode().wasSuccessful()) {
             LOGGER.info("Successfully created the parent dir {} on host {}", dir, hostName);
         } else {
             final String stdErr = commandOutput.getStandardError().isEmpty() ? commandOutput.getStandardOutput() : commandOutput.getStandardError();
             LOGGER.error("Error in creating parent dir {} on host {}:: ERROR : {}", dir, hostName, stdErr);
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, stdErr);
-        }
+        }*//*
         return commandOutput;
-    }
+    }*/
 
     public <T> String getResponseTemplate(final T entity, final String fileName, final boolean isApplicationBinary) {
         String template = "";
@@ -1059,25 +1059,35 @@ public class ResourceServiceImpl implements ResourceService {
             }
         } else if (entity instanceof Application) {
             template = groupPersistenceService.getGroupAppResourceTemplate(((Application) entity).getGroup().getName(), ((Application) entity).getName(), fileName);
+        } else if (entity instanceof WebServer) {
+            template = webServerPersistenceService.getResourceTemplate(((WebServer) entity).getName(), fileName);
         }
         return template;
     }
 
     public <T> String generateConfigFile(final T entity, final String fileName) {
         String resourceFileString = "";
+        final String failMessage = "Failed to find the template in the database or on the file system";
         if (entity instanceof Jvm) {
             final String templateContent = jvmPersistenceService.getJvmTemplate(fileName, ((Jvm) entity).getId());
             if (!templateContent.isEmpty()) {
                 resourceFileString = generateResourceFile(fileName, templateContent, generateResourceGroup(), entity, ResourceGeneratorType.TEMPLATE);
             } else {
-                throw new BadRequestException(AemFaultType.JVM_TEMPLATE_NOT_FOUND, "Failed to find the template in the database or on the file system");
+                throw new BadRequestException(AemFaultType.JVM_TEMPLATE_NOT_FOUND, failMessage);
             }
         } else if (entity instanceof Application) {
             final String templateContentApplication = groupPersistenceService.getGroupAppResourceTemplate(((Application) entity).getGroup().getName(), ((Application) entity).getName(), fileName);
             if (!templateContentApplication.isEmpty()) {
                 resourceFileString = generateResourceFile(fileName, templateContentApplication, generateResourceGroup(), entity, ResourceGeneratorType.TEMPLATE);
             } else {
-                throw new BadRequestException(AemFaultType.APP_TEMPLATE_NOT_FOUND, "Failed to find the template in the database or on the file system");
+                throw new BadRequestException(AemFaultType.APP_TEMPLATE_NOT_FOUND, failMessage);
+            }
+        } else if (entity instanceof WebServer) {
+            final String templateContentWebServer = webServerPersistenceService.getResourceTemplate(((WebServer) entity).getName(), fileName);
+            if (!templateContentWebServer.isEmpty()) {
+                resourceFileString = generateResourceFile(fileName, templateContentWebServer, generateResourceGroup(), entity, ResourceGeneratorType.TEMPLATE);
+            } else {
+                throw new BadRequestException(AemFaultType.WEB_SERVER_CONF_TEMPLATE_NOT_FOUND, failMessage);
             }
         }
         return resourceFileString;
@@ -1118,6 +1128,7 @@ public class ResourceServiceImpl implements ResourceService {
                 destination,
                 options);
     }
+
     @Override
     public String getResourceMimeType(final InputStream in) {
         try {

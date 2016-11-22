@@ -228,7 +228,8 @@ public class AemServiceConfiguration {
                 fileManager,
                 resourceService,
                 inMemoryStateManagerService,
-                templatePath);
+                templatePath,
+                binaryDistributionLockManager);
     }
 
     @Bean

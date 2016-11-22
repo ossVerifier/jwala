@@ -700,18 +700,22 @@ public class JvmServiceImpl implements JvmService {
         Jvm jvm = getJvm(jvmName);
         // only one at a time per jvm
         binaryDistributionLockManager.writeLock(jvm.getId().getId().toString());
-        if (jvm.getState().isStartedState()) {
-            LOGGER.error("The target JVM {} must be stopped before attempting to update the resource files", jvm.getJvmName());
-            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE,
-                    "The target JVM must be stopped before attempting to update the resource files");
+        try {
+            if (jvm.getState().isStartedState()) {
+                LOGGER.error("The target JVM {} must be stopped before attempting to update the resource files", jvm.getJvmName());
+                throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE,
+                        "The target JVM must be stopped before attempting to update the resource files");
+            }
+            ResourceIdentifier resourceIdentifier = new ResourceIdentifier.Builder()
+                    .setResourceName(fileName)
+                    .setJvmName(jvmName)
+                    .build();
+            resourceService.validateSingleResourceForGeneration(resourceIdentifier);
+            resourceService.generateAndDeployFile(resourceIdentifier, jvm.getJvmName(), fileName, jvm.getHostName());
+        } finally {
+            binaryDistributionLockManager.writeUnlock(jvm.getId().getId().toString());
+            LOGGER.debug("End generateAndDeployFile for {} by user {}", jvmName, user.getId());
         }
-        ResourceIdentifier resourceIdentifier = new ResourceIdentifier.Builder()
-                .setResourceName(fileName)
-                .setJvmName(jvmName)
-                .build();
-        resourceService.validateSingleResourceForGeneration(resourceIdentifier);
-        resourceService.generateAndDeployFile(resourceIdentifier, jvm.getJvmName(), fileName, jvm.getHostName());
-        binaryDistributionLockManager.writeUnlock(jvm.getId().getId().toString());
         return jvm;
     }
 
@@ -905,7 +909,7 @@ public class JvmServiceImpl implements JvmService {
                         resourceGroup, jvm, ResourceGeneratorType.TEMPLATE);
                 generatedFiles.put(createConfigFile(ApplicationProperties.get("paths.generated.resource.dir") + "/" + jvmName, deployFileName, generatedResourceStr),
                         resourceTemplateMetaData.getDeployPath() + "/" + deployFileName);
-            }  else {
+            } else {
                 if (generatedFiles == null) {
                     generatedFiles = new HashMap<>();
                 }

@@ -48,6 +48,7 @@ import org.apache.cxf.jaxrs.ext.MessageContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.method.P;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
@@ -428,7 +429,11 @@ public class GroupServiceRestImpl implements GroupServiceRest {
                 LOGGER.error("FAILURE getting response for {}", keyEntityName, e);
                 final Throwable cause = e.getCause();
                 if (cause instanceof InternalErrorException) {
-                    entityDetailsMap.putAll(((InternalErrorException) cause).getErrorDetails());
+                    if (((InternalErrorException) cause).getErrorDetails() != null) {
+                        entityDetailsMap.putAll(((InternalErrorException) cause).getErrorDetails());
+                    } else {
+                        entityDetailsMap.put(keyEntityName, Collections.singletonList(cause.getMessage()));
+                    }
                 } else {
                     entityDetailsMap.put(keyEntityName, Collections.singletonList(e.getMessage()));
                 }

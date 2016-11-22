@@ -85,6 +85,8 @@ public enum AemFaultType implements MessageResponseStatus {
     /**/
     WEB_SERVER_HTTPD_CONF_TEMPLATE_NOT_FOUND("AEM38", "WebServerHttpdConfTemplateNotFound"),
     /**/
+    WEB_SERVER_CONF_TEMPLATE_NOT_FOUND("AEM72", "WebServerConfTemplateNotFound"),
+    /**/
     GROUP_CONTROL_HISTORY_NOT_FOUND("AEM39", "GroupControlHistoryNotFound"),
     /**/
     GROUP_STATE_NOT_SPECIFIED("AEM40", "GroupStateNotSpecified"),

@@ -198,8 +198,10 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
     @Override
     public Response generateAndDeployConfig(final String aWebServerName, final String resourceFileName, final AuthenticatedUser user) {
         LOGGER.info("Generate and deploy config {} for web server {} by user {}", resourceFileName, aWebServerName, user.getUser().getId());
+        return ResponseBuilder.ok(webServerService.generateAndDeployFile(aWebServerName, resourceFileName, user.getUser()));
+     // return ResponseBuilder.ok(webServerService.getResourceTemplate(aWebServerName, resourceFileName, false, new ResourceGroup()));
 
-        // only one at a time per web server
+        /*        // only one at a time per web server
         if (!wsWriteLocks.containsKey(aWebServerName)) {
             wsWriteLocks.put(aWebServerName, new ReentrantReadWriteLock());
         }
@@ -273,7 +275,9 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
         } finally {
             wsWriteLocks.get(aWebServerName).writeLock().unlock();
         }
+
         return ResponseBuilder.ok(webServerService.getResourceTemplate(aWebServerName, resourceFileName, false, new ResourceGroup()));
+        */
     }
 
     @Override
