@@ -181,7 +181,7 @@ public class ResourceServiceImpl implements ResourceService {
             // keeps a copy of the JSON String so the JSON String should match the property values.
             final ObjectMapper objectMapper = new ObjectMapper();
             final String jsonStr = IOUtils.toString(metaData, Charset.defaultCharset());
-
+            final HashMap<String,Object> jsonMap = objectMapper.readValue(jsonStr, HashMap.class);
             // Read input stream into a byte array and use the byte array going forward so we don't need to deal
             // with resetting the input stream
             final byte [] bytes = IOUtils.toByteArray(templateData);
