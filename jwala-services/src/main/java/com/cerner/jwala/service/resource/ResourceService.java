@@ -306,5 +306,10 @@ public interface ResourceService {
 
     CommandOutput executeUnzipBinaryCommand(String entity, String host, String source, String destination, String options) throws CommandFailureException;
 
-    String getResourceMimeType(InputStream in);
+    /**
+     * Get mime type
+     * @param bytes byte array that contains file data
+     * @return {@link org.apache.tika.mime.MediaType}
+     */
+    String getResourceMimeType(byte [] bytes);
 }
