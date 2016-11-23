@@ -14,7 +14,6 @@ import com.cerner.jwala.common.exception.ApplicationException;
 import com.cerner.jwala.common.exception.BadRequestException;
 import com.cerner.jwala.common.exception.InternalErrorException;
 import com.cerner.jwala.common.exec.CommandOutput;
-import com.cerner.jwala.common.exec.CommandOutputReturnCode;
 import com.cerner.jwala.common.properties.ApplicationProperties;
 import com.cerner.jwala.common.properties.ExternalProperties;
 import com.cerner.jwala.common.request.app.RemoveWebArchiveRequest;
@@ -60,6 +59,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.BufferedInputStream;
 import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -184,16 +184,16 @@ public class ResourceServiceImpl implements ResourceService {
             final HashMap<String,Object> jsonMap = objectMapper.readValue(jsonStr, HashMap.class);
             // Read input stream into a byte array and use the byte array going forward so we don't need to deal
             // with resetting the input stream
-            final byte [] bytes = IOUtils.toByteArray(templateData);
-            jsonMap.put("contentType",  getResourceMimeType(bytes));
+            final BufferedInputStream bufferedInputStream = new BufferedInputStream(templateData);
+            jsonMap.put("contentType",  getResourceMimeType(bufferedInputStream));
 
             resourceTemplateMetaData = getMetaData(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(jsonMap));
             if (MEDIA_TYPE_TEXT.equalsIgnoreCase(resourceTemplateMetaData.getContentType().getType()) ||
                     MediaType.APPLICATION_XML.equals(resourceTemplateMetaData.getContentType())) {
-                Scanner scanner = new Scanner(new ByteArrayInputStream(bytes)).useDelimiter("\\A");
+                Scanner scanner = new Scanner(bufferedInputStream).useDelimiter("\\A");
                 templateContent = scanner.hasNext() ? scanner.next() : "";
             } else {
-                templateContent = uploadResource(resourceTemplateMetaData, new ByteArrayInputStream(bytes));
+                templateContent = uploadResource(resourceTemplateMetaData, bufferedInputStream);
             }
 
             if (StringUtil.isEmpty(targetName)) {
@@ -1133,8 +1133,12 @@ public class ResourceServiceImpl implements ResourceService {
     }
 
     @Override
-    public String getResourceMimeType(final byte [] bytes) {
-        return fileTypeDetector.detect(bytes);
+    public String getResourceMimeType(final BufferedInputStream fileContents) {
+        try {
+            return fileTypeDetector.detect(fileContents);
+        } catch (final IOException e) {
+            throw new ResourceServiceException("Failed to read mime type from stream!", e);
+        }
     }
 
 }

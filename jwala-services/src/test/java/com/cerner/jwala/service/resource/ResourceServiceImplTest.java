@@ -948,52 +948,52 @@ public class ResourceServiceImplTest {
     @Test
     public void testGetResourceMimeTypes() throws IOException {
         // jpg
-        assertEquals("image/jpeg", resourceService.getResourceMimeType(IOUtils.toByteArray(this.getClass()
-                .getResourceAsStream("/get-resource-mime-type-test-files/jpg"))));
-        assertEquals("image/jpeg", resourceService.getResourceMimeType(IOUtils.toByteArray(this.getClass()
-                .getResourceAsStream("/get-resource-mime-type-test-files/jpg.jpg"))));
-        assertEquals("image/jpeg", resourceService.getResourceMimeType(IOUtils.toByteArray(this.getClass()
-                .getResourceAsStream("/get-resource-mime-type-test-files/jpg.txt"))));
+        assertEquals("image/jpeg", resourceService.getResourceMimeType(new BufferedInputStream(
+                this.getClass().getResourceAsStream("/get-resource-mime-type-test-files/jpg"))));
+        assertEquals("image/jpeg", resourceService.getResourceMimeType(new BufferedInputStream(
+                this.getClass().getResourceAsStream("/get-resource-mime-type-test-files/jpg.jpg"))));
+        assertEquals("image/jpeg", resourceService.getResourceMimeType(new BufferedInputStream(
+                this.getClass().getResourceAsStream("/get-resource-mime-type-test-files/jpg.txt"))));
 
         // xml
-        assertEquals("application/xml", resourceService.getResourceMimeType(IOUtils.toByteArray(this.getClass()
-                .getResourceAsStream("/get-resource-mime-type-test-files/xml-tpl"))));
-        assertEquals("application/xml", resourceService.getResourceMimeType(IOUtils.toByteArray(this.getClass()
-                .getResourceAsStream("/get-resource-mime-type-test-files/xml-tpl.tpl"))));
-        assertEquals("application/xml", resourceService.getResourceMimeType(IOUtils.toByteArray(this.getClass()
-                .getResourceAsStream("/get-resource-mime-type-test-files/xml-tpl.war"))));
-        assertEquals("application/xml", resourceService.getResourceMimeType(IOUtils.toByteArray(this.getClass()
-                .getResourceAsStream("/get-resource-mime-type-test-files/xml-tpl.zip"))));
+        assertEquals("application/xml", resourceService.getResourceMimeType(new BufferedInputStream(
+                this.getClass().getResourceAsStream("/get-resource-mime-type-test-files/xml-tpl"))));
+        assertEquals("application/xml", resourceService.getResourceMimeType(new BufferedInputStream(
+                this.getClass().getResourceAsStream("/get-resource-mime-type-test-files/xml-tpl.tpl"))));
+        assertEquals("application/xml", resourceService.getResourceMimeType(new BufferedInputStream(
+                this.getClass().getResourceAsStream("/get-resource-mime-type-test-files/xml-tpl.war"))));
+        assertEquals("application/xml", resourceService.getResourceMimeType(new BufferedInputStream(
+                this.getClass().getResourceAsStream("/get-resource-mime-type-test-files/xml-tpl.zip"))));
 
         // war
-        assertEquals("application/x-tika-java-web-archive", resourceService.getResourceMimeType(IOUtils.toByteArray(this.getClass()
-                .getResourceAsStream("/get-resource-mime-type-test-files/war"))));
-        assertEquals("application/x-tika-java-web-archive", resourceService.getResourceMimeType(IOUtils.toByteArray(this.getClass()
-                .getResourceAsStream("/get-resource-mime-type-test-files/war.txt"))));
-        assertEquals("application/x-tika-java-web-archive", resourceService.getResourceMimeType(IOUtils.toByteArray(this.getClass()
-                .getResourceAsStream("/get-resource-mime-type-test-files/war.war"))));
-        assertEquals("application/x-tika-java-web-archive", resourceService.getResourceMimeType(IOUtils.toByteArray(this.getClass()
-                .getResourceAsStream("/get-resource-mime-type-test-files/war.zip"))));
+        assertEquals("application/zip", resourceService.getResourceMimeType(new BufferedInputStream(
+                this.getClass().getResourceAsStream("/get-resource-mime-type-test-files/war"))));
+        assertEquals("application/zip", resourceService.getResourceMimeType(new BufferedInputStream(
+                this.getClass().getResourceAsStream("/get-resource-mime-type-test-files/war.txt"))));
+        assertEquals("application/zip", resourceService.getResourceMimeType(new BufferedInputStream(
+                this.getClass().getResourceAsStream("/get-resource-mime-type-test-files/war.war"))));
+        assertEquals("application/zip", resourceService.getResourceMimeType(new BufferedInputStream(
+                this.getClass().getResourceAsStream("/get-resource-mime-type-test-files/war.zip"))));
 
         // zip
-        assertEquals("application/zip", resourceService.getResourceMimeType(IOUtils.toByteArray(this.getClass()
-                .getResourceAsStream("/get-resource-mime-type-test-files/zip"))));
-        assertEquals("application/zip", resourceService.getResourceMimeType(IOUtils.toByteArray(this.getClass()
-                .getResourceAsStream("/get-resource-mime-type-test-files/zip.txt"))));
-        assertEquals("application/zip", resourceService.getResourceMimeType(IOUtils.toByteArray(this.getClass()
-                .getResourceAsStream("/get-resource-mime-type-test-files/zip.zip"))));
+        assertEquals("application/zip", resourceService.getResourceMimeType(new BufferedInputStream(
+                this.getClass().getResourceAsStream("/get-resource-mime-type-test-files/zip"))));
+        assertEquals("application/zip", resourceService.getResourceMimeType(new BufferedInputStream(
+                this.getClass().getResourceAsStream("/get-resource-mime-type-test-files/zip.txt"))));
+        assertEquals("application/zip", resourceService.getResourceMimeType(new BufferedInputStream(
+                this.getClass().getResourceAsStream("/get-resource-mime-type-test-files/zip.zip"))));
 
         // properties file/text
-        assertEquals("text/plain", resourceService.getResourceMimeType(IOUtils.toByteArray(this.getClass()
-                .getResourceAsStream("/get-resource-mime-type-test-files/properties-file-tpl"))));
-        assertEquals("text/plain", resourceService.getResourceMimeType(IOUtils.toByteArray(this.getClass()
-                .getResourceAsStream("/get-resource-mime-type-test-files/properties-file-tpl.tpl"))));
-        assertEquals("text/plain", resourceService.getResourceMimeType(IOUtils.toByteArray(this.getClass()
-                .getResourceAsStream("/get-resource-mime-type-test-files/properties-file-tpl.war"))));
+        assertEquals("text/plain", resourceService.getResourceMimeType(new BufferedInputStream(
+                this.getClass().getResourceAsStream("/get-resource-mime-type-test-files/properties-file-tpl"))));
+        assertEquals("text/plain", resourceService.getResourceMimeType(new BufferedInputStream(
+                this.getClass().getResourceAsStream("/get-resource-mime-type-test-files/properties-file-tpl.tpl"))));
+        assertEquals("text/plain", resourceService.getResourceMimeType(new BufferedInputStream(
+                this.getClass().getResourceAsStream("/get-resource-mime-type-test-files/properties-file-tpl.war"))));
 
         // jar
-        assertEquals("application/java-archive", resourceService.getResourceMimeType(IOUtils.toByteArray(this.getClass()
-                .getResourceAsStream("/get-resource-mime-type-test-files/jar.jar"))));
+        assertEquals("application/zip", resourceService.getResourceMimeType(new BufferedInputStream(
+                this.getClass().getResourceAsStream("/get-resource-mime-type-test-files/jar.jar"))));
     }
 
 }

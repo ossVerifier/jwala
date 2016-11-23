@@ -37,6 +37,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.BufferedInputStream;
 import java.nio.charset.Charset;
 import java.util.*;
 
@@ -151,7 +152,7 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
 
         try {
             final Map<String, Object> metaDataMap = new HashMap<>();
-            byte [] bytes = {};
+            BufferedInputStream bufferedInputStream = null;
             String templateName = null;
             for (final Attachment attachment : attachments) {
                 if (attachment.getHeader("Content-Type") == null) {
@@ -159,13 +160,13 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
                             IOUtils.toString(attachment.getDataHandler().getInputStream(), Charset.defaultCharset()));
                 } else {
                     templateName = attachment.getDataHandler().getName();
-                    bytes = IOUtils.toByteArray(attachment.getDataHandler().getInputStream());
+                    bufferedInputStream = new BufferedInputStream(attachment.getDataHandler().getInputStream());
                 }
             }
 
             metaDataMap.put("deployFileName", deployFilename);
             metaDataMap.put("templateName", templateName);
-            metaDataMap.put("contentType", resourceService.getResourceMimeType(bytes));
+            metaDataMap.put("contentType", resourceService.getResourceMimeType(bufferedInputStream));
 
             // Note: In the create resource UI "assign to JVMs" makes more sense than "deploy to JVMs" e.g.
             //       one create's a resource that will be assigned to JVMs.
@@ -186,9 +187,8 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
                     .setJvmName(createResourceParam.getJvm())
                     .setWebAppName(createResourceParam.getWebApp()).build();
 
-            // TODO: ResourceService's createResource should take byte array
             createResourceResponseWrapper = resourceService.createResource(resourceIdentifier, resourceTemplateMetaData,
-                    new ByteArrayInputStream(bytes));
+                    bufferedInputStream);
         } catch (final IOException e) {
             LOGGER.error("Failed to create resource {}!", deployFilename, e);
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(AemFaultType.IO_EXCEPTION, e.getMessage()));

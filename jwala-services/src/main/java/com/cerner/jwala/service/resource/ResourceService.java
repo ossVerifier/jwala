@@ -10,6 +10,7 @@ import com.cerner.jwala.exception.CommandFailureException;
 import com.cerner.jwala.service.resource.impl.CreateResourceResponseWrapper;
 import com.cerner.jwala.service.resource.impl.ResourceGeneratorType;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -308,8 +309,8 @@ public interface ResourceService {
 
     /**
      * Get mime type
-     * @param bytes byte array that contains file data
+     * @param fileContents a buffered inputstream that contains the contents of a file
      * @return {@link org.apache.tika.mime.MediaType}
      */
-    String getResourceMimeType(byte [] bytes);
+    String getResourceMimeType(BufferedInputStream fileContents);
 }
