@@ -198,6 +198,8 @@ var JvmConfigForm = React.createClass({
         var host = "";
         var statusPath = "/manager"; // TODO: Define in a properties file
         var groupIds = [];
+        var jdkVersions = ["JDK 1.6", "JDK 1.7", "JDK 1.8"]; // TODO: retrieve from the database
+        var getApacheTomcatVersions = ["Apache Tomcat 7.0.55", "Apache Tomcat 8.0.2"]; // TODO: retrieve from the database
         var httpPort = "";
         var httpsPort = "";
         var redirectPort = "";
@@ -229,6 +231,8 @@ var JvmConfigForm = React.createClass({
             host: host,
             statusPath: statusPath,
             groupIds: groupIds,
+            jdkVersions: jdkVersions,
+            getApacheTomcatVersions: getApacheTomcatVersions,
             groupMultiSelectData: [],
             httpPort: httpPort,
             httpsPort: httpsPort,
@@ -356,7 +360,7 @@ var JvmConfigForm = React.createClass({
                             <tr>
                             	<td><input name="userName" type="text" valueLink={this.linkState("userName")} /></td>
                             </tr>
-                            
+
                             <tr>
                             	<td>Password</td>
                             </tr>
@@ -368,7 +372,37 @@ var JvmConfigForm = React.createClass({
                             <tr>
                         		<td><input name="encryptedPassword" type="password" valueLink={this.linkState("encryptedPassword")} /></td>
                         	</tr>
-                            
+                        	<tr>
+                        	    <td>JDK Version</td>
+                        	</tr>
+                            <tr>
+                                <td>
+                                    <label htmlFor="jdkVersion" className="error"></label>
+                                </td>
+                            </tr>
+                        	<tr>
+                        	    <td>
+                        	    <select ref="jdkVersion" valueLink={this.linkState("jdkVersion")}>
+                                    {this.getJdkVersions()}
+                                </select>
+                        	    </td>
+                        	</tr>
+                        	<tr>
+                        	    <td>Apache Tomcat Version</td>
+                        	</tr>
+                            <tr>
+                                <td>
+                                    <label htmlFor="apacheTomcatVersion" className="error"></label>
+                                </td>
+                            </tr>
+                        	<tr>
+                        	    <td>
+                        	    <select ref="apacheTomcatVersion" valueLink={this.linkState("apacheTomcatVersion")}>
+                                    {this.getApacheTomcatVersions()}
+                                </select>
+                        	    </td>
+                        	</tr>
+
                             <tr>
                                 <td>
                                     *Group
@@ -435,6 +469,8 @@ var JvmConfigForm = React.createClass({
     componentDidMount: function() {
         this.validator = $(this.getDOMNode().children[0]).validate({ignore: ":hidden",
                                                                     rules: {"groupSelector[]": {required: true},
+                                                                            "jdkVersion": {required: true},
+                                                                            "apacheTomcatVersion" : {required: true},
                                                                             "jvmName": {nameCheck: true},
                                                                             "hostName": {hostNameCheck: true},
                                                                             "statusPath": {pathCheck: true},
@@ -473,6 +509,22 @@ var JvmConfigForm = React.createClass({
         groupService.getGroups().then(function(response){
                                         self.setState({groupMultiSelectData:response.applicationResponseContent});
                                       });
+    },
+    getJdkVersions: function() {
+        var items=[];
+        for (var i=0; i < this.state.jdkVersions.length; i++){
+            var jdkVersionOption = this.state.jdkVersions[i];
+            items.push(<option key={jdkVersionOption} value={jdkVersionOption}>{jdkVersionOption}</option>);
+        }
+        return items;
+    },
+    getApacheTomcatVersions: function() {
+        var items=[];
+        for (var i=0; i < this.state.getApacheTomcatVersions.length; i++){
+            var apacheTomcatOption = this.state.getApacheTomcatVersions[i];
+            items.push(<option key={apacheTomcatOption} value={apacheTomcatOption}>{apacheTomcatOption}</option>);
+        }
+        return items;
     }
 });
 
