@@ -10,6 +10,7 @@ import com.cerner.jwala.service.resource.ResourceHandler;
 import com.cerner.jwala.service.resource.ResourceService;
 import com.cerner.jwala.service.resource.impl.CreateResourceResponseWrapper;
 import com.cerner.jwala.service.resource.impl.ResourceServiceImpl;
+import org.apache.tika.Tika;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -38,7 +39,7 @@ public class ExternalPropertiesResourceHandlerTest {
     private ResourceDao mockResourceDao;
 
     private ResourceService resourceService = new ResourceServiceImpl(null, null, null, null, null, null, null, null,
-                                                                      null, null, null, null);
+                                                                      null, null, null, null, null, new Tika());
     @Before
     public void setup(){
         mockResourceDao = mock(ResourceDao.class);

@@ -1,6 +1,7 @@
 package com.cerner.jwala.ws.rest.v1.service.resource.impl;
 
 import com.cerner.jwala.common.domain.model.fault.AemFaultType;
+import com.cerner.jwala.common.domain.model.resource.Entity;
 import com.cerner.jwala.common.domain.model.resource.ResourceContent;
 import com.cerner.jwala.common.domain.model.resource.ResourceIdentifier;
 import com.cerner.jwala.common.domain.model.resource.ResourceTemplateMetaData;
@@ -36,6 +37,8 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.BufferedInputStream;
+import java.nio.charset.Charset;
 import java.util.*;
 
 /**
@@ -149,22 +152,34 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
 
         try {
             final Map<String, Object> metaDataMap = new HashMap<>();
-            InputStream template = null;
+            BufferedInputStream bufferedInputStream = null;
             String templateName = null;
             for (final Attachment attachment : attachments) {
-                if ("application/octet-stream".equalsIgnoreCase(attachment.getHeader("Content-Type"))) {
-                    templateName = attachment.getDataHandler().getName();
-                    template = attachment.getDataHandler().getInputStream();
-                } else {
+                if (attachment.getHeader("Content-Type") == null) {
                     metaDataMap.put(attachment.getDataHandler().getName(),
-                            IOUtils.toString(attachment.getDataHandler().getInputStream()));
+                            IOUtils.toString(attachment.getDataHandler().getInputStream(), Charset.defaultCharset()));
+                } else {
+                    templateName = attachment.getDataHandler().getName();
+                    bufferedInputStream = new BufferedInputStream(attachment.getDataHandler().getInputStream());
                 }
             }
 
             metaDataMap.put("deployFileName", deployFilename);
             metaDataMap.put("templateName", templateName);
+            metaDataMap.put("contentType", resourceService.getResourceMimeType(bufferedInputStream));
+
+            // Note: In the create resource UI "assign to JVMs" makes more sense than "deploy to JVMs" e.g.
+            //       one create's a resource that will be assigned to JVMs.
+            //       We have to put it in its meta data counter part which is deployToJvms.
+            //       IMHO meta data's deployToJvms should be renamed to assignToJvms but it can't be changed just yet
+            //       not until an impact analysis has been made.
+            // TODO: Discuss with the team about renaming meta data's deployToJvms to assignToJvms
+            final Entity entity = new Entity(null, null, null, null, Boolean.parseBoolean((String) metaDataMap.get("assignToJvms")));
+            metaDataMap.remove("assignToJvms");
+            metaDataMap.put("entity", entity);
+
             final ResourceTemplateMetaData resourceTemplateMetaData =
-                    resourceService.getMetaData(new ObjectMapper().writeValueAsString(metaDataMap));
+                    resourceService.getMetaData(new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(metaDataMap));
 
             final ResourceIdentifier resourceIdentifier = new ResourceIdentifier.Builder().setResourceName(templateName)
                     .setGroupName(createResourceParam.getGroup())
@@ -173,7 +188,7 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
                     .setWebAppName(createResourceParam.getWebApp()).build();
 
             createResourceResponseWrapper = resourceService.createResource(resourceIdentifier, resourceTemplateMetaData,
-                    template);
+                    bufferedInputStream);
         } catch (final IOException e) {
             LOGGER.error("Failed to create resource {}!", deployFilename, e);
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(AemFaultType.IO_EXCEPTION, e.getMessage()));

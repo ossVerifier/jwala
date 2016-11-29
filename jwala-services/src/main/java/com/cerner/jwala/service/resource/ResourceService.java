@@ -5,9 +5,12 @@ import com.cerner.jwala.common.domain.model.resource.ResourceGroup;
 import com.cerner.jwala.common.domain.model.resource.ResourceIdentifier;
 import com.cerner.jwala.common.domain.model.resource.ResourceTemplateMetaData;
 import com.cerner.jwala.common.domain.model.user.User;
+import com.cerner.jwala.common.exec.CommandOutput;
+import com.cerner.jwala.exception.CommandFailureException;
 import com.cerner.jwala.service.resource.impl.CreateResourceResponseWrapper;
 import com.cerner.jwala.service.resource.impl.ResourceGeneratorType;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -43,6 +46,8 @@ public interface ResourceService {
      * @param templateData        the template data
      * @param targetName
      * @param user
+     *
+     * NOTE: This is a legacy method!
      */
     CreateResourceResponseWrapper createTemplate(InputStream metaDataInputStream, InputStream templateData, String targetName, User user);
 
@@ -293,4 +298,19 @@ public interface ResourceService {
     void validateAllResourcesForGeneration(ResourceIdentifier resourceIdentifier);
 
     void validateSingleResourceForGeneration(ResourceIdentifier resourceIdentifier);
+
+    <T> CommandOutput generateAndDeployFile(ResourceIdentifier resourceIdentifier, String name, String fileName, String hostName);
+
+    CommandOutput executeCheckFileExistsCommand(String entity, String host, String fileName) throws CommandFailureException;
+
+    CommandOutput executeBackUpCommand(String entity, String host, String source) throws CommandFailureException;
+
+    CommandOutput executeUnzipBinaryCommand(String entity, String host, String source, String destination, String options) throws CommandFailureException;
+
+    /**
+     * Get mime type
+     * @param fileContents a buffered inputstream that contains the contents of a file
+     * @return {@link org.apache.tika.mime.MediaType}
+     */
+    String getResourceMimeType(BufferedInputStream fileContents);
 }

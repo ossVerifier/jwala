@@ -3,7 +3,6 @@ package com.cerner.jwala.ws.rest.v1.service.webserver.impl;
 import com.cerner.jwala.common.domain.model.fault.AemFaultType;
 import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.id.Identifier;
-import com.cerner.jwala.common.domain.model.resource.ContentType;
 import com.cerner.jwala.common.domain.model.resource.ResourceGroup;
 import com.cerner.jwala.common.domain.model.resource.ResourceIdentifier;
 import com.cerner.jwala.common.domain.model.resource.ResourceTemplateMetaData;
@@ -30,6 +29,7 @@ import com.cerner.jwala.ws.rest.v1.response.ResponseBuilder;
 import com.cerner.jwala.ws.rest.v1.service.webserver.WebServerServiceRest;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.jaxrs.ext.MessageContext;
+import org.apache.tika.mime.MediaType;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.slf4j.Logger;
@@ -51,6 +51,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
     private static final Logger LOGGER = LoggerFactory.getLogger(WebServerServiceRestImpl.class);
     public static final String PATHS_GENERATED_RESOURCE_DIR = "paths.generated.resource.dir";
     private static final String COMMANDS_SCRIPTS_PATH = ApplicationProperties.get("commands.scripts-path");
+    private static final String MEDIA_TYPE_TEXT = "text";
 
     private final WebServerService webServerService;
     private final WebServerControlService webServerControlService;
@@ -197,79 +198,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
     @Override
     public Response generateAndDeployConfig(final String aWebServerName, final String resourceFileName, final AuthenticatedUser user) {
         LOGGER.info("Generate and deploy config {} for web server {} by user {}", resourceFileName, aWebServerName, user.getUser().getId());
-
-        // only one at a time per web server
-        if (!wsWriteLocks.containsKey(aWebServerName)) {
-            wsWriteLocks.put(aWebServerName, new ReentrantReadWriteLock());
-        }
-
-        wsWriteLocks.get(aWebServerName).writeLock().lock();
-
-        try {
-            // check the web server state
-            if (webServerService.isStarted(webServerService.getWebServer(aWebServerName))) {
-                LOGGER.error("The target Web Server {} must be stopped before attempting to update the resource file", aWebServerName);
-                throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "The target Web Server must be stopped before attempting to update the resource file");
-            }
-
-            ResourceIdentifier resourceIdentifier = new ResourceIdentifier.Builder()
-                    .setWebServerName(aWebServerName)
-                    .setResourceName(resourceFileName)
-                    .build();
-            resourceService.validateSingleResourceForGeneration(resourceIdentifier);
-
-            // get the meta data
-            String metaDataStr = webServerService.getResourceTemplateMetaData(aWebServerName, resourceFileName);
-            ResourceTemplateMetaData metaData = resourceService.getTokenizedMetaData(resourceFileName, webServerService.getWebServer(aWebServerName), metaDataStr);
-            final String deployFileName = metaData.getDeployFileName();
-
-            String configFilePath;
-            if (metaData.getContentType().equals(ContentType.APPLICATION_BINARY.contentTypeStr)) {
-                configFilePath = webServerService.getResourceTemplate(aWebServerName, resourceFileName, false, resourceService.generateResourceGroup());
-            } else {
-                // create the file
-                final String jwalaGeneratedResourcesDir = ApplicationProperties.get(PATHS_GENERATED_RESOURCE_DIR);
-                final String generatedHttpdConf = webServerService.getResourceTemplate(aWebServerName, resourceFileName, true,
-                        resourceService.generateResourceGroup());
-                int resourceNameDotIndex = deployFileName.lastIndexOf(".");
-                final File configFile = createTempWebServerResourceFile(aWebServerName, jwalaGeneratedResourcesDir, deployFileName.substring(0, resourceNameDotIndex), resourceFileName.substring(resourceNameDotIndex + 1, resourceFileName.length()), generatedHttpdConf);
-
-                // copy the file
-                configFilePath = configFile.getAbsolutePath().replace("\\", "/");
-            }
-            //String destinationPath = resourceService.generateResourceFile(resourceFileName,metaData.getDeployPath(), resourceService.generateResourceGroup(), webServerService.getWebServer(aWebServerName)) + "/" + resourceFileName;
-            String destinationPath = metaData.getDeployPath() + "/" + deployFileName;
-            final CommandOutput execData;
-            execData = webServerControlService.secureCopyFile(aWebServerName, configFilePath, destinationPath, user.getUser().getId());
-            if (execData.getReturnCode().wasSuccessful()) {
-                LOGGER.info("Copy of {} successful: {}", deployFileName, configFilePath);
-            } else {
-                String standardError =
-                        execData.getStandardError().isEmpty() ? execData.getStandardOutput() : execData
-                                .getStandardError();
-                LOGGER.error("Copy command completed with error trying to copy httpd.conf to {} :: ERROR: {}",
-                        aWebServerName, standardError);
-                Map<String, String> errorDetails = new HashMap<>();
-                errorDetails.put("webServerName", aWebServerName);
-                return ResponseBuilder.notOkWithDetails(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
-                        AemFaultType.REMOTE_COMMAND_FAILURE, CommandOutputReturnCode.fromReturnCode(execData.getReturnCode().getReturnCode()).getDesc()), errorDetails);
-            }
-        } catch (CommandFailureException e) {
-            LOGGER.error("Failed to copy the httpd.conf to {} :: ERROR: {}", aWebServerName, e);
-            Map<String, String> errorDetails = new HashMap<>();
-            errorDetails.put("webServerName", aWebServerName);
-            return ResponseBuilder.notOkWithDetails(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
-                    AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to copy httpd.conf"), errorDetails);
-        } catch (JsonMappingException | JsonParseException e) {
-            LOGGER.error("Failed to map meta data for {}", aWebServerName, e);
-            return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(AemFaultType.BAD_STREAM, "Failed to map meta data for " + aWebServerName, e));
-        } catch (IOException e) {
-            LOGGER.error("Failed to map meta data because of IOException for {}", aWebServerName, e);
-            return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(AemFaultType.BAD_STREAM, "Failed to map meta data because of IOException for " + aWebServerName, e));
-        } finally {
-            wsWriteLocks.get(aWebServerName).writeLock().unlock();
-        }
-        return ResponseBuilder.ok(webServerService.getResourceTemplate(aWebServerName, resourceFileName, false, new ResourceGroup()));
+        return ResponseBuilder.ok(webServerService.generateAndDeployFile(aWebServerName, resourceFileName, user.getUser()));
     }
 
     @Override

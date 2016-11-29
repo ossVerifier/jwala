@@ -16,6 +16,7 @@ import com.cerner.jwala.files.FileManager;
 import com.cerner.jwala.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
 import com.cerner.jwala.persistence.jpa.service.exception.ResourceTemplateUpdateException;
 import com.cerner.jwala.persistence.service.WebServerPersistenceService;
+import com.cerner.jwala.service.binarydistribution.BinaryDistributionLockManager;
 import com.cerner.jwala.service.resource.ResourceService;
 import com.cerner.jwala.service.resource.impl.ResourceGeneratorType;
 import com.cerner.jwala.service.state.InMemoryStateManagerService;
@@ -51,23 +52,26 @@ public class WebServerServiceImpl implements WebServerService {
 
     private final String templatePath;
 
+    private final BinaryDistributionLockManager binaryDistributionLockManager;
+
     public WebServerServiceImpl(final WebServerPersistenceService webServerPersistenceService,
                                 final FileManager fileManager,
                                 final ResourceService resourceService,
                                 @Qualifier("webServerInMemoryStateManagerService")
                                 final InMemoryStateManagerService<Identifier<WebServer>, WebServerReachableState> inMemoryStateManagerService,
-                                final String templatePath) {
+                                final String templatePath,
+                                final BinaryDistributionLockManager binaryDistributionLockManager) {
         this.webServerPersistenceService = webServerPersistenceService;
         this.fileManager = fileManager;
         this.inMemoryStateManagerService = inMemoryStateManagerService;
         this.templatePath = templatePath;
         this.resourceService = resourceService;
-
+        this.binaryDistributionLockManager = binaryDistributionLockManager;
         initInMemoryStateService();
     }
 
     private void initInMemoryStateService() {
-        for(WebServer webServer : webServerPersistenceService.getWebServers()){
+        for (WebServer webServer : webServerPersistenceService.getWebServers()) {
             inMemoryStateManagerService.put(webServer.getId(), webServer.getState());
         }
     }
@@ -286,4 +290,25 @@ public class WebServerServiceImpl implements WebServerService {
         return webServerPersistenceService.getWebServerStoppedCount(groupName);
     }
 
+    @Override
+    public WebServer generateAndDeployFile(String webServerName, String fileName, User user) {
+        WebServer webServer = getWebServer(webServerName);
+        binaryDistributionLockManager.writeLock(webServer.getId().getId().toString());
+        try {
+            // check the web server state
+            if (isStarted(getWebServer(webServerName))) {
+                LOGGER.error("The target Web Server {} must be stopped before attempting to update the resource file", webServerName);
+                throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "The target Web Server must be stopped before attempting to update the resource file");
+            }
+            ResourceIdentifier resourceIdentifier = new ResourceIdentifier.Builder()
+                    .setWebServerName(webServerName)
+                    .setResourceName(fileName)
+                    .build();
+            resourceService.validateSingleResourceForGeneration(resourceIdentifier);
+            resourceService.generateAndDeployFile(resourceIdentifier, webServerName, fileName, webServer.getHost());
+        } finally {
+            binaryDistributionLockManager.writeUnlock(webServer.getId().getId().toString());
+        }
+        return webServer;
+    }
 }

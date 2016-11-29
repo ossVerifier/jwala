@@ -56,4 +56,6 @@ public interface WebServerService {
     Long getWebServerStoppedCount(String groupName);
 
     String getResourceTemplateMetaData(String aWebServerName, String resourceTemplateName);
+
+    WebServer generateAndDeployFile(String webServerName, String fileName, User user);
 }

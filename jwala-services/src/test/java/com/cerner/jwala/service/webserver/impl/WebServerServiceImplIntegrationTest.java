@@ -13,6 +13,7 @@ import com.cerner.jwala.persistence.jpa.service.impl.GroupCrudServiceImpl;
 import com.cerner.jwala.persistence.jpa.service.impl.WebServerCrudServiceImpl;
 import com.cerner.jwala.persistence.service.WebServerPersistenceService;
 import com.cerner.jwala.persistence.service.impl.WebServerPersistenceServiceImpl;
+import com.cerner.jwala.service.binarydistribution.BinaryDistributionLockManager;
 import com.cerner.jwala.service.configuration.TestJpaConfiguration;
 import com.cerner.jwala.service.resource.ResourceService;
 import com.cerner.jwala.service.state.InMemoryStateManagerService;
@@ -74,9 +75,12 @@ public class WebServerServiceImplIntegrationTest {
     @Autowired
     private ResourceService resourceService;
 
+    @Autowired
+    private BinaryDistributionLockManager binaryDistributionLockManager;
+
     @Before
     public void setup() {
-        webServerService = new WebServerServiceImpl(webServerPersistenceService, fileManager, resourceService, inMemService, "d:/jwala/app/data/types");
+        webServerService = new WebServerServiceImpl(webServerPersistenceService, fileManager, resourceService, inMemService, "d:/jwala/app/data/types", binaryDistributionLockManager);
     }
 
     @Test(expected = NotFoundException.class)

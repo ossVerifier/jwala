@@ -8,10 +8,7 @@ import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
 import com.cerner.jwala.common.domain.model.jvm.JvmState;
-import com.cerner.jwala.common.domain.model.resource.Entity;
-import com.cerner.jwala.common.domain.model.resource.ResourceGroup;
-import com.cerner.jwala.common.domain.model.resource.ResourceTemplateMetaData;
-import com.cerner.jwala.common.domain.model.resource.ResourceType;
+import com.cerner.jwala.common.domain.model.resource.*;
 import com.cerner.jwala.common.domain.model.user.User;
 import com.cerner.jwala.common.domain.model.webserver.WebServer;
 import com.cerner.jwala.common.domain.model.webserver.WebServerReachableState;
@@ -55,6 +52,7 @@ import com.cerner.jwala.ws.rest.v1.service.webserver.WebServerServiceRest;
 import com.cerner.jwala.ws.rest.v1.service.webserver.impl.WebServerServiceRestImpl;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.io.FileUtils;
+import org.apache.tika.mime.MediaType;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -294,7 +292,7 @@ public class GroupServiceImplDeployTest {
 
         when(mockGroupService.getGroupAppResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"entity\":{\"target\": \"testApp\", \"deployToJvms\": false}}");
         when(mockJvm.getHostName()).thenReturn("TestHost");
-        when(mockGroupService.deployGroupAppTemplate(anyString(), anyString(), any(ResourceGroup.class), any(Application.class), anyString())).thenReturn(
+        when(mockGroupService.deployGroupAppTemplate(anyString(), anyString(), any(Application.class), anyString())).thenReturn(
                 new CommandOutput(new ExecReturnCode(0), "SUCCESS", ""));
         returnResponse = groupServiceRest.generateAndDeployGroupAppFile("testGroup", "hct.xml", "testApp", mockAuthUser, hostName);
         assertEquals(200, returnResponse.getStatus());
@@ -346,7 +344,7 @@ public class GroupServiceImplDeployTest {
         when(mockGroupService.getGroup(anyString())).thenReturn(mockGroup);
         when(mockGroupService.getGroupAppResourceTemplate(anyString(), anyString(), anyString(), anyBoolean(), any(ResourceGroup.class))).thenReturn("new hct.xml content");
         when(mockGroupService.getGroupAppResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"entity\":{\"target\": \"testApp\", \"deployToJvms\":false}}");
-        when(mockGroupService.deployGroupAppTemplate(anyString(), anyString(), any(ResourceGroup.class), any(Application.class), any(Jvm.class))).thenReturn(new CommandOutput(new ExecReturnCode(0), "SUCCESS", ""));
+        when(mockGroupService.deployGroupAppTemplate(anyString(), anyString(), any(Application.class), any(Jvm.class))).thenReturn(new CommandOutput(new ExecReturnCode(0), "SUCCESS", ""));
         when(mockJvmService.getJvm(anyString())).thenReturn(mockJvm);
         when(mockApplicationService.updateResourceTemplate(anyString(), anyString(), anyString(), anyString(), anyString())).thenReturn("new hct.xml content");
         when(mockResourceService.generateResourceGroup()).thenReturn(new ResourceGroup());
@@ -367,6 +365,27 @@ public class GroupServiceImplDeployTest {
             internalErrorExceptionThrown = true;
         }
         assertTrue(internalErrorExceptionThrown);
+    }
+
+    @Test (expected = InternalErrorException.class)
+    public void testGroupAppDeployToHostsFailedForStartedJvm() throws IOException {
+        Group mockGroup = mock(Group.class);
+        Jvm mockJvm = mock(Jvm.class);
+        when(mockJvm.getHostName()).thenReturn("test-host-name");
+        when(mockJvm.getState()).thenReturn(JvmState.JVM_STARTED);
+        when(mockJvm.getJvmName()).thenReturn("test-jvm-name");
+        when(mockGroup.getJvms()).thenReturn(Collections.singleton(mockJvm));
+
+        when(mockGroupService.getGroup(anyString())).thenReturn(mockGroup);
+        when(mockGroupService.getGroupAppResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"entity\":{\"target\": \"testApp\", \"deployToJvms\":false}}");
+
+        ResourceTemplateMetaData mockMetaData = mock(ResourceTemplateMetaData.class);
+        Entity mockMetaDataEntity = mock(Entity.class);
+        when(mockMetaData.getEntity()).thenReturn(mockMetaDataEntity);
+        when(mockMetaDataEntity.getDeployToJvms()).thenReturn(false);
+        when(mockResourceService.getMetaData(anyString())).thenReturn(mockMetaData);
+
+        groupServiceRest.generateAndDeployGroupAppFile("test-group-name", "test.properties", "test-app-name", mockAuthUser, "test-host-name");
     }
 
     @Test
@@ -432,7 +451,7 @@ public class GroupServiceImplDeployTest {
         ResourceTemplateMetaData mockMetaData = mock(ResourceTemplateMetaData.class);
         when(mockMetaData.getDeployFileName()).thenReturn("group-app-resource.war");
         when(mockMetaData.getDeployPath()).thenReturn("./group/app/resource/deploy/path");
-        when(mockMetaData.getContentType()).thenReturn("application/binary");
+        when(mockMetaData.getContentType()).thenReturn(MediaType.APPLICATION_ZIP);
         Entity mockEntity = mock(Entity.class);
         when(mockEntity.getTarget()).thenReturn("group-app");
         when(mockMetaData.getEntity()).thenReturn(mockEntity);
@@ -440,7 +459,8 @@ public class GroupServiceImplDeployTest {
         when(mockMetaData.isOverwrite()).thenReturn(false);
         when(mockResourceService.generateResourceFile(anyString(), anyString(), any(ResourceGroup.class), any(), any(ResourceGeneratorType.class))).thenReturn(metaData);
         when(mockResourceService.getTokenizedMetaData(anyString(), Matchers.anyObject(),anyString())).thenReturn(mockMetaData);
-        assertEquals(commandOutput, groupServiceImpl.deployGroupAppTemplate(groupName, fileName, resourceGroup, application, jvm));
+        when(mockResourceService.generateAndDeployFile(any(ResourceIdentifier.class), anyString(), anyString(), anyString())).thenReturn(commandOutput);
+        assertEquals(commandOutput, groupServiceImpl.deployGroupAppTemplate(groupName, fileName, application, jvm));
     }
 
     @Test

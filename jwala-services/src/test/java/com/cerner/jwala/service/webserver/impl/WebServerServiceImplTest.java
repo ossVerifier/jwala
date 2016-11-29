@@ -22,6 +22,7 @@ import com.cerner.jwala.files.RepositoryFileInformation;
 import com.cerner.jwala.files.JwalaFile;
 import com.cerner.jwala.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
 import com.cerner.jwala.persistence.service.WebServerPersistenceService;
+import com.cerner.jwala.service.binarydistribution.BinaryDistributionLockManager;
 import com.cerner.jwala.service.resource.ResourceService;
 import com.cerner.jwala.service.resource.impl.ResourceGeneratorType;
 import com.cerner.jwala.service.state.InMemoryStateManagerService;
@@ -72,6 +73,8 @@ public class WebServerServiceImplTest {
 
     @Mock
     private RepositoryFileInformation repositoryFileInformation;
+
+    private BinaryDistributionLockManager binaryDistributionLockManager;
 
     private ArrayList<WebServer> mockWebServersAll = new ArrayList<>();
     private ArrayList<WebServer> mockWebServers11 = new ArrayList<>();
@@ -141,7 +144,7 @@ public class WebServerServiceImplTest {
         mockWebServers11.add(mockWebServer);
         mockWebServers12.add(mockWebServer2);
 
-        wsService = new WebServerServiceImpl(webServerPersistenceService, fileManager, resourceService, inMemService, StringUtils.EMPTY);
+        wsService = new WebServerServiceImpl(webServerPersistenceService, fileManager, resourceService, inMemService, StringUtils.EMPTY, binaryDistributionLockManager);
 
         when(repositoryFileInformation.getType()).thenReturn(RepositoryFileInformation.Type.NONE);
         when(fileManager.getAbsoluteLocation(any(JwalaFile.class))).thenAnswer(new Answer<String>() {

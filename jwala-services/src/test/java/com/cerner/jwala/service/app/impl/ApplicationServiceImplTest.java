@@ -43,6 +43,7 @@ import com.cerner.jwala.service.group.GroupService;
 import com.cerner.jwala.service.resource.ResourceService;
 import com.cerner.jwala.service.resource.impl.CreateResourceResponseWrapper;
 import com.cerner.jwala.service.resource.impl.ResourceGeneratorType;
+import org.apache.tika.mime.MediaType;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -388,7 +389,7 @@ public class ApplicationServiceImplTest {
         ResourceTemplateMetaData mockMetaData = mock(ResourceTemplateMetaData.class);
         when(mockMetaData.getDeployFileName()).thenReturn("hct.xml");
         when(mockMetaData.getDeployPath()).thenReturn("./test/deploy-path/conf/CatalinaSSL/localhost");
-        when(mockMetaData.getContentType()).thenReturn("text/xml");
+        when(mockMetaData.getContentType()).thenReturn(MediaType.APPLICATION_XML);
         when(mockResourceService.getTokenizedMetaData(anyString(), any(Object.class), anyString())).thenReturn(mockMetaData);
         when(mockResourceService.generateResourceFile(anyString(), anyString(), any(ResourceGroup.class), any(), any(ResourceGeneratorType.class))).thenReturn("{\"deployPath\":\"./test/deploy-path/conf/CatalinaSSL/localhost\",\"contentType\":\"text/xml\",\"entity\":{\"type\":\"APPLICATION\",\"target\":\"soarcom-hct\",\"group\":\"soarcom-616\",\"parentName\":null,\"deployToJvms\":true},\"templateName\":\"hctXmlTemplate.tpl\",\"deployFileName\":\"hct.xml\"}");
 
@@ -446,7 +447,7 @@ public class ApplicationServiceImplTest {
         ResourceTemplateMetaData mockMetaData = mock(ResourceTemplateMetaData.class);
         when(mockMetaData.getDeployFileName()).thenReturn("hct.xml");
         when(mockMetaData.getDeployPath()).thenReturn("./test/deploy-path/conf/CatalinaSSL/localhost");
-        when(mockMetaData.getContentType()).thenReturn("text/xml");
+        when(mockMetaData.getContentType()).thenReturn(MediaType.APPLICATION_XML);
         when(mockResourceService.getTokenizedMetaData(anyString(), any(Object.class), anyString())).thenReturn(mockMetaData);
         when(mockResourceService.generateResourceFile(anyString(), anyString(), any(ResourceGroup.class), any(), any(ResourceGeneratorType.class))).thenReturn("anything");
         applicationService.deployConf("hct", "hct-group", "jvm-1", "hct.xml", mock(ResourceGroup.class), testUser);
@@ -472,7 +473,7 @@ public class ApplicationServiceImplTest {
         ResourceTemplateMetaData mockMetaData = mock(ResourceTemplateMetaData.class);
         when(mockMetaData.getDeployFileName()).thenReturn("hct.xml");
         when(mockMetaData.getDeployPath()).thenReturn("./test/deploy-path/conf/CatalinaSSL/localhost");
-        when(mockMetaData.getContentType()).thenReturn("text/xml");
+        when(mockMetaData.getContentType()).thenReturn(MediaType.APPLICATION_XML);
         when(mockResourceService.getTokenizedMetaData(anyString(), any(Object.class), anyString())).thenReturn(mockMetaData);
         when(mockResourceService.generateResourceFile(anyString(), anyString(), any(ResourceGroup.class), any(), any(ResourceGeneratorType.class))).thenReturn("anything");
         applicationService.deployConf("hct", "hct-group", "jvm-1", "hct.xml", mock(ResourceGroup.class), testUser);
@@ -498,7 +499,7 @@ public class ApplicationServiceImplTest {
         ResourceTemplateMetaData mockMetaData = mock(ResourceTemplateMetaData.class);
         when(mockMetaData.getDeployFileName()).thenReturn("hct.xml");
         when(mockMetaData.getDeployPath()).thenReturn("./test/deploy-path/conf/CatalinaSSL/localhost");
-        when(mockMetaData.getContentType()).thenReturn("text/xml");
+        when(mockMetaData.getContentType()).thenReturn(MediaType.APPLICATION_XML);
         when(mockResourceService.getTokenizedMetaData(anyString(), any(Object.class), anyString())).thenReturn(mockMetaData);
         when(mockResourceService.generateResourceFile(anyString(), anyString(), any(ResourceGroup.class), any(), any(ResourceGeneratorType.class))).thenReturn("anything");
         applicationService.deployConf("hct", "hct-group", "jvm-1", "hct.xml", mock(ResourceGroup.class), testUser);
@@ -728,7 +729,7 @@ public class ApplicationServiceImplTest {
                                                                         "    \"deployToJvms\" : false\n" +
                                                                         "  },\n" +
                                                                         "  \"overwrite\" : false,\n" +
-                                                                        "  \"contentType\" : \"application/binary\",\n" +
+                                                                        "  \"contentType\" : \"application/zip\",\n" +
                                                                         "  \"deployFileName\" : \"test.war\",\n" +
                                                                         "  \"templateName\" : \"test.war\"\n" +
                                                                         "}", ResourceTemplateMetaData.class);
@@ -775,10 +776,10 @@ public class ApplicationServiceImplTest {
         when(mockMetaData.getEntity()).thenReturn(mockEntity);
         when(mockEntity.getDeployToJvms()).thenReturn(false);
         when(groupService.getGroupAppsResourceTemplateNames(anyString(), anyString())).thenReturn(templateNames);
-        when(groupService.deployGroupAppTemplate(anyString(), anyString(), any(ResourceGroup.class), any(Application.class), anyString())).thenReturn(mockCommandOutput);
+        when(groupService.deployGroupAppTemplate(anyString(), anyString(), any(Application.class), anyString())).thenReturn(mockCommandOutput);
         when(mockCommandOutput.getReturnCode()).thenReturn(new ExecReturnCode(0));
         applicationService.deployConf(appName, null, testUser);
-        verify(groupService, times(2)).deployGroupAppTemplate(eq("test-group"), anyString(), any(ResourceGroup.class), eq(mockApplication), anyString());
+        verify(groupService, times(2)).deployGroupAppTemplate(eq("test-group"), anyString(), eq(mockApplication), anyString());
     }
 
     @Test (expected = InternalErrorException.class)
@@ -810,7 +811,7 @@ public class ApplicationServiceImplTest {
         when(mockMetaData.getEntity()).thenReturn(mockEntity);
         when(mockEntity.getDeployToJvms()).thenReturn(false);
         when(groupService.getGroupAppsResourceTemplateNames(anyString(), anyString())).thenReturn(templateNames);
-        when(groupService.deployGroupAppTemplate(anyString(), anyString(), any(ResourceGroup.class), any(Application.class), anyString())).thenReturn(mockCommandOutput);
+        when(groupService.deployGroupAppTemplate(anyString(), anyString(), any(Application.class), anyString())).thenReturn(mockCommandOutput);
         when(mockCommandOutput.getReturnCode()).thenReturn(new ExecReturnCode(1));
         applicationService.deployConf(appName, null, testUser);
     }

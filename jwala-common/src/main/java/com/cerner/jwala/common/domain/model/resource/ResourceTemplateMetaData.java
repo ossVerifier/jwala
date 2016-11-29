@@ -1,9 +1,10 @@
 package com.cerner.jwala.common.domain.model.resource;
 
-import org.apache.commons.lang3.StringUtils;
+import org.apache.tika.mime.MediaType;
 import org.codehaus.jackson.annotate.JsonCreator;
 import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.annotate.JsonProperty;
+import org.codehaus.jackson.map.annotate.JsonDeserialize;
 
 /**
  * Resource template meta data.
@@ -12,7 +13,10 @@ import org.codehaus.jackson.annotate.JsonProperty;
  */
 public class ResourceTemplateMetaData {
     private final String templateName;
-    private final ContentType contentType;
+
+    @JsonDeserialize(using = ContentTypeStrDeserializer.class)
+    private final MediaType contentType;
+
     private final String deployFileName;
     private final String deployPath;
     private final Entity entity;
@@ -24,7 +28,7 @@ public class ResourceTemplateMetaData {
 
     @JsonCreator
     public ResourceTemplateMetaData(@JsonProperty("templateName") final String templateName,
-                                    @JsonProperty("contentType") final ContentType contentType,
+                                    @JsonProperty("contentType") final MediaType contentType,
                                     @JsonProperty("deployFileName") final String deployFileName,
                                     @JsonProperty("deployPath") final String deployPath,
                                     @JsonProperty("entity") final Entity entity,
@@ -43,11 +47,8 @@ public class ResourceTemplateMetaData {
         return templateName;
     }
 
-    public String getContentType() {
-        if (contentType != null) {
-            return contentType.contentTypeStr;
-        }
-        return StringUtils.EMPTY;
+    public MediaType getContentType() {
+        return contentType;
     }
 
     public Entity getEntity() {

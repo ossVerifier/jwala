@@ -7,7 +7,6 @@ import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
 import com.cerner.jwala.common.domain.model.jvm.JvmControlOperation;
 import com.cerner.jwala.common.domain.model.jvm.JvmState;
-import com.cerner.jwala.common.domain.model.resource.ContentType;
 import com.cerner.jwala.common.domain.model.resource.ResourceGroup;
 import com.cerner.jwala.common.domain.model.resource.ResourceIdentifier;
 import com.cerner.jwala.common.domain.model.resource.ResourceTemplateMetaData;
@@ -50,6 +49,7 @@ import groovy.text.SimpleTemplateEngine;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.tika.mime.MediaType;
 import org.codehaus.groovy.control.CompilationFailedException;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
@@ -70,6 +70,7 @@ public class JvmServiceImpl implements JvmService {
     private static final Logger LOGGER = LoggerFactory.getLogger(JvmServiceImpl.class);
     private static final String REMOTE_COMMANDS_USER_SCRIPTS = ApplicationProperties.get("remote.commands.user-scripts");
     private static final String MSG_TYPE_HISTORY = "history";
+    private static final String MEDIA_TYPE_TEXT = "text";
 
     private final BinaryDistributionLockManager binaryDistributionLockManager;
     private String topicServerStates;
@@ -391,7 +392,7 @@ public class JvmServiceImpl implements JvmService {
                                 .setWebAppName(appName)
                                 .build();
                         resourceService.validateSingleResourceForGeneration(resourceIdentifier);
-                    } catch (InternalErrorException iee){
+                    } catch (InternalErrorException iee) {
                         LOGGER.info("Catching known app resource generation exception, and now consolidating with the JVM resource exceptions");
                         LOGGER.debug("This application resource generation exception should have already been logged previously", iee);
                         jvmAndAppResourcesExceptions.putAll(iee.getErrorDetails());
@@ -697,11 +698,8 @@ public class JvmServiceImpl implements JvmService {
     @Override
     public Jvm generateAndDeployFile(String jvmName, String fileName, User user) {
         Jvm jvm = getJvm(jvmName);
-
         // only one at a time per jvm
         binaryDistributionLockManager.writeLock(jvm.getId().getId().toString());
-
-        final String badStreamMessage = "Bad Stream: ";
         try {
             if (jvm.getState().isStartedState()) {
                 LOGGER.error("The target JVM {} must be stopped before attempting to update the resource files", jvm.getJvmName());
@@ -713,58 +711,13 @@ public class JvmServiceImpl implements JvmService {
                     .setJvmName(jvmName)
                     .build();
             resourceService.validateSingleResourceForGeneration(resourceIdentifier);
-
-            String metaDataStr = getResourceTemplateMetaData(jvmName, fileName);
-            ResourceTemplateMetaData resourceTemplateMetaData = resourceService.getTokenizedMetaData(fileName, jvm, metaDataStr);
-            String resourceSourceCopy;
-            final String deployFileName = resourceTemplateMetaData.getDeployFileName();
-            String resourceDestPath = resourceTemplateMetaData.getDeployPath() + "/" + deployFileName;
-            if (resourceTemplateMetaData.getContentType().equals(ContentType.APPLICATION_BINARY.contentTypeStr)) {
-                resourceSourceCopy = getResourceTemplate(jvmName, fileName, false);
-            } else {
-                String fileContent = generateConfigFile(jvmName, fileName);
-                String jvmResourcesNameDir = ApplicationProperties.get("paths.generated.resource.dir") + "/" + jvmName;
-                resourceSourceCopy = jvmResourcesNameDir + "/" + deployFileName;
-                createConfigFile(jvmResourcesNameDir + "/", deployFileName, fileContent);
-            }
-
-            deployJvmConfigFile(deployFileName, jvm, resourceDestPath, resourceSourceCopy, user);
-        } catch (IOException e) {
-            String message = "Failed to write file " + fileName + " for JVM " + jvmName;
-            LOGGER.error(badStreamMessage + message, e);
-            throw new InternalErrorException(AemFaultType.BAD_STREAM, message, e);
-        } catch (CommandFailureException ce) {
-            String message = "Failed to copy file " + fileName + " for JVM " + jvmName;
-            LOGGER.error(badStreamMessage + message, ce);
-            throw new InternalErrorException(AemFaultType.BAD_STREAM, message, ce);
+            resourceService.generateAndDeployFile(resourceIdentifier, jvm.getJvmName(), fileName, jvm.getHostName());
         } finally {
             binaryDistributionLockManager.writeUnlock(jvm.getId().getId().toString());
+            LOGGER.debug("End generateAndDeployFile for {} by user {}", jvmName, user.getId());
         }
-
         return jvm;
     }
-
-    protected void deployJvmConfigFile(String fileName, Jvm jvm, String destPath, String sourcePath, User user)
-            throws CommandFailureException {
-        final String parentDir;
-        if (destPath.startsWith("~")) {
-            parentDir = destPath.substring(0, destPath.lastIndexOf("/"));
-        } else {
-            parentDir = new File(destPath).getParentFile().getAbsolutePath().replaceAll("\\\\", "/");
-        }
-        createParentDir(jvm, parentDir);
-        CommandOutput result =
-                jvmControlService.secureCopyFile(new ControlJvmRequest(jvm.getId(), JvmControlOperation.SECURE_COPY), sourcePath, destPath, user.getId());
-        if (result.getReturnCode().wasSuccessful()) {
-            LOGGER.info("Successful generation and deploy of {} to {}", fileName, jvm.getJvmName());
-        } else {
-            String standardError =
-                    result.getStandardError().isEmpty() ? result.getStandardOutput() : result.getStandardError();
-            LOGGER.error("Copying config file {} failed :: ERROR: {}", fileName, standardError);
-            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, CommandOutputReturnCode.fromReturnCode(result.getReturnCode().getReturnCode()).getDesc());
-        }
-    }
-
 
     @Override
     @Transactional
@@ -949,16 +902,18 @@ public class JvmServiceImpl implements JvmService {
             if (generatedFiles == null) {
                 generatedFiles = new HashMap<>();
             }
-            if (resourceTemplateMetaData.getContentType().equals(ContentType.APPLICATION_BINARY.contentTypeStr)) {
+
+            if (resourceTemplateMetaData.getContentType().getType().equalsIgnoreCase(MEDIA_TYPE_TEXT) ||
+                    MediaType.APPLICATION_XML.equals(resourceTemplateMetaData.getContentType())) {
+                final String generatedResourceStr = resourceService.generateResourceFile(jpaJvmConfigTemplate.getTemplateName(), jpaJvmConfigTemplate.getTemplateContent(),
+                        resourceGroup, jvm, ResourceGeneratorType.TEMPLATE);
+                generatedFiles.put(createConfigFile(ApplicationProperties.get("paths.generated.resource.dir") + "/" + jvmName, deployFileName, generatedResourceStr),
+                        resourceTemplateMetaData.getDeployPath() + "/" + deployFileName);
+            } else {
                 if (generatedFiles == null) {
                     generatedFiles = new HashMap<>();
                 }
                 generatedFiles.put(jpaJvmConfigTemplate.getTemplateContent(),
-                        resourceTemplateMetaData.getDeployPath() + "/" + deployFileName);
-            } else {
-                final String generatedResourceStr = resourceService.generateResourceFile(jpaJvmConfigTemplate.getTemplateName(), jpaJvmConfigTemplate.getTemplateContent(),
-                        resourceGroup, jvm, ResourceGeneratorType.TEMPLATE);
-                generatedFiles.put(createConfigFile(ApplicationProperties.get("paths.generated.resource.dir") + "/" + jvmName, deployFileName, generatedResourceStr),
                         resourceTemplateMetaData.getDeployPath() + "/" + deployFileName);
             }
         }

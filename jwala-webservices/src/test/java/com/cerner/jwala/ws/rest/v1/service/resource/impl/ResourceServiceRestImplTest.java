@@ -156,13 +156,13 @@ public class ResourceServiceRestImplTest {
         final Attachment deployPathAttachment = mock(Attachment.class);
         when(deployPathAttachment.getDataHandler()).thenReturn(deployPathDataHandler);
 
-        // Content type
-        final DataHandler contentTypeDataHandler = mock(DataHandler.class);
-        when(contentTypeDataHandler.getName()).thenReturn("contentType");
-        when(contentTypeDataHandler.getInputStream()).thenReturn(IOUtils.toInputStream("text/plain"));
+        // assign to JVMs
+        final DataHandler assignToJvmsDataHandler = mock(DataHandler.class);
+        when(assignToJvmsDataHandler.getName()).thenReturn("assignToJvms");
+        when(assignToJvmsDataHandler.getInputStream()).thenReturn(IOUtils.toInputStream("true", Charset.defaultCharset()));
 
-        final Attachment contentTypeAttachment = mock(Attachment.class);
-        when(contentTypeAttachment.getDataHandler()).thenReturn(contentTypeDataHandler);
+        final Attachment assignToJvmsPathAttachment = mock(Attachment.class);
+        when(assignToJvmsPathAttachment.getDataHandler()).thenReturn(assignToJvmsDataHandler);
 
         // File attachment
         final DataHandler fileAttachmentDataHandler = mock(DataHandler.class);
@@ -176,7 +176,7 @@ public class ResourceServiceRestImplTest {
         final List<Attachment> attachmentList = new ArrayList<>();
         attachmentList.add(fileAttachment);
         attachmentList.add(deployPathAttachment);
-        attachmentList.add(contentTypeAttachment);
+        attachmentList.add(assignToJvmsPathAttachment);
 
         final Response response = cut.createResource("httpd.conf", createResourceParam, attachmentList);
         assertEquals("0", ((ApplicationResponse) response.getEntity()).getMsgCode());
@@ -221,18 +221,18 @@ public class ResourceServiceRestImplTest {
         // Deploy path
         final DataHandler deployPathDataHandler = mock(DataHandler.class);
         when(deployPathDataHandler.getName()).thenReturn("deployPath");
-        when(deployPathDataHandler.getInputStream()).thenReturn(IOUtils.toInputStream("c:/tmp"));
+        when(deployPathDataHandler.getInputStream()).thenReturn(IOUtils.toInputStream("c:/tmp", Charset.defaultCharset()));
 
         final Attachment deployPathAttachment = mock(Attachment.class);
         when(deployPathAttachment.getDataHandler()).thenReturn(deployPathDataHandler);
 
-        // Content type
-        final DataHandler contentTypeDataHandler = mock(DataHandler.class);
-        when(contentTypeDataHandler.getName()).thenReturn("contentType");
-        when(contentTypeDataHandler.getInputStream()).thenReturn(IOUtils.toInputStream("text/plain"));
+        // assign to JVMs
+        final DataHandler assignToJvmsDataHandler = mock(DataHandler.class);
+        when(assignToJvmsDataHandler.getName()).thenReturn("assignToJvms");
+        when(assignToJvmsDataHandler.getInputStream()).thenReturn(IOUtils.toInputStream("true", Charset.defaultCharset()));
 
-        final Attachment contentTypeAttachment = mock(Attachment.class);
-        when(contentTypeAttachment.getDataHandler()).thenReturn(contentTypeDataHandler);
+        final Attachment assignToJvmsPathAttachment = mock(Attachment.class);
+        when(assignToJvmsPathAttachment.getDataHandler()).thenReturn(assignToJvmsDataHandler);
 
         // File attachment
         final DataHandler fileAttachmentDataHandler = mock(DataHandler.class);
@@ -246,7 +246,7 @@ public class ResourceServiceRestImplTest {
         final List<Attachment> attachmentList = new ArrayList<>();
         attachmentList.add(fileAttachment);
         attachmentList.add(deployPathAttachment);
-        attachmentList.add(contentTypeAttachment);
+        attachmentList.add(assignToJvmsPathAttachment);
 
         when(impl.getMetaData(anyString())).thenThrow(new IOException());
 

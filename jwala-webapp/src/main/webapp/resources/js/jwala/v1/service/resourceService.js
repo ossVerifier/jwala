@@ -1,7 +1,10 @@
 var resourceService = {
     createResource: function(groupName, webServerName, jvmName, webAppName, formData, metaDataFile, deployFilename) {
+        console.log(formData);
         if (metaDataFile) {
-            return serviceFoundation.promisedPost("v1.0/resources/template/" + deployFilename, "json", formData, null, true);
+            // Legacy resource creation
+            // The target is inside the attached JSON meta data file
+            return serviceFoundation.promisedPost("v1.0/resources/template/", "json", formData, null, true);
         }
         var matrixParam = this.createMatrixParam(groupName, webServerName, jvmName, webAppName);
         return serviceFoundation.promisedPost("v1.0/resources/" + deployFilename + matrixParam, "json", formData, null, true);

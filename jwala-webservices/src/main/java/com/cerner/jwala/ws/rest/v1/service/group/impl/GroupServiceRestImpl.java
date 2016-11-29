@@ -48,6 +48,7 @@ import org.apache.cxf.jaxrs.ext.MessageContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.method.P;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
@@ -205,7 +206,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
             group = groupService.getGroupWithWebServers(group.getId());
 
             Set<WebServer> groupWebServers = group.getWebServers();
-            Map<String,Future<Response>> futureContents = new HashMap<>();
+            Map<String, Future<Response>> futureContents = new HashMap<>();
             if (null != groupWebServers) {
                 LOGGER.info("Updating the templates for all the Web Servers in group {}", groupName);
                 final Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -317,7 +318,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
             final Group group = groupService.getGroup(groupName);
 
             Set<Jvm> groupJvms = group.getJvms();
-            Map<String,Future<Response>> futureContents = new HashMap<>();
+            Map<String, Future<Response>> futureContents = new HashMap<>();
             if (null != groupJvms) {
                 LOGGER.info("Updating the templates for all the JVMs in group {}", groupName);
                 final Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -428,7 +429,11 @@ public class GroupServiceRestImpl implements GroupServiceRest {
                 LOGGER.error("FAILURE getting response for {}", keyEntityName, e);
                 final Throwable cause = e.getCause();
                 if (cause instanceof InternalErrorException) {
-                    entityDetailsMap.putAll(((InternalErrorException) cause).getErrorDetails());
+                    if (((InternalErrorException) cause).getErrorDetails() != null) {
+                        entityDetailsMap.putAll(((InternalErrorException) cause).getErrorDetails());
+                    } else {
+                        entityDetailsMap.put(keyEntityName, Collections.singletonList(cause.getMessage()));
+                    }
                 } else {
                     entityDetailsMap.put(keyEntityName, Collections.singletonList(e.getMessage()));
                 }
@@ -657,7 +662,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         try {
             final String updatedContent = groupService.updateGroupAppResourceTemplate(groupName, appName, resourceTemplateName, content);
             Set<Jvm> groupJvms = group.getJvms();
-            Map<String,Future<Response>> futureContents = new HashMap<>();
+            Map<String, Future<Response>> futureContents = new HashMap<>();
             if (null != groupJvms) {
                 LOGGER.info("Updating the templates for all the JVMs in group {}", groupName);
                 final ApplicationServiceRest appServiceRest = ApplicationServiceRestImpl.get();
@@ -738,8 +743,17 @@ public class GroupServiceRestImpl implements GroupServiceRest {
      */
     protected void performGroupAppDeployToHost(final String groupName, final String fileName, final String appName, final String hostName) {
         Map<String, Future<Response>> futureMap = new HashMap<>();
-        futureMap.put(hostName, createFutureResponseForAppDeploy(groupName, fileName, appName, null, hostName));
-        checkResponsesForErrorStatus(futureMap);
+        Set<Jvm> jvms = groupService.getGroup(groupName).getJvms();
+        if (null != jvms && jvms.size() > 0) {
+            for (Jvm jvm : jvms) {
+                if (jvm.getHostName().equalsIgnoreCase(hostName) && jvm.getState().isStartedState()) {
+                    LOGGER.info("Failed to deploy file {} for group {} on host {}: not all JVMs were stopped - {} was started", fileName, groupName, hostName, jvm.getJvmName());
+                    throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "All JVMs on the host " + hostName + " must be stopped before continuing. Operation stopped for JVM " + jvm.getJvmName());
+                }
+            }
+            futureMap.put(hostName, createFutureResponseForAppDeploy(groupName, fileName, appName, null, hostName));
+            checkResponsesForErrorStatus(futureMap);
+        }
     }
 
     protected void performGroupAppDeployToHosts(final String groupName, final String fileName, final String appName) {
@@ -827,10 +841,10 @@ public class GroupServiceRestImpl implements GroupServiceRest {
                 CommandOutput commandOutput = null;
                 if (jvm != null) {
                     LOGGER.debug("got jvm object with id {}, creating command output with jvm", jvm.getId().getId());
-                    commandOutput = groupService.deployGroupAppTemplate(groupName, fileName, resourceGroup, application, jvm);
+                    commandOutput = groupService.deployGroupAppTemplate(groupName, fileName, application, jvm);
                 } else {
                     LOGGER.debug("got jvm as null creating app templates for hostname {}", hostName);
-                    commandOutput = groupService.deployGroupAppTemplate(groupName, fileName, resourceGroup, application, hostName);
+                    commandOutput = groupService.deployGroupAppTemplate(groupName, fileName, application, hostName);
                 }
                 if (commandOutput.getReturnCode().wasSuccessful()) {
                     return ResponseBuilder.ok(commandOutput);

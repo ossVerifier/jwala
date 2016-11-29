@@ -45,6 +45,7 @@ import com.cerner.jwala.service.resource.impl.ResourceGeneratorType;
 import com.cerner.jwala.service.webserver.component.ClientFactoryHelper;
 import com.jcraft.jsch.JSchException;
 import org.apache.commons.io.FileUtils;
+import org.apache.tika.mime.MediaType;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
@@ -662,7 +663,7 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
 
         when(mockMetaData.getDeployFileName()).thenReturn("test.file");
         when(mockMetaData.getDeployPath()).thenReturn("D:/jwala/app/instances/testJvmName/bin");
-        when(mockMetaData.getContentType()).thenReturn("text/plain");
+        when(mockMetaData.getContentType()).thenReturn(MediaType.TEXT_PLAIN);
 
         when(mockResourceService.generateResourceGroup()).thenReturn(mockResourceGroup);
         when(mockResourceService.generateResourceFile(anyString(), anyString(), any(ResourceGroup.class), any(Jvm.class), any(ResourceGeneratorType.class))).thenReturn(metadata);
@@ -685,12 +686,12 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
         JpaJvmConfigTemplate jpaJvmConfigTemplate = new JpaJvmConfigTemplate();
         jpaJvmConfigTemplate.setTemplateContent("C:/Temp/test.file");
         jpaJvmConfigTemplates.add(jpaJvmConfigTemplate);
-        final String metadata = "{\"contentType\":\"application/binary\",\"deployPath\":\"D:/jwala/app/instances/testJvmName/bin\",\"deployFileName\": \"test.file\"}";
+        final String metadata = "{\"contentType\":\"application/zip\",\"deployPath\":\"D:/jwala/app/instances/testJvmName/bin\",\"deployFileName\": \"test.file\"}";
         ResourceTemplateMetaData mockMetaData = mock(ResourceTemplateMetaData.class);
 
         when(mockMetaData.getDeployFileName()).thenReturn("test.file");
         when(mockMetaData.getDeployPath()).thenReturn("D:/jwala/app/instances/testJvmName/bin");
-        when(mockMetaData.getContentType()).thenReturn("application/binary");
+        when(mockMetaData.getContentType()).thenReturn(MediaType.APPLICATION_ZIP);
         when(mockResourceService.generateResourceGroup()).thenReturn(mockResourceGroup);
         when(mockResourceService.generateResourceFile(anyString(), anyString(), any(ResourceGroup.class), any(Jvm.class), any(ResourceGeneratorType.class))).thenReturn(metadata);
         when(mockResourceService.getMetaData(anyString())).thenReturn(mockMetaData);
@@ -960,7 +961,7 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
         when(mockExecData.getReturnCode()).thenReturn(new ExecReturnCode(0));
         when(mockJvmPersistenceService.findJvmByExactName(anyString())).thenReturn(mockJvm);
         when(mockResourceService.generateResourceFile(anyString(), anyString(), any(ResourceGroup.class), anyString(), any(ResourceGeneratorType.class))).thenReturn("<server>xml</server>");
-        when(mockJvmPersistenceService.getResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"deployFileName\":\"server.xml\", \"deployPath\":\"/\",\"contentType\":\"text/plain\"}");
+        when(mockJvmPersistenceService.getResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"deployFileName\":\"server.xml\", \"deployPath\":\"/\",\"contentType\":\"application/xml\"}");
         when(mockJvmPersistenceService.getJvmTemplate(anyString(), any(Identifier.class))).thenReturn("<server>xml</server>");
         when(mockJvmControlService.secureCopyFile(any(ControlJvmRequest.class), anyString(), anyString(), anyString())).thenReturn(mockExecData);
         when(mockJvmControlService.executeCreateDirectoryCommand(any(Jvm.class), anyString())).thenReturn(mockExecData);
@@ -968,14 +969,15 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
         when(mockResourceService.generateResourceFile(anyString(), anyString(), any(ResourceGroup.class), any(), any(ResourceGeneratorType.class))).thenReturn("{\"deployFileName\":\"server.xml\", \"deployPath\":\"/\",\"contentType\":\"text/plain\"}");
         when(mockMetaData.getDeployFileName()).thenReturn("server.xml");
         when(mockMetaData.getDeployPath()).thenReturn("/");
-        when(mockMetaData.getContentType()).thenReturn("text/plain");
+        when(mockMetaData.getContentType()).thenReturn(MediaType.APPLICATION_XML);
         when(mockResourceService.getTokenizedMetaData(anyString(), Matchers.anyObject(), anyString())).thenReturn(mockMetaData);
         Jvm jvm = jvmService.generateAndDeployFile("test-jvm-deploy-file", "server.xml", mockUser);
         assertEquals(mockJvm, jvm);
 
         when(mockExecData.getReturnCode()).thenReturn(new ExecReturnCode(1));
         when(mockExecData.getStandardError()).thenReturn("ERROR");
-        when(mockJvmControlService.secureCopyFile(any(ControlJvmRequest.class), anyString(), anyString(), anyString())).thenReturn(mockExecData);
+        when(mockResourceService.generateAndDeployFile(any(ResourceIdentifier.class), anyString(), anyString(), anyString())).thenThrow(new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "xxx"));
+
         boolean exceptionThrown = false;
         try {
             jvmService.generateAndDeployFile(jvm.getJvmName(), "server.xml", mockUser);

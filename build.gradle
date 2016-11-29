@@ -6,7 +6,6 @@ ext {
             pmd                   : "5.1.1",
             spring                : "4.1.8.RELEASE",
             spring_security       : "4.1.1.RELEASE",
-            jackson               : "1.4.2",
             jpa                   : "2.4.0",
             h2                    : "1.3.175",
             cxf                   : "3.0.0-milestone1",
@@ -34,7 +33,8 @@ ext {
             jkeylockmanager       : '1.2.0',
             jackson               : '1.9.13',
             babelcli              : '6.6.4',
-            babeltransform        : '6.5.0'
+            babeltransform        : '6.5.0',
+            tika                  : '1.14'
     ]
 }
 repositories {
