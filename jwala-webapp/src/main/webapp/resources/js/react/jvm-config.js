@@ -375,11 +375,6 @@ var JvmConfigForm = React.createClass({
                         	<tr>
                         	    <td>JDK Version</td>
                         	</tr>
-                            <tr>
-                                <td>
-                                    <label htmlFor="jdkVersion" className="error"></label>
-                                </td>
-                            </tr>
                         	<tr>
                         	    <td>
                         	    <select ref="jdkVersion" valueLink={this.linkState("jdkVersion")}>
@@ -390,11 +385,6 @@ var JvmConfigForm = React.createClass({
                         	<tr>
                         	    <td>Apache Tomcat Version</td>
                         	</tr>
-                            <tr>
-                                <td>
-                                    <label htmlFor="apacheTomcatVersion" className="error"></label>
-                                </td>
-                            </tr>
                         	<tr>
                         	    <td>
                         	    <select ref="apacheTomcatVersion" valueLink={this.linkState("apacheTomcatVersion")}>
@@ -469,8 +459,6 @@ var JvmConfigForm = React.createClass({
     componentDidMount: function() {
         this.validator = $(this.getDOMNode().children[0]).validate({ignore: ":hidden",
                                                                     rules: {"groupSelector[]": {required: true},
-                                                                            "jdkVersion": {required: true},
-                                                                            "apacheTomcatVersion" : {required: true},
                                                                             "jvmName": {nameCheck: true},
                                                                             "hostName": {hostNameCheck: true},
                                                                             "statusPath": {pathCheck: true},
@@ -511,17 +499,17 @@ var JvmConfigForm = React.createClass({
                                       });
     },
     getJdkVersions: function() {
-        var items=[];
+        var items=[<option key='no-jvm-version' value=''></option>];
         for (var i=0; i < this.state.jdkVersions.length; i++){
-            var jdkVersionOption = this.state.jdkVersions[i];
+            var jdkVersionOption = this.state.jdkVersions[i]; // TODO retrieve these from the database
             items.push(<option key={jdkVersionOption} value={jdkVersionOption}>{jdkVersionOption}</option>);
         }
         return items;
     },
     getApacheTomcatVersions: function() {
-        var items=[];
+        var items=[<option key='no-apache-tomcat-version' value=''></option>];
         for (var i=0; i < this.state.getApacheTomcatVersions.length; i++){
-            var apacheTomcatOption = this.state.getApacheTomcatVersions[i];
+            var apacheTomcatOption = this.state.getApacheTomcatVersions[i]; // TODO retrieve these from the database
             items.push(<option key={apacheTomcatOption} value={apacheTomcatOption}>{apacheTomcatOption}</option>);
         }
         return items;
