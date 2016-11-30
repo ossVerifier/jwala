@@ -315,31 +315,27 @@ var UploadWarWidget = React.createClass({
 
         console.log('v1.0/resources/' + this.props.data.id.id + '/war');
 
-        return <div className="war-upload-component">
-                  <div className="archive-file">
-                      <div className="file-upload">
-                          <form ref="warUploadForm">
-                              <div className="fileUploadContainer">
-                                  <input ref="fileInput" type="file" name="file" onChange={this.onChangeFileInput}></input>
-                              </div>
-                              <div>Deploy Path</div>
-                              <div className="deployPath">
-                                  <input ref="deployPathInput" name="deployPath" value={this.state.deployPath} onChange={this.onChangeDeployPath} />
-                                  <div className="openCloseProperties">
-                                      <span ref="openClosePropertiesIcon" className={this.state.showProperties ? "ui-icon ui-icon-triangle-1-s" : "ui-icon ui-icon-triangle-1-e"}
-                                            onClick={this.openClosePropertiesIconCallback} />
-                                      <span>Properties</span>
-                                      {this.state.showProperties ? propertiesTable : null}
-                                  </div>
-                              </div>
-                          </form>
-                          <span ref="uploadResult" />
-                          <div className="progressBar">
-                            <div ref="progressBar" className="inner" />
-                          </div>
+        return <div className="UploadWarWidget">
+                   <form ref="warUploadForm">
+                       <label>*WAR File</label>
+                       <label htmlFor="fileInput" className="error"/>
+                       <input ref="fileInput" name="fileInput" type="file" onChange={this.onChangeFileInput}/>
+                       <br/>
+                       <input type="checkbox" value={this.state.assignToJvms} onChange={this.onChangeAssignToJvms}>
+                           <span>Assign to JVMs</span>
+                       </input>
+                       <br/>
+                       <label>Deploy Path</label>
+                       <input ref="deployPathInput" name="deployPath" value={this.state.deployPath} onChange={this.onChangeDeployPath}/>
+                       <div className="openCloseProperties">
+                            <span>Select deploy path from properties</span>
+                            <span ref="openClosePropertiesIcon"
+                                  className={this.state.showProperties ? "ui-icon ui-icon-triangle-1-s" : "ui-icon ui-icon-triangle-1-e"}
+                                  onClick={this.openClosePropertiesIconCallback} />
+                            {this.state.showProperties ? propertiesTable : null}
                        </div>
-                  </div>
-              </div>;
+                   </form>
+               </div>;
     },
     openClosePropertiesIconCallback: function() {
         if (this.state.showProperties) {
@@ -351,10 +347,13 @@ var UploadWarWidget = React.createClass({
     onPropertiesLoad: function(response) {
         this.setState({properties: response.applicationResponseContent, showProperties: true});
     },
-    onChangeFileInput: function(e) {
+    onChangeFileInput: function() {
         this.setState({uploadFilename: $(this.refs.fileInput.getDOMNode()).val()});
     },
-    onChangeDeployPath: function(e) {
+    onChangeAssignToJvms: function() {
+        this.setState({assignToJvms: !this.state.assignToJvms});
+    },
+    onChangeDeployPath: function() {
         this.setState({deployPath: $(this.refs.deployPathInput.getDOMNode()).val()});
     },
     onAddPropertiesClick: function(val) {
