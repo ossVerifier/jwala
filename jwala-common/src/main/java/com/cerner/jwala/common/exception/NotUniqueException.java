@@ -1,7 +1,7 @@
 package com.cerner.jwala.common.exception;
 
 /**
- * Created by z003e5zv on 4/1/2015.
+ * Created by Eric Pinder on 4/1/2015.
  */
 public class NotUniqueException extends FaultCodeException {
 

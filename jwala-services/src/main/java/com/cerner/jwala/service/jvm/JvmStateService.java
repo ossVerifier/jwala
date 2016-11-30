@@ -8,7 +8,7 @@ import com.cerner.jwala.service.RemoteCommandReturnInfo;
 /**
  * The contract for a JVM state related services.
  *
- * Created by JC043760 on 3/22/2016.
+ * Created by Jedd Cuison on 3/22/2016.
  */
 public interface JvmStateService {
 

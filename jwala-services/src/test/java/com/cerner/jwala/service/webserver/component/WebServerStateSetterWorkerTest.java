@@ -33,7 +33,7 @@ import static org.mockito.Mockito.*;
 /**
  * Unit test(s) for WebServerStateSetterWorker.
  *
- * Created by JC043760 on 2/19/2016.
+ * Created by Jedd Cuison on 2/19/2016.
  */
 public class WebServerStateSetterWorkerTest {
 

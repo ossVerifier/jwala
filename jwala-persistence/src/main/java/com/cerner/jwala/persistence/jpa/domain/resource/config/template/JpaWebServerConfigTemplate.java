@@ -7,7 +7,7 @@ import javax.persistence.*;
 /**
  * POJO that describes a db table that holds data about web server related resource configuration templates.
  *
- * Created by z003bpej on 8/25/2015.
+ * Created by Jedd Cuison on 8/25/2015.
  */
 @Entity
 @Table(name = "WEBSERVER_CONFIG_TEMPLATE", uniqueConstraints = {@UniqueConstraint(columnNames = {"WEBSERVER_ID", "TEMPLATE_NAME"})})

@@ -44,7 +44,7 @@ import java.util.*;
 /**
  * {@link ResourceServiceRest} implementation.
  * <p/>
- * Created by z003e5zv on 3/16/2015.
+ * Created by Eric Pinder on 3/16/2015.
  */
 public class ResourceServiceRestImpl implements ResourceServiceRest {
 

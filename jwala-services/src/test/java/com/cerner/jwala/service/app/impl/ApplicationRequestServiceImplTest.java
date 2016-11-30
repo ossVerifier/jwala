@@ -23,7 +23,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 /**
- * Created by z003bpej on 9/30/2015.
+ * Created by Jedd Cuison on 9/30/2015.
  */
 public class ApplicationRequestServiceImplTest {
 

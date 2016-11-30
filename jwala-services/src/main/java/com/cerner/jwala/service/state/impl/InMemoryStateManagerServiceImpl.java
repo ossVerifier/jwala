@@ -8,7 +8,7 @@ import com.cerner.jwala.service.state.InMemoryStateManagerService;
 /**
  * Implements {@link InMemoryStateManagerService} using a {@link HashMap}.
  *
- * Created by JC043760 on 3/25/2016.
+ * Created by Jedd Cuison on 3/25/2016.
  */
 public class InMemoryStateManagerServiceImpl<K, V>  implements InMemoryStateManagerService<K, V>  {
 

@@ -15,7 +15,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Created by z003e5zv on 3/16/2015.
+ * Created by Eric Pinder on 3/16/2015.
  */
 @JsonDeserialize(using = JsonResourceInstance.CreateResourceInstanceJSONDeserializer.class)
 public class JsonResourceInstance {

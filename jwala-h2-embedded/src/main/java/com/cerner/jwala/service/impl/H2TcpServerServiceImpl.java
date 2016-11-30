@@ -11,7 +11,7 @@ import java.util.logging.Logger;
 /**
  * H2 TCP Server implementation of {@link AbstractH2ServerService}
  *
- * Created by JC043760 on 8/25/2016
+ * Created by Jedd Cuison on 8/25/2016
  */
 public class H2TcpServerServiceImpl extends AbstractH2ServerService {
 

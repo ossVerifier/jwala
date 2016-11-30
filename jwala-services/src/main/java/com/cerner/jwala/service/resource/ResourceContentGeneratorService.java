@@ -6,7 +6,7 @@ import com.cerner.jwala.service.resource.impl.ResourceGeneratorType;
 /**
  * Contract for a service that generates resource content
  *
- * Created by JC043760 on 7/26/2016
+ * Created by Jedd Cuison on 7/26/2016
  */
 public interface ResourceContentGeneratorService {
 

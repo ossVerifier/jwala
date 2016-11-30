@@ -10,7 +10,7 @@ import java.util.List;
 /**
  * History service.
  *
- * Created by JC043760 on 12/2/2015.
+ * Created by Jedd Cuison on 12/2/2015.
  */
 public interface HistoryService {
 

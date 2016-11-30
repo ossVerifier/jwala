@@ -11,7 +11,7 @@
  *
  * Usage example: var pollerForAPromise = new PollerForAPromise(1000, getState, processState, processError);
  *
- * Created by Z003BPEJ on 10/23/2015.
+ * Created by Jedd Cuison on 10/23/2015.
  */
 function PollerForAPromise(interval, runner, thenCallback, caughtCallback) {
     this.interval = interval;

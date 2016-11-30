@@ -10,7 +10,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Created by z003e5zv on 3/20/2015.
+ * Created by Eric Pinder on 3/20/2015.
  */
 public class MapNotEmptyTest {
 

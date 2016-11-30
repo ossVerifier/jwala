@@ -1,7 +1,6 @@
 package com.cerner.jwala.service.binarydistribution.impl;
 
 import com.cerner.jwala.common.domain.model.fault.AemFaultType;
-import com.cerner.jwala.common.domain.model.resource.Entity;
 import com.cerner.jwala.common.domain.model.resource.EntityType;
 import com.cerner.jwala.common.exception.InternalErrorException;
 import com.cerner.jwala.common.properties.ApplicationProperties;
@@ -11,11 +10,12 @@ import com.cerner.jwala.service.binarydistribution.BinaryDistributionLockManager
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+
 
 import java.io.File;
-
+/**
+ * Created by Arvindo Kinny on 10/11/2016.
+ */
 public class BinaryDistributionServiceImpl implements BinaryDistributionService {
     private static final Logger LOGGER = LoggerFactory.getLogger(BinaryDistributionServiceImpl.class);
 

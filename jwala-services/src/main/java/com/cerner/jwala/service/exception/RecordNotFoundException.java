@@ -1,7 +1,7 @@
 package com.cerner.jwala.service.exception;
 
 /**
- * Created by Z003BPEJ on 2/24/14.
+ * Created by Jedd Cuison on 2/24/14.
  */
 public class RecordNotFoundException extends RuntimeException {
 

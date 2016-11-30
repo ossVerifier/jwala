@@ -11,7 +11,7 @@ import java.io.Serializable;
 /**
  * Request wrapper to upload JVM resource template.
  *
- * Created by z0033r5b on 8/25/2015.
+ * Created by Jeffery Mahmood on 8/25/2015.
  */
 public abstract class UploadJvmTemplateRequest implements Serializable, Request {
     private final Jvm jvm;

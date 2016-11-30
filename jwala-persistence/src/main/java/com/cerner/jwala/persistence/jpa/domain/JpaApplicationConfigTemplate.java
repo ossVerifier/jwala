@@ -7,7 +7,7 @@ import javax.persistence.*;
 /**
  * JPA POJO for application resource template data.
  *
- * Created by z003bpej on 8/25/2015.
+ * Created by Jedd Cuison on 8/25/2015.
  */
 @Entity
 @Table(name = "APP_CONFIG_TEMPLATE", uniqueConstraints = {@UniqueConstraint(columnNames = {"APP_ID", "TEMPLATE_NAME", "JVM_ID"})})

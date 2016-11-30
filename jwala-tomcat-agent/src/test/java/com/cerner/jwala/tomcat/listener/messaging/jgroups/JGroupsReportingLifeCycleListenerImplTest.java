@@ -25,7 +25,7 @@ import static org.mockito.MockitoAnnotations.initMocks;
 /**
  * Test for {@link JGroupsReportingLifeCycleListener}
  *
- * Created by JC043760 on 8/24/2016.
+ * Created by Jedd Cuison on 8/24/2016.
  */
 public class JGroupsReportingLifeCycleListenerImplTest {
 

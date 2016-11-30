@@ -28,7 +28,7 @@ import static org.mockito.Mockito.when;
 /**
  * Tests for {@link JschRemoteCommandExecutorServiceImpl}.
  *
- * Created by JC043760 on 4/18/2016.
+ * Created by Jedd Cuison on 4/18/2016.
  */
 public class JschRemoteCommandExecutorServiceImplTest {
 

@@ -28,7 +28,7 @@ import java.util.concurrent.Future;
  * NOTE: For @Async to work, the worker must be in its own class separate from the caller the reason for this
  *       class' existence.
  *
- * Created by JC043760 on 3/24/2016.
+ * Created by Jedd Cuison on 3/24/2016.
  */
 @Service
 public class JvmStateResolverWorker {

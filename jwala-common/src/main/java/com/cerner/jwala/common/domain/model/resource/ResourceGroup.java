@@ -5,7 +5,7 @@ import java.util.List;
 import com.cerner.jwala.common.domain.model.group.Group;
 
 /**
- * Created by SP043299 on 4/25/2016.
+ * Created by Sahil Palvi on 4/25/2016.
  *
  * This class contains all the information of a group resource. It contains the list of webservers, jvms and webapps for a selected group.
  */

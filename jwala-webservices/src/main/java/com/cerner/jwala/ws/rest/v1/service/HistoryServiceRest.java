@@ -7,7 +7,7 @@ import javax.ws.rs.core.Response;
 /**
  * Restful history service contract.
  *
- * Created by JC043760 on 12/7/2015.
+ * Created by Jedd Cuison on 12/7/2015.
  */
 @Path("/history")
 @Produces(MediaType.APPLICATION_JSON)

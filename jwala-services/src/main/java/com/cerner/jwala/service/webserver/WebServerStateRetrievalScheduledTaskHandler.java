@@ -17,7 +17,7 @@ import java.util.concurrent.Future;
  * Handles periodic retrieval of all web server states. This handler is defined as a Spring bean in conjunction
  * with Spring's @Scheduled annotation defined for its execution method.
  * <p/>
- * Created by Z003BPEJ on 6/16/2015.
+ * Created by Jedd Cuison on 6/16/2015.
  */
 public class WebServerStateRetrievalScheduledTaskHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(WebServerStateRetrievalScheduledTaskHandler.class);

@@ -11,7 +11,7 @@ import java.io.Serializable;
 /**
  * Request wrapper for uploading web server resource templates.
  *
- * Created by z0033r5b on 8/26/2015.
+ * Created by Jeffery Mahmood on 8/26/2015.
  */
 public abstract class UploadWebServerTemplateRequest implements Serializable, Request {
     private final WebServer webServer;

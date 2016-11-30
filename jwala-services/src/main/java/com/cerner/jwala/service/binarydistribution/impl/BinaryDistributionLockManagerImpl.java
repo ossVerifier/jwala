@@ -12,7 +12,7 @@ import java.util.Map;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
- * Created by AK048646 on 10/11/2016.
+ * Created by Arvindo Kinny on 10/11/2016.
  */
 public class BinaryDistributionLockManagerImpl implements BinaryDistributionLockManager {
 

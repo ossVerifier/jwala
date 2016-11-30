@@ -4,7 +4,7 @@ package com.cerner.jwala.common.request.webserver;
  * Upload request wrapper specific for httpd.conf.
  * Note: Deprecated in lieu of a more generic approach ???
  *
- * Created by z0033r5b on 8/26/2015.
+ * Created by Jeffery Mahmood on 8/26/2015.
  */
 @Deprecated
 public class UploadHttpdConfTemplateRequest /*extends UploadWebServerTemplateRequest*/ {

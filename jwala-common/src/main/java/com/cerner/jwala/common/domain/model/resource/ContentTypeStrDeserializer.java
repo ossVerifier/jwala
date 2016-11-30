@@ -10,7 +10,7 @@ import java.io.IOException;
 /**
  * Custom JSON deserializer from content type string to {@link ContentType}
  *
- * Created by JC043760 on 10/6/2016
+ * Created by Jedd Cuison on 10/6/2016
  */
 public class ContentTypeStrDeserializer extends StdDeserializer<MediaType> {
 

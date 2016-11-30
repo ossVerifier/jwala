@@ -9,7 +9,7 @@ package com.cerner.jwala.persistence.jpa.type;
  *       their db, a decision was made to have the event type describe both instead. Anyhow this can change in the near
  *       future on subsequent team design/code review.
  *
- * Created by JC043760 on 12/9/2015
+ * Created by Jedd Cuison on 12/9/2015
  */
 public enum EventType {
 

@@ -13,7 +13,7 @@ import java.util.List;
  * And yes it's WorkersProperties with a 's' in reference to
  * the 'workers.properties' file.
  *
- * Created by Z003BPEJ on 6/24/14.
+ * Created by Jedd Cuison on 6/24/14.
  */
 public class WorkersProperties {
     private final List<Jvm> jvms;

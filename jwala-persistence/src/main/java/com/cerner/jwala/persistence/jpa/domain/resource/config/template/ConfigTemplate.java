@@ -7,7 +7,7 @@ import com.cerner.jwala.persistence.jpa.domain.AbstractEntity;
 /**
  * Base POJO for resource configuration template data.
  *
- * Created by JC043760 on 4/4/2016.
+ * Created by Jedd Cuison on 4/4/2016.
  */
 @MappedSuperclass
 public class ConfigTemplate extends AbstractEntity<ConfigTemplate> {

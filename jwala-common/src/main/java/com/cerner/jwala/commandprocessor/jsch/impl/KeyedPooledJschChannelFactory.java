@@ -18,7 +18,7 @@ import java.util.Map;
 /**
  * A keyed JSCH channel factory.
  *
- * Created by JC043760 on 2/26/2016.
+ * Created by Jedd Cuison on 2/26/2016.
  */
 public class KeyedPooledJschChannelFactory extends BaseKeyedPooledObjectFactory<ChannelSessionKey, Channel> {
 

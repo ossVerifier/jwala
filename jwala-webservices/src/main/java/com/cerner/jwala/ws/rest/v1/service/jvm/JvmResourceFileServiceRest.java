@@ -6,7 +6,7 @@ import javax.ws.rs.core.Response;
 /**
  * Contains REST services that has something to do with resource files e.g. resource file data maintenance, generation etc...
  *
- * Created by JC043760 on 4/15/2016.
+ * Created by Jedd Cuison on 4/15/2016.
  */
 @Path("/jvms/resource")
 public interface JvmResourceFileServiceRest {

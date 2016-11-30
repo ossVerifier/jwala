@@ -16,7 +16,7 @@ import static org.mockito.Mockito.when;
 /**
  * Unit test for {@link com.cerner.jwala.service.fault.AemExceptionMapping}.
  *
- * Created by Z003BPEJ on 7/6/2015.
+ * Created by Jedd Cuison on 7/6/2015.
  */
 public class AemExceptionMappingTest {
 

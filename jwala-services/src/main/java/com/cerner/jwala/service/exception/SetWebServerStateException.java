@@ -1,7 +1,7 @@
 package com.cerner.jwala.service.exception;
 
 /**
- * Created by Z003BPEJ on 6/10/2015.
+ * Created by Jedd Cuison on 6/10/2015.
  */
 public class SetWebServerStateException extends RuntimeException {
 

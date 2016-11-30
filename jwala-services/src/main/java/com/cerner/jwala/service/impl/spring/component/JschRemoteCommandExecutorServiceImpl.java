@@ -29,7 +29,7 @@ import java.nio.charset.StandardCharsets;
 /**
  * Implementation of {@link RemoteCommandExecutorService} using JSCH.
  * <p/>
- * Created by JC043760 on 3/25/2016.
+ * Created by Jedd Cuison on 3/25/2016.
  */
 @Service
 public class JschRemoteCommandExecutorServiceImpl implements RemoteCommandExecutorService {

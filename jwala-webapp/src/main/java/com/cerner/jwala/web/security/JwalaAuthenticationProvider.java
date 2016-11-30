@@ -29,7 +29,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import com.cerner.jwala.common.properties.ApplicationProperties;
 
 /**
- * @author AK048646
+ * @author Arvindo Kinny
  *         Jwala Authentication Provider
  */
 public class JwalaAuthenticationProvider implements AuthenticationProvider {

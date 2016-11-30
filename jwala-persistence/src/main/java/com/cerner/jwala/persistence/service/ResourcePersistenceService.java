@@ -3,7 +3,7 @@ package com.cerner.jwala.persistence.service;
 import java.util.List;
 
 /**
- * Created by z003e5zv on 3/25/2015.
+ * Created by Eric Pinder on 3/25/2015.
  */
 public interface ResourcePersistenceService {
 

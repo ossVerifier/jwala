@@ -1,7 +1,7 @@
 package com.cerner.jwala.persistence.jpa.service.exception;
 
 /**
- * Created by z003bpej on 8/28/2015.
+ * Created by Jedd Cuison on 8/28/2015.
  */
 public class ResourceTemplateUpdateException extends RuntimeException {
 

@@ -6,7 +6,7 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 /**
  * Contains parameters that identify a resource
  *
- * Created by JC043760 on 7/18/2016
+ * Created by Jedd Cuison on 7/18/2016
  */
 public class ResourceIdentifier {
 

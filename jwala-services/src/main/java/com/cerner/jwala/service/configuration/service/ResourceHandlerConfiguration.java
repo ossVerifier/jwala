@@ -10,7 +10,7 @@ import org.springframework.context.annotation.ComponentScan;
  * Resource handler wiring and configuration.
  * Note: The resource handlers implement the chain of responsibility pattern.
  *
- * Created by JC043760 on 7/21/2016
+ * Created by Jedd Cuison on 7/21/2016
  */
 @ComponentScan({"com.cerner.jwala.service.resource.impl"})
 public class ResourceHandlerConfiguration {

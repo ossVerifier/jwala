@@ -54,7 +54,7 @@ import static org.mockito.Mockito.when;
 /**
  * Unit test for {@link WebServerCommandServiceImpl}.
  * <p/>
- * Created by z003bpej on 8/27/14.
+ * Created by Jedd Cuison on 8/27/14.
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {WebServerRequestServiceImplTest.Config.class})

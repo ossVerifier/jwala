@@ -8,7 +8,7 @@ import java.io.IOException;
 /**
  * A filter that redirects legacy REST service url calls e.g. jwala/v1.0 to jwala/services/v1.0
  *
- * Created by JC043760 on 8/8/2016.
+ * Created by Jedd Cuison on 8/8/2016.
  */
 @WebFilter(urlPatterns = "/v1.0/*")
 public class RestWebServiceLegacyUrlRedirect implements Filter {

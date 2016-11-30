@@ -14,7 +14,7 @@ import javax.ws.rs.core.Response;
 /**
  * Implements {JvmServiceRest}
  *
- * Created by JC043760 on 8/9/2016.
+ * Created by Jedd Cuison on 8/9/2016.
  */
 public class JvmServiceRestImpl implements JvmServiceRest {
 

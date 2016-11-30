@@ -45,7 +45,7 @@ import static org.junit.Assert.assertEquals;
 /**
  * Unit tests for {@link ResourceDaoImpl}.
  *
- * Created by JC043760 on 6/7/2016.
+ * Created by Jedd Cuison on 6/7/2016.
  */
 
 @RunWith(SpringJUnit4ClassRunner.class)

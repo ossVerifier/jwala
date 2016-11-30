@@ -38,7 +38,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * {@link JvmStateService} implementation.
  *
- * Created by JC043760 on 3/22/2016.
+ * Created by Jedd Cuison on 3/22/2016.
  */
 @Service
 public class JvmStateServiceImpl implements JvmStateService {

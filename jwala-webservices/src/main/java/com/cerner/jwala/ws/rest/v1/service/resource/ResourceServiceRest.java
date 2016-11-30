@@ -11,7 +11,7 @@ import javax.ws.rs.core.Response;
 import java.util.List;
 
 /**
- * Created by z003e5zv on 3/16/2015.
+ * Created by Eric Pinder on 3/16/2015.
  */
 @Path("/resources")
 @Produces(MediaType.APPLICATION_JSON)

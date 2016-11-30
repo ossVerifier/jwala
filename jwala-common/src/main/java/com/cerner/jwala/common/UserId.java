@@ -5,7 +5,7 @@ import com.cerner.jwala.common.domain.model.user.User;
 /**
  * Holds {@link User} in a ThreadLocal.
  *
- * Created by JC043760 on 12/29/2015.
+ * Created by Jedd Cuison on 12/29/2015.
  */
 public class UserId {
 

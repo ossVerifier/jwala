@@ -17,7 +17,7 @@ import java.util.List;
 /**
  * Implements {@link HistoryFacadeService}
  *
- * Created by JC043760 on 11/9/2016
+ * Created by Jedd Cuison on 11/9/2016
  */
 @Service
 public class HistoryFacadeServiceImpl implements HistoryFacadeService {

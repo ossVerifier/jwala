@@ -3,7 +3,7 @@ package com.cerner.jwala.service.state;
 /**
  * Provides a contract for managing states in memory.
  *
- * Created by JC043760 on 3/25/2016.
+ * Created by Jedd Cuison on 3/25/2016.
  */
 public interface InMemoryStateManagerService<K, V> {
 

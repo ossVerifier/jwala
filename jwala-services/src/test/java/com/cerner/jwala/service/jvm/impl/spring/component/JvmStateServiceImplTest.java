@@ -35,7 +35,7 @@ import static org.mockito.MockitoAnnotations.initMocks;
 /**
  * {@link JvmStateServiceImpl} tests.
  *
- * Created by JC043760 on 5/12/2016.
+ * Created by Jedd Cuison on 5/12/2016.
  */
 public class JvmStateServiceImplTest {
     private JvmStateService jvmStateService;

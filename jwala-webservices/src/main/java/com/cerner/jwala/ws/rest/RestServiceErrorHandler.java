@@ -14,7 +14,7 @@ import javax.ws.rs.ext.ExceptionMapper;
  * Note: This handler's purpose is to intercept uncaught errors so that they won't bubble up to the UI.
  * It does not replace proper error handling in the REST layer.
  * <p>
- * Created by JC043760 on 8/11/2016.
+ * Created by Jedd Cuison on 8/11/2016.
  */
 public class RestServiceErrorHandler implements ExceptionMapper {
     private final static Logger LOGGER = LoggerFactory.getLogger(RestServiceErrorHandler.class);

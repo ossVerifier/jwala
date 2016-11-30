@@ -12,7 +12,7 @@ import java.util.List;
 /**
  * {@link HistoryServiceRest} implementation.
  *
- * Created by JC043760 on 12/7/2015.
+ * Created by Jedd Cuison on 12/7/2015.
  */
 public class HistoryServiceRestImpl implements HistoryServiceRest {
 

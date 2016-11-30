@@ -7,7 +7,7 @@ import javax.ws.rs.core.Response;
 /**
  * Contract for Jvm related services
  *
- * Created by JC043760 on 8/9/2016.
+ * Created by Jedd Cuison on 8/9/2016.
  */
 @Path("/jvms")
 @Produces(MediaType.APPLICATION_JSON)

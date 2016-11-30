@@ -23,7 +23,7 @@ import java.nio.file.*;
 import java.util.Properties;
 
 /**
- * Created by z003e5zv on 4/15/2015.
+ * Created by Eric Pinder on 4/15/2015.
  */
 @ContextConfiguration(loader = AnnotationConfigContextLoader.class, classes = {
         FileManagerTest.CommonConfiguration.class})

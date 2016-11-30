@@ -3,7 +3,7 @@ package com.cerner.jwala.service;
 /**
  * Message template that is sent via {@link MessagingService}
  *
- * Created by JC043760 on 11/2/2016
+ * Created by Jedd Cuison on 11/2/2016
  */
 public class Message<B> {
 
