@@ -294,8 +294,10 @@ var UploadWarWidget = React.createClass({
         return {
             properties: {},
             showProperties: false,
+            uploadFilename: "",
             deployPath: "",
-            uploadData: null
+            uploadData: null,
+            assignToJvms: false
         }
     },
     render: function() {
@@ -311,16 +313,18 @@ var UploadWarWidget = React.createClass({
 
         var propertiesTable = <div><table ref="propertiesTable">{rows}</table></div>;
 
+        console.log('v1.0/resources/' + this.props.data.id.id + '/war');
+
         return <div className="war-upload-component">
                   <div className="archive-file">
                       <div className="file-upload">
-                          <form ref="warUploadForm" encType='multipart/form-data' method="POST" action={'v1.0/applications/' + this.props.data.id.id + '/war'}>
+                          <form ref="warUploadForm">
                               <div className="fileUploadContainer">
-                                  <input ref="fileInput" type="file" name="file"></input>
+                                  <input ref="fileInput" type="file" name="file" onChange={this.onChangeFileInput}></input>
                               </div>
                               <div>Deploy Path</div>
                               <div className="deployPath">
-                                  <input ref="deployPathInput" name="deployPath" value={this.state.deployPath} onChange={this.onDeployPathChanged} />
+                                  <input ref="deployPathInput" name="deployPath" value={this.state.deployPath} onChange={this.onChangeDeployPath} />
                                   <div className="openCloseProperties">
                                       <span ref="openClosePropertiesIcon" className={this.state.showProperties ? "ui-icon ui-icon-triangle-1-s" : "ui-icon ui-icon-triangle-1-e"}
                                             onClick={this.openClosePropertiesIconCallback} />
@@ -337,9 +341,6 @@ var UploadWarWidget = React.createClass({
                   </div>
               </div>;
     },
-    componentDidMount: function() {
-        this.initFileUpload();
-    },
     openClosePropertiesIconCallback: function() {
         if (this.state.showProperties) {
             this.setState({showProperties: false});
@@ -350,52 +351,33 @@ var UploadWarWidget = React.createClass({
     onPropertiesLoad: function(response) {
         this.setState({properties: response.applicationResponseContent, showProperties: true});
     },
-    onDeployPathChanged: function(e) {
+    onChangeFileInput: function(e) {
+        this.setState({uploadFilename: $(this.refs.fileInput.getDOMNode()).val()});
+    },
+    onChangeDeployPath: function(e) {
         this.setState({deployPath: $(this.refs.deployPathInput.getDOMNode()).val()});
     },
     onAddPropertiesClick: function(val) {
         this.setState({deployPath: this.state.deployPath + val});
     },
-    initFileUpload :function() {
-        var self = this;
-        var d = new Date();
-        $(this.refs.fileInput.getDOMNode()).fileupload({
-            dataType: "json",
-            url: "v1.0/applications/" + this.props.data.id.id + "/war" + "?_"+ d.getTime(),
-            forceIframeTransport: false,
-            replaceFileInput: false,
-            add: function(e, data) {
-                self.setState({uploadData: data});
-            },
-            progressall: function(e, data) {
-                var progress = parseInt(data.loaded / data.total * 100, 10);
-                $(self.refs.progressBar.getDOMNode()).css({'width' : progress + '%', 'background-color' : 'green'});
-            }
-        });
-    },
     performUpload: function() {
         var self = this;
-        if (this.state.uploadData !== null) {
-            // Note: Don't confuse with "form" submit. Please see initFileUpload.
-            this.state.uploadData.submit().success(function(result, textStatus, jqXHR) {
+        var formData = new FormData();
 
-                if (result && result.msgCode === "0") {
-                    if ($.isFunction(self.props.afterUploadCallback)) {
-                        self.props.afterUploadCallback(self.refs.fileInput.getDOMNode().files);
-                    }
-                } else {
-                    self.progressError("Error has occurred! Please check browser console logs for details.");
-                    console.log(result);
-                    console.log(textStatus);
+        formData.append("assignToJvms", this.state.assignToJvms);
+        formData.append("templateFile", this.refs.fileInput.getDOMNode().files[0]);
+        $(this.refs.warUploadForm.getDOMNode()).serializeArray().forEach(function(item){
+            formData.append(item.name, item.value);
+        });
+
+        ServiceFactory.getResourceService().createResource(this.props.data.group.name, null, null, this.props.data.name,
+            formData, null, this.state.uploadFilename.split("\\").pop()).then(function(response){
+                if ($.isFunction(self.props.afterUploadCallback)) {
+                    self.props.afterUploadCallback(self.refs.fileInput.getDOMNode().files);
                 }
-
-            }).error (function(result, textStatus, jqXHR) {
-                console.log(result);
-                self.progressError(JSON.parse(result.responseText).applicationResponseContent);
+            }).caught(function(response){
+                $.errorAlert(response, "Error");
             });
-        } else {
-            $(this.refs.fileInput.getDOMNode()).effect("highlight")
-        }
     },
     progressError: function(errorMsg, progress) {
 
