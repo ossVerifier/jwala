@@ -318,8 +318,8 @@ var UploadWarWidget = React.createClass({
         return <div className="UploadWarWidget">
                    <form ref="warUploadForm">
                        <label>*WAR File</label>
-                       <label htmlFor="fileInput" className="error"/>
-                       <input ref="fileInput" name="fileInput" type="file" onChange={this.onChangeFileInput}/>
+                       <label ref="fileInputLabel" htmlFor="fileInput" className="error"/>
+                       <input ref="fileInput" name="fileInput" type="file" required onChange={this.onChangeFileInput}/>
                        <br/>
                        <input type="checkbox" value={this.state.assignToJvms} onChange={this.onChangeAssignToJvms}>
                            <span>Assign to JVMs</span>
@@ -337,6 +337,18 @@ var UploadWarWidget = React.createClass({
                    </form>
                </div>;
     },
+    onComponentDidMount: function() {
+        $(this.refs.warUploadForm.getDOMNode()).validate({
+                                rules: {"fileInput": {
+                                            required: true
+                                            }
+                                        },
+                                messages: {
+                                    "fileInput": {
+                                        required: "Please select a file for upload"
+                                     },
+                                }});
+    },
     openClosePropertiesIconCallback: function() {
         if (this.state.showProperties) {
             this.setState({showProperties: false});
@@ -348,6 +360,15 @@ var UploadWarWidget = React.createClass({
         this.setState({properties: response.applicationResponseContent, showProperties: true});
     },
     onChangeFileInput: function() {
+        // This is necessary since jquery validate does not clear the error
+        // after user specifies a file not unless user clicks on something
+        // Note: We are not modifying the DOM here in such a way that will affect React
+        if ($(this.refs.fileInputLabel.getDOMNode()).hasClass("error")) {
+            $(this.refs.fileInputLabel.getDOMNode()).removeClass("error");
+            $(this.refs.fileInputLabel.getDOMNode()).html("");
+            $(this.refs.fileInput.getDOMNode()).removeClass("error");
+        }
+
         this.setState({uploadFilename: $(this.refs.fileInput.getDOMNode()).val()});
     },
     onChangeAssignToJvms: function() {
@@ -360,6 +381,10 @@ var UploadWarWidget = React.createClass({
         this.setState({deployPath: this.state.deployPath + val});
     },
     performUpload: function() {
+        if (!$(this.refs.warUploadForm.getDOMNode()).validate().form()) {
+            return;
+        }
+
         var self = this;
         var formData = new FormData();
 
@@ -377,18 +402,6 @@ var UploadWarWidget = React.createClass({
             }).caught(function(response){
                 $.errorAlert(response, "Error");
             });
-    },
-    progressError: function(errorMsg, progress) {
-
-      $(this.refs.progressBar.getDOMNode()).css({
-          'width' : (progress !== undefined ? progress : 100) + '%',
-          'background-color' : 'red'
-      });
-
-      var uploadResult = $(this.refs.uploadResult.getDOMNode());
-      uploadResult.addClass("error");
-      uploadResult.removeClass("ok");
-      uploadResult.text(errorMsg);
     },
     statics: {
         isPossiblePath: function(path) {
