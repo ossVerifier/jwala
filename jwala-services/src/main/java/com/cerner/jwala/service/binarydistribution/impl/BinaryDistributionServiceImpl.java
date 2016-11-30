@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 
 /**
- * Created by Arvindo Kinny on 10/11/2016.
+ * Created by Arvindo Kinny on 10/11/2016
  */
 public class BinaryDistributionServiceImpl implements BinaryDistributionService {
     private static final Logger LOGGER = LoggerFactory.getLogger(BinaryDistributionServiceImpl.class);

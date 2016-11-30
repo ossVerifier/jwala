@@ -55,8 +55,8 @@ import static org.mockito.Mockito.*;
 
 /**
  * Unit test for {@link ResourceServiceRestImpl}.
- * <p/>
- * Created by Jeffery Mahmood on 9/29/2015.
+ * <p>
+ * Created by Jeffery Mahmood on 9/29/2015
  */
 @RunWith(MockitoJUnitRunner.class)
 public class ResourceServiceRestImplTest {
