@@ -392,6 +392,7 @@ public class ApplicationServiceImplTest {
         when(mockMetaData.getContentType()).thenReturn(MediaType.APPLICATION_XML);
         when(mockResourceService.getTokenizedMetaData(anyString(), any(Object.class), anyString())).thenReturn(mockMetaData);
         when(mockResourceService.generateResourceFile(anyString(), anyString(), any(ResourceGroup.class), any(), any(ResourceGeneratorType.class))).thenReturn("{\"deployPath\":\"./test/deploy-path/conf/CatalinaSSL/localhost\",\"contentType\":\"text/xml\",\"entity\":{\"type\":\"APPLICATION\",\"target\":\"soarcom-hct\",\"group\":\"soarcom-616\",\"parentName\":null,\"deployToJvms\":true},\"templateName\":\"hctXmlTemplate.tpl\",\"deployFileName\":\"hct.xml\"}");
+        when(mockResourceService.generateAndDeployFile(any(ResourceIdentifier.class), anyString(), anyString(), anyString())).thenReturn(execData);
 
         CommandOutput retExecData = applicationService.deployConf("hct", "hct-group", "jvm-1", "hct.xml", mock(ResourceGroup.class), testUser);
         assertTrue(retExecData.getReturnCode().wasSuccessful());
@@ -425,84 +426,6 @@ public class ApplicationServiceImplTest {
             assertTrue(ee.getCause() instanceof CommandFailureException);
         }
 
-    }
-
-    @Test(expected = DeployApplicationConfException.class)
-    public void testDeployConfExecDataWasNotSuccessful() throws CommandFailureException, IOException {
-        final Jvm jvm = mock(Jvm.class);
-        when(jvm.getHostName()).thenReturn("localhost");
-        when(jvm.getState()).thenReturn(JvmState.JVM_STOPPED);
-        when(jvmPersistenceService.findJvmByExactName(eq("jvm-1"))).thenReturn(jvm);
-        final CommandOutput execData = mock(CommandOutput.class);
-        when(execData.getReturnCode()).thenReturn(new ExecReturnCode(ExecReturnCode.JWALA_EXIT_CODE_NO_OP));
-        when(execData.getStandardError()).thenReturn("No operation!");
-        when(remoteCommandExecutorImpl.executeRemoteCommand(
-                anyString(), anyString(), any(ApplicationControlOperation.class), any(WindowsApplicationPlatformCommandProvider.class), anyString(), anyString())).thenReturn(execData);
-        when(remoteCommandExecutorImpl.executeRemoteCommand(anyString(), anyString(), eq(ApplicationControlOperation.CHECK_FILE_EXISTS), any(WindowsApplicationPlatformCommandProvider.class), anyString())).thenReturn(execData);
-        when(remoteCommandExecutorImpl.executeRemoteCommand(anyString(), anyString(), eq(ApplicationControlOperation.CREATE_DIRECTORY), any(WindowsApplicationPlatformCommandProvider.class), anyString())).thenReturn(execData);
-        when(applicationPersistenceService.getResourceTemplate(eq("hct"), eq("hct.xml"), eq("jvm-1"), eq("hct-group"))).thenReturn("Test template");
-        when(applicationPersistenceService.findApplication(eq("hct"), eq("hct-group"), eq("jvm-1"))).thenReturn(mockApplication);
-        when(applicationPersistenceService.getMetaData(anyString(), anyString(), anyString(), anyString())).thenReturn(META_DATA_TEST_VALUES);
-        when(jvmPersistenceService.findJvm(eq("jvm-1"), eq("hct-group"))).thenReturn(jvm);
-        ResourceTemplateMetaData mockMetaData = mock(ResourceTemplateMetaData.class);
-        when(mockMetaData.getDeployFileName()).thenReturn("hct.xml");
-        when(mockMetaData.getDeployPath()).thenReturn("./test/deploy-path/conf/CatalinaSSL/localhost");
-        when(mockMetaData.getContentType()).thenReturn(MediaType.APPLICATION_XML);
-        when(mockResourceService.getTokenizedMetaData(anyString(), any(Object.class), anyString())).thenReturn(mockMetaData);
-        when(mockResourceService.generateResourceFile(anyString(), anyString(), any(ResourceGroup.class), any(), any(ResourceGeneratorType.class))).thenReturn("anything");
-        applicationService.deployConf("hct", "hct-group", "jvm-1", "hct.xml", mock(ResourceGroup.class), testUser);
-    }
-
-    @Test(expected = DeployApplicationConfException.class)
-    public void testDeployConfExecDataCommandFailureException() throws CommandFailureException, IOException {
-        final Jvm jvm = mock(Jvm.class);
-        when(jvm.getHostName()).thenReturn("localhost");
-        when(jvm.getState()).thenReturn(JvmState.JVM_STOPPED);
-        when(jvmPersistenceService.findJvmByExactName(eq("jvm-1"))).thenReturn(jvm);
-        final CommandOutput execData = mock(CommandOutput.class);
-        when(execData.getReturnCode()).thenReturn(new ExecReturnCode(ExecReturnCode.JWALA_EXIT_CODE_NO_OP));
-        when(execData.getStandardError()).thenReturn("No operation!");
-        when(remoteCommandExecutorImpl.executeRemoteCommand(
-                anyString(), anyString(), any(ApplicationControlOperation.class), any(WindowsApplicationPlatformCommandProvider.class), anyString(), anyString())).thenReturn(execData);
-        when(remoteCommandExecutorImpl.executeRemoteCommand(anyString(), anyString(), eq(ApplicationControlOperation.CHECK_FILE_EXISTS), any(WindowsApplicationPlatformCommandProvider.class), anyString())).thenReturn(execData);
-        when(remoteCommandExecutorImpl.executeRemoteCommand(anyString(), anyString(), eq(ApplicationControlOperation.CREATE_DIRECTORY), any(WindowsApplicationPlatformCommandProvider.class), anyString())).thenReturn(execData);
-        when(applicationPersistenceService.getResourceTemplate(eq("hct"), eq("hct.xml"), eq("jvm-1"), eq("hct-group"))).thenReturn("Test template");
-        when(applicationPersistenceService.findApplication(eq("hct"), eq("hct-group"), eq("jvm-1"))).thenReturn(mockApplication);
-        when(applicationPersistenceService.getMetaData(anyString(), anyString(), anyString(), anyString())).thenReturn(META_DATA_TEST_VALUES);
-        when(jvmPersistenceService.findJvm(eq("jvm-1"), eq("hct-group"))).thenReturn(jvm);
-        ResourceTemplateMetaData mockMetaData = mock(ResourceTemplateMetaData.class);
-        when(mockMetaData.getDeployFileName()).thenReturn("hct.xml");
-        when(mockMetaData.getDeployPath()).thenReturn("./test/deploy-path/conf/CatalinaSSL/localhost");
-        when(mockMetaData.getContentType()).thenReturn(MediaType.APPLICATION_XML);
-        when(mockResourceService.getTokenizedMetaData(anyString(), any(Object.class), anyString())).thenReturn(mockMetaData);
-        when(mockResourceService.generateResourceFile(anyString(), anyString(), any(ResourceGroup.class), any(), any(ResourceGeneratorType.class))).thenReturn("anything");
-        applicationService.deployConf("hct", "hct-group", "jvm-1", "hct.xml", mock(ResourceGroup.class), testUser);
-    }
-
-    @Test (expected = DeployApplicationConfException.class)
-    public void testDeployConfExecDataFileNotFoundException() throws CommandFailureException, IOException {
-        final Jvm jvm = mock(Jvm.class);
-        when(jvm.getHostName()).thenReturn("localhost");
-        when(jvm.getState()).thenReturn(JvmState.JVM_STOPPED);
-        when(jvmPersistenceService.findJvmByExactName(eq("jvm-1"))).thenReturn(jvm);
-        final CommandOutput execData = mock(CommandOutput.class);
-        when(execData.getReturnCode()).thenReturn(new ExecReturnCode(ExecReturnCode.JWALA_EXIT_CODE_NO_OP));
-        when(execData.getStandardError()).thenReturn("No operation!");
-        when(remoteCommandExecutorImpl.executeRemoteCommand(
-                anyString(), anyString(), any(ApplicationControlOperation.class), any(WindowsApplicationPlatformCommandProvider.class), anyString(), anyString())).thenReturn(execData);
-        when(remoteCommandExecutorImpl.executeRemoteCommand(anyString(), anyString(), eq(ApplicationControlOperation.CHECK_FILE_EXISTS), any(WindowsApplicationPlatformCommandProvider.class), anyString())).thenReturn(execData);
-        when(remoteCommandExecutorImpl.executeRemoteCommand(anyString(), anyString(), eq(ApplicationControlOperation.CREATE_DIRECTORY), any(WindowsApplicationPlatformCommandProvider.class), anyString())).thenReturn(execData);
-        when(applicationPersistenceService.getResourceTemplate(eq("hct"), eq("hct.xml"), eq("jvm-1"), eq("hct-group"))).thenReturn("Test template");
-        when(applicationPersistenceService.findApplication(eq("hct"), eq("hct-group"), eq("jvm-1"))).thenReturn(mockApplication);
-        when(applicationPersistenceService.getMetaData(anyString(), anyString(), anyString(), anyString())).thenReturn(META_DATA_TEST_VALUES);
-        when(jvmPersistenceService.findJvm(eq("jvm-1"), eq("hct-group"))).thenReturn(jvm);
-        ResourceTemplateMetaData mockMetaData = mock(ResourceTemplateMetaData.class);
-        when(mockMetaData.getDeployFileName()).thenReturn("hct.xml");
-        when(mockMetaData.getDeployPath()).thenReturn("./test/deploy-path/conf/CatalinaSSL/localhost");
-        when(mockMetaData.getContentType()).thenReturn(MediaType.APPLICATION_XML);
-        when(mockResourceService.getTokenizedMetaData(anyString(), any(Object.class), anyString())).thenReturn(mockMetaData);
-        when(mockResourceService.generateResourceFile(anyString(), anyString(), any(ResourceGroup.class), any(), any(ResourceGeneratorType.class))).thenReturn("anything");
-        applicationService.deployConf("hct", "hct-group", "jvm-1", "hct.xml", mock(ResourceGroup.class), testUser);
     }
 
     @Test(expected = InternalErrorException.class)

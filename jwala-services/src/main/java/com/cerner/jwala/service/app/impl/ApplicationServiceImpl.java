@@ -248,91 +248,30 @@ public class ApplicationServiceImpl implements ApplicationService {
     // TODO: Have an option to do a hot deploy or not.
     public CommandOutput deployConf(final String appName, final String groupName, final String jvmName,
                                     final String resourceTemplateName, ResourceGroup resourceGroup, User user) {
-
         final StringBuilder key = new StringBuilder();
         key.append(groupName).append(jvmName).append(appName).append(resourceTemplateName);
-
         try {
             // only one at a time
             if (!writeLock.containsKey(key.toString())) {
                 writeLock.put(key.toString(), new ReentrantReadWriteLock());
             }
             writeLock.get(key.toString()).writeLock().lock();
-
+            ResourceIdentifier resourceIdentifier = new ResourceIdentifier.Builder()
+                    .setResourceName(resourceTemplateName)
+                    .setGroupName(groupName)
+                    .setWebAppName(appName)
+                    .setJvmName(jvmName)
+                    .build();
             final Jvm jvm = jvmPersistenceService.findJvmByExactName(jvmName);
             if (jvm.getState().isStartedState()) {
                 LOGGER.error("The target JVM must be stopped before attempting to update the resource files");
                 throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE,
                         "The target JVM must be stopped before attempting to update the resource files");
             }
-
-            final File confFile = createConfFile(appName, groupName, jvmName, resourceTemplateName, resourceGroup);
-            final Application app = applicationPersistenceService.findApplication(appName, groupName, jvmName);
-
-            String metaData = applicationPersistenceService.getMetaData(appName, jvmName, groupName, resourceTemplateName);
-            app.setParentJvm(jvm);
-            ResourceTemplateMetaData templateMetaData = resourceService.getTokenizedMetaData(resourceTemplateName, app, metaData);
-            final String deployFileName = templateMetaData.getDeployFileName();
-            final String destPath = templateMetaData.getDeployPath() + '/' + deployFileName;
-            String srcPath;
-
-            if (templateMetaData.getContentType().getType().equalsIgnoreCase(MEDIA_TYPE_TEXT) ||
-                    MediaType.APPLICATION_XML.equals(templateMetaData.getContentType())) {
-                srcPath = confFile.getAbsolutePath().replace("\\", "/");
-            } else {
-                srcPath = applicationPersistenceService.getResourceTemplate(appName, resourceTemplateName, jvmName, groupName);
-            }
-
-            final String eventDescription = WindowsJvmNetOperation.SECURE_COPY.name() + " " + deployFileName;
-            final String id = user.getId();
-
-            historyFacadeService.write("JVM " + jvm.getJvmName(), new ArrayList<>(jvm.getGroups()), eventDescription, EventType.USER_ACTION_INFO, id);
-
-            final String deployJvmName = jvm.getJvmName();
             final String hostName = jvm.getHostName();
-            final String parentDir = new File(destPath).getParentFile().getAbsolutePath().replaceAll("\\\\", "/");
-            CommandOutput commandOutput = executeCreateDirectoryCommand(deployJvmName, hostName, parentDir);
-
-            if (commandOutput.getReturnCode().wasSuccessful()) {
-                LOGGER.info("created the parent dir {} successfully", parentDir);
-            } else {
-                final String standardError = commandOutput.getStandardError().isEmpty() ? commandOutput.getStandardOutput() : commandOutput.getStandardError();
-                LOGGER.error("error in creating parent directory {} :: ERROR : ", parentDir, parentDir);
-                throw new DeployApplicationConfException(standardError);
-            }
-            commandOutput = executeCheckIfFileExistsCommand(deployJvmName, hostName, destPath);
-
-            if (commandOutput.getReturnCode().wasSuccessful()) {
-                commandOutput = executeBackUpCommand(deployJvmName, hostName, destPath);
-
-                if (!commandOutput.getReturnCode().wasSuccessful()) {
-                    final String standardError = "Failed to back up file " + destPath + " for " + app.getName() + ". Continuing with secure copy.";
-                    LOGGER.error(standardError);
-                    throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, standardError);
-                }
-            }
-            final CommandOutput execData = executeSecureCopyCommand(deployJvmName, hostName, srcPath, destPath);
-
-            if (execData.getReturnCode().wasSuccessful()) {
-                LOGGER.info("Copy of {} successful: {}", deployFileName, confFile.getAbsolutePath());
-                return execData;
-            } else {
-                String standardError = execData.getStandardError().isEmpty() ? execData.getStandardOutput() : execData.getStandardError();
-                LOGGER.error("Copy command completed with error trying to copy {} to {} :: ERROR: {}",
-                        deployFileName, appName, standardError);
-                throw new DeployApplicationConfException(standardError);
-            }
-        } catch (FileNotFoundException | CommandFailureException ex) {
-            LOGGER.error("Failed to deploy config file {} for app {} to jvm {} ", resourceTemplateName, appName, jvmName, ex);
-            throw new DeployApplicationConfException(ex);
-        } catch (JsonMappingException | JsonParseException e) {
-            LOGGER.error("Failed to map meta data while deploying config file {} for app {} to jvm {}", resourceTemplateName, appName, jvmName, e);
-            throw new DeployApplicationConfException(e);
+            return resourceService.generateAndDeployFile(resourceIdentifier, appName, resourceTemplateName, hostName);
         } catch (ResourceFileGeneratorException e) {
             LOGGER.error("Fail to generate the resource file {}", resourceTemplateName, e);
-            throw new DeployApplicationConfException(e);
-        } catch (IOException e) {
-            LOGGER.error("Failed for IOException while deploying config file {} for app {} to jvm {}", resourceTemplateName, appName, jvmName, e);
             throw new DeployApplicationConfException(e);
         } finally {
             writeLock.get(key.toString()).writeLock().unlock();
@@ -657,52 +596,6 @@ public class ApplicationServiceImpl implements ApplicationService {
         }
     }
 
-    /**
-     * Create application configuration file.
-     *
-     * @param appName              - the application name.
-     * @param groupName            - the group where the application belongs to.
-     * @param jvmName              - the JVM name where the application is deployed.
-     * @param resourceTemplateName - the name of the resource to generate.
-     * @return the configuration file.
-     */
-    @Transactional
-    protected File createConfFile(final String appName, final String groupName, final String jvmName,
-                                  final String resourceTemplateName, final ResourceGroup resourceGroup)
-            throws FileNotFoundException {
-        PrintWriter out = null;
-        final StringBuilder fileNameBuilder = new StringBuilder();
-
-        createPathIfItDoesNotExists(ApplicationProperties.get(GENERATED_RESOURCE_DIR));
-        createPathIfItDoesNotExists(ApplicationProperties.get(GENERATED_RESOURCE_DIR) + "/"
-                + groupName.replace(" ", "-"));
-        createPathIfItDoesNotExists(ApplicationProperties.get(GENERATED_RESOURCE_DIR)
-                + "/" + groupName.replace(" ", "-") + "/" + jvmName.replace(" ", "-"));
-
-        fileNameBuilder.append(ApplicationProperties.get(GENERATED_RESOURCE_DIR))
-                .append('/')
-                .append(groupName.replace(" ", "-"))
-                .append('/')
-                .append(jvmName.replace(" ", "-"))
-                .append('/')
-                .append(appName.replace(" ", "-"))
-                .append('.')
-                .append(new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date()))
-                .append('_')
-                .append(resourceTemplateName);
-
-        final File appConfFile = new File(fileNameBuilder.toString());
-        try {
-            out = new PrintWriter(appConfFile.getAbsolutePath());
-            out.println(getResourceTemplate(appName, groupName, jvmName, resourceTemplateName, resourceGroup, true));
-        } finally {
-            if (out != null) {
-                out.close();
-            }
-        }
-        return appConfFile;
-    }
-
     @Override
     @Transactional
     public Application uploadWebArchive(final Identifier<Application> appId, final String warName, final byte[] war,
@@ -756,7 +649,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         final List<String> hostNames = getDeployHostList(hostName, group, application);
 
         LOGGER.info("deploying templates to hosts: {}", hostNames.toString());
-        historyFacadeService.write("", group, "Deploy \"" + appName + "\" resources",  EventType.USER_ACTION_INFO, user.getId());
+        historyFacadeService.write("", group, "Deploy \"" + appName + "\" resources", EventType.USER_ACTION_INFO, user.getId());
 
         checkForRunningJvms(group, hostNames, user);
 
@@ -818,7 +711,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     protected void checkForRunningJvms(final Group group, final List<String> hostNames, final User user) {
         final List<Jvm> runningJvmList = new ArrayList<>();
         final List<String> runningJvmNameList = new ArrayList<>();
-        for (final Jvm jvm: group.getJvms()) {
+        for (final Jvm jvm : group.getJvms()) {
             if (hostNames.contains(jvm.getHostName().toLowerCase()) && jvm.getState().isStartedState()) {
                 runningJvmList.add(jvm);
                 runningJvmNameList.add(jvm.getJvmName());
@@ -828,7 +721,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         if (!runningJvmList.isEmpty()) {
             final String errMsg = "Make sure the following JVMs are completely stopped before deploying.";
             LOGGER.error(errMsg + " {}", runningJvmNameList);
-            for (final Jvm jvm: runningJvmList) {
+            for (final Jvm jvm : runningJvmList) {
                 historyFacadeService.write(Jvm.class.getSimpleName() + " " + jvm.getJvmName(), jvm.getGroups(),
                         "Web app resource(s) cannot be deployed on a running JVM!",
                         EventType.SYSTEM_ERROR, user.getId());

@@ -276,7 +276,8 @@ public class ResourceServiceImplTest {
         when(mockJvmPersistenceService.getJpaJvm(any(Identifier.class), anyBoolean())).thenReturn(mockJpaJvm);
         User mockUser = mock(User.class);
         when(mockUser.getId()).thenReturn("user-id");
-        resourceService.createTemplate(metaDataIn, templateIn, "test-jvm-name", mockUser);
+        resourceService.createTemplate(metaDataIn, templateIn, "some application", mockUser);
+        verify(mockJvmPersistenceService).findJvmByExactName("some jvm name");
         verify(mockAppPersistenceService).getApplication("some application");
         verify(mockAppPersistenceService).uploadAppTemplate(any(UploadAppTemplateRequest.class), any(JpaJvm.class));
     }
@@ -298,7 +299,8 @@ public class ResourceServiceImplTest {
         when(mockPrivateApplicationService.uploadWebArchiveData(any(UploadWebArchiveRequest.class))).thenReturn(mockRepoFilInfo);
         User mockUser = mock(User.class);
         when(mockUser.getId()).thenReturn("user-id");
-        resourceService.createTemplate(metaDataIn, templateIn, "test-jvm-name", mockUser);
+        resourceService.createTemplate(metaDataIn, templateIn, "some application", mockUser);
+        verify(mockJvmPersistenceService).findJvmByExactName("some jvm name");
         verify(mockAppPersistenceService).getApplication("some application");
         verify(mockAppPersistenceService).uploadAppTemplate(any(UploadAppTemplateRequest.class), any(JpaJvm.class));
     }
