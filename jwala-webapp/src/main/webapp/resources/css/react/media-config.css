@@ -1,0 +1,18 @@
+.MediaConfig {
+    position: relative;
+}
+
+.MediaConfig > .btnContainer {
+    float: right;
+    margin-bottom: 2px;
+}
+
+.upArrowIconBtn {
+    padding-left: 0;
+    padding-right: 0;
+}
+
+.trashIconBtn {
+    padding-left: 0;
+    padding-right: 0;
+}

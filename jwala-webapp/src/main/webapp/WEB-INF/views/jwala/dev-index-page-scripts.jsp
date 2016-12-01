@@ -83,6 +83,7 @@
 <script type="text/jsx" src="public-resources/js/react/admin-tab.js"></script>
 <script type="text/jsx" src="public-resources/js/react/jvm-config.js"></script>
 <script type="text/jsx" src="public-resources/js/react/group-config.js"></script>
+<script type="text/jsx" src="public-resources/js/react/media-config.js"></script>
 <script type="text/jsx" src="public-resources/js/react/webserver-config.js"></script>
 <script type="text/jsx" src="public-resources/js/react/WebAppConfig.js"></script>
 <script type="text/jsx" src="public-resources/js/react/ResourcesConfig.js"></script>
