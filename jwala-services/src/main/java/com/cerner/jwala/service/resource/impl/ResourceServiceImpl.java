@@ -5,7 +5,6 @@ import com.cerner.jwala.common.domain.model.app.ApplicationControlOperation;
 import com.cerner.jwala.common.domain.model.binarydistribution.BinaryDistributionControlOperation;
 import com.cerner.jwala.common.domain.model.fault.AemFaultType;
 import com.cerner.jwala.common.domain.model.group.Group;
-import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
 import com.cerner.jwala.common.domain.model.resource.*;
 import com.cerner.jwala.common.domain.model.user.User;
@@ -16,9 +15,7 @@ import com.cerner.jwala.common.exception.InternalErrorException;
 import com.cerner.jwala.common.exec.CommandOutput;
 import com.cerner.jwala.common.properties.ApplicationProperties;
 import com.cerner.jwala.common.properties.ExternalProperties;
-import com.cerner.jwala.common.request.app.RemoveWebArchiveRequest;
 import com.cerner.jwala.common.request.app.UploadAppTemplateRequest;
-import com.cerner.jwala.common.request.app.UploadWebArchiveRequest;
 import com.cerner.jwala.common.request.jvm.UploadJvmConfigTemplateRequest;
 import com.cerner.jwala.common.request.jvm.UploadJvmTemplateRequest;
 import com.cerner.jwala.common.request.webserver.UploadWebServerTemplateRequest;
@@ -26,17 +23,12 @@ import com.cerner.jwala.control.application.command.impl.WindowsApplicationPlatf
 import com.cerner.jwala.control.command.RemoteCommandExecutorImpl;
 import com.cerner.jwala.control.command.impl.WindowsBinaryDistributionPlatformCommandProvider;
 import com.cerner.jwala.exception.CommandFailureException;
-import com.cerner.jwala.files.RepositoryFileInformation;
-import com.cerner.jwala.files.WebArchiveManager;
 import com.cerner.jwala.persistence.jpa.domain.JpaJvm;
 import com.cerner.jwala.persistence.jpa.domain.resource.config.template.ConfigTemplate;
 import com.cerner.jwala.persistence.service.*;
-import com.cerner.jwala.service.app.PrivateApplicationService;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionService;
 import com.cerner.jwala.service.exception.ResourceServiceException;
-import com.cerner.jwala.service.resource.ResourceContentGeneratorService;
-import com.cerner.jwala.service.resource.ResourceHandler;
-import com.cerner.jwala.service.resource.ResourceService;
+import com.cerner.jwala.service.resource.*;
 import com.cerner.jwala.service.resource.impl.handler.exception.ResourceHandlerException;
 import com.cerner.jwala.template.exception.ResourceFileGeneratorException;
 import opennlp.tools.util.StringUtil;
@@ -55,11 +47,7 @@ import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.BufferedInputStream;
+import java.io.*;
 import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -81,7 +69,7 @@ public class ResourceServiceImpl implements ResourceService {
     private final ResourcePersistenceService resourcePersistenceService;
     private final GroupPersistenceService groupPersistenceService;
     private final ExecutorService executorService;
-    private PrivateApplicationService privateApplicationService;
+
     // TODO replace ApplicationControlOperation (and all operation classes) with ResourceControlOperation
     private RemoteCommandExecutorImpl remoteCommandExecutor;
     private Map<String, ReentrantReadWriteLock> resourceWriteLockMap;
@@ -98,7 +86,6 @@ public class ResourceServiceImpl implements ResourceService {
 
     private final ResourceDao resourceDao;
 
-    private final WebArchiveManager webArchiveManager;
 
     private final ResourceHandler resourceHandler;
 
@@ -113,23 +100,23 @@ public class ResourceServiceImpl implements ResourceService {
     @Value("${paths.resource-templates}")
     private String templatePath;
 
+    private final ResourceRepositoryService resourceRepositoryService;
+
     public ResourceServiceImpl(final ResourcePersistenceService resourcePersistenceService,
                                final GroupPersistenceService groupPersistenceService,
                                final ApplicationPersistenceService applicationPersistenceService,
                                final JvmPersistenceService jvmPersistenceService,
                                final WebServerPersistenceService webServerPersistenceService,
-                               final PrivateApplicationService privateApplicationService,
                                final ResourceDao resourceDao,
-                               final WebArchiveManager webArchiveManager,
                                final ResourceHandler resourceHandler,
                                final RemoteCommandExecutorImpl remoteCommandExecutor,
                                final Map<String, ReentrantReadWriteLock> resourceWriteLockMap,
                                final ResourceContentGeneratorService resourceContentGeneratorService,
                                final BinaryDistributionService binaryDistributionService,
-                               final Tika fileTypeDetector) {
+                               final Tika fileTypeDetector,
+                               final ResourceRepositoryService resourceRepositoryService) {
         this.resourcePersistenceService = resourcePersistenceService;
         this.groupPersistenceService = groupPersistenceService;
-        this.privateApplicationService = privateApplicationService;
         this.remoteCommandExecutor = remoteCommandExecutor;
         this.resourceWriteLockMap = resourceWriteLockMap;
         expressionParser = new SpelExpressionParser();
@@ -139,12 +126,12 @@ public class ResourceServiceImpl implements ResourceService {
         this.jvmPersistenceService = jvmPersistenceService;
         this.webServerPersistenceService = webServerPersistenceService;
         this.resourceDao = resourceDao;
-        this.webArchiveManager = webArchiveManager;
         this.resourceHandler = resourceHandler;
         executorService = Executors.newFixedThreadPool(Integer.parseInt(ApplicationProperties.get("resources.thread-task-executor.pool.size", "25")));
         this.resourceContentGeneratorService = resourceContentGeneratorService;
         this.binaryDistributionService = binaryDistributionService;
         this.fileTypeDetector = fileTypeDetector;
+        this.resourceRepositoryService = resourceRepositoryService;
     }
 
     @Override
@@ -673,26 +660,17 @@ public class ResourceServiceImpl implements ResourceService {
             for (final String templateName : templateNameList) {
                 if (templateName.toLowerCase().endsWith(".war")) {
                     final Application app = applicationPersistenceService.getApplication(appName);
-                    final RemoveWebArchiveRequest removeWarRequest = new RemoveWebArchiveRequest(app);
 
                     // An app is only assigned to one group as of July 7, 2016 so we don't need the group to delete the
                     // war info of an app
                     applicationPersistenceService.deleteWarInfo(appName);
 
                     try {
-                        final RepositoryFileInformation result = webArchiveManager.remove(removeWarRequest);
-                        if (result.getType() != RepositoryFileInformation.Type.DELETED) {
-                            // If the physical file can't be deleted for some reason don't throw an exception since
-                            // there's no outright ill effect if the war file is not removed in the file system.
-                            // The said file might not exist anymore also which is the reason for the error.
-                            LOGGER.error("Failed to delete the archive {}! WebArchiveManager remove result type = {}", app.getWarPath(),
-                                    result.getType());
-                        }
-                    } catch (final IOException ioe) {
-                        // If the physical file can't be deleted for some reason don't throw an exception since
-                        // there's no outright ill effect if the war file is not removed in the file system.
-                        LOGGER.error("Failed to delete the archive {}!", app.getWarPath(), ioe);
+                        resourceRepositoryService.delete(app.getWarPath());
+                    } catch (final ResourceRepositoryServiceException e) {
+                        LOGGER.error("Failed to delete the archive {}!", app.getWarPath(), e);
                     }
+
                 }
             }
         }
@@ -933,14 +911,7 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Override
     public String uploadResource(final ResourceTemplateMetaData resourceTemplateMetaData, final InputStream resourceDataIn) {
-        final String deployFileName = resourceTemplateMetaData.getDeployFileName();
-        final Application fakedApplication = new Application(new Identifier<Application>(0L), deployFileName,
-                resourceTemplateMetaData.getDeployPath(), "", null, true, true, false, deployFileName);
-        final UploadWebArchiveRequest uploadWebArchiveRequest = new UploadWebArchiveRequest(fakedApplication,
-                deployFileName, -1L, resourceDataIn);
-        final RepositoryFileInformation fileInfo = privateApplicationService.uploadWebArchiveData(uploadWebArchiveRequest);
-
-        return fileInfo.getPath().toString();
+        return resourceRepositoryService.upload(resourceTemplateMetaData.getDeployFileName(), resourceDataIn);
     }
 
     @Override

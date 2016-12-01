@@ -5,8 +5,6 @@ import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.webserver.WebServer;
 import com.cerner.jwala.common.domain.model.webserver.WebServerReachableState;
 import com.cerner.jwala.common.exception.NotFoundException;
-import com.cerner.jwala.files.FileManager;
-import com.cerner.jwala.files.configuration.JwalaFileManagerConfigReference;
 import com.cerner.jwala.persistence.jpa.service.GroupCrudService;
 import com.cerner.jwala.persistence.jpa.service.WebServerCrudService;
 import com.cerner.jwala.persistence.jpa.service.impl.GroupCrudServiceImpl;
@@ -35,7 +33,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @ContextConfiguration(loader = AnnotationConfigContextLoader.class, classes = {
         WebServerServiceImplIntegrationTest.CommonConfiguration.class,
-        TestJpaConfiguration.class, JwalaFileManagerConfigReference.class})
+        TestJpaConfiguration.class})
 @IfProfileValue(name = TestExecutionProfile.RUN_TEST_TYPES, value = TestExecutionProfile.INTEGRATION)
 @RunWith(SpringJUnit4ClassRunner.class)
 @EnableTransactionManagement
@@ -70,9 +68,6 @@ public class WebServerServiceImplIntegrationTest {
     private WebServerService webServerService;
 
     @Autowired
-    private FileManager fileManager;
-
-    @Autowired
     private ResourceService resourceService;
 
     @Autowired
@@ -80,7 +75,7 @@ public class WebServerServiceImplIntegrationTest {
 
     @Before
     public void setup() {
-        webServerService = new WebServerServiceImpl(webServerPersistenceService, fileManager, resourceService, inMemService, "d:/jwala/app/data/types", binaryDistributionLockManager);
+        webServerService = new WebServerServiceImpl(webServerPersistenceService, resourceService, inMemService, "d:/jwala/app/data/types", binaryDistributionLockManager);
     }
 
     @Test(expected = NotFoundException.class)

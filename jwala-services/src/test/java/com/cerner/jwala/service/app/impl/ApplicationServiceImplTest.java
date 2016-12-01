@@ -9,7 +9,6 @@ import com.cerner.jwala.common.domain.model.jvm.Jvm;
 import com.cerner.jwala.common.domain.model.jvm.JvmState;
 import com.cerner.jwala.common.domain.model.resource.Entity;
 import com.cerner.jwala.common.domain.model.resource.ResourceGroup;
-import com.cerner.jwala.common.domain.model.resource.ResourceIdentifier;
 import com.cerner.jwala.common.domain.model.resource.ResourceTemplateMetaData;
 import com.cerner.jwala.common.domain.model.ssh.SshConfiguration;
 import com.cerner.jwala.common.domain.model.user.User;
@@ -20,31 +19,27 @@ import com.cerner.jwala.common.exec.CommandOutput;
 import com.cerner.jwala.common.exec.ExecCommand;
 import com.cerner.jwala.common.exec.ExecReturnCode;
 import com.cerner.jwala.common.properties.ApplicationProperties;
-import com.cerner.jwala.common.request.app.*;
+import com.cerner.jwala.common.request.app.CreateApplicationRequest;
+import com.cerner.jwala.common.request.app.UpdateApplicationRequest;
+import com.cerner.jwala.common.request.app.UploadAppTemplateRequest;
 import com.cerner.jwala.control.application.command.impl.WindowsApplicationPlatformCommandProvider;
 import com.cerner.jwala.control.command.PlatformCommandProvider;
 import com.cerner.jwala.control.command.RemoteCommandExecutor;
 import com.cerner.jwala.control.command.RemoteCommandExecutorImpl;
 import com.cerner.jwala.control.configuration.AemSshConfig;
 import com.cerner.jwala.exception.CommandFailureException;
-import com.cerner.jwala.files.FileManager;
-import com.cerner.jwala.files.RepositoryFileInformation;
-import com.cerner.jwala.files.WebArchiveManager;
 import com.cerner.jwala.persistence.jpa.domain.JpaJvm;
 import com.cerner.jwala.persistence.service.ApplicationPersistenceService;
 import com.cerner.jwala.persistence.service.JvmPersistenceService;
 import com.cerner.jwala.persistence.service.ResourceDao;
 import com.cerner.jwala.service.HistoryFacadeService;
-import com.cerner.jwala.service.app.PrivateApplicationService;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionControlService;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionService;
 import com.cerner.jwala.service.exception.ApplicationServiceException;
 import com.cerner.jwala.service.group.GroupService;
 import com.cerner.jwala.service.resource.ResourceService;
-import com.cerner.jwala.service.resource.impl.CreateResourceResponseWrapper;
 import com.cerner.jwala.service.resource.impl.ResourceGeneratorType;
 import org.apache.tika.mime.MediaType;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -56,9 +51,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.ByteBuffer;
-import java.nio.file.FileSystems;
 import java.util.*;
 
 import static org.junit.Assert.assertEquals;
@@ -76,12 +69,6 @@ public class ApplicationServiceImplTest {
     private ApplicationPersistenceService applicationPersistenceService;
 
     @Mock
-    private WebArchiveManager webArchiveManager;
-
-    @Mock
-    private PrivateApplicationService privateApplicationService = new PrivateApplicationServiceImpl();
-
-    @Mock
     private JvmPersistenceService jvmPersistenceService;
 
     @Mock
@@ -92,9 +79,6 @@ public class ApplicationServiceImplTest {
 
     @Mock
     private GroupService groupService;
-
-    @Mock
-    private FileManager fileManager;
 
     private ApplicationServiceImpl applicationService;
 
@@ -172,11 +156,8 @@ public class ApplicationServiceImplTest {
         groupService = mock(GroupService.class);
         when(groupService.getGroup(any(Identifier.class))).thenReturn(group);
 
-        when(fileManager.getResourceTypeTemplate(eq("AppContextXMLTemplate.tpl"))).thenReturn("The application context template.");
-        when(fileManager.getResourceTypeTemplate(eq("RoleMappingTemplate.tpl"))).thenReturn("The role mapping properties template.");
-
         applicationService = new ApplicationServiceImpl(applicationPersistenceService,
-                jvmPersistenceService, remoteCommandExecutor, groupService, webArchiveManager, privateApplicationService,
+                jvmPersistenceService, groupService,
                 mockResourceService, remoteCommandExecutorImpl, binaryDistributionService, mockHistoryFacadeService);
     }
 
@@ -281,51 +262,6 @@ public class ApplicationServiceImplTest {
         applicationService.removeApplication(mockApplication.getId(), testUser);
 
         verify(applicationPersistenceService, Mockito.times(1)).removeApplication(Mockito.any(Identifier.class));
-    }
-
-    @SuppressWarnings("unchecked")
-    @Test
-    public void testUploadWebArchive() throws IOException {
-        UploadWebArchiveRequest uwac = new UploadWebArchiveRequest(mockApplication, "fn.war", 2L, uploadedFile);
-
-        when(webArchiveManager.store(uwac)).thenReturn(RepositoryFileInformation.stored(FileSystems.getDefault().getPath("D:\\fn.war"), 2L));
-
-        applicationService.uploadWebArchive(uwac, testUser);
-
-        verify(privateApplicationService, Mockito.times(1)).uploadWebArchiveData(uwac);
-        verify(privateApplicationService, Mockito.times(1)).uploadWebArchiveUpdateDB(any(UploadWebArchiveRequest.class), any(RepositoryFileInformation.class));
-    }
-
-    @SuppressWarnings("unchecked")
-    @Test
-    public void testDeleteWebArchive() throws IOException {
-        when(mockApplication.getName()).thenReturn("hct");
-        when(mockApplication.getWarName()).thenReturn("hct.war");
-        when(applicationPersistenceService.getApplication(any(Identifier.class))).thenReturn(mockApplication);
-        when(webArchiveManager.remove(any(RemoveWebArchiveRequest.class))).thenReturn(RepositoryFileInformation.deleted(FileSystems.getDefault().getPath("D:\\fn.war")));
-
-        applicationService.deleteWebArchive(mockApplication.getId(), testUser);
-
-        verify(webArchiveManager, Mockito.times(1)).remove(any(RemoveWebArchiveRequest.class));
-        verify(mockResourceService).deleteGroupLevelAppResources(eq("hct"), anyString(), anyList());
-    }
-
-    @Test
-    public void testDeleteWebArchiveWithIoException() throws IOException {
-        when(applicationPersistenceService.getApplication(any(Identifier.class))).thenReturn(mockApplication);
-        when(webArchiveManager.remove(any(RemoveWebArchiveRequest.class))).thenThrow(IOException.class);
-        applicationService.deleteWebArchive(mockApplication.getId(), testUser);
-        verify(webArchiveManager).remove(any(RemoveWebArchiveRequest.class));
-    }
-
-    @Test
-    public void testDeleteWebArchiveDeleteFailedDueToArchiveNotFound() throws IOException {
-        when(applicationPersistenceService.getApplication(any(Identifier.class))).thenReturn(mockApplication);
-        final RepositoryFileInformation mockRepositoryFileInformation = mock(RepositoryFileInformation.class);
-        when(mockRepositoryFileInformation.getType()).thenReturn(RepositoryFileInformation.Type.NONE);
-        when(webArchiveManager.remove(any(RemoveWebArchiveRequest.class))).thenReturn(mockRepositoryFileInformation);
-        applicationService.deleteWebArchive(mockApplication.getId(), testUser);
-        verify(webArchiveManager).remove(any(RemoveWebArchiveRequest.class));
     }
 
     @Test
@@ -506,7 +442,7 @@ public class ApplicationServiceImplTest {
         when(mockJvm2.getHostName()).thenReturn("localhost");
 
         ApplicationServiceImpl mockApplicationService = new ApplicationServiceImpl(applicationPersistenceService,
-                jvmPersistenceService, remoteCommandExecutor, mockGroupService, webArchiveManager, privateApplicationService,
+                jvmPersistenceService, mockGroupService,
                 mockResourceService, remoteCommandExecutorImpl, binaryDistributionService, mockHistoryFacadeService);
 
         try {
@@ -558,7 +494,7 @@ public class ApplicationServiceImplTest {
         CommandOutput successCommandOutput = new CommandOutput(new ExecReturnCode(0), "SUCCESS", "");
 
         ApplicationServiceImpl mockApplicationService = new ApplicationServiceImpl(applicationPersistenceService,
-                jvmPersistenceService, remoteCommandExecutor, null, webArchiveManager, privateApplicationService,
+                jvmPersistenceService, null,
                 mockResourceService, remoteCommandExecutorImpl, binaryDistributionService, mockHistoryFacadeService);
 
         try {
@@ -621,52 +557,10 @@ public class ApplicationServiceImplTest {
         when(remoteCommandExecutor.executeRemoteCommand(anyString(), anyString(), any(ApplicationControlOperation.class), any(PlatformCommandProvider.class), anyString(), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(0), "Success!", ""));
 
         ApplicationServiceImpl mockApplicationService = new ApplicationServiceImpl(applicationPersistenceService,
-                jvmPersistenceService, remoteCommandExecutor, mockGroupService, webArchiveManager, privateApplicationService,
+                jvmPersistenceService, mockGroupService,
                 mockResourceService, remoteCommandExecutorImpl, binaryDistributionService, mockHistoryFacadeService);
         mockApplicationService.copyApplicationConfigToGroupJvms(mockGroup, "testApp", mock(ResourceGroup.class), testUser);
 
-    }
-
-    @Test
-    public void testUploadWebArchiveWithWarName() throws IOException {
-        Identifier<Application> id = new Identifier<>("1");
-        Group mockGroup = mock(Group.class);
-        Application app = new Application(id, "testApp", "D:/ctp/app/webapps", "/test", mockGroup, false, false, false, "test.war");
-        Application returnApp = new Application(id, "testApp", null, "/test", mockGroup, false, false, false, null);
-        when(applicationPersistenceService.getApplication(any(Identifier.class))).thenReturn(returnApp);
-        when(mockGroup.getName()).thenReturn("testGroup");
-        byte[] bytes = new byte[0];
-        when(mockResourceService.uploadResource(any(ResourceTemplateMetaData.class), any(InputStream.class))).thenReturn("");
-        CreateResourceResponseWrapper createResourceResponseWrapper = mock(CreateResourceResponseWrapper.class);
-        when(mockResourceService.createResource(any(ResourceIdentifier.class), any(ResourceTemplateMetaData.class), any(InputStream.class))).thenReturn(createResourceResponseWrapper);
-        when(mockResourceService.getAppTemplate(anyString(), anyString(), anyString())).thenReturn("");
-
-        final ResourceTemplateMetaData resourceTemplateMetaData = new ObjectMapper().readValue("{\n" +
-                                                                        "  \"unpack\" : false,\n" +
-                                                                        "  \"deployPath\" : \"D:/stp/app/webapps\",\n" +
-                                                                        "  \"entity\" : {\n" +
-                                                                        "    \"type\" : \"GROUPED_APPS\",\n" +
-                                                                        "    \"group\" : \"testGroup\",\n" +
-                                                                        "    \"target\" : \"testApp\",\n" +
-                                                                        "    \"parentName\" : null,\n" +
-                                                                        "    \"deployToJvms\" : false\n" +
-                                                                        "  },\n" +
-                                                                        "  \"overwrite\" : false,\n" +
-                                                                        "  \"contentType\" : \"application/zip\",\n" +
-                                                                        "  \"deployFileName\" : \"test.war\",\n" +
-                                                                        "  \"templateName\" : \"test.war\"\n" +
-                                                                        "}", ResourceTemplateMetaData.class);
-
-        when(mockResourceService.getMetaData(anyString())).thenReturn(resourceTemplateMetaData);
-
-        Application app2 = applicationService.uploadWebArchive(app.getId(), app.getWarName(), bytes, app.getWarPath());
-        assertEquals(app.getWarName(), app2.getWarName());
-        assertEquals(app.getWarPath(), app.getWarPath());
-    }
-
-    @Test (expected = ApplicationServiceException.class)
-    public void testUploadWebArchiveWithWarNameFail() throws IOException {
-        applicationService.uploadWebArchive(new Identifier<Application>("1"), null, new byte[0], new String());
     }
 
     @Test

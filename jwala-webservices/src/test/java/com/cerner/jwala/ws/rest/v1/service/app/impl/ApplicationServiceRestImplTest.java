@@ -5,7 +5,6 @@ import com.cerner.jwala.common.domain.model.fault.AemFaultType;
 import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
-import com.cerner.jwala.common.domain.model.jvm.JvmState;
 import com.cerner.jwala.common.domain.model.resource.ResourceGroup;
 import com.cerner.jwala.common.domain.model.user.User;
 import com.cerner.jwala.common.exception.InternalErrorException;
@@ -21,18 +20,13 @@ import com.cerner.jwala.service.resource.ResourceService;
 import com.cerner.jwala.ws.rest.v1.provider.AuthenticatedUser;
 import com.cerner.jwala.ws.rest.v1.response.ApplicationResponse;
 import com.cerner.jwala.ws.rest.v1.service.app.ApplicationServiceRest;
-import org.apache.commons.fileupload.FileItemIterator;
-import org.apache.commons.fileupload.FileItemStream;
-import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.cxf.jaxrs.ext.MessageContext;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.*;
-import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.mockito.stubbing.Answer;
 
 import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
@@ -45,9 +39,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import static com.cerner.jwala.common.domain.model.id.Identifier.id;
 import static org.junit.Assert.*;
@@ -137,246 +129,6 @@ public class ApplicationServiceRestImplTest {
         }
 
     }
-
-    @Test
-    public void testUploadWebArchive() throws IOException, FileUploadException {
-        final ServletFileUpload mockServletFileUpload = mock(ServletFileUpload.class);
-        final FileItemIterator mockFileItemIterator = mock(FileItemIterator.class);
-
-        when(mockFileItemIterator.hasNext()).thenAnswer(new Answer<Boolean>() {
-            private int count = 0;
-
-            @Override
-            public Boolean answer(InvocationOnMock invocation) throws Throwable {
-                if (count++ < 2) {
-                    return true;
-                }
-                return false;
-            }
-        });
-
-        when(mockFileItemIterator.next()).thenAnswer(new Answer<FileItemStream>() {
-            private int count = 0;
-
-            @Override
-            public FileItemStream answer(InvocationOnMock invocation) throws Throwable {
-                count++;
-                final FileItemStream mockFileItemStream = mock(FileItemStream.class);
-                when(mockFileItemStream.openStream()).thenReturn(new ByteArrayInputStream("test".getBytes()));
-                if (count == 1) {
-                    when(mockFileItemStream.getFieldName()).thenReturn("file");
-                    return mockFileItemStream;
-                } else if (count == 2) {
-                    when(mockFileItemStream.getFieldName()).thenReturn("deployPath");
-                    return mockFileItemStream;
-                }
-                return null;
-            }
-        });
-
-        when(mockServletFileUpload.getItemIterator(any(HttpServletRequest.class))).thenReturn(mockFileItemIterator);
-        final ApplicationService mockApplicationService = mock(ApplicationService.class);
-        ApplicationServiceRestImpl applicationServiceRestImpl = new ApplicationServiceRestImpl(mockApplicationService,
-                mock(ResourceService.class), mockServletFileUpload, mockGroupService);
-        applicationServiceRestImpl.uploadWebArchive(new Identifier<Application>(1L), mock(MessageContext.class));
-        verify(mockApplicationService).uploadWebArchive(any(Identifier.class), anyString(), any(byte[].class), anyString());
-    }
-
-//    @Test
-//    @Ignore
-//    // TODO: Fix this!
-//    public void testUploadWebArchive_OLD() throws IOException {
-//
-//        when(service.uploadWebArchive(argThat(new IsValidUploadCommand()), any(User.class))).thenReturn(applicationWithWar);
-//        when(service.getApplication(any(Identifier.class))).thenReturn(application);
-//
-//        // ISO8859-1
-//        String ls = System.lineSeparator();
-//        String boundary = "--WebKitFormBoundarywBZFyEeqG5xW80nx";
-//
-//        @SuppressWarnings("unused")
-//        String http = "Accept:text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8" + ls +
-//                "Cache-Control:no-cache" + ls +
-//                "Content-Type:multipart/form-data; boundary=--" + boundary + ls +
-//                "Origin:null" + ls +
-//                "Pragma:no-cache" + ls +
-//                "Referer:" + ls +
-//                "User-Agent:Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.114 Safari/537.36" + ls;
-//
-//        String dataText = "abcdef";
-//        String contentText = "--" + boundary + ls +
-//                "Content-Disposition: form-data; name=\"files\"; filename=\"jwala-webapp-1.0-SNAPSHOT.war\"" + ls +
-//                "Content-Type: text/plain" + ls + ls +
-//                dataText + ls +
-//                "--" + boundary + "--" + ls;
-//
-//        String charsetText = "UTF-8";
-//        ByteBuffer bbBuffer = Charset.forName(charsetText).encode(contentText);
-//        when(mockHsr.getCharacterEncoding()).thenReturn(charsetText);
-//        when(mockHsr.getInputStream()).thenReturn(new MyIS(new ByteArrayInputStream(bbBuffer.array())));
-//        when(mockHsr.getContentType()).thenReturn(FileUploadBase.MULTIPART_FORM_DATA + ";boundary=" + boundary);
-//
-//
-//        Response resp = cut.uploadWebArchive(application.getId(), );
-//
-//        Application result = getApplicationFromResponse(resp);
-//
-//        assertEquals(Status.CREATED.getStatusCode(), resp.getStatus());
-//
-//        Assert.hasText(result.getWarPath());
-//    }
-//
-//    @Test
-//    @Ignore
-//    // TODO: Fix this!
-//    public void testUploadWebArchiveBinary() throws IOException {
-//
-//        when(service.uploadWebArchive(argThat(new IsValidUploadCommand()), any(User.class))).thenReturn(applicationWithWar);
-//        when(service.getApplication(any(Identifier.class))).thenReturn(application);
-//
-//        // ISO8859-1
-//        String ls = System.lineSeparator();
-//        String boundary = "--WebKitFormBoundarywBZFyEeqG5xW80nx";
-//
-//        ByteBuffer file = ByteBuffer.allocate(4);
-//        file.asShortBuffer().put((short) 0xc0de);
-//        String data = Base64Utility.encode(file.array());
-//
-//        @SuppressWarnings("unused")
-//        String http = "Accept:text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8" + ls +
-//                "Cache-Control:no-cache" + ls +
-//                "Content-Type:multipart/form-data; boundary=--" + boundary + ls +
-//                "Origin:null" + ls +
-//                "Pragma:no-cache" + ls +
-//                "Referer:" + ls +
-//                "User-Agent:Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.114 Safari/537.36" + ls;
-//
-//        String content = "--" + boundary + ls +
-//                "Content-Disposition: form-data; name=\"files\"; filename=\"jwala-webapp-1.0-SNAPSHOT.war\"" + ls +
-//                "Content-Type: application/octet-stream" + ls + ls +
-//                data + ls +
-//                "--" + boundary + "--" + ls;
-//
-//        String charsetBin = "ISO-8859-1";
-//        ByteBuffer bbBuffer = Charset.forName(charsetBin).encode(content);
-//        when(mockHsr.getCharacterEncoding()).thenReturn(charsetBin);
-//        when(mockHsr.getInputStream()).thenReturn(new MyIS(new ByteArrayInputStream(bbBuffer.array())));
-//        when(mockHsr.getContentType()).thenReturn(FileUploadBase.MULTIPART_FORM_DATA + ";boundary=" + boundary);
-//
-//
-//        Response resp = cut.uploadWebArchive(application.getId(), );
-//
-//        Application result = getApplicationFromResponse(resp);
-//
-//        assertEquals(Status.CREATED.getStatusCode(), resp.getStatus());
-//
-//        Assert.hasText(result.getWarPath());
-//    }
-//
-//    @Test
-//    @Ignore
-//    // TODO: Fix this!
-//    public void testUploadWebArchiveBinaryThrowsInternalErrorExceptionWhenCopyingToJvm() throws IOException {
-//        when(service.uploadWebArchive(argThat(new IsValidUploadCommand()), any(User.class))).thenThrow(new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "test failure"));
-//        when(service.getApplication(any(Identifier.class))).thenReturn(application);
-//
-//        // ISO8859-1
-//        String ls = System.lineSeparator();
-//        String boundary = "--WebKitFormBoundarywBZFyEeqG5xW80nx";
-//
-//        ByteBuffer file = ByteBuffer.allocate(4);
-//        file.asShortBuffer().put((short) 0xc0de);
-//        String data = Base64Utility.encode(file.array());
-//
-//        @SuppressWarnings("unused")
-//        String http = "Accept:text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8" + ls +
-//                "Cache-Control:no-cache" + ls +
-//                "Content-Type:multipart/form-data; boundary=--" + boundary + ls +
-//                "Origin:null" + ls +
-//                "Pragma:no-cache" + ls +
-//                "Referer:" + ls +
-//                "User-Agent:Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.114 Safari/537.36" + ls;
-//
-//        String content = "--" + boundary + ls +
-//                "Content-Disposition: form-data; name=\"files\"; filename=\"jwala-webapp-1.0-SNAPSHOT.war\"" + ls +
-//                "Content-Type: application/octet-stream" + ls + ls +
-//                data + ls +
-//                "--" + boundary + "--" + ls;
-//
-//        String charsetBin = "ISO-8859-1";
-//        ByteBuffer bbBuffer = Charset.forName(charsetBin).encode(content);
-//        when(mockHsr.getCharacterEncoding()).thenReturn(charsetBin);
-//        when(mockHsr.getInputStream()).thenReturn(new MyIS(new ByteArrayInputStream(bbBuffer.array())));
-//        when(mockHsr.getContentType()).thenReturn(FileUploadBase.MULTIPART_FORM_DATA + ";boundary=" + boundary);
-//
-//        Response resp = cut.uploadWebArchive(application.getId(), );
-//        assertEquals(Status.INTERNAL_SERVER_ERROR.getStatusCode(), resp.getStatus());
-//    }
-//
-//    @Test(expected = InternalErrorException.class)
-//    @Ignore
-//    // TODO: Fix this!
-//    public void testUploadWebArchiveBadStream() throws IOException {
-//
-//        when(service.uploadWebArchive(argThat(new IsValidUploadCommand()), any(User.class))).thenReturn(applicationWithWar);
-//        // ISO8859-1
-//        String ls = System.lineSeparator();
-//        String boundary = "--WebKitFormBoundarywBZFyEeqG5xW80nx";
-//
-//        ByteBuffer file = ByteBuffer.allocate(4);
-//        file.asShortBuffer().put((short) 0xc0de);
-//        String data = Base64Utility.encode(file.array());
-//
-//        @SuppressWarnings("unused")
-//        String http = "Accept:text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8" + ls +
-//                "Cache-Control:no-cache" + ls +
-//                "Content-Type:multipart/form-data; boundary=--" + boundary + ls +
-//                "Origin:null" + ls +
-//                "Pragma:no-cache" + ls +
-//                "Referer:" + ls +
-//                "User-Agent:Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.114 Safari/537.36" + ls;
-//
-//        String content = "--" + boundary + ls +
-//                "Content-Disposition: form-data; name=\"files\"; filename=\"jwala-webapp-1.0-SNAPSHOT.war\"" + ls +
-//                "Content-Type: application/octet-stream" + ls + ls +
-//                data + ls +
-//                /*"--" + bad stream!*/ boundary + "--" + ls;
-//
-//        String charsetBin = "ISO-8859-1";
-//        ByteBuffer bbBuffer = Charset.forName(charsetBin).encode(content);
-//        when(mockHsr.getCharacterEncoding()).thenReturn(charsetBin);
-//        when(mockHsr.getInputStream()).thenReturn(new MyIS(new ByteArrayInputStream(bbBuffer.array())));
-//        when(mockHsr.getContentType()).thenReturn(FileUploadBase.MULTIPART_FORM_DATA + ";boundary=" + boundary);
-//
-//        cut.uploadWebArchive(application.getId(), );
-//    }
-//
-//    @Test
-//    @Ignore
-//    // TODO: Fix this!
-//    public void testUploadWebArchiveNoContent() throws IOException {
-//
-//        verify(service, never()).uploadWebArchive(argThat(new IsValidUploadCommand()), any(User.class));
-//
-//        // ISO8859-1
-//        String boundary = "--WebKitFormBoundarywBZFyEeqG5xW80nx";
-//
-//        String content = "";
-//
-//        String charsetBin = "ISO-8859-1";
-//        ByteBuffer bbBuffer = Charset.forName(charsetBin).encode(content);
-//        Application mockApp = mock(Application.class);
-//        when(mockHsr.getCharacterEncoding()).thenReturn(charsetBin);
-//        when(mockHsr.getInputStream()).thenReturn(new MyIS(new ByteArrayInputStream(bbBuffer.array())));
-//        when(mockHsr.getContentType()).thenReturn(FileUploadBase.MULTIPART_FORM_DATA + ";boundary=" + boundary);
-//        when(service.getApplication(any(Identifier.class))).thenReturn(mockApp);
-//        when(mockApp.getName()).thenReturn("NoContentTestApp");
-//
-//
-//        Response resp = cut.uploadWebArchive(application.getId(), );
-//
-//        assertEquals(Status.NO_CONTENT.getStatusCode(), resp.getStatus());
-//    }
 
     @Test
     public void testDeleteWebArchive() throws IOException {
@@ -566,50 +318,6 @@ public class ApplicationServiceRestImplTest {
         assertNotNull(response.getEntity());
     }
 
-    @Test
-    public void testDeployWar() {
-        Application mockApplication = mock(Application.class);
-        Group mockGroup = mock(Group.class);
-        Set<Jvm> jvmSet = new HashSet<>();
-        Jvm mockJvm = mock(Jvm.class);
-        jvmSet.add(mockJvm);
-        when(mockApplication.getName()).thenReturn("appName");
-        when(mockApplication.getGroup()).thenReturn(mockGroup);
-        when(mockGroup.getJvms()).thenReturn(jvmSet);
-        when(mockJvm.getJvmName()).thenReturn("jvmName");
-        when(mockJvm.getState()).thenReturn(JvmState.JVM_STOPPED);
-        when(service.getApplication(any(Identifier.class))).thenReturn(mockApplication);
-
-        applicationServiceRest.deployWebArchive(new Identifier<Application>(111L), authenticatedUser);
-
-        verify(service).copyApplicationWarToGroupHosts(any(Application.class));
-    }
-
-    @Test
-    public void testDeployWarWithNoJvms() {
-        Application mockApplication = mock(Application.class);
-        Group mockGroup = mock(Group.class);
-        Set<Jvm> jvmSet = new HashSet<>();
-        when(mockApplication.getName()).thenReturn("appName");
-        when(mockApplication.getGroup()).thenReturn(mockGroup);
-        when(mockGroup.getJvms()).thenReturn(jvmSet);
-        when(service.getApplication(any(Identifier.class))).thenReturn(mockApplication);
-
-        Response response = applicationServiceRest.deployWebArchive(new Identifier<Application>(111L), authenticatedUser);
-        assertEquals(200, response.getStatus());
-    }
-
-    @Test
-    public void testDeployWebArchive() {
-        Application mockApplication = mock(Application.class);
-        String hostname = "localhost";
-        when(mockApplication.getName()).thenReturn("appName");
-        when(service.getApplication(any(Identifier.class))).thenReturn(mockApplication);
-
-        applicationServiceRest.deployWebArchive(new Identifier<Application>(111L), hostname);
-
-        verify(service).copyApplicationWarToHost(any(Application.class), eq(hostname));
-    }
     /**
      * Instead of mocking the ServletInputStream, let's extend it instead.
      *

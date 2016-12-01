@@ -6,6 +6,7 @@ import com.cerner.jwala.common.domain.model.app.Application;
 import com.cerner.jwala.common.exception.BadRequestException;
 import com.cerner.jwala.common.request.Request;
 
+@Deprecated
 public class RemoveWebArchiveRequest implements Serializable, Request {
 
     /**

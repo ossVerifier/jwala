@@ -169,10 +169,13 @@ var WebAppConfig = React.createClass({
     },
     deleteWarCallback: function(data) {
         var self = this;
-        this.props.service.deleteWar(data.id.id).then(function(){
-            self.refs.confirmDeleteWarDlg.close();
-            self.loadTableData();
-        });
+        ServiceFactory.getResourceService()
+            .deleteResources([data.warName], data.group.name, null, null, data.name).then(function(){
+                self.refs.confirmDeleteWarDlg.close();
+                self.loadTableData();
+            }).caught(function(response){
+                $.errorAlert(response, "Error");
+            });
     }
 })
 

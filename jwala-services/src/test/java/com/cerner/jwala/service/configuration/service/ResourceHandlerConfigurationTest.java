@@ -15,6 +15,7 @@ import com.cerner.jwala.persistence.jpa.domain.JpaJvm;
 import com.cerner.jwala.persistence.service.*;
 import com.cerner.jwala.service.HistoryFacadeService;
 import com.cerner.jwala.service.MessagingService;
+import com.cerner.jwala.service.resource.ResourceRepositoryService;
 import com.cerner.jwala.service.resource.ResourceService;
 import com.cerner.jwala.service.resource.impl.ResourceServiceImpl;
 import com.cerner.jwala.service.resource.impl.handler.WebServerResourceHandler;
@@ -24,6 +25,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -58,8 +60,11 @@ public class ResourceHandlerConfigurationTest {
 
     private ResourceTemplateMetaData metaData;
 
+    @Mock
+    private ResourceRepositoryService mockResourceRepositoryService;
+
     private ResourceService resourceService = new ResourceServiceImpl(null, null, null, null, null, null, null, null,
-            null, null, null, null, null, new Tika());
+            null, null, null, new Tika(), mockResourceRepositoryService);
 
     @BeforeClass
     public static void init() {

@@ -12,18 +12,12 @@ import com.cerner.jwala.common.exec.CommandOutputReturnCode;
 import com.cerner.jwala.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
 import com.cerner.jwala.persistence.jpa.service.exception.ResourceTemplateUpdateException;
 import com.cerner.jwala.service.app.ApplicationService;
-import com.cerner.jwala.service.exception.ApplicationServiceException;
-import com.cerner.jwala.service.exception.ResourceServiceException;
 import com.cerner.jwala.service.group.GroupService;
 import com.cerner.jwala.service.resource.ResourceService;
 import com.cerner.jwala.ws.rest.v1.provider.AuthenticatedUser;
 import com.cerner.jwala.ws.rest.v1.response.ResponseBuilder;
 import com.cerner.jwala.ws.rest.v1.service.app.ApplicationServiceRest;
-import org.apache.commons.fileupload.FileItemIterator;
-import org.apache.commons.fileupload.FileItemStream;
-import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
-import org.apache.commons.io.IOUtils;
 import org.apache.cxf.jaxrs.ext.MessageContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,9 +25,6 @@ import org.slf4j.LoggerFactory;
 import javax.persistence.EntityExistsException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.List;
 import java.util.Set;
 
@@ -125,46 +116,6 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
 
     @Context
     private MessageContext context; // TODO: Define as a method parameter to make this class more testable!
-
-    @Override
-    public Response uploadWebArchive(final Identifier<Application> appId, final MessageContext messageContext) {
-        InputStream in;
-        String deployPath = null;
-        String warName = null;
-        byte[] war = null;
-
-        try {
-            final FileItemIterator it = servletFileUpload.getItemIterator(messageContext.getHttpServletRequest());
-            while (it.hasNext()) {
-                final FileItemStream fileItemStream = it.next();
-                if ("file".equalsIgnoreCase(fileItemStream.getFieldName())) {
-                    warName = fileItemStream.getName();
-                    in = fileItemStream.openStream();
-                    war = IOUtils.toByteArray(in);
-                    in.close();
-                } else if ("deployPath".equalsIgnoreCase(fileItemStream.getFieldName())) {
-                    in = fileItemStream.openStream();
-                    deployPath = IOUtils.toString(in);
-                    in.close();
-                } else {
-                    return ResponseBuilder.notOk(Status.INTERNAL_SERVER_ERROR, new FaultCodeException(AemFaultType.INVALID_REST_SERVICE_PARAMETER,
-                            "Invalid parameter " + fileItemStream.getFieldName()));
-                }
-            }
-
-            final Application application = service.uploadWebArchive(appId, warName, war, deployPath);
-
-            // Why created ? Because to upload a new WAR means creating one ? Isn't uploading a new war means
-            // "updating an application"
-            // Anyways, I just followed the original implementation.
-            // TODO: Decide if uploading a new war is a CREATE rather than an UPDATE.
-            return ResponseBuilder.created(application);
-        } catch (final FileUploadException | ApplicationServiceException | ResourceServiceException | IOException e) {
-            LOGGER.error("Error uploading web archive", e);
-            return ResponseBuilder.notOk(Status.INTERNAL_SERVER_ERROR, new FaultCodeException(AemFaultType.IO_EXCEPTION,
-                    e.getMessage()));
-        }
-    }
 
     @Override
     public Response deleteWebArchive(final Identifier<Application> appToRemoveWAR, final AuthenticatedUser aUser) {

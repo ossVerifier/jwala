@@ -7,21 +7,22 @@ import com.cerner.jwala.common.domain.model.fault.AemFaultType;
 import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
-import com.cerner.jwala.common.domain.model.resource.*;
+import com.cerner.jwala.common.domain.model.resource.ResourceGroup;
+import com.cerner.jwala.common.domain.model.resource.ResourceIdentifier;
+import com.cerner.jwala.common.domain.model.resource.ResourceTemplateMetaData;
 import com.cerner.jwala.common.domain.model.user.User;
 import com.cerner.jwala.common.exception.InternalErrorException;
 import com.cerner.jwala.common.exec.CommandOutput;
 import com.cerner.jwala.common.properties.ApplicationProperties;
-import com.cerner.jwala.common.request.app.*;
+import com.cerner.jwala.common.request.app.CreateApplicationRequest;
+import com.cerner.jwala.common.request.app.UpdateApplicationRequest;
+import com.cerner.jwala.common.request.app.UploadAppTemplateRequest;
 import com.cerner.jwala.control.AemControl;
 import com.cerner.jwala.control.application.command.impl.WindowsApplicationPlatformCommandProvider;
-import com.cerner.jwala.control.command.RemoteCommandExecutor;
 import com.cerner.jwala.control.command.RemoteCommandExecutorImpl;
 import com.cerner.jwala.control.command.impl.WindowsBinaryDistributionPlatformCommandProvider;
 import com.cerner.jwala.control.jvm.command.windows.WindowsJvmNetOperation;
 import com.cerner.jwala.exception.CommandFailureException;
-import com.cerner.jwala.files.RepositoryFileInformation;
-import com.cerner.jwala.files.WebArchiveManager;
 import com.cerner.jwala.persistence.jpa.domain.JpaApplicationConfigTemplate;
 import com.cerner.jwala.persistence.jpa.domain.JpaJvm;
 import com.cerner.jwala.persistence.jpa.type.EventType;
@@ -29,7 +30,6 @@ import com.cerner.jwala.persistence.service.ApplicationPersistenceService;
 import com.cerner.jwala.persistence.service.JvmPersistenceService;
 import com.cerner.jwala.service.HistoryFacadeService;
 import com.cerner.jwala.service.app.ApplicationService;
-import com.cerner.jwala.service.app.PrivateApplicationService;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionService;
 import com.cerner.jwala.service.exception.ApplicationServiceException;
 import com.cerner.jwala.service.group.GroupService;
@@ -41,7 +41,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.tika.mime.MediaType;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,7 +49,10 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.FileCopyUtils;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
@@ -72,17 +74,9 @@ public class ApplicationServiceImpl implements ApplicationService {
     private ApplicationPersistenceService applicationPersistenceService;
 
     @Autowired
-    private WebArchiveManager webArchiveManager;
-
-    @Autowired
-    private PrivateApplicationService privateApplicationService;
-
-    @Autowired
     private JvmPersistenceService jvmPersistenceService;
 
     private final ResourceService resourceService;
-
-    private RemoteCommandExecutor<ApplicationControlOperation> applicationCommandExecutor;
 
     private Map<String, ReentrantReadWriteLock> writeLock = new HashMap<>();
 
@@ -98,20 +92,14 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     public ApplicationServiceImpl(final ApplicationPersistenceService applicationPersistenceService,
                                   final JvmPersistenceService jvmPersistenceService,
-                                  final RemoteCommandExecutor<ApplicationControlOperation> applicationCommandService,
                                   final GroupService groupService,
-                                  final WebArchiveManager webArchiveManager,
-                                  final PrivateApplicationService privateApplicationService,
                                   final ResourceService resourceService,
                                   final RemoteCommandExecutorImpl remoteCommandExecutor,
                                   final BinaryDistributionService binaryDistributionService,
                                   final HistoryFacadeService historyFacadeService) {
         this.applicationPersistenceService = applicationPersistenceService;
         this.jvmPersistenceService = jvmPersistenceService;
-        this.applicationCommandExecutor = applicationCommandService;
         this.groupService = groupService;
-        this.webArchiveManager = webArchiveManager;
-        this.privateApplicationService = privateApplicationService;
         this.historyFacadeService = historyFacadeService;
         this.resourceService = resourceService;
         this.remoteCommandExecutor = remoteCommandExecutor;
@@ -174,44 +162,11 @@ public class ApplicationServiceImpl implements ApplicationService {
         applicationPersistenceService.removeApplication(anAppIdToRemove);
     }
 
-    /**
-     * Non-transactional entry point, utilizes {@link PrivateApplicationServiceImpl}
-     */
-    @Override
-    public Application uploadWebArchive(UploadWebArchiveRequest uploadWebArchiveRequest, User user) {
-        uploadWebArchiveRequest.validate();
-        return privateApplicationService.uploadWebArchiveUpdateDB(uploadWebArchiveRequest, privateApplicationService.uploadWebArchiveData(uploadWebArchiveRequest));
-    }
-
     @Override
     @Transactional
+    @Deprecated
     public Application deleteWebArchive(final Identifier<Application> appId, final User user) {
-        final Application app = applicationPersistenceService.getApplication(appId);
-
-        final List<String> resourceNames = new ArrayList<>();
-        resourceNames.add(app.getWarName());
-        resourceService.deleteGroupLevelAppResources(app.getName(), app.getGroup().getName(), resourceNames);
-
-        final Application updatedApp = applicationPersistenceService.deleteWarInfo(app.getName());
-
-        final RemoveWebArchiveRequest removeWarRequest = new RemoveWebArchiveRequest(app);
-        try {
-            final RepositoryFileInformation result = webArchiveManager.remove(removeWarRequest);
-            LOGGER.info("Archive Delete: " + result.toString());
-            if (result.getType() != RepositoryFileInformation.Type.DELETED) {
-                // If the physical file can't be deleted for some reason don't throw an exception since there's no
-                // outright ill effect if the war file is not removed in the file system.
-                // The said file might not exist anymore also which is the reason for the error.
-                LOGGER.error("Failed to delete the archive {}! WebArchiveManager remove result type = {}", app.getWarPath(),
-                        result.getType());
-            }
-        } catch (final IOException ioe) {
-            // If the physical file can't be deleted for some reason don't throw an exception since there's no
-            // outright ill effect if the war file is not removed in the file system.
-            LOGGER.error("Failed to delete the archive {}!", app.getWarPath(), ioe);
-        }
-
-        return updatedApp;
+        throw new UnsupportedOperationException("This service was deprecated! Please use resource service to delete a WAR.");
     }
 
     @Override
@@ -593,52 +548,6 @@ public class ApplicationServiceImpl implements ApplicationService {
     protected static void createPathIfItDoesNotExists(String path) {
         if (!Files.exists(Paths.get(path))) {
             new File(path).mkdir();
-        }
-    }
-
-    @Override
-    @Transactional
-    public Application uploadWebArchive(final Identifier<Application> appId, final String warName, final byte[] war,
-                                        final String deployPath) throws IOException {
-
-        final Map<String, Object> metaDataMap = new HashMap<>();
-
-        if (warName != null && warName.toLowerCase().endsWith(".war")) {
-
-            final Application application = applicationPersistenceService.getApplication(appId);
-
-            metaDataMap.put("contentType", MediaType.APPLICATION_ZIP.toString());
-            metaDataMap.put("deployPath", StringUtils.isEmpty(deployPath) ? ApplicationProperties.get(JWALA_WEBAPPS_DIR)
-                    : deployPath);
-            metaDataMap.put("deployFileName", warName);
-            metaDataMap.put("templateName", warName);
-
-            final Entity entity = new Entity(EntityType.GROUPED_APPS.toString(), application.getGroup().getName(),
-                    application.getName(), null, false);
-
-            metaDataMap.put("unpack", application.isUnpackWar());
-            metaDataMap.put("overwrite", false);
-            metaDataMap.put("entity", entity);
-
-            final ResourceTemplateMetaData metaData =
-                    resourceService.getMetaData(new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(metaDataMap));
-
-            InputStream resourceDataIn = new ByteArrayInputStream(war);
-            resourceDataIn = new ByteArrayInputStream(resourceService.uploadResource(metaData, resourceDataIn).getBytes());
-
-            // Creating a group level app resource is not straightforward, there are business logic involved
-            // that only the resources service knows of so we just reuse it.
-            final ResourceIdentifier resourceIdentifier = new ResourceIdentifier.Builder()
-                    .setResourceName(metaData.getTemplateName()).setGroupName(application.getGroup().getName())
-                    .setWebAppName(application.getName()).build();
-            resourceService.createResource(resourceIdentifier, metaData, resourceDataIn);
-
-            application.setWarName(warName);
-            application.setWarPath(resourceService.getAppTemplate(application.getGroup().getName(), application.getName(), warName));
-
-            return application;
-        } else {
-            throw new ApplicationServiceException("Invalid war file!");
         }
     }
 
