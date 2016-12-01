@@ -3,7 +3,7 @@ package com.cerner.jwala.tomcat.listener.messaging.jgroups;
 /**
  * Exception wrapper for {@link JGroupsStateReporter} related errors
  *
- * Created by JC043760 on 8/18/2016
+ * Created by Jedd Cuison on 8/18/2016
  */
 public class JGroupsStateReporterException extends RuntimeException {
 

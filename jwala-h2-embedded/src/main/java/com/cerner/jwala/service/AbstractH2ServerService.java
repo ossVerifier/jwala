@@ -10,7 +10,7 @@ import java.util.logging.Logger;
 /**
  * A partial contract for H2 database server functionality
  *
- * Created by JC043760 on 8/30/2016
+ * Created by Jedd Cuison on 8/30/2016
  */
 public abstract class AbstractH2ServerService {
 

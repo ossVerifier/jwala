@@ -7,7 +7,7 @@ import javax.ws.rs.core.Response;
 /**
  * Builder for a {@link Response} that returns application/json content
  *
- * Created by JC043760 on 8/14/2016.
+ * Created by Jedd Cuison on 8/14/2016.
  */
 public class JsonResponseBuilder<T> {
 

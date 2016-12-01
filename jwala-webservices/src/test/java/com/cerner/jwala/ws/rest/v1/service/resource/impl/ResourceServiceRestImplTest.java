@@ -7,7 +7,6 @@ import com.cerner.jwala.common.domain.model.resource.ResourceGroup;
 import com.cerner.jwala.common.domain.model.resource.ResourceIdentifier;
 import com.cerner.jwala.common.domain.model.resource.ResourceTemplateMetaData;
 import com.cerner.jwala.common.domain.model.user.User;
-import com.cerner.jwala.common.request.resource.ResourceInstanceRequest;
 import com.cerner.jwala.persistence.jpa.domain.resource.config.template.ConfigTemplate;
 import com.cerner.jwala.persistence.jpa.service.exception.ResourceTemplateMetaDataUpdateException;
 import com.cerner.jwala.service.group.GroupService;
@@ -56,8 +55,8 @@ import static org.mockito.Mockito.*;
 
 /**
  * Unit test for {@link ResourceServiceRestImpl}.
- * <p>
- * Created by z0033r5b on 9/29/2015.
+ * <p/>
+ * Created by Jeffery Mahmood on 9/29/2015.
  */
 @RunWith(MockitoJUnitRunner.class)
 public class ResourceServiceRestImplTest {
@@ -69,8 +68,7 @@ public class ResourceServiceRestImplTest {
     private GroupService groupService;
     @Mock
     private JvmService jvmService;
-    @Mock
-    private JsonResourceInstance jsonResourceInstance;
+
     private ResourceServiceRestImpl cut;
     private Group group;
 
@@ -79,7 +77,6 @@ public class ResourceServiceRestImplTest {
         group = new Group(new Identifier<Group>(1L), "theGroup");
         cut = new ResourceServiceRestImpl(impl);
         when(authenticatedUser.getUser()).thenReturn(new User("Unused"));
-        when(jsonResourceInstance.getCommand()).thenReturn(new ResourceInstanceRequest("resourceType", "resourceName", group.getName(), new HashMap<String, String>()));
     }
 
     @Test

@@ -7,7 +7,7 @@ import com.cerner.jwala.ws.rest.v1.service.jvm.impl.JsonUtilJvm;
 import static org.junit.Assert.assertEquals;
 
 /**
- * Created by z003bpej on 6/3/14.
+ * Created by Jedd Cuison on 6/3/14.
  */
 public class JsonUtilJvmTest {
 

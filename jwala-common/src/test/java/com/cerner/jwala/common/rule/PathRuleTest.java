@@ -9,7 +9,7 @@ import com.cerner.jwala.common.rule.PathRule;
 import static org.junit.Assert.assertTrue;
 
 /**
- * Created by Z003BPEJ on 1/13/15.
+ * Created by Jedd Cuison on 1/13/15.
  */
 public class PathRuleTest {
 

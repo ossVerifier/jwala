@@ -23,7 +23,7 @@ import org.apache.commons.pool2.impl.GenericKeyedObjectPool;
 /**
  * Encapsulates non-state altering commands to a web server.
  *
- * Created by z003bpej on 8/25/14.
+ * Created by Jedd Cuison on 8/25/14.
  */
 public class WebServerCommandServiceImpl implements WebServerCommandService {
 

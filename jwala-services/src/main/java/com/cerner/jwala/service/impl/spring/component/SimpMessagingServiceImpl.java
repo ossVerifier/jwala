@@ -10,7 +10,7 @@ import com.cerner.jwala.service.MessagingService;
 /**
  * {@link MessagingService} implementation using Spring's SimpMessagingTemplate.
  *
- * Created by JC043760 on 3/23/2016.
+ * Created by Jedd Cuison on 3/23/2016.
  */
 @Service
 public class SimpMessagingServiceImpl implements MessagingService {

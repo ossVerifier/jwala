@@ -6,7 +6,7 @@ import com.cerner.jwala.common.domain.model.id.Identifier;
  * Retrieve group state details (e.g. running JVM count and Web Sever count) and send the said data to a destination via
  * a messaging framework like JMS or Spring STOMP.
  *
- * Created by JC043760 on 3/14/2016.
+ * Created by Jedd Cuison on 3/14/2016.
  */
 public interface GroupStateNotificationService {
 

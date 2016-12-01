@@ -15,7 +15,7 @@ import org.springframework.beans.factory.InitializingBean;
 /**
  * JGroups cluster initializer.
  * <p/>
- * Created by JC043760 on 3/15/2016.
+ * Created by Jedd Cuison on 3/15/2016.
  */
 public class JGroupsClusterInitializer implements InitializingBean {
     private static final Logger LOGGER = LoggerFactory.getLogger(JGroupsClusterInitializer.class);

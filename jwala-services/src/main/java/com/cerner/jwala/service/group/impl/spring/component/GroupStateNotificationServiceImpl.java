@@ -28,7 +28,7 @@ import java.util.List;
 /**
  * {@link GroupStateNotificationService} implementation.
  *
- * Created by JC043760 on 3/14/2016.
+ * Created by Jedd Cuison on 3/14/2016.
  */
 @Service
 public class GroupStateNotificationServiceImpl implements GroupStateNotificationService {

@@ -7,7 +7,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 /**
  * Wrapper to get current context user from a REST request
  *
- * Created by JC043760 on 10/26/2016.
+ * Created by Jedd Cuison on 10/26/2016.
  */
 public class AuthUser {
 

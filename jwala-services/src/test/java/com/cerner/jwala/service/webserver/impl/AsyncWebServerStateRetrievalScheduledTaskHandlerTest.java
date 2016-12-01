@@ -51,7 +51,7 @@ import static org.mockito.Mockito.*;
 /**
  * Unit test for {@link com.cerner.jwala.service.webserver.WebServerStateRetrievalScheduledTaskHandler}.
  *
- * Created by Z003BPEJ on 6/30/2015.
+ * Created by Jedd Cuison on 6/30/2015.
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {AsyncWebServerStateRetrievalScheduledTaskHandlerTest.Config.class})

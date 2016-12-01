@@ -6,7 +6,7 @@ import com.cerner.jwala.common.domain.model.fault.AemFaultType;
 import com.cerner.jwala.common.exception.BadRequestException;
 
 /**
- * Created by z003e5zv on 3/17/2015.
+ * Created by Eric Pinder on 3/17/2015.
  */
 public class MapNotEmptyRule implements Rule {
 

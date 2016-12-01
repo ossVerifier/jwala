@@ -27,7 +27,7 @@ import java.util.List;
 /**
  * Implement {@link ResourceContentGeneratorService}
  * <p>
- * Created by JC043760 on 7/26/2016.
+ * Created by Jedd Cuison on 7/26/2016.
  */
 @Service
 public class ResourceContentGeneratorServiceImpl implements ResourceContentGeneratorService {

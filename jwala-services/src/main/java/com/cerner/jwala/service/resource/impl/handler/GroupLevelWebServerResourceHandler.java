@@ -23,7 +23,7 @@ import java.util.Set;
 /**
  * Handler for a group level web server resource identified by a "resource identifier" {@link ResourceIdentifier}
  *
- * Created by JC043760 on 7/21/2016
+ * Created by Jedd Cuison on 7/21/2016
  */
 public class GroupLevelWebServerResourceHandler extends ResourceHandler {
 

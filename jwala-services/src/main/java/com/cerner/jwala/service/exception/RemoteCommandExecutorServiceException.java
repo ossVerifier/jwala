@@ -3,7 +3,7 @@ package com.cerner.jwala.service.exception;
 /**
  * RuntimeException wrapper for {@link com.cerner.jwala.service.RemoteCommandExecutorService}
  *
- * Created by JC043760 on 3/28/2016.
+ * Created by Jedd Cuison on 3/28/2016.
  */
 public class RemoteCommandExecutorServiceException extends RuntimeException {
 

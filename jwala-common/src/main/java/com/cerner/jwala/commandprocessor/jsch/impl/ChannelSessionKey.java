@@ -5,7 +5,7 @@ import com.cerner.jwala.common.exec.RemoteSystemConnection;
 /**
  * A key that identifies a channel's session.
  * <p/>
- * Created by JC043760 on 2/26/2016.
+ * Created by Jedd Cuison on 2/26/2016.
  */
 public class ChannelSessionKey {
 

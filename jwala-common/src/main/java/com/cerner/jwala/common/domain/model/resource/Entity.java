@@ -6,7 +6,7 @@ import org.codehaus.jackson.annotate.JsonProperty;
 /**
  * Resource entity that wraps type, group and target
  *
- * Created by JC043760 on 3/30/2016
+ * Created by Jedd Cuison on 3/30/2016
  */
 public class Entity {
     private final String type;

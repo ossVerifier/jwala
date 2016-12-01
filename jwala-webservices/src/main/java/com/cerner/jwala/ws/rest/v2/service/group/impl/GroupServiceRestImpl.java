@@ -8,7 +8,7 @@ import javax.ws.rs.core.Response;
 /**
  * Implements {@link com.cerner.jwala.ws.rest.v2.service.group.GroupServiceRest}
  *
- * Created by JC043760 on 7/29/2016.
+ * Created by Jedd Cuison on 7/29/2016.
  */
 public class GroupServiceRestImpl implements GroupServiceRest {
 

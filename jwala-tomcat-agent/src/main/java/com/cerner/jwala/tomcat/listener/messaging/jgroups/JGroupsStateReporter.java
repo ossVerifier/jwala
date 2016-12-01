@@ -16,7 +16,7 @@ import java.util.concurrent.TimeUnit;
  *
  * Usage: jgroupsStateReporter.init().sendMsg(...).schedulePeriodicMsgDelivery(...)
  *
- * Created by JC043760 on 8/18/2016.
+ * Created by Jedd Cuison on 8/18/2016.
  */
 public class JGroupsStateReporter {
 

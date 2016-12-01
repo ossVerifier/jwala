@@ -9,4 +9,4 @@ Thanks.
 * Please state the version of {technical dependencies} and <%= projectName %> you are using in the description.
 * Include any relevant code in the issue summary.
 
-[1]: https://github.com/cerner/<%= projectName %>/issues
+[1]: https://github.com/cerner/jwala/issues

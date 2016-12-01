@@ -3,7 +3,7 @@ package com.cerner.jwala.service;
 /**
  * Wrapper that contains information on a remote command execution.
  *
- * Created by JC043760 on 3/25/2016.
+ * Created by Jedd Cuison on 3/25/2016.
  */
 public class RemoteCommandReturnInfo {
 

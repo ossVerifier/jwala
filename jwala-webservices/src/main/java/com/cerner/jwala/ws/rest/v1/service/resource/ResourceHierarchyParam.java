@@ -3,7 +3,7 @@ package com.cerner.jwala.ws.rest.v1.service.resource;
 /**
  * POJO that contains resource related hierarchy parameters.
  * <p/>
- * Created by JC043760 on 6/2/2016.
+ * Created by Jedd Cuison on 6/2/2016.
  */
 public class ResourceHierarchyParam {
 

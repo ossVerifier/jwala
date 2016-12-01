@@ -31,7 +31,7 @@ import static junit.framework.TestCase.assertEquals;
 /**
  * Integration test for {@link HistoryCrudService}.
  *
- * Created by JC043760 on 11/30/2015.
+ * Created by Jedd Cuison on 11/30/2015.
  */
 @ContextConfiguration(loader = AnnotationConfigContextLoader.class,
         classes = {HistoryCrudServiceIntegrationTest.Config.class, TestJpaConfiguration.class})

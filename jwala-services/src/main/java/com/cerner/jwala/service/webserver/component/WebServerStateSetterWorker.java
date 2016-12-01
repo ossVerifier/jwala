@@ -43,7 +43,7 @@ import java.util.concurrent.Future;
  * which uses Spring config and component scanning from picking up other Spring components that it does not need
  * which also results to spring bean definition problems.
  * <p>
- * Created by Z003BPEJ on 6/25/2015.
+ * Created by Jedd Cuison on 6/25/2015.
  */
 @Service
 public class WebServerStateSetterWorker {

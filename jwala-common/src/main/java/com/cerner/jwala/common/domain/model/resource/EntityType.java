@@ -3,7 +3,7 @@ package com.cerner.jwala.common.domain.model.resource;
 /**
  * Enumerates possible resource entity types.
  *
- * Created by JC043760 on 3/30/2016.
+ * Created by Jedd Cuison on 3/30/2016.
  */
 public enum EntityType {
     JVM("JVM"), GROUPED_JVMS("GROUPED_JVMS"), WEB_SERVER("WEB_SERVER"), GROUPED_WEBSERVERS("GROUPED_WEBSERVERS"),

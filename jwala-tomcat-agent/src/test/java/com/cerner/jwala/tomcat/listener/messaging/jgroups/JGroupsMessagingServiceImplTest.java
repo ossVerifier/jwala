@@ -15,7 +15,7 @@ import static org.mockito.MockitoAnnotations.initMocks;
 /**
  * Unit test for {@link JGroupsMessagingServiceImpl}
  *
- * Created by JC043760 on 8/23/2016
+ * Created by Jedd Cuison on 8/23/2016
  */
 public class JGroupsMessagingServiceImplTest {
 

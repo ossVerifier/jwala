@@ -7,7 +7,7 @@ import com.cerner.jwala.common.exception.BadRequestException;
 import com.cerner.jwala.common.request.Request;
 
 /**
- * Created by z003e5zv on 3/13/2015.
+ * Created by Eric Pinder on 3/13/2015.
  */
 public class ResourceInstanceRequest implements Serializable, Request {
     private static final long serialVersionUID = 1L;

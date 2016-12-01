@@ -15,7 +15,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * A life cycle listener that sends state via JGroups
  *
- * Created by JC043760 on 8/15/2016
+ * Created by Jedd Cuison on 8/15/2016
  */
 public class JGroupsReportingLifeCycleListener implements LifecycleListener {
 

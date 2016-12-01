@@ -3,7 +3,7 @@ package com.cerner.jwala.common.rule;
 import com.cerner.jwala.common.exception.BadRequestException;
 
 /**
- * Created by z003e5zv on 3/30/2015.
+ * Created by Eric Pinder on 3/30/2015.
  */
 public class StringLengthRule implements  Rule {
 

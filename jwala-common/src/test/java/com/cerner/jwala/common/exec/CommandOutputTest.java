@@ -6,7 +6,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 
 /**
- * Created by z0033r5b on 6/19/2015.
+ * Created by Jeffery Mahmood on 6/19/2015.
  */
 public class CommandOutputTest {
     private static final String STANDARD_OUTPUT_WITH_SPECIAL_CHARS =

@@ -9,7 +9,7 @@ import java.util.Collection;
 /**
  * Brings history and messaging functionalities together
  *
- * Created by JC043760 on 11/2/2016
+ * Created by Jedd Cuison on 11/2/2016
  */
 @Service
 public interface HistoryFacadeService {

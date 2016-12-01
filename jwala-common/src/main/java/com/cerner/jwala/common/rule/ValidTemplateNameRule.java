@@ -4,7 +4,7 @@ import com.cerner.jwala.common.domain.model.fault.AemFaultType;
 import com.cerner.jwala.common.exception.MessageResponseStatus;
 
 /**
- * Created by z0033r5b on 8/20/2015.
+ * Created by Jeffery Mahmood on 8/20/2015.
  */
 public class ValidTemplateNameRule extends ValidNameRule {
 

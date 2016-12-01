@@ -31,7 +31,7 @@ import static org.mockito.Mockito.*;
 /**
  * Unit tests for {@link CommandController}.
  *
- * Created by Z003BPEJ on 9/2/14.
+ * Created by Jedd Cuison on 9/2/14.
  */
 @RunWith(MockitoJUnitRunner.class)
 public class RequestControllerTest {

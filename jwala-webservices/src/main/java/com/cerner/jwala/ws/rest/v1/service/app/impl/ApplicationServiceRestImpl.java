@@ -241,28 +241,8 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
     @Override
     public Response deployConf(final String appName, final String groupName, final String jvmName,
                                final String resourceTemplateName, final AuthenticatedUser authUser) {
-
         LOGGER.info("Deploying the application conf file {} for app {} to JVM {} in group {} by ", resourceTemplateName, appName, jvmName, groupName, authUser.getUser().getId());
-
-        ResourceIdentifier resourceIdentifier = new ResourceIdentifier.Builder()
-                .setResourceName(resourceTemplateName)
-                .setGroupName(groupName)
-                .setWebAppName(appName)
-                .setJvmName(jvmName)
-                .build();
-        resourceService.validateSingleResourceForGeneration(resourceIdentifier);
-
-        final CommandOutput execData =
-                service.deployConf(appName, groupName, jvmName, resourceTemplateName, resourceService.generateResourceGroup(), authUser.getUser());
-        if (execData.getReturnCode().wasSuccessful()) {
-            LOGGER.info("Successfully deployed {} of {} to {} ", resourceTemplateName, appName, jvmName);
-            return ResponseBuilder.ok("Successfully deployed " + resourceTemplateName + " of " + appName + " to "
-                    + jvmName);
-        } else {
-            LOGGER.error("Failed to deploy application configuration [" + resourceTemplateName + "] for " + appName + " to " + jvmName + " :: " + execData.toString());
-            return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
-                    AemFaultType.REMOTE_COMMAND_FAILURE, CommandOutputReturnCode.fromReturnCode(execData.getReturnCode().getReturnCode()).getDesc()));
-        }
+        return ResponseBuilder.ok(service.deployConf(appName, groupName, jvmName, resourceTemplateName, resourceService.generateResourceGroup(), authUser.getUser()));
     }
 
     @Override

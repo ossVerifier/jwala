@@ -22,7 +22,7 @@ import static org.mockito.MockitoAnnotations.initMocks;
 /**
  * Unit test for {@link JvmStateReceiverAdapter}
  *
- * Created by JC043760 on 9/1/2016.
+ * Created by Jedd Cuison on 9/1/2016.
  */
 public class JvmStateReceiverAdapterTest {
 

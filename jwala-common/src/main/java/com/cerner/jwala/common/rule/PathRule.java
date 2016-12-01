@@ -10,7 +10,7 @@ import com.cerner.jwala.common.exception.BadRequestException;
 /**
  * General rule for a generic path such as a local path, absolute path, relative path etc...
  *
- * Created by Z003BPEJ on 1/13/15.
+ * Created by Jedd Cuison on 1/13/15.
  */
 public class PathRule implements Rule {
 

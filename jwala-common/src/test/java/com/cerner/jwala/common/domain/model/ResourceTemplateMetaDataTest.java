@@ -11,7 +11,7 @@ import static groovy.util.GroovyTestCase.assertEquals;
 /**
  * Unit test for {@link com.cerner.jwala.common.domain.model.resource.ResourceTemplateMetaData}
  *
- * Created by JC043760 on 10/6/2016
+ * Created by Jedd Cuison on 10/6/2016
  */
 public class ResourceTemplateMetaDataTest {
 

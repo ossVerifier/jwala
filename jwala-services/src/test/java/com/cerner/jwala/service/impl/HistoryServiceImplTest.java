@@ -22,7 +22,7 @@ import static org.mockito.MockitoAnnotations.initMocks;
 /**
  * Unit test for {@link HistoryServiceImpl}
  *
- * Created by JC043760 on 12/2/2015.
+ * Created by Jedd Cuison on 12/2/2015.
  */
 public class HistoryServiceImplTest {
 

@@ -42,7 +42,7 @@ import static org.mockito.Mockito.*;
 /**
  * Test resource handler chain
  * <p>
- * Created by JC043760 on 7/22/2016.
+ * Created by Jedd Cuison on 7/22/2016.
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(loader = AnnotationConfigContextLoader.class, classes = {ResourceHandlerConfiguration.class,

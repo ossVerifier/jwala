@@ -21,7 +21,7 @@ import static org.mockito.MockitoAnnotations.initMocks;
 /**
  * Unit test for {@link BalancerManagerServiceRest}
  *
- * Created by JC043760 on 10/25/2016.
+ * Created by Jedd Cuison on 10/25/2016.
  */
 public class BalancerManagerServiceRestImplTest {
 

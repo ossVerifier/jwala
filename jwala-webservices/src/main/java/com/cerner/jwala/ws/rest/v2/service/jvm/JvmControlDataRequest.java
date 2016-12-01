@@ -9,7 +9,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 /**
  * POJO that wraps JVM related data
  *
- * Created by JC043760 on 8/11/2016.
+ * Created by Jedd Cuison on 8/11/2016.
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement

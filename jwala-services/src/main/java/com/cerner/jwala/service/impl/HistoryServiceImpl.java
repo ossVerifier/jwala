@@ -16,7 +16,7 @@ import java.util.List;
 /**
  * {@link HistoryService} implementation.
  *
- * Created by JC043760 on 12/2/2015.
+ * Created by Jedd Cuison on 12/2/2015.
  */
 public class HistoryServiceImpl implements HistoryService {
 

@@ -26,7 +26,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 /**
- * Created by z0033r5b on 10/26/2015.
+ * Created by Jeffery Mahmood on 10/26/2015.
  */
 @RunWith(MockitoJUnitRunner.class)
 public class AdminServiceRestImplTest {

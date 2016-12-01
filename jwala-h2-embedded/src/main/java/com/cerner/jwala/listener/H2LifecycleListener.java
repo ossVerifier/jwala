@@ -13,7 +13,7 @@ import java.util.logging.Logger;
 /**
  * A life cycle listener that starts/stops h2 db server
  *
- * Created by JC043760 on 8/28/2016
+ * Created by Jedd Cuison on 8/28/2016
  */
 public class H2LifecycleListener implements LifecycleListener {
 

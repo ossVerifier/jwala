@@ -8,7 +8,7 @@ import org.slf4j.LoggerFactory;
 /**
  * A thread that sends a message via JGroups
  *
- * Created by JC043760 on 8/15/2016
+ * Created by Jedd Cuison on 8/15/2016
  */
 public class JGroupsLifeCycleReporterRunnable implements Runnable {
 

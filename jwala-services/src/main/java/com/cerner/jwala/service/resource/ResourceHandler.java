@@ -12,7 +12,7 @@ import java.util.List;
  * Outlines what a concrete resource handler should look like and what it can do.
  * This abstract class is also the corner stone for implementing a chain or responsibility pattern.
  *
- * Created by JC043760 on 7/21/2016
+ * Created by Jedd Cuison on 7/21/2016
  */
 public abstract class ResourceHandler {
 

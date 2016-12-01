@@ -38,7 +38,7 @@ import static org.mockito.Mockito.when;
 /**
  * Generic test for classes that implement {@link Rule}.
  *
- * Created by JC043760 on 2/16/2016.
+ * Created by Jedd Cuison on 2/16/2016.
  */
 public class RuleTest {
     private Path mockPath = mock(Path.class);
