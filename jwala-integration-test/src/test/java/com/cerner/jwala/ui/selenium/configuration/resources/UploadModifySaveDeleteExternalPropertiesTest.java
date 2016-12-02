@@ -56,7 +56,7 @@ public class UploadModifySaveDeleteExternalPropertiesTest extends SeleniumTestCa
         driver.findElement(By.xpath("//span[text()=\"Ext Properties\"]")).click();
         driver.findElement(By.cssSelector("span.ui-icon.ui-icon-plusthick")).click();
         driver.findElement(By.name("templateFile")).clear();
-        driver.findElement(By.name("templateFile")).sendKeys("D:\\jwala-resources\\external.properties");
+        driver.findElement(By.name("templateFile")).sendKeys(properties.getProperty(PROPERTY_JWALA_RESOURCES_UPLOAD_DIR) + properties.getProperty(PROPERTY_JWALA_PATH_SEPARATOR) + EXTERNAL_PROPERTIES_FILE_NAME);
         driver.findElement(By.xpath("(//button[@type='button'])[2]")).click();
         for (int second = 0; ; second++) {
             if (second >= 60) fail("timeout");
@@ -82,10 +82,8 @@ public class UploadModifySaveDeleteExternalPropertiesTest extends SeleniumTestCa
         Actions actions = new Actions(driver);
         driver.findElement(By.xpath("//pre")).click();
 
-        actions.sendKeys(Keys.HOME).build().perform();
-        actions.sendKeys(Keys.ENTER).build().perform();
-        actions.sendKeys(Keys.ARROW_UP).build().perform();
-        actions.sendKeys("selenium.test.property=running selenium tests ${vars['resources.enabled']}").build().perform();
+        // put the cursor at the beginning of the text area and create a new line before entering the text
+        actions.sendKeys(Keys.HOME).sendKeys(Keys.ENTER).sendKeys(Keys.ARROW_UP).sendKeys("selenium.test.property=running selenium tests ${vars['resources.enabled']}").build().perform();
         assertEquals("selenium.test.property=running selenium tests ${vars['resources.enabled']}", driver.findElement(By.xpath("//pre")).getText());
 
         driver.findElement(By.cssSelector("span.ui-icon.ui-icon-disk")).click();
@@ -101,7 +99,7 @@ public class UploadModifySaveDeleteExternalPropertiesTest extends SeleniumTestCa
         waitABit();
         assertEquals("Only one external properties file can be uploaded. Any existing ones will be overwritten.", driver.findElement(By.cssSelector("span.msg")).getText());
         driver.findElement(By.name("templateFile")).clear();
-        driver.findElement(By.name("templateFile")).sendKeys("D:\\jwala-resources\\external.properties");
+        driver.findElement(By.name("templateFile")).sendKeys(properties.getProperty(PROPERTY_JWALA_RESOURCES_UPLOAD_DIR) + properties.getProperty(PROPERTY_JWALA_PATH_SEPARATOR) + EXTERNAL_PROPERTIES_FILE_NAME);
         driver.findElement(By.xpath("(//span[text()=\"Ok\"])")).click();
         waitABit();
         driver.findElement(By.xpath("//span[text()=\"ext.properties\"]")).click();
