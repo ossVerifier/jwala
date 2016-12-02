@@ -24,7 +24,7 @@ public class ResourceRepositoryServiceImpl implements ResourceRepositoryService 
     public static final int BYTE_ARRAY_SIZE = 1024;
     private final Path repositoryPath;
 
-    public ResourceRepositoryServiceImpl(@Value("${paths.web-archive:../data/archives}") final String repositoryPath) {
+    public ResourceRepositoryServiceImpl(@Value("${paths.web-archive}") final String repositoryPath) {
         this.repositoryPath = Paths.get(repositoryPath);
     }
 
