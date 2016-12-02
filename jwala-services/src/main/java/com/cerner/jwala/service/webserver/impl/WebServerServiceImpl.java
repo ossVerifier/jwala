@@ -293,7 +293,7 @@ public class WebServerServiceImpl implements WebServerService {
     @Override
     public WebServer generateAndDeployFile(String webServerName, String fileName, User user) {
         WebServer webServer = getWebServer(webServerName);
-        binaryDistributionLockManager.writeLock(webServer.getId().getId().toString());
+        binaryDistributionLockManager.writeLock(webServerName + "-" + webServer.getId().getId().toString());
         try {
             // check the web server state
             if (isStarted(getWebServer(webServerName))) {
@@ -307,7 +307,7 @@ public class WebServerServiceImpl implements WebServerService {
             resourceService.validateSingleResourceForGeneration(resourceIdentifier);
             resourceService.generateAndDeployFile(resourceIdentifier, webServerName, fileName, webServer.getHost());
         } finally {
-            binaryDistributionLockManager.writeUnlock(webServer.getId().getId().toString());
+            binaryDistributionLockManager.writeUnlock(webServerName + "-" + webServer.getId().getId().toString());
         }
         return webServer;
     }

@@ -61,7 +61,7 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
 
     @Override
     public void distributeWebServer(final String hostname) {
-        String wrietLockResourceName = hostname+"-"+ EntityType.WEB_SERVER.toString();
+        String wrietLockResourceName = hostname + "-" + EntityType.WEB_SERVER.toString();
         try {
             binaryDistributionLockManager.writeLock(wrietLockResourceName);
             File apache = new File(ApplicationProperties.get("remote.paths.apache.httpd"));

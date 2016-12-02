@@ -303,7 +303,7 @@ public class JvmServiceImpl implements JvmService {
         LOGGER.debug("Start generateAndDeployJvm for {} by user {}", jvmName, user.getId());
 
         //add write lock for multiple write
-        binaryDistributionLockManager.writeLock(jvm.getId().toString());
+        binaryDistributionLockManager.writeLock(jvmName + "-" + jvm.getId().toString());
 
         try {
             if (jvm.getState().isStartedState()) {
@@ -355,7 +355,7 @@ public class JvmServiceImpl implements JvmService {
             LOGGER.error("Failed to generate the JVM config for {} :: ERROR: {}", jvm.getJvmName(), e);
             throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to generate the JVM config: " + jvm.getJvmName(), e);
         } finally {
-            binaryDistributionLockManager.writeUnlock(jvm.getId().toString());
+            binaryDistributionLockManager.writeUnlock(jvmName + "-" + jvm.getId().toString());
             LOGGER.debug("End generateAndDeployJvm for {} by user {}", jvmName, user.getId());
         }
         return jvm;
@@ -699,7 +699,7 @@ public class JvmServiceImpl implements JvmService {
     public Jvm generateAndDeployFile(String jvmName, String fileName, User user) {
         Jvm jvm = getJvm(jvmName);
         // only one at a time per jvm
-        binaryDistributionLockManager.writeLock(jvm.getId().getId().toString());
+        binaryDistributionLockManager.writeLock(jvmName + "-" + jvm.getId().getId().toString());
         try {
             if (jvm.getState().isStartedState()) {
                 LOGGER.error("The target JVM {} must be stopped before attempting to update the resource files", jvm.getJvmName());
@@ -713,7 +713,7 @@ public class JvmServiceImpl implements JvmService {
             resourceService.validateSingleResourceForGeneration(resourceIdentifier);
             resourceService.generateAndDeployFile(resourceIdentifier, jvm.getJvmName(), fileName, jvm.getHostName());
         } finally {
-            binaryDistributionLockManager.writeUnlock(jvm.getId().getId().toString());
+            binaryDistributionLockManager.writeUnlock(jvmName + "-" + jvm.getId().getId().toString());
             LOGGER.debug("End generateAndDeployFile for {} by user {}", jvmName, user.getId());
         }
         return jvm;
