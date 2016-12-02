@@ -26,11 +26,6 @@ public class PropertyFilesConfigurationImpl implements FilesConfiguration {
         load(fmProperties);
     }
 
-    @Override
-    public Path getConfiguredPath(JwalaPath which) {
-        return paths.get(which);
-    }
-    
     public void reload() {
         paths.clear();
         load(ApplicationProperties.getProperties());
