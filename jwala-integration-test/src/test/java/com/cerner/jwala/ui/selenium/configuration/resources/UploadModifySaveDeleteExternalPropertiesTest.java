@@ -56,7 +56,7 @@ public class UploadModifySaveDeleteExternalPropertiesTest extends SeleniumTestCa
         driver.findElement(By.xpath("//span[text()=\"Ext Properties\"]")).click();
         driver.findElement(By.cssSelector("span.ui-icon.ui-icon-plusthick")).click();
         driver.findElement(By.name("templateFile")).clear();
-        driver.findElement(By.name("templateFile")).sendKeys(properties.getProperty("jwala.resources.upload.dir") + properties.getProperty("jwala.path.separator") +"external.properties");
+        driver.findElement(By.name("templateFile")).sendKeys(properties.getProperty(PROPERTY_JWALA_RESOURCES_UPLOAD_DIR) + properties.getProperty(PROPERTY_JWALA_PATH_SEPARATOR) + EXTERNAL_PROPERTIES_FILE_NAME);
         driver.findElement(By.xpath("(//button[@type='button'])[2]")).click();
         for (int second = 0; ; second++) {
             if (second >= 60) fail("timeout");
