@@ -27,7 +27,7 @@ public interface MediaServiceRest extends InitializingBean {
                          @BeanParam final AuthenticatedUser aUser);
 
     @DELETE
-    @Path("/{jvmId}")
+    @Path("/{mediaId}")
     Response removeMedia(@PathParam("mediaId") final Integer aMediaId,
                          @BeanParam final AuthenticatedUser aUser);
 
