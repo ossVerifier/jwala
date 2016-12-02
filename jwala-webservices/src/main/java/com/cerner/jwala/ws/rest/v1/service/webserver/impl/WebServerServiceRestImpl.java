@@ -113,7 +113,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
 
                 }
                 if (groups.size() > 1) {
-                    return ResponseBuilder.notOk(Response.Status.EXPECTATION_FAILED, new FaultCodeException(AemFaultType.GROUP_NOT_SPECIFIED, "Multiple groups were associated with the Web Server, but the Web Server was created using the templates from group " + groupName));
+                    LOGGER.warn("Multiple groups were associated with the Web Server, but the Web Server was created using the templates from group " + groupName);
                 }
             }
             return ResponseBuilder.created(webServer);

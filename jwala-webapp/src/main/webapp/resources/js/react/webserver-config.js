@@ -355,6 +355,9 @@ var WebServerConfigForm = React.createClass({
                             </tr>
                             <tr>
                                 <td>
+                                  <div className="webServerStatusUrl">
+                                    {this.props.data === undefined && this.state.groupIds.length > 1 ? "The Webserver templates will only be inherited from a single group" : ""}
+                                  </div>
                                     <DataMultiSelectBox name="groupSelector[]"
                                                         data={this.state.groupMultiSelectData}
                                                         selectedValIds={this.state.groupIds}
