@@ -1,3 +1,4 @@
+@ECHO OFF
 
 set svc_username=%1
 set svc_password=%2

@@ -18,7 +18,12 @@ else
     /usr/bin/echo Service $1 already exists
     exit $JWALA_EXIT_CODE_FAILED
 fi
-cygstart $2/install_serviceWS.bat
+$2/install_serviceWS.bat
+if [ "$EXIT_CODE" -ne "0" ]; then
+  /usr/bin/echo Failed to install service $1
+  exit $JWALA_EXIT_CODE_FAILED
+fi
+
 for (( c=1; c<=5; c++ ))
 do
     /usr/bin/sleep 1
