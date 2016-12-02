@@ -82,10 +82,8 @@ public class UploadModifySaveDeleteExternalPropertiesTest extends SeleniumTestCa
         Actions actions = new Actions(driver);
         driver.findElement(By.xpath("//pre")).click();
 
-        actions.sendKeys(Keys.HOME).build().perform();
-        actions.sendKeys(Keys.ENTER).build().perform();
-        actions.sendKeys(Keys.ARROW_UP).build().perform();
-        actions.sendKeys("selenium.test.property=running selenium tests ${vars['resources.enabled']}").build().perform();
+        // put the cursor at the beginning of the text area and create a new line before entering the text
+        actions.sendKeys(Keys.HOME).sendKeys(Keys.ENTER).sendKeys(Keys.ARROW_UP).sendKeys("selenium.test.property=running selenium tests ${vars['resources.enabled']}").build().perform();
         assertEquals("selenium.test.property=running selenium tests ${vars['resources.enabled']}", driver.findElement(By.xpath("//pre")).getText());
 
         driver.findElement(By.cssSelector("span.ui-icon.ui-icon-disk")).click();
