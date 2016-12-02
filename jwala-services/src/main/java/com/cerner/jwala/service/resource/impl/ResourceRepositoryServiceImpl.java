@@ -31,7 +31,7 @@ public class ResourceRepositoryServiceImpl implements ResourceRepositoryService 
     @Override
     public String upload(final String filename, final InputStream resource) {
         try {
-            final String absoluteFilename = repositoryPath.toAbsolutePath().normalize().toString() + "\\" +
+            final String absoluteFilename = repositoryPath.toAbsolutePath().normalize().toString() + "/" +
                                                 getResourceNameUniqueName(filename);
             final FileOutputStream out = new FileOutputStream(absoluteFilename);
             final byte [] bytes = new byte[BYTE_ARRAY_SIZE];
