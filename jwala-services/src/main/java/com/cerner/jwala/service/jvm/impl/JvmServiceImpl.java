@@ -27,6 +27,7 @@ import com.cerner.jwala.common.request.jvm.CreateJvmRequest;
 import com.cerner.jwala.common.request.jvm.UpdateJvmRequest;
 import com.cerner.jwala.control.AemControl;
 import com.cerner.jwala.exception.CommandFailureException;
+import com.cerner.jwala.common.FileUtility;
 import com.cerner.jwala.persistence.jpa.domain.resource.config.template.JpaJvmConfigTemplate;
 import com.cerner.jwala.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
 import com.cerner.jwala.persistence.jpa.service.exception.ResourceTemplateUpdateException;
@@ -61,17 +62,19 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.*;
 import java.nio.charset.Charset;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
 
 public class JvmServiceImpl implements JvmService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JvmServiceImpl.class);
     private static final String REMOTE_COMMANDS_USER_SCRIPTS = ApplicationProperties.get("remote.commands.user-scripts");
-    private static final String MSG_TYPE_HISTORY = "history";
     private static final String MEDIA_TYPE_TEXT = "text";
+    private static final String PATHS_RESOURCE_TEMPLATES = "paths.resource-templates";
+    private static final String INSTALL_SERVICE_TEMPLATE_TPL = "Install_ServiceTemplate.tpl";
 
     private final BinaryDistributionLockManager binaryDistributionLockManager;
     private String topicServerStates;
@@ -85,6 +88,7 @@ public class JvmServiceImpl implements JvmService {
     private final JvmControlService jvmControlService;
     private final HistoryFacadeService historyFacadeService;
     private final BinaryDistributionService binaryDistributionService;
+    private final FileUtility fileUtility;
     private static final String JWALA_SCRIPTS_PATH = ApplicationProperties.get("remote.commands.user-scripts");
 
     private static final String DIAGNOSIS_INITIATED = "Diagnosis Initiated on JVM ${jvm.jvmName}, host ${jvm.hostName}";
@@ -102,7 +106,8 @@ public class JvmServiceImpl implements JvmService {
                           final JvmControlService jvmControlService,
                           final BinaryDistributionService binaryDistributionService,
                           final BinaryDistributionLockManager binaryDistributionLockManager,
-                          final HistoryFacadeService historyFacadeService) {
+                          final HistoryFacadeService historyFacadeService,
+                          final FileUtility fileUtility) {
         this.jvmPersistenceService = jvmPersistenceService;
         this.groupService = groupService;
         this.applicationService = applicationService;
@@ -115,6 +120,7 @@ public class JvmServiceImpl implements JvmService {
         this.binaryDistributionService = binaryDistributionService;
         this.binaryDistributionLockManager = binaryDistributionLockManager;
         this.historyFacadeService = historyFacadeService;
+        this.fileUtility = fileUtility;
     }
 
 
@@ -480,7 +486,9 @@ public class JvmServiceImpl implements JvmService {
             final String destDirPath = generatedDir.getAbsolutePath();
             LOGGER.debug("Start Unzip Instance Template {} to {} ", binaryDir + "/" + instanceTemplateZipName, unzipDir);
             // Copy the templates that would be included in the zip file.
-            unZipFile(new File(binaryDir + "/" + instanceTemplateZipName), unzipDir);
+
+            fileUtility.unzip(new File(binaryDir + "/" + instanceTemplateZipName), unzipDir);
+
             LOGGER.debug("End Unzip Instance Template {} to {} ", binaryDir + "/" + instanceTemplateZipName, unzipDir);
             final String generatedText = generateInstallServiceBat(jvmName);
             final String install_serviceBatDir = generatedDir + "/bin";
@@ -540,30 +548,6 @@ public class JvmServiceImpl implements JvmService {
         LOGGER.info("Generation of configuration tar SUCCEEDED for {}: {}", jvmName, configJarPath);
 
         return jvmResourcesNameDir;
-    }
-
-    protected void unZipFile(final File zipFile, final File destDir) throws IOException {
-        LOGGER.debug("zipFile: {} -> destDir: {}", zipFile.getAbsolutePath(), destDir.getAbsolutePath());
-        if(!destDir.exists()) {
-            destDir.mkdir();
-        }
-        final JarFile zip = new JarFile(zipFile);
-        Enumeration enumEntries = zip.entries();
-        while (enumEntries.hasMoreElements()) {
-            JarEntry file = (JarEntry) enumEntries.nextElement();
-            File f = new File(destDir + File.separator + file.getName());
-            if (file.isDirectory()) { // if its a directory, create it
-                f.mkdir();
-                continue;
-            }
-            InputStream is = zip.getInputStream(file); // get the input stream
-            FileOutputStream fos = new FileOutputStream(f);
-            while (is.available() > 0) {  // write contents of 'is' to 'fos'
-                fos.write(is.read());
-            }
-            fos.close();
-            is.close();
-        }
     }
 
     protected void createParentDir(final Jvm jvm, final String parentDir) throws CommandFailureException {
@@ -836,11 +820,12 @@ public class JvmServiceImpl implements JvmService {
     @Override
     @Transactional
     public String generateInstallServiceBat(String jvmName) {
-        final String installServiceBatTemplateContent;
         try {
-            installServiceBatTemplateContent = IOUtils.toString(this.getClass()
-                    .getResourceAsStream("Install_ServiceTemplate.tpl"), Charset.defaultCharset());
-            return resourceService.generateResourceFile("install_service.bat", installServiceBatTemplateContent,
+            final Path templatesPath = Paths.get(ApplicationProperties.get(PATHS_RESOURCE_TEMPLATES));
+            final FileInputStream installServiceBatTemplateContent = new FileInputStream(templatesPath.toAbsolutePath()
+                    .normalize().toString() + "/" + new File(INSTALL_SERVICE_TEMPLATE_TPL));
+            return resourceService.generateResourceFile("install_service.bat",
+                    IOUtils.toString(installServiceBatTemplateContent, Charset.defaultCharset()),
                     resourceService.generateResourceGroup(), jvmPersistenceService.findJvmByExactName(jvmName),
                     ResourceGeneratorType.TEMPLATE);
         } catch (final IOException e) {

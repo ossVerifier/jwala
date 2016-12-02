@@ -26,6 +26,7 @@ import com.cerner.jwala.common.request.jvm.CreateJvmRequest;
 import com.cerner.jwala.common.request.jvm.UpdateJvmRequest;
 import com.cerner.jwala.control.AemControl;
 import com.cerner.jwala.exception.CommandFailureException;
+import com.cerner.jwala.common.FileUtility;
 import com.cerner.jwala.persistence.jpa.domain.resource.config.template.JpaJvmConfigTemplate;
 import com.cerner.jwala.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
 import com.cerner.jwala.persistence.service.JvmPersistenceService;
@@ -47,7 +48,6 @@ import org.apache.commons.io.FileUtils;
 import org.apache.tika.mime.MediaType;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Matchers;
 import org.mockito.Mock;
@@ -110,6 +110,9 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
     @Mock
     private HistoryFacadeService mockHistoryFacadeService;
 
+    @Mock
+    private FileUtility mockFileUtility;
+
     private JvmService jvmService;
 
     private JvmServiceImpl jvmServiceImpl;
@@ -124,7 +127,7 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
         jvmServiceImpl = new JvmServiceImpl(mockJvmPersistenceService, mockGroupService, mockApplicationService,
                 mockMessagingTemplate, mockGroupStateNotificationService, mockResourceService, mockClientFactoryHelper,
                 "/topic/server-states", mockJvmControlService, mockBinaryDistributionService, mockBinaryDistributionLockManager,
-                mockHistoryFacadeService);
+                mockHistoryFacadeService, mockFileUtility);
         jvmService = jvmServiceImpl;
     }
 
@@ -697,8 +700,6 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
     }
 
     @Test
-    @Ignore
-    // TODO: Fix this!
     public void testGenerateAndDeployConfig() throws CommandFailureException, IOException {
 
         Collection<ResourceType> mockResourceTypes = new ArrayList<>();

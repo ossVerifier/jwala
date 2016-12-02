@@ -17,6 +17,7 @@ import com.cerner.jwala.common.properties.ApplicationProperties;
 import com.cerner.jwala.control.command.RemoteCommandExecutor;
 import com.cerner.jwala.control.configuration.AemCommandExecutorConfig;
 import com.cerner.jwala.control.configuration.AemSshConfig;
+import com.cerner.jwala.common.FileUtility;
 import com.cerner.jwala.persistence.configuration.AemPersistenceServiceConfiguration;
 import com.cerner.jwala.persistence.jpa.service.*;
 import com.cerner.jwala.persistence.jpa.service.impl.GroupJvmRelationshipServiceImpl;
@@ -120,7 +121,8 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
         "com.cerner.jwala.service.group.impl.spring.component",
         "com.cerner.jwala.service.jvm.impl.spring.component",
         "com.cerner.jwala.service.impl.spring.component",
-        "com.cerner.jwala.service.resource.impl"})
+        "com.cerner.jwala.service.resource.impl",
+        "com.cerner.jwala.common"})
 public class AemServiceConfiguration {
 
     @Autowired
@@ -188,12 +190,13 @@ public class AemServiceConfiguration {
                                     final ApplicationService applicationService,
                                     final ResourceService resourceService, final ClientFactoryHelper clientFactoryHelper,
                                     @Value("${spring.messaging.topic.serverStates:/topic/server-states}") final String topicServerStates,
-                                    final JvmControlService jvmControlService, final HistoryFacadeService historyFacadeService) {
+                                    final JvmControlService jvmControlService, final HistoryFacadeService historyFacadeService,
+                                    final FileUtility fileUtility) {
         final JvmPersistenceService jvmPersistenceService = persistenceServiceConfiguration.getJvmPersistenceService();
         return new JvmServiceImpl(jvmPersistenceService, groupService, applicationService,
                 messagingTemplate, groupStateNotificationService, resourceService,
                 clientFactoryHelper, topicServerStates, jvmControlService, binaryDistributionService, binaryDistributionLockManager,
-                historyFacadeService);
+                historyFacadeService, fileUtility);
     }
 
     @Bean(name = "binaryDistributionLockManager")
