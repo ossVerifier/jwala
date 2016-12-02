@@ -99,7 +99,7 @@ public class UploadModifySaveDeleteExternalPropertiesTest extends SeleniumTestCa
         waitABit();
         assertEquals("Only one external properties file can be uploaded. Any existing ones will be overwritten.", driver.findElement(By.cssSelector("span.msg")).getText());
         driver.findElement(By.name("templateFile")).clear();
-        driver.findElement(By.name("templateFile")).sendKeys("D:\\jwala-resources\\external.properties");
+        driver.findElement(By.name("templateFile")).sendKeys(properties.getProperty(PROPERTY_JWALA_RESOURCES_UPLOAD_DIR) + properties.getProperty(PROPERTY_JWALA_PATH_SEPARATOR) + EXTERNAL_PROPERTIES_FILE_NAME);
         driver.findElement(By.xpath("(//span[text()=\"Ok\"])")).click();
         waitABit();
         driver.findElement(By.xpath("//span[text()=\"ext.properties\"]")).click();
