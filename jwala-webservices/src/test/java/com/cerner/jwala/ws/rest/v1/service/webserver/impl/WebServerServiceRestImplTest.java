@@ -207,7 +207,7 @@ public class WebServerServiceRestImplTest {
         when(mockMetaData.getDeployFileName()).thenReturn("httpd.conf");
         when(resourceService.getTokenizedMetaData(anyString(), Matchers.anyObject(), anyString())).thenReturn(mockMetaData);
         final Response response = webServerServiceRest.createWebServer(jsonCreateWebServer, authenticatedUser);
-        assertEquals(Response.Status.EXPECTATION_FAILED.getStatusCode(), response.getStatus());
+        assertEquals(Response.Status.CREATED.getStatusCode(), response.getStatus());
     }
 
     @Test
