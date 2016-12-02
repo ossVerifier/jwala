@@ -33,6 +33,7 @@
 <script src="public-resources/js/jwala/v1/service/webServerService.js"></script>
 <script src="public-resources/js/jwala/v1/service/webAppService.js"></script>
 <script src="public-resources/js/jwala/v1/service/jvmService.js"></script>
+<script src="public-resources/js/jwala/v1/service/mediaService.js"></script>
 <script src="public-resources/js/jwala/v1/service/historyService.js"></script>
 <script src="public-resources/js/jwala/v1/service/serviceFactory.js"></script>
 <script src="public-resources/js/jwala/v1/service/groupControlService.js"></script>

@@ -32,6 +32,8 @@ import com.cerner.jwala.ws.rest.v1.service.group.GroupServiceRest;
 import com.cerner.jwala.ws.rest.v1.service.group.impl.GroupServiceRestImpl;
 import com.cerner.jwala.ws.rest.v1.service.jvm.JvmServiceRest;
 import com.cerner.jwala.ws.rest.v1.service.jvm.impl.JvmServiceRestImpl;
+import com.cerner.jwala.ws.rest.v1.service.media.MediaServiceRest;
+import com.cerner.jwala.ws.rest.v1.service.media.impl.MediaServiceRestImpl;
 import com.cerner.jwala.ws.rest.v1.service.resource.ResourceServiceRest;
 import com.cerner.jwala.ws.rest.v1.service.resource.impl.ResourceServiceRestImpl;
 import com.cerner.jwala.ws.rest.v1.service.user.UserServiceRest;
@@ -125,6 +127,7 @@ public class AemWebServiceConfiguration {
 
         serviceBeans.add(getV1GroupServiceRest());
         serviceBeans.add(getV1JvmServiceRest());
+        serviceBeans.add(getV1MediaServiceRest());
         serviceBeans.add(getV1WebServerServiceRest());
         serviceBeans.add(getV1ApplicationServiceRest());
         serviceBeans.add(getV1UserServiceRest());
@@ -164,6 +167,13 @@ public class AemWebServiceConfiguration {
                 jvmService,
                 jvmControlService,
                 resourceService
+        );
+    }
+
+    @Bean
+    public MediaServiceRest getV1MediaServiceRest(){
+        return new MediaServiceRestImpl(
+
         );
     }
 

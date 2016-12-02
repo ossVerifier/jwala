@@ -11,7 +11,7 @@ var MediaConfig = React.createClass({
                    </div>
 
                    <RDataTable ref="dataTable"
-                               tableIndex="id.id"
+                               tableIndex="id"
                                colDefinitions={[{key: "id", isVisible: false},
                                                 {title: "Type", key: "type"},
                                                 {title: "Path", key: "path"},
@@ -42,12 +42,12 @@ var MediaConfig = React.createClass({
     loadTableData: function(afterLoadCallback) {
         var self = this;
         // TODO implement service call
-//        this.props.service.getWebApps(function(response){
-//                                          self.refs.dataTable.refresh(response.applicationResponseContent);
-//                                          if ($.isFunction(afterLoadCallback)) {
-//                                            afterLoadCallback();
-//                                          }
-//                                      });
+        mediaService.getMedia((function(response){
+                                          self.refs.dataTable.refresh(response.applicationResponseContent);
+                                          if ($.isFunction(afterLoadCallback)) {
+                                            afterLoadCallback();
+                                          }
+                                      }));
     },
     addBtnCallback: function() {
         this.refs.modalAddMediaDlg.show();
@@ -57,17 +57,17 @@ var MediaConfig = React.createClass({
         if (this.refs.mediaAddForm.isValid()) {
             var serializedData = $(this.refs.mediaAddForm.refs.form.getDOMNode()).serializeArray();
             // TODO implement service call
-//            ServiceFactory.getWebAppService().insertNewWebApp(
-//                serializedData,
-//                function(){
-//                    self.refs.modalAddWebAppDlg.close();
-//                    self.loadTableData(function(){
-//                        self.refs.dataTable.deselectAllRows();
-//                    });
-//                },
-//                function(errMsg){
-//                    $.errorAlert(errMsg, "Error");
-//                });
+             this.props.service.insertNewMedia(
+                serializedData,
+                function(){
+                    self.refs.modalAddWebAppDlg.close();
+                    self.loadTableData(function(){
+                        self.refs.dataTable.deselectAllRows();
+                    });
+                },
+                function(errMsg){
+                    $.errorAlert(errMsg, "Error");
+                });
         }
     },
     okEditCallback: function() {
@@ -75,16 +75,16 @@ var MediaConfig = React.createClass({
         if (this.refs.modalEditMediaDlg.refs.mediaEditForm.isValid()) {
             var serializedData = $(this.refs.modalEditMediaDlg.refs.mediaEditForm.refs.form.getDOMNode()).serializeArray();
             // TODO implement service call
-//            this.props.service.updateWebApp(serializedData,
-//                                            function(response){
-//                                                self.refs.modalEditWebAppDlg.close();
-//                                                self.loadTableData(function(){
-//                                                    self.state.selectedMedia = self.refs.dataTable.getSelectedItem();
-//                                                });
-//                                            },
-//                                            function(errMsg) {
-//                                                $.errorAlert(errMsg, "Error");
-//                                            });
+            this.props.service.updateMedia(serializedData,
+                                            function(response){
+                                                self.refs.modalEditWebAppDlg.close();
+                                                self.loadTableData(function(){
+                                                    self.state.selectedMedia = self.refs.dataTable.getSelectedItem();
+                                                });
+                                            },
+                                            function(errMsg) {
+                                                $.errorAlert(errMsg, "Error");
+                                            });
         }
     },
     selectItemCallback: function(item) {
@@ -101,12 +101,12 @@ var MediaConfig = React.createClass({
     confirmDeleteCallback: function() {
         var self = this;
         // TODO implement service call
-//        ServiceFactory.getWebAppService().deleteWebApp(this.state.selectedMedia.id.id).then(function(){
-//            self.refs.confirmDeleteWebAppDlg.close();
-//            self.loadTableData(function(){
-//                self.state.selectedMedia = null;
-//            });
-//        });
+        mediaService.deleteMedia(this.state.selectedMedia.id.id).then(function(){
+            self.refs.confirmDeleteWebAppDlg.close();
+            self.loadTableData(function(){
+                self.state.selectedMedia = null;
+            });
+        });
     },
     onMediaNameClick: function(name) {
         var self = this;
