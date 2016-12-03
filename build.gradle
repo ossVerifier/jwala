@@ -25,7 +25,7 @@ ext {
             tomcat                : '7.0.55',
             ant                   : '1.8.2',
             groovy                : '2.4.3',
-            jacoco                : '0.7.7.201606060606',
+            jacoco                : '0.7.0.201403182114',
             devbundle             : '1.1-SNAPSHOT',
             objenesis             : '1.0',
             jgroups               : '3.6.6.Final',
