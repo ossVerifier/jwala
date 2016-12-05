@@ -13,9 +13,9 @@ var MediaConfig = React.createClass({
                    <RDataTable ref="dataTable"
                                tableIndex="id"
                                colDefinitions={[{key: "id", isVisible: false},
-                                                {title: "Type", key: "type"},
+                                                {title: "Name", key: "name", renderCallback: this.onMediaNameClick},
                                                 {title: "Path", key: "path"},
-                                                {title: "Name", key: "name"},
+                                                {title: "Type", key: "type"},
                                                 {title: "Remote Host Path", key: "remoteHostPath"}]}
                                selectItemCallback={this.selectItemCallback}
                                deselectAllRowsCallback={this.deselectAllRowsCallback}/>
@@ -42,7 +42,7 @@ var MediaConfig = React.createClass({
     loadTableData: function(afterLoadCallback) {
         var self = this;
         // TODO implement service call
-        mediaService.getMedia((function(response){
+        mediaService.getAllMedia((function(response){
                                           self.refs.dataTable.refresh(response.applicationResponseContent);
                                           if ($.isFunction(afterLoadCallback)) {
                                             afterLoadCallback();
@@ -54,11 +54,16 @@ var MediaConfig = React.createClass({
     },
     okAddCallback: function() {
         var self = this;
-        if (this.refs.mediaAddForm.isValid()) {
-            var serializedData = $(this.refs.mediaAddForm.refs.form.getDOMNode()).serializeArray();
+//        if (this.refs.mediaAddForm.isValid()) {
+//            var serializedData = $(this.refs.mediaAddForm.refs.form.getDOMNode()).serializeArray();
             // TODO implement service call
-             this.props.service.insertNewMedia(
-                serializedData,
+
+             mediaService.insertNewMedia(
+//                serializedData,
+                this.refs.mediaAddForm.state.name,
+                this.refs.mediaAddForm.state.path,
+                this.refs.mediaAddForm.state.type,
+                this.refs.mediaAddForm.state.remoteHostPath,
                 function(){
                     self.refs.modalAddWebAppDlg.close();
                     self.loadTableData(function(){
@@ -68,14 +73,14 @@ var MediaConfig = React.createClass({
                 function(errMsg){
                     $.errorAlert(errMsg, "Error");
                 });
-        }
+//        }
     },
     okEditCallback: function() {
         var self = this;
         if (this.refs.modalEditMediaDlg.refs.mediaEditForm.isValid()) {
             var serializedData = $(this.refs.modalEditMediaDlg.refs.mediaEditForm.refs.form.getDOMNode()).serializeArray();
             // TODO implement service call
-            this.props.service.updateMedia(serializedData,
+            mediaService.updateMedia(serializedData,
                                             function(response){
                                                 self.refs.modalEditWebAppDlg.close();
                                                 self.loadTableData(function(){
@@ -108,22 +113,12 @@ var MediaConfig = React.createClass({
             });
         });
     },
+    editMediaDlg: function(name) {
+        this.refs.modalAddMediaDlg.show();
+    },
     onMediaNameClick: function(name) {
         var self = this;
-        // TODO implement service call
-//        ServiceFactory.getWebAppService().getWebAppByName(name).then(function(response){
-//            var formData = {};
-//            formData["id"] = response.applicationResponseContent.id;
-//            formData["name"] = response.applicationResponseContent.name;
-//            formData["context"] = response.applicationResponseContent.webAppContext;
-//            formData["groupIds"] = [response.applicationResponseContent.group.id];
-//            formData["secure"] = response.applicationResponseContent.unpackWar;
-//            formData["unpackWar"] = response.applicationResponseContent.unpackWar;
-//            formData["loadBalance"] = response.applicationResponseContent.loadBalance;
-//            formData["loadBalanceAcrossServers"] = response.applicationResponseContent.loadBalanceAcrossServers;
-//            self.refs.modalEditWebAppDlg.show("Edit Web Application",
-//                <WebAppConfigForm formData={formData}/>);
-//        });
+        return <button className="button-link" onClick={this.editMediaDlg.bind(this, name)}>{name}</button>
     }
 })
 
