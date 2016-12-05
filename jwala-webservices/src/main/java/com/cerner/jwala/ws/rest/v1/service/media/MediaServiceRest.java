@@ -1,6 +1,7 @@
 package com.cerner.jwala.ws.rest.v1.service.media;
 
 import com.cerner.jwala.ws.rest.v1.provider.AuthenticatedUser;
+import com.cerner.jwala.ws.rest.v1.service.media.impl.JsonCreateMedia;
 import org.springframework.beans.factory.InitializingBean;
 
 import javax.ws.rs.*;
@@ -17,7 +18,7 @@ public interface MediaServiceRest extends InitializingBean {
 
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
-    Response createMedia(final String jsonCreateMedia,
+    Response createMedia(final JsonCreateMedia jsonCreateMedia,
                          @BeanParam final AuthenticatedUser aUser);
 
 
@@ -32,6 +33,11 @@ public interface MediaServiceRest extends InitializingBean {
                          @BeanParam final AuthenticatedUser aUser);
 
     @GET
-    Response getMedia();
+    Response getAllMedia();
+
+    @GET
+    @Path("/{mediaId")
+    Response getMedia(@PathParam("mediaId") final Integer aMediaId,
+                      @BeanParam final AuthenticatedUser aUser);
 
 }

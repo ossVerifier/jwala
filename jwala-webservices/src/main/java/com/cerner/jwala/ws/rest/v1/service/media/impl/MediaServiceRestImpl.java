@@ -16,7 +16,7 @@ public class MediaServiceRestImpl implements MediaServiceRest {
 
 
     @Override
-    public Response createMedia(final String jsonCreateMedia, final AuthenticatedUser aUser) {
+    public Response createMedia(final JsonCreateMedia jsonCreateMedia, final AuthenticatedUser aUser) {
         return ResponseBuilder.ok("Created Media");
     }
 
@@ -27,15 +27,21 @@ public class MediaServiceRestImpl implements MediaServiceRest {
 
     @Override
     public Response removeMedia(final Integer aMediaId, final AuthenticatedUser aUser) {
-        return ResponseBuilder.ok("removed JDK 1.7");
+        return ResponseBuilder.ok();
     }
 
     @Override
-    public Response getMedia() {
+    public Response getAllMedia() {
         Media media = new Media(1, "mediaName", "mediaPath", "mediaType", "mediaRemoteHostPath");
         List<Media> mediaList = new ArrayList<Media>();
         mediaList.add(media);
         return ResponseBuilder.ok(mediaList);
+    }
+
+    @Override
+    public Response getMedia(final Integer aMediaId, final AuthenticatedUser aUser) {
+        Media media = new Media(1, "mediaName", "mediaPath", "mediaType", "mediaRemoteHostPath");
+        return ResponseBuilder.ok(media);
     }
 
     @Override
