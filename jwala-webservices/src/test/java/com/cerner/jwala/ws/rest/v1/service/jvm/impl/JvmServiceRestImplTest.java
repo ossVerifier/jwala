@@ -104,7 +104,8 @@ public class JvmServiceRestImplTest {
                 statusPath,
                 systemProperties,
                 JvmState.JVM_STOPPED,
-                null, null, null, userName, encryptedPassword);
+                null, null, null, userName, encryptedPassword,
+                "", "");
         final List<Jvm> result = new ArrayList<>();
         result.add(ws);
         return result;
@@ -158,7 +159,7 @@ public class JvmServiceRestImplTest {
         when(jvmService.createJvm(any(CreateJvmAndAddToGroupsRequest.class), any(User.class))).thenReturn(jvm);
 
         final JsonCreateJvm jsonCreateJvm = new JsonCreateJvm(name, hostName, httpPort, httpsPort, redirectPort,
-                shutdownPort, ajpPort, statusPath.getUriPath(), systemProperties, userName, clearTextPassword);
+                shutdownPort, ajpPort, statusPath.getUriPath(), systemProperties, userName, clearTextPassword, "JDK 1.7-test", "Apache Tomcat 7.0.55-test");
         final Response response = jvmServiceRest.createJvm(jsonCreateJvm, authenticatedUser);
         assertEquals(Response.Status.CREATED.getStatusCode(), response.getStatus());
 
@@ -187,7 +188,9 @@ public class JvmServiceRestImplTest {
                 statusPath.getUriPath(),
                 systemProperties,
                 userName,
-                clearTextPassword);
+                clearTextPassword,
+                "JDK 1.7-test",
+                "Apache Tomcat 7.0.55-test");
         final Response response = jvmServiceRest.createJvm(jsonCreateJvm, authenticatedUser);
         assertEquals(Response.Status.CREATED.getStatusCode(), response.getStatus());
 

@@ -1,14 +1,13 @@
 package com.cerner.jwala.persistence.service;
 
-import java.util.Collections;
-
 import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
 import com.cerner.jwala.common.domain.model.path.Path;
 import com.cerner.jwala.common.request.jvm.CreateJvmRequest;
 import com.cerner.jwala.common.request.jvm.UpdateJvmRequest;
-import com.cerner.jwala.persistence.service.JvmPersistenceService;
+
+import java.util.Collections;
 
 public class CommonJvmPersistenceServiceBehavior {
 
@@ -29,7 +28,9 @@ public class CommonJvmPersistenceServiceBehavior {
                          final Path aStatusPath,
                          final String aSystemProperties,
                          final String aUserName,
-                         final String anEncryptedPassword) {
+                         final String anEncryptedPassword,
+                         final String jdkVersion,
+                         final String apacheTomcatVersion) {
 
         final CreateJvmRequest createJvmRequest = createCreateJvmRequest(aJvmName,
                 aHostName,
@@ -42,7 +43,9 @@ public class CommonJvmPersistenceServiceBehavior {
                 aStatusPath,
                 aSystemProperties,
                 aUserName,
-                anEncryptedPassword);
+                anEncryptedPassword,
+                jdkVersion,
+                apacheTomcatVersion);
 
         return jvmPersistenceService.createJvm(createJvmRequest);
     }
@@ -89,7 +92,9 @@ public class CommonJvmPersistenceServiceBehavior {
                                                       final Path aStatusPath,
                                                       final String aSystemProperties,
                                                       final String aUserName,
-                                                      final String anEncryptedPassword) {
+                                                      final String anEncryptedPassword,
+                                                      final String jdkVersion,
+                                                      final String apacheTomcatVersion) {
 
         return new CreateJvmRequest(aJvmName,
                 aJvmHostName,
@@ -101,7 +106,9 @@ public class CommonJvmPersistenceServiceBehavior {
                 aStatusPath,
                 aSystemProperties,
                 aUserName,
-                anEncryptedPassword);
+                anEncryptedPassword,
+                jdkVersion,
+                apacheTomcatVersion);
     }
 
     protected UpdateJvmRequest createUpdateJvmRequest(final Identifier<Jvm> aJvmId,

@@ -1,15 +1,17 @@
 package com.cerner.jwala.common.domain.model.jvm;
 
-import java.io.Serializable;
-import java.net.URI;
-import java.util.*;
-
 import com.cerner.jwala.common.domain.model.app.Application;
 import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.path.Path;
 import com.cerner.jwala.common.domain.model.ssh.DecryptPassword;
 import com.cerner.jwala.common.domain.model.uri.UriBuilder;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+
+import java.io.Serializable;
+import java.net.URI;
+import java.util.*;
 
 public class Jvm implements Serializable {
 
@@ -34,6 +36,8 @@ public class Jvm implements Serializable {
     private Calendar lastUpdatedDate;
     private String userName;
     private String encryptedPassword;
+    private String jdkVersion;
+    private String tomcatVersion;
 
     public Jvm(final Identifier<Jvm> id, final String name) {
         this.id = id;
@@ -69,7 +73,9 @@ public class Jvm implements Serializable {
                final List<Application> webApps,
                final Calendar lastUpdatedDate,
                final String userName,
-               final String encryptedPassword) {
+               final String encryptedPassword,
+               final String jdkVersion,
+               final String tomcatVersion) {
         this.id = id;
         this.jvmName = name;
         this.hostName = hostName;
@@ -89,6 +95,8 @@ public class Jvm implements Serializable {
         this.lastUpdatedDate = lastUpdatedDate;
         this.userName = userName;
         this.encryptedPassword = encryptedPassword;
+        this.jdkVersion = jdkVersion;
+        this.tomcatVersion = tomcatVersion;
     }
 
     public Jvm toDecrypted() {
@@ -108,7 +116,9 @@ public class Jvm implements Serializable {
                 this.webApps,
                 this.lastUpdatedDate,
                 this.userName,
-                this.encryptedPassword != null && this.encryptedPassword.length() > 0 ? new DecryptPassword().decrypt(this.encryptedPassword) : "");
+                this.encryptedPassword != null && this.encryptedPassword.length() > 0 ? new DecryptPassword().decrypt(this.encryptedPassword) : "",
+                this.jdkVersion,
+                this.tomcatVersion);
     }
 
     public Jvm(Identifier<Jvm> id,
@@ -127,7 +137,9 @@ public class Jvm implements Serializable {
                String errorStatus,
                Calendar lastUpdatedDate,
                String userName,
-               String encryptedPassword) {
+               String encryptedPassword,
+               String jdkVersion,
+               String tomcatVersion) {
         this.id = id;
         this.jvmName = jvmName;
         this.hostName = hostName;
@@ -145,8 +157,17 @@ public class Jvm implements Serializable {
         this.lastUpdatedDate = lastUpdatedDate;
         this.userName = userName;
         this.encryptedPassword = encryptedPassword;
+        this.jdkVersion = jdkVersion;
+        this.tomcatVersion = tomcatVersion;
     }
 
+    public String getJdkVersion() {
+        return jdkVersion;
+    }
+
+    public String getTomcatVersion() {
+        return tomcatVersion;
+    }
     public String getEncryptedPassword() {
         return encryptedPassword;
     }
@@ -242,21 +263,58 @@ public class Jvm implements Serializable {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
+        if (this == o) return true;
+
+        if (o == null || getClass() != o.getClass()) return false;
 
         Jvm jvm = (Jvm) o;
 
-        return id.equals(jvm.id);
+        return new EqualsBuilder()
+                .append(id, jvm.id)
+                .append(jvmName, jvm.jvmName)
+                .append(hostName, jvm.hostName)
+                .append(groups, jvm.groups)
+                .append(parentGroup, jvm.parentGroup)
+                .append(httpPort, jvm.httpPort)
+                .append(httpsPort, jvm.httpsPort)
+                .append(redirectPort, jvm.redirectPort)
+                .append(shutdownPort, jvm.shutdownPort)
+                .append(ajpPort, jvm.ajpPort)
+                .append(statusPath, jvm.statusPath)
+                .append(systemProperties, jvm.systemProperties)
+                .append(state, jvm.state)
+                .append(errorStatus, jvm.errorStatus)
+                .append(webApps, jvm.webApps)
+                .append(lastUpdatedDate, jvm.lastUpdatedDate)
+                .append(userName, jvm.userName)
+                .append(encryptedPassword, jvm.encryptedPassword)
+                .append(jdkVersion, jvm.jdkVersion)
+                .append(tomcatVersion, jvm.tomcatVersion)
+                .isEquals();
     }
 
     @Override
     public int hashCode() {
-        return id.hashCode();
+        return new HashCodeBuilder(17, 37)
+                .append(id)
+                .append(jvmName)
+                .append(hostName)
+                .append(httpPort)
+                .append(httpsPort)
+                .append(redirectPort)
+                .append(shutdownPort)
+                .append(ajpPort)
+                .append(statusPath)
+                .append(systemProperties)
+                .append(state)
+                .append(errorStatus)
+                .append(webApps)
+                .append(lastUpdatedDate)
+                .append(userName)
+                .append(encryptedPassword)
+                .append(jdkVersion)
+                .append(tomcatVersion)
+                .toHashCode();
     }
 
     @Override
@@ -280,6 +338,8 @@ public class Jvm implements Serializable {
                 ", lastUpdatedDate=" + lastUpdatedDate +
                 ", userName='" + userName + '\'' +
                 ", encryptedPassword='" + encryptedPassword + '\'' +
+                ", jdkVersion='" + jdkVersion + '\'' +
+                ", tomcatVersion='" + tomcatVersion + '\'' +
                 '}';
     }
 }

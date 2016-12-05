@@ -1,9 +1,8 @@
 package com.cerner.jwala.persistence.jpa.domain;
 
-import javax.persistence.*;
-
 import com.cerner.jwala.common.domain.model.jvm.JvmState;
 
+import javax.persistence.*;
 import java.util.List;
 
 @Entity
@@ -82,6 +81,12 @@ public class JpaJvm extends AbstractEntity<JpaJvm> {
 
     @Column(nullable = true)
     private String encryptedPassword;
+
+    @Column(nullable = true)
+    private String jdkVersion;
+
+    @Column(nullable = true)
+    private String tomcatVersion;
 
     public Long getId() {
         return id;
@@ -249,4 +254,11 @@ public class JpaJvm extends AbstractEntity<JpaJvm> {
                 '}';
     }
 
+    public String getJdkVersion() {
+        return jdkVersion;
+    }
+
+    public String getTomcatVersion() {
+        return tomcatVersion;
+    }
 }

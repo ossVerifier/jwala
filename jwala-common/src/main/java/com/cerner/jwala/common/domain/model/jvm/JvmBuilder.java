@@ -1,9 +1,5 @@
 package com.cerner.jwala.common.domain.model.jvm;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 import com.cerner.jwala.common.domain.model.app.Application;
 import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.id.Identifier;
@@ -35,6 +31,8 @@ public class JvmBuilder {
     private Calendar lastUpdatedDate;
     private String userName;
     private String encryptedPassword;
+    private String jdkVersion;
+    private String tomcatVersion;
 
     public JvmBuilder setUserName(String userName) {
         this.userName = userName;
@@ -131,8 +129,17 @@ public class JvmBuilder {
 
     public Jvm build() {
         return new Jvm(id, name, hostName, groups, httpPort, httpsPort, redirectPort, shutdownPort, ajpPort, statusPath,
-                       systemProperties, state, errorStatus, webApps, lastUpdatedDate, userName, encryptedPassword);
+                       systemProperties, state, errorStatus, webApps, lastUpdatedDate, userName, encryptedPassword, jdkVersion, tomcatVersion);
     }
 
 
+    public JvmBuilder setJdkVersion(String jdkVersion) {
+        this.jdkVersion = jdkVersion;
+        return this;
+    }
+
+    public JvmBuilder setTomcatVersion(String tomcatVersion) {
+        this.tomcatVersion = tomcatVersion;
+        return this;
+    }
 }

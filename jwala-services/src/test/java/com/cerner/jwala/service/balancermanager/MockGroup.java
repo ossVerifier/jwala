@@ -51,7 +51,9 @@ public class MockGroup {
                 getApplications(),
                 Calendar.getInstance(),
                 "username",
-                "encryptedpassword");
+                "encryptedpassword",
+                "jdkVersion",
+                "apacheTomcatVersion");
         this.jvms.add(jvm);
         jvms.add(jvm);
         return jvms;
@@ -74,7 +76,9 @@ public class MockGroup {
                 getApplications(),
                 Calendar.getInstance(),
                 "username",
-                "encryptedpassword");
+                "encryptedpassword",
+                "jdkVersion",
+                "apacheTomcatVersion");
         return jvm;
     }
 

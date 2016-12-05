@@ -108,6 +108,8 @@ var JvmConfig = React.createClass({
                                             this.refs.jvmAddForm.state.ajpPort,
                                             this.refs.jvmAddForm.state.userName,
                                             this.refs.jvmAddForm.state.encryptedPassword,
+                                            this.refs.jvmAddForm.state.jdkVersion,
+                                            this.refs.jvmAddForm.state.apacheTomcatVersion,
                                             function(){
                                                 self.state.selectedJvm = null;
                                                 self.refreshData({showModalFormAddDialog:false});
@@ -199,7 +201,9 @@ var JvmConfigForm = React.createClass({
         var statusPath = "/manager"; // TODO: Define in a properties file
         var groupIds = [];
         var jdkVersions = ["JDK 1.6", "JDK 1.7", "JDK 1.8"]; // TODO: retrieve from the database
-        var getApacheTomcatVersions = ["Apache Tomcat 7.0.55", "Apache Tomcat 8.0.2"]; // TODO: retrieve from the database
+        var apacheTomcatVersions = ["Apache Tomcat 7.0.55", "Apache Tomcat 8.0.2"]; // TODO: retrieve from the database
+        var jdkVersion = "";
+        var apacheTomcatVersion = "";
         var httpPort = "";
         var httpsPort = "";
         var redirectPort = "";
@@ -223,6 +227,8 @@ var JvmConfigForm = React.createClass({
             ajpPort = this.props.data.ajpPort;
             userName = this.props.data.userName;
             encryptedPassword = this.props.data.encryptedPassword;
+            jdkVersion = this.props.data.jdkVersion;
+            apacheTomcatVersion = this.props.data.apacheTomcatVersion;
         }
 
         return {
@@ -231,8 +237,10 @@ var JvmConfigForm = React.createClass({
             host: host,
             statusPath: statusPath,
             groupIds: groupIds,
-            jdkVersions: jdkVersions,
-            getApacheTomcatVersions: getApacheTomcatVersions,
+            jdkVersions: jdkVersions, // TODO remove once versions are retrieved from the database
+            apacheTomcatVersions: apacheTomcatVersions, // TODO remove once versions are retrieved from the database
+            jdkVersion: jdkVersion,
+            apacheTomcatVersion: apacheTomcatVersion,
             groupMultiSelectData: [],
             httpPort: httpPort,
             httpsPort: httpsPort,
@@ -377,7 +385,7 @@ var JvmConfigForm = React.createClass({
                         	</tr>
                         	<tr>
                         	    <td>
-                        	    <select ref="jdkVersion" valueLink={this.linkState("jdkVersion")}>
+                        	    <select name="jdkVersion" ref="jdkVersion" valueLink={this.linkState("jdkVersion")}>
                                     {this.getJdkVersions()}
                                 </select>
                         	    </td>
@@ -387,7 +395,7 @@ var JvmConfigForm = React.createClass({
                         	</tr>
                         	<tr>
                         	    <td>
-                        	    <select ref="apacheTomcatVersion" valueLink={this.linkState("apacheTomcatVersion")}>
+                        	    <select name="apacheTomcatVersion" ref="apacheTomcatVersion" valueLink={this.linkState("apacheTomcatVersion")}>
                                     {this.getApacheTomcatVersions()}
                                 </select>
                         	    </td>
@@ -438,16 +446,16 @@ var JvmConfigForm = React.createClass({
             var basePort = parseInt(this.state.httpPort);
             var ports = {};
             if (!$.trim(this.state.httpsPort)) {
-                ports.httpsPort = basePort + 1;
+                ports.httpsPort = basePort + 1 + "";
             }
             if (!$.trim(this.state.redirectPort)) {
-                ports.redirectPort = basePort + 2;
+                ports.redirectPort = basePort + 2 + "";
             }
             if (!$.trim(this.state.shutdownPort)) {
-                ports.shutdownPort = basePort + 3;
+                ports.shutdownPort = basePort + 3 + "";
             }
             if (!$.trim(this.state.ajpPort)) {
-                ports.ajpPort = basePort + 4;
+                ports.ajpPort = basePort + 4 + "";
             }
             this.setState(ports);
         }
@@ -469,7 +477,9 @@ var JvmConfigForm = React.createClass({
                                                                                 range: [-1, 65535],
                                                                                 notEqualTo: 0
                                                                              },
-                                                                            "ajpPort": {range: [1, 65535]}
+                                                                            "ajpPort": {range: [1, 65535]},
+                                                                            "jdkVersion": {required: false},
+                                                                            "apacheTomcatVersion": {required: false}
                                                                             },
                                                                             messages: {
                                                                                 "groupSelector[]": {
@@ -508,8 +518,8 @@ var JvmConfigForm = React.createClass({
     },
     getApacheTomcatVersions: function() {
         var items=[<option key='no-apache-tomcat-version' value=''></option>];
-        for (var i=0; i < this.state.getApacheTomcatVersions.length; i++){
-            var apacheTomcatOption = this.state.getApacheTomcatVersions[i]; // TODO retrieve these from the database
+        for (var i=0; i < this.state.apacheTomcatVersions.length; i++){
+            var apacheTomcatOption = this.state.apacheTomcatVersions[i]; // TODO retrieve these from the database
             items.push(<option key={apacheTomcatOption} value={apacheTomcatOption}>{apacheTomcatOption}</option>);
         }
         return items;
@@ -539,7 +549,9 @@ var JvmConfigDataTable = React.createClass({
                         {sTitle:"Redir", mData:"redirectPort"},
                         {sTitle:"Shutd", mData:"shutdownPort"},
                         {sTitle:"AJP", mData:"ajpPort"},
-                        {sTitle:"Username", mData: "userName"}];
+                        {sTitle:"Username", mData: "userName"},
+                        {sTitle:"JDK", mData:"jdkVersion"},
+                        {sTitle:"Tomcat", mData:"tomcatVersion"}];
         return <JwalaDataTable ref="dataTableWrapper"
                                tableId="jvm-config-datatable"
                                tableDef={tableDef}

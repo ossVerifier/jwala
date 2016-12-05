@@ -69,7 +69,9 @@ public class JvmResourceHandler extends ResourceHandler {
                     jvm.getErrorStatus(),
                     jvm.getLastUpdatedDate(),
                     jvm.getUserName(),
-                    jvm.getEncryptedPassword());
+                    jvm.getEncryptedPassword(),
+                    jvm.getJdkVersion(),
+                    jvm.getTomcatVersion());
 
             final UploadJvmConfigTemplateRequest uploadJvmTemplateRequest = new UploadJvmConfigTemplateRequest(jvmWithParentGroup, metaData.getTemplateName(),
                     templateContent, metaData.getJsonData());

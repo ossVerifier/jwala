@@ -67,7 +67,7 @@ public abstract class AbstractGroupPersistenceServiceIntegrationTest {
                                             5, 4, 3, 2, 1,
                                             userId,
                                             new Path("/abc"),
-                                            "EXAMPLE_OPTS=%someEnv%/someVal", null, null);
+                                            "EXAMPLE_OPTS=%someEnv%/someVal", null, null, "", "");
 
         application = applicationPersistenceService.createApplication(new CreateApplicationRequest(preCreatedGroup.getId(),
                         "testApp", "", false, false, false));
@@ -290,7 +290,7 @@ public abstract class AbstractGroupPersistenceServiceIntegrationTest {
                                                    5, 4, 3, 2, 1,
                                                    userId,
                                                    new Path("/abc"),
-                                                   "EXAMPLE_OPTS=%someEnv%/someVal", null, null);
+                                                   "EXAMPLE_OPTS=%someEnv%/someVal", null, null, "", "");
 
         final Identifier<Group> groupId = preCreatedGroup.getId();
 

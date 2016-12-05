@@ -35,7 +35,9 @@ public class JsonCreateJvm {
     private final String systemProperties;
     private final String userName;
     private final String encryptedPassword;
-    
+    private final String jdkVersion;
+    private final String apacheTomcatVersion;
+
     private final Set<String> groupIds;
 
     public JsonCreateJvm(final String theJvmName,
@@ -48,19 +50,23 @@ public class JsonCreateJvm {
                          final String theStatusPath,
                          final String theSystemProperties,
                          final String theUsername,
-                         final String theEncryptedPassword) {
+                         final String theEncryptedPassword,
+                         final String theJdkVersion,
+                         final String theApacheTomcatVersion) {
         this(theJvmName,
-             theHostName,
-             Collections.<String>emptySet(),
-             theHttpPort,
-             theHttpsPort,
-             theRedirectPort,
-             theShutdownPort,
-             theAjpPort,
-             theStatusPath,
-             theSystemProperties,
-             theUsername,
-             theEncryptedPassword);
+                theHostName,
+                Collections.<String>emptySet(),
+                theHttpPort,
+                theHttpsPort,
+                theRedirectPort,
+                theShutdownPort,
+                theAjpPort,
+                theStatusPath,
+                theSystemProperties,
+                theUsername,
+                theEncryptedPassword,
+                theJdkVersion,
+                theApacheTomcatVersion);
     }
 
     public JsonCreateJvm(final String theJvmName,
@@ -74,7 +80,9 @@ public class JsonCreateJvm {
                          final String theStatusPath,
                          final String theSystemProperties,
                          final String theUsername,
-                         final String theEncrypedPassword) {
+                         final String theEncrypedPassword,
+                         final String theJdkVersion,
+                         final String theApacheTomcatVersion) {
         jvmName = theJvmName;
         hostName = theHostName;
         httpPort = theHttpPort;
@@ -86,7 +94,9 @@ public class JsonCreateJvm {
         systemProperties = theSystemProperties;
         groupIds = Collections.unmodifiableSet(new HashSet<>(someGroupIds));
         userName = theUsername;
-        encryptedPassword =theEncrypedPassword;
+        encryptedPassword = theEncrypedPassword;
+        jdkVersion = theJdkVersion;
+        apacheTomcatVersion = theApacheTomcatVersion;
     }
 
     public boolean areGroupsPresent() {
@@ -96,33 +106,37 @@ public class JsonCreateJvm {
     public CreateJvmRequest toCreateJvmRequest() throws BadRequestException {
 
         return new CreateJvmRequest(jvmName,
-                                    hostName,
-                                    JsonUtilJvm.stringToInteger(httpPort),
-                                    JsonUtilJvm.stringToInteger(httpsPort),
-                                    JsonUtilJvm.stringToInteger(redirectPort),
-                                    JsonUtilJvm.stringToInteger(shutdownPort),
-                                    JsonUtilJvm.stringToInteger(ajpPort),
-                                    new Path(statusPath),
-                                    systemProperties,
-                                    userName,
-                                    encryptedPassword);
+                hostName,
+                JsonUtilJvm.stringToInteger(httpPort),
+                JsonUtilJvm.stringToInteger(httpsPort),
+                JsonUtilJvm.stringToInteger(redirectPort),
+                JsonUtilJvm.stringToInteger(shutdownPort),
+                JsonUtilJvm.stringToInteger(ajpPort),
+                new Path(statusPath),
+                systemProperties,
+                userName,
+                encryptedPassword,
+                jdkVersion,
+                apacheTomcatVersion);
     }
 
     public CreateJvmAndAddToGroupsRequest toCreateAndAddRequest() {
         final Set<Identifier<Group>> groups = convertGroupIds();
 
         return new CreateJvmAndAddToGroupsRequest(jvmName,
-                                                  hostName,
-                                                  groups,
-                                                  JsonUtilJvm.stringToInteger(httpPort),
-                                                  JsonUtilJvm.stringToInteger(httpsPort),
-                                                  JsonUtilJvm.stringToInteger(redirectPort),
-                                                  JsonUtilJvm.stringToInteger(shutdownPort),
-                                                  JsonUtilJvm.stringToInteger(ajpPort),
-                                                  new Path(statusPath),
-                                                  systemProperties,
-                                                  userName,
-                                                  encryptedPassword);
+                hostName,
+                groups,
+                JsonUtilJvm.stringToInteger(httpPort),
+                JsonUtilJvm.stringToInteger(httpsPort),
+                JsonUtilJvm.stringToInteger(redirectPort),
+                JsonUtilJvm.stringToInteger(shutdownPort),
+                JsonUtilJvm.stringToInteger(ajpPort),
+                new Path(statusPath),
+                systemProperties,
+                userName,
+                encryptedPassword,
+                jdkVersion,
+                apacheTomcatVersion);
     }
 
     protected Set<Identifier<Group>> convertGroupIds() {
@@ -152,28 +166,32 @@ public class JsonCreateJvm {
             final JsonNode systemProperties = rootNode.get("systemProperties");
             final JsonNode userName = rootNode.get("userName");
             final JsonNode encryptedPassword = rootNode.get("encryptedPassword");
-            
+            final JsonNode jdkVersion = rootNode.get("jdkVersion");
+            final JsonNode apacheTomcatVersion = rootNode.get("apacheTomcatVersion");
+
             final Set<String> rawGroupIds = deserializeGroupIdentifiers(rootNode);
-            final String jsonPassword = encryptedPassword==null ? null : encryptedPassword.getTextValue();
+            final String jsonPassword = encryptedPassword == null ? null : encryptedPassword.getTextValue();
             final String pw;
-            if (jsonPassword!=null && jsonPassword.length()>0) {
+            if (jsonPassword != null && jsonPassword.length() > 0) {
                 pw = new DecryptPassword().encrypt(encryptedPassword.getTextValue());
             } else {
                 pw = "";
             }
-            
+
             return new JsonCreateJvm(jvmNode.getTextValue(),
-                                     hostNameNode.getTextValue(),
-                                     rawGroupIds,
-                                     httpPortNode.getValueAsText(),
-                                     httpsPortNode.getValueAsText(),
-                                     redirectPortNode.getValueAsText(),
-                                     shutdownPortNode.getValueAsText(),
-                                     ajpPortNode.getValueAsText(),
-                                     statusPathNode.getTextValue(),
-                                     systemProperties.getTextValue(),
-                                     userName==null? null : userName.getTextValue(),
-                                     pw);
+                    hostNameNode.getTextValue(),
+                    rawGroupIds,
+                    httpPortNode.getTextValue(),
+                    httpsPortNode.getTextValue(),
+                    redirectPortNode.getTextValue(),
+                    shutdownPortNode.getTextValue(),
+                    ajpPortNode.getTextValue(),
+                    statusPathNode.getTextValue(),
+                    systemProperties.getTextValue(),
+                    userName == null ? null : userName.getTextValue(),
+                    pw,
+                    jdkVersion.getTextValue(),
+                    apacheTomcatVersion.getTextValue());
         }
     }
 
@@ -191,6 +209,8 @@ public class JsonCreateJvm {
                 ", systemProperties='" + systemProperties + '\'' +
                 ", userName='" + userName + '\'' +
                 ", encryptedPassword='" + encryptedPassword + '\'' +
+                ", jdkVersion='" + jdkVersion + '\'' +
+                ", apacheTomcatVersion='" + apacheTomcatVersion + '\'' +
                 ", groupIds=" + groupIds +
                 '}';
     }

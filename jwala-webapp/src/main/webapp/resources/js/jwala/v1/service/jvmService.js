@@ -38,6 +38,8 @@
                            ajpPort,
                            userName,
                            encryptedPassword,
+                           jdkVersion,
+                           apacheTomcatVersion,
                            successCallback,
                            errorCallback) {
         return serviceFoundation.post("v1.0/jvms",
@@ -53,7 +55,9 @@
                                                       shutdownPort: shutdownPort,
                                                       ajpPort: ajpPort,
                                                       userName: userName,
-                                                      encryptedPassword: encryptedPassword}),
+                                                      encryptedPassword: encryptedPassword,
+                                                      jdkVersion: jdkVersion,
+                                                      apacheTomcatVersion: apacheTomcatVersion}),
                                                       successCallback,
                                                       errorCallback);
     },

@@ -1,14 +1,5 @@
 package com.cerner.jwala.common.request.jvm;
 
-import java.io.Serializable;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
-
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ToStringBuilder;
-
 import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
@@ -16,6 +7,14 @@ import com.cerner.jwala.common.domain.model.path.Path;
 import com.cerner.jwala.common.request.Request;
 import com.cerner.jwala.common.request.group.AddJvmToGroupRequest;
 import com.cerner.jwala.common.rule.group.GroupIdsRule;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+
+import java.io.Serializable;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 public class CreateJvmAndAddToGroupsRequest implements Serializable, Request {
 
@@ -33,19 +32,24 @@ public class CreateJvmAndAddToGroupsRequest implements Serializable, Request {
                                           final Path theStatusPath,
                                           final String theSystemProperties,
                                           final String theUserName,
-                                          final String theEncryptedPassword) {
+                                          final String theEncryptedPassword,
+                                          final String theJdkVersion,
+                                          final String theTomcatVersion) {
 
         createCommand = new CreateJvmRequest(theName,
-                                             theHostName,
-                                             theHttpPort,
-                                             theHttpsPort,
-                                             theRedirectPort,
-                                             theShutdownPort,
-                                             theAjpPort,
-                                             theStatusPath,
-                                             theSystemProperties,
-                                             theUserName,
-                                             theEncryptedPassword);
+                theHostName,
+                theHttpPort,
+                theHttpsPort,
+                theRedirectPort,
+                theShutdownPort,
+                theAjpPort,
+                theStatusPath,
+                theSystemProperties,
+                theUserName,
+                theEncryptedPassword,
+                theJdkVersion,
+                theTomcatVersion
+        );
         groups = Collections.unmodifiableSet(new HashSet<>(theGroups));
     }
 
@@ -55,7 +59,7 @@ public class CreateJvmAndAddToGroupsRequest implements Serializable, Request {
 
     public Set<AddJvmToGroupRequest> toAddRequestsFor(final Identifier<Jvm> aJvmId) {
         return new AddJvmToGroupCommandSetBuilder(aJvmId,
-                                                  groups).build();
+                groups).build();
     }
 
     public Set<Identifier<Group>> getGroups() {
