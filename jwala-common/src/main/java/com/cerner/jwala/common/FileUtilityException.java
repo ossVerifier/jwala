@@ -7,6 +7,10 @@ package com.cerner.jwala.common;
  */
 public class FileUtilityException extends RuntimeException {
 
+    public FileUtilityException(final String msg) {
+        super(msg);
+    }
+
     public FileUtilityException(final String msg, final Throwable throwable) {
         super(msg, throwable);
     }

@@ -23,6 +23,11 @@ public class FileUtility {
      * @param destination the destination e.g. c:/scratch
      */
     public void unzip(final File zipFile, final File destination) {
+
+        if (!destination.exists() && !destination.mkdir()) {
+            throw new FileUtilityException("Failed to create zip file destination directory \"" + destination + "\"!");
+        }
+
         try {
             final JarFile jarFile = new JarFile(zipFile);
             final Enumeration entries = jarFile.entries();
