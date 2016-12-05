@@ -1,5 +1,3 @@
-apply plugin: "sonar-runner"
-
 ext {
     versions = [
             junit                 : "4.11",
@@ -37,40 +35,88 @@ ext {
             tika                  : '1.14'
     ]
 }
-repositories {
-    mavenCentral()
-}
-
-sonarRunner {
-    sonarProperties {
-        property 'sonar.host.url',  project.properties['sonarHostUrl']
-        property 'sonar.jdbc.url', project.properties['sonarJDBCUrl']
-        property 'sonar.jdbc.driverClassName', 'com.mysql.jdbc.Driver'
-        property 'sonar.jdbc.username', 'sonar'
-        property 'sonar.jdbc.password', 'sonar'
-        property 'sonar.dynamicAnalysis', 'reuseReports'
-        properties["sonar.projectKey"] = 'com.cerner.jwala'
-        properties["sonar.projectName"] = 'tomcat operations center'
-        properties["sonar.projectVersion"] =  '1.0.0'
-    }
-}
 
 task(clean) << {
     delete "build/jacoco"
 }
 
+task(createRelease) << {
+    def gradleProperties = file("gradle.properties")
+    def lines = gradleProperties.readLines()
+    def line = lines.first()
+    def versions = line.split("=")
+    def version = versions.last().replace("-SNAPSHOT", "")
+    lines[0] = "buildVersion=" + version
+    gradleProperties.withWriter {
+        lines.eachWithIndex { l, i ->
+            it.write(l + "\n")
+        }
+    }
+}
+
+task(createSnapshot) << {
+    def gradleProperties = file("gradle.properties")
+    def lines = gradleProperties.readLines()
+    def line = lines.first()
+    def versions = line.split("=")
+    def version = versions.last().replace("-SNAPSHOT", "")
+    def numbers = version.split("\\.")
+    def newNumber = numbers.last().toInteger() + 1
+    numbers[numbers.size() - 1] = newNumber.toString()
+    version = new String()
+    numbers.eachWithIndex { num, i ->
+        if (i < numbers.size() - 1) {
+            version = version + num + "."
+        } else {
+            version = version + num
+        }
+    }
+    lines[0] = "buildVersion=" + version + "-SNAPSHOT"
+    gradleProperties.withWriter {
+        lines.eachWithIndex { l, i ->
+            it.write(l + "\n")
+        }
+    }
+}
+
+// displays progress information just as Gradle does when it retrieves an artifact from a repository.
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath 'de.undercouch:gradle-download-task:3.1.1'
+    }
+}
+
+/*** Gradle Plugin for Node: start ***/
+buildscript {
+    repositories {
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+    }
+    dependencies {
+        classpath "com.moowork.gradle:gradle-node-plugin:0.13"
+    }
+}
+
+apply plugin: 'com.moowork.node'
+/*** Gradle Plugin for Node: end ***/
+
 subprojects {
     apply plugin: "java"
-    apply plugin: "jacoco"
     apply plugin: "pmd"
+    apply plugin: "jacoco"
     apply plugin: "eclipse"
 
     sourceCompatibility = 1.8
+
     group = "com.cerner.jwala"
+
     version = project.properties['buildVersion']
 
     plugins.withType(MavenPublishPlugin).whenPluginAdded {
-
         publishing {
             repositories {
                 maven {
@@ -105,20 +151,17 @@ subprojects {
         }
     }
 
+    // We need this since this sub project compiles Jwala which have dependencies
     repositories {
         mavenCentral()
     }
 
     dependencies {
-        compile group: 'org.slf4j', name: 'slf4j-api', version: "$versions.slf4j"
         compile group: 'org.apache.commons', name: 'commons-lang3', version: "$versions.commons_lang"
-
+        compile group: 'org.slf4j', name: 'slf4j-api', version: "$versions.slf4j"
 
         testCompile "junit:junit:4.11"
         testCompile group: 'org.mockito', name: 'mockito-core', version: "$versions.mockito"
-
-        pmd group: "net.sourceforge.pmd", name: "pmd", version: "$versions.pmd"
-
     }
 
     jar {
@@ -136,6 +179,7 @@ subprojects {
         }
     }
 
+    /*** PMD Config: start ***/
     pmdMain {
         reports {
             xml.enabled = true
@@ -149,7 +193,9 @@ subprojects {
             html.enabled = false
         }
     }
+    /*** PMD Config: end ***/
 
+    /*** Jacoco: start ***/
     jacoco {
         toolVersion = "$project.versions.jacoco"
     }
@@ -193,77 +239,31 @@ subprojects {
     }
 
     test.finalizedBy mergeTestCodeCoverageResults
+    /*** Jacoco: end ***/
+}
+
+// Sonar Runner requires sourceCompatibility 1.7 which is the reason why it's in its own subproject
+subprojects {
+    apply plugin: "sonar-runner"
+
+    sourceCompatibility = 1.7
+
+    group = "com.cerner.jwala"
 
     sonarRunner {
         sonarProperties {
+            property 'sonar.host.url',  project.properties['sonarHostUrl']
+            property 'sonar.jdbc.url', project.properties['sonarJDBCUrl']
+            property 'sonar.jdbc.driverClassName', 'com.mysql.jdbc.Driver'
+            property 'sonar.jdbc.username', 'sonar'
+            property 'sonar.jdbc.password', 'sonar'
+            property 'sonar.dynamicAnalysis', 'reuseReports'
             property "sonar.junit.reportsPath", test.reports.junitXml.destination   // will be fixed in Gradle 1.12
             property "sonar.jacoco.reportPath", project.rootProject.buildDir.path + "/jacoco/" + "accum.exec"
             property "sonar.jacoco.itReportPath", project.rootProject.buildDir.path + "/jacoco/" + "integration_test_jwala.exec"
+            properties["sonar.projectKey"] = 'com.cerner.jwala'
+            properties["sonar.projectName"] = 'tomcat operations center'
+            properties["sonar.projectVersion"] =  '1.0.0'
         }
     }
 }
-
-task(createRelease) << {
-    def gradleProperties = file("gradle.properties")
-    def lines = gradleProperties.readLines()
-    def line = lines.first()
-    def versions = line.split("=")
-    def version = versions.last().replace("-SNAPSHOT", "")
-    lines[0] = "buildVersion=" + version
-    gradleProperties.withWriter {
-        lines.eachWithIndex { l, i ->
-            it.write(l + "\n")
-        }
-    }
-}
-
-task(createSnapshot) << {
-    def gradleProperties = file("gradle.properties")
-    def lines = gradleProperties.readLines()
-    def line = lines.first()
-    def versions = line.split("=")
-    def version = versions.last().replace("-SNAPSHOT", "")
-    def numbers = version.split("\\.")
-    def newNumber = numbers.last().toInteger() + 1
-    numbers[numbers.size() - 1] = newNumber.toString()
-    version = new String()
-    numbers.eachWithIndex { num, i ->
-        if (i < numbers.size() - 1) {
-            version = version + num + "."
-        } else {
-            version = version + num
-        }
-    }
-    lines[0] = "buildVersion=" + version + "-SNAPSHOT"
-    gradleProperties.withWriter {
-        lines.eachWithIndex { l, i ->
-            it.write(l + "\n")
-        }
-    }
-}
-
-buildscript {
-    repositories {
-        jcenter()
-    }
-    dependencies {
-        classpath 'de.undercouch:gradle-download-task:3.1.1'
-    }
-}
-
-
-
-
-buildscript {
-    repositories {
-        maven {
-            url "https://plugins.gradle.org/m2/"
-        }
-    }
-
-    dependencies {
-        classpath "com.moowork.gradle:gradle-node-plugin:0.13"
-    }
-}
-
-apply plugin: 'com.moowork.node'
