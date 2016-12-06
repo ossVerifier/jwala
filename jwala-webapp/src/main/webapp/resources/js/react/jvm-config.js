@@ -200,8 +200,8 @@ var JvmConfigForm = React.createClass({
         var host = "";
         var statusPath = "/manager"; // TODO: Define in a properties file
         var groupIds = [];
-        var jdkVersions = ["JDK 1.6", "JDK 1.7", "JDK 1.8"]; // TODO: retrieve from the database
-        var tomcatVersions = ["Apache Tomcat 7.0.55", "Apache Tomcat 8.0.2"]; // TODO: retrieve from the database
+        var jdkVersions = [];
+        var tomcatVersions = [];
         var jdkVersion = "";
         var tomcatVersion = "";
         var httpPort = "";
@@ -237,8 +237,8 @@ var JvmConfigForm = React.createClass({
             host: host,
             statusPath: statusPath,
             groupIds: groupIds,
-            jdkVersions: jdkVersions, // TODO remove once versions are retrieved from the database
-            tomcatVersions: tomcatVersions, // TODO remove once versions are retrieved from the database
+            jdkVersions: jdkVersions,
+            tomcatVersions: tomcatVersions,
             jdkVersion: jdkVersion,
             tomcatVersion: tomcatVersion,
             groupMultiSelectData: [],
