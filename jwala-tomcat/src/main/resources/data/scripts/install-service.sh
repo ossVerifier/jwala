@@ -19,6 +19,7 @@ else
     exit $JWALA_EXIT_CODE_FAILED
 fi
 $2/$1/bin/install_service.bat "$3" "$4"
+export EXIT_CODE=$?
 if [ "$EXIT_CODE" -ne "0" ]; then
   /usr/bin/echo Failed to install service $1
   exit $JWALA_EXIT_CODE_FAILED

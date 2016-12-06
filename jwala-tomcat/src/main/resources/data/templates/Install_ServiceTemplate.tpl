@@ -7,6 +7,9 @@ CALL ${vars['remote.paths.instances']}\\${jvm.jvmName}\bin\setenv.bat
 
 ECHO Run pre_install.bat
 if exist ${vars['remote.paths.instances']}\\${jvm.jvmName}\bin\pre_install.bat call ${vars['remote.paths.instances']}\\${jvm.jvmName}\bin\pre_install.bat
+IF "%ERRORLEVEL%" NEQ "0" (
+    EXIT %ERRORLEVEL%"
+)
 
 ECHO Install the service
 CMD /C ${vars['remote.paths.tomcat.core']}\bin\service.bat install ${jvm.jvmName}
@@ -19,6 +22,9 @@ SC CONFIG ${jvm.jvmName} start= auto
 
 ECHO Run post_install.bat
 if exist ${vars['remote.paths.instances']}\\${jvm.jvmName}\bin\post_install.bat call ${vars['remote.paths.instances']}\\${jvm.jvmName}\bin\post_install.bat
+IF "%ERRORLEVEL%" NEQ "0" (
+    EXIT %ERRORLEVEL%"
+)
 
 if "%svc_username%"=="" goto :no_user
 
