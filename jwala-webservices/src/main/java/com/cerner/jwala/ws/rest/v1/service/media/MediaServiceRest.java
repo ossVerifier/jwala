@@ -36,8 +36,8 @@ public interface MediaServiceRest extends InitializingBean {
     Response getAllMedia();
 
     @GET
-    @Path("/{mediaId")
-    Response getMedia(@PathParam("mediaId") final Integer aMediaId,
+    @Path("/{aMediaName}")
+    Response getMedia(@PathParam("aMediaName") final String aMediaName,
                       @BeanParam final AuthenticatedUser aUser);
 
 }

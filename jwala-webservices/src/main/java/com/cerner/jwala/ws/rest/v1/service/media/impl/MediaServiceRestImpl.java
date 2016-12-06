@@ -39,7 +39,7 @@ public class MediaServiceRestImpl implements MediaServiceRest {
     }
 
     @Override
-    public Response getMedia(final Integer aMediaId, final AuthenticatedUser aUser) {
+    public Response getMedia(final String aMediaName, final AuthenticatedUser aUser) {
         Media media = new Media(1, "mediaName", "mediaPath", "mediaType", "mediaRemoteHostPath");
         return ResponseBuilder.ok(media);
     }

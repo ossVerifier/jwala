@@ -1,9 +1,10 @@
 var mediaService = {
+
       getAllMedia: function(responseCallback) {
-            return serviceFoundation.get("/v1.0/media?all", "json", responseCallback);
+            return serviceFoundation.get("v1.0/media?all", "json", responseCallback);
       },
-      getAllMedia: function(responseCallback) {
-            return serviceFoundation.get("/v1.0/media/" + id, "json", responseCallback);
+      getMedia: function(id, responseCallback) {
+            return serviceFoundation.get("v1.0/media/" + id, "json", responseCallback);
       },
       insertNewMedia: function(name, successCallback, errorCallback) {
       	    return serviceFoundation.post("v1.0/media",

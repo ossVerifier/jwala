@@ -41,7 +41,6 @@ var MediaConfig = React.createClass({
     },
     loadTableData: function(afterLoadCallback) {
         var self = this;
-        // TODO implement service call
         mediaService.getAllMedia((function(response){
                                           self.refs.dataTable.refresh(response.applicationResponseContent);
                                           if ($.isFunction(afterLoadCallback)) {
@@ -82,7 +81,7 @@ var MediaConfig = React.createClass({
             // TODO implement service call
             mediaService.updateMedia(serializedData,
                                             function(response){
-                                                self.refs.modalEditWebAppDlg.close();
+                                                self.refs.modalEditMediaDlg.close();
                                                 self.loadTableData(function(){
                                                     self.state.selectedMedia = self.refs.dataTable.getSelectedItem();
                                                 });
@@ -114,11 +113,24 @@ var MediaConfig = React.createClass({
         });
     },
     editMediaDlg: function(name) {
-        this.refs.modalAddMediaDlg.show();
+          var self = this;
+              mediaService.getMedia(name, (function(response){
+                                           var formData = {};
+                                                 formData["name"] = response.applicationResponseContent.name;
+                                                 formData["path"] = response.applicationResponseContent.path;
+                                                 formData["type"] = response.applicationResponseContent.type;
+                                                 formData["remoteHostPath"] = response.applicationResponseContent.remoteHostPath;
+                                                         self.refs.modalEditMediaDlg.show("Edit Media",
+                                                             <MediaConfigForm formData={formData}/>);
+                                                }));
+
+
+
+
     },
     onMediaNameClick: function(name) {
         var self = this;
-        return <button className="button-link" onClick={this.editMediaDlg.bind(this, name)}>{name}</button>
+        return <button className="button-link" onClick={function(){self.editMediaDlg(name)}}/*{this.editMediaDlg.bind(this, name)}*/>{name}</button>
     }
 })
 
