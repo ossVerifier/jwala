@@ -213,27 +213,15 @@ subprojects {
         systemProperties['spring.profiles.active'] = 'integration'
     }
 
-    task copyResult(type: Copy) {
-        from file("${project.buildDir.path}/jacoco/")
-        into file("${project.rootProject.buildDir.path}/jacoco/")
-        include "accum-${project.name}.exec"
-        rename "accum-${project.name}.exec", "accum.exec"
-    }
-
     task mergeTestCodeCoverageResults(type: JacocoMerge) {
         description = 'Merge test code coverage results from all java projects'
-        destinationFile = file("${project.buildDir.path}/jacoco/accum-${project.name}.exec")
-        def mergeFile = file("${project.rootProject.buildDir.path}/jacoco/accum.exec")
+        destinationFile = file("${project.rootProject.buildDir.path}/jacoco/accum.exec")
         def testFile = file("${project.buildDir.path}/jacoco/test.exec")
         onlyIf {
             testFile.exists()
         }
         executionData {
-            if (mergeFile.exists()) return files(mergeFile, testFile);
-            else return files(testFile);
-        }
-        doLast {
-            copyResult.execute();
+            return files(destinationFile, testFile);
         }
     }
 
@@ -241,28 +229,42 @@ subprojects {
     /*** Jacoco: end ***/
 }
 
+/*** Sonar Runner: start ***/
+apply plugin: "sonar-runner"
+
+repositories {
+    mavenCentral()
+}
+
+// Project wide SonarRunner properties definition
+sonarRunner {
+    sonarProperties {
+        property 'sonar.host.url',  project.properties['sonarHostUrl']
+        property 'sonar.jdbc.url', project.properties['sonarJDBCUrl']
+        property 'sonar.jdbc.driverClassName', 'com.mysql.jdbc.Driver'
+        property 'sonar.jdbc.username', 'sonar'
+        property 'sonar.jdbc.password', 'sonar'
+        property 'sonar.dynamicAnalysis', 'reuseReports'
+        properties["sonar.projectKey"] = 'com.cerner.jwala'
+        properties["sonar.projectName"] = 'jwala'
+        properties["sonar.projectVersion"] =  '1.0.0'
+    }
+}
+
 // Sonar Runner requires sourceCompatibility 1.7 which is the reason why it's in its own subproject
 subprojects {
-    apply plugin: "sonar-runner"
-
     sourceCompatibility = 1.7
 
     group = "com.cerner.jwala"
 
+    version = project.properties['buildVersion']
+
     sonarRunner {
         sonarProperties {
-            property 'sonar.host.url',  project.properties['sonarHostUrl']
-            property 'sonar.jdbc.url', project.properties['sonarJDBCUrl']
-            property 'sonar.jdbc.driverClassName', 'com.mysql.jdbc.Driver'
-            property 'sonar.jdbc.username', 'sonar'
-            property 'sonar.jdbc.password', 'sonar'
-            property 'sonar.dynamicAnalysis', 'reuseReports'
             property "sonar.junit.reportsPath", test.reports.junitXml.destination   // will be fixed in Gradle 1.12
             property "sonar.jacoco.reportPath", project.rootProject.buildDir.path + "/jacoco/" + "accum.exec"
             property "sonar.jacoco.itReportPath", project.rootProject.buildDir.path + "/jacoco/" + "integration_test_jwala.exec"
-            properties["sonar.projectKey"] = 'com.cerner.jwala'
-            properties["sonar.projectName"] = 'jwala'
-            properties["sonar.projectVersion"] =  '1.0.0'
         }
     }
 }
+/*** Sonar Runner: end ***/
