@@ -221,7 +221,10 @@ subprojects {
             testFile.exists()
         }
         executionData {
-            return files(destinationFile, testFile);
+            if (destinationFile.exists()) {
+                return files(destinationFile, testFile);
+            }
+            return files(testFile);
         }
     }
 
