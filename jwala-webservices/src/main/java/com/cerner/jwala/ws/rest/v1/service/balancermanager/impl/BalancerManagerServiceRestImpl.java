@@ -76,7 +76,4 @@ public class BalancerManagerServiceRestImpl implements BalancerManagerServiceRes
         return ResponseBuilder.ok(balancerManagerState);
     }
 
-    @Override
-    public void afterPropertiesSet() throws Exception {
-    }
 }
