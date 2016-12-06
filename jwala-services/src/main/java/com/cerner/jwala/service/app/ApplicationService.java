@@ -35,8 +35,6 @@ public interface ApplicationService {
 
     List<Application> findApplicationsByJvmId(Identifier<Jvm> jvmId);
 
-    Application uploadWebArchive(UploadWebArchiveRequest command, User user);
-
     Application deleteWebArchive(Identifier<Application> appToRemoveWAR, User user);
 
     List<String> getResourceTemplateNames(final String appName, String jvmName);
@@ -78,15 +76,6 @@ public interface ApplicationService {
     void copyApplicationConfigToGroupJvms(Group group, String appName, ResourceGroup resourceGroup, User user);
 
     void deployApplicationResourcesToGroupHosts(String groupName, Application app, ResourceGroup resourceGroup);
-
-    /**
-     * Upload a WAR for an application.
-     * @param appId the application id
-     * @param warName the war name
-     * @param war the war byte data
-     * @param deployPath @return {@link Application}
-     */
-    Application uploadWebArchive(final Identifier<Application> appId, String warName, byte[] war, String deployPath) throws IOException;
 
     CommandOutput executeBackUpCommand(String entity, String host, String source) throws CommandFailureException;
 

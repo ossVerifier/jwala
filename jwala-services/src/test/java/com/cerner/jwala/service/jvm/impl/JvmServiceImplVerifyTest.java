@@ -26,7 +26,7 @@ import com.cerner.jwala.common.request.jvm.CreateJvmRequest;
 import com.cerner.jwala.common.request.jvm.UpdateJvmRequest;
 import com.cerner.jwala.control.AemControl;
 import com.cerner.jwala.exception.CommandFailureException;
-import com.cerner.jwala.files.FileManager;
+import com.cerner.jwala.common.FileUtility;
 import com.cerner.jwala.persistence.jpa.domain.resource.config.template.JpaJvmConfigTemplate;
 import com.cerner.jwala.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
 import com.cerner.jwala.persistence.service.JvmPersistenceService;
@@ -84,9 +84,6 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
     private User mockUser;
 
     @Mock
-    private FileManager mockFileManager;
-
-    @Mock
     private ApplicationService mockApplicationService;
 
     @Mock
@@ -113,6 +110,9 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
     @Mock
     private HistoryFacadeService mockHistoryFacadeService;
 
+    @Mock
+    private FileUtility mockFileUtility;
+
     private JvmService jvmService;
 
     private JvmServiceImpl jvmServiceImpl;
@@ -124,10 +124,10 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
 
         System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, "./src/test/resources");
         initMocks(this);
-        jvmServiceImpl = new JvmServiceImpl(mockJvmPersistenceService, mockGroupService, mockApplicationService, mockFileManager,
+        jvmServiceImpl = new JvmServiceImpl(mockJvmPersistenceService, mockGroupService, mockApplicationService,
                 mockMessagingTemplate, mockGroupStateNotificationService, mockResourceService, mockClientFactoryHelper,
                 "/topic/server-states", mockJvmControlService, mockBinaryDistributionService, mockBinaryDistributionLockManager,
-                mockHistoryFacadeService);
+                mockHistoryFacadeService, mockFileUtility);
         jvmService = jvmServiceImpl;
     }
 
@@ -575,20 +575,6 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
         when(mockJvmPersistenceService.updateResourceTemplate(testJvmName, resourceTemplateName, template)).thenReturn(template);
         String result = jvmService.updateResourceTemplate(testJvmName, resourceTemplateName, template);
         assertEquals(template, result);
-    }
-
-    @Test
-    public void testGenerateInstallServiceBat() {
-        final Jvm jvm = mock(Jvm.class);
-        final List<Jvm> jvms = new ArrayList<>();
-        jvms.add(jvm);
-        when(mockJvmPersistenceService.findJvmByExactName(anyString())).thenReturn(jvm);
-        final String expectedValue = "template contents";
-        when(mockFileManager.getResourceTypeTemplate(anyString())).thenReturn(expectedValue);
-        when(mockResourceService.generateResourceGroup()).thenReturn(new ResourceGroup());
-        when(mockResourceService.generateResourceFile(anyString(), anyString(), any(ResourceGroup.class), eq(jvm), any(ResourceGeneratorType.class))).thenReturn(expectedValue);
-        final String result = jvmService.generateInstallServiceBat(anyString());
-        assertEquals(expectedValue, result);
     }
 
     @Test

@@ -7,11 +7,9 @@ import com.cerner.jwala.common.domain.model.jvm.Jvm;
 import com.cerner.jwala.ws.rest.v1.provider.AuthenticatedUser;
 import com.cerner.jwala.ws.rest.v1.service.app.impl.JsonCreateApplication;
 import com.cerner.jwala.ws.rest.v1.service.app.impl.JsonUpdateApplication;
-import org.apache.cxf.jaxrs.ext.MessageContext;
 import org.springframework.beans.factory.InitializingBean;
 
 import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -48,12 +46,6 @@ public interface ApplicationServiceRest extends InitializingBean {
     @Path("/{applicationId}")
     Response removeApplication(@PathParam("applicationId") final Identifier<Application> anAppToRemove,
                                @BeanParam final AuthenticatedUser aUser);
-
-    @POST
-    @Path("/{applicationId}/war")
-    @Consumes(MediaType.MULTIPART_FORM_DATA)
-    Response uploadWebArchive(@PathParam("applicationId") final Identifier<Application> appId,
-                              @Context MessageContext messageContext);
 
     @DELETE
     @Path("/{applicationId}/war")

@@ -12,7 +12,6 @@ import com.cerner.jwala.common.domain.model.webserver.WebServerReachableState;
 import com.cerner.jwala.common.exception.InternalErrorException;
 import com.cerner.jwala.common.request.webserver.CreateWebServerRequest;
 import com.cerner.jwala.common.request.webserver.UpdateWebServerRequest;
-import com.cerner.jwala.files.FileManager;
 import com.cerner.jwala.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
 import com.cerner.jwala.persistence.jpa.service.exception.ResourceTemplateUpdateException;
 import com.cerner.jwala.persistence.service.WebServerPersistenceService;
@@ -42,8 +41,6 @@ public class WebServerServiceImpl implements WebServerService {
 
     private final WebServerPersistenceService webServerPersistenceService;
 
-    private final FileManager fileManager;
-
     private final String HTTPD_CONF = "httpd.conf";
 
     private final ResourceService resourceService;
@@ -55,14 +52,12 @@ public class WebServerServiceImpl implements WebServerService {
     private final BinaryDistributionLockManager binaryDistributionLockManager;
 
     public WebServerServiceImpl(final WebServerPersistenceService webServerPersistenceService,
-                                final FileManager fileManager,
                                 final ResourceService resourceService,
                                 @Qualifier("webServerInMemoryStateManagerService")
                                 final InMemoryStateManagerService<Identifier<WebServer>, WebServerReachableState> inMemoryStateManagerService,
                                 final String templatePath,
                                 final BinaryDistributionLockManager binaryDistributionLockManager) {
         this.webServerPersistenceService = webServerPersistenceService;
-        this.fileManager = fileManager;
         this.inMemoryStateManagerService = inMemoryStateManagerService;
         this.templatePath = templatePath;
         this.resourceService = resourceService;

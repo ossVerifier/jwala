@@ -14,15 +14,14 @@ import com.cerner.jwala.common.properties.ApplicationProperties;
 import com.cerner.jwala.common.request.group.*;
 import com.cerner.jwala.common.request.jvm.UploadJvmTemplateRequest;
 import com.cerner.jwala.control.command.RemoteCommandExecutorImpl;
-import com.cerner.jwala.files.WebArchiveManager;
 import com.cerner.jwala.persistence.service.*;
 import com.cerner.jwala.service.HistoryFacadeService;
 import com.cerner.jwala.service.MessagingService;
 import com.cerner.jwala.service.VerificationBehaviorSupport;
-import com.cerner.jwala.service.app.PrivateApplicationService;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionService;
 import com.cerner.jwala.service.resource.ResourceContentGeneratorService;
 import com.cerner.jwala.service.resource.ResourceHandler;
+import com.cerner.jwala.service.resource.ResourceRepositoryService;
 import com.cerner.jwala.service.resource.ResourceService;
 import com.cerner.jwala.service.resource.impl.ResourceContentGeneratorServiceImpl;
 import com.cerner.jwala.service.resource.impl.ResourceServiceImpl;
@@ -69,13 +68,7 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
     private WebServerPersistenceService mockWebServerPersistenceService;
 
     @Mock
-    private PrivateApplicationService mockPrivateApplicationService;
-
-    @Mock
     private ResourceDao mockResourceDao;
-
-    @Mock
-    private WebArchiveManager mockWebArchiveManager;
 
     @Mock
     private ResourceHandler mockResourceHandler;
@@ -90,6 +83,9 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
     private HistoryFacadeService mockHistoryFacadeService;
 
     private ResourceContentGeneratorService resourceContentGeneratorService;
+
+    @Mock
+    private ResourceRepositoryService mockResourceRepositoryService;
 
     Map<String, ReentrantReadWriteLock> resourceWriteLockMap = new HashMap<>();
 
@@ -119,8 +115,8 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
 
         resourceService = new ResourceServiceImpl(mockResourcePersistenceService, mockGroupPesistenceService,
                 mockAppPersistenceService, mockJvmPersistenceService, mockWebServerPersistenceService,
-                mockPrivateApplicationService, mockResourceDao, mockWebArchiveManager, mockResourceHandler, mockRemoteCommandExector, resourceWriteLockMap,
-                resourceContentGeneratorService, binaryDistributionService, new Tika());
+                 mockResourceDao, mockResourceHandler, mockRemoteCommandExector, resourceWriteLockMap,
+                resourceContentGeneratorService, binaryDistributionService, new Tika(), mockResourceRepositoryService);
 
         groupService = new GroupServiceImpl(groupPersistenceService,
                 applicationPersistenceService,

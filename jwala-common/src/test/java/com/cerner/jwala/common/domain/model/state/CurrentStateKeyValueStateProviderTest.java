@@ -1,20 +1,16 @@
 package com.cerner.jwala.common.domain.model.state;
 
+import com.cerner.jwala.common.domain.model.id.Identifier;
+import com.cerner.jwala.common.domain.model.state.message.CommonStateKey;
+import com.cerner.jwala.common.domain.model.state.message.StateKey;
+import com.cerner.jwala.common.domain.model.webserver.WebServer;
+import com.cerner.jwala.common.domain.model.webserver.WebServerReachableState;
 import org.joda.time.DateTime;
 import org.joda.time.format.ISODateTimeFormat;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-
-import com.cerner.jwala.common.domain.model.id.Identifier;
-import com.cerner.jwala.common.domain.model.state.CurrentState;
-import com.cerner.jwala.common.domain.model.state.KeyValueStateConsumer;
-import com.cerner.jwala.common.domain.model.state.StateType;
-import com.cerner.jwala.common.domain.model.state.message.CommonStateKey;
-import com.cerner.jwala.common.domain.model.state.message.StateKey;
-import com.cerner.jwala.common.domain.model.webserver.WebServer;
-import com.cerner.jwala.common.domain.model.webserver.WebServerReachableState;
 
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.times;

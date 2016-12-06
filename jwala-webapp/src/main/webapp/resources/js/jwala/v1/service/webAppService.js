@@ -1,11 +1,3 @@
-/*
-Application:
-  .group {.id, .name, .jvms }
-  .id {.id}
-  .name
-  .warPath
-  .webAppContext
-*/
 var webAppService = {
     baseUrl: "v1.0/applications",
     serializedWebAppFormToJson: function(serializedArray, forUpdate) {
@@ -33,14 +25,11 @@ var webAppService = {
 
         return JSON.stringify(json);
     },
-	  deleteWar : function(id, caughtCallback) {
+    deleteWar : function(id, caughtCallback) {
         return serviceFoundation.del("v1.0/applications/" + id + "/war", "json", caughtCallback);
     },
-    deployWarFile : function(id, successCallback, errorCallback) {
-        return serviceFoundation.put("v1.0/applications/" + id + "/war/deploy", "json", null, successCallback, errorCallback);
-    },
-	 insertNewWebApp : function(webAppFromArray, successCallback, errorCallback) {
-		return serviceFoundation.post("v1.0/applications",
+	insertNewWebApp : function(webAppFromArray, successCallback, errorCallback) {
+	    return serviceFoundation.post("v1.0/applications",
 		                              "json",
 		                              this.serializedWebAppFormToJson(webAppFromArray, false),
 		                                                successCallback,
@@ -82,7 +71,7 @@ var webAppService = {
                                      false,
                                      "text/plain; charset=utf-8");
     },
-     previewResourceFile: function(resourceTemplateName, appName, groupName, jvmName, template, successCallback, errorCallback) {
+    previewResourceFile: function(resourceTemplateName, appName, groupName, jvmName, template, successCallback, errorCallback) {
         return serviceFoundation.put("v1.0/applications/" + encodeURIComponent(appName) + "/resources/preview/ " + encodeURIComponent(resourceTemplateName) + ";groupName=" +
                                      encodeURIComponent(groupName) + ";jvmName=" + encodeURIComponent(jvmName),
                                      "json",

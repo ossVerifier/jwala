@@ -17,9 +17,6 @@ import com.cerner.jwala.common.properties.ApplicationProperties;
 import com.cerner.jwala.common.request.webserver.CreateWebServerRequest;
 import com.cerner.jwala.common.request.webserver.UpdateWebServerRequest;
 import com.cerner.jwala.common.request.webserver.UploadWebServerTemplateRequest;
-import com.cerner.jwala.files.FileManager;
-import com.cerner.jwala.files.RepositoryFileInformation;
-import com.cerner.jwala.files.JwalaFile;
 import com.cerner.jwala.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
 import com.cerner.jwala.persistence.service.WebServerPersistenceService;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionLockManager;
@@ -34,9 +31,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Matchers;
 import org.mockito.Mock;
-import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.mockito.stubbing.Answer;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -44,9 +39,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
@@ -67,12 +60,6 @@ public class WebServerServiceImplTest {
     private WebServer mockWebServer;
     @Mock
     private WebServer mockWebServer2;
-
-    @Mock
-    private FileManager fileManager;
-
-    @Mock
-    private RepositoryFileInformation repositoryFileInformation;
 
     private BinaryDistributionLockManager binaryDistributionLockManager;
 
@@ -144,20 +131,7 @@ public class WebServerServiceImplTest {
         mockWebServers11.add(mockWebServer);
         mockWebServers12.add(mockWebServer2);
 
-        wsService = new WebServerServiceImpl(webServerPersistenceService, fileManager, resourceService, inMemService, StringUtils.EMPTY, binaryDistributionLockManager);
-
-        when(repositoryFileInformation.getType()).thenReturn(RepositoryFileInformation.Type.NONE);
-        when(fileManager.getAbsoluteLocation(any(JwalaFile.class))).thenAnswer(new Answer<String>() {
-
-            @Override
-            public String answer(InvocationOnMock invocation) throws Throwable {
-                JwalaFile file = (JwalaFile) invocation.getArguments()[0];
-                if (file != null) {
-                    return "/" + file.getFileName();
-                }
-                return null;
-            }
-        });
+        wsService = new WebServerServiceImpl(webServerPersistenceService, resourceService, inMemService, StringUtils.EMPTY, binaryDistributionLockManager);
 
         resourceGroup = new ResourceGroup(new ArrayList<>(groups));
     }
