@@ -6,7 +6,7 @@ import com.cerner.jwala.ws.rest.v1.response.ResponseBuilder;
 import com.cerner.jwala.ws.rest.v1.service.media.MediaServiceRest;
 
 import javax.ws.rs.core.Response;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -32,9 +32,11 @@ public class MediaServiceRestImpl implements MediaServiceRest {
 
     @Override
     public Response getAllMedia() {
-        Media media = new Media(1, "mediaName", "mediaPath", "mediaType", "mediaRemoteHostPath");
-        List<Media> mediaList = new ArrayList<Media>();
-        mediaList.add(media);
+        List<Media> mediaList = Arrays.asList(
+                new Media(1, "Windows JDK 1.7", "C:/jdk1.7.zip", "JDK", "D:/stp/jdk1.7"),
+                new Media(2, "Windows Apache Tomcat 7.0.55", "C:/apache-tomcat-7.0.55.zip", "Tomcat", "D:/stp/apache-tomcat-7.0.55"),
+                new Media(3, "Windows JDK 1.8", "C:/jdk1.8.zip", "JDK", "D:/stp/jdk1.8"),
+                new Media(4, "Windows Apache Tomcat 8.0.20", "C:/apache-tomcat-8.0.20.zip", "Tomcat", "D:/stp/apache-tomcat-8.0.20"));
         return ResponseBuilder.ok(mediaList);
     }
 

@@ -201,7 +201,7 @@ var JvmConfigForm = React.createClass({
         var statusPath = "/manager"; // TODO: Define in a properties file
         var groupIds = [];
         var jdkVersions = ["JDK 1.6", "JDK 1.7", "JDK 1.8"]; // TODO: retrieve from the database
-        var apacheTomcatVersions = ["Apache Tomcat 7.0.55", "Apache Tomcat 8.0.2"]; // TODO: retrieve from the database
+        var tomcatVersions = ["Apache Tomcat 7.0.55", "Apache Tomcat 8.0.2"]; // TODO: retrieve from the database
         var jdkVersion = "";
         var tomcatVersion = "";
         var httpPort = "";
@@ -238,7 +238,7 @@ var JvmConfigForm = React.createClass({
             statusPath: statusPath,
             groupIds: groupIds,
             jdkVersions: jdkVersions, // TODO remove once versions are retrieved from the database
-            apacheTomcatVersions: apacheTomcatVersions, // TODO remove once versions are retrieved from the database
+            tomcatVersions: tomcatVersions, // TODO remove once versions are retrieved from the database
             jdkVersion: jdkVersion,
             tomcatVersion: tomcatVersion,
             groupMultiSelectData: [],
@@ -396,7 +396,7 @@ var JvmConfigForm = React.createClass({
                         	<tr>
                         	    <td>
                         	    <select name="tomcatVersion" ref="tomcatVersion" valueLink={this.linkState("tomcatVersion")}>
-                                    {this.getApacheTomcatVersions()}
+                                    {this.getTomcatVersions()}
                                 </select>
                         	    </td>
                         	</tr>
@@ -494,6 +494,7 @@ var JvmConfigForm = React.createClass({
         });
 
         this.retrieveGroups();
+        this.getMedia();
     },
     isValid: function() {
         this.validator.form();
@@ -508,19 +509,34 @@ var JvmConfigForm = React.createClass({
                                         self.setState({groupMultiSelectData:response.applicationResponseContent});
                                       });
     },
+    getMedia: function() {
+        var self = this;
+        mediaService.getAllMedia(function(response){
+            var allMedia = response.applicationResponseContent;
+            var jdkVersions = [], tomcatVersions = [];
+            for (var i=0; i<allMedia.length; i++) {
+                if (allMedia[i].type === "JDK") {
+                    jdkVersions.push(allMedia[i]);
+                } else {
+                    tomcatVersions.push(allMedia[i]);
+                }
+            }
+            self.setState({jdkVersions: jdkVersions, tomcatVersions: tomcatVersions});
+        })
+    },
     getJdkVersions: function() {
         var items=[<option key='no-jvm-version' value=''></option>];
         for (var i=0; i < this.state.jdkVersions.length; i++){
-            var jdkVersionOption = this.state.jdkVersions[i]; // TODO retrieve these from the database
-            items.push(<option key={jdkVersionOption} value={jdkVersionOption}>{jdkVersionOption}</option>);
+            var jdkVersionOption = this.state.jdkVersions[i];
+            items.push(<option key={jdkVersionOption.id} value={jdkVersionOption.name}>{jdkVersionOption.name}</option>);
         }
         return items;
     },
-    getApacheTomcatVersions: function() {
+    getTomcatVersions: function() {
         var items=[<option key='no-apache-tomcat-version' value=''></option>];
-        for (var i=0; i < this.state.apacheTomcatVersions.length; i++){
-            var apacheTomcatOption = this.state.apacheTomcatVersions[i]; // TODO retrieve these from the database
-            items.push(<option key={apacheTomcatOption} value={apacheTomcatOption}>{apacheTomcatOption}</option>);
+        for (var i=0; i < this.state.tomcatVersions.length; i++){
+            var apacheTomcatOption = this.state.tomcatVersions[i];
+            items.push(<option key={apacheTomcatOption.id} value={apacheTomcatOption.name}>{apacheTomcatOption.name}</option>);
         }
         return items;
     }
