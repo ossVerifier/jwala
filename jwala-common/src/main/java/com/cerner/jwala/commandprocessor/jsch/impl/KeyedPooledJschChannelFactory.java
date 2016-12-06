@@ -25,7 +25,7 @@ public class KeyedPooledJschChannelFactory extends BaseKeyedPooledObjectFactory<
     private static final Logger LOGGER = LoggerFactory.getLogger(KeyedPooledJschChannelFactory.class);
 
     private final JSch jsch;
-    private static final Map<ChannelSessionKey, Session> SESSION_MAP = new HashMap<>();
+    private final Map<ChannelSessionKey, Session> sessionMap = new HashMap<>();
 
     public KeyedPooledJschChannelFactory(final JSch jsch) {
         this.jsch = jsch;
@@ -33,14 +33,16 @@ public class KeyedPooledJschChannelFactory extends BaseKeyedPooledObjectFactory<
 
     @Override
     public Channel create(final ChannelSessionKey key) throws Exception {
-        Session session = SESSION_MAP.get(key);
-        if (session == null || !session.isConnected()) {
-            session = prepareSession(key.remoteSystemConnection);
-            session.connect();
-            SESSION_MAP.put(key, session);
-            LOGGER.debug("session {} created and connected!", key);
+        synchronized (sessionMap) {
+            Session session = sessionMap.get(key);
+            if (session == null || !session.isConnected()) {
+                session = prepareSession(key.remoteSystemConnection);
+                session.connect();
+                sessionMap.put(key, session);
+                LOGGER.debug("session {} created and connected!", key);
+            }
+            return session.openChannel(key.channelType.getChannelType());
         }
-        return session.openChannel(key.channelType.getChannelType());
     }
 
     @Override
