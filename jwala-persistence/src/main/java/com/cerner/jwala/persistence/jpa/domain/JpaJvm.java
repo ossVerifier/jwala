@@ -261,4 +261,12 @@ public class JpaJvm extends AbstractEntity<JpaJvm> {
     public String getTomcatVersion() {
         return tomcatVersion;
     }
+
+    public void setJdkVersion(String jdkVersion) {
+        this.jdkVersion = jdkVersion;
+    }
+
+    public void setTomcatVersion(String tomcatVersion) {
+        this.tomcatVersion = tomcatVersion;
+    }
 }

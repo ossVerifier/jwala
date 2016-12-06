@@ -33,6 +33,8 @@ public class UpdateJvmRequest implements Serializable, Request {
     private final String newSystemProperties;
     private final String newUserName;
     private final String newEncryptedPassword;
+    private final String newJdkVersion;
+    private final String newTomcatVersion;
 
     private final Set<Identifier<Group>> groupIds;
 
@@ -48,7 +50,9 @@ public class UpdateJvmRequest implements Serializable, Request {
                             final Path theNewStatusPath,
                             final String theNewSystemProperties,
                             final String theUserName,
-                            final String theEncryptedPassword) {
+                            final String theEncryptedPassword,
+                            final String theJdkVersion,
+                            final String theTomcatVersion) {
         id = theId;
         newJvmName = theNewJvmName;
         newHostName = theNewHostName;
@@ -62,6 +66,8 @@ public class UpdateJvmRequest implements Serializable, Request {
         newSystemProperties = theNewSystemProperties;
         newUserName = theUserName;
         newEncryptedPassword = theEncryptedPassword;
+        newJdkVersion = theJdkVersion;
+        newTomcatVersion = theTomcatVersion;
     }
 
     public Identifier<Jvm> getId() {
@@ -102,6 +108,14 @@ public class UpdateJvmRequest implements Serializable, Request {
 
     public String getNewEncryptedPassword() {
         return newEncryptedPassword;
+    }
+
+    public String getNewJdkVersion() {
+        return newJdkVersion;
+    }
+
+    public String getNewTomcatVersion() {
+        return newTomcatVersion;
     }
 
     public String getNewSystemProperties() {return newSystemProperties;}
@@ -154,6 +168,8 @@ public class UpdateJvmRequest implements Serializable, Request {
                 .append(this.newSystemProperties, rhs.newSystemProperties)
                 .append(this.newUserName, rhs.newUserName)
                 .append(this.newEncryptedPassword, rhs.newEncryptedPassword)
+                .append(this.newJdkVersion, rhs.newJdkVersion)
+                .append(this.newTomcatVersion, rhs.newTomcatVersion)
                 .isEquals();
     }
 
@@ -172,6 +188,8 @@ public class UpdateJvmRequest implements Serializable, Request {
                 .append(newSystemProperties)
                 .append(newUserName)
                 .append(newEncryptedPassword)
+                .append(newJdkVersion)
+                .append(newTomcatVersion)
                 .toHashCode();
     }
 
@@ -190,6 +208,8 @@ public class UpdateJvmRequest implements Serializable, Request {
                 ", newSystemProperties='" + newSystemProperties + '\'' +
                 ", newUserName='" + newUserName + '\'' +
                 ", newEncryptedPassword='" + newEncryptedPassword + '\'' +
+                ", newJdkVersion='" + newJdkVersion + '\'' +
+                ", newTomcatVersion='" + newTomcatVersion + '\'' +
                 ", groupIds=" + groupIds +
                 '}';
     }

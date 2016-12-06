@@ -30,7 +30,7 @@ public class CommonJvmPersistenceServiceBehavior {
                          final String aUserName,
                          final String anEncryptedPassword,
                          final String jdkVersion,
-                         final String apacheTomcatVersion) {
+                         final String tomcatVersion) {
 
         final CreateJvmRequest createJvmRequest = createCreateJvmRequest(aJvmName,
                 aHostName,
@@ -45,7 +45,7 @@ public class CommonJvmPersistenceServiceBehavior {
                 aUserName,
                 anEncryptedPassword,
                 jdkVersion,
-                apacheTomcatVersion);
+                tomcatVersion);
 
         return jvmPersistenceService.createJvm(createJvmRequest);
     }
@@ -62,7 +62,9 @@ public class CommonJvmPersistenceServiceBehavior {
                          final Path aStatusPath,
                          final String aSystemProperties,
                          final String aUserName,
-                         final String anEncryptedPassword) {
+                         final String anEncryptedPassword,
+                         final String aJdkVersion,
+                         final String aTomcatVersion) {
 
         final UpdateJvmRequest updateJvmRequest = createUpdateJvmRequest(aJvmId,
                 aNewJvmName,
@@ -76,7 +78,9 @@ public class CommonJvmPersistenceServiceBehavior {
                 aStatusPath,
                 aSystemProperties,
                 aUserName,
-                anEncryptedPassword);
+                anEncryptedPassword,
+                aJdkVersion,
+                aTomcatVersion);
 
         return jvmPersistenceService.updateJvm(updateJvmRequest);
     }
@@ -94,7 +98,7 @@ public class CommonJvmPersistenceServiceBehavior {
                                                       final String aUserName,
                                                       final String anEncryptedPassword,
                                                       final String jdkVersion,
-                                                      final String apacheTomcatVersion) {
+                                                      final String tomcatVersion) {
 
         return new CreateJvmRequest(aJvmName,
                 aJvmHostName,
@@ -108,7 +112,7 @@ public class CommonJvmPersistenceServiceBehavior {
                 aUserName,
                 anEncryptedPassword,
                 jdkVersion,
-                apacheTomcatVersion);
+                tomcatVersion);
     }
 
     protected UpdateJvmRequest createUpdateJvmRequest(final Identifier<Jvm> aJvmId,
@@ -123,7 +127,9 @@ public class CommonJvmPersistenceServiceBehavior {
                                                       final Path aStatusPath,
                                                       final String systemProperties,  
                                                       final String aUserName,
-                                                      final String anEncryptedPassword) {
+                                                      final String anEncryptedPassword,
+                                                      final String aJdkVersion,
+                                                      final String aTomcatVersion) {
 
         return new UpdateJvmRequest(aJvmId,
                 aNewJvmName,
@@ -137,6 +143,8 @@ public class CommonJvmPersistenceServiceBehavior {
                 aStatusPath,
                 systemProperties, 
                 aUserName,
-                anEncryptedPassword);
+                anEncryptedPassword,
+                aJdkVersion,
+                aTomcatVersion);
     }
 }

@@ -39,7 +39,7 @@
                            userName,
                            encryptedPassword,
                            jdkVersion,
-                           apacheTomcatVersion,
+                           tomcatVersion,
                            successCallback,
                            errorCallback) {
         return serviceFoundation.post("v1.0/jvms",
@@ -57,7 +57,7 @@
                                                       userName: userName,
                                                       encryptedPassword: encryptedPassword,
                                                       jdkVersion: jdkVersion,
-                                                      apacheTomcatVersion: apacheTomcatVersion}),
+                                                      tomcatVersion: tomcatVersion}),
                                                       successCallback,
                                                       errorCallback);
     },

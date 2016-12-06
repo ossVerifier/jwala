@@ -38,6 +38,8 @@ public class JsonUpdateJvm {
     private final String systemProperties;
     private final String userName;
     private final String encryptedPassword;
+    private final String jdkVersion;
+    private final String tomcatVersion;
 
     public JsonUpdateJvm(final String theJvmId,
                          final String theJvmName,
@@ -51,7 +53,9 @@ public class JsonUpdateJvm {
                          final String theStatusPath,
                          final String theSystemProperties,
                          final String theUserName,
-                         final String theEncryptedPassword) {
+                         final String theEncryptedPassword,
+                         final String theJdkVersion,
+                         final String theTomcatVersion) {
         jvmId = theJvmId;
         jvmName = theJvmName;
         hostName = theHostName;
@@ -65,23 +69,27 @@ public class JsonUpdateJvm {
         systemProperties = theSystemProperties;
         userName = theUserName;
         encryptedPassword = theEncryptedPassword;
+        jdkVersion = theJdkVersion;
+        tomcatVersion = theTomcatVersion;
     }
 
     public UpdateJvmRequest toUpdateJvmRequest() throws BadRequestException {
 
         return new UpdateJvmRequest(convertJvmId(),
-                                    jvmName,
-                                    hostName,
-                                    convertGroupIds(),
-                                    JsonUtilJvm.stringToInteger(httpPort),
-                                    JsonUtilJvm.stringToInteger(httpsPort),
-                                    JsonUtilJvm.stringToInteger(redirectPort),
-                                    JsonUtilJvm.stringToInteger(shutdownPort),
-                                    JsonUtilJvm.stringToInteger(ajpPort),
-                                    new Path(statusPath),
-                                    systemProperties,
-                                    userName,
-                                    encryptedPassword);
+                jvmName,
+                hostName,
+                convertGroupIds(),
+                JsonUtilJvm.stringToInteger(httpPort),
+                JsonUtilJvm.stringToInteger(httpsPort),
+                JsonUtilJvm.stringToInteger(redirectPort),
+                JsonUtilJvm.stringToInteger(shutdownPort),
+                JsonUtilJvm.stringToInteger(ajpPort),
+                new Path(statusPath),
+                systemProperties,
+                userName,
+                encryptedPassword,
+                jdkVersion,
+                tomcatVersion);
     }
 
     protected Identifier<Jvm> convertJvmId() {
@@ -130,22 +138,24 @@ public class JsonUpdateJvm {
             final JsonNode node = obj.readTree(jp);
             final JsonNode usernameNode = node.get("userName");
             final JsonNode passwordNode = node.get("encryptedPassword");
-            
-            final String pw = (passwordNode==null) ? null : new DecryptPassword().encrypt(passwordNode.getTextValue());
-            
-            return new JsonUpdateJvm(node.get("jvmId").getValueAsText(),
-                                     node.get("jvmName").getTextValue(),
-                                     node.get("hostName").getTextValue(),
-                                     deserializeGroupIdentifiers(node),
-                                     node.get("httpPort").getValueAsText(),
-                                     node.get("httpsPort").getValueAsText(),
-                                     node.get("redirectPort").getValueAsText(),
-                                     node.get("shutdownPort").getValueAsText(),
-                                     node.get("ajpPort").getValueAsText(),
-                                     node.get("statusPath").getTextValue(),
-                                     node.get("systemProperties").getTextValue(),
-                                     usernameNode == null ? null : node.get("userName").getTextValue(),
-                                     pw);
+
+            final String pw = (passwordNode == null) ? null : new DecryptPassword().encrypt(passwordNode.getTextValue());
+
+            return new JsonUpdateJvm(node.get("jvmId").getTextValue(),
+                    node.get("jvmName").getTextValue(),
+                    node.get("hostName").getTextValue(),
+                    deserializeGroupIdentifiers(node),
+                    node.get("httpPort").getTextValue(),
+                    node.get("httpsPort").getTextValue(),
+                    node.get("redirectPort").getTextValue(),
+                    node.get("shutdownPort").getTextValue(),
+                    node.get("ajpPort").getTextValue(),
+                    node.get("statusPath").getTextValue(),
+                    node.get("systemProperties").getTextValue(),
+                    usernameNode == null ? null : node.get("userName").getTextValue(),
+                    pw,
+                    node.get("jdkVersion").getTextValue(),
+                    node.get("tomcatVersion").getTextValue());
         }
     }
 }

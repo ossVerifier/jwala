@@ -53,7 +53,7 @@ public class MockGroup {
                 "username",
                 "encryptedpassword",
                 "jdkVersion",
-                "apacheTomcatVersion");
+                "tomcatVersion");
         this.jvms.add(jvm);
         jvms.add(jvm);
         return jvms;
@@ -78,7 +78,7 @@ public class MockGroup {
                 "username",
                 "encryptedpassword",
                 "jdkVersion",
-                "apacheTomcatVersion");
+                "tomcatVersion");
         return jvm;
     }
 

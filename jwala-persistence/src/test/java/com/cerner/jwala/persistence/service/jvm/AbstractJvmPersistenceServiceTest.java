@@ -111,6 +111,8 @@ public abstract class AbstractJvmPersistenceServiceTest {
         final String newSystemProperties = "EXAMPLE_OPTS=%someEnv%/someVal";
         final String newUserName = "new username";
         final String newEncryptedPassword = "the quick brown fox";
+        final String newJdkVersion = "JDK 1.7-test";
+        final String newTomcatVersion = "Apache Tomcat 7.0.55-test";
 
         final Jvm updatedJvm = jvmHelper.updateJvm(jvm.getId(),
                 newJvmName,
@@ -124,7 +126,9 @@ public abstract class AbstractJvmPersistenceServiceTest {
                 newStatusPath,
                 newSystemProperties,
                 newUserName,
-                newEncryptedPassword);
+                newEncryptedPassword,
+                newJdkVersion,
+                newTomcatVersion);
 
         assertEquals(jvm.getId(),
                 updatedJvm.getId());
@@ -174,7 +178,7 @@ public abstract class AbstractJvmPersistenceServiceTest {
                 5, 4, 3, 2, 1,
                 userId,
                 new Path("/abc"),
-                "EXAMPLE_OPTS=%someEnv%/someVal", null, null);
+                "EXAMPLE_OPTS=%someEnv%/someVal", null, null, "", "");
     }
 
     @Test(expected = NotFoundException.class)
@@ -188,7 +192,7 @@ public abstract class AbstractJvmPersistenceServiceTest {
                 5, 4, 3, 2, 1,
                 userId,
                 new Path("/abc"),
-                "EXAMPLE_OPTS=%someEnv%/someVal", null, null);
+                "EXAMPLE_OPTS=%someEnv%/someVal", null, null, "", "");
     }
 
     @Test

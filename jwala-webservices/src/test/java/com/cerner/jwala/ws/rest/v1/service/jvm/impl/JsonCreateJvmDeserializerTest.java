@@ -59,7 +59,7 @@ public class JsonCreateJvmDeserializerTest {
                 keyTextValue("userName", userName),
                 keyTextValue("encryptedPassword", encryptedPassword),
                 keyTextValue("jdkVersion", "JDK 1.7-test"),
-                keyTextValue("apacheTomcatVersion", "Apache Tomcat Version 7.0.55-test"));
+                keyTextValue("tomcatVersion", "Apache Tomcat Version 7.0.55-test"));
 
         final JsonCreateJvm create = readValue(json);
 
@@ -91,7 +91,7 @@ public class JsonCreateJvmDeserializerTest {
                 keyTextValue("userName", userName),
                 keyTextValue("encryptedPassword", encryptedPassword),
                 keyTextValue("jdkVersion", "JDK 1.7-test"),
-                keyTextValue("apacheTomcatVersion", "Apache Tomcat Version 7.0.55-test"));
+                keyTextValue("tomcatVersion", "Apache Tomcat Version 7.0.55-test"));
 
         final JsonCreateJvm create = readValue(json);
 
@@ -121,7 +121,7 @@ public class JsonCreateJvmDeserializerTest {
                 keyTextValue("userName", userName),
                 keyTextValue("encryptedPassword", encryptedPassword),
                 keyTextValue("jdkVersion", "JDK 1.7-test"),
-                keyTextValue("apacheTomcatVersion", "Apache Tomcat Version 7.0.55-test"));
+                keyTextValue("tomcatVersion", "Apache Tomcat Version 7.0.55-test"));
 
         final JsonCreateJvm create = readValue(json);
 
@@ -149,7 +149,7 @@ public class JsonCreateJvmDeserializerTest {
                 keyTextValue("userName", userName),
                 keyTextValue("encryptedPassword", encryptedPassword),
                 keyTextValue("jdkVersion", "JDK 1.7-test"),
-                keyTextValue("apacheTomcatVersion", "Apache Tomcat Version 7.0.55-test"));
+                keyTextValue("tomcatVersion", "Apache Tomcat Version 7.0.55-test"));
 
         final JsonCreateJvm create = readValue(json);
 
@@ -186,7 +186,7 @@ public class JsonCreateJvmDeserializerTest {
                 keyTextValue("userName", userName),
                 keyTextValue("encryptedPassword", encryptedPassword),
                 keyTextValue("jdkVersion", "JDK 1.7-test"),
-                keyTextValue("apacheTomcatVersion", "Apache Tomcat Version 7.0.55-test"));
+                keyTextValue("tomcatVersion", "Apache Tomcat Version 7.0.55-test"));
 
         final JsonCreateJvm create = readValue(json);
         verifyAssertions(create,

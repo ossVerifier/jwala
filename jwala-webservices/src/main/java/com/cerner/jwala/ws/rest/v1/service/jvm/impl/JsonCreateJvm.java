@@ -36,7 +36,7 @@ public class JsonCreateJvm {
     private final String userName;
     private final String encryptedPassword;
     private final String jdkVersion;
-    private final String apacheTomcatVersion;
+    private final String tomcatVersion;
 
     private final Set<String> groupIds;
 
@@ -52,7 +52,7 @@ public class JsonCreateJvm {
                          final String theUsername,
                          final String theEncryptedPassword,
                          final String theJdkVersion,
-                         final String theApacheTomcatVersion) {
+                         final String theTomcatVersion) {
         this(theJvmName,
                 theHostName,
                 Collections.<String>emptySet(),
@@ -66,7 +66,7 @@ public class JsonCreateJvm {
                 theUsername,
                 theEncryptedPassword,
                 theJdkVersion,
-                theApacheTomcatVersion);
+                theTomcatVersion);
     }
 
     public JsonCreateJvm(final String theJvmName,
@@ -82,7 +82,7 @@ public class JsonCreateJvm {
                          final String theUsername,
                          final String theEncrypedPassword,
                          final String theJdkVersion,
-                         final String theApacheTomcatVersion) {
+                         final String theTomcatVersion) {
         jvmName = theJvmName;
         hostName = theHostName;
         httpPort = theHttpPort;
@@ -96,7 +96,7 @@ public class JsonCreateJvm {
         userName = theUsername;
         encryptedPassword = theEncrypedPassword;
         jdkVersion = theJdkVersion;
-        apacheTomcatVersion = theApacheTomcatVersion;
+        tomcatVersion = theTomcatVersion;
     }
 
     public boolean areGroupsPresent() {
@@ -117,7 +117,7 @@ public class JsonCreateJvm {
                 userName,
                 encryptedPassword,
                 jdkVersion,
-                apacheTomcatVersion);
+                tomcatVersion);
     }
 
     public CreateJvmAndAddToGroupsRequest toCreateAndAddRequest() {
@@ -136,7 +136,7 @@ public class JsonCreateJvm {
                 userName,
                 encryptedPassword,
                 jdkVersion,
-                apacheTomcatVersion);
+                tomcatVersion);
     }
 
     protected Set<Identifier<Group>> convertGroupIds() {
@@ -167,7 +167,7 @@ public class JsonCreateJvm {
             final JsonNode userName = rootNode.get("userName");
             final JsonNode encryptedPassword = rootNode.get("encryptedPassword");
             final JsonNode jdkVersion = rootNode.get("jdkVersion");
-            final JsonNode apacheTomcatVersion = rootNode.get("apacheTomcatVersion");
+            final JsonNode tomcatVersion = rootNode.get("tomcatVersion");
 
             final Set<String> rawGroupIds = deserializeGroupIdentifiers(rootNode);
             final String jsonPassword = encryptedPassword == null ? null : encryptedPassword.getTextValue();
@@ -191,7 +191,7 @@ public class JsonCreateJvm {
                     userName == null ? null : userName.getTextValue(),
                     pw,
                     jdkVersion.getTextValue(),
-                    apacheTomcatVersion.getTextValue());
+                    tomcatVersion.getTextValue());
         }
     }
 
@@ -210,7 +210,7 @@ public class JsonCreateJvm {
                 ", userName='" + userName + '\'' +
                 ", encryptedPassword='" + encryptedPassword + '\'' +
                 ", jdkVersion='" + jdkVersion + '\'' +
-                ", apacheTomcatVersion='" + apacheTomcatVersion + '\'' +
+                ", tomcatVersion='" + tomcatVersion + '\'' +
                 ", groupIds=" + groupIds +
                 '}';
     }

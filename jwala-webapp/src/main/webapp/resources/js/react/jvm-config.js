@@ -109,7 +109,7 @@ var JvmConfig = React.createClass({
                                             this.refs.jvmAddForm.state.userName,
                                             this.refs.jvmAddForm.state.encryptedPassword,
                                             this.refs.jvmAddForm.state.jdkVersion,
-                                            this.refs.jvmAddForm.state.apacheTomcatVersion,
+                                            this.refs.jvmAddForm.state.tomcatVersion,
                                             function(){
                                                 self.state.selectedJvm = null;
                                                 self.refreshData({showModalFormAddDialog:false});
@@ -203,7 +203,7 @@ var JvmConfigForm = React.createClass({
         var jdkVersions = ["JDK 1.6", "JDK 1.7", "JDK 1.8"]; // TODO: retrieve from the database
         var apacheTomcatVersions = ["Apache Tomcat 7.0.55", "Apache Tomcat 8.0.2"]; // TODO: retrieve from the database
         var jdkVersion = "";
-        var apacheTomcatVersion = "";
+        var tomcatVersion = "";
         var httpPort = "";
         var httpsPort = "";
         var redirectPort = "";
@@ -228,7 +228,7 @@ var JvmConfigForm = React.createClass({
             userName = this.props.data.userName;
             encryptedPassword = this.props.data.encryptedPassword;
             jdkVersion = this.props.data.jdkVersion;
-            apacheTomcatVersion = this.props.data.apacheTomcatVersion;
+            tomcatVersion = this.props.data.tomcatVersion;
         }
 
         return {
@@ -240,7 +240,7 @@ var JvmConfigForm = React.createClass({
             jdkVersions: jdkVersions, // TODO remove once versions are retrieved from the database
             apacheTomcatVersions: apacheTomcatVersions, // TODO remove once versions are retrieved from the database
             jdkVersion: jdkVersion,
-            apacheTomcatVersion: apacheTomcatVersion,
+            tomcatVersion: tomcatVersion,
             groupMultiSelectData: [],
             httpPort: httpPort,
             httpsPort: httpsPort,
@@ -395,7 +395,7 @@ var JvmConfigForm = React.createClass({
                         	</tr>
                         	<tr>
                         	    <td>
-                        	    <select name="apacheTomcatVersion" ref="apacheTomcatVersion" valueLink={this.linkState("apacheTomcatVersion")}>
+                        	    <select name="tomcatVersion" ref="tomcatVersion" valueLink={this.linkState("tomcatVersion")}>
                                     {this.getApacheTomcatVersions()}
                                 </select>
                         	    </td>
@@ -479,7 +479,7 @@ var JvmConfigForm = React.createClass({
                                                                              },
                                                                             "ajpPort": {range: [1, 65535]},
                                                                             "jdkVersion": {required: false},
-                                                                            "apacheTomcatVersion": {required: false}
+                                                                            "tomcatVersion": {required: false}
                                                                             },
                                                                             messages: {
                                                                                 "groupSelector[]": {
