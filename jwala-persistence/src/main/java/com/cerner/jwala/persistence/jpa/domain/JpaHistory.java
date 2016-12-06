@@ -108,4 +108,7 @@ public class JpaHistory extends AbstractEntity<JpaHistory> {
         return id != null ? id.hashCode() : 0;
     }
 
+    public static int getMaxEventLen() {
+        return MAX_EVENT_LEN;
+    }
 }

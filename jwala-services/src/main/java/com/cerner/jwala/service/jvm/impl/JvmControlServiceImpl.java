@@ -15,6 +15,7 @@ import com.cerner.jwala.control.command.RemoteCommandExecutor;
 import com.cerner.jwala.control.command.ServiceCommandBuilder;
 import com.cerner.jwala.control.jvm.command.impl.WindowsJvmPlatformCommandProvider;
 import com.cerner.jwala.exception.CommandFailureException;
+import com.cerner.jwala.persistence.jpa.domain.JpaHistory;
 import com.cerner.jwala.persistence.jpa.type.EventType;
 import com.cerner.jwala.persistence.service.JvmPersistenceService;
 import com.cerner.jwala.service.HistoryFacadeService;
@@ -164,13 +165,14 @@ public class JvmControlServiceImpl implements JvmControlService {
 
     private String getCommandErrorMessage(CommandOutput commandOutput, ExecReturnCode returnCode, String commandOutputReturnDescription) {
         return "JVM remote command FAILURE. Return code = "
-                                        + returnCode.getReturnCode() + ", description = " +
-                                        commandOutputReturnDescription + ", message = " + commandOutput.standardErrorOrStandardOut();
+                + returnCode.getReturnCode() + ", description = " +
+                commandOutputReturnDescription + ", message = " + commandOutput.standardErrorOrStandardOut();
     }
 
     private void sendMessageToActionEventLog(User aUser, Jvm jvm, String commandOutputReturnDescription) {
         LOGGER.error(commandOutputReturnDescription);
-        historyFacadeService.write(getServerName(jvm), new ArrayList<>(jvm.getGroups()), commandOutputReturnDescription,
+        final String logString = commandOutputReturnDescription.length() <= JpaHistory.getMaxEventLen() ? commandOutputReturnDescription : commandOutputReturnDescription.substring(0, JpaHistory.getMaxEventLen());
+        historyFacadeService.write(getServerName(jvm), new ArrayList<>(jvm.getGroups()), logString,
                 EventType.SYSTEM_ERROR, aUser.getId());
     }
 
@@ -258,7 +260,7 @@ public class JvmControlServiceImpl implements JvmControlService {
         if (!ApplicationProperties.get("remote.commands.user-scripts").endsWith(fileName)) {
             final String eventDescription = event + " " + fileName;
             historyFacadeService.write(getServerName(jvm), new ArrayList<>(jvm.getGroups()), eventDescription,
-                                EventType.USER_ACTION_INFO, userId);
+                    EventType.USER_ACTION_INFO, userId);
         }
         final String name = jvm.getJvmName();
         final String hostName = jvm.getHostName();
