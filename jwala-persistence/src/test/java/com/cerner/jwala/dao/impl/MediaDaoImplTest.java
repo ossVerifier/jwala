@@ -3,6 +3,7 @@ package com.cerner.jwala.dao.impl;
 import com.cerner.jwala.dao.MediaDao;
 import com.cerner.jwala.dao.configuration.TestConfiguration;
 import com.cerner.jwala.persistence.jpa.domain.Media;
+import com.cerner.jwala.persistence.jpa.domain.builder.MediaBuilder;
 import com.cerner.jwala.persistence.jpa.type.MediaType;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -19,7 +20,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import java.nio.file.Paths;
 
 import static org.junit.Assert.assertEquals;
 
@@ -39,11 +39,8 @@ public class MediaDaoImplTest {
 
     @Test
     public void testCrud() {
-        final Media media = new Media();
-        media.setName("jdk 1.8");
-        media.setType(MediaType.JDK);
-        media.setLocalPath(Paths.get("c:/java"));
-        media.setRemotePath("any");
+        final Media media = new MediaBuilder().setName("jdk 1.8").setType(MediaType.JDK).setLocalPath("c:/java")
+                .setRemotePath("any").build();
         mediaDao.create(media);
         final Media foundMedia = mediaDao.find("jdk 1.8");
         assertEquals(media, foundMedia);
