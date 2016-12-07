@@ -146,7 +146,7 @@ public enum FaultType implements MessageResponseStatus {
 
     RESOURCE_DEPLOY_FAILURE("AEM70", "ResourceDeployFailed"),
 
-    GROUP_MISSING_HOSTS("AEM71", "GroupMissingHosts");
+    GROUP_MISSING_HOSTS("AEM71", "GroupMissingHosts"), JVM_JDK_NOT_SPECIFIED("AEM72", "NoJDKSpecifiedForJVM");
 
     private final String faultCode;
     private final String faultMessage;

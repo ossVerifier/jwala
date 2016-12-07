@@ -566,7 +566,7 @@ var JvmConfigDataTable = React.createClass({
                         {sTitle:"Shutd", mData:"shutdownPort"},
                         {sTitle:"AJP", mData:"ajpPort"},
                         {sTitle:"Username", mData: "userName"},
-                        {sTitle:"JDK", mData:"jdkMedia"},
+                        {sTitle:"JDK", mData:"jdkMedia.name"},
                         {sTitle:"Tomcat", mData:"tomcatMedia"}];
         return <JwalaDataTable ref="dataTableWrapper"
                                tableId="jvm-config-datatable"

@@ -37,15 +37,20 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
     public void distributeJdk(final Jvm jvm) {
         LOGGER.info("Start deploy jdk for {}", jvm);
         final Media jdkMedia = jvm.getJdkMedia();
-        File javaHome = new File(jdkMedia.getRemoteHostPath());
-        String jdkDir = javaHome.getName();
-        String binaryDeployDir = javaHome.getParentFile().getAbsolutePath().replaceAll("\\\\", "/");
-        if (jdkDir != null && !jdkDir.isEmpty()) {
-            distributeBinary(jvm.getHostName(), jdkDir, binaryDeployDir, "");
+        if (jdkMedia != null) {
+            File javaHome = new File(jdkMedia.getRemoteHostPath());
+            String jdkDir = javaHome.getName();
+            String binaryDeployDir = javaHome.getParentFile().getAbsolutePath().replaceAll("\\\\", "/");
+            if (jdkDir != null && !jdkDir.isEmpty()) {
+                distributeBinary(jvm.getHostName(), jdkDir, binaryDeployDir, "");
+            } else {
+                LOGGER.warn("JDK dir location is null or empty {}", jdkDir);
+            }
+            LOGGER.info("End deploy jdk {} for {}", jdkMedia.getName(), jvm.getJvmName());
         } else {
-            LOGGER.warn("JDK dir location is null or empty {}", jdkDir);
+            LOGGER.error("No JDK version specified for {}", jvm.getJvmName());
+            // TODO throw an internal error exception here? or check for JDK at the same time the templates are validated and throw the exception there?
         }
-        LOGGER.info("End deploy jdk {} for {}", jdkMedia.getName(), jvm.getJvmName());
     }
 
     @Override
@@ -75,7 +80,7 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
             } else {
                 LOGGER.warn("WebServer dir location is null or empty {}", webServerDir);
             }
-        }finally {
+        } finally {
             binaryDistributionLockManager.writeUnlock(wrietLockResourceName);
         }
     }

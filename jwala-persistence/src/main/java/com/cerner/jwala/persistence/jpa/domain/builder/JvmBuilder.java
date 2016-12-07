@@ -47,9 +47,10 @@ public class JvmBuilder {
                 .setErrorStatus(jpaJvm.getErrorStatus())
                 .setLastUpdatedDate(jpaJvm.getLastUpdateDate())
                 .setUserName(jpaJvm.getUserName())
-                .setEncryptedPassword(jpaJvm.getEncryptedPassword())
-                .setJdkMedia(jpaJvm.getJdkMedia())
-                .setTomcatMedia(jpaJvm.getTomcatMedia());
+                .setEncryptedPassword(jpaJvm.getEncryptedPassword());
+                // TODO manually set this for now to test deployment
+//                .setJdkMedia(new Media(3, "jdk1.8.0_92.zip", "D:/stp/toc-1.3.80/apache-tomcat-7.0.55/data/binaries", "JDK", "D:/stp/jdk1.8.0_92"))
+//                .setTomcatMedia(jpaJvm.getTomcatMedia());
         return builder.build();
     }
 
