@@ -23,10 +23,8 @@ public class TestJpaConfiguration {
 
     @Bean
     public DataSource getDataSource() {
-        return new SimpleDriverDataSource(new Driver(),
-                                          "jdbc:h2:mem:test-persistence;DB_CLOSE_DELAY=-1;LOCK_MODE=0",
-                                          "sa",
-                                          "");
+        return new SimpleDriverDataSource(new Driver(), "jdbc:h2:mem:test-persistence;DB_CLOSE_DELAY=-1;LOCK_MODE=0",
+                                          "sa", "");
     }
 
     @Bean
@@ -41,19 +39,16 @@ public class TestJpaConfiguration {
         properties.setProperty("openjpa.jdbc.SynchronizeMappings", "buildSchema(schemaAction='drop,add',ForeignKeys=true)");
         properties.setProperty("openjpa.Log", "DefaultLevel=INFO");
         properties.setProperty("openjpa.InitializeEagerly", "true");
-        
         return properties;
     }
 
     @Bean
     public LocalContainerEntityManagerFactoryBean getEntityManagerFactoryBean() {
         final LocalContainerEntityManagerFactoryBean factory = new LocalContainerEntityManagerFactoryBean();
-
         factory.setJpaVendorAdapter(getJpaVendorAdapter());
         factory.setPersistenceXmlLocation("classpath:META-INF/test-persistence.xml");
         factory.setDataSource(getDataSource());
         factory.setJpaProperties(getJpaProperties());
-
         return factory;
     }
 
@@ -64,8 +59,7 @@ public class TestJpaConfiguration {
 
     @Bean(name = "transactionManager")
     public PlatformTransactionManager getTransactionManager() {
-        final PlatformTransactionManager manager = new JpaTransactionManager(getEntityManagerFactory());
-        return manager;
+        return new JpaTransactionManager(getEntityManagerFactory());
     }
 
     @Bean
@@ -79,4 +73,5 @@ public class TestJpaConfiguration {
     public ApplicationCrudService getApplicationCrudService() {
         return new ApplicationCrudServiceImpl();
     }
+
 }
