@@ -616,10 +616,11 @@ public class JvmServiceImpl implements JvmService {
         if (execData.getReturnCode().wasSuccessful()) {
             LOGGER.info("Install of windows service {} was successful", jvm.getJvmName());
         } else {
+            updateState(jvm.getId(), JvmState.JVM_FAILED);
             String standardError =
                     execData.getStandardError().isEmpty() ? execData.getStandardOutput() : execData.getStandardError();
             LOGGER.error("Installing windows service {} failed :: ERROR: {}", jvm.getJvmName(), standardError);
-            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, standardError.isEmpty() ? CommandOutputReturnCode.fromReturnCode(execData.getReturnCode().getReturnCode()).getDesc() : standardError);
+            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Installing windows service failed for " + AemControl.Properties.INSTALL_SERVICE_SCRIPT_NAME  +", please refer to history.");
         }
     }
 

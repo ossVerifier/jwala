@@ -26,7 +26,7 @@ IF "%ERRORLEVEL%" NEQ "0" (
     EXIT %ERRORLEVEL%"
 )
 
-if "%svc_username%"=="" goto :no_user
+if %svc_username%=="" goto :no_user
 
 SC CONFIG ${jvm.jvmName} obj=%svc_username% password=%svc_password%
 

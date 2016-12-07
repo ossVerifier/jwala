@@ -17,7 +17,7 @@ public class JpaHistory extends AbstractEntity<JpaHistory> {
 
     public static final String QRY_GET_HISTORY_BY_GROUP_NAME = "getHistoryByGroupName";
     public static final String QRY_GET_HISTORY_BY_GROUP_NAME_AND_SERVER_NAME = "getHistoryByGroupNameAndServerName";
-    private static final int MAX_EVENT_LEN = 10000;
+    private static final int MAX_EVENT_LEN = 100000;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
