@@ -3,6 +3,7 @@ package com.cerner.jwala.persistence.service.jvm;
 import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
+import com.cerner.jwala.common.domain.model.media.Media;
 import com.cerner.jwala.common.domain.model.path.Path;
 import com.cerner.jwala.common.domain.model.user.User;
 import com.cerner.jwala.common.exception.NotFoundException;
@@ -62,7 +63,7 @@ public abstract class AbstractJvmPersistenceServiceTest {
                 5, 4, 3, 2, 1,
                 userId,
                 new Path("/abc"),
-                "EXAMPLE_OPTS=%someEnv%/someVal", null, null, "", "");
+                "EXAMPLE_OPTS=%someEnv%/someVal", null, null,  null, null);
 
         assertNotNull(jvm);
         assertNotNull(jvm.getId());
@@ -80,14 +81,14 @@ public abstract class AbstractJvmPersistenceServiceTest {
                 5, 4, 3, 2, 1,
                 userId,
                 new Path("/abc"),
-                "EXAMPLE_OPTS=%someEnv%/someVal", null, null, "", "");
+                "EXAMPLE_OPTS=%someEnv%/someVal", null, null,  null, null);
 
         final Jvm duplicateNameJvm = jvmHelper.createJvm(existingJvm.getJvmName(),
                 "A different Host Name",
                 5, 4, 3, 2, 1,
                 userId,
                 new Path("/abc"),
-                "EXAMPLE_OPTS=%someEnv%/someVal", null, null, "", "");
+                "EXAMPLE_OPTS=%someEnv%/someVal", null, null,  null, null);
     }
 
     @Test
@@ -98,7 +99,7 @@ public abstract class AbstractJvmPersistenceServiceTest {
                 10, 9, 8, 7, 6,
                 userId,
                 new Path("/abc"),
-                "EXAMPLE_OPTS=%someEnv%/someVal", null, null, "", "");
+                "EXAMPLE_OPTS=%someEnv%/someVal", null, null,  null, null);
 
         final String newJvmName = "A New Jvm Name";
         final String newHostName = "A New Host Name";
@@ -111,8 +112,8 @@ public abstract class AbstractJvmPersistenceServiceTest {
         final String newSystemProperties = "EXAMPLE_OPTS=%someEnv%/someVal";
         final String newUserName = "new username";
         final String newEncryptedPassword = "the quick brown fox";
-        final String newJdkVersion = "JDK 1.7-test";
-        final String newTomcatVersion = "Apache Tomcat 7.0.55-test";
+        final Identifier<Media> newJdkMediaId = new Identifier<>(1L);
+        final Identifier<Media> newTomcatMediaId = new Identifier<>(11L);
 
         final Jvm updatedJvm = jvmHelper.updateJvm(jvm.getId(),
                 newJvmName,
@@ -127,8 +128,8 @@ public abstract class AbstractJvmPersistenceServiceTest {
                 newSystemProperties,
                 newUserName,
                 newEncryptedPassword,
-                newJdkVersion,
-                newTomcatVersion);
+                newJdkMediaId,
+                newTomcatMediaId);
 
         assertEquals(jvm.getId(),
                 updatedJvm.getId());
@@ -163,14 +164,14 @@ public abstract class AbstractJvmPersistenceServiceTest {
                 5, 4, 3, 2, 1,
                 userId,
                 new Path("/abc"),
-                "EXAMPLE_OPTS=%someEnv%/someVal", null, null, "", "");
+                "EXAMPLE_OPTS=%someEnv%/someVal", null, null,  null, null);
 
         final Jvm secondJvm = jvmHelper.createJvm("A different Jvm Name",
                 "A different Host Name",
                 5, 4, 3, 2, 1,
                 userId,
                 new Path("/abc"),
-                "EXAMPLE_OPTS=%someEnv%/someVal", null, null, "", "");
+                "EXAMPLE_OPTS=%someEnv%/someVal", null, null,  null, null);
 
         jvmHelper.updateJvm(secondJvm.getId(),
                 jvm.getJvmName(),
@@ -178,7 +179,7 @@ public abstract class AbstractJvmPersistenceServiceTest {
                 5, 4, 3, 2, 1,
                 userId,
                 new Path("/abc"),
-                "EXAMPLE_OPTS=%someEnv%/someVal", null, null, "", "");
+                "EXAMPLE_OPTS=%someEnv%/someVal", null, null,  null, null);
     }
 
     @Test(expected = NotFoundException.class)
@@ -192,7 +193,7 @@ public abstract class AbstractJvmPersistenceServiceTest {
                 5, 4, 3, 2, 1,
                 userId,
                 new Path("/abc"),
-                "EXAMPLE_OPTS=%someEnv%/someVal", null, null, "", "");
+                "EXAMPLE_OPTS=%someEnv%/someVal", null, null,  null, null);
     }
 
     @Test
@@ -203,7 +204,7 @@ public abstract class AbstractJvmPersistenceServiceTest {
                 5, 4, 3, 2, 1,
                 userId,
                 new Path("/abc"),
-                "EXAMPLE_OPTS=%someEnv%/someVal", null, null, "","");
+                "EXAMPLE_OPTS=%someEnv%/someVal", null, null,  null, null);
 
         final Jvm theSameJvm = jvmPersistenceService.getJvm(jvm.getId());
 
@@ -230,7 +231,7 @@ public abstract class AbstractJvmPersistenceServiceTest {
                     5, 4, 3, 2, 1,
                     userId,
                     new Path("/abc"),
-                    "EXAMPLE_OPTS=%someEnv%/someVal", null, null, "", "");
+                    "EXAMPLE_OPTS=%someEnv%/someVal", null, null,  null, null);
         }
 
         final List<Jvm> jvms = jvmPersistenceService.getJvms();
@@ -246,7 +247,7 @@ public abstract class AbstractJvmPersistenceServiceTest {
                 5, 4, 3, 2, 1,
                 userId,
                 new Path("/abc"),
-                "EXAMPLE_OPTS=%someEnv%/someVal", null, null, "", "");
+                "EXAMPLE_OPTS=%someEnv%/someVal", null, null,  null, null);
 
         jvmPersistenceService.removeJvm(jvm.getId());
 
@@ -266,7 +267,7 @@ public abstract class AbstractJvmPersistenceServiceTest {
                 5, 4, 3, 2, 1,
                 userId,
                 new Path("/abc"),
-                "EXAMPLE_OPTS=%someEnv%/someVal", null, null, "", "");
+                "EXAMPLE_OPTS=%someEnv%/someVal", null, null,  null, null);
 
         final Group group = groupHelper.createGroup("Group to assign JVMs to",
                 userId);
@@ -288,7 +289,7 @@ public abstract class AbstractJvmPersistenceServiceTest {
                 5, 4, 3, 2, 1,
                 userId,
                 new Path("/abc"),
-                "EXAMPLE_OPTS=%someEnv%/someVal", null, null, "", "");
+                "EXAMPLE_OPTS=%someEnv%/someVal", null, null,  null, null);
         final Identifier<Jvm> jvmId = jvm.getId();
         final Group firstGroup = groupHelper.createGroup("Group 1",
                 userId);
@@ -322,8 +323,8 @@ public abstract class AbstractJvmPersistenceServiceTest {
 
     @Test
     public void testFindJvmByExactName() {
-        jvmHelper.createJvm("jvm-1", "testHost", 9101, 9102, 9103, -1, 9104, userId, new Path("./"), "", null, null, "", "");
-        jvmHelper.createJvm("jvm-11", "testHost", 9111, 9112, 9113, -1, 9114, userId, new Path("./"), "", null, null, "", "");
+        jvmHelper.createJvm("jvm-1", "testHost", 9101, 9102, 9103, -1, 9104, userId, new Path("./"), "", null, null,  null, null);
+        jvmHelper.createJvm("jvm-11", "testHost", 9111, 9112, 9113, -1, 9114, userId, new Path("./"), "", null, null,  null, null);
         Jvm jvm = jvmPersistenceService.findJvmByExactName("jvm-1");
         assertEquals("jvm-1", jvm.getJvmName());
         assertEquals(new Integer(9101), jvm.getHttpPort());

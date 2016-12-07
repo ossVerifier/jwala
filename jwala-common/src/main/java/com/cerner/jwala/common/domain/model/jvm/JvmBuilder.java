@@ -3,6 +3,7 @@ package com.cerner.jwala.common.domain.model.jvm;
 import com.cerner.jwala.common.domain.model.app.Application;
 import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.id.Identifier;
+import com.cerner.jwala.common.domain.model.media.Media;
 import com.cerner.jwala.common.domain.model.path.Path;
 
 import java.util.Calendar;
@@ -31,8 +32,8 @@ public class JvmBuilder {
     private Calendar lastUpdatedDate;
     private String userName;
     private String encryptedPassword;
-    private String jdkVersion;
-    private String tomcatVersion;
+    private Media jdkMedia;
+    private Media tomcatMedia;
 
     public JvmBuilder setUserName(String userName) {
         this.userName = userName;
@@ -129,17 +130,17 @@ public class JvmBuilder {
 
     public Jvm build() {
         return new Jvm(id, name, hostName, groups, httpPort, httpsPort, redirectPort, shutdownPort, ajpPort, statusPath,
-                       systemProperties, state, errorStatus, webApps, lastUpdatedDate, userName, encryptedPassword, jdkVersion, tomcatVersion);
+                       systemProperties, state, errorStatus, webApps, lastUpdatedDate, userName, encryptedPassword, jdkMedia, tomcatMedia);
     }
 
 
-    public JvmBuilder setJdkVersion(String jdkVersion) {
-        this.jdkVersion = jdkVersion;
+    public JvmBuilder setJdkMedia(Media jdkMedia) {
+        this.jdkMedia = jdkMedia;
         return this;
     }
 
-    public JvmBuilder setTomcatVersion(String tomcatVersion) {
-        this.tomcatVersion = tomcatVersion;
+    public JvmBuilder setTomcatMedia(Media tomcatMedia) {
+        this.tomcatMedia = tomcatMedia;
         return this;
     }
 }

@@ -528,7 +528,7 @@ var JvmConfigForm = React.createClass({
         var items=[<option key='no-jvm-version' value=''></option>];
         for (var i=0; i < this.state.jdkVersions.length; i++){
             var jdkVersionOption = this.state.jdkVersions[i];
-            items.push(<option key={jdkVersionOption.id} value={jdkVersionOption.name}>{jdkVersionOption.name}</option>);
+            items.push(<option value={jdkVersionOption.id}>{jdkVersionOption.name}</option>);
         }
         return items;
     },
@@ -536,7 +536,7 @@ var JvmConfigForm = React.createClass({
         var items=[<option key='no-apache-tomcat-version' value=''></option>];
         for (var i=0; i < this.state.tomcatVersions.length; i++){
             var apacheTomcatOption = this.state.tomcatVersions[i];
-            items.push(<option key={apacheTomcatOption.id} value={apacheTomcatOption.name}>{apacheTomcatOption.name}</option>);
+            items.push(<option value={apacheTomcatOption.id}>{apacheTomcatOption.name}</option>);
         }
         return items;
     }
@@ -566,8 +566,8 @@ var JvmConfigDataTable = React.createClass({
                         {sTitle:"Shutd", mData:"shutdownPort"},
                         {sTitle:"AJP", mData:"ajpPort"},
                         {sTitle:"Username", mData: "userName"},
-                        {sTitle:"JDK", mData:"jdkVersion"},
-                        {sTitle:"Tomcat", mData:"tomcatVersion"}];
+                        {sTitle:"JDK", mData:"jdkMedia"},
+                        {sTitle:"Tomcat", mData:"tomcatMedia"}];
         return <JwalaDataTable ref="dataTableWrapper"
                                tableId="jvm-config-datatable"
                                tableDef={tableDef}

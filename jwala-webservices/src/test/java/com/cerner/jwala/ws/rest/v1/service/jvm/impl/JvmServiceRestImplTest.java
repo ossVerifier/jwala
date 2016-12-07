@@ -68,8 +68,8 @@ public class JvmServiceRestImplTest {
     private static final String userName = "JoeThePlumber";
     private static final String clearTextPassword = "The Quick Brown Fox";
     private static final String encryptedPassword = new DecryptPassword().encrypt(clearTextPassword);
-    private static final String JDK_1_7_TEST = "JDK 1.7-test";
-    private static final String APACHE_TOMCAT_7_0_55_TEST = "Apache Tomcat 7.0.55-test";
+    private static final String JDK_1_7_TEST_VERSION = "1";
+    private static final String APACHE_TOMCAT_7_0_55_TEST_VERSION = "11";
 
     @Mock
     private JvmServiceImpl jvmService;
@@ -107,7 +107,7 @@ public class JvmServiceRestImplTest {
                 systemProperties,
                 JvmState.JVM_STOPPED,
                 null, null, null, userName, encryptedPassword,
-                "", "");
+                null, null);
         final List<Jvm> result = new ArrayList<>();
         result.add(ws);
         return result;
@@ -161,7 +161,7 @@ public class JvmServiceRestImplTest {
         when(jvmService.createJvm(any(CreateJvmAndAddToGroupsRequest.class), any(User.class))).thenReturn(jvm);
 
         final JsonCreateJvm jsonCreateJvm = new JsonCreateJvm(name, hostName, httpPort, httpsPort, redirectPort,
-                shutdownPort, ajpPort, statusPath.getUriPath(), systemProperties, userName, clearTextPassword, JDK_1_7_TEST, APACHE_TOMCAT_7_0_55_TEST);
+                shutdownPort, ajpPort, statusPath.getUriPath(), systemProperties, userName, clearTextPassword, JDK_1_7_TEST_VERSION, APACHE_TOMCAT_7_0_55_TEST_VERSION);
         final Response response = jvmServiceRest.createJvm(jsonCreateJvm, authenticatedUser);
         assertEquals(Response.Status.CREATED.getStatusCode(), response.getStatus());
 
@@ -191,8 +191,8 @@ public class JvmServiceRestImplTest {
                 systemProperties,
                 userName,
                 clearTextPassword,
-                JDK_1_7_TEST,
-                APACHE_TOMCAT_7_0_55_TEST);
+                JDK_1_7_TEST_VERSION,
+                APACHE_TOMCAT_7_0_55_TEST_VERSION);
         final Response response = jvmServiceRest.createJvm(jsonCreateJvm, authenticatedUser);
         assertEquals(Response.Status.CREATED.getStatusCode(), response.getStatus());
 
@@ -209,7 +209,7 @@ public class JvmServiceRestImplTest {
         final Set<String> groupIds = new HashSet<>();
         groupIds.add("111");
         final JsonUpdateJvm jsonUpdateJvm = new JsonUpdateJvm("1", name, hostName, groupIds, "5", "4", "3", "2", "1",
-                statusPath.getUriPath(), systemProperties, userName, clearTextPassword, JDK_1_7_TEST, APACHE_TOMCAT_7_0_55_TEST);
+                statusPath.getUriPath(), systemProperties, userName, clearTextPassword, JDK_1_7_TEST_VERSION, APACHE_TOMCAT_7_0_55_TEST_VERSION);
         when(jvmService.updateJvm(any(UpdateJvmRequest.class), any(User.class))).thenReturn(jvm);
 
         // Check rules for the JVM
@@ -235,7 +235,7 @@ public class JvmServiceRestImplTest {
     public void testNoGroupIdInUpdateRequest() {
         final Set<String> groupIds = new HashSet<>();
         final JsonUpdateJvm jsonUpdateJvm = new JsonUpdateJvm("1", name, hostName, groupIds, "5", "4", "3", "2", "1",
-                statusPath.getUriPath(), systemProperties, userName, clearTextPassword, JDK_1_7_TEST, APACHE_TOMCAT_7_0_55_TEST);
+                statusPath.getUriPath(), systemProperties, userName, clearTextPassword, JDK_1_7_TEST_VERSION, APACHE_TOMCAT_7_0_55_TEST_VERSION);
 
         // Check rules for the JVM
         UpdateJvmRequest updateJvmCommand = jsonUpdateJvm.toUpdateJvmRequest();

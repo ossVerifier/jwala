@@ -296,6 +296,8 @@ public class JvmServiceImpl implements JvmService {
             validateJvmAndAppResources(jvm);
 
             distributeBinaries(jvm.getHostName());
+            // check for setenv.bat
+            checkForSetenvBat(jvm.getJvmName());
 
             // create the scripts directory if it doesn't exist
             createScriptsDirectory(jvm);
@@ -392,11 +394,12 @@ public class JvmServiceImpl implements JvmService {
         }
     }
 
-    private void distributeBinaries(String hostName) {
+    private void distributeBinaries(Jvm jvm) {
+        final String hostName = jvm.getHostName();
         try {
             binaryDistributionLockManager.writeLock(hostName);
             binaryDistributionService.distributeUnzip(hostName);
-            binaryDistributionService.distributeJdk(hostName);
+            binaryDistributionService.distributeJdk(jvm);
         } finally {
             binaryDistributionLockManager.writeUnlock(hostName);
         }

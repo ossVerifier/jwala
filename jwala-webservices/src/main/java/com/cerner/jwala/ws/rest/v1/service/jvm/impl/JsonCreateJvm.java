@@ -3,6 +3,7 @@ package com.cerner.jwala.ws.rest.v1.service.jvm.impl;
 import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.id.IdentifierSetBuilder;
+import com.cerner.jwala.common.domain.model.media.Media;
 import com.cerner.jwala.common.domain.model.path.Path;
 import com.cerner.jwala.common.domain.model.ssh.DecryptPassword;
 import com.cerner.jwala.common.exception.BadRequestException;
@@ -35,8 +36,8 @@ public class JsonCreateJvm {
     private final String systemProperties;
     private final String userName;
     private final String encryptedPassword;
-    private final String jdkVersion;
-    private final String tomcatVersion;
+    private final String jdkMediaId;
+    private final String tomcatMediaId;
 
     private final Set<String> groupIds;
 
@@ -51,8 +52,8 @@ public class JsonCreateJvm {
                          final String theSystemProperties,
                          final String theUsername,
                          final String theEncryptedPassword,
-                         final String theJdkVersion,
-                         final String theTomcatVersion) {
+                         final String jdkMediaId,
+                         final String tomcatMediaId) {
         this(theJvmName,
                 theHostName,
                 Collections.<String>emptySet(),
@@ -65,8 +66,8 @@ public class JsonCreateJvm {
                 theSystemProperties,
                 theUsername,
                 theEncryptedPassword,
-                theJdkVersion,
-                theTomcatVersion);
+                jdkMediaId,
+                tomcatMediaId);
     }
 
     public JsonCreateJvm(final String theJvmName,
@@ -81,8 +82,8 @@ public class JsonCreateJvm {
                          final String theSystemProperties,
                          final String theUsername,
                          final String theEncrypedPassword,
-                         final String theJdkVersion,
-                         final String theTomcatVersion) {
+                         final String theJdkMediaId,
+                         final String theTomcatMediaId) {
         jvmName = theJvmName;
         hostName = theHostName;
         httpPort = theHttpPort;
@@ -95,8 +96,8 @@ public class JsonCreateJvm {
         groupIds = Collections.unmodifiableSet(new HashSet<>(someGroupIds));
         userName = theUsername;
         encryptedPassword = theEncrypedPassword;
-        jdkVersion = theJdkVersion;
-        tomcatVersion = theTomcatVersion;
+        jdkMediaId = theJdkMediaId;
+        tomcatMediaId = theTomcatMediaId;
     }
 
     public boolean areGroupsPresent() {
@@ -116,8 +117,8 @@ public class JsonCreateJvm {
                 systemProperties,
                 userName,
                 encryptedPassword,
-                jdkVersion,
-                tomcatVersion);
+                new Identifier<Media>(Long.parseLong(jdkMediaId)),
+                new Identifier<Media>(Long.parseLong(tomcatMediaId)));
     }
 
     public CreateJvmAndAddToGroupsRequest toCreateAndAddRequest() {
@@ -135,8 +136,8 @@ public class JsonCreateJvm {
                 systemProperties,
                 userName,
                 encryptedPassword,
-                jdkVersion,
-                tomcatVersion);
+                new Identifier<Media>(Long.parseLong(jdkMediaId)),
+                new Identifier<Media>(Long.parseLong(tomcatMediaId)));
     }
 
     protected Set<Identifier<Group>> convertGroupIds() {
@@ -166,8 +167,8 @@ public class JsonCreateJvm {
             final JsonNode systemProperties = rootNode.get("systemProperties");
             final JsonNode userName = rootNode.get("userName");
             final JsonNode encryptedPassword = rootNode.get("encryptedPassword");
-            final JsonNode jdkVersion = rootNode.get("jdkVersion");
-            final JsonNode tomcatVersion = rootNode.get("tomcatVersion");
+            final JsonNode jdkMediaId = rootNode.get("jdkVersion");
+            final JsonNode tomcatMediaId = rootNode.get("tomcatVersion");
 
             final Set<String> rawGroupIds = deserializeGroupIdentifiers(rootNode);
             final String jsonPassword = encryptedPassword == null ? null : encryptedPassword.getTextValue();
@@ -190,8 +191,8 @@ public class JsonCreateJvm {
                     systemProperties.getTextValue(),
                     userName == null ? null : userName.getTextValue(),
                     pw,
-                    jdkVersion.getTextValue(),
-                    tomcatVersion.getTextValue());
+                    jdkMediaId.getTextValue(),
+                    tomcatMediaId.getTextValue());
         }
     }
 
@@ -209,8 +210,8 @@ public class JsonCreateJvm {
                 ", systemProperties='" + systemProperties + '\'' +
                 ", userName='" + userName + '\'' +
                 ", encryptedPassword='" + encryptedPassword + '\'' +
-                ", jdkVersion='" + jdkVersion + '\'' +
-                ", tomcatVersion='" + tomcatVersion + '\'' +
+                ", jdkMediaId='" + jdkMediaId + '\'' +
+                ", tomcatMediaId='" + tomcatMediaId + '\'' +
                 ", groupIds=" + groupIds +
                 '}';
     }

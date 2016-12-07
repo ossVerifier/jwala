@@ -437,8 +437,8 @@ public class ResourceServiceImpl implements ResourceService {
                 jvm.getLastUpdatedDate(),
                 jvm.getUserName(),
                 jvm.getEncryptedPassword(),
-                jvm.getJdkVersion(),
-                jvm.getTomcatVersion());
+                jvm.getJdkMedia(),
+                jvm.getTomcatMedia());
 
         final UploadJvmConfigTemplateRequest uploadJvmTemplateRequest = new UploadJvmConfigTemplateRequest(jvmWithParentGroup, metaData.getTemplateName(),
                 templateContent, metaData.getJsonData());

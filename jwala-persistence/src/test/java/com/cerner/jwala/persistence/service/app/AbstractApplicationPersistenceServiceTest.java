@@ -174,7 +174,7 @@ public abstract class AbstractApplicationPersistenceServiceTest {
         CreateApplicationRequest request = new CreateApplicationRequest(group.getId(), "testAppName", "/hctTest", true, true, false);
         Application app = applicationPersistenceService.createApplication(request);
 
-        CreateJvmRequest createJvmRequest = new CreateJvmRequest(jvmName, "testHost", 9101, 9102, 9103, -1, 9104, new Path("./"), "", null, null, "", "");
+        CreateJvmRequest createJvmRequest = new CreateJvmRequest(jvmName, "testHost", 9101, 9102, 9103, -1, 9104, new Path("./"), "", null, null, null, null);
         Jvm jvm = jvmPersistenceService.createJvm(createJvmRequest);
 
         AddJvmToGroupRequest addJvmToGroup = new AddJvmToGroupRequest(group.getId(), jvm.getId());
@@ -196,7 +196,7 @@ public abstract class AbstractApplicationPersistenceServiceTest {
         CreateGroupRequest createGroupReq = new CreateGroupRequest("testGroupName");
         Group group = groupPersistenceService.createGroup(createGroupReq);
 
-        CreateJvmRequest createJvmRequest = new CreateJvmRequest(jvmName, "testHost", 9101, 9102, 9103, -1, 9104, new Path("./"), "", null, null, "", "");
+        CreateJvmRequest createJvmRequest = new CreateJvmRequest(jvmName, "testHost", 9101, 9102, 9103, -1, 9104, new Path("./"), "", null, null, null, null);
         Jvm jvm = jvmPersistenceService.createJvm(createJvmRequest);
 
         AddJvmToGroupRequest addJvmToGroup = new AddJvmToGroupRequest(group.getId(), jvm.getId());
@@ -212,7 +212,7 @@ public abstract class AbstractApplicationPersistenceServiceTest {
 
     @Test
     public void testUploadAppTemplate() throws FileNotFoundException {
-        CreateJvmRequest createJvmRequest = new CreateJvmRequest("testJvmName", "testHostName", 9101, 9102, 9103, -1, 9104, new Path("./"), "", null, null, "", "");
+        CreateJvmRequest createJvmRequest = new CreateJvmRequest("testJvmName", "testHostName", 9101, 9102, 9103, -1, 9104, new Path("./"), "", null, null, null, null);
 
         CreateGroupRequest createGroupReq = new CreateGroupRequest("testGroupName");
         Group group = groupPersistenceService.createGroup(createGroupReq);

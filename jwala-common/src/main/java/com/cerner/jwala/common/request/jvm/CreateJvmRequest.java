@@ -1,6 +1,8 @@
 package com.cerner.jwala.common.request.jvm;
 
 import com.cerner.jwala.common.domain.model.fault.FaultType;
+import com.cerner.jwala.common.domain.model.id.Identifier;
+import com.cerner.jwala.common.domain.model.media.Media;
 import com.cerner.jwala.common.domain.model.path.Path;
 import com.cerner.jwala.common.request.Request;
 import com.cerner.jwala.common.rule.*;
@@ -27,8 +29,8 @@ public class CreateJvmRequest implements Serializable, Request {
     private final String systemsProperties;
     private final String userName;
     private final String encryptedPassword;
-    private final String jdkVersion;
-    private final String tomcatVersion;
+    private final Identifier<Media> jdkMediaId;
+    private final Identifier<Media> tomcatMediaId;
 
     public CreateJvmRequest(final String theName,
                             final String theHostName,
@@ -41,8 +43,8 @@ public class CreateJvmRequest implements Serializable, Request {
                             final String theSystemProperties,
                             final String theUserName,
                             final String theEncryptedPassword,
-                            final String jdkVersion,
-                            final String tomcatVersion) {
+                            final Identifier<Media> jdkMediaId,
+                            final Identifier<Media> tomcatMediaId) {
         jvmName = theName;
         hostName = theHostName;
         httpPort = theHttpPort;
@@ -54,8 +56,8 @@ public class CreateJvmRequest implements Serializable, Request {
         systemsProperties = theSystemProperties;
         userName = theUserName;
         encryptedPassword = theEncryptedPassword;
-        this.jdkVersion = jdkVersion;
-        this.tomcatVersion = tomcatVersion;
+        this.jdkMediaId = jdkMediaId;
+        this.tomcatMediaId = tomcatMediaId;
     }
 
     public String getJvmName() {
@@ -114,12 +116,12 @@ public class CreateJvmRequest implements Serializable, Request {
                           new PortNumberRule(ajpPort, FaultType.INVALID_JVM_AJP_PORT)).validate();
     }
 
-    public String getJdkVersion() {
-        return jdkVersion;
+    public Identifier<Media> getJdkMediaId() {
+        return jdkMediaId;
     }
 
-    public String getTomcatVersion() {
-        return tomcatVersion;
+    public Identifier<Media> getTomcatMediaId() {
+        return tomcatMediaId;
     }
 
     @Override
@@ -142,8 +144,8 @@ public class CreateJvmRequest implements Serializable, Request {
                 .append(systemsProperties, that.systemsProperties)
                 .append(userName, that.userName)
                 .append(encryptedPassword, that.encryptedPassword)
-                .append(jdkVersion, that.jdkVersion)
-                .append(tomcatVersion, that.tomcatVersion)
+                .append(jdkMediaId, that.jdkMediaId)
+                .append(tomcatMediaId, that.tomcatMediaId)
                 .isEquals();
     }
 
@@ -161,8 +163,8 @@ public class CreateJvmRequest implements Serializable, Request {
                 .append(systemsProperties)
                 .append(userName)
                 .append(encryptedPassword)
-                .append(jdkVersion)
-                .append(tomcatVersion)
+                .append(jdkMediaId)
+                .append(tomcatMediaId)
                 .toHashCode();
     }
 
@@ -180,8 +182,8 @@ public class CreateJvmRequest implements Serializable, Request {
                 ", systemsProperties='" + systemsProperties + '\'' +
                 ", userName='" + userName + '\'' +
                 ", encryptedPassword='" + encryptedPassword + '\'' +
-                ", jdkVersion='" + jdkVersion + '\'' +
-                ", tomcatVersion='" + tomcatVersion + '\'' +
+                ", jdkMediaId='" + jdkMediaId + '\'' +
+                ", tomcatMediaId='" + tomcatMediaId + '\'' +
                 '}';
     }
 }

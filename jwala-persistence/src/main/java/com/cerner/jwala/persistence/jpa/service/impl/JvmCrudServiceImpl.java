@@ -46,8 +46,9 @@ public class JvmCrudServiceImpl extends AbstractCrudServiceImpl<JpaJvm> implemen
             jpaJvm.setSystemProperties(createJvmRequest.getSystemProperties());
             jpaJvm.setUserName(createJvmRequest.getUserName());
             jpaJvm.setEncryptedPassword(createJvmRequest.getEncryptedPassword());
-            jpaJvm.setJdkVersion(createJvmRequest.getJdkVersion());
-            jpaJvm.setTomcatVersion(createJvmRequest.getTomcatVersion());
+            // TODO add jpaMedia to jpaJvm
+//            jpaJvm.setJdkMedia(createJvmRequest.getJdkMediaId());
+//            jpaJvm.setTomcatMedia(createJvmRequest.getTomcatMediaId());
 
             return create(jpaJvm);
         } catch (final EntityExistsException eee) {
@@ -74,8 +75,9 @@ public class JvmCrudServiceImpl extends AbstractCrudServiceImpl<JpaJvm> implemen
             jpaJvm.setSystemProperties(updateJvmRequest.getNewSystemProperties());
             jpaJvm.setUserName(updateJvmRequest.getNewUserName());
             jpaJvm.setEncryptedPassword(updateJvmRequest.getNewEncryptedPassword());
-            jpaJvm.setJdkVersion(updateJvmRequest.getNewJdkVersion());
-            jpaJvm.setTomcatVersion(updateJvmRequest.getNewTomcatVersion());
+            // TODO add jpaMedia to Jvm
+//            jpaJvm.setJdkMedia(updateJvmRequest.getNewJdkMediaId());
+//            jpaJvm.setTomcatMedia(updateJvmRequest.getNewTomcatMediaId());
 
             return update(jpaJvm);
         } catch (final EntityExistsException eee) {

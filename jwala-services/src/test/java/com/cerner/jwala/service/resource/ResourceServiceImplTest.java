@@ -328,9 +328,9 @@ public class ResourceServiceImplTest {
                     new com.cerner.jwala.common.domain.model.path.Path("./"), new com.cerner.jwala.common.domain.model.path.Path("htdocs"), WebServerReachableState.WS_UNREACHABLE, "");
             webServers.add(webServer);
             jvms.add(new Jvm(new Identifier<Jvm>(11L), "tc1", "someHostGenerateMe", new HashSet<>(groups), 11010, 11011, 11012, -1, 11013,
-                    new com.cerner.jwala.common.domain.model.path.Path("/statusPath"), "EXAMPLE_OPTS=%someEvn%/someVal", JvmState.JVM_STOPPED, "", null, null, null, null, "", ""));
+                    new com.cerner.jwala.common.domain.model.path.Path("/statusPath"), "EXAMPLE_OPTS=%someEvn%/someVal", JvmState.JVM_STOPPED, "", null, null, null, null, null, null));
             jvms.add(new Jvm(new Identifier<Jvm>(22L), "tc2", "someHostGenerateMe", new HashSet<>(groups), 11020, 11021, 11022, -1, 11023,
-                    new com.cerner.jwala.common.domain.model.path.Path("/statusPath"), "EXAMPLE_OPTS=%someEvn%/someVal", JvmState.JVM_STOPPED, "", null, null, null, null, "", ""));
+                    new com.cerner.jwala.common.domain.model.path.Path("/statusPath"), "EXAMPLE_OPTS=%someEvn%/someVal", JvmState.JVM_STOPPED, "", null, null, null, null, null, null));
 
             when(mockGroupPesistenceService.getGroups()).thenReturn(groups);
             when(mockAppPersistenceService.findApplicationsBelongingTo(anyString())).thenReturn(applications);

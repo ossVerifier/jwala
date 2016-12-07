@@ -48,8 +48,8 @@ public class JvmBuilder {
                 .setLastUpdatedDate(jpaJvm.getLastUpdateDate())
                 .setUserName(jpaJvm.getUserName())
                 .setEncryptedPassword(jpaJvm.getEncryptedPassword())
-                .setJdkVersion(jpaJvm.getJdkVersion())
-                .setTomcatVersion(jpaJvm.getTomcatVersion());
+                .setJdkMedia(jpaJvm.getJdkMedia())
+                .setTomcatMedia(jpaJvm.getTomcatMedia());
         return builder.build();
     }
 

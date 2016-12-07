@@ -211,7 +211,7 @@ public class WebServerCrudServiceImplTest {
         List<JpaWebServer> wsList = new ArrayList<>();
         wsList.add(webServerCrudService.findById(webServer.getId().getId()));
         group.setWebServers(wsList);
-        CreateJvmRequest createJvmReq = new CreateJvmRequest("testJvmName", "testHostName", 1212, 1213, 1214, -1, 1215, new Path("./statusPath"), "", null, null, "", "");
+        CreateJvmRequest createJvmReq = new CreateJvmRequest("testJvmName", "testHostName", 1212, 1213, 1214, -1, 1215, new Path("./statusPath"), "", null, null, null, null);
         final JpaJvm jvm = jvmCrudService.createJvm(createJvmReq);
         List<JpaJvm> jvmsList = new ArrayList<>();
         jvmsList.add(jvm);

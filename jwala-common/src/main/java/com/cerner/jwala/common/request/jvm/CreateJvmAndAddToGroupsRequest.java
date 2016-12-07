@@ -3,6 +3,7 @@ package com.cerner.jwala.common.request.jvm;
 import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
+import com.cerner.jwala.common.domain.model.media.Media;
 import com.cerner.jwala.common.domain.model.path.Path;
 import com.cerner.jwala.common.request.Request;
 import com.cerner.jwala.common.request.group.AddJvmToGroupRequest;
@@ -33,8 +34,8 @@ public class CreateJvmAndAddToGroupsRequest implements Serializable, Request {
                                           final String theSystemProperties,
                                           final String theUserName,
                                           final String theEncryptedPassword,
-                                          final String theJdkVersion,
-                                          final String theTomcatVersion) {
+                                          final Identifier<Media> theJdkMedia,
+                                          final Identifier<Media> theTomcatMedia) {
 
         createCommand = new CreateJvmRequest(theName,
                 theHostName,
@@ -47,8 +48,8 @@ public class CreateJvmAndAddToGroupsRequest implements Serializable, Request {
                 theSystemProperties,
                 theUserName,
                 theEncryptedPassword,
-                theJdkVersion,
-                theTomcatVersion
+                theJdkMedia,
+                theTomcatMedia
         );
         groups = Collections.unmodifiableSet(new HashSet<>(theGroups));
     }

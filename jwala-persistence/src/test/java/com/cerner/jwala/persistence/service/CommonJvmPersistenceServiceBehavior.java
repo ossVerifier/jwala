@@ -3,6 +3,7 @@ package com.cerner.jwala.persistence.service;
 import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
+import com.cerner.jwala.common.domain.model.media.Media;
 import com.cerner.jwala.common.domain.model.path.Path;
 import com.cerner.jwala.common.request.jvm.CreateJvmRequest;
 import com.cerner.jwala.common.request.jvm.UpdateJvmRequest;
@@ -29,8 +30,8 @@ public class CommonJvmPersistenceServiceBehavior {
                          final String aSystemProperties,
                          final String aUserName,
                          final String anEncryptedPassword,
-                         final String jdkVersion,
-                         final String tomcatVersion) {
+                         final Identifier<Media> jdkMediaId,
+                         final Identifier<Media> tomcatMediaId) {
 
         final CreateJvmRequest createJvmRequest = createCreateJvmRequest(aJvmName,
                 aHostName,
@@ -44,8 +45,8 @@ public class CommonJvmPersistenceServiceBehavior {
                 aSystemProperties,
                 aUserName,
                 anEncryptedPassword,
-                jdkVersion,
-                tomcatVersion);
+                jdkMediaId,
+                tomcatMediaId);
 
         return jvmPersistenceService.createJvm(createJvmRequest);
     }
@@ -63,8 +64,8 @@ public class CommonJvmPersistenceServiceBehavior {
                          final String aSystemProperties,
                          final String aUserName,
                          final String anEncryptedPassword,
-                         final String aJdkVersion,
-                         final String aTomcatVersion) {
+                         final Identifier<Media> aJdkMediaId,
+                         final Identifier<Media> aTomcatMediaId) {
 
         final UpdateJvmRequest updateJvmRequest = createUpdateJvmRequest(aJvmId,
                 aNewJvmName,
@@ -79,8 +80,8 @@ public class CommonJvmPersistenceServiceBehavior {
                 aSystemProperties,
                 aUserName,
                 anEncryptedPassword,
-                aJdkVersion,
-                aTomcatVersion);
+                aJdkMediaId,
+                aTomcatMediaId);
 
         return jvmPersistenceService.updateJvm(updateJvmRequest);
     }
@@ -97,8 +98,8 @@ public class CommonJvmPersistenceServiceBehavior {
                                                       final String aSystemProperties,
                                                       final String aUserName,
                                                       final String anEncryptedPassword,
-                                                      final String jdkVersion,
-                                                      final String tomcatVersion) {
+                                                      final Identifier<Media> jdkMediaId,
+                                                      final Identifier<Media> tomcatMediaId) {
 
         return new CreateJvmRequest(aJvmName,
                 aJvmHostName,
@@ -111,8 +112,8 @@ public class CommonJvmPersistenceServiceBehavior {
                 aSystemProperties,
                 aUserName,
                 anEncryptedPassword,
-                jdkVersion,
-                tomcatVersion);
+                jdkMediaId,
+                tomcatMediaId);
     }
 
     protected UpdateJvmRequest createUpdateJvmRequest(final Identifier<Jvm> aJvmId,
@@ -128,8 +129,8 @@ public class CommonJvmPersistenceServiceBehavior {
                                                       final String systemProperties,  
                                                       final String aUserName,
                                                       final String anEncryptedPassword,
-                                                      final String aJdkVersion,
-                                                      final String aTomcatVersion) {
+                                                      final Identifier<Media> aJdkMediaId,
+                                                      final Identifier<Media> aTomcatMediaId) {
 
         return new UpdateJvmRequest(aJvmId,
                 aNewJvmName,
@@ -144,7 +145,7 @@ public class CommonJvmPersistenceServiceBehavior {
                 systemProperties, 
                 aUserName,
                 anEncryptedPassword,
-                aJdkVersion,
-                aTomcatVersion);
+                aJdkMediaId,
+                aTomcatMediaId);
     }
 }

@@ -58,8 +58,8 @@ public class JsonCreateJvmDeserializerTest {
                 keyTextValue("systemProperties", systemProperties),
                 keyTextValue("userName", userName),
                 keyTextValue("encryptedPassword", encryptedPassword),
-                keyTextValue("jdkVersion", "JDK 1.7-test"),
-                keyTextValue("tomcatVersion", "Apache Tomcat Version 7.0.55-test"));
+                keyTextValue("jdkVersion", "1"),
+                keyTextValue("tomcatVersion", "11"));
 
         final JsonCreateJvm create = readValue(json);
 
@@ -90,8 +90,8 @@ public class JsonCreateJvmDeserializerTest {
                 keyTextValue("systemProperties", systemProperties),
                 keyTextValue("userName", userName),
                 keyTextValue("encryptedPassword", encryptedPassword),
-                keyTextValue("jdkVersion", "JDK 1.7-test"),
-                keyTextValue("tomcatVersion", "Apache Tomcat Version 7.0.55-test"));
+                keyTextValue("jdkVersion", "1"),
+                keyTextValue("tomcatVersion", "11"));
 
         final JsonCreateJvm create = readValue(json);
 
@@ -120,8 +120,8 @@ public class JsonCreateJvmDeserializerTest {
                 keyTextValue("systemProperties", systemProperties),
                 keyTextValue("userName", userName),
                 keyTextValue("encryptedPassword", encryptedPassword),
-                keyTextValue("jdkVersion", "JDK 1.7-test"),
-                keyTextValue("tomcatVersion", "Apache Tomcat Version 7.0.55-test"));
+                keyTextValue("jdkVersion", "1"),
+                keyTextValue("tomcatVersion", "11"));
 
         final JsonCreateJvm create = readValue(json);
 
@@ -148,8 +148,8 @@ public class JsonCreateJvmDeserializerTest {
                 keyTextValue("systemProperties", systemProperties),
                 keyTextValue("userName", userName),
                 keyTextValue("encryptedPassword", encryptedPassword),
-                keyTextValue("jdkVersion", "JDK 1.7-test"),
-                keyTextValue("tomcatVersion", "Apache Tomcat Version 7.0.55-test"));
+                keyTextValue("jdkVersion", "1"),
+                keyTextValue("tomcatVersion", "11"));
 
         final JsonCreateJvm create = readValue(json);
 
@@ -185,8 +185,8 @@ public class JsonCreateJvmDeserializerTest {
                 keyTextValue("systemProperties", systemProperties),
                 keyTextValue("userName", userName),
                 keyTextValue("encryptedPassword", encryptedPassword),
-                keyTextValue("jdkVersion", "JDK 1.7-test"),
-                keyTextValue("tomcatVersion", "Apache Tomcat Version 7.0.55-test"));
+                keyTextValue("jdkVersion", "1"),
+                keyTextValue("tomcatVersion", "11"));
 
         final JsonCreateJvm create = readValue(json);
         verifyAssertions(create,

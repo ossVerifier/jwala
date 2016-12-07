@@ -3,6 +3,7 @@ package com.cerner.jwala.common.domain.model.jvm;
 import com.cerner.jwala.common.domain.model.app.Application;
 import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.id.Identifier;
+import com.cerner.jwala.common.domain.model.media.Media;
 import com.cerner.jwala.common.domain.model.path.Path;
 import com.cerner.jwala.common.domain.model.ssh.DecryptPassword;
 import com.cerner.jwala.common.domain.model.uri.UriBuilder;
@@ -36,8 +37,8 @@ public class Jvm implements Serializable {
     private Calendar lastUpdatedDate;
     private String userName;
     private String encryptedPassword;
-    private String jdkVersion;
-    private String tomcatVersion;
+    private Media jdkMedia;
+    private Media tomcatMedia;
 
     public Jvm(final Identifier<Jvm> id, final String name) {
         this.id = id;
@@ -74,8 +75,8 @@ public class Jvm implements Serializable {
                final Calendar lastUpdatedDate,
                final String userName,
                final String encryptedPassword,
-               final String jdkVersion,
-               final String tomcatVersion) {
+               final Media jdkMedia,
+               final Media tomcatMedia) {
         this.id = id;
         this.jvmName = name;
         this.hostName = hostName;
@@ -95,8 +96,8 @@ public class Jvm implements Serializable {
         this.lastUpdatedDate = lastUpdatedDate;
         this.userName = userName;
         this.encryptedPassword = encryptedPassword;
-        this.jdkVersion = jdkVersion;
-        this.tomcatVersion = tomcatVersion;
+        this.jdkMedia = jdkMedia;
+        this.tomcatMedia = tomcatMedia;
     }
 
     public Jvm toDecrypted() {
@@ -117,8 +118,8 @@ public class Jvm implements Serializable {
                 this.lastUpdatedDate,
                 this.userName,
                 this.encryptedPassword != null && this.encryptedPassword.length() > 0 ? new DecryptPassword().decrypt(this.encryptedPassword) : "",
-                this.jdkVersion,
-                this.tomcatVersion);
+                this.jdkMedia,
+                this.tomcatMedia);
     }
 
     public Jvm(Identifier<Jvm> id,
@@ -138,8 +139,8 @@ public class Jvm implements Serializable {
                Calendar lastUpdatedDate,
                String userName,
                String encryptedPassword,
-               String jdkVersion,
-               String tomcatVersion) {
+               Media jdkMedia,
+               Media tomcatMedia) {
         this.id = id;
         this.jvmName = jvmName;
         this.hostName = hostName;
@@ -157,16 +158,16 @@ public class Jvm implements Serializable {
         this.lastUpdatedDate = lastUpdatedDate;
         this.userName = userName;
         this.encryptedPassword = encryptedPassword;
-        this.jdkVersion = jdkVersion;
-        this.tomcatVersion = tomcatVersion;
+        this.jdkMedia = jdkMedia;
+        this.tomcatMedia = tomcatMedia;
     }
 
-    public String getJdkVersion() {
-        return jdkVersion;
+    public Media getJdkMedia() {
+        return jdkMedia;
     }
 
-    public String getTomcatVersion() {
-        return tomcatVersion;
+    public Media getTomcatMedia() {
+        return tomcatMedia;
     }
     public String getEncryptedPassword() {
         return encryptedPassword;
@@ -288,8 +289,8 @@ public class Jvm implements Serializable {
                 .append(lastUpdatedDate, jvm.lastUpdatedDate)
                 .append(userName, jvm.userName)
                 .append(encryptedPassword, jvm.encryptedPassword)
-                .append(jdkVersion, jvm.jdkVersion)
-                .append(tomcatVersion, jvm.tomcatVersion)
+                .append(jdkMedia, jvm.jdkMedia)
+                .append(tomcatMedia, jvm.tomcatMedia)
                 .isEquals();
     }
 
@@ -312,8 +313,8 @@ public class Jvm implements Serializable {
                 .append(lastUpdatedDate)
                 .append(userName)
                 .append(encryptedPassword)
-                .append(jdkVersion)
-                .append(tomcatVersion)
+                .append(jdkMedia)
+                .append(tomcatMedia)
                 .toHashCode();
     }
 
@@ -338,8 +339,8 @@ public class Jvm implements Serializable {
                 ", lastUpdatedDate=" + lastUpdatedDate +
                 ", userName='" + userName + '\'' +
                 ", encryptedPassword='" + encryptedPassword + '\'' +
-                ", jdkVersion='" + jdkVersion + '\'' +
-                ", tomcatVersion='" + tomcatVersion + '\'' +
+                ", jdkMedia='" + jdkMedia + '\'' +
+                ", tomcatMedia='" + tomcatMedia + '\'' +
                 '}';
     }
 }

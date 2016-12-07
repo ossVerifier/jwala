@@ -5,6 +5,7 @@ import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
 import com.cerner.jwala.common.domain.model.jvm.JvmState;
+import com.cerner.jwala.common.domain.model.media.Media;
 import com.cerner.jwala.common.domain.model.path.FileSystemPath;
 import com.cerner.jwala.common.domain.model.path.Path;
 import com.cerner.jwala.common.domain.model.webserver.WebServer;
@@ -52,8 +53,8 @@ public class MockGroup {
                 Calendar.getInstance(),
                 "username",
                 "encryptedpassword",
-                "jdkVersion",
-                "tomcatVersion");
+                new Media(1, "JDK 1.7-test", "/local/archive/path", "JDK", "/remote/host/path"),
+                new Media(1, "Apache Tomcat 7.0.55-test", "/local/archive/path", "Tomcat", "/remote/host/path"));
         this.jvms.add(jvm);
         jvms.add(jvm);
         return jvms;
@@ -77,8 +78,8 @@ public class MockGroup {
                 Calendar.getInstance(),
                 "username",
                 "encryptedpassword",
-                "jdkVersion",
-                "tomcatVersion");
+                new Media(1, "JDK 1.7-test", "/local/archive/path", "JDK", "/remote/host/path"),
+                new Media(1, "Apache Tomcat 7.0.55-test", "/local/archive/path", "Tomcat", "/remote/host/path"));
         return jvm;
     }
 

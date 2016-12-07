@@ -1,6 +1,7 @@
 package com.cerner.jwala.persistence.jpa.domain;
 
 import com.cerner.jwala.common.domain.model.jvm.JvmState;
+import com.cerner.jwala.common.domain.model.media.Media;
 
 import javax.persistence.*;
 import java.util.List;
@@ -83,10 +84,10 @@ public class JpaJvm extends AbstractEntity<JpaJvm> {
     private String encryptedPassword;
 
     @Column(nullable = true)
-    private String jdkVersion;
+    private Media jdkMedia;
 
     @Column(nullable = true)
-    private String tomcatVersion;
+    private Media tomcatMedia;
 
     public Long getId() {
         return id;
@@ -254,19 +255,19 @@ public class JpaJvm extends AbstractEntity<JpaJvm> {
                 '}';
     }
 
-    public String getJdkVersion() {
-        return jdkVersion;
+    public Media getJdkMedia() {
+        return jdkMedia;
     }
 
-    public String getTomcatVersion() {
-        return tomcatVersion;
+    public Media getTomcatMedia() {
+        return tomcatMedia;
     }
 
-    public void setJdkVersion(String jdkVersion) {
-        this.jdkVersion = jdkVersion;
+    public void setJdkMedia(Media jdkMedia) {
+        this.jdkMedia = jdkMedia;
     }
 
-    public void setTomcatVersion(String tomcatVersion) {
-        this.tomcatVersion = tomcatVersion;
+    public void setTomcatMedia(Media tomcatMedia) {
+        this.tomcatMedia = tomcatMedia;
     }
 }

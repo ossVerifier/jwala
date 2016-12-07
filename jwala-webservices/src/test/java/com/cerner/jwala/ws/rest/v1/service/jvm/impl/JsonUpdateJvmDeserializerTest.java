@@ -4,6 +4,7 @@ import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.id.IdentifierSetBuilder;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
+import com.cerner.jwala.common.domain.model.media.Media;
 import com.cerner.jwala.common.domain.model.ssh.DecryptPassword;
 import com.cerner.jwala.common.exception.BadRequestException;
 import com.cerner.jwala.common.request.group.AddJvmToGroupRequest;
@@ -35,8 +36,8 @@ public class JsonUpdateJvmDeserializerTest {
     private static final String userName = "John Doe";
     private static final String clearTextPassword = "The Quick Brown Fox";
     private static final String encryptedPassword = new DecryptPassword().encrypt(clearTextPassword);
-    private static final String jdkVersion = "JDK 1.7-test";
-    private static final String tomcatVersion = "Apache Tomcat 7.0.55-test";
+    private static final String jdkVersion = "1";
+    private static final String tomcatVersion = "11";
 
     @Before
     public void setUp() {
@@ -362,10 +363,10 @@ public class JsonUpdateJvmDeserializerTest {
                 update.getNewUserName());
         assertEquals(anEncryptedPassword,
                 update.getNewEncryptedPassword());
-        assertEquals(aJdkVersion,
-                update.getNewJdkVersion());
-        assertEquals(aTomcatVersion,
-                update.getNewTomcatVersion());
+        assertEquals(new Identifier<Media>(Long.parseLong(aJdkVersion)),
+                update.getNewJdkMediaId());
+        assertEquals(new Identifier<Media>(Long.parseLong(aTomcatVersion)),
+                update.getNewTomcatMediaId());
         final Set<Identifier<Group>> expectedGroupIds = new IdentifierSetBuilder(Arrays.asList(someGroupIds)).build();
         for (final AddJvmToGroupRequest addCommand : update.getAssignmentCommands()) {
             assertTrue(expectedGroupIds.contains(addCommand.getGroupId()));

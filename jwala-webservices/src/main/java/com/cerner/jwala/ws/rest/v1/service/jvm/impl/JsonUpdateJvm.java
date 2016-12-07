@@ -5,6 +5,7 @@ import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.id.IdentifierSetBuilder;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
+import com.cerner.jwala.common.domain.model.media.Media;
 import com.cerner.jwala.common.domain.model.path.Path;
 import com.cerner.jwala.common.domain.model.ssh.DecryptPassword;
 import com.cerner.jwala.common.exception.BadRequestException;
@@ -38,8 +39,8 @@ public class JsonUpdateJvm {
     private final String systemProperties;
     private final String userName;
     private final String encryptedPassword;
-    private final String jdkVersion;
-    private final String tomcatVersion;
+    private final String  jdkMediaId;
+    private final String tomcatMediaId;
 
     public JsonUpdateJvm(final String theJvmId,
                          final String theJvmName,
@@ -54,8 +55,8 @@ public class JsonUpdateJvm {
                          final String theSystemProperties,
                          final String theUserName,
                          final String theEncryptedPassword,
-                         final String theJdkVersion,
-                         final String theTomcatVersion) {
+                         final String theJdkMediaId,
+                         final String theTomcatMediaId) {
         jvmId = theJvmId;
         jvmName = theJvmName;
         hostName = theHostName;
@@ -69,8 +70,8 @@ public class JsonUpdateJvm {
         systemProperties = theSystemProperties;
         userName = theUserName;
         encryptedPassword = theEncryptedPassword;
-        jdkVersion = theJdkVersion;
-        tomcatVersion = theTomcatVersion;
+        jdkMediaId = theJdkMediaId;
+        tomcatMediaId = theTomcatMediaId;
     }
 
     public UpdateJvmRequest toUpdateJvmRequest() throws BadRequestException {
@@ -88,8 +89,8 @@ public class JsonUpdateJvm {
                 systemProperties,
                 userName,
                 encryptedPassword,
-                jdkVersion,
-                tomcatVersion);
+                new Identifier<Media>(Long.parseLong(jdkMediaId)),
+                new Identifier<Media>(Long.parseLong(tomcatMediaId)));
     }
 
     protected Identifier<Jvm> convertJvmId() {
