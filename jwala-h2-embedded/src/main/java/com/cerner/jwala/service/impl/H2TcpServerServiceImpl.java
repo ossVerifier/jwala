@@ -15,7 +15,7 @@ import java.util.logging.Logger;
  */
 public class H2TcpServerServiceImpl extends AbstractH2ServerService {
 
-    private static Logger LOGGER = Logger.getLogger(H2TcpServerServiceImpl.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(H2TcpServerServiceImpl.class.getName());
 
     private static final String DEFAULT_TCP_SERVER_PARAMS = "-tcpPort,9094,-tcpAllowOthers";
 
