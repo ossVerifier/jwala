@@ -18,7 +18,7 @@ import com.cerner.jwala.service.webserver.WebServerControlService;
 import com.cerner.jwala.service.webserver.WebServerService;
 import com.cerner.jwala.ws.rest.RestServiceErrorHandler;
 import com.cerner.jwala.ws.rest.v1.exceptionmapper.*;
-import com.cerner.jwala.ws.rest.v1.impl.HistoryServiceRestImpl;
+import com.cerner.jwala.ws.rest.v1.service.impl.HistoryServiceRestImpl;
 import com.cerner.jwala.ws.rest.v1.response.ApplicationResponse;
 import com.cerner.jwala.ws.rest.v1.response.ResponseMessageBodyWriter;
 import com.cerner.jwala.ws.rest.v1.service.HistoryServiceRest;
@@ -58,7 +58,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 @Configuration
-@ComponentScan({"com.cerner.jwala.ws.rest.v1.impl"})
+@ComponentScan({"com.cerner.jwala.ws.rest.v1.service.impl"})
 public class AemWebServiceConfiguration {
 
     @Autowired

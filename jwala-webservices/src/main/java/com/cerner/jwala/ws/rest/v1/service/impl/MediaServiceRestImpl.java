@@ -1,4 +1,4 @@
-package com.cerner.jwala.ws.rest.v1.impl;
+package com.cerner.jwala.ws.rest.v1.service.impl;
 
 import com.cerner.jwala.service.MediaService;
 import com.cerner.jwala.ws.rest.v1.provider.AuthenticatedUser;
