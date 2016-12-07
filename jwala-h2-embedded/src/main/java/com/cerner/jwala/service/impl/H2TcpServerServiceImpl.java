@@ -5,6 +5,7 @@ import com.cerner.jwala.service.DbServerServiceException;
 import org.h2.tools.Server;
 
 import java.sql.SQLException;
+import java.text.MessageFormat;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -22,7 +23,8 @@ public class H2TcpServerServiceImpl extends AbstractH2ServerService {
     public H2TcpServerServiceImpl(final String tcpServerParams) {
         super(tcpServerParams == null ? DEFAULT_TCP_SERVER_PARAMS : tcpServerParams);
         if (tcpServerParams == null) {
-            LOGGER.warning("tcpServerParams is null, loading default tcpServerParams values \"" + DEFAULT_TCP_SERVER_PARAMS + "\"");
+            LOGGER.warning(MessageFormat.format("tcpServerParams is null, loading default tcpServerParams values \"{0}\"",
+                                                DEFAULT_TCP_SERVER_PARAMS));
         }
     }
 
@@ -35,4 +37,5 @@ public class H2TcpServerServiceImpl extends AbstractH2ServerService {
             throw new DbServerServiceException(e);
         }
     }
+
 }
