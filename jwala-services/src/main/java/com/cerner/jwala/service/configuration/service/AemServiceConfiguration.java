@@ -121,6 +121,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
         "com.cerner.jwala.service.impl.spring.component",
         "com.cerner.jwala.service.resource.impl",
         "com.cerner.jwala.common",
+        "com.cerner.jwala.service.impl",
         "com.cerner.jwala.common.jsch.impl"})
 public class AemServiceConfiguration {
 

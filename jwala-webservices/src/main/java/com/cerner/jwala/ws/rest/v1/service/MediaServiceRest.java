@@ -1,4 +1,4 @@
-package com.cerner.jwala.ws.rest.v1.service.media;
+package com.cerner.jwala.ws.rest.v1.service;
 
 import com.cerner.jwala.ws.rest.v1.provider.AuthenticatedUser;
 import com.cerner.jwala.ws.rest.v1.service.media.impl.JsonCreateMedia;
@@ -9,7 +9,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 /**
- * Created by RS045609 on 12/1/2016.
+ * Created by Rahul Sayini on 12/1/2016
  */
 
 @Path("/media")
@@ -18,26 +18,25 @@ public interface MediaServiceRest extends InitializingBean {
 
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
-    Response createMedia(final JsonCreateMedia jsonCreateMedia,
-                         @BeanParam final AuthenticatedUser aUser);
-
+    Response createMedia(JsonCreateMedia jsonCreateMedia,
+                         @BeanParam AuthenticatedUser aUser);
 
     @PUT
     @Consumes(MediaType.APPLICATION_JSON)
-    Response updateMedia(final String aJvmToUpdate,
-                         @BeanParam final AuthenticatedUser aUser);
+    Response updateMedia(String aJvmToUpdate,
+                         @BeanParam AuthenticatedUser aUser);
 
     @DELETE
     @Path("/{mediaId}")
-    Response removeMedia(@PathParam("mediaId") final Integer aMediaId,
-                         @BeanParam final AuthenticatedUser aUser);
+    Response removeMedia(@PathParam("mediaId") Integer aMediaId,
+                         @BeanParam AuthenticatedUser aUser);
 
     @GET
     Response getAllMedia();
 
     @GET
     @Path("/{aMediaName}")
-    Response getMedia(@PathParam("aMediaName") final String aMediaName,
-                      @BeanParam final AuthenticatedUser aUser);
+    Response getMedia(@PathParam("aMediaName") String aMediaName,
+                      @BeanParam AuthenticatedUser aUser);
 
 }
