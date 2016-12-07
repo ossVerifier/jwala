@@ -26,7 +26,7 @@ public class H2LifecycleListener implements LifecycleListener {
     private String webServerParam;
 
     @Override
-    public void lifecycleEvent(final LifecycleEvent event) {
+    public synchronized void lifecycleEvent(final LifecycleEvent event) {
         final LifecycleState lifecycleState = event.getLifecycle().getState();
 
         // h2 tcp server
