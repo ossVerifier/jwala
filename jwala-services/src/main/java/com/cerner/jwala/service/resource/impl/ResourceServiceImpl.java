@@ -936,7 +936,7 @@ public class ResourceServiceImpl implements ResourceService {
                 resourceSourceCopy = resourcesNameDir + "/" + deployFileName;
                 createConfigFile(resourcesNameDir + "/", deployFileName, fileContent);
             } else {
-                resourceSourceCopy = getResponseTemplate(resourceHandler.getSelectedValue(resourceIdentifier), fileName, false);
+                resourceSourceCopy = generateTemplateForNotText(resourceHandler.getSelectedValue(resourceIdentifier), fileName);
             }
 
             commandOutput = secureCopyFile(hostName, resourceSourceCopy, resourceDestPath);
@@ -990,13 +990,10 @@ public class ResourceServiceImpl implements ResourceService {
         return commandOutput;
     }
 
-    public <T> String getResponseTemplate(final T entity, final String fileName, final boolean isApplicationBinary) {
+    public <T> String generateTemplateForNotText(final T entity, final String fileName) {
         String template = "";
         if (entity instanceof Jvm) {
             template = jvmPersistenceService.getResourceTemplate(((Jvm) entity).getJvmName(), fileName);
-            if (isApplicationBinary) {
-                return generateResourceFile(fileName, template, generateResourceGroup(), jvmPersistenceService.findJvmByExactName(((Jvm) entity).getJvmName()), ResourceGeneratorType.TEMPLATE);
-            }
         } else if (entity instanceof Application) {
             if (((Application) entity).getParentJvm() != null) {
                 template = applicationPersistenceService.getResourceTemplate(((Application) entity).getName(), fileName, ((Application) entity).getParentJvm().getJvmName(), ((Application) entity).getGroup().getName());
