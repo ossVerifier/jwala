@@ -9,10 +9,20 @@ import java.nio.file.Paths;
 /**
  * POJO that defines a media such as jdk, tomcat application server, apache web server
  *
- * Created by Jedd Anthony Cuison on 12/6/2016
+ * Created by Jedd Cuison on 12/6/2016
  */
 @Entity
 public class Media extends AbstractEntity<Media> {
+
+    public Media() {
+    }
+
+    public Media(final String name, final MediaType type, final String localPath, final String remotePath) {
+        this.name = name;
+        this.type = type;
+        this.localPath = localPath;
+        this.remotePath = remotePath;
+    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
