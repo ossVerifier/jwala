@@ -1,7 +1,7 @@
 package com.cerner.jwala.control.command;
 
 import com.cerner.jwala.commandprocessor.CommandProcessorBuilder;
-import com.cerner.jwala.commandprocessor.impl.ThreadedCommandExecutorImpl;
+import com.cerner.jwala.commandprocessor.impl.CommandExecutorImpl;
 import com.cerner.jwala.commandprocessor.impl.jsch.JschBuilder;
 import com.cerner.jwala.commandprocessor.jsch.impl.ChannelSessionKey;
 import com.cerner.jwala.common.domain.model.jvm.JvmControlOperation;
@@ -27,7 +27,7 @@ public class RemoteCommandExecutorImplTest {
     private RemoteCommandExecutor remoteCommandExecutor;
 
     @Mock
-    ThreadedCommandExecutorImpl mockCommandExecutor;
+    CommandExecutorImpl mockCommandExecutor;
 
     @Mock
     JschBuilder mockJschBuilder;

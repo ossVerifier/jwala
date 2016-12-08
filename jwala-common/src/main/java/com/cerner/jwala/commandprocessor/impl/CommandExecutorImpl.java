@@ -6,8 +6,14 @@ import com.cerner.jwala.commandprocessor.CommandProcessorBuilder;
 import com.cerner.jwala.common.exec.CommandOutput;
 import com.cerner.jwala.exception.CommandFailureException;
 
-public class ThreadedCommandExecutorImpl implements CommandExecutor {
+public class CommandExecutorImpl implements CommandExecutor {
 
+    /**
+     * Executes the command and returns the result
+     * @param commandProcessorBuilder The builder and command
+     * @return Returns a result as @link com.cerner.jwala.common.exec.CommandOutput
+     * @throws CommandFailureException Thrown when the command cannot be processed as expected
+     */
     @Override
     public CommandOutput execute(final CommandProcessorBuilder commandProcessorBuilder) throws CommandFailureException {
         final CommandProcessor processor = commandProcessorBuilder.build();
