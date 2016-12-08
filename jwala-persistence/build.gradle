@@ -1,3 +1,4 @@
+description "This modules has the persistance layer for Jwala"
 apply plugin: 'maven-publish'
 
 dependencies {
