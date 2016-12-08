@@ -1,7 +1,5 @@
 package com.cerner.jwala.service.group.impl;
 
-import com.cerner.jwala.common.dispatch.GroupJvmDispatchCommand;
-import com.cerner.jwala.common.dispatch.JvmDispatchCommandResult;
 import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.jvm.JvmControlOperation;
@@ -11,14 +9,9 @@ import com.cerner.jwala.common.exec.ExecReturnCode;
 import com.cerner.jwala.common.request.group.ControlGroupJvmRequest;
 import com.cerner.jwala.common.request.jvm.ControlJvmRequest;
 import com.cerner.jwala.service.group.GroupService;
-import com.cerner.jwala.service.group.impl.GroupJvmControlServiceImpl;
 import com.cerner.jwala.service.jvm.JvmControlService;
-
 import org.junit.Before;
 import org.junit.Test;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
@@ -54,17 +47,5 @@ public class GroupJvmControlServiceImplTest {
     public void testControlGroupWithInvalidGroup() {
         ControlGroupJvmRequest controlGroupJvmRequest = new ControlGroupJvmRequest(groupId, JvmControlOperation.START);
         cut.controlGroup(controlGroupJvmRequest, testUser);
-    }
-
-    @Test
-    public void testDispatchCommandComplete() {
-        List<JvmDispatchCommandResult> results = new ArrayList<>();
-        GroupJvmDispatchCommand groupJvmDispatchCommand = new GroupJvmDispatchCommand(mockGroup, controlGroupJvmRequest, testUser);
-        JvmDispatchCommandResult commandResult = new JvmDispatchCommandResult(true, groupJvmDispatchCommand);
-        JvmDispatchCommandResult commandResultFail = new JvmDispatchCommandResult(false, groupJvmDispatchCommand);
-        results.add(commandResult);
-        results.add(commandResultFail);
-        cut.dispatchCommandComplete(results);
-        
     }
 }

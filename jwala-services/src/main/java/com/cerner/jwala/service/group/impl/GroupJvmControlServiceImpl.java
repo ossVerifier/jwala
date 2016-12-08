@@ -1,6 +1,5 @@
 package com.cerner.jwala.service.group.impl;
 
-import com.cerner.jwala.common.dispatch.JvmDispatchCommandResult;
 import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
 import com.cerner.jwala.common.domain.model.user.User;
@@ -11,11 +10,9 @@ import com.cerner.jwala.common.request.jvm.ControlJvmRequest;
 import com.cerner.jwala.service.group.GroupJvmControlService;
 import com.cerner.jwala.service.group.GroupService;
 import com.cerner.jwala.service.jvm.JvmControlService;
-
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -46,33 +43,6 @@ public class GroupJvmControlServiceImpl implements GroupJvmControlService {
         final Set<Jvm> jvms = group.getJvms();
         if (jvms != null) {
             controlJvms(controlGroupJvmRequest, aUser, jvms);
-        }
-    }
-
-    @Transactional
-    public void dispatchCommandComplete(List<JvmDispatchCommandResult> results) {
-
-        LOGGER.debug("entering dispatchCommandComplete with results {}", results);
-
-        if (results != null && !results.isEmpty()) {
-
-            long successCount = 0;
-            long totalCount = 0;
-
-            for (JvmDispatchCommandResult jvmDispatchCommandResult : results) {
-                jvmDispatchCommandResult.getGroupJvmDispatchCommand();
-                if (jvmDispatchCommandResult.wasSuccessful()) {
-                    successCount++;
-                }
-                ++totalCount;
-            }
-
-            String logMsg = "Group Dispatch : Command Complete: " + successCount + " of " + totalCount + " succeeded.";
-            if (successCount == results.size()) {
-                LOGGER.info(logMsg);
-            } else {
-                LOGGER.warn(logMsg);
-            }
         }
     }
 
