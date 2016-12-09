@@ -25,6 +25,7 @@ import com.cerner.jwala.persistence.jpa.service.exception.ResourceTemplateMetaDa
 import com.cerner.jwala.persistence.jpa.service.exception.ResourceTemplateUpdateException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityExistsException;
 import javax.persistence.NoResultException;
@@ -99,10 +100,8 @@ public class WebServerCrudServiceImpl extends AbstractCrudServiceImpl<JpaWebServ
     @Override
     @SuppressWarnings("unchecked")
     public List<WebServer> findWebServers(final String aWebServerNameFragment) {
-
-        final Query query = entityManager.createQuery("SELECT g FROM JpaWebServer g WHERE g.name LIKE :WebServerName");
-        query.setParameter("WebServerName", "?" + aWebServerNameFragment + "?");
-
+        final Query query = entityManager.createNamedQuery(JpaWebServer.FIND_WEB_SERVER_BY_NAME_LIKE_QUERY);
+        query.setParameter(1, aWebServerNameFragment);
         return webServersFrom(query.getResultList());
     }
 
@@ -130,7 +129,7 @@ public class WebServerCrudServiceImpl extends AbstractCrudServiceImpl<JpaWebServ
     @SuppressWarnings("unchecked")
     public void removeWebServersBelongingTo(final Identifier<Group> aGroupId) {
 
-        final Query query = entityManager.createQuery("SELECT j FROM JpaWebServer j WHERE :groupId MEMBER OF j.groups.id");
+        final Query query = entityManager.createNamedQuery(JpaWebServer.FIND_WEBSERVERS_BY_GROUPID);
         query.setParameter("groupId", aGroupId.getId());
 
         final List<JpaWebServer> webservers = query.getResultList();
@@ -145,7 +144,7 @@ public class WebServerCrudServiceImpl extends AbstractCrudServiceImpl<JpaWebServ
         final Query query = entityManager.createNamedQuery(JpaGroup.QUERY_GET_GROUP);
         query.setParameter("groupId", aGroup.getId());
         final JpaGroup group = (JpaGroup) query.getSingleResult();
-        return webserversFrom(group.getWebServers()); // TODO: Verify if we need to sort web servers by name.
+        return webserversFrom(group.getWebServers());
     }
 
     protected WebServer webserverFrom(final JpaWebServer aJpaWebServer) {
@@ -170,16 +169,14 @@ public class WebServerCrudServiceImpl extends AbstractCrudServiceImpl<JpaWebServ
 
     @Override
     public List<Application> findApplications(final String aWebServerName) {
-        // TODO: Use named query
-        Query q = entityManager.createQuery("SELECT ws FROM JpaWebServer ws WHERE ws.name = :wsName");
+        Query q = entityManager.createNamedQuery(JpaWebServer.FIND_WEB_SERVER_BY_QUERY);
         q.setParameter(JpaApplication.WEB_SERVER_NAME_PARAM, aWebServerName);
         final JpaWebServer webServer = (JpaWebServer) q.getSingleResult();
-        final long size = webServer.getGroups().size();
 
         q = entityManager.createNamedQuery(JpaApplication.QUERY_BY_WEB_SERVER_NAME);
         q.setParameter(JpaApplication.GROUP_LIST_PARAM, webServer.getGroups());
 
-        final List<Application> apps = new ArrayList<>(q.getResultList().size());
+        final List<Application> apps = new ArrayList<>();
         for (final JpaApplication jpa : (List<JpaApplication>) q.getResultList()) {
             apps.add(JpaAppBuilder.appFrom(jpa));
         }
@@ -196,12 +193,9 @@ public class WebServerCrudServiceImpl extends AbstractCrudServiceImpl<JpaWebServ
 
     @Override
     public List<Jvm> findJvms(final String aWebServerName) {
-        // TODO: Use named query
-        Query q = entityManager.createQuery("SELECT ws FROM JpaWebServer ws WHERE ws.name = :wsName");
+        Query q = entityManager.createNamedQuery(JpaWebServer.FIND_WEB_SERVER_BY_QUERY);
         q.setParameter(JpaApplication.WEB_SERVER_NAME_PARAM, aWebServerName);
         final JpaWebServer webServer = (JpaWebServer) q.getSingleResult();
-        final long size = webServer.getGroups().size();
-
         q = entityManager.createNamedQuery(JpaWebServer.FIND_JVMS_QUERY);
         q.setParameter("groups", webServer.getGroups());
 
@@ -262,7 +256,7 @@ public class WebServerCrudServiceImpl extends AbstractCrudServiceImpl<JpaWebServ
     public JpaWebServerConfigTemplate uploadWebserverConfigTemplate(UploadWebServerTemplateRequest uploadWebServerTemplateRequest) {
         return uploadWebServerTemplate(uploadWebServerTemplateRequest);
     }
-
+    @Transactional
     private JpaWebServerConfigTemplate uploadWebServerTemplate(UploadWebServerTemplateRequest request) {
         final WebServer webServer = request.getWebServer();
         Identifier<WebServer> id = webServer.getId();
