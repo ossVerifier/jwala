@@ -60,12 +60,6 @@ public class CurrentGroupState extends CurrentState<Group, GroupState> {
     }
 
     @Override
-    public void provideState(final KeyValueStateConsumer aConsumer) {
-        super.provideState(aConsumer);
-        aConsumer.set(CommonStateKey.PROGRESS, "{jvms:"+jvms.toString()+",webservers:"+webServers.toString()+"}");
-    }
-
-    @Override
     public String toString() {
         return super.toString() + ", 'detail': {jvms: "+jvms +", webservers: " + webServers + "}";
     }

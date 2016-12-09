@@ -7,8 +7,7 @@ public enum CommonStateKey implements StateKey {
     STATE("STATE"),
     TYPE("TYPE"),
     PROGRESS("PROGRESS"),
-    MESSAGE("MESSAGE"),
-    USERID("USERID");
+    MESSAGE("MESSAGE");
 
     private final String key;
 
