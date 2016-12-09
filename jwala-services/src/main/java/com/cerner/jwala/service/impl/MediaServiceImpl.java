@@ -2,6 +2,7 @@ package com.cerner.jwala.service.impl;
 
 import com.cerner.jwala.dao.MediaDao;
 import com.cerner.jwala.persistence.jpa.domain.Media;
+import com.cerner.jwala.persistence.jpa.type.MediaType;
 import com.cerner.jwala.service.MediaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -42,6 +43,11 @@ public class MediaServiceImpl implements MediaService {
     @Transactional
     public void remove(final String name) {
         mediaDao.remove(mediaDao.find(name));
+    }
+
+    @Override
+    public MediaType [] getMediaTypes() {
+        return MediaType.values();
     }
 
 }

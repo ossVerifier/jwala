@@ -1,6 +1,7 @@
 package com.cerner.jwala.service;
 
 import com.cerner.jwala.persistence.jpa.domain.Media;
+import com.cerner.jwala.persistence.jpa.type.MediaType;
 
 import java.util.List;
 
@@ -33,5 +34,12 @@ public interface MediaService {
      * @param name the name if the media to remove
      */
     void remove(String name);
+
+    /**
+     * Returns a list of {@link MediaType}
+     * @return List of {@link MediaType}
+     */
+    MediaType [] getMediaTypes();
+
 
 }
