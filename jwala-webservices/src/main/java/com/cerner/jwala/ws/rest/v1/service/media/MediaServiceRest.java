@@ -24,14 +24,14 @@ public interface MediaServiceRest {
     Response updateMedia(String aJvmToUpdate, @BeanParam AuthenticatedUser aUser);
 
     @DELETE
-    @Path("/{mediaId}")
-    Response removeMedia(@PathParam("mediaId") String name, @BeanParam AuthenticatedUser aUser);
+    @Path("/{mediaName}")
+    Response removeMedia(@PathParam("mediaName") String name, @BeanParam AuthenticatedUser aUser);
 
     @GET
-    Response getAllMedia();
+    Response getMedia(@MatrixParam("name") String aMediaName, @BeanParam AuthenticatedUser aUser);
 
     @GET
-    @Path("/{aMediaName}")
-    Response getMedia(@PathParam("aMediaName") String aMediaName, @BeanParam AuthenticatedUser aUser);
+    @Path("/types")
+    Response getMediaTypes();
 
 }

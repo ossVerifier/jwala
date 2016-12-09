@@ -4,16 +4,13 @@ import com.cerner.jwala.persistence.jpa.domain.Media;
 import com.cerner.jwala.service.MediaService;
 import com.cerner.jwala.ws.rest.v1.provider.AuthenticatedUser;
 import com.cerner.jwala.ws.rest.v1.response.ResponseBuilder;
-
 import com.cerner.jwala.ws.rest.v1.service.media.MediaServiceRest;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.ws.rs.core.Response;
 
-/**
- * Created by Rahul Sayini on 12/1/2016
- */
 @Service
 public class MediaServiceRestImpl implements MediaServiceRest {
 
@@ -37,13 +34,16 @@ public class MediaServiceRestImpl implements MediaServiceRest {
     }
 
     @Override
-    public Response getAllMedia() {
-        return ResponseBuilder.ok(mediaService.findAll());
+    public Response getMedia(final String name, final AuthenticatedUser aUser) {
+        if (StringUtils.isEmpty(name)) {
+            return ResponseBuilder.ok(mediaService.findAll());
+        }
+        return ResponseBuilder.ok(mediaService.find(name));
     }
 
     @Override
-    public Response getMedia(final String name, final AuthenticatedUser aUser) {
-        return ResponseBuilder.ok(mediaService.find(name));
+    public Response getMediaTypes() {
+        return ResponseBuilder.ok(mediaService.getMediaTypes());
     }
 
 }
