@@ -11,6 +11,8 @@ import javax.ws.rs.core.Response;
 import java.util.List;
 
 /**
+ * RESTFul service for resource related operations
+ *
  * Created by Eric Pinder on 3/16/2015.
  */
 @Path("/resources")
@@ -22,6 +24,7 @@ public interface ResourceServiceRest extends InitializingBean {
      * A template file is used when generating the actual resource file what will be deployed to a JVM or web server.
      *
      * @param attachments contains the template's meta data and main content
+     * @param targetName  the resource's name when deployed e.g. jwala.properties
      * @param user        a logged in user who's calling this service
      * @return {@link Response}
      */
