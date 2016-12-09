@@ -40,11 +40,6 @@ public class ControlGroupRequest implements Serializable, GroupRequest {
     }
 
     @Override
-    public String getExternalOperationName() {
-        return controlOperation.getExternalValue();
-    }
-
-    @Override
     public String getType() {
         return "Group";
     }

@@ -1,5 +1,6 @@
 package com.cerner.jwala.service.group.impl;
 
+import com.cerner.jwala.common.domain.model.group.GroupControlOperation;
 import com.cerner.jwala.common.domain.model.jvm.JvmControlOperation;
 import com.cerner.jwala.common.domain.model.user.User;
 import com.cerner.jwala.common.domain.model.webserver.WebServerControlOperation;
@@ -9,7 +10,6 @@ import com.cerner.jwala.common.request.webserver.ControlGroupWebServerRequest;
 import com.cerner.jwala.service.group.GroupControlService;
 import com.cerner.jwala.service.group.GroupJvmControlService;
 import com.cerner.jwala.service.group.GroupWebServerControlService;
-
 import org.springframework.transaction.annotation.Transactional;
 
 public class GroupControlServiceImpl implements GroupControlService {
@@ -35,25 +35,12 @@ public class GroupControlServiceImpl implements GroupControlService {
     }
 
     private void controlWebServers(ControlGroupRequest controlGroupRequest, User aUser) {
-
-        WebServerControlOperation wsControlOperation = WebServerControlOperation.convertFrom(controlGroupRequest
-                .getControlOperation().getExternalValue());
-
-        ControlGroupWebServerRequest controlGroupWebServerCommand = new ControlGroupWebServerRequest(
-                controlGroupRequest.getGroupId(), wsControlOperation);
-
+        ControlGroupWebServerRequest controlGroupWebServerCommand = convertToControlGroupWebServerRequest(controlGroupRequest);
         groupWebServerControlService.controlGroup(controlGroupWebServerCommand, aUser);
     }
 
     private void controlJvms(ControlGroupRequest controlGroupRequest, User aUser) {
-  
-        JvmControlOperation jvmControlOperation = JvmControlOperation.convertFrom(controlGroupRequest.getControlOperation()
-                .getExternalValue());
-        // TODO address this mapping between operations
-
-        ControlGroupJvmRequest controlGroupJvmCommand = new ControlGroupJvmRequest(controlGroupRequest.getGroupId(),
-                jvmControlOperation);
-
+        ControlGroupJvmRequest controlGroupJvmCommand = convertToControlGroupJvmRequest(controlGroupRequest);
         groupJvmControlService.controlGroup(controlGroupJvmCommand, aUser);
     }
 
@@ -61,15 +48,29 @@ public class GroupControlServiceImpl implements GroupControlService {
     public void controlGroups(final ControlGroupRequest controlGroupRequest, final User user) {
         LOGGER.debug("Controlling groups. ControlGroupRequest = {}", controlGroupRequest);
 
-        final WebServerControlOperation wsControlOperation = WebServerControlOperation
-                .convertFrom(controlGroupRequest.getControlOperation().getExternalValue());
-        groupWebServerControlService.controlAllWebSevers(new ControlGroupWebServerRequest(controlGroupRequest.getGroupId(),
-                wsControlOperation), user);
+        ControlGroupWebServerRequest controlGroupWebServerCommand = convertToControlGroupWebServerRequest(controlGroupRequest);
+        groupWebServerControlService.controlAllWebSevers(controlGroupWebServerCommand, user);
+
+        ControlGroupJvmRequest controlGroupJvmCommand = convertToControlGroupJvmRequest(controlGroupRequest);
+        groupJvmControlService.controlAllJvms(controlGroupJvmCommand, user);
+    }
 
 
-        final JvmControlOperation jvmControlOperation = JvmControlOperation.convertFrom(controlGroupRequest.getControlOperation()
-                .getExternalValue());
+    private ControlGroupWebServerRequest convertToControlGroupWebServerRequest(ControlGroupRequest controlGroupRequest) {
+        WebServerControlOperation webServerControlOperation = WebServerControlOperation.STOP;
+        if (controlGroupRequest.getControlOperation().equals(GroupControlOperation.START)){
+            webServerControlOperation = WebServerControlOperation.START;
+        }
 
-        groupJvmControlService.controlAllJvms(new ControlGroupJvmRequest(controlGroupRequest.getGroupId(), jvmControlOperation), user);
+        return new ControlGroupWebServerRequest( controlGroupRequest.getGroupId(), webServerControlOperation);
+    }
+
+    private ControlGroupJvmRequest convertToControlGroupJvmRequest(ControlGroupRequest controlGroupRequest) {
+        JvmControlOperation jvmControlOperation = JvmControlOperation.STOP;
+        if (controlGroupRequest.getControlOperation().equals(GroupControlOperation.START)){
+            jvmControlOperation = JvmControlOperation.START;
+        }
+
+        return new ControlGroupJvmRequest(controlGroupRequest.getGroupId(),jvmControlOperation);
     }
 }
