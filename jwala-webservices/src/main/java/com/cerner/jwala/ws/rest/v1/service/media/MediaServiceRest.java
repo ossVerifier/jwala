@@ -1,5 +1,6 @@
 package com.cerner.jwala.ws.rest.v1.service.media;
 
+import com.cerner.jwala.persistence.jpa.domain.Media;
 import com.cerner.jwala.ws.rest.v1.provider.AuthenticatedUser;
 
 import javax.ws.rs.*;
@@ -16,7 +17,7 @@ public interface MediaServiceRest {
 
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
-    Response createMedia(JsonMedia jsonCreateMedia, @BeanParam AuthenticatedUser aUser);
+    Response createMedia(Media media, @BeanParam AuthenticatedUser aUser);
 
     @PUT
     @Consumes(MediaType.APPLICATION_JSON)

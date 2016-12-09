@@ -1,9 +1,14 @@
 package com.cerner.jwala.persistence.jpa.domain;
 
 import com.cerner.jwala.persistence.jpa.type.MediaType;
+import org.codehaus.jackson.annotate.JsonIgnoreProperties;
+import org.codehaus.jackson.map.annotate.JsonDeserialize;
 import org.codehaus.jackson.map.annotate.JsonSerialize;
 
 import javax.persistence.*;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlRootElement;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -14,6 +19,9 @@ import java.nio.file.Paths;
  */
 @Entity
 @NamedQueries({@NamedQuery(name = Media.QUERY_FIND_BY_NAME, query = "SELECT m FROM Media m WHERE m.name = :name")})
+@XmlAccessorType(XmlAccessType.FIELD)
+@XmlRootElement
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Media extends AbstractEntity<Media> {
 
     public static final String QUERY_FIND_BY_NAME = "QUERY_FIND_BY_NAME";
@@ -64,6 +72,7 @@ public class Media extends AbstractEntity<Media> {
         return Paths.get(localPath);
     }
 
+    @JsonDeserialize(using = StringToPathDeserializer.class)
     public void setLocalPath(final Path localPath) {
         this.localPath = localPath.toString();
     }
@@ -73,6 +82,7 @@ public class Media extends AbstractEntity<Media> {
         return Paths.get(remoteDir);
     }
 
+    @JsonDeserialize(using = StringToPathDeserializer.class)
     public void setRemoteDir(final Path remoteDir) {
         this.remoteDir = remoteDir.toString();
     }
@@ -82,6 +92,7 @@ public class Media extends AbstractEntity<Media> {
         return Paths.get(mediaDir);
     }
 
+    @JsonDeserialize(using = StringToPathDeserializer.class)
     public void setMediaDir(final Path mediaDir) {
         this.mediaDir = mediaDir.toString();
     }

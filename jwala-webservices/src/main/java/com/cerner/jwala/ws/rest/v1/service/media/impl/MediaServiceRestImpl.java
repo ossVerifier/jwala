@@ -1,13 +1,10 @@
 package com.cerner.jwala.ws.rest.v1.service.media.impl;
 
 import com.cerner.jwala.persistence.jpa.domain.Media;
-import com.cerner.jwala.persistence.jpa.domain.builder.MediaBuilder;
-import com.cerner.jwala.persistence.jpa.type.MediaType;
 import com.cerner.jwala.service.MediaService;
 import com.cerner.jwala.ws.rest.v1.provider.AuthenticatedUser;
 import com.cerner.jwala.ws.rest.v1.response.ResponseBuilder;
 
-import com.cerner.jwala.ws.rest.v1.service.media.JsonMedia;
 import com.cerner.jwala.ws.rest.v1.service.media.MediaServiceRest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -24,13 +21,7 @@ public class MediaServiceRestImpl implements MediaServiceRest {
     private MediaService mediaService;
 
     @Override
-    public Response createMedia(final JsonMedia jsonCreateMedia, final AuthenticatedUser aUser) {
-        final Media media = new MediaBuilder().setName(jsonCreateMedia.getName())
-                                              .setType(MediaType.valueOf(jsonCreateMedia.getType()))
-                                              .setLocalPath(jsonCreateMedia.getLocalPath())
-                                              .setRemoteDir(jsonCreateMedia.getRemoteDir())
-                                              .setMediaDir(jsonCreateMedia.getMediaDir()).build();
-
+    public Response createMedia(final Media media, final AuthenticatedUser aUser) {
         return ResponseBuilder.created(mediaService.create(media));
     }
 
