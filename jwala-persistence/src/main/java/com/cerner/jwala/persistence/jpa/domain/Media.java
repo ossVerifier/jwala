@@ -1,6 +1,7 @@
 package com.cerner.jwala.persistence.jpa.domain;
 
 import com.cerner.jwala.persistence.jpa.type.MediaType;
+import org.codehaus.jackson.map.annotate.JsonSerialize;
 
 import javax.persistence.*;
 import java.nio.file.Path;
@@ -12,17 +13,11 @@ import java.nio.file.Paths;
  * Created by Jedd Cuison on 12/6/2016
  */
 @Entity
+@NamedQueries({@NamedQuery(name = Media.QUERY_FIND_BY_NAME, query = "SELECT m FROM Media m WHERE m.name = :name")})
 public class Media extends AbstractEntity<Media> {
 
-    public Media() {
-    }
-
-    public Media(final String name, final MediaType type, final String localPath, final String remotePath) {
-        this.name = name;
-        this.type = type;
-        this.localPath = localPath;
-        this.remotePath = remotePath;
-    }
+    public static final String QUERY_FIND_BY_NAME = "QUERY_FIND_BY_NAME";
+    public static final String PARAM_NAME = "name";
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -36,7 +31,9 @@ public class Media extends AbstractEntity<Media> {
 
     private String localPath;
 
-    private String remotePath;
+    private String remoteDir; // e.g. c:/ctp
+
+    private String mediaDir;  // e.g. tomcat-7.0
 
     public Long getId() {
         return id;
@@ -62,6 +59,7 @@ public class Media extends AbstractEntity<Media> {
         this.type = type;
     }
 
+    @JsonSerialize(using = PathToStringSerializer.class)
     public Path getLocalPath() {
         return Paths.get(localPath);
     }
@@ -70,12 +68,22 @@ public class Media extends AbstractEntity<Media> {
         this.localPath = localPath.toString();
     }
 
-    public String getRemotePath() {
-        return remotePath;
+    @JsonSerialize(using = PathToStringSerializer.class)
+    public Path getRemoteDir() {
+        return Paths.get(remoteDir);
     }
 
-    public void setRemotePath(final String remotePath) {
-        this.remotePath = remotePath;
+    public void setRemoteDir(final Path remoteDir) {
+        this.remoteDir = remoteDir.toString();
+    }
+
+    @JsonSerialize(using = PathToStringSerializer.class)
+    public Path getMediaDir() {
+        return Paths.get(mediaDir);
+    }
+
+    public void setMediaDir(final Path mediaDir) {
+        this.mediaDir = mediaDir.toString();
     }
 
     @Override
@@ -92,6 +100,10 @@ public class Media extends AbstractEntity<Media> {
     public int hashCode() {
         int result = id.hashCode();
         result = 31 * result + name.hashCode();
+        result = 31 * result + (type != null ? type.hashCode() : 0);
+        result = 31 * result + (localPath != null ? localPath.hashCode() : 0);
+        result = 31 * result + (remoteDir != null ? remoteDir.hashCode() : 0);
+        result = 31 * result + (mediaDir != null ? mediaDir.hashCode() : 0);
         return result;
     }
 
@@ -102,7 +114,8 @@ public class Media extends AbstractEntity<Media> {
                 ", name='" + name + '\'' +
                 ", type=" + type +
                 ", localPath='" + localPath + '\'' +
-                ", remotePath='" + remotePath + '\'' +
+                ", remoteDir='" + remoteDir + '\'' +
+                ", mediaDir='" + mediaDir + '\'' +
                 '}';
     }
 

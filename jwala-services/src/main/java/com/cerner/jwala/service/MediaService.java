@@ -26,7 +26,7 @@ public interface MediaService {
      * Create a media
      * @param media the media to create
      */
-    void create(Media media);
+    Media create(Media media);
 
     /**
      * Remove media

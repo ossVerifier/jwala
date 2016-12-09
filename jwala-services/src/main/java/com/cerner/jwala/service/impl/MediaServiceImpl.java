@@ -3,6 +3,7 @@ package com.cerner.jwala.service.impl;
 import com.cerner.jwala.dao.MediaDao;
 import com.cerner.jwala.persistence.jpa.domain.Media;
 import com.cerner.jwala.service.MediaService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -11,16 +12,13 @@ import java.util.List;
 /**
  * Implements {@link MediaService}
  *
- * Created by JC043760 on 12/7/2016.
+ * Created by Jedd Cuison on 12/7/2016
  */
 @Service
 public class MediaServiceImpl implements MediaService {
 
-    private final MediaDao mediaDao;
-
-    public MediaServiceImpl(final MediaDao mediaDao) {
-        this.mediaDao = mediaDao;
-    }
+    @Autowired
+    private MediaDao mediaDao;
 
     @Override
     @Transactional
@@ -36,8 +34,8 @@ public class MediaServiceImpl implements MediaService {
 
     @Override
     @Transactional
-    public void create(final Media media) {
-        mediaDao.create(media);
+    public Media create(final Media media) {
+        return mediaDao.create(media);
     }
 
     @Override

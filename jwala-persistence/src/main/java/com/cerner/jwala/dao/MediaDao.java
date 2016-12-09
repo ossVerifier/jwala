@@ -15,7 +15,7 @@ public interface MediaDao {
 
     List<Media> findAll();
 
-    void create(Media media);
+    Media create(Media media);
 
     void remove(Media media);
 

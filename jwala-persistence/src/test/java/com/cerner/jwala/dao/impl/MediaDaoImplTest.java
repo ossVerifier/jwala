@@ -40,7 +40,7 @@ public class MediaDaoImplTest {
     @Test
     public void testCrud() {
         final Media media = new MediaBuilder().setName("jdk 1.8").setType(MediaType.JDK).setLocalPath("c:/java")
-                .setRemotePath("any").build();
+                .setRemoteDir("c:/ctp").setMediaDir("jdk-1.8").build();
         mediaDao.create(media);
         final Media foundMedia = mediaDao.find("jdk 1.8");
         assertEquals(media, foundMedia);

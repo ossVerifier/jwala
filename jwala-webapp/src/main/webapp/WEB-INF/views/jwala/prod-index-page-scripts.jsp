@@ -85,7 +85,7 @@
 <script src="gen-public-resources/js/react/admin-tab.js"></script>
 <script src="gen-public-resources/js/react/jvm-config.js"></script>
 <script src="gen-public-resources/js/react/group-config.js"></script>
-<script src="gen-public-resources/js/react/media-config.js"></script>
+<script src="gen-public-resources/js/react/MediaConfig.js"></script>
 <script src="gen-public-resources/js/react/webserver-config.js"></script>
 <script src="gen-public-resources/js/react/WebAppConfig.js"></script>
 <script src="gen-public-resources/js/react/ResourcesConfig.js"></script>
