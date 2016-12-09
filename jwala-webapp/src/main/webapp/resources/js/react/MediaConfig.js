@@ -151,7 +151,7 @@ var MediaConfigForm = React.createClass({
                        <input name="name" type="text" valueLink={this.linkState("name")} maxLength="255" required/>
                        <label>Type</label>
                        <label htmlFor="type" className="error"/>
-                       <input name="type" type="text" valueLink={this.linkState("type")} required maxLength="255"/>
+                       <MediaTypeDropdown ref="mediaTypeDropdown"/>
                        <label>Path</label>
                        <label htmlFor="localPath" className="error"/>
                        <input name="localPath" type="text" valueLink={this.linkState("localPath")} required maxLength="255"/>
@@ -183,3 +183,34 @@ var MediaConfigForm = React.createClass({
         return false;
     }
 });
+
+var MediaTypeDropdown = React.createClass({
+    getInitialState: function() {
+        return {selectedMediaType: this.props.selectedMediaType, mediaTypes: []}
+    },
+    componentDidMount: function() {
+        var self = this;
+        ServiceFactory.getMediaService().getMediaTypes().then(function(response){
+            self.setState({mediaTypes: response.applicationResponseContent});
+        });
+    },
+    render: function() {
+        var self = this;
+        var options = [];
+        this.state.mediaTypes.forEach(function(mediaType){
+            if (self.state.selectedMediaType === mediaType) {
+                options.push(<option value={mediaType}>{mediaType}</option>);
+            } else {
+                options.push(<option value={mediaType} selected="selected">{mediaType}</option>);
+            }
+        });
+
+        if (options.length > 0) {
+            return <select name="type" refs="mediaTypeSelect" onChange={this.onChangeSelect}>{options}</select>
+        }
+        return <div>Loading Media Types...</div>
+    },
+    onChangeSelect: function(e) {
+        this.setState({selectedMediaType: this.getDOMNode().value});
+    }
+})

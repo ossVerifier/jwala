@@ -20,3 +20,7 @@
 .MediaConfig form > label {
     display: block;
 }
+
+.MediaConfig form > select {
+    display: block;
+}
