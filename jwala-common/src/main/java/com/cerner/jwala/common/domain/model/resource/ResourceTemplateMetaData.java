@@ -67,7 +67,9 @@ public class ResourceTemplateMetaData {
         return unpack;
     }
 
-    public boolean isOverwrite() { return overwrite; }
+    public boolean isOverwrite() {
+        return overwrite;
+    }
 
     public String getJsonData() {
         return jsonData;

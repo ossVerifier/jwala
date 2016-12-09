@@ -1,3 +1,5 @@
+description "This module has Jwala UI, which is used to manage Group of instances.  Group includes Web Apps, JVMs, Web Servers, and Resources."
+
 apply plugin: 'com.moowork.node'
 apply plugin: "war"
 apply plugin: 'maven-publish'

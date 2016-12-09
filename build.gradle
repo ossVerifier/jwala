@@ -1,3 +1,4 @@
+description "Jwala is a web application that provides management for a group of Tomcat servers. Jwala is capable of creating and persisting definitions of Group instances, and exposes a RESTful interface to do so. The definition of a Group includes Web Apps, JVMs, Web Servers, and Resources."
 ext {
     versions = [
             junit                 : "4.11",
@@ -102,19 +103,117 @@ buildscript {
 
 apply plugin: 'com.moowork.node'
 /*** Gradle Plugin for Node: end ***/
+/*** Maven plugin: start  ***/
+apply plugin: 'maven'
+
+task createMasterPom << {
+    pom {
+        project {
+            groupId 'com.cerner.jwala'
+            artifactId "$project.name"
+            version "$buildVersion"
+            packaging "pom"
+            description "$project.description"
+            modules {
+                module "jwala-common"
+                module "jwala-persistence"
+                module "jwala-services"
+                module "jwala-webapp"
+                module "jwala-webservices"
+                module "jwala-tomcat"
+                module "jwala-tomcat-agent"
+                module "jwala-h2-embedded"
+            }
+            inceptionYear '2016'
+            licenses {
+                license {
+                    name 'The Apache Software License, Version 2.0'
+                    url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    distribution 'repo'
+                }
+            }
+            distributionManagement {
+                site{
+                    id 'jwala'
+                    url "file://$project.buildDir/jwalasite"
+                }
+            }
+            /*profiles{
+                profile {
+                    id "release-profile"
+                    activation {
+                        property{
+                            name 'performRelease'
+                                    value'true'
+                        }
+                    }
+                    build {
+                            plugins {
+                                plugin {
+                                    groupId 'com.github.github'
+                                    artifactId 'site-maven-plugin'
+                                    version '0.9'
+                                    executions {
+                                        execution {
+                                            goals {
+                                                goal 'site'
+                                            }
+                                            phase 'site-deploy'
+                                            configuration {
+                                                message 'Building site for Jwala project'
+                                                path "$jwalaContentSite/jwalasite"
+                                                merge "true"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                    }
+                }
+            }*/
+        }
+    }.writeTo("pom.xml")
+}
+
+/*** Maven plugin: start  ***/
 
 subprojects {
     apply plugin: "java"
     apply plugin: "pmd"
     apply plugin: "jacoco"
     apply plugin: "eclipse"
-
+    apply plugin: "maven"
     sourceCompatibility = 1.8
 
     group = "com.cerner.jwala"
 
     version = project.properties['buildVersion']
-
+/*** Create Module pom's start ***/
+    task createModulePom << {
+        pom {
+            project {
+                groupId 'com.cerner.jwala'
+                artifactId "$project.name"
+                name "$project.name"
+                description "$project.description"
+                version "$buildVersion"
+                inceptionYear '2016'
+                parent{
+                    groupId 'com.cerner.jwala'
+                    artifactId "$rootProject.name"
+                    version "$buildVersion"
+                }
+                 licenses {
+                    license {
+                        name 'The Apache Software License, Version 2.0'
+                        url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                        distribution 'repo'
+                    }
+                }
+            }
+        }.writeTo("pom.xml")
+    }
+/*** Create Module pom's start ***/
     plugins.withType(MavenPublishPlugin).whenPluginAdded {
         publishing {
             repositories {

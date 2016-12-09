@@ -37,7 +37,7 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
         File javaHome = new File(ApplicationProperties.get("remote.jwala.java.home"));
         String jdkDir = javaHome.getName();
         String binaryDeployDir = javaHome.getParentFile().getAbsolutePath().replaceAll("\\\\", "/");
-        if (jdkDir != null && !jdkDir.isEmpty()) {
+        if (!jdkDir.isEmpty()) {
             distributeBinary(hostname, jdkDir, binaryDeployDir, "");
         } else {
             LOGGER.warn("JDK dir location is null or empty {}", jdkDir);

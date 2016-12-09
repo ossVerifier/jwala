@@ -161,7 +161,7 @@ public class JschScpCommandProcessorImpl implements CommandProcessor {
         }
 
         if (b == 1 || b == 2) {
-            StringBuffer sb = new StringBuffer(); // TODO: Find out if we can use StringBuilder instead.
+            StringBuffer sb = new StringBuffer();
             int c;
             do {
                 c = in.read();

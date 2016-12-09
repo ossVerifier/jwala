@@ -1,3 +1,5 @@
+description "This module is the service layer for Jwala, it mostly used by the webservice layers to manage the Jwala resources.  " +
+        "The business logic for this application resides here."
 
 configurations { providedCompile }
 
@@ -13,6 +15,7 @@ dependencies {
     compile group: "org.springframework", name: "spring-messaging", version: "$project.versions.spring"
     compile group: "org.jgroups", name: "jgroups", version: "$project.versions.jgroups"
 
+    compile group: 'org.apache.commons', name: 'commons-lang3', version: "$project.versions.commons_lang"
     compile group: 'commons-logging', name: 'commons-logging', version: "$project.versions.commons_logging"
     compile group: 'org.apache.httpcomponents', name: 'httpcore', version: "$project.versions.httpcomponents_core"
     compile group: 'org.apache.httpcomponents', name: 'httpclient', version: "$project.versions.httpcomponents_client"
