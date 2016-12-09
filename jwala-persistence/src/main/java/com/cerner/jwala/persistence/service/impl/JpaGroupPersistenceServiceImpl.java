@@ -1,6 +1,5 @@
 package com.cerner.jwala.persistence.service.impl;
 
-import com.cerner.jwala.common.domain.model.group.CurrentGroupState;
 import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.group.GroupState;
 import com.cerner.jwala.common.domain.model.id.Identifier;
@@ -18,7 +17,6 @@ import com.cerner.jwala.persistence.jpa.domain.resource.config.template.ConfigTe
 import com.cerner.jwala.persistence.jpa.service.GroupCrudService;
 import com.cerner.jwala.persistence.jpa.service.GroupJvmRelationshipService;
 import com.cerner.jwala.persistence.service.GroupPersistenceService;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -131,7 +129,7 @@ public class JpaGroupPersistenceServiceImpl implements GroupPersistenceService {
     }
 
     protected Group groupFrom(final CurrentState<Group, GroupState> originalStatus, final JpaGroup aJpaGroup) {
-        return new JpaGroupBuilder(aJpaGroup).setStateDetail((CurrentGroupState) originalStatus).build();
+        return new JpaGroupBuilder(aJpaGroup).setStateDetail((CurrentState) originalStatus).build();
     }
     protected CurrentState<Group, GroupState> groupStateFrom(final JpaGroup aJpaGroup) {
         return new JpaGroupBuilder(aJpaGroup).build().getCurrentState();
@@ -173,12 +171,6 @@ public class JpaGroupPersistenceServiceImpl implements GroupPersistenceService {
     public Group populateJvmConfig(Identifier<Group> aGroupId, List<UploadJvmTemplateRequest> uploadJvmTemplateCommands, User user, boolean overwriteExisting) {
         groupJvmRelationshipService.populateJvmConfig(uploadJvmTemplateCommands, user, overwriteExisting);
         return groupFrom(groupCrudService.getGroup(aGroupId), false);
-    }
-
-    @Override
-    public Group updateGroupStatus(SetGroupStateRequest setGroupStateRequest) {
-        LOGGER.debug("Persisting new state " + setGroupStateRequest);
-        return groupFrom(setGroupStateRequest.getNewState(), groupCrudService.updateGroupStatus(setGroupStateRequest));
     }
 
     @Override

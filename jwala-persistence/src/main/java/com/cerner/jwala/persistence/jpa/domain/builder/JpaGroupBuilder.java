@@ -1,17 +1,16 @@
 package com.cerner.jwala.persistence.jpa.domain.builder;
 
-import com.cerner.jwala.common.domain.model.group.CurrentGroupState;
 import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.group.GroupState;
 import com.cerner.jwala.common.domain.model.group.History;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
+import com.cerner.jwala.common.domain.model.state.CurrentState;
 import com.cerner.jwala.common.domain.model.webserver.WebServer;
 import com.cerner.jwala.persistence.jpa.domain.JpaGroup;
 import com.cerner.jwala.persistence.jpa.domain.JpaHistory;
 import com.cerner.jwala.persistence.jpa.domain.JpaJvm;
 import com.cerner.jwala.persistence.jpa.domain.JpaWebServer;
-
 import org.joda.time.Chronology;
 import org.joda.time.DateTime;
 
@@ -22,7 +21,7 @@ public class JpaGroupBuilder {
 
     public static final Chronology USE_DEFAULT_CHRONOLOGY = null;
     private JpaGroup group;
-    private CurrentGroupState currentGroupState = null;
+    private CurrentState currentGroupState = null;
     private boolean fetchWebServers = false;
 
     public JpaGroupBuilder() {
@@ -56,8 +55,7 @@ public class JpaGroupBuilder {
             return new Group(new Identifier<Group>(group.getId()),
                              group.getName(),
                              getJvms(),
-                             currentGroupState,
-                             getAsOf());
+                             currentGroupState);
         }
     }
 
@@ -112,7 +110,7 @@ public class JpaGroupBuilder {
         return history;
     }
 
-    public JpaGroupBuilder setStateDetail(CurrentGroupState originalStatus) {
+    public JpaGroupBuilder setStateDetail(CurrentState originalStatus) {
         this.currentGroupState = originalStatus;
         return this;
     }
