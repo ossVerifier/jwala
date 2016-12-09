@@ -1,7 +1,6 @@
 package com.cerner.jwala.service.resource;
 
 import com.cerner.jwala.common.domain.model.app.Application;
-import com.cerner.jwala.common.domain.model.group.CurrentGroupState;
 import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.group.GroupState;
 import com.cerner.jwala.common.domain.model.group.History;
@@ -10,6 +9,8 @@ import com.cerner.jwala.common.domain.model.jvm.Jvm;
 import com.cerner.jwala.common.domain.model.jvm.JvmState;
 import com.cerner.jwala.common.domain.model.path.FileSystemPath;
 import com.cerner.jwala.common.domain.model.resource.*;
+import com.cerner.jwala.common.domain.model.state.CurrentState;
+import com.cerner.jwala.common.domain.model.state.StateType;
 import com.cerner.jwala.common.domain.model.user.User;
 import com.cerner.jwala.common.domain.model.webserver.WebServer;
 import com.cerner.jwala.common.domain.model.webserver.WebServerReachableState;
@@ -321,7 +322,7 @@ public class ResourceServiceImplTest {
                     "groupName",
                     new HashSet<>(jvms),
                     new HashSet<>(webServers),
-                    new CurrentGroupState(new Identifier<Group>(1111L), GroupState.GRP_STOPPED, DateTime.now()),
+                    new CurrentState(new Identifier<Group>(1111L), GroupState.GRP_STOPPED, DateTime.now(), StateType.GROUP),
                     new HashSet<History>(),
                     new HashSet<>(applications));
             groups.add(group);

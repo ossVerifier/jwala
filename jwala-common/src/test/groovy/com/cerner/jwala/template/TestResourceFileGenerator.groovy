@@ -1,7 +1,6 @@
 package com.cerner.jwala.template
 
 import com.cerner.jwala.common.domain.model.app.Application
-import com.cerner.jwala.common.domain.model.group.CurrentGroupState
 import com.cerner.jwala.common.domain.model.group.Group
 import com.cerner.jwala.common.domain.model.group.GroupState
 import com.cerner.jwala.common.domain.model.group.History
@@ -11,6 +10,8 @@ import com.cerner.jwala.common.domain.model.jvm.JvmState
 import com.cerner.jwala.common.domain.model.path.FileSystemPath
 import com.cerner.jwala.common.domain.model.path.Path
 import com.cerner.jwala.common.domain.model.resource.ResourceGroup
+import com.cerner.jwala.common.domain.model.state.CurrentState
+import com.cerner.jwala.common.domain.model.state.StateType
 import com.cerner.jwala.common.domain.model.webserver.WebServer
 import com.cerner.jwala.common.domain.model.webserver.WebServerReachableState
 import com.cerner.jwala.common.properties.ApplicationProperties
@@ -36,7 +37,7 @@ println f.exists()
         groupHashSet = new LinkedHashSet<Group>();
 
         createTestJvmsAndWebServers(groupHashSet)
-        def group = new Group(new Identifier<Group>(1111L), "groupName", jvms, webServers, new CurrentGroupState<>(new Identifier<Group>(1111L), GroupState.GRP_STOPPED, DateTime.now()), new HashSet<History>(), apps)
+        def group = new Group(new Identifier<Group>(1111L), "groupName", jvms, webServers, new CurrentState<>(new Identifier<Group>(1111L), GroupState.GRP_STOPPED, DateTime.now(), StateType.GROUP), new HashSet<History>(), apps)
         groupHashSet.add(group);
         app = new Application(new Identifier<Application>(111L), "hello-world-1", "d:/jwala/app/archive", "/hello-world-1", group, true, true, false, "testWar.war")
         app.setParentJvm(jvm);

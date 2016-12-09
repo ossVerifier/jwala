@@ -20,6 +20,7 @@ import com.cerner.jwala.service.webserver.component.ClientFactoryHelper;
 import org.apache.http.NameValuePair;
 import org.apache.http.StatusLine;
 import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.conn.HttpHostConnectException;
 import org.apache.http.message.BasicNameValuePair;
 import org.junit.After;
 import org.junit.Before;
@@ -41,6 +42,7 @@ import java.util.*;
 
 import static com.cerner.jwala.common.domain.model.id.Identifier.id;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
@@ -488,7 +490,7 @@ public class BalancemanagerServiceImplTest {
         } catch (KeyManagementException e) {
             e.printStackTrace();
         } catch (IOException e) {
-            assertEquals("org.apache.http.conn.HttpHostConnectException: Connect to localhost:443 [localhost/127.0.0.1, localhost/0:0:0:0:0:0:0:1] failed: Connection refused: connect", e.toString());
+            assertTrue(e instanceof HttpHostConnectException);
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
         }

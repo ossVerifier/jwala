@@ -11,7 +11,6 @@ import com.cerner.jwala.common.domain.model.path.Path;
 import com.cerner.jwala.common.domain.model.resource.ResourceGroup;
 import com.cerner.jwala.common.domain.model.resource.ResourceIdentifier;
 import com.cerner.jwala.common.domain.model.resource.ResourceTemplateMetaData;
-import com.cerner.jwala.common.domain.model.resource.ResourceType;
 import com.cerner.jwala.common.domain.model.user.User;
 import com.cerner.jwala.common.exception.BadRequestException;
 import com.cerner.jwala.common.exception.InternalErrorException;
@@ -702,9 +701,6 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
     @Test
     public void testGenerateAndDeployConfig() throws CommandFailureException, IOException {
 
-        Collection<ResourceType> mockResourceTypes = new ArrayList<>();
-        ResourceType mockResource = mock(ResourceType.class);
-        mockResourceTypes.add(mockResource);
         CommandOutput commandOutput = mock(CommandOutput.class);
         Jvm mockJvm = mock(Jvm.class);
         ResourceGroup mockResourceGroup = mock(ResourceGroup.class);
@@ -713,9 +709,6 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
         when(mockJvm.getJvmName()).thenReturn("test-jvm-deploy-config");
         when(mockJvm.getId()).thenReturn(new Identifier<Jvm>(111L));
         when(commandOutput.getReturnCode()).thenReturn(new ExecReturnCode(0));
-        when(mockResource.getEntityType()).thenReturn("jvm");
-        when(mockResource.getTemplateName()).thenReturn("ServerXMLTemplate.tpl");
-        when(mockResource.getConfigFileName()).thenReturn("server.xml");
         when(mockJvmControlService.secureCopyFile(any(ControlJvmRequest.class), anyString(), anyString(), anyString())).thenReturn(commandOutput);
         when(mockJvmControlService.executeCreateDirectoryCommand(any(Jvm.class), anyString())).thenReturn(commandOutput);
         when(mockJvmControlService.executeChangeFileModeCommand(any(Jvm.class), anyString(), anyString(), anyString())).thenReturn(commandOutput);
