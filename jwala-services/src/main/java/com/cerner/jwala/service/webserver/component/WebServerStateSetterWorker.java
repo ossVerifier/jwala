@@ -182,7 +182,7 @@ public class WebServerStateSetterWorker {
      * @param msg   a message
      * @return {@link SetStateRequest}
      */
-    private SetStateRequest<WebServer, WebServerReachableState> createStateCommand(final Identifier<WebServer> id,
+    /*private SetStateRequest<WebServer, WebServerReachableState> createStateCommand(final Identifier<WebServer> id,
                                                                                    final WebServerReachableState state,
                                                                                    final String msg) {
         if (StringUtils.isEmpty(msg)) {
@@ -196,6 +196,6 @@ public class WebServerStateSetterWorker {
                 DateTime.now(),
                 StateType.WEB_SERVER,
                 msg));
-    }
+    }*/
 
 }
