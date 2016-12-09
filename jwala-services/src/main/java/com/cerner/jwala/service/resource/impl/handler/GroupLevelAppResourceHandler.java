@@ -29,7 +29,6 @@ import java.util.Set;
 public class GroupLevelAppResourceHandler extends ResourceHandler {
 
     private static final String WAR_FILE_EXTENSION = ".war";
-    private static final String MSG_ERR_CONVERTING_DATA_INPUTSTREAM_TO_STR = "Error converting data input stream to string!";
     private static final String MSG_CAN_ONLY_HAVE_ONE_WAR = "A web application can only have 1 war file. To change it, delete the war file first before uploading a new one.";
 
     private final GroupPersistenceService groupPersistenceService;

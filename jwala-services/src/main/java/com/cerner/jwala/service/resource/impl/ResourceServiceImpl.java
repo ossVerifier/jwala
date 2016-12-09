@@ -97,9 +97,6 @@ public class ResourceServiceImpl implements ResourceService {
 
     private final Tika fileTypeDetector;
 
-    @Value("${paths.resource-templates}")
-    private String templatePath;
-
     private final ResourceRepositoryService resourceRepositoryService;
 
     public ResourceServiceImpl(final ResourcePersistenceService resourcePersistenceService,

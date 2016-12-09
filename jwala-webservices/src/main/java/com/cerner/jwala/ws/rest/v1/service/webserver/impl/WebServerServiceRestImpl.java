@@ -418,16 +418,6 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
         return ResponseBuilder.ok(webServerService.getResourceTemplateNames(wsName));
     }
 
-    @Context
-    private MessageContext context;
-
-    /*
-     * access point for unit testing
-     */
-    void setMessageContext(MessageContext aContextForTesting) {
-        context = aContextForTesting;
-    }
-
     @Override
     public Response getResourceTemplate(final String wsName, final String resourceTemplateName,
                                         final boolean tokensReplaced) {

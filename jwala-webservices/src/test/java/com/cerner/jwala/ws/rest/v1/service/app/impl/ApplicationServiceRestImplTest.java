@@ -65,7 +65,7 @@ public class ApplicationServiceRestImplTest {
     @InjectMocks
     @Spy
     private ApplicationServiceRestImpl applicationServiceRest = new ApplicationServiceRestImpl(service = Mockito.mock(ApplicationService.class),
-            mock(ResourceService.class), new ServletFileUpload(), mockGroupService);
+            mock(ResourceService.class), mockGroupService);
 
     private ApplicationServiceRest cut;
 
