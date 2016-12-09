@@ -23,6 +23,7 @@ public abstract class AbstractH2ServerService {
     /**
      * Constructs the h2 server service
      * @param serverParams the h2 server parameter e.g. -tcpPort,9094,-tcpAllowOthers,-baseDir,${catalina.home}\\data\\db
+     *                     Please note that a comma is needed as a delimiter for individual parameters
      */
     public AbstractH2ServerService(final String serverParams) {
         // Remove extra spaces since h2's createTcpServer and createWebServer compares parameters as is e.g.
