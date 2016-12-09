@@ -13,6 +13,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
+import org.mockito.internal.exceptions.ExceptionIncludingMockitoWarnings;
 
 import java.io.File;
 
@@ -204,14 +205,17 @@ public class BinaryDistributionServiceImplTest {
     }
 
     @Test
-    public void testDistributeJdk() throws CommandFailureException {
+    public void testDistributeJdk() throws Exception {
         final String hostname = "localhost";
-        final String java_home = ApplicationProperties.get("remote.jwala.java.home").replace("/", "//");
-        when(mockBinaryDistributionControlService.checkFileExists(hostname, java_home)).thenReturn(new CommandOutput(new ExecReturnCode(1), "FAIL", ""));
-        when(mockBinaryDistributionControlService.createDirectory(hostname, "D:/")).thenReturn(new CommandOutput(new ExecReturnCode(0), "SUCCESS", ""));
+//        final String javaHome = ApplicationProperties.get("remote.jwala.java.home").replace("/", "//");
+        final String javaHome = ApplicationProperties.get("remote.jwala.java.home");
+        final String javaParentDir = new File(javaHome).getParent();
+        when(mockBinaryDistributionControlService.checkFileExists(hostname, javaHome)).thenReturn(new CommandOutput(new ExecReturnCode(1), "FAIL", ""));
+//        when(mockBinaryDistributionControlService.createDirectory(hostname, "D:/")).thenReturn(new CommandOutput(new ExecReturnCode(0), "SUCCESS", ""));
+        when(mockBinaryDistributionControlService.createDirectory(hostname, javaParentDir)).thenReturn(new CommandOutput(new ExecReturnCode(0), "SUCCESS", ""));
         when(mockBinaryDistributionControlService.secureCopyFile(anyString(), anyString(), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(0), "SUCCESS", ""));
-        when(mockBinaryDistributionControlService.unzipBinary(hostname, "~/.jwala/unzip.exe", java_home + ".zip", "D:/", "")).thenReturn(new CommandOutput(new ExecReturnCode(0), "SUCCESS", ""));
-        when(mockBinaryDistributionControlService.deleteBinary(hostname, java_home + ".zip")).thenReturn(new CommandOutput(new ExecReturnCode(0), "SUCCESS", ""));
+        when(mockBinaryDistributionControlService.unzipBinary(hostname, "~/.jwala/unzip.exe", javaHome + ".zip", javaParentDir, "")).thenReturn(new CommandOutput(new ExecReturnCode(0), "SUCCESS", ""));
+        when(mockBinaryDistributionControlService.deleteBinary(hostname, javaHome + ".zip")).thenReturn(new CommandOutput(new ExecReturnCode(0), "SUCCESS", ""));
         binaryDistributionService.distributeJdk(hostname);
     }
 

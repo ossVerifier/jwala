@@ -150,21 +150,15 @@ public class GroupServiceImplDeployTest {
         Group mockGroup = mock(Group.class);
         Jvm mockJvm = mock(Jvm.class);
         Response mockResponse = mock(Response.class);
-        ResourceType mockResourceType = mock(ResourceType.class);
 
         Set<Jvm> jvmSet = new HashSet<>();
         jvmSet.add(mockJvm);
-        Collection<ResourceType> resourcesList = new ArrayList<>();
-        resourcesList.add(mockResourceType);
 
         when(mockGroup.getJvms()).thenReturn(jvmSet);
         when(mockJvm.getJvmName()).thenReturn("testJvm");
         when(mockJvm.getId()).thenReturn(new Identifier<Jvm>(99L));
         when(mockJvm.getState()).thenReturn(JvmState.JVM_STOPPED);
         when(mockResponse.getStatus()).thenReturn(200);
-        when(mockResourceType.getRelativeDir()).thenReturn("./");
-        when(mockResourceType.getEntityType()).thenReturn("jvm");
-        when(mockResourceType.getConfigFileName()).thenReturn("server.xml");
         when(mockGroupService.getGroup(anyString())).thenReturn(mockGroup);
         when(mockGroupService.getGroupJvmResourceTemplate(anyString(), anyString(), any(ResourceGroup.class), anyBoolean())).thenReturn("new server.xml content");
         when(mockJvmService.updateResourceTemplate(anyString(), anyString(), anyString())).thenReturn("new server.xml content");
@@ -192,21 +186,15 @@ public class GroupServiceImplDeployTest {
         Group mockGroup = mock(Group.class);
         WebServer mockWebServer = mock(WebServer.class);
         Response mockResponse = mock(Response.class);
-        ResourceType mockResourceType = mock(ResourceType.class);
 
         Set<WebServer> webServerSet = new HashSet<>();
         webServerSet.add(mockWebServer);
-        Collection<ResourceType> resourcesList = new ArrayList<>();
-        resourcesList.add(mockResourceType);
 
         when(mockGroup.getWebServers()).thenReturn(webServerSet);
         when(mockWebServer.getName()).thenReturn("testWebServer");
         when(mockWebServer.getId()).thenReturn(new Identifier<WebServer>(99L));
         when(mockWebServer.getState()).thenReturn(WebServerReachableState.WS_UNREACHABLE);
         when(mockResponse.getStatus()).thenReturn(200);
-        when(mockResourceType.getRelativeDir()).thenReturn("./");
-        when(mockResourceType.getEntityType()).thenReturn("webServer");
-        when(mockResourceType.getConfigFileName()).thenReturn("httpd.conf");
         when(mockGroupService.getGroup(anyString())).thenReturn(mockGroup);
         when(mockGroupService.getGroupWithWebServers(any(Identifier.class))).thenReturn(mockGroup);
         when(mockGroupService.getGroupWebServerResourceTemplate(anyString(), anyString(), anyBoolean(), any(ResourceGroup.class))).thenReturn("new httpd.conf context");
@@ -247,15 +235,12 @@ public class GroupServiceImplDeployTest {
         Jvm mockJvm = mock(Jvm.class);
         Application mockApp = mock(Application.class);
         Response mockResponse = mock(Response.class);
-        ResourceType mockResourceType = mock(ResourceType.class);
         String hostName = "testHost";
 
         Set<Jvm> jvmSet = new HashSet<>();
         jvmSet.add(mockJvm);
         Set<Application> appSet = new HashSet<>();
         appSet.add(mockApp);
-        Collection<ResourceType> resourcesList = new ArrayList<>();
-        resourcesList.add(mockResourceType);
 
         when(mockApp.getName()).thenReturn("testApp");
         when(mockGroup.getJvms()).thenReturn(jvmSet);
@@ -263,9 +248,6 @@ public class GroupServiceImplDeployTest {
         when(mockJvm.getId()).thenReturn(new Identifier<Jvm>(99L));
         when(mockJvm.getState()).thenReturn(JvmState.JVM_STOPPED);
         when(mockResponse.getStatus()).thenReturn(200);
-        when(mockResourceType.getRelativeDir()).thenReturn("./");
-        when(mockResourceType.getEntityType()).thenReturn("webApp");
-        when(mockResourceType.getConfigFileName()).thenReturn("hct.xml");
         when(mockGroupService.getGroup(anyString())).thenReturn(mockGroup);
         when(mockGroupService.getGroupAppResourceTemplate(anyString(), anyString(), anyString(), anyBoolean(), any(ResourceGroup.class))).thenReturn("new hct.xml content");
         when(mockGroupService.getGroupAppResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"entity\":{\"target\": \"testApp\"}}");
@@ -321,14 +303,11 @@ public class GroupServiceImplDeployTest {
         Jvm mockJvm = mock(Jvm.class);
         Application mockApp = mock(Application.class);
         Response mockResponse = mock(Response.class);
-        ResourceType mockResourceType = mock(ResourceType.class);
 
         Set<Jvm> jvmSet = new HashSet<>();
         jvmSet.add(mockJvm);
         Set<Application> appSet = new HashSet<>();
         appSet.add(mockApp);
-        Collection<ResourceType> resourcesList = new ArrayList<>();
-        resourcesList.add(mockResourceType);
 
         reset(mockResourceService);
         when(mockApp.getName()).thenReturn("testApp");
@@ -338,9 +317,6 @@ public class GroupServiceImplDeployTest {
         when(mockJvm.getState()).thenReturn(JvmState.JVM_STOPPED);
         when(mockJvm.getHostName()).thenReturn("mockHost");
         when(mockResponse.getStatus()).thenReturn(200);
-        when(mockResourceType.getRelativeDir()).thenReturn("./");
-        when(mockResourceType.getEntityType()).thenReturn("webApp");
-        when(mockResourceType.getConfigFileName()).thenReturn("hct.xml");
         when(mockGroupService.getGroup(anyString())).thenReturn(mockGroup);
         when(mockGroupService.getGroupAppResourceTemplate(anyString(), anyString(), anyString(), anyBoolean(), any(ResourceGroup.class))).thenReturn("new hct.xml content");
         when(mockGroupService.getGroupAppResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"entity\":{\"target\": \"testApp\", \"deployToJvms\":false}}");
