@@ -43,8 +43,6 @@ public interface GroupPersistenceService extends StatePersistenceService<Group, 
 
     Group removeJvmFromGroup(RemoveJvmFromGroupRequest removeJvmFromGroupRequest) throws NotFoundException;
 
-    Group updateGroupStatus(SetGroupStateRequest setGroupStateRequest);
-
     Group getGroup(final Identifier<Group> aGroupId, final boolean fetchWebServers) throws NotFoundException;
 
     Set<CurrentState<Group, GroupState>> getAllKnownStates();

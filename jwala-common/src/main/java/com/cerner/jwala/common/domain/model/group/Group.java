@@ -1,16 +1,15 @@
 package com.cerner.jwala.common.domain.model.group;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.joda.time.DateTime;
-
 import com.cerner.jwala.common.domain.model.app.Application;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
+import com.cerner.jwala.common.domain.model.state.CurrentState;
+import com.cerner.jwala.common.domain.model.state.StateType;
 import com.cerner.jwala.common.domain.model.webserver.WebServer;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.joda.time.DateTime;
 
-import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -21,7 +20,7 @@ public class Group {
     private final String name;
     private final Set<Jvm> jvms;
     private final Set<WebServer> webServers;
-    private final CurrentGroupState currentState;
+    private final CurrentState currentState;
     private final Set<History> history;
     private final Set<Application> applications;
 
@@ -45,7 +44,7 @@ public class Group {
         name = theName;
         jvms = Collections.unmodifiableSet(new HashSet<>(theJvms));
         webServers = null;
-        currentState = new CurrentGroupState(theId, theState, theAsOf);
+        currentState = new CurrentState(theId, theState, theAsOf, StateType.GROUP);
         history = null;
         applications = null;
     }
@@ -54,7 +53,7 @@ public class Group {
                  final String theName,
                  final Set<Jvm> theJvms,
                  final Set<WebServer> theWebServers,
-                 final CurrentGroupState theState,
+                 final CurrentState theState,
                  final Set<History> theHistory) {
         id = theId;
         name = theName;
@@ -68,8 +67,7 @@ public class Group {
     public Group(final Identifier<Group> theId,
                  final String theName,
                  final Set<Jvm> theJvms,
-                 final CurrentGroupState theState,
-                 final DateTime theAsOf) {
+                 final CurrentState theState) {
         id = theId;
         name = theName;
         jvms = Collections.unmodifiableSet(new HashSet<>(theJvms));
@@ -79,7 +77,7 @@ public class Group {
         applications = null;
     }
 
-    public Group(Identifier<Group> id, String name, Set<Jvm> jvms, Set<WebServer> webServers, CurrentGroupState currentState, Set<History> history, Set<Application> applications) {
+    public Group(Identifier<Group> id, String name, Set<Jvm> jvms, Set<WebServer> webServers, CurrentState currentState, Set<History> history, Set<Application> applications) {
         this.id = id;
         this.name = name;
         this.jvms = jvms;
@@ -105,7 +103,7 @@ public class Group {
         return webServers;
     }
 
-    public CurrentGroupState getCurrentState() {
+    public CurrentState getCurrentState() {
         return currentState;
     }
 
