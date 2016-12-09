@@ -20,7 +20,16 @@ public abstract class AbstractH2ServerService {
 
     private Logger logger = Logger.getLogger(this.getClass().getName());
 
+    /**
+     * Constructs the h2 server service
+     * @param serverParams the h2 server parameter e.g. -tcpPort,9094,-tcpAllowOthers,-baseDir,${catalina.home}\\data\\db
+     */
     public AbstractH2ServerService(final String serverParams) {
+        // Remove extra spaces since h2's createTcpServer and createWebServer compares parameters as is e.g.
+        // " -tcpAllowOther" is not equal to "-tcpAllowOther"
+        // for example if input for the tcp server is "-tcpPort,9094, -tcpAllowOthers,-baseDir,${catalina.home}\\data\\db"
+        // one will get the following error -> Feature not supported: " -tcpAllowOthers" due to a space in between the
+        // comma and "-"
         this.serverParams = serverParams.replaceAll(" ", "").split(",");
     }
 
