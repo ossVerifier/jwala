@@ -6,8 +6,6 @@ public interface GroupRequest extends Request {
     
     Long getId();
     
-    String getExternalOperationName();
-    
     String getType();
 
 }
