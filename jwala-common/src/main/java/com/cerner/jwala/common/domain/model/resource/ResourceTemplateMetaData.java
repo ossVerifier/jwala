@@ -14,7 +14,7 @@ import org.codehaus.jackson.map.annotate.JsonDeserialize;
 public class ResourceTemplateMetaData {
     private final String templateName;
 
-    @JsonDeserialize(using = ContentTypeStrDeserializer.class)
+    @JsonDeserialize(using = MediaTypeToStrDeserializer.class)
     private final MediaType contentType;
 
     private final String deployFileName;
