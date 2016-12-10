@@ -103,7 +103,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
             final WebServer webServer = webServerService.createWebServer(aWebServerToCreate.toCreateWebServerRequest(), aUser.getUser());
             // Populate the web server templates from the group templates
             Collection<Group> groups = webServer.getGroups();
-            if (null != groups && groups.size() > 0) {
+            if (null != groups && !groups.isEmpty()) {
                 Group group = groups.iterator().next();
                 final String groupName = group.getName();
                 for (final String templateName : groupService.getGroupWebServersResourceTemplateNames(groupName)) {

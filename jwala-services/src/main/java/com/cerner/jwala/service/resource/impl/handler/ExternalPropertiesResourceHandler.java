@@ -48,7 +48,7 @@ public class ExternalPropertiesResourceHandler extends ResourceHandler {
 
             // remove any existing template
             List<String> existingTemplateNames = resourceDao.getResourceNames(resourceIdentifier, EntityType.EXT_PROPERTIES);
-            if (existingTemplateNames.size() > 0) {
+            if (!existingTemplateNames.isEmpty()) {
                 resourceDao.deleteExternalProperties();
                 ExternalProperties.reset();
                 // TODO clean up any deployed files on desk (don't delete - just rename with timestamp)

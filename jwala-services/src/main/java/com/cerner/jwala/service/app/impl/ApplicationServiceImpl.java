@@ -257,7 +257,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     public void copyApplicationWarToGroupHosts(Application application) {
         Group group = groupService.getGroup(application.getGroup().getId());
         final Set<Jvm> theJvms = group.getJvms();
-        if (theJvms != null && theJvms.size() > 0) {
+        if (theJvms != null && !theJvms.isEmpty()) {
             Set<String> hostNames = new HashSet<>();
             for (Jvm jvm : theJvms) {
                 final String host = jvm.getHostName().toLowerCase();
@@ -275,12 +275,12 @@ public class ApplicationServiceImpl implements ApplicationService {
         List<String> appResourcesNames = groupService.getGroupAppsResourceTemplateNames(groupName);
         Group group = groupService.getGroup(app.getGroup().getId());
         final Set<Jvm> jvms = group.getJvms();
-        if (null != appResourcesNames && appResourcesNames.size() > 0) {
+        if (null != appResourcesNames && !appResourcesNames.isEmpty()) {
             for (String resourceTemplateName : appResourcesNames) {
                 String metaDataStr = groupService.getGroupAppResourceTemplateMetaData(groupName, resourceTemplateName);
                 try {
                     ResourceTemplateMetaData metaData = resourceService.getTokenizedMetaData(resourceTemplateName, app, metaDataStr);
-                    if (jvms != null && jvms.size() > 0 && !metaData.getEntity().getDeployToJvms()) {
+                    if (jvms != null && !jvms.isEmpty() && !metaData.getEntity().getDeployToJvms()) {
                         // still need to iterate through the JVMs to get the host names
                         Set<String> hostNames = new HashSet<>();
                         for (Jvm jvm : jvms) {

@@ -334,7 +334,7 @@ public class GroupServiceImpl implements GroupService {
     @Transactional
     public String previewGroupAppResourceTemplate(String groupName, String resourceTemplateName, String template, ResourceGroup resourceGroup) {
         final Set<Jvm> jvms = groupPersistenceService.getGroup(groupName).getJvms();
-        Jvm jvm = jvms != null && jvms.size() > 0 ? jvms.iterator().next() : null;
+        Jvm jvm = jvms != null && !jvms.isEmpty() ? jvms.iterator().next() : null;
         String metaDataStr = groupPersistenceService.getGroupAppResourceTemplateMetaData(groupName, resourceTemplateName);
         try {
             ResourceTemplateMetaData metaData = resourceService.getTokenizedMetaData(resourceTemplateName, jvm, metaDataStr);

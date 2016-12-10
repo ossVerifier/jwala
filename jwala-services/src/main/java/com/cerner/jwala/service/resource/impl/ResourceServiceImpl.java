@@ -834,7 +834,7 @@ public class ResourceServiceImpl implements ResourceService {
         final TreeMap sortedProperties = null == externalProperties ? null : new TreeMap<>(externalProperties);
 
         String retVal = "No External Properties configured";
-        if (null != sortedProperties && sortedProperties.size() > 0) {
+        if (null != sortedProperties && !sortedProperties.isEmpty()) {
             StringBuilder sb = new StringBuilder();
             for (Object key : sortedProperties.keySet()) {
                 sb.append(key);
