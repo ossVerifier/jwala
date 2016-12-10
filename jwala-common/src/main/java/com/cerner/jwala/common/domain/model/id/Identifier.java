@@ -18,7 +18,6 @@ public class Identifier<T> implements Serializable {
     }
 
     public Identifier(final Long id) {
-        // TODO Throw new IllegalArgumentException if null?
         this.id = id;
     }
 

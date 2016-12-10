@@ -33,7 +33,6 @@ import java.util.List;
 public class GroupStateNotificationServiceImpl implements GroupStateNotificationService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GroupStateNotificationServiceImpl.class);
-    private static final String NULL_STR = "NULL_STR";
 
     private final JvmCrudService jvmCrudService;
     private final WebServerCrudService webServerCrudService;

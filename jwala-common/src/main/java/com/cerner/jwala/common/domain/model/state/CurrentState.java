@@ -1,18 +1,14 @@
 package com.cerner.jwala.common.domain.model.state;
 
 import com.cerner.jwala.common.domain.model.id.Identifier;
-import com.cerner.jwala.common.domain.model.state.message.CommonStateKey;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.joda.time.DateTime;
-import org.joda.time.format.DateTimeFormatter;
-import org.joda.time.format.ISODateTimeFormat;
 
-public class CurrentState<S, T extends OperationalState> implements KeyValueStateProvider {
+public class CurrentState<S, T extends OperationalState>  {
 
-    private static final DateTimeFormatter DATE_TIME_FORMATTER = ISODateTimeFormat.dateTime();
     public static final String DEFAULT_EMPTY_MESSAGE = "";
 
     private final Identifier<S> id;
@@ -20,42 +16,13 @@ public class CurrentState<S, T extends OperationalState> implements KeyValueStat
     private final DateTime asOf;
     private final StateType type;
     private final String message;
-    private String userId; // TODO: Have this set in the constructor.
-
-    private Long webServerCount;
-    private Long webServerStartedCount;
-    private Long webServerStoppedCount;
-    private Long jvmCount;
-    private Long jvmStartedCount;
-    private Long jvmStoppedCount;
-    private Long jvmForciblyStoppedCount;
-
-    public CurrentState(final Identifier<S> id, final T state, final DateTime asOf, final StateType stateType) {
-        this(id, state, asOf, stateType, DEFAULT_EMPTY_MESSAGE);
-    }
-
-    public CurrentState(final Identifier<S> id, final T state, final String userId, final DateTime asOf, final StateType stateType) {
-        this(id, state, asOf, stateType, DEFAULT_EMPTY_MESSAGE);
-        setUserId(userId);
-    }
-
-    // TODO: Create a builder for this
-    public CurrentState(final Identifier<S> id, final T state, final DateTime asOf, final StateType type,
-                        final Long webServerCount, final Long webServerStartedCount, final Long webServerStoppedCount,
-                        final Long jvmCount, final Long jvmStartedCount, final Long jvmStoppedCount, final Long jvmForciblyStoppedCount) {
-        this.id = id;
-        this.state = state;
-        this.asOf = asOf;
-        this.type = type;
-        this.message = DEFAULT_EMPTY_MESSAGE;
-        this.webServerCount = webServerCount;
-        this.webServerStartedCount = webServerStartedCount;
-        this.webServerStoppedCount = webServerStoppedCount;
-        this.jvmCount = jvmCount;
-        this.jvmStartedCount = jvmStartedCount;
-        this.jvmStoppedCount = jvmStoppedCount;
-        this.jvmForciblyStoppedCount = jvmForciblyStoppedCount;
-    }
+    private final Long webServerCount;
+    private final Long webServerStartedCount;
+    private final Long webServerStoppedCount;
+    private final Long jvmCount;
+    private final Long jvmStartedCount;
+    private final Long jvmStoppedCount;
+    private final Long jvmForciblyStoppedCount;
 
     public CurrentState(final Identifier<S> id, final T state, final DateTime asOf, final StateType type, final String message) {
         this.id = id;
@@ -63,15 +30,42 @@ public class CurrentState<S, T extends OperationalState> implements KeyValueStat
         this.asOf = asOf;
         this.type = type;
         this.message = message;
+        this.webServerCount = null;
+        this.webServerStartedCount = null;
+        this.webServerStoppedCount = null;
+        this.jvmCount = null;
+        this.jvmStartedCount = null;
+        this.jvmStoppedCount = null;
+        this.jvmForciblyStoppedCount = null;
     }
 
-    public CurrentState(final Identifier<S> id, final T state, final DateTime asOf, final StateType type, final String message, final String userId) {
+    public CurrentState(final Identifier<S> id, final T state, final DateTime asOf, final StateType type) {
+        this(id, state, asOf, type, DEFAULT_EMPTY_MESSAGE);
+    }
+
+    public CurrentState(final Identifier<S> id, final T state, final DateTime asOf, final StateType type,
+                        final Long webServerCount, final Long webServerStartedCount, final Long webServerStoppedCount,
+                        final Long jvmCount, final Long jvmStartedCount, final Long jvmStoppedCount, final Long jvmForciblyStoppedCount, final String message) {
         this.id = id;
         this.state = state;
         this.asOf = asOf;
         this.type = type;
+        this.webServerCount = webServerCount;
+        this.webServerStartedCount = webServerStartedCount;
+        this.webServerStoppedCount = webServerStoppedCount;
+        this.jvmCount = jvmCount;
+        this.jvmStartedCount = jvmStartedCount;
+        this.jvmStoppedCount = jvmStoppedCount;
+        this.jvmForciblyStoppedCount = jvmForciblyStoppedCount;
         this.message = message;
-        setUserId(userId);
+    }
+
+    public CurrentState(final Identifier<S> id, final T state, final DateTime asOf, final StateType type,
+                        final Long webServerCount, final Long webServerStartedCount, final Long webServerStoppedCount,
+                        final Long jvmCount, final Long jvmStartedCount, final Long jvmStoppedCount, final Long jvmForciblyStoppedCount) {
+        this(id, state, asOf, type,
+                webServerCount, webServerStartedCount, webServerStoppedCount,
+                jvmCount, jvmStartedCount, jvmStoppedCount, jvmForciblyStoppedCount, DEFAULT_EMPTY_MESSAGE);
     }
 
     public Identifier<S> getId() {
@@ -102,24 +96,6 @@ public class CurrentState<S, T extends OperationalState> implements KeyValueStat
         return message;
     }
 
-    public String getUserId() {
-        return userId;
-    }
-
-    public void setUserId(String userId) {
-        this.userId = userId;
-    }
-
-    @Override
-    public void provideState(final KeyValueStateConsumer aConsumer) {
-        aConsumer.set(CommonStateKey.ID, id.getId().toString());
-        aConsumer.set(CommonStateKey.TYPE, type.toString());
-        aConsumer.set(CommonStateKey.AS_OF, DATE_TIME_FORMATTER.print(asOf));
-        aConsumer.set(CommonStateKey.STATE, state.toPersistentString());
-        aConsumer.set(CommonStateKey.MESSAGE, message);
-        aConsumer.set(CommonStateKey.USERID, userId);
-    }
-
     @SuppressWarnings("unchecked")
     @Override
     public boolean equals(Object obj) {
@@ -139,7 +115,13 @@ public class CurrentState<S, T extends OperationalState> implements KeyValueStat
                 .append(this.asOf, rhs.asOf)
                 .append(this.type, rhs.type)
                 .append(this.message, rhs.message)
-                .append(this.userId, rhs.userId)
+                .append(this.webServerCount, rhs.webServerCount)
+                .append(this.webServerStartedCount, rhs.webServerStartedCount)
+                .append(this.webServerStoppedCount, rhs.webServerStoppedCount)
+                .append(this.jvmCount, rhs.jvmCount)
+                .append(this.jvmStartedCount, rhs.jvmStartedCount)
+                .append(this.jvmStoppedCount, rhs.jvmStoppedCount)
+                .append(this.jvmForciblyStoppedCount, rhs.jvmForciblyStoppedCount)
                 .isEquals();
     }
 
@@ -151,19 +133,31 @@ public class CurrentState<S, T extends OperationalState> implements KeyValueStat
                 .append(asOf)
                 .append(type)
                 .append(message)
-                .append(userId)
+                .append(webServerCount)
+                .append(webServerStartedCount)
+                .append(webServerStoppedCount)
+                .append(jvmCount)
+                .append(jvmStartedCount)
+                .append(jvmStoppedCount)
+                .append(jvmForciblyStoppedCount)
                 .toHashCode();
     }
 
     @Override
     public String toString() {
-        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
+        return new ToStringBuilder(this, ToStringStyle.DEFAULT_STYLE)
                 .append("id", id)
                 .append("state", state)
                 .append("asOf", asOf)
                 .append("type", type)
                 .append("message", message)
-                .append("userId", userId) // Log the entire, because nobody else will report this message.
+                .append("webServerCount", webServerCount)
+                .append("webServerStartedCount", webServerStartedCount)
+                .append("webServerStoppedCount", webServerStoppedCount)
+                .append("jvmCount", jvmCount)
+                .append("jvmStartedCount", jvmStartedCount)
+                .append("jvmStoppedCount", jvmStoppedCount)
+                .append("jvmForciblyStoppedCount", jvmForciblyStoppedCount)
                 .toString();
     }
 

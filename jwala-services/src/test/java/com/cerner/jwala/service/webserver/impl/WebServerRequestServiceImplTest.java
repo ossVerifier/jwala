@@ -120,7 +120,7 @@ public class WebServerRequestServiceImplTest {
                 .thenReturn(new RemoteCommandReturnInfo(0, "The content of httpd.conf", null));
 
         assertNotNull(factoryHelper);
-        impl = new WebServerCommandServiceImpl(webServerService, executor, jschBuilder, sshConfig, channelPool,
+        impl = new WebServerCommandServiceImpl(webServerService, sshConfig,
                 mockRemoteCommandExecutorService);
     }
 

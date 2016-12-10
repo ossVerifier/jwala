@@ -24,7 +24,6 @@ import java.util.Set;
  */
 public class GroupLevelJvmResourceHandler extends ResourceHandler {
 
-    private static final String MSG_ERR_CONVERTING_DATA_INPUTSTREAM_TO_STR = "Error converting data input stream to string!";
     private final GroupPersistenceService groupPersistenceService;
     private final JvmPersistenceService jvmPersistenceService;
 

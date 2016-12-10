@@ -1,20 +1,16 @@
 package com.cerner.jwala.common.domain.model.state;
 
 import com.cerner.jwala.common.domain.model.id.Identifier;
-import com.cerner.jwala.common.domain.model.state.message.CommonStateKey;
-import com.cerner.jwala.common.domain.model.state.message.StateKey;
 import com.cerner.jwala.common.domain.model.webserver.WebServer;
 import com.cerner.jwala.common.domain.model.webserver.WebServerReachableState;
 import org.joda.time.DateTime;
-import org.joda.time.format.ISODateTimeFormat;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import static groovy.util.GroovyTestCase.assertEquals;
+
 
 @RunWith(MockitoJUnitRunner.class)
 public class CurrentStateKeyValueStateProviderTest {
@@ -33,18 +29,7 @@ public class CurrentStateKeyValueStateProviderTest {
                                                                                              state,
                                                                                              asOf,
                                                                                              type);
-        producer.provideState(consumer);
-
-        verifyKeySet(CommonStateKey.ID,
-                     id.getId().toString());
-        verifyKeySet(CommonStateKey.STATE,
-                     state.toPersistentString());
-        verifyKeySet(CommonStateKey.AS_OF,
-                     ISODateTimeFormat.dateTime().print(asOf));
-        verifyKeySet(CommonStateKey.TYPE,
-                     type.name());
-        verifyKeySet(CommonStateKey.MESSAGE,
-                     "");
+        assertEquals(id, producer.getId());
     }
 
     @Test
@@ -60,23 +45,7 @@ public class CurrentStateKeyValueStateProviderTest {
                                                                                              asOf,
                                                                                              type,
                                                                                              message);
-        producer.provideState(consumer);
-
-        verifyKeySet(CommonStateKey.ID,
-                     id.getId().toString());
-        verifyKeySet(CommonStateKey.STATE,
-                     state.toPersistentString());
-        verifyKeySet(CommonStateKey.AS_OF,
-                     ISODateTimeFormat.dateTime().print(asOf));
-        verifyKeySet(CommonStateKey.TYPE,
-                     type.name());
-        verifyKeySet(CommonStateKey.MESSAGE,
-                     message);
+        assertEquals(message, producer.getMessage());
     }
 
-    private void verifyKeySet(final StateKey aKey,
-                              final String aValue) {
-        verify(consumer, times(1)).set(eq(aKey),
-                                       eq(aValue));
-    }
 }

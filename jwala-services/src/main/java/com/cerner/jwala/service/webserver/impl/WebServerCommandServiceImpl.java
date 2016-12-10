@@ -28,22 +28,14 @@ import org.apache.commons.pool2.impl.GenericKeyedObjectPool;
 public class WebServerCommandServiceImpl implements WebServerCommandService {
 
     private final WebServerService webServerService;
-    private final CommandExecutor executor;
-    private final JschBuilder jschBuilder;
     private final SshConfiguration sshConfig;
-    private final GenericKeyedObjectPool<ChannelSessionKey, Channel> channelPool;
 
     private final RemoteCommandExecutorService remoteCommandExecutorService;
 
-    public WebServerCommandServiceImpl(final WebServerService webServerService, final CommandExecutor executor,
-                                       final JschBuilder jschBuilder, final SshConfiguration sshConfig,
-                                       final GenericKeyedObjectPool<ChannelSessionKey, Channel> channelPool,
+    public WebServerCommandServiceImpl(final WebServerService webServerService, final SshConfiguration sshConfig,
                                        final RemoteCommandExecutorService remoteCommandExecutorService) {
         this.webServerService = webServerService;
-        this.executor = executor;
-        this.jschBuilder = jschBuilder;
         this.sshConfig = sshConfig;
-        this.channelPool = channelPool;
         this.remoteCommandExecutorService = remoteCommandExecutorService;
     }
 

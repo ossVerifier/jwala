@@ -204,14 +204,14 @@ public class BinaryDistributionServiceImplTest {
     }
 
     @Test
-    public void testDistributeJdk() throws Exception {
+    public void testDistributeJdk() throws CommandFailureException {
         final String hostname = "localhost";
         final String javaHome = ApplicationProperties.get("remote.jwala.java.home");
         final String javaParentDir = new File(javaHome).getParent().replaceAll("\\\\", "/");
         when(mockBinaryDistributionControlService.checkFileExists(hostname, javaHome)).thenReturn(new CommandOutput(new ExecReturnCode(1), "FAIL", ""));
         when(mockBinaryDistributionControlService.createDirectory(hostname, javaParentDir)).thenReturn(new CommandOutput(new ExecReturnCode(0), "SUCCESS", ""));
         when(mockBinaryDistributionControlService.secureCopyFile(anyString(), anyString(), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(0), "SUCCESS", ""));
-        when(mockBinaryDistributionControlService.unzipBinary(hostname, "~/.jwala/unzip.exe", javaHome + ".zip", javaParentDir, "")).thenReturn(new CommandOutput(new ExecReturnCode(0), "SUCCESS", ""));
+        when(mockBinaryDistributionControlService.unzipBinary(hostname, "~/.jwala/unzip.exe", javaHome + ".zip", "D:/ctp", "")).thenReturn(new CommandOutput(new ExecReturnCode(0), "SUCCESS", ""));
         when(mockBinaryDistributionControlService.deleteBinary(hostname, javaHome + ".zip")).thenReturn(new CommandOutput(new ExecReturnCode(0), "SUCCESS", ""));
         binaryDistributionService.distributeJdk(hostname);
     }

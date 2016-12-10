@@ -90,7 +90,6 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
-import org.springframework.core.env.Environment;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
@@ -100,7 +99,6 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
-import javax.annotation.Resource;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -147,9 +145,6 @@ public class AemServiceConfiguration {
     private GroupStateNotificationService groupStateNotificationService;
 
     private final Map webServerFutureMap = new HashMap();
-
-    @Resource
-    private Environment env;
 
     @Autowired
     private BinaryDistributionService binaryDistributionService;
@@ -298,10 +293,7 @@ public class AemServiceConfiguration {
 
         return new WebServerCommandServiceImpl(
                 webServerService,
-                commandExecutor,
-                jschBuilder,
                 sshConfig,
-                channelPool,
                 remoteCommandExecutorService);
     }
 

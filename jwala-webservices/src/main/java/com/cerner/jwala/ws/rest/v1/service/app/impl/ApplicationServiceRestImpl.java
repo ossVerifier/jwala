@@ -34,16 +34,15 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
 
     private ApplicationService service;
     private ResourceService resourceService;
-    private ServletFileUpload servletFileUpload;
     private final GroupService groupService;
 
     private static ApplicationServiceRestImpl instance;
 
-    public ApplicationServiceRestImpl(ApplicationService applicationService, ResourceService resourceService,
-                                      ServletFileUpload servletFileUpload, final GroupService groupService) {
+    public ApplicationServiceRestImpl(ApplicationService applicationService,
+                                      ResourceService resourceService,
+                                      final GroupService groupService) {
         service = applicationService;
         this.resourceService = resourceService;
-        this.servletFileUpload = servletFileUpload;
         this.groupService = groupService;
     }
 
@@ -113,9 +112,6 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
         service.removeApplication(anAppToRemove, aUser.getUser());
         return ResponseBuilder.ok();
     }
-
-    @Context
-    private MessageContext context; // TODO: Define as a method parameter to make this class more testable!
 
     @Override
     public Response deleteWebArchive(final Identifier<Application> appToRemoveWAR, final AuthenticatedUser aUser) {
@@ -226,7 +222,4 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
         return instance;
     }
 
-    public void setMessageContext(MessageContext messageContext) {
-        context = messageContext;
-    }
 }

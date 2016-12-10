@@ -64,9 +64,6 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 public class ApplicationServiceImpl implements ApplicationService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ApplicationServiceImpl.class);
-    private static final String GENERATED_RESOURCE_DIR = "paths.generated.resource.dir";
-    private static final String JWALA_WEBAPPS_DIR = "remote.jwala.webapps.dir";
-    private static final String MEDIA_TYPE_TEXT = "text";
     private final ExecutorService executorService;
     final String JWALA_SCRIPTS_PATH = ApplicationProperties.get("remote.commands.user-scripts");
 
