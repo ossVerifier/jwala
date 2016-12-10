@@ -234,7 +234,6 @@ public class ResourceServiceImpl implements ResourceService {
                     group.getName(),
                     null != jvms ? new LinkedHashSet<>(jvms) : new LinkedHashSet<Jvm>(),
                     null != webServers ? new LinkedHashSet<>(webServers) : new LinkedHashSet<WebServer>(),
-                    group.getCurrentState(),
                     group.getHistory(),
                     null != applications ? new LinkedHashSet<>(applications) : new LinkedHashSet<Application>()));
         }

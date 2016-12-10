@@ -2,15 +2,12 @@ package com.cerner.jwala.service.resource;
 
 import com.cerner.jwala.common.domain.model.app.Application;
 import com.cerner.jwala.common.domain.model.group.Group;
-import com.cerner.jwala.common.domain.model.group.GroupState;
 import com.cerner.jwala.common.domain.model.group.History;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
 import com.cerner.jwala.common.domain.model.jvm.JvmState;
 import com.cerner.jwala.common.domain.model.path.FileSystemPath;
 import com.cerner.jwala.common.domain.model.resource.*;
-import com.cerner.jwala.common.domain.model.state.CurrentState;
-import com.cerner.jwala.common.domain.model.state.StateType;
 import com.cerner.jwala.common.domain.model.user.User;
 import com.cerner.jwala.common.domain.model.webserver.WebServer;
 import com.cerner.jwala.common.domain.model.webserver.WebServerReachableState;
@@ -37,7 +34,6 @@ import org.apache.tika.Tika;
 import org.apache.tika.mime.MediaType;
 import org.codehaus.groovy.runtime.ResourceGroovyMethods;
 import org.codehaus.jackson.map.ObjectMapper;
-import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -322,7 +318,6 @@ public class ResourceServiceImplTest {
                     "groupName",
                     new HashSet<>(jvms),
                     new HashSet<>(webServers),
-                    new CurrentState(new Identifier<Group>(1111L), GroupState.GRP_STOPPED, DateTime.now(), StateType.GROUP),
                     new HashSet<History>(),
                     new HashSet<>(applications));
             groups.add(group);

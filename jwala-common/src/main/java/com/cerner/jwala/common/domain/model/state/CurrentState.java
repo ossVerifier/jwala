@@ -1,5 +1,7 @@
 package com.cerner.jwala.common.domain.model.state;
 
+import com.cerner.jwala.common.domain.model.id.Identifier;
+import com.cerner.jwala.common.domain.model.state.message.CommonStateKey;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -7,9 +9,6 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
-
-import com.cerner.jwala.common.domain.model.id.Identifier;
-import com.cerner.jwala.common.domain.model.state.message.CommonStateKey;
 
 public class CurrentState<S, T extends OperationalState> implements KeyValueStateProvider {
 
@@ -84,7 +83,7 @@ public class CurrentState<S, T extends OperationalState> implements KeyValueStat
     }
 
     public String getStateString() {
-        return state.toStateLabel();
+        return state != null ? state.toStateLabel() : "";
     }
 
     public boolean hasMessage() {
@@ -133,7 +132,7 @@ public class CurrentState<S, T extends OperationalState> implements KeyValueStat
         if (obj.getClass() != getClass()) {
             return false;
         }
-        CurrentState<S,T> rhs = (CurrentState<S,T>) obj;
+        CurrentState<S, T> rhs = (CurrentState<S, T>) obj;
         return new EqualsBuilder()
                 .append(this.id, rhs.id)
                 .append(this.state, rhs.state)

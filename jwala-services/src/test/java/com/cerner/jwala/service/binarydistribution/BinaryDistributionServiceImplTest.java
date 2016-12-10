@@ -13,7 +13,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
-import org.mockito.internal.exceptions.ExceptionIncludingMockitoWarnings;
 
 import java.io.File;
 
@@ -207,11 +206,9 @@ public class BinaryDistributionServiceImplTest {
     @Test
     public void testDistributeJdk() throws Exception {
         final String hostname = "localhost";
-//        final String javaHome = ApplicationProperties.get("remote.jwala.java.home").replace("/", "//");
         final String javaHome = ApplicationProperties.get("remote.jwala.java.home");
-        final String javaParentDir = new File(javaHome).getParent();
+        final String javaParentDir = new File(javaHome).getParent().replaceAll("\\\\", "/");
         when(mockBinaryDistributionControlService.checkFileExists(hostname, javaHome)).thenReturn(new CommandOutput(new ExecReturnCode(1), "FAIL", ""));
-//        when(mockBinaryDistributionControlService.createDirectory(hostname, "D:/")).thenReturn(new CommandOutput(new ExecReturnCode(0), "SUCCESS", ""));
         when(mockBinaryDistributionControlService.createDirectory(hostname, javaParentDir)).thenReturn(new CommandOutput(new ExecReturnCode(0), "SUCCESS", ""));
         when(mockBinaryDistributionControlService.secureCopyFile(anyString(), anyString(), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(0), "SUCCESS", ""));
         when(mockBinaryDistributionControlService.unzipBinary(hostname, "~/.jwala/unzip.exe", javaHome + ".zip", javaParentDir, "")).thenReturn(new CommandOutput(new ExecReturnCode(0), "SUCCESS", ""));

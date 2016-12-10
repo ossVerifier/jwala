@@ -1,10 +1,10 @@
 package com.cerner.jwala.service.group.impl.spring.component;
 
 import com.cerner.jwala.common.domain.model.group.Group;
-import com.cerner.jwala.common.domain.model.group.GroupState;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
 import com.cerner.jwala.common.domain.model.state.CurrentState;
+import com.cerner.jwala.common.domain.model.state.OperationalState;
 import com.cerner.jwala.common.domain.model.state.StateType;
 import com.cerner.jwala.common.domain.model.webserver.WebServer;
 import com.cerner.jwala.persistence.jpa.domain.JpaGroup;
@@ -15,7 +15,6 @@ import com.cerner.jwala.persistence.jpa.service.WebServerCrudService;
 import com.cerner.jwala.service.MessagingService;
 import com.cerner.jwala.service.exception.GroupStateNotificationServiceException;
 import com.cerner.jwala.service.group.GroupStateNotificationService;
-
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -76,8 +75,8 @@ public class GroupStateNotificationServiceImpl implements GroupStateNotification
                 final Long webServerStartedCount = webServerCrudService.getWebServerStartedCount(group.getName());
                 final Long webServerStoppedCount = webServerCrudService.getWebServerStoppedCount(group.getName());
                 final Long webServerCount = webServerCrudService.getWebServerCount(group.getName());
-                final CurrentState<Group, GroupState> groupState = new CurrentState<>(new Identifier<Group>(group.getId()),
-                        GroupState.GRP_UNKNOWN, DateTime.now(), StateType.GROUP, webServerCount, webServerStartedCount,
+                final CurrentState<Group, OperationalState> groupState = new CurrentState<>(new Identifier<Group>(group.getId()),
+                        null, DateTime.now(), StateType.GROUP, webServerCount, webServerStartedCount,
                         webServerStoppedCount, jvmCount, jvmStartedCount, jvmStoppedCount, jvmForciblyStoppedCount);
                 messagingService.send(groupState);
                 LOGGER.debug("Group '{}' state = {}", group.getName(), groupState);

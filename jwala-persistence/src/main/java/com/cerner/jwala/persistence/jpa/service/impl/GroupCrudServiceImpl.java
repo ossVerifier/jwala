@@ -2,7 +2,6 @@ package com.cerner.jwala.persistence.jpa.service.impl;
 
 import com.cerner.jwala.common.domain.model.fault.AemFaultType;
 import com.cerner.jwala.common.domain.model.group.Group;
-import com.cerner.jwala.common.domain.model.group.GroupState;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.webserver.WebServer;
 import com.cerner.jwala.common.exception.BadRequestException;
@@ -10,7 +9,6 @@ import com.cerner.jwala.common.exception.NotFoundException;
 import com.cerner.jwala.common.request.group.CreateGroupRequest;
 import com.cerner.jwala.common.request.group.UpdateGroupRequest;
 import com.cerner.jwala.common.request.jvm.UploadJvmTemplateRequest;
-import com.cerner.jwala.common.request.state.SetStateRequest;
 import com.cerner.jwala.common.request.webserver.UploadWebServerTemplateRequest;
 import com.cerner.jwala.persistence.jpa.domain.JpaApplication;
 import com.cerner.jwala.persistence.jpa.domain.JpaGroup;
@@ -23,7 +21,6 @@ import com.cerner.jwala.persistence.jpa.service.GroupCrudService;
 import com.cerner.jwala.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
 import com.cerner.jwala.persistence.jpa.service.exception.ResourceTemplateMetaDataUpdateException;
 import com.cerner.jwala.persistence.jpa.service.exception.ResourceTemplateUpdateException;
-import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -106,16 +103,6 @@ public class GroupCrudServiceImpl extends AbstractCrudServiceImpl<JpaGroup> impl
     public void removeGroup(final Identifier<Group> aGroupId) {
         final JpaGroup group = getGroup(aGroupId);
         remove(group);
-    }
-
-    @Override
-    public JpaGroup updateGroupStatus(SetStateRequest<Group, GroupState> setStateRequest) {
-        final JpaGroup jpaGroup = getGroup(setStateRequest.getNewState().getId());
-
-        jpaGroup.setState(setStateRequest.getNewState().getState());
-        jpaGroup.setStateUpdated(DateTime.now().toCalendar(null));
-
-        return update(jpaGroup);
     }
 
     @Override
@@ -490,14 +477,6 @@ public class GroupCrudServiceImpl extends AbstractCrudServiceImpl<JpaGroup> impl
         }
 
         return jpaConfigTemplate;
-    }
-
-    @Override
-    public void updateState(final Identifier<Group> id, final GroupState state) {
-        final Query query = entityManager.createNamedQuery(JpaGroup.QUERY_UPDATE_STATE_BY_ID);
-        query.setParameter(JpaGroup.QUERY_PARAM_STATE, state.toString());
-        query.setParameter(JpaGroup.QUERY_PARAM_ID, id.getId());
-        query.executeUpdate();
     }
 
     @Override

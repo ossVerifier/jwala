@@ -2,7 +2,6 @@ package com.cerner.jwala.service.group;
 
 import com.cerner.jwala.common.domain.model.app.Application;
 import com.cerner.jwala.common.domain.model.group.Group;
-import com.cerner.jwala.common.domain.model.group.GroupState;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
 import com.cerner.jwala.common.domain.model.resource.ResourceGroup;
@@ -11,7 +10,6 @@ import com.cerner.jwala.common.domain.model.webserver.WebServer;
 import com.cerner.jwala.common.exec.CommandOutput;
 import com.cerner.jwala.common.request.group.*;
 import com.cerner.jwala.common.request.jvm.UploadJvmTemplateRequest;
-import com.cerner.jwala.exception.CommandFailureException;
 
 import java.util.List;
 
@@ -91,8 +89,6 @@ public interface GroupService {
     String updateGroupAppResourceTemplate(String groupName, String appName, String resourceTemplateName, String content);
 
     String previewGroupAppResourceTemplate(String groupName, String resourceTemplateName, String template, ResourceGroup resourceGroup);
-
-    void updateState(Identifier<Group> id, GroupState state);
 
     CommandOutput deployGroupAppTemplate(String groupName, String fileName, Application application, Jvm jvm);
 
