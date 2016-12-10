@@ -47,7 +47,6 @@ public class RuleTest {
                              new PortNumberRule(8080, AemFaultType.CANNOT_CONNECT),
                              new ShutdownPortNumberRule(8080, AemFaultType.CANNOT_CONNECT),
                              new StatusPathRule(mockPath),
-                             new StringLengthRule(1, 10, "any"),
                              new ValidTemplateNameRule("any"),
                              new ValidWebArchiveNameRule("any"),
                              new ApplicationIdRule(new Identifier<Application>(1L)),
