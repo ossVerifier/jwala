@@ -11,6 +11,8 @@ import java.util.List;
  */
 public interface MediaDao {
 
+    Media findById(Long id);
+
     Media find(String name);
 
     List<Media> findAll();
@@ -19,4 +21,5 @@ public interface MediaDao {
 
     void remove(Media media);
 
+    Media update(Media media);
 }
