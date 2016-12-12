@@ -12,7 +12,6 @@ import java.io.Serializable;
 
 public class SshConfiguration implements Serializable {
 
-    private static final long serialVersionUID = 1L;
     private static final Logger LOGGER = LoggerFactory.getLogger(SshConfiguration.class);
 
     private final String userName;

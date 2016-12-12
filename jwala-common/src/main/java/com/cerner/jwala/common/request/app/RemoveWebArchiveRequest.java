@@ -9,11 +9,6 @@ import com.cerner.jwala.common.request.Request;
 @Deprecated
 public class RemoveWebArchiveRequest implements Serializable, Request {
 
-    /**
-     * 
-     */
-    private static final long serialVersionUID = 1L;
-    
     private final Application application;
         
     public RemoveWebArchiveRequest(final Application application) {

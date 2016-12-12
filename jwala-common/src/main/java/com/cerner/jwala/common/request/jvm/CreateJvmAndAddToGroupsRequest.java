@@ -19,7 +19,6 @@ import com.cerner.jwala.common.rule.group.GroupIdsRule;
 
 public class CreateJvmAndAddToGroupsRequest implements Serializable, Request {
 
-    private static final long serialVersionUID = 1L;
     private final CreateJvmRequest createCommand;
     private final Set<Identifier<Group>> groups;
 

@@ -15,8 +15,6 @@ import java.io.Serializable;
 
 public class ControlJvmRequest implements Serializable, Request {
 
-    private static final long serialVersionUID = 1L;
-
     private final Identifier<Jvm> jvmId;
     private final JvmControlOperation controlOperation;
 

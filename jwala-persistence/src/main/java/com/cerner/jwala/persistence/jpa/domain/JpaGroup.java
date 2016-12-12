@@ -28,8 +28,6 @@ public class JpaGroup extends AbstractEntity<JpaGroup> {
     public static final String QUERY_PARAM_STATE = "state";
     public static final String QUERY_PARAM_NAME = "name";
 
-    private static final long serialVersionUID = -2125399708516728584L;
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "ID")

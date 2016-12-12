@@ -12,11 +12,6 @@ import com.cerner.jwala.common.rule.app.GoodStreamRule;
 
 public class UploadWebArchiveRequest implements Serializable, Request {
 
-    /**
-     * 
-     */
-    private static final long serialVersionUID = 1L;
-    
     transient private InputStream data;   
     private Application application;
     private String filename;

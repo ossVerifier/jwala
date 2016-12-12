@@ -8,7 +8,6 @@ import com.cerner.jwala.common.request.webserver.ControlGroupWebServerRequest;
 
 public class GroupWebServerDispatchCommand extends DispatchCommand {
     
-    private static final long serialVersionUID = 1L;
     private final Group group;
     private final ControlGroupWebServerRequest request;
     private final User user;

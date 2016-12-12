@@ -20,8 +20,6 @@ import com.cerner.jwala.common.rule.webserver.WebServerNameRule;
 
 public class UpdateWebServerRequest implements Serializable, Request {
 
-    private static final long serialVersionUID = 1L;
-
     private final Identifier<WebServer> id;
     private final Collection<Identifier<Group>> newGroupIds; //TODO (Corey) Peter Agrees: Change this to a Set all the way down the line...
     private final String newHost;

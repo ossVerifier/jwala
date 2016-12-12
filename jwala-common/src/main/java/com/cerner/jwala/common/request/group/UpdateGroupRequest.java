@@ -14,8 +14,6 @@ import java.io.Serializable;
 
 public class UpdateGroupRequest implements Serializable, Request {
 
-    private static final long serialVersionUID = 1L;
-
     private final Identifier<Group> id;
     private final String newName;
 

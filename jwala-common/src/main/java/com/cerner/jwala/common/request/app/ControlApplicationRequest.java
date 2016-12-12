@@ -15,8 +15,6 @@ import java.io.Serializable;
 
 public class ControlApplicationRequest implements Serializable, Request {
 
-    private static final long serialVersionUID = 1L;
-
     private final Identifier<Application> appId;
     private final ApplicationControlOperation controlOperation;
 

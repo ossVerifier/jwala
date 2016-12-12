@@ -9,8 +9,6 @@ import java.util.concurrent.TimeUnit;
 
 public class TimeDuration implements Serializable {
 
-    private static final long serialVersionUID = 1L;
-
     private final Long timePeriod;
     private final TimeUnit timeUnit;
 

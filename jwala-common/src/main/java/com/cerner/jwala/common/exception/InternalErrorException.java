@@ -7,7 +7,6 @@ import java.util.Map;
 
 public class InternalErrorException extends FaultCodeException {
 
-    private static final long serialVersionUID = 1L;
     private Map<String, List<String>> errorDetails = null;
     private static final Throwable NULL_THROWABLE = null;
 

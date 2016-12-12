@@ -11,7 +11,6 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 import java.io.Serializable;
 
 public class ControlGroupJvmRequest implements Serializable, GroupRequest {
-    private static final long serialVersionUID = 1L;
 
     private final Identifier<Group> groupId;
     private final JvmControlOperation controlOperation;

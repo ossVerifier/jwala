@@ -4,8 +4,6 @@ import java.io.Serializable;
 
 public class RemoteSystemConnection implements Serializable {
 
-    private static final long serialVersionUID = 1L;
-
     private final String user;
     private final String host;
     private final Integer port;

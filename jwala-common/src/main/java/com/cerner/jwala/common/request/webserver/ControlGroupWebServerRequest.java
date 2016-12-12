@@ -10,7 +10,6 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import java.io.Serializable;
 
 public class ControlGroupWebServerRequest implements Serializable, GroupRequest {
-    private static final long serialVersionUID = 1L;
 
     private final Identifier<Group> groupId;
     private final WebServerControlOperation controlOperation;

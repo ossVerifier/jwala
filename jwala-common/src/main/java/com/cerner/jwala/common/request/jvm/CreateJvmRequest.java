@@ -12,8 +12,6 @@ import java.io.Serializable;
 
 public class CreateJvmRequest implements Serializable, Request {
 
-    private static final long serialVersionUID = 1L;
-
     private final String jvmName;
     private final String hostName;
 

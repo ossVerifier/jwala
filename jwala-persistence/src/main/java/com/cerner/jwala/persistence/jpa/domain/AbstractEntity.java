@@ -10,8 +10,6 @@ import java.util.Calendar;
 @MappedSuperclass
 public abstract class AbstractEntity<T extends AbstractEntity<T>> implements Serializable, Audited {
 
-    private static final long serialVersionUID = 5211000020477780062L;
-
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "createDate")
     public Calendar createDate;

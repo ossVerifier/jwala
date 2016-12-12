@@ -2,8 +2,6 @@ package com.cerner.jwala.common.exception;
 
 public class ApplicationException extends RuntimeException {
 
-    private static final long serialVersionUID = 1;
-
     public ApplicationException() {
         super();
     }

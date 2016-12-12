@@ -18,8 +18,6 @@ import com.cerner.jwala.common.rule.webserver.WebServerNameRule;
 
 public class CreateWebServerRequest implements Serializable, Request {
 
-    private static final long serialVersionUID = 1L;
-
     private final Collection<Identifier<Group>> groupIds;
     private final String host;
     private final String name;

@@ -13,8 +13,6 @@ import java.io.Serializable;
 
 public abstract class SetStateRequest<S, T extends OperationalState> implements Serializable, Request {
 
-    private static final long serialVersionUID = 1L;
-
     private final CurrentState<S, T> newState;
 
     public SetStateRequest(final CurrentState<S, T> theNewState) {

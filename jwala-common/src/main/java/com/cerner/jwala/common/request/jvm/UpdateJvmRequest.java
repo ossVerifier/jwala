@@ -21,8 +21,6 @@ import java.util.Set;
 
 public class UpdateJvmRequest implements Serializable, Request {
 
-    private static final long serialVersionUID = 1L;
-
     private final Identifier<Jvm> id;
     private final String newJvmName;
     private final String newHostName;

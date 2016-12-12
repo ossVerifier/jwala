@@ -48,11 +48,6 @@ import javax.persistence.*;
     })
 public class JpaApplication extends AbstractEntity<JpaApplication> {
 
-    /**
-     *
-     */
-    private static final long serialVersionUID = 1L;
-
     public static final String QUERY_BY_GROUP_ID = "findApplicationsByGroupId";
     public static final String QUERY_BY_GROUP_NAME = "findApplicationsByGroupName";
     public static final String QUERY_BY_JVM_ID = "findApplicationsByJvmId";
