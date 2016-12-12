@@ -390,6 +390,9 @@ var JvmConfigForm = React.createClass({
                                 </select>
                         	    </td>
                         	</tr>
+
+{/*                        	TODO remove the tomcat version for now - the main focus is the JDK update
+
                         	<tr>
                         	    <td>Apache Tomcat Version</td>
                         	</tr>
@@ -399,7 +402,7 @@ var JvmConfigForm = React.createClass({
                                     {this.getTomcatVersions()}
                                 </select>
                         	    </td>
-                        	</tr>
+                        	</tr>*/}
 
                             <tr>
                                 <td>
@@ -566,8 +569,8 @@ var JvmConfigDataTable = React.createClass({
                         {sTitle:"Shutd", mData:"shutdownPort"},
                         {sTitle:"AJP", mData:"ajpPort"},
                         {sTitle:"Username", mData: "userName"},
-                        {sTitle:"JDK", mData:"jdkMedia.name"},
-                        {sTitle:"Tomcat", mData:"tomcatMedia"}];
+                        {sTitle:"JDK", mData:"jdkMedia.name"}/*,
+                        {sTitle:"Tomcat", mData:"tomcatMedia"}*/];
         return <JwalaDataTable ref="dataTableWrapper"
                                tableId="jvm-config-datatable"
                                tableDef={tableDef}

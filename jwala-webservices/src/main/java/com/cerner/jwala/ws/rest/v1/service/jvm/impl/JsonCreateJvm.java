@@ -117,8 +117,8 @@ public class JsonCreateJvm {
                 systemProperties,
                 userName,
                 encryptedPassword,
-                new Identifier<Media>(Long.parseLong(jdkMediaId)),
-                new Identifier<Media>(Long.parseLong(tomcatMediaId)));
+                jdkMediaId.isEmpty() ? null : new Identifier<Media>(Long.parseLong(jdkMediaId)),
+                tomcatMediaId.isEmpty() ? null : new Identifier<Media>(Long.parseLong(tomcatMediaId)));
     }
 
     public CreateJvmAndAddToGroupsRequest toCreateAndAddRequest() {
@@ -136,8 +136,8 @@ public class JsonCreateJvm {
                 systemProperties,
                 userName,
                 encryptedPassword,
-                new Identifier<Media>(Long.parseLong(jdkMediaId)),
-                new Identifier<Media>(Long.parseLong(tomcatMediaId)));
+                jdkMediaId.isEmpty() ? null : new Identifier<Media>(Long.parseLong(jdkMediaId)),
+                tomcatMediaId.isEmpty() ? null : new Identifier<Media>(Long.parseLong(tomcatMediaId)));
     }
 
     protected Set<Identifier<Group>> convertGroupIds() {
