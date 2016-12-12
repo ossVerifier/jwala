@@ -266,7 +266,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         Map<String, Future<Response>> futures = new HashMap<>();
         final JvmServiceRest jvmServiceRest = JvmServiceRestImpl.get();
         final Set<Jvm> jvms = group.getJvms();
-        if (null != jvms && jvms.size() > 0) {
+        if (null != jvms && !jvms.isEmpty()) {
             for (final Jvm jvm : jvms) {
                 if (jvm.getState().isStartedState()) {
                     LOGGER.info("Failed to deploy file {} for group {}: not all JVMs were stopped - {} was started", fileName, group.getName(), jvm.getJvmName());
@@ -357,7 +357,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
             final Group group = groupService.getGroup(groupName);
             final ResourceGroup resourceGroup = resourceService.generateResourceGroup();
             final Set<Jvm> jvms = group.getJvms();
-            return ResponseBuilder.ok(resourceService.generateResourceFile(fileName, template, resourceGroup, (null != jvms && jvms.size() > 0 ? jvms.iterator().next() : null), ResourceGeneratorType.PREVIEW));
+            return ResponseBuilder.ok(resourceService.generateResourceFile(fileName, template, resourceGroup, (null != jvms && !jvms.isEmpty() ? jvms.iterator().next() : null), ResourceGeneratorType.PREVIEW));
         } catch (RuntimeException e) {
             LOGGER.error("Failed to preview the JVM template for {}", groupName, e);
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
@@ -374,7 +374,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         final String resourceMetaData = groupService.getGroupWebServerResourceTemplateMetaData(groupName, resourceFileName);
         final WebServerServiceRestImpl webServerServiceRest = WebServerServiceRestImpl.get();
         final Set<WebServer> webServers = group.getWebServers();
-        if (null != webServers && webServers.size() > 0) {
+        if (null != webServers && !webServers.isEmpty()) {
             for (WebServer webServer : webServers) {
                 if (webServerService.isStarted(webServer)) {
                     LOGGER.info("Failed to deploy {} for group {}: not all web servers were stopped - {} was started",
@@ -467,7 +467,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         LOGGER.info("Starting group generation of web servers for group ID {} by user {}", aGroupId, aUser.getUser().getId());
         Group group = groupService.getGroupWithWebServers(aGroupId);
         Set<WebServer> webServers = group.getWebServers();
-        if (null != webServers && webServers.size() > 0) {
+        if (null != webServers && !webServers.isEmpty()) {
             Set<String> startedWebServers = new HashSet<>();
             for (WebServer webServer : webServers) {
                 if (webServerService.isStarted(webServer)) {
@@ -511,7 +511,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
 
         final Group group = groupService.getGroup(aGroupId);
         Set<Jvm> jvms = group.getJvms();
-        if (null != jvms && jvms.size() > 0) {
+        if (null != jvms && !jvms.isEmpty()) {
             Set<String> starteJvms = new HashSet<>();
             for (Jvm jvm : jvms) {
                 if (jvm.getState().isStartedState()) {
@@ -744,7 +744,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     protected void performGroupAppDeployToHost(final String groupName, final String fileName, final String appName, final String hostName) {
         Map<String, Future<Response>> futureMap = new HashMap<>();
         Set<Jvm> jvms = groupService.getGroup(groupName).getJvms();
-        if (null != jvms && jvms.size() > 0) {
+        if (null != jvms && !jvms.isEmpty()) {
             for (Jvm jvm : jvms) {
                 if (jvm.getHostName().equalsIgnoreCase(hostName) && jvm.getState().isStartedState()) {
                     LOGGER.info("Failed to deploy file {} for group {} on host {}: not all JVMs were stopped - {} was started", fileName, groupName, hostName, jvm.getJvmName());
@@ -759,7 +759,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     protected void performGroupAppDeployToHosts(final String groupName, final String fileName, final String appName) {
         Map<String, Future<Response>> futureMap = new HashMap<>();
         Set<Jvm> jvms = groupService.getGroup(groupName).getJvms();
-        if (null != jvms && jvms.size() > 0) {
+        if (null != jvms && !jvms.isEmpty()) {
             for (Jvm jvm : jvms) {
                 if (jvm.getState().isStartedState()) {
                     LOGGER.info("Failed to deploy file {} for group {}: not all JVMs were stopped - {} was started", fileName, groupName, jvm.getJvmName());
@@ -795,7 +795,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
             LOGGER.debug("got no hostname deploying to all group jvms");
             jvms = groupJvms;
         }
-        if (null != jvms && jvms.size() > 0) {
+        if (null != jvms && !jvms.isEmpty()) {
             for (Jvm jvm : jvms) {
                 if (jvm.getState().isStartedState()) {
                     LOGGER.info("Failed to deploy file {} for group {}: not all JVMs were stopped - {} was started", fileName, group.getName(), jvm.getJvmName());
@@ -977,7 +977,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         resultTrue.put("allStopped", Boolean.TRUE.toString());
         Group group = groupService.getGroup(groupName);
         Set<Jvm> jvms = group.getJvms();
-        if (null != jvms && jvms.size() > 0) {
+        if (null != jvms && !jvms.isEmpty()) {
             for (final Jvm jvm : jvms) {
                 if (jvm.getState().isStartedState()) {
                     HashMap<String, String> notStopped = new HashMap<>();
@@ -1000,7 +1000,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         Group group = groupService.getGroup(groupName);
         group = groupService.getGroupWithWebServers(group.getId());
         Set<WebServer> webServers = group.getWebServers();
-        if (null != webServers && webServers.size() > 0) {
+        if (null != webServers && !webServers.isEmpty()) {
             for (final WebServer webServer : webServers) {
                 if (webServerService.isStarted(webServer)) {
                     HashMap<String, String> notStopped = new HashMap<>();

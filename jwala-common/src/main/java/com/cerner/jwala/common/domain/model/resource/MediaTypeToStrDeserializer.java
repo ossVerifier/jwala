@@ -8,24 +8,24 @@ import org.codehaus.jackson.map.deser.std.StdDeserializer;
 import java.io.IOException;
 
 /**
- * Custom JSON deserializer from content type string to {@link ContentType}
+ * Custom JSON deserializer from content type string to {@link MediaType}
  *
  * Created by Jedd Cuison on 10/6/2016
  */
-public class ContentTypeStrDeserializer extends StdDeserializer<MediaType> {
+public class MediaTypeToStrDeserializer extends StdDeserializer<MediaType> {
 
     // This constructor is required because we extended StdDeserializer
-    public ContentTypeStrDeserializer() {
+    public MediaTypeToStrDeserializer() {
         this(null);
     }
 
-    protected ContentTypeStrDeserializer(Class<?> vc) {
+    protected MediaTypeToStrDeserializer(Class<?> vc) {
         super(vc);
     }
 
     @Override
-    public MediaType deserialize(JsonParser jp, DeserializationContext ctxt)
-            throws IOException {
+    public MediaType deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException {
         return MediaType.parse(jp.getText());
     }
+
 }

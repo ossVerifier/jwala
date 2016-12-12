@@ -1,12 +1,8 @@
 package com.cerner.jwala.common.rule.webserver;
 
-import org.junit.Before;
-import org.junit.Test;
-
 import com.cerner.jwala.common.domain.model.app.Application;
 import com.cerner.jwala.common.domain.model.fault.AemFaultType;
 import com.cerner.jwala.common.domain.model.group.Group;
-import com.cerner.jwala.common.domain.model.group.GroupState;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
 import com.cerner.jwala.common.domain.model.jvm.JvmState;
@@ -20,16 +16,16 @@ import com.cerner.jwala.common.rule.app.GoodStreamRule;
 import com.cerner.jwala.common.rule.group.GroupIdRule;
 import com.cerner.jwala.common.rule.group.GroupIdsRule;
 import com.cerner.jwala.common.rule.group.GroupNameRule;
-import com.cerner.jwala.common.rule.group.GroupStateRule;
 import com.cerner.jwala.common.rule.jvm.JvmIdRule;
 import com.cerner.jwala.common.rule.jvm.JvmIdsRule;
 import com.cerner.jwala.common.rule.jvm.JvmStateRule;
-import com.cerner.jwala.common.rule.webserver.HttpConfigFileRule;
-import com.cerner.jwala.common.rule.webserver.WebServerIdRule;
-import com.cerner.jwala.common.rule.webserver.WebServerReachableStateRule;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.io.InputStream;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Map;
 
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
@@ -51,7 +47,6 @@ public class RuleTest {
                              new PortNumberRule(8080, AemFaultType.CANNOT_CONNECT),
                              new ShutdownPortNumberRule(8080, AemFaultType.CANNOT_CONNECT),
                              new StatusPathRule(mockPath),
-                             new StringLengthRule(1, 10, "any"),
                              new ValidTemplateNameRule("any"),
                              new ValidWebArchiveNameRule("any"),
                              new ApplicationIdRule(new Identifier<Application>(1L)),
@@ -59,7 +54,6 @@ public class RuleTest {
                              new GroupIdRule(groupIds[0]),
                              new GroupIdsRule(new HashSet<Identifier<Group>>(Arrays.<Identifier<Group>>asList(groupIds))),
                              new GroupNameRule("any"),
-                             new GroupStateRule(GroupState.GRP_UNKNOWN),
                              new JvmIdRule(jvmIds[0]),
                              new JvmIdsRule(new HashSet<Identifier<Jvm>>(Arrays.<Identifier<Jvm>>asList(jvmIds))),
                              new JvmStateRule(JvmState.JVM_STOPPED),

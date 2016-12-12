@@ -1,14 +1,12 @@
 package com.cerner.jwala.persistence.jpa.service;
 
 import com.cerner.jwala.common.domain.model.group.Group;
-import com.cerner.jwala.common.domain.model.group.GroupState;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.webserver.WebServer;
 import com.cerner.jwala.common.exception.NotFoundException;
 import com.cerner.jwala.common.request.group.CreateGroupRequest;
 import com.cerner.jwala.common.request.group.UpdateGroupRequest;
 import com.cerner.jwala.common.request.jvm.UploadJvmTemplateRequest;
-import com.cerner.jwala.common.request.state.SetStateRequest;
 import com.cerner.jwala.common.request.webserver.UploadWebServerTemplateRequest;
 import com.cerner.jwala.persistence.jpa.domain.JpaGroup;
 import com.cerner.jwala.persistence.jpa.domain.resource.config.template.ConfigTemplate;
@@ -31,8 +29,6 @@ public interface GroupCrudService extends CrudService<JpaGroup> {
 
     void removeGroup(final Identifier<Group> aGroupId);
     
-    JpaGroup updateGroupStatus(SetStateRequest<Group, GroupState> setStateRequest);
-
     Long getGroupId(String name);
 
     /**
@@ -75,8 +71,6 @@ public interface GroupCrudService extends CrudService<JpaGroup> {
     String getGroupAppResourceTemplateMetaData(String groupName, String fileName);
 
     void updateGroupAppResourceTemplate(String groupName, String appName, String resourceTemplateName, String content);
-
-    void updateState(Identifier<Group> id, GroupState state);
 
     String getGroupJvmResourceTemplateMetaData(String groupName, String fileName);
 

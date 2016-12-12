@@ -128,7 +128,7 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
         Set<Jvm> jvms = group.getJvms();
         final String appName = app.getName();
         final String groupName = group.getName();
-        if (null != jvms && jvms.size() > 0) {
+        if (null != jvms && !jvms.isEmpty()) {
             service.copyApplicationWarToGroupHosts(app);
             service.deployApplicationResourcesToGroupHosts(groupName, app, resourceService.generateResourceGroup());
         } else {

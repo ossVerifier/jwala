@@ -2,25 +2,19 @@ package com.cerner.jwala.persistence.service.group;
 
 import com.cerner.jwala.common.domain.model.app.Application;
 import com.cerner.jwala.common.domain.model.group.Group;
-import com.cerner.jwala.common.domain.model.group.GroupState;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
 import com.cerner.jwala.common.domain.model.path.Path;
-import com.cerner.jwala.common.domain.model.state.CurrentState;
-import com.cerner.jwala.common.domain.model.state.StateType;
 import com.cerner.jwala.common.domain.model.user.User;
 import com.cerner.jwala.common.domain.model.webserver.WebServer;
-import com.cerner.jwala.common.exception.BadRequestException;
 import com.cerner.jwala.common.exception.NotFoundException;
 import com.cerner.jwala.common.request.app.CreateApplicationRequest;
 import com.cerner.jwala.common.request.group.CreateGroupRequest;
 import com.cerner.jwala.common.request.jvm.UploadJvmTemplateRequest;
-import com.cerner.jwala.common.request.state.SetStateRequest;
 import com.cerner.jwala.common.request.webserver.UploadWebServerTemplateRequest;
 import com.cerner.jwala.persistence.jpa.domain.resource.config.template.ConfigTemplate;
 import com.cerner.jwala.persistence.service.*;
 import org.apache.commons.lang3.StringUtils;
-import org.joda.time.DateTime;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -360,24 +354,6 @@ public abstract class AbstractGroupPersistenceServiceIntegrationTest {
         groupPersistenceService.removeGroup(removeME.getName());
         groups = groupPersistenceService.getGroups(true);
         assertEquals(1, groups.size());
-    }
-
-    @Test
-    public void testUpdateGroupState() {
-        SetStateRequest<Group, GroupState> updateRequest = new SetStateRequest<Group, GroupState>(new CurrentState<Group, GroupState>(preCreatedGroup.getId(), GroupState.GRP_STARTED, DateTime.now(), StateType.GROUP)) {
-            @Override
-            public void validate() {
-
-            }
-        };
-        CurrentState<Group, GroupState> state = groupPersistenceService.updateState(updateRequest);
-        assertEquals(GroupState.GRP_STARTED, state.getState());
-
-        state = groupPersistenceService.getState(preCreatedGroup.getId(), StateType.GROUP);
-        assertEquals(GroupState.GRP_STARTED, state.getState());
-
-        Set<CurrentState<Group, GroupState>> states = groupPersistenceService.getAllKnownStates();
-        assertEquals(1, states.size());
     }
 
     @Test

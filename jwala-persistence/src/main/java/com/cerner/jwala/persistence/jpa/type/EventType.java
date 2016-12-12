@@ -1,5 +1,7 @@
 package com.cerner.jwala.persistence.jpa.type;
 
+import org.apache.commons.lang3.StringUtils;
+
 /**
  * This enum lists events classified by source and severity level
  *
@@ -16,7 +18,7 @@ public enum EventType {
     USER_ACTION_INFO("UI"), SYSTEM_ERROR("SE"), SYSTEM_INFO("SI"),
     @Deprecated USER_ACTION("A") /* Kept for backward compatibility */,
     @Deprecated APPLICATION_EVENT("E")  /* Kept for backward compatibility */,
-    UNKNOWN(null);
+    UNKNOWN(StringUtils.EMPTY);
 
     private final String abbrev;
 

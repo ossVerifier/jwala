@@ -134,6 +134,9 @@ var GroupOperations = React.createClass({
         this.state.groups.forEach(function(group){
             response.applicationResponseContent.forEach(function(info){
                 if (group.name === info.groupName) {
+                    if (!group.currentState) {
+                        group.currentState = {};
+                    }
                     group.currentState.jvmCount = info.jvmCount;
                     group.currentState.jvmStartedCount = info.jvmStartedCount;
                     group.currentState.jvmStoppedCount = info.jvmStoppedCount;

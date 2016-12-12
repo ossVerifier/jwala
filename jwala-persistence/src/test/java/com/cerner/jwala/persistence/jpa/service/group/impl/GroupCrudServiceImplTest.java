@@ -4,22 +4,17 @@ import com.cerner.jwala.common.configuration.TestExecutionProfile;
 import com.cerner.jwala.common.domain.model.app.Application;
 import com.cerner.jwala.common.domain.model.fault.AemFaultType;
 import com.cerner.jwala.common.domain.model.group.Group;
-import com.cerner.jwala.common.domain.model.group.GroupState;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
 import com.cerner.jwala.common.domain.model.path.FileSystemPath;
 import com.cerner.jwala.common.domain.model.path.Path;
-import com.cerner.jwala.common.domain.model.state.CurrentState;
-import com.cerner.jwala.common.domain.model.state.StateType;
 import com.cerner.jwala.common.domain.model.user.User;
 import com.cerner.jwala.common.domain.model.webserver.WebServer;
 import com.cerner.jwala.common.domain.model.webserver.WebServerReachableState;
-import com.cerner.jwala.common.exception.BadRequestException;
 import com.cerner.jwala.common.exception.NotFoundException;
 import com.cerner.jwala.common.request.app.CreateApplicationRequest;
 import com.cerner.jwala.common.request.group.CreateGroupRequest;
 import com.cerner.jwala.common.request.jvm.UploadJvmTemplateRequest;
-import com.cerner.jwala.common.request.state.SetStateRequest;
 import com.cerner.jwala.common.request.webserver.UploadWebServerTemplateRequest;
 import com.cerner.jwala.persistence.configuration.TestJpaConfiguration;
 import com.cerner.jwala.persistence.jpa.domain.JpaApplication;
@@ -32,10 +27,8 @@ import com.cerner.jwala.persistence.jpa.service.exception.NonRetrievableResource
 import com.cerner.jwala.persistence.jpa.service.exception.ResourceTemplateUpdateException;
 import com.cerner.jwala.persistence.jpa.service.impl.GroupCrudServiceImpl;
 import com.cerner.jwala.persistence.jpa.service.impl.WebServerCrudServiceImpl;
-
 import junit.framework.TestCase;
 import org.apache.commons.lang3.StringUtils;
-import org.joda.time.DateTime;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -138,19 +131,6 @@ public class GroupCrudServiceImplTest {
         } catch (NotFoundException e) {
             assertTrue(e.getMessageResponseStatus().equals(AemFaultType.GROUP_NOT_FOUND));
         }
-    }
-
-    @Test
-    public void testUpdateGroupStatus() {
-        CurrentState<Group, GroupState> theNewState = new CurrentState<Group, GroupState>(groupId, GroupState.GRP_STARTED, DateTime.now(), StateType.GROUP);
-        SetStateRequest<Group, GroupState> setStateRequest = new SetStateRequest<Group, GroupState>(theNewState) {
-            @Override
-            public void validate() throws BadRequestException {
-                LOGGER.debug("empty validate");
-            }
-        };
-        JpaGroup group = groupCrudService.updateGroupStatus(setStateRequest);
-        assertEquals(GroupState.GRP_STARTED, group.getState());
     }
 
     @Test
@@ -311,10 +291,5 @@ public class GroupCrudServiceImplTest {
 
         List<String> templateNames = groupCrudService.getGroupAppsResourceTemplateNames(groupName, "some-app-name");
         assertEquals(1, templateNames.size());
-    }
-
-    @Test
-    public void testUpdateState() {
-        groupCrudService.updateState(groupId, GroupState.GRP_PARTIAL);
     }
 }

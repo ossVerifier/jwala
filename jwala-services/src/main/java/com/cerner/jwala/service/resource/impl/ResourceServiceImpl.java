@@ -231,7 +231,6 @@ public class ResourceServiceImpl implements ResourceService {
                     group.getName(),
                     null != jvms ? new LinkedHashSet<>(jvms) : new LinkedHashSet<Jvm>(),
                     null != webServers ? new LinkedHashSet<>(webServers) : new LinkedHashSet<WebServer>(),
-                    group.getCurrentState(),
                     group.getHistory(),
                     null != applications ? new LinkedHashSet<>(applications) : new LinkedHashSet<Application>()));
         }
@@ -835,7 +834,7 @@ public class ResourceServiceImpl implements ResourceService {
         final TreeMap sortedProperties = null == externalProperties ? null : new TreeMap<>(externalProperties);
 
         String retVal = "No External Properties configured";
-        if (null != sortedProperties && sortedProperties.size() > 0) {
+        if (null != sortedProperties && !sortedProperties.isEmpty()) {
             StringBuilder sb = new StringBuilder();
             for (Object key : sortedProperties.keySet()) {
                 sb.append(key);

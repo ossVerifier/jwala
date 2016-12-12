@@ -22,7 +22,6 @@ public class JschScpCommandProcessorImpl implements CommandProcessor {
 
     private OutputStream localInput;
     private InputStream remoteOutput;
-    private InputStream remoteError;
 
     public JschScpCommandProcessorImpl(JSch jsch, RemoteExecCommand remoteCommand) {
         this.jsch = jsch;
@@ -61,7 +60,6 @@ public class JschScpCommandProcessorImpl implements CommandProcessor {
             // get I/O streams for remote scp
             localInput = channelExec.getOutputStream();
             remoteOutput = channelExec.getInputStream();
-            remoteError = channelExec.getErrStream();
 
             channelExec.connect();
 

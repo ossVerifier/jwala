@@ -21,13 +21,16 @@ public class NullHostNameVerifier implements HostnameVerifier, X509HostnameVerif
 
     @Override
     public void verify(String host, SSLSocket ssl) throws IOException {
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public void verify(String host, X509Certificate cert) throws SSLException {
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public void verify(String host, String[] cns, String[] subjectAlts) throws SSLException {
+        throw new UnsupportedOperationException();
     }
 }

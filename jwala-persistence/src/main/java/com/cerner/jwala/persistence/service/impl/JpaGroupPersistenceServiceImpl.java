@@ -1,15 +1,14 @@
 package com.cerner.jwala.persistence.service.impl;
 
 import com.cerner.jwala.common.domain.model.group.Group;
-import com.cerner.jwala.common.domain.model.group.GroupState;
 import com.cerner.jwala.common.domain.model.id.Identifier;
-import com.cerner.jwala.common.domain.model.state.CurrentState;
-import com.cerner.jwala.common.domain.model.state.StateType;
 import com.cerner.jwala.common.domain.model.user.User;
 import com.cerner.jwala.common.exception.NotFoundException;
-import com.cerner.jwala.common.request.group.*;
+import com.cerner.jwala.common.request.group.AddJvmToGroupRequest;
+import com.cerner.jwala.common.request.group.CreateGroupRequest;
+import com.cerner.jwala.common.request.group.RemoveJvmFromGroupRequest;
+import com.cerner.jwala.common.request.group.UpdateGroupRequest;
 import com.cerner.jwala.common.request.jvm.UploadJvmTemplateRequest;
-import com.cerner.jwala.common.request.state.SetStateRequest;
 import com.cerner.jwala.common.request.webserver.UploadWebServerTemplateRequest;
 import com.cerner.jwala.persistence.jpa.domain.JpaGroup;
 import com.cerner.jwala.persistence.jpa.domain.builder.JpaGroupBuilder;
@@ -23,7 +22,9 @@ import org.slf4j.LoggerFactory;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 public class JpaGroupPersistenceServiceImpl implements GroupPersistenceService {
 
@@ -128,43 +129,12 @@ public class JpaGroupPersistenceServiceImpl implements GroupPersistenceService {
         return new JpaGroupBuilder(aJpaGroup).setFetchWebServers(fetchWebServers).build();
     }
 
-    protected Group groupFrom(final CurrentState<Group, GroupState> originalStatus, final JpaGroup aJpaGroup) {
-        return new JpaGroupBuilder(aJpaGroup).setStateDetail((CurrentState) originalStatus).build();
-    }
-    protected CurrentState<Group, GroupState> groupStateFrom(final JpaGroup aJpaGroup) {
-        return new JpaGroupBuilder(aJpaGroup).build().getCurrentState();
-    }
-
     protected List<Group> groupsFrom(final List<JpaGroup> someJpaGroups, final boolean fetchWebServers) {
         final List<Group> groups = new ArrayList<>();
         for (final JpaGroup jpaGroup : someJpaGroups) {
             groups.add(groupFrom(jpaGroup, fetchWebServers));
         }
         return groups;
-    }
-
-    protected Set<CurrentState<Group, GroupState>> groupStatesFrom(final List<JpaGroup> someJpaGroups) {
-        final Set<CurrentState<Group, GroupState>> groupStates = new HashSet<>();
-        for (final JpaGroup jpaGroup : someJpaGroups) {
-            groupStates.add(groupStateFrom(jpaGroup));
-        }
-        return groupStates;
-    }
-
-    @Override
-    public CurrentState<Group, GroupState> updateState(SetStateRequest<Group, GroupState> setStateRequest) {
-        return groupStateFrom(groupCrudService.updateGroupStatus(setStateRequest));
-    }
-
-    @Override
-    public CurrentState<Group, GroupState> getState(Identifier<Group> anId, StateType stateType) {
-        return groupStateFrom(groupCrudService.getGroup(anId));
-    }
-
-    @Override
-    public Set<CurrentState<Group, GroupState>> getAllKnownStates() {
-        final List<JpaGroup> groups = groupCrudService.getGroups();
-        return groupStatesFrom(groups);
     }
 
     @Override
@@ -185,18 +155,6 @@ public class JpaGroupPersistenceServiceImpl implements GroupPersistenceService {
     @Override
     public Group populateGroupWebServerTemplates(String groupName, Map<String, UploadWebServerTemplateRequest> uploadWSTemplateRequests) {
         final JpaGroup group = groupCrudService.getGroup(groupName);
-        // check for pre-existing httpd.conf
-//        for (String uploadRequestDeployFileName : uploadWSTemplateRequests.keySet()) {
-//            if (uploadRequestDeployFileName.equals("httpd.conf"))
-//            {
-//                for(String resourceTemplateName : getGroupWebServersResourceTemplateNames(groupName)){
-//                    if (resourceTemplateName.equals("httpd.conf")){
-//                        // TODO log this error
-//                        throw new InternalErrorException(AemFaultType.HTTPD_CONF_TEMPLATE_ALREADY_EXISTS, "The group " + groupName + " already has a httpd.conf template for the web servers. Please delete the existing httpd.conf template and try again.");
-//                    }
-//                }
-//            }
-//        }
 
         // upload all of the templates
         for (String uploadRequestDeployFileName : uploadWSTemplateRequests.keySet()) {
@@ -295,11 +253,6 @@ public class JpaGroupPersistenceServiceImpl implements GroupPersistenceService {
     @Override
     public String getGroupAppResourceTemplate(String groupName, String appName, String resourceTemplateName) {
         return groupCrudService.getGroupAppResourceTemplate(groupName, appName, resourceTemplateName);
-    }
-
-    @Override
-    public void updateState(final Identifier<Group> id, final GroupState state) {
-        groupCrudService.updateState(id, state);
     }
 
     @Override

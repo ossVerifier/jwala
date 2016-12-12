@@ -1,13 +1,11 @@
 package com.cerner.jwala.common.domain.model.state;
 
+import com.cerner.jwala.common.domain.model.id.Identifier;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.joda.time.DateTime;
-
-import com.cerner.jwala.common.domain.model.id.Identifier;
-
 
 public class CurrentState<S, T extends OperationalState>  {
 
@@ -79,7 +77,7 @@ public class CurrentState<S, T extends OperationalState>  {
     }
 
     public String getStateString() {
-        return state.toStateLabel();
+        return state != null ? state.toStateLabel() : "";
     }
 
     public boolean hasMessage() {

@@ -1,7 +1,5 @@
 package com.cerner.jwala.persistence.jpa.domain;
 
-import com.cerner.jwala.common.domain.model.group.GroupState;
-
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -86,14 +84,6 @@ public class JpaGroup extends AbstractEntity<JpaGroup> {
         this.jvms = jvms;
     }
     
-    public GroupState getState() {
-        return GroupState.convertFrom(stateName);
-    }
-
-    public void setState(GroupState state) {
-        this.stateName = state.name();
-    }
-
     public Calendar getStateUpdated() {
         return stateUpdated;
     }

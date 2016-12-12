@@ -1,11 +1,9 @@
 package com.cerner.jwala.persistence.jpa.domain.builder;
 
 import com.cerner.jwala.common.domain.model.group.Group;
-import com.cerner.jwala.common.domain.model.group.GroupState;
 import com.cerner.jwala.common.domain.model.group.History;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
-import com.cerner.jwala.common.domain.model.state.CurrentState;
 import com.cerner.jwala.common.domain.model.webserver.WebServer;
 import com.cerner.jwala.persistence.jpa.domain.JpaGroup;
 import com.cerner.jwala.persistence.jpa.domain.JpaHistory;
@@ -21,7 +19,6 @@ public class JpaGroupBuilder {
 
     public static final Chronology USE_DEFAULT_CHRONOLOGY = null;
     private JpaGroup group;
-    private CurrentState currentGroupState = null;
     private boolean fetchWebServers = false;
 
     public JpaGroupBuilder() {
@@ -37,43 +34,25 @@ public class JpaGroupBuilder {
     }
 
     public Group build() {
-        if(currentGroupState == null) {
-            if (fetchWebServers) {
-                return new Group(new Identifier<Group>(group.getId()),
-                                 group.getName(),
-                                 getJvms(),
-                                 getWebServers(),
-                                 currentGroupState,
-                                 getHistory());
-            }
+        if (fetchWebServers) {
             return new Group(new Identifier<Group>(group.getId()),
-                             group.getName(),
-                             getJvms(),
-                             getState(),
-                             getAsOf());
-        } else {
-            return new Group(new Identifier<Group>(group.getId()),
-                             group.getName(),
-                             getJvms(),
-                             currentGroupState);
+                    group.getName(),
+                    getJvms(),
+                    getWebServers(),
+                    getHistory());
         }
+        return new Group(new Identifier<Group>(group.getId()),
+                group.getName(),
+                getJvms());
     }
 
     private DateTime getAsOf() {
         if (group.getStateUpdated() != null) {
             return new DateTime(group.getStateUpdated(),
-                                USE_DEFAULT_CHRONOLOGY);
+                    USE_DEFAULT_CHRONOLOGY);
         }
 
         return null;
-    }
-
-    private GroupState getState() {
-        if (group.getState() != null) {
-            return group.getState();
-        }
-
-        return GroupState.GRP_UNKNOWN;
     }
 
     protected Set<Jvm> getJvms() {
@@ -108,11 +87,6 @@ public class JpaGroupBuilder {
         }
 
         return history;
-    }
-
-    public JpaGroupBuilder setStateDetail(CurrentState originalStatus) {
-        this.currentGroupState = originalStatus;
-        return this;
     }
 
     public JpaGroupBuilder setFetchWebServers(boolean fetchWebServers) {

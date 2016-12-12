@@ -6,8 +6,8 @@ import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.user.User;
 import com.cerner.jwala.common.request.webserver.ControlGroupWebServerRequest;
 
-public class GroupWebServerDispatchCommand extends DispatchCommand {
-    
+public class GroupWebServerDispatchCommand {
+
     private final Group group;
     private final ControlGroupWebServerRequest request;
     private final User user;

@@ -1,17 +1,15 @@
 package com.cerner.jwala.service.group.impl.spring.component;
 
 import com.cerner.jwala.common.domain.model.group.Group;
-import com.cerner.jwala.common.domain.model.group.GroupState;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
 import com.cerner.jwala.common.domain.model.state.CurrentState;
+import com.cerner.jwala.common.domain.model.state.OperationalState;
 import com.cerner.jwala.persistence.jpa.domain.JpaGroup;
 import com.cerner.jwala.persistence.jpa.domain.JpaJvm;
 import com.cerner.jwala.persistence.jpa.service.JvmCrudService;
 import com.cerner.jwala.persistence.jpa.service.WebServerCrudService;
 import com.cerner.jwala.service.MessagingService;
-import com.cerner.jwala.service.group.impl.spring.component.GroupStateNotificationServiceImpl;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -20,11 +18,11 @@ import org.mockito.MockitoAnnotations;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static org.junit.Assert.assertEquals;
 
 /**
  * Unit test for {@link GroupStateNotificationServiceImpl}.
@@ -69,15 +67,15 @@ public class GroupStateNotificationServiceImplTest {
         groupStateNotificationServiceImpl.retrieveStateAndSendToATopic(id, Jvm.class);
         System.out.println(groupStateArray[0]);
         System.out.println(groupStateArray[1]);
-        assertEquals("Identifier[id=1], GRP_UNKNOWN", groupStateArray[0]);
-        assertEquals("Identifier[id=2], GRP_UNKNOWN", groupStateArray[1]);
+        assertEquals("Identifier[id=1], null", groupStateArray[0]);
+        assertEquals("Identifier[id=2], null", groupStateArray[1]);
     }
 
     private static class TesterMessagingService implements MessagingService {
 
         @Override
         public void send(Object payLoad) {
-            final CurrentState<Group, GroupState> groupState = (CurrentState<Group, GroupState>) payLoad;
+            final CurrentState<Group, OperationalState> groupState = (CurrentState<Group, OperationalState>) payLoad;
             groupStateArray[groupStateArrayCount++] = groupState.getId() + ", " + groupState.getState();
         }
     }
