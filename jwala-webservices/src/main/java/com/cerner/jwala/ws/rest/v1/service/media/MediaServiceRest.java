@@ -8,9 +8,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 /**
- * Created by Rahul Sayini on 12/1/2016
+ * The REST service contract
  */
-
 @Path("/media")
 @Produces(MediaType.APPLICATION_JSON)
 public interface MediaServiceRest {
@@ -21,14 +20,14 @@ public interface MediaServiceRest {
 
     @PUT
     @Consumes(MediaType.APPLICATION_JSON)
-    Response updateMedia(String aJvmToUpdate, @BeanParam AuthenticatedUser aUser);
+    Response updateMedia(Media media, @BeanParam AuthenticatedUser aUser);
 
     @DELETE
     @Path("/{mediaName}")
     Response removeMedia(@PathParam("mediaName") String name, @BeanParam AuthenticatedUser aUser);
 
     @GET
-    Response getMedia(@MatrixParam("name") String aMediaName, @BeanParam AuthenticatedUser aUser);
+    Response getMedia(@MatrixParam("id") Long id, @MatrixParam("name") String mediaName, @BeanParam AuthenticatedUser aUser);
 
     @GET
     @Path("/types")

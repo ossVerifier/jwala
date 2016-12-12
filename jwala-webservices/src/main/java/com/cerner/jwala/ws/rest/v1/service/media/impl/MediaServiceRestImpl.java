@@ -11,6 +11,9 @@ import org.springframework.stereotype.Service;
 
 import javax.ws.rs.core.Response;
 
+/**
+ * Implements {@link MediaServiceRest}
+ */
 @Service
 public class MediaServiceRestImpl implements MediaServiceRest {
 
@@ -23,8 +26,8 @@ public class MediaServiceRestImpl implements MediaServiceRest {
     }
 
     @Override
-    public Response updateMedia(final String aMediaToUpdate, final AuthenticatedUser aUser) {
-        return ResponseBuilder.ok("Updated Media");
+    public Response updateMedia(final Media media, final AuthenticatedUser aUser) {
+        return ResponseBuilder.ok(mediaService.update(media));
     }
 
     @Override
@@ -34,11 +37,13 @@ public class MediaServiceRestImpl implements MediaServiceRest {
     }
 
     @Override
-    public Response getMedia(final String name, final AuthenticatedUser aUser) {
-        if (StringUtils.isEmpty(name)) {
+    public Response getMedia(final Long id, final String mediaName, final AuthenticatedUser aUser) {
+        if (id == null && StringUtils.isEmpty(mediaName)) {
             return ResponseBuilder.ok(mediaService.findAll());
+        } else if (id != null) {
+            return ResponseBuilder.ok(mediaService.find(id));
         }
-        return ResponseBuilder.ok(mediaService.find(name));
+        return ResponseBuilder.ok(mediaService.find(mediaName));
     }
 
     @Override

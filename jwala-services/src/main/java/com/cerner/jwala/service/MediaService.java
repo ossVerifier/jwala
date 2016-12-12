@@ -6,9 +6,18 @@ import com.cerner.jwala.persistence.jpa.type.MediaType;
 import java.util.List;
 
 /**
+ * The media service contract
+ *
  * Created by Jedd Cuison on 12/7/2016
  */
 public interface MediaService {
+
+    /**
+     * Find a media by id
+     * @param id id of the media
+     * @return the {@link Media}
+     */
+    Media find(Long id);
 
     /**
      * Find a media
@@ -41,5 +50,10 @@ public interface MediaService {
      */
     MediaType [] getMediaTypes();
 
-
+    /**
+     * Update a media
+     * @param media the media
+     * @return updated media
+     */
+    Media update(Media media);
 }

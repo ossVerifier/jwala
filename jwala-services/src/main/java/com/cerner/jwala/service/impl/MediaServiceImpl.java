@@ -22,6 +22,11 @@ public class MediaServiceImpl implements MediaService {
     private MediaDao mediaDao;
 
     @Override
+    public Media find(final Long id) {
+        return mediaDao.findById(id);
+    }
+
+    @Override
     @Transactional
     public Media find(final String name) {
         return mediaDao.find(name);
@@ -48,6 +53,12 @@ public class MediaServiceImpl implements MediaService {
     @Override
     public MediaType [] getMediaTypes() {
         return MediaType.values();
+    }
+
+    @Override
+    @Transactional
+    public Media update(final Media media) {
+        return mediaDao.update(media);
     }
 
 }

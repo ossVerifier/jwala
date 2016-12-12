@@ -1,9 +1,13 @@
 var mediaService = {
     getAllMedia: function(responseCallback) {
-        return serviceFoundation.get("v1.0/media", "json", responseCallback);
+        return serviceFoundation.promisedGet("v1.0/media", "json");
+
     },
-    getMedia: function(id, responseCallback) {
-        return serviceFoundation.get("v1.0/media/" + id, "json", responseCallback);
+    getMediaById: function(id) {
+        return serviceFoundation.promisedGet("v1.0/media;id=" + id, "json");
+    },
+    getMediaByName: function(name, responseCallback) {
+        return serviceFoundation.promisedGet("v1.0/media;name=" + encodeURIComponent(name), "json");
     },
     createMedia: function(serializedArray) {
         var jsonData = {};
@@ -12,9 +16,12 @@ var mediaService = {
         });
         return serviceFoundation.promisedPost("v1.0/media", "json", JSON.stringify(jsonData));
     },
-    updateMedia: function(updateName, successCallback, errorCallback) {
-        jvm = this.serializedJvmFormToJson(updateName, true);
-        return serviceFoundation.put("v1.0/media/", "json", updateName, successCallback, errorCallback );
+    updateMedia: function(serializedArray) {
+        var jsonData = {};
+        serializedArray.forEach(function(item){
+            jsonData[item.name] = item.value;
+        });
+        return serviceFoundation.promisedPut("v1.0/media", "json", JSON.stringify(jsonData));
     },
     deleteMedia: function(name, caughtCallback) {
         return serviceFoundation.promisedDel("v1.0/media/" + encodeURIComponent(name), "json");
