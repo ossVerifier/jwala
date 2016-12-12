@@ -16,8 +16,8 @@ public class ApplicationServiceException extends InternalErrorException {
         super(null, msg);
     }
 
-    public ApplicationServiceException(final MessageResponseStatus theMessageResponseStatus, final String theMessage,
+    public ApplicationServiceException(final MessageResponseStatus msgResponseStatus, final String msg,
                                        final Collection<String> entityDetailsCollection) {
-        super(theMessageResponseStatus, theMessage, entityDetailsCollection);
+        super(msgResponseStatus, msg, entityDetailsCollection);
     }
 }
