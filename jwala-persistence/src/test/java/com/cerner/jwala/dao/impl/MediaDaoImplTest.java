@@ -2,7 +2,7 @@ package com.cerner.jwala.dao.impl;
 
 import com.cerner.jwala.dao.MediaDao;
 import com.cerner.jwala.dao.configuration.TestConfiguration;
-import com.cerner.jwala.persistence.jpa.domain.Media;
+import com.cerner.jwala.persistence.jpa.domain.JpaMedia;
 import com.cerner.jwala.persistence.jpa.type.MediaType;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -39,14 +39,14 @@ public class MediaDaoImplTest {
 
     @Test
     public void testCrud() {
-        final Media media = new Media();
+        final JpaMedia media = new JpaMedia();
         media.setName("jdk 1.8");
         media.setType(MediaType.JDK);
         media.setLocalPath(Paths.get("c:/java"));
         media.setRemoteDir(Paths.get("c:/ctp"));
         media.setMediaDir(Paths.get("jdk-1.8"));
         mediaDao.create(media);
-        final Media foundMedia = mediaDao.find("jdk 1.8");
+        final JpaMedia foundMedia = mediaDao.find("jdk 1.8");
         assertEquals(media, foundMedia);
         assertEquals(mediaDao.findAll().size(), 1);
         mediaDao.remove(media);

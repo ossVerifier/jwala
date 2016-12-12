@@ -1,7 +1,7 @@
 package com.cerner.jwala.service.impl;
 
 import com.cerner.jwala.dao.MediaDao;
-import com.cerner.jwala.persistence.jpa.domain.Media;
+import com.cerner.jwala.persistence.jpa.domain.JpaMedia;
 import com.cerner.jwala.persistence.jpa.type.MediaType;
 import com.cerner.jwala.service.MediaService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,25 +22,25 @@ public class MediaServiceImpl implements MediaService {
     private MediaDao mediaDao;
 
     @Override
-    public Media find(final Long id) {
+    public JpaMedia find(final Long id) {
         return mediaDao.findById(id);
     }
 
     @Override
     @Transactional
-    public Media find(final String name) {
+    public JpaMedia find(final String name) {
         return mediaDao.find(name);
     }
 
     @Override
     @Transactional
-    public List<Media> findAll() {
+    public List<JpaMedia> findAll() {
         return mediaDao.findAll();
     }
 
     @Override
     @Transactional
-    public Media create(final Media media) {
+    public JpaMedia create(final JpaMedia media) {
         return mediaDao.create(media);
     }
 
@@ -57,7 +57,7 @@ public class MediaServiceImpl implements MediaService {
 
     @Override
     @Transactional
-    public Media update(final Media media) {
+    public JpaMedia update(final JpaMedia media) {
         return mediaDao.update(media);
     }
 

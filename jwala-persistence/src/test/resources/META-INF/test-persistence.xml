@@ -24,7 +24,7 @@
         <class>com.cerner.jwala.persistence.jpa.domain.resource.config.template.JpaJvmConfigTemplate</class>
         <class>com.cerner.jwala.persistence.jpa.domain.resource.config.template.JpaResourceConfigTemplate</class>
         <class>com.cerner.jwala.persistence.jpa.domain.resource.config.template.JpaWebServerConfigTemplate</class>
-        <class>com.cerner.jwala.persistence.jpa.domain.Media</class>
+        <class>com.cerner.jwala.persistence.jpa.domain.JpaMedia</class>
         <exclude-unlisted-classes>true</exclude-unlisted-classes>
         <properties>
             <property name="openjpa.jdbc.MappingDefaults" value="jpa(ForeignKeyDeleteAction=restrict,JoinForeignKeyDeleteAction=restrict,IndexLogicalForeignKeys=true)"/>

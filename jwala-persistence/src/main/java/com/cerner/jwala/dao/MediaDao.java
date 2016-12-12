@@ -1,6 +1,6 @@
 package com.cerner.jwala.dao;
 
-import com.cerner.jwala.persistence.jpa.domain.Media;
+import com.cerner.jwala.persistence.jpa.domain.JpaMedia;
 
 import java.util.List;
 
@@ -11,15 +11,15 @@ import java.util.List;
  */
 public interface MediaDao {
 
-    Media findById(Long id);
+    JpaMedia findById(Long id);
 
-    Media find(String name);
+    JpaMedia find(String name);
 
-    List<Media> findAll();
+    List<JpaMedia> findAll();
 
-    Media create(Media media);
+    JpaMedia create(JpaMedia media);
 
-    void remove(Media media);
+    void remove(JpaMedia media);
 
-    Media update(Media media);
+    JpaMedia update(JpaMedia media);
 }

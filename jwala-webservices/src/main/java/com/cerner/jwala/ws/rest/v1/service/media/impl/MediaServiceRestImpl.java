@@ -1,6 +1,6 @@
 package com.cerner.jwala.ws.rest.v1.service.media.impl;
 
-import com.cerner.jwala.persistence.jpa.domain.Media;
+import com.cerner.jwala.persistence.jpa.domain.JpaMedia;
 import com.cerner.jwala.service.MediaService;
 import com.cerner.jwala.ws.rest.v1.provider.AuthenticatedUser;
 import com.cerner.jwala.ws.rest.v1.response.ResponseBuilder;
@@ -21,12 +21,12 @@ public class MediaServiceRestImpl implements MediaServiceRest {
     private MediaService mediaService;
 
     @Override
-    public Response createMedia(final Media media, final AuthenticatedUser aUser) {
+    public Response createMedia(final JpaMedia media, final AuthenticatedUser aUser) {
         return ResponseBuilder.created(mediaService.create(media));
     }
 
     @Override
-    public Response updateMedia(final Media media, final AuthenticatedUser aUser) {
+    public Response updateMedia(final JpaMedia media, final AuthenticatedUser aUser) {
         return ResponseBuilder.ok(mediaService.update(media));
     }
 

@@ -1,6 +1,6 @@
 package com.cerner.jwala.service;
 
-import com.cerner.jwala.persistence.jpa.domain.Media;
+import com.cerner.jwala.persistence.jpa.domain.JpaMedia;
 import com.cerner.jwala.persistence.jpa.type.MediaType;
 
 import java.util.List;
@@ -15,28 +15,28 @@ public interface MediaService {
     /**
      * Find a media by id
      * @param id id of the media
-     * @return the {@link Media}
+     * @return the {@link JpaMedia}
      */
-    Media find(Long id);
+    JpaMedia find(Long id);
 
     /**
      * Find a media
      * @param name name of the media
-     * @return the {@link Media}
+     * @return the {@link JpaMedia}
      */
-    Media find(String name);
+    JpaMedia find(String name);
 
     /**
      * Find all media
-     * @return List of {@link Media}
+     * @return List of {@link JpaMedia}
      */
-    List<Media> findAll();
+    List<JpaMedia> findAll();
 
     /**
      * Create a media
      * @param media the media to create
      */
-    Media create(Media media);
+    JpaMedia create(JpaMedia media);
 
     /**
      * Remove media
@@ -55,5 +55,5 @@ public interface MediaService {
      * @param media the media
      * @return updated media
      */
-    Media update(Media media);
+    JpaMedia update(JpaMedia media);
 }

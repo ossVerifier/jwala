@@ -18,11 +18,11 @@ import java.nio.file.Paths;
  * Created by Jedd Cuison on 12/6/2016
  */
 @Entity
-@NamedQueries({@NamedQuery(name = Media.QUERY_FIND_BY_NAME, query = "SELECT m FROM Media m WHERE m.name = :name")})
+@NamedQueries({@NamedQuery(name = JpaMedia.QUERY_FIND_BY_NAME, query = "SELECT m FROM JpaMedia m WHERE m.name = :name")})
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class Media extends AbstractEntity<Media> {
+public class JpaMedia extends AbstractEntity<JpaMedia> {
 
     public static final String QUERY_FIND_BY_NAME = "QUERY_FIND_BY_NAME";
     public static final String PARAM_NAME = "name";
@@ -102,7 +102,7 @@ public class Media extends AbstractEntity<Media> {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        Media media = (Media) o;
+        JpaMedia media = (JpaMedia) o;
 
         return id.equals(media.id) && name.equals(media.name);
     }
