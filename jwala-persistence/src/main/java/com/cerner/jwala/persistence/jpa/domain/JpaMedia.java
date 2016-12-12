@@ -17,7 +17,7 @@ import java.nio.file.Paths;
  *
  * Created by Jedd Cuison on 12/6/2016
  */
-@Entity
+@Entity(name = "MEDIA")
 @NamedQueries({@NamedQuery(name = JpaMedia.QUERY_FIND_BY_NAME, query = "SELECT m FROM JpaMedia m WHERE m.name = :name")})
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement
