@@ -215,11 +215,11 @@ public class WebServerCrudServiceImplTest {
         wsList.add(webServerCrudService.findById(webServer.getId().getId()));
         group.setWebServers(wsList);
         CreateJvmRequest createJvmReq = new CreateJvmRequest("testJvmName", "testHostName", 1212, 1213, 1214, -1, 1215, new Path("./statusPath"), "", null, null, null);
-        final Media media = new Media();
+        final JpaMedia media = new JpaMedia();
         media.setName("test-media");
         media.setType(MediaType.JDK);
-        media.setLocalPath(new File("./").toPath());
-        media.setRemoteDir(new File("./").toPath());
+        media.setLocalPath(new File("d:/not/a/real/path.zip").toPath());
+        media.setRemoteDir(new File("d:/fake/remote/path").toPath());
         final JpaJvm jvm = jvmCrudService.createJvm(createJvmReq, mediaDao.create(media));
         List<JpaJvm> jvmsList = new ArrayList<>();
         jvmsList.add(jvm);

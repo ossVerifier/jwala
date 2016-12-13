@@ -82,13 +82,13 @@ public class JpaJvm extends AbstractEntity<JpaJvm> {
     @Column(nullable = true)
     private String encryptedPassword;
 
-    @OneToOne (targetEntity = Media.class)
+    @OneToOne (targetEntity = JpaMedia.class)
     @Column(nullable = true)
-    private Media jdkMedia;
+    private JpaMedia jdkMedia;
 
-    @OneToOne (targetEntity = Media.class)
+    @OneToOne (targetEntity = JpaMedia.class)
     @Column(nullable = true)
-    private Media tomcatMedia;
+    private JpaMedia tomcatMedia;
 
     public Long getId() {
         return id;
@@ -256,19 +256,19 @@ public class JpaJvm extends AbstractEntity<JpaJvm> {
                 '}';
     }
 
-    public Media getJdkMedia() {
+    public JpaMedia getJdkMedia() {
         return jdkMedia;
     }
 
-    public Media getTomcatMedia() {
+    public JpaMedia getTomcatMedia() {
         return tomcatMedia;
     }
 
-    public void setJdkMedia(Media jdkMedia) {
+    public void setJdkMedia(JpaMedia jdkMedia) {
         this.jdkMedia = jdkMedia;
     }
 
-    public void setTomcatMedia(Media tomcatMedia) {
+    public void setTomcatMedia(JpaMedia tomcatMedia) {
         this.tomcatMedia = tomcatMedia;
     }
 }

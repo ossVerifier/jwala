@@ -11,7 +11,7 @@ import com.cerner.jwala.common.request.jvm.UpdateJvmRequest;
 import com.cerner.jwala.common.request.jvm.UploadJvmTemplateRequest;
 import com.cerner.jwala.dao.MediaDao;
 import com.cerner.jwala.persistence.jpa.domain.JpaJvm;
-import com.cerner.jwala.persistence.jpa.domain.Media;
+import com.cerner.jwala.persistence.jpa.domain.JpaMedia;
 import com.cerner.jwala.persistence.jpa.domain.builder.JvmBuilder;
 import com.cerner.jwala.persistence.jpa.domain.resource.config.template.JpaJvmConfigTemplate;
 import com.cerner.jwala.persistence.jpa.service.ApplicationCrudService;
@@ -54,7 +54,7 @@ public class JpaJvmPersistenceServiceImpl implements JvmPersistenceService {
 
     @Override
     public Jvm createJvm(CreateJvmRequest createJvmRequest) {
-        Media jdkMedia = null;
+        JpaMedia jdkMedia = null;
         if (createJvmRequest.getJdkMediaId() != null ) {
             jdkMedia = mediaDao.findById(createJvmRequest.getJdkMediaId().getId());
         }
@@ -65,7 +65,7 @@ public class JpaJvmPersistenceServiceImpl implements JvmPersistenceService {
 
     @Override
     public Jvm updateJvm(UpdateJvmRequest updateJvmRequest) {
-        Media jdkMedia = null;
+        JpaMedia jdkMedia = null;
         if (updateJvmRequest.getNewJdkMediaId() != null ) {
             jdkMedia = mediaDao.findById(updateJvmRequest.getNewJdkMediaId().getId());
         }

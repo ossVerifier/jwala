@@ -13,7 +13,7 @@ import com.cerner.jwala.common.request.group.CreateGroupRequest;
 import com.cerner.jwala.common.request.jvm.CreateJvmRequest;
 import com.cerner.jwala.dao.MediaDao;
 import com.cerner.jwala.persistence.jpa.domain.JpaJvm;
-import com.cerner.jwala.persistence.jpa.domain.Media;
+import com.cerner.jwala.persistence.jpa.domain.JpaMedia;
 import com.cerner.jwala.persistence.jpa.type.MediaType;
 import com.cerner.jwala.persistence.service.ApplicationPersistenceService;
 import com.cerner.jwala.persistence.service.GroupPersistenceService;
@@ -86,7 +86,7 @@ public abstract class AbstractApplicationPersistenceServiceTest {
         expGroupId = group.getId();
         expUpdatedGroupId = updGroup.getId();
 
-        final Media media = new Media();
+        final JpaMedia media = new JpaMedia();
         media.setName("test-media");
         media.setType(MediaType.JDK);
         mediaDao.create(media);

@@ -10,7 +10,7 @@ import com.cerner.jwala.common.request.jvm.CreateJvmRequest;
 import com.cerner.jwala.common.request.jvm.UpdateJvmRequest;
 import com.cerner.jwala.common.request.jvm.UploadJvmTemplateRequest;
 import com.cerner.jwala.persistence.jpa.domain.JpaJvm;
-import com.cerner.jwala.persistence.jpa.domain.Media;
+import com.cerner.jwala.persistence.jpa.domain.JpaMedia;
 import com.cerner.jwala.persistence.jpa.domain.builder.JvmBuilder;
 import com.cerner.jwala.persistence.jpa.domain.resource.config.template.JpaJvmConfigTemplate;
 import com.cerner.jwala.persistence.jpa.service.JvmCrudService;
@@ -31,7 +31,7 @@ public class JvmCrudServiceImpl extends AbstractCrudServiceImpl<JpaJvm> implemen
     private EntityManager entityManager;
 
     @Override
-    public JpaJvm createJvm(CreateJvmRequest createJvmRequest, Media jdkMedia) {
+    public JpaJvm createJvm(CreateJvmRequest createJvmRequest, JpaMedia jdkMedia) {
 
         try {
             final JpaJvm jpaJvm = new JpaJvm();
@@ -58,7 +58,7 @@ public class JvmCrudServiceImpl extends AbstractCrudServiceImpl<JpaJvm> implemen
     }
 
     @Override
-    public JpaJvm updateJvm(UpdateJvmRequest updateJvmRequest, Media jdkMedia) {
+    public JpaJvm updateJvm(UpdateJvmRequest updateJvmRequest, JpaMedia jdkMedia) {
 
         try {
             final Identifier<Jvm> jvmId = updateJvmRequest.getId();

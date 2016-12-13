@@ -33,7 +33,7 @@ public class JvmBuilder {
     public Jvm build() {
         final com.cerner.jwala.common.domain.model.jvm.JvmBuilder builder =
                 new com.cerner.jwala.common.domain.model.jvm.JvmBuilder();
-        final com.cerner.jwala.persistence.jpa.domain.Media jdkMedia = jpaJvm.getJdkMedia();
+        final com.cerner.jwala.persistence.jpa.domain.JpaMedia jdkMedia = jpaJvm.getJdkMedia();
         builder.setId(new Identifier<Jvm>(jpaJvm.getId()))
                 .setName(jpaJvm.getName())
                 .setHostName(jpaJvm.getHostName())
@@ -55,7 +55,7 @@ public class JvmBuilder {
         return builder.build();
     }
 
-    private Media createJdkMedia(com.cerner.jwala.persistence.jpa.domain.Media jdkMedia) {
+    private Media createJdkMedia(com.cerner.jwala.persistence.jpa.domain.JpaMedia jdkMedia) {
         if (jdkMedia != null) {
             final int id = jdkMedia.getId() != null ? Integer.parseInt(jdkMedia.getId().toString()) : -1;
             final String name = jdkMedia.getName();

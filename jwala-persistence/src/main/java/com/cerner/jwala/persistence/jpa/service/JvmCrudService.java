@@ -8,7 +8,7 @@ import com.cerner.jwala.common.request.jvm.CreateJvmRequest;
 import com.cerner.jwala.common.request.jvm.UpdateJvmRequest;
 import com.cerner.jwala.common.request.jvm.UploadJvmTemplateRequest;
 import com.cerner.jwala.persistence.jpa.domain.JpaJvm;
-import com.cerner.jwala.persistence.jpa.domain.Media;
+import com.cerner.jwala.persistence.jpa.domain.JpaMedia;
 import com.cerner.jwala.persistence.jpa.domain.resource.config.template.JpaJvmConfigTemplate;
 import com.cerner.jwala.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
 
@@ -16,9 +16,9 @@ import java.util.List;
 
 public interface JvmCrudService extends CrudService<JpaJvm> {
 
-    JpaJvm createJvm(CreateJvmRequest createJvmRequest, Media jdkMedia);
+    JpaJvm createJvm(CreateJvmRequest createJvmRequest, JpaMedia jdkMedia);
 
-    JpaJvm updateJvm(UpdateJvmRequest updateJvmRequest, Media jdkMedia);
+    JpaJvm updateJvm(UpdateJvmRequest updateJvmRequest, JpaMedia jdkMedia);
 
     JpaJvm getJvm(final Identifier<Jvm> aJvmId) throws NotFoundException;
 

@@ -13,7 +13,7 @@ import com.cerner.jwala.dao.MediaDao;
 import com.cerner.jwala.dao.impl.MediaDaoImpl;
 import com.cerner.jwala.persistence.configuration.TestJpaConfiguration;
 import com.cerner.jwala.persistence.jpa.domain.JpaJvm;
-import com.cerner.jwala.persistence.jpa.domain.Media;
+import com.cerner.jwala.persistence.jpa.domain.JpaMedia;
 import com.cerner.jwala.persistence.jpa.domain.resource.config.template.JpaJvmConfigTemplate;
 import com.cerner.jwala.persistence.jpa.service.impl.JvmCrudServiceImpl;
 import com.cerner.jwala.persistence.jpa.type.MediaType;
@@ -60,7 +60,7 @@ public class JvmCrudServiceImplTest {
 
     private User user;
     private Jvm jvm;
-    private Media jpaMedia;
+    private JpaMedia jpaMedia;
 
     @Before
     public void setup() throws Exception {
@@ -68,11 +68,11 @@ public class JvmCrudServiceImplTest {
         user.addToThread();
 
         String testJvmName = "testJvmName";
-        final Media media = new Media();
+        final JpaMedia media = new JpaMedia();
         media .setName("test-media");
         media .setType(MediaType.JDK);
-        media.setLocalPath(new File("./").toPath());
-        media.setRemoteDir(new File("./").toPath());
+        media.setLocalPath(new File("d:/not/a/real/path.zip").toPath());
+        media.setRemoteDir(new File("d:/fake/remote/path").toPath());
         jpaMedia = mediaDao.create(media);
         CreateJvmRequest createJvmRequest = new CreateJvmRequest(testJvmName, "testHostName", 100, 101, 102, 103, 104, new Path("./jwala.png"), "", null, null, null);
         JpaJvm jpaJvm = jvmCrudService.createJvm(createJvmRequest, jpaMedia);

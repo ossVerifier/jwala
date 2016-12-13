@@ -48,11 +48,11 @@ public abstract class AbstractJvmPersistenceServiceTest {
         User user = new User("testUser");
         user.addToThread();
 
-        final com.cerner.jwala.persistence.jpa.domain.Media media = new com.cerner.jwala.persistence.jpa.domain.Media();
+        final com.cerner.jwala.persistence.jpa.domain.JpaMedia media = new com.cerner.jwala.persistence.jpa.domain.JpaMedia();
         media.setName("test-media");
         media.setType(MediaType.JDK);
-        media.setLocalPath(new File("./").toPath());
-        media.setRemoteDir(new File("./").toPath());
+        media.setLocalPath(new File("d:/not/a/real/path.zip").toPath());
+        media.setRemoteDir(new File("d:/fake/remote/path").toPath());
         mediaDao.create(media);
         jvmHelper = new CommonJvmPersistenceServiceBehavior(jvmPersistenceService);
         groupHelper = new CommonGroupPersistenceServiceBehavior(groupPersistenceService);

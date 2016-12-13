@@ -20,7 +20,7 @@ import com.cerner.jwala.persistence.configuration.TestJpaConfiguration;
 import com.cerner.jwala.persistence.jpa.domain.JpaApplication;
 import com.cerner.jwala.persistence.jpa.domain.JpaGroup;
 import com.cerner.jwala.persistence.jpa.domain.JpaJvm;
-import com.cerner.jwala.persistence.jpa.domain.Media;
+import com.cerner.jwala.persistence.jpa.domain.JpaMedia;
 import com.cerner.jwala.persistence.jpa.service.ApplicationCrudService;
 import com.cerner.jwala.persistence.jpa.service.GroupCrudService;
 import com.cerner.jwala.persistence.jpa.service.GroupJvmRelationshipService;
@@ -146,7 +146,7 @@ public class ApplicationCrudServiceImplTest {
 
     private Identifier<Group> expGroupId;
     private JpaGroup jpaGroup;
-    private Media jpaMedia;
+    private JpaMedia jpaMedia;
 
     private User userObj;
 
@@ -159,11 +159,11 @@ public class ApplicationCrudServiceImplTest {
         aUser = "TestUserId";
         userObj = new User(aUser);
         jpaGroup = groupCrudService.createGroup(new CreateGroupRequest(textGroup));
-        final Media media = new Media();
-        media .setName("test-media");
-        media .setType(MediaType.JDK);
-        media.setLocalPath(new File("./").toPath());
-        media.setRemoteDir(new File("./").toPath());
+        final JpaMedia media = new JpaMedia();
+        media.setName("test-media");
+        media.setType(MediaType.JDK);
+        media.setLocalPath(new File("d:/not/a/real/path.zip").toPath());
+        media.setRemoteDir(new File("d:/fake/remote/path").toPath());
         jpaMedia = mediaDao.create(media);
         expGroupId = Identifier.id(jpaGroup.getId());
     }
