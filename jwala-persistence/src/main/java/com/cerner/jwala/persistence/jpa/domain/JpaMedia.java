@@ -6,6 +6,9 @@ import org.codehaus.jackson.map.annotate.JsonDeserialize;
 import org.codehaus.jackson.map.annotate.JsonSerialize;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
+import javax.validation.constraints.Size;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -32,13 +35,18 @@ public class JpaMedia extends AbstractEntity<JpaMedia> {
     private Long id;
 
     @Column(nullable = false, unique = true)
+    @Size(min=2, max=200, message = "{media.name.length.msg}")
     private String name;
 
     @Column(nullable = false)
+    @NotNull
+    @Enumerated(EnumType.STRING)
     private MediaType type;
 
+    @Pattern(regexp = "^(?:[\\w]\\:|\\\\)(\\\\[a-z_\\-\\s0-9\\.]+)+\\.(zip)$", message = "{media.localPath.validity.msg}")
     private String localPath;
 
+    @Pattern(regexp = "^[a-z]:\\\\(?:[^\\\\/:*?\"<>|\\r\\n]+\\\\)*[^\\\\/:*?\"<>|\\r\\n]*$", message = "{media.remoteDir.validity.msg}")
     private String remoteDir; // e.g. c:/ctp
 
     private String mediaDir;  // e.g. tomcat-7.0
@@ -102,19 +110,17 @@ public class JpaMedia extends AbstractEntity<JpaMedia> {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        JpaMedia media = (JpaMedia) o;
+        JpaMedia jpaMedia = (JpaMedia) o;
 
-        return id.equals(media.id) && name.equals(media.name);
+        if (!name.equals(jpaMedia.name)) return false;
+        return type == jpaMedia.type;
+
     }
 
     @Override
     public int hashCode() {
-        int result = id.hashCode();
-        result = 31 * result + name.hashCode();
-        result = 31 * result + (type != null ? type.hashCode() : 0);
-        result = 31 * result + (localPath != null ? localPath.hashCode() : 0);
-        result = 31 * result + (remoteDir != null ? remoteDir.hashCode() : 0);
-        result = 31 * result + (mediaDir != null ? mediaDir.hashCode() : 0);
+        int result = name.hashCode();
+        result = 31 * result + type.hashCode();
         return result;
     }
 

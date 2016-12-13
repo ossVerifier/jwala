@@ -5,9 +5,12 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.validation.ConstraintViolation;
+import javax.validation.ConstraintViolationException;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
+import java.util.Set;
 import java.util.Map;
 
 /**
@@ -30,6 +33,14 @@ public class RestServiceErrorHandler implements ExceptionMapper {
         if (t instanceof WebApplicationException) {
             status = ((WebApplicationException) t).getResponse().getStatus();
             msg = t.getMessage();
+        } else if (t instanceof ConstraintViolationException) {
+            final StringBuilder msgBuilder = new StringBuilder();
+            final Set<ConstraintViolation<?>> cvSet = ((ConstraintViolationException) t).getConstraintViolations();
+            for (ConstraintViolation<?> aCvSet : cvSet) {
+                msgBuilder.append(aCvSet.getMessage()).append("\n");
+            }
+            status = Response.Status.INTERNAL_SERVER_ERROR.getStatusCode();
+            msg = msgBuilder.toString();
         } else {
             status = Response.Status.INTERNAL_SERVER_ERROR.getStatusCode();
             msg = t.getMessage();
