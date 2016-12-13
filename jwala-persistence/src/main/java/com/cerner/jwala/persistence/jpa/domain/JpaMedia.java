@@ -1,5 +1,6 @@
 package com.cerner.jwala.persistence.jpa.domain;
 
+import com.cerner.jwala.persistence.jpa.domain.constraint.ValidPath;
 import com.cerner.jwala.persistence.jpa.type.MediaType;
 import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 import org.codehaus.jackson.map.annotate.JsonDeserialize;
@@ -7,7 +8,6 @@ import org.codehaus.jackson.map.annotate.JsonSerialize;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -43,10 +43,10 @@ public class JpaMedia extends AbstractEntity<JpaMedia> {
     @Enumerated(EnumType.STRING)
     private MediaType type;
 
-    @Pattern(regexp = "^(?:[\\w]\\:|\\\\)(\\\\[a-z_\\-\\s0-9\\.]+)+\\.(zip)$", message = "{media.localPath.validity.msg}")
+    @ValidPath(allowableFileExtensions = {"zip"})
     private String localPath;
 
-    @Pattern(regexp = "^[a-z]:\\\\(?:[^\\\\/:*?\"<>|\\r\\n]+\\\\)*[^\\\\/:*?\"<>|\\r\\n]*$", message = "{media.remoteDir.validity.msg}")
+    @ValidPath
     private String remoteDir; // e.g. c:/ctp
 
     private String mediaDir;  // e.g. tomcat-7.0

@@ -1,6 +1,8 @@
 description "This modules has the persistance layer for Jwala. CRUD (create, read, update delete) logic resides here."
 apply plugin: 'maven-publish'
 
+sourceCompatibility = 1.8
+
 dependencies {
     compile project(":jwala-common")
 
