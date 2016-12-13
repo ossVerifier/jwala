@@ -40,7 +40,7 @@ public enum JvmControlOperation {
 
     CHANGE_FILE_MODE("changeFileMode", NO_JVM_IN_PROGRESS_STATE),
 
-    CHECK_FILE_EXISTS("checkFileExists", NO_JVM_IN_PROGRESS_STATE),;
+    CHECK_FILE_EXISTS("checkFileExists", NO_JVM_IN_PROGRESS_STATE);
 
     private static final Map<String, JvmControlOperation> LOOKUP_MAP = new HashMap<>();
 
@@ -61,12 +61,12 @@ public enum JvmControlOperation {
 
     public static JvmControlOperation convertFrom(final String aValue) {
         final String value = aValue.toLowerCase(Locale.US);
-        if (LOOKUP_MAP.containsKey(value)) {
-            return LOOKUP_MAP.get(value);
+        JvmControlOperation retVal = LOOKUP_MAP.get(value);
+        if (null == retVal) {
+            throw new BadRequestException(AemFaultType.INVALID_JVM_OPERATION, "Invalid operation: " + aValue);
+        } else {
+            return retVal;
         }
-
-        throw new BadRequestException(AemFaultType.INVALID_JVM_OPERATION,
-                "Invalid operation: " + aValue);
     }
 
     public String getExternalValue() {
