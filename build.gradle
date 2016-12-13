@@ -132,50 +132,50 @@ task createMasterPom << {
                     distribution 'repo'
                 }
             }
+
+            reporting {
+
+                outputDirectory "$project.buildDir/jwalasite"
+                plugins {
+                    plugin {
+                        groupId 'org.apache.maven.plugins'
+                        artifactId 'maven-javadoc-plugin'
+                        version '2.10.4'
+                        configuration {
+                            stylesheetfile "$project.buildDir/jwalasite/src/main/javadoc/stylesheet.css"
+                            show 'public'
+                        }
+                        reportSets{
+                            reportSet{
+                                id 'default'
+                                reports{
+                                    report 'javadoc'
+                                }
+                            }
+                        }
+                    }
+                }
+            }
             distributionManagement {
                 site{
                     id 'jwala'
                     url "file://$project.buildDir/jwalasite"
                 }
             }
-            /*profiles{
-                profile {
-                    id "release-profile"
-                    activation {
-                        property{
-                            name 'performRelease'
-                                    value'true'
-                        }
-                    }
-                    build {
-                            plugins {
-                                plugin {
-                                    groupId 'com.github.github'
-                                    artifactId 'site-maven-plugin'
-                                    version '0.9'
-                                    executions {
-                                        execution {
-                                            goals {
-                                                goal 'site'
-                                            }
-                                            phase 'site-deploy'
-                                            configuration {
-                                                message 'Building site for Jwala project'
-                                                path "$jwalaContentSite/jwalasite"
-                                                merge "true"
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                    }
-                }
-            }*/
         }
     }.writeTo("pom.xml")
 }
 
 /*** Maven plugin: start  ***/
+apply plugin: 'build-dashboard'
+buildDashboard {
+    reports {
+        html {
+            destination "build/dashboard.html"
+        }
+    }
+}
+apply plugin: 'project-report'
 
 subprojects {
     apply plugin: "java"
@@ -183,8 +183,17 @@ subprojects {
     apply plugin: "jacoco"
     apply plugin: "eclipse"
     apply plugin: "maven"
+    apply plugin: "findbugs"
     sourceCompatibility = 1.8
 
+    tasks.withType(FindBugs) {
+        ignoreFailures = true
+        reports {
+            xml.enabled false
+            html.enabled true
+            //html.stylesheet resources.text.fromFile('config/xsl/colors.xsl')
+        }
+    }
     group = "com.cerner.jwala"
 
     version = project.properties['buildVersion']
