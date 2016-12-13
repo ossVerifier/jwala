@@ -37,7 +37,7 @@ public class JsonCreateJvm {
     private final String userName;
     private final String encryptedPassword;
     private final String jdkMediaId;
-    private final String tomcatMediaId;
+//    private final String tomcatMediaId;
 
     private final Set<String> groupIds;
 
@@ -52,8 +52,8 @@ public class JsonCreateJvm {
                          final String theSystemProperties,
                          final String theUsername,
                          final String theEncryptedPassword,
-                         final String jdkMediaId,
-                         final String tomcatMediaId) {
+                         final String jdkMediaId/*,
+                         final String tomcatMediaId*/) {
         this(theJvmName,
                 theHostName,
                 Collections.<String>emptySet(),
@@ -66,8 +66,8 @@ public class JsonCreateJvm {
                 theSystemProperties,
                 theUsername,
                 theEncryptedPassword,
-                jdkMediaId,
-                tomcatMediaId);
+                jdkMediaId/*,
+                tomcatMediaId*/);
     }
 
     public JsonCreateJvm(final String theJvmName,
@@ -82,8 +82,8 @@ public class JsonCreateJvm {
                          final String theSystemProperties,
                          final String theUsername,
                          final String theEncrypedPassword,
-                         final String theJdkMediaId,
-                         final String theTomcatMediaId) {
+                         final String theJdkMediaId/*,
+                         final String theTomcatMediaId*/) {
         jvmName = theJvmName;
         hostName = theHostName;
         httpPort = theHttpPort;
@@ -97,7 +97,7 @@ public class JsonCreateJvm {
         userName = theUsername;
         encryptedPassword = theEncrypedPassword;
         jdkMediaId = theJdkMediaId;
-        tomcatMediaId = theTomcatMediaId;
+//        tomcatMediaId = theTomcatMediaId;
     }
 
     public boolean areGroupsPresent() {
@@ -117,8 +117,8 @@ public class JsonCreateJvm {
                 systemProperties,
                 userName,
                 encryptedPassword,
-                jdkMediaId.isEmpty() ? null : new Identifier<Media>(Long.parseLong(jdkMediaId)),
-                tomcatMediaId.isEmpty() ? null : new Identifier<Media>(Long.parseLong(tomcatMediaId)));
+                jdkMediaId.isEmpty() ? null : new Identifier<Media>(Long.parseLong(jdkMediaId))/*,
+                tomcatMediaId.isEmpty() ? null : new Identifier<Media>(Long.parseLong(tomcatMediaId))*/);
     }
 
     public CreateJvmAndAddToGroupsRequest toCreateAndAddRequest() {
@@ -136,8 +136,8 @@ public class JsonCreateJvm {
                 systemProperties,
                 userName,
                 encryptedPassword,
-                jdkMediaId.isEmpty() ? null : new Identifier<Media>(Long.parseLong(jdkMediaId)),
-                tomcatMediaId.isEmpty() ? null : new Identifier<Media>(Long.parseLong(tomcatMediaId)));
+                jdkMediaId.isEmpty() ? null : new Identifier<Media>(Long.parseLong(jdkMediaId))/*,
+                tomcatMediaId.isEmpty() ? null : new Identifier<Media>(Long.parseLong(tomcatMediaId))*/);
     }
 
     protected Set<Identifier<Group>> convertGroupIds() {
@@ -168,7 +168,7 @@ public class JsonCreateJvm {
             final JsonNode userName = rootNode.get("userName");
             final JsonNode encryptedPassword = rootNode.get("encryptedPassword");
             final JsonNode jdkMediaId = rootNode.get("jdkVersion");
-            final JsonNode tomcatMediaId = rootNode.get("tomcatVersion");
+//            final JsonNode tomcatMediaId = rootNode.get("tomcatVersion");
 
             final Set<String> rawGroupIds = deserializeGroupIdentifiers(rootNode);
             final String jsonPassword = encryptedPassword == null ? null : encryptedPassword.getTextValue();
@@ -191,8 +191,8 @@ public class JsonCreateJvm {
                     systemProperties.getTextValue(),
                     userName == null ? null : userName.getTextValue(),
                     pw,
-                    jdkMediaId.getTextValue(),
-                    tomcatMediaId.getTextValue());
+                    jdkMediaId.getTextValue()/*,
+                    tomcatMediaId.getTextValue()*/);
         }
     }
 
@@ -211,7 +211,7 @@ public class JsonCreateJvm {
                 ", userName='" + userName + '\'' +
                 ", encryptedPassword='" + encryptedPassword + '\'' +
                 ", jdkMediaId='" + jdkMediaId + '\'' +
-                ", tomcatMediaId='" + tomcatMediaId + '\'' +
+//                ", tomcatMediaId='" + tomcatMediaId + '\'' +
                 ", groupIds=" + groupIds +
                 '}';
     }

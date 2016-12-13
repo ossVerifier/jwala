@@ -365,8 +365,8 @@ public class JsonUpdateJvmDeserializerTest {
                 update.getNewEncryptedPassword());
         assertEquals(new Identifier<Media>(Long.parseLong(aJdkVersion)),
                 update.getNewJdkMediaId());
-        assertEquals(new Identifier<Media>(Long.parseLong(aTomcatVersion)),
-                update.getNewTomcatMediaId());
+/*        assertEquals(new Identifier<Media>(Long.parseLong(aTomcatVersion)),
+                update.getNewTomcatMediaId());*/
         final Set<Identifier<Group>> expectedGroupIds = new IdentifierSetBuilder(Arrays.asList(someGroupIds)).build();
         for (final AddJvmToGroupRequest addCommand : update.getAssignmentCommands()) {
             assertTrue(expectedGroupIds.contains(addCommand.getGroupId()));

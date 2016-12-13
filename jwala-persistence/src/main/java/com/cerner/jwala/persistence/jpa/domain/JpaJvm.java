@@ -1,7 +1,6 @@
 package com.cerner.jwala.persistence.jpa.domain;
 
 import com.cerner.jwala.common.domain.model.jvm.JvmState;
-import com.cerner.jwala.common.domain.model.media.Media;
 
 import javax.persistence.*;
 import java.util.List;
@@ -83,9 +82,11 @@ public class JpaJvm extends AbstractEntity<JpaJvm> {
     @Column(nullable = true)
     private String encryptedPassword;
 
+    @OneToOne (targetEntity = Media.class)
     @Column(nullable = true)
     private Media jdkMedia;
 
+    @OneToOne (targetEntity = Media.class)
     @Column(nullable = true)
     private Media tomcatMedia;
 

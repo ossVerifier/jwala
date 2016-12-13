@@ -40,7 +40,7 @@ public class JsonUpdateJvm {
     private final String userName;
     private final String encryptedPassword;
     private final String  jdkMediaId;
-    private final String tomcatMediaId;
+//    private final String tomcatMediaId;
 
     public JsonUpdateJvm(final String theJvmId,
                          final String theJvmName,
@@ -55,8 +55,8 @@ public class JsonUpdateJvm {
                          final String theSystemProperties,
                          final String theUserName,
                          final String theEncryptedPassword,
-                         final String theJdkMediaId,
-                         final String theTomcatMediaId) {
+                         final String theJdkMediaId/*,
+                         final String theTomcatMediaId*/) {
         jvmId = theJvmId;
         jvmName = theJvmName;
         hostName = theHostName;
@@ -71,7 +71,7 @@ public class JsonUpdateJvm {
         userName = theUserName;
         encryptedPassword = theEncryptedPassword;
         jdkMediaId = theJdkMediaId;
-        tomcatMediaId = theTomcatMediaId;
+//        tomcatMediaId = theTomcatMediaId;
     }
 
     public UpdateJvmRequest toUpdateJvmRequest() throws BadRequestException {
@@ -89,8 +89,8 @@ public class JsonUpdateJvm {
                 systemProperties,
                 userName,
                 encryptedPassword,
-                new Identifier<Media>(Long.parseLong(jdkMediaId)),
-                new Identifier<Media>(Long.parseLong(tomcatMediaId)));
+                new Identifier<Media>(Long.parseLong(jdkMediaId))/*,
+                new Identifier<Media>(Long.parseLong(tomcatMediaId))*/);
     }
 
     protected Identifier<Jvm> convertJvmId() {
@@ -155,8 +155,8 @@ public class JsonUpdateJvm {
                     node.get("systemProperties").getTextValue(),
                     usernameNode == null ? null : node.get("userName").getTextValue(),
                     pw,
-                    node.get("jdkVersion").getTextValue(),
-                    node.get("tomcatVersion").getTextValue());
+                    node.get("jdkVersion").getTextValue()/*,
+                    node.get("tomcatVersion").getTextValue()*/);
         }
     }
 }

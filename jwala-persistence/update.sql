@@ -109,8 +109,8 @@ INSERT INTO VERSION (RELEASE_VERSION, LAST_UPDATED) VALUES ('1.3.10', NOW());
 -- ======================================================== --
 -- === BEGIN: UPGRADE FROM Jwala 1.3.10 to Jwala 0.0.32 === --
 -- ======================================================== --
-ALTER TABLE JVM ADD COLUMN IF NOT EXISTS jdkVersion VARCHAR(255);
-ALTER TABLE JVM ADD COLUMN IF NOT EXISTS tomcatVersion VARCHAR(255)
+ALTER TABLE JVM ADD COLUMN IF NOT EXISTS JDKMEDIA_ID BIGINT;
+ALTER TABLE JVM ADD COLUMN IF NOT EXISTS TOMCATMEDIA_ID BIGINT;
 -- ======================================================== --
 -- === END : UPGRADE FROM Jwala 1.3.10 to Jwala 0.0.32 === --
 -- ======================================================== --

@@ -12,6 +12,8 @@ import com.cerner.jwala.common.properties.ApplicationProperties;
 import com.cerner.jwala.control.command.RemoteCommandExecutor;
 import com.cerner.jwala.control.command.RemoteCommandExecutorImpl;
 import com.cerner.jwala.control.configuration.AemSshConfig;
+import com.cerner.jwala.dao.MediaDao;
+import com.cerner.jwala.dao.impl.MediaDaoImpl;
 import com.cerner.jwala.persistence.jpa.service.ApplicationCrudService;
 import com.cerner.jwala.persistence.jpa.service.GroupCrudService;
 import com.cerner.jwala.persistence.jpa.service.GroupJvmRelationshipService;
@@ -128,6 +130,9 @@ public class ApplicationServiceImplIntegrationTest {
         public ClientFactoryHelper getClientFactoryHelper() {
             return new ClientFactoryHelper();
         }
+
+        @Bean
+        public MediaDao getMediaDao() { return new MediaDaoImpl(); }
 
     }
 

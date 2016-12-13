@@ -10,6 +10,7 @@ import com.cerner.jwala.common.request.jvm.CreateJvmRequest;
 import com.cerner.jwala.common.request.jvm.UpdateJvmRequest;
 import com.cerner.jwala.common.request.jvm.UploadJvmTemplateRequest;
 import com.cerner.jwala.persistence.jpa.domain.JpaJvm;
+import com.cerner.jwala.persistence.jpa.domain.Media;
 import com.cerner.jwala.persistence.jpa.domain.builder.JvmBuilder;
 import com.cerner.jwala.persistence.jpa.domain.resource.config.template.JpaJvmConfigTemplate;
 import com.cerner.jwala.persistence.jpa.service.JvmCrudService;
@@ -30,7 +31,7 @@ public class JvmCrudServiceImpl extends AbstractCrudServiceImpl<JpaJvm> implemen
     private EntityManager entityManager;
 
     @Override
-    public JpaJvm createJvm(CreateJvmRequest createJvmRequest) {
+    public JpaJvm createJvm(CreateJvmRequest createJvmRequest, Media jdkMedia) {
 
         try {
             final JpaJvm jpaJvm = new JpaJvm();
@@ -46,8 +47,7 @@ public class JvmCrudServiceImpl extends AbstractCrudServiceImpl<JpaJvm> implemen
             jpaJvm.setSystemProperties(createJvmRequest.getSystemProperties());
             jpaJvm.setUserName(createJvmRequest.getUserName());
             jpaJvm.setEncryptedPassword(createJvmRequest.getEncryptedPassword());
-            // TODO add jpaMedia to jpaJvm
-//            jpaJvm.setJdkMedia(createJvmRequest.getJdkMediaId());
+            jpaJvm.setJdkMedia(jdkMedia);
 //            jpaJvm.setTomcatMedia(createJvmRequest.getTomcatMediaId());
 
             return create(jpaJvm);
@@ -58,7 +58,7 @@ public class JvmCrudServiceImpl extends AbstractCrudServiceImpl<JpaJvm> implemen
     }
 
     @Override
-    public JpaJvm updateJvm(UpdateJvmRequest updateJvmRequest) {
+    public JpaJvm updateJvm(UpdateJvmRequest updateJvmRequest, Media jdkMedia) {
 
         try {
             final Identifier<Jvm> jvmId = updateJvmRequest.getId();
@@ -75,8 +75,7 @@ public class JvmCrudServiceImpl extends AbstractCrudServiceImpl<JpaJvm> implemen
             jpaJvm.setSystemProperties(updateJvmRequest.getNewSystemProperties());
             jpaJvm.setUserName(updateJvmRequest.getNewUserName());
             jpaJvm.setEncryptedPassword(updateJvmRequest.getNewEncryptedPassword());
-            // TODO add jpaMedia to Jvm
-//            jpaJvm.setJdkMedia(updateJvmRequest.getNewJdkMediaId());
+            jpaJvm.setJdkMedia(jdkMedia);
 //            jpaJvm.setTomcatMedia(updateJvmRequest.getNewTomcatMediaId());
 
             return update(jpaJvm);

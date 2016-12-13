@@ -9,23 +9,31 @@ import com.cerner.jwala.common.exception.NotFoundException;
 import com.cerner.jwala.common.request.jvm.CreateJvmRequest;
 import com.cerner.jwala.common.request.jvm.UpdateJvmRequest;
 import com.cerner.jwala.common.request.jvm.UploadJvmTemplateRequest;
+import com.cerner.jwala.dao.MediaDao;
 import com.cerner.jwala.persistence.jpa.domain.JpaJvm;
+import com.cerner.jwala.persistence.jpa.domain.Media;
 import com.cerner.jwala.persistence.jpa.domain.builder.JvmBuilder;
 import com.cerner.jwala.persistence.jpa.domain.resource.config.template.JpaJvmConfigTemplate;
 import com.cerner.jwala.persistence.jpa.service.ApplicationCrudService;
 import com.cerner.jwala.persistence.jpa.service.GroupJvmRelationshipService;
 import com.cerner.jwala.persistence.jpa.service.JvmCrudService;
 import com.cerner.jwala.persistence.service.JvmPersistenceService;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.*;
+import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
+import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
 import java.util.ArrayList;
 import java.util.List;
 
 public class JpaJvmPersistenceServiceImpl implements JvmPersistenceService {
+
+    @Autowired
+    private MediaDao mediaDao;
 
     private final JvmCrudService jvmCrudService;
     private final ApplicationCrudService applicationCrudService;
@@ -46,13 +54,23 @@ public class JpaJvmPersistenceServiceImpl implements JvmPersistenceService {
 
     @Override
     public Jvm createJvm(CreateJvmRequest createJvmRequest) {
-        final JpaJvm jpaJvm = jvmCrudService.createJvm(createJvmRequest);
+        Media jdkMedia = null;
+        if (createJvmRequest.getJdkMediaId() != null ) {
+            jdkMedia = mediaDao.findById(createJvmRequest.getJdkMediaId().getId());
+        }
+//        Media tomcatMedia = mediaDaoImpl.find(createJvmRequest.getTomcatMediaId());
+        final JpaJvm jpaJvm = jvmCrudService.createJvm(createJvmRequest, jdkMedia);
         return jvmFrom(jpaJvm);
     }
 
     @Override
     public Jvm updateJvm(UpdateJvmRequest updateJvmRequest) {
-        final JpaJvm jpaJvm = jvmCrudService.updateJvm(updateJvmRequest);
+        Media jdkMedia = null;
+        if (updateJvmRequest.getNewJdkMediaId() != null ) {
+            jdkMedia = mediaDao.findById(updateJvmRequest.getNewJdkMediaId().getId());
+        }
+//        Media tomcatMedia = mediaDaoImpl.find(createJvmRequest.getTomcatMediaId());
+        final JpaJvm jpaJvm = jvmCrudService.updateJvm(updateJvmRequest, jdkMedia);
         return jvmFrom(jpaJvm);
     }
 

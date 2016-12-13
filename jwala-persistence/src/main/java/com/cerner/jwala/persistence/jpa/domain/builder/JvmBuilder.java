@@ -3,6 +3,7 @@ package com.cerner.jwala.persistence.jpa.domain.builder;
 import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
+import com.cerner.jwala.common.domain.model.media.Media;
 import com.cerner.jwala.common.domain.model.path.Path;
 import com.cerner.jwala.persistence.jpa.domain.JpaGroup;
 import com.cerner.jwala.persistence.jpa.domain.JpaJvm;
@@ -32,6 +33,7 @@ public class JvmBuilder {
     public Jvm build() {
         final com.cerner.jwala.common.domain.model.jvm.JvmBuilder builder =
                 new com.cerner.jwala.common.domain.model.jvm.JvmBuilder();
+        final com.cerner.jwala.persistence.jpa.domain.Media jdkMedia = jpaJvm.getJdkMedia();
         builder.setId(new Identifier<Jvm>(jpaJvm.getId()))
                 .setName(jpaJvm.getName())
                 .setHostName(jpaJvm.getHostName())
@@ -47,11 +49,23 @@ public class JvmBuilder {
                 .setErrorStatus(jpaJvm.getErrorStatus())
                 .setLastUpdatedDate(jpaJvm.getLastUpdateDate())
                 .setUserName(jpaJvm.getUserName())
-                .setEncryptedPassword(jpaJvm.getEncryptedPassword());
-                // TODO manually set this for now to test deployment
-//                .setJdkMedia(new Media(3, "jdk1.8.0_92.zip", "D:/stp/toc-1.3.80/apache-tomcat-7.0.55/data/binaries", "JDK", "D:/stp/jdk1.8.0_92"))
+                .setEncryptedPassword(jpaJvm.getEncryptedPassword())
+                .setJdkMedia(createJdkMedia(jdkMedia));
 //                .setTomcatMedia(jpaJvm.getTomcatMedia());
         return builder.build();
+    }
+
+    private Media createJdkMedia(com.cerner.jwala.persistence.jpa.domain.Media jdkMedia) {
+        if (jdkMedia != null) {
+            final int id = jdkMedia.getId() != null ? Integer.parseInt(jdkMedia.getId().toString()) : -1;
+            final String name = jdkMedia.getName();
+            final String path = jdkMedia.getLocalPath() != null ? jdkMedia.getLocalPath().toString() : "";
+            final String type = jdkMedia.getType() != null ? jdkMedia.getType().toString() : "";
+            final String remoteHostPath = jdkMedia.getRemoteDir() != null ? jdkMedia.getRemoteDir().toString() : "";
+            return new Media(id, name, path, type, remoteHostPath);
+        } else {
+            return null;
+        }
     }
 
     protected Set<Group> createGroups() {

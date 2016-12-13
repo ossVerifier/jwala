@@ -34,8 +34,8 @@ public class CreateJvmAndAddToGroupsRequest implements Serializable, Request {
                                           final String theSystemProperties,
                                           final String theUserName,
                                           final String theEncryptedPassword,
-                                          final Identifier<Media> theJdkMedia,
-                                          final Identifier<Media> theTomcatMedia) {
+                                          final Identifier<Media> theJdkMediaId/*,
+                                          final Identifier<Media> theTomcatMediaId*/) {
 
         createCommand = new CreateJvmRequest(theName,
                 theHostName,
@@ -48,9 +48,9 @@ public class CreateJvmAndAddToGroupsRequest implements Serializable, Request {
                 theSystemProperties,
                 theUserName,
                 theEncryptedPassword,
-                theJdkMedia,
-                theTomcatMedia
-        );
+                theJdkMediaId/*,
+                theTomcatMediaId*/
+                );
         groups = Collections.unmodifiableSet(new HashSet<>(theGroups));
     }
 
