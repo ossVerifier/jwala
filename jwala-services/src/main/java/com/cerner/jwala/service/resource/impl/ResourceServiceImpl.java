@@ -41,7 +41,6 @@ import org.apache.tika.mime.MediaType;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.expression.Expression;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
@@ -258,6 +257,16 @@ public class ResourceServiceImpl implements ResourceService {
                     .setWebServerName(resourceIdentifier.webServerName)
                     .build();
             ResourceContent resourceContent = getResourceContent(resourceIdentifierWithResource);
+
+            try {
+                if (entity instanceof Application && getMetaData(resourceContent.getMetaData()).getEntity().getDeployToJvms()) {
+                    LOGGER.info("Skipping application resource validation for {} because deployToJvms=true", resourceName);
+                    continue;
+                }
+            } catch (IOException e) {
+                throw new ApplicationException("Unable to retrieve meta data for " + resourceName + " during validation step.", e);
+            }
+
             try {
                 generateResourceFile(resourceName, resourceContent.getMetaData(), resourceGroup, entity, ResourceGeneratorType.METADATA);
             } catch (ResourceFileGeneratorException e) {
