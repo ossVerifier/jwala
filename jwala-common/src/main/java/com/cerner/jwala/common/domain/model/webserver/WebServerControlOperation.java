@@ -4,6 +4,7 @@ import com.cerner.jwala.common.domain.model.fault.AemFaultType;
 import com.cerner.jwala.common.exception.BadRequestException;
 
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 public enum WebServerControlOperation {
@@ -23,7 +24,7 @@ public enum WebServerControlOperation {
 
     static {
         for (final WebServerControlOperation operation : values()) {
-            LOOKUP_MAP.put(operation.operationValue.toLowerCase(), operation);
+            LOOKUP_MAP.put(operation.operationValue.toLowerCase(Locale.US), operation);
         }
     }
 
@@ -37,7 +38,7 @@ public enum WebServerControlOperation {
     }
 
     public static WebServerControlOperation convertFrom(final String aValue) {
-        final String value = aValue.toLowerCase();
+        final String value = aValue.toLowerCase(Locale.US);
         if (LOOKUP_MAP.containsKey(value)) {
             return LOOKUP_MAP.get(value);
         }

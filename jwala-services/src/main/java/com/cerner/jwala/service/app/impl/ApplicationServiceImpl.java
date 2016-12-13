@@ -21,7 +21,6 @@ import com.cerner.jwala.control.AemControl;
 import com.cerner.jwala.control.application.command.impl.WindowsApplicationPlatformCommandProvider;
 import com.cerner.jwala.control.command.RemoteCommandExecutorImpl;
 import com.cerner.jwala.control.command.impl.WindowsBinaryDistributionPlatformCommandProvider;
-import com.cerner.jwala.control.jvm.command.windows.WindowsJvmNetOperation;
 import com.cerner.jwala.exception.CommandFailureException;
 import com.cerner.jwala.persistence.jpa.domain.JpaApplicationConfigTemplate;
 import com.cerner.jwala.persistence.jpa.domain.JpaJvm;
@@ -38,9 +37,6 @@ import com.cerner.jwala.service.resource.impl.ResourceGeneratorType;
 import com.cerner.jwala.template.exception.ResourceFileGeneratorException;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.tika.mime.MediaType;
-import org.codehaus.jackson.JsonParseException;
-import org.codehaus.jackson.map.JsonMappingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,9 +46,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.FileCopyUtils;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
@@ -260,7 +254,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         if (theJvms != null && !theJvms.isEmpty()) {
             Set<String> hostNames = new HashSet<>();
             for (Jvm jvm : theJvms) {
-                final String host = jvm.getHostName().toLowerCase();
+                final String host = jvm.getHostName().toLowerCase(Locale.US);
                 if (!hostNames.contains(host)) {
                     hostNames.add(host);
                 }
@@ -284,7 +278,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                         // still need to iterate through the JVMs to get the host names
                         Set<String> hostNames = new HashSet<>();
                         for (Jvm jvm : jvms) {
-                            final String host = jvm.getHostName().toLowerCase();
+                            final String host = jvm.getHostName().toLowerCase(Locale.US);
                             if (!hostNames.contains(host)) {
                                 hostNames.add(host);
                                 groupService.deployGroupAppTemplate(groupName, resourceTemplateName, app, jvm);
@@ -596,13 +590,13 @@ public class ApplicationServiceImpl implements ApplicationService {
         if (hostName == null || hostName.isEmpty()) {
             LOGGER.info("Hostname not passed, deploying to all hosts");
             for (String host : allHosts) {
-                hostNames.add(host.toLowerCase());
+                hostNames.add(host.toLowerCase(Locale.US));
             }
         } else {
             LOGGER.info("host name provided {}", hostName);
             for (final String host : allHosts) {
-                if (hostName.toLowerCase().equals(host.toLowerCase())) {
-                    hostNames.add(host.toLowerCase());
+                if (hostName.toLowerCase(Locale.US).equals(host.toLowerCase(Locale.US))) {
+                    hostNames.add(host.toLowerCase(Locale.US));
                 }
             }
             if (hostNames.isEmpty()) {
@@ -618,7 +612,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         final List<Jvm> runningJvmList = new ArrayList<>();
         final List<String> runningJvmNameList = new ArrayList<>();
         for (final Jvm jvm : group.getJvms()) {
-            if (hostNames.contains(jvm.getHostName().toLowerCase()) && jvm.getState().isStartedState()) {
+            if (hostNames.contains(jvm.getHostName().toLowerCase(Locale.US)) && jvm.getState().isStartedState()) {
                 runningJvmList.add(jvm);
                 runningJvmNameList.add(jvm.getJvmName());
             }

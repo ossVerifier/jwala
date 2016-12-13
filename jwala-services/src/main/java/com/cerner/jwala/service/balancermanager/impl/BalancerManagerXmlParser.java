@@ -13,6 +13,7 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 public class BalancerManagerXmlParser {
@@ -93,7 +94,7 @@ public class BalancerManagerXmlParser {
             } else {
                 return "";
             }
-            if (worker.toLowerCase().indexOf(jvmUrl.toLowerCase()) != -1) {
+            if (worker.toLowerCase(Locale.US).indexOf(jvmUrl.toLowerCase(Locale.US)) != -1) {
                 jvmName = jvm.getJvmName();
                 break;
             }

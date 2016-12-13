@@ -592,7 +592,7 @@ public class ResourceServiceImpl implements ResourceService {
         ConfigTemplate createdConfigTemplate = null;
 
         if (MediaType.APPLICATION_ZIP.equals(metaData.getContentType()) &&
-                metaData.getTemplateName().toLowerCase().endsWith(WAR_FILE_EXTENSION)) {
+                metaData.getTemplateName().toLowerCase(Locale.US).endsWith(WAR_FILE_EXTENSION)) {
             applicationPersistenceService.updateWarInfo(targetAppName, metaData.getTemplateName(), templateContent);
         }
         final String deployFileName = metaData.getDeployFileName();
@@ -663,7 +663,7 @@ public class ResourceServiceImpl implements ResourceService {
                 resourceDao.deleteAppResources(templateNameList, appName, jvm.getJvmName());
             }
             for (final String templateName : templateNameList) {
-                if (templateName.toLowerCase().endsWith(".war")) {
+                if (templateName.toLowerCase(Locale.US).endsWith(".war")) {
                     final Application app = applicationPersistenceService.getApplication(appName);
 
                     // An app is only assigned to one group as of July 7, 2016 so we don't need the group to delete the
