@@ -8,7 +8,7 @@ import org.codehaus.jackson.map.annotate.JsonDeserialize;
 
 /**
  * Resource template meta data.
- *
+ * <p>
  * Created by Jedd Cuison on 3/30/2016.
  */
 public class ResourceTemplateMetaData {
