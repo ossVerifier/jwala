@@ -17,10 +17,15 @@
     padding-right: 0;
 }
 
-.MediaConfig form > label {
+.MediaConfig label {
     display: block;
 }
 
 .MediaConfig form > select {
     display: block;
+    margin-bottom: 5px;
+}
+
+.MediaConfig input {
+    margin-bottom: 5px;
 }

@@ -14,7 +14,6 @@ var MediaConfig = React.createClass({
                                tableIndex="id"
                                colDefinitions={[{key: "id", isVisible: false},
                                                 {title: "Name", key: "name", renderCallback: this.mediaNameRenderCallback},
-                                                {title: "Path", key: "localPath"},
                                                 {title: "Type", key: "type"},
                                                 {title: "Remote Target Directory", key: "remoteDir"},
                                                 {title: "Media Directory Name", key: "mediaDir"}]}
@@ -57,7 +56,7 @@ var MediaConfig = React.createClass({
     okAddCallback: function() {
         var self = this;
         if (this.refs.mediaAddForm.isValid()) {
-            ServiceFactory.getMediaService().createMedia($(this.refs.mediaAddForm.refs.form.getDOMNode()).serializeArray())
+            ServiceFactory.getMediaService().createMedia(new FormData(this.refs.mediaAddForm.refs.form.getDOMNode()))
             .then(function(response){
                 self.refs.modalAddMediaDlg.close();
                 self.loadTableData();
@@ -113,8 +112,8 @@ var MediaConfig = React.createClass({
                                                 var formData = {};
                                                 formData["id"] = response.applicationResponseContent.id;
                                                 formData["name"] = response.applicationResponseContent.name;
-                                                formData["type"] = response.applicationResponseContent.type;
                                                 formData["localPath"] = response.applicationResponseContent.localPath;
+                                                formData["type"] = response.applicationResponseContent.type;
                                                 formData["remoteDir"] = response.applicationResponseContent.remoteDir;
                                                 formData["mediaDir"] = response.applicationResponseContent.mediaDir;
                                                 self.refs.modalEditMediaDlg.show("Edit Media", <MediaConfigForm formData={formData}/>);
@@ -134,32 +133,42 @@ var MediaConfigForm = React.createClass({
         var localPath = this.props.formData && this.props.formData.localPath ? this.props.formData.localPath : null;
         var remoteDir = this.props.formData && this.props.formData.remoteDir ? this.props.formData.remoteDir : null;
         var mediaDir = this.props.formData && this.props.formData.mediaDir ? this.props.formData.mediaDir : null;
-        return {name: name, type: type, localPath: localPath, remoteDir: remoteDir, mediaDir: mediaDir};
+        return {name: name, type: type, mediaArchiveFilename: "", mediaArchiveFile: null, remoteDir: remoteDir, mediaDir: mediaDir};
     },
     render: function() {
         var idTextHidden = null;
+        var localPathTextHidden = null;
+        var mediaDirTextHidden = null;
+        var mediaArchiveFileInput = null;
+
         if (this.props.formData && this.props.formData.id) {
             idTextHidden = <input type="hidden" name="id" value={this.props.formData.id}/>;
+            localPathTextHidden = <input type="hidden" name="localPath" value={this.props.formData.localPath}/>;
+            mediaDirTextHidden = <input type="hidden" name="mediaDir" value={this.props.formData.mediaDir}/>;
+        } else {
+            mediaArchiveFileInput = <div>
+                                        <label>Media Archive File</label>
+                                            <label htmlFor="mediaArchiveFile" className="error"/>
+                                            <input type="file" ref="mediaArchiveFile" name="mediaArchiveFile" required accept=".zip"
+                                                   value={this.state.mediaArchiveFilename} onChange={this.onChangeMediaArchiveFile}/>
+                                    </div>;
         }
 
         return <div>
-                   <form ref="form">
+                   <form ref="form" enctype="multipart/form-data">
                        {idTextHidden}
+                       {localPathTextHidden}
+                       {mediaDirTextHidden}
                        <label>Name</label>
                        <label htmlFor="name" className="error"/>
                        <input name="name" type="text" valueLink={this.linkState("name")} maxLength="255" required/>
                        <label>Type</label>
                        <label htmlFor="type" className="error"/>
                        <MediaTypeDropdown ref="mediaTypeDropdown" selectedMediaType={this.state.type}/>
-                       <label>Path</label>
-                       <label htmlFor="localPath" className="error"/>
-                       <input name="localPath" type="text" valueLink={this.linkState("localPath")} required maxLength="255"/>
+                       {mediaArchiveFileInput}
                        <label>Remote Directory</label>
                        <label htmlFor="remoteDir" className="error"/>
                        <input name="remoteDir" type="text" valueLink={this.linkState("remoteDir")} required maxLength="255"/>
-                       <label>Media Directory</label>
-                       <label htmlFor="mediaDir" className="error"/>
-                       <input name="mediaDir" type="text" valueLink={this.linkState("mediaDir")} required maxLength="255"/>
                    </form>
                </div>
     },
@@ -180,6 +189,13 @@ var MediaConfigForm = React.createClass({
             alert("There is no validator for the form!");
         }
         return false;
+    },
+    onChangeMediaArchiveFile: function(e) {
+        this.setState({mediaArchiveFilename: this.refs.mediaArchiveFile.getDOMNode().value,
+                       mediaArchiveFile: this.refs.mediaArchiveFile.getDOMNode().files[0]});
+    },
+    getMediaArchiveFile: function() {
+        return this.state.mediaArchiveFile;
     }
 });
 

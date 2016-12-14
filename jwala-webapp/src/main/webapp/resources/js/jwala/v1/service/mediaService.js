@@ -9,12 +9,8 @@ var mediaService = {
     getMediaByName: function(name, responseCallback) {
         return serviceFoundation.promisedGet("v1.0/media;name=" + encodeURIComponent(name), "json");
     },
-    createMedia: function(serializedArray) {
-        var jsonData = {};
-        serializedArray.forEach(function(item){
-            jsonData[item.name] = item.value;
-        });
-        return serviceFoundation.promisedPost("v1.0/media", "json", JSON.stringify(jsonData));
+    createMedia: function(formData) {
+        return serviceFoundation.promisedPost("v1.0/media", "json", formData, null, true);
     },
     updateMedia: function(serializedArray) {
         var jsonData = {};

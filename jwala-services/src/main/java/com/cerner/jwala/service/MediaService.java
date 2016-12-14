@@ -4,6 +4,7 @@ import com.cerner.jwala.persistence.jpa.domain.JpaMedia;
 import com.cerner.jwala.persistence.jpa.type.MediaType;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * The media service contract
@@ -34,9 +35,10 @@ public interface MediaService {
 
     /**
      * Create a media
-     * @param media the media to create
+     * @param mediaDataMap contains media data
+     * @param mediaFileDataMap contains media archive file data
      */
-    JpaMedia create(JpaMedia media);
+    JpaMedia create(Map<String, String> mediaDataMap, Map<String, Object> mediaFileDataMap);
 
     /**
      * Remove media

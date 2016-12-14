@@ -2,10 +2,12 @@ package com.cerner.jwala.ws.rest.v1.service.media;
 
 import com.cerner.jwala.persistence.jpa.domain.JpaMedia;
 import com.cerner.jwala.ws.rest.v1.provider.AuthenticatedUser;
+import org.apache.cxf.jaxrs.ext.multipart.Attachment;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.util.List;
 
 /**
  * The REST service contract
@@ -15,8 +17,8 @@ import javax.ws.rs.core.Response;
 public interface MediaServiceRest {
 
     @POST
-    @Consumes(MediaType.APPLICATION_JSON)
-    Response createMedia(JpaMedia media, @BeanParam AuthenticatedUser aUser);
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    Response createMedia(final List<Attachment> attachments);
 
     @PUT
     @Consumes(MediaType.APPLICATION_JSON)
