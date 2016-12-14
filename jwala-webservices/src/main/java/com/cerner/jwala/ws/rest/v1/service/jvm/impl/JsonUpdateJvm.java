@@ -5,13 +5,11 @@ import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.id.IdentifierSetBuilder;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
-import com.cerner.jwala.common.domain.model.media.Media;
 import com.cerner.jwala.common.domain.model.path.Path;
 import com.cerner.jwala.common.domain.model.ssh.DecryptPassword;
 import com.cerner.jwala.common.exception.BadRequestException;
 import com.cerner.jwala.common.request.jvm.UpdateJvmRequest;
 import com.cerner.jwala.ws.rest.v1.json.AbstractJsonDeserializer;
-
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.JsonParser;
 import org.codehaus.jackson.ObjectCodec;
@@ -89,7 +87,7 @@ public class JsonUpdateJvm {
                 systemProperties,
                 userName,
                 encryptedPassword,
-                new Identifier<Media>(Long.parseLong(jdkMediaId))/*,
+                jdkMediaId.isEmpty() ? null : new Identifier<>(Long.parseLong(jdkMediaId))/*,
                 new Identifier<Media>(Long.parseLong(tomcatMediaId))*/);
     }
 
