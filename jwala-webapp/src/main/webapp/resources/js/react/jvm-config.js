@@ -202,7 +202,7 @@ var JvmConfigForm = React.createClass({
         var groupIds = [];
         var jdkVersions = [];
         var tomcatVersions = [];
-        var jdkVersion = "";
+        var jdkMedia = {};
         var tomcatVersion = "";
         var httpPort = "";
         var httpsPort = "";
@@ -227,7 +227,7 @@ var JvmConfigForm = React.createClass({
             ajpPort = this.props.data.ajpPort;
             userName = this.props.data.userName;
             encryptedPassword = this.props.data.encryptedPassword;
-            jdkVersion = this.props.data.jdkVersion;
+            jdkMedia = this.props.data.jdkMedia;
             tomcatVersion = this.props.data.tomcatVersion;
         }
 
@@ -239,7 +239,7 @@ var JvmConfigForm = React.createClass({
             groupIds: groupIds,
             jdkVersions: jdkVersions,
             tomcatVersions: tomcatVersions,
-            jdkVersion: jdkVersion,
+            jdkMedia: jdkMedia,
             tomcatVersion: tomcatVersion,
             groupMultiSelectData: [],
             httpPort: httpPort,
@@ -514,7 +514,7 @@ var JvmConfigForm = React.createClass({
     },
     getMedia: function() {
         var self = this;
-        mediaService.getAllMedia(function(response){
+        mediaService.getAllMedia().then((function(response){
             var allMedia = response.applicationResponseContent;
             var jdkVersions = [], tomcatVersions = [];
             for (var i=0; i<allMedia.length; i++) {
@@ -525,13 +525,15 @@ var JvmConfigForm = React.createClass({
                 }
             }
             self.setState({jdkVersions: jdkVersions, tomcatVersions: tomcatVersions});
-        })
+        })).caught(function(response){
+            $.errorAlert(response);
+        });
     },
     getJdkVersions: function() {
         var items=[<option key='no-jvm-version' value=''></option>];
         for (var i=0; i < this.state.jdkVersions.length; i++){
             var jdkVersionOption = this.state.jdkVersions[i];
-            items.push(<option value={jdkVersionOption.id}>{jdkVersionOption.name}</option>);
+            items.push(<option selected={jdkVersionOption.id == this.state.jdkMedia.id} value={jdkVersionOption.id}>{jdkVersionOption.name}</option>);
         }
         return items;
     },
