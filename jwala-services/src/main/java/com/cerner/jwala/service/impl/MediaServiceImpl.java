@@ -12,7 +12,7 @@ import java.util.List;
 
 /**
  * Implements {@link MediaService}
- *
+ * <p/>
  * Created by Jedd Cuison on 12/7/2016
  */
 @Service
@@ -51,7 +51,7 @@ public class MediaServiceImpl implements MediaService {
     }
 
     @Override
-    public MediaType [] getMediaTypes() {
+    public MediaType[] getMediaTypes() {
         return MediaType.values();
     }
 
@@ -59,6 +59,10 @@ public class MediaServiceImpl implements MediaService {
     @Transactional
     public JpaMedia update(final JpaMedia media) {
         return mediaDao.update(media);
+    }
+
+    public void setMediaDao(MediaDao mediaDao) {
+        this.mediaDao = mediaDao;
     }
 
 }

@@ -51,4 +51,7 @@ public class MediaServiceRestImpl implements MediaServiceRest {
         return ResponseBuilder.ok(mediaService.getMediaTypes());
     }
 
+    public void setMediaService(MediaService mediaService) {
+        this.mediaService = mediaService;
+    }
 }
