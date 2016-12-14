@@ -20,6 +20,7 @@ import java.io.File;
 
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
@@ -209,7 +210,7 @@ public class BinaryDistributionServiceImplTest {
     @Test
     public void testDistributeJdk() throws CommandFailureException {
         final String hostname = "localhost";
-        final String java_home = ApplicationProperties.get("remote.jwala.java.home").replace("/", "//");
+        final String java_home = ApplicationProperties.get("remote.jwala.java.home");
         final String javaParentDir = new File(java_home).getParent().replaceAll("\\\\", "/");
 
         Media mockMedia = mock(Media.class);
@@ -221,7 +222,7 @@ public class BinaryDistributionServiceImplTest {
         when(mockJvm.getHostName()).thenReturn(hostname);
         when(mockJvm.getJvmName()).thenReturn("test-jvm");
 
-        when(mockBinaryDistributionControlService.checkFileExists(hostname, java_home)).thenReturn(new CommandOutput(new ExecReturnCode(1), "FAIL", ""));
+        when(mockBinaryDistributionControlService.checkFileExists(eq(hostname), eq(java_home))).thenReturn(new CommandOutput(new ExecReturnCode(1), "FAIL", ""));
         when(mockBinaryDistributionControlService.createDirectory(hostname, javaParentDir)).thenReturn(new CommandOutput(new ExecReturnCode(0), "SUCCESS", ""));
         when(mockBinaryDistributionControlService.secureCopyFile(anyString(), anyString(), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(0), "SUCCESS", ""));
         when(mockBinaryDistributionControlService.unzipBinary(hostname, "~/.jwala/unzip.exe", java_home + ".zip", "D:/ctp", "")).thenReturn(new CommandOutput(new ExecReturnCode(0), "SUCCESS", ""));
