@@ -210,7 +210,7 @@ public class BinaryDistributionServiceImplTest {
     public void testDistributeJdk() throws CommandFailureException {
         final String hostname = "localhost";
         final String java_home = ApplicationProperties.get("remote.jwala.java.home").replace("/", "//");
-        final String javaParentDir = new File(javaHome).getParent().replaceAll("\\\\", "/");
+        final String javaParentDir = new File(java_home).getParent().replaceAll("\\\\", "/");
 
         Media mockMedia = mock(Media.class);
         when(mockMedia.getName()).thenReturn("test-jvm-jdk-media");
