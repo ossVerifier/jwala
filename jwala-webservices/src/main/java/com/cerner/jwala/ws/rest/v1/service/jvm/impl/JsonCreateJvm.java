@@ -117,7 +117,7 @@ public class JsonCreateJvm {
                 systemProperties,
                 userName,
                 encryptedPassword,
-                jdkMediaId.isEmpty() ? null : new Identifier<Media>(Long.parseLong(jdkMediaId))/*,
+                jdkMediaId == null ? null : new Identifier<Media>(Long.parseLong(jdkMediaId))/*,
                 tomcatMediaId.isEmpty() ? null : new Identifier<Media>(Long.parseLong(tomcatMediaId))*/);
     }
 
@@ -136,7 +136,7 @@ public class JsonCreateJvm {
                 systemProperties,
                 userName,
                 encryptedPassword,
-                jdkMediaId.isEmpty() ? null : new Identifier<Media>(Long.parseLong(jdkMediaId))/*,
+                jdkMediaId == null ? null : new Identifier<Media>(Long.parseLong(jdkMediaId))/*,
                 tomcatMediaId.isEmpty() ? null : new Identifier<Media>(Long.parseLong(tomcatMediaId))*/);
     }
 
@@ -191,7 +191,7 @@ public class JsonCreateJvm {
                     systemProperties.getTextValue(),
                     userName == null ? null : userName.getTextValue(),
                     pw,
-                    jdkMediaId.getTextValue()/*,
+                    jdkMediaId == null ? null : jdkMediaId.getTextValue()/*,
                     tomcatMediaId.getTextValue()*/);
         }
     }
