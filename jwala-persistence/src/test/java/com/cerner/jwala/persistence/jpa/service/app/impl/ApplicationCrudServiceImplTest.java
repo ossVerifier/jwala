@@ -58,6 +58,7 @@ import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Scanner;
 
 import static org.junit.Assert.*;
@@ -122,7 +123,7 @@ public class ApplicationCrudServiceImplTest {
     private String aUser;
 
     private String alphaLower = "abcdefghijklmnopqrstuvwxyz";
-    private String alpha = alphaLower + alphaLower.toUpperCase();
+    private String alpha = alphaLower + alphaLower.toUpperCase(Locale.US);
     private String alphaNum = alpha + "0123456789,.-/_$ ";
     private String alphaUnsafe = alphaNum + "\\\t\r\n";
 

@@ -19,6 +19,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.tika.mime.MediaType;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 /**
@@ -71,7 +72,7 @@ public class GroupLevelAppResourceHandler extends ResourceHandler {
             final ConfigTemplate createdConfigTemplate;
 
             if (metaData.getContentType().equals(MediaType.APPLICATION_ZIP) &&
-                    templateContent.toLowerCase().endsWith(WAR_FILE_EXTENSION)) {
+                    templateContent.toLowerCase(Locale.US).endsWith(WAR_FILE_EXTENSION)) {
                 final Application app = applicationPersistenceService.getApplication(resourceIdentifier.webAppName);
                 if (StringUtils.isEmpty(app.getWarName())) {
                     applicationPersistenceService.updateWarInfo(resourceIdentifier.webAppName, metaData.getTemplateName(), templateContent);

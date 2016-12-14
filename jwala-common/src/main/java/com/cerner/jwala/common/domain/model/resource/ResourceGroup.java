@@ -1,8 +1,9 @@
 package com.cerner.jwala.common.domain.model.resource;
 
-import java.util.List;
-
 import com.cerner.jwala.common.domain.model.group.Group;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by Sahil Palvi on 4/25/2016.
@@ -10,7 +11,7 @@ import com.cerner.jwala.common.domain.model.group.Group;
  * This class contains all the information of a group resource. It contains the list of webservers, jvms and webapps for a selected group.
  */
 public class ResourceGroup {
-    private List<Group> groups;
+    private List<Group> groups = new ArrayList<>();
 
     public ResourceGroup() {
     }

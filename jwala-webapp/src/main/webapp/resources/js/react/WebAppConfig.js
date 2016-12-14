@@ -204,7 +204,7 @@ var WebAppConfigForm = React.createClass({
                        {idTextHidden}
                        <label>*Name</label><br/>
                        <label htmlFor="name" className="error"/>
-                       <input name="name" type="text" valueLink={this.linkState("name")} maxLength="255" required
+                       <input ref="webServerName" name="name" type="text" valueLink={this.linkState("name")} maxLength="255" required
                               className="width-max"/>
                        <label>*Context path</label><br/>
                        <label htmlFor="webappContext" className="error"/>
@@ -250,6 +250,7 @@ var WebAppConfigForm = React.createClass({
         ServiceFactory.getGroupService().getGroups().then(function(response){
             self.setState({groupData: response.applicationResponseContent});
         }).lastly(function(){
+            $(self.refs.webServerName.getDOMNode()).focus();
             if (self.validator === null) {
                 self.validator = $(self.getDOMNode().children[0])
                     .validate({ignore: ":hidden", rules: {"groupId": {required: true}},

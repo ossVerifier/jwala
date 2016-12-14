@@ -6,7 +6,6 @@ import com.cerner.jwala.common.domain.model.resource.ResourceContent;
 import com.cerner.jwala.common.domain.model.resource.ResourceIdentifier;
 import com.cerner.jwala.common.domain.model.resource.ResourceTemplateMetaData;
 import com.cerner.jwala.common.exception.FaultCodeException;
-import com.cerner.jwala.common.exec.CommandOutput;
 import com.cerner.jwala.common.properties.ExternalProperties;
 import com.cerner.jwala.persistence.jpa.service.exception.ResourceTemplateMetaDataUpdateException;
 import com.cerner.jwala.service.exception.ResourceServiceException;
@@ -33,11 +32,7 @@ import javax.activation.DataHandler;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.BufferedInputStream;
+import java.io.*;
 import java.nio.charset.Charset;
 import java.util.*;
 
@@ -82,7 +77,7 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
                     final DataHandler handler = attachment.getDataHandler();
                     try {
                         LOGGER.debug("filename is {}", handler.getName());
-                        if (handler.getName().toLowerCase().endsWith(JSON_FILE_EXTENSION)) {
+                        if (handler.getName().toLowerCase(Locale.US).endsWith(JSON_FILE_EXTENSION)) {
                             metadataInputStream = attachment.getDataHandler().getInputStream();
                         } else {
                             templateInputStream = attachment.getDataHandler().getInputStream();
