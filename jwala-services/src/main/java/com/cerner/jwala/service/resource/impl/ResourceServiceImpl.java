@@ -93,8 +93,6 @@ public class ResourceServiceImpl implements ResourceService {
 
     private final ResourceRepositoryService resourceRepositoryService;
 
-    private final ResourceRepositoryService resourceRepositoryService;
-
     public ResourceServiceImpl(final ResourcePersistenceService resourcePersistenceService,
                                final GroupPersistenceService groupPersistenceService,
                                final ApplicationPersistenceService applicationPersistenceService,
