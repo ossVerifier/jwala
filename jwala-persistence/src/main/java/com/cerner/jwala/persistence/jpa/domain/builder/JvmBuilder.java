@@ -62,7 +62,8 @@ public class JvmBuilder {
             final String path = jdkMedia.getLocalPath() != null ? jdkMedia.getLocalPath().toString() : "";
             final String type = jdkMedia.getType() != null ? jdkMedia.getType().toString() : "";
             final String remoteHostPath = jdkMedia.getRemoteDir() != null ? jdkMedia.getRemoteDir().toString() : "";
-            return new Media(id, name, path, type, remoteHostPath);
+            final String mediaDir = jdkMedia.getMediaDir() != null ? jdkMedia.getMediaDir().toString() : "";
+            return new Media(id, name, path, type, remoteHostPath, mediaDir);
         } else {
             return null;
         }

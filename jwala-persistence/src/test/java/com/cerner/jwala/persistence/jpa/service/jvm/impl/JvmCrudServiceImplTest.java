@@ -69,10 +69,11 @@ public class JvmCrudServiceImplTest {
 
         String testJvmName = "testJvmName";
         final JpaMedia media = new JpaMedia();
-        media .setName("test-media");
-        media .setType(MediaType.JDK);
+        media.setName("test-media");
+        media.setType(MediaType.JDK);
         media.setLocalPath(new File("d:/not/a/real/path.zip").toPath());
         media.setRemoteDir(new File("d:/fake/remote/path").toPath());
+        media.setMediaDir(new File("test-media").toPath());
         jpaMedia = mediaDao.create(media);
         CreateJvmRequest createJvmRequest = new CreateJvmRequest(testJvmName, "testHostName", 100, 101, 102, 103, 104, new Path("./jwala.png"), "", null, null, null);
         JpaJvm jpaJvm = jvmCrudService.createJvm(createJvmRequest, jpaMedia);

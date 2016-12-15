@@ -13,13 +13,15 @@ public class Media implements Serializable {
     private String path;
     private String type;
     private String remoteHostPath;
+    private String mediaDir;
 
-    public Media(Integer id, String name, String path, String type, String remoteHostPath) {
+    public Media(Integer id, String name, String path, String type, String remoteHostPath, String mediaDir) {
         this.id = id;
         this.name = name;
         this.path = path;
         this.type = type;
         this.remoteHostPath = remoteHostPath;
+        this.mediaDir = mediaDir;
     }
 
 
@@ -63,4 +65,11 @@ public class Media implements Serializable {
         this.remoteHostPath = remoteHostPath;
     }
 
+    public String getMediaDir() {
+        return mediaDir;
+    }
+
+    public void setMediaDir(String mediaDir) {
+        this.mediaDir = mediaDir;
+    }
 }

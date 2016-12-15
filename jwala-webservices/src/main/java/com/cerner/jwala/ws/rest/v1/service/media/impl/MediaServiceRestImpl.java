@@ -34,7 +34,9 @@ public class MediaServiceRestImpl implements MediaServiceRest {
 
     @Override
     public Response createMedia(final List<Attachment> attachments) {
+        LOGGER.info("createMedia {}", attachments);
         if (attachments == null || attachments.isEmpty()) {
+            LOGGER.error("Expected non-empty attachments. Returning without creating Media.");
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
 
@@ -60,17 +62,20 @@ public class MediaServiceRestImpl implements MediaServiceRest {
 
     @Override
     public Response updateMedia(final JpaMedia media, final AuthenticatedUser aUser) {
+        LOGGER.info("updateMedia {} by user {}", media, aUser.getUser().getId());
         return ResponseBuilder.ok(mediaService.update(media));
     }
 
     @Override
     public Response removeMedia(final String name, final AuthenticatedUser aUser) {
+        LOGGER.info("removeMedia {} by user {}", name, aUser.getUser().getId());
         mediaService.remove(name);
         return Response.status(Response.Status.NO_CONTENT).build();
     }
 
     @Override
     public Response getMedia(final Long id, final String mediaName, final AuthenticatedUser aUser) {
+        LOGGER.debug("getMedia with ID {} and name {} by user", id, mediaName, aUser.getUser().getId());
         if (id == null && StringUtils.isEmpty(mediaName)) {
             return ResponseBuilder.ok(mediaService.findAll());
         } else if (id != null) {
@@ -81,10 +86,13 @@ public class MediaServiceRestImpl implements MediaServiceRest {
 
     @Override
     public Response getMediaTypes() {
+        LOGGER.debug("getMediaTypes");
         return ResponseBuilder.ok(mediaService.getMediaTypes());
     }
 
-    public void setMediaService(MediaService mediaService) {
+    public void setMediaService(MediaService mediaService)
+    {
+        LOGGER.debug("setMediaService");
         this.mediaService = mediaService;
     }
 }

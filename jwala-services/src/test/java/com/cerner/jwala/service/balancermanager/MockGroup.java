@@ -53,8 +53,8 @@ public class MockGroup {
                 Calendar.getInstance(),
                 "username",
                 "encryptedpassword",
-                new Media(1, "JDK 1.7-test", "/local/archive/path", "JDK", "/remote/host/path"),
-                new Media(1, "Apache Tomcat 7.0.55-test", "/local/archive/path", "Tomcat", "/remote/host/path"));
+                new Media(1, "JDK 1.7-test", "/local/archive/path.zip", "JDK", "/remote/host/path", "unzipped-root-deploy-dir"),
+                new Media(2, "Apache Tomcat 7.0.55-test", "/local/archive/path.zip", "Tomcat", "/remote/host/path", "unzipped-root-deploy-dir"));
         this.jvms.add(jvm);
         jvms.add(jvm);
         return jvms;
@@ -78,8 +78,8 @@ public class MockGroup {
                 Calendar.getInstance(),
                 "username",
                 "encryptedpassword",
-                new Media(1, "JDK 1.7-test", "/local/archive/path", "JDK", "/remote/host/path"),
-                new Media(1, "Apache Tomcat 7.0.55-test", "/local/archive/path", "Tomcat", "/remote/host/path"));
+                new Media(1, "JDK 1.7-test", "/local/archive/path", "JDK", "/remote/host/path", "unzipped-root-deploy-dir"),
+                new Media(1, "Apache Tomcat 7.0.55-test", "/local/archive/path", "Tomcat", "/remote/host/path", "unzipped-root-deploy-dir"));
         return jvm;
     }
 

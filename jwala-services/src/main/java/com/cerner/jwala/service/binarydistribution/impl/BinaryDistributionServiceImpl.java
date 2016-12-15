@@ -38,11 +38,12 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
         LOGGER.info("Start deploy jdk for {}", jvm);
         final Media jdkMedia = jvm.getJdkMedia();
         if (jdkMedia != null) {
-            File javaHome = new File(jdkMedia.getRemoteHostPath());
-            String jdkDir = javaHome.getName();
-            String binaryDeployDir = javaHome.getParentFile().getAbsolutePath().replaceAll("\\\\", "/");
-            if (jdkDir != null && !jdkDir.isEmpty()) {
-                distributeBinary(jvm.getHostName(), jdkDir, binaryDeployDir, "");
+            String remoteHostPath = jdkMedia.getRemoteHostPath();
+            String jdkDir = jdkMedia.getMediaDir();
+            File remoteDestination = new File(remoteHostPath);
+            String binaryDeployDir = remoteDestination.getAbsolutePath().replaceAll("\\\\", "/");
+            if (binaryDeployDir != null && !binaryDeployDir.isEmpty()) {
+                distributeBinary(jvm.getHostName(), jdkDir, binaryDeployDir, "", jdkMedia.getPath());
             } else {
                 LOGGER.warn("JDK dir location is null or empty {}", jdkDir);
             }
@@ -60,7 +61,8 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
         String tomcatDir = tomcat.getParentFile().getName();
         String binaryDeployDir = tomcat.getParentFile().getParentFile().getAbsolutePath().replaceAll("\\\\", "/");
         if (tomcatDir != null && !tomcatDir.isEmpty()) {
-            distributeBinary(hostname, tomcatDir, binaryDeployDir, "");
+            final String localArchivePath = ApplicationProperties.get(BINARY_LOCATION_PROPERTY_KEY) + "/" + tomcatDir + ".zip";
+            distributeBinary(hostname, tomcatDir, binaryDeployDir, "", localArchivePath);
         } else {
             LOGGER.warn("Tomcat dir location is null or empty {}", tomcatDir);
         }
@@ -76,7 +78,8 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
             String webServerDir = apache.getName();
             String binaryDeployDir = apache.getParentFile().getAbsolutePath().replaceAll("\\\\", "/");
             if (webServerDir != null && !webServerDir.isEmpty()) {
-                distributeBinary(hostname, webServerDir, binaryDeployDir, APACHE_EXCLUDE);
+                final String localArchivePath = ApplicationProperties.get(BINARY_LOCATION_PROPERTY_KEY) + "/" + webServerDir + ".zip";
+                distributeBinary(hostname, webServerDir, binaryDeployDir, APACHE_EXCLUDE, localArchivePath);
             } else {
                 LOGGER.warn("WebServer dir location is null or empty {}", webServerDir);
             }
@@ -85,13 +88,12 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
         }
     }
 
-    private void distributeBinary(final String hostname, final String binaryName, final String binaryDeployDir, final String exclude) {
-        String binaryDir = ApplicationProperties.get(BINARY_LOCATION_PROPERTY_KEY);
+    private void distributeBinary(final String hostname, final String binaryName, final String binaryDeployDir, final String exclude, String localArchivePath) {
         if (binaryDeployDir != null && !binaryDeployDir.isEmpty()) {
             if (!remoteFileCheck(hostname, binaryDeployDir + "/" + binaryName)) {
                 LOGGER.info("Couldn't find {} on host {}. Trying to deploy it", binaryName, hostname);
-                if (binaryDir != null && !binaryDir.isEmpty()) {
-                    String zipFile = binaryDir + "/" + binaryName + ".zip";
+                if (localArchivePath != null && !localArchivePath.isEmpty()) {
+                    String zipFile = localArchivePath;
                     String destinationZipFile = binaryDeployDir + "/" + binaryName + ".zip";
                     remoteCreateDirectory(hostname, binaryDeployDir);
                     remoteSecureCopyFile(hostname, zipFile, destinationZipFile);
@@ -101,7 +103,7 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
                         remoteDeleteBinary(hostname, destinationZipFile);
                     }
                 } else {
-                    LOGGER.warn("Cannot find the binary directory location in jwala, value is {}", binaryDir);
+                    LOGGER.warn("Cannot find the binary directory location in jwala, value is {}", localArchivePath);
                 }
             } else {
                 LOGGER.info("Found {} at on host {}", binaryName, hostname);

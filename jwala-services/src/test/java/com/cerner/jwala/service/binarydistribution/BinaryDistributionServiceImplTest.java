@@ -210,23 +210,27 @@ public class BinaryDistributionServiceImplTest {
     @Test
     public void testDistributeJdk() throws CommandFailureException {
         final String hostname = "localhost";
-        final String java_home = ApplicationProperties.get("remote.jwala.java.home");
-        final String javaParentDir = new File(java_home).getParent().replaceAll("\\\\", "/");
+        final String remoteJwalaJavaHome = "d:/stp";
+        final String rootDeployDirFromZip = "root-deploy-dir";
+        final String localZipFileName = "/path.zip";
 
         Media mockMedia = mock(Media.class);
         when(mockMedia.getName()).thenReturn("test-jvm-jdk-media");
-        when(mockMedia.getRemoteHostPath()).thenReturn(java_home);
+        when(mockMedia.getRemoteHostPath()).thenReturn(remoteJwalaJavaHome);
+        when(mockMedia.getPath()).thenReturn("/local" + localZipFileName);
+        when(mockMedia.getMediaDir()).thenReturn(rootDeployDirFromZip);
 
         Jvm mockJvm = mock(Jvm.class);
         when(mockJvm.getJdkMedia()).thenReturn(mockMedia);
         when(mockJvm.getHostName()).thenReturn(hostname);
         when(mockJvm.getJvmName()).thenReturn("test-jvm");
 
-        when(mockBinaryDistributionControlService.checkFileExists(eq(hostname), eq(java_home))).thenReturn(new CommandOutput(new ExecReturnCode(1), "FAIL", ""));
-        when(mockBinaryDistributionControlService.createDirectory(hostname, javaParentDir)).thenReturn(new CommandOutput(new ExecReturnCode(0), "SUCCESS", ""));
+        when(mockBinaryDistributionControlService.checkFileExists(eq(hostname), eq(remoteJwalaJavaHome + "/" + rootDeployDirFromZip))).thenReturn(new CommandOutput(new ExecReturnCode(1), "FAIL", ""));
+        when(mockBinaryDistributionControlService.createDirectory(hostname, remoteJwalaJavaHome)).thenReturn(new CommandOutput(new ExecReturnCode(0), "SUCCESS", ""));
         when(mockBinaryDistributionControlService.secureCopyFile(anyString(), anyString(), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(0), "SUCCESS", ""));
-        when(mockBinaryDistributionControlService.unzipBinary(hostname, "~/.jwala/unzip.exe", java_home + ".zip", "D:/ctp", "")).thenReturn(new CommandOutput(new ExecReturnCode(0), "SUCCESS", ""));
-        when(mockBinaryDistributionControlService.deleteBinary(hostname, java_home + ".zip")).thenReturn(new CommandOutput(new ExecReturnCode(0), "SUCCESS", ""));
+        when(mockBinaryDistributionControlService.unzipBinary(hostname, "~/.jwala/unzip.exe", remoteJwalaJavaHome + "/" + rootDeployDirFromZip + ".zip", remoteJwalaJavaHome, "")).thenReturn(new CommandOutput(new ExecReturnCode(0), "SUCCESS", ""));
+        final String destination = remoteJwalaJavaHome + "/" + rootDeployDirFromZip + ".zip";
+        when(mockBinaryDistributionControlService.deleteBinary(hostname, destination)).thenReturn(new CommandOutput(new ExecReturnCode(0), "SUCCESS", ""));
         binaryDistributionService.distributeJdk(mockJvm);
     }
 
