@@ -41,7 +41,6 @@ public class RuleTest {
     private Identifier [] groupIds = {new Identifier<Group>(1L)};
     private Identifier [] jvmIds = {new Identifier<Jvm>(1L)};
     private Rule [] rules = {new HostNameRule("any"),
-                             new MapNotEmptyRule(mock(Map.class)),
                              new MultipleRules(),
                              new PathRule(mockPath),
                              new PortNumberRule(8080, AemFaultType.CANNOT_CONNECT),
