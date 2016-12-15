@@ -112,7 +112,7 @@ public class WebServerCrudServiceImpl extends AbstractCrudServiceImpl<JpaWebServ
 
     protected List<WebServer> webServersFrom(final List<JpaWebServer> someJpaWebServers) {
 
-        final List<WebServer> webservers = new ArrayList<>();
+        final List<WebServer> webservers = new ArrayList<>(someJpaWebServers.size());
 
         for (final JpaWebServer jpaWebServer : someJpaWebServers) {
             webservers.add(webServerFrom(jpaWebServer));

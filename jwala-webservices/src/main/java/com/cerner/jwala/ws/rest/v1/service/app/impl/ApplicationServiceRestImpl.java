@@ -5,10 +5,7 @@ import com.cerner.jwala.common.domain.model.fault.AemFaultType;
 import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
-import com.cerner.jwala.common.domain.model.resource.ResourceIdentifier;
 import com.cerner.jwala.common.exception.FaultCodeException;
-import com.cerner.jwala.common.exec.CommandOutput;
-import com.cerner.jwala.common.exec.CommandOutputReturnCode;
 import com.cerner.jwala.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
 import com.cerner.jwala.persistence.jpa.service.exception.ResourceTemplateUpdateException;
 import com.cerner.jwala.service.app.ApplicationService;
@@ -17,13 +14,10 @@ import com.cerner.jwala.service.resource.ResourceService;
 import com.cerner.jwala.ws.rest.v1.provider.AuthenticatedUser;
 import com.cerner.jwala.ws.rest.v1.response.ResponseBuilder;
 import com.cerner.jwala.ws.rest.v1.service.app.ApplicationServiceRest;
-import org.apache.commons.fileupload.servlet.ServletFileUpload;
-import org.apache.cxf.jaxrs.ext.MessageContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.persistence.EntityExistsException;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import java.util.List;
 import java.util.Set;
@@ -113,12 +107,6 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
         return ResponseBuilder.ok();
     }
 
-    @Override
-    public Response deleteWebArchive(final Identifier<Application> appToRemoveWAR, final AuthenticatedUser aUser) {
-        LOGGER.info("Delete Archive requested: {}", appToRemoveWAR);
-        Application updated = service.deleteWebArchive(appToRemoveWAR, aUser.getUser());
-        return ResponseBuilder.ok(updated);
-    }
 
     @Override
     public Response deployWebArchive(final Identifier<Application> anAppToGet, final AuthenticatedUser aUser) {

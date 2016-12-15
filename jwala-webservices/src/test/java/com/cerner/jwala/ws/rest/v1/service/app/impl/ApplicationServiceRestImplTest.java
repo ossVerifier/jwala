@@ -20,7 +20,6 @@ import com.cerner.jwala.service.resource.ResourceService;
 import com.cerner.jwala.ws.rest.v1.provider.AuthenticatedUser;
 import com.cerner.jwala.ws.rest.v1.response.ApplicationResponse;
 import com.cerner.jwala.ws.rest.v1.service.app.ApplicationServiceRest;
-import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.cxf.jaxrs.ext.MessageContext;
 import org.junit.Before;
 import org.junit.Test;
@@ -128,20 +127,6 @@ public class ApplicationServiceRestImplTest {
             return true;
         }
 
-    }
-
-    @Test
-    public void testDeleteWebArchive() throws IOException {
-        when(service.getApplication(Matchers.eq(id(1L, Application.class)))).thenReturn(applicationWithWar);
-        when(service.deleteWebArchive(Matchers.eq(id(1L, Application.class)), any(User.class))).thenReturn(application);
-
-        Response currentResponse = cut.getApplication(id(1L, Application.class));
-        Application current = getApplicationFromResponse(currentResponse);
-        assertEquals(applicationWithWar, current);
-
-        Response updatedResponse = cut.deleteWebArchive(id(1L, Application.class), authenticatedUser);
-        Application updated = getApplicationFromResponse(updatedResponse);
-        assertEquals(application, updated);
     }
 
     @Test

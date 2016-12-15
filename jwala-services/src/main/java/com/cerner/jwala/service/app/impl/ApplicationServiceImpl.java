@@ -154,13 +154,6 @@ public class ApplicationServiceImpl implements ApplicationService {
     }
 
     @Override
-    @Transactional
-    @Deprecated
-    public Application deleteWebArchive(final Identifier<Application> appId, final User user) {
-        throw new UnsupportedOperationException("This service was deprecated! Please use resource service to delete a WAR.");
-    }
-
-    @Override
     @Transactional(readOnly = true)
     public List<String> getResourceTemplateNames(final String appName, final String jvmName) {
         return applicationPersistenceService.getResourceTemplateNames(appName, jvmName);
