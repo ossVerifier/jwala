@@ -1,18 +1,13 @@
 package com.cerner.jwala.service.webserver.component;
 
 import com.cerner.jwala.common.domain.model.id.Identifier;
-import com.cerner.jwala.common.domain.model.state.CurrentState;
-import com.cerner.jwala.common.domain.model.state.StateType;
 import com.cerner.jwala.common.domain.model.webserver.WebServer;
 import com.cerner.jwala.common.domain.model.webserver.WebServerReachableState;
 import com.cerner.jwala.common.domain.model.webserver.WebServerState;
-import com.cerner.jwala.common.request.state.SetStateRequest;
-import com.cerner.jwala.common.request.state.WebServerSetStateRequest;
 import com.cerner.jwala.service.MessagingService;
 import com.cerner.jwala.service.group.GroupStateNotificationService;
 import com.cerner.jwala.service.state.InMemoryStateManagerService;
 import com.cerner.jwala.service.webserver.WebServerService;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.conn.ConnectTimeoutException;
 import org.joda.time.DateTime;
@@ -173,29 +168,5 @@ public class WebServerStateSetterWorker {
         }
         return stateChangedAndOrMsgNotEmpty;
     }
-
-    /**
-     * Sets the web server state.
-     *
-     * @param id    the web server id {@link com.cerner.jwala.common.domain.model.id.Identifier}
-     * @param state the state {@link com.cerner.jwala.common.domain.model.webserver.WebServerReachableState}
-     * @param msg   a message
-     * @return {@link SetStateRequest}
-     */
-    /*private SetStateRequest<WebServer, WebServerReachableState> createStateCommand(final Identifier<WebServer> id,
-                                                                                   final WebServerReachableState state,
-                                                                                   final String msg) {
-        if (StringUtils.isEmpty(msg)) {
-            return new WebServerSetStateRequest(new CurrentState<>(id,
-                    state,
-                    DateTime.now(),
-                    StateType.WEB_SERVER));
-        }
-        return new WebServerSetStateRequest(new CurrentState<>(id,
-                state,
-                DateTime.now(),
-                StateType.WEB_SERVER,
-                msg));
-    }*/
 
 }
