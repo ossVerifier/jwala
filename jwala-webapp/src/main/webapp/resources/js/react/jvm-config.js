@@ -572,7 +572,7 @@ var JvmConfigDataTable = React.createClass({
                         {sTitle:"Shutd", mData:"shutdownPort"},
                         {sTitle:"AJP", mData:"ajpPort"},
                         {sTitle:"Username", mData: "userName"},
-                        {sTitle:"JDK", mData:"jdkMedia.name"}/*,
+                        {sTitle:"JDK", mData:"jdkMedia", jwalaType:"custom", jwalaRenderCfgFn:this.renderJdkMediaName}/*,
                         {sTitle:"Tomcat", mData:"tomcatMedia"}*/];
         return <JwalaDataTable ref="dataTableWrapper"
                                tableId="jvm-config-datatable"
@@ -589,5 +589,12 @@ var JvmConfigDataTable = React.createClass({
                 $(this.getDOMNode()).click(oData, self.props.editCallback);
             });
         };
+   },
+   renderJdkMediaName:function(dataTable, data, aoColumnDefs, itemIndex) {
+        var self = this;
+        aoColumnDefs[itemIndex].fnCreatedCell = function (nTd, sData, oData, iRow, iCol) {
+            var jdkMediaName = sData && sData.name ? sData.name : "";
+            return React.renderComponent(React.createElement("span", {}, jdkMediaName), nTd);
+        }
    }
 });
