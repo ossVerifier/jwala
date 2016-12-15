@@ -295,6 +295,8 @@ public class JvmServiceImpl implements JvmService {
 
             validateJvmAndAppResources(jvm);
 
+            checkForJdkBinaries(jvm);
+
             distributeBinaries(jvm.getHostName());
             // check for setenv.bat
             checkForSetenvBat(jvm.getJvmName());
@@ -347,6 +349,14 @@ public class JvmServiceImpl implements JvmService {
             historyFacadeService.write(jvm.getHostName(), jvm.getGroups(), historyMessage, eventType, user.getId());
         }
         return jvm;
+    }
+
+    private void checkForJdkBinaries(Jvm jvm) {
+        if (jvm.getJdkMedia() == null){
+            final String jvmName = jvm.getJvmName();
+            LOGGER.error("No JDK version specified for JVM {}. Stopping the JV generation.", jvmName);
+            throw new InternalErrorException(AemFaultType.JVM_JDK_NOT_SPECIFIED, "No JDK version specified for JVM " + jvmName + ". Stopping the JVM generation.");
+        }
     }
 
     private void validateJvmAndAppResources(Jvm jvm) {

@@ -37,21 +37,16 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
     public void distributeJdk(final Jvm jvm) {
         LOGGER.info("Start deploy jdk for {}", jvm);
         final Media jdkMedia = jvm.getJdkMedia();
-        if (jdkMedia != null) {
-            String remoteHostPath = jdkMedia.getRemoteHostPath();
-            String jdkDir = jdkMedia.getMediaDir();
-            File remoteDestination = new File(remoteHostPath);
-            String binaryDeployDir = remoteDestination.getAbsolutePath().replaceAll("\\\\", "/");
-            if (binaryDeployDir != null && !binaryDeployDir.isEmpty()) {
-                distributeBinary(jvm.getHostName(), jdkDir, binaryDeployDir, "", jdkMedia.getPath());
-            } else {
-                LOGGER.warn("JDK dir location is null or empty {}", jdkDir);
-            }
-            LOGGER.info("End deploy jdk {} for {}", jdkMedia.getName(), jvm.getJvmName());
+        String remoteHostPath = jdkMedia.getRemoteHostPath();
+        String jdkDir = jdkMedia.getMediaDir();
+        File remoteDestination = new File(remoteHostPath);
+        String binaryDeployDir = remoteDestination.getAbsolutePath().replaceAll("\\\\", "/");
+        if (binaryDeployDir != null && !binaryDeployDir.isEmpty()) {
+            distributeBinary(jvm.getHostName(), jdkDir, binaryDeployDir, "", jdkMedia.getPath());
         } else {
-            LOGGER.error("No JDK version specified for {}", jvm.getJvmName());
-            // TODO throw an internal error exception here? or check for JDK at the same time the templates are validated and throw the exception there?
+            LOGGER.info("JDK dir location is null or empty for JVM {}. Not deploying JDK.", jvm.getJvmName());
         }
+        LOGGER.info("End deploy jdk {} for {}", jdkMedia.getName(), jvm.getJvmName());
     }
 
     @Override
