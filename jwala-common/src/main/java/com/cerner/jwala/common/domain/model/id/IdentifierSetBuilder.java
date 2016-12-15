@@ -20,6 +20,10 @@ public class IdentifierSetBuilder {
         try {
             final Set<Identifier<T>> newIds = new HashSet<>(ids != null ? ids.size() : 0);
 
+            if (ids == null) {
+                return newIds;
+            }
+
             for (final String id : ids) {
                 newIds.add(new Identifier<T>(id));
             }
