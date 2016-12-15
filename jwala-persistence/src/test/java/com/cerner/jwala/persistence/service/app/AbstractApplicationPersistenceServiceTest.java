@@ -148,33 +148,6 @@ public abstract class AbstractApplicationPersistenceServiceTest {
         testRemoveApp();
         testUpdateApp();
     }    
-    
-    @Test
-    public void testUpdateWARPath() { 
-        CreateApplicationRequest request = new CreateApplicationRequest(expGroupId,  textName, textContext, true, true, false);
-        Application created = applicationPersistenceService.createApplication(request);
-        
-        UploadWebArchiveRequest uploadWebArchiveRequest = new UploadWebArchiveRequest(created, "filename-uuid.war", 0L, null);
-
-        Application uploaded = applicationPersistenceService.updateWARPath(uploadWebArchiveRequest, "D:\\APACHE\\TOMCAT\\WEBAPPS\\filename-uuid.war");
-        assertEquals(uploaded.getWarPath(), "D:\\APACHE\\TOMCAT\\WEBAPPS\\filename-uuid.war");                
-    }
-    
-    @Test
-    public void testRemoveWARPath() {        
-        CreateApplicationRequest request = new CreateApplicationRequest(expGroupId,  textName, textContext, true, true, false);
-        Application created = applicationPersistenceService.createApplication(request);
-        
-        UploadWebArchiveRequest uploadWebArchiveRequest = new UploadWebArchiveRequest(created, "filename-uuid.war", 0L, null);
-
-        Application uploaded = applicationPersistenceService.updateWARPath(uploadWebArchiveRequest, "D:\\APACHE\\TOMCAT\\WEBAPPS\\filename-uuid.war");
-        assertEquals(uploaded.getWarPath(), "D:\\APACHE\\TOMCAT\\WEBAPPS\\filename-uuid.war");                        
-
-        RemoveWebArchiveRequest removeWebArchiveRequest = new RemoveWebArchiveRequest(created);
-
-        Application noWarApp = applicationPersistenceService.removeWarPathAndName(removeWebArchiveRequest);
-        assertNull(noWarApp.getWarPath());
-    }
 
     @Test
     public void testUpdateSecureFlag() {
