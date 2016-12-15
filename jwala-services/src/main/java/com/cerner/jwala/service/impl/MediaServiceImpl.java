@@ -1,11 +1,14 @@
 package com.cerner.jwala.service.impl;
 
+import com.cerner.jwala.common.FileUtility;
 import com.cerner.jwala.dao.MediaDao;
 import com.cerner.jwala.persistence.jpa.domain.JpaMedia;
 import com.cerner.jwala.persistence.jpa.type.MediaType;
 import com.cerner.jwala.service.MediaService;
 import com.cerner.jwala.service.resource.ResourceRepositoryService;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,8 +26,13 @@ import java.util.Map;
 @Service
 public class MediaServiceImpl implements MediaService {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(MediaServiceImpl.class);
+
     @Autowired
     private MediaDao mediaDao;
+
+    @Autowired
+    private FileUtility fileUtility;
 
     @Autowired
     private ResourceRepositoryService resourceRepositoryService;
@@ -53,10 +61,9 @@ public class MediaServiceImpl implements MediaService {
         final JpaMedia media = objectMapper.convertValue(mediaDataMap, JpaMedia.class);
 
         final String filename = (String) mediaFileDataMap.get("filename");
-        media.setMediaDir(Paths.get(filename.substring(0, filename.lastIndexOf("."))));
-
         final String dest = resourceRepositoryService.upload(filename, (BufferedInputStream) mediaFileDataMap.get("content"));
 
+        media.setMediaDir(Paths.get(fileUtility.getFirstZipEntryParent(dest)));
         media.setLocalPath(Paths.get(dest));
 
         return mediaDao.create(media);

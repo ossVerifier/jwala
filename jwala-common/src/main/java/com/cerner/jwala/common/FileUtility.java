@@ -6,9 +6,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.io.*;
+import java.text.MessageFormat;
 import java.util.Enumeration;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
 
@@ -55,6 +58,34 @@ public class FileUtility {
         } catch (final IOException e) {
             throw new FileUtilityException("Failed to unpack " + zipFile.getAbsolutePath() + "!", e);
         }
+    }
+
+    /**
+     * Gets the parent directory of the first path entry of a zip file e.g. entries = [folder1/file1, folder1/folder2]
+     * returns "folder"
+     * @param zipFilename the zip filename
+     * @return the parent of the first path entry
+     */
+    public String getFirstZipEntryParent(final String zipFilename) {
+        try {
+            final ZipFile zipFile = new ZipFile(zipFilename);
+            final Enumeration zipEntryEnumeration = zipFile.entries();
+            if (zipEntryEnumeration.hasMoreElements()) {
+                final ZipEntry zipEntry = (ZipEntry) zipEntryEnumeration.nextElement();
+                zipFile.close();
+                return zipEntry.getName().substring(0, zipEntry.getName().indexOf("/"));
+            }
+            zipFile.close();
+            return null;
+        } catch (final IOException e) {
+            final MessageFormat messageFormat = new MessageFormat("Failed to get {0} parent path!");
+            throw new FileUtilityException(messageFormat.format(zipFilename), e);
+        }
+    }
+
+    public static void main(String [] args) throws IOException {
+        final FileUtility fileUtility = new FileUtility();
+        System.out.println(fileUtility.getFirstZipEntryParent("D:/scratch/jedd2.zip"));
     }
 
     public void createJarArchive(File archiveFile, File[] filesToBeJared, String parent) {
