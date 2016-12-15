@@ -212,14 +212,4 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
         service.deployConf(appName, hostName, aUser.getUser());
         return ResponseBuilder.ok(appName);
     }
-
-    @Override
-    public void afterPropertiesSet() throws Exception {
-        instance = this;
-    }
-
-    public static ApplicationServiceRest get() {
-        return instance;
-    }
-
 }

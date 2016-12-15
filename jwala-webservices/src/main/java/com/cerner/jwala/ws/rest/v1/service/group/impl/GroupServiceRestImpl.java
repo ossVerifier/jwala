@@ -72,12 +72,14 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     private GroupWebServerControlService groupWebServerControlService;
     private final JvmService jvmService;
     private final WebServerService webServerService;
+    final ApplicationServiceRest applicationServiceRest;
 
     @Autowired
     public GroupServiceRestImpl(final GroupService groupService, final ResourceService resourceService,
                                 final GroupControlService groupControlService, final GroupJvmControlService groupJvmControlService,
                                 final GroupWebServerControlService groupWebServerControlService, final JvmService jvmService,
-                                final WebServerService webServerService, ApplicationService applicationService) {
+                                final WebServerService webServerService, ApplicationService applicationService,
+                                final ApplicationServiceRest applicationServiceRest) {
         this.groupService = groupService;
         this.resourceService = resourceService;
         this.groupControlService = groupControlService;
@@ -86,6 +88,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         this.jvmService = jvmService;
         this.webServerService = webServerService;
         this.applicationService = applicationService;
+        this.applicationServiceRest = applicationServiceRest;
         executorService = Executors.newFixedThreadPool(Integer.parseInt(ApplicationProperties.get("resources.thread-task-executor.pool.size", "25")));
     }
 
@@ -665,7 +668,6 @@ public class GroupServiceRestImpl implements GroupServiceRest {
             Map<String, Future<Response>> futureContents = new HashMap<>();
             if (null != groupJvms) {
                 LOGGER.info("Updating the templates for all the JVMs in group {}", groupName);
-                final ApplicationServiceRest appServiceRest = ApplicationServiceRestImpl.get();
                 final Authentication auth = SecurityContextHolder.getContext().getAuthentication();
                 for (final Jvm jvm : groupJvms) {
                     final String jvmName = jvm.getJvmName();
@@ -674,7 +676,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
                         @Override
                         public Response call() throws Exception {
                             SecurityContextHolder.getContext().setAuthentication(auth);
-                            return appServiceRest.updateResourceTemplate(appName, resourceTemplateName, jvmName, groupName, updatedContent);
+                            return applicationServiceRest.updateResourceTemplate(appName, resourceTemplateName, jvmName, groupName, updatedContent);
                         }
                     });
                     futureContents.put(jvmName, futureContent);
@@ -707,10 +709,9 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         ResourceTemplateMetaData metaData;
         try {
             metaData = resourceService.getMetaData(groupAppMetaData);
-            final ApplicationServiceRest appServiceRest = ApplicationServiceRestImpl.get();
             if (metaData.getEntity().getDeployToJvms()) {
                 // deploy to all jvms in group
-                performGroupAppDeployToJvms(groupName, fileName, aUser, group, appName, appServiceRest, hostName);
+                performGroupAppDeployToJvms(groupName, fileName, aUser, group, appName, applicationServiceRest, hostName);
             } else {
                 ResourceIdentifier resourceIdentifier = new ResourceIdentifier.Builder()
                         .setGroupName(groupName)
@@ -782,7 +783,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
                                                final String appName, final ApplicationServiceRest appServiceRest, final String hostName) {
         Map<String, Future<Response>> futureMap = new HashMap<>();
         final Set<Jvm> groupJvms = group.getJvms();
-        Set<Jvm> jvms = null;
+        Set<Jvm> jvms;
         if (hostName != null && !hostName.isEmpty()) {
             LOGGER.debug("got hostname {} deploying template to host jvms only", hostName);
             jvms = new HashSet<>();
@@ -831,7 +832,6 @@ public class GroupServiceRestImpl implements GroupServiceRest {
      * @return returns a Future<Response> object if successful.
      */
     protected Future<Response> createFutureResponseForAppDeploy(final String groupName, final String fileName, final String appName, final Jvm jvm, final String hostName) {
-        final ResourceGroup resourceGroup = resourceService.generateResourceGroup();
         final Application application = applicationService.getApplication(appName);
         final Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Future<Response> responseFuture = executorService.submit(new Callable<Response>() {

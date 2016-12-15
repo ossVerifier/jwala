@@ -106,6 +106,7 @@ public class GroupServiceImplDeployTest {
     static final WebServerService mockWebServerService = mock(WebServerService.class);
     static final WebServerControlService mockWebServerControlService = mock(WebServerControlService.class);
     static final ApplicationService mockApplicationService = mock(ApplicationService.class);
+    static final ApplicationServiceRest mockApplicationServiceRest = mock(ApplicationServiceRest.class);
 
     private AuthenticatedUser mockAuthUser = mock(AuthenticatedUser.class);
     private User mockUser = mock(User.class);
@@ -254,6 +255,7 @@ public class GroupServiceImplDeployTest {
         when(mockJvmService.getJvm(anyString())).thenReturn(mockJvm);
         when(mockApplicationService.updateResourceTemplate(anyString(), anyString(), anyString(), anyString(), anyString())).thenReturn("new hct.xml content");
         when(mockApplicationService.deployConf(anyString(), anyString(), anyString(), anyString(), any(ResourceGroup.class), any(User.class))).thenReturn(new CommandOutput(new ExecReturnCode(0), "SUCCESS", ""));
+        when(mockApplicationServiceRest.deployConf(anyString(), anyString(), anyString(), anyString(), any(AuthenticatedUser.class))).thenReturn(mockResponse);
 
         ResourceTemplateMetaData mockMetaData = mock(ResourceTemplateMetaData.class);
         Entity mockEntity = mock(Entity.class);
@@ -546,6 +548,9 @@ public class GroupServiceImplDeployTest {
 
     @Test
     public void testUpdateGroupAppTemplate() {
+        Response mockResponse = mock(Response.class);
+        when(mockResponse.getStatus()).thenReturn(200);
+
         Group mockGroupWithJvms = mock(Group.class);
         Jvm mockJvm = mock(Jvm.class);
         Set<Jvm> mockJvms = new HashSet<>();
@@ -557,6 +562,7 @@ public class GroupServiceImplDeployTest {
         when(mockGroupService.updateGroupAppResourceTemplate(anyString(), anyString(), anyString(), anyString())).thenReturn("new hct.xml content");
         when(mockGroupService.getGroup(anyString())).thenReturn(mockGroupWithJvms);
         when(mockGroupService.getGroupAppResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"entity\":{\"target\": \"testApp\"}}");
+        when(mockApplicationServiceRest.updateResourceTemplate(anyString(), anyString(), anyString(), anyString(), anyString())).thenReturn(mockResponse);
         when(mockApplicationService.updateResourceTemplate(anyString(), anyString(), anyString(), anyString(), anyString())).thenReturn("new hct.xml content");
 
         Response response = groupServiceRest.updateGroupAppResourceTemplate("testGroup", "testAppName", "hct.xml", "new hct.xml context");
@@ -632,7 +638,7 @@ public class GroupServiceImplDeployTest {
         @Bean
         public GroupServiceRest getGroupServiceRest() {
             return new GroupServiceRestImpl(mockGroupService, mockResourceService, mockGroupControlService, mockGroupJvmControlService,
-                    mockGroupWebServerControlService, mockJvmService, mockWebServerService, mockApplicationService);
+                    mockGroupWebServerControlService, mockJvmService, mockWebServerService, mockApplicationService, mockApplicationServiceRest);
         }
 
         @Bean

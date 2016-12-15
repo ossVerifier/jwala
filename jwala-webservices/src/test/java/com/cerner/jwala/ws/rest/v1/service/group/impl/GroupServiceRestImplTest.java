@@ -155,6 +155,9 @@ public class GroupServiceRestImplTest {
     @Mock
     private BinaryDistributionService mockBinaryDistributionService;
 
+    @Mock
+    private ApplicationServiceRest applicationServiceRest;
+
 
     private static List<Group> createGroupList() {
         final Group ws = new Group(Identifier.id(1L, Group.class), name);
@@ -197,7 +200,8 @@ public class GroupServiceRestImplTest {
         mockBinaryDistributionService = mock(BinaryDistributionService.class);
 
         groupServiceRest = new GroupServiceRestImpl(mockGroupService, mockResourceService, mockGroupControlService,
-                mockGroupJvmControlService, mockGroupWSControlService, mockJvmService, mockWebServerService, mockApplicationService);
+                mockGroupJvmControlService, mockGroupWSControlService, mockJvmService, mockWebServerService,
+                mockApplicationService, applicationServiceRest);
 
 
         final WebServerServiceRest webServerServiceRest = new WebServerServiceRestImpl(mockWebServerService, mockWebServerControlService, mockWebServerCommandService, new HashMap<String, ReentrantReadWriteLock>(), mockResourceService, mockGroupService, mockBinaryDistributionService);
