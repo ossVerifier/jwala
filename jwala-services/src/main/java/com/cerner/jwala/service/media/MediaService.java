@@ -1,4 +1,4 @@
-package com.cerner.jwala.service;
+package com.cerner.jwala.service.media;
 
 import com.cerner.jwala.persistence.jpa.domain.JpaMedia;
 import com.cerner.jwala.persistence.jpa.type.MediaType;

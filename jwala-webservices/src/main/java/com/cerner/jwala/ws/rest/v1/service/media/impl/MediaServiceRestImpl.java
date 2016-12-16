@@ -1,7 +1,7 @@
 package com.cerner.jwala.ws.rest.v1.service.media.impl;
 
 import com.cerner.jwala.persistence.jpa.domain.JpaMedia;
-import com.cerner.jwala.service.MediaService;
+import com.cerner.jwala.service.media.MediaService;
 import com.cerner.jwala.ws.rest.v1.provider.AuthenticatedUser;
 import com.cerner.jwala.ws.rest.v1.response.ResponseBuilder;
 import com.cerner.jwala.ws.rest.v1.service.media.MediaServiceRest;

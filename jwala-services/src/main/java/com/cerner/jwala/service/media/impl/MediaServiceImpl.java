@@ -1,15 +1,16 @@
-package com.cerner.jwala.service.impl;
+package com.cerner.jwala.service.media.impl;
 
 import com.cerner.jwala.common.FileUtility;
 import com.cerner.jwala.dao.MediaDao;
 import com.cerner.jwala.persistence.jpa.domain.JpaMedia;
 import com.cerner.jwala.persistence.jpa.type.MediaType;
-import com.cerner.jwala.service.MediaService;
-import com.cerner.jwala.service.resource.ResourceRepositoryService;
+import com.cerner.jwala.service.media.MediaService;
+import com.cerner.jwala.service.repository.RepositoryService;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,7 +36,8 @@ public class MediaServiceImpl implements MediaService {
     private FileUtility fileUtility;
 
     @Autowired
-    private ResourceRepositoryService resourceRepositoryService;
+    @Qualifier("mediaRepositoryService")
+    private RepositoryService repositoryService;
 
     @Override
     public JpaMedia find(final Long id) {
@@ -61,7 +63,7 @@ public class MediaServiceImpl implements MediaService {
         final JpaMedia media = objectMapper.convertValue(mediaDataMap, JpaMedia.class);
 
         final String filename = (String) mediaFileDataMap.get("filename");
-        final String dest = resourceRepositoryService.upload(filename, (BufferedInputStream) mediaFileDataMap.get("content"));
+        final String dest = repositoryService.upload(filename, (BufferedInputStream) mediaFileDataMap.get("content"));
 
         media.setMediaDir(Paths.get(fileUtility.getFirstZipEntryParent(dest)));
         media.setLocalPath(Paths.get(dest));
@@ -73,7 +75,7 @@ public class MediaServiceImpl implements MediaService {
     @Transactional
     public void remove(final String name) {
         final JpaMedia jpaMedia = mediaDao.find(name);
-        resourceRepositoryService.delete(jpaMedia.getLocalPath().getFileName().toString());
+        repositoryService.delete(jpaMedia.getLocalPath().getFileName().toString());
         mediaDao.remove(jpaMedia);
     }
 

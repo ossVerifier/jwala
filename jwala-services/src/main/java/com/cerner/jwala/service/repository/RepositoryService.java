@@ -1,4 +1,4 @@
-package com.cerner.jwala.service.resource;
+package com.cerner.jwala.service.repository;
 
 import java.io.InputStream;
 
@@ -7,7 +7,7 @@ import java.io.InputStream;
  *
  * Created by Jedd Anthony Cuison on 11/30/2016
  */
-public interface ResourceRepositoryService {
+public interface RepositoryService {
 
     /**
      * uploads a file to the resource repository

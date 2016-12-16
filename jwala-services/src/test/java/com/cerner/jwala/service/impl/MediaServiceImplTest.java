@@ -4,15 +4,15 @@ import com.cerner.jwala.common.FileUtility;
 import com.cerner.jwala.dao.MediaDao;
 import com.cerner.jwala.persistence.jpa.domain.JpaMedia;
 import com.cerner.jwala.persistence.jpa.type.MediaType;
-import com.cerner.jwala.service.MediaService;
-import com.cerner.jwala.service.resource.ResourceRepositoryService;
+import com.cerner.jwala.service.media.MediaService;
+import com.cerner.jwala.service.media.impl.MediaServiceImpl;
+import com.cerner.jwala.service.repository.RepositoryService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -79,9 +79,9 @@ public class MediaServiceImplTest {
         mediaFileDataMap.put("filename", "apache-tomcat-8.5.9.zip");
         mediaFileDataMap.put("content", new BufferedInputStream(new ByteArrayInputStream("the content".getBytes())));
 
-        when(Config.MOCK_RESOURCE_REPOSITORY_SERVICE.upload(anyString(), any(InputStream.class)))
-                .thenReturn("c:/jwala/toc/data/archive/apache-tomcat-8.5.9-89876567321.zip");
-        when(Config.MOCK_FILE_UTILITY.getFirstZipEntryParent(eq("c:/jwala/toc/data/archive/apache-tomcat-8.5.9-89876567321.zip")))
+        when(Config.MOCK_MEDIA_REPOSITORY_SERVICE.upload(anyString(), any(InputStream.class)))
+                .thenReturn("c:/jwala/toc/data/bin/apache-tomcat-8.5.9-89876567321.zip");
+        when(Config.MOCK_FILE_UTILITY.getFirstZipEntryParent(eq("c:/jwala/toc/data/bin/apache-tomcat-8.5.9-89876567321.zip")))
                 .thenReturn("apache-tomcat-8.5.9");
         mediaService.create(dataMap, mediaFileDataMap);
         verify(Config.MOCK_MEDIA_DAO).create(any(JpaMedia.class));
@@ -98,7 +98,7 @@ public class MediaServiceImplTest {
         when(Config.MOCK_MEDIA_DAO.find(eq("tomcat"))).thenReturn(mockMedia);
         when(mockMedia.getLocalPath()).thenReturn(Paths.get("/apache/tomcat.zip"));
         mediaService.remove("tomcat");
-        verify(Config.MOCK_RESOURCE_REPOSITORY_SERVICE).delete(eq("tomcat.zip"));
+        verify(Config.MOCK_MEDIA_REPOSITORY_SERVICE).delete(eq("tomcat.zip"));
         verify(Config.MOCK_MEDIA_DAO).remove(any(JpaMedia.class));
     }
 
@@ -117,11 +117,10 @@ public class MediaServiceImplTest {
     }
 
     @Configuration
-    @ComponentScan(basePackageClasses = {com.cerner.jwala.service.impl.MediaServiceImpl.class}, lazyInit = true)
     static class Config {
 
         private static final MediaDao MOCK_MEDIA_DAO = mock(MediaDao.class);
-        private static final ResourceRepositoryService MOCK_RESOURCE_REPOSITORY_SERVICE = mock(ResourceRepositoryService.class);
+        private static final RepositoryService MOCK_MEDIA_REPOSITORY_SERVICE = mock(RepositoryService.class);
         private static final FileUtility MOCK_FILE_UTILITY = mock(FileUtility.class);
 
         @Bean
@@ -129,14 +128,19 @@ public class MediaServiceImplTest {
             return MOCK_MEDIA_DAO;
         }
 
-        @Bean
-        public ResourceRepositoryService getResourceRepositoryService() {
-            return MOCK_RESOURCE_REPOSITORY_SERVICE;
+        @Bean(name = "mediaRepositoryService")
+        public RepositoryService getMediaRepositoryService() {
+            return MOCK_MEDIA_REPOSITORY_SERVICE;
         }
 
         @Bean
         public FileUtility getFileUtility() {
             return MOCK_FILE_UTILITY;
+        }
+
+        @Bean
+        public MediaService getMediaService() {
+            return new MediaServiceImpl();
         }
 
     }
