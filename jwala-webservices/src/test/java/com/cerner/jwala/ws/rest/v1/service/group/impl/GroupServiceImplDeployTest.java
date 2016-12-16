@@ -50,7 +50,6 @@ import com.cerner.jwala.ws.rest.v1.service.jvm.JvmServiceRest;
 import com.cerner.jwala.ws.rest.v1.service.jvm.impl.JvmServiceRestImpl;
 import com.cerner.jwala.ws.rest.v1.service.webserver.WebServerServiceRest;
 import com.cerner.jwala.ws.rest.v1.service.webserver.impl.WebServerServiceRestImpl;
-import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.io.FileUtils;
 import org.apache.tika.mime.MediaType;
 import org.junit.After;
@@ -383,7 +382,7 @@ public class GroupServiceImplDeployTest {
         ApplicationPersistenceService applicationPersistenceService = mock(ApplicationPersistenceService.class);
         RemoteCommandExecutorImpl remoteCommandExecutorImpl = mock(RemoteCommandExecutorImpl.class);
         HistoryFacadeService mockHistoryService = mock(HistoryFacadeService.class);
-        GroupServiceImpl groupServiceImpl = new GroupServiceImpl(groupPersistenceService, applicationPersistenceService, remoteCommandExecutorImpl, binaryDistributionService, mockResourceService, mockHistoryService);
+        GroupServiceImpl groupServiceImpl = new GroupServiceImpl(groupPersistenceService, applicationPersistenceService, remoteCommandExecutorImpl, binaryDistributionService, mockResourceService);
         CommandOutput commandOutput = mock(CommandOutput.class);
 
         String metaData = "{\"templateName\":\"someTemplateName\",\"contentType\":\"application/binary\",\"deployPath\":" +
