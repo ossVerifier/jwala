@@ -2,7 +2,7 @@ package com.cerner.jwala.service.app.impl;
 
 import com.cerner.jwala.common.domain.model.app.Application;
 import com.cerner.jwala.common.domain.model.app.ApplicationControlOperation;
-import com.cerner.jwala.common.domain.model.fault.AemFaultType;
+import com.cerner.jwala.common.domain.model.fault.FaultType;
 import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
@@ -463,7 +463,7 @@ public class ApplicationServiceImplTest {
         } catch (CommandFailureException e) {
             assertTrue("should not fail " + e.getMessage(), false);
         } catch (InternalErrorException ie) {
-            assertEquals(AemFaultType.REMOTE_COMMAND_FAILURE, ie.getMessageResponseStatus());
+            assertEquals(FaultType.REMOTE_COMMAND_FAILURE, ie.getMessageResponseStatus());
         }
         new File("./src/test/resources/webapps/test.war").delete();
 

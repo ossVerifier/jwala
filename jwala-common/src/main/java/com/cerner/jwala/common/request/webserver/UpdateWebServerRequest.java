@@ -5,7 +5,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 
-import com.cerner.jwala.common.domain.model.fault.AemFaultType;
+import com.cerner.jwala.common.domain.model.fault.FaultType;
 import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.path.FileSystemPath;
@@ -112,8 +112,8 @@ public class UpdateWebServerRequest implements Serializable, Request {
         final MultipleRules mr =
                 new MultipleRules(new WebServerNameRule(newName),
                         new HostNameRule(newHost),
-                        new PortNumberRule(newPort, AemFaultType.INVALID_WEBSERVER_PORT),
-                        new PortNumberRule(newHttpsPort, AemFaultType.INVALID_WEBSERVER_PORT, true),
+                        new PortNumberRule(newPort, FaultType.INVALID_WEBSERVER_PORT),
+                        new PortNumberRule(newHttpsPort, FaultType.INVALID_WEBSERVER_PORT, true),
                         new WebServerIdRule(id),
                         new GroupIdsRule(newGroupIds),
                         new StatusPathRule(newStatusPath));

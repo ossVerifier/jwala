@@ -1,7 +1,7 @@
 package com.cerner.jwala.ws.rest.v1.service.balancermanager.impl;
 
 import com.cerner.jwala.common.domain.model.balancermanager.BalancerManagerState;
-import com.cerner.jwala.common.domain.model.fault.AemFaultType;
+import com.cerner.jwala.common.domain.model.fault.FaultType;
 import com.cerner.jwala.common.exception.FaultCodeException;
 import com.cerner.jwala.common.exception.InternalErrorException;
 import com.cerner.jwala.service.balancermanager.BalancerManagerService;
@@ -33,7 +33,7 @@ public class BalancerManagerServiceRestImpl implements BalancerManagerServiceRes
             LOGGER.error("Failed to drain web servers {} of group {}!", webServerNames, groupName, iee);
             final String message = "Please make sure that the ff web servers " + webServerNames + " in group " + groupName + " are STARTED before draining.";
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
-                    AemFaultType.SERVICE_EXCEPTION, iee.getMessage() + " " + message, iee));
+                    FaultType.SERVICE_EXCEPTION, iee.getMessage() + " " + message, iee));
         }
     }
 
@@ -47,7 +47,7 @@ public class BalancerManagerServiceRestImpl implements BalancerManagerServiceRes
         } catch (InternalErrorException iee) {
             LOGGER.error("Drain web server error ", iee.getMessage());
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
-                    AemFaultType.INVALID_WEBSERVER_OPERATION, iee.getMessage(), iee));
+                    FaultType.INVALID_WEBSERVER_OPERATION, iee.getMessage(), iee));
         }
     }
 
@@ -66,7 +66,7 @@ public class BalancerManagerServiceRestImpl implements BalancerManagerServiceRes
         } catch (InternalErrorException iee) {
             LOGGER.error("Drain jvm error ", iee.getMessage());
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
-                    AemFaultType.INVALID_WEBSERVER_OPERATION, iee.getMessage(), iee));
+                    FaultType.INVALID_WEBSERVER_OPERATION, iee.getMessage(), iee));
         }
     }
 

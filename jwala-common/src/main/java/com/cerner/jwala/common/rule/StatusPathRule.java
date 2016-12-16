@@ -3,7 +3,7 @@ package com.cerner.jwala.common.rule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.cerner.jwala.common.domain.model.fault.AemFaultType;
+import com.cerner.jwala.common.domain.model.fault.FaultType;
 import com.cerner.jwala.common.domain.model.path.Path;
 import com.cerner.jwala.common.exception.BadRequestException;
 
@@ -37,7 +37,7 @@ public class StatusPathRule implements Rule {
     @Override
     public void validate() throws BadRequestException {
         if (!isValid()) {
-            throw new BadRequestException(AemFaultType.INVALID_STATUS_PATH,
+            throw new BadRequestException(FaultType.INVALID_STATUS_PATH,
                                           "Invalid status path URL : \"" + statusPath + "\"");
         }
     }

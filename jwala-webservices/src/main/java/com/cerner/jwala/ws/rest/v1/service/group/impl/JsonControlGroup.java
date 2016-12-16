@@ -1,6 +1,6 @@
 package com.cerner.jwala.ws.rest.v1.service.group.impl;
 
-import com.cerner.jwala.common.domain.model.fault.AemFaultType;
+import com.cerner.jwala.common.domain.model.fault.FaultType;
 import com.cerner.jwala.common.domain.model.group.GroupControlOperation;
 import com.cerner.jwala.common.exception.InternalErrorException;
 import com.cerner.jwala.ws.rest.v1.json.AbstractJsonDeserializer;
@@ -28,7 +28,7 @@ public class JsonControlGroup {
 
     public GroupControlOperation toControlOperation() {
         if (controlOperation.isEmpty()){
-            throw new InternalErrorException(AemFaultType.CONTROL_OPERATION_UNSUCCESSFUL, "Group control operation was not specified. Cannot continue with request.");
+            throw new InternalErrorException(FaultType.CONTROL_OPERATION_UNSUCCESSFUL, "Group control operation was not specified. Cannot continue with request.");
         }
 
         GroupControlOperation retVal = GroupControlOperation.STOP;

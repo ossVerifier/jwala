@@ -1,6 +1,6 @@
 package com.cerner.jwala.common.rule.jvm;
 
-import com.cerner.jwala.common.domain.model.fault.AemFaultType;
+import com.cerner.jwala.common.domain.model.fault.FaultType;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
 import com.cerner.jwala.common.rule.Rule;
@@ -10,7 +10,7 @@ public class JvmIdRule extends IdentifierRule<Jvm> implements Rule {
 
     public JvmIdRule(final Identifier<Jvm> theId) {
         super(theId,
-              AemFaultType.JVM_NOT_SPECIFIED,
+              FaultType.JVM_NOT_SPECIFIED,
               "JVM Id was not specified");
     }
 }

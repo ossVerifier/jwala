@@ -1,6 +1,6 @@
 package com.cerner.jwala.common.domain.model.jvm;
 
-import com.cerner.jwala.common.domain.model.fault.AemFaultType;
+import com.cerner.jwala.common.domain.model.fault.FaultType;
 import com.cerner.jwala.common.exception.BadRequestException;
 
 import java.util.HashMap;
@@ -63,7 +63,7 @@ public enum JvmControlOperation {
         final String value = aValue.toLowerCase(Locale.US);
         JvmControlOperation retVal = LOOKUP_MAP.get(value);
         if (null == retVal) {
-            throw new BadRequestException(AemFaultType.INVALID_JVM_OPERATION, "Invalid operation: " + aValue);
+            throw new BadRequestException(FaultType.INVALID_JVM_OPERATION, "Invalid operation: " + aValue);
         } else {
             return retVal;
         }

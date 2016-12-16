@@ -2,7 +2,7 @@ package com.cerner.jwala.common.rule;
 
 import java.util.Map;
 
-import com.cerner.jwala.common.domain.model.fault.AemFaultType;
+import com.cerner.jwala.common.domain.model.fault.FaultType;
 import com.cerner.jwala.common.exception.BadRequestException;
 
 /**
@@ -25,7 +25,7 @@ public class MapNotEmptyRule implements Rule {
     @Override
     public void validate() throws BadRequestException {
         if (!isValid()) {
-            throw new BadRequestException(AemFaultType.RESOURCE_INSTANCE_MAP_NOT_INCLUDED, "Resource Instance Attributes not found");
+            throw new BadRequestException(FaultType.RESOURCE_INSTANCE_MAP_NOT_INCLUDED, "Resource Instance Attributes not found");
         }
     }
 }

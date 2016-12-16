@@ -1,7 +1,7 @@
 package com.cerner.jwala.service.group.impl;
 
 import com.cerner.jwala.common.domain.model.app.Application;
-import com.cerner.jwala.common.domain.model.fault.AemFaultType;
+import com.cerner.jwala.common.domain.model.fault.FaultType;
 import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
@@ -364,7 +364,7 @@ public class GroupServiceImpl implements GroupService {
                 LOGGER.error("Failed to generate and deploy file {} to Web App {}", resourceTemplateName, appName, rfge);
                 Map<String, List<String>> errorDetails = new HashMap<>();
                 errorDetails.put(appName, Collections.singletonList(rfge.getMessage()));
-                throw new InternalErrorException(AemFaultType.RESOURCE_GENERATION_FAILED, "Failed to generate and deploy file " + resourceTemplateName + " to Web App " + appName, null, errorDetails);
+                throw new InternalErrorException(FaultType.RESOURCE_GENERATION_FAILED, "Failed to generate and deploy file " + resourceTemplateName + " to Web App " + appName, null, errorDetails);
             } catch (Exception x) {
                 LOGGER.error("Failed to tokenize template {} in group {}", resourceTemplateName, groupName, x);
                 throw new ApplicationException("Template token replacement failed.", x);

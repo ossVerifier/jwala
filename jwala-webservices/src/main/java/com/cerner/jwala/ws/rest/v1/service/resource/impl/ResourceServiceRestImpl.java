@@ -1,6 +1,6 @@
 package com.cerner.jwala.ws.rest.v1.service.resource.impl;
 
-import com.cerner.jwala.common.domain.model.fault.AemFaultType;
+import com.cerner.jwala.common.domain.model.fault.FaultType;
 import com.cerner.jwala.common.domain.model.resource.Entity;
 import com.cerner.jwala.common.domain.model.resource.ResourceContent;
 import com.cerner.jwala.common.domain.model.resource.ResourceIdentifier;
@@ -85,19 +85,19 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
                     } catch (final IOException ioe) {
                         LOGGER.error("Create template failed!", ioe);
                         return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR,
-                                new FaultCodeException(AemFaultType.IO_EXCEPTION, ioe.getMessage()));
+                                new FaultCodeException(FaultType.IO_EXCEPTION, ioe.getMessage()));
                     }
                 }
                 return ResponseBuilder.created(resourceService.createTemplate(metadataInputStream, templateInputStream, targetName, user.getUser()));
             } else {
                 return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
-                        AemFaultType.INVALID_NUMBER_OF_ATTACHMENTS,
+                        FaultType.INVALID_NUMBER_OF_ATTACHMENTS,
                         "Invalid number of attachments! 2 attachments is expected by the service."));
             }
         } catch (final ResourceServiceException rse) {
             LOGGER.error("Remove template failed!", rse);
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR,
-                    new FaultCodeException(AemFaultType.SERVICE_EXCEPTION, rse.getMessage()));
+                    new FaultCodeException(FaultType.SERVICE_EXCEPTION, rse.getMessage()));
         }
     }
 
@@ -141,7 +141,7 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
 
         if (attachments == null || !isExternalProperty && attachments.size() != CREATE_RESOURCE_ATTACHMENT_SIZE) {
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
-                    AemFaultType.INVALID_NUMBER_OF_ATTACHMENTS,
+                    FaultType.INVALID_NUMBER_OF_ATTACHMENTS,
                     "Invalid number of attachments! " + CREATE_RESOURCE_ATTACHMENT_SIZE + " attachments is expected by the service."));
         }
 
@@ -186,7 +186,7 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
                     bufferedInputStream);
         } catch (final IOException e) {
             LOGGER.error("Failed to create resource {}!", deployFilename, e);
-            return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(AemFaultType.IO_EXCEPTION, e.getMessage()));
+            return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(FaultType.IO_EXCEPTION, e.getMessage()));
         }
 
         return ResponseBuilder.ok(createResourceResponseWrapper);
@@ -228,11 +228,11 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
         } catch (IOException ioe) {
             LOGGER.error("IOException thrown in uploadExternalProperties", ioe);
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR,
-                    new FaultCodeException(AemFaultType.SERVICE_EXCEPTION, ioe.getMessage()));
+                    new FaultCodeException(FaultType.SERVICE_EXCEPTION, ioe.getMessage()));
         } catch (FileUploadException fue) {
             LOGGER.error("FileUploadException thrown in uploadExternalProperties", fue);
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR,
-                    new FaultCodeException(AemFaultType.SERVICE_EXCEPTION, fue.getMessage()));
+                    new FaultCodeException(FaultType.SERVICE_EXCEPTION, fue.getMessage()));
         } finally {
             assert data != null;
             try {
@@ -307,7 +307,7 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
         } else {
 
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR,
-                    new FaultCodeException(AemFaultType.INVALID_REST_SERVICE_PARAMETER,
+                    new FaultCodeException(FaultType.INVALID_REST_SERVICE_PARAMETER,
                             "Parameters passed to the rest service is/are invalid!"));
 
         }
@@ -384,7 +384,7 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
         } else {
 
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR,
-                    new FaultCodeException(AemFaultType.INVALID_REST_SERVICE_PARAMETER,
+                    new FaultCodeException(FaultType.INVALID_REST_SERVICE_PARAMETER,
                             "Parameters passed to the rest service is/are invalid!"));
 
         }
@@ -435,7 +435,7 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
             return ResponseBuilder.ok(resourceService.updateResourceMetaData(resourceIdentifier, resourceName, metaData));
         } catch (ResourceTemplateMetaDataUpdateException ue) {
             LOGGER.error("Failed to update the resource", ue);
-            return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(AemFaultType.RESOURCE_META_DATA_UPDATE_FAILED, ue.getMessage()));
+            return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(FaultType.RESOURCE_META_DATA_UPDATE_FAILED, ue.getMessage()));
         }
     }
 
@@ -488,7 +488,7 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
             response = responseBuilder.build();
         } catch (IOException e) {
             LOGGER.error("Error attempting to download the external properties file", e);
-            response = ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(AemFaultType.BAD_STREAM, "Unable to provide the external properties file as a download."));
+            response = ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(FaultType.BAD_STREAM, "Unable to provide the external properties file as a download."));
         }
         return response;
     }

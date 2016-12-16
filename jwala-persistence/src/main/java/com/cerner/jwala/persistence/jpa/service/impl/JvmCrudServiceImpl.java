@@ -1,6 +1,6 @@
 package com.cerner.jwala.persistence.jpa.service.impl;
 
-import com.cerner.jwala.common.domain.model.fault.AemFaultType;
+import com.cerner.jwala.common.domain.model.fault.FaultType;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
 import com.cerner.jwala.common.domain.model.jvm.JvmState;
@@ -86,7 +86,7 @@ public class JvmCrudServiceImpl extends AbstractCrudServiceImpl<JpaJvm> implemen
 
         if (jvm == null) {
             LOGGER.error("Error getting JVM for ID {}", aJvmId);
-            throw new NotFoundException(AemFaultType.JVM_NOT_FOUND,
+            throw new NotFoundException(FaultType.JVM_NOT_FOUND,
                     "Jvm not found: " + aJvmId);
         }
 
@@ -137,7 +137,7 @@ public class JvmCrudServiceImpl extends AbstractCrudServiceImpl<JpaJvm> implemen
             entityManager.flush();
         } else {
             LOGGER.error("Error uploading JVM template for request {}", uploadJvmTemplateRequest);
-            throw new BadRequestException(AemFaultType.JVM_TEMPLATE_NOT_FOUND,
+            throw new BadRequestException(FaultType.JVM_TEMPLATE_NOT_FOUND,
                     "Only expecting one template to be returned for JVM [" + uploadJvmTemplateRequest+ "] but returned " + templates.size() + " templates");
         }
 
@@ -157,7 +157,7 @@ public class JvmCrudServiceImpl extends AbstractCrudServiceImpl<JpaJvm> implemen
             return "";
         } else {
             LOGGER.error("Error getting JVM template {} for JVM ID {}", templateName, jvmId);
-            throw new BadRequestException(AemFaultType.JVM_TEMPLATE_NOT_FOUND,
+            throw new BadRequestException(FaultType.JVM_TEMPLATE_NOT_FOUND,
                     "Only expecting one " + templateName + " template to be returned for JVM [" + jvmId + "] but returned " + templates.size() + " templates");
         }
     }

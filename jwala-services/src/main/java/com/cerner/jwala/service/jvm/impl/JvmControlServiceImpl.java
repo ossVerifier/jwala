@@ -1,6 +1,6 @@
 package com.cerner.jwala.service.jvm.impl;
 
-import com.cerner.jwala.common.domain.model.fault.AemFaultType;
+import com.cerner.jwala.common.domain.model.fault.FaultType;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
 import com.cerner.jwala.common.domain.model.jvm.JvmControlOperation;
@@ -158,7 +158,7 @@ public class JvmControlServiceImpl implements JvmControlService {
             LOGGER.error(e.getMessage(), e);
             historyFacadeService.write(getServerName(jvm), new ArrayList<>(jvm.getGroups()), e.getMessage(), EventType.SYSTEM_ERROR,
                     aUser.getId());
-            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE,
+            throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE,
                     "CommandFailureException when attempting to control a JVM: " + controlJvmRequest, e);
         }
     }
@@ -277,7 +277,7 @@ public class JvmControlServiceImpl implements JvmControlService {
         } else {
             final String standardError = commandOutput.getStandardError().isEmpty() ? commandOutput.getStandardOutput() : commandOutput.getStandardError();
             LOGGER.error("create command failed with error trying to create parent directory {} on {} :: ERROR: {}", parentDir, hostName, standardError);
-            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, standardError.isEmpty() ? CommandOutputReturnCode.fromReturnCode(commandOutput.getReturnCode().getReturnCode()).getDesc() : standardError);
+            throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, standardError.isEmpty() ? CommandOutputReturnCode.fromReturnCode(commandOutput.getReturnCode().getReturnCode()).getDesc() : standardError);
         }
         commandOutput = executeCheckFileExistsCommand(jvm, destPath);
 
@@ -287,7 +287,7 @@ public class JvmControlServiceImpl implements JvmControlService {
             if (!commandOutput.getReturnCode().wasSuccessful()) {
                 final String standardError = "Failed to back up the " + destPath + " for " + name + ".";
                 LOGGER.error(standardError);
-                throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, standardError);
+                throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, standardError);
             } else {
                 LOGGER.info("Successfully backed up " + destPath + " at " + hostName);
             }

@@ -3,7 +3,7 @@ package com.cerner.jwala.common.exec;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.cerner.jwala.common.domain.model.fault.AemFaultType;
+import com.cerner.jwala.common.domain.model.fault.FaultType;
 import com.cerner.jwala.common.exception.InternalErrorException;
 
 import java.io.IOException;
@@ -38,10 +38,10 @@ public class RuntimeCommand {
                     errorBuffer.toString());
         } catch (IOException e) {
             LOGGER.error("Failed running command IOException :: ERROR: {}", e.getMessage());
-            throw new InternalErrorException(AemFaultType.BAD_STREAM, "Failed running command IOException", e);
+            throw new InternalErrorException(FaultType.BAD_STREAM, "Failed running command IOException", e);
         } catch (InterruptedException e) {
             LOGGER.error("Failed running command InterruptedException:: ERROR: {}", e.getMessage());
-            throw new InternalErrorException(AemFaultType.RUNTIME_COMMAND_FAILURE, "Failed running command InterruptedException", e);
+            throw new InternalErrorException(FaultType.RUNTIME_COMMAND_FAILURE, "Failed running command InterruptedException", e);
         }
     }
 

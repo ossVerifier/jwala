@@ -1,7 +1,7 @@
 package com.cerner.jwala.ws.rest.v1.service.app.impl;
 
 import com.cerner.jwala.common.domain.model.app.Application;
-import com.cerner.jwala.common.domain.model.fault.AemFaultType;
+import com.cerner.jwala.common.domain.model.fault.FaultType;
 import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
@@ -84,7 +84,7 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
             return ResponseBuilder.created(created);
         } catch (EntityExistsException eee) {
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
-                    AemFaultType.DUPLICATE_APPLICATION, eee.getMessage(), eee));
+                    FaultType.DUPLICATE_APPLICATION, eee.getMessage(), eee));
         }
     }
 
@@ -96,7 +96,7 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
             return ResponseBuilder.ok(updated);
         } catch (EntityExistsException eee) {
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
-                    AemFaultType.DUPLICATE_APPLICATION, eee.getMessage(), eee));
+                    FaultType.DUPLICATE_APPLICATION, eee.getMessage(), eee));
         }
     }
 
@@ -169,7 +169,7 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
         } catch (ResourceTemplateUpdateException | NonRetrievableResourceTemplateContentException e) {
             LOGGER.debug("Failed to update resource template {}", resourceTemplateName, e);
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
-                    AemFaultType.PERSISTENCE_ERROR, e.getMessage()));
+                    FaultType.PERSISTENCE_ERROR, e.getMessage()));
         }
     }
 
@@ -190,7 +190,7 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
         } catch (RuntimeException rte) {
             LOGGER.debug("Error previewing template.", rte);
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
-                    AemFaultType.INVALID_TEMPLATE, rte.getMessage()));
+                    FaultType.INVALID_TEMPLATE, rte.getMessage()));
         }
     }
 

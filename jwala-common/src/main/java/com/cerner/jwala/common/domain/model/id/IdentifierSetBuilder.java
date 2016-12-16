@@ -1,6 +1,6 @@
 package com.cerner.jwala.common.domain.model.id;
 
-import com.cerner.jwala.common.domain.model.fault.AemFaultType;
+import com.cerner.jwala.common.domain.model.fault.FaultType;
 import com.cerner.jwala.common.exception.BadRequestException;
 
 import java.util.Collection;
@@ -30,7 +30,7 @@ public class IdentifierSetBuilder {
 
             return newIds;
         } catch (final NumberFormatException nfe) {
-            throw new BadRequestException(AemFaultType.INVALID_IDENTIFIER,
+            throw new BadRequestException(FaultType.INVALID_IDENTIFIER,
                                           nfe.getMessage(),
                                           nfe);
         }

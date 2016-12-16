@@ -1,6 +1,6 @@
 package com.cerner.jwala.common.rule.webserver;
 
-import com.cerner.jwala.common.domain.model.fault.AemFaultType;
+import com.cerner.jwala.common.domain.model.fault.FaultType;
 import com.cerner.jwala.common.domain.model.path.FileSystemPath;
 import com.cerner.jwala.common.exception.BadRequestException;
 import com.cerner.jwala.common.rule.Rule;
@@ -37,7 +37,7 @@ public class HttpConfigFileRule implements Rule {
     @Override
     public void validate() throws BadRequestException {
         if (!isValid()) {
-            throw new BadRequestException(AemFaultType.INVALID_HTTP_CONFIG_FILE,
+            throw new BadRequestException(FaultType.INVALID_HTTP_CONFIG_FILE,
                     "Invalid http configuration file : \"" + fileSystemPath + "\"");
         }
     }

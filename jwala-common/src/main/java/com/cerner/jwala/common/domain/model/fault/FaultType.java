@@ -2,7 +2,7 @@ package com.cerner.jwala.common.domain.model.fault;
 
 import com.cerner.jwala.common.exception.MessageResponseStatus;
 
-public enum AemFaultType implements MessageResponseStatus {
+public enum FaultType implements MessageResponseStatus {
 
     GROUP_NOT_FOUND("AEM1", "GroupNotFound"),
 
@@ -151,8 +151,8 @@ public enum AemFaultType implements MessageResponseStatus {
     private final String faultCode;
     private final String faultMessage;
 
-    AemFaultType(final String theFaultCode,
-                 final String theFaultMessage) {
+    FaultType(final String theFaultCode,
+              final String theFaultMessage) {
         faultCode = theFaultCode;
         faultMessage = theFaultMessage;
     }

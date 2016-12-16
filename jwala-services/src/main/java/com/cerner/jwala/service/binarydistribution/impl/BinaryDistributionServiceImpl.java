@@ -1,6 +1,6 @@
 package com.cerner.jwala.service.binarydistribution.impl;
 
-import com.cerner.jwala.common.domain.model.fault.AemFaultType;
+import com.cerner.jwala.common.domain.model.fault.FaultType;
 import com.cerner.jwala.common.domain.model.resource.EntityType;
 import com.cerner.jwala.common.exception.InternalErrorException;
 import com.cerner.jwala.common.properties.ApplicationProperties;
@@ -110,12 +110,12 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
             } else {
                 String message = "Failed to change the file permissions in " + targetDir + "/" + UNZIPEXE;
                 LOGGER.error(message);
-                throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, message);
+                throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, message);
             }
         } catch (CommandFailureException e) {
             final String message = "Error in change file mode at host: " + hostname + " mode: " + mode + " target: " + target;
             LOGGER.error(message, e);
-            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, message, e);
+            throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, message, e);
         }
     }
 
@@ -126,12 +126,12 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
             } else {
                 final String message = "error in deleting file " + destination;
                 LOGGER.error(message);
-                throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, message);
+                throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, message);
             }
         } catch (CommandFailureException e) {
             final String message = "Error in delete remote binary at host: " + hostname + " destination: " + destination;
             LOGGER.error(message, e);
-            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, message, e);
+            throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, message, e);
         }
     }
 
@@ -142,12 +142,12 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
             } else {
                 final String message = "cannot unzip from " + binaryLocation + " to " + destination;
                 LOGGER.error(message);
-                throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, message);
+                throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, message);
             }
         } catch (CommandFailureException e) {
             final String message = "Error in remote unzip binary at host: " + hostname + " binaryLocation: " + binaryLocation + " destination: " + destination;
             LOGGER.error(message, e);
-            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, message, e);
+            throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, message, e);
         }
     }
 
@@ -158,12 +158,12 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
             } else {
                 final String message = "error with scp of binary " + source + " to destination " + destination;
                 LOGGER.error(message);
-                throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, message);
+                throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, message);
             }
         } catch (CommandFailureException e) {
             final String message = "Error in remote secure copy at host: " + hostname + " source: " + source + " destination: " + destination;
             LOGGER.error(message, e);
-            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, message, e);
+            throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, message, e);
         }
     }
 
@@ -174,12 +174,12 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
             } else {
                 final String message = "User does not have permission to create the directory " + destination;
                 LOGGER.error(message);
-                throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, message);
+                throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, message);
             }
         } catch (CommandFailureException e) {
             final String message = "Error in create remote directory at host: " + hostname + " destination: " + destination;
             LOGGER.error(message, e);
-            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, message, e);
+            throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, message, e);
         }
     }
 
@@ -191,7 +191,7 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
         } catch (CommandFailureException e) {
             final String message = "Error in check remote File at host: " + hostname + " destination: " + destination;
             LOGGER.error(message, e);
-            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, message, e);
+            throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, message, e);
         }
         LOGGER.info("result: " + result);
         return result;

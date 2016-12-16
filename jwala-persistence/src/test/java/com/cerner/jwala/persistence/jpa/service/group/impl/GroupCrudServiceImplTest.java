@@ -2,7 +2,7 @@ package com.cerner.jwala.persistence.jpa.service.group.impl;
 
 import com.cerner.jwala.common.configuration.TestExecutionProfile;
 import com.cerner.jwala.common.domain.model.app.Application;
-import com.cerner.jwala.common.domain.model.fault.AemFaultType;
+import com.cerner.jwala.common.domain.model.fault.FaultType;
 import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
@@ -129,7 +129,7 @@ public class GroupCrudServiceImplTest {
         try {
             groupCrudService.getGroup("group does not exist");
         } catch (NotFoundException e) {
-            assertTrue(e.getMessageResponseStatus().equals(AemFaultType.GROUP_NOT_FOUND));
+            assertTrue(e.getMessageResponseStatus().equals(FaultType.GROUP_NOT_FOUND));
         }
     }
 

@@ -1,6 +1,6 @@
 package com.cerner.jwala.common.domain.model.webserver;
 
-import com.cerner.jwala.common.domain.model.fault.AemFaultType;
+import com.cerner.jwala.common.domain.model.fault.FaultType;
 import com.cerner.jwala.common.exception.BadRequestException;
 
 import java.util.HashMap;
@@ -43,7 +43,7 @@ public enum WebServerControlOperation {
             return LOOKUP_MAP.get(value);
         }
 
-        throw new BadRequestException(AemFaultType.INVALID_WEBSERVER_OPERATION,
+        throw new BadRequestException(FaultType.INVALID_WEBSERVER_OPERATION,
                 "Invalid operation: " + aValue);
     }
 

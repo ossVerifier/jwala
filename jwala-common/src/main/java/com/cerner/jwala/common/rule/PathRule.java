@@ -3,7 +3,7 @@ package com.cerner.jwala.common.rule;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.cerner.jwala.common.domain.model.fault.AemFaultType;
+import com.cerner.jwala.common.domain.model.fault.FaultType;
 import com.cerner.jwala.common.domain.model.path.Path;
 import com.cerner.jwala.common.exception.BadRequestException;
 
@@ -38,7 +38,7 @@ public class PathRule implements Rule {
     @Override
     public void validate() {
         if (!isValid()) {
-           throw new BadRequestException(AemFaultType.INVALID_PATH, "Invalid path : \"" + path.getPath() + "\"");
+           throw new BadRequestException(FaultType.INVALID_PATH, "Invalid path : \"" + path.getPath() + "\"");
         }
     }
 

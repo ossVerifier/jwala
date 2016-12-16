@@ -1,6 +1,6 @@
 package com.cerner.jwala.service.jvm.impl;
 
-import com.cerner.jwala.common.domain.model.fault.AemFaultType;
+import com.cerner.jwala.common.domain.model.fault.FaultType;
 import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
@@ -121,14 +121,14 @@ public class JvmControlServiceImplVerifyTest extends VerificationBehaviorSupport
         try {
             jvmControlService.controlJvm(controlCommand, user);
         } catch (ExternalSystemErrorException ee) {
-            assertEquals(ee.getMessageResponseStatus(), AemFaultType.FAST_FAIL);
+            assertEquals(ee.getMessageResponseStatus(), FaultType.FAST_FAIL);
         }
 
         when(mockRemoteCommandExecutorService.executeCommand(any(RemoteExecCommand.class))).thenReturn(new RemoteCommandReturnInfo(ExecReturnCode.JWALA_EXIT_NO_SUCH_SERVICE, "", "No such service"));
         try {
             jvmControlService.controlJvm(controlCommand, user);
         } catch (ExternalSystemErrorException ee) {
-            assertEquals(ee.getMessageResponseStatus(), AemFaultType.REMOTE_COMMAND_FAILURE);
+            assertEquals(ee.getMessageResponseStatus(), FaultType.REMOTE_COMMAND_FAILURE);
         }
 
         when(mockRemoteCommandExecutorService.executeCommand(any(RemoteExecCommand.class))).thenReturn(new RemoteCommandReturnInfo(ExecReturnCode.JWALA_EXIT_PROCESS_KILLED, "", "Process killed"));
@@ -139,7 +139,7 @@ public class JvmControlServiceImplVerifyTest extends VerificationBehaviorSupport
         try {
             jvmControlService.controlJvm(controlCommand, user);
         } catch (ExternalSystemErrorException ee) {
-            assertEquals(ee.getMessageResponseStatus(), AemFaultType.REMOTE_COMMAND_FAILURE);
+            assertEquals(ee.getMessageResponseStatus(), FaultType.REMOTE_COMMAND_FAILURE);
         }
 
         when(controlCommand.getControlOperation()).thenReturn(JvmControlOperation.HEAP_DUMP);

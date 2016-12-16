@@ -3,7 +3,7 @@ package com.cerner.jwala.common.rule.app;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.cerner.jwala.common.domain.model.fault.AemFaultType;
+import com.cerner.jwala.common.domain.model.fault.FaultType;
 import com.cerner.jwala.common.exception.BadRequestException;
 import com.cerner.jwala.common.rule.Rule;
 
@@ -44,7 +44,7 @@ public class GoodStreamRule implements Rule {
     public void validate() throws BadRequestException {
 
         if (!isValid()) {
-            throw new BadRequestException(AemFaultType.BAD_STREAM, "Cannot read uploaded file data");
+            throw new BadRequestException(FaultType.BAD_STREAM, "Cannot read uploaded file data");
         }
 
     }

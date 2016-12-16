@@ -1,6 +1,6 @@
 package com.cerner.jwala.ws.rest.v1.service.webserver.impl;
 
-import com.cerner.jwala.common.domain.model.fault.AemFaultType;
+import com.cerner.jwala.common.domain.model.fault.FaultType;
 import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.path.FileSystemPath;
@@ -128,7 +128,7 @@ public class WebServerServiceRestImplTest {
 
         InternalErrorException iee = new InternalErrorException(null, "User does not have permission to create the directory ~/.jwala");
         statusNotOk = ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
-                AemFaultType.DUPLICATE_GROUP_NAME, iee.getMessage(), iee));
+                FaultType.DUPLICATE_GROUP_NAME, iee.getMessage(), iee));
 
         try {
             webServerServiceRest.afterPropertiesSet();

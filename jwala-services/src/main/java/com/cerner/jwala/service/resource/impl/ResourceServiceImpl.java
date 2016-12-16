@@ -3,7 +3,7 @@ package com.cerner.jwala.service.resource.impl;
 import com.cerner.jwala.common.domain.model.app.Application;
 import com.cerner.jwala.common.domain.model.app.ApplicationControlOperation;
 import com.cerner.jwala.common.domain.model.binarydistribution.BinaryDistributionControlOperation;
-import com.cerner.jwala.common.domain.model.fault.AemFaultType;
+import com.cerner.jwala.common.domain.model.fault.FaultType;
 import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
 import com.cerner.jwala.common.domain.model.resource.*;
@@ -314,7 +314,7 @@ public class ResourceServiceImpl implements ResourceService {
         if (!exceptionList.isEmpty()) {
             final String resourceName = resourceIdentifier.jvmName != null ? resourceIdentifier.jvmName : resourceIdentifier.webServerName != null ? resourceIdentifier.webServerName : resourceIdentifier.webAppName;
             resourceExceptionMap.put(resourceName, exceptionList);
-            throw new InternalErrorException(AemFaultType.RESOURCE_GENERATION_FAILED, "Failed to validate the following resources.", null, resourceExceptionMap);
+            throw new InternalErrorException(FaultType.RESOURCE_GENERATION_FAILED, "Failed to validate the following resources.", null, resourceExceptionMap);
         } else {
             LOGGER.info("Resources passed validation for {}", entity);
         }
@@ -738,7 +738,7 @@ public class ResourceServiceImpl implements ResourceService {
             Future<CommandOutput> deployFuture = futures.get(hostName);
             if (!deployFuture.get().getReturnCode().wasSuccessful()) {
                 LOGGER.error("Failed to deploy {} to host {}", fileName, hostName);
-                throw new InternalErrorException(AemFaultType.CONTROL_OPERATION_UNSUCCESSFUL, "Failed to deploy the template " + fileName + " to host " + hostName);
+                throw new InternalErrorException(FaultType.CONTROL_OPERATION_UNSUCCESSFUL, "Failed to deploy the template " + fileName + " to host " + hostName);
             }
         }
     }
@@ -788,7 +788,7 @@ public class ResourceServiceImpl implements ResourceService {
         } else {
             final String stdErr = commandOutput.getStandardError().isEmpty() ? commandOutput.getStandardOutput() : commandOutput.getStandardError();
             LOGGER.error("Error in creating parent dir {} on host {}:: ERROR : {}", parentDir, hostName, stdErr);
-            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, stdErr);
+            throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, stdErr);
         }
 
         commandOutput = remoteCommandExecutor.executeRemoteCommand(
@@ -811,7 +811,7 @@ public class ResourceServiceImpl implements ResourceService {
             if (!commandOutput.getReturnCode().wasSuccessful()) {
                 final String standardError = "Failed to back up the " + destPath + " for " + name + ". Continuing with secure copy.";
                 LOGGER.error(standardError);
-                throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, standardError);
+                throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, standardError);
             } else {
                 LOGGER.info("Successfully backed up " + destPath + " at " + hostName);
             }
@@ -862,7 +862,7 @@ public class ResourceServiceImpl implements ResourceService {
         final List<String> extPropertiesNamesList = getResourceNames(new ResourceIdentifier.Builder().build());
         if (extPropertiesNamesList.isEmpty()) {
             LOGGER.error("No external properties file has been uploaded. Cannot provide a download at this time.");
-            throw new InternalErrorException(AemFaultType.TEMPLATE_NOT_FOUND, "No external properties file has been uploaded. Cannot provide a download at this time.");
+            throw new InternalErrorException(FaultType.TEMPLATE_NOT_FOUND, "No external properties file has been uploaded. Cannot provide a download at this time.");
         }
 
         final String extPropertiesResourceName = extPropertiesNamesList.get(0);
@@ -951,11 +951,11 @@ public class ResourceServiceImpl implements ResourceService {
         } catch (IOException e) {
             String message = "Failed to write file " + fileName;
             LOGGER.error(badStreamMessage + message, e);
-            throw new InternalErrorException(AemFaultType.BAD_STREAM, message, e);
+            throw new InternalErrorException(FaultType.BAD_STREAM, message, e);
         } catch (CommandFailureException ce) {
             String message = "Failed to copy file " + fileName;
             LOGGER.error(badStreamMessage + message, ce);
-            throw new InternalErrorException(AemFaultType.BAD_STREAM, message, ce);
+            throw new InternalErrorException(FaultType.BAD_STREAM, message, ce);
         }
         return commandOutput;
     }
@@ -978,7 +978,7 @@ public class ResourceServiceImpl implements ResourceService {
                 } else {
                     standardError = "Could not back up " + zipDestinationOption;
                     LOGGER.error(standardError);
-                    throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, standardError);
+                    throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, standardError);
                 }
             }
             commandOutput = executeUnzipBinaryCommand(null, hostName, destPath, zipDestinationOption, "");
@@ -986,7 +986,7 @@ public class ResourceServiceImpl implements ResourceService {
             if (!commandOutput.getReturnCode().wasSuccessful()) {
                 standardError = "Cannot unzip " + destPath + " to " + zipDestinationOption + ", please check the log for more information.";
                 LOGGER.error(standardError);
-                throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, standardError);
+                throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, standardError);
             }
         } catch (CommandFailureException e) {
             LOGGER.error("Failed to execute remote command when unpack to {} ", destPath, e);
@@ -1019,7 +1019,7 @@ public class ResourceServiceImpl implements ResourceService {
             if (!templateContent.isEmpty()) {
                 resourceFileString = generateResourceFile(fileName, templateContent, generateResourceGroup(), entity, ResourceGeneratorType.TEMPLATE);
             } else {
-                throw new BadRequestException(AemFaultType.JVM_TEMPLATE_NOT_FOUND, failMessage);
+                throw new BadRequestException(FaultType.JVM_TEMPLATE_NOT_FOUND, failMessage);
             }
         } else if (entity instanceof Application) {
             String templateContentApplication;
@@ -1031,14 +1031,14 @@ public class ResourceServiceImpl implements ResourceService {
             if (!templateContentApplication.isEmpty()) {
                 resourceFileString = generateResourceFile(fileName, templateContentApplication, generateResourceGroup(), entity, ResourceGeneratorType.TEMPLATE);
             } else {
-                throw new BadRequestException(AemFaultType.APP_TEMPLATE_NOT_FOUND, failMessage);
+                throw new BadRequestException(FaultType.APP_TEMPLATE_NOT_FOUND, failMessage);
             }
         } else if (entity instanceof WebServer) {
             final String templateContentWebServer = webServerPersistenceService.getResourceTemplate(((WebServer) entity).getName(), fileName);
             if (!templateContentWebServer.isEmpty()) {
                 resourceFileString = generateResourceFile(fileName, templateContentWebServer, generateResourceGroup(), entity, ResourceGeneratorType.TEMPLATE);
             } else {
-                throw new BadRequestException(AemFaultType.WEB_SERVER_CONF_TEMPLATE_NOT_FOUND, failMessage);
+                throw new BadRequestException(FaultType.WEB_SERVER_CONF_TEMPLATE_NOT_FOUND, failMessage);
             }
         }
         return resourceFileString;
