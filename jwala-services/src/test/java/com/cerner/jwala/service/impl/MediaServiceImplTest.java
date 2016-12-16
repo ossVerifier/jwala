@@ -44,8 +44,6 @@ public class MediaServiceImplTest {
     @Autowired
     private MediaService mediaService;
 
-    private List<JpaMedia> list;
-
     @Mock
     private JpaMedia mockMedia;
 
