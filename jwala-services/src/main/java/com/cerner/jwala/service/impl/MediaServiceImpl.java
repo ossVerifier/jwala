@@ -88,8 +88,4 @@ public class MediaServiceImpl implements MediaService {
         return mediaDao.update(media);
     }
 
-    public void setMediaDao(MediaDao mediaDao) {
-        this.mediaDao = mediaDao;
-    }
-
 }

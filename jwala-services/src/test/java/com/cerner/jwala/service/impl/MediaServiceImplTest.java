@@ -1,104 +1,144 @@
 package com.cerner.jwala.service.impl;
 
+import com.cerner.jwala.common.FileUtility;
 import com.cerner.jwala.dao.MediaDao;
 import com.cerner.jwala.persistence.jpa.domain.JpaMedia;
 import com.cerner.jwala.persistence.jpa.type.MediaType;
+import com.cerner.jwala.service.MediaService;
+import com.cerner.jwala.service.resource.ResourceRepositoryService;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.support.AnnotationConfigContextLoader;
 
+import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static junit.framework.Assert.assertEquals;
-import static org.mockito.Matchers.*;
-import static org.mockito.Mockito.when;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.*;
+import static org.mockito.MockitoAnnotations.initMocks;
 
 /**
- * Created by RS045609 on 12/13/2016.
+ * {@link MediaServiceImpl} unit tests
  */
-@RunWith(MockitoJUnitRunner.class)
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(loader = AnnotationConfigContextLoader.class, classes = {MediaServiceImplTest.Config.class})
 public class MediaServiceImplTest {
+
+    @Autowired
+    private MediaService mediaService;
+
+    private List<JpaMedia> list;
+
     @Mock
-    private MediaDao mediaDao;
-
-    private MediaServiceImpl mediaService;
-    private JpaMedia media;
-    private List<JpaMedia> list = createMediaList();
-
-    private List<JpaMedia> createMediaList() {
-        List<JpaMedia> mediaList = new ArrayList<>();
-        media = new JpaMedia();
-        media.setId(1L);
-        media.setName("jdk 1.8");
-        media.setType(MediaType.JDK);
-        media.setLocalPath(Paths.get("c:/java/jdk.zip"));
-        media.setRemoteDir(Paths.get("c:/ctp"));
-        media.setMediaDir(Paths.get("jdk-1.8"));
-        mediaList.add(media);
-        return mediaList;
-    }
-
+    private JpaMedia mockMedia;
 
     @Before
     public void setUp() {
-        media = new JpaMedia();
-        media.setId(1L);
-        media.setName("jdk 1.8");
-        media.setType(MediaType.JDK);
-        media.setLocalPath(Paths.get("c:/java/jdk.zip"));
-        media.setRemoteDir(Paths.get("c:/ctp"));
-        media.setMediaDir(Paths.get("jdk-1.8"));
-        when(mediaDao.findById(anyLong())).thenReturn(media);
-        mediaService = new MediaServiceImpl();
-        mediaService.setMediaDao(mediaDao);
-
+        initMocks(this);
+        when(mockMedia.getName()).thenReturn("tomcat");
     }
 
     @Test
     public void testFindById() {
-        when(mediaDao.findById(anyLong())).thenReturn(media);
-        JpaMedia result = mediaService.find(1L);
-        assertEquals(result.getName(), media.getName());
+        when(Config.MOCK_MEDIA_DAO.findById(eq(1L))).thenReturn(mockMedia);
+        assertEquals(mediaService.find(1L).getName(), "tomcat");
     }
 
     @Test
     public void testFindByName() {
-        when(mediaDao.find(anyString())).thenReturn(media);
-        JpaMedia result = mediaService.find("jdk 1.8");
-        assertEquals(result.getName(), media.getName());
+        when(Config.MOCK_MEDIA_DAO.find(anyString())).thenReturn(mockMedia);
+        JpaMedia result = mediaService.find("tomcat");
+        assertEquals(mockMedia.getName(), result.getName());
     }
 
     @Test
-    @Ignore
-    // TODO: fix me!
     public void testCreate() {
-        // when(mediaDao.create(any(JpaMedia.class))).thenReturn(media);
-        // JpaMedia result = mediaService.create(media);
-        // assertEquals(result.getName(), media.getName());
+        final Map<String, String> dataMap = new HashMap<>();
+        dataMap.put("name", "tomcat");
+        dataMap.put("type", "TOMCAT");
+        dataMap.put("remoteDir", "c:/tomcat");
+
+        final Map<String, Object> mediaFileDataMap = new HashMap<>();
+        mediaFileDataMap.put("filename", "apache-tomcat-8.5.9.zip");
+        mediaFileDataMap.put("content", new BufferedInputStream(new ByteArrayInputStream("the content".getBytes())));
+
+        when(Config.MOCK_RESOURCE_REPOSITORY_SERVICE.upload(anyString(), any(InputStream.class)))
+                .thenReturn("c:/jwala/toc/data/archive/apache-tomcat-8.5.9-89876567321.zip");
+        when(Config.MOCK_FILE_UTILITY.getFirstZipEntryParent(eq("c:/jwala/toc/data/archive/apache-tomcat-8.5.9-89876567321.zip")))
+                .thenReturn("apache-tomcat-8.5.9");
+        mediaService.create(dataMap, mediaFileDataMap);
+        verify(Config.MOCK_MEDIA_DAO).create(any(JpaMedia.class));
     }
 
     @Test
     public void testUpdate() {
-        when(mediaDao.update(any(JpaMedia.class))).thenReturn(media);
-        JpaMedia result = mediaService.update(media);
-        assertEquals(result.getName(), media.getName());
+        mediaService.update(mockMedia);
+        verify(Config.MOCK_MEDIA_DAO).update(any(JpaMedia.class));
+    }
+
+    @Test
+    public void testRemove() {
+        when(Config.MOCK_MEDIA_DAO.find(eq("tomcat"))).thenReturn(mockMedia);
+        when(mockMedia.getLocalPath()).thenReturn(Paths.get("/apache/tomcat.zip"));
+        mediaService.remove("tomcat");
+        verify(Config.MOCK_RESOURCE_REPOSITORY_SERVICE).delete(eq("tomcat.zip"));
+        verify(Config.MOCK_MEDIA_DAO).remove(any(JpaMedia.class));
     }
 
     @Test
     public void testFindAll() {
-        when(mediaDao.findAll()).thenReturn(list);
-        List<JpaMedia> result = mediaService.findAll();
-        assertEquals(result.get(0).getName(), media.getName());
+        final List<JpaMedia> mediaList = new ArrayList<>();
+        mediaList.add(mockMedia);
+        when(Config.MOCK_MEDIA_DAO.findAll()).thenReturn(mediaList);
+        final List<JpaMedia> result = mediaService.findAll();
+        assertEquals(result.get(0).getName(), mockMedia.getName());
     }
 
     @Test
     public void testGetMediaTypes() {
         assertEquals(MediaType.values().length, mediaService.getMediaTypes().length);
+    }
+
+    @Configuration
+    @ComponentScan(basePackageClasses = {com.cerner.jwala.service.impl.MediaServiceImpl.class}, lazyInit = true)
+    static class Config {
+
+        private static final MediaDao MOCK_MEDIA_DAO = mock(MediaDao.class);
+        private static final ResourceRepositoryService MOCK_RESOURCE_REPOSITORY_SERVICE = mock(ResourceRepositoryService.class);
+        private static final FileUtility MOCK_FILE_UTILITY = mock(FileUtility.class);
+
+        @Bean
+        public MediaDao getMediaDao() {
+            return MOCK_MEDIA_DAO;
+        }
+
+        @Bean
+        public ResourceRepositoryService getResourceRepositoryService() {
+            return MOCK_RESOURCE_REPOSITORY_SERVICE;
+        }
+
+        @Bean
+        public FileUtility getFileUtility() {
+            return MOCK_FILE_UTILITY;
+        }
+
     }
 
 }
