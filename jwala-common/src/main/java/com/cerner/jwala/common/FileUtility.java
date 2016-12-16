@@ -78,8 +78,7 @@ public class FileUtility {
             zipFile.close();
             return null;
         } catch (final IOException e) {
-            final MessageFormat messageFormat = new MessageFormat("Failed to get {0} parent path!");
-            throw new FileUtilityException(messageFormat.format(zipFilename), e);
+            throw new FileUtilityException(MessageFormat.format("Failed to get {0} parent path!", zipFilename), e);
         }
     }
 
