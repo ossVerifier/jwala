@@ -121,7 +121,7 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
         groupService = new GroupServiceImpl(groupPersistenceService,
                 applicationPersistenceService,
                 remoteCommandExecutor, binaryDistributionService,
-                resourceService, mockHistoryFacadeService);
+                resourceService);
         user = new User("unused");
 
     }

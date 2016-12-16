@@ -12,7 +12,6 @@ import com.cerner.jwala.common.domain.model.webserver.WebServer;
 import com.cerner.jwala.common.domain.model.webserver.WebServerReachableState;
 import com.cerner.jwala.common.rule.*;
 import com.cerner.jwala.common.rule.app.ApplicationIdRule;
-import com.cerner.jwala.common.rule.app.GoodStreamRule;
 import com.cerner.jwala.common.rule.group.GroupIdRule;
 import com.cerner.jwala.common.rule.group.GroupIdsRule;
 import com.cerner.jwala.common.rule.group.GroupNameRule;
@@ -22,10 +21,8 @@ import com.cerner.jwala.common.rule.jvm.JvmStateRule;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.InputStream;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Map;
 
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
@@ -41,7 +38,6 @@ public class RuleTest {
     private Identifier [] groupIds = {new Identifier<Group>(1L)};
     private Identifier [] jvmIds = {new Identifier<Jvm>(1L)};
     private Rule [] rules = {new HostNameRule("any"),
-                             new MapNotEmptyRule(mock(Map.class)),
                              new MultipleRules(),
                              new PathRule(mockPath),
                              new PortNumberRule(8080, FaultType.CANNOT_CONNECT),
@@ -50,7 +46,6 @@ public class RuleTest {
                              new ValidTemplateNameRule("any"),
                              new ValidWebArchiveNameRule("any"),
                              new ApplicationIdRule(new Identifier<Application>(1L)),
-                             new GoodStreamRule(mock(InputStream.class)),
                              new GroupIdRule(groupIds[0]),
                              new GroupIdsRule(new HashSet<Identifier<Group>>(Arrays.<Identifier<Group>>asList(groupIds))),
                              new GroupNameRule("any"),

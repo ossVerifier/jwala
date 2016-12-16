@@ -16,11 +16,6 @@ public interface ApplicationPersistenceService {
 
     Application updateApplication(final UpdateApplicationRequest updateApplicationRequest);
 
-    Application updateWARPath(UploadWebArchiveRequest uploadWebArchiveRequest, String warPath);
-
-    @Deprecated
-    Application removeWarPathAndName(RemoveWebArchiveRequest removeWebArchiveRequest);
-
     void removeApplication(final Identifier<Application> anAppToRemove);
 
     List<String> getResourceTemplateNames(String appName, String jvmName);

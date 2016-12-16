@@ -176,8 +176,8 @@ public class AemServiceConfiguration {
                                     persistenceServiceConfiguration.getApplicationPersistenceService(),
                                     aemCommandExecutorConfig.getRemoteCommandExecutor(),
                                     binaryDistributionService,
-                                    resourceService,
-                historyFacadeService);
+                                    resourceService
+        );
     }
 
     @Bean(name = "jvmService")

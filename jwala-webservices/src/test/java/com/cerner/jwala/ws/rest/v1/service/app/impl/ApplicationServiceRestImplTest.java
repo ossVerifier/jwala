@@ -12,7 +12,6 @@ import com.cerner.jwala.common.exec.CommandOutput;
 import com.cerner.jwala.common.exec.ExecReturnCode;
 import com.cerner.jwala.common.request.app.CreateApplicationRequest;
 import com.cerner.jwala.common.request.app.UpdateApplicationRequest;
-import com.cerner.jwala.common.request.app.UploadWebArchiveRequest;
 import com.cerner.jwala.persistence.jpa.service.exception.ResourceTemplateUpdateException;
 import com.cerner.jwala.service.app.ApplicationService;
 import com.cerner.jwala.service.group.GroupService;
@@ -114,17 +113,6 @@ public class ApplicationServiceRestImplTest {
         @Override
         public int read() throws IOException {
             return backingStream.read();
-        }
-
-    }
-
-    private class IsValidUploadCommand extends ArgumentMatcher<UploadWebArchiveRequest> {
-
-        @Override
-        public boolean matches(Object arg) {
-            UploadWebArchiveRequest uwac = (UploadWebArchiveRequest) arg;
-            uwac.validate();
-            return true;
         }
 
     }

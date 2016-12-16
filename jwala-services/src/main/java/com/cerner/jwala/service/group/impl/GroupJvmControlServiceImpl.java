@@ -20,8 +20,6 @@ import java.util.concurrent.Executors;
 
 public class GroupJvmControlServiceImpl implements GroupJvmControlService {
 
-    private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(GroupJvmControlServiceImpl.class);
-
     private final GroupService groupService;
     private final JvmControlService jvmControlService;
     private final ExecutorService executorService;

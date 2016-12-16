@@ -67,7 +67,6 @@ public class ResourceServiceImpl implements ResourceService {
     private final Expression decryptExpression;
     private final ResourcePersistenceService resourcePersistenceService;
     private final GroupPersistenceService groupPersistenceService;
-    private final ExecutorService executorService;
 
     // TODO replace ApplicationControlOperation (and all operation classes) with ResourceControlOperation
     private RemoteCommandExecutorImpl remoteCommandExecutor;
@@ -123,7 +122,6 @@ public class ResourceServiceImpl implements ResourceService {
         this.webServerPersistenceService = webServerPersistenceService;
         this.resourceDao = resourceDao;
         this.resourceHandler = resourceHandler;
-        executorService = Executors.newFixedThreadPool(Integer.parseInt(ApplicationProperties.get("resources.thread-task-executor.pool.size", "25")));
         this.resourceContentGeneratorService = resourceContentGeneratorService;
         this.binaryDistributionService = binaryDistributionService;
         this.fileTypeDetector = fileTypeDetector;
