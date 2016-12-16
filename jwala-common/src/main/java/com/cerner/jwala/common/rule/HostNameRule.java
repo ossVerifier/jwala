@@ -3,7 +3,7 @@ package com.cerner.jwala.common.rule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.cerner.jwala.common.domain.model.fault.AemFaultType;
+import com.cerner.jwala.common.domain.model.fault.FaultType;
 import com.cerner.jwala.common.exception.MessageResponseStatus;
 
 import java.net.URI;
@@ -19,7 +19,7 @@ public class HostNameRule extends ValidNameRule {
 
     @Override
     public MessageResponseStatus getMessageResponseStatus() {
-        return AemFaultType.INVALID_HOST_NAME;
+        return FaultType.INVALID_HOST_NAME;
     }
 
     @Override

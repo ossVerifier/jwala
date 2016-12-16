@@ -1,6 +1,6 @@
 package com.cerner.jwala.ws.rest.v1.service.admin.impl;
 
-import com.cerner.jwala.common.domain.model.fault.AemFaultType;
+import com.cerner.jwala.common.domain.model.fault.FaultType;
 import com.cerner.jwala.common.exception.InternalErrorException;
 import com.cerner.jwala.common.properties.ApplicationProperties;
 import com.cerner.jwala.files.FilesConfiguration;
@@ -110,7 +110,7 @@ public class AdminServiceRestImpl implements AdminServiceRest {
                 attributes = manifest.getMainAttributes();
             } catch (IOException e) {
                 LOGGER.debug("Error getting manifest for " + context.getServletContextName(), e);
-                throw new InternalErrorException(AemFaultType.INVALID_PATH, "Failed to read MANIFEST.MF for "
+                throw new InternalErrorException(FaultType.INVALID_PATH, "Failed to read MANIFEST.MF for "
                         + context.getServletContextName());
             }
         }

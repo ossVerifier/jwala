@@ -12,9 +12,9 @@ public class AemFaultTypeTest {
     public void testUniquenessOfMessageCodes() {
 
         final Set<String> messageCodes = new HashSet<>();
-        final Set<AemFaultType> duplicates = EnumSet.noneOf(AemFaultType.class);
+        final Set<FaultType> duplicates = EnumSet.noneOf(FaultType.class);
 
-        for (final AemFaultType faultType : AemFaultType.values()) {
+        for (final FaultType faultType : FaultType.values()) {
             final String messageCode = faultType.getMessageCode().toLowerCase(Locale.US);
             if (messageCodes.contains(messageCode)) {
                 duplicates.add(faultType);

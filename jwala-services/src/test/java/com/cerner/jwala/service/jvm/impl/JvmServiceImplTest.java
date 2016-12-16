@@ -1,7 +1,7 @@
 package com.cerner.jwala.service.jvm.impl;
 
 import com.cerner.jwala.common.domain.model.app.Application;
-import com.cerner.jwala.common.domain.model.fault.AemFaultType;
+import com.cerner.jwala.common.domain.model.fault.FaultType;
 import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
@@ -71,7 +71,7 @@ import static org.mockito.Mockito.contains;
 import static org.mockito.Mockito.*;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
+public class JvmServiceImplTest extends VerificationBehaviorSupport {
 
     @Mock
     private JvmPersistenceService mockJvmPersistenceService;
@@ -826,8 +826,8 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
         when(mockApplicationService.findApplications(any(Identifier.class))).thenReturn(appList);
         when(mockJvmPersistenceService.findJvmByExactName(anyString())).thenReturn(mockJvm);
         when(mockJvmPersistenceService.findGroupsByJvm(any(Identifier.class))).thenReturn(groupList);
-        doThrow(new InternalErrorException(AemFaultType.RESOURCE_GENERATION_FAILED, "Test for failing JVM resource generation", null, jvmErrorMap)).when(mockResourceService).validateAllResourcesForGeneration(any(ResourceIdentifier.class));
-        doThrow(new InternalErrorException(AemFaultType.RESOURCE_GENERATION_FAILED, "Test failing for Web App resource generation", null, appErrorMap)).when(mockResourceService).validateSingleResourceForGeneration(any(ResourceIdentifier.class));
+        doThrow(new InternalErrorException(FaultType.RESOURCE_GENERATION_FAILED, "Test for failing JVM resource generation", null, jvmErrorMap)).when(mockResourceService).validateAllResourcesForGeneration(any(ResourceIdentifier.class));
+        doThrow(new InternalErrorException(FaultType.RESOURCE_GENERATION_FAILED, "Test failing for Web App resource generation", null, appErrorMap)).when(mockResourceService).validateSingleResourceForGeneration(any(ResourceIdentifier.class));
 
         InternalErrorException caughtException = null;
         try {
@@ -955,7 +955,7 @@ public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
 
         when(mockExecData.getReturnCode()).thenReturn(new ExecReturnCode(1));
         when(mockExecData.getStandardError()).thenReturn("ERROR");
-        when(mockResourceService.generateAndDeployFile(any(ResourceIdentifier.class), anyString(), anyString(), anyString())).thenThrow(new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "xxx"));
+        when(mockResourceService.generateAndDeployFile(any(ResourceIdentifier.class), anyString(), anyString(), anyString())).thenThrow(new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, "xxx"));
 
         boolean exceptionThrown = false;
         try {

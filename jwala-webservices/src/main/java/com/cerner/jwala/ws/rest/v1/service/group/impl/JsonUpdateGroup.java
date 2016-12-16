@@ -7,7 +7,7 @@ import org.codehaus.jackson.map.DeserializationContext;
 import org.codehaus.jackson.map.JsonDeserializer;
 import org.codehaus.jackson.map.annotate.JsonDeserialize;
 
-import com.cerner.jwala.common.domain.model.fault.AemFaultType;
+import com.cerner.jwala.common.domain.model.fault.FaultType;
 import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.exception.BadRequestException;
@@ -31,7 +31,7 @@ public class JsonUpdateGroup {
             final Identifier<Group> groupId = new Identifier<>(id);
             return new UpdateGroupRequest(groupId, name);
         } catch (final NumberFormatException nfe) {
-            throw new BadRequestException(AemFaultType.INVALID_GROUP_NAME,
+            throw new BadRequestException(FaultType.INVALID_GROUP_NAME,
                                           nfe.getMessage(),
                                           nfe);
         }

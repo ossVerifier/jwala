@@ -1,6 +1,6 @@
 package com.cerner.jwala.ws.rest.v1.service.user.impl;
 
-import com.cerner.jwala.common.domain.model.fault.AemFaultType;
+import com.cerner.jwala.common.domain.model.fault.FaultType;
 import com.cerner.jwala.common.exception.FaultCodeException;
 import com.cerner.jwala.common.properties.ApplicationProperties;
 import com.cerner.jwala.ws.rest.v1.response.ResponseBuilder;
@@ -50,7 +50,7 @@ public class UserServiceRestImpl implements UserServiceRest {
             LOGGER.error("Error Login",
                          e);
             return ResponseBuilder.notOk(Response.Status.UNAUTHORIZED,
-                                         new FaultCodeException(AemFaultType.USER_AUTHENTICATION_FAILED,
+                                         new FaultCodeException(FaultType.USER_AUTHENTICATION_FAILED,
                                                                 e.getMessage()));
         }
 

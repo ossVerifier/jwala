@@ -1,6 +1,6 @@
 package com.cerner.jwala.common.rule.jvm;
 
-import com.cerner.jwala.common.domain.model.fault.AemFaultType;
+import com.cerner.jwala.common.domain.model.fault.FaultType;
 import com.cerner.jwala.common.domain.model.jvm.JvmState;
 import com.cerner.jwala.common.exception.BadRequestException;
 import com.cerner.jwala.common.rule.Rule;
@@ -21,7 +21,7 @@ public class JvmStateRule implements Rule {
     @Override
     public void validate() throws BadRequestException {
         if (!isValid()) {
-            throw new BadRequestException(AemFaultType.JVM_STATE_NOT_SPECIFIED,
+            throw new BadRequestException(FaultType.JVM_STATE_NOT_SPECIFIED,
                                           "A non-null JVM State was not specified");
         }
     }

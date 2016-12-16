@@ -3,7 +3,7 @@ package com.cerner.jwala.common.request.webserver;
 import java.io.Serializable;
 import java.util.Collection;
 
-import com.cerner.jwala.common.domain.model.fault.AemFaultType;
+import com.cerner.jwala.common.domain.model.fault.FaultType;
 import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.path.Path;
@@ -95,8 +95,8 @@ public class CreateWebServerRequest implements Serializable, Request {
     public void validate() {
         new MultipleRules(new WebServerNameRule(name),
                 new HostNameRule(host),
-                new PortNumberRule(port, AemFaultType.INVALID_WEBSERVER_PORT),
-                new PortNumberRule(httpsPort, AemFaultType.INVALID_WEBSERVER_HTTPS_PORT, true),
+                new PortNumberRule(port, FaultType.INVALID_WEBSERVER_PORT),
+                new PortNumberRule(httpsPort, FaultType.INVALID_WEBSERVER_HTTPS_PORT, true),
                 new GroupIdsRule(groupIds),
                 new StatusPathRule(statusPath)).validate();
     }
