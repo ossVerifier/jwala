@@ -71,7 +71,7 @@ import static org.mockito.Mockito.contains;
 import static org.mockito.Mockito.*;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-public class JvmServiceImplVerifyTest extends VerificationBehaviorSupport {
+public class JvmServiceImplTest extends VerificationBehaviorSupport {
 
     @Mock
     private JvmPersistenceService mockJvmPersistenceService;

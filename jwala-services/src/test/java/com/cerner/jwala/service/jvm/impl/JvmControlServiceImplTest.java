@@ -43,7 +43,7 @@ import static org.junit.Assert.*;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 @RunWith(MockitoJUnitRunner.class)
-public class JvmControlServiceImplVerifyTest extends VerificationBehaviorSupport {
+public class JvmControlServiceImplTest extends VerificationBehaviorSupport {
 
     private JvmControlServiceImpl jvmControlService;
     private RemoteCommandExecutor commandExecutor;
@@ -66,7 +66,7 @@ public class JvmControlServiceImplVerifyTest extends VerificationBehaviorSupport
 
     private List<JpaGroup> groups = new ArrayList<>();
 
-    public JvmControlServiceImplVerifyTest() {
+    public JvmControlServiceImplTest() {
         this.groups.add(new JpaGroup());
     }
 
