@@ -29,7 +29,6 @@ import com.cerner.jwala.persistence.service.*;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionService;
 import com.cerner.jwala.service.exception.ResourceServiceException;
 import com.cerner.jwala.service.resource.*;
-import com.cerner.jwala.service.resource.impl.handler.exception.ResourceHandlerException;
 import com.cerner.jwala.template.exception.ResourceFileGeneratorException;
 import opennlp.tools.util.StringUtil;
 import org.apache.commons.io.FileUtils;
@@ -51,8 +50,6 @@ import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -907,7 +904,7 @@ public class ResourceServiceImpl implements ResourceService {
 
         try {
             return resourceHandler.createResource(resourceIdentifier, metaData, templateContent);
-        } catch (final ResourceHandlerException rhe) {
+        } catch (final ResourceServiceException rhe) {
             throw new ResourceServiceException(rhe);
         }
     }
