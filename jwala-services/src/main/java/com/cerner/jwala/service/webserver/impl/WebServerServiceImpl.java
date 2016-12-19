@@ -1,6 +1,6 @@
 package com.cerner.jwala.service.webserver.impl;
 
-import com.cerner.jwala.common.domain.model.fault.AemFaultType;
+import com.cerner.jwala.common.domain.model.fault.FaultType;
 import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.resource.ResourceGroup;
@@ -203,7 +203,7 @@ public class WebServerServiceImpl implements WebServerService {
             return resourceService.generateResourceFile(HTTPD_CONF, httpdConfText, resourceGroup, server, ResourceGeneratorType.TEMPLATE);
         } catch (NonRetrievableResourceTemplateContentException nrtce) {
             LOGGER.error("Failed to retrieve resource template from the database", nrtce);
-            throw new InternalErrorException(AemFaultType.TEMPLATE_NOT_FOUND, nrtce.getMessage());
+            throw new InternalErrorException(FaultType.TEMPLATE_NOT_FOUND, nrtce.getMessage());
         }
     }
 
@@ -245,7 +245,7 @@ public class WebServerServiceImpl implements WebServerService {
 
         } catch (IOException e) {
             LOGGER.error("Failed to map meta data when uploading web server config {} for {}", templateName, webServer, e);
-            throw new InternalErrorException(AemFaultType.BAD_STREAM, "Unable to map the meta data for template " + templateName, e);
+            throw new InternalErrorException(FaultType.BAD_STREAM, "Unable to map the meta data for template " + templateName, e);
         }
     }
 
@@ -293,7 +293,7 @@ public class WebServerServiceImpl implements WebServerService {
             // check the web server state
             if (isStarted(getWebServer(webServerName))) {
                 LOGGER.error("The target Web Server {} must be stopped before attempting to update the resource file", webServerName);
-                throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "The target Web Server must be stopped before attempting to update the resource file");
+                throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, "The target Web Server must be stopped before attempting to update the resource file");
             }
             ResourceIdentifier resourceIdentifier = new ResourceIdentifier.Builder()
                     .setWebServerName(webServerName)

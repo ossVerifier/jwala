@@ -2,7 +2,8 @@ package com.cerner.jwala.service.impl.spring.component;
 
 import com.cerner.jwala.commandprocessor.jsch.impl.ChannelSessionKey;
 import com.cerner.jwala.commandprocessor.jsch.impl.ChannelType;
-import com.cerner.jwala.common.domain.model.fault.AemFaultType;
+import com.cerner.jwala.common.domain.model.fault.FaultType;
+import com.cerner.jwala.common.exception.ApplicationException;
 import com.cerner.jwala.common.exception.InternalErrorException;
 import com.cerner.jwala.common.exec.ExecReturnCode;
 import com.cerner.jwala.common.exec.RemoteExecCommand;
@@ -213,9 +214,10 @@ public class JschRemoteCommandExecutorServiceImpl implements RemoteCommandExecut
      * @param channelSessionKey
      * @throws IOException
      */
-    protected String readRemoteOutput(InputStream in, final ChannelShell channel, ChannelSessionKey channelSessionKey) throws Exception {
+    protected String readRemoteOutput(InputStream in, final ChannelShell channel, ChannelSessionKey channelSessionKey) {
         boolean timeout = false;
-        int readByte = in.read();
+        int readByte = 0;
+        readByte = readByte(in);
         LOGGER.debug("Reading remote output ...");
         StringBuilder inStringBuilder = new StringBuilder();
 
@@ -233,7 +235,7 @@ public class JschRemoteCommandExecutorServiceImpl implements RemoteCommandExecut
                 LOGGER.debug("Channel exit status {}", channel.getExitStatus());
                 LOGGER.debug("Channel being returned to the pool");
                 channelPool.returnObject(channelSessionKey, channel);
-                throw new InternalErrorException(AemFaultType.CONTROL_OPERATION_UNSUCCESSFUL, "Input stream to channel ended before return value received");
+                throw new InternalErrorException(FaultType.CONTROL_OPERATION_UNSUCCESSFUL, "Input stream to channel ended before return value received");
             }
             int length = inStringBuilder.length();
             if (length > 16384) {
@@ -246,8 +248,7 @@ public class JschRemoteCommandExecutorServiceImpl implements RemoteCommandExecut
                 return result;
             }
 
-            // TODO: Find a way how to timeout from Inputstream read. The timeout mechanism above may not work when read is blocking.
-            readByte = in.read();
+            readByte = readByte(in);
 
             if (readByte == -1) {
                 LOGGER.error("Read -1 from shell stream - closing connection for unexpected output");
@@ -272,6 +273,17 @@ public class JschRemoteCommandExecutorServiceImpl implements RemoteCommandExecut
         String result = inStringBuilder.toString();
         inStringBuilder = null;
         return result;
+    }
+
+    private int readByte(InputStream in) {
+        // TODO: Find a way how to timeout from Inputstream read. The timeout mechanism above may not work when read is blocking.
+        int readByte;
+        try {
+            readByte = in.read();
+        } catch (IOException e) {
+            throw new ApplicationException(e);
+        }
+        return readByte;
     }
 
     /**

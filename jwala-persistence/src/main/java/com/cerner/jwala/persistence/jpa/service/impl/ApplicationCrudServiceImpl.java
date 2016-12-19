@@ -1,7 +1,7 @@
 package com.cerner.jwala.persistence.jpa.service.impl;
 
 import com.cerner.jwala.common.domain.model.app.Application;
-import com.cerner.jwala.common.domain.model.fault.AemFaultType;
+import com.cerner.jwala.common.domain.model.fault.FaultType;
 import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
@@ -142,7 +142,7 @@ public class ApplicationCrudServiceImpl extends AbstractCrudServiceImpl<JpaAppli
             }
         } else {
             LOGGER.error("Application cannot be found {} attempting to update application", updateApplicationRequest);
-            throw new BadRequestException(AemFaultType.INVALID_APPLICATION_NAME,
+            throw new BadRequestException(FaultType.INVALID_APPLICATION_NAME,
                     "Application cannot be found: " + appId.getId());
         }
     }
@@ -257,7 +257,7 @@ public class ApplicationCrudServiceImpl extends AbstractCrudServiceImpl<JpaAppli
             entityManager.flush();
         } else {
             LOGGER.error("Error uploading template for app request {} and JVM {}", uploadAppTemplateRequest, jpaJvm);
-            throw new BadRequestException(AemFaultType.APPLICATION_NOT_FOUND,
+            throw new BadRequestException(FaultType.APPLICATION_NOT_FOUND,
                     "Only expecting one template to be returned for application [" + uploadAppTemplateRequest + "] but returned " + templates.size() + " templates");
         }
 
@@ -269,7 +269,7 @@ public class ApplicationCrudServiceImpl extends AbstractCrudServiceImpl<JpaAppli
         JpaApplication jpaApp = entityManager.find(JpaApplication.class, aApplicationId.getId());
         if (jpaApp == null) {
             LOGGER.error("No application found for id {}", aApplicationId);
-            throw new NotFoundException(AemFaultType.APPLICATION_NOT_FOUND,
+            throw new NotFoundException(FaultType.APPLICATION_NOT_FOUND,
                     "Application not found: " + aApplicationId);
         }
         return JpaAppBuilder.appFrom(jpaApp);

@@ -1,7 +1,7 @@
 package com.cerner.jwala.common.rule.webserver;
 
 import com.cerner.jwala.common.domain.model.app.Application;
-import com.cerner.jwala.common.domain.model.fault.AemFaultType;
+import com.cerner.jwala.common.domain.model.fault.FaultType;
 import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
@@ -40,8 +40,8 @@ public class RuleTest {
     private Rule [] rules = {new HostNameRule("any"),
                              new MultipleRules(),
                              new PathRule(mockPath),
-                             new PortNumberRule(8080, AemFaultType.CANNOT_CONNECT),
-                             new ShutdownPortNumberRule(8080, AemFaultType.CANNOT_CONNECT),
+                             new PortNumberRule(8080, FaultType.CANNOT_CONNECT),
+                             new ShutdownPortNumberRule(8080, FaultType.CANNOT_CONNECT),
                              new StatusPathRule(mockPath),
                              new ValidTemplateNameRule("any"),
                              new ValidWebArchiveNameRule("any"),

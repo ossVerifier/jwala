@@ -1,6 +1,6 @@
 package com.cerner.jwala.ws.rest.v1.service.webserver.impl;
 
-import com.cerner.jwala.common.domain.model.fault.AemFaultType;
+import com.cerner.jwala.common.domain.model.fault.FaultType;
 import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.resource.ResourceGroup;
@@ -117,7 +117,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
         } catch (EntityExistsException eee) {
             LOGGER.error("Web server \"{}\" already exists", aWebServerToCreate, eee);
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
-                    AemFaultType.DUPLICATE_WEBSERVER_NAME, eee.getMessage(), eee));
+                    FaultType.DUPLICATE_WEBSERVER_NAME, eee.getMessage(), eee));
         }
     }
 
@@ -130,7 +130,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
         } catch (EntityExistsException eee) {
             LOGGER.error("Web server with name \"{}\" already exists", aWebServerToCreate.toUpdateWebServerRequest().getNewName(), eee);
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
-                    AemFaultType.DUPLICATE_WEBSERVER_NAME, eee.getMessage(), eee));
+                    FaultType.DUPLICATE_WEBSERVER_NAME, eee.getMessage(), eee));
         }
     }
 
@@ -146,14 +146,14 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
                             new ControlWebServerRequest(aWsId, WebServerControlOperation.DELETE_SERVICE), webServer.getName());
                 } catch (final RuntimeException e) {
                     return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR,
-                            new FaultCodeException(AemFaultType.CONTROL_OPERATION_UNSUCCESSFUL, e.getMessage(), e));
+                            new FaultCodeException(FaultType.CONTROL_OPERATION_UNSUCCESSFUL, e.getMessage(), e));
                 }
             }
             webServerService.removeWebServer(aWsId);
         } else {
             LOGGER.error("The target web server {} must be stopped before attempting to delete it", webServer.getName());
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR,
-                    new FaultCodeException(AemFaultType.CONTROL_OPERATION_UNSUCCESSFUL, "Web server " + webServer.getName() +
+                    new FaultCodeException(FaultType.CONTROL_OPERATION_UNSUCCESSFUL, "Web server " + webServer.getName() +
                             " must be stopped before it can be deleted!", null));
         }
         return ResponseBuilder.ok("successful");
@@ -180,7 +180,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
             final String standardOut = commandOutput.getStandardOutput();
             String errMessage = null != standardError && !standardError.isEmpty() ? standardError : standardOut;
             LOGGER.error("Control Operation Unsuccessful: {}", errMessage);
-            throw new InternalErrorException(AemFaultType.CONTROL_OPERATION_UNSUCCESSFUL, CommandOutputReturnCode.fromReturnCode(commandOutput.getReturnCode().getReturnCode()).getDesc());
+            throw new InternalErrorException(FaultType.CONTROL_OPERATION_UNSUCCESSFUL, CommandOutputReturnCode.fromReturnCode(commandOutput.getReturnCode().getReturnCode()).getDesc());
         }
     }
 
@@ -212,7 +212,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
             if (webServerService.isStarted(webServer)) {
                 final String errorMessage = "The target Web Server " + aWebServerName + " must be stopped before attempting to update the resource file";
                 LOGGER.error(errorMessage);
-                throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, errorMessage);
+                throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, errorMessage);
             }
             ResourceIdentifier resourceIdentifier = new ResourceIdentifier.Builder()
                     .setWebServerName(webServer.getName())
@@ -250,7 +250,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
         } catch (CommandFailureException e) {
             LOGGER.error("Failed for {}", aWebServerName, e);
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
-                    AemFaultType.REMOTE_COMMAND_FAILURE, e.getMessage(), e));
+                    FaultType.REMOTE_COMMAND_FAILURE, e.getMessage(), e));
         } finally {
             wsWriteLocks.get(aWebServerName).writeLock().unlock();
         }
@@ -268,7 +268,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
             }
         }
         if (!foundHttpdConf) {
-            throw new InternalErrorException(AemFaultType.WEB_SERVER_HTTPD_CONF_TEMPLATE_NOT_FOUND, "No template was found for the httpd.conf. Please upload a template for the httpd.conf and try again.");
+            throw new InternalErrorException(FaultType.WEB_SERVER_HTTPD_CONF_TEMPLATE_NOT_FOUND, "No template was found for the httpd.conf. Please upload a template for the httpd.conf and try again.");
         }
     }
 
@@ -279,7 +279,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
         final ExecReturnCode resultReturnCode = result.getReturnCode();
         if (!resultReturnCode.wasSuccessful()) {
             LOGGER.error("Creating scripts directory {} FAILED ", scriptsDir);
-            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, CommandOutputReturnCode.fromReturnCode(resultReturnCode.getReturnCode()).getDesc());
+            throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, CommandOutputReturnCode.fromReturnCode(resultReturnCode.getReturnCode()).getDesc());
         }
 
     }
@@ -294,11 +294,11 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
             LOGGER.info("Successfully created the directory {}", destHttpdConfParentDir);
         } else {
             LOGGER.error("Failed to create the directory {} during creation of {}", destHttpdConfParentDir, webServerName);
-            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to secure copy file " + sourceStartServicePath + " during the creation of " + webServerName);
+            throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, "Failed to secure copy file " + sourceStartServicePath + " during the creation of " + webServerName);
         }
         if (!webServerControlService.secureCopyFile(webServerName, sourceStartServicePath, destHttpdConfStartScript, userId).getReturnCode().wasSuccessful()) {
             LOGGER.error("Failed to secure copy file {} during creation of {}", sourceStartServicePath, webServerName);
-            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to secure copy file " + sourceStartServicePath + " during the creation of " + webServerName);
+            throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, "Failed to secure copy file " + sourceStartServicePath + " during the creation of " + webServerName);
         }
 
         final String stopScriptName = AemControl.Properties.STOP_SCRIPT_NAME.getValue();
@@ -306,7 +306,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
         final String destHttpdConfStopScript = destHttpdConfParentDir + "/" + stopScriptName;
         if (!webServerControlService.secureCopyFile(webServerName, sourceStopServicePath, destHttpdConfStopScript, userId).getReturnCode().wasSuccessful()) {
             LOGGER.error("Failed to secure copy file {} during creation of {}", sourceStopServicePath, webServerName);
-            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to secure copy file " + sourceStopServicePath + " during the creation of " + webServerName);
+            throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, "Failed to secure copy file " + sourceStopServicePath + " during the creation of " + webServerName);
         }
 
         final String installServiceWsScriptName = AemControl.Properties.INSTALL_SERVICE_WS_SERVICE_SCRIPT_NAME.getValue();
@@ -314,17 +314,17 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
         final String jwalaScriptsPath = ApplicationProperties.get("remote.commands.user-scripts");
         if (!webServerControlService.secureCopyFile(webServerName, sourceInstallServiceWsServicePath, jwalaScriptsPath + "/" + installServiceWsScriptName, userId).getReturnCode().wasSuccessful()) {
             LOGGER.error("Failed to secure copy file {} during creation of {}", sourceInstallServiceWsServicePath, webServerName);
-            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to secure copy file " + sourceInstallServiceWsServicePath + " during the creation of " + webServerName);
+            throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, "Failed to secure copy file " + sourceInstallServiceWsServicePath + " during the creation of " + webServerName);
         }
 
         // make sure the scripts are executable
         if (!webServerControlService.changeFileMode(webServer, "a+x", jwalaScriptsPath, "*.sh").getReturnCode().wasSuccessful()) {
             LOGGER.error("Failed to update the permissions in {} during the creation of {}", jwalaScriptsPath, webServerName);
-            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to update the permissions in " + sourceInstallServiceWsServicePath + " during the creation of " + webServerName);
+            throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, "Failed to update the permissions in " + sourceInstallServiceWsServicePath + " during the creation of " + webServerName);
         }
         if (!webServerControlService.changeFileMode(webServer, "a+x", destHttpdConfParentDir, "*.sh").getReturnCode().wasSuccessful()) {
             LOGGER.error("Failed to update the permissions in {} during the creation of {}", destHttpdConfParentDir, webServerName);
-            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to update the permissions in " + destHttpdConfParentDir + " during the creation of " + webServerName);
+            throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, "Failed to update the permissions in " + destHttpdConfParentDir + " during the creation of " + webServerName);
         }
     }
 
@@ -344,7 +344,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
             LOGGER.info("Successfully copied {} to {}", install_serviceWsBatFileAbsolutePath, webServer.getHost());
         } else {
             LOGGER.error("Failed to copy {} to {} ", install_serviceWsBatFileAbsolutePath, webServer.getHost());
-            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to copy " + install_serviceWsBatFileAbsolutePath + " to " + webServer.getHost());
+            throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, "Failed to copy " + install_serviceWsBatFileAbsolutePath + " to " + webServer.getHost());
         }
 
         // call the install_serviceWs.bat file
@@ -354,7 +354,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
         } else {
             final String standardError = installserviceResult.getStandardError();
             LOGGER.error("Failed to create windows service for {} :: {}", name, !standardError.isEmpty() ? standardError : installserviceResult.getStandardOutput());
-            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to create windows service for " + name + ". " + installserviceResult.standardErrorOrStandardOut());
+            throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, "Failed to create windows service for " + name + ". " + installserviceResult.standardErrorOrStandardOut());
         }
     }
 
@@ -371,7 +371,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
                         commandOutput.getStandardError().isEmpty() ?
                                 commandOutput.getStandardOutput() : commandOutput.getStandardError();
                 LOGGER.error("Deleting windows service {} failed :: ERROR: {}", webServerName, standardError);
-                throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, standardError);
+                throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, standardError);
             }
         }
     }
@@ -387,7 +387,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
             out.println(generatedTemplate);
         } catch (FileNotFoundException e) {
             LOGGER.error("Unable to create temporary file {}", httpdConfAbsolutePath);
-            throw new InternalErrorException(AemFaultType.INVALID_PATH, e.getMessage(), e);
+            throw new InternalErrorException(FaultType.INVALID_PATH, e.getMessage(), e);
         } finally {
             if (out != null) {
                 out.close();
@@ -404,7 +404,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
         } catch (CommandFailureException cmdFailEx) {
             LOGGER.warn("Request Failure Occurred", cmdFailEx);
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
-                    AemFaultType.REMOTE_COMMAND_FAILURE, cmdFailEx.getMessage()));
+                    FaultType.REMOTE_COMMAND_FAILURE, cmdFailEx.getMessage()));
         }
     }
 
@@ -430,7 +430,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
             return ResponseBuilder.ok(someContent);
         } else {
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
-                    AemFaultType.PERSISTENCE_ERROR, "Failed to update the template " + resourceTemplateName + " for " + wsName + ". See the log for more details."));
+                    FaultType.PERSISTENCE_ERROR, "Failed to update the template " + resourceTemplateName + " for " + wsName + ". See the log for more details."));
         }
 
     }
@@ -443,7 +443,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
         } catch (RuntimeException rte) {
             LOGGER.debug("Error previewing template.", rte);
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
-                    AemFaultType.INVALID_TEMPLATE, rte.getMessage()));
+                    FaultType.INVALID_TEMPLATE, rte.getMessage()));
         }
     }
 

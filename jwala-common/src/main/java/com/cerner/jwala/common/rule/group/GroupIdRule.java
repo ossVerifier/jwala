@@ -1,6 +1,6 @@
 package com.cerner.jwala.common.rule.group;
 
-import com.cerner.jwala.common.domain.model.fault.AemFaultType;
+import com.cerner.jwala.common.domain.model.fault.FaultType;
 import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.rule.Rule;
@@ -10,7 +10,7 @@ public class GroupIdRule extends IdentifierRule<Group> implements Rule {
 
     public GroupIdRule(final Identifier<Group> theId) {
         super(theId,
-              AemFaultType.GROUP_NOT_SPECIFIED,
+              FaultType.GROUP_NOT_SPECIFIED,
               "Group Id was not specified");
     }
 }

@@ -3,7 +3,7 @@ package com.cerner.jwala.service.app.impl;
 import com.cerner.jwala.common.domain.model.app.Application;
 import com.cerner.jwala.common.domain.model.app.ApplicationControlOperation;
 import com.cerner.jwala.common.domain.model.binarydistribution.BinaryDistributionControlOperation;
-import com.cerner.jwala.common.domain.model.fault.AemFaultType;
+import com.cerner.jwala.common.domain.model.fault.FaultType;
 import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
@@ -204,7 +204,7 @@ public class ApplicationServiceImpl implements ApplicationService {
             final Jvm jvm = jvmPersistenceService.findJvmByExactName(jvmName);
             if (jvm.getState().isStartedState()) {
                 LOGGER.error("The target JVM must be stopped before attempting to update the resource files");
-                throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE,
+                throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE,
                         "The target JVM must be stopped before attempting to update the resource files");
             }
             final String hostName = jvm.getHostName();
@@ -281,7 +281,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                     }
                 } catch (IOException e) {
                     LOGGER.error("Failed to map meta data for template {} in group {}", resourceTemplateName, groupName, e);
-                    throw new InternalErrorException(AemFaultType.BAD_STREAM, "Failed to read meta data for template " + resourceTemplateName + " in group " + groupName, e);
+                    throw new InternalErrorException(FaultType.BAD_STREAM, "Failed to read meta data for template " + resourceTemplateName + " in group " + groupName, e);
                 }
             }
         }
@@ -317,15 +317,15 @@ public class ApplicationServiceImpl implements ApplicationService {
                 } else {
                     String errorOutput = execData.getStandardError().isEmpty() ? execData.getStandardOutput() : execData.getStandardError();
                     LOGGER.error("Copy of application war {} to {} FAILED::{}", applicationWar.getName(), entry.getKey(), errorOutput);
-                    throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to copy application war to the group host " + entry.getKey());
+                    throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, "Failed to copy application war to the group host " + entry.getKey());
                 }
             }
         } catch (IOException e) {
             LOGGER.error("Creation of temporary war file for {} FAILED :: {}", application.getWarPath(), e);
-            throw new InternalErrorException(AemFaultType.INVALID_PATH, "Failed to create temporary war file for copying to remote hosts");
+            throw new InternalErrorException(FaultType.INVALID_PATH, "Failed to create temporary war file for copying to remote hosts");
         } catch (ExecutionException | InterruptedException e) {
             LOGGER.error("FAILURE getting return status from copying web app war", e);
-            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Exception thrown while copying war", e);
+            throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, "Exception thrown while copying war", e);
         } finally {
             if (tempWarFile.exists()) {
                 tempWarFile.delete();
@@ -345,7 +345,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                 } else {
                     final String standardError = commandOutput.getStandardError().isEmpty() ? commandOutput.getStandardOutput() : commandOutput.getStandardError();
                     LOGGER.error("Error in creating parent dir {} on host {}:: ERROR : {}", parentDir, host, standardError);
-                    throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, standardError);
+                    throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, standardError);
                 }
                 LOGGER.info("Copying {} war to host {}", name, host);
                 commandOutput = executeSecureCopyCommand(null, host, tempWarFile.getAbsolutePath().replaceAll("\\\\", "/"), destPath);
@@ -361,7 +361,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                     } else {
                         final String standardError = commandOutput.getStandardError().isEmpty() ? commandOutput.getStandardOutput() : commandOutput.getStandardError();
                         LOGGER.error("Error in creating parent dir {} on host {}:: ERROR : {}", JWALA_SCRIPTS_PATH, host, standardError);
-                        throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, standardError);
+                        throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, standardError);
                     }
 
                     final String unpackWarScriptPath = ApplicationProperties.get("commands.scripts-path") + "/" + AemControl.Properties.UNPACK_BINARY_SCRIPT_NAME;
@@ -396,7 +396,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                         } else {
                             final String standardError = "Could not back up " + zipDestinationOption;
                             LOGGER.error(standardError);
-                            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, standardError);
+                            throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, standardError);
                         }
                     }
 
@@ -578,7 +578,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         final List<String> allHosts = groupService.getHosts(groupName);
         if (allHosts == null || allHosts.isEmpty()) {
             LOGGER.error("No hosts found for the group: {} and application: {}", groupName, appName);
-            throw new InternalErrorException(AemFaultType.GROUP_MISSING_HOSTS, "No host found for the application " + appName);
+            throw new InternalErrorException(FaultType.GROUP_MISSING_HOSTS, "No host found for the application " + appName);
         }
         if (hostName == null || hostName.isEmpty()) {
             LOGGER.info("Hostname not passed, deploying to all hosts");
@@ -594,7 +594,7 @@ public class ApplicationServiceImpl implements ApplicationService {
             }
             if (hostNames.isEmpty()) {
                 LOGGER.error("Hostname {} does not belong to the group {}", hostName, groupName);
-                throw new InternalErrorException(AemFaultType.INVALID_HOST_NAME, "The hostname: " + hostName + " does not belong to the group " + groupName);
+                throw new InternalErrorException(FaultType.INVALID_HOST_NAME, "The hostname: " + hostName + " does not belong to the group " + groupName);
             }
         }
         return hostNames;
@@ -619,7 +619,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                         "Web app resource(s) cannot be deployed on a running JVM!",
                         EventType.SYSTEM_ERROR, user.getId());
             }
-            throw new ApplicationServiceException(AemFaultType.RESOURCE_DEPLOY_FAILURE, errMsg, runningJvmNameList);
+            throw new ApplicationServiceException(FaultType.RESOURCE_DEPLOY_FAILURE, errMsg, runningJvmNameList);
         }
     }
 
@@ -640,7 +640,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                 }
             } catch (IOException e) {
                 LOGGER.error("Error in templatizing the metadata file", e);
-                throw new InternalErrorException(AemFaultType.IO_EXCEPTION, "Error in templatizing the metadata for resource " + resourceTemplate);
+                throw new InternalErrorException(FaultType.IO_EXCEPTION, "Error in templatizing the metadata for resource " + resourceTemplate);
             }
         }
         return resourceSet;
@@ -682,12 +682,12 @@ public class ApplicationServiceImpl implements ApplicationService {
                             final String errorMessage = "Error in deploying resources to host " + entry.getKey() +
                                     " for application " + appName;
                             LOGGER.error(errorMessage);
-                            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, errorMessage);
+                            throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, errorMessage);
                         }
                     }
                 } catch (InterruptedException | ExecutionException | TimeoutException e) {
                     LOGGER.error("Error in executing deploy", e);
-                    throw new InternalErrorException(AemFaultType.RESOURCE_DEPLOY_FAILURE, e.getMessage());
+                    throw new InternalErrorException(FaultType.RESOURCE_DEPLOY_FAILURE, e.getMessage());
                 }
             }
         }
@@ -704,7 +704,7 @@ public class ApplicationServiceImpl implements ApplicationService {
             if (!gotLock) {
                 LOGGER.error("Could not get lock for host: {} and app: {}", host, appName);
                 releaseWriteLocks(keys);
-                throw new InternalErrorException(AemFaultType.SERVICE_EXCEPTION, "Current resource is being deployed, wait for deploy to complete.");
+                throw new InternalErrorException(FaultType.SERVICE_EXCEPTION, "Current resource is being deployed, wait for deploy to complete.");
             } else {
                 keys.add(key);
             }

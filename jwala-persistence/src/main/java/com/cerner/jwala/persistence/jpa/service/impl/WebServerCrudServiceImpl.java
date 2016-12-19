@@ -1,7 +1,7 @@
 package com.cerner.jwala.persistence.jpa.service.impl;
 
 import com.cerner.jwala.common.domain.model.app.Application;
-import com.cerner.jwala.common.domain.model.fault.AemFaultType;
+import com.cerner.jwala.common.domain.model.fault.FaultType;
 import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
@@ -288,7 +288,7 @@ public class WebServerCrudServiceImpl extends AbstractCrudServiceImpl<JpaWebServ
             entityManager.flush();
         } else {
             LOGGER.error("Error uploading web server template for request {}", request);
-            throw new BadRequestException(AemFaultType.WEB_SERVER_HTTPD_CONF_TEMPLATE_NOT_FOUND,
+            throw new BadRequestException(FaultType.WEB_SERVER_HTTPD_CONF_TEMPLATE_NOT_FOUND,
                     "Only expecting one template to be returned for web server [" + request + "] but returned " + templates.size() + " templates");
         }
 

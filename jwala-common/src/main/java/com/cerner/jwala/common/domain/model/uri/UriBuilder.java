@@ -1,5 +1,7 @@
 package com.cerner.jwala.common.domain.model.uri;
 
+import com.cerner.jwala.common.domain.model.app.Application;
+import com.cerner.jwala.common.exception.ApplicationException;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -77,7 +79,7 @@ public class UriBuilder {
             LOGGER.trace("Constructed URI: " + uri.toString());
             return uri;
         } catch (final URISyntaxException urise) {
-            throw new RuntimeException("Unable to construct the URI for : " + this.toString(), urise);
+            throw new ApplicationException("Unable to construct the URI for : " + this.toString(), urise);
         }
     }
 

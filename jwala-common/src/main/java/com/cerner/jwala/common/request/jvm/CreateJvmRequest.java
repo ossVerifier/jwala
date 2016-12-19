@@ -1,6 +1,6 @@
 package com.cerner.jwala.common.request.jvm;
 
-import com.cerner.jwala.common.domain.model.fault.AemFaultType;
+import com.cerner.jwala.common.domain.model.fault.FaultType;
 import com.cerner.jwala.common.domain.model.path.Path;
 import com.cerner.jwala.common.request.Request;
 import com.cerner.jwala.common.rule.*;
@@ -102,11 +102,11 @@ public class CreateJvmRequest implements Serializable, Request {
         new MultipleRules(new JvmNameRule(jvmName),
                           new HostNameRule(hostName),
                           new StatusPathRule(statusPath),
-                          new PortNumberRule(httpPort, AemFaultType.INVALID_JVM_HTTP_PORT),
-                          new PortNumberRule(httpsPort, AemFaultType.INVALID_JVM_HTTPS_PORT, true),
-                          new PortNumberRule(redirectPort, AemFaultType.INVALID_JVM_REDIRECT_PORT),
-                          new ShutdownPortNumberRule(shutdownPort, AemFaultType.INVALID_JVM_SHUTDOWN_PORT),
-                          new PortNumberRule(ajpPort, AemFaultType.INVALID_JVM_AJP_PORT)).validate();
+                          new PortNumberRule(httpPort, FaultType.INVALID_JVM_HTTP_PORT),
+                          new PortNumberRule(httpsPort, FaultType.INVALID_JVM_HTTPS_PORT, true),
+                          new PortNumberRule(redirectPort, FaultType.INVALID_JVM_REDIRECT_PORT),
+                          new ShutdownPortNumberRule(shutdownPort, FaultType.INVALID_JVM_SHUTDOWN_PORT),
+                          new PortNumberRule(ajpPort, FaultType.INVALID_JVM_AJP_PORT)).validate();
     }
 
     @Override

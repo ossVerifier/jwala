@@ -2,14 +2,13 @@ package com.cerner.jwala.common.rule;
 
 import org.junit.Test;
 
-import com.cerner.jwala.common.domain.model.fault.AemFaultType;
+import com.cerner.jwala.common.domain.model.fault.FaultType;
 import com.cerner.jwala.common.exception.BadRequestException;
-import com.cerner.jwala.common.rule.PortNumberRule;
 
 import static org.junit.Assert.*;
 
 public class PortNumberRuleTest {
-    AemFaultType error = AemFaultType.INVALID_WEBSERVER_PORT;
+    FaultType error = FaultType.INVALID_WEBSERVER_PORT;
     PortNumberRule pnrValid = new PortNumberRule(Integer.valueOf(1), error);
     PortNumberRule pnrNull = new PortNumberRule(null, error);
     PortNumberRule pnrOne = new PortNumberRule(Integer.valueOf(0), error);
@@ -59,7 +58,7 @@ public class PortNumberRuleTest {
     @Test
     public void testInvalidPortNumberWhileNullable() {
         final PortNumberRule rule = new PortNumberRule(-12,
-                                                       AemFaultType.INVALID_WEBSERVER_PORT,
+                                                       FaultType.INVALID_WEBSERVER_PORT,
                                                        true);
         assertFalse(rule.isValid());
     }

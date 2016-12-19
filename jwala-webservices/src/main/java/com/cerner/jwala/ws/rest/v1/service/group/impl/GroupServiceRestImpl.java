@@ -1,7 +1,7 @@
 package com.cerner.jwala.ws.rest.v1.service.group.impl;
 
 import com.cerner.jwala.common.domain.model.app.Application;
-import com.cerner.jwala.common.domain.model.fault.AemFaultType;
+import com.cerner.jwala.common.domain.model.fault.FaultType;
 import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.group.GroupControlOperation;
 import com.cerner.jwala.common.domain.model.id.Identifier;
@@ -35,7 +35,6 @@ import com.cerner.jwala.ws.rest.v1.provider.AuthenticatedUser;
 import com.cerner.jwala.ws.rest.v1.provider.NameSearchParameterProvider;
 import com.cerner.jwala.ws.rest.v1.response.ResponseBuilder;
 import com.cerner.jwala.ws.rest.v1.service.app.ApplicationServiceRest;
-import com.cerner.jwala.ws.rest.v1.service.app.impl.ApplicationServiceRestImpl;
 import com.cerner.jwala.ws.rest.v1.service.group.GroupChildType;
 import com.cerner.jwala.ws.rest.v1.service.group.GroupServiceRest;
 import com.cerner.jwala.ws.rest.v1.service.group.MembershipDetails;
@@ -48,7 +47,6 @@ import org.apache.cxf.jaxrs.ext.MessageContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.access.method.P;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
@@ -72,12 +70,14 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     private GroupWebServerControlService groupWebServerControlService;
     private final JvmService jvmService;
     private final WebServerService webServerService;
+    final ApplicationServiceRest applicationServiceRest;
 
     @Autowired
     public GroupServiceRestImpl(final GroupService groupService, final ResourceService resourceService,
                                 final GroupControlService groupControlService, final GroupJvmControlService groupJvmControlService,
                                 final GroupWebServerControlService groupWebServerControlService, final JvmService jvmService,
-                                final WebServerService webServerService, ApplicationService applicationService) {
+                                final WebServerService webServerService, ApplicationService applicationService,
+                                final ApplicationServiceRest applicationServiceRest) {
         this.groupService = groupService;
         this.resourceService = resourceService;
         this.groupControlService = groupControlService;
@@ -86,6 +86,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         this.jvmService = jvmService;
         this.webServerService = webServerService;
         this.applicationService = applicationService;
+        this.applicationServiceRest = applicationServiceRest;
         executorService = Executors.newFixedThreadPool(Integer.parseInt(ApplicationProperties.get("resources.thread-task-executor.pool.size", "25")));
     }
 
@@ -123,7 +124,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         } catch (EntityExistsException eee) {
             LOGGER.error("Group Name already exists: {}", aNewGroupName);
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
-                    AemFaultType.DUPLICATE_GROUP_NAME, eee.getMessage(), eee));
+                    FaultType.DUPLICATE_GROUP_NAME, eee.getMessage(), eee));
         }
     }
 
@@ -143,7 +144,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         } catch (EntityExistsException eee) {
             LOGGER.error("Group Name already exists: {}", anUpdatedGroup.getName(), eee);
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
-                    AemFaultType.DUPLICATE_GROUP_NAME, eee.getMessage(), eee));
+                    FaultType.DUPLICATE_GROUP_NAME, eee.getMessage(), eee));
         }
     }
 
@@ -160,7 +161,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         } catch (GroupServiceException e) {
             LOGGER.error("Remove group error: {}", name, e);
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
-                    AemFaultType.FAILED_TO_DELETE_GROUP, e.getMessage(), e));
+                    FaultType.FAILED_TO_DELETE_GROUP, e.getMessage(), e));
         }
     }
 
@@ -233,7 +234,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         } catch (ResourceTemplateUpdateException | NonRetrievableResourceTemplateContentException e) {
             LOGGER.error("Failed to update the template {}", resourceTemplateName, e);
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
-                    AemFaultType.PERSISTENCE_ERROR, e.getMessage()));
+                    FaultType.PERSISTENCE_ERROR, e.getMessage()));
         }
     }
 
@@ -246,7 +247,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         } catch (RuntimeException e) {
             LOGGER.error("Failed to preview the web server template for {}", groupName, e);
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
-                    AemFaultType.INVALID_TEMPLATE, e.getMessage(), e));
+                    FaultType.INVALID_TEMPLATE, e.getMessage(), e));
         }
     }
 
@@ -270,7 +271,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
             for (final Jvm jvm : jvms) {
                 if (jvm.getState().isStartedState()) {
                     LOGGER.info("Failed to deploy file {} for group {}: not all JVMs were stopped - {} was started", fileName, group.getName(), jvm.getJvmName());
-                    throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "All JVMs in the group must be stopped before continuing. Operation stopped for JVM " + jvm.getJvmName());
+                    throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, "All JVMs in the group must be stopped before continuing. Operation stopped for JVM " + jvm.getJvmName());
                 }
             }
             final Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -345,7 +346,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         } catch (ResourceTemplateUpdateException | NonRetrievableResourceTemplateContentException e) {
             LOGGER.error("Failed to update the template {}", resourceTemplateName, e);
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
-                    AemFaultType.PERSISTENCE_ERROR, e.getMessage()));
+                    FaultType.PERSISTENCE_ERROR, e.getMessage()));
         }
     }
 
@@ -361,7 +362,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         } catch (RuntimeException e) {
             LOGGER.error("Failed to preview the JVM template for {}", groupName, e);
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
-                    AemFaultType.INVALID_TEMPLATE, e.getMessage(), e));
+                    FaultType.INVALID_TEMPLATE, e.getMessage(), e));
         }
     }
 
@@ -379,7 +380,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
                 if (webServerService.isStarted(webServer)) {
                     LOGGER.info("Failed to deploy {} for group {}: not all web servers were stopped - {} was started",
                             resourceFileName, group.getName(), webServer.getName());
-                    throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE,
+                    throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE,
                             "All web servers in the group must be stopped before continuing. Operation stopped for web server "
                                     + webServer.getName());
                 }
@@ -444,7 +445,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         }
 
         if (!entityDetailsMap.isEmpty()) {
-            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Request failed for the following errors:", null, entityDetailsMap);
+            throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, "Request failed for the following errors:", null, entityDetailsMap);
         } else {
             LOGGER.info("Finished checking requests for error statuses.");
         }
@@ -478,7 +479,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
 
             if (!startedWebServers.isEmpty()) {
                 LOGGER.error("Failed to start generation of web servers for group ID {}: not all web servers were stopped - {} were started", aGroupId, startedWebServers.toString());
-                throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE,
+                throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE,
                         "All web servers in the group must be stopped before continuing. Operation stopped for web server " + startedWebServers.toString());
             }
 
@@ -522,7 +523,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
 
             if (!starteJvms.isEmpty()) {
                 LOGGER.error("Failed to start generation of JVMs for group ID {}: not all JVMs were stopped - {} were started", aGroupId, starteJvms.toString());
-                throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE,
+                throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE,
                         "All JVMs in the group must be stopped before continuing. Operation stopped for JVMs " + starteJvms.toString());
             }
 
@@ -665,7 +666,6 @@ public class GroupServiceRestImpl implements GroupServiceRest {
             Map<String, Future<Response>> futureContents = new HashMap<>();
             if (null != groupJvms) {
                 LOGGER.info("Updating the templates for all the JVMs in group {}", groupName);
-                final ApplicationServiceRest appServiceRest = ApplicationServiceRestImpl.get();
                 final Authentication auth = SecurityContextHolder.getContext().getAuthentication();
                 for (final Jvm jvm : groupJvms) {
                     final String jvmName = jvm.getJvmName();
@@ -674,7 +674,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
                         @Override
                         public Response call() throws Exception {
                             SecurityContextHolder.getContext().setAuthentication(auth);
-                            return appServiceRest.updateResourceTemplate(appName, resourceTemplateName, jvmName, groupName, updatedContent);
+                            return applicationServiceRest.updateResourceTemplate(appName, resourceTemplateName, jvmName, groupName, updatedContent);
                         }
                     });
                     futureContents.put(jvmName, futureContent);
@@ -690,10 +690,10 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         } catch (ResourceTemplateUpdateException | NonRetrievableResourceTemplateContentException e) {
             LOGGER.error("Failed to update the template {}", resourceTemplateName, e);
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
-                    AemFaultType.PERSISTENCE_ERROR, e.getMessage()));
+                    FaultType.PERSISTENCE_ERROR, e.getMessage()));
         } catch (ResourceFileGeneratorException e) {
             LOGGER.error("Fail to generate the resource file {}", resourceTemplateName, e);
-            return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(AemFaultType.BAD_STREAM, "Fail to generate the resource file " + resourceTemplateName, e));
+            return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(FaultType.BAD_STREAM, "Fail to generate the resource file " + resourceTemplateName, e));
         }
     }
 
@@ -707,10 +707,9 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         ResourceTemplateMetaData metaData;
         try {
             metaData = resourceService.getMetaData(groupAppMetaData);
-            final ApplicationServiceRest appServiceRest = ApplicationServiceRestImpl.get();
             if (metaData.getEntity().getDeployToJvms()) {
                 // deploy to all jvms in group
-                performGroupAppDeployToJvms(groupName, fileName, aUser, group, appName, appServiceRest, hostName);
+                performGroupAppDeployToJvms(groupName, fileName, aUser, group, appName, applicationServiceRest, hostName);
             } else {
                 ResourceIdentifier resourceIdentifier = new ResourceIdentifier.Builder()
                         .setGroupName(groupName)
@@ -728,7 +727,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
             }
         } catch (IOException e) {
             LOGGER.error("Failed to map meta data for resource template {} in group {} :: meta data: {} ", fileName, groupName, groupAppMetaData, e);
-            throw new InternalErrorException(AemFaultType.BAD_STREAM, "Failed to map meta data for resource template " + fileName + " in group " + groupName, e);
+            throw new InternalErrorException(FaultType.BAD_STREAM, "Failed to map meta data for resource template " + fileName + " in group " + groupName, e);
         }
         return ResponseBuilder.ok(group);
     }
@@ -748,7 +747,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
             for (Jvm jvm : jvms) {
                 if (jvm.getHostName().equalsIgnoreCase(hostName) && jvm.getState().isStartedState()) {
                     LOGGER.info("Failed to deploy file {} for group {} on host {}: not all JVMs were stopped - {} was started", fileName, groupName, hostName, jvm.getJvmName());
-                    throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "All JVMs on the host " + hostName + " must be stopped before continuing. Operation stopped for JVM " + jvm.getJvmName());
+                    throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, "All JVMs on the host " + hostName + " must be stopped before continuing. Operation stopped for JVM " + jvm.getJvmName());
                 }
             }
             futureMap.put(hostName, createFutureResponseForAppDeploy(groupName, fileName, appName, null, hostName));
@@ -763,7 +762,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
             for (Jvm jvm : jvms) {
                 if (jvm.getState().isStartedState()) {
                     LOGGER.info("Failed to deploy file {} for group {}: not all JVMs were stopped - {} was started", fileName, groupName, jvm.getJvmName());
-                    throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "All JVMs in the group must be stopped before continuing. Operation stopped for JVM " + jvm.getJvmName());
+                    throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, "All JVMs in the group must be stopped before continuing. Operation stopped for JVM " + jvm.getJvmName());
                 }
             }
             List<String> deployedHosts = new LinkedList<>();
@@ -782,7 +781,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
                                                final String appName, final ApplicationServiceRest appServiceRest, final String hostName) {
         Map<String, Future<Response>> futureMap = new HashMap<>();
         final Set<Jvm> groupJvms = group.getJvms();
-        Set<Jvm> jvms = null;
+        Set<Jvm> jvms;
         if (hostName != null && !hostName.isEmpty()) {
             LOGGER.debug("got hostname {} deploying template to host jvms only", hostName);
             jvms = new HashSet<>();
@@ -799,7 +798,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
             for (Jvm jvm : jvms) {
                 if (jvm.getState().isStartedState()) {
                     LOGGER.info("Failed to deploy file {} for group {}: not all JVMs were stopped - {} was started", fileName, group.getName(), jvm.getJvmName());
-                    throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "All JVMs in the group must be stopped before continuing. Operation stopped for JVM " + jvm.getJvmName());
+                    throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, "All JVMs in the group must be stopped before continuing. Operation stopped for JVM " + jvm.getJvmName());
                 }
             }
             final String groupAppTemplateContent = groupService.getGroupAppResourceTemplate(groupName, appName, fileName, false, new ResourceGroup());
@@ -831,7 +830,6 @@ public class GroupServiceRestImpl implements GroupServiceRest {
      * @return returns a Future<Response> object if successful.
      */
     protected Future<Response> createFutureResponseForAppDeploy(final String groupName, final String fileName, final String appName, final Jvm jvm, final String hostName) {
-        final ResourceGroup resourceGroup = resourceService.generateResourceGroup();
         final Application application = applicationService.getApplication(appName);
         final Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Future<Response> responseFuture = executorService.submit(new Callable<Response>() {
@@ -849,7 +847,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
                 if (commandOutput.getReturnCode().wasSuccessful()) {
                     return ResponseBuilder.ok(commandOutput);
                 } else {
-                    return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(AemFaultType.REMOTE_COMMAND_FAILURE, commandOutput.toString()));
+                    return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(FaultType.REMOTE_COMMAND_FAILURE, commandOutput.toString()));
                 }
             }
         });
@@ -865,7 +863,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         } catch (RuntimeException e) {
             LOGGER.error("Failed to preview the application template {} for {}", resourceTemplateName, groupName, e);
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
-                    AemFaultType.INVALID_TEMPLATE, e.getMessage(), e));
+                    FaultType.INVALID_TEMPLATE, e.getMessage(), e));
         }
     }
 

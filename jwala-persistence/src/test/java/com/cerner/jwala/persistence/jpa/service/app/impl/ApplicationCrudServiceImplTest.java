@@ -2,7 +2,7 @@ package com.cerner.jwala.persistence.jpa.service.app.impl;
 
 import com.cerner.jwala.common.configuration.TestExecutionProfile;
 import com.cerner.jwala.common.domain.model.app.Application;
-import com.cerner.jwala.common.domain.model.fault.AemFaultType;
+import com.cerner.jwala.common.domain.model.fault.FaultType;
 import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
@@ -171,7 +171,7 @@ public class ApplicationCrudServiceImplTest {
             JpaApplication duplicate = applicationCrudService.createApplication(request, jpaGroup);
             fail(duplicate.toString());
         } catch (BadRequestException e) {
-            assertEquals(AemFaultType.DUPLICATE_APPLICATION, e.getMessageResponseStatus());
+            assertEquals(FaultType.DUPLICATE_APPLICATION, e.getMessageResponseStatus());
             throw e;
         } finally {
             try {

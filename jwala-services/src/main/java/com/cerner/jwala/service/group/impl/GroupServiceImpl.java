@@ -1,7 +1,7 @@
 package com.cerner.jwala.service.group.impl;
 
 import com.cerner.jwala.common.domain.model.app.Application;
-import com.cerner.jwala.common.domain.model.fault.AemFaultType;
+import com.cerner.jwala.common.domain.model.fault.FaultType;
 import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
@@ -19,7 +19,6 @@ import com.cerner.jwala.common.rule.group.GroupNameRule;
 import com.cerner.jwala.control.command.RemoteCommandExecutorImpl;
 import com.cerner.jwala.persistence.service.ApplicationPersistenceService;
 import com.cerner.jwala.persistence.service.GroupPersistenceService;
-import com.cerner.jwala.service.HistoryFacadeService;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionService;
 import com.cerner.jwala.service.exception.GroupServiceException;
 import com.cerner.jwala.service.group.GroupService;
@@ -35,30 +34,24 @@ import java.util.*;
 
 public class GroupServiceImpl implements GroupService {
 
-    private static final String MEDIA_TYPE_TEXT = "text";
     private final GroupPersistenceService groupPersistenceService;
     private final RemoteCommandExecutorImpl remoteCommandExecutor;
     private final BinaryDistributionService binaryDistributionService;
     private ApplicationPersistenceService applicationPersistenceService;
     private ResourceService resourceService;
-    private HistoryFacadeService historyFacadeService;
 
-    private static final String GENERATED_RESOURCE_DIR = "paths.generated.resource.dir";
     private static final Logger LOGGER = LoggerFactory.getLogger(GroupServiceImpl.class);
-    private static final String UNZIP_EXE = "unzip.exe";
 
     public GroupServiceImpl(final GroupPersistenceService groupPersistenceService,
                             final ApplicationPersistenceService applicationPersistenceService,
                             final RemoteCommandExecutorImpl remoteCommandExecutor,
                             final BinaryDistributionService binaryDistributionService,
-                            final ResourceService resourceService,
-                            final HistoryFacadeService historyFacadeService) {
+                            final ResourceService resourceService) {
         this.groupPersistenceService = groupPersistenceService;
         this.applicationPersistenceService = applicationPersistenceService;
         this.remoteCommandExecutor = remoteCommandExecutor;
         this.binaryDistributionService = binaryDistributionService;
         this.resourceService = resourceService;
-        this.historyFacadeService = historyFacadeService;
     }
 
     @Override
@@ -364,7 +357,7 @@ public class GroupServiceImpl implements GroupService {
                 LOGGER.error("Failed to generate and deploy file {} to Web App {}", resourceTemplateName, appName, rfge);
                 Map<String, List<String>> errorDetails = new HashMap<>();
                 errorDetails.put(appName, Collections.singletonList(rfge.getMessage()));
-                throw new InternalErrorException(AemFaultType.RESOURCE_GENERATION_FAILED, "Failed to generate and deploy file " + resourceTemplateName + " to Web App " + appName, null, errorDetails);
+                throw new InternalErrorException(FaultType.RESOURCE_GENERATION_FAILED, "Failed to generate and deploy file " + resourceTemplateName + " to Web App " + appName, null, errorDetails);
             } catch (Exception x) {
                 LOGGER.error("Failed to tokenize template {} in group {}", resourceTemplateName, groupName, x);
                 throw new ApplicationException("Template token replacement failed.", x);

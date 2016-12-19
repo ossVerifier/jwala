@@ -3,7 +3,7 @@ package com.cerner.jwala.service.balancermanager.impl;
 import com.cerner.jwala.common.domain.model.app.Application;
 import com.cerner.jwala.common.domain.model.balancermanager.BalancerManagerState;
 import com.cerner.jwala.common.domain.model.balancermanager.WorkerStatusType;
-import com.cerner.jwala.common.domain.model.fault.AemFaultType;
+import com.cerner.jwala.common.domain.model.fault.FaultType;
 import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
 import com.cerner.jwala.common.domain.model.webserver.WebServer;
@@ -126,7 +126,7 @@ public class BalancerManagerServiceImpl implements BalancerManagerService {
         } catch (javax.persistence.NoResultException e) {
             LOGGER.error(e.getMessage(), e);
             String message = "Cannot find " + jvmName + ", please verify if it is valid jvmName";
-            throw new InternalErrorException(AemFaultType.INVALID_WEBSERVER_OPERATION, message);
+            throw new InternalErrorException(FaultType.INVALID_WEBSERVER_OPERATION, message);
         }
         return jvm;
     }
@@ -181,7 +181,7 @@ public class BalancerManagerServiceImpl implements BalancerManagerService {
         }
         if (!found) {
             String message = "Cannot find " + jvmName + " in group: " + group.getName() + ", please verify if it is valid jvmName";
-            throw new InternalErrorException(AemFaultType.INVALID_WEBSERVER_OPERATION, message);
+            throw new InternalErrorException(FaultType.INVALID_WEBSERVER_OPERATION, message);
         }
     }
 
@@ -209,7 +209,7 @@ public class BalancerManagerServiceImpl implements BalancerManagerService {
             if (!webServerService.isStarted(webServer)) {
                 final String message = "The target Web Server " + webServer.getName() + " in group " + groupName + " must be STARTED before attempting to drain users";
                 LOGGER.error(message);
-                throw new InternalErrorException(AemFaultType.INVALID_WEBSERVER_OPERATION, message);
+                throw new InternalErrorException(FaultType.INVALID_WEBSERVER_OPERATION, message);
             }
         }
     }
@@ -218,7 +218,7 @@ public class BalancerManagerServiceImpl implements BalancerManagerService {
         if (!webServerService.isStarted(webServer)) {
             final String message = "The target Web Server " + webServer.getName() + " must be STARTED before attempting to drain users";
             LOGGER.error(message);
-            throw new InternalErrorException(AemFaultType.INVALID_WEBSERVER_OPERATION, message);
+            throw new InternalErrorException(FaultType.INVALID_WEBSERVER_OPERATION, message);
         }
     }
 
@@ -266,7 +266,7 @@ public class BalancerManagerServiceImpl implements BalancerManagerService {
             }
         }
         if (wrongWebServers.length() != 0) {
-            throw new InternalErrorException(AemFaultType.WEBSERVER_NOT_FOUND, wrongWebServers.substring(0, wrongWebServers.length() - 2) + " cannot be found in the group");
+            throw new InternalErrorException(FaultType.WEBSERVER_NOT_FOUND, wrongWebServers.substring(0, wrongWebServers.length() - 2) + " cannot be found in the group");
         }
         return webServersMatch;
     }

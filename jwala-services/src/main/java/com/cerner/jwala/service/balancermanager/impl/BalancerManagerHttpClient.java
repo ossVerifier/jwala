@@ -5,10 +5,9 @@ import org.apache.http.NameValuePair;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.conn.ssl.AllowAllHostnameVerifier;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
-
-import com.cerner.jwala.service.ssl.jsse.NullHostNameVerifier;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
@@ -40,7 +39,7 @@ public class BalancerManagerHttpClient {
             public void checkServerTrusted(X509Certificate[] certs, String authType) {
             }
         }}, new SecureRandom());
-        httpclient = HttpClients.custom().setSslcontext(sslContext).setHostnameVerifier(new NullHostNameVerifier()).build();
+        httpclient = HttpClients.custom().setSslcontext(sslContext).setHostnameVerifier(new AllowAllHostnameVerifier()).build();
         httppost.setEntity(new UrlEncodedFormEntity(nvps, Consts.UTF_8));
         return httpclient.execute(httppost);
     }
