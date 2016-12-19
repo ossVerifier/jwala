@@ -37,12 +37,10 @@ public class RuleTest {
     private Identifier [] jvmIds = {new Identifier<Jvm>(1L)};
     private Rule [] rules = {new HostNameRule("any"),
                              new MultipleRules(),
-                             new PathRule(mockPath),
                              new PortNumberRule(8080, FaultType.CANNOT_CONNECT),
                              new ShutdownPortNumberRule(8080, FaultType.CANNOT_CONNECT),
                              new StatusPathRule(mockPath),
                              new ValidTemplateNameRule("any"),
-                             new ValidWebArchiveNameRule("any"),
                              new ApplicationIdRule(new Identifier<Application>(1L)),
                              new GroupIdRule(groupIds[0]),
                              new GroupIdsRule(new HashSet<Identifier<Group>>(Arrays.<Identifier<Group>>asList(groupIds))),
