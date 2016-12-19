@@ -16,7 +16,6 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 
 public class JschCommandProcessorImpl implements CommandProcessor {
@@ -66,19 +65,50 @@ public class JschCommandProcessorImpl implements CommandProcessor {
         ChannelSessionKey channelSessionKey = new ChannelSessionKey(remoteExecCommand.getRemoteSystemConnection(), ChannelType.SHELL);
         LOGGER.debug("channel session key = {}", channelSessionKey);
         try {
-            InputStream in = null;
-            InputStream inErr = null;
-            OutputStream out = null;
+            channel = getChannelShell(channelSessionKey, CHANNEL_BORROW_LOOP_WAIT_TIME);
 
-            final long startTime = System.currentTimeMillis();
-            while ((channel == null || !channel.isConnected()) && (System.currentTimeMillis() - startTime) < CHANNEL_BORROW_LOOP_WAIT_TIME) {
+            final InputStream in = channel.getInputStream();
+            final OutputStream out = channel.getOutputStream();
+
+            final String commandString = remoteExecCommand.getCommand().toCommandString();
+            out.write(commandString.getBytes(StandardCharsets.UTF_8));
+            LOGGER.debug("commandString = {}", commandString);
+            out.write("echo 'EXIT_CODE='$?***".getBytes(StandardCharsets.UTF_8));
+            out.write("echo -n -e '\\xff'".getBytes(StandardCharsets.UTF_8));
+            out.flush();
+
+            commandOutputStr = readRemoteOutput(in);
+            LOGGER.debug("commandOutput=" + commandOutputStr);
+            returnCode = parseReturnCode(commandOutputStr);
+            LOGGER.debug("return code =" + returnCode);
+        } catch (final IOException e) {
+            LOGGER.error("Failed to process shell command: {}!", remoteExecCommand, e);
+        } finally {
+            if (channel != null) {
+                channelPool.returnObject(channelSessionKey, channel);
+                LOGGER.debug("channel {} returned", channel.getId());
+            }
+        }
+    }
+
+    /**
+     * Acquires a channel
+     * @param channelSessionKey the session key that is used to acquire a channel
+     * @param timeout the given time limit to acquire a channel, if reached a {@link JschCommandProcessorImplException} is thrown
+     * @return {@link ChannelShell}
+     */
+    private ChannelShell getChannelShell(final ChannelSessionKey channelSessionKey, final long timeout) {
+        ChannelShell channel = null;
+        final long startTime = System.currentTimeMillis();
+        while (channel == null || !channel.isConnected()) {
+            if ((System.currentTimeMillis() - startTime) > timeout) {
+                throw new JschCommandProcessorImplException("Channel acquisition timeout!");
+            }
+
+            try {
                 LOGGER.debug("borrowing a channel...");
                 channel = (ChannelShell) channelPool.borrowObject(channelSessionKey);
                 LOGGER.debug("channel {} borrowed", channel.getId());
-
-                in = channel.getInputStream();
-                inErr = channel.getExtInputStream();
-                out = channel.getOutputStream();
 
                 if (!channel.isConnected()) {
                     try {
@@ -92,36 +122,11 @@ public class JschCommandProcessorImpl implements CommandProcessor {
                 } else {
                     LOGGER.debug("Channel {} already connected!", channel.getId());
                 }
-            }
-
-            // Still no channel to borrow ? Let's just give up and throw in the towel!
-            if (channel == null) {
-                LOGGER.error("Was not able to borrow a channel!");
-                throw new RemoteCommandFailureException(remoteExecCommand, new Throwable("Was not able to borrow a channel!"));
-            }
-
-            final PrintStream commandStream = new PrintStream(out, true);
-            final String commandString = remoteExecCommand.getCommand().toCommandString();
-            LOGGER.debug("commandString = " + commandString);
-
-            commandStream.println(commandString);
-            commandStream.println("echo 'EXIT_CODE='$?***");
-            commandStream.println("echo -n -e '\\xff'");
-
-            commandOutputStr = readRemoteOutput(in);
-            LOGGER.debug("commandOutput=" + commandOutputStr);
-            returnCode = parseReturnCode(commandOutputStr);
-            LOGGER.debug("return code =" + returnCode);
-        } catch (final Exception e) {
-            LOGGER.error("Error processing shell command!", e);
-            returnCode = new ExecReturnCode(-1);
-            errorOutputStr = e.getMessage();
-        } finally {
-            if (channel != null) {
-                channelPool.returnObject(channelSessionKey, channel);
-                LOGGER.debug("channel {} returned", channel.getId());
+            } catch (final Exception e) {
+                throw new JschCommandProcessorImplException("Failed to get channel!", e);
             }
         }
+        return channel;
     }
 
     /**
@@ -254,7 +259,7 @@ public class JschCommandProcessorImpl implements CommandProcessor {
 
     /**
      * Prepare the session by setting session properties.
-     * @param remoteSystemConnection
+     * @param remoteSystemConnection contains connection details use to prepare a session
      * @return {@link Session}
      * @throws JSchException
      */
