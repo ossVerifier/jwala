@@ -17,7 +17,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
 public class JschCommandProcessorImpl implements CommandProcessor {
@@ -66,7 +65,6 @@ public class JschCommandProcessorImpl implements CommandProcessor {
         ChannelShell channel = null;
         ChannelSessionKey channelSessionKey = new ChannelSessionKey(remoteExecCommand.getRemoteSystemConnection(), ChannelType.SHELL);
         LOGGER.debug("channel session key = {}", channelSessionKey);
-        PrintStream commandStream = null;
         try {
             InputStream in = null;
             InputStream inErr = null;
@@ -102,14 +100,13 @@ public class JschCommandProcessorImpl implements CommandProcessor {
                 throw new RemoteCommandFailureException(remoteExecCommand, new Throwable("Was not able to borrow a channel!"));
             }
 
-            commandStream = new PrintStream(out, true, Charset.forName("UTF-8").toString());
+            final PrintStream commandStream = new PrintStream(out, true);
             final String commandString = remoteExecCommand.getCommand().toCommandString();
             LOGGER.debug("commandString = " + commandString);
-            
+
             commandStream.println(commandString);
             commandStream.println("echo 'EXIT_CODE='$?***");
             commandStream.println("echo -n -e '\\xff'");
-
 
             commandOutputStr = readRemoteOutput(in);
             LOGGER.debug("commandOutput=" + commandOutputStr);
@@ -120,10 +117,6 @@ public class JschCommandProcessorImpl implements CommandProcessor {
             returnCode = new ExecReturnCode(-1);
             errorOutputStr = e.getMessage();
         } finally {
-            if (commandStream != null) {
-                commandStream.close();
-            }
-
             if (channel != null) {
                 channelPool.returnObject(channelSessionKey, channel);
                 LOGGER.debug("channel {} returned", channel.getId());
