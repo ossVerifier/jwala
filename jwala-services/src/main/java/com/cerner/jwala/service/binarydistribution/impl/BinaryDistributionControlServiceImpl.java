@@ -2,6 +2,8 @@ package com.cerner.jwala.service.binarydistribution.impl;
 
 import com.cerner.jwala.common.domain.model.binarydistribution.BinaryDistributionControlOperation;
 import com.cerner.jwala.common.exec.CommandOutput;
+import com.cerner.jwala.common.exec.ExecCommand;
+import com.cerner.jwala.common.exec.ShellCommand;
 import com.cerner.jwala.control.command.impl.WindowsBinaryDistributionPlatformCommandProvider;
 import com.cerner.jwala.control.command.RemoteCommandExecutor;
 import com.cerner.jwala.exception.CommandFailureException;
@@ -79,6 +81,16 @@ public class BinaryDistributionControlServiceImpl implements BinaryDistributionC
                 mode,
                 targetDir,
                 target);
+    }
+
+    @Override
+    public CommandOutput getUName(String hostname) throws CommandFailureException {
+        final ExecCommand expecCommand = new ShellCommand("uname");
+         return remoteCommandExecutor.executeRemoteCommand(null,
+                hostname,
+                BinaryDistributionControlOperation.UNAME,
+                new WindowsBinaryDistributionPlatformCommandProvider()
+         );
     }
 
     public void printCommandOutput(CommandOutput commandOutput) {

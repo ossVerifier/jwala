@@ -11,8 +11,10 @@ import com.cerner.jwala.common.exception.InternalErrorException;
 import com.cerner.jwala.common.exec.*;
 import com.cerner.jwala.common.properties.ApplicationProperties;
 import com.cerner.jwala.common.request.jvm.ControlJvmRequest;
+import com.cerner.jwala.control.command.PlatformCommandProvider;
 import com.cerner.jwala.control.command.RemoteCommandExecutor;
 import com.cerner.jwala.control.command.ServiceCommandBuilder;
+import com.cerner.jwala.control.jvm.command.impl.LinuxJvmPlatformCommandProvider;
 import com.cerner.jwala.control.jvm.command.impl.WindowsJvmPlatformCommandProvider;
 import com.cerner.jwala.exception.CommandFailureException;
 import com.cerner.jwala.persistence.jpa.domain.JpaHistory;
@@ -21,7 +23,9 @@ import com.cerner.jwala.persistence.service.JvmPersistenceService;
 import com.cerner.jwala.service.HistoryFacadeService;
 import com.cerner.jwala.service.RemoteCommandExecutorService;
 import com.cerner.jwala.service.RemoteCommandReturnInfo;
+import com.cerner.jwala.service.exception.ApplicationServiceException;
 import com.cerner.jwala.service.exception.RemoteCommandExecutorServiceException;
+import com.cerner.jwala.service.host.HostService;
 import com.cerner.jwala.service.jvm.JvmControlService;
 import com.cerner.jwala.service.jvm.JvmStateService;
 import com.cerner.jwala.service.jvm.exception.JvmControlServiceException;
@@ -29,6 +33,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
 import java.io.File;
@@ -37,6 +42,8 @@ import java.util.ArrayList;
 import java.util.Date;
 
 public class JvmControlServiceImpl implements JvmControlService {
+    @Autowired
+    private HostService hostService;
 
     @Value("${spring.messaging.topic.serverStates:/topic/server-states}")
     protected String topicServerStates;
@@ -80,9 +87,8 @@ public class JvmControlServiceImpl implements JvmControlService {
             final String event = ctrlOp.getOperationState() == null ? ctrlOp.name() : ctrlOp.getOperationState().toStateLabel();
 
             historyFacadeService.write(getServerName(jvm), new ArrayList<>(jvm.getGroups()), event, EventType.USER_ACTION_INFO, aUser.getId());
-
-            final WindowsJvmPlatformCommandProvider windowsJvmPlatformCommandProvider = new WindowsJvmPlatformCommandProvider();
-            final ServiceCommandBuilder serviceCommandBuilder = windowsJvmPlatformCommandProvider.getServiceCommandBuilderFor(controlOperation);
+            PlatformCommandProvider platformCommandProvider = getPlatformCommandProvider(jvm);
+            final ServiceCommandBuilder serviceCommandBuilder = platformCommandProvider.getServiceCommandBuilderFor(controlOperation);
             final ExecCommand execCommand = serviceCommandBuilder.buildCommandForService(jvm.getJvmName(), jvm.getUserName(), jvm.getEncryptedPassword());
             final RemoteExecCommand remoteExecCommand = new RemoteExecCommand(new RemoteSystemConnection(sshConfig.getUserName(),
                     sshConfig.getPassword(), jvm.getHostName(), sshConfig.getPort()), execCommand);
@@ -268,7 +274,7 @@ public class JvmControlServiceImpl implements JvmControlService {
         if (destPath.startsWith("~")) {
             parentDir = destPath.substring(0, destPath.lastIndexOf("/"));
         } else {
-            parentDir = new File(destPath).getParentFile().getAbsolutePath().replaceAll("\\\\", "/");
+            parentDir =destPath;
         }
         CommandOutput commandOutput = executeCreateDirectoryCommand(jvm, parentDir);
 
@@ -343,5 +349,42 @@ public class JvmControlServiceImpl implements JvmControlService {
                 new WindowsJvmPlatformCommandProvider(),
                 filename,
                 destPathBackup);
+    }
+
+    /**
+     *
+     * @param aJvm
+     * @return
+     */
+    private PlatformCommandProvider<JvmControlOperation> getPlatformCommandProvider(Jvm aJvm) throws ApplicationServiceException{
+        //Determine Host OS
+        if(HostService.UNAME_LINUX.equals(getHostOS(aJvm.getHostName()))) {
+            LinuxJvmPlatformCommandProvider linuxJvmPlatformCommandProvider = new LinuxJvmPlatformCommandProvider();
+            return linuxJvmPlatformCommandProvider;
+        }else if (HostService.UNAME_CYGWIN.equals(getHostOS(aJvm.getHostName()))) {
+            WindowsJvmPlatformCommandProvider windowsJvmPlatformCommandProvider = new WindowsJvmPlatformCommandProvider();
+            return windowsJvmPlatformCommandProvider;
+        }
+        return null;
+    }
+
+    /**
+     *
+     * @param hostName
+     * @return
+     */
+    private String getHostOS(String hostName) throws ApplicationServiceException{
+       String uName = hostService.getUName(hostName);
+        if(uName!=null && uName.indexOf(hostService.UNAME_LINUX)>-1) {
+            return HostService.UNAME_LINUX;
+        }else if (uName!=null && uName.indexOf(hostService.UNAME_CYGWIN)>-1) {
+            return HostService.UNAME_CYGWIN;
+        }else{
+            throw new ApplicationServiceException("Unknown host OS");
+        }
+    }
+
+    public void setHostService(HostService hostService) {
+        this.hostService = hostService;
     }
 }

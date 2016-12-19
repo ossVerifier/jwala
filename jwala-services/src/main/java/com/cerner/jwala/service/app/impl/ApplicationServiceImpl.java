@@ -338,7 +338,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         Future<CommandOutput> commandOutputFuture = executorService.submit(new Callable<CommandOutput>() {
             @Override
             public CommandOutput call() throws Exception {
-                final String parentDir = new File(destPath).getParentFile().getAbsolutePath().replaceAll("\\\\", "/");
+                final String parentDir =destPath;
                 CommandOutput commandOutput = executeCreateDirectoryCommand(null, host, parentDir);
                 if (commandOutput.getReturnCode().wasSuccessful()) {
                     LOGGER.info("Successfully created parent dir {} on host {}", parentDir, host);

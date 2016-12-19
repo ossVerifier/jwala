@@ -12,7 +12,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
-import java.io.File;
 /**
  * Created by Arvindo Kinny on 10/11/2016.
  */
@@ -34,9 +33,8 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
     @Override
     public void distributeJdk(final String hostname) {
         LOGGER.info("Start deploy jdk for {}", hostname);
-        File javaHome = new File(ApplicationProperties.get("remote.jwala.java.home"));
-        String jdkDir = javaHome.getName();
-        String binaryDeployDir = javaHome.getParentFile().getAbsolutePath().replaceAll("\\\\", "/");
+        String jdkDir = ApplicationProperties.get("remote.jwala.java.home");
+        String binaryDeployDir = ApplicationProperties.get("remote.jwala.java.rootDir");
         if (!jdkDir.isEmpty()) {
             distributeBinary(hostname, jdkDir, binaryDeployDir, "");
         } else {
@@ -48,9 +46,8 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
     @Override
     public void distributeTomcat(final String hostname) {
         LOGGER.info("Start deploy tomcat binaries for {}", hostname);
-        File tomcat = new File(ApplicationProperties.get("remote.paths.tomcat.core"));
-        String tomcatDir = tomcat.getParentFile().getName();
-        String binaryDeployDir = tomcat.getParentFile().getParentFile().getAbsolutePath().replaceAll("\\\\", "/");
+        String tomcatDir = ApplicationProperties.get("remote.paths.tomcat.core");
+        String binaryDeployDir = ApplicationProperties.get("remote.paths.tomcat.root.core");
         if (tomcatDir != null && !tomcatDir.isEmpty()) {
             distributeBinary(hostname, tomcatDir, binaryDeployDir, "");
         } else {
@@ -64,9 +61,8 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
         String wrietLockResourceName = hostname + "-" + EntityType.WEB_SERVER.toString();
         try {
             binaryDistributionLockManager.writeLock(wrietLockResourceName);
-            File apache = new File(ApplicationProperties.get("remote.paths.apache.httpd"));
-            String webServerDir = apache.getName();
-            String binaryDeployDir = apache.getParentFile().getAbsolutePath().replaceAll("\\\\", "/");
+            String webServerDir = ApplicationProperties.get("remote.paths.apache.httpd");
+            String binaryDeployDir =  ApplicationProperties.get("remote.paths.root.httpd");
             if (webServerDir != null && !webServerDir.isEmpty()) {
                 distributeBinary(hostname, webServerDir, binaryDeployDir, APACHE_EXCLUDE);
             } else {

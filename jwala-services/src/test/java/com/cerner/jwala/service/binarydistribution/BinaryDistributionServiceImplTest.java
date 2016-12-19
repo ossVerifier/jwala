@@ -22,7 +22,7 @@ import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 /**
- * Created by LW044480 on 9/8/2016.
+ * Created by Lin-Hung Wu on 9/8/2016.
  */
 public class BinaryDistributionServiceImplTest {
 

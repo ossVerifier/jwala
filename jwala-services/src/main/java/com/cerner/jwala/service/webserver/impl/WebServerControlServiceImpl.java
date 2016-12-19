@@ -10,8 +10,10 @@ import com.cerner.jwala.common.exception.InternalErrorException;
 import com.cerner.jwala.common.exec.*;
 import com.cerner.jwala.common.properties.ApplicationProperties;
 import com.cerner.jwala.common.request.webserver.ControlWebServerRequest;
+import com.cerner.jwala.control.command.PlatformCommandProvider;
 import com.cerner.jwala.control.command.RemoteCommandExecutor;
 import com.cerner.jwala.control.command.ServiceCommandBuilder;
+import com.cerner.jwala.control.webserver.command.impl.LinuxWebServerPlatformCommandProvider;
 import com.cerner.jwala.control.webserver.command.impl.WindowsWebServerPlatformCommandProvider;
 import com.cerner.jwala.control.webserver.command.windows.WindowsWebServerNetOperation;
 import com.cerner.jwala.exception.CommandFailureException;
@@ -19,13 +21,16 @@ import com.cerner.jwala.persistence.jpa.type.EventType;
 import com.cerner.jwala.service.HistoryFacadeService;
 import com.cerner.jwala.service.RemoteCommandExecutorService;
 import com.cerner.jwala.service.RemoteCommandReturnInfo;
+import com.cerner.jwala.service.exception.ApplicationServiceException;
 import com.cerner.jwala.service.exception.RemoteCommandExecutorServiceException;
+import com.cerner.jwala.service.host.HostService;
 import com.cerner.jwala.service.webserver.WebServerControlService;
 import com.cerner.jwala.service.webserver.WebServerService;
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
 import java.io.File;
@@ -40,6 +45,8 @@ public class WebServerControlServiceImpl implements WebServerControlService {
 
     @Value("${spring.messaging.topic.serverStates:/topic/server-states}")
     protected String topicServerStates;
+    @Autowired
+    private HostService hostService;
 
     private static final String FORCED_STOPPED = "FORCED STOPPED";
     private static final String WEB_SERVER = "Web Server";
@@ -75,8 +82,8 @@ public class WebServerControlServiceImpl implements WebServerControlService {
 
             historyFacadeService.write(getServerName(webServer), new ArrayList<>(webServer.getGroups()), event, EventType.USER_ACTION_INFO, aUser.getId());
 
-            final WindowsWebServerPlatformCommandProvider windowsJvmPlatformCommandProvider = new WindowsWebServerPlatformCommandProvider();
-            final ServiceCommandBuilder serviceCommandBuilder = windowsJvmPlatformCommandProvider.getServiceCommandBuilderFor(controlOperation);
+            final PlatformCommandProvider platformCommandProvider = getPlatformCommandProvider(webServer);
+            final ServiceCommandBuilder serviceCommandBuilder = platformCommandProvider.getServiceCommandBuilderFor(controlOperation);
             final ExecCommand execCommand = serviceCommandBuilder.buildCommandForService(webServer.getName());
             final RemoteExecCommand remoteExecCommand = new RemoteExecCommand(new RemoteSystemConnection(sshConfig.getUserName(),
                     sshConfig.getPassword(), webServer.getHost(), sshConfig.getPort()), execCommand);
@@ -151,9 +158,9 @@ public class WebServerControlServiceImpl implements WebServerControlService {
 
     private String createCommandErrorMessage(CommandOutput commandOutput, Integer returnCode, String commandName) {
         return "Web Server control command [" + commandName + "] was not successful! Return code = "
-                                        + returnCode + ", description = " +
-                                        CommandOutputReturnCode.fromReturnCode(returnCode).getDesc() +
-                                        ", message = " + commandOutput.standardErrorOrStandardOut();
+                + returnCode + ", description = " +
+                CommandOutputReturnCode.fromReturnCode(returnCode).getDesc() +
+                ", message = " + commandOutput.standardErrorOrStandardOut();
     }
 
     private void sendMessageToActionEventLogs(User aUser, WebServer webServer, String commandOutputReturnDescription) {
@@ -309,4 +316,39 @@ public class WebServerControlServiceImpl implements WebServerControlService {
         return false;
     }
 
+
+    /**
+     * @param aWebServer
+     * @return
+     */
+    private PlatformCommandProvider<WebServerControlOperation> getPlatformCommandProvider(WebServer aWebServer) throws ApplicationServiceException {
+        //Determine Host OS
+        if (HostService.UNAME_LINUX.equals(getHostOS(aWebServer.getHost()))) {
+            LinuxWebServerPlatformCommandProvider linuxWindowsPlatformCommandProvider = new LinuxWebServerPlatformCommandProvider();
+            return linuxWindowsPlatformCommandProvider;
+        } else if (HostService.UNAME_CYGWIN.equals(getHostOS(aWebServer.getHost()))) {
+            WindowsWebServerPlatformCommandProvider windowsWindowsPlatformCommandProvider = new WindowsWebServerPlatformCommandProvider();
+            return windowsWindowsPlatformCommandProvider;
+        }
+        return null;
+    }
+
+    /**
+     * @param hostName
+     * @return
+     */
+    private String getHostOS(String hostName) throws ApplicationServiceException {
+        String uName = hostService.getUName(hostName);
+        if (uName != null && uName.indexOf(hostService.UNAME_LINUX) > -1) {
+            return HostService.UNAME_LINUX;
+        } else if (uName != null && uName.indexOf(hostService.UNAME_CYGWIN) > -1) {
+            return HostService.UNAME_CYGWIN;
+        } else {
+            throw new ApplicationServiceException("Unknown host OS");
+        }
+    }
+
+    public void setHostService(HostService hostService) {
+        this.hostService = hostService;
+    }
 }

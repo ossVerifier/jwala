@@ -188,6 +188,7 @@ subprojects {
 
     tasks.withType(FindBugs) {
         ignoreFailures = true
+        reportLevel 'low'
         reports {
             xml.enabled false
             html.enabled true

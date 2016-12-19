@@ -1,9 +1,6 @@
 package com.cerner.jwala.commandprocessor.impl.jsch;
 
 import com.cerner.jwala.commandprocessor.impl.CommonSshTestConfiguration;
-import com.cerner.jwala.commandprocessor.impl.jsch.JschBuilder;
-import com.cerner.jwala.commandprocessor.impl.jsch.JschCommandProcessorImpl;
-import com.cerner.jwala.common.IntegrationTestRule;
 import com.cerner.jwala.common.exec.ExecCommand;
 import com.cerner.jwala.common.exec.ExecReturnCode;
 import com.cerner.jwala.common.exec.RemoteExecCommand;
@@ -11,7 +8,6 @@ import com.cerner.jwala.common.exec.RemoteSystemConnection;
 import com.cerner.jwala.exception.ExitCodeNotAvailableException;
 import com.cerner.jwala.exception.RemoteCommandFailureException;
 import com.jcraft.jsch.JSchException;
-
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Ignore;
@@ -21,8 +17,6 @@ import org.junit.Test;
 // TODO: Make ssh server should be self contained or permanent. The server that this test connects to changes from time to time thus it fails on occasions.
 public class JschRequestProcessorImplTest {
 
-    @ClassRule
-    public static IntegrationTestRule integrationTestRule = new IntegrationTestRule();
 
     private JschBuilder builder;
     private RemoteSystemConnection remoteSystemConnection;

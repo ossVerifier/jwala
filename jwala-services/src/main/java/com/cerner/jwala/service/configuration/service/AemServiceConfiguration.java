@@ -120,7 +120,8 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
         "com.cerner.jwala.service.jvm.impl.spring.component",
         "com.cerner.jwala.service.impl.spring.component",
         "com.cerner.jwala.service.resource.impl",
-        "com.cerner.jwala.common"})
+        "com.cerner.jwala.common",
+        "com.cerner.jwala.service.host.impl"})
 public class AemServiceConfiguration {
 
     @Autowired
@@ -155,6 +156,12 @@ public class AemServiceConfiguration {
     @Autowired
     private BinaryDistributionLockManager binaryDistributionLockManager;
 
+    @Autowired
+    RemoteCommandExecutorService remoteCommandExecutorService;
+
+    @Autowired
+    SshConfiguration sshConfiguration;
+
     private final Map<String, ReentrantReadWriteLock> binaryWriteLockMap = new HashMap<>();
 
     /**
@@ -186,7 +193,7 @@ public class AemServiceConfiguration {
                                     final ResourceService resourceService, final ClientFactoryHelper clientFactoryHelper,
                                     @Value("${spring.messaging.topic.serverStates:/topic/server-states}") final String topicServerStates,
                                     final JvmControlService jvmControlService, final HistoryFacadeService historyFacadeService,
-                                    final FileUtility fileUtility) {
+                                    final FileUtility fileUtility, final SshConfiguration sshConfiguration,  final RemoteCommandExecutorService remoteCommandExecutorService) {
         final JvmPersistenceService jvmPersistenceService = persistenceServiceConfiguration.getJvmPersistenceService();
         return new JvmServiceImpl(jvmPersistenceService, groupService, applicationService,
                 messagingTemplate, groupStateNotificationService, resourceService,

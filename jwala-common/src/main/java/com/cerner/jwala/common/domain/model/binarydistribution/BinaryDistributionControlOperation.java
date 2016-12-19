@@ -3,7 +3,7 @@ package com.cerner.jwala.common.domain.model.binarydistribution;
 import static com.cerner.jwala.common.domain.model.binarydistribution.BinaryDistributionStatus.*;
 
 /**
- * Created by LW044480 on 9/7/2016.
+ * Created by Lin-Hung Wu  on 9/7/2016.
  */
 public enum BinaryDistributionControlOperation {
 
@@ -12,7 +12,8 @@ public enum BinaryDistributionControlOperation {
     SECURE_COPY(COPY_FAIL, COPY_SUCCESSFUL),
     DELETE_BINARY(DELETE_FAIL, DELETE_SUCCESSFUL),
     UNZIP_BINARY(UNZIP_FAIL, UNZIP_SUCCESSFUL),
-    CHANGE_FILE_MODE(CHANGE_MODE_FAIL, CHANGE_MODE_SUCCESSFUL);
+    CHANGE_FILE_MODE(CHANGE_MODE_FAIL, CHANGE_MODE_SUCCESSFUL),
+    UNAME(UNAME_FAIL, UNAME_SUCCESSFUL);
 
     private BinaryDistributionStatus fail, success;
 

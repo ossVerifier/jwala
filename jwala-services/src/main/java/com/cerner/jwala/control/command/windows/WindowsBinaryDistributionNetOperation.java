@@ -14,7 +14,12 @@ import static com.cerner.jwala.control.AemControl.Properties.SCP_SCRIPT_NAME;
 
 public enum WindowsBinaryDistributionNetOperation implements ServiceCommandBuilder {
 
-    CHECK_FILE_EXISTS(BinaryDistributionControlOperation.CHECK_FILE_EXISTS) {
+    UNAME(BinaryDistributionControlOperation.UNAME) {
+        @Override
+        public ExecCommand buildCommandForService(String aServiceName, String... aParams) {
+            return new ShellCommand("uname");
+        }
+    },    CHECK_FILE_EXISTS(BinaryDistributionControlOperation.CHECK_FILE_EXISTS) {
         @Override
         public ExecCommand buildCommandForService(String aServiceName, String... aParams) {
             return new ShellCommand("/usr/bin/test -e " + aParams[0]);

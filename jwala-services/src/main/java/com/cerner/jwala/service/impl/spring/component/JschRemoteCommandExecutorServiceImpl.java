@@ -112,7 +112,6 @@ public class JschRemoteCommandExecutorServiceImpl implements RemoteCommandExecut
             commandStream.println(remoteExecCommand.getCommand().toCommandString());
             commandStream.println("echo 'EXIT_CODE='$?***");
             commandStream.println("echo -n -e '\\xff'");
-
             String commandOutputStr = readRemoteOutput(in, channel, channelSessionKey);
             int retCode = parseReturnCode(commandOutputStr, remoteExecCommand).getReturnCode();
             return new RemoteCommandReturnInfo(retCode, commandOutputStr, StringUtils.EMPTY);

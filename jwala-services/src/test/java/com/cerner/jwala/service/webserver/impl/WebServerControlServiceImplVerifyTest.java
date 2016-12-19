@@ -20,6 +20,7 @@ import com.cerner.jwala.control.webserver.command.impl.WindowsWebServerPlatformC
 import com.cerner.jwala.exception.CommandFailureException;
 import com.cerner.jwala.persistence.jpa.type.EventType;
 import com.cerner.jwala.service.*;
+import com.cerner.jwala.service.host.HostService;
 import com.cerner.jwala.service.webserver.WebServerService;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -41,6 +42,10 @@ import static org.mockito.Mockito.*;
 public class WebServerControlServiceImplVerifyTest extends VerificationBehaviorSupport {
 
     private WebServerControlServiceImpl webServerControlService;
+
+
+    @Mock
+    private HostService hostService;
 
     @Mock
     private WebServerService webServerService;
@@ -67,7 +72,8 @@ public class WebServerControlServiceImplVerifyTest extends VerificationBehaviorS
         System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, new File(".").getAbsolutePath() + "/src/test/resources");
         webServerControlService = new WebServerControlServiceImpl(webServerService, commandExecutor,
                 remoteCommandExecutorService, mockSshConfig, mockHistoryFacadeService);
-
+        webServerControlService.setHostService(hostService);
+        when(hostService.getUName(anyString())).thenReturn(HostService.UNAME_CYGWIN);
         user = new User("unused");
     }
 

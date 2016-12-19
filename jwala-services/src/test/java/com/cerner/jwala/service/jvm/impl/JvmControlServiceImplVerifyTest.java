@@ -26,11 +26,14 @@ import com.cerner.jwala.service.HistoryFacadeService;
 import com.cerner.jwala.service.RemoteCommandExecutorService;
 import com.cerner.jwala.service.RemoteCommandReturnInfo;
 import com.cerner.jwala.service.VerificationBehaviorSupport;
+import com.cerner.jwala.service.host.HostService;
+import com.cerner.jwala.service.host.impl.HostServiceImpl;
 import com.cerner.jwala.service.jvm.JvmStateService;
 import com.cerner.jwala.service.jvm.exception.JvmControlServiceException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
@@ -48,6 +51,9 @@ public class JvmControlServiceImplVerifyTest extends VerificationBehaviorSupport
     private JvmControlServiceImpl jvmControlService;
     private RemoteCommandExecutor commandExecutor;
     private User user;
+
+    @Mock
+    private HostService mockHostService;
 
     @Mock
     private HistoryFacadeService mockHistoryFacadeService;
@@ -74,8 +80,11 @@ public class JvmControlServiceImplVerifyTest extends VerificationBehaviorSupport
     public void setup() {
         System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, new File(".").getAbsolutePath() + "/src/test/resources");
         commandExecutor = mock(RemoteCommandExecutor.class);
+
         jvmControlService = new JvmControlServiceImpl(mockJvmPersistenceService, commandExecutor,  mockJvmStateService,
                 mockRemoteCommandExecutorService, mockSshConfig, mockHistoryFacadeService);
+        jvmControlService.setHostService(mockHostService);
+        when(mockHostService.getUName(anyString())).thenReturn("CYGWIN_NT-6.3");
         user = new User("unused");
     }
 
@@ -100,6 +109,7 @@ public class JvmControlServiceImplVerifyTest extends VerificationBehaviorSupport
         when(mockExecData.getReturnCode()).thenReturn(new ExecReturnCode(0));
 
         jvmControlService.controlJvm(controlCommand, user);
+        when(mockHostService.getUName("mockJvmHost")).thenReturn("CYGWIN_NT-6.3");
 
         verify(mockJvmPersistenceService, times(1)).getJvm(eq(jvmId));
         verify(mockRemoteCommandExecutorService, times(1)).executeCommand(any(RemoteExecCommand.class));
@@ -273,6 +283,7 @@ public class JvmControlServiceImplVerifyTest extends VerificationBehaviorSupport
         when(mockJvmPersistenceService.getJvm(any(Identifier.class))).thenReturn(mockJvm);
         when(mockRemoteCommandExecutorService.executeCommand(any(RemoteExecCommand.class))).thenReturn(new RemoteCommandReturnInfo(0, "Success!", ""));
         final ControlJvmRequest controlJvmRequest = new ControlJvmRequest(new Identifier<Jvm>("1"), JvmControlOperation.START);
+        when(mockHostService.getUName("mockJvmHost")).thenReturn("CYGWIN_NT-6.3");
         final CommandOutput commandOutput  = jvmControlService.controlJvmSynchronously(controlJvmRequest, 60000, new User("jedi"));
         assertTrue(commandOutput.getReturnCode().getWasSuccessful());
     }
@@ -280,6 +291,8 @@ public class JvmControlServiceImplVerifyTest extends VerificationBehaviorSupport
     @Test
     public void testStopControlJvmSynchronously() throws InterruptedException {
         final Jvm mockJvm = mock(Jvm.class);
+        when(mockHostService.getUName("mockJvmHost")).thenReturn("CYGWIN_NT-6.3");
+        when (mockJvm.getHostName()).thenReturn("mockJvmHost");
         when(mockJvm.getState()).thenReturn(JvmState.JVM_STOPPED);
         when(mockJvmPersistenceService.getJvm(any(Identifier.class))).thenReturn(mockJvm);
         when(mockRemoteCommandExecutorService.executeCommand(any(RemoteExecCommand.class))).thenReturn(new RemoteCommandReturnInfo(0, "Success!", ""));
