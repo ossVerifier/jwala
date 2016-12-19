@@ -1,9 +1,8 @@
 package com.cerner.jwala.service.ssl.hc;
 
+import org.apache.http.conn.ssl.AllowAllHostnameVerifier;
 import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.conn.ssl.TrustStrategy;
-
-import com.cerner.jwala.service.ssl.jsse.NullHostNameVerifier;
 
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
@@ -24,7 +23,7 @@ public class TrustingSSLSocketFactory extends SSLSocketFactory {
             public boolean isTrusted(X509Certificate[] chain, String authType) throws CertificateException {
                 return true;
             }
-        }, new NullHostNameVerifier());
+        }, new AllowAllHostnameVerifier());
     }
     
 }
