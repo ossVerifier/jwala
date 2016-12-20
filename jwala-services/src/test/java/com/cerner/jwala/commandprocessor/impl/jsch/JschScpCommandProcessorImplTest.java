@@ -1,6 +1,5 @@
 package com.cerner.jwala.commandprocessor.impl.jsch;
 
-import com.cerner.jwala.commandprocessor.impl.jsch.JschScpCommandProcessorImpl;
 import com.cerner.jwala.common.exec.ExecCommand;
 import com.cerner.jwala.common.exec.ExecReturnCode;
 import com.cerner.jwala.common.exec.RemoteExecCommand;
@@ -11,7 +10,6 @@ import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -32,7 +30,7 @@ public class JschScpCommandProcessorImplTest {
 
     @Test
     public void testProcessCommand() throws JSchException, IOException {
-        System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, new File(".").getAbsolutePath() + "/jwala-services/src/test/resources");
+        System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, new File(".").getAbsolutePath() + "/src/test/resources");
 
         JSch mockJsch = mock(JSch.class);
         Session mockSession = mock(Session.class);
@@ -46,7 +44,7 @@ public class JschScpCommandProcessorImplTest {
         when(mockChannel.getOutputStream()).thenReturn(mockLocalInput);
         when(mockChannel.getErrStream()).thenReturn(mockRemoteErr);
         when(mockRemoteOutput.read()).thenReturn(0); // return success for checkAck
-        RemoteSystemConnection remoteSystemConnection = new RemoteSystemConnection("testUser", "testPassword", "testHost", 1111);
+        RemoteSystemConnection remoteSystemConnection = new RemoteSystemConnection("testUser", "==encryptedTestPassword==".toCharArray(), "testHost", 1111);
         ExecCommand execCommand = new ExecCommand("scp src/test/resources/known_hosts destpath/testfile.txt".split(" "));
          
         RemoteExecCommand remoteExecCommand = new RemoteExecCommand(remoteSystemConnection, execCommand);

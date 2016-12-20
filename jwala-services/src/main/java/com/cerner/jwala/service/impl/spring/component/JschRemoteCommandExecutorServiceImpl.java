@@ -3,6 +3,7 @@ package com.cerner.jwala.service.impl.spring.component;
 import com.cerner.jwala.commandprocessor.jsch.impl.ChannelSessionKey;
 import com.cerner.jwala.commandprocessor.jsch.impl.ChannelType;
 import com.cerner.jwala.common.domain.model.fault.FaultType;
+import com.cerner.jwala.common.domain.model.ssh.DecryptPassword;
 import com.cerner.jwala.common.exception.ApplicationException;
 import com.cerner.jwala.common.exception.InternalErrorException;
 import com.cerner.jwala.common.exec.ExecReturnCode;
@@ -26,6 +27,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 
 /**
  * Implementation of {@link RemoteCommandExecutorService} using JSCH.
@@ -312,9 +314,9 @@ public class JschRemoteCommandExecutorServiceImpl implements RemoteCommandExecut
     protected Session prepareSession(final RemoteSystemConnection remoteSystemConnection) throws JSchException {
         final Session session = jSch.getSession(remoteSystemConnection.getUser(), remoteSystemConnection.getHost(),
                 remoteSystemConnection.getPort());
-        final String password = remoteSystemConnection.getPassword();
-        if (password != null) {
-            session.setPassword(password);
+        final char[] encryptedPassword = remoteSystemConnection.getEncryptedPassword();
+        if (encryptedPassword != null) {
+            session.setPassword(new DecryptPassword().decrypt(Arrays.toString(encryptedPassword)));
             session.setConfig("StrictHostKeyChecking", "no");
             session.setConfig("PreferredAuthentications", "password,gssapi-with-mic,publickey,keyboard-interactive");
         }

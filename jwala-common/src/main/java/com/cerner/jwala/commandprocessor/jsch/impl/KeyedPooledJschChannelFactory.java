@@ -1,5 +1,6 @@
 package com.cerner.jwala.commandprocessor.jsch.impl;
 
+import com.cerner.jwala.common.domain.model.ssh.DecryptPassword;
 import com.cerner.jwala.common.exec.RemoteSystemConnection;
 import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.JSch;
@@ -12,6 +13,7 @@ import org.apache.commons.pool2.impl.DefaultPooledObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -67,9 +69,9 @@ public class KeyedPooledJschChannelFactory extends BaseKeyedPooledObjectFactory<
     private Session prepareSession(final RemoteSystemConnection remoteSystemConnection)  throws JSchException {
         final Session session = jsch.getSession(remoteSystemConnection.getUser(), remoteSystemConnection.getHost(),
                 remoteSystemConnection.getPort());
-        final String password = remoteSystemConnection.getPassword();
-        if (password != null) {
-            session.setPassword(password);
+        final char[] encryptedPassword = remoteSystemConnection.getEncryptedPassword();
+        if (encryptedPassword != null) {
+            session.setPassword(new DecryptPassword().decrypt(Arrays.toString(encryptedPassword)));
             session.setConfig("StrictHostKeyChecking", "no");
             session.setConfig("PreferredAuthentications", "password,gssapi-with-mic,publickey,keyboard-interactive");
         }

@@ -1,8 +1,6 @@
 package com.cerner.jwala.commandprocessor.impl.jsch;
 
 import com.cerner.jwala.commandprocessor.impl.CommonSshTestConfiguration;
-import com.cerner.jwala.commandprocessor.impl.jsch.JschBuilder;
-import com.cerner.jwala.commandprocessor.impl.jsch.JschCommandProcessorImpl;
 import com.cerner.jwala.common.IntegrationTestRule;
 import com.cerner.jwala.common.exec.ExecCommand;
 import com.cerner.jwala.common.exec.ExecReturnCode;
@@ -11,7 +9,6 @@ import com.cerner.jwala.common.exec.RemoteSystemConnection;
 import com.cerner.jwala.exception.ExitCodeNotAvailableException;
 import com.cerner.jwala.exception.RemoteCommandFailureException;
 import com.jcraft.jsch.JSchException;
-
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Ignore;
@@ -46,7 +43,7 @@ public class JschRequestProcessorImplTest {
     @Test(expected = RemoteCommandFailureException.class)
     public void testBadRemoteCommand() throws Exception {
         final RemoteExecCommand remoteExecCommand =
-                new RemoteExecCommand(new RemoteSystemConnection("abc", "123546", "example.com", 123456), new ExecCommand("vi"));
+                new RemoteExecCommand(new RemoteSystemConnection("abc", "==encryptedPassword==".toCharArray(), "example.com", 123456), new ExecCommand("vi"));
         final JschCommandProcessorImpl jschCommandProcessor = new JschCommandProcessorImpl(builder.build(), remoteExecCommand,
                 null);
         jschCommandProcessor.processCommand();

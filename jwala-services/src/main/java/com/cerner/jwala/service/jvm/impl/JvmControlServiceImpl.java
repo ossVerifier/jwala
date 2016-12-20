@@ -85,7 +85,7 @@ public class JvmControlServiceImpl implements JvmControlService {
             final ServiceCommandBuilder serviceCommandBuilder = windowsJvmPlatformCommandProvider.getServiceCommandBuilderFor(controlOperation);
             final ExecCommand execCommand = serviceCommandBuilder.buildCommandForService(jvm.getJvmName(), jvm.getUserName(), jvm.getEncryptedPassword());
             final RemoteExecCommand remoteExecCommand = new RemoteExecCommand(new RemoteSystemConnection(sshConfig.getUserName(),
-                    sshConfig.getPassword(), jvm.getHostName(), sshConfig.getPort()), execCommand);
+                    sshConfig.getEncryptedPassword(), jvm.getHostName(), sshConfig.getPort()), execCommand);
 
             RemoteCommandReturnInfo remoteCommandReturnInfo = remoteCommandExecutorService.executeCommand(remoteExecCommand);
 

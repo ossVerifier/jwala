@@ -79,7 +79,7 @@ public class WebServerControlServiceImpl implements WebServerControlService {
             final ServiceCommandBuilder serviceCommandBuilder = windowsJvmPlatformCommandProvider.getServiceCommandBuilderFor(controlOperation);
             final ExecCommand execCommand = serviceCommandBuilder.buildCommandForService(webServer.getName());
             final RemoteExecCommand remoteExecCommand = new RemoteExecCommand(new RemoteSystemConnection(sshConfig.getUserName(),
-                    sshConfig.getPassword(), webServer.getHost(), sshConfig.getPort()), execCommand);
+                    sshConfig.getEncryptedPassword(), webServer.getHost(), sshConfig.getPort()), execCommand);
 
             RemoteCommandReturnInfo remoteCommandReturnInfo = remoteCommandExecutorService.executeCommand(remoteExecCommand);
 

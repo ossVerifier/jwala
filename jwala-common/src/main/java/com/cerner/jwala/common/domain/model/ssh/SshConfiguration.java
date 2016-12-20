@@ -18,13 +18,13 @@ public class SshConfiguration implements Serializable {
     private final Integer port;
     private final String privateKeyFile;
     private final String knownHostsFile;
-    private final String iAmNotThePasswordYoureLookingFor;
+    private final char[] encPassword;
 
     public SshConfiguration(final String theUserName,
                             final Integer thePort,
                             final String thePrivateKeyFile,
                             final String theKnownHostsFile,
-                            final String theEncPassword) {
+                            final char[] theEncPassword) {
 
 
         if (theUserName == null
@@ -39,11 +39,7 @@ public class SshConfiguration implements Serializable {
         port = thePort;
         privateKeyFile = thePrivateKeyFile;
         knownHostsFile = theKnownHostsFile;
-        if (theEncPassword == null) {
-            iAmNotThePasswordYoureLookingFor = null;
-        } else {
-            iAmNotThePasswordYoureLookingFor = new DecryptPassword().decrypt(theEncPassword);
-        }
+        encPassword = theEncPassword;
     }
 
     public String getUserName() {
@@ -62,7 +58,9 @@ public class SshConfiguration implements Serializable {
         return knownHostsFile;
     }
 
-    public String getPassword() { return iAmNotThePasswordYoureLookingFor; }
+    public char[] getEncryptedPassword() {
+        return encPassword;
+    }
 
     @Override
     public boolean equals(Object obj) {

@@ -58,7 +58,7 @@ public class JschRemoteCommandExecutorServiceImplTest {
     @Mock
     private ExecCommand mockExecCommand;
 
-    final RemoteSystemConnection remoteSystemConnection = new RemoteSystemConnection("theUser", "thePassword", "theHost", 999);
+    final RemoteSystemConnection remoteSystemConnection = new RemoteSystemConnection("theUser", "==theEncryptedPassword==".toCharArray(), "theHost", 999);
 
     @Before
     public void setup() {
@@ -112,7 +112,7 @@ public class JschRemoteCommandExecutorServiceImplTest {
         when(mockJSch.getSession(anyString(), anyString(), anyInt())).thenReturn(mockSession);
         when(mockRemoteExecCommand.getRemoteSystemConnection()).thenReturn(mockRemoteSystemConnection);
         when(mockSession.openChannel(eq(ChannelType.EXEC.getChannelType()))).thenReturn(mockChannelExec);
-        when(mockRemoteSystemConnection.getPassword()).thenReturn("test");
+        when(mockRemoteSystemConnection.getEncryptedPassword()).thenReturn("==test==".toCharArray());
 
         final byte [] output = SOME_OUTPUT.getBytes();
         final InputStream remoteOutput = new ByteArrayInputStream(output);
