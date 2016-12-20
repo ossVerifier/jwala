@@ -47,6 +47,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.*;
 import java.nio.charset.Charset;
+import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
@@ -259,7 +260,7 @@ public class ResourceServiceImpl implements ResourceService {
                     continue;
                 }
             } catch (IOException e) {
-                throw new ApplicationException("Unable to retrieve meta data for " + resourceName + " during validation step.", e);
+                throw new ApplicationException(MessageFormat.format("Unable to retrieve meta data for {0} during validation step.", resourceName), e);
             }
 
             try {
