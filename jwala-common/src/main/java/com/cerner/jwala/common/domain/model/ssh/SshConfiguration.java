@@ -8,9 +8,7 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.Serializable;
-
-public class SshConfiguration implements Serializable {
+public class SshConfiguration {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SshConfiguration.class);
 
