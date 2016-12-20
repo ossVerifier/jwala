@@ -1,12 +1,14 @@
 package com.cerner.jwala.ws.rest;
 
 import com.cerner.jwala.common.exception.InternalErrorException;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
+import java.util.Map;
 
 /**
  * Handler for internal server errors in the REST layer
@@ -35,7 +37,14 @@ public class RestServiceErrorHandler implements ExceptionMapper {
 
         final JsonResponseBuilder jsonResponseBuilder = new JsonResponseBuilder().setStatusCode(status).setMessage(msg);
         if (t instanceof InternalErrorException && ((InternalErrorException) t).getErrorDetails() != null) {
-            jsonResponseBuilder.setContent(((InternalErrorException) t).getErrorDetails());
+            final Map errorDetails = ((InternalErrorException) t).getErrorDetails();
+            if (errorDetails.isEmpty()) {
+                jsonResponseBuilder.setContent(ExceptionUtils.getStackTrace(t));
+            } else {
+                jsonResponseBuilder.setContent(errorDetails);
+            }
+        } else {
+            jsonResponseBuilder.setContent(ExceptionUtils.getStackTrace(t));
         }
 
         return jsonResponseBuilder.build();
