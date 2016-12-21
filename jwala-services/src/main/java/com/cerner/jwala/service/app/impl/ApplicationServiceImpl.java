@@ -47,8 +47,6 @@ import org.springframework.util.FileCopyUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.Map.Entry;
@@ -481,58 +479,6 @@ public class ApplicationServiceImpl implements ApplicationService {
                 destination,
                 options
         );
-    }
-
-    @Override
-    @Transactional
-    public void copyApplicationConfigToGroupJvms(Group group, final String appName, final ResourceGroup resourceGroup, final User user) {
-        final String groupName = group.getName();
-        Set<Future> futures = new HashSet<>();
-
-        for (final Jvm jvm : group.getJvms()) {
-            final List<String> resourceTemplateNames = applicationPersistenceService.getResourceTemplateNames(appName,
-                    jvm.getJvmName());
-            for (final String templateName : resourceTemplateNames) {
-
-                final String jvmName = jvm.getJvmName();
-                LOGGER.info("Deploying application config {} to JVM {}", templateName, jvmName);
-
-                Future<CommandOutput> commandOutputFuture = executorService.submit(new Callable<CommandOutput>() {
-                    @Override
-                    public CommandOutput call() throws Exception {
-                        return deployConf(appName, groupName, jvmName, templateName, resourceGroup, user);
-                    }
-                });
-                futures.add(commandOutputFuture);
-            }
-        }
-        waitForDeployToComplete(futures);
-    }
-
-    protected void waitForDeployToComplete(Set<Future> futures) {
-        final int size = futures.size();
-        if (size > 0) {
-            LOGGER.info("Check to see if all {} tasks completed", size);
-            boolean allDone = false;
-            // think about adding a manual timeout - for now, since the transaction was timing out before this was added fall back to the transaction timeout
-            while (!allDone) {
-                boolean isDone = true;
-                for (Future isDoneFuture : futures) {
-                    isDone = isDone && isDoneFuture.isDone();
-                }
-                allDone = isDone;
-            }
-            LOGGER.info("Tasks complete: {}", size);
-        }
-    }
-
-    /**
-     * As the name describes, this method creates the path if it does not exists.
-     */
-    protected static void createPathIfItDoesNotExists(String path) {
-        if (!Files.exists(Paths.get(path))) {
-            new File(path).mkdir();
-        }
     }
 
     @Override

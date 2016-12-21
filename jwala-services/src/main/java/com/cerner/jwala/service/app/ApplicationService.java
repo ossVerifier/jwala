@@ -69,8 +69,6 @@ public interface ApplicationService {
 
     void copyApplicationWarToHost(Application application, String hostName);
 
-    void copyApplicationConfigToGroupJvms(Group group, String appName, ResourceGroup resourceGroup, User user);
-
     void deployApplicationResourcesToGroupHosts(String groupName, Application app, ResourceGroup resourceGroup);
 
     CommandOutput executeBackUpCommand(String entity, String host, String source) throws CommandFailureException;

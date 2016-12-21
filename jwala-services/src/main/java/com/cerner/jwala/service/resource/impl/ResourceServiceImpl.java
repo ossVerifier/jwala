@@ -50,8 +50,6 @@ import java.nio.charset.Charset;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class ResourceServiceImpl implements ResourceService {
@@ -124,13 +122,6 @@ public class ResourceServiceImpl implements ResourceService {
         this.binaryDistributionService = binaryDistributionService;
         this.fileTypeDetector = fileTypeDetector;
         this.resourceRepositoryService = resourceRepositoryService;
-    }
-
-    @Override
-    public String decryptUsingPlatformBean(String encryptedString) {
-        StandardEvaluationContext context = new StandardEvaluationContext();
-        context.setVariable("stringToDecrypt", encryptedString);
-        return decryptExpression.getValue(context, String.class);
     }
 
     @Override
@@ -727,33 +718,6 @@ public class ResourceServiceImpl implements ResourceService {
     @Override
     public String previewResourceContent(ResourceIdentifier resourceIdentifier, String content) {
         return generateResourceFile(resourceIdentifier.resourceName, content, generateResourceGroup(), resourceHandler.getSelectedValue(resourceIdentifier), ResourceGeneratorType.PREVIEW);
-    }
-
-    protected void checkFuturesResults(Map<String, Future<CommandOutput>> futures, String fileName) throws ExecutionException, InterruptedException {
-        for (String hostName : futures.keySet()) {
-            Future<CommandOutput> deployFuture = futures.get(hostName);
-            if (!deployFuture.get().getReturnCode().wasSuccessful()) {
-                LOGGER.error("Failed to deploy {} to host {}", fileName, hostName);
-                throw new InternalErrorException(FaultType.CONTROL_OPERATION_UNSUCCESSFUL, "Failed to deploy the template " + fileName + " to host " + hostName);
-            }
-        }
-    }
-
-    protected void waitForDeployToComplete(Map<String, Future<CommandOutput>> futures) {
-        final int size = futures.size();
-        if (size > 0) {
-            LOGGER.info("Check to see if all {} tasks completed", size);
-            boolean allDone = false;
-            // TODO think about adding a manual timeout
-            while (!allDone) {
-                boolean isDone = true;
-                for (Future<CommandOutput> isDoneFuture : futures.values()) {
-                    isDone = isDone && isDoneFuture.isDone();
-                }
-                allDone = isDone;
-            }
-            LOGGER.info("Tasks complete: {}", size);
-        }
     }
 
     public CommandOutput secureCopyFile(final String hostName, final String sourcePath, final String destPath) throws CommandFailureException {

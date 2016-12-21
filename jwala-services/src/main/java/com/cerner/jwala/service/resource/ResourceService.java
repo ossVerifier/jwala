@@ -21,8 +21,6 @@ import java.util.Properties;
 
 public interface ResourceService {
 
-    String decryptUsingPlatformBean(String encryptedString);
-
     String encryptUsingPlatformBean(String cleartext);
 
     /**

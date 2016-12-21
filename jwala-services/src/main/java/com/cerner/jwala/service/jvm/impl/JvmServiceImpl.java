@@ -1,5 +1,6 @@
 package com.cerner.jwala.service.jvm.impl;
 
+import com.cerner.jwala.common.FileUtility;
 import com.cerner.jwala.common.domain.model.app.Application;
 import com.cerner.jwala.common.domain.model.fault.FaultType;
 import com.cerner.jwala.common.domain.model.group.Group;
@@ -14,7 +15,6 @@ import com.cerner.jwala.common.domain.model.state.CurrentState;
 import com.cerner.jwala.common.domain.model.state.StateType;
 import com.cerner.jwala.common.domain.model.user.User;
 import com.cerner.jwala.common.exception.ApplicationException;
-import com.cerner.jwala.common.exception.BadRequestException;
 import com.cerner.jwala.common.exception.InternalErrorException;
 import com.cerner.jwala.common.exec.CommandOutput;
 import com.cerner.jwala.common.exec.CommandOutputReturnCode;
@@ -27,7 +27,6 @@ import com.cerner.jwala.common.request.jvm.CreateJvmRequest;
 import com.cerner.jwala.common.request.jvm.UpdateJvmRequest;
 import com.cerner.jwala.control.AemControl;
 import com.cerner.jwala.exception.CommandFailureException;
-import com.cerner.jwala.common.FileUtility;
 import com.cerner.jwala.persistence.jpa.domain.resource.config.template.JpaJvmConfigTemplate;
 import com.cerner.jwala.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
 import com.cerner.jwala.persistence.jpa.service.exception.ResourceTemplateUpdateException;
@@ -281,20 +280,6 @@ public class JvmServiceImpl implements JvmService {
         for (final AddJvmToGroupRequest command : someAddCommands) {
             LOGGER.info("Adding jvm {} to group {}", command.getJvmId(), command.getGroupId());
             groupService.addJvmToGroup(command, anAddingUser);
-        }
-    }
-
-
-    @Override
-    @Transactional(readOnly = true)
-    public String generateConfigFile(String aJvmName, String templateName) {
-        Jvm jvm = jvmPersistenceService.findJvmByExactName(aJvmName);
-
-        final String templateContent = jvmPersistenceService.getJvmTemplate(templateName, jvm.getId());
-        if (!templateContent.isEmpty()) {
-            return resourceService.generateResourceFile(templateName, templateContent, resourceService.generateResourceGroup(), jvmPersistenceService.findJvmByExactName(aJvmName), ResourceGeneratorType.TEMPLATE);
-        } else {
-            throw new BadRequestException(FaultType.JVM_TEMPLATE_NOT_FOUND, "Failed to find the template in the database or on the file system");
         }
     }
 
