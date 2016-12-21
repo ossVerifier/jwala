@@ -193,19 +193,6 @@ public class WebServerServiceImpl implements WebServerService {
         }
     }
 
-    @Override
-    @Transactional(readOnly = true)
-    public String generateHttpdConfig(final String aWebServerName, ResourceGroup resourceGroup) {
-        final WebServer server = webServerPersistenceService.findWebServerByName(aWebServerName);
-
-        try {
-            String httpdConfText = webServerPersistenceService.getResourceTemplate(aWebServerName, HTTPD_CONF);
-            return resourceService.generateResourceFile(HTTPD_CONF, httpdConfText, resourceGroup, server, ResourceGeneratorType.TEMPLATE);
-        } catch (NonRetrievableResourceTemplateContentException nrtce) {
-            LOGGER.error("Failed to retrieve resource template from the database", nrtce);
-            throw new InternalErrorException(FaultType.TEMPLATE_NOT_FOUND, nrtce.getMessage());
-        }
-    }
 
     @Override
     @Transactional(readOnly = true)

@@ -6,6 +6,7 @@ import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
 import com.cerner.jwala.common.exception.FaultCodeException;
+import com.cerner.jwala.exception.CommandFailureException;
 import com.cerner.jwala.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
 import com.cerner.jwala.persistence.jpa.service.exception.ResourceTemplateUpdateException;
 import com.cerner.jwala.service.app.ApplicationService;
@@ -199,5 +200,20 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
         LOGGER.info("Deploying application {} initiated by user {}", appName, aUser.getUser().getId());
         service.deployConf(appName, hostName, aUser.getUser());
         return ResponseBuilder.ok(appName);
+    }
+
+    @Override
+    public Response checkIfFileExists(final String appName, final AuthenticatedUser aUser, final String hostName) {
+        Application application = service.getApplication(appName);
+        try {
+            if (service.executeCheckIfFileExistsCommand(appName, hostName, application.getWarName()).getReturnCode().getWasSuccessful())
+                return ResponseBuilder.ok();
+            else
+                return ResponseBuilder.notOk(Response.Status.NOT_FOUND, new FaultCodeException(
+                        FaultType.ENTITY_NOT_FOUND, "File not found"));
+        } catch (CommandFailureException cfe) {
+            return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
+                    FaultType.INVALID_TEMPLATE, cfe.getMessage()));
+        }
     }
 }

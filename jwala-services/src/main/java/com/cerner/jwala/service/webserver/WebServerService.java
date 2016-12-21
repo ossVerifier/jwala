@@ -29,8 +29,6 @@ public interface WebServerService {
 
     String generateInstallServiceWSBat(WebServer webServer);
 
-    String generateHttpdConfig(final String aWebServerName, ResourceGroup resourceGroup);
-
     List<String> getResourceTemplateNames(final String webServerName);
 
     String getResourceTemplate(final String webServerName, final String resourceTemplateName, final boolean tokensReplaced, ResourceGroup resourceGroup);
