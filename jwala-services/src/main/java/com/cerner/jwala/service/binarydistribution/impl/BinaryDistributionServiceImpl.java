@@ -7,11 +7,16 @@ import com.cerner.jwala.common.domain.model.resource.EntityType;
 import com.cerner.jwala.common.exception.InternalErrorException;
 import com.cerner.jwala.common.properties.ApplicationProperties;
 import com.cerner.jwala.exception.CommandFailureException;
+import com.cerner.jwala.persistence.jpa.type.EventType;
+import com.cerner.jwala.service.HistoryFacadeService;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionControlService;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionLockManager;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.io.File;
 
@@ -27,10 +32,12 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
 
     private final BinaryDistributionControlService binaryDistributionControlService;
     private final BinaryDistributionLockManager binaryDistributionLockManager;
+    private HistoryFacadeService historyFacadeService;
 
-    public BinaryDistributionServiceImpl(BinaryDistributionControlService binaryDistributionControlService, BinaryDistributionLockManager binaryDistributionLockManager) {
+    public BinaryDistributionServiceImpl(BinaryDistributionControlService binaryDistributionControlService, BinaryDistributionLockManager binaryDistributionLockManager, HistoryFacadeService historyFacadeService) {
         this.binaryDistributionControlService = binaryDistributionControlService;
         this.binaryDistributionLockManager = binaryDistributionLockManager;
+        this.historyFacadeService = historyFacadeService;
     }
 
     @Override
@@ -42,11 +49,28 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
         File remoteDestination = new File(remoteHostPath);
         String binaryDeployDir = remoteDestination.getAbsolutePath().replaceAll("\\\\", "/");
         if (binaryDeployDir != null && !binaryDeployDir.isEmpty()) {
+            historyFacadeService.write(jvm.getHostName(), jvm.getGroups(), "DISTRIBUTE_JDK " + jdkMedia.getName(), EventType.APPLICATION_EVENT, getUserNameFromSecurityContext());
             distributeBinary(jvm.getHostName(), jdkDir, binaryDeployDir, "", jdkMedia.getPath());
         } else {
             LOGGER.info("JDK dir location is null or empty for JVM {}. Not deploying JDK.", jvm.getJvmName());
         }
         LOGGER.info("End deploy jdk {} for {}", jdkMedia.getName(), jvm.getJvmName());
+    }
+
+    private String getUserNameFromSecurityContext() {
+        final SecurityContext context = SecurityContextHolder.getContext();
+        if (context == null) {
+            LOGGER.debug("No context found getting user name from SecurityContextHolder");
+            return "";
+        }
+
+        final Authentication authentication = context.getAuthentication();
+        if (authentication == null) {
+            LOGGER.debug("No authentication found getting user name from SecuriyContextHolder");
+            return "";
+        }
+
+        return authentication.getName();
     }
 
     @Override
@@ -57,6 +81,8 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
         String binaryDeployDir = tomcat.getParentFile().getParentFile().getAbsolutePath().replaceAll("\\\\", "/");
         if (tomcatDir != null && !tomcatDir.isEmpty()) {
             final String localArchivePath = ApplicationProperties.get(BINARY_LOCATION_PROPERTY_KEY) + "/" + tomcatDir + ".zip";
+            // TODO write history
+            //historyFacadeService.write(hostname, jvm.getGroups(), "DISTRIBUTE_TOMCAT", EventType.APPLICATION_EVENT, SecurityContextHolder.getContext().getAuthentication().getName());
             distributeBinary(hostname, tomcatDir, binaryDeployDir, "", localArchivePath);
         } else {
             LOGGER.warn("Tomcat dir location is null or empty {}", tomcatDir);
@@ -74,6 +100,8 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
             String binaryDeployDir = apache.getParentFile().getAbsolutePath().replaceAll("\\\\", "/");
             if (webServerDir != null && !webServerDir.isEmpty()) {
                 final String localArchivePath = ApplicationProperties.get(BINARY_LOCATION_PROPERTY_KEY) + "/" + webServerDir + ".zip";
+                // TODO write history
+                //historyFacadeService.write(hostname, webserver.getGroups(), "DISTRIBUTE_APACHE", EventType.APPLICATION_EVENT, SecurityContextHolder.getContext().getAuthentication().getName());
                 distributeBinary(hostname, webServerDir, binaryDeployDir, APACHE_EXCLUDE, localArchivePath);
             } else {
                 LOGGER.warn("WebServer dir location is null or empty {}", webServerDir);

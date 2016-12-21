@@ -10,6 +10,7 @@ import com.cerner.jwala.common.exec.ExecReturnCode;
 import com.cerner.jwala.common.properties.ApplicationProperties;
 import com.cerner.jwala.control.command.RemoteCommandExecutor;
 import com.cerner.jwala.exception.CommandFailureException;
+import com.cerner.jwala.service.HistoryFacadeService;
 import com.cerner.jwala.service.binarydistribution.impl.BinaryDistributionServiceImpl;
 import org.junit.After;
 import org.junit.Before;
@@ -39,13 +40,16 @@ public class BinaryDistributionServiceImplTest {
     @Mock
     private BinaryDistributionLockManager mockBinaryDistributionLockManager;
 
+    @Mock
+    private HistoryFacadeService historyFacadeService;
+
     private BinaryDistributionServiceImpl binaryDistributionService;
 
     @Before
     public void setup() {
         initMocks(this);
         System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, new File(".").getAbsolutePath() + "/src/test/resources");
-        binaryDistributionService = new BinaryDistributionServiceImpl(mockBinaryDistributionControlService, mockBinaryDistributionLockManager);
+        binaryDistributionService = new BinaryDistributionServiceImpl(mockBinaryDistributionControlService, mockBinaryDistributionLockManager, historyFacadeService);
     }
 
     @After

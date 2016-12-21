@@ -454,7 +454,7 @@ public class AemServiceConfiguration {
     }
 
     @Bean(name = "binaryDistributionService")
-    public BinaryDistributionService getBinaryDistributionService(BinaryDistributionControlService binaryDistributionControlService) {
-        return new BinaryDistributionServiceImpl(binaryDistributionControlService, getBinaryDistributionLockManager());
+    public BinaryDistributionService getBinaryDistributionService(BinaryDistributionControlService binaryDistributionControlService, HistoryFacadeService historyFacadeService) {
+        return new BinaryDistributionServiceImpl(binaryDistributionControlService, getBinaryDistributionLockManager(), historyFacadeService);
     }
 }
