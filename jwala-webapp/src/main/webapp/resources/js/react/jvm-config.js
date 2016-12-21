@@ -481,8 +481,8 @@ var JvmConfigForm = React.createClass({
                                                                                 notEqualTo: 0
                                                                              },
                                                                             "ajpPort": {range: [1, 65535]},
-                                                                            "jdkVersion": {required: false},
-                                                                            "tomcatVersion": {required: false}
+                                                                            "jdkVersion": {required: true}/*,
+                                                                            "tomcatVersion": {required: false}*/
                                                                             },
                                                                             messages: {
                                                                                 "groupSelector[]": {
