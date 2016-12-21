@@ -18,7 +18,7 @@ $.extend({ errorAlert: function (message, dlgTitle, modal, content) {
                 }
             }
 
-            if (content) {
+            if (content && typeof content !== "string") {
                 message += "<div class='textAlignLeft'><ul>";
                 var sortedContent = [];
                 for (var property in content) {
@@ -44,6 +44,15 @@ $.extend({ errorAlert: function (message, dlgTitle, modal, content) {
                 message += "</ul></div>"
             }
 
+            var detailsHtml = "";
+            if (content && content !== "") {
+                var showErrorDetails = "$('.showErrorDetails').hide();$('.hideErrorDetails').show();$('.stackTrace').show()";
+                var hideErrorDetails = "$('.showErrorDetails').show();$('.hideErrorDetails').hide();$('.stackTrace').hide()";
+                detailsHtml = "<br><br><div style='width:100%;text-align:left'><button class='showErrorDetails' onClick="
+                              + showErrorDetails + ">Show Details</button><button style='display:none' class='hideErrorDetails' onClick=" + hideErrorDetails + ">Hide Details</button></div>" +
+                              "<br><div class='stackTrace' style='display:none;width:100%;max-height:200px;text-align:left;overflow:auto'>" + content + "</div>";
+            }
+
             $("<div style='font-size:14px'></div>").dialog( {
                 buttons: { "Ok": function () { $(this).dialog("close"); } },
                 close: function (event, ui) { $(this).remove(); },
@@ -54,7 +63,7 @@ $.extend({ errorAlert: function (message, dlgTitle, modal, content) {
                 open: function () {
                     $(this).parents(".ui-dialog:first").find(".ui-dialog-titlebar").addClass("ui-state-error");
                     $(this).parents(".ui-dialog:first").zIndex(999);
-                }}).html($.parseHTML(message.replace(/\n/g, "<br>")));
+                }}).html($.parseHTML(message.replace(/\n/g, "<br>") + detailsHtml));
         }
     }
 });

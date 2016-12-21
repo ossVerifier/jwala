@@ -28,7 +28,6 @@ import java.util.Map;
 
 public class JpaGroupPersistenceServiceImpl implements GroupPersistenceService {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(JpaGroupPersistenceServiceImpl.class);
     private final GroupCrudService groupCrudService;
     private final GroupJvmRelationshipService groupJvmRelationshipService;
 

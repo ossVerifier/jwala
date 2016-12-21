@@ -1,7 +1,5 @@
 package com.cerner.jwala.service.group.impl;
 
-import com.cerner.jwala.common.dispatch.GroupWebServerDispatchCommand;
-import com.cerner.jwala.common.dispatch.WebServerDispatchCommandResult;
 import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.user.User;
@@ -13,15 +11,11 @@ import com.cerner.jwala.common.exec.ExecReturnCode;
 import com.cerner.jwala.common.request.webserver.ControlGroupWebServerRequest;
 import com.cerner.jwala.common.request.webserver.ControlWebServerRequest;
 import com.cerner.jwala.service.group.GroupService;
-import com.cerner.jwala.service.group.impl.GroupWebServerControlServiceImpl;
 import com.cerner.jwala.service.webserver.WebServerControlService;
-
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import static org.mockito.Mockito.*;
@@ -69,15 +63,6 @@ public class GroupWebServerControlServiceImplTest {
     @Test
     public void testControlGroup() {
         cut.controlGroup(controlGroupWebServerRequest, testUser);
-    }
-
-    @Test
-    public void testDispatchCommandComplete() {
-        List<WebServerDispatchCommandResult> results = new ArrayList<>();
-        GroupWebServerDispatchCommand groupWebServerDispatchCommand = new GroupWebServerDispatchCommand(mockGroup,
-                controlGroupWebServerRequest, testUser);
-        WebServerDispatchCommandResult commandResult = new WebServerDispatchCommandResult(true, groupWebServerDispatchCommand);
-        results.add(commandResult);
     }
 
 }

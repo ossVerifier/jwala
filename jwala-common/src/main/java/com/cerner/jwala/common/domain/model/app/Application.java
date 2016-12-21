@@ -7,9 +7,10 @@ import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
 
+import java.io.Serializable;
 import java.util.List;
 
-public class Application {
+public class Application implements Serializable {
 
     private Identifier<Application> id;
 

@@ -9,8 +9,6 @@ import java.io.Serializable;
 
 public class CreateGroupRequest implements Serializable, Request {
 
-    private static final long serialVersionUID = 1L;
-
     private final String groupName;
 
     public CreateGroupRequest(final String theGroupName) {

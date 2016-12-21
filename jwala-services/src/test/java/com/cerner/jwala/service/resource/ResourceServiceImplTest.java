@@ -125,7 +125,6 @@ public class ResourceServiceImplTest {
         final String encryptedHello = "aGVsbG8=";
         final String clearTextHello = "hello";
         assertEquals(encryptedHello, resourceService.encryptUsingPlatformBean(clearTextHello));
-        assertEquals(clearTextHello, resourceService.decryptUsingPlatformBean(encryptedHello));
     }
 
     @Test

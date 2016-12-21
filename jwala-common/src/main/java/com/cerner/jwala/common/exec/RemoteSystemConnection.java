@@ -4,21 +4,19 @@ import java.io.Serializable;
 
 public class RemoteSystemConnection implements Serializable {
 
-    private static final long serialVersionUID = 1L;
-
     private final String user;
     private final String host;
     private final Integer port;
-    private final String password;
+    private final char[] encryptedPassword;
 
     public RemoteSystemConnection(final String theUser,
-                                  final String thePassword,
+                                  final char[] theEncryptedPassword,
                                   final String theHost,
                                   final Integer thePort) {
         user = theUser;
         host = theHost;
         port = thePort;
-        password = thePassword;
+        encryptedPassword = theEncryptedPassword;
     }
 
     public String getUser() {
@@ -33,8 +31,8 @@ public class RemoteSystemConnection implements Serializable {
         return port;
     }
 
-    public String getPassword() {
-        return password;
+    public char[] getEncryptedPassword() {
+        return encryptedPassword;
     }
 
     @Override

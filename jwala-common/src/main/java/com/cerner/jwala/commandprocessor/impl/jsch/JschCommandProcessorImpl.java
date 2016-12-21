@@ -3,6 +3,7 @@ package com.cerner.jwala.commandprocessor.impl.jsch;
 import com.cerner.jwala.commandprocessor.CommandProcessor;
 import com.cerner.jwala.commandprocessor.jsch.impl.ChannelSessionKey;
 import com.cerner.jwala.commandprocessor.jsch.impl.ChannelType;
+import com.cerner.jwala.common.domain.model.ssh.DecryptPassword;
 import com.cerner.jwala.common.exec.ExecReturnCode;
 import com.cerner.jwala.common.exec.RemoteExecCommand;
 import com.cerner.jwala.common.exec.RemoteSystemConnection;
@@ -18,10 +19,9 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 
-public class JschCommandProcessorImpl implements CommandProcessor {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(JschCommandProcessorImpl.class);
+public class JschCommandProcessorImpl implements CommandProcessor {private static final Logger LOGGER = LoggerFactory.getLogger(JschCommandProcessorImpl.class);
     public static final int CHANNEL_BORROW_LOOP_WAIT_TIME = 180000;
 
     private final JSch jsch;
@@ -103,7 +103,7 @@ public class JschCommandProcessorImpl implements CommandProcessor {
             final PrintStream commandStream = new PrintStream(out, true);
             final String commandString = remoteExecCommand.getCommand().toCommandString();
             LOGGER.debug("commandString = " + commandString);
-            
+
             commandStream.println(commandString);
             commandStream.println("echo 'EXIT_CODE='$?***");
             commandStream.println("echo -n -e '\\xff'");
@@ -254,20 +254,19 @@ public class JschCommandProcessorImpl implements CommandProcessor {
 
     /**
      * Prepare the session by setting session properties.
-     * @param remoteSystemConnection
+     * @param remoteSystemConnection the object containing the details for the remote system
      * @return {@link Session}
-     * @throws JSchException
+     * @throws JSchException when anything fails with the remote server connection
      */
     private Session prepareSession(final RemoteSystemConnection remoteSystemConnection)  throws JSchException {
         final Session session = jsch.getSession(remoteSystemConnection.getUser(), remoteSystemConnection.getHost(),
                 remoteSystemConnection.getPort());
-        final String password = remoteSystemConnection.getPassword();
-        if (password != null) {
-            session.setPassword(password);
+        final char[] encryptedPassword = remoteSystemConnection.getEncryptedPassword();
+        if (encryptedPassword != null) {
+            session.setPassword(new DecryptPassword().decrypt(Arrays.toString(encryptedPassword)));
             session.setConfig("StrictHostKeyChecking", "no");
             session.setConfig("PreferredAuthentications", "password,gssapi-with-mic,publickey,keyboard-interactive");
         }
         return session;
     }
-
 }

@@ -1,6 +1,6 @@
 package com.cerner.jwala.persistence.jpa.service.impl;
 
-import com.cerner.jwala.common.domain.model.fault.AemFaultType;
+import com.cerner.jwala.common.domain.model.fault.FaultType;
 import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.webserver.WebServer;
@@ -79,7 +79,7 @@ public class GroupCrudServiceImpl extends AbstractCrudServiceImpl<JpaGroup> impl
         List<JpaGroup> jpaGroups = query.getResultList();
         if (jpaGroups == null || jpaGroups.isEmpty()) {
             LOGGER.error("Error getting the group {}", name);
-            throw new NotFoundException(AemFaultType.GROUP_NOT_FOUND, "Group not found: " + name);
+            throw new NotFoundException(FaultType.GROUP_NOT_FOUND, "Group not found: " + name);
         }
         return jpaGroups.get(0);
     }
@@ -472,7 +472,7 @@ public class GroupCrudServiceImpl extends AbstractCrudServiceImpl<JpaGroup> impl
             entityManager.flush();
         } else {
             LOGGER.error("Error popuklating group app template {} for app {} in group {}", templateFileName, appName, groupName);
-            throw new BadRequestException(AemFaultType.APP_TEMPLATE_NOT_FOUND,
+            throw new BadRequestException(FaultType.APP_TEMPLATE_NOT_FOUND,
                     "Only expecting one template to be returned for GROUP APP Template [" + groupName + "] but returned " + templates.size() + " templates");
         }
 

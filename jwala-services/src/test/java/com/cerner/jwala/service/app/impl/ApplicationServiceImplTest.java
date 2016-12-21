@@ -2,7 +2,7 @@ package com.cerner.jwala.service.app.impl;
 
 import com.cerner.jwala.common.domain.model.app.Application;
 import com.cerner.jwala.common.domain.model.app.ApplicationControlOperation;
-import com.cerner.jwala.common.domain.model.fault.AemFaultType;
+import com.cerner.jwala.common.domain.model.fault.FaultType;
 import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
@@ -463,7 +463,7 @@ public class ApplicationServiceImplTest {
         } catch (CommandFailureException e) {
             assertTrue("should not fail " + e.getMessage(), false);
         } catch (InternalErrorException ie) {
-            assertEquals(AemFaultType.REMOTE_COMMAND_FAILURE, ie.getMessageResponseStatus());
+            assertEquals(FaultType.REMOTE_COMMAND_FAILURE, ie.getMessageResponseStatus());
         }
         new File("./src/test/resources/webapps/test.war").delete();
 
@@ -529,39 +529,6 @@ public class ApplicationServiceImplTest {
             exceptionThrown = true;
         }
         assertTrue(exceptionThrown);
-    }
-
-    @Test
-    public void testCopyToGroupJvms() throws CommandFailureException {
-        GroupService mockGroupService = mock(GroupService.class);
-        Group mockGroup = mock(Group.class);
-        when(mockGroupService.getGroup(any(Identifier.class))).thenReturn(mockGroup);
-        when(mockGroupService.getGroup(anyString())).thenReturn(mockGroup);
-        Set<Group> groupSet = new HashSet<>();
-        groupSet.add(mockGroup);
-
-        Set<Jvm> jvms = new HashSet<>();
-        final Jvm testjvm = mock(Jvm.class);
-        when(testjvm.getId()).thenReturn(new Identifier<Jvm>(11111L));
-        when(testjvm.getJvmName()).thenReturn("testjvm");
-        when(testjvm.getState()).thenReturn(JvmState.JVM_STOPPED);
-        jvms.add(testjvm);
-
-        when(jvmPersistenceService.findJvmByExactName(anyString())).thenReturn(testjvm);
-        when(mockGroup.getJvms()).thenReturn(jvms);
-        when(mockGroup.getName()).thenReturn("testGroupName");
-        List<String> templateNames = new ArrayList<>();
-        templateNames.add("app.xml");
-        when(applicationPersistenceService.getResourceTemplateNames(anyString(), anyString())).thenReturn(templateNames);
-        when(applicationPersistenceService.findApplication(anyString(), anyString(), anyString())).thenReturn(new Application(new Identifier<Application>(111L), "appName", "./warPath", "/context", mockGroup, true, true, false, "app.war"));
-        when(applicationPersistenceService.getResourceTemplate(anyString(), anyString(), anyString(), anyString())).thenReturn("template this!");
-        when(remoteCommandExecutor.executeRemoteCommand(anyString(), anyString(), any(ApplicationControlOperation.class), any(PlatformCommandProvider.class), anyString(), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(0), "Success!", ""));
-
-        ApplicationServiceImpl mockApplicationService = new ApplicationServiceImpl(applicationPersistenceService,
-                jvmPersistenceService, mockGroupService,
-                mockResourceService, remoteCommandExecutorImpl, binaryDistributionService, mockHistoryFacadeService);
-        mockApplicationService.copyApplicationConfigToGroupJvms(mockGroup, "testApp", mock(ResourceGroup.class), testUser);
-
     }
 
     @Test

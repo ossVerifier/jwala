@@ -15,8 +15,6 @@ import java.io.Serializable;
 
 public class ControlWebServerRequest implements Serializable, Request {
 
-    private static final long serialVersionUID = 1L;
-
     private final Identifier<WebServer> webServerId;
     private final WebServerControlOperation controlOperation;
 

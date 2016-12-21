@@ -1,6 +1,6 @@
 package com.cerner.jwala.ws.rest.v1.service.webserver.impl;
 
-import com.cerner.jwala.common.domain.model.fault.AemFaultType;
+import com.cerner.jwala.common.domain.model.fault.FaultType;
 import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.id.IdentifierSetBuilder;
@@ -55,9 +55,9 @@ public class JsonCreateWebServer {
         final Set<Identifier<Group>> ids = new IdentifierSetBuilder(groupIds).build();
 
         final Integer port = convertFrom(portNumber,
-                AemFaultType.INVALID_WEBSERVER_PORT);
+                FaultType.INVALID_WEBSERVER_PORT);
         final Integer securePort = convertIfPresentFrom(httpsPort,
-                AemFaultType.INVALID_WEBSERVER_HTTPS_PORT,
+                FaultType.INVALID_WEBSERVER_HTTPS_PORT,
                 null);
 
         return new CreateWebServerRequest(ids, webserverName, hostName, port, securePort, new Path(statusPath),
@@ -66,7 +66,7 @@ public class JsonCreateWebServer {
     }
 
     private Integer convertFrom(final String aValue,
-                                AemFaultType aFaultType) {
+                                FaultType aFaultType) {
         try {
             return Integer.valueOf(aValue);
         } catch (final NumberFormatException nfe) {
@@ -77,7 +77,7 @@ public class JsonCreateWebServer {
     }
 
     private Integer convertIfPresentFrom(final String aValue,
-                                         final AemFaultType aFaultType,
+                                         final FaultType aFaultType,
                                          final Integer aDefault) {
         if (aValue != null && !"".equals(aValue.trim())) {
             return convertFrom(aValue,

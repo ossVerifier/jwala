@@ -32,7 +32,6 @@ import java.util.List;
 })
 public class JpaWebServer extends AbstractEntity<JpaWebServer> {
 
-    private static final long serialVersionUID = 1L;
     public static final String WEB_SERVER_PARAM_NAME = "wsName";
     public static final String FIND_WEB_SERVER_BY_QUERY = "findWebServerByNameQuery";
     public static final String FIND_WEB_SERVER_BY_NAME_LIKE_QUERY = "findWebServerByNameLikeQuery";

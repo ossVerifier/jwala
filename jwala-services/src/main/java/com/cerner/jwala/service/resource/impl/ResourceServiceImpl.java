@@ -3,7 +3,7 @@ package com.cerner.jwala.service.resource.impl;
 import com.cerner.jwala.common.domain.model.app.Application;
 import com.cerner.jwala.common.domain.model.app.ApplicationControlOperation;
 import com.cerner.jwala.common.domain.model.binarydistribution.BinaryDistributionControlOperation;
-import com.cerner.jwala.common.domain.model.fault.AemFaultType;
+import com.cerner.jwala.common.domain.model.fault.FaultType;
 import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
 import com.cerner.jwala.common.domain.model.resource.*;
@@ -29,7 +29,6 @@ import com.cerner.jwala.persistence.service.*;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionService;
 import com.cerner.jwala.service.exception.ResourceServiceException;
 import com.cerner.jwala.service.resource.*;
-import com.cerner.jwala.service.resource.impl.handler.exception.ResourceHandlerException;
 import com.cerner.jwala.template.exception.ResourceFileGeneratorException;
 import opennlp.tools.util.StringUtil;
 import org.apache.commons.io.FileUtils;
@@ -41,7 +40,6 @@ import org.apache.tika.mime.MediaType;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.expression.Expression;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
@@ -49,12 +47,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.*;
 import java.nio.charset.Charset;
+import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class ResourceServiceImpl implements ResourceService {
@@ -68,7 +63,6 @@ public class ResourceServiceImpl implements ResourceService {
     private final Expression decryptExpression;
     private final ResourcePersistenceService resourcePersistenceService;
     private final GroupPersistenceService groupPersistenceService;
-    private final ExecutorService executorService;
 
     // TODO replace ApplicationControlOperation (and all operation classes) with ResourceControlOperation
     private RemoteCommandExecutorImpl remoteCommandExecutor;
@@ -124,18 +118,10 @@ public class ResourceServiceImpl implements ResourceService {
         this.webServerPersistenceService = webServerPersistenceService;
         this.resourceDao = resourceDao;
         this.resourceHandler = resourceHandler;
-        executorService = Executors.newFixedThreadPool(Integer.parseInt(ApplicationProperties.get("resources.thread-task-executor.pool.size", "25")));
         this.resourceContentGeneratorService = resourceContentGeneratorService;
         this.binaryDistributionService = binaryDistributionService;
         this.fileTypeDetector = fileTypeDetector;
         this.resourceRepositoryService = resourceRepositoryService;
-    }
-
-    @Override
-    public String decryptUsingPlatformBean(String encryptedString) {
-        StandardEvaluationContext context = new StandardEvaluationContext();
-        context.setVariable("stringToDecrypt", encryptedString);
-        return decryptExpression.getValue(context, String.class);
     }
 
     @Override
@@ -258,6 +244,16 @@ public class ResourceServiceImpl implements ResourceService {
                     .setWebServerName(resourceIdentifier.webServerName)
                     .build();
             ResourceContent resourceContent = getResourceContent(resourceIdentifierWithResource);
+
+            try {
+                if (entity instanceof Application && getMetaData(resourceContent.getMetaData()).getEntity().getDeployToJvms()) {
+                    LOGGER.info("Skipping application resource validation for {} because deployToJvms=true", resourceName);
+                    continue;
+                }
+            } catch (IOException e) {
+                throw new ApplicationException(MessageFormat.format("Unable to retrieve meta data for {0} during validation step.", resourceName), e);
+            }
+
             try {
                 generateResourceFile(resourceName, resourceContent.getMetaData(), resourceGroup, entity, ResourceGeneratorType.METADATA);
             } catch (ResourceFileGeneratorException e) {
@@ -305,7 +301,7 @@ public class ResourceServiceImpl implements ResourceService {
         if (!exceptionList.isEmpty()) {
             final String resourceName = resourceIdentifier.jvmName != null ? resourceIdentifier.jvmName : resourceIdentifier.webServerName != null ? resourceIdentifier.webServerName : resourceIdentifier.webAppName;
             resourceExceptionMap.put(resourceName, exceptionList);
-            throw new InternalErrorException(AemFaultType.RESOURCE_GENERATION_FAILED, "Failed to validate the following resources.", null, resourceExceptionMap);
+            throw new InternalErrorException(FaultType.RESOURCE_GENERATION_FAILED, "Failed to validate the following resources.", null, resourceExceptionMap);
         } else {
             LOGGER.info("Resources passed validation for {}", entity);
         }
@@ -583,7 +579,7 @@ public class ResourceServiceImpl implements ResourceService {
         ConfigTemplate createdConfigTemplate = null;
 
         if (MediaType.APPLICATION_ZIP.equals(metaData.getContentType()) &&
-                metaData.getTemplateName().toLowerCase().endsWith(WAR_FILE_EXTENSION)) {
+                metaData.getTemplateName().toLowerCase(Locale.US).endsWith(WAR_FILE_EXTENSION)) {
             applicationPersistenceService.updateWarInfo(targetAppName, metaData.getTemplateName(), templateContent);
         }
         final String deployFileName = metaData.getDeployFileName();
@@ -654,7 +650,7 @@ public class ResourceServiceImpl implements ResourceService {
                 resourceDao.deleteAppResources(templateNameList, appName, jvm.getJvmName());
             }
             for (final String templateName : templateNameList) {
-                if (templateName.toLowerCase().endsWith(".war")) {
+                if (templateName.toLowerCase(Locale.US).endsWith(".war")) {
                     final Application app = applicationPersistenceService.getApplication(appName);
 
                     // An app is only assigned to one group as of July 7, 2016 so we don't need the group to delete the
@@ -724,33 +720,6 @@ public class ResourceServiceImpl implements ResourceService {
         return generateResourceFile(resourceIdentifier.resourceName, content, generateResourceGroup(), resourceHandler.getSelectedValue(resourceIdentifier), ResourceGeneratorType.PREVIEW);
     }
 
-    protected void checkFuturesResults(Map<String, Future<CommandOutput>> futures, String fileName) throws ExecutionException, InterruptedException {
-        for (String hostName : futures.keySet()) {
-            Future<CommandOutput> deployFuture = futures.get(hostName);
-            if (!deployFuture.get().getReturnCode().wasSuccessful()) {
-                LOGGER.error("Failed to deploy {} to host {}", fileName, hostName);
-                throw new InternalErrorException(AemFaultType.CONTROL_OPERATION_UNSUCCESSFUL, "Failed to deploy the template " + fileName + " to host " + hostName);
-            }
-        }
-    }
-
-    protected void waitForDeployToComplete(Map<String, Future<CommandOutput>> futures) {
-        final int size = futures.size();
-        if (size > 0) {
-            LOGGER.info("Check to see if all {} tasks completed", size);
-            boolean allDone = false;
-            // TODO think about adding a manual timeout
-            while (!allDone) {
-                boolean isDone = true;
-                for (Future<CommandOutput> isDoneFuture : futures.values()) {
-                    isDone = isDone && isDoneFuture.isDone();
-                }
-                allDone = isDone;
-            }
-            LOGGER.info("Tasks complete: {}", size);
-        }
-    }
-
     public CommandOutput secureCopyFile(final String hostName, final String sourcePath, final String destPath) throws CommandFailureException {
         final int beginIndex = destPath.lastIndexOf("/");
         final String fileName = destPath.substring(beginIndex + 1, destPath.length());
@@ -779,7 +748,7 @@ public class ResourceServiceImpl implements ResourceService {
         } else {
             final String stdErr = commandOutput.getStandardError().isEmpty() ? commandOutput.getStandardOutput() : commandOutput.getStandardError();
             LOGGER.error("Error in creating parent dir {} on host {}:: ERROR : {}", parentDir, hostName, stdErr);
-            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, stdErr);
+            throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, stdErr);
         }
 
         commandOutput = remoteCommandExecutor.executeRemoteCommand(
@@ -802,7 +771,7 @@ public class ResourceServiceImpl implements ResourceService {
             if (!commandOutput.getReturnCode().wasSuccessful()) {
                 final String standardError = "Failed to back up the " + destPath + " for " + name + ". Continuing with secure copy.";
                 LOGGER.error(standardError);
-                throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, standardError);
+                throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, standardError);
             } else {
                 LOGGER.info("Successfully backed up " + destPath + " at " + hostName);
             }
@@ -853,7 +822,7 @@ public class ResourceServiceImpl implements ResourceService {
         final List<String> extPropertiesNamesList = getResourceNames(new ResourceIdentifier.Builder().build());
         if (extPropertiesNamesList.isEmpty()) {
             LOGGER.error("No external properties file has been uploaded. Cannot provide a download at this time.");
-            throw new InternalErrorException(AemFaultType.TEMPLATE_NOT_FOUND, "No external properties file has been uploaded. Cannot provide a download at this time.");
+            throw new InternalErrorException(FaultType.TEMPLATE_NOT_FOUND, "No external properties file has been uploaded. Cannot provide a download at this time.");
         }
 
         final String extPropertiesResourceName = extPropertiesNamesList.get(0);
@@ -900,7 +869,7 @@ public class ResourceServiceImpl implements ResourceService {
 
         try {
             return resourceHandler.createResource(resourceIdentifier, metaData, templateContent);
-        } catch (final ResourceHandlerException rhe) {
+        } catch (final ResourceServiceException rhe) {
             throw new ResourceServiceException(rhe);
         }
     }
@@ -942,11 +911,11 @@ public class ResourceServiceImpl implements ResourceService {
         } catch (IOException e) {
             String message = "Failed to write file " + fileName;
             LOGGER.error(badStreamMessage + message, e);
-            throw new InternalErrorException(AemFaultType.BAD_STREAM, message, e);
+            throw new InternalErrorException(FaultType.BAD_STREAM, message, e);
         } catch (CommandFailureException ce) {
             String message = "Failed to copy file " + fileName;
             LOGGER.error(badStreamMessage + message, ce);
-            throw new InternalErrorException(AemFaultType.BAD_STREAM, message, ce);
+            throw new InternalErrorException(FaultType.BAD_STREAM, message, ce);
         }
         return commandOutput;
     }
@@ -969,7 +938,7 @@ public class ResourceServiceImpl implements ResourceService {
                 } else {
                     standardError = "Could not back up " + zipDestinationOption;
                     LOGGER.error(standardError);
-                    throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, standardError);
+                    throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, standardError);
                 }
             }
             commandOutput = executeUnzipBinaryCommand(null, hostName, destPath, zipDestinationOption, "");
@@ -977,7 +946,7 @@ public class ResourceServiceImpl implements ResourceService {
             if (!commandOutput.getReturnCode().wasSuccessful()) {
                 standardError = "Cannot unzip " + destPath + " to " + zipDestinationOption + ", please check the log for more information.";
                 LOGGER.error(standardError);
-                throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, standardError);
+                throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, standardError);
             }
         } catch (CommandFailureException e) {
             LOGGER.error("Failed to execute remote command when unpack to {} ", destPath, e);
@@ -1010,7 +979,7 @@ public class ResourceServiceImpl implements ResourceService {
             if (!templateContent.isEmpty()) {
                 resourceFileString = generateResourceFile(fileName, templateContent, generateResourceGroup(), entity, ResourceGeneratorType.TEMPLATE);
             } else {
-                throw new BadRequestException(AemFaultType.JVM_TEMPLATE_NOT_FOUND, failMessage);
+                throw new BadRequestException(FaultType.JVM_TEMPLATE_NOT_FOUND, failMessage);
             }
         } else if (entity instanceof Application) {
             String templateContentApplication;
@@ -1022,14 +991,14 @@ public class ResourceServiceImpl implements ResourceService {
             if (!templateContentApplication.isEmpty()) {
                 resourceFileString = generateResourceFile(fileName, templateContentApplication, generateResourceGroup(), entity, ResourceGeneratorType.TEMPLATE);
             } else {
-                throw new BadRequestException(AemFaultType.APP_TEMPLATE_NOT_FOUND, failMessage);
+                throw new BadRequestException(FaultType.APP_TEMPLATE_NOT_FOUND, failMessage);
             }
         } else if (entity instanceof WebServer) {
             final String templateContentWebServer = webServerPersistenceService.getResourceTemplate(((WebServer) entity).getName(), fileName);
             if (!templateContentWebServer.isEmpty()) {
                 resourceFileString = generateResourceFile(fileName, templateContentWebServer, generateResourceGroup(), entity, ResourceGeneratorType.TEMPLATE);
             } else {
-                throw new BadRequestException(AemFaultType.WEB_SERVER_CONF_TEMPLATE_NOT_FOUND, failMessage);
+                throw new BadRequestException(FaultType.WEB_SERVER_CONF_TEMPLATE_NOT_FOUND, failMessage);
             }
         }
         return resourceFileString;

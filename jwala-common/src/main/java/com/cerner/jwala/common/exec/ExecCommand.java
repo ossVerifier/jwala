@@ -12,8 +12,6 @@ import java.util.List;
 
 public class ExecCommand implements Serializable {
 
-    private static final long serialVersionUID = 1L;
-
     protected final List<String> commandFragments;
     protected boolean runInShell = false;
 

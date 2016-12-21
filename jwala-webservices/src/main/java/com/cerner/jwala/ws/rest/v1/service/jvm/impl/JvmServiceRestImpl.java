@@ -1,6 +1,6 @@
 package com.cerner.jwala.ws.rest.v1.service.jvm.impl;
 
-import com.cerner.jwala.common.domain.model.fault.AemFaultType;
+import com.cerner.jwala.common.domain.model.fault.FaultType;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
 import com.cerner.jwala.common.domain.model.user.User;
@@ -74,7 +74,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
             return ResponseBuilder.created(jvm);
         } catch (EntityExistsException eee) {
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
-                    AemFaultType.DUPLICATE_JVM_NAME, eee.getMessage(), eee));
+                    FaultType.DUPLICATE_JVM_NAME, eee.getMessage(), eee));
         }
     }
 
@@ -85,7 +85,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
             return ResponseBuilder.ok(jvmService.updateJvm(aJvmToUpdate.toUpdateJvmRequest(), aUser.getUser()));
         } catch (EntityExistsException eee) {
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
-                    AemFaultType.DUPLICATE_JVM_NAME, eee.getMessage(), eee));
+                    FaultType.DUPLICATE_JVM_NAME, eee.getMessage(), eee));
         }
     }
 
@@ -111,7 +111,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
             } catch (final InterruptedException | JvmControlServiceException e) {
                 LOGGER.error("Control a JVM synchronously has failed!", e);
                 return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR,
-                        new FaultCodeException(AemFaultType.SERVICE_EXCEPTION, e.getMessage()));
+                        new FaultCodeException(FaultType.SERVICE_EXCEPTION, e.getMessage()));
             }
         } else {
             commandOutput = jvmControlService.controlJvm(controlJvmRequest, aUser.getUser());
@@ -124,7 +124,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
             final String standardOutput = commandOutput.getStandardOutput();
             String errMessage = standardError != null && !standardError.isEmpty() ? standardError : standardOutput;
             LOGGER.error("Control JVM unsuccessful: " + errMessage);
-            throw new InternalErrorException(AemFaultType.CONTROL_OPERATION_UNSUCCESSFUL, CommandOutputReturnCode.fromReturnCode(commandOutput.getReturnCode().getReturnCode()).getDesc());
+            throw new InternalErrorException(FaultType.CONTROL_OPERATION_UNSUCCESSFUL, CommandOutputReturnCode.fromReturnCode(commandOutput.getReturnCode().getReturnCode()).getDesc());
         }
     }
 
@@ -177,7 +177,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
             return ResponseBuilder.ok(someContent);
         } else {
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
-                    AemFaultType.PERSISTENCE_ERROR, "Failed to update the template " + resourceTemplateName + " for " + jvmName + ". See the log for more details."));
+                    FaultType.PERSISTENCE_ERROR, "Failed to update the template " + resourceTemplateName + " for " + jvmName + ". See the log for more details."));
         }
     }
 
@@ -189,7 +189,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
         } catch (RuntimeException rte) {
             LOGGER.debug("Error previewing resource.", rte);
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
-                    AemFaultType.INVALID_TEMPLATE, rte.getMessage()));
+                    FaultType.INVALID_TEMPLATE, rte.getMessage()));
         }
     }
 

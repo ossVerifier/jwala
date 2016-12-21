@@ -1,6 +1,6 @@
 package com.cerner.jwala.ws.rest.v1.service.webserver.impl;
 
-import com.cerner.jwala.common.domain.model.fault.AemFaultType;
+import com.cerner.jwala.common.domain.model.fault.FaultType;
 import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.id.IdentifierSetBuilder;
@@ -69,7 +69,7 @@ public class JsonUpdateWebServer {
         try {
             return new Identifier<>(webServerId);
         } catch (final NumberFormatException nfe) {
-            throw new BadRequestException(AemFaultType.INVALID_IDENTIFIER, nfe.getMessage(), nfe);
+            throw new BadRequestException(FaultType.INVALID_IDENTIFIER, nfe.getMessage(), nfe);
         }
     }
 
@@ -77,7 +77,7 @@ public class JsonUpdateWebServer {
         try {
             return Integer.valueOf(portNumber);
         } catch (final NumberFormatException nfe) {
-            throw new BadRequestException(AemFaultType.INVALID_WEBSERVER_PORT, nfe.getMessage(), nfe);
+            throw new BadRequestException(FaultType.INVALID_WEBSERVER_PORT, nfe.getMessage(), nfe);
         }
     }
 
@@ -88,7 +88,7 @@ public class JsonUpdateWebServer {
             }
             return null;
         } catch (final NumberFormatException nfe) {
-            throw new BadRequestException(AemFaultType.INVALID_WEBSERVER_HTTPS_PORT, nfe.getMessage(), nfe);
+            throw new BadRequestException(FaultType.INVALID_WEBSERVER_HTTPS_PORT, nfe.getMessage(), nfe);
         }
     }
 

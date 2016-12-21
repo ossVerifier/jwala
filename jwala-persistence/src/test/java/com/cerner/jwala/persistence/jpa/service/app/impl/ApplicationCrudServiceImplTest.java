@@ -2,7 +2,7 @@ package com.cerner.jwala.persistence.jpa.service.app.impl;
 
 import com.cerner.jwala.common.configuration.TestExecutionProfile;
 import com.cerner.jwala.common.domain.model.app.Application;
-import com.cerner.jwala.common.domain.model.fault.AemFaultType;
+import com.cerner.jwala.common.domain.model.fault.FaultType;
 import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
@@ -58,6 +58,7 @@ import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Scanner;
 
 import static org.junit.Assert.*;
@@ -122,7 +123,7 @@ public class ApplicationCrudServiceImplTest {
     private String aUser;
 
     private String alphaLower = "abcdefghijklmnopqrstuvwxyz";
-    private String alpha = alphaLower + alphaLower.toUpperCase();
+    private String alpha = alphaLower + alphaLower.toUpperCase(Locale.US);
     private String alphaNum = alpha + "0123456789,.-/_$ ";
     private String alphaUnsafe = alphaNum + "\\\t\r\n";
 
@@ -170,7 +171,7 @@ public class ApplicationCrudServiceImplTest {
             JpaApplication duplicate = applicationCrudService.createApplication(request, jpaGroup);
             fail(duplicate.toString());
         } catch (BadRequestException e) {
-            assertEquals(AemFaultType.DUPLICATE_APPLICATION, e.getMessageResponseStatus());
+            assertEquals(FaultType.DUPLICATE_APPLICATION, e.getMessageResponseStatus());
             throw e;
         } finally {
             try {

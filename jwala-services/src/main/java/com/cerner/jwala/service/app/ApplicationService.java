@@ -10,11 +10,9 @@ import com.cerner.jwala.common.exec.CommandOutput;
 import com.cerner.jwala.common.request.app.CreateApplicationRequest;
 import com.cerner.jwala.common.request.app.UpdateApplicationRequest;
 import com.cerner.jwala.common.request.app.UploadAppTemplateRequest;
-import com.cerner.jwala.common.request.app.UploadWebArchiveRequest;
 import com.cerner.jwala.exception.CommandFailureException;
 import com.cerner.jwala.persistence.jpa.domain.JpaApplicationConfigTemplate;
 
-import java.io.IOException;
 import java.util.List;
 
 public interface ApplicationService {
@@ -34,8 +32,6 @@ public interface ApplicationService {
     List<Application> findApplications(Identifier<Group> groupId);
 
     List<Application> findApplicationsByJvmId(Identifier<Jvm> jvmId);
-
-    Application deleteWebArchive(Identifier<Application> appToRemoveWAR, User user);
 
     List<String> getResourceTemplateNames(final String appName, String jvmName);
 
@@ -72,8 +68,6 @@ public interface ApplicationService {
     void copyApplicationWarToGroupHosts(Application application);
 
     void copyApplicationWarToHost(Application application, String hostName);
-
-    void copyApplicationConfigToGroupJvms(Group group, String appName, ResourceGroup resourceGroup, User user);
 
     void deployApplicationResourcesToGroupHosts(String groupName, Application app, ResourceGroup resourceGroup);
 

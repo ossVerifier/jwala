@@ -1,8 +1,5 @@
 package com.cerner.jwala.service.webserver.impl;
 
-import com.cerner.jwala.commandprocessor.CommandExecutor;
-import com.cerner.jwala.commandprocessor.impl.jsch.JschBuilder;
-import com.cerner.jwala.commandprocessor.jsch.impl.ChannelSessionKey;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.ssh.SshConfiguration;
 import com.cerner.jwala.common.domain.model.webserver.WebServer;
@@ -16,9 +13,6 @@ import com.cerner.jwala.service.RemoteCommandExecutorService;
 import com.cerner.jwala.service.RemoteCommandReturnInfo;
 import com.cerner.jwala.service.webserver.WebServerCommandService;
 import com.cerner.jwala.service.webserver.WebServerService;
-import com.jcraft.jsch.Channel;
-
-import org.apache.commons.pool2.impl.GenericKeyedObjectPool;
 
 /**
  * Encapsulates non-state altering commands to a web server.
@@ -46,7 +40,7 @@ public class WebServerCommandServiceImpl implements WebServerCommandService {
         final ExecCommand execCommand = createExecCommand(webServer, WebServerControlOperation.VIEW_HTTP_CONFIG_FILE,
                 httpdPath + "/httpd.conf");
         final RemoteExecCommand remoteExecCommand = new RemoteExecCommand(new RemoteSystemConnection(sshConfig.getUserName(),
-                sshConfig.getPassword(), webServer.getHost(), sshConfig.getPort()), execCommand);
+                sshConfig.getEncryptedPassword(), webServer.getHost(), sshConfig.getPort()), execCommand);
         final RemoteCommandReturnInfo remoteCommandReturnInfo = remoteCommandExecutorService.executeCommand(remoteExecCommand);
 
         return new CommandOutput(new ExecReturnCode(remoteCommandReturnInfo.retCode), remoteCommandReturnInfo.standardOuput,

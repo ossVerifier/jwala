@@ -1,6 +1,6 @@
 package com.cerner.jwala.common.domain.model.ssh;
 
-import com.cerner.jwala.common.domain.model.fault.AemFaultType;
+import com.cerner.jwala.common.domain.model.fault.FaultType;
 import com.cerner.jwala.common.exception.InternalErrorException;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -8,24 +8,21 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.Serializable;
+public class SshConfiguration {
 
-public class SshConfiguration implements Serializable {
-
-    private static final long serialVersionUID = 1L;
     private static final Logger LOGGER = LoggerFactory.getLogger(SshConfiguration.class);
 
     private final String userName;
     private final Integer port;
     private final String privateKeyFile;
     private final String knownHostsFile;
-    private final String iAmNotThePasswordYoureLookingFor;
+    private final char[] encPassword;
 
     public SshConfiguration(final String theUserName,
                             final Integer thePort,
                             final String thePrivateKeyFile,
                             final String theKnownHostsFile,
-                            final String theEncPassword) {
+                            final char[] theEncPassword) {
 
 
         if (theUserName == null
@@ -34,17 +31,13 @@ public class SshConfiguration implements Serializable {
                 || theKnownHostsFile == null) {
             String message = "Startup Aborted: Jwala SSH Properties Not Set in Application Properties file";
             LOGGER.error(message);
-            throw new InternalErrorException(AemFaultType.SSH_CONFIG_MISSING, message);
+            throw new InternalErrorException(FaultType.SSH_CONFIG_MISSING, message);
         }
         userName = theUserName;
         port = thePort;
         privateKeyFile = thePrivateKeyFile;
         knownHostsFile = theKnownHostsFile;
-        if (theEncPassword == null) {
-            iAmNotThePasswordYoureLookingFor = null;
-        } else {
-            iAmNotThePasswordYoureLookingFor = new DecryptPassword().decrypt(theEncPassword);
-        }
+        encPassword = theEncPassword;
     }
 
     public String getUserName() {
@@ -63,7 +56,9 @@ public class SshConfiguration implements Serializable {
         return knownHostsFile;
     }
 
-    public String getPassword() { return iAmNotThePasswordYoureLookingFor; }
+    public char[] getEncryptedPassword() {
+        return encPassword;
+    }
 
     @Override
     public boolean equals(Object obj) {

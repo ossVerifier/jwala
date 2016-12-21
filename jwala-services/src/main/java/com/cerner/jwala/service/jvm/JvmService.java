@@ -29,8 +29,6 @@ public interface JvmService {
 
     void deleteJvmWindowsService(ControlJvmRequest controlJvmRequest, Jvm jvm, User user);
 
-    String generateConfigFile(String aJvmName, String templateName);
-
     Jvm generateAndDeployJvm(String jvmName, User user);
 
     Jvm generateAndDeployFile(String jvmName, String fileName, User user);

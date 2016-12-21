@@ -16,8 +16,6 @@ import java.util.regex.Pattern;
  */
 public class Path implements Serializable {
 
-    private static final long serialVersionUID = 1L;
-
     private static final Pattern ABSOLUTE_REG_EX = Pattern.compile("^(([a-zA-Z]:)|([\\/])).*");
     private static final Pattern FEATURE_REG_EX = Pattern.compile(";([^=;]*)?=?([0-9A-Za-z]*)?");
     

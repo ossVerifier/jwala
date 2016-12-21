@@ -16,8 +16,6 @@ import java.io.Serializable;
 //       Do we just log it ?
 public class ExecReturnCode implements Serializable {
 
-    private static final long serialVersionUID = 1L;
-
     private static final Integer ZERO = 0;
     public static final int JWALA_EXIT_CODE_SERVICE_DOES_NOT_EXIST = 36;
     public static final int JWALA_EXIT_CODE_FAST_FAIL = 125; /* Use FailFast Listener */

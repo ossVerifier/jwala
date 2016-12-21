@@ -18,8 +18,6 @@ public class User implements Serializable {
         return new User("systemUser");
     }
 
-    private static final long serialVersionUID = 1L;
-
     private final String id;
 
     public User(final String theId) {

@@ -13,8 +13,6 @@ import java.io.Serializable;
 
 public class ControlGroupRequest implements Serializable, GroupRequest {
 
-    private static final long serialVersionUID = 1L;
-
     private final Identifier<Group> groupId;
     private final GroupControlOperation controlOperation;
 

@@ -8,8 +8,6 @@ import java.io.Serializable;
 
 public class RemoteExecCommand implements Serializable {
 
-    private static final long serialVersionUID = 1L;
-
     private final RemoteSystemConnection remoteSystemConnection;
     private final ExecCommand command;
 

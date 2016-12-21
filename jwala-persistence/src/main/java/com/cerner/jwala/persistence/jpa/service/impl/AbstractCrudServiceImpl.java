@@ -1,6 +1,6 @@
 package com.cerner.jwala.persistence.jpa.service.impl;
 
-import com.cerner.jwala.common.domain.model.fault.AemFaultType;
+import com.cerner.jwala.common.domain.model.fault.FaultType;
 import com.cerner.jwala.common.exception.NotFoundException;
 import com.cerner.jwala.persistence.jpa.domain.AbstractEntity;
 import com.cerner.jwala.persistence.jpa.service.CrudService;
@@ -47,7 +47,7 @@ public abstract class AbstractCrudServiceImpl<T extends AbstractEntity<T>> imple
         T t = entityManager.find(entityClass, id);
 
         if (t == null) {
-            throw new NotFoundException(AemFaultType.ENTITY_NOT_FOUND,
+            throw new NotFoundException(FaultType.ENTITY_NOT_FOUND,
                     "Entity with id " + id + " not found");
         }
 

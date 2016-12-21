@@ -7,7 +7,6 @@ import com.cerner.jwala.common.domain.model.jvm.Jvm;
 import com.cerner.jwala.ws.rest.v1.provider.AuthenticatedUser;
 import com.cerner.jwala.ws.rest.v1.service.app.impl.JsonCreateApplication;
 import com.cerner.jwala.ws.rest.v1.service.app.impl.JsonUpdateApplication;
-import org.springframework.beans.factory.InitializingBean;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -15,7 +14,7 @@ import javax.ws.rs.core.Response;
 
 @Path("/applications")
 @Produces(MediaType.APPLICATION_JSON)
-public interface ApplicationServiceRest extends InitializingBean {
+public interface ApplicationServiceRest {
 
     @GET
     Response getApplications(@QueryParam("group.id") final Identifier<Group> aGroupId);
@@ -46,11 +45,6 @@ public interface ApplicationServiceRest extends InitializingBean {
     @Path("/{applicationId}")
     Response removeApplication(@PathParam("applicationId") final Identifier<Application> anAppToRemove,
                                @BeanParam final AuthenticatedUser aUser);
-
-    @DELETE
-    @Path("/{applicationId}/war")
-    Response deleteWebArchive(@PathParam("applicationId") final Identifier<Application> anAppToGet,
-                              @BeanParam final AuthenticatedUser aUser);
 
     @PUT
     @Path("/{applicationId}/war/deploy")

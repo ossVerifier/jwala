@@ -1,6 +1,6 @@
 package com.cerner.jwala.service.webserver.impl;
 
-import com.cerner.jwala.common.domain.model.fault.AemFaultType;
+import com.cerner.jwala.common.domain.model.fault.FaultType;
 import com.cerner.jwala.common.domain.model.ssh.SshConfiguration;
 import com.cerner.jwala.common.domain.model.user.User;
 import com.cerner.jwala.common.domain.model.webserver.WebServer;
@@ -79,7 +79,7 @@ public class WebServerControlServiceImpl implements WebServerControlService {
             final ServiceCommandBuilder serviceCommandBuilder = windowsJvmPlatformCommandProvider.getServiceCommandBuilderFor(controlOperation);
             final ExecCommand execCommand = serviceCommandBuilder.buildCommandForService(webServer.getName());
             final RemoteExecCommand remoteExecCommand = new RemoteExecCommand(new RemoteSystemConnection(sshConfig.getUserName(),
-                    sshConfig.getPassword(), webServer.getHost(), sshConfig.getPort()), execCommand);
+                    sshConfig.getEncryptedPassword(), webServer.getHost(), sshConfig.getPort()), execCommand);
 
             RemoteCommandReturnInfo remoteCommandReturnInfo = remoteCommandExecutorService.executeCommand(remoteExecCommand);
 
@@ -144,7 +144,7 @@ public class WebServerControlServiceImpl implements WebServerControlService {
             historyFacadeService.write(getServerName(webServer), new ArrayList<>(webServer.getGroups()), e.getMessage(),
                     EventType.SYSTEM_ERROR, aUser.getId());
 
-            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE,
+            throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE,
                     "CommandFailureException when attempting to control a JVM: " + controlWebServerRequest, e);
         }
     }
@@ -212,7 +212,7 @@ public class WebServerControlServiceImpl implements WebServerControlService {
             } else {
                 final String standardError = commandOutput.getStandardError().isEmpty() ? commandOutput.getStandardOutput() : commandOutput.getStandardError();
                 LOGGER.error("create command failed with error trying to create parent directory {} on {} :: ERROR: {}", parentDir, host, standardError);
-                throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, standardError.isEmpty() ? CommandOutputReturnCode.fromReturnCode(commandOutput.getReturnCode().getReturnCode()).getDesc() : standardError);
+                throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, standardError.isEmpty() ? CommandOutputReturnCode.fromReturnCode(commandOutput.getReturnCode().getReturnCode()).getDesc() : standardError);
             }
         }
         commandOutput = commandExecutor.executeRemoteCommand(aWebServerName,
@@ -233,7 +233,7 @@ public class WebServerControlServiceImpl implements WebServerControlService {
             if (!commandOutput.getReturnCode().wasSuccessful()) {
                 final String standardError = "Failed to back up the " + destPath + " for " + aWebServerName + ". Continuing with secure copy.";
                 LOGGER.error(standardError);
-                throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, standardError);
+                throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, standardError);
             } else {
                 LOGGER.info("Successfully backed up " + destPath + " at " + host);
             }
@@ -293,7 +293,7 @@ public class WebServerControlServiceImpl implements WebServerControlService {
                     }
                     break;
                 default:
-                    throw new InternalErrorException(AemFaultType.SERVICE_EXCEPTION, "Command: " + webServerControlOperation.toString() + " not supported");
+                    throw new InternalErrorException(FaultType.SERVICE_EXCEPTION, "Command: " + webServerControlOperation.toString() + " not supported");
             }
             if (DateTime.now().getMillis() - startTime > waitTimeout) {
                 LOGGER.warn("Timeout reached to get the state for webserver: {}", webServer.getName());
@@ -303,7 +303,7 @@ public class WebServerControlServiceImpl implements WebServerControlService {
                 Thread.sleep(SLEEP_DURATION);
             } catch (InterruptedException e) {
                 LOGGER.error("Error with Thread.sleep", e);
-                throw new InternalErrorException(AemFaultType.SERVICE_EXCEPTION, "Error with waiting for state for WebServer: " + webServer.getName(), e);
+                throw new InternalErrorException(FaultType.SERVICE_EXCEPTION, "Error with waiting for state for WebServer: " + webServer.getName(), e);
             }
         }
         return false;

@@ -1,7 +1,7 @@
 package com.cerner.jwala.ws.rest.v1.service.app.impl;
 
 import com.cerner.jwala.common.domain.model.app.Application;
-import com.cerner.jwala.common.domain.model.fault.AemFaultType;
+import com.cerner.jwala.common.domain.model.fault.FaultType;
 import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
@@ -12,7 +12,6 @@ import com.cerner.jwala.common.exec.CommandOutput;
 import com.cerner.jwala.common.exec.ExecReturnCode;
 import com.cerner.jwala.common.request.app.CreateApplicationRequest;
 import com.cerner.jwala.common.request.app.UpdateApplicationRequest;
-import com.cerner.jwala.common.request.app.UploadWebArchiveRequest;
 import com.cerner.jwala.persistence.jpa.service.exception.ResourceTemplateUpdateException;
 import com.cerner.jwala.service.app.ApplicationService;
 import com.cerner.jwala.service.group.GroupService;
@@ -20,7 +19,6 @@ import com.cerner.jwala.service.resource.ResourceService;
 import com.cerner.jwala.ws.rest.v1.provider.AuthenticatedUser;
 import com.cerner.jwala.ws.rest.v1.response.ApplicationResponse;
 import com.cerner.jwala.ws.rest.v1.service.app.ApplicationServiceRest;
-import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.cxf.jaxrs.ext.MessageContext;
 import org.junit.Before;
 import org.junit.Test;
@@ -117,31 +115,6 @@ public class ApplicationServiceRestImplTest {
             return backingStream.read();
         }
 
-    }
-
-    private class IsValidUploadCommand extends ArgumentMatcher<UploadWebArchiveRequest> {
-
-        @Override
-        public boolean matches(Object arg) {
-            UploadWebArchiveRequest uwac = (UploadWebArchiveRequest) arg;
-            uwac.validate();
-            return true;
-        }
-
-    }
-
-    @Test
-    public void testDeleteWebArchive() throws IOException {
-        when(service.getApplication(Matchers.eq(id(1L, Application.class)))).thenReturn(applicationWithWar);
-        when(service.deleteWebArchive(Matchers.eq(id(1L, Application.class)), any(User.class))).thenReturn(application);
-
-        Response currentResponse = cut.getApplication(id(1L, Application.class));
-        Application current = getApplicationFromResponse(currentResponse);
-        assertEquals(applicationWithWar, current);
-
-        Response updatedResponse = cut.deleteWebArchive(id(1L, Application.class), authenticatedUser);
-        Application updated = getApplicationFromResponse(updatedResponse);
-        assertEquals(application, updated);
     }
 
     @Test
@@ -295,7 +268,7 @@ public class ApplicationServiceRestImplTest {
         response = cut.deployConf(application.getName(), group1.getName(), "jvmName", "ServerXMLTemplate.tpl", authenticatedUser);
         assertNotNull(response.getEntity());
 
-        when(service.deployConf(anyString(), anyString(), anyString(), anyString(), any(ResourceGroup.class), any(User.class))).thenThrow(new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Target JVM must be stopped"));
+        when(service.deployConf(anyString(), anyString(), anyString(), anyString(), any(ResourceGroup.class), any(User.class))).thenThrow(new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, "Target JVM must be stopped"));
         boolean exceptionThrown = false;
         try {
             cut.deployConf(application.getName(), group1.getName(), "jvmName", "ServerXMLTemplate.tpl", authenticatedUser);

@@ -1,7 +1,8 @@
 package com.cerner.jwala.service.jvm.impl;
 
+import com.cerner.jwala.common.FileUtility;
 import com.cerner.jwala.common.domain.model.app.Application;
-import com.cerner.jwala.common.domain.model.fault.AemFaultType;
+import com.cerner.jwala.common.domain.model.fault.FaultType;
 import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
@@ -14,7 +15,6 @@ import com.cerner.jwala.common.domain.model.state.CurrentState;
 import com.cerner.jwala.common.domain.model.state.StateType;
 import com.cerner.jwala.common.domain.model.user.User;
 import com.cerner.jwala.common.exception.ApplicationException;
-import com.cerner.jwala.common.exception.BadRequestException;
 import com.cerner.jwala.common.exception.InternalErrorException;
 import com.cerner.jwala.common.exec.CommandOutput;
 import com.cerner.jwala.common.exec.CommandOutputReturnCode;
@@ -27,7 +27,6 @@ import com.cerner.jwala.common.request.jvm.CreateJvmRequest;
 import com.cerner.jwala.common.request.jvm.UpdateJvmRequest;
 import com.cerner.jwala.control.AemControl;
 import com.cerner.jwala.exception.CommandFailureException;
-import com.cerner.jwala.common.FileUtility;
 import com.cerner.jwala.persistence.jpa.domain.resource.config.template.JpaJvmConfigTemplate;
 import com.cerner.jwala.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
 import com.cerner.jwala.persistence.jpa.service.exception.ResourceTemplateUpdateException;
@@ -181,7 +180,7 @@ public class JvmServiceImpl implements JvmService {
 
             } catch (IOException e) {
                 LOGGER.error("Failed to map meta data for JVM {} in group {}", jvmName, groupName, e);
-                throw new InternalErrorException(AemFaultType.BAD_STREAM, "Failed to map meta data for JVM " + jvmName + " in group " + groupName, e);
+                throw new InternalErrorException(FaultType.BAD_STREAM, "Failed to map meta data for JVM " + jvmName + " in group " + groupName, e);
             }
         }
 
@@ -200,7 +199,7 @@ public class JvmServiceImpl implements JvmService {
                 }
             } catch (IOException e) {
                 LOGGER.error("Failed to map meta data while creating JVM for template {} in group {}", templateName, groupName, e);
-                throw new InternalErrorException(AemFaultType.BAD_STREAM, "Failed to map data for template " + templateName + " in group " + groupName, e);
+                throw new InternalErrorException(FaultType.BAD_STREAM, "Failed to map data for template " + templateName + " in group " + groupName, e);
             }
         }
     }
@@ -250,7 +249,7 @@ public class JvmServiceImpl implements JvmService {
             jvmPersistenceService.removeJvm(aJvmId);
         } else {
             LOGGER.error("The target JVM {} must be stopped before attempting to delete it", jvm.getJvmName());
-            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE,
+            throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE,
                     "The target JVM must be stopped before attempting to delete it");
         }
 
@@ -270,7 +269,7 @@ public class JvmServiceImpl implements JvmService {
                         commandOutput.getStandardError().isEmpty() ?
                                 commandOutput.getStandardOutput() : commandOutput.getStandardError();
                 LOGGER.error("Deleting windows service {} failed :: ERROR: {}", jvmName, standardError);
-                throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, standardError.isEmpty() ? CommandOutputReturnCode.fromReturnCode(commandOutput.getReturnCode().getReturnCode()).getDesc() : standardError);
+                throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, standardError.isEmpty() ? CommandOutputReturnCode.fromReturnCode(commandOutput.getReturnCode().getReturnCode()).getDesc() : standardError);
             }
         }
     }
@@ -281,20 +280,6 @@ public class JvmServiceImpl implements JvmService {
         for (final AddJvmToGroupRequest command : someAddCommands) {
             LOGGER.info("Adding jvm {} to group {}", command.getJvmId(), command.getGroupId());
             groupService.addJvmToGroup(command, anAddingUser);
-        }
-    }
-
-
-    @Override
-    @Transactional(readOnly = true)
-    public String generateConfigFile(String aJvmName, String templateName) {
-        Jvm jvm = jvmPersistenceService.findJvmByExactName(aJvmName);
-
-        final String templateContent = jvmPersistenceService.getJvmTemplate(templateName, jvm.getId());
-        if (!templateContent.isEmpty()) {
-            return resourceService.generateResourceFile(templateName, templateContent, resourceService.generateResourceGroup(), jvmPersistenceService.findJvmByExactName(aJvmName), ResourceGeneratorType.TEMPLATE);
-        } else {
-            throw new BadRequestException(AemFaultType.JVM_TEMPLATE_NOT_FOUND, "Failed to find the template in the database or on the file system");
         }
     }
 
@@ -312,7 +297,7 @@ public class JvmServiceImpl implements JvmService {
             if (jvm.getState().isStartedState()) {
                 final String errorMessage = "The target JVM " + jvm.getJvmName() + " must be stopped before attempting to update the resource files";
                 LOGGER.error(errorMessage);
-                throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, errorMessage);
+                throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, errorMessage);
             }
             validateJvmAndAppResources(jvm);
 
@@ -356,7 +341,7 @@ public class JvmServiceImpl implements JvmService {
 
         } catch (CommandFailureException | IOException e) {
             LOGGER.error("Failed to generate the JVM config for {} :: ERROR: {}", jvm.getJvmName(), e);
-            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Failed to generate the JVM config: " + jvm.getJvmName(), e);
+            throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, "Failed to generate the JVM config: " + jvm.getJvmName(), e);
         } finally {
             binaryDistributionLockManager.writeUnlock(jvmName + "-" + jvm.getId().toString());
             LOGGER.debug("End generateAndDeployJvm for {} by user {}", jvmName, user.getId());
@@ -405,7 +390,7 @@ public class JvmServiceImpl implements JvmService {
         }
 
         if (!jvmAndAppResourcesExceptions.isEmpty()) {
-            throw new InternalErrorException(AemFaultType.RESOURCE_GENERATION_FAILED, "Failed to generate the resources for JVM " + jvmName, null, jvmAndAppResourcesExceptions);
+            throw new InternalErrorException(FaultType.RESOURCE_GENERATION_FAILED, "Failed to generate the resources for JVM " + jvmName, null, jvmAndAppResourcesExceptions);
         }
     }
 
@@ -426,7 +411,7 @@ public class JvmServiceImpl implements JvmService {
         ExecReturnCode resultReturnCode = commandOutput.getReturnCode();
         if (!resultReturnCode.wasSuccessful()) {
             LOGGER.error("Creating scripts directory {} FAILED ", scriptsDir);
-            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, commandOutput.getStandardError().isEmpty() ? CommandOutputReturnCode.fromReturnCode(resultReturnCode.getReturnCode()).getDesc() : commandOutput.getStandardError());
+            throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, commandOutput.getStandardError().isEmpty() ? CommandOutputReturnCode.fromReturnCode(resultReturnCode.getReturnCode()).getDesc() : commandOutput.getStandardError());
         }
 
     }
@@ -448,7 +433,7 @@ public class JvmServiceImpl implements JvmService {
         if (!jvmControlService.secureCopyFile(secureCopyRequest, deployConfigJarPath, destinationDeployJarPath, userId).getReturnCode().wasSuccessful()) {
             String message = failedToCopyMessage + deployConfigJarPath + duringCreationMessage + jvmName;
             LOGGER.error(message);
-            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, message);
+            throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, message);
         }
 
         final String installServicePath = commandsScriptsPath + "/" + AemControl.Properties.INSTALL_SERVICE_SCRIPT_NAME.getValue();
@@ -456,14 +441,14 @@ public class JvmServiceImpl implements JvmService {
         if (!jvmControlService.secureCopyFile(secureCopyRequest, installServicePath, destinationInstallServicePath, userId).getReturnCode().wasSuccessful()) {
             String message = failedToCopyMessage + installServicePath + duringCreationMessage + jvmName;
             LOGGER.error(message);
-            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, message);
+            throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, message);
         }
 
         // make sure the scripts are executable
         if (!jvmControlService.executeChangeFileModeCommand(jvm, "a+x", stagingArea, "*.sh").getReturnCode().wasSuccessful()) {
             String message = "Failed to change the file permissions in " + stagingArea + duringCreationMessage + jvmName;
             LOGGER.error(message);
-            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, message);
+            throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, message);
         }
     }
 
@@ -527,7 +512,7 @@ public class JvmServiceImpl implements JvmService {
             final File jvmResourcesDirFile = new File(jvmGeneratedResourcesTempDir);
             if (!jvmResourcesDirFile.exists() && !jvmResourcesDirFile.mkdir()) {
                 LOGGER.error("Could not create {} for JVM resources generation {}", jvmGeneratedResourcesTempDir, jvmName);
-                throw new InternalErrorException(AemFaultType.BAD_STREAM, "Could not create " + jvmGeneratedResourcesTempDir + " for JVM resources generation " + jvmName);
+                throw new InternalErrorException(FaultType.BAD_STREAM, "Could not create " + jvmGeneratedResourcesTempDir + " for JVM resources generation " + jvmName);
             }
             target = new JarOutputStream(new FileOutputStream(configJarPath));
             addFileToTarget(new File("./" + jvmName + "/"), target);
@@ -536,7 +521,7 @@ public class JvmServiceImpl implements JvmService {
             FileUtils.copyDirectoryToDirectory(generatedDir, jvmResourcesDirFile);
         } catch (IOException e) {
             LOGGER.error("Failed to generate the config jar for {}", jvmName, e);
-            throw new InternalErrorException(AemFaultType.BAD_STREAM, "Failed to generate the resources jar for " + jvmName, e);
+            throw new InternalErrorException(FaultType.BAD_STREAM, "Failed to generate the resources jar for " + jvmName, e);
         } finally {
             try {
                 FileUtils.deleteDirectory(generatedDir);
@@ -557,7 +542,7 @@ public class JvmServiceImpl implements JvmService {
         } else {
             final String standardError = commandOutput.getStandardError().isEmpty() ? commandOutput.getStandardOutput() : commandOutput.getStandardError();
             LOGGER.error("create command failed with error trying to create parent directory {} on {} :: ERROR: {}", parentDir, jvm.getHostName(), standardError);
-            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, standardError.isEmpty() ? CommandOutputReturnCode.fromReturnCode(commandOutput.getReturnCode().getReturnCode()).getDesc() : standardError);
+            throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, standardError.isEmpty() ? CommandOutputReturnCode.fromReturnCode(commandOutput.getReturnCode().getReturnCode()).getDesc() : standardError);
         }
     }
 
@@ -575,7 +560,7 @@ public class JvmServiceImpl implements JvmService {
         } else {
             String standardError = execData.getStandardError().isEmpty() ? execData.getStandardOutput() : execData.getStandardError();
             LOGGER.error("Deploy command completed with error trying to extract and back up JVM config {} :: ERROR: {}", jvm.getJvmName(), standardError);
-            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, standardError.isEmpty() ? CommandOutputReturnCode.fromReturnCode(execData.getReturnCode().getReturnCode()).getDesc() : standardError);
+            throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, standardError.isEmpty() ? CommandOutputReturnCode.fromReturnCode(execData.getReturnCode().getReturnCode()).getDesc() : standardError);
         }
         execData = jvmControlService.controlJvm(
                 new ControlJvmRequest(jvm.getId(), JvmControlOperation.DEPLOY_CONFIG_ARCHIVE), user);
@@ -587,7 +572,7 @@ public class JvmServiceImpl implements JvmService {
             LOGGER.error(
                     "Deploy command completed with error trying to extract and back up JVM config {} :: ERROR: {}",
                     jvm.getJvmName(), standardError);
-            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, standardError.isEmpty() ? CommandOutputReturnCode.fromReturnCode(execData.getReturnCode().getReturnCode()).getDesc() : standardError);
+            throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, standardError.isEmpty() ? CommandOutputReturnCode.fromReturnCode(execData.getReturnCode().getReturnCode()).getDesc() : standardError);
         }
 
         // make sure the start/stop scripts are executable
@@ -596,7 +581,7 @@ public class JvmServiceImpl implements JvmService {
         if (!jvmControlService.executeChangeFileModeCommand(jvm, "a+x", targetAbsoluteDir, "*.sh").getReturnCode().wasSuccessful()) {
             String message = "Failed to change the file permissions in " + targetAbsoluteDir + " for " + jvm.getJvmName();
             LOGGER.error(message);
-            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, message);
+            throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, message);
         }
 
     }
@@ -620,7 +605,7 @@ public class JvmServiceImpl implements JvmService {
             String standardError =
                     execData.getStandardError().isEmpty() ? execData.getStandardOutput() : execData.getStandardError();
             LOGGER.error("Installing windows service {} failed :: ERROR: {}", jvm.getJvmName(), standardError);
-            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, "Installing windows service failed for " + AemControl.Properties.INSTALL_SERVICE_SCRIPT_NAME  +", please refer to history.");
+            throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, "Installing windows service failed for " + AemControl.Properties.INSTALL_SERVICE_SCRIPT_NAME  +", please refer to history.");
         }
     }
 
@@ -628,7 +613,7 @@ public class JvmServiceImpl implements JvmService {
         File targetDir = new File(absoluteDirPath);
         if (!targetDir.exists() && !targetDir.mkdirs()) {
             LOGGER.error("Bad Stream: Failed to create directory " + absoluteDirPath);
-            throw new InternalErrorException(AemFaultType.BAD_STREAM, "Failed to create directory" + absoluteDirPath);
+            throw new InternalErrorException(FaultType.BAD_STREAM, "Failed to create directory" + absoluteDirPath);
         }
     }
 
@@ -656,7 +641,7 @@ public class JvmServiceImpl implements JvmService {
         } else {
             final String standardError = commandOutput.getStandardError().isEmpty() ? commandOutput.getStandardOutput() : commandOutput.getStandardError();
             LOGGER.error("Copy command failed with error trying to copy file {} to {} :: ERROR: {}", sourceFile, jvm.getHostName(), standardError);
-            throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE, standardError.isEmpty() ? CommandOutputReturnCode.fromReturnCode(commandOutput.getReturnCode().getReturnCode()).getDesc() : standardError);
+            throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, standardError.isEmpty() ? CommandOutputReturnCode.fromReturnCode(commandOutput.getReturnCode().getReturnCode()).getDesc() : standardError);
         }
     }
 
@@ -709,7 +694,7 @@ public class JvmServiceImpl implements JvmService {
         try {
             if (jvm.getState().isStartedState()) {
                 LOGGER.error("The target JVM {} must be stopped before attempting to update the resource files", jvm.getJvmName());
-                throw new InternalErrorException(AemFaultType.REMOTE_COMMAND_FAILURE,
+                throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE,
                         "The target JVM must be stopped before attempting to update the resource files");
             }
             ResourceIdentifier resourceIdentifier = new ResourceIdentifier.Builder()
@@ -756,7 +741,7 @@ public class JvmServiceImpl implements JvmService {
             jvmPersistenceService.getResourceTemplate(jvmName, "setenv.bat");
         } catch (NonRetrievableResourceTemplateContentException e) {
             LOGGER.error("No setenv.bat configured for JVM: {}", jvmName, e);
-            throw new InternalErrorException(AemFaultType.TEMPLATE_NOT_FOUND, "No setenv.bat template found for " + jvmName + ". Unable to continue processing.");
+            throw new InternalErrorException(FaultType.TEMPLATE_NOT_FOUND, "No setenv.bat template found for " + jvmName + ". Unable to continue processing.");
         }
         LOGGER.debug("Found setenv.bat for JVM: {}. Continuing with process. ", jvmName);
     }
