@@ -7,6 +7,7 @@ import com.cerner.jwala.common.domain.model.media.Media;
 import com.cerner.jwala.common.domain.model.path.Path;
 import com.cerner.jwala.persistence.jpa.domain.JpaGroup;
 import com.cerner.jwala.persistence.jpa.domain.JpaJvm;
+import com.cerner.jwala.persistence.jpa.domain.JpaMedia;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -50,9 +51,22 @@ public class JvmBuilder {
                 .setLastUpdatedDate(jpaJvm.getLastUpdateDate())
                 .setUserName(jpaJvm.getUserName())
                 .setEncryptedPassword(jpaJvm.getEncryptedPassword())
-                .setJdkMedia(createJdkMedia(jdkMedia));
+                .setJdkMedia(createJdkMedia(jdkMedia))
+                .setJavaHome(createJavaHomeFromMedia(jdkMedia));
 //                .setTomcatMedia(jpaJvm.getTomcatMedia());
         return builder.build();
+    }
+
+    private String createJavaHomeFromMedia(JpaMedia jdkMedia) {
+        if (jdkMedia == null) {
+            return "";
+        }
+
+        if (jdkMedia.getRemoteDir() != null && jdkMedia.getMediaDir() != null){
+            return jdkMedia.getRemoteDir() + "/" + jdkMedia.getMediaDir();
+        } else {
+            return "";
+        }
     }
 
     private Media createJdkMedia(com.cerner.jwala.persistence.jpa.domain.JpaMedia jdkMedia) {

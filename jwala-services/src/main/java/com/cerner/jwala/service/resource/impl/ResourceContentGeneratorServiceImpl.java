@@ -91,7 +91,7 @@ public class ResourceContentGeneratorServiceImpl implements ResourceContentGener
             if (groupsToBeAdded == null) {
                 groupsToBeAdded = new ArrayList<>(groups.size());
             }
-            final List<Jvm> jvms = jvmPersistenceService.getJvmsAndWebAppsByGroupName(group.getName());
+            final List<Jvm> jvms = jvmPersistenceService.getJvmsByGroupName(group.getName());
             final List<WebServer> webServers = webServerPersistenceService.getWebServersByGroupName(group.getName());
             final List<Application> applications = applicationPersistenceService.findApplicationsBelongingTo(group.getName());
             groupsToBeAdded.add(new Group(group.getId(),

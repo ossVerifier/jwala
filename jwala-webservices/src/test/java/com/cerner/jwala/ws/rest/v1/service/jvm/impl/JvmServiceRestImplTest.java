@@ -94,10 +94,11 @@ public class JvmServiceRestImplTest {
 
     private static List<Jvm> createJvmList() {
         final Set<Group> groups = new HashSet<>();
-        final Jvm ws = new Jvm(Identifier.id(1L, Jvm.class),
+        final Jvm ws = new Jvm(new Identifier<Jvm>(1L),
                 name,
                 hostName,
                 groups,
+                null,
                 Integer.valueOf(httpPort),
                 Integer.valueOf(httpsPort),
                 Integer.valueOf(redirectPort),
@@ -106,8 +107,8 @@ public class JvmServiceRestImplTest {
                 statusPath,
                 systemProperties,
                 JvmState.JVM_STOPPED,
-                null, null, null, userName, encryptedPassword,
-                null, null);
+                null, null, userName, encryptedPassword,
+                null, null, "");
         final List<Jvm> result = new ArrayList<>();
         result.add(ws);
         return result;

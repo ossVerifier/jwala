@@ -1,6 +1,5 @@
 package com.cerner.jwala.common.domain.model.jvm;
 
-import com.cerner.jwala.common.domain.model.app.Application;
 import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.media.Media;
@@ -8,7 +7,6 @@ import com.cerner.jwala.common.domain.model.path.Path;
 
 import java.util.Calendar;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -28,12 +26,12 @@ public class JvmBuilder {
     private String systemProperties;
     private JvmState state;
     private String errorStatus;
-    private List<Application> webApps;
     private Calendar lastUpdatedDate;
     private String userName;
     private String encryptedPassword;
     private Media jdkMedia;
     private Media tomcatMedia;
+    private String javaHome;
 
     public JvmBuilder setUserName(String userName) {
         this.userName = userName;
@@ -118,19 +116,14 @@ public class JvmBuilder {
         return this;
     }
 
-    public JvmBuilder setWebApps(List<Application> webApps) {
-        this.webApps = webApps;
-        return this;
-    }
-
     public JvmBuilder setLastUpdatedDate(Calendar lastUpdatedDate) {
         this.lastUpdatedDate = lastUpdatedDate;
         return this;
     }
 
     public Jvm build() {
-        return new Jvm(id, name, hostName, groups, httpPort, httpsPort, redirectPort, shutdownPort, ajpPort, statusPath,
-                       systemProperties, state, errorStatus, webApps, lastUpdatedDate, userName, encryptedPassword, jdkMedia, tomcatMedia);
+        return new Jvm(id, name, hostName, groups, null, httpPort, httpsPort, redirectPort, shutdownPort, ajpPort, statusPath,
+                       systemProperties, state, errorStatus, lastUpdatedDate, userName, encryptedPassword, jdkMedia, tomcatMedia, javaHome);
     }
 
 
@@ -142,5 +135,13 @@ public class JvmBuilder {
     public JvmBuilder setTomcatMedia(Media tomcatMedia) {
         this.tomcatMedia = tomcatMedia;
         return this;
+    }
+
+    public String getJavaHome() {
+        return javaHome;
+    }
+
+    public void setJavaHome(String javaHome) {
+        this.javaHome = javaHome;
     }
 }

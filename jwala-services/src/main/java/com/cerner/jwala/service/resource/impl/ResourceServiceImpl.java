@@ -440,7 +440,8 @@ public class ResourceServiceImpl implements ResourceService {
                 jvm.getUserName(),
                 jvm.getEncryptedPassword(),
                 jvm.getJdkMedia(),
-                jvm.getTomcatMedia());
+                jvm.getTomcatMedia(),
+                jvm.getJavaHome());
 
         final UploadJvmConfigTemplateRequest uploadJvmTemplateRequest = new UploadJvmConfigTemplateRequest(jvmWithParentGroup, metaData.getTemplateName(),
                 templateContent, metaData.getJsonData());
