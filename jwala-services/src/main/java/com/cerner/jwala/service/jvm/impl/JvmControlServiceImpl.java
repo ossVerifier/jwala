@@ -29,6 +29,7 @@ import com.cerner.jwala.service.host.HostService;
 import com.cerner.jwala.service.jvm.JvmControlService;
 import com.cerner.jwala.service.jvm.JvmStateService;
 import com.cerner.jwala.service.jvm.exception.JvmControlServiceException;
+import com.cerner.jwala.service.jvm.operation.JvmOperationService;
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
@@ -45,13 +46,16 @@ public class JvmControlServiceImpl implements JvmControlService {
     @Autowired
     private HostService hostService;
 
+    @Autowired
+    private JvmOperationService jvmOperationService;
+
     @Value("${spring.messaging.topic.serverStates:/topic/server-states}")
     protected String topicServerStates;
 
     private final JvmPersistenceService jvmPersistenceService;
     private static final Logger LOGGER = LoggerFactory.getLogger(JvmControlServiceImpl.class);
     private static final String FORCED_STOPPED = "FORCED STOPPED";
-    private static final String JVM = "JVM";
+    private static final String JVM = "JVM ";
     private final RemoteCommandExecutor<JvmControlOperation> remoteCommandExecutor;
     private final HistoryFacadeService historyFacadeService;
     private final RemoteCommandExecutorService remoteCommandExecutorService;
@@ -386,5 +390,13 @@ public class JvmControlServiceImpl implements JvmControlService {
 
     public void setHostService(HostService hostService) {
         this.hostService = hostService;
+    }
+
+    public JvmOperationService getJvmOperationService() {
+        return jvmOperationService;
+    }
+
+    public void setJvmOperationService(JvmOperationService jvmOperationService) {
+        this.jvmOperationService = jvmOperationService;
     }
 }

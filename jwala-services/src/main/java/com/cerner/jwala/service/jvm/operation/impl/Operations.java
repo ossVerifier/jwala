@@ -10,8 +10,13 @@ import com.cerner.jwala.service.jvm.operation.Operation;
  */
 public enum Operations {
 
+    /**
+     *
+     */
     START(new Start()), STOP(new Stop());
-
+    /**
+     *
+     */
     private Operation op;
 
     Operations(final Operation op) {

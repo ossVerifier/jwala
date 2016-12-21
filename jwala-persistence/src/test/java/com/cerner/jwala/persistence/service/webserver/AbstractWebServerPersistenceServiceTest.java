@@ -4,7 +4,6 @@ import com.cerner.jwala.common.domain.model.app.Application;
 import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
-import com.cerner.jwala.common.domain.model.path.FileSystemPath;
 import com.cerner.jwala.common.domain.model.path.Path;
 import com.cerner.jwala.common.domain.model.webserver.WebServer;
 import com.cerner.jwala.common.domain.model.webserver.WebServerReachableState;
@@ -75,7 +74,7 @@ public abstract class AbstractWebServerPersistenceServiceTest {
                 oldWebServer.getPort(),
                 oldWebServer.getHttpsPort(),
                 oldWebServer.getStatusPath(),
-                new FileSystemPath("./httpd/conf/path"),
+                new Path("./httpd/conf/path"),
                 oldWebServer.getSvrRoot(),
                 oldWebServer.getDocRoot(),
                 oldWebServer.getState(),

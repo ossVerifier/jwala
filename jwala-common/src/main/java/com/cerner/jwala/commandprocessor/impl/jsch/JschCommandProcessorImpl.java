@@ -66,7 +66,6 @@ public class JschCommandProcessorImpl implements CommandProcessor {
         ChannelShell channel = null;
         ChannelSessionKey channelSessionKey = new ChannelSessionKey(remoteExecCommand.getRemoteSystemConnection(), ChannelType.SHELL);
         LOGGER.debug("channel session key = {}", channelSessionKey);
-        PrintStream commandStream = null;
         try {
             InputStream in = null;
             InputStream inErr = null;
@@ -102,7 +101,7 @@ public class JschCommandProcessorImpl implements CommandProcessor {
                 throw new RemoteCommandFailureException(remoteExecCommand, new Throwable("Was not able to borrow a channel!"));
             }
 
-            commandStream = new PrintStream(out, true, Charset.forName("UTF-8").toString());
+            PrintStream commandStream = new PrintStream(out, true, Charset.forName("UTF-8").toString());
             final String commandString = remoteExecCommand.getCommand().toCommandString();
             LOGGER.debug("commandString = " + commandString);
             
@@ -120,10 +119,6 @@ public class JschCommandProcessorImpl implements CommandProcessor {
             returnCode = new ExecReturnCode(-1);
             errorOutputStr = e.getMessage();
         } finally {
-            if (commandStream != null) {
-                commandStream.close();
-            }
-
             if (channel != null) {
                 channelPool.returnObject(channelSessionKey, channel);
                 LOGGER.debug("channel {} returned", channel.getId());

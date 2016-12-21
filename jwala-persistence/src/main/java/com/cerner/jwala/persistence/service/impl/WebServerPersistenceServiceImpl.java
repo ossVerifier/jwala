@@ -4,7 +4,7 @@ import com.cerner.jwala.common.domain.model.app.Application;
 import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
-import com.cerner.jwala.common.domain.model.path.FileSystemPath;
+import com.cerner.jwala.common.domain.model.path.Path;
 import com.cerner.jwala.common.domain.model.webserver.WebServer;
 import com.cerner.jwala.common.domain.model.webserver.WebServerReachableState;
 import com.cerner.jwala.common.exception.NotFoundException;
@@ -106,7 +106,7 @@ public class WebServerPersistenceServiceImpl implements WebServerPersistenceServ
                     webServer.getPort(),
                     webServer.getHttpsPort(),
                     webServer.getStatusPath(),
-                    new FileSystemPath(absoluteDeployPath),
+                    new Path(absoluteDeployPath),
                     webServer.getSvrRoot(),
                     webServer.getDocRoot(),
                     webServer.getState(),

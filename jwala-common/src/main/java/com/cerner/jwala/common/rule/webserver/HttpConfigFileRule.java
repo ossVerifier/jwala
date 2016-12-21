@@ -1,7 +1,7 @@
 package com.cerner.jwala.common.rule.webserver;
 
 import com.cerner.jwala.common.domain.model.fault.FaultType;
-import com.cerner.jwala.common.domain.model.path.FileSystemPath;
+import com.cerner.jwala.common.domain.model.path.Path;
 import com.cerner.jwala.common.exception.BadRequestException;
 import com.cerner.jwala.common.rule.Rule;
 
@@ -14,10 +14,10 @@ import com.cerner.jwala.common.rule.Rule;
 // Note: HTTP Config was removed in the UI. Remove this too once nobody looks for HTTP config anymore.
 public class HttpConfigFileRule implements Rule {
 
-    private final FileSystemPath fileSystemPath;
+    private final Path path;
 
-    public HttpConfigFileRule(final FileSystemPath theFileSystemPath) {
-        fileSystemPath = theFileSystemPath;
+    public HttpConfigFileRule(final Path theFileSystemPath) {
+        path = theFileSystemPath;
     }
 
     @Override
@@ -28,17 +28,17 @@ public class HttpConfigFileRule implements Rule {
          *       d:/some-dir/httpd.conf or /cygdrive/some-dir/httpd-conf
          *       Both of which are interpreted as absolute paths by Java.
          */
-        return fileSystemPath != null &&
-                fileSystemPath.isAbsolute() &&
-               !fileSystemPath.getUriPath().endsWith("/") &&
-               !fileSystemPath.getUriPath().endsWith("\\");
+        return path != null &&
+                path.isAbsolute() &&
+               !path.getUriPath().endsWith("/") &&
+               !path.getUriPath().endsWith("\\");
     }
 
     @Override
     public void validate() throws BadRequestException {
         if (!isValid()) {
             throw new BadRequestException(FaultType.INVALID_HTTP_CONFIG_FILE,
-                    "Invalid http configuration file : \"" + fileSystemPath + "\"");
+                    "Invalid http configuration file : \"" + path + "\"");
         }
     }
 

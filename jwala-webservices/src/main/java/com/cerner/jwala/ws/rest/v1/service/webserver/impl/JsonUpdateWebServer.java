@@ -4,7 +4,6 @@ import com.cerner.jwala.common.domain.model.fault.FaultType;
 import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.id.IdentifierSetBuilder;
-import com.cerner.jwala.common.domain.model.path.FileSystemPath;
 import com.cerner.jwala.common.domain.model.path.Path;
 import com.cerner.jwala.common.domain.model.webserver.WebServer;
 import com.cerner.jwala.common.domain.model.webserver.WebServerReachableState;
@@ -61,7 +60,7 @@ public class JsonUpdateWebServer {
     public UpdateWebServerRequest toUpdateWebServerRequest() {
         final Set<Identifier<Group>> groups = new IdentifierSetBuilder(groupIds).build();
         return new UpdateWebServerRequest(convertWebServerId(), groups, webServerName, hostName, convertPortNumber(),
-                convertHttpsPortNumber(), new Path(statusPath), new FileSystemPath(httpConfigFile), new Path(svrRoot),
+                convertHttpsPortNumber(), new Path(statusPath), new Path(httpConfigFile), new Path(svrRoot),
                 new Path(docRoot), WebServerReachableState.WS_UNREACHABLE, null);
     }
 

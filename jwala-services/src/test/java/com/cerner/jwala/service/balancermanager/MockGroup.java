@@ -5,7 +5,6 @@ import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
 import com.cerner.jwala.common.domain.model.jvm.JvmState;
-import com.cerner.jwala.common.domain.model.path.FileSystemPath;
 import com.cerner.jwala.common.domain.model.path.Path;
 import com.cerner.jwala.common.domain.model.webserver.WebServer;
 import com.cerner.jwala.common.domain.model.webserver.WebServerReachableState;
@@ -86,7 +85,7 @@ public class MockGroup {
                 80,
                 443,
                 new Path("path"),
-                new FileSystemPath("filesystempath"),
+                new Path("filesystempath"),
                 new Path("svrRoot"),
                 new Path("docRoot"),
                 WebServerReachableState.WS_REACHABLE,
@@ -103,7 +102,7 @@ public class MockGroup {
                 80,
                 443,
                 new Path("path"),
-                new FileSystemPath("filesystempath"),
+                new Path("filesystempath"),
                 new Path("svrRoot"),
                 new Path("docRoot"),
                 WebServerReachableState.WS_REACHABLE,
@@ -180,7 +179,7 @@ public class MockGroup {
                 80,
                 443,
                 new Path("path"),
-                new FileSystemPath("filesystempath"),
+                new Path("filesystempath"),
                 new Path("svrRoot"),
                 new Path("docRoot"),
                 WebServerReachableState.WS_REACHABLE,
@@ -192,7 +191,7 @@ public class MockGroup {
                 80,
                 443,
                 new Path("path"),
-                new FileSystemPath("filesystempath"),
+                new Path("filesystempath"),
                 new Path("svrRoot"),
                 new Path("docRoot"),
                 WebServerReachableState.WS_REACHABLE,

@@ -2,7 +2,6 @@ package com.cerner.jwala.common.domain.model.webserver;
 
 import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.id.Identifier;
-import com.cerner.jwala.common.domain.model.path.FileSystemPath;
 import com.cerner.jwala.common.domain.model.path.Path;
 import com.cerner.jwala.common.domain.model.uri.UriBuilder;
 
@@ -21,7 +20,7 @@ public class WebServer implements Serializable {
     private final Integer port;
     private final Integer httpsPort;
     private final Path statusPath;
-    private final FileSystemPath httpConfigFile;
+    private final Path httpConfigFile;
     private final Path svrRoot;
     private final Path docRoot;
     private final WebServerReachableState state;
@@ -62,7 +61,7 @@ public class WebServer implements Serializable {
                      final Integer thePort,
                      final Integer theHttpsPort,
                      final Path theStatusPath,
-                     final FileSystemPath theHttpConfigFile,
+                     final Path theHttpConfigFile,
                      final Path theSvrRoot,
                      final Path theDocRoot,
                      final WebServerReachableState state,
@@ -90,7 +89,7 @@ public class WebServer implements Serializable {
                      final Integer port,
                      final Integer httpsPort,
                      final Path statusPath,
-                     final FileSystemPath httpConfigFile,
+                     final Path httpConfigFile,
                      final Path svrRoot,
                      final Path docRoot,
                      final WebServerReachableState state,
@@ -142,7 +141,7 @@ public class WebServer implements Serializable {
         return statusPath;
     }
 
-    public FileSystemPath getHttpConfigFile() {
+    public Path getHttpConfigFile() {
         return httpConfigFile;
     }
 
@@ -168,15 +167,6 @@ public class WebServer implements Serializable {
 
     public String getErrorStatus() {
         return errorStatus;
-    }
-
-    /**
-     * The user friendly state wording.
-     *
-     * @return the state e.g. STOPPED instead of the state name which is JVM_STOPPED.
-     */
-    public String getStateLabel() {
-        return state.toStateLabel();
     }
 
     public Group getParentGroup() {

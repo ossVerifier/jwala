@@ -6,7 +6,6 @@ import com.cerner.jwala.common.domain.model.group.History
 import com.cerner.jwala.common.domain.model.id.Identifier
 import com.cerner.jwala.common.domain.model.jvm.Jvm
 import com.cerner.jwala.common.domain.model.jvm.JvmState
-import com.cerner.jwala.common.domain.model.path.FileSystemPath
 import com.cerner.jwala.common.domain.model.path.Path
 import com.cerner.jwala.common.domain.model.resource.ResourceGroup
 import com.cerner.jwala.common.domain.model.webserver.WebServer
@@ -48,7 +47,7 @@ println f.exists()
 
     private void createTestJvmsAndWebServers(HashSet<Group> groupHashSet) {
         webServer = new WebServer(new Identifier<WebServer>(1L), groupHashSet, "Apache2.4", "localhost", 80, 443,
-                new Path("/statusPath"), new FileSystemPath("D:/jwala/app/data/httpd//httpd.conf"),
+                new Path("/statusPath"), new Path("D:/jwala/app/data/httpd//httpd.conf"),
                 new Path("./"), new Path("htdocs"), WebServerReachableState.WS_UNREACHABLE, "");
         jvm = new Jvm(new Identifier<Jvm>(11L), "tc1", "someHostGenerateMe", groupHashSet, 11010, 11011, 11012, -1, 11013,
                 new Path("/statusPath"), "EXAMPLE_OPTS=%someEvn%/someVal", JvmState.JVM_STOPPED, "", null, null, null, null)
@@ -65,7 +64,7 @@ println f.exists()
 
     private void createTestJvmsAndWebServers(HashSet<Group> groupHashSet, Group group) {
         webServer = new WebServer(new Identifier<WebServer>(1L), "localhost", "Apache2.4", 80, 443,
-                new Path("/statusPath"), new FileSystemPath("D:/jwala/app/data/httpd//httpd.conf"),
+                new Path("/statusPath"), new Path("D:/jwala/app/data/httpd//httpd.conf"),
                 new Path("./"), new Path("htdocs"), WebServerReachableState.WS_UNREACHABLE, "", group);
         jvm = new Jvm(new Identifier<Jvm>(11L), "tc1", "someHostGenerateMe", groupHashSet, group, 11010, 11011, 11012, -1, 11013,
                 new Path("/statusPath"), "EXAMPLE_OPTS=%someEvn%/someVal", JvmState.JVM_STOPPED, "", null, null, null)

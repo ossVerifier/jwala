@@ -3,7 +3,6 @@ package com.cerner.jwala.ws.rest.v1.service.webserver.impl;
 import com.cerner.jwala.common.domain.model.fault.FaultType;
 import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.id.Identifier;
-import com.cerner.jwala.common.domain.model.path.FileSystemPath;
 import com.cerner.jwala.common.domain.model.path.Path;
 import com.cerner.jwala.common.domain.model.resource.ResourceGroup;
 import com.cerner.jwala.common.domain.model.resource.ResourceTemplateMetaData;
@@ -59,7 +58,7 @@ import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.*;
 
 /**
- * @author horspe00
+ *
  */
 @RunWith(MockitoJUnitRunner.class)
 public class WebServerServiceRestImplTest {
@@ -68,7 +67,7 @@ public class WebServerServiceRestImplTest {
     private static final String name2 = "webserverName2";
     private static final String host = "localhost";
     private static final Path statusPath = new Path("/statusPath");
-    private static final FileSystemPath httpConfigFile = new FileSystemPath("d:/some-dir/httpd.conf");
+    private static final Path httpConfigFile = new Path("d:/some-dir/httpd.conf");
     private static final Path SVR_ROOT = new Path("./");
     private static final Path DOC_ROOT = new Path("htdocs");
     private static final List<WebServer> webServerList = createWebServerList();
@@ -315,7 +314,7 @@ public class WebServerServiceRestImplTest {
     public void testGetWebServersByGroup() {
         final List<WebServer> webServers = new ArrayList<>();
         webServers.add(new WebServer(null, new ArrayList<Group>(), "test", null, null, null, new Path("/statusPath"),
-                new FileSystemPath("d:/some-dir/httpd.conf"), SVR_ROOT, DOC_ROOT, WebServerReachableState.WS_UNREACHABLE,
+                new Path("d:/some-dir/httpd.conf"), SVR_ROOT, DOC_ROOT, WebServerReachableState.WS_UNREACHABLE,
                 null));
 
         final Identifier<Group> groupId = new Identifier<>("1");

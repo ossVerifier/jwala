@@ -1,6 +1,8 @@
 package com.cerner.jwala.common;
 
 import org.springframework.stereotype.Component;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -17,7 +19,7 @@ import java.util.jar.JarFile;
  */
 @Component
 public class FileUtility {
-
+    private static final Logger LOGGER = LoggerFactory.getLogger(FileUtility.class);
     /**
      * Unzips the file to the specified destination
      * @param destination the destination e.g. c:/scratch
@@ -27,15 +29,15 @@ public class FileUtility {
         if (!destination.exists() && !destination.mkdir()) {
             throw new FileUtilityException("Failed to create zip file destination directory \"" + destination + "\"!");
         }
-
+        JarFile jarFile = null;
         try {
-            final JarFile jarFile = new JarFile(zipFile);
+            jarFile = new JarFile(zipFile);
             final Enumeration entries = jarFile.entries();
             while (entries.hasMoreElements()) {
                 final JarEntry jarEntry = (JarEntry) entries.nextElement();
                 final File f = new File(destination + File.separator + jarEntry.getName());
                 if (jarEntry.isDirectory()) {
-                    f.mkdir();
+                    boolean created = f.mkdir();
                     continue;
                 }
                 final InputStream in = jarFile.getInputStream(jarEntry);
@@ -48,6 +50,15 @@ public class FileUtility {
             }
         } catch (final IOException e) {
             throw new FileUtilityException("Failed to unpack " + zipFile.getAbsolutePath() + "!", e);
+        }finally {
+            if(jarFile!=null){
+                try {
+                    jarFile.close();
+                }catch (IOException ioe){
+                    LOGGER.info("Error closing jar",ioe);
+                }
+            }
+
         }
     }
 

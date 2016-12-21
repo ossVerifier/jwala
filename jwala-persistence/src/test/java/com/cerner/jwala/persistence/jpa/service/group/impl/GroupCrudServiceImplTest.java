@@ -6,7 +6,6 @@ import com.cerner.jwala.common.domain.model.fault.FaultType;
 import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
-import com.cerner.jwala.common.domain.model.path.FileSystemPath;
 import com.cerner.jwala.common.domain.model.path.Path;
 import com.cerner.jwala.common.domain.model.user.User;
 import com.cerner.jwala.common.domain.model.webserver.WebServer;
@@ -141,7 +140,7 @@ public class GroupCrudServiceImplTest {
     @Test
     public void testLinkWebServer() {
         WebServer webServer = new WebServer(new Identifier<WebServer>(1111L), new HashSet<Group>(), "testWebServer", "testHost",
-                101, 102, new Path("./statusPath"), new FileSystemPath("./httpdConfPath"), new Path("./svrRootPath"),
+                101, 102, new Path("./statusPath"), new Path("./httpdConfPath"), new Path("./svrRootPath"),
                 new Path("./docRoot"), WebServerReachableState.WS_UNREACHABLE, StringUtils.EMPTY);
         webServer = webServerCrudService.createWebServer(webServer, "testGroupCrud");
         groupCrudService.linkWebServer(webServer);

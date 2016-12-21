@@ -33,8 +33,8 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
     @Override
     public void distributeJdk(final String hostname) {
         LOGGER.info("Start deploy jdk for {}", hostname);
-        String jdkDir = ApplicationProperties.get("remote.jwala.java.home");
-        String binaryDeployDir = ApplicationProperties.get("remote.jwala.java.rootDir");
+        String jdkDir = ApplicationProperties.get("remote.jwala.java.rootDir");
+        String binaryDeployDir = ApplicationProperties.get("remote.jwala.home");
         if (!jdkDir.isEmpty()) {
             distributeBinary(hostname, jdkDir, binaryDeployDir, "");
         } else {
@@ -46,10 +46,10 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
     @Override
     public void distributeTomcat(final String hostname) {
         LOGGER.info("Start deploy tomcat binaries for {}", hostname);
-        String tomcatDir = ApplicationProperties.get("remote.paths.tomcat.core");
-        String binaryDeployDir = ApplicationProperties.get("remote.paths.tomcat.root.core");
+        String tomcatDir = ApplicationProperties.get("remote.paths.tomcat.rootDir");
+        String binaryDeployDir = ApplicationProperties.get("remote.jwala.home");
         if (tomcatDir != null && !tomcatDir.isEmpty()) {
-            distributeBinary(hostname, tomcatDir, binaryDeployDir, "");
+                distributeBinary(hostname, tomcatDir, binaryDeployDir, "");
         } else {
             LOGGER.warn("Tomcat dir location is null or empty {}", tomcatDir);
         }

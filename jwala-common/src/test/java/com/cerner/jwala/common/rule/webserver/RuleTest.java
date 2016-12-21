@@ -6,7 +6,6 @@ import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
 import com.cerner.jwala.common.domain.model.jvm.JvmState;
-import com.cerner.jwala.common.domain.model.path.FileSystemPath;
 import com.cerner.jwala.common.domain.model.path.Path;
 import com.cerner.jwala.common.domain.model.webserver.WebServer;
 import com.cerner.jwala.common.domain.model.webserver.WebServerReachableState;
@@ -52,7 +51,7 @@ public class RuleTest {
                              new JvmIdRule(jvmIds[0]),
                              new JvmIdsRule(new HashSet<Identifier<Jvm>>(Arrays.<Identifier<Jvm>>asList(jvmIds))),
                              new JvmStateRule(JvmState.JVM_STOPPED),
-                             new HttpConfigFileRule(mock(FileSystemPath.class)),
+                             new HttpConfigFileRule(mock(Path.class)),
                              new WebServerIdRule(new Identifier<WebServer>(1L)),
                              new WebServerReachableStateRule(WebServerReachableState.WS_UNREACHABLE)};
 

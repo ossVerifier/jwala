@@ -8,7 +8,6 @@ import java.util.HashSet;
 import com.cerner.jwala.common.domain.model.fault.FaultType;
 import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.id.Identifier;
-import com.cerner.jwala.common.domain.model.path.FileSystemPath;
 import com.cerner.jwala.common.domain.model.path.Path;
 import com.cerner.jwala.common.domain.model.webserver.WebServer;
 import com.cerner.jwala.common.domain.model.webserver.WebServerReachableState;
@@ -29,7 +28,7 @@ public class UpdateWebServerRequest implements Serializable, Request {
     private final Path newStatusPath;
     private final Path newSvrRoot;
     private final Path newDocRoot;
-    private final FileSystemPath newHttpConfigFile;
+    private final Path newHttpConfigFile;
     private final WebServerReachableState state;
     private final String errorStatus;
 
@@ -40,7 +39,7 @@ public class UpdateWebServerRequest implements Serializable, Request {
                                   final Integer theNewPort,
                                   final Integer theNewHttpsPort,
                                   final Path theNewStatusPath,
-                                  final FileSystemPath theNewHttpConfigFile,
+                                  final Path theNewHttpConfigFile,
                                   final Path theSvrRoot,
                                   final Path theDocRoot,
                                   final WebServerReachableState state,
@@ -87,7 +86,7 @@ public class UpdateWebServerRequest implements Serializable, Request {
         return newStatusPath;
     }
 
-    public FileSystemPath getNewHttpConfigFile() {
+    public Path getNewHttpConfigFile() {
         return newHttpConfigFile;
     }
 

@@ -4,7 +4,6 @@ import org.junit.Test;
 
 import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.id.Identifier;
-import com.cerner.jwala.common.domain.model.path.FileSystemPath;
 import com.cerner.jwala.common.domain.model.path.Path;
 import com.cerner.jwala.common.domain.model.uri.UriBuilder;
 import com.cerner.jwala.common.domain.model.webserver.WebServer;
@@ -22,7 +21,7 @@ public class WebServerTest {
     private static final String HOST = "host";
     private static final String NAME = "name";
     private static final Path STATUS_PATH = new Path("/the status path");
-    private static final FileSystemPath HTTP_CONFIG_FILE = new FileSystemPath("d:/some-dir/httpd.conf");
+    private static final Path HTTP_CONFIG_FILE = new Path("d:/some-dir/httpd.conf");
     private static final Integer port = 10000;
     private static final Integer httpsPort = 20000;
     private static final Long id = 1L;
