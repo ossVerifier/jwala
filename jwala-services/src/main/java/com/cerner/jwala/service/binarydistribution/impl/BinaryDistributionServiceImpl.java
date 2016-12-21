@@ -2,6 +2,7 @@ package com.cerner.jwala.service.binarydistribution.impl;
 
 import com.cerner.jwala.common.domain.model.fault.FaultType;
 import com.cerner.jwala.common.domain.model.resource.EntityType;
+import com.cerner.jwala.common.exception.ApplicationException;
 import com.cerner.jwala.common.exception.InternalErrorException;
 import com.cerner.jwala.common.properties.ApplicationProperties;
 import com.cerner.jwala.exception.CommandFailureException;
@@ -61,8 +62,8 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
         String wrietLockResourceName = hostname + "-" + EntityType.WEB_SERVER.toString();
         try {
             binaryDistributionLockManager.writeLock(wrietLockResourceName);
-            String webServerDir = ApplicationProperties.get("remote.paths.apache.httpd");
-            String binaryDeployDir =  ApplicationProperties.get("remote.paths.root.httpd");
+            String webServerDir = ApplicationProperties.get("remote.paths.apache.httpd.rootDir");
+            String binaryDeployDir =  ApplicationProperties.get("remote.jwala.home");
             if (webServerDir != null && !webServerDir.isEmpty()) {
                 distributeBinary(hostname, webServerDir, binaryDeployDir, APACHE_EXCLUDE);
             } else {
@@ -96,6 +97,7 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
             }
         } else {
             LOGGER.warn("Binary deploy location not provided value is {}", binaryDeployDir);
+            throw new ApplicationException("Binary deploy location not provided value is "+ binaryDeployDir);
         }
     }
 
