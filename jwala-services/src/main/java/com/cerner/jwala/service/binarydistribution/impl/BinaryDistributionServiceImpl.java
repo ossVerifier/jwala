@@ -34,7 +34,7 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
     @Override
     public void distributeJdk(final String hostname) {
         LOGGER.info("Start deploy jdk for {}", hostname);
-        String jdkDir = ApplicationProperties.get("remote.jwala.java.rootDir");
+        String jdkDir = ApplicationProperties.get("remote.jwala.java.root.dir");
         String binaryDeployDir = ApplicationProperties.get("remote.jwala.home");
         if (!jdkDir.isEmpty()) {
             distributeBinary(hostname, jdkDir, binaryDeployDir, "");
@@ -47,7 +47,7 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
     @Override
     public void distributeTomcat(final String hostname) {
         LOGGER.info("Start deploy tomcat binaries for {}", hostname);
-        String tomcatDir = ApplicationProperties.get("remote.paths.tomcat.rootDir");
+        String tomcatDir = ApplicationProperties.get("remote.paths.tomcat.root.dir");
         String binaryDeployDir = ApplicationProperties.get("remote.jwala.home");
         if (tomcatDir != null && !tomcatDir.isEmpty()) {
                 distributeBinary(hostname, tomcatDir, binaryDeployDir, "");
@@ -62,7 +62,7 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
         String wrietLockResourceName = hostname + "-" + EntityType.WEB_SERVER.toString();
         try {
             binaryDistributionLockManager.writeLock(wrietLockResourceName);
-            String webServerDir = ApplicationProperties.get("remote.paths.apache.httpd.rootDir");
+            String webServerDir = ApplicationProperties.get("remote.paths.apache.httpd.root.dir");
             String binaryDeployDir =  ApplicationProperties.get("remote.jwala.home");
             if (webServerDir != null && !webServerDir.isEmpty()) {
                 distributeBinary(hostname, webServerDir, binaryDeployDir, APACHE_EXCLUDE);
