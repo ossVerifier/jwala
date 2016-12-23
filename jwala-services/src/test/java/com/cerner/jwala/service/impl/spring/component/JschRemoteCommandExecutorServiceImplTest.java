@@ -9,7 +9,6 @@ import com.cerner.jwala.common.exec.RemoteSystemConnection;
 import com.cerner.jwala.exception.ExitCodeNotAvailableException;
 import com.cerner.jwala.service.RemoteCommandReturnInfo;
 import com.jcraft.jsch.*;
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.pool2.impl.GenericKeyedObjectPool;
 import org.junit.Before;
 import org.junit.Test;
@@ -26,9 +25,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 /**
- * Tests for {@link JschRemoteCommandExecutorServiceImpl}.
+ * Tests for {@link JschRemoteCommandExecutorServiceImpl}
  *
- * Created by Jedd Cuison on 4/18/2016.
+ * Created by Jedd Cuison on 4/18/2016
  */
 public class JschRemoteCommandExecutorServiceImplTest {
 
@@ -129,33 +128,6 @@ public class JschRemoteCommandExecutorServiceImplTest {
 
         assertEquals("some output", returnInfo.standardOuput);
         assertEquals("some err output", returnInfo.errorOupout);
-    }
-
-    @Test (expected = InternalErrorException.class)
-    public void testReadRemoteOutputFail() throws Exception {
-        InputStream mockInputStream = mock(InputStream.class);
-        ChannelShell mockChannelShell = mock(ChannelShell.class);
-        ChannelSessionKey mockChannelSessionKey = mock(ChannelSessionKey.class);
-        when(mockInputStream.read()).thenReturn(-1);
-        jschRemoteCommandExecutorService.readRemoteOutput(mockInputStream, mockChannelShell, mockChannelSessionKey);
-    }
-
-    @Test
-    public void testReadRemoteOutputLargeString() throws Exception {
-        ChannelShell mockChannelShell = mock(ChannelShell.class);
-        ChannelSessionKey mockChannelSessionKey = mock(ChannelSessionKey.class);
-        String testString = StringUtils.repeat("a", 18000);
-        InputStream inputStream = new ByteArrayInputStream(testString.getBytes());
-        assertEquals(16399, jschRemoteCommandExecutorService.readRemoteOutput(inputStream, mockChannelShell, mockChannelSessionKey).length());
-    }
-
-    @Test (expected = InternalErrorException.class)
-    public void testReadRemoteOutputSmallString() throws Exception {
-        ChannelShell mockChannelShell = mock(ChannelShell.class);
-        ChannelSessionKey mockChannelSessionKey = mock(ChannelSessionKey.class);
-        String testString = "a";
-        InputStream inputStream = new ByteArrayInputStream(testString.getBytes());
-        jschRemoteCommandExecutorService.readRemoteOutput(inputStream, mockChannelShell, mockChannelSessionKey);
     }
 
     @Test (expected = ExitCodeNotAvailableException.class)

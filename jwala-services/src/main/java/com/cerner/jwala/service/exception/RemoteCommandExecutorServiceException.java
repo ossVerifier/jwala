@@ -15,4 +15,8 @@ public class RemoteCommandExecutorServiceException extends RuntimeException {
         super(throwable);
     }
 
+    public RemoteCommandExecutorServiceException(final String msg, final Throwable t) {
+        super(msg, t);
+    }
+
 }

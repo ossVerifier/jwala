@@ -2,10 +2,7 @@ package com.cerner.jwala.service.impl.spring.component;
 
 import com.cerner.jwala.commandprocessor.jsch.impl.ChannelSessionKey;
 import com.cerner.jwala.commandprocessor.jsch.impl.ChannelType;
-import com.cerner.jwala.common.domain.model.fault.FaultType;
 import com.cerner.jwala.common.domain.model.ssh.DecryptPassword;
-import com.cerner.jwala.common.exception.ApplicationException;
-import com.cerner.jwala.common.exception.InternalErrorException;
 import com.cerner.jwala.common.exec.ExecReturnCode;
 import com.cerner.jwala.common.exec.RemoteExecCommand;
 import com.cerner.jwala.common.exec.RemoteSystemConnection;
@@ -24,8 +21,8 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
+import java.text.MessageFormat;
 
 /**
  * Implementation of {@link RemoteCommandExecutorService} using JSCH.
@@ -38,7 +35,8 @@ public class JschRemoteCommandExecutorServiceImpl implements RemoteCommandExecut
     private static final Logger LOGGER = LoggerFactory.getLogger(JschRemoteCommandExecutorServiceImpl.class);
     private static final int CHANNEL_CONNECT_TIMEOUT = 60000;
     private static final int CHANNEL_BORROW_LOOP_WAIT_TIME = 180000;
-    private static final int REMOTE_OUTPUT_STREAM_MAX_WAIT_TIME = 180000;
+    private static final int SHELL_REMOTE_OUTPUT_READ_WAIT_TIME = 180000;
+    private static final int EXEC_REMOTE_OUTPUT_READ_WAIT_TIME = 3000;
     private static final String EXIT_CODE_START_MARKER = "EXIT_CODE";
     private static final String EXIT_CODE_END_MARKER = "***";
 
@@ -71,55 +69,40 @@ public class JschRemoteCommandExecutorServiceImpl implements RemoteCommandExecut
         ChannelSessionKey channelSessionKey = new ChannelSessionKey(remoteExecCommand.getRemoteSystemConnection(), ChannelType.SHELL);
         LOGGER.debug("channel session key = {}", channelSessionKey);
 
-        InputStream in = null;
-        OutputStream out = null;
-
-        final long startTime = System.currentTimeMillis();
+        InputStream in;
+        OutputStream out;
 
         try {
-            while ((channel == null || !channel.isConnected()) &&
-                    (System.currentTimeMillis() - startTime) < CHANNEL_BORROW_LOOP_WAIT_TIME) {
-                LOGGER.debug("borrowing a channel...");
-                channel = (ChannelShell) channelPool.borrowObject(channelSessionKey);
-                if (channel != null) {
-                    LOGGER.debug("channel {} borrowed", channel.getId());
-                    in = channel.getInputStream();
-                    out = channel.getOutputStream();
-                    if (!channel.isConnected()) {
-                        try {
-                            LOGGER.debug("channel {} connecting...");
-                            channel.connect(CHANNEL_CONNECT_TIMEOUT);
-                            LOGGER.debug("channel {} connected!", channel.getId());
-                        } catch (final JSchException jsche) {
-                            LOGGER.error("Borrowed channel {} connection failed! Invalidating the channel!",
-                                    channel.getId(), jsche);
-                            channelPool.invalidateObject(channelSessionKey, channel);
-                        }
-                    } else {
-                        LOGGER.debug("Channel {} already connected!", channel.getId());
-                    }
-                }
+
+            try {
+                channel = getChannelShell(channelSessionKey);
+            } catch (final Exception e) {
+                throw new RemoteCommandExecutorServiceException("Failed to get channel!", e);
             }
 
-            // Still no channel to borrow ? Let's just give up and throw in the towel!
-            if (channel == null) {
-                final RemoteCommandExecutorServiceException e =
-                        new RemoteCommandExecutorServiceException("Was not able to borrow a channel!");
-                LOGGER.error(e.getMessage());
-                throw e;
-            }
+            in = channel.getInputStream();
+            out = channel.getOutputStream();
 
-            final PrintStream commandStream = new PrintStream(out, true);
-            commandStream.println(remoteExecCommand.getCommand().toCommandString());
-            commandStream.println("echo 'EXIT_CODE='$?***");
-            commandStream.println("echo -n -e '\\xff'");
+            out.write(remoteExecCommand.getCommand().toCommandString().getBytes(StandardCharsets.UTF_8));
+            out.write("\r\n".getBytes(StandardCharsets.UTF_8));
+            out.write("echo 'EXIT_CODE='$?***".getBytes(StandardCharsets.UTF_8));
+            out.write("\r\n".getBytes(StandardCharsets.UTF_8));
+            out.write("echo -n -e '\\xff'".getBytes(StandardCharsets.UTF_8));
+            out.write("\r\n".getBytes(StandardCharsets.UTF_8));
+            out.flush();
 
-            String commandOutputStr = readRemoteOutput(in, channel, channelSessionKey);
+            String commandOutputStr;
+            LOGGER.debug("Reading remote output ...");
+            commandOutputStr = readRemoteOutput(in, (char) 0xff, SHELL_REMOTE_OUTPUT_READ_WAIT_TIME);
+            LOGGER.debug("****** output: start ******");
+            LOGGER.debug(commandOutputStr);
+            LOGGER.debug("****** output: end ******");
+
             int retCode = parseReturnCode(commandOutputStr, remoteExecCommand).getReturnCode();
             return new RemoteCommandReturnInfo(retCode, commandOutputStr, StringUtils.EMPTY);
-        } catch (final Exception e) {
+        } catch (final IOException e) {
             throw new RemoteCommandExecutorServiceException(e);
-        } finally {
+        }  finally {
             if (channel != null) {
                 channelPool.returnObject(channelSessionKey, channel);
                 LOGGER.debug("channel {} returned", channel.getId());
@@ -128,7 +111,46 @@ public class JschRemoteCommandExecutorServiceImpl implements RemoteCommandExecut
     }
 
     /**
-     * Execute a command directly (do not open a shell) then exit immediately.
+     * Get a {@link ChannelShell}
+     * @param channelSessionKey the session key that identifies the channel
+     * @return {@link ChannelShell}
+     * @throws Exception thrown by borrowObject and invalidateObject
+     */
+    private ChannelShell getChannelShell(final ChannelSessionKey channelSessionKey) throws Exception {
+        final long startTime = System.currentTimeMillis();
+        Channel channel;
+        do {
+            LOGGER.debug("borrowing a channel...");
+            channel = channelPool.borrowObject(channelSessionKey);
+            if (channel != null) {
+                LOGGER.debug("channel {} borrowed", channel.getId());
+                if (!channel.isConnected()) {
+                    try {
+                        LOGGER.debug("channel {} connecting...", channel.getId());
+                        channel.connect(CHANNEL_CONNECT_TIMEOUT);
+                        LOGGER.debug("channel {} connected!", channel.getId());
+                    } catch (final JSchException jsche) {
+                        LOGGER.error("Borrowed channel {} connection failed! Invalidating the channel...",
+                                channel.getId(), jsche);
+                        channelPool.invalidateObject(channelSessionKey, channel);
+                    }
+                } else {
+                    LOGGER.debug("Channel {} already connected!", channel.getId());
+                }
+            }
+
+            if ((channel == null || !channel.isConnected()) && (System.currentTimeMillis() - startTime) > CHANNEL_BORROW_LOOP_WAIT_TIME) {
+                final String errMsg = MessageFormat.format("Failed to get a channel within {0} ms! Aborting channel acquisition!",
+                        CHANNEL_BORROW_LOOP_WAIT_TIME);
+                LOGGER.error(errMsg);
+                throw new RemoteCommandExecutorServiceException(errMsg);
+            }
+        } while (channel == null || !channel.isConnected());
+        return (ChannelShell) channel;
+    }
+
+    /**
+     * Execute a command directly (do not open a shell) then exit immediately
      *
      * @param remoteExecCommand wrapper that contains command details
      * @return {@link RemoteCommandReturnInfo}
@@ -158,37 +180,16 @@ public class JschRemoteCommandExecutorServiceImpl implements RemoteCommandExecut
             LOGGER.debug("channel {} connected!", channel.getId());
 
             LOGGER.debug("reading remote output...");
-            final StringBuilder remoteOutputStringBuilder = new StringBuilder();
-            final StringBuilder remoteErrorStringBuilder = new StringBuilder();
+            commandOutputStr = readRemoteOutput(remoteOutput, null, EXEC_REMOTE_OUTPUT_READ_WAIT_TIME);
+            LOGGER.debug("remote output = {}", commandOutputStr);
 
-            int readByte;
-
-            // read output
-            do {
-                readByte = remoteOutput.read();
-                if (readByte != -1) {
-                    remoteOutputStringBuilder.append((char) readByte);
-                }
-            } while (!channel.isClosed() && readByte != -1);
-
-            // read error
             if (channel.getExitStatus() != 0) {
-                readByte = remoteError.read();
-                while (readByte != -1) {
-                    remoteErrorStringBuilder.append((char) readByte);
-                    readByte = remoteError.read();
-                }
+                errorOutputStr = readRemoteOutput(remoteError, null, EXEC_REMOTE_OUTPUT_READ_WAIT_TIME);
+                LOGGER.debug("remote error = {}", errorOutputStr);
             }
 
             retCode = new ExecReturnCode(channel.getExitStatus());
             LOGGER.debug("exit code = {}", retCode.getReturnCode());
-
-            commandOutputStr = remoteOutputStringBuilder.toString();
-            LOGGER.debug("remote output = {}", commandOutputStr);
-
-            errorOutputStr = remoteErrorStringBuilder.toString();
-            LOGGER.debug("remote error = {}", errorOutputStr);
-
         } catch (final JSchException | IOException e) {
             LOGGER.error("Error processing exec command!", e);
             retCode = new ExecReturnCode(-1);
@@ -209,83 +210,35 @@ public class JschRemoteCommandExecutorServiceImpl implements RemoteCommandExecut
     }
 
     /**
-     * Read remote output stream.
-     *
-     * @param in                the input stream
-     * @param channel
-     * @param channelSessionKey
+     * Reads data streamed from a remote connection
+     * @param remoteOutput the inputstream where the remote connection will stream data to
+     * @param dataEndMarker a marker which tells the method to stop reading from the inputstream. If this is null
+     *            then the method will try to read data from the input stream until read timeout is reached.
+     * @param timeout the length of time in which to wait for incoming data from the stream
+     * @return the data streamed from the remote connection
      * @throws IOException
      */
-    protected String readRemoteOutput(InputStream in, final ChannelShell channel, ChannelSessionKey channelSessionKey) {
-        boolean timeout = false;
-        int readByte = 0;
-        readByte = readByte(in);
-        LOGGER.debug("Reading remote output ...");
-        StringBuilder inStringBuilder = new StringBuilder();
+    private String readRemoteOutput(final InputStream remoteOutput, final Character dataEndMarker, final long timeout) throws IOException {
+        final StringBuilder remoteOutputStringBuilder = new StringBuilder();
+        long startTime = System.currentTimeMillis();
+        while (true) {
+            if (remoteOutput.available() != 0) {
+                char readChar = (char) remoteOutput.read();
+                remoteOutputStringBuilder.append(readChar);
+                startTime = System.currentTimeMillis();
 
-        final long startTime = System.currentTimeMillis();
-        while (readByte != 0xff) {
-            if ((System.currentTimeMillis() - startTime) > REMOTE_OUTPUT_STREAM_MAX_WAIT_TIME) {
-                timeout = true;
+                if (dataEndMarker != null && readChar == dataEndMarker) {
+                    LOGGER.debug("Read EOF character '{}', stopping remote output reading...", readChar);
+                    return remoteOutputStringBuilder.toString();
+                }
+            }
+
+            if ((System.currentTimeMillis() - startTime) > timeout) {
+                LOGGER.warn("Remote output reading timeout!");
                 break;
             }
-            if (readByte != -1) {
-                inStringBuilder.append((char) readByte);
-            } else {
-                LOGGER.debug("Reached the end of file reading the stream");
-                LOGGER.debug("Channel is closed");
-                LOGGER.debug("Channel exit status {}", channel.getExitStatus());
-                LOGGER.debug("Channel being returned to the pool");
-                channelPool.returnObject(channelSessionKey, channel);
-                throw new InternalErrorException(FaultType.CONTROL_OPERATION_UNSUCCESSFUL, "Input stream to channel ended before return value received");
-            }
-            int length = inStringBuilder.length();
-            if (length > 16384) {
-                LOGGER.error("OOM found large string of length {} :: {}", length, inStringBuilder.toString());
-                inStringBuilder.append(EXIT_CODE_START_MARKER);
-                inStringBuilder.append("=1");
-                inStringBuilder.append(EXIT_CODE_END_MARKER);
-                String result = inStringBuilder.toString();
-                inStringBuilder = null;
-                return result;
-            }
-
-            readByte = readByte(in);
-
-            if (readByte == -1) {
-                LOGGER.error("Read -1 from shell stream - closing connection for unexpected output");
-            } else if (readByte == 255) {
-                LOGGER.debug("Received expected value of 0xff (255) from shell stream - done processing command");
-            }
         }
-
-        if (timeout) {
-            LOGGER.error("remote output reading timeout!");
-            // Don't throw an exception here like it was suggested before since this simply means that there's no 'EOL'
-            // char coming in from the stream so as such just don't do anything with the status. If the status is
-            // in the "ING" state e.g. stopping, then let it hang there. If ever we really want to throw an error
-            // It has to be a timeout error and it shouldn't interfere on how the UI functions (like the states should
-            // still be displayed not missing in the case of just throwing and error from here)
-        } else {
-            LOGGER.debug("****** output: start ******");
-            LOGGER.debug(inStringBuilder.toString());
-            LOGGER.debug("****** output: end ******");
-        }
-
-        String result = inStringBuilder.toString();
-        inStringBuilder = null;
-        return result;
-    }
-
-    private int readByte(InputStream in) {
-        // TODO: Find a way how to timeout from Inputstream read. The timeout mechanism above may not work when read is blocking.
-        int readByte;
-        try {
-            readByte = in.read();
-        } catch (IOException e) {
-            throw new ApplicationException(e);
-        }
-        return readByte;
+        return remoteOutputStringBuilder.toString();
     }
 
     /**
