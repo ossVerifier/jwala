@@ -91,9 +91,8 @@ public class JschRemoteCommandExecutorServiceImpl implements RemoteCommandExecut
             out.write("\r\n".getBytes(StandardCharsets.UTF_8));
             out.flush();
 
-            String commandOutputStr;
             LOGGER.debug("Reading remote output ...");
-            commandOutputStr = readRemoteOutput(in, (char) 0xff, SHELL_REMOTE_OUTPUT_READ_WAIT_TIME);
+            final String commandOutputStr = readRemoteOutput(in, (char) 0xff, SHELL_REMOTE_OUTPUT_READ_WAIT_TIME);
             LOGGER.debug("****** output: start ******");
             LOGGER.debug(commandOutputStr);
             LOGGER.debug("****** output: end ******");
