@@ -205,11 +205,8 @@ public class ResourceServiceImpl implements ResourceService {
     @Override
     public ResourceGroup generateResourceGroup() {
         List<Group> groups = groupPersistenceService.getGroups();
-        List<Group> groupsToBeAdded = null;
+        List<Group> groupsToBeAdded = new ArrayList<>(groups.size());
         for (Group group : groups) {
-            if (groupsToBeAdded == null) {
-                groupsToBeAdded = new ArrayList<>(groups.size());
-            }
             List<Jvm> jvms = jvmPersistenceService.getJvmsAndWebAppsByGroupName(group.getName());
             List<WebServer> webServers = webServerPersistenceService.getWebServersByGroupName(group.getName());
             List<Application> applications = applicationPersistenceService.findApplicationsBelongingTo(group.getName());
@@ -341,17 +338,17 @@ public class ResourceServiceImpl implements ResourceService {
         if (groupName != null && !groupName.isEmpty() && fileName != null && !fileName.isEmpty()) {
             if (jvmName != null && !jvmName.isEmpty()) {
                 // Search for file in jvms
-                LOGGER.debug("searching for resource {} in group {} and jvm {}", fileName, groupName, jvmName);
+                LOGGER.debug("Searching for resource {} in group {} and jvm {}", fileName, groupName, jvmName);
                 resultBoolean = groupPersistenceService.checkGroupJvmResourceFileName(groupName, fileName) ||
                         jvmPersistenceService.checkJvmResourceFileName(groupName, jvmName, fileName);
             } else if (webappName != null && !webappName.isEmpty()) {
                 // Search for file in webapps
-                LOGGER.debug("searching for resource {} in group {} and webapp {}", fileName, groupName, webappName);
+                LOGGER.debug("Searching for resource {} in group {} and webapp {}", fileName, groupName, webappName);
                 resultBoolean = groupPersistenceService.checkGroupAppResourceFileName(groupName, fileName) ||
                         applicationPersistenceService.checkAppResourceFileName(groupName, webappName, fileName);
             } else if (webserverName != null && !webserverName.isEmpty()) {
                 // Search for file in webservers
-                LOGGER.debug("searching for resource {} in group {} and webserver {}", fileName, groupName, webserverName);
+                LOGGER.debug("Searching for resource {} in group {} and webserver {}", fileName, groupName, webserverName);
                 resultBoolean = groupPersistenceService.checkGroupWebServerResourceFileName(groupName, fileName) ||
                         webServerPersistenceService.checkWebServerResourceFileName(groupName, webserverName, fileName);
             }
@@ -361,6 +358,13 @@ public class ResourceServiceImpl implements ResourceService {
         result.put("exists", Boolean.toString(resultBoolean));
         LOGGER.debug("result: {}", result.toString());
         return result;
+    }
+
+    @Override
+    public boolean checkJvmFileExists(String groupName, String jvmName, String fileName) {
+        LOGGER.debug("Searching for resource {} in group {} and jvm {}", fileName, groupName, jvmName);
+        return groupPersistenceService.checkGroupJvmResourceFileName(groupName, fileName) ||
+                jvmPersistenceService.checkJvmResourceFileName(groupName, jvmName, fileName);
     }
 
     @Override

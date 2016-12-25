@@ -6,7 +6,7 @@ var MainArea = React.createClass({
         }
     },
     render: function() {
-        var content = this.state.hasRole ? <MainTabs/> : <p>Retrieving roles...</p>;
+        var content = this.state.hasRole ? <MainTabs/> : <p></p>;
         return <div className={this.props.className}>
                    <div id="txt"/>
                    <table className="main-area-table">

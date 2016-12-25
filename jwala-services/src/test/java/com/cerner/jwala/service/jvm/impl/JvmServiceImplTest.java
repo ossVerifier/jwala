@@ -40,15 +40,20 @@ import com.cerner.jwala.service.jvm.JvmService;
 import com.cerner.jwala.service.jvm.exception.JvmServiceException;
 import com.cerner.jwala.service.resource.ResourceService;
 import com.cerner.jwala.service.resource.impl.ResourceGeneratorType;
+import com.cerner.jwala.service.resource.impl.ResourceServiceImpl;
 import com.cerner.jwala.service.webserver.component.ClientFactoryHelper;
 import com.jcraft.jsch.JSchException;
+import net.didion.jwnl.dictionary.file_manager.FileManagerImpl;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.tika.mime.MediaType;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Matchers;
 import org.mockito.Mock;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -57,6 +62,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.charset.Charset;
 import java.util.*;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -117,6 +123,8 @@ public class JvmServiceImplTest extends VerificationBehaviorSupport {
 
     private final Map<String, ReentrantReadWriteLock> lockMap = new HashMap<>();
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(JvmServiceImplTest.class);
+
     @Before
     public void setup() {
 
@@ -125,7 +133,7 @@ public class JvmServiceImplTest extends VerificationBehaviorSupport {
         jvmServiceImpl = new JvmServiceImpl(mockJvmPersistenceService, mockGroupService, mockApplicationService,
                 mockMessagingTemplate, mockGroupStateNotificationService, mockResourceService, mockClientFactoryHelper,
                 "/topic/server-states", mockJvmControlService, mockBinaryDistributionService, mockBinaryDistributionLockManager,
-                mockHistoryFacadeService, mockFileUtility);
+                mockHistoryFacadeService, new FileUtility());
         jvmService = jvmServiceImpl;
     }
 
@@ -920,5 +928,31 @@ public class JvmServiceImplTest extends VerificationBehaviorSupport {
         when(mockJvm.getId()).thenReturn(new Identifier<Jvm>(11111L));
         when(mockJvmPersistenceService.findJvmByExactName(anyString())).thenReturn(mockJvm);
         jvmService.generateAndDeployFile("jvmName", "fileName", mockUser);
+    }
+
+    @Test
+    public void testGenerateJvmConfigJar() {
+        Set<Group> groups = new HashSet<Group>() {{
+            add(new Group(Identifier.id(2L, Group.class), "junit-group"));
+        }};
+
+        Jvm jvm = new Jvm(Identifier.id(1L, Jvm.class), "junit-jvm", groups);
+
+        jvmServiceImpl = new JvmServiceImpl(mockJvmPersistenceService, mockGroupService, mockApplicationService,
+                mockMessagingTemplate, mockGroupStateNotificationService, mockResourceService, mockClientFactoryHelper,
+                "/topic/server-states", mockJvmControlService, mockBinaryDistributionService, mockBinaryDistributionLockManager,
+                mockHistoryFacadeService, new FileUtility());
+
+        when(mockJvmPersistenceService.findJvmByExactName(jvm.getJvmName())).thenReturn(jvm);
+        when(mockResourceService.generateResourceFile(anyString(),
+                anyString(),
+                any(ResourceGroup.class),
+                any(Jvm.class),
+                eq(ResourceGeneratorType.TEMPLATE))).thenReturn("some file content");
+        try {
+            jvmServiceImpl.generateJvmConfigJar(jvm);
+        } catch (CommandFailureException e) {
+            LOGGER.error("Failed to generate remote jar.", e);
+        }
     }
 }

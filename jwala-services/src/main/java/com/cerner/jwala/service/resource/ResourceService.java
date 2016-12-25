@@ -87,6 +87,8 @@ public interface ResourceService {
 
     Map<String, String> checkFileExists(String groupName, String jvmName, String webappName, String webserverName, String fileName);
 
+    boolean checkJvmFileExists(String groupName, String jvmName, String fileName);
+
     /**
      * Delete a web server resource.
      *

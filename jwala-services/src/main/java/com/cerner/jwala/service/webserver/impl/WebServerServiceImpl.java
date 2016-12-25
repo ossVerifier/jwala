@@ -37,7 +37,7 @@ import java.util.List;
 public class WebServerServiceImpl implements WebServerService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(WebServerServiceImpl.class);
-    private static final String INSTALL_SERVICE_WSBAT_TEMPLATE_TPL_PATH = "/Install_ServiceWSBatTemplate.tpl";
+    private static final String INSTALL_SERVICE_WSBAT_TEMPLATE_TPL_PATH = "/install-service-http.bat.tpl";
 
     private final WebServerPersistenceService webServerPersistenceService;
 

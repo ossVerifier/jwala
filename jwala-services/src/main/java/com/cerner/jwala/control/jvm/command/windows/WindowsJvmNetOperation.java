@@ -5,6 +5,7 @@ import com.cerner.jwala.common.domain.model.ssh.DecryptPassword;
 import com.cerner.jwala.common.exec.ExecCommand;
 import com.cerner.jwala.common.exec.ShellCommand;
 import com.cerner.jwala.common.properties.ApplicationProperties;
+import com.cerner.jwala.common.properties.PropertyKeys;
 import com.cerner.jwala.control.AemControl;
 import com.cerner.jwala.control.command.ServiceCommandBuilder;
 import org.joda.time.DateTime;
@@ -30,7 +31,8 @@ public enum WindowsJvmNetOperation implements ServiceCommandBuilder {
     START(JvmControlOperation.START) {
         @Override
         public ExecCommand buildCommandForService(final String aServiceName, final String... aParams) {
-            final String scriptAbsolutePath = REMOTE_PATHS_INSTANCES + "/" + aServiceName + "/bin";
+            final String scriptAbsolutePath = REMOTE_PATHS_INSTANCES + "/" + aServiceName +
+                    "/" + ApplicationProperties.getRequired(PropertyKeys.REMOTE_TOMCAT_DIR_NAME) + "/bin";
             return new ShellCommand(
                     cygpathWrapper(START_SCRIPT_NAME, scriptAbsolutePath),
                     quotedServiceName(aServiceName),
@@ -41,7 +43,8 @@ public enum WindowsJvmNetOperation implements ServiceCommandBuilder {
     STOP(JvmControlOperation.STOP) {
         @Override
         public ExecCommand buildCommandForService(final String aServiceName, final String... aParams) {
-            final String scriptAbsolutePath = REMOTE_PATHS_INSTANCES + "/" + aServiceName + "/bin";
+            final String scriptAbsolutePath = REMOTE_PATHS_INSTANCES + "/" + aServiceName +
+                    "/" + ApplicationProperties.getRequired(PropertyKeys.REMOTE_TOMCAT_DIR_NAME) + "/bin";
             return new ShellCommand(
                     cygpathWrapper(STOP_SCRIPT_NAME, scriptAbsolutePath),
                     quotedServiceName(aServiceName),
@@ -80,7 +83,7 @@ public enum WindowsJvmNetOperation implements ServiceCommandBuilder {
 
             return new ExecCommand(
                     cygpathWrapper(DEPLOY_CONFIG_ARCHIVE_SCRIPT_NAME, REMOTE_COMMANDS_USER_SCRIPTS + "/" + aServiceName + "/"),
-                    REMOTE_COMMANDS_USER_SCRIPTS + "/" + aServiceName + "_config.jar",
+                    REMOTE_COMMANDS_USER_SCRIPTS + "/" + aServiceName + ".jar",
                     REMOTE_PATHS_INSTANCES + "/" + aServiceName,
                     REMOTE_JAVA_HOME + "/bin/jar"
             );
@@ -118,8 +121,11 @@ public enum WindowsJvmNetOperation implements ServiceCommandBuilder {
                 quotedUsername = "";
             }
             final String decryptedPassword = encryptedPassword != null && encryptedPassword.length() > 0 ? new DecryptPassword().decrypt(encryptedPassword) : "";
-            List<String> formatStrings = Arrays.asList(cygpathWrapper(INSTALL_SERVICE_SCRIPT_NAME, REMOTE_COMMANDS_USER_SCRIPTS + "/" + aServiceName + "/"),
-                    aServiceName, REMOTE_PATHS_INSTANCES);
+            List<String> formatStrings = Arrays.asList(cygpathWrapper(INSTALL_SERVICE_SCRIPT_NAME,
+                    REMOTE_COMMANDS_USER_SCRIPTS + "/" + aServiceName + "/"),
+                    aServiceName,
+                    REMOTE_PATHS_INSTANCES,
+                    ApplicationProperties.getRequired(PropertyKeys.REMOTE_TOMCAT_DIR_NAME));
             List<String> unformatStrings = Arrays.asList(quotedUsername, decryptedPassword);
             return new ExecCommand(
                     formatStrings,

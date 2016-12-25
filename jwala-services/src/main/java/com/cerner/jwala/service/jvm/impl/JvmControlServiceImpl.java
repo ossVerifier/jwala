@@ -76,14 +76,15 @@ public class JvmControlServiceImpl implements JvmControlService {
         LOGGER.debug("Control JVM request operation = {}", controlOperation.toString());
         final Jvm jvm = jvmPersistenceService.getJvm(controlJvmRequest.getJvmId());
         try {
-            final JvmControlOperation ctrlOp = controlOperation;
-            final String event = ctrlOp.getOperationState() == null ? ctrlOp.name() : ctrlOp.getOperationState().toStateLabel();
+            final String event = controlOperation.getOperationState() == null ? controlOperation.name() : controlOperation.getOperationState().toStateLabel();
 
             historyFacadeService.write(getServerName(jvm), new ArrayList<>(jvm.getGroups()), event, EventType.USER_ACTION_INFO, aUser.getId());
 
             final WindowsJvmPlatformCommandProvider windowsJvmPlatformCommandProvider = new WindowsJvmPlatformCommandProvider();
             final ServiceCommandBuilder serviceCommandBuilder = windowsJvmPlatformCommandProvider.getServiceCommandBuilderFor(controlOperation);
+
             final ExecCommand execCommand = serviceCommandBuilder.buildCommandForService(jvm.getJvmName(), jvm.getUserName(), jvm.getEncryptedPassword());
+
             final RemoteExecCommand remoteExecCommand = new RemoteExecCommand(new RemoteSystemConnection(sshConfig.getUserName(),
                     sshConfig.getEncryptedPassword(), jvm.getHostName(), sshConfig.getPort()), execCommand);
 
@@ -97,7 +98,7 @@ public class JvmControlServiceImpl implements JvmControlService {
             if (StringUtils.isNotEmpty(standardOutput) && (JvmControlOperation.START.equals(controlOperation) ||
                     JvmControlOperation.STOP.equals(controlOperation))) {
                 commandOutput.cleanStandardOutput();
-                LOGGER.info("shell command output{}", standardOutput);
+                LOGGER.info("shell command output is {}", standardOutput);
             } else if (StringUtils.isNoneBlank(standardOutput) && JvmControlOperation.HEAP_DUMP.equals(controlOperation)
                     && returnCode.wasSuccessful()) {
                 commandOutput.cleanHeapDumpStandardOutput();

@@ -216,19 +216,19 @@ public class BinaryDistributionServiceImplTest {
 //        binaryDistributionService.distributeJdk(hostname);
 //    }
 
-    @Test
-    public void testDistributeTomcat() throws CommandFailureException {
-        final String hostname = "localhost";
-        File tomcat = new File(ApplicationProperties.get("remote.paths.tomcat.core"));
-        final String tomcatDir = tomcat.getParentFile().getName();
-        final String binaryDeployDir = tomcat.getParentFile().getParentFile().getAbsolutePath().replaceAll("\\\\", "/");
-        when(mockBinaryDistributionControlService.checkFileExists(hostname, binaryDeployDir + "/" + tomcatDir)).thenReturn(new CommandOutput(new ExecReturnCode(1), "FAIL", ""));
-        when(mockBinaryDistributionControlService.createDirectory(hostname, binaryDeployDir)).thenReturn(new CommandOutput(new ExecReturnCode(0), "SUCCESS", ""));
-        when(mockBinaryDistributionControlService.secureCopyFile(anyString(), anyString(), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(0), "SUCCESS", ""));
-        when(mockBinaryDistributionControlService.unzipBinary(hostname, "~/.jwala/unzip.exe", binaryDeployDir + "/" + tomcatDir + ".zip", binaryDeployDir, "")).thenReturn(new CommandOutput(new ExecReturnCode(0), "SUCCESS", ""));
-        when(mockBinaryDistributionControlService.deleteBinary(hostname, binaryDeployDir + "/" + tomcatDir + ".zip")).thenReturn(new CommandOutput(new ExecReturnCode(0), "SUCCESS", ""));
-        binaryDistributionService.distributeTomcat(hostname);
-    }
+//    @Test
+//    public void testDistributeTomcat() throws CommandFailureException {
+//        final String hostname = "localhost";
+//        File tomcat = new File(ApplicationProperties.get("remote.paths.tomcat.core"));
+//        final String tomcatDir = tomcat.getParentFile().getName();
+//        final String binaryDeployDir = tomcat.getParentFile().getParentFile().getAbsolutePath().replaceAll("\\\\", "/");
+//        when(mockBinaryDistributionControlService.checkFileExists(hostname, binaryDeployDir + "/" + tomcatDir)).thenReturn(new CommandOutput(new ExecReturnCode(1), "FAIL", ""));
+//        when(mockBinaryDistributionControlService.createDirectory(hostname, binaryDeployDir)).thenReturn(new CommandOutput(new ExecReturnCode(0), "SUCCESS", ""));
+//        when(mockBinaryDistributionControlService.secureCopyFile(anyString(), anyString(), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(0), "SUCCESS", ""));
+//        when(mockBinaryDistributionControlService.unzipBinary(hostname, "~/.jwala/unzip.exe", binaryDeployDir + "/" + tomcatDir + ".zip", binaryDeployDir, "")).thenReturn(new CommandOutput(new ExecReturnCode(0), "SUCCESS", ""));
+//        when(mockBinaryDistributionControlService.deleteBinary(hostname, binaryDeployDir + "/" + tomcatDir + ".zip")).thenReturn(new CommandOutput(new ExecReturnCode(0), "SUCCESS", ""));
+//        binaryDistributionService.distributeTomcat(hostname);
+//    }
 
     @Test
     public void testDistributeWebServer() throws CommandFailureException {
