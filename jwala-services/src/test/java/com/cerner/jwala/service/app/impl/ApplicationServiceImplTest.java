@@ -13,7 +13,6 @@ import com.cerner.jwala.common.domain.model.resource.ResourceIdentifier;
 import com.cerner.jwala.common.domain.model.resource.ResourceTemplateMetaData;
 import com.cerner.jwala.common.domain.model.ssh.SshConfiguration;
 import com.cerner.jwala.common.domain.model.user.User;
-import com.cerner.jwala.common.exception.ApplicationException;
 import com.cerner.jwala.common.exception.BadRequestException;
 import com.cerner.jwala.common.exception.InternalErrorException;
 import com.cerner.jwala.common.exec.CommandOutput;
@@ -271,31 +270,6 @@ public class ApplicationServiceImplTest {
         when(applicationPersistenceService.getResourceTemplateNames(eq("hct"), anyString())).thenReturn(Arrays.asList(nameArray));
         final List names = applicationService.getResourceTemplateNames("hct", "any");
         assertEquals("hct.xml", names.get(0));
-    }
-
-    @Test
-    public void testGetResourceTemplate() {
-        final String theTemplate = "<context>${webApp.warPath}</context>";
-        when(applicationPersistenceService.getResourceTemplate(eq("hct"), eq("hct.xml"), eq("jvm1"), eq("group1"))).thenReturn(theTemplate);
-        assertEquals(theTemplate, applicationService.getResourceTemplate("hct", "group1", "jvm1", "hct.xml", new ResourceGroup(), false));
-    }
-
-    @Test
-    public void testGetResourceTemplateWithTokensReplaced() {
-        final String theTemplate = "<context>${webApp.warPath}</context>";
-        when(applicationPersistenceService.getResourceTemplate(eq("hct"), eq("hct.xml"), eq("jvm1"), eq("group1"))).thenReturn(theTemplate);
-        final Application app = mock(Application.class);
-        when(app.getWarPath()).thenReturn("theWarPath");
-        when(applicationPersistenceService.findApplication(eq("hct"), anyString(), anyString())).thenReturn(app);
-        when(jvmPersistenceService.findJvm(anyString(), anyString())).thenReturn(null);
-        applicationService.getResourceTemplate("hct", "group1", "jvm1", "hct.xml", new ResourceGroup(), true);
-        verify(mockResourceService).generateResourceFile(anyString(), anyString(), any(ResourceGroup.class), any(Application.class), any(ResourceGeneratorType.class));
-        when(applicationPersistenceService.getResourceTemplate(eq("hct"), eq("hct.xml"), eq("jvm1"), eq("group1"))).thenReturn(theTemplate);
-        try {
-            applicationService.getResourceTemplate("hct", "group1", "jvm1", "hct.xml", new ResourceGroup(), true);
-        } catch (ApplicationException ae) {
-            assertTrue(ae.getMessage().contains("replacement failed"));
-        }
     }
 
     @Test

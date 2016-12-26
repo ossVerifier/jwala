@@ -159,23 +159,6 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     @Override
     @Transactional
-    public String getResourceTemplate(final String appName,
-                                      final String groupName,
-                                      final String jvmName,
-                                      final String resourceTemplateName,
-                                      final ResourceGroup resourceGroup,
-                                      final boolean tokensReplaced) {
-        final String template = applicationPersistenceService.getResourceTemplate(appName, resourceTemplateName, jvmName, groupName);
-        if (tokensReplaced) {
-            final Application application = applicationPersistenceService.findApplication(appName, groupName, jvmName);
-            application.setParentJvm(jvmPersistenceService.findJvmByExactName(jvmName));
-            return resourceService.generateResourceFile(resourceTemplateName, template, resourceGroup, application, ResourceGeneratorType.TEMPLATE);
-        }
-        return template;
-    }
-
-    @Override
-    @Transactional
     public String updateResourceTemplate(final String appName, final String resourceTemplateName, final String template, final String jvmName, final String groupName) {
         return applicationPersistenceService.updateResourceTemplate(appName, resourceTemplateName, template, jvmName, groupName);
     }

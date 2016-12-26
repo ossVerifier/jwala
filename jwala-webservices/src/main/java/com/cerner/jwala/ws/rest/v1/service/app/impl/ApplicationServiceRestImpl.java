@@ -143,13 +143,6 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
     }
 
     @Override
-    public Response getResourceTemplate(final String appName, final String groupName, final String jvmName,
-                                        final String resourceTemplateName, final boolean tokensReplaced) {
-        LOGGER.debug("get resource template {} for app {} in group {} associated with JVM {} : tokens replaced={}", resourceTemplateName, appName, groupName, jvmName, tokensReplaced);
-        return ResponseBuilder.ok(service.getResourceTemplate(appName, groupName, jvmName, resourceTemplateName, resourceService.generateResourceGroup(), tokensReplaced));
-    }
-
-    @Override
     public Response updateResourceTemplate(final String appName,
                                            final String resourceTemplateName,
                                            final String jvmName,

@@ -35,9 +35,6 @@ public interface ApplicationService {
 
     List<String> getResourceTemplateNames(final String appName, String jvmName);
 
-    String getResourceTemplate(final String appName, String groupName, String jvmName, final String resourceTemplateName,
-                               final ResourceGroup resourceGroup, final boolean tokensReplaced);
-
     String updateResourceTemplate(final String appName, final String resourceTemplateName, final String template, final String jvmName, final String groupName);
 
     /**
