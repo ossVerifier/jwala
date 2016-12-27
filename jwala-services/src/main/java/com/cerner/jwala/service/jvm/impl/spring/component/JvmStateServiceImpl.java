@@ -12,7 +12,7 @@ import com.cerner.jwala.common.exec.RemoteSystemConnection;
 import com.cerner.jwala.persistence.service.JvmPersistenceService;
 import com.cerner.jwala.service.MessagingService;
 import com.cerner.jwala.service.RemoteCommandExecutorService;
-import com.cerner.jwala.service.RemoteCommandReturnInfo;
+import com.cerner.jwala.common.jsch.RemoteCommandReturnInfo;
 import com.cerner.jwala.service.group.GroupStateNotificationService;
 import com.cerner.jwala.service.jvm.JvmStateService;
 import com.cerner.jwala.service.state.InMemoryStateManagerService;

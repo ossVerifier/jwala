@@ -4,7 +4,7 @@ import com.cerner.jwala.common.domain.model.jvm.Jvm;
 import com.cerner.jwala.common.domain.model.jvm.JvmState;
 import com.cerner.jwala.common.domain.model.state.CurrentState;
 import com.cerner.jwala.common.domain.model.state.StateType;
-import com.cerner.jwala.service.RemoteCommandReturnInfo;
+import com.cerner.jwala.common.jsch.RemoteCommandReturnInfo;
 import com.cerner.jwala.service.exception.RemoteCommandExecutorServiceException;
 import com.cerner.jwala.service.jvm.JvmStateService;
 import com.cerner.jwala.service.webserver.component.ClientFactoryHelper;
