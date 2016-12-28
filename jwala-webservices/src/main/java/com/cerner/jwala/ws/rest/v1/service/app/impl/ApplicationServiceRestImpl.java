@@ -194,5 +194,10 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
         return ResponseBuilder.ok(appName);
     }
 
+    @Override
+    public Response checkIfFileExists(final String fileName, final AuthenticatedUser aUser, final String hostName) {
+        return ResponseBuilder.ok(service.executeCheckIfFileExistsCommand("Entity", hostName, fileName));
+    }
+
 
 }
