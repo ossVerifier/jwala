@@ -1,16 +1,16 @@
 package com.cerner.jwala.common.jsch.impl;
 
+import com.cerner.jwala.common.domain.model.ssh.DecryptPassword;
 import com.cerner.jwala.common.exec.ExecReturnCode;
+import com.cerner.jwala.common.exec.RemoteSystemConnection;
 import com.cerner.jwala.common.jsch.JschService;
 import com.cerner.jwala.common.jsch.JschServiceException;
 import com.cerner.jwala.common.jsch.RemoteCommandReturnInfo;
 import com.cerner.jwala.exception.ExitCodeNotAvailableException;
-import com.jcraft.jsch.Channel;
-import com.jcraft.jsch.ChannelExec;
-import com.jcraft.jsch.ChannelShell;
-import com.jcraft.jsch.JSchException;
+import com.jcraft.jsch.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -18,6 +18,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
+import java.util.Arrays;
 
 /**
  * Implements {@link JschService}
@@ -32,6 +33,29 @@ public class JschServiceImpl implements JschService {
     private static final int CHANNEL_CONNECT_TIMEOUT = 60000;
     private static final String EXIT_CODE_START_MARKER = "EXIT_CODE";
     private static final String EXIT_CODE_END_MARKER = "***";
+
+    @Autowired
+    private JSch jsch;
+
+    /**
+     * Prepare the session by setting session properties
+     *
+     * @param remoteSystemConnection {@link RemoteSystemConnection}
+     * @return {@link Session}
+     * @throws JSchException
+     */
+    @Override
+    public Session prepareSession(final RemoteSystemConnection remoteSystemConnection) throws JSchException {
+        final Session session = jsch.getSession(remoteSystemConnection.getUser(), remoteSystemConnection.getHost(),
+                remoteSystemConnection.getPort());
+        final char[] encryptedPassword = remoteSystemConnection.getEncryptedPassword();
+        if (encryptedPassword != null) {
+            session.setPassword(new DecryptPassword().decrypt(Arrays.toString(encryptedPassword)));
+            session.setConfig("StrictHostKeyChecking", "no");
+            session.setConfig("PreferredAuthentications", "password,gssapi-with-mic,publickey,keyboard-interactive");
+        }
+        return session;
+    }
 
     @Override
     public RemoteCommandReturnInfo runCommand(final String command, final Channel channel, long timeout) throws IOException, JSchException {

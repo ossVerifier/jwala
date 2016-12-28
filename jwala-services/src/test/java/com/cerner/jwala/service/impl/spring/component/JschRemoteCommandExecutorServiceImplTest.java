@@ -89,6 +89,7 @@ public class JschRemoteCommandExecutorServiceImplTest {
         when(mockChannelExec.getExitStatus()).thenReturn(0);
         when(mockRemoteExecCommand.getCommand()).thenReturn(mockExecCommand);
         when(mockExecCommand.toCommandString()).thenReturn("sc query something");
+        when(mockJschService.prepareSession(any(RemoteSystemConnection.class))).thenReturn(mockSession);
         when(mockJschService.runCommand(eq("sc query something"), eq(mockChannelExec), anyLong())).thenReturn(new RemoteCommandReturnInfo(0, SOME_OUTPUT, null));
         final RemoteCommandReturnInfo returnInfo = this.jschRemoteCommandExecutorService.executeCommand(mockRemoteExecCommand);
         assertEquals("some output", returnInfo.standardOuput);
@@ -103,6 +104,7 @@ public class JschRemoteCommandExecutorServiceImplTest {
         when(mockChannelExec.getExitStatus()).thenReturn(0);
         when(mockRemoteExecCommand.getCommand()).thenReturn(mockExecCommand);
         when(mockExecCommand.toCommandString()).thenReturn("sc query something");
+        when(mockJschService.prepareSession(any(RemoteSystemConnection.class))).thenReturn(mockSession);
         when(mockJschService.runCommand(eq("sc query something"), eq(mockChannelExec), anyLong())).thenReturn(
                 new RemoteCommandReturnInfo(0, SOME_OUTPUT, SOME_ERR_OUTPUT));
         final RemoteCommandReturnInfo returnInfo = this.jschRemoteCommandExecutorService.executeCommand(mockRemoteExecCommand);

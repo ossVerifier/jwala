@@ -2,9 +2,7 @@ package com.cerner.jwala.service.impl.spring.component;
 
 import com.cerner.jwala.commandprocessor.jsch.impl.ChannelSessionKey;
 import com.cerner.jwala.commandprocessor.jsch.impl.ChannelType;
-import com.cerner.jwala.common.domain.model.ssh.DecryptPassword;
 import com.cerner.jwala.common.exec.RemoteExecCommand;
-import com.cerner.jwala.common.exec.RemoteSystemConnection;
 import com.cerner.jwala.common.jsch.JschService;
 import com.cerner.jwala.common.jsch.RemoteCommandReturnInfo;
 import com.cerner.jwala.service.RemoteCommandExecutorService;
@@ -33,7 +31,6 @@ public class JschRemoteCommandExecutorServiceImpl implements RemoteCommandExecut
     private static final int SHELL_REMOTE_OUTPUT_READ_WAIT_TIME = 180000;
     private static final int EXEC_REMOTE_OUTPUT_READ_WAIT_TIME = 3000;
 
-    private final JSch jSch;
     private final GenericKeyedObjectPool<ChannelSessionKey, Channel> channelPool;
     private final JschService jschService;
 
@@ -41,7 +38,6 @@ public class JschRemoteCommandExecutorServiceImpl implements RemoteCommandExecut
     public JschRemoteCommandExecutorServiceImpl(final JSch jSch,
                                                 final GenericKeyedObjectPool<ChannelSessionKey, Channel> channelPool,
                                                 final JschService jschService) {
-        this.jSch = jSch;
         this.channelPool = channelPool;
         this.jschService = jschService;
     }
@@ -137,7 +133,7 @@ public class JschRemoteCommandExecutorServiceImpl implements RemoteCommandExecut
             // We can't keep the session and the channels open for type exec since we need the exit code and the
             // standard error e.g. thread dump uses this and requires the exit code and the standard error.
             LOGGER.debug("preparing session...");
-            session = prepareSession(remoteExecCommand.getRemoteSystemConnection());
+            session = jschService.prepareSession(remoteExecCommand.getRemoteSystemConnection());
             session.connect();
             LOGGER.debug("session connected");
             channel = (ChannelExec) session.openChannel(ChannelType.EXEC.getChannelType());
@@ -159,25 +155,6 @@ public class JschRemoteCommandExecutorServiceImpl implements RemoteCommandExecut
                 LOGGER.debug("session disconnected");
             }
         }
-    }
-
-    /**
-     * Prepare the session by setting session properties.
-     *
-     * @param remoteSystemConnection {@link RemoteSystemConnection}
-     * @return {@link Session}
-     * @throws JSchException
-     */
-    protected Session prepareSession(final RemoteSystemConnection remoteSystemConnection) throws JSchException {
-        final Session session = jSch.getSession(remoteSystemConnection.getUser(), remoteSystemConnection.getHost(),
-                remoteSystemConnection.getPort());
-        final char[] encryptedPassword = remoteSystemConnection.getEncryptedPassword();
-        if (encryptedPassword != null) {
-            session.setPassword(new DecryptPassword().decrypt(encryptedPassword));
-            session.setConfig("StrictHostKeyChecking", "no");
-            session.setConfig("PreferredAuthentications", "password,gssapi-with-mic,publickey,keyboard-interactive");
-        }
-        return session;
     }
 
 }

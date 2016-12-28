@@ -1,14 +1,20 @@
 package com.cerner.jwala.common.jsch.impl;
 
+import com.cerner.jwala.common.exec.RemoteSystemConnection;
 import com.cerner.jwala.common.jsch.JschService;
 import com.cerner.jwala.common.jsch.JschServiceException;
 import com.cerner.jwala.common.jsch.RemoteCommandReturnInfo;
-import com.jcraft.jsch.ChannelExec;
-import com.jcraft.jsch.ChannelShell;
-import com.jcraft.jsch.JSchException;
+import com.jcraft.jsch.*;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.support.AnnotationConfigContextLoader;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -18,9 +24,7 @@ import java.io.OutputStream;
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 /**
@@ -28,8 +32,11 @@ import static org.mockito.MockitoAnnotations.initMocks;
  *
  * Created by Jedd Cuison on 12/26/2016
  */
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(loader = AnnotationConfigContextLoader.class, classes = {JschServiceImplTest.Config.class})
 public class JschServiceImplTest {
 
+    @Autowired
     private JschService jschService;
 
     @Mock
@@ -47,9 +54,14 @@ public class JschServiceImplTest {
     @Mock
     private OutputStream mockOut;
 
+    @Mock
+    private RemoteSystemConnection mockRemoteSystemConnection;
+
+    @Mock
+    private Session mockSession;
+
     @Before
     public void setup() {
-        jschService = new JschServiceImpl();
         initMocks(this);
     }
 
@@ -97,6 +109,35 @@ public class JschServiceImplTest {
         jschService.runCommand("scp", mockChannelExec, 0);
         verify(mockChannelExec).setCommand(any(byte[].class));
         verify(mockChannelExec).connect(anyInt());
+    }
+
+    @Test
+    public void testPrepareSession() throws Exception {
+        when(Config.mockJsch.getSession(anyString(), anyString(), anyInt())).thenReturn(mockSession);
+        when(mockRemoteSystemConnection.getEncryptedPassword()).thenReturn("#@#$%".toCharArray());
+        jschService.prepareSession(mockRemoteSystemConnection);
+        verify(mockRemoteSystemConnection).getUser();
+        verify(mockRemoteSystemConnection).getEncryptedPassword();
+        verify(mockRemoteSystemConnection).getPort();
+        verify(mockSession).setPassword(anyString());
+        verify(mockSession, times(2)).setConfig(anyString(), anyString());
+    }
+
+    @Configuration
+    static class Config {
+
+        public static final JSch mockJsch = mock(JSch.class);
+
+        @Bean
+        public JSch getMockJsch() {
+            return mockJsch;
+        }
+
+        @Bean
+        public JschService getJschService() {
+            return new JschServiceImpl();
+        }
+
     }
 
 }
