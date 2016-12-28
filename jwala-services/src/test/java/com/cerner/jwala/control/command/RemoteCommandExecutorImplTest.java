@@ -8,6 +8,7 @@ import com.cerner.jwala.common.domain.model.jvm.JvmControlOperation;
 import com.cerner.jwala.common.domain.model.ssh.SshConfiguration;
 import com.cerner.jwala.common.exec.CommandOutput;
 import com.cerner.jwala.common.exec.ExecCommand;
+import com.cerner.jwala.common.jsch.JschService;
 import com.cerner.jwala.exception.CommandFailureException;
 import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.JSchException;
@@ -38,10 +39,14 @@ public class RemoteCommandExecutorImplTest {
     @Mock
     GenericKeyedObjectPool<ChannelSessionKey, Channel> mockChannelPool;
 
+    @Mock
+    private JschService mockJschService;
+
     @Before
     public void setup() {
         initMocks(this);
-        remoteCommandExecutor = new RemoteCommandExecutorImpl(mockCommandExecutor, mockJschBuilder, mockSshConfiguration, mockChannelPool);
+        remoteCommandExecutor = new RemoteCommandExecutorImpl(mockCommandExecutor, mockJschBuilder, mockSshConfiguration,
+                mockChannelPool, mockJschService);
     }
 
     @Test

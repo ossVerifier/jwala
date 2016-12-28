@@ -2,6 +2,8 @@ package com.cerner.jwala.commandprocessor.impl.jsch;
 
 import com.cerner.jwala.commandprocessor.jsch.impl.ChannelSessionKey;
 import com.cerner.jwala.common.exec.*;
+import com.cerner.jwala.common.jsch.JschService;
+import com.cerner.jwala.common.jsch.RemoteCommandReturnInfo;
 import com.cerner.jwala.common.properties.ApplicationProperties;
 import com.cerner.jwala.exception.RemoteCommandFailureException;
 import com.jcraft.jsch.*;
@@ -20,7 +22,6 @@ import java.io.OutputStream;
 
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.*;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -29,6 +30,9 @@ public class JschCommandProcessorImplTest {
 
     @Mock
     private JSch mockJsch;
+
+    @Mock
+    private JschService mockJschService;
 
     @Mock
     private Session mockSession;
@@ -40,15 +44,15 @@ public class JschCommandProcessorImplTest {
     private ChannelShell mockChannelShell;
 
     @Mock
-    InputStream mockRemoteErr;
+    private InputStream mockRemoteErr;
 
     @Mock
-    OutputStream mockLocalInput;
+    private OutputStream mockLocalInput;
 
     @Mock
-    GenericKeyedObjectPool<ChannelSessionKey, Channel> mockChannelPool;
+    private GenericKeyedObjectPool<ChannelSessionKey, Channel> mockChannelPool;
 
-    JschCommandProcessorImpl jschCommandProcessor;
+    private JschCommandProcessorImpl jschCommandProcessor;
 
     @Before
     public void setup() throws JSchException {
@@ -73,12 +77,10 @@ public class JschCommandProcessorImplTest {
     @Test
     public void testProcessCommandExec() throws JSchException, IOException {
         when(mockSession.openChannel("exec")).thenReturn(mockChannel);
-        when(mockChannel.getInputStream()).thenReturn(remoteOutputStream);
-        when(mockChannel.getOutputStream()).thenReturn(mockLocalInput);
-        when(mockChannel.getErrStream()).thenReturn(mockRemoteErr);
-        when(mockChannel.isClosed()).thenReturn(true);
+        when(mockJschService.prepareSession(any(RemoteSystemConnection.class))).thenReturn(mockSession);
+        when(mockJschService.runCommand(anyString(), any(ChannelExec.class), anyLong())).thenReturn(new RemoteCommandReturnInfo(0, "std", "err"));
         jschCommandProcessor = new JschCommandProcessorImpl(mockJsch, new RemoteExecCommand(new RemoteSystemConnection("testUser", "==encryptedTestPassword==".toCharArray(), "testHost", 1111),
-                new ExecCommand("scp ./jwala-services/src/test/resources/known_hosts destpath/testfile.txt".split(" "))), null);
+                new ExecCommand("scp ./jwala-services/src/test/resources/known_hosts destpath/testfile.txt".split(" "))), null, mockJschService);
         try {
             jschCommandProcessor.processCommand();
             ExecReturnCode returnCode = jschCommandProcessor.getExecutionReturnCode();
@@ -90,16 +92,12 @@ public class JschCommandProcessorImplTest {
 
     @Test
     public void testProcessCommandShell() throws Exception {
-        ChannelShell mockChannelShell = mock(ChannelShell.class);
-        when(mockChannelShell.getInputStream()).thenReturn(remoteOutputStream);
-        when(mockChannelShell.getOutputStream()).thenReturn(mockLocalInput);
-        when(mockChannelShell.getExtInputStream()).thenReturn(mockRemoteErr);
-        when(mockChannelShell.getSession()).thenReturn(mockSession);
         when(mockChannelPool.borrowObject(any(ChannelSessionKey.class))).thenReturn(mockChannelShell);
         when(mockChannelShell.isConnected()).thenReturn(true);
+        when(mockJschService.runCommand(anyString(), any(ChannelExec.class), anyLong())).thenReturn(new RemoteCommandReturnInfo(0, "std", "err"));
         jschCommandProcessor = new JschCommandProcessorImpl(mockJsch,
                 new RemoteExecCommand(new RemoteSystemConnection("testUser", "==encryptedTestPassword==".toCharArray(), "testHost", 1111),
-                new ShellCommand("start", "jvm", "testShellCommand")), mockChannelPool);
+                new ShellCommand("start", "jvm", "testShellCommand")), mockChannelPool, mockJschService);
         try {
             jschCommandProcessor.processCommand();
             assertTrue(jschCommandProcessor.getExecutionReturnCode().getWasSuccessful());

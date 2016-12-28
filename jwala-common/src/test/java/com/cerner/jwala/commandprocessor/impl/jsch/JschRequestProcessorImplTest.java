@@ -35,7 +35,7 @@ public class JschRequestProcessorImplTest {
     public void testGetReturnCodeBeforeFinishing() throws Exception {
         final RemoteExecCommand remoteExecCommand = new RemoteExecCommand(remoteSystemConnection, new ExecCommand("vi"));
         final JschCommandProcessorImpl sshProcessor = new JschCommandProcessorImpl(builder.build(), remoteExecCommand,
-                null);
+                null, null);
         sshProcessor.processCommand();
         final ExecReturnCode returnCode = sshProcessor.getExecutionReturnCode();
     }
@@ -45,7 +45,7 @@ public class JschRequestProcessorImplTest {
         final RemoteExecCommand remoteExecCommand =
                 new RemoteExecCommand(new RemoteSystemConnection("abc", "==encryptedPassword==".toCharArray(), "example.com", 123456), new ExecCommand("vi"));
         final JschCommandProcessorImpl jschCommandProcessor = new JschCommandProcessorImpl(builder.build(), remoteExecCommand,
-                null);
+                null, null);
         jschCommandProcessor.processCommand();
     }
 
