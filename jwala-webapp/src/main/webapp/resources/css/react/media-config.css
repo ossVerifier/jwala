@@ -29,3 +29,11 @@
 .MediaConfig input {
     margin-bottom: 5px;
 }
+
+.uploadMediaBusyIcon {
+    padding: 0 0 0 4px;
+}
+
+.mediaTypeSelect {
+    width: 50%;
+}

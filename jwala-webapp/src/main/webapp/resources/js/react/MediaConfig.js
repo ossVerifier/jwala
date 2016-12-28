@@ -133,13 +133,14 @@ var MediaConfigForm = React.createClass({
         var localPath = this.props.formData && this.props.formData.localPath ? this.props.formData.localPath : null;
         var remoteDir = this.props.formData && this.props.formData.remoteDir ? this.props.formData.remoteDir : null;
         var mediaDir = this.props.formData && this.props.formData.mediaDir ? this.props.formData.mediaDir : null;
-        return {name: name, type: type, mediaArchiveFilename: "", mediaArchiveFile: null, remoteDir: remoteDir, mediaDir: mediaDir};
+        return {name: name, type: type, mediaArchiveFilename: "", mediaArchiveFile: null, remoteDir: remoteDir, mediaDir: mediaDir, showUploadBusy: false};
     },
     render: function() {
         var idTextHidden = null;
         var localPathTextHidden = null;
         var mediaDirTextHidden = null;
         var mediaArchiveFileInput = null;
+        var uploadBusyImg = this.state.showUploadBusy ? <span>Uploading {this.state.mediaArchiveFile.name} ... <img className="uploadMediaBusyIcon" src="public-resources/img/busy-circular.gif"/></span>: null;
 
         if (this.props.formData && this.props.formData.id) {
             idTextHidden = <input type="hidden" name="id" value={this.props.formData.id}/>;
@@ -161,7 +162,7 @@ var MediaConfigForm = React.createClass({
                        {mediaDirTextHidden}
                        <label>Name</label>
                        <label htmlFor="name" className="error"/>
-                       <input name="name" type="text" valueLink={this.linkState("name")} maxLength="255" required/>
+                       <input name="name" type="text" valueLink={this.linkState("name")} maxLength="255" required autoFocus/>
                        <label>Type</label>
                        <label htmlFor="type" className="error"/>
                        <MediaTypeDropdown ref="mediaTypeDropdown" selectedMediaType={this.state.type}/>
@@ -170,6 +171,9 @@ var MediaConfigForm = React.createClass({
                        <label htmlFor="remoteDir" className="error"/>
                        <input name="remoteDir" type="text" valueLink={this.linkState("remoteDir")} required maxLength="255"/>
                    </form>
+                   <div>
+                    {uploadBusyImg}
+                   </div>
                </div>
     },
     validator: null,
@@ -183,12 +187,16 @@ var MediaConfigForm = React.createClass({
         if (this.validator !== null) {
             this.validator.form();
             if (this.validator.numberOfInvalids() === 0) {
+                this.setState({showUploadBusy:true})
                 return true;
             }
         } else {
             alert("There is no validator for the form!");
         }
         return false;
+    },
+    componentWillUnmount: function() {
+        this.state.showUploadBusy = false;
     },
     onChangeMediaArchiveFile: function(e) {
         this.setState({mediaArchiveFilename: this.refs.mediaArchiveFile.getDOMNode().value,
@@ -223,7 +231,7 @@ var MediaTypeDropdown = React.createClass({
         });
 
         if (options.length > 0) {
-            return <select name="type" refs="mediaTypeSelect" onChange={this.onChangeSelect} value={this.state.selectedMediaType}>{options}</select>
+            return <select className="mediaTypeSelect" name="type" refs="mediaTypeSelect" onChange={this.onChangeSelect} value={this.state.selectedMediaType}>{options}</select>
         }
         return <div>Loading Media Types...</div>
     },
