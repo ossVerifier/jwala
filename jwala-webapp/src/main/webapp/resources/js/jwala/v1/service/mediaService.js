@@ -10,7 +10,7 @@ var mediaService = {
         return serviceFoundation.promisedGet("v1.0/media;name=" + encodeURIComponent(name), "json");
     },
     createMedia: function(formData) {
-        return serviceFoundation.promisedPost("v1.0/media", "json", formData, null, true);
+        return serviceFoundation.promisedPost("v1.0/media", "json", formData, null, true, true);
     },
     updateMedia: function(serializedArray) {
         var jsonData = {};
