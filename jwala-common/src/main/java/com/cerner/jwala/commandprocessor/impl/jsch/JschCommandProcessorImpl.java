@@ -19,7 +19,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 
 public class JschCommandProcessorImpl implements CommandProcessor {private static final Logger LOGGER = LoggerFactory.getLogger(JschCommandProcessorImpl.class);
     public static final int CHANNEL_BORROW_LOOP_WAIT_TIME = 180000;
@@ -263,7 +262,7 @@ public class JschCommandProcessorImpl implements CommandProcessor {private stati
                 remoteSystemConnection.getPort());
         final char[] encryptedPassword = remoteSystemConnection.getEncryptedPassword();
         if (encryptedPassword != null) {
-            session.setPassword(new DecryptPassword().decrypt(Arrays.toString(encryptedPassword)));
+            session.setPassword(new DecryptPassword().decrypt(encryptedPassword));
             session.setConfig("StrictHostKeyChecking", "no");
             session.setConfig("PreferredAuthentications", "password,gssapi-with-mic,publickey,keyboard-interactive");
         }

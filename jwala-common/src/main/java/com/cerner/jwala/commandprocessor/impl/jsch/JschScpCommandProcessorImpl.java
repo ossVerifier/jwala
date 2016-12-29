@@ -7,12 +7,10 @@ import com.cerner.jwala.common.exec.RemoteExecCommand;
 import com.cerner.jwala.common.exec.RemoteSystemConnection;
 import com.cerner.jwala.exception.RemoteCommandFailureException;
 import com.jcraft.jsch.*;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
-import java.util.Arrays;
 import java.util.List;
 
 public class JschScpCommandProcessorImpl implements CommandProcessor {
@@ -199,7 +197,7 @@ public class JschScpCommandProcessorImpl implements CommandProcessor {
                 remoteSystemConnection.getPort());
         final char[] encryptedPassword = remoteSystemConnection.getEncryptedPassword();
         if (encryptedPassword != null) {
-            session.setPassword(new DecryptPassword().decrypt(Arrays.toString(encryptedPassword)));
+            session.setPassword(new DecryptPassword().decrypt(encryptedPassword));
             session.setConfig("StrictHostKeyChecking", "no");
             session.setConfig("PreferredAuthentications", "password,gssapi-with-mic,publickey,keyboard-interactive");
         }
