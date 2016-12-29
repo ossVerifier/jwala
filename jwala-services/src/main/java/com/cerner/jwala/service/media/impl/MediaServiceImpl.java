@@ -5,7 +5,9 @@ import com.cerner.jwala.dao.MediaDao;
 import com.cerner.jwala.persistence.jpa.domain.JpaMedia;
 import com.cerner.jwala.persistence.jpa.type.MediaType;
 import com.cerner.jwala.service.media.MediaService;
+import com.cerner.jwala.service.media.MediaServiceException;
 import com.cerner.jwala.service.repository.RepositoryService;
+import org.apache.commons.lang3.StringUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,8 +18,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.BufferedInputStream;
 import java.nio.file.Paths;
+import java.text.MessageFormat;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Implements {@link MediaService}
@@ -65,10 +69,16 @@ public class MediaServiceImpl implements MediaService {
         final String filename = (String) mediaFileDataMap.get("filename");
         final String dest = repositoryService.upload(filename, (BufferedInputStream) mediaFileDataMap.get("content"));
 
-        media.setMediaDir(Paths.get(fileUtility.getFirstZipEntryParent(dest)));
-        media.setLocalPath(Paths.get(dest));
+        final Set<String> zipRootDirSet = fileUtility.getZipRootDirs(dest);
+        if (!zipRootDirSet.isEmpty()) {
+            media.setMediaDir(Paths.get(StringUtils.join(zipRootDirSet, ",")));
+            media.setLocalPath(Paths.get(dest));
+            return mediaDao.create(media);
+        }
 
-        return mediaDao.create(media);
+        repositoryService.delete(dest);
+        throw new MediaServiceException(MessageFormat
+                .format("{} does not have any root directories! the said file may not be a valid media file.", filename));
     }
 
     @Override

@@ -22,10 +22,7 @@ import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static junit.framework.Assert.assertEquals;
 import static org.mockito.Matchers.any;
@@ -79,8 +76,10 @@ public class MediaServiceImplTest {
 
         when(Config.MOCK_MEDIA_REPOSITORY_SERVICE.upload(anyString(), any(InputStream.class)))
                 .thenReturn("c:/jwala/toc/data/bin/apache-tomcat-8.5.9-89876567321.zip");
-        when(Config.MOCK_FILE_UTILITY.getFirstZipEntryParent(eq("c:/jwala/toc/data/bin/apache-tomcat-8.5.9-89876567321.zip")))
-                .thenReturn("apache-tomcat-8.5.9");
+        final Set<String> rootDirSet = new HashSet<>();
+        rootDirSet.add("apache-tomcat-8.5.9");
+        when(Config.MOCK_FILE_UTILITY.getZipRootDirs(eq("c:/jwala/toc/data/bin/apache-tomcat-8.5.9-89876567321.zip")))
+                .thenReturn(rootDirSet);
         mediaService.create(dataMap, mediaFileDataMap);
         verify(Config.MOCK_MEDIA_DAO).create(any(JpaMedia.class));
     }
