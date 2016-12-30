@@ -14,6 +14,7 @@ import com.cerner.jwala.common.request.jvm.ControlJvmRequest;
 import com.cerner.jwala.control.command.PlatformCommandProvider;
 import com.cerner.jwala.control.command.RemoteCommandExecutor;
 import com.cerner.jwala.control.command.ServiceCommandBuilder;
+import com.cerner.jwala.control.command.common.CommandFactory;
 import com.cerner.jwala.control.jvm.command.impl.LinuxJvmPlatformCommandProvider;
 import com.cerner.jwala.control.jvm.command.impl.WindowsJvmPlatformCommandProvider;
 import com.cerner.jwala.exception.CommandFailureException;
@@ -48,6 +49,9 @@ public class JvmControlServiceImpl implements JvmControlService {
 
     @Autowired
     private JvmOperationService jvmOperationService;
+
+    @Autowired
+    private CommandFactory commandFactory;
 
     @Value("${spring.messaging.topic.serverStates:/topic/server-states}")
     protected String topicServerStates;
@@ -87,18 +91,10 @@ public class JvmControlServiceImpl implements JvmControlService {
         LOGGER.debug("Control JVM request operation = {}", controlOperation.toString());
         final Jvm jvm = jvmPersistenceService.getJvm(controlJvmRequest.getJvmId());
         try {
-            final JvmControlOperation ctrlOp = controlOperation;
-            final String event = ctrlOp.getOperationState() == null ? ctrlOp.name() : ctrlOp.getOperationState().toStateLabel();
-
+            final String event = controlOperation.getOperationState() == null ? controlOperation.name() : controlOperation.getOperationState().toStateLabel();
+            //Write message to history
             historyFacadeService.write(getServerName(jvm), new ArrayList<>(jvm.getGroups()), event, EventType.USER_ACTION_INFO, aUser.getId());
-            PlatformCommandProvider platformCommandProvider = getPlatformCommandProvider(jvm);
-            final ServiceCommandBuilder serviceCommandBuilder = platformCommandProvider.getServiceCommandBuilderFor(controlOperation);
-            final ExecCommand execCommand = serviceCommandBuilder.buildCommandForService(jvm.getJvmName(), jvm.getUserName(), jvm.getEncryptedPassword());
-            final RemoteExecCommand remoteExecCommand = new RemoteExecCommand(new RemoteSystemConnection(sshConfig.getUserName(),
-                    sshConfig.getPassword(), jvm.getHostName(), sshConfig.getPort()), execCommand);
-
-            RemoteCommandReturnInfo remoteCommandReturnInfo = remoteCommandExecutorService.executeCommand(remoteExecCommand);
-
+            RemoteCommandReturnInfo remoteCommandReturnInfo = commandFactory.executeCommand(jvm,controlJvmRequest.getControlOperation());
             CommandOutput commandOutput = new CommandOutput(new ExecReturnCode(remoteCommandReturnInfo.retCode),
                     remoteCommandReturnInfo.standardOuput, remoteCommandReturnInfo.errorOupout);
 

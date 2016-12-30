@@ -123,7 +123,8 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
         "com.cerner.jwala.common",
         "com.cerner.jwala.service.host.impl",
         "com.cerner.jwala.service.jvm.impl",
-        "com.cerner.jwala.service.jvm.operation.impl"})
+        "com.cerner.jwala.service.jvm.operation.impl",
+        "com.cerner.jwala.control.command.common"})
 public class AemServiceConfiguration {
 
     @Autowired
