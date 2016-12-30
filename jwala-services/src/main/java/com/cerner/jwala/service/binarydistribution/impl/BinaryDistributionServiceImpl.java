@@ -44,17 +44,35 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
     public void distributeJdk(final Jvm jvm) {
         LOGGER.info("Start deploy jdk for {}", jvm);
         final Media jdkMedia = jvm.getJdkMedia();
-        String remoteHostPath = jdkMedia.getRemoteHostPath();
-        String jdkDir = jdkMedia.getMediaDir();
-        File remoteDestination = new File(remoteHostPath);
-        String binaryDeployDir = remoteDestination.getAbsolutePath().replaceAll("\\\\", "/");
+        final String binaryDeployDir = new File(jdkMedia.getRemoteHostPath()).getAbsolutePath().replaceAll("\\\\", "/");
         if (binaryDeployDir != null && !binaryDeployDir.isEmpty()) {
-            historyFacadeService.write(jvm.getHostName(), jvm.getGroups(), "DISTRIBUTE_JDK " + jdkMedia.getName(), EventType.APPLICATION_EVENT, getUserNameFromSecurityContext());
-            distributeBinary(jvm.getHostName(), jdkDir, binaryDeployDir, "", jdkMedia.getPath());
+            historyFacadeService.write(jvm.getHostName(), jvm.getGroups(), "DISTRIBUTE_JDK " + jdkMedia.getName(),
+                    EventType.APPLICATION_EVENT, getUserNameFromSecurityContext());
+            if (!checkIfMediaDirExists(jvm.getJdkMedia().getMediaDir().split(","), jvm.getHostName(), binaryDeployDir)) {
+                distributeBinary(jvm.getHostName(), jdkMedia.getName(), binaryDeployDir, "", jdkMedia.getPath());
+            } else {
+                LOGGER.warn("Jdk directories already exists, installation of {} skipped!", jvm.getJdkMedia().getName());
+            }
         } else {
             LOGGER.info("JDK dir location is null or empty for JVM {}. Not deploying JDK.", jvm.getJvmName());
         }
         LOGGER.info("End deploy jdk {} for {}", jdkMedia.getName(), jvm.getJvmName());
+    }
+
+    /**
+     * Checks if the binary media directories already exists
+     * @param mediaDirs the binary media directories to check
+     * @param hostName the host name where to check the binary media directories
+     * @param binaryDeployDir the location where the binary media directories are in
+     * @return true if all the binary media root directories already exists, otherwise false
+     */
+    private boolean checkIfMediaDirExists(final String [] mediaDirs, final String hostName, final String binaryDeployDir) {
+        for (final String mediaDir : mediaDirs) {
+            if (!remoteFileCheck(hostName, binaryDeployDir + "/" + mediaDir)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private String getUserNameFromSecurityContext() {
@@ -250,4 +268,5 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
         }
         LOGGER.info("End deploy unzip for {}", hostname);
     }
+
 }

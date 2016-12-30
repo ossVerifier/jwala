@@ -215,7 +215,7 @@ public class BinaryDistributionServiceImplTest {
     public void testDistributeJdk() throws CommandFailureException {
         final String hostname = "localhost";
         final String remoteJwalaJavaHome = "d:/stp";
-        final String rootDeployDirFromZip = "root-deploy-dir";
+        final String rootDeployDirFromZip = "test-jvm-jdk-media";
         final String localZipFileName = "/path.zip";
 
         Media mockMedia = mock(Media.class);
