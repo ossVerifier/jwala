@@ -56,11 +56,13 @@ var MediaConfig = React.createClass({
     okAddCallback: function() {
         var self = this;
         if (this.refs.mediaAddForm.isValid()) {
+            this.refs.modalAddMediaDlg.setEnabled(false);
             ServiceFactory.getMediaService().createMedia(new FormData(this.refs.mediaAddForm.refs.form.getDOMNode()))
             .then(function(response){
                 self.refs.modalAddMediaDlg.close();
                 self.loadTableData();
             }).caught(function(response){
+                this.refs.modalAddMediaDlg.setEnabled(true);
                 $.errorAlert(JSON.parse(response.responseText).message);
             });
         }

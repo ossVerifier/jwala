@@ -43,7 +43,8 @@ var ModalDialogBox = React.createClass({
                 mouseDownXDiff: 0,
                 mouseDownYDiff: 0,
                 needsRepositioning: false,
-                contentHeight: "100%"};
+                contentHeight: "100%",
+                enabled: true};
     },
     render: function() {
         if (!this.state.show) {
@@ -81,7 +82,7 @@ var ModalDialogBox = React.createClass({
     },
     keyDownHandler: function(e) {
         if (e.keyCode === ModalDialogBox.KEY_CODE_ESC) {
-            this.state.cancelCallback();
+            this.closeBtnOnClickHandler();
         } else if (e.keyCode === ModalDialogBox.KEY_CODE_ENTER) {
             if (this.state.okCallback() !== false) {
                 e.preventDefault();
@@ -177,19 +178,24 @@ var ModalDialogBox = React.createClass({
             states["cancelCallback"] = cancelCallback;
         }
 
+        states["enabled"] = true;
         this.setState(states);
     },
     close: function() {
         this.setState({show: false});
     },
     okBtnOnClickHandler: function() {
-        this.state.okCallback();
+        if (this.state.enabled) {
+            this.state.okCallback();
+        }
     },
     closeBtnOnClickHandler: function() {
-        if (this.state.cancelCallback) {
-            this.state.cancelCallback();
-        } else {
-            this.close();
+        if (this.state.enabled) {
+            if (this.state.cancelCallback) {
+                this.state.cancelCallback();
+            } else {
+                this.close();
+            }
         }
     },
     mouseDownHandler: function(e) {
@@ -212,6 +218,9 @@ var ModalDialogBox = React.createClass({
     },
     isShown: function() {
         return this.state.show;
+    },
+    setEnabled: function(enabled) {
+        this.state.enabled = enabled;
     },
     statics: {
         DEFAULT_TOP: -10000,
