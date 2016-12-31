@@ -733,7 +733,7 @@ public class ResourceServiceImpl implements ResourceService {
         /*if (!AemControl.Properties.USER_JWALA_SCRIPTS_PATH.getValue().endsWith(fileName)) {
             final String eventDescription = "SECURE COPY " + fileName;
             historyService.createHistory(hostName, new ArrayList<>(*//*jvm.getGroups()*//*), eventDescription, EventType.USER_ACTION_INFO, userId);
-            messagingService.send(new JvmHistoryEvent(jvm.getId(), eventDescription, userId, DateTime.now(), JvmControlOperation.SECURE_COPY));
+            messagingService.send(new JvmHistoryEvent(jvm.getId(), eventDescription, userId, DateTime.now(), JvmControlOperation.SCP));
         }*/
 
         // TODO update this to be derived from the resource type being copied
@@ -785,7 +785,7 @@ public class ResourceServiceImpl implements ResourceService {
         return remoteCommandExecutor.executeRemoteCommand(
                 name,
                 hostName,
-                ApplicationControlOperation.SECURE_COPY,
+                ApplicationControlOperation.SCP,
                 new WindowsApplicationPlatformCommandProvider(),
                 sourcePath,
                 destPath);
@@ -913,11 +913,11 @@ public class ResourceServiceImpl implements ResourceService {
                 commandOutput = doUnpack(entity, hostName, resourceTemplateMetaData.getDeployPath() + "/" + resourceTemplateMetaData.getDeployFileName());
             }
         } catch (IOException e) {
-            String message = "Failed to write file " + fileName;
+            String message = "Failed to write file " + fileName + ". " + e.toString();
             LOGGER.error(badStreamMessage + message, e);
             throw new InternalErrorException(FaultType.BAD_STREAM, message, e);
         } catch (CommandFailureException ce) {
-            String message = "Failed to copy file " + fileName;
+            String message = "Failed to copy file " + fileName + ". " + ce.getMessage();
             LOGGER.error(badStreamMessage + message, ce);
             throw new InternalErrorException(FaultType.BAD_STREAM, message, ce);
         }
@@ -928,7 +928,7 @@ public class ResourceServiceImpl implements ResourceService {
         CommandOutput commandOutput;
         try {
             String standardError;
-            binaryDistributionService.prepareUnzip(hostName);
+            binaryDistributionService.distributeUnzip(hostName);
             final String zipDestinationOption = FilenameUtils.removeExtension(destPath);
             LOGGER.debug("checking if unpacked destination exists: {}", zipDestinationOption);
             commandOutput = executeCheckFileExistsCommand(entity, hostName, zipDestinationOption);

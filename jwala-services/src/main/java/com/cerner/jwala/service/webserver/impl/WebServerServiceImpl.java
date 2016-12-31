@@ -38,10 +38,9 @@ public class WebServerServiceImpl implements WebServerService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(WebServerServiceImpl.class);
     private static final String INSTALL_SERVICE_WSBAT_TEMPLATE_TPL_PATH = "/install-service-http.bat.tpl";
+    public static final String INSTALL_SERVICE_SCRIPT_NAME = "install-service-http.bat";
 
     private final WebServerPersistenceService webServerPersistenceService;
-
-    private final String HTTPD_CONF = "httpd.conf";
 
     private final ResourceService resourceService;
 
@@ -183,13 +182,13 @@ public class WebServerServiceImpl implements WebServerService {
     }
 
     @Override
-    public String generateInstallServiceWSBat(WebServer webServer) {
+    public String generateInstallServiceScript(WebServer webServer) {
         try {
             // NOTE: install_serviceWS.bat is internal to Jwala that is why the template is not in Db.
-            return resourceService.generateResourceFile("install_serviceWS.bat", FileUtils.readFileToString(new File(templatePath + INSTALL_SERVICE_WSBAT_TEMPLATE_TPL_PATH)),
+            return resourceService.generateResourceFile(INSTALL_SERVICE_SCRIPT_NAME, FileUtils.readFileToString(new File(templatePath + INSTALL_SERVICE_WSBAT_TEMPLATE_TPL_PATH)),
                     resourceService.generateResourceGroup(), webServer, ResourceGeneratorType.TEMPLATE);
         } catch (final IOException ioe) {
-            throw new WebServerServiceException("Error generating install_serviceWS.bat!", ioe);
+            throw new WebServerServiceException("Error generating " + INSTALL_SERVICE_SCRIPT_NAME+ "!", ioe);
         }
     }
 
@@ -200,7 +199,6 @@ public class WebServerServiceImpl implements WebServerService {
         return webServerPersistenceService.getResourceTemplateNames(webServerName);
     }
 
-    //TODO: remove ResourceGroup class, we can use resourceService.generateResourceGroup()
     @Override
     @Transactional(readOnly = true)
     public String getResourceTemplate(final String webServerName, final String resourceTemplateName,

@@ -77,7 +77,6 @@ public class ManagedJvmBuilder {
                 addLibs().
                 createLogDir().
                 jar();
-//                cleanup();
     }
 
     protected ManagedJvmBuilder createLogDir() {
@@ -141,16 +140,6 @@ public class ManagedJvmBuilder {
     protected ManagedJvmBuilder addScripts() {
         createServiceInstallScript();
         createServiceControlScripts();
-
-        return this;
-    }
-
-    public ManagedJvmBuilder cleanup() {
-        try {
-            FileUtils.deleteDirectory(getStagingDir());
-        } catch (IOException e) {
-            throw new ApplicationException(e);
-        }
 
         return this;
     }

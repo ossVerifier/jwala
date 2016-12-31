@@ -380,7 +380,7 @@ public class WebServerServiceImplTest {
     @Test (expected = WebServerServiceException.class)
     public void testGenerateInstallServiceWSBat() {
         when(resourceService.generateResourceFile(anyString(), anyString(), any(ResourceGroup.class), eq(mockWebServer), any(ResourceGeneratorType.class))).thenThrow(IOException.class);
-        wsService.generateInstallServiceWSBat(mockWebServer);
+        wsService.generateInstallServiceScript(mockWebServer);
     }
 
     @Test

@@ -15,7 +15,7 @@ public class AemControl {
     private AemControl() {
     }
 
-    public static enum Properties {
+    public enum Properties {
         CYGPATH("commands.cygwin.cygpath", "/usr/bin/cygpath"),
         START_SCRIPT_NAME("commands.cygwin.start-service", "start-service.sh"),
         STOP_SCRIPT_NAME("commands.cygwin.stop-service", "stop-service.sh"),

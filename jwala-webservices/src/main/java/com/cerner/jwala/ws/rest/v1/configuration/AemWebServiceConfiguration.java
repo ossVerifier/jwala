@@ -145,7 +145,8 @@ public class AemWebServiceConfiguration {
     @Bean
     public GroupServiceRest getV1GroupServiceRest() {
         return new GroupServiceRestImpl(groupService, resourceService, groupControlService, groupJvmControlService,
-                groupWebServerControlService, jvmService, webServerService, applicationService, getV1ApplicationServiceRest());
+                groupWebServerControlService, jvmService, webServerService, applicationService, getV1ApplicationServiceRest(),
+                getV1WebServerServiceRest());
     }
 
     @Bean

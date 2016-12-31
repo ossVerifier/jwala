@@ -2,7 +2,7 @@ package com.cerner.jwala.common.domain.model.app;
 
 public enum ApplicationControlOperation {
 
-    SECURE_COPY,
+    SCP,
     BACK_UP,
     CREATE_DIRECTORY,
     CHANGE_FILE_MODE,

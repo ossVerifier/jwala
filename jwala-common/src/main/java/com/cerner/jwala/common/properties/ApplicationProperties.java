@@ -95,6 +95,11 @@ public class ApplicationProperties {
         return Boolean.parseBoolean(getProperties().getProperty(key));
     }
 
+    public static Boolean getRequiredAsBoolean(PropertyKeys key) {
+        String value = getRequired(key);
+        return Boolean.parseBoolean(value);
+    }
+
     public static int size() {
         return getProperties().size();
     }

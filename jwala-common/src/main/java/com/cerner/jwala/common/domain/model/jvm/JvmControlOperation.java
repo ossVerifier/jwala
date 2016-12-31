@@ -32,7 +32,7 @@ public enum JvmControlOperation {
 
     INSTALL_SERVICE("installService", NO_JVM_IN_PROGRESS_STATE),
 
-    SECURE_COPY("secureCopy", NO_JVM_IN_PROGRESS_STATE),
+    SCP("secureCopy", NO_JVM_IN_PROGRESS_STATE),
 
     BACK_UP("backupFile", NO_JVM_IN_PROGRESS_STATE),
 

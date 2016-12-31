@@ -30,36 +30,40 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
     }
 
     @Override
+    public void distributeWebServer(final String hostname) {
+        String writeLockResourceName = hostname + "-" + EntityType.WEB_SERVER.toString();
+        try {
+            binaryDistributionLockManager.writeLock(writeLockResourceName);
+
+            //remote.paths.apache.httpd=c:/ctp/apache-httpd-2.4.20
+            String remoteDeployDir =  ApplicationProperties.getRequired(PropertyKeys.REMOTE_PATHS_APACHE_HTTPD);
+
+            //remote.paths.httpd.root.dir.name=apache-httpd-2.4.20
+            String apacheDirName = ApplicationProperties.get(PropertyKeys.REMOTE_PATHS_HTTPD_ROOT_DIR_NAME);
+
+            distributeBinary(hostname, apacheDirName, remoteDeployDir, APACHE_EXCLUDE);
+
+        } finally {
+            binaryDistributionLockManager.writeUnlock(writeLockResourceName);
+        }
+    }
+
+    @Override
     public void distributeJdk(final String hostname) {
         LOGGER.info("Start deploy jdk for host {}", hostname);
 
-        String binaryName = ApplicationProperties.getRequired(PropertyKeys.REMOTE_JWALA_JAVA_ROOT_DIR);
-        String remoteJdkDir = ApplicationProperties.getRequired(PropertyKeys.REMOTE_JAVA_HOME);
+        //remote.jwala.java.home=c:/ctp/jdk1.8.0_92
+        String remoteDeployDir = ApplicationProperties.getRequired(PropertyKeys.REMOTE_JAVA_HOME);
 
-        distributeBinary(hostname, binaryName, remoteJdkDir, "");
+        //remote.jwala.java.root.dir.name=jdk1.8.0_92
+        String javaDirName = ApplicationProperties.getRequired(PropertyKeys.REMOTE_JWALA_JAVA_ROOT_DIR_NAME);
+
+        distributeBinary(hostname, javaDirName, remoteDeployDir, "");
 
         LOGGER.info("End deploy jdk for {}", hostname);
     }
 
-    @Override
-    public void distributeWebServer(final String hostname) {
-//        TODO: change this to work like distributeJdk
-//        String writeLockResourceName = hostname + "-" + EntityType.WEB_SERVER.toString();
-//        try {
-//            binaryDistributionLockManager.writeLock(writeLockResourceName);
-//            String webServerDir = ApplicationProperties.get("remote.paths.apache.httpd");
-//            String binaryDeployDir =  ApplicationProperties.get("remote.paths.root.httpd");
-//            if (webServerDir != null && !webServerDir.isEmpty()) {
-//                distributeBinary(hostname, webServerDir, binaryDeployDir, APACHE_EXCLUDE);
-//            } else {
-//                LOGGER.warn("WebServer dir location is null or empty {}", webServerDir);
-//            }
-//        } finally {
-//            binaryDistributionLockManager.writeUnlock(writeLockResourceName);
-//        }
-    }
-
-    private void distributeBinary(final String hostname, final String binaryName, final String binaryDeployDir, final String exclude) {
+    private void distributeBinary(final String hostname, final String binaryName, final String binaryDeployDir, final String excludeFromZip) {
         String binaryDir = ApplicationProperties.getRequired(PropertyKeys.LOCAL_JWALA_BINARY_DIR);
         LOGGER.debug("SCP binary starting for remote host {}. binary name is {}, binary deploy dir is {}", hostname, binaryName, binaryDeployDir);
 
@@ -78,10 +82,10 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
 
         try {
             remoteUnzipBinary(hostname,
-                    ApplicationProperties.getRequired(PropertyKeys.REMOTE_SCRIPTS) + "/" + UNZIPEXE,
+                    ApplicationProperties.getRequired(PropertyKeys.REMOTE_SCRIPT_DIR) + "/" + UNZIPEXE,
                     destinationZipFile,
                     ApplicationProperties.getRequired(PropertyKeys.REMOTE_PATHS_DEPLOY_DIR),
-                    exclude);
+                    excludeFromZip);
         } finally {
             remoteDeleteBinary(hostname, destinationZipFile);
         }
@@ -185,9 +189,9 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
     }
 
     @Override
-    public void prepareUnzip(String hostname) {
+    public void distributeUnzip(String hostname) {
         LOGGER.info("Start deploy unzip for {}", hostname);
-        final String jwalaScriptsPath = ApplicationProperties.getRequired(PropertyKeys.REMOTE_SCRIPTS);
+        final String jwalaScriptsPath = ApplicationProperties.getRequired(PropertyKeys.REMOTE_SCRIPT_DIR);
         if (!remoteFileCheck(hostname, jwalaScriptsPath)) {
             remoteCreateDirectory(hostname, jwalaScriptsPath);
         }

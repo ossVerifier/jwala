@@ -1,6 +1,6 @@
-@ECHO OFF
+@ECHO ON
 
-PUSHD  D:\jwala\apache-httpd-2.4.20
+PUSHD  ${vars['remote.paths.apache.httpd']}
 ${vars['remote.paths.apache.httpd']}\bin\httpd -k install -n ${webServer.name} -f ${webServer.httpConfigFile.path}
 CMD /C SC config ${webServer.name} DisplayName= "Apache ${webServer.name}"
 POPD

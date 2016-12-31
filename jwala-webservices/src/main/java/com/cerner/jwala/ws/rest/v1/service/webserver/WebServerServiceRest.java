@@ -16,7 +16,7 @@ import javax.ws.rs.core.Response;
 
 @Path("/webservers")
 @Produces(MediaType.APPLICATION_JSON)
-public interface WebServerServiceRest extends InitializingBean {
+public interface WebServerServiceRest {
 
     @GET
     Response getWebServers(@QueryParam("groupId") final Identifier<Group> aGroupId);

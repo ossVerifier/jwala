@@ -5,6 +5,7 @@ import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.resource.ResourceGroup;
 import com.cerner.jwala.common.domain.model.resource.ResourceIdentifier;
+import com.cerner.jwala.common.domain.model.resource.ResourceTemplateMetaData;
 import com.cerner.jwala.common.domain.model.webserver.WebServer;
 import com.cerner.jwala.common.domain.model.webserver.WebServerControlOperation;
 import com.cerner.jwala.common.domain.model.webserver.WebServerReachableState;
@@ -14,6 +15,7 @@ import com.cerner.jwala.common.exec.CommandOutput;
 import com.cerner.jwala.common.exec.CommandOutputReturnCode;
 import com.cerner.jwala.common.exec.ExecReturnCode;
 import com.cerner.jwala.common.properties.ApplicationProperties;
+import com.cerner.jwala.common.properties.PropertyKeys;
 import com.cerner.jwala.common.request.webserver.ControlWebServerRequest;
 import com.cerner.jwala.control.AemControl;
 import com.cerner.jwala.exception.CommandFailureException;
@@ -23,9 +25,12 @@ import com.cerner.jwala.service.resource.ResourceService;
 import com.cerner.jwala.service.webserver.WebServerCommandService;
 import com.cerner.jwala.service.webserver.WebServerControlService;
 import com.cerner.jwala.service.webserver.WebServerService;
+import com.cerner.jwala.service.webserver.exception.WebServerServiceException;
+import com.cerner.jwala.service.webserver.impl.WebServerServiceImpl;
 import com.cerner.jwala.ws.rest.v1.provider.AuthenticatedUser;
 import com.cerner.jwala.ws.rest.v1.response.ResponseBuilder;
 import com.cerner.jwala.ws.rest.v1.service.webserver.WebServerServiceRest;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,7 +39,9 @@ import javax.persistence.EntityExistsException;
 import javax.ws.rs.core.Response;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.PrintWriter;
+import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
@@ -48,6 +55,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
     public static final String PATHS_GENERATED_RESOURCE_DIR = "paths.generated.resource.dir";
     private static final String COMMANDS_SCRIPTS_PATH = ApplicationProperties.get("commands.scripts-path");
     private static final String MEDIA_TYPE_TEXT = "text";
+    private static final String HTTPD_CONF = "httpd.conf";
 
     private final WebServerService webServerService;
     private final WebServerControlService webServerControlService;
@@ -202,29 +210,20 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
         LOGGER.info("Generate and deploy web server {} by user {}", aWebServerName, aUser.getUser().getId());
 
         // only one at a time per web server
-        if (!wsWriteLocks.containsKey(aWebServerName)) {
-            wsWriteLocks.put(aWebServerName, new ReentrantReadWriteLock());
-        }
-        wsWriteLocks.get(aWebServerName).writeLock().lock();
+        lock(aWebServerName);
 
         try {
             WebServer webServer = webServerService.getWebServer(aWebServerName);
-            if (webServerService.isStarted(webServer)) {
-                final String errorMessage = "The target Web Server " + aWebServerName + " must be stopped before attempting to update the resource file";
-                LOGGER.error(errorMessage);
-                throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, errorMessage);
-            }
-            ResourceIdentifier resourceIdentifier = new ResourceIdentifier.Builder()
-                    .setWebServerName(webServer.getName())
-                    .setResourceName("*")
-                    .build();
-            resourceService.validateAllResourcesForGeneration(resourceIdentifier);
 
-            binaryDistributionService.prepareUnzip(webServer.getHost());
+            verifyStopped(aWebServerName, webServer);
+
+            validateResources(webServer);
+
+            binaryDistributionService.distributeUnzip(webServer.getHost());
             binaryDistributionService.distributeWebServer(webServer.getHost());
 
             // check for httpd.conf template
-            checkForHttpdConfTemplate(aWebServerName);
+            validateHttpdConf(webServer);
 
             // create the remote scripts directory
             createScriptsDirectory(webServer);
@@ -237,7 +236,6 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
 
             // create the configuration file(s)
             final List<String> templateNames = webServerService.getResourceTemplateNames(aWebServerName);
-            boolean resourceFileGeneratorExceptionFlag = false;
             for (final String templateName : templateNames) {
                 generateAndDeployConfig(aWebServerName, templateName, aUser);
             }
@@ -252,109 +250,175 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
                     FaultType.REMOTE_COMMAND_FAILURE, e.getMessage(), e));
         } finally {
-            wsWriteLocks.get(aWebServerName).writeLock().unlock();
+            unlock(aWebServerName);
         }
 
         return ResponseBuilder.ok(webServerService.getWebServer(aWebServerName));
     }
 
-    protected void checkForHttpdConfTemplate(String aWebServerName) {
+    private String fetchRemoteDeployDir(String aWebServerName) {
+        String remoteDeployDir = getMetaData(aWebServerName).getDeployPath();
+        LOGGER.debug("Fetched the web server template remote path {} from the metadata.", remoteDeployDir);
+        if (remoteDeployDir == null || remoteDeployDir.isEmpty()) {
+            throw new WebServerServiceException("The deployPath in the " + HTTPD_CONF + " metadata is required but not found.");
+        }
+        return remoteDeployDir;
+    }
+
+    private void validateResources(WebServer webServer) {
+        ResourceIdentifier resourceIdentifier = new ResourceIdentifier.Builder()
+                .setWebServerName(webServer.getName())
+                .setResourceName("*")
+                .build();
+        resourceService.validateAllResourcesForGeneration(resourceIdentifier);
+    }
+
+    private void verifyStopped(String aWebServerName, WebServer webServer) {
+        if (webServerService.isStarted(webServer)) {
+            final String errorMessage = "The target Web Server " + aWebServerName + " must be stopped before attempting to update the resource file";
+            LOGGER.error(errorMessage);
+            throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, errorMessage);
+        }
+    }
+
+    private void unlock(String aWebServerName) {
+        wsWriteLocks.get(aWebServerName).writeLock().unlock();
+    }
+
+    private void lock(String aWebServerName) {
+        if (!wsWriteLocks.containsKey(aWebServerName)) {
+            wsWriteLocks.put(aWebServerName, new ReentrantReadWriteLock());
+        }
+        wsWriteLocks.get(aWebServerName).writeLock().lock();
+    }
+
+    protected void validateHttpdConf(WebServer webServer) {
+        final String aWebServerName = webServer.getName();
         boolean foundHttpdConf = false;
         final List<String> templateNames = webServerService.getResourceTemplateNames(aWebServerName);
-        for (final String templateName : templateNames) {
-            if (templateName.equals("httpd.conf")) {
+        for (final String template : templateNames) {
+            if (template.equals(HTTPD_CONF)) {
                 foundHttpdConf = true;
                 break;
             }
         }
+
         if (!foundHttpdConf) {
-            throw new InternalErrorException(FaultType.WEB_SERVER_HTTPD_CONF_TEMPLATE_NOT_FOUND, "No template was found for the httpd.conf. Please upload a template for the httpd.conf and try again.");
+            throw new WebServerServiceException("No template was found for the " + HTTPD_CONF + ". Please upload a template for the httpd.conf and try again.");
         }
+
     }
 
     protected void createScriptsDirectory(WebServer webServer) throws CommandFailureException {
-        final String scriptsDir = ApplicationProperties.get("remote.commands.user-scripts");
-        final CommandOutput result = webServerControlService.createDirectory(webServer, scriptsDir);
+        final String remoteScriptsDir = ApplicationProperties.getRequired(PropertyKeys.REMOTE_SCRIPT_DIR);
+        final CommandOutput result = webServerControlService.createDirectory(webServer, remoteScriptsDir);
 
         final ExecReturnCode resultReturnCode = result.getReturnCode();
         if (!resultReturnCode.wasSuccessful()) {
-            LOGGER.error("Creating scripts directory {} FAILED ", scriptsDir);
+            LOGGER.error("Creating scripts directory {} FAILED ", remoteScriptsDir);
             throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, CommandOutputReturnCode.fromReturnCode(resultReturnCode.getReturnCode()).getDesc());
         }
+    }
 
+    public ResourceTemplateMetaData getMetaData(String aWebServerName) {
+        String metaData = webServerService.getResourceTemplateMetaData(aWebServerName, HTTPD_CONF);
+
+        LOGGER.debug("Returned webserver {} metaData {}", aWebServerName, metaData);
+
+        if (metaData == null || metaData.isEmpty()) {
+            throw new WebServerServiceException(MessageFormat.format("Metadata not found for template {0} and web server {1}", aWebServerName, HTTPD_CONF));
+        }
+
+        ResourceTemplateMetaData resourceTemplateMetaData;
+        try {
+            resourceTemplateMetaData = resourceService.getMetaData(metaData);
+            LOGGER.debug("Metadata deploy path is {}", resourceTemplateMetaData.getDeployPath());
+        } catch (IOException e) {
+            throw new WebServerServiceException(e);
+        }
+
+        return resourceTemplateMetaData;
     }
 
     protected void deployStartStopScripts(WebServer webServer, String userId) throws CommandFailureException {
+        final String remoteScriptDir = ApplicationProperties.getRequired(PropertyKeys.REMOTE_SCRIPT_DIR);
+
         final String webServerName = webServer.getName();
-        final String startScriptName = AemControl.Properties.START_SCRIPT_NAME.getValue();
-        final String sourceStartServicePath = COMMANDS_SCRIPTS_PATH + "/" + startScriptName;
-        final String destHttpdConfParentDir = ApplicationProperties.get("remote.paths.httpd.conf");
-        final String destHttpdConfStartScript = destHttpdConfParentDir + "/" + startScriptName;
-        if (webServerControlService.createDirectory(webServer, destHttpdConfParentDir).getReturnCode().wasSuccessful()) {
-            LOGGER.info("Successfully created the directory {}", destHttpdConfParentDir);
+        final String serviceStartScriptName = AemControl.Properties.START_SCRIPT_NAME.getValue();
+        final String serviceStartScriptPath = COMMANDS_SCRIPTS_PATH + "/" + serviceStartScriptName;
+        final String remoteDestStartScriptPath = remoteScriptDir + "/" + serviceStartScriptName;
+
+        if (webServerControlService.createDirectory(webServer, remoteScriptDir).getReturnCode().wasSuccessful()) {
+            LOGGER.info("Successfully created the directory {}", remoteScriptDir);
         } else {
-            LOGGER.error("Failed to create the directory {} during creation of {}", destHttpdConfParentDir, webServerName);
-            throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, "Failed to secure copy file " + sourceStartServicePath + " during the creation of " + webServerName);
+            LOGGER.error("Failed to create the directory {} during creation of {}", remoteScriptDir, webServerName);
+            throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, "Failed to secure copy file " + serviceStartScriptPath + " during the creation of " + webServerName);
         }
-        if (!webServerControlService.secureCopyFile(webServerName, sourceStartServicePath, destHttpdConfStartScript, userId).getReturnCode().wasSuccessful()) {
-            LOGGER.error("Failed to secure copy file {} during creation of {}", sourceStartServicePath, webServerName);
-            throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, "Failed to secure copy file " + sourceStartServicePath + " during the creation of " + webServerName);
+        if (!webServerControlService.secureCopyFile(webServerName, serviceStartScriptPath, remoteDestStartScriptPath, userId).getReturnCode().wasSuccessful()) {
+            LOGGER.error("Failed to secure copy file {} during creation of {}", serviceStartScriptPath, webServerName);
+            throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, "Failed to secure copy file " + serviceStartScriptPath + " during the creation of " + webServerName);
         }
 
-        final String stopScriptName = AemControl.Properties.STOP_SCRIPT_NAME.getValue();
-        final String sourceStopServicePath = COMMANDS_SCRIPTS_PATH + "/" + stopScriptName;
-        final String destHttpdConfStopScript = destHttpdConfParentDir + "/" + stopScriptName;
-        if (!webServerControlService.secureCopyFile(webServerName, sourceStopServicePath, destHttpdConfStopScript, userId).getReturnCode().wasSuccessful()) {
-            LOGGER.error("Failed to secure copy file {} during creation of {}", sourceStopServicePath, webServerName);
-            throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, "Failed to secure copy file " + sourceStopServicePath + " during the creation of " + webServerName);
+        final String serviceStopScriptName = AemControl.Properties.STOP_SCRIPT_NAME.getValue();
+        final String serviceStopScriptPath = COMMANDS_SCRIPTS_PATH + "/" + serviceStopScriptName;
+        final String remoteDestStopScriptPath = remoteScriptDir + "/" + serviceStopScriptName;
+
+        if (!webServerControlService.secureCopyFile(webServerName, serviceStopScriptPath, remoteDestStopScriptPath, userId).getReturnCode().wasSuccessful()) {
+            LOGGER.error("Failed to secure copy file {} during creation of {}", serviceStopScriptPath, webServerName);
+            throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, "Failed to secure copy file " + serviceStopScriptPath + " during the creation of " + webServerName);
         }
 
         final String installServiceWsScriptName = AemControl.Properties.INSTALL_SERVICE_WS_SERVICE_SCRIPT_NAME.getValue();
         final String sourceInstallServiceWsServicePath = COMMANDS_SCRIPTS_PATH + "/" + installServiceWsScriptName;
-        final String jwalaScriptsPath = ApplicationProperties.get("remote.commands.user-scripts");
-        if (!webServerControlService.secureCopyFile(webServerName, sourceInstallServiceWsServicePath, jwalaScriptsPath + "/" + installServiceWsScriptName, userId).getReturnCode().wasSuccessful()) {
+        if (!webServerControlService.secureCopyFile(webServerName, sourceInstallServiceWsServicePath, remoteScriptDir + "/" + installServiceWsScriptName, userId).getReturnCode().wasSuccessful()) {
             LOGGER.error("Failed to secure copy file {} during creation of {}", sourceInstallServiceWsServicePath, webServerName);
             throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, "Failed to secure copy file " + sourceInstallServiceWsServicePath + " during the creation of " + webServerName);
         }
 
         // make sure the scripts are executable
-        if (!webServerControlService.changeFileMode(webServer, "a+x", jwalaScriptsPath, "*.sh").getReturnCode().wasSuccessful()) {
-            LOGGER.error("Failed to update the permissions in {} during the creation of {}", jwalaScriptsPath, webServerName);
+        if (!webServerControlService.changeFileMode(webServer, "a+x", remoteScriptDir, "*.sh").getReturnCode().wasSuccessful()) {
+            LOGGER.error("Failed to update the *.sh permissions in {} during the creation of {}", remoteScriptDir, webServerName);
             throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, "Failed to update the permissions in " + sourceInstallServiceWsServicePath + " during the creation of " + webServerName);
-        }
-        if (!webServerControlService.changeFileMode(webServer, "a+x", destHttpdConfParentDir, "*.sh").getReturnCode().wasSuccessful()) {
-            LOGGER.error("Failed to update the permissions in {} during the creation of {}", destHttpdConfParentDir, webServerName);
-            throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, "Failed to update the permissions in " + destHttpdConfParentDir + " during the creation of " + webServerName);
         }
     }
 
-    protected void installWebServerWindowsService(final AuthenticatedUser user, final ControlWebServerRequest installServiceWSBatRequest, final WebServer webServer) throws CommandFailureException {
+    protected void installWebServerWindowsService(final AuthenticatedUser user, final ControlWebServerRequest installServiceRequest, final WebServer webServer) throws CommandFailureException {
+
+        final String remoteScriptDir = ApplicationProperties.getRequired(PropertyKeys.REMOTE_SCRIPT_DIR);
 
         // create the install_serviceWS.bat file
-        String installserviceWSBatText = webServerService.generateInstallServiceWSBat(webServer);
+        String installServiceScriptText = webServerService.generateInstallServiceScript(webServer);
         final String jwalaGeneratedResourcesDir = ApplicationProperties.get(PATHS_GENERATED_RESOURCE_DIR);
-        final String httpdDataDir = ApplicationProperties.get("remote.paths.httpd.conf");
+
+
         final String name = webServer.getName();
-        final File install_serviceWsBatFile = createTempWebServerResourceFile(name, jwalaGeneratedResourcesDir, "install_serviceWS", "bat", installserviceWSBatText);
+        final File installServiceScript = createTempWebServerResourceFile(name, jwalaGeneratedResourcesDir, WebServerServiceImpl.INSTALL_SERVICE_SCRIPT_NAME, installServiceScriptText);
 
         // copy the install_serviceWS.bat file
-        final String install_serviceWsBatFileAbsolutePath = install_serviceWsBatFile.getAbsolutePath().replaceAll("\\\\", "/");
-        CommandOutput copyResult = webServerControlService.secureCopyFile(name, install_serviceWsBatFileAbsolutePath, httpdDataDir + "/install_serviceWS.bat", user.getUser().getId());
+        final String installServiceScriptPath = installServiceScript.getAbsolutePath().replaceAll("\\\\", "/");
+        String remoteInstallServiceScriptPath = remoteScriptDir + "/" + WebServerServiceImpl.INSTALL_SERVICE_SCRIPT_NAME;
+        CommandOutput copyResult = webServerControlService.secureCopyFile(name, installServiceScriptPath, remoteInstallServiceScriptPath, user.getUser().getId());
         if (copyResult.getReturnCode().wasSuccessful()) {
-            LOGGER.info("Successfully copied {} to {}", install_serviceWsBatFileAbsolutePath, webServer.getHost());
+            LOGGER.info("Successfully copied {} to host {} and path {}", installServiceScriptPath, webServer.getHost(), remoteInstallServiceScriptPath);
         } else {
-            LOGGER.error("Failed to copy {} to {} ", install_serviceWsBatFileAbsolutePath, webServer.getHost());
-            throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, "Failed to copy " + install_serviceWsBatFileAbsolutePath + " to " + webServer.getHost());
+            LOGGER.error("Failed to copy {} to host {} and path {}", installServiceScriptPath, webServer.getHost(), remoteInstallServiceScriptPath);
+            throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, "Failed to copy " + installServiceScriptPath +
+                    " to " + webServer.getHost() + " path " + remoteInstallServiceScriptPath);
         }
 
-        // call the install_serviceWs.bat file
-        CommandOutput installserviceResult = webServerControlService.controlWebServer(installServiceWSBatRequest, user.getUser());
-        if (installserviceResult.getReturnCode().wasSuccessful()) {
+        if (!webServerControlService.changeFileMode(webServer, "a+x", remoteScriptDir, "*.bat").getReturnCode().wasSuccessful()) {
+            LOGGER.error("Failed to update the *.bat permissions in {} during the creation of {}", remoteScriptDir, webServer.getName());
+            throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, "Failed to update the permissions in " + remoteScriptDir + " during the creation of " + webServer.getName());
+        }
+
+        // call the install service script file
+        CommandOutput installServiceResult = webServerControlService.controlWebServer(installServiceRequest, user.getUser());
+        if (installServiceResult.getReturnCode().wasSuccessful()) {
             LOGGER.info("Successfully invoked service {}", name);
         } else {
-            final String standardError = installserviceResult.getStandardError();
-            LOGGER.error("Failed to create windows service for {} :: {}", name, !standardError.isEmpty() ? standardError : installserviceResult.getStandardOutput());
-            throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, "Failed to create windows service for " + name + ". " + installserviceResult.standardErrorOrStandardOut());
+            final String standardError = installServiceResult.getStandardError();
+            LOGGER.error("Failed to create windows service for {} :: {}", name, !standardError.isEmpty() ? standardError : installServiceResult.getStandardOutput());
+            throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, "Failed to create windows service for " + name + ". " + installServiceResult.standardErrorOrStandardOut());
         }
     }
 
@@ -376,7 +440,10 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
         }
     }
 
-    protected File createTempWebServerResourceFile(String aWebServerName, String httpdDataDir, String fileNamePrefix, String fileNameSuffix, String generatedTemplate) {
+    protected File createTempWebServerResourceFile(String aWebServerName, String httpdDataDir, String fileName, String generatedTemplate) {
+        String fileNamePrefix = FilenameUtils.getBaseName(fileName);
+        String fileNameSuffix = FilenameUtils.getExtension(fileName);
+
         PrintWriter out = null;
         final File httpdConfFile =
                 new File(httpdDataDir + System.getProperty("file.separator") + aWebServerName + "_" + fileNamePrefix + "."
@@ -398,7 +465,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
 
     @Override
     public Response getHttpdConfig(Identifier<WebServer> aWebServerId) {
-        LOGGER.debug("Get httpd.conf for {}", aWebServerId);
+        LOGGER.debug("Get " + HTTPD_CONF + " for {}", aWebServerId);
         try {
             return Response.ok(webServerCommandService.getHttpdConf(aWebServerId)).build();
         } catch (CommandFailureException cmdFailEx) {
@@ -445,14 +512,5 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
                     FaultType.INVALID_TEMPLATE, rte.getMessage()));
         }
-    }
-
-    @Override
-    public void afterPropertiesSet() throws Exception {
-        instance = this;
-    }
-
-    public static WebServerServiceRestImpl get() {
-        return instance;
     }
 }

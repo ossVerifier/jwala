@@ -28,6 +28,7 @@ import com.cerner.jwala.service.resource.ResourceService;
 import com.cerner.jwala.service.resource.impl.ResourceGeneratorType;
 import com.cerner.jwala.service.webserver.WebServerCommandService;
 import com.cerner.jwala.service.webserver.WebServerControlService;
+import com.cerner.jwala.service.webserver.exception.WebServerServiceException;
 import com.cerner.jwala.service.webserver.impl.WebServerServiceImpl;
 import com.cerner.jwala.ws.rest.v1.provider.AuthenticatedUser;
 import com.cerner.jwala.ws.rest.v1.response.ApplicationResponse;
@@ -129,13 +130,6 @@ public class WebServerServiceRestImplTest {
         InternalErrorException iee = new InternalErrorException(null, "User does not have permission to create the directory ~/.jwala");
         statusNotOk = ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
                 FaultType.DUPLICATE_GROUP_NAME, iee.getMessage(), iee));
-
-        try {
-            webServerServiceRest.afterPropertiesSet();
-        } catch (Exception e) {
-            assertTrue("This should not fail, but ... " + e.getMessage(), false);
-        }
-
     }
 
     @After
@@ -437,7 +431,7 @@ public class WebServerServiceRestImplTest {
         assertEquals(webServer.getName(), ((Map) ((ApplicationResponse) response.getEntity()).getApplicationResponseContent()).get("webServerName"));
     }*/
 
-    @Test (expected = InternalErrorException.class)
+    @Test (expected = WebServerServiceException.class)
     public void testGenerateAndDeployWebServerWithNoHttpdConfTemplate() {
         when(impl.getWebServer(anyString())).thenReturn(webServer);
         when(impl.isStarted(any(WebServer.class))).thenReturn(false);
@@ -455,7 +449,7 @@ public class WebServerServiceRestImplTest {
         when(webServerControlService.createDirectory(any(WebServer.class), anyString())).thenReturn(retSuccessExecData);
         when(webServerControlService.changeFileMode(any(WebServer.class), anyString(), anyString(), anyString())).thenReturn(retSuccessExecData);
         when(impl.getWebServer(anyString())).thenReturn(webServer);
-        when(impl.generateInstallServiceWSBat(any(WebServer.class))).thenReturn("invoke me");
+        when(impl.generateInstallServiceScript(any(WebServer.class))).thenReturn("invoke me");
         when(impl.getResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"contentType\":\"text/plain\",\"deployPath\":\"./anyPath\",\"deployFileName\":\"httpd.conf\"}");
         when(impl.getResourceTemplateNames(anyString())).thenReturn(webServerResourceNames);
         when(resourceService.generateResourceGroup()).thenReturn(new ResourceGroup());
@@ -571,11 +565,11 @@ public class WebServerServiceRestImplTest {
         CommandOutput retFailExecData = new CommandOutput(new ExecReturnCode(1), "", "Failed secure copy");
         when(webServerControlService.controlWebServer(any(ControlWebServerRequest.class), any(User.class))).thenReturn(retSuccessExecData);
         when(webServerControlService.secureCopyFile(anyString(), anyString(), anyString(), anyString())).thenReturn(retSuccessExecData);
-        when(webServerControlService.secureCopyFile(anyString(), contains("install_serviceWS"), anyString(), anyString())).thenReturn(retFailExecData);
+        when(webServerControlService.secureCopyFile(anyString(), contains("install-ws-service"), anyString(), anyString())).thenReturn(retFailExecData);
         when(webServerControlService.createDirectory(any(WebServer.class), anyString())).thenReturn(retSuccessExecData);
         when(webServerControlService.changeFileMode(any(WebServer.class), anyString(), anyString(), anyString())).thenReturn(retSuccessExecData);
         when(impl.getWebServer(anyString())).thenReturn(webServer);
-        when(impl.generateInstallServiceWSBat(any(WebServer.class))).thenReturn("invoke me");
+        when(impl.generateInstallServiceScript(any(WebServer.class))).thenReturn("invoke me");
         when(impl.getResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"contentType\":\"text/plain\",\"deployPath\":\"./anyPath\",\"deployFileName\":\"httpd.conf\"}");
         when(impl.getResourceTemplateNames(anyString())).thenReturn(webServerResourceNames);
         when(resourceService.generateResourceGroup()).thenReturn(new ResourceGroup());
@@ -603,7 +597,7 @@ public class WebServerServiceRestImplTest {
         when(webServerControlService.createDirectory(any(WebServer.class), anyString())).thenReturn(retSuccessExecData);
         when(webServerControlService.changeFileMode(any(WebServer.class), anyString(), anyString(), anyString())).thenReturn(retSuccessExecData);
         when(impl.getWebServer(anyString())).thenReturn(webServer);
-        when(impl.generateInstallServiceWSBat(any(WebServer.class))).thenReturn("invoke me");
+        when(impl.generateInstallServiceScript(any(WebServer.class))).thenReturn("invoke me");
         when(impl.getResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"contentType\":\"text/plain\",\"deployPath\":\"./anyPath\",\"deployFileName\":\"httpd.conf\"}");
         when(impl.getResourceTemplateNames(anyString())).thenReturn(webServerResourceNames);
         when(resourceService.generateResourceGroup()).thenReturn(new ResourceGroup());
@@ -630,7 +624,7 @@ public class WebServerServiceRestImplTest {
         when(webServerControlService.createDirectory(any(WebServer.class), anyString())).thenReturn(retSuccessExecData);
         when(webServerControlService.changeFileMode(any(WebServer.class), anyString(), anyString(), anyString())).thenReturn(retSuccessExecData);
         when(impl.getWebServer(anyString())).thenReturn(webServer);
-        when(impl.generateInstallServiceWSBat(any(WebServer.class))).thenReturn("invoke me");
+        when(impl.generateInstallServiceScript(any(WebServer.class))).thenReturn("invoke me");
         when(impl.getResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"contentType\":\"text/plain\",\"deployPath\":\"./anyPath\",\"deployFileName\":\"httpd.conf\"}");
         when(impl.getResourceTemplateNames(anyString())).thenReturn(webServerResourceNames);
         when(resourceService.generateResourceGroup()).thenReturn(new ResourceGroup());
@@ -659,7 +653,7 @@ public class WebServerServiceRestImplTest {
         when(webServerControlService.createDirectory(any(WebServer.class), anyString())).thenReturn(retSuccessExecData);
         when(webServerControlService.changeFileMode(any(WebServer.class), anyString(), anyString(), anyString())).thenReturn(retSuccessExecData);
         when(impl.getWebServer(anyString())).thenReturn(webServer);
-        when(impl.generateInstallServiceWSBat(any(WebServer.class))).thenReturn("invoke me");
+        when(impl.generateInstallServiceScript(any(WebServer.class))).thenReturn("invoke me");
         when(impl.getResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"contentType\":\"text/plain\",\"deployPath\":\"./anyPath\",\"deployFileName\":\"httpd.conf\"}");
         when(impl.getResourceTemplateNames(anyString())).thenReturn(webServerResourceNames);
         when(resourceService.generateResourceGroup()).thenReturn(new ResourceGroup());

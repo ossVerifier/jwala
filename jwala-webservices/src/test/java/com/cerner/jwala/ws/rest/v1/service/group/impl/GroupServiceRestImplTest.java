@@ -112,6 +112,9 @@ public class GroupServiceRestImplTest {
     private GroupPersistenceService mockGroupPersistenceService;
 
     @Mock
+    private WebServerServiceRest mockWebServerServiceRest;
+
+    @Mock
     private Jvm mockJvm;
 
     private List<Jvm> jvms;
@@ -201,11 +204,14 @@ public class GroupServiceRestImplTest {
 
         groupServiceRest = new GroupServiceRestImpl(mockGroupService, mockResourceService, mockGroupControlService,
                 mockGroupJvmControlService, mockGroupWSControlService, mockJvmService, mockWebServerService,
-                mockApplicationService, applicationServiceRest);
+                mockApplicationService, applicationServiceRest, mockWebServerServiceRest);
 
 
         final WebServerServiceRest webServerServiceRest = new WebServerServiceRestImpl(mockWebServerService, mockWebServerControlService, mockWebServerCommandService, new HashMap<String, ReentrantReadWriteLock>(), mockResourceService, mockGroupService, mockBinaryDistributionService);
-        webServerServiceRest.afterPropertiesSet();
+
+        groupServiceRest = new GroupServiceRestImpl(mockGroupService, mockResourceService, mockGroupControlService,
+                mockGroupJvmControlService, mockGroupWSControlService, mockJvmService, mockWebServerService,
+                mockApplicationService, applicationServiceRest, webServerServiceRest);
     }
 
     @After
@@ -484,7 +490,6 @@ public class GroupServiceRestImplTest {
         when(mockGroupService.getGroup(anyString())).thenReturn(mockGroup);
         when(mockGroupService.getGroupWithWebServers(any(Identifier.class))).thenReturn(mockGroup);
         when(mockGroup.getWebServers()).thenReturn(wsSet);
-        when(mockWebServerService.updateResourceTemplate(anyString(), anyString(), anyString())).thenReturn(httpdConfTemplateContent);
         when(mockWebServerService.getResourceTemplateMetaData(anyString(), anyString())).thenReturn(rawMetaData);
         when(mockWebServerService.getResourceTemplate(anyString(), anyString(), anyBoolean(), any(ResourceGroup.class))).thenReturn(httpdConfTemplateContent);
         when(mockResourceService.updateResourceMetaData(any(ResourceIdentifier.class), anyString(), anyString())).thenReturn(rawMetaData);

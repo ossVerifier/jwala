@@ -15,6 +15,6 @@ public interface GroupStateNotificationService {
      * @param id the id
      * @param aClass the class where the state belongs to.
      */
-    void retrieveStateAndSendToATopic(Identifier id, Class aClass);
+    void retrieveStateAndSend(Identifier id, Class aClass);
 
 }

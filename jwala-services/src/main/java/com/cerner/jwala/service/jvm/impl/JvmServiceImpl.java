@@ -61,9 +61,6 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.*;
-import java.nio.charset.Charset;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
 
 public class JvmServiceImpl implements JvmService {
@@ -390,9 +387,8 @@ public class JvmServiceImpl implements JvmService {
     private void distributeBinaries(String hostName) {
         try {
             binaryDistributionLockManager.writeLock(hostName);
-            binaryDistributionService.prepareUnzip(hostName);
+            binaryDistributionService.distributeUnzip(hostName);
             binaryDistributionService.distributeJdk(hostName);
-//            binaryDistributionService.distributeTomcat(hostName);
         } finally {
             binaryDistributionLockManager.writeUnlock(hostName);
         }
@@ -410,7 +406,7 @@ public class JvmServiceImpl implements JvmService {
     }
 
     protected void deployScriptsToUserJwalaScriptsDir(Jvm jvm, User user) throws CommandFailureException, IOException {
-        final ControlJvmRequest secureCopyRequest = new ControlJvmRequest(jvm.getId(), JvmControlOperation.SECURE_COPY);
+        final ControlJvmRequest secureCopyRequest = new ControlJvmRequest(jvm.getId(), JvmControlOperation.SCP);
         final String commandsScriptsPath = ApplicationProperties.get("commands.scripts-path");
 
         final String deployConfigJarPath = commandsScriptsPath + "/" + AemControl.Properties.DEPLOY_CONFIG_ARCHIVE_SCRIPT_NAME.getValue();
@@ -550,7 +546,7 @@ public class JvmServiceImpl implements JvmService {
             parentDir = new File(destinationFile).getParentFile().getAbsolutePath().replaceAll("\\\\", "/");
         }
         createParentDir(jvm, parentDir);
-        final ControlJvmRequest controlJvmRequest = new ControlJvmRequest(jvm.getId(), JvmControlOperation.SECURE_COPY);
+        final ControlJvmRequest controlJvmRequest = new ControlJvmRequest(jvm.getId(), JvmControlOperation.SCP);
         final CommandOutput commandOutput = jvmControlService.secureCopyFile(controlJvmRequest, sourceFile, destinationFile, user.getId());
         if (commandOutput.getReturnCode().wasSuccessful()) {
             LOGGER.info("Successfully copied {} to destination location {} on {}", sourceFile, destinationFile, jvm.getHostName());
@@ -634,7 +630,7 @@ public class JvmServiceImpl implements JvmService {
                           final String msg) {
         jvmPersistenceService.updateState(jvm.getId(), state, msg);
         messagingTemplate.convertAndSend(topicServerStates, new CurrentState<>(jvm.getId(), state, DateTime.now(), StateType.JVM));
-        groupStateNotificationService.retrieveStateAndSendToATopic(jvm.getId(), Jvm.class);
+        groupStateNotificationService.retrieveStateAndSend(jvm.getId(), Jvm.class);
     }
 
     @Override
