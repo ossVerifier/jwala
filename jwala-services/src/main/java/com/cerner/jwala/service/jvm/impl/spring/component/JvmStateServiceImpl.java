@@ -237,14 +237,26 @@ public class JvmStateServiceImpl implements JvmStateService {
     protected boolean isStateChangedAndOrMsgNotEmpty(Jvm jvm, final JvmState state, final String errMsg) {
         final Identifier<Jvm> id = jvm.getId();
 
-        final boolean newOrStateChanged = !inMemoryStateManagerService.containsKey(id) ||
-                !inMemoryStateManagerService.get(id).getState().equals(state);
+        if (!inMemoryStateManagerService.containsKey(id)) {
+            return false;
+        }
 
-        final boolean newOrMsgChanged = !inMemoryStateManagerService.containsKey(id)  ||
-                !inMemoryStateManagerService.get(id).getMessage().equals(errMsg);
-        final boolean result = newOrStateChanged || newOrMsgChanged;
-        LOGGER.debug("isStateChangedAndOrMsgNotEmpty result: newOrStateChanged {} || newOrMsgChanged {} = {}",
-                newOrStateChanged, newOrMsgChanged, result);
+        JvmState jvmState = inMemoryStateManagerService.get(id).getState();
+        final boolean stateChanged = !jvmState.equals(state);
+
+        String jvmMessage = inMemoryStateManagerService.get(id).getMessage();
+        final boolean msgChanged = !jvmMessage.equals(errMsg);
+
+        final boolean result = stateChanged || msgChanged;
+
+        if (stateChanged) {
+            LOGGER.debug("Jvm state for jvm {} changed from {} to {}", jvm.getJvmName(), jvmState, state);
+        }
+
+        if (msgChanged) {
+            LOGGER.debug("Jvm message for jvm {} changed from {} to {}", jvm.getJvmName(), jvmState, state);
+        }
+
         return result;
     }
 

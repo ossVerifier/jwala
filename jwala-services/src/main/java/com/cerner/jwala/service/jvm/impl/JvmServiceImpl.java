@@ -277,10 +277,13 @@ public class JvmServiceImpl implements JvmService {
 
     @Override
     public Jvm generateAndDeployJvm(String jvmName, User user) {
+        boolean didSucceed = true;
         Jvm jvm = getJvm(jvmName);
         // only one at a time per JVM
         //TODO return error if .jwala directory is already being written to
         LOGGER.debug("Start generateAndDeployJvm for {} by user {}", jvmName, user.getId());
+
+        historyFacadeService.write(jvm.getHostName(), jvm.getGroups(), "Starting to generate remote JVM " + jvm.getJvmName(), EventType.USER_ACTION_INFO, user.getId());
 
         //add write lock for multiple write
         binaryDistributionLockManager.writeLock(jvmName + "-" + jvm.getId().toString());
@@ -330,11 +333,17 @@ public class JvmServiceImpl implements JvmService {
             updateState(jvm.getId(), JvmState.JVM_STOPPED);
 
         } catch (CommandFailureException | IOException e) {
+            didSucceed = false;
             LOGGER.error("Failed to generate the JVM config for {} :: ERROR: {}", jvm.getJvmName(), e);
             throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, "Failed to generate the JVM config: " + jvm.getJvmName(), e);
         } finally {
             binaryDistributionLockManager.writeUnlock(jvmName + "-" + jvm.getId().toString());
             LOGGER.debug("End generateAndDeployJvm for {} by user {}", jvmName, user.getId());
+
+            String historyMessage = didSucceed ? "Remote generation of jvm " + jvm.getJvmName() + " succeeded" :
+                    "Remote generation of jvm " + jvm.getJvmName() + " failed";
+
+            historyFacadeService.write(jvm.getHostName(), jvm.getGroups(), historyMessage, EventType.USER_ACTION_INFO, user.getId());
         }
         return jvm;
     }
