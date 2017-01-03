@@ -18,7 +18,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
-import java.util.Arrays;
 
 /**
  * Implements {@link JschService}
@@ -50,7 +49,7 @@ public class JschServiceImpl implements JschService {
                 remoteSystemConnection.getPort());
         final char[] encryptedPassword = remoteSystemConnection.getEncryptedPassword();
         if (encryptedPassword != null) {
-            session.setPassword(new DecryptPassword().decrypt(Arrays.toString(encryptedPassword)));
+            session.setPassword(new DecryptPassword().decrypt(encryptedPassword));
             session.setConfig("StrictHostKeyChecking", "no");
             session.setConfig("PreferredAuthentications", "password,gssapi-with-mic,publickey,keyboard-interactive");
         }
