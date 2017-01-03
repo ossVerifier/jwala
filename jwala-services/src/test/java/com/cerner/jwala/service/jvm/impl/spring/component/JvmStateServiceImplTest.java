@@ -7,16 +7,12 @@ import com.cerner.jwala.common.domain.model.jvm.JvmState;
 import com.cerner.jwala.common.domain.model.ssh.SshConfiguration;
 import com.cerner.jwala.common.domain.model.state.CurrentState;
 import com.cerner.jwala.common.exec.RemoteExecCommand;
-import com.cerner.jwala.persistence.jpa.domain.JpaJvm;
 import com.cerner.jwala.persistence.service.JvmPersistenceService;
 import com.cerner.jwala.service.MessagingService;
 import com.cerner.jwala.service.RemoteCommandExecutorService;
 import com.cerner.jwala.service.group.GroupStateNotificationService;
 import com.cerner.jwala.service.jvm.JvmStateService;
-import com.cerner.jwala.service.jvm.impl.spring.component.JvmStateResolverWorker;
-import com.cerner.jwala.service.jvm.impl.spring.component.JvmStateServiceImpl;
 import com.cerner.jwala.service.state.InMemoryStateManagerService;
-
 import org.apache.commons.lang.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -114,16 +110,5 @@ public class JvmStateServiceImplTest {
         verify(mockJvmPersistenceService).updateState(eq(id), eq(JvmState.JVM_STOPPED), eq(StringUtils.EMPTY));
         verify(mockMessagingService).send(any(CurrentState.class));
         verify(mockGroupStateNotificationService).retrieveStateAndSendToATopic(eq(id), eq(Jvm.class));
-    }
-
-    @Test
-    @SuppressWarnings("unchecked")
-    public void testRequestCurrentStatesRetrievalAndNotification() {
-        final List<JpaJvm> jpaJvmList = new ArrayList<>();
-        jpaJvmList.add(new JpaJvm());
-        when(mockJvmPersistenceService.getJpaJvmsByGroupName(eq("some-group-name"))).thenReturn(jpaJvmList);
-        when(mockInMemoryStateManagerService.get(any(Identifier.class))).thenReturn(null);
-        jvmStateService.requestCurrentStatesRetrievalAndNotification("some-group-name");
-        verify(mockMessagingService).send(any(CurrentState.class));
     }
 }

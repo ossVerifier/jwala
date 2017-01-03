@@ -9,7 +9,6 @@ import com.cerner.jwala.common.domain.model.state.StateType;
 import com.cerner.jwala.common.exec.ExecCommand;
 import com.cerner.jwala.common.exec.RemoteExecCommand;
 import com.cerner.jwala.common.exec.RemoteSystemConnection;
-import com.cerner.jwala.persistence.jpa.domain.JpaJvm;
 import com.cerner.jwala.persistence.service.JvmPersistenceService;
 import com.cerner.jwala.service.MessagingService;
 import com.cerner.jwala.service.RemoteCommandExecutorService;
@@ -17,7 +16,6 @@ import com.cerner.jwala.service.RemoteCommandReturnInfo;
 import com.cerner.jwala.service.group.GroupStateNotificationService;
 import com.cerner.jwala.service.jvm.JvmStateService;
 import com.cerner.jwala.service.state.InMemoryStateManagerService;
-
 import de.jkeylockmanager.manager.KeyLockManager;
 import de.jkeylockmanager.manager.LockCallback;
 import de.jkeylockmanager.manager.implementation.lockstripe.StripedKeyLockManager;
@@ -31,7 +29,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
@@ -232,30 +233,5 @@ public class JvmStateServiceImpl implements JvmStateService {
         LOGGER.debug("isStateChangedAndOrMsgNotEmpty result: newOrStateChanged {} || newOrMsgChanged {} = {}",
                      newOrStateChanged, newOrMsgChanged, result);
         return result;
-    }
-
-    /**
-     * This method will deliver the states using a messaging service.
-     *
-     * @param groupName the group name
-     * @return number of JVM state notifications.
-     */
-    @Override
-    public int requestCurrentStatesRetrievalAndNotification(final String groupName) {
-        final List<JpaJvm> jpaJvmList = jvmPersistenceService.getJpaJvmsByGroupName(groupName);
-            for (final JpaJvm jpaJvm : jpaJvmList) {
-                final CurrentState<Jvm, JvmState> inMemoryState = inMemoryStateManagerService.get(new Identifier<Jvm>(jpaJvm.getId()));
-                if (inMemoryState == null) {
-                    LOGGER.debug("in-memory JVM state = null");
-                    final CurrentState<Jvm, JvmState> currentState = new CurrentState<>(new Identifier<Jvm>(jpaJvm.getId()), jpaJvm.getState(),
-                            new DateTime(jpaJvm.getLastUpdateDate()), StateType.JVM, jpaJvm.getErrorStatus());
-                    LOGGER.debug("Sending JVM state from db: {}", currentState);
-                    messagingService.send(currentState);
-                } else {
-                    LOGGER.debug("Sending in-memory JVM state {}", inMemoryState);
-                    messagingService.send(inMemoryState);
-                }
-            }
-        return jpaJvmList.size();
     }
 }

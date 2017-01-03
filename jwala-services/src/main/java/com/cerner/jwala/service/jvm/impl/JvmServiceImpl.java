@@ -787,11 +787,6 @@ public class JvmServiceImpl implements JvmService {
     }
 
     @Override
-    public String getResourceTemplateMetaData(String jvmName, String fileName) {
-        return jvmPersistenceService.getResourceTemplateMetaData(jvmName, fileName);
-    }
-
-    @Override
     @Transactional
     public String updateResourceTemplate(final String jvmName, final String resourceTemplateName, final String template) {
         String retVal = null;
