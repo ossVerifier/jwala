@@ -15,7 +15,12 @@
 ECHO=/bin/echo
 TOMCAT_HOME=$1
 TOMCAT_HOME_BIN=$TOMCAT_HOME/bin
-TOMCAT_USER=z002s9mw
+
+# Define the tomcat username
+TOMCAT_USER="${TOMCAT_USER:-tomcat}"
+
+# Define the tomcat group
+TOMCAT_GROUP="${TOMCAT_GROUP:-`id -gn $TOMCAT_USER`}"
 
 # For SELinux we need to use 'runuser' not 'su'
 if [ -x "/sbin/runuser" ]; then
@@ -25,14 +30,15 @@ else
 fi
 
 start() {
-    $ECHO -n "Starting Tomcat Jwala "
-    $SU - $TOMCAT_USER -c "pushd $TOMCAT_HOME_BIN; sudo ./startup.sh; popd"
+    $ECHO -n "Starting Tomcat "
+    chown -R ${TOMCAT_USER}:${TOMCAT_GROUP} $TOMCAT_HOME/logs
+    $SU - $TOMCAT_USER -c "pushd $TOMCAT_HOME_BIN; ./startup.sh; popd"
     $ECHO "."
 }
 
 stop() {
-    $ECHO -n "Stopping Tomcat Jwala "
-    $SU - $TOMCAT_USER -c "pushd $TOMCAT_HOME_BIN; sudo ./catalina.sh stop 20 -force; popd"
+    $ECHO -n "Stopping Tomcat "
+    $SU - $TOMCAT_USER -c "pushd $TOMCAT_HOME_BIN; ./catalina.sh stop 20 -force; popd"
     $ECHO "."
 }
 
