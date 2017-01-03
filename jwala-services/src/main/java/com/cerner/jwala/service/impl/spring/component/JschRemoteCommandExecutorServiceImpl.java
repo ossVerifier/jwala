@@ -14,7 +14,6 @@ import com.cerner.jwala.service.RemoteCommandExecutorService;
 import com.cerner.jwala.service.RemoteCommandReturnInfo;
 import com.cerner.jwala.service.exception.RemoteCommandExecutorServiceException;
 import com.jcraft.jsch.*;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.pool2.impl.GenericKeyedObjectPool;
 import org.slf4j.Logger;
@@ -27,7 +26,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 
 /**
  * Implementation of {@link RemoteCommandExecutorService} using JSCH.
@@ -316,7 +314,7 @@ public class JschRemoteCommandExecutorServiceImpl implements RemoteCommandExecut
                 remoteSystemConnection.getPort());
         final char[] encryptedPassword = remoteSystemConnection.getEncryptedPassword();
         if (encryptedPassword != null) {
-            session.setPassword(new DecryptPassword().decrypt(Arrays.toString(encryptedPassword)));
+            session.setPassword(new DecryptPassword().decrypt(encryptedPassword));
             session.setConfig("StrictHostKeyChecking", "no");
             session.setConfig("PreferredAuthentications", "password,gssapi-with-mic,publickey,keyboard-interactive");
         }

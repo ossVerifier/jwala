@@ -8,6 +8,8 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Arrays;
+
 public class SshConfiguration {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SshConfiguration.class);
@@ -37,7 +39,7 @@ public class SshConfiguration {
         port = thePort;
         privateKeyFile = thePrivateKeyFile;
         knownHostsFile = theKnownHostsFile;
-        encPassword = theEncPassword;
+        encPassword = theEncPassword != null ? Arrays.copyOf(theEncPassword, theEncPassword.length) : new char[]{};
     }
 
     public String getUserName() {
@@ -57,7 +59,7 @@ public class SshConfiguration {
     }
 
     public char[] getEncryptedPassword() {
-        return encPassword;
+        return Arrays.copyOf(encPassword, encPassword.length);
     }
 
     @Override

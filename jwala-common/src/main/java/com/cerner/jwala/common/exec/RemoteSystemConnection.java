@@ -1,6 +1,7 @@
 package com.cerner.jwala.common.exec;
 
 import java.io.Serializable;
+import java.util.Arrays;
 
 public class RemoteSystemConnection implements Serializable {
 
@@ -16,7 +17,7 @@ public class RemoteSystemConnection implements Serializable {
         user = theUser;
         host = theHost;
         port = thePort;
-        encryptedPassword = theEncryptedPassword;
+        encryptedPassword = theEncryptedPassword != null ? Arrays.copyOf(theEncryptedPassword, theEncryptedPassword.length) : new char[]{};
     }
 
     public String getUser() {
@@ -32,7 +33,7 @@ public class RemoteSystemConnection implements Serializable {
     }
 
     public char[] getEncryptedPassword() {
-        return encryptedPassword;
+        return Arrays.copyOf(encryptedPassword, encryptedPassword.length);
     }
 
     @Override
