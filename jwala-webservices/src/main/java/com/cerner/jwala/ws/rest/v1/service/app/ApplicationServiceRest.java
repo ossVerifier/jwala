@@ -91,7 +91,7 @@ public interface ApplicationServiceRest {
     Response deployConf(@PathParam("appName") String appName, @BeanParam AuthenticatedUser aUser, @QueryParam("hostName") String hostName);
 
     @GET
-    @Path("/file")
+    @Path("/fileExists")
     Response checkIfFileExists(@QueryParam("filePath") String filePath, @BeanParam AuthenticatedUser aUser, @QueryParam("hostName") String hostName);
 
 }
