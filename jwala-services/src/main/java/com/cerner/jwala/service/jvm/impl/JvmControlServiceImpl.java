@@ -13,8 +13,7 @@ import com.cerner.jwala.common.properties.ApplicationProperties;
 import com.cerner.jwala.common.request.jvm.ControlJvmRequest;
 import com.cerner.jwala.control.command.PlatformCommandProvider;
 import com.cerner.jwala.control.command.RemoteCommandExecutor;
-import com.cerner.jwala.control.command.ServiceCommandBuilder;
-import com.cerner.jwala.control.command.common.CommandFactory;
+import com.cerner.jwala.control.jvm.command.JvmCommandFactory;
 import com.cerner.jwala.control.jvm.command.impl.LinuxJvmPlatformCommandProvider;
 import com.cerner.jwala.control.jvm.command.impl.WindowsJvmPlatformCommandProvider;
 import com.cerner.jwala.exception.CommandFailureException;
@@ -38,7 +37,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
-import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -51,7 +49,7 @@ public class JvmControlServiceImpl implements JvmControlService {
     private JvmOperationService jvmOperationService;
 
     @Autowired
-    private CommandFactory commandFactory;
+    private JvmCommandFactory commandFactory;
 
     @Value("${spring.messaging.topic.serverStates:/topic/server-states}")
     protected String topicServerStates;
@@ -100,6 +98,7 @@ public class JvmControlServiceImpl implements JvmControlService {
 
             final String standardOutput = commandOutput.getStandardOutput();
             final ExecReturnCode returnCode = commandOutput.getReturnCode();
+            //What is this used for?
             if (StringUtils.isNotEmpty(standardOutput) && (JvmControlOperation.START.equals(controlOperation) ||
                     JvmControlOperation.STOP.equals(controlOperation))) {
                 commandOutput.cleanStandardOutput();
@@ -108,8 +107,7 @@ public class JvmControlServiceImpl implements JvmControlService {
                     && returnCode.wasSuccessful()) {
                 commandOutput.cleanHeapDumpStandardOutput();
             }
-
-            LOGGER.debug("Command output return code = {}", returnCode);
+            LOGGER.debug("JvmCommand output return code = {}", returnCode);
             if (returnCode.wasSuccessful()) {
                 if (JvmControlOperation.STOP.equals(controlOperation)) {
                     LOGGER.debug("Updating state to {}...", JvmState.JVM_STOPPED);
@@ -394,5 +392,13 @@ public class JvmControlServiceImpl implements JvmControlService {
 
     public void setJvmOperationService(JvmOperationService jvmOperationService) {
         this.jvmOperationService = jvmOperationService;
+    }
+
+    /**
+     *
+     * @param commandFactory
+     */
+    public void setCommandFactory(JvmCommandFactory commandFactory){
+        this.commandFactory=commandFactory;
     }
 }

@@ -423,7 +423,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
                 response = futureMap.get(keyEntityName).get(timeout, TimeUnit.SECONDS);
                 if (response.getStatus() > 399) {
                     final String reasonPhrase = response.getStatusInfo().getReasonPhrase();
-                    LOGGER.error("Remote Command Failure for " + keyEntityName + ": " + reasonPhrase);
+                    LOGGER.error("Remote JvmCommand Failure for " + keyEntityName + ": " + reasonPhrase);
                     entityDetailsMap.put(keyEntityName, Collections.singletonList(reasonPhrase));
                 }
             } catch (InterruptedException | ExecutionException e) {

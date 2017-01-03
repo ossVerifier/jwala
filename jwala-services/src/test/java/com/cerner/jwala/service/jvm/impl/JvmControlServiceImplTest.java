@@ -16,6 +16,7 @@ import com.cerner.jwala.common.exec.RemoteExecCommand;
 import com.cerner.jwala.common.properties.ApplicationProperties;
 import com.cerner.jwala.common.request.jvm.ControlJvmRequest;
 import com.cerner.jwala.control.command.RemoteCommandExecutor;
+import com.cerner.jwala.control.jvm.command.JvmCommandFactory;
 import com.cerner.jwala.control.jvm.command.impl.WindowsJvmPlatformCommandProvider;
 import com.cerner.jwala.exception.CommandFailureException;
 import com.cerner.jwala.persistence.jpa.domain.JpaGroup;
@@ -56,6 +57,9 @@ public class JvmControlServiceImplTest extends VerificationBehaviorSupport {
     private HostService mockHostService;
 
     @Mock
+    private JvmCommandFactory mockCommandFactory;
+
+    @Mock
     private HistoryFacadeService mockHistoryFacadeService;
 
     @Mock
@@ -80,10 +84,11 @@ public class JvmControlServiceImplTest extends VerificationBehaviorSupport {
     public void setup() {
         System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, new File(".").getAbsolutePath() + "/src/test/resources");
         commandExecutor = mock(RemoteCommandExecutor.class);
-
+        mockCommandFactory = mock(JvmCommandFactory.class);
         jvmControlService = new JvmControlServiceImpl(mockJvmPersistenceService, commandExecutor,  mockJvmStateService,
                 mockRemoteCommandExecutorService, mockSshConfig, mockHistoryFacadeService);
         jvmControlService.setHostService(mockHostService);
+        jvmControlService.setCommandFactory(mockCommandFactory);
         when(mockHostService.getUName(anyString())).thenReturn("CYGWIN_NT-6.3");
         user = new User("unused");
     }
@@ -282,6 +287,7 @@ public class JvmControlServiceImplTest extends VerificationBehaviorSupport {
         when(mockJvm.getState()).thenReturn(JvmState.JVM_STARTED);
         when(mockJvmPersistenceService.getJvm(any(Identifier.class))).thenReturn(mockJvm);
         when(mockRemoteCommandExecutorService.executeCommand(any(RemoteExecCommand.class))).thenReturn(new RemoteCommandReturnInfo(0, "Success!", ""));
+        when(mockCommandFactory.executeCommand(mockJvm, JvmControlOperation.START)).thenReturn(new RemoteCommandReturnInfo(0, "Success!", ""));
         final ControlJvmRequest controlJvmRequest = new ControlJvmRequest(new Identifier<Jvm>("1"), JvmControlOperation.START);
         when(mockHostService.getUName("mockJvmHost")).thenReturn("CYGWIN_NT-6.3");
         final CommandOutput commandOutput  = jvmControlService.controlJvmSynchronously(controlJvmRequest, 60000, new User("jedi"));
@@ -296,6 +302,7 @@ public class JvmControlServiceImplTest extends VerificationBehaviorSupport {
         when(mockJvm.getState()).thenReturn(JvmState.JVM_STOPPED);
         when(mockJvmPersistenceService.getJvm(any(Identifier.class))).thenReturn(mockJvm);
         when(mockRemoteCommandExecutorService.executeCommand(any(RemoteExecCommand.class))).thenReturn(new RemoteCommandReturnInfo(0, "Success!", ""));
+        when(mockCommandFactory.executeCommand(mockJvm, JvmControlOperation.STOP)).thenReturn(new RemoteCommandReturnInfo(0, "Success!", ""));
         final ControlJvmRequest controlJvmRequest = new ControlJvmRequest(new Identifier<Jvm>("1"), JvmControlOperation.STOP);
         final CommandOutput commandOutput  = jvmControlService.controlJvmSynchronously(controlJvmRequest, 60000, new User("jedi"));
         assertTrue(commandOutput.getReturnCode().getWasSuccessful());
@@ -306,6 +313,7 @@ public class JvmControlServiceImplTest extends VerificationBehaviorSupport {
         final Jvm mockJvm = mock(Jvm.class);
         when(mockJvmPersistenceService.getJvm(any(Identifier.class))).thenReturn(mockJvm);
         when(mockRemoteCommandExecutorService.executeCommand(any(RemoteExecCommand.class))).thenReturn(new RemoteCommandReturnInfo(0, "***heapdump-start***hi there***heapdump-end***", ""));
+        when(mockCommandFactory.executeCommand(mockJvm, JvmControlOperation.HEAP_DUMP)).thenReturn(new RemoteCommandReturnInfo(0, "***heapdump-start***hi there***heapdump-end***", ""));
         final ControlJvmRequest controlJvmRequest = new ControlJvmRequest(new Identifier<Jvm>("1"), JvmControlOperation.HEAP_DUMP);
         final CommandOutput commandOutput  = jvmControlService.controlJvmSynchronously(controlJvmRequest, 60000, new User("jedi"));
     }

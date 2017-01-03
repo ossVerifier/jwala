@@ -1,4 +1,4 @@
-package com.cerner.jwala.control.command.common;
+package com.cerner.jwala.control.jvm.command;
 
 /**
  * Created by Arvindo Kinny on 12/22/2016.
@@ -8,9 +8,9 @@ import com.cerner.jwala.common.domain.model.jvm.Jvm;
 import com.cerner.jwala.service.RemoteCommandReturnInfo;
 
 /**
- * The Command functional interface.<br/>
+ * The JvmCommand functional interface.<br/>
  */
 @FunctionalInterface
-public interface Command<T> {
+public interface JvmCommand<T> {
     public RemoteCommandReturnInfo apply(Jvm jvm);
 }

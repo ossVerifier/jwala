@@ -13,6 +13,7 @@ import com.cerner.jwala.common.request.webserver.ControlWebServerRequest;
 import com.cerner.jwala.control.command.PlatformCommandProvider;
 import com.cerner.jwala.control.command.RemoteCommandExecutor;
 import com.cerner.jwala.control.command.ServiceCommandBuilder;
+import com.cerner.jwala.control.webserver.command.WebServerCommandFactory;
 import com.cerner.jwala.control.webserver.command.impl.LinuxWebServerPlatformCommandProvider;
 import com.cerner.jwala.control.webserver.command.impl.WindowsWebServerPlatformCommandProvider;
 import com.cerner.jwala.control.webserver.command.windows.WindowsWebServerNetOperation;
@@ -47,6 +48,8 @@ public class WebServerControlServiceImpl implements WebServerControlService {
     protected String topicServerStates;
     @Autowired
     private HostService hostService;
+    @Autowired
+    private WebServerCommandFactory webServerCommandFactory;
 
     private static final String FORCED_STOPPED = "FORCED STOPPED";
     private static final String WEB_SERVER = "Web Server";
@@ -81,14 +84,7 @@ public class WebServerControlServiceImpl implements WebServerControlService {
                     controlOperation.name() : controlOperation.getOperationState().toStateLabel();
 
             historyFacadeService.write(getServerName(webServer), new ArrayList<>(webServer.getGroups()), event, EventType.USER_ACTION_INFO, aUser.getId());
-
-            final PlatformCommandProvider platformCommandProvider = getPlatformCommandProvider(webServer);
-            final ServiceCommandBuilder serviceCommandBuilder = platformCommandProvider.getServiceCommandBuilderFor(controlOperation);
-            final ExecCommand execCommand = serviceCommandBuilder.buildCommandForService(webServer.getName());
-            final RemoteExecCommand remoteExecCommand = new RemoteExecCommand(new RemoteSystemConnection(sshConfig.getUserName(),
-                    sshConfig.getPassword(), webServer.getHost(), sshConfig.getPort()), execCommand);
-
-            RemoteCommandReturnInfo remoteCommandReturnInfo = remoteCommandExecutorService.executeCommand(remoteExecCommand);
+            RemoteCommandReturnInfo remoteCommandReturnInfo = webServerCommandFactory.executeCommand(webServer, controlOperation);
 
             CommandOutput commandOutput = new CommandOutput(new ExecReturnCode(remoteCommandReturnInfo.retCode),
                     remoteCommandReturnInfo.standardOuput, remoteCommandReturnInfo.errorOupout);
@@ -300,7 +296,7 @@ public class WebServerControlServiceImpl implements WebServerControlService {
                     }
                     break;
                 default:
-                    throw new InternalErrorException(FaultType.SERVICE_EXCEPTION, "Command: " + webServerControlOperation.toString() + " not supported");
+                    throw new InternalErrorException(FaultType.SERVICE_EXCEPTION, "JvmCommand: " + webServerControlOperation.toString() + " not supported");
             }
             if (DateTime.now().getMillis() - startTime > waitTimeout) {
                 LOGGER.warn("Timeout reached to get the state for webserver: {}", webServer.getName());
@@ -350,5 +346,9 @@ public class WebServerControlServiceImpl implements WebServerControlService {
 
     public void setHostService(HostService hostService) {
         this.hostService = hostService;
+    }
+
+    public void setWebServerCommandFactory(WebServerCommandFactory webServerCommandFactory) {
+        this.webServerCommandFactory = webServerCommandFactory;
     }
 }

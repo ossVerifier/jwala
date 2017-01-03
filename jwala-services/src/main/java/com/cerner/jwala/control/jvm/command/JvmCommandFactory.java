@@ -1,4 +1,4 @@
-package com.cerner.jwala.control.command.common;
+package com.cerner.jwala.control.jvm.command;
 
 /**
  * Created by Arvindo Kinny on 12/22/2016.
@@ -8,7 +8,6 @@ package com.cerner.jwala.control.command.common;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
 import com.cerner.jwala.common.domain.model.jvm.JvmControlOperation;
 import com.cerner.jwala.common.domain.model.ssh.SshConfiguration;
-import com.cerner.jwala.common.exec.CommandOutput;
 import com.cerner.jwala.common.exec.ExecCommand;
 import com.cerner.jwala.common.exec.RemoteExecCommand;
 import com.cerner.jwala.common.exec.RemoteSystemConnection;
@@ -28,17 +27,19 @@ import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
-import java.util.stream.Collectors;
 
 /**
  * The CommandFactory class.<br/>
  */
 @Component
-public final class CommandFactory {
-    private static final Logger LOGGER = LoggerFactory.getLogger(CommandFactory.class);
+public class JvmCommandFactory {
+    private static final Logger LOGGER = LoggerFactory.getLogger(JvmCommandFactory.class);
+    private static final  String START_JVM_SERVICE = "start-service.sh";
+    private static final  String STOP_JVM_SERVICE = "stop-service.sh";
+    private static final  String HEAP_DUMP_JVM_ = "heap-dump.sh";
+    private static final  String THREAD_DUMP_JVM= "stop-service.sh";
 
-    private HashMap<String, Command> commands;
+    private HashMap<String, JvmCommand> commands;
 
     @Autowired
     protected SshConfiguration sshConfig;
@@ -68,7 +69,7 @@ public final class CommandFactory {
         if (commands.containsKey(operation.getExternalValue())) {
             return commands.get(operation.getExternalValue()).apply(jvm);
         }
-        throw new ApplicationServiceException("Command not found");
+        throw new ApplicationServiceException("JvmCommand not found");
     }
 
     public void listCommands() {
@@ -83,10 +84,10 @@ public final class CommandFactory {
     public void initJvmCommands() {
         commands = new HashMap<>();
         // commands are added here using lambdas. It is also possible to dynamically add commands without editing the code.
-        commands.put(JvmControlOperation.START.getExternalValue(), (Jvm jvm) -> remoteCommandExecutorService.executeCommand(new RemoteExecCommand(getConnection(jvm),getExecCommand("start-service.sh", jvm))));
-        commands.put(JvmControlOperation.STOP.getExternalValue(), (Jvm jvm) -> remoteCommandExecutorService.executeCommand(new RemoteExecCommand(getConnection(jvm),getExecCommand("stop-service.sh", jvm))));
-        commands.put(JvmControlOperation.THREAD_DUMP.getExternalValue(), (Jvm jvm) -> remoteCommandExecutorService.executeCommand(new RemoteExecCommand(getConnection(jvm),getExecCommandForThreadDump("thread-dump.sh", jvm))));
-        commands.put(JvmControlOperation.HEAP_DUMP.getExternalValue(), (Jvm jvm) -> remoteCommandExecutorService.executeCommand(new RemoteExecCommand(getConnection(jvm),getExecCommandForHeapDump("heap-dump.sh", jvm))));
+        commands.put(JvmControlOperation.START.getExternalValue(), (Jvm jvm) -> remoteCommandExecutorService.executeCommand(new RemoteExecCommand(getConnection(jvm),getExecCommand(START_JVM_SERVICE, jvm))));
+        commands.put(JvmControlOperation.STOP.getExternalValue(), (Jvm jvm) -> remoteCommandExecutorService.executeCommand(new RemoteExecCommand(getConnection(jvm),getExecCommand(STOP_JVM_SERVICE, jvm))));
+        commands.put(JvmControlOperation.THREAD_DUMP.getExternalValue(), (Jvm jvm) -> remoteCommandExecutorService.executeCommand(new RemoteExecCommand(getConnection(jvm),getExecCommandForThreadDump(THREAD_DUMP_JVM, jvm))));
+        commands.put(JvmControlOperation.HEAP_DUMP.getExternalValue(), (Jvm jvm) -> remoteCommandExecutorService.executeCommand(new RemoteExecCommand(getConnection(jvm),getExecCommandForHeapDump(HEAP_DUMP_JVM_, jvm))));
     }
 
     private RemoteSystemConnection getConnection(Jvm jvm) {
