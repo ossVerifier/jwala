@@ -23,6 +23,7 @@ import java.util.List;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
@@ -66,15 +67,15 @@ public class JvmStateServiceImplTest {
     public void setup() {
         initMocks(this);
         jvmStateService = new JvmStateServiceImpl(mockJvmPersistenceService,
-                mockInMemoryStateManagerService,
-                mockJvmStateResolverWorker,
-                mockMessagingService,
-                mockGroupStateNotificationService,
-                JVM_STATE_UPDATE_INTERVAL,
-                mockRemoteCommandExecutorService,
-                mockSshConfig,
-                LOCK_TIMEOUT,
-                KEY_LOCK_STRIPE_COUNT);
+                                                  mockInMemoryStateManagerService,
+                                                  mockJvmStateResolverWorker,
+                                                  mockMessagingService,
+                                                  mockGroupStateNotificationService,
+                                                  JVM_STATE_UPDATE_INTERVAL,
+                                                  mockRemoteCommandExecutorService,
+                                                  mockSshConfig,
+                                                  LOCK_TIMEOUT,
+                                                  KEY_LOCK_STRIPE_COUNT);
     }
 
     @Test

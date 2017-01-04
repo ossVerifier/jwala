@@ -15,7 +15,6 @@ import com.cerner.jwala.service.RemoteCommandExecutorService;
 import com.cerner.jwala.service.RemoteCommandReturnInfo;
 import com.cerner.jwala.service.group.GroupStateNotificationService;
 import com.cerner.jwala.service.jvm.JvmStateService;
-import com.cerner.jwala.service.jvm.exception.JvmServiceException;
 import com.cerner.jwala.service.state.InMemoryStateManagerService;
 import de.jkeylockmanager.manager.KeyLockManager;
 import de.jkeylockmanager.manager.LockCallback;
@@ -68,7 +67,7 @@ public class JvmStateServiceImpl implements JvmStateService {
                                final MessagingService messagingService,
                                final GroupStateNotificationService groupStateNotificationService,
                                @Value("${jvm.state.update.interval:60000}")
-                               final long jvmStateUpdateInterval,
+                                   final long jvmStateUpdateInterval,
                                final RemoteCommandExecutorService remoteCommandExecutorService,
                                final SshConfiguration sshConfig,
                                @Value("${jvm.state.key.lock.timeout.millis:600000}")
@@ -101,24 +100,23 @@ public class JvmStateServiceImpl implements JvmStateService {
         final List<Jvm> jvms = jvmPersistenceService.getJvms();
         for (final Jvm jvm : jvms) {
             if (!isStateInMemory(jvm) || ((isStarted(jvm) || isStopping(jvm)) && isStale(jvm)) &&
-                    (!PING_FUTURE_MAP.containsKey(jvm.getId()) || PING_FUTURE_MAP.get(jvm.getId()).isDone())) {
-                LOGGER.debug("Pinging JVM {} ...", jvm.getJvmName());
-                PING_FUTURE_MAP.put(jvm.getId(), jvmStateResolverWorker.pingAndUpdateJvmState(jvm, this));
-                LOGGER.debug("Pinged JVM {}", jvm.getJvmName());
+                (!PING_FUTURE_MAP.containsKey(jvm.getId()) || PING_FUTURE_MAP.get(jvm.getId()).isDone())) {
+                    LOGGER.debug("Pinging JVM {} ...", jvm.getJvmName());
+                    PING_FUTURE_MAP.put(jvm.getId(), jvmStateResolverWorker.pingAndUpdateJvmState(jvm, this));
+                    LOGGER.debug("Pinged JVM {}", jvm.getJvmName());
             }
         }
     }
 
     /**
      * Check if the JVM's state is stale by checking the state's time stamp.
-     *
      * @param jvm {@link Jvm}
      * @return true if the state is stale.
      */
     protected boolean isStale(final Jvm jvm) {
         final long interval = DateTime.now().getMillis() - inMemoryStateManagerService.get(jvm.getId()).getAsOf().getMillis();
         if (interval > jvmStateUpdateInterval) {
-            LOGGER.debug("JVM {}'s state is stale. Interval since last update = {} sec!", jvm.getJvmName(), interval / 1000);
+            LOGGER.debug("JVM {}'s state is stale. Interval since last update = {} sec!", jvm.getJvmName(), interval/1000);
             return true;
         }
         return false;
@@ -126,7 +124,6 @@ public class JvmStateServiceImpl implements JvmStateService {
 
     /**
      * Checks if a JVM's state is set to started.
-     *
      * @param jvm {@link Jvm}
      * @return true if the state is started.
      */
@@ -136,7 +133,6 @@ public class JvmStateServiceImpl implements JvmStateService {
 
     /**
      * Checks if a JVM's state is set to stopping.
-     *
      * @param jvm {@link Jvm}
      * @return true if the state is started.
      */
@@ -156,7 +152,6 @@ public class JvmStateServiceImpl implements JvmStateService {
 
     /**
      * Check if the state in the application context state map
-     *
      * @param jvm {@link Jvm}
      * @return true if the state of a certain JVM is in the application context state map.
      */
@@ -215,7 +210,6 @@ public class JvmStateServiceImpl implements JvmStateService {
 
     /**
      * Checks whether the current state of the JVM is stopped.
-     *
      * @return true if the state is stopped.
      */
     protected boolean isCurrentStateStopped(final Identifier<Jvm> id) {
@@ -225,7 +219,6 @@ public class JvmStateServiceImpl implements JvmStateService {
         final Jvm jvm = jvmPersistenceService.getJvm(id);
         return JvmState.JVM_STOPPED.equals(jvm.getState());
     }
-
 
     /**
      * Check if the state has changed and-or message is not empty.
