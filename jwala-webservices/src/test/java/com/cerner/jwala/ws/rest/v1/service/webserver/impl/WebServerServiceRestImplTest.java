@@ -22,6 +22,8 @@ import com.cerner.jwala.common.request.webserver.CreateWebServerRequest;
 import com.cerner.jwala.common.request.webserver.UpdateWebServerRequest;
 import com.cerner.jwala.control.AemControl;
 import com.cerner.jwala.exception.CommandFailureException;
+import com.cerner.jwala.service.HistoryFacadeService;
+import com.cerner.jwala.service.HistoryService;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionService;
 import com.cerner.jwala.service.group.GroupService;
 import com.cerner.jwala.service.resource.ResourceService;
@@ -95,6 +97,12 @@ public class WebServerServiceRestImplTest {
     private AuthenticatedUser authenticatedUser;
 
     @Mock
+    private HistoryService mockHistoryService;
+
+    @Mock
+    private HistoryFacadeService mockHistoryFacadeService;
+
+    @Mock
     private BinaryDistributionService binaryDistributionService;
 
     private WebServerServiceRestImpl webServerServiceRest;
@@ -124,7 +132,7 @@ public class WebServerServiceRestImplTest {
     @Before
     public void setUp() {
         System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, "./src/test/resources");
-        webServerServiceRest = new WebServerServiceRestImpl(impl, webServerControlService, commandImpl, writeLockMap, resourceService, groupService, binaryDistributionService);
+        webServerServiceRest = new WebServerServiceRestImpl(impl, webServerControlService, commandImpl, writeLockMap, resourceService, groupService, binaryDistributionService, mockHistoryFacadeService);
         when(authenticatedUser.getUser()).thenReturn(new User("Unused"));
 
         InternalErrorException iee = new InternalErrorException(null, "User does not have permission to create the directory ~/.jwala");

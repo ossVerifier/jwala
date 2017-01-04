@@ -279,8 +279,6 @@ public class JvmServiceImpl implements JvmService {
     public Jvm generateAndDeployJvm(String jvmName, User user) {
         boolean didSucceed = true;
         Jvm jvm = getJvm(jvmName);
-        // only one at a time per JVM
-        //TODO return error if .jwala directory is already being written to
         LOGGER.debug("Start generateAndDeployJvm for {} by user {}", jvmName, user.getId());
 
         historyFacadeService.write(jvm.getHostName(), jvm.getGroups(), "Starting to generate remote JVM " + jvm.getJvmName(), EventType.USER_ACTION_INFO, user.getId());

@@ -19,6 +19,9 @@ import com.cerner.jwala.common.properties.PropertyKeys;
 import com.cerner.jwala.common.request.webserver.ControlWebServerRequest;
 import com.cerner.jwala.control.AemControl;
 import com.cerner.jwala.exception.CommandFailureException;
+import com.cerner.jwala.persistence.jpa.type.EventType;
+import com.cerner.jwala.service.HistoryFacadeService;
+import com.cerner.jwala.service.HistoryService;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionService;
 import com.cerner.jwala.service.group.GroupService;
 import com.cerner.jwala.service.resource.ResourceService;
@@ -43,10 +46,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
-import java.util.Collection;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class WebServerServiceRestImpl implements WebServerServiceRest {
@@ -54,7 +54,6 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
     private static final Logger LOGGER = LoggerFactory.getLogger(WebServerServiceRestImpl.class);
     public static final String PATHS_GENERATED_RESOURCE_DIR = "paths.generated.resource.dir";
     private static final String COMMANDS_SCRIPTS_PATH = ApplicationProperties.get("commands.scripts-path");
-    private static final String MEDIA_TYPE_TEXT = "text";
     private static final String HTTPD_CONF = "httpd.conf";
 
     private final WebServerService webServerService;
@@ -63,7 +62,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
     private final Map<String, ReentrantReadWriteLock> wsWriteLocks;
     private ResourceService resourceService;
     private GroupService groupService;
-    private static WebServerServiceRestImpl instance;
+    private HistoryFacadeService historyFacadeService;
     private final BinaryDistributionService binaryDistributionService;
     private static final Long DEFAULT_WAIT_TIMEOUT = 30000L;
 
@@ -72,7 +71,8 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
                                     final WebServerCommandService theWebServerCommandService,
                                     final Map<String, ReentrantReadWriteLock> theWriteLocks,
                                     final ResourceService theResourceService, GroupService groupService,
-                                    final BinaryDistributionService binaryDistributionService) {
+                                    final BinaryDistributionService binaryDistributionService,
+                                    final HistoryFacadeService historyFacadeService) {
         webServerService = theWebServerService;
         webServerControlService = theWebServerControlService;
         webServerCommandService = theWebServerCommandService;
@@ -80,6 +80,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
         resourceService = theResourceService;
         this.groupService = groupService;
         this.binaryDistributionService = binaryDistributionService;
+        this.historyFacadeService = historyFacadeService;
     }
 
     @Override
@@ -208,12 +209,16 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
     @Override
     public Response generateAndDeployWebServer(final String aWebServerName, final AuthenticatedUser aUser) {
         LOGGER.info("Generate and deploy web server {} by user {}", aWebServerName, aUser.getUser().getId());
+        boolean didSucceed = true;
 
         // only one at a time per web server
         lock(aWebServerName);
 
+        WebServer webServer = webServerService.getWebServer(aWebServerName);
+
         try {
-            WebServer webServer = webServerService.getWebServer(aWebServerName);
+
+            historyFacadeService.write(aWebServerName, webServer.getGroups(), "Starting to generate remote web server " + aWebServerName, EventType.USER_ACTION_INFO, aUser.getUser().getId());
 
             verifyStopped(aWebServerName, webServer);
 
@@ -246,23 +251,18 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
             webServerService.updateState(webServer.getId(), WebServerReachableState.WS_UNREACHABLE, StringUtils.EMPTY);
 
         } catch (CommandFailureException e) {
+            didSucceed = false;
             LOGGER.error("Failed for {}", aWebServerName, e);
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
                     FaultType.REMOTE_COMMAND_FAILURE, e.getMessage(), e));
         } finally {
             unlock(aWebServerName);
+            final String historyMessage = didSucceed ? "Remote generation of web server " + aWebServerName + " succeeded" :
+                    "Remote generation of web server " + aWebServerName + " failed";
+            historyFacadeService.write(aWebServerName, new ArrayList<>(webServer.getGroups()), historyMessage, EventType.USER_ACTION_INFO, aUser.getUser().getId());
         }
 
         return ResponseBuilder.ok(webServerService.getWebServer(aWebServerName));
-    }
-
-    private String fetchRemoteDeployDir(String aWebServerName) {
-        String remoteDeployDir = getMetaData(aWebServerName).getDeployPath();
-        LOGGER.debug("Fetched the web server template remote path {} from the metadata.", remoteDeployDir);
-        if (remoteDeployDir == null || remoteDeployDir.isEmpty()) {
-            throw new WebServerServiceException("The deployPath in the " + HTTPD_CONF + " metadata is required but not found.");
-        }
-        return remoteDeployDir;
     }
 
     private void validateResources(WebServer webServer) {

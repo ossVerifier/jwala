@@ -27,6 +27,7 @@ import com.cerner.jwala.persistence.jpa.service.exception.ResourceTemplateUpdate
 import com.cerner.jwala.persistence.service.ApplicationPersistenceService;
 import com.cerner.jwala.persistence.service.GroupPersistenceService;
 import com.cerner.jwala.service.HistoryFacadeService;
+import com.cerner.jwala.service.HistoryService;
 import com.cerner.jwala.service.app.ApplicationService;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionService;
 import com.cerner.jwala.service.group.GroupControlService;
@@ -107,6 +108,8 @@ public class GroupServiceImplDeployTest {
     static final ApplicationService mockApplicationService = mock(ApplicationService.class);
     static final ApplicationServiceRest mockApplicationServiceRest = mock(ApplicationServiceRest.class);
     static final WebServerServiceRest mockWebServerServiceRest = mock(WebServerServiceRest.class);
+    static final HistoryFacadeService mockHistoryService = mock(HistoryFacadeService.class);
+
 
     private AuthenticatedUser mockAuthUser = mock(AuthenticatedUser.class);
     private User mockUser = mock(User.class);
@@ -382,7 +385,6 @@ public class GroupServiceImplDeployTest {
         GroupPersistenceService groupPersistenceService = mock(GroupPersistenceService.class);
         ApplicationPersistenceService applicationPersistenceService = mock(ApplicationPersistenceService.class);
         RemoteCommandExecutorImpl remoteCommandExecutorImpl = mock(RemoteCommandExecutorImpl.class);
-        HistoryFacadeService mockHistoryService = mock(HistoryFacadeService.class);
         GroupServiceImpl groupServiceImpl = new GroupServiceImpl(groupPersistenceService, applicationPersistenceService, remoteCommandExecutorImpl, binaryDistributionService, mockResourceService);
         CommandOutput commandOutput = mock(CommandOutput.class);
 
@@ -646,7 +648,7 @@ public class GroupServiceImplDeployTest {
 
         @Bean
         WebServerServiceRest getWebServerServiceRest() {
-            return new WebServerServiceRestImpl(mockWebServerService, mockWebServerControlService, mock(WebServerCommandService.class), new HashMap<String, ReentrantReadWriteLock>(), mockResourceService, mockGroupService, binaryDistributionService);
+            return new WebServerServiceRestImpl(mockWebServerService, mockWebServerControlService, mock(WebServerCommandService.class), new HashMap<String, ReentrantReadWriteLock>(), mockResourceService, mockGroupService, binaryDistributionService, mockHistoryService);
         }
 
         @Bean

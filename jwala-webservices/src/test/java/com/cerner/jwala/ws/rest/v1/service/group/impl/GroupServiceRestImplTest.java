@@ -24,6 +24,8 @@ import com.cerner.jwala.common.request.group.UpdateGroupRequest;
 import com.cerner.jwala.exception.CommandFailureException;
 import com.cerner.jwala.persistence.jpa.service.exception.ResourceTemplateUpdateException;
 import com.cerner.jwala.persistence.service.GroupPersistenceService;
+import com.cerner.jwala.service.HistoryFacadeService;
+import com.cerner.jwala.service.HistoryService;
 import com.cerner.jwala.service.app.ApplicationService;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionService;
 import com.cerner.jwala.service.exception.GroupServiceException;
@@ -113,6 +115,12 @@ public class GroupServiceRestImplTest {
 
     @Mock
     private WebServerServiceRest mockWebServerServiceRest;
+
+    @Mock
+    private HistoryService mockHistoryService;
+
+    @Mock
+    private HistoryFacadeService mockHistoryFacadeService;
 
     @Mock
     private Jvm mockJvm;
@@ -207,7 +215,7 @@ public class GroupServiceRestImplTest {
                 mockApplicationService, applicationServiceRest, mockWebServerServiceRest);
 
 
-        final WebServerServiceRest webServerServiceRest = new WebServerServiceRestImpl(mockWebServerService, mockWebServerControlService, mockWebServerCommandService, new HashMap<String, ReentrantReadWriteLock>(), mockResourceService, mockGroupService, mockBinaryDistributionService);
+        final WebServerServiceRest webServerServiceRest = new WebServerServiceRestImpl(mockWebServerService, mockWebServerControlService, mockWebServerCommandService, new HashMap<String, ReentrantReadWriteLock>(), mockResourceService, mockGroupService, mockBinaryDistributionService, mockHistoryFacadeService);
 
         groupServiceRest = new GroupServiceRestImpl(mockGroupService, mockResourceService, mockGroupControlService,
                 mockGroupJvmControlService, mockGroupWSControlService, mockJvmService, mockWebServerService,
