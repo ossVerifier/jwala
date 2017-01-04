@@ -7,6 +7,10 @@ package com.cerner.jwala.common.jsch;
  */
 public class JschServiceException extends RuntimeException {
 
+    public JschServiceException(final String msg) {
+        super(msg);
+    }
+
     public JschServiceException(final String msg, final Throwable cause) {
         super(msg, cause);
     }

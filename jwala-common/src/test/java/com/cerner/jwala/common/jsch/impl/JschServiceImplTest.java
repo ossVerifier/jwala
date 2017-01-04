@@ -1,10 +1,13 @@
 package com.cerner.jwala.common.jsch.impl;
 
+import com.cerner.jwala.commandprocessor.jsch.impl.ChannelSessionKey;
+import com.cerner.jwala.commandprocessor.jsch.impl.ChannelType;
 import com.cerner.jwala.common.exec.RemoteSystemConnection;
 import com.cerner.jwala.common.jsch.JschService;
 import com.cerner.jwala.common.jsch.JschServiceException;
 import com.cerner.jwala.common.jsch.RemoteCommandReturnInfo;
 import com.jcraft.jsch.*;
+import org.apache.commons.pool2.impl.GenericKeyedObjectPool;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -66,21 +69,25 @@ public class JschServiceImplTest {
     }
 
     @Test
-    public void testRunCommandUsingChannelShell() throws IOException, JSchException {
+    public void testRunCommandUsingChannelShell() throws Exception {
         when(mockChannelShell.getInputStream()).thenReturn(new ByteArrayInputStream("EXIT_CODE=0*** \0xff".getBytes()));
         when(mockChannelShell.getOutputStream()).thenReturn(mockOut);
-        final RemoteCommandReturnInfo result = jschService.runCommand("scp", mockChannelShell, 500);
+        when(mockChannelShell.isConnected()).thenReturn(true);
+        when(Config.getMockPool().borrowObject(any(ChannelSessionKey.class))).thenReturn(mockChannelShell);
+        final RemoteCommandReturnInfo result = jschService.runShellCommand(mockRemoteSystemConnection, "scp", 500);
         verify(mockOut, times(6)).write(any(byte[].class));
         verify(mockOut).flush();
         assertEquals("EXIT_CODE=0*** \0xff", result.standardOuput);
     }
 
     @Test(expected = JschServiceException.class)
-    public void testRunCommandUsingChannelShellAndTimesOut() throws IOException, JSchException {
+    public void testRunCommandUsingChannelShellAndTimesOut() throws Exception {
         when(mockChannelShell.getInputStream()).thenReturn(mockIn);
         when(mockChannelShell.getOutputStream()).thenReturn(mockOut);
+        when(mockChannelShell.isConnected()).thenReturn(true);
+        when(Config.getMockPool().borrowObject(any(ChannelSessionKey.class))).thenReturn(mockChannelShell);
         when(mockIn.available()).thenReturn(0);
-        final RemoteCommandReturnInfo result = jschService.runCommand("scp", mockChannelShell, 500);
+        final RemoteCommandReturnInfo result = jschService.runShellCommand(mockRemoteSystemConnection, "scp", 500);
         verify(mockOut, times(6)).write(any(byte[].class));
         verify(mockOut).flush();
         assertEquals("", result.standardOuput);
@@ -92,7 +99,9 @@ public class JschServiceImplTest {
         when(mockChannelExec.getExitStatus()).thenReturn(0);
         when(mockIn.available()).thenReturn(1);
         when(mockIn.read()).thenReturn(0xfd);
-        jschService.runCommand("scp", mockChannelExec, 0);
+        when(Config.mockJsch.getSession(anyString(), anyString(), anyInt())).thenReturn(mockSession);
+        when(mockSession.openChannel(eq(ChannelType.EXEC.getChannelType()))).thenReturn(mockChannelExec);
+        jschService.runExecCommand(mockRemoteSystemConnection, "scp", 0);
         verify(mockChannelExec).setCommand(any(byte[].class));
         verify(mockChannelExec).connect(anyInt());
     }
@@ -106,21 +115,11 @@ public class JschServiceImplTest {
         when(mockIn.read()).thenReturn(0xfd);
         when(mockInErr.available()).thenReturn(1);
         when(mockInErr.read()).thenReturn(0xfd);
-        jschService.runCommand("scp", mockChannelExec, 0);
+        when(Config.mockJsch.getSession(anyString(), anyString(), anyInt())).thenReturn(mockSession);
+        when(mockSession.openChannel(eq(ChannelType.EXEC.getChannelType()))).thenReturn(mockChannelExec);
+        jschService.runExecCommand(mockRemoteSystemConnection, "scp", 0);
         verify(mockChannelExec).setCommand(any(byte[].class));
         verify(mockChannelExec).connect(anyInt());
-    }
-
-    @Test
-    public void testPrepareSession() throws Exception {
-        when(Config.mockJsch.getSession(anyString(), anyString(), anyInt())).thenReturn(mockSession);
-        when(mockRemoteSystemConnection.getEncryptedPassword()).thenReturn("#@#$%".toCharArray());
-        jschService.prepareSession(mockRemoteSystemConnection);
-        verify(mockRemoteSystemConnection).getUser();
-        verify(mockRemoteSystemConnection).getEncryptedPassword();
-        verify(mockRemoteSystemConnection).getPort();
-        verify(mockSession).setPassword(anyString());
-        verify(mockSession, times(2)).setConfig(anyString(), anyString());
     }
 
     @Configuration
@@ -128,9 +127,17 @@ public class JschServiceImplTest {
 
         public static final JSch mockJsch = mock(JSch.class);
 
+        @SuppressWarnings("unchecked")
+        public static final GenericKeyedObjectPool<ChannelSessionKey, Channel> mockPool = mock(GenericKeyedObjectPool.class);
+
         @Bean
         public JSch getMockJsch() {
             return mockJsch;
+        }
+
+        @Bean
+        public static GenericKeyedObjectPool<ChannelSessionKey, Channel> getMockPool() {
+            return mockPool;
         }
 
         @Bean

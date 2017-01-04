@@ -1,5 +1,7 @@
 package com.cerner.jwala.common.jsch.impl;
 
+import com.cerner.jwala.commandprocessor.jsch.impl.ChannelSessionKey;
+import com.cerner.jwala.commandprocessor.jsch.impl.ChannelType;
 import com.cerner.jwala.common.domain.model.ssh.DecryptPassword;
 import com.cerner.jwala.common.exec.ExecReturnCode;
 import com.cerner.jwala.common.exec.RemoteSystemConnection;
@@ -8,6 +10,7 @@ import com.cerner.jwala.common.jsch.JschServiceException;
 import com.cerner.jwala.common.jsch.RemoteCommandReturnInfo;
 import com.cerner.jwala.exception.ExitCodeNotAvailableException;
 import com.jcraft.jsch.*;
+import org.apache.commons.pool2.impl.GenericKeyedObjectPool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,38 +33,64 @@ public class JschServiceImpl implements JschService {
     private static final Logger LOGGER = LoggerFactory.getLogger(JschServiceImpl.class);
     private static final String CRLF = "\r\n";
     private static final int CHANNEL_CONNECT_TIMEOUT = 60000;
+    private static final int CHANNEL_BORROW_LOOP_WAIT_TIME = 180000;
     private static final String EXIT_CODE_START_MARKER = "EXIT_CODE";
     private static final String EXIT_CODE_END_MARKER = "***";
 
     @Autowired
     private JSch jsch;
 
-    /**
-     * Prepare the session by setting session properties
-     *
-     * @param remoteSystemConnection {@link RemoteSystemConnection}
-     * @return {@link Session}
-     * @throws JSchException
-     */
+    @Autowired
+    private GenericKeyedObjectPool<ChannelSessionKey, Channel> channelPool;
+
     @Override
-    public Session prepareSession(final RemoteSystemConnection remoteSystemConnection) throws JSchException {
-        final Session session = jsch.getSession(remoteSystemConnection.getUser(), remoteSystemConnection.getHost(),
-                remoteSystemConnection.getPort());
-        final char[] encryptedPassword = remoteSystemConnection.getEncryptedPassword();
-        if (encryptedPassword != null) {
-            session.setPassword(new DecryptPassword().decrypt(encryptedPassword));
-            session.setConfig("StrictHostKeyChecking", "no");
-            session.setConfig("PreferredAuthentications", "password,gssapi-with-mic,publickey,keyboard-interactive");
+    public RemoteCommandReturnInfo runShellCommand(RemoteSystemConnection remoteSystemConnection, String command, long timeout) {
+        final ChannelSessionKey channelSessionKey = new ChannelSessionKey(remoteSystemConnection, ChannelType.SHELL);
+        LOGGER.debug("channel session key = {}", channelSessionKey);
+        Channel channel = null;
+        try {
+            channel = getChannelShell(channelSessionKey);
+            return runShellCommand(command, (ChannelShell) channel, timeout);
+        } catch (final Exception e) {
+            final String errMsg = MessageFormat.format("Failed to run the following command: {0}", command);
+            LOGGER.error(errMsg, e);
+            throw new JschServiceException(errMsg, e);
+        } finally {
+            if (channel != null) {
+                channelPool.returnObject(channelSessionKey, channel);
+                LOGGER.debug("channel {} returned", channel.getId());
+            }
         }
-        return session;
     }
 
     @Override
-    public RemoteCommandReturnInfo runCommand(final String command, final Channel channel, long timeout) throws IOException, JSchException {
-        if (channel instanceof ChannelShell) {
-            return runShellCommand(command, (ChannelShell) channel, timeout);
+    public RemoteCommandReturnInfo runExecCommand(RemoteSystemConnection remoteSystemConnection, String command, long timeout) {
+        Session session = null;
+        Channel channel = null;
+        try {
+            // We can't keep the session and the channels open for type exec since we need the exit code and the
+            // standard error e.g. thread dump uses this and requires the exit code and the standard error.
+            LOGGER.debug("preparing session...");
+            session = prepareSession(remoteSystemConnection);
+            session.connect();
+            LOGGER.debug("session connected");
+            channel = session.openChannel(ChannelType.EXEC.getChannelType());
+            return runExecCommand(command, (ChannelExec) channel, timeout);
+        } catch (final Exception e) {
+            final String errMsg = MessageFormat.format("Failed to run the following command: {0}", command);
+            LOGGER.error(errMsg, e);
+            throw new JschServiceException(errMsg, e);
+        } finally {
+            if (channel != null && channel.isConnected()) {
+                channel.disconnect();
+                LOGGER.debug("Channel {} disconnected!", channel.getId());
+            }
+
+            if (session != null && session.isConnected()) {
+                session.disconnect();
+                LOGGER.debug("session disconnected");
+            }
         }
-        return runExecCommand(command, (ChannelExec) channel, timeout);
     }
 
     /**
@@ -181,6 +210,64 @@ public class JschServiceImpl implements JschService {
             }
         }
         throw new ExitCodeNotAvailableException(command);
+    }
+
+    /**
+     * Get a {@link ChannelShell}
+     * @param channelSessionKey the session key that identifies the channel
+     * @return {@link ChannelShell}
+     * @throws Exception thrown by borrowObject and invalidateObject
+     */
+    private ChannelShell getChannelShell(final ChannelSessionKey channelSessionKey) throws Exception {
+        final long startTime = System.currentTimeMillis();
+        Channel channel;
+        do {
+            LOGGER.debug("borrowing a channel...");
+            channel = channelPool.borrowObject(channelSessionKey);
+            if (channel != null) {
+                LOGGER.debug("channel {} borrowed", channel.getId());
+                if (!channel.isConnected()) {
+                    try {
+                        LOGGER.debug("channel {} connecting...", channel.getId());
+                        channel.connect(CHANNEL_CONNECT_TIMEOUT);
+                        LOGGER.debug("channel {} connected!", channel.getId());
+                    } catch (final JSchException jsche) {
+                        LOGGER.error("Borrowed channel {} connection failed! Invalidating the channel...",
+                                channel.getId(), jsche);
+                        channelPool.invalidateObject(channelSessionKey, channel);
+                    }
+                } else {
+                    LOGGER.debug("Channel {} already connected!", channel.getId());
+                }
+            }
+
+            if ((channel == null || !channel.isConnected()) && (System.currentTimeMillis() - startTime) > CHANNEL_BORROW_LOOP_WAIT_TIME) {
+                final String errMsg = MessageFormat.format("Failed to get a channel within {0} ms! Aborting channel acquisition!",
+                        CHANNEL_BORROW_LOOP_WAIT_TIME);
+                LOGGER.error(errMsg);
+                throw new JschServiceException(errMsg);
+            }
+        } while (channel == null || !channel.isConnected());
+        return (ChannelShell) channel;
+    }
+
+    /**
+     * Prepare the session by setting session properties
+     *
+     * @param remoteSystemConnection {@link RemoteSystemConnection}
+     * @return {@link Session}
+     * @throws JSchException
+     */
+    private Session prepareSession(final RemoteSystemConnection remoteSystemConnection) throws JSchException {
+        final Session session = jsch.getSession(remoteSystemConnection.getUser(), remoteSystemConnection.getHost(),
+                remoteSystemConnection.getPort());
+        final char[] encryptedPassword = remoteSystemConnection.getEncryptedPassword();
+        if (encryptedPassword != null) {
+            session.setPassword(new DecryptPassword().decrypt(encryptedPassword));
+            session.setConfig("StrictHostKeyChecking", "no");
+            session.setConfig("PreferredAuthentications", "password,gssapi-with-mic,publickey,keyboard-interactive");
+        }
+        return session;
     }
 
 }

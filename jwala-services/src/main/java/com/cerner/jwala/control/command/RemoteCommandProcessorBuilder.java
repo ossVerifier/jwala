@@ -65,7 +65,7 @@ public class RemoteCommandProcessorBuilder implements CommandProcessorBuilder {
         if (command.getCommandFragments().get(0).contains(AemControl.Properties.SCP_SCRIPT_NAME.getValue())) {
             return new JschScpCommandProcessorImpl(jsch, remoteCommand);
         } else {
-            return new JschCommandProcessorImpl(jsch, remoteCommand, channelPool, jschService);
+            return new JschCommandProcessorImpl(remoteCommand, jschService);
         }
     }
 

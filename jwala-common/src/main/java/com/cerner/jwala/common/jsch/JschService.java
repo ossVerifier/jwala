@@ -1,11 +1,6 @@
 package com.cerner.jwala.common.jsch;
 
 import com.cerner.jwala.common.exec.RemoteSystemConnection;
-import com.jcraft.jsch.Channel;
-import com.jcraft.jsch.JSchException;
-import com.jcraft.jsch.Session;
-
-import java.io.IOException;
 
 /**
  * Defines a rudimentary JSCH service
@@ -14,8 +9,22 @@ import java.io.IOException;
  */
 public interface JschService {
 
-    Session prepareSession(final RemoteSystemConnection remoteSystemConnection) throws JSchException;
+    /**
+     * Executes a command by opening an ssh shell in the remote server
+     * @param remoteSystemConnection target server connection details
+     * @param command the command to execute
+     * @param timeout length of time to wait before timing out
+     * @return {@link RemoteCommandReturnInfo}
+     */
+    RemoteCommandReturnInfo runShellCommand(RemoteSystemConnection remoteSystemConnection, String command, long timeout);
 
-    RemoteCommandReturnInfo runCommand(String command, Channel channel, long timeout) throws IOException, JSchException;
+    /**
+     * Executes a command through an EXEC type JSch channel
+     * @param remoteSystemConnection target server connection details
+     * @param command the command to execute
+     * @param timeout length of time to wait before timing out
+     * @return {@link RemoteCommandReturnInfo}
+     */
+    RemoteCommandReturnInfo runExecCommand(RemoteSystemConnection remoteSystemConnection, String command, long timeout);
 
 }
