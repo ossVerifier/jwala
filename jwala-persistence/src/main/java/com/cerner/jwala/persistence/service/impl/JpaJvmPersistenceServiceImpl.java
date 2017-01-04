@@ -223,6 +223,35 @@ public class JpaJvmPersistenceServiceImpl implements JvmPersistenceService {
     }
 
     @Override
+    public List<Jvm> getJvmsAndWebAppsByGroupName(final String groupName) {
+        final List<Jvm> jvms = jvmCrudService.getJvmsByGroupName(groupName);
+        final List<Jvm> jvmsWithWebApps = new ArrayList<>();
+        final com.cerner.jwala.common.domain.model.jvm.JvmBuilder jvmBuilder = new com.cerner.jwala.common.domain.model.jvm.JvmBuilder();
+        for (Jvm jvm : jvms) {
+            final List<Application> webApps = applicationCrudService.findApplicationsBelongingToJvm(jvm.getId());
+            // TODO: Decide whether to use a builder or have a setter just to set the applications ?
+            final Jvm jvmWithWebApps = jvmBuilder.setId(jvm.getId())
+                                                 .setName(jvm.getJvmName())
+                                                 .setHostName(jvm.getHostName())
+                                                 .setStatusPath(jvm.getStatusPath())
+                                                 .setGroups(jvm.getGroups())
+                                                 .setHttpPort(jvm.getHttpPort())
+                                                 .setHttpsPort(jvm.getHttpsPort())
+                                                 .setRedirectPort(jvm.getRedirectPort())
+                                                 .setShutdownPort(jvm.getShutdownPort())
+                                                 .setAjpPort(jvm.getAjpPort())
+                                                 .setSystemProperties(jvm.getSystemProperties())
+                                                 .setState(jvm.getState())
+                                                 .setErrorStatus(jvm.getErrorStatus())
+                                                 .setUserName(jvm.getUserName())
+                                                 .setEncryptedPassword(jvm.getEncryptedPassword())
+                                                 .build();
+            jvmsWithWebApps.add(jvmWithWebApps);
+        }
+        return jvmsWithWebApps;
+    }
+
+    @Override
     public boolean checkJvmResourceFileName(final String groupName, final String jvmName, final String fileName) {
         return jvmCrudService.checkJvmResourceFileName(groupName, jvmName, fileName);
     }

@@ -355,7 +355,7 @@ public class JvmServiceImpl implements JvmService {
         if (jvm.getJdkMedia() == null){
             final String jvmName = jvm.getJvmName();
             LOGGER.error("No JDK version specified for JVM {}. Stopping the JV generation.", jvmName);
-            throw new InternalErrorException(AemFaultType.JVM_JDK_NOT_SPECIFIED, "No JDK version specified for JVM " + jvmName + ". Stopping the JVM generation.");
+            throw new InternalErrorException(FaultType.JVM_JDK_NOT_SPECIFIED, "No JDK version specified for JVM " + jvmName + ". Stopping the JVM generation.");
         }
     }
 
