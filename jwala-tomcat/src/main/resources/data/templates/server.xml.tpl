@@ -7,6 +7,7 @@
   (the "License"); you may not use this file except in compliance with
   the License.  You may obtain a copy of the License at
 
+
       http://www.apache.org/licenses/LICENSE-2.0
 
   Unless required by applicable law or agreed to in writing, software
@@ -19,30 +20,36 @@
      define subcomponents such as "Valves" at this level.
      Documentation at /docs/config/server.html
  -->
-<Server port="8005" shutdown="SHUTDOWN">
+<Server port="${jvm.shutdownPort}" shutdown="SHUTDOWN">
   <!-- Security listener. Documentation at /docs/config/listeners.html
   <Listener className="org.apache.catalina.security.SecurityListener" />
   -->
   <!--APR library loader. Documentation at /docs/apr.html -->
   <Listener className="org.apache.catalina.core.AprLifecycleListener" SSLEngine="on" />
-  <!--Initialize Jasper prior to webapps are loaded. Documentation at /docs/jasper-howto.html -->
-  <Listener className="org.apache.catalina.core.JasperListener" />
+
+      <!--Initialize Jasper prior to webapps are loaded. Documentation at /docs/jasper-howto.html -->
+      <Listener className="org.apache.catalina.core.JasperListener" />
+
   <!-- Prevent memory leaks due to use of particular java/javax APIs-->
   <Listener className="org.apache.catalina.core.JreMemoryLeakPreventionListener" />
   <Listener className="org.apache.catalina.mbeans.GlobalResourcesLifecycleListener" />
   <Listener className="org.apache.catalina.core.ThreadLocalLeakPreventionListener" />
 
-    <Listener className="com.cerner.jwala.tomcat.listener.messaging.jgroups.JGroupsReportingLifeCycleListener"
+  <Listener className="com.cerner.jwala.tomcat.listener.messaging.jgroups.JGroupsReportingLifeCycleListener"
             serverName="${jvm.jvmName}"
             jgroupsPreferIpv4Stack="true"
             jgroupsConfigXml="tcp.xml"
-            jgroupsCoordinatorIp="172.16.93.1"
+            jgroupsCoordinatorIp="${vars['jgroups.coordinator.ip.address']}"
             jgroupsCoordinatorPort="30000"
             jgroupsClusterName="jwala_jgroups"
   	        schedulerDelayInitial="30"
   	        schedulerDelaySubsequent="30"
   	        schedulerDelayUnit="SECONDS"
   	        schedulerThreadCount="1"/>
+
+  <!-- commented out until we have jmx ports in jvm definitions in TOC -->
+  <!--Listener className="org.apache.catalina.mbeans.JmxRemoteLifecycleListener"
+            rmiRegistryPortPlatform="9090" rmiServerPortPlatform="9091" /-->
 
   <!-- Global JNDI resources
        Documentation at /docs/jndi-resources-howto.html
@@ -56,13 +63,23 @@
               description="User database that can be updated and saved"
               factory="org.apache.catalina.users.MemoryUserDatabaseFactory"
               pathname="conf/tomcat-users.xml" />
+
   </GlobalNamingResources>
+
 
   <!-- A "Service" is a collection of one or more "Connectors" that share
        a single "Container" Note:  A "Service" is not itself a "Container",
        so you may not define subcomponents such as "Valves" at this level.
        Documentation at /docs/config/service.html
    -->
+  <!-- Soarian Tomcat Platform Service
+       Features: SSL enabled, AJP disabled, HTTP disabled
+       Exploded apps: stpapps
+       Archived apps: by context.xmls in conf/stp/localhost
+       -->
+
+  <!-- Default well-known service
+       Only supports HTTP connections -->
   <Service name="Catalina">
 
     <!--The connectors can use a shared executor, you can define one or more named thread pools-->
@@ -77,31 +94,20 @@
          Java HTTP Connector: /docs/config/http.html (blocking & non-blocking)
          Java AJP  Connector: /docs/config/ajp.html
          APR (HTTP/AJP) Connector: /docs/apr.html
-         Define a non-SSL HTTP/1.1 Connector on port 8080
+         Define a non-SSL HTTP/1.1 Connector on port 8090
     -->
-    <Connector port="8080" protocol="HTTP/1.1"
+    <Connector port="${jvm.httpPort}" protocol="HTTP/1.1"
                connectionTimeout="20000"
-               redirectPort="8443" />
+               redirectPort="${jvm.httpsPort}" />
     <!-- A "Connector" using the shared thread pool-->
     <!--
     <Connector executor="tomcatThreadPool"
-               port="8080" protocol="HTTP/1.1"
+               port="8090" protocol="HTTP/1.1"
                connectionTimeout="20000"
-               redirectPort="8443" />
+               redirectPort="8091" />
     -->
-    <!-- Define a SSL HTTP/1.1 Connector on port 8443
-         This connector uses the BIO implementation that requires the JSSE
-         style configuration. When using the APR/native implementation, the
-         OpenSSL style configuration is required as described in the APR/native
-         documentation -->
-    <!--
-    <Connector port="8443" protocol="org.apache.coyote.http11.Http11Protocol"
-               maxThreads="150" SSLEnabled="true" scheme="https" secure="true"
-               clientAuth="false" sslProtocol="TLS" />
-    -->
-
-    <!-- Define an AJP 1.3 Connector on port 8009 -->
-    <Connector port="8009" protocol="AJP/1.3" redirectPort="8443" />
+    <!-- Define an AJP 1.3 Connector on port 8094 -->
+    <Connector port="${jvm.ajpPort}" protocol="AJP/1.3" redirectPort="${jvm.httpsPort}" />
 
 
     <!-- An Engine represents the entry point (within Catalina) that processes

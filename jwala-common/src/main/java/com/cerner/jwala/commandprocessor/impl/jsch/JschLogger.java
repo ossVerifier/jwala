@@ -1,5 +1,6 @@
 package com.cerner.jwala.commandprocessor.impl.jsch;
 
+import com.cerner.jwala.common.properties.ApplicationProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,7 +17,7 @@ public class JschLogger implements com.jcraft.jsch.Logger {
     @Override
     public boolean isEnabled(int level) {
         // Just let the log function decide.
-        return true;
+        return ApplicationProperties.getAsBoolean("ssh.verbose");
     }
 
     @Override
