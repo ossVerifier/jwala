@@ -277,7 +277,7 @@ public class JvmServiceImpl implements JvmService {
 
     @Override
     public Jvm generateAndDeployJvm(String jvmName, User user) {
-        boolean didSucceed = true;
+        boolean didSucceed = false;
         Jvm jvm = getJvm(jvmName);
         LOGGER.debug("Start generateAndDeployJvm for {} by user {}", jvmName, user.getId());
 
@@ -330,18 +330,19 @@ public class JvmServiceImpl implements JvmService {
             // set the state to stopped
             updateState(jvm.getId(), JvmState.JVM_STOPPED);
 
+            didSucceed = true;
         } catch (CommandFailureException | IOException e) {
-            didSucceed = false;
             LOGGER.error("Failed to generate the JVM config for {} :: ERROR: {}", jvm.getJvmName(), e);
             throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, "Failed to generate the JVM config: " + jvm.getJvmName(), e);
         } finally {
             binaryDistributionLockManager.writeUnlock(jvmName + "-" + jvm.getId().toString());
             LOGGER.debug("End generateAndDeployJvm for {} by user {}", jvmName, user.getId());
 
+            final EventType eventType = didSucceed ? EventType.SYSTEM_INFO : EventType.SYSTEM_ERROR;
             String historyMessage = didSucceed ? "Remote generation of jvm " + jvm.getJvmName() + " succeeded" :
                     "Remote generation of jvm " + jvm.getJvmName() + " failed";
 
-            historyFacadeService.write(jvm.getHostName(), jvm.getGroups(), historyMessage, EventType.USER_ACTION_INFO, user.getId());
+            historyFacadeService.write(jvm.getHostName(), jvm.getGroups(), historyMessage, eventType, user.getId());
         }
         return jvm;
     }
