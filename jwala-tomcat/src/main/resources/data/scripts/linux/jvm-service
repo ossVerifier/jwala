@@ -1,7 +1,7 @@
 #!/bin/sh
 
 ### BEGIN INIT INFO
-# Provides:          tomcat
+# Provides:          tomcat @JVM_NAME@
 # Required-Start:    $remote_fs $syslog
 # Required-Stop:     $remote_fs $syslog
 # Default-Start:     2 3 4 5
@@ -11,9 +11,8 @@
 # chkconfig: 2345 99
 ### END INIT INFO
 
-# $1=/opt/ctp/app/apache-tomcat-7.0.55
 ECHO=/bin/echo
-TOMCAT_HOME=$1
+TOMCAT_HOME=@TOMCAT_HOME@
 TOMCAT_HOME_BIN=$TOMCAT_HOME/bin
 
 # Define the tomcat username
@@ -30,14 +29,16 @@ else
 fi
 
 start() {
-    $ECHO -n "Starting Tomcat "
+    $ECHO -n "Starting Tomcat @JVM_NAME@"
+    chmod -R 755 ${TOMCAT_USER}:${TOMCAT_GROUP} $TOMCAT_HOME/bin
+    chown -R ${TOMCAT_USER}:${TOMCAT_GROUP} $TOMCAT_HOME/work
     chown -R ${TOMCAT_USER}:${TOMCAT_GROUP} $TOMCAT_HOME/logs
     $SU - $TOMCAT_USER -c "pushd $TOMCAT_HOME_BIN; ./startup.sh; popd"
     $ECHO "."
 }
 
 stop() {
-    $ECHO -n "Stopping Tomcat "
+    $ECHO -n "Stopping Tomcat @JVM_NAME@"
     $SU - $TOMCAT_USER -c "pushd $TOMCAT_HOME_BIN; ./catalina.sh stop 20 -force; popd"
     $ECHO "."
 }

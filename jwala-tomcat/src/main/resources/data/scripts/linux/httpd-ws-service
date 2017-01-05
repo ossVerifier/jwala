@@ -20,10 +20,8 @@
 # Source function library.
 . /etc/rc.d/init.d/functions
 
-# $1=/opt/ctp/apache-httpd-2.4.20
-# $2=/opt/ctp/app/data/httpd/httpd.conf
-apache_home=$1
-httpd_conf=$2
+apache_home=@APACHE_HOME@
+httpd_conf=@HTTPD_CONF@
 pidfile=${PIDFILE-$apache_home/logs/httpd.pid}
 lockfile=${LOCKFILE-$apache_home/logs/httpd}
 RETVAL=0
