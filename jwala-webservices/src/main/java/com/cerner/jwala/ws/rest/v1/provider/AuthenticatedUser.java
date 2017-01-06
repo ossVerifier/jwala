@@ -4,6 +4,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.SecurityContext;
 
 import com.cerner.jwala.common.domain.model.user.User;
+import org.springframework.security.authentication.InternalAuthenticationServiceException;
 
 public class AuthenticatedUser {
 
@@ -17,9 +18,14 @@ public class AuthenticatedUser {
         context = theSecurityContext;
     }
 
+    /**
+     *
+     * @return user
+     */
     public User getUser() {
-        if(context.getUserPrincipal() == null) { return new User("nouser"); } // do not check in
-        //TODO This should throw some sort of security exception if there's nobody logged in
+        if(context.getUserPrincipal() == null) {
+            throw new InternalAuthenticationServiceException("User not found");
+        }
         return new User(context.getUserPrincipal().getName());
     }
 }

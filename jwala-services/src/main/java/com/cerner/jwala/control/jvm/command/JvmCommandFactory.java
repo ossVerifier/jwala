@@ -11,6 +11,7 @@ import com.cerner.jwala.common.domain.model.ssh.SshConfiguration;
 import com.cerner.jwala.common.exec.ExecCommand;
 import com.cerner.jwala.common.exec.RemoteExecCommand;
 import com.cerner.jwala.common.exec.RemoteSystemConnection;
+import com.cerner.jwala.common.properties.ApplicationProperties;
 import com.cerner.jwala.service.RemoteCommandExecutorService;
 import com.cerner.jwala.service.RemoteCommandReturnInfo;
 import com.cerner.jwala.service.exception.ApplicationServiceException;
@@ -43,20 +44,17 @@ public class JvmCommandFactory {
 
     @Autowired
     protected SshConfiguration sshConfig;
-
-    @Value("${remote.paths.instances}")
-    protected String remoteJvmInstanceDir;
-
-    @Value("${remote.jwala.java.home}")
-    protected String remoteJdkHome;
-    @Value("${jmap.dump.live.enabled}")
-    protected Boolean dumpLive;
-
-    @Value("${remote.jwala.data.dir}")
-    protected String remoteDataDir;
-
     @Autowired
     protected RemoteCommandExecutorService remoteCommandExecutorService;
+
+    private String remoteJvmInstanceDir = ApplicationProperties.get("remote.paths.instances");
+
+    private String remoteJdkHome = ApplicationProperties.get("remote.jwala.java.home");
+
+    private Boolean dumpLive = ApplicationProperties.getAsBoolean("jmap.dump.live.enabled");
+
+    private String remoteDataDir = ApplicationProperties.get("remote.jwala.data.dir");
+
 
     /**
      *
@@ -84,12 +82,23 @@ public class JvmCommandFactory {
     public void initJvmCommands() {
         commands = new HashMap<>();
         // commands are added here using lambdas. It is also possible to dynamically add commands without editing the code.
-        commands.put(JvmControlOperation.START.getExternalValue(), (Jvm jvm) -> remoteCommandExecutorService.executeCommand(new RemoteExecCommand(getConnection(jvm),getExecCommand(START_JVM_SERVICE, jvm))));
-        commands.put(JvmControlOperation.STOP.getExternalValue(), (Jvm jvm) -> remoteCommandExecutorService.executeCommand(new RemoteExecCommand(getConnection(jvm),getExecCommand(STOP_JVM_SERVICE, jvm))));
-        commands.put(JvmControlOperation.THREAD_DUMP.getExternalValue(), (Jvm jvm) -> remoteCommandExecutorService.executeCommand(new RemoteExecCommand(getConnection(jvm),getExecCommandForThreadDump(THREAD_DUMP_JVM, jvm))));
-        commands.put(JvmControlOperation.HEAP_DUMP.getExternalValue(), (Jvm jvm) -> remoteCommandExecutorService.executeCommand(new RemoteExecCommand(getConnection(jvm),getExecCommandForHeapDump(HEAP_DUMP_JVM_, jvm))));
+        commands.put(JvmControlOperation.START.getExternalValue(), (Jvm jvm)
+                -> remoteCommandExecutorService.executeCommand(new RemoteExecCommand(getConnection(jvm),getExecCommand(START_JVM_SERVICE, jvm))));
+        commands.put(JvmControlOperation.STOP.getExternalValue(), (Jvm jvm)
+                -> remoteCommandExecutorService.executeCommand(new RemoteExecCommand(getConnection(jvm),getExecCommand(STOP_JVM_SERVICE, jvm))));
+        commands.put(JvmControlOperation.THREAD_DUMP.getExternalValue(), (Jvm jvm)
+                -> remoteCommandExecutorService.executeCommand(new RemoteExecCommand(getConnection(jvm),getExecCommandForThreadDump(THREAD_DUMP_JVM, jvm))));
+        commands.put(JvmControlOperation.HEAP_DUMP.getExternalValue(), (Jvm jvm)
+                -> remoteCommandExecutorService.executeCommand(new RemoteExecCommand(getConnection(jvm),getExecCommandForHeapDump(HEAP_DUMP_JVM_, jvm))));
+        commands.put(JvmControlOperation.DEPLOY_CONFIG_ARCHIVE.getExternalValue(), (Jvm jvm)
+                -> remoteCommandExecutorService.executeCommand(new RemoteExecCommand(getConnection(jvm),getExecCommandForHeapDump("mkdir", jvm))));
     }
 
+    /**
+     *
+     * @param jvm
+     * @return
+     */
     private RemoteSystemConnection getConnection(Jvm jvm) {
         return new RemoteSystemConnection(sshConfig.getUserName(), sshConfig.getPassword(), jvm.getHostName(), sshConfig.getPort());
     }
@@ -128,6 +137,13 @@ public class JvmCommandFactory {
         String jvmInstanceDir = remoteJvmInstanceDir + "/" +StringUtils.replace(jvm.getJvmName(), " ", "");
         return new ExecCommand(getFullPathScript(jvm, scriptName),remoteJdkHome, jvmInstanceDir);
     }
+
+    /**
+     *
+     * @param scriptName
+     * @param jvm
+     * @return
+     */
     private ExecCommand getExecCommand(String scriptName, Jvm jvm){
         return new ExecCommand(getFullPathScript(jvm, scriptName), jvm.getJvmName());
     }

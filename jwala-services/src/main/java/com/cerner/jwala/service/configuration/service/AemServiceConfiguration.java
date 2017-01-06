@@ -18,6 +18,7 @@ import com.cerner.jwala.control.command.RemoteCommandExecutor;
 import com.cerner.jwala.control.configuration.AemCommandExecutorConfig;
 import com.cerner.jwala.control.configuration.AemSshConfig;
 import com.cerner.jwala.common.FileUtility;
+import com.cerner.jwala.control.webserver.command.WebServerCommandFactory;
 import com.cerner.jwala.persistence.configuration.AemPersistenceServiceConfiguration;
 import com.cerner.jwala.persistence.jpa.service.*;
 import com.cerner.jwala.persistence.jpa.service.impl.GroupJvmRelationshipServiceImpl;
@@ -125,11 +126,13 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
         "com.cerner.jwala.service.jvm.impl",
         "com.cerner.jwala.service.jvm.operation.impl",
         "com.cerner.jwala.control.jvm.command",
-        "com.cerner.jwala.control.webserver.command"})
+        "com.cerner.jwala.control.webserver.command",
+        "com.cerner.jwala.commandprocessor.impl.jsch"})
+
 public class AemServiceConfiguration {
 
     @Autowired
-    private AemPersistenceServiceConfiguration persistenceServiceConfiguration;
+    private AemPersistenceServiceConfiguration aemPersistenceServiceConfiguration;
 
     @Autowired
     private AemCommandExecutorConfig aemCommandExecutorConfig;
@@ -177,8 +180,8 @@ public class AemServiceConfiguration {
 
     @Bean
     public GroupService getGroupService(final HistoryFacadeService historyFacadeService) {
-        return new GroupServiceImpl(persistenceServiceConfiguration.getGroupPersistenceService(),
-                                    persistenceServiceConfiguration.getApplicationPersistenceService(),
+        return new GroupServiceImpl(aemPersistenceServiceConfiguration.getGroupPersistenceService(),
+                                    aemPersistenceServiceConfiguration.getApplicationPersistenceService(),
                                     aemCommandExecutorConfig.getRemoteCommandExecutor(),
                                     binaryDistributionService,
                                     resourceService
@@ -192,7 +195,7 @@ public class AemServiceConfiguration {
                                     @Value("${spring.messaging.topic.serverStates:/topic/server-states}") final String topicServerStates,
                                     final JvmControlService jvmControlService, final HistoryFacadeService historyFacadeService,
                                     final FileUtility fileUtility) {
-        final JvmPersistenceService jvmPersistenceService = persistenceServiceConfiguration.getJvmPersistenceService();
+        final JvmPersistenceService jvmPersistenceService = aemPersistenceServiceConfiguration.getJvmPersistenceService();
         return new JvmServiceImpl(jvmPersistenceService, groupService, applicationService,
                 messagingTemplate, groupStateNotificationService, resourceService,
                 clientFactoryHelper, topicServerStates, jvmControlService, binaryDistributionService, binaryDistributionLockManager,
@@ -222,7 +225,7 @@ public class AemServiceConfiguration {
                                                 final InMemoryStateManagerService<Identifier<WebServer>, WebServerReachableState> inMemoryStateManagerService,
                                                 @Value("${paths.resource-templates:../data/templates}") final String templatePath) {
         return new WebServerServiceImpl(
-                persistenceServiceConfiguration.getWebServerPersistenceService(),
+                aemPersistenceServiceConfiguration.getWebServerPersistenceService(),
                 resourceService,
                 inMemoryStateManagerService,
                 templatePath,
@@ -246,7 +249,7 @@ public class AemServiceConfiguration {
     public ApplicationService getApplicationService(final JvmPersistenceService jvmPersistenceService, final GroupService groupService,
                                                     final HistoryCrudService historyCrudService, final MessagingService messagingService,
                                                     final ResourceService resourceService, final HistoryFacadeService historyFacadeService) {
-        return new ApplicationServiceImpl(persistenceServiceConfiguration.getApplicationPersistenceService(),
+        return new ApplicationServiceImpl(aemPersistenceServiceConfiguration.getApplicationPersistenceService(),
                 jvmPersistenceService, groupService,
                 resourceService, aemCommandExecutorConfig.getRemoteCommandExecutor(), binaryDistributionService, historyFacadeService);
     }
@@ -258,7 +261,7 @@ public class AemServiceConfiguration {
                                                   final RemoteCommandExecutorService remoteCommandExecutorService,
                                                   final SshConfiguration sshConfig,
                                                   final HistoryFacadeService historyFacadeService) {
-        return new JvmControlServiceImpl(persistenceServiceConfiguration.getJvmPersistenceService(), aemCommandExecutorConfig.getRemoteCommandExecutor(),
+        return new JvmControlServiceImpl(aemPersistenceServiceConfiguration.getJvmPersistenceService(), aemCommandExecutorConfig.getRemoteCommandExecutor(),
                 jvmStateService, remoteCommandExecutorService,
                 sshConfig, historyFacadeService);
     }
@@ -315,8 +318,8 @@ public class AemServiceConfiguration {
                                               final WebServerResourceHandler webServerResourceHandler,
                                               final ResourceContentGeneratorService resourceContentGeneratorService,
                                               final ResourceRepositoryService resourceRepositoryService) {
-        return new ResourceServiceImpl(persistenceServiceConfiguration.getResourcePersistenceService(),
-                persistenceServiceConfiguration.getGroupPersistenceService(), applicationPersistenceService,
+        return new ResourceServiceImpl(aemPersistenceServiceConfiguration.getResourcePersistenceService(),
+                aemPersistenceServiceConfiguration.getGroupPersistenceService(), applicationPersistenceService,
                 jvmPersistenceService, webServerPersistenceService, resourceDao, webServerResourceHandler,
                 aemCommandExecutorConfig.getRemoteCommandExecutor(), binaryWriteLockMap,
                 resourceContentGeneratorService, binaryDistributionService, new Tika(), resourceRepositoryService);

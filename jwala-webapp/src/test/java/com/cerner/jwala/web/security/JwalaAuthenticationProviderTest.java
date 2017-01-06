@@ -50,7 +50,7 @@ public class JwalaAuthenticationProviderTest {
         jwalaAuthenticationProvider = new JwalaAuthenticationProvider();
         userDatabaseRealm.setResourceName("resources/tomcat-users.xml");
         name = new ObjectName("Catalina", "type", "Engine");
-        jwalaAuthenticationProvider.setmBeanServer(mBeanServer);
+//        jwalaAuthenticationProvider.setmBeanServer(mBeanServer);
         assertEquals(jwalaAuthenticationProvider.getmBeanServer(), mBeanServer);
         when(mBeanServer.getAttribute(name, "managedResource")).thenReturn(engine);
         when(jwalaAuthenticationProvider.getTomcatContextRealm()).thenReturn(userDatabaseRealm);
