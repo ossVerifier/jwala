@@ -44,6 +44,10 @@ public class MediaServiceRestImpl implements MediaServiceRest {
         final Map<String, Object> mediaFileDataMap = new HashMap<>();
         attachments.forEach(attachment -> {
             try {
+                // when using the REST API from Chef a null attachment gets added somewhere between the execute_rest and here
+                if (attachment.getHeaders().size() < 2) {
+                    return;
+                }
                 if (attachment.getHeader("Content-Type") == null) {
                     mediaDataMap.put(attachment.getDataHandler().getName(),
                             IOUtils.toString(attachment.getDataHandler().getInputStream(), Charset.defaultCharset()));

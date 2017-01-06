@@ -14,6 +14,7 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import javax.activation.DataHandler;
+import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.io.InputStream;
@@ -130,6 +131,9 @@ public class MediaServiceRestImplTest {
         when(attachment.getDataHandler()).thenReturn(dataHandler);
         when(dataHandler.getName()).thenReturn("mockString");
         when(dataHandler.getInputStream()).thenReturn(inputStream);
+        MultivaluedMap<String, String> multimap = mock(MultivaluedMap.class);
+        when(multimap.size()).thenReturn(2);
+        when(attachment.getHeaders()).thenReturn(multimap);
 
         attachments.add(attachment);
         Response response = mediaServiceRest.createMedia(attachments);

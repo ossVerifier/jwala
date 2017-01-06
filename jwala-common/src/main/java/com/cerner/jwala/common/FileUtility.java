@@ -37,7 +37,7 @@ public class FileUtility {
         }
 
         JarFile jarFile = null;
-        final String errMsg = MessageFormat.format("Failed to unpack {}!", destination.getAbsolutePath());
+        final String errMsg = MessageFormat.format("Failed to unpack {0}!", destination.getAbsolutePath());
         try {
             jarFile = new JarFile(zipFile);
             final Enumeration entries = jarFile.entries();
