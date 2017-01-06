@@ -30,8 +30,6 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
     private ResourceService resourceService;
     private final GroupService groupService;
 
-    private static ApplicationServiceRestImpl instance;
-
     public ApplicationServiceRestImpl(ApplicationService applicationService,
                                       ResourceService resourceService,
                                       final GroupService groupService) {
@@ -130,8 +128,6 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
     public Response deployWebArchive(final Identifier<Application> anAppToGet, String hostName) {
         LOGGER.info("Deploying web archive for app ID {}", anAppToGet);
         Application app = service.getApplication(anAppToGet);
-        final Group group = app.getGroup();
-        final String appName = app.getName();
         service.copyApplicationWarToHost(app, hostName);
         return null;
     }
