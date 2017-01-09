@@ -34,15 +34,9 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
         String writeLockResourceName = hostname + "-" + EntityType.WEB_SERVER.toString();
         try {
             binaryDistributionLockManager.writeLock(writeLockResourceName);
-
-            //remote.paths.apache.httpd=c:/ctp/apache-httpd-2.4.20
             String remoteDeployDir =  ApplicationProperties.getRequired(PropertyKeys.REMOTE_PATHS_APACHE_HTTPD);
-
-            //remote.paths.httpd.root.dir.name=apache-httpd-2.4.20
             String apacheDirName = ApplicationProperties.get(PropertyKeys.REMOTE_PATHS_HTTPD_ROOT_DIR_NAME);
-
             distributeBinary(hostname, apacheDirName, remoteDeployDir, APACHE_EXCLUDE);
-
         } finally {
             binaryDistributionLockManager.writeUnlock(writeLockResourceName);
         }
@@ -51,15 +45,9 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
     @Override
     public void distributeJdk(final String hostname) {
         LOGGER.info("Start deploy jdk for host {}", hostname);
-
-        //remote.jwala.java.home=c:/ctp/jdk1.8.0_92
         String remoteDeployDir = ApplicationProperties.getRequired(PropertyKeys.REMOTE_JAVA_HOME);
-
-        //remote.jwala.java.root.dir.name=jdk1.8.0_92
         String javaDirName = ApplicationProperties.getRequired(PropertyKeys.REMOTE_JWALA_JAVA_ROOT_DIR_NAME);
-
         distributeBinary(hostname, javaDirName, remoteDeployDir, "");
-
         LOGGER.info("End deploy jdk for {}", hostname);
     }
 
