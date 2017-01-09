@@ -102,7 +102,7 @@ public class JvmStateReceiverAdapter extends ReceiverAdapter {
     private Jvm getJvmById(final long id) {
         LOGGER.debug("Retrieving JVM id with id = {}...", id);
         try {
-            return jvmPersistenceService.getJvm(new Identifier<>(id));
+            return jvmPersistenceService.getJvm(new Identifier<Jvm>(id));
         } catch (NoResultException e) {
             LOGGER.warn("Received a notification from a jvm named {} but Jwala doesn't know about a Jvm " +
                     "with that name!!!  ", id);
