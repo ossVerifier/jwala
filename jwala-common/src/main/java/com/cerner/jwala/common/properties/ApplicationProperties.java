@@ -80,7 +80,7 @@ public class ApplicationProperties {
         String propVal = getProperties().getProperty(key);
         LOGGER.trace("ApplicationsProperties.get({})=({})", key, propVal);
 
-        if (REQUIRED.equals(key)) {
+        if (REQUIRED.equalsIgnoreCase(propVal)) {
             LOGGER.warn("Required property with key {} was not valued.", key);
         }
 
