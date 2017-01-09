@@ -13,6 +13,7 @@ import com.cerner.jwala.service.RemoteCommandExecutorService;
 import com.cerner.jwala.service.group.GroupStateNotificationService;
 import com.cerner.jwala.service.jvm.JvmStateService;
 import com.cerner.jwala.service.state.InMemoryStateManagerService;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -94,14 +95,20 @@ public class JvmStateServiceImplTest {
         verify(mockRemoteCommandExecutorService).executeCommand(any(RemoteExecCommand.class));
     }
 
-// TODO 1/4/2017: Fix this test!
-//    @Test
-//    public void testUpdateState() {
-//        final Identifier<Jvm> id = new Identifier<>(1L);
-//        jvmStateService.updateState(id, JvmState.JVM_STOPPED);
-//        verify(mockJvmPersistenceService).updateState(eq(id), eq(JvmState.JVM_STOPPED), eq(StringUtils.EMPTY));
-//        verify(mockMessagingService).send(any(CurrentState.class));
-//        verify(mockGroupStateNotificationService).retrieveStateAndSendToATopic(eq(id), eq(Jvm.class));
-//    }
+    @Test
+    public void testUpdateState() {
+        final Identifier<Jvm> id = new Identifier<>(1L);
+        final Jvm mockJvm = mock(Jvm.class);
+        final CurrentState<Jvm, JvmState> mockCurrentState = mock(CurrentState.class);
+        when(mockCurrentState.getState()).thenReturn(JvmState.JVM_STOPPED);
+        when(mockCurrentState.getMessage()).thenReturn("some message...");
+        when(mockJvm.getId()).thenReturn(id);
+        when(mockInMemoryStateManagerService.get(eq(id))).thenReturn(mockCurrentState);
+        when(mockInMemoryStateManagerService.containsKey(eq(id))).thenReturn(true);
+        jvmStateService.updateState(mockJvm, JvmState.JVM_STOPPED);
+        verify(mockJvmPersistenceService).updateState(eq(id), eq(JvmState.JVM_STOPPED), eq(StringUtils.EMPTY));
+        verify(mockMessagingService).send(any(CurrentState.class));
+        verify(mockGroupStateNotificationService).retrieveStateAndSend(eq(id), eq(Jvm.class));
+    }
 
 }
