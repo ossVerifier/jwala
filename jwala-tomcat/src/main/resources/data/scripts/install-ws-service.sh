@@ -47,3 +47,4 @@ if $linux; then
   chmod 755 $1
   sudo cp $1 /etc/init.d
   sudo chkconfig --add $1
+fi
