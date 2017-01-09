@@ -8,7 +8,7 @@ import com.cerner.jwala.service.jvm.JvmStateService;
 import org.apache.catalina.LifecycleState;
 import org.apache.commons.lang3.StringUtils;
 import javax.persistence.NoResultException;
-import org.jgroups.Address;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.jgroups.Message;
 import org.jgroups.ReceiverAdapter;
 import org.jgroups.View;
@@ -57,41 +57,30 @@ public class JvmStateReceiverAdapter extends ReceiverAdapter {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
-    public void receive(Message jgroupMessage) {
-        final Address src = jgroupMessage.getSrc();
-        final Map serverInfoMap = (Map) jgroupMessage.getObject();
-        final JvmState jvmState;
-        String jvmId = null;
+    public void receive(final Message jGroupMsg) {
+        final Map serverInfoMap = (Map) jGroupMsg.getObject();
+        final Jvm jvm = getJvm(serverInfoMap);
+        final JvmState jvmState = LIFECYCLE_JWALA_JVM_STATE_REF_MAP.get(serverInfoMap.get(STATE_KEY));
 
-        LOGGER.debug("Received JGroups JVM state message {} {}", src, serverInfoMap);
-
-        final LifecycleState lifecycleState = (LifecycleState) serverInfoMap.get(STATE_KEY);
-
-        jvmState = LIFECYCLE_JWALA_JVM_STATE_REF_MAP.get(lifecycleState);
-
-
-        Jvm jvm = null;
-        Object id = serverInfoMap.get(ID_KEY);
-        if (id != null) {
-            jvmId = (String) id;
-            jvm = getJvmById(id);
-        } else {
-            final Object name = serverInfoMap.get(NAME_KEY);
-            if (name != null) {
-                jvm = getJvmByName((String )name);
-                id = getJvmId((String) name);
-                if (id != null) {
-                    jvmId = id.toString();
-                }
-            }
-        }
-
-        if (jvmId != null && !JvmState.JVM_STOPPED.equals(jvmState)) {
+        if (jvm != null && !JvmState.JVM_STOPPED.equals(jvmState)) {
             jvmStateService.updateState(jvm, jvmState, StringUtils.EMPTY);
-        } else if (jvmId == null) {
-            LOGGER.error("Jvm id is null! Cannot update JVM state.");
+        } else if (jvm == null) {
+            LOGGER.error("Cannot update the state since no JVM was found with the following details: {}", serverInfoMap);
         }
+    }
+
+    /**
+     * Get the JVM with parameters provided in a map
+     * @param serverInfoMap the map that contains the JVM id or name
+     * @return {@link Jvm}
+     */
+    private Jvm getJvm(final Map serverInfoMap) {
+        final String id = serverInfoMap.get(ID_KEY) instanceof String ? (String) serverInfoMap.get(ID_KEY) : null;
+        if (id != null && NumberUtils.isNumber(id)) {
+            return getJvmById(Long.parseLong(id));
+        }
+        // try to get the JVM by name instead
+        return serverInfoMap.get(NAME_KEY) instanceof String ? getJvmByName((String) serverInfoMap.get(NAME_KEY)) : null;
     }
 
     /**
@@ -110,10 +99,10 @@ public class JvmStateReceiverAdapter extends ReceiverAdapter {
         return null;
     }
 
-    private Jvm getJvmById(final Object id) {
+    private Jvm getJvmById(final long id) {
         LOGGER.debug("Retrieving JVM id with id = {}...", id);
         try {
-            return jvmPersistenceService.getJvm(new Identifier<Jvm>((long) id));
+            return jvmPersistenceService.getJvm(new Identifier<>(id));
         } catch (NoResultException e) {
             LOGGER.warn("Received a notification from a jvm named {} but Jwala doesn't know about a Jvm " +
                     "with that name!!!  ", id);
