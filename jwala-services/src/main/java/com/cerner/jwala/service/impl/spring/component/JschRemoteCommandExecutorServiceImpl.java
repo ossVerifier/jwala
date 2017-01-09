@@ -147,6 +147,7 @@ public class JschRemoteCommandExecutorServiceImpl implements RemoteCommandExecut
             session.connect();
             LOGGER.debug("session connected");
             channel = (ChannelExec) session.openChannel(ChannelType.EXEC.getChannelType());
+            LOGGER.debug("Executing remote cmd {} ", remoteExecCommand.getCommand().toCommandString());
             channel.setCommand(remoteExecCommand.getCommand().toCommandString().getBytes(StandardCharsets.UTF_8));
 
             final InputStream remoteOutput = channel.getInputStream();

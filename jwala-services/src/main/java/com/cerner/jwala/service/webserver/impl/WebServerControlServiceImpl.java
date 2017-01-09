@@ -38,9 +38,6 @@ import static com.cerner.jwala.common.domain.model.webserver.WebServerControlOpe
 
 public class WebServerControlServiceImpl implements WebServerControlService {
 
-    @Value("${spring.messaging.topic.serverStates:/topic/server-states}")
-    protected String topicServerStates;
-
     private static final String FORCED_STOPPED = "FORCED STOPPED";
     private static final String WEB_SERVER = "Web Server";
     private final WebServerService webServerService;
@@ -76,8 +73,10 @@ public class WebServerControlServiceImpl implements WebServerControlService {
             historyFacadeService.write(getServerName(webServer), new ArrayList<>(webServer.getGroups()), event, EventType.USER_ACTION_INFO, aUser.getId());
 
             final WindowsWebServerPlatformCommandProvider windowsJvmPlatformCommandProvider = new WindowsWebServerPlatformCommandProvider();
+
             final ServiceCommandBuilder serviceCommandBuilder = windowsJvmPlatformCommandProvider.getServiceCommandBuilderFor(controlOperation);
             final ExecCommand execCommand = serviceCommandBuilder.buildCommandForService(webServer.getName());
+
             final RemoteExecCommand remoteExecCommand = new RemoteExecCommand(new RemoteSystemConnection(sshConfig.getUserName(),
                     sshConfig.getEncryptedPassword(), webServer.getHost(), sshConfig.getPort()), execCommand);
 
@@ -90,7 +89,7 @@ public class WebServerControlServiceImpl implements WebServerControlService {
             if (StringUtils.isNotEmpty(standardOutput) && (START.equals(controlOperation) ||
                     STOP.equals(controlOperation))) {
                 commandOutput.cleanStandardOutput();
-                LOGGER.info("shell command output{}", standardOutput);
+                LOGGER.info("shell command output {}", standardOutput);
             }
 
             // Process non successful return codes...
@@ -177,9 +176,9 @@ public class WebServerControlServiceImpl implements WebServerControlService {
 
         final WebServer aWebServer = webServerService.getWebServer(aWebServerName);
         final String fileName = new File(destPath).getName();
-        if (!ApplicationProperties.get("remote.commands.user-scripts").endsWith(fileName)) {
+        if (destPath.endsWith(fileName)) {
             historyFacadeService.write(getServerName(aWebServer), new ArrayList<>(aWebServer.getGroups()),
-                    WindowsWebServerNetOperation.SECURE_COPY.name() + " " + fileName, EventType.USER_ACTION_INFO, userId);
+                    WindowsWebServerNetOperation.SCP.name() + " " + fileName, EventType.USER_ACTION_INFO, userId);
         }
 
         // back up the original file first
@@ -243,7 +242,7 @@ public class WebServerControlServiceImpl implements WebServerControlService {
         return commandExecutor.executeRemoteCommand(
                 aWebServer.getName(),
                 host,
-                WebServerControlOperation.SECURE_COPY,
+                WebServerControlOperation.SCP,
                 new WindowsWebServerPlatformCommandProvider(),
                 sourcePath,
                 destPath);

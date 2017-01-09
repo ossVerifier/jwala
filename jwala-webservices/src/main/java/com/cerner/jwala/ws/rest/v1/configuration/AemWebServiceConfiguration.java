@@ -1,6 +1,7 @@
 package com.cerner.jwala.ws.rest.v1.configuration;
 
 import com.cerner.jwala.files.FilesConfiguration;
+import com.cerner.jwala.service.HistoryFacadeService;
 import com.cerner.jwala.service.HistoryService;
 import com.cerner.jwala.service.app.ApplicationService;
 import com.cerner.jwala.service.balancermanager.BalancerManagerService;
@@ -89,6 +90,9 @@ public class AemWebServiceConfiguration {
     private HistoryService historyService;
 
     @Autowired
+    private HistoryFacadeService historyFacadeService;
+
+    @Autowired
     private GroupControlService groupControlService;
 
     @Autowired
@@ -145,7 +149,8 @@ public class AemWebServiceConfiguration {
     @Bean
     public GroupServiceRest getV1GroupServiceRest() {
         return new GroupServiceRestImpl(groupService, resourceService, groupControlService, groupJvmControlService,
-                groupWebServerControlService, jvmService, webServerService, applicationService, getV1ApplicationServiceRest());
+                groupWebServerControlService, jvmService, webServerService, applicationService, getV1ApplicationServiceRest(),
+                getV1WebServerServiceRest());
     }
 
     @Bean
@@ -170,7 +175,8 @@ public class AemWebServiceConfiguration {
                 wsWriteLockMap,
                 resourceService,
                 groupService,
-                binaryDistributionService);
+                binaryDistributionService,
+                historyFacadeService);
     }
 
     @Bean

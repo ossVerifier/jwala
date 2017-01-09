@@ -19,12 +19,13 @@ fi
 if $cygwin; then
   export JVMINST=`sc queryex $1 | head -1 | awk '{ sub(/:/,"",$4); print $4 }'`
   if [ "$JVMINST" = "1060" ]; then
-      echo Service $1 not installed on server, continuing with invoke
+    echo Service $1 not installed on server, continuing with install
   else
-      /usr/bin/echo Service $1 already exists
-      exit $JWALA_EXIT_CODE_FAILED
+    /usr/bin/echo Service $1 already exists
+    exit $JWALA_EXIT_CODE_FAILED
   fi
-  $2/$1/bin/install_service.bat "$3" "$4"
+
+  $2/$1/$3/bin/install-service.bat "$4" "$5"
   export EXIT_CODE=$?
   if [ "$EXIT_CODE" -ne "0" ]; then
     /usr/bin/echo Failed to install service $1
@@ -33,7 +34,7 @@ if $cygwin; then
 
   for (( c=1; c<=5; c++ ))
   do
-      /usr/bin/sleep 1
+    /usr/bin/sleep 1
   done
 
   export JVMINST=`sc queryex $1 | head -1 | awk '{ sub(/:/,"",$4); print $4 }'`

@@ -20,6 +20,7 @@ import com.cerner.jwala.common.exec.CommandOutput;
 import com.cerner.jwala.common.exec.CommandOutputReturnCode;
 import com.cerner.jwala.common.exec.ExecReturnCode;
 import com.cerner.jwala.common.properties.ApplicationProperties;
+import com.cerner.jwala.common.properties.PropertyKeys;
 import com.cerner.jwala.common.request.group.AddJvmToGroupRequest;
 import com.cerner.jwala.common.request.jvm.ControlJvmRequest;
 import com.cerner.jwala.common.request.jvm.CreateJvmAndAddToGroupsRequest;
@@ -60,20 +61,13 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.*;
-import java.nio.charset.Charset;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
-import java.util.jar.JarEntry;
-import java.util.jar.JarOutputStream;
 
 public class JvmServiceImpl implements JvmService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JvmServiceImpl.class);
     private static final String REMOTE_COMMANDS_USER_SCRIPTS = ApplicationProperties.get("remote.commands.user-scripts");
     private static final String MEDIA_TYPE_TEXT = "text";
-    private static final String PATHS_RESOURCE_TEMPLATES = "paths.resource-templates";
-    private static final String INSTALL_SERVICE_TEMPLATE_TPL = "Install_ServiceTemplate.tpl";
 
     private final BinaryDistributionLockManager binaryDistributionLockManager;
     private String topicServerStates;
@@ -91,8 +85,6 @@ public class JvmServiceImpl implements JvmService {
     private static final String JWALA_SCRIPTS_PATH = ApplicationProperties.get("remote.commands.user-scripts");
 
     private static final String DIAGNOSIS_INITIATED = "Diagnosis Initiated on JVM ${jvm.jvmName}, host ${jvm.hostName}";
-    public static final String CONFIG_FILENAME_INSTALL_SERVICE_BAT = "install_service.bat";
-    public static final String CONFIG_JAR = "_config.jar";
 
     public JvmServiceImpl(final JvmPersistenceService jvmPersistenceService,
                           final GroupService groupService,
@@ -285,10 +277,11 @@ public class JvmServiceImpl implements JvmService {
 
     @Override
     public Jvm generateAndDeployJvm(String jvmName, User user) {
+        boolean didSucceed = false;
         Jvm jvm = getJvm(jvmName);
-        // only one at a time per JVM
-        //TODO return error if .jwala directory is already being written to
         LOGGER.debug("Start generateAndDeployJvm for {} by user {}", jvmName, user.getId());
+
+        historyFacadeService.write(jvm.getHostName(), jvm.getGroups(), "Starting to generate remote JVM " + jvm.getJvmName(), EventType.USER_ACTION_INFO, user.getId());
 
         //add write lock for multiple write
         binaryDistributionLockManager.writeLock(jvmName + "-" + jvm.getId().toString());
@@ -299,11 +292,10 @@ public class JvmServiceImpl implements JvmService {
                 LOGGER.error(errorMessage);
                 throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, errorMessage);
             }
+
             validateJvmAndAppResources(jvm);
 
             distributeBinaries(jvm.getHostName());
-            // check for setenv.bat
-            checkForSetenvBat(jvm.getJvmName());
 
             // create the scripts directory if it doesn't exist
             createScriptsDirectory(jvm);
@@ -311,7 +303,7 @@ public class JvmServiceImpl implements JvmService {
             // copy the install and deploy scripts
             deployScriptsToUserJwalaScriptsDir(jvm, user);
 
-            // delete the service, needs service.bat
+            // delete the service, needs install-service.bat
             // TODO make generic to support multiple OSs
             deleteJvmWindowsService(new ControlJvmRequest(jvm.getId(), JvmControlOperation.DELETE_SERVICE), jvm, user);
 
@@ -335,16 +327,22 @@ public class JvmServiceImpl implements JvmService {
             // re-install the service
             installJvmWindowsService(jvm, user);
 
-
             // set the state to stopped
             updateState(jvm.getId(), JvmState.JVM_STOPPED);
 
+            didSucceed = true;
         } catch (CommandFailureException | IOException e) {
             LOGGER.error("Failed to generate the JVM config for {} :: ERROR: {}", jvm.getJvmName(), e);
             throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, "Failed to generate the JVM config: " + jvm.getJvmName(), e);
         } finally {
             binaryDistributionLockManager.writeUnlock(jvmName + "-" + jvm.getId().toString());
             LOGGER.debug("End generateAndDeployJvm for {} by user {}", jvmName, user.getId());
+
+            final EventType eventType = didSucceed ? EventType.SYSTEM_INFO : EventType.SYSTEM_ERROR;
+            String historyMessage = didSucceed ? "Remote generation of jvm " + jvm.getJvmName() + " succeeded" :
+                    "Remote generation of jvm " + jvm.getJvmName() + " failed";
+
+            historyFacadeService.write(jvm.getHostName(), jvm.getGroups(), historyMessage, eventType, user.getId());
         }
         return jvm;
     }
@@ -397,9 +395,8 @@ public class JvmServiceImpl implements JvmService {
     private void distributeBinaries(String hostName) {
         try {
             binaryDistributionLockManager.writeLock(hostName);
-            binaryDistributionService.prepareUnzip(hostName);
+            binaryDistributionService.distributeUnzip(hostName);
             binaryDistributionService.distributeJdk(hostName);
-            binaryDistributionService.distributeTomcat(hostName);
         } finally {
             binaryDistributionLockManager.writeUnlock(hostName);
         }
@@ -417,7 +414,7 @@ public class JvmServiceImpl implements JvmService {
     }
 
     protected void deployScriptsToUserJwalaScriptsDir(Jvm jvm, User user) throws CommandFailureException, IOException {
-        final ControlJvmRequest secureCopyRequest = new ControlJvmRequest(jvm.getId(), JvmControlOperation.SECURE_COPY);
+        final ControlJvmRequest secureCopyRequest = new ControlJvmRequest(jvm.getId(), JvmControlOperation.SCP);
         final String commandsScriptsPath = ApplicationProperties.get("commands.scripts-path");
 
         final String deployConfigJarPath = commandsScriptsPath + "/" + AemControl.Properties.DEPLOY_CONFIG_ARCHIVE_SCRIPT_NAME.getValue();
@@ -453,86 +450,14 @@ public class JvmServiceImpl implements JvmService {
     }
 
     protected String generateJvmConfigJar(Jvm jvm) throws CommandFailureException {
-        String jvmName = jvm.getJvmName();
-        LOGGER.info("Generating JVM configuration tar for {}", jvmName);
-        final String jvmGeneratedResourcesTempDir = ApplicationProperties.get("paths.generated.resource.dir");
-        final String instanceTemplateZipName = ApplicationProperties.get("jwala.instance-template");
-        final String binaryDir = ApplicationProperties.get("jwala.binary.dir");
-        final String agentDir = ApplicationProperties.get("jwala.agent.dir");
+        ManagedJvmBuilder managedJvmBuilder =
+                new ManagedJvmBuilder().
+                        jvm(jvmPersistenceService.findJvmByExactName(jvm.getJvmName())).
+                        fileUtility(fileUtility).
+                        resourceService(resourceService).
+                        build();
 
-        String jvmResourcesNameDir = jvmGeneratedResourcesTempDir + "/" + jvmName;
-        LOGGER.debug("generated resources dir: {}", jvmGeneratedResourcesTempDir);
-        LOGGER.debug("generated JVM directory location: {}", jvmResourcesNameDir);
-
-        final File generatedDir = new File("./" + jvmName);
-        final File unzipDir = new File(jvmName);
-        String configJarPath;
-        try {
-            final String destDirPath = generatedDir.getAbsolutePath();
-            LOGGER.debug("Start Unzip Instance Template {} to {} ", binaryDir + "/" + instanceTemplateZipName, unzipDir);
-            // Copy the templates that would be included in the zip file.
-
-            fileUtility.unzip(new File(binaryDir + "/" + instanceTemplateZipName), unzipDir);
-
-            LOGGER.debug("End Unzip Instance Template {} to {} ", binaryDir + "/" + instanceTemplateZipName, unzipDir);
-            final String generatedText = generateInstallServiceBat(jvmName);
-            final String install_serviceBatDir = generatedDir + "/bin";
-            LOGGER.debug("generated install_service.bat text: {}", generatedText);
-            LOGGER.debug("generating template in location: {}", install_serviceBatDir + "/" + CONFIG_FILENAME_INSTALL_SERVICE_BAT);
-            createConfigFile(install_serviceBatDir + "/", CONFIG_FILENAME_INSTALL_SERVICE_BAT, generatedText);
-            // copy Agent, JodaTime & JGroup Libraries
-            // create the lib directory
-            final File generatedJvmDestDirLib = new File(jvmName + "/lib");
-            if (!generatedJvmDestDirLib.exists()) {
-                generatedJvmDestDirLib.mkdir();
-            }
-            LOGGER.debug("Copy agent dir: {} to instance template {}", agentDir, generatedJvmDestDirLib);
-            File jwalaAgentDir = new File(agentDir);
-            if (jwalaAgentDir.exists() && jwalaAgentDir.isDirectory()) {
-                File[] files = jwalaAgentDir.listFiles();
-                for (File file : files) {
-                    FileUtils.copyFileToDirectory(file, generatedJvmDestDirLib);
-                }
-            }
-            // copy the start and stop scripts to the instances/jvm/bin directory
-            final String commandsScriptsPath = ApplicationProperties.get("commands.scripts-path");
-            final File generatedJvmDestDirBin = new File(destDirPath + "/bin");
-            FileUtils.copyFileToDirectory(new File(commandsScriptsPath + "/" + AemControl.Properties.START_SCRIPT_NAME.getValue()), generatedJvmDestDirBin);
-            FileUtils.copyFileToDirectory(new File(commandsScriptsPath + "/" + AemControl.Properties.STOP_SCRIPT_NAME.getValue()), generatedJvmDestDirBin);
-
-            // create the logs directory
-            createDirectory(destDirPath + "/logs");
-
-            // jar up the file
-            String jvmConfigTar = jvmName + CONFIG_JAR;
-            JarOutputStream target;
-            configJarPath = jvmGeneratedResourcesTempDir + "/" + jvmConfigTar;
-            LOGGER.info("Creating JVM jar {}", configJarPath);
-
-            final File jvmResourcesDirFile = new File(jvmGeneratedResourcesTempDir);
-            if (!jvmResourcesDirFile.exists() && !jvmResourcesDirFile.mkdir()) {
-                LOGGER.error("Could not create {} for JVM resources generation {}", jvmGeneratedResourcesTempDir, jvmName);
-                throw new InternalErrorException(FaultType.BAD_STREAM, "Could not create " + jvmGeneratedResourcesTempDir + " for JVM resources generation " + jvmName);
-            }
-            target = new JarOutputStream(new FileOutputStream(configJarPath));
-            addFileToTarget(new File("./" + jvmName + "/"), target);
-            target.close();
-            LOGGER.debug("created resources at {}, copying to {}", generatedDir.getAbsolutePath(), jvmGeneratedResourcesTempDir);
-            FileUtils.copyDirectoryToDirectory(generatedDir, jvmResourcesDirFile);
-        } catch (IOException e) {
-            LOGGER.error("Failed to generate the config jar for {}", jvmName, e);
-            throw new InternalErrorException(FaultType.BAD_STREAM, "Failed to generate the resources jar for " + jvmName, e);
-        } finally {
-            try {
-                FileUtils.deleteDirectory(generatedDir);
-            } catch (IOException e) {
-                LOGGER.error("Failed to clean up the staging directory " + generatedDir, e);
-            }
-        }
-
-        LOGGER.info("Generation of configuration tar SUCCEEDED for {}: {}", jvmName, configJarPath);
-
-        return jvmResourcesNameDir;
+        return managedJvmBuilder.getStagingDir().getAbsolutePath();
     }
 
     protected void createParentDir(final Jvm jvm, final String parentDir) throws CommandFailureException {
@@ -547,12 +472,12 @@ public class JvmServiceImpl implements JvmService {
     }
 
     protected void secureCopyJvmConfigJar(Jvm jvm, String jvmConfigTar, User user) throws CommandFailureException {
-        String configTarName = jvm.getJvmName() + CONFIG_JAR;
-        secureCopyFileToJvm(jvm, ApplicationProperties.get("paths.generated.resource.dir") + "/" + configTarName, REMOTE_COMMANDS_USER_SCRIPTS + "/" + configTarName, user);
+        String configTarName = jvm.getJvmName() + ".jar";
+        secureCopyFileToJvm(jvm, ApplicationProperties.get("paths.generated.resource.dir") + "/" + jvm.getJvmName() + "/" + configTarName, REMOTE_COMMANDS_USER_SCRIPTS + "/" + configTarName, user);
         LOGGER.info("Copy of config tar successful: {}", jvmConfigTar);
     }
 
-    protected void deployJvmConfigJar(Jvm jvm, User user, String jvmConfigTar) throws CommandFailureException {
+    protected void deployJvmConfigJar(Jvm jvm, User user, String jvmJar) throws CommandFailureException {
         final String parentDir = ApplicationProperties.get("remote.paths.instances");
         CommandOutput execData = jvmControlService.executeCreateDirectoryCommand(jvm, parentDir);
         if (execData.getReturnCode().wasSuccessful()) {
@@ -565,7 +490,7 @@ public class JvmServiceImpl implements JvmService {
         execData = jvmControlService.controlJvm(
                 new ControlJvmRequest(jvm.getId(), JvmControlOperation.DEPLOY_CONFIG_ARCHIVE), user);
         if (execData.getReturnCode().wasSuccessful()) {
-            LOGGER.info("Deployment of config tar was successful: {}", jvmConfigTar);
+            LOGGER.info("Deployment of config tar was successful: {}", jvmJar);
         } else {
             String standardError =
                     execData.getStandardError().isEmpty() ? execData.getStandardOutput() : execData.getStandardError();
@@ -576,10 +501,13 @@ public class JvmServiceImpl implements JvmService {
         }
 
         // make sure the start/stop scripts are executable
-        String instancesDir = ApplicationProperties.get("remote.paths.instances");
-        final String targetAbsoluteDir = instancesDir + "/" + jvm.getJvmName() + "/bin";
+        String instancesDir = ApplicationProperties.getRequired(PropertyKeys.REMOTE_PATH_INSTANCES_DIR);
+        String tomcatDirName = ApplicationProperties.getRequired(PropertyKeys.REMOTE_TOMCAT_DIR_NAME);
+
+        final String targetAbsoluteDir = instancesDir + "/" + jvm.getJvmName() + "/" + tomcatDirName + "/bin";
+
         if (!jvmControlService.executeChangeFileModeCommand(jvm, "a+x", targetAbsoluteDir, "*.sh").getReturnCode().wasSuccessful()) {
-            String message = "Failed to change the file permissions in " + targetAbsoluteDir + " for " + jvm.getJvmName();
+            String message = "Failed to change the file permissions in " + targetAbsoluteDir + " for jvm " + jvm.getJvmName();
             LOGGER.error(message);
             throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, message);
         }
@@ -605,15 +533,7 @@ public class JvmServiceImpl implements JvmService {
             String standardError =
                     execData.getStandardError().isEmpty() ? execData.getStandardOutput() : execData.getStandardError();
             LOGGER.error("Installing windows service {} failed :: ERROR: {}", jvm.getJvmName(), standardError);
-            throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, "Installing windows service failed for " + AemControl.Properties.INSTALL_SERVICE_SCRIPT_NAME  +", please refer to history.");
-        }
-    }
-
-    protected void createDirectory(String absoluteDirPath) {
-        File targetDir = new File(absoluteDirPath);
-        if (!targetDir.exists() && !targetDir.mkdirs()) {
-            LOGGER.error("Bad Stream: Failed to create directory " + absoluteDirPath);
-            throw new InternalErrorException(FaultType.BAD_STREAM, "Failed to create directory" + absoluteDirPath);
+            throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, "Installing windows service failed for " + AemControl.Properties.INSTALL_SERVICE_SCRIPT_NAME  +".  Please refer to the history window.");
         }
     }
 
@@ -634,7 +554,7 @@ public class JvmServiceImpl implements JvmService {
             parentDir = new File(destinationFile).getParentFile().getAbsolutePath().replaceAll("\\\\", "/");
         }
         createParentDir(jvm, parentDir);
-        final ControlJvmRequest controlJvmRequest = new ControlJvmRequest(jvm.getId(), JvmControlOperation.SECURE_COPY);
+        final ControlJvmRequest controlJvmRequest = new ControlJvmRequest(jvm.getId(), JvmControlOperation.SCP);
         final CommandOutput commandOutput = jvmControlService.secureCopyFile(controlJvmRequest, sourceFile, destinationFile, user.getId());
         if (commandOutput.getReturnCode().wasSuccessful()) {
             LOGGER.info("Successfully copied {} to destination location {} on {}", sourceFile, destinationFile, jvm.getHostName());
@@ -642,47 +562,6 @@ public class JvmServiceImpl implements JvmService {
             final String standardError = commandOutput.getStandardError().isEmpty() ? commandOutput.getStandardOutput() : commandOutput.getStandardError();
             LOGGER.error("Copy command failed with error trying to copy file {} to {} :: ERROR: {}", sourceFile, jvm.getHostName(), standardError);
             throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, standardError.isEmpty() ? CommandOutputReturnCode.fromReturnCode(commandOutput.getReturnCode().getReturnCode()).getDesc() : standardError);
-        }
-    }
-
-    protected void addFileToTarget(File source, JarOutputStream target) throws IOException {
-        BufferedInputStream in = null;
-        try {
-            if (source.isDirectory()) {
-                String name = source.getPath().replace("\\", "/");
-                if (!name.isEmpty()) {
-                    if (!name.endsWith("/")) {
-                        name += "/";
-                    }
-                    JarEntry entry = new JarEntry(name);
-                    entry.setTime(source.lastModified());
-                    target.putNextEntry(entry);
-                    target.closeEntry();
-                }
-                for (File nestedFile : source.listFiles()) {
-                    addFileToTarget(nestedFile, target);
-                }
-                return;
-            }
-
-            JarEntry entry = new JarEntry(source.getPath().replace("\\", "/"));
-            entry.setTime(source.lastModified());
-            target.putNextEntry(entry);
-            in = new BufferedInputStream(new FileInputStream(source));
-
-            byte[] buffer = new byte[1024];
-            while (true) {
-                int count = in.read(buffer);
-                if (count == -1) {
-                    break;
-                }
-                target.write(buffer, 0, count);
-            }
-            target.closeEntry();
-        } finally {
-            if (in != null) {
-                in.close();
-            }
         }
     }
 
@@ -759,7 +638,7 @@ public class JvmServiceImpl implements JvmService {
                           final String msg) {
         jvmPersistenceService.updateState(jvm.getId(), state, msg);
         messagingTemplate.convertAndSend(topicServerStates, new CurrentState<>(jvm.getId(), state, DateTime.now(), StateType.JVM));
-        groupStateNotificationService.retrieveStateAndSendToATopic(jvm.getId(), Jvm.class);
+        groupStateNotificationService.retrieveStateAndSend(jvm.getId(), Jvm.class);
     }
 
     @Override
@@ -796,22 +675,6 @@ public class JvmServiceImpl implements JvmService {
             LOGGER.error("Failed to update the template {}", resourceTemplateName, e);
         }
         return retVal;
-    }
-
-    @Override
-    @Transactional
-    public String generateInstallServiceBat(String jvmName) {
-        try {
-            final Path templatesPath = Paths.get(ApplicationProperties.get(PATHS_RESOURCE_TEMPLATES));
-            final FileInputStream installServiceBatTemplateContent = new FileInputStream(templatesPath.toAbsolutePath()
-                    .normalize().toString() + "/" + new File(INSTALL_SERVICE_TEMPLATE_TPL));
-            return resourceService.generateResourceFile("install_service.bat",
-                    IOUtils.toString(installServiceBatTemplateContent, Charset.defaultCharset()),
-                    resourceService.generateResourceGroup(), jvmPersistenceService.findJvmByExactName(jvmName),
-                    ResourceGeneratorType.TEMPLATE);
-        } catch (final IOException e) {
-            throw new JvmServiceException("Failed to generate install service batch file!", e);
-        }
     }
 
     @Override

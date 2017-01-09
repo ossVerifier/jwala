@@ -361,7 +361,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                         return commandOutput;
                     }
 
-                    binaryDistributionService.prepareUnzip(host);
+                    binaryDistributionService.distributeUnzip(host);
 
                     final String zipDestinationOption = FilenameUtils.removeExtension(destPath);
 
@@ -419,7 +419,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         return remoteCommandExecutor.executeRemoteCommand(
                 entity,
                 host,
-                ApplicationControlOperation.SECURE_COPY,
+                ApplicationControlOperation.SCP,
                 new WindowsApplicationPlatformCommandProvider(),
                 source,
                 destination

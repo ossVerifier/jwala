@@ -64,7 +64,7 @@ public class GroupStateNotificationServiceImplTest {
         when(mockJvmCrudService.getJvmCount(anyString())).thenReturn(4L);
         when(mockWebServerCrudService.getWebServerStartedCount(anyString())).thenReturn(2L);
         when(mockWebServerCrudService.getWebServerCount(anyString())).thenReturn(2L);
-        groupStateNotificationServiceImpl.retrieveStateAndSendToATopic(id, Jvm.class);
+        groupStateNotificationServiceImpl.retrieveStateAndSend(id, Jvm.class);
         System.out.println(groupStateArray[0]);
         System.out.println(groupStateArray[1]);
         assertEquals("Identifier[id=1], null", groupStateArray[0]);

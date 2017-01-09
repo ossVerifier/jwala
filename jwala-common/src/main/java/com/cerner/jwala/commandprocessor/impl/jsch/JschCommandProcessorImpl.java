@@ -3,6 +3,7 @@ package com.cerner.jwala.commandprocessor.impl.jsch;
 import com.cerner.jwala.commandprocessor.CommandProcessor;
 import com.cerner.jwala.commandprocessor.jsch.impl.ChannelSessionKey;
 import com.cerner.jwala.commandprocessor.jsch.impl.ChannelType;
+import com.cerner.jwala.common.exception.ApplicationException;
 import com.cerner.jwala.common.domain.model.ssh.DecryptPassword;
 import com.cerner.jwala.common.exec.ExecReturnCode;
 import com.cerner.jwala.common.exec.RemoteExecCommand;
@@ -115,6 +116,7 @@ public class JschCommandProcessorImpl implements CommandProcessor {private stati
             LOGGER.error("Error processing shell command!", e);
             returnCode = new ExecReturnCode(-1);
             errorOutputStr = e.getMessage();
+            throw new ApplicationException(e); // TODO 1/4/2017: Find out if this works!
         } finally {
             if (channel != null) {
                 channelPool.returnObject(channelSessionKey, channel);

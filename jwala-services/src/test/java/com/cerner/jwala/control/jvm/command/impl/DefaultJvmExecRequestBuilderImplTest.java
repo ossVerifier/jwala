@@ -62,7 +62,7 @@ public class DefaultJvmExecRequestBuilderImplTest {
         impl.setOperation(operation);
 
         final ExecCommand actualCommand = impl.build(new WindowsJvmPlatformCommandProvider());
-        final ShellCommand expectedCommand = new ShellCommand("`/usr/bin/cygpath d:/jwala/app/instances/theJvmName/bin/start-service.sh`",
+        final ShellCommand expectedCommand = new ShellCommand("`/usr/bin/cygpath d:/jwala/app/instances/theJvmName/apache-tomcat-7.0.55/bin/start-service.sh`",
                 "\"" + jvmName + "\"", "20");
         assertEquals(expectedCommand,
                 actualCommand);

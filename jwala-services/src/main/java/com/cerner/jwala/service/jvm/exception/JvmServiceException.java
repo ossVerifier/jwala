@@ -7,6 +7,10 @@ package com.cerner.jwala.service.jvm.exception;
  */
 public class JvmServiceException extends RuntimeException {
 
+    public JvmServiceException(Throwable cause) {
+        super(cause);
+    }
+
     public JvmServiceException(final String s) {
         super(s);
     }

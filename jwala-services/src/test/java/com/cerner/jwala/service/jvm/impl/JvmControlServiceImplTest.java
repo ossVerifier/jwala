@@ -103,7 +103,7 @@ public class JvmControlServiceImplTest extends VerificationBehaviorSupport {
 
         verify(mockJvmPersistenceService, times(1)).getJvm(eq(jvmId));
         verify(mockRemoteCommandExecutorService, times(1)).executeCommand(any(RemoteExecCommand.class));
-        verify(mockJvmStateService, times(1)).updateState(any(Identifier.class), any(JvmState.class));
+        verify(mockJvmStateService, times(1)).updateState(any(Jvm.class), any(JvmState.class));
         verify(mockHistoryFacadeService).write(anyString(), anyList(), anyString(), any(EventType.class), anyString());
 
         // test other command codes
@@ -188,7 +188,7 @@ public class JvmControlServiceImplTest extends VerificationBehaviorSupport {
     @Test
     public void testSecureCopyConfFile() throws CommandFailureException {
         ControlJvmRequest mockControlJvmRequest = mock(ControlJvmRequest.class);
-        when(mockControlJvmRequest.getControlOperation()).thenReturn(JvmControlOperation.SECURE_COPY);
+        when(mockControlJvmRequest.getControlOperation()).thenReturn(JvmControlOperation.SCP);
         when(mockControlJvmRequest.getJvmId()).thenReturn(new Identifier<Jvm>(11L));
 
         Jvm mockJvm = mock(Jvm.class);
@@ -203,13 +203,13 @@ public class JvmControlServiceImplTest extends VerificationBehaviorSupport {
         when(commandExecutor.executeRemoteCommand(anyString(), anyString(), eq(JvmControlOperation.CREATE_DIRECTORY), any(WindowsJvmPlatformCommandProvider.class), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(0), "Backup succeeded", ""));
         jvmControlService.secureCopyFile(mockControlJvmRequest, "./source/path", "./dest/path", "user-id");
 
-        verify(commandExecutor).executeRemoteCommand(anyString(), anyString(), eq(JvmControlOperation.SECURE_COPY), any(WindowsJvmPlatformCommandProvider.class), anyString(), anyString());
+        verify(commandExecutor).executeRemoteCommand(anyString(), anyString(), eq(JvmControlOperation.SCP), any(WindowsJvmPlatformCommandProvider.class), anyString(), anyString());
     }
 
     @Test
     public void testSecureCopyConfFilePerformsBackup() throws CommandFailureException {
         ControlJvmRequest mockControlJvmRequest = mock(ControlJvmRequest.class);
-        when(mockControlJvmRequest.getControlOperation()).thenReturn(JvmControlOperation.SECURE_COPY);
+        when(mockControlJvmRequest.getControlOperation()).thenReturn(JvmControlOperation.SCP);
         when(mockControlJvmRequest.getJvmId()).thenReturn(new Identifier<Jvm>(11L));
 
         Jvm mockJvm = mock(Jvm.class);
@@ -225,13 +225,13 @@ public class JvmControlServiceImplTest extends VerificationBehaviorSupport {
         when(commandExecutor.executeRemoteCommand(anyString(), anyString(), eq(JvmControlOperation.CREATE_DIRECTORY), any(WindowsJvmPlatformCommandProvider.class), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(0), "Backup succeeded", ""));
         jvmControlService.secureCopyFile(mockControlJvmRequest, "./source/path", "./dest/path", "user-id");
 
-        verify(commandExecutor).executeRemoteCommand(anyString(), anyString(), eq(JvmControlOperation.SECURE_COPY), any(WindowsJvmPlatformCommandProvider.class), anyString(), anyString());
+        verify(commandExecutor).executeRemoteCommand(anyString(), anyString(), eq(JvmControlOperation.SCP), any(WindowsJvmPlatformCommandProvider.class), anyString(), anyString());
     }
 
     @Test (expected = InternalErrorException.class)
     public void testSecureCopyConfFileFailsBackup() throws CommandFailureException {
         ControlJvmRequest mockControlJvmRequest = mock(ControlJvmRequest.class);
-        when(mockControlJvmRequest.getControlOperation()).thenReturn(JvmControlOperation.SECURE_COPY);
+        when(mockControlJvmRequest.getControlOperation()).thenReturn(JvmControlOperation.SCP);
         when(mockControlJvmRequest.getJvmId()).thenReturn(new Identifier<Jvm>(11L));
 
         Jvm mockJvm = mock(Jvm.class);

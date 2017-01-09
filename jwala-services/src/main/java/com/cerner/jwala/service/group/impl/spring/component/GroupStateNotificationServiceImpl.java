@@ -49,7 +49,7 @@ public class GroupStateNotificationServiceImpl implements GroupStateNotification
     @Override
     @Async
     @SuppressWarnings("unchecked")
-    public void retrieveStateAndSendToATopic(final Identifier id, final Class aClass) {
+    public void retrieveStateAndSend(final Identifier id, final Class aClass) {
         LOGGER.debug("Synchronizing on {} and {}...", id, aClass);
         synchronized (aClass.getSimpleName() + id.toString().intern()) {
             LOGGER.debug("Thread locked on {} and {}...!", id, aClass);

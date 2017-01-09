@@ -82,7 +82,7 @@ public class WebServerStateSetterWorker {
             final WebServerReachableState webServerState = webServer.getState();
             if (!isWebServerBusy(webServer) && inMemoryStateManagerService.get(webServer.getId()) != WebServerReachableState.WS_NEW) {
                 final String webServerName = webServer.getName();
-                LOGGER.debug(">>>> Send ping for web server {}", webServerName);
+                LOGGER.debug(">>>> Send ping to {} for web server {}", webServer.getStatusUri(), webServerName);
                 try {
                     final ClientHttpRequest request = httpRequestFactory.createRequest(webServer.getStatusUri(), HttpMethod.GET);
                     response = request.execute();
@@ -141,7 +141,7 @@ public class WebServerStateSetterWorker {
         if (!isWebServerBusy(webServer) && checkStateChangedAndOrMsgNotEmpty(webServer, webServerReachableState, msg)) {
             webServerService.updateState(webServer.getId(), webServerReachableState, msg);
             messagingService.send(new WebServerState(webServer.getId(), webServerReachableState, DateTime.now()));
-            groupStateNotificationService.retrieveStateAndSendToATopic(webServer.getId(), WebServer.class);
+            groupStateNotificationService.retrieveStateAndSend(webServer.getId(), WebServer.class);
         }
     }
 

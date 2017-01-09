@@ -11,7 +11,7 @@ import static com.cerner.jwala.control.AemControl.Properties.SCP_SCRIPT_NAME;
 
 public enum WindowsApplicationNetOperation implements ServiceCommandBuilder {
 
-    SECURE_COPY(ApplicationControlOperation.SECURE_COPY) {
+    SCP(ApplicationControlOperation.SCP) {
         @Override
         public ExecCommand buildCommandForService(String aServiceName, String... aParams) {
             final String configFilePath = aParams[0];
