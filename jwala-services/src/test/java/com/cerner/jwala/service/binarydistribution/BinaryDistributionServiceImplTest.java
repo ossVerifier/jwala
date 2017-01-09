@@ -217,7 +217,7 @@ public class BinaryDistributionServiceImplTest {
         binaryDistributionService.distributeJdk(hostname);
     }
 
-
+// TODO 1/9/2017: Fix this test!
 //    @Test
 //    public void testDistributeWebServer() throws CommandFailureException {
 //        final String hostname = "localhost";
