@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
@@ -178,7 +179,7 @@ public class ManagedJvmBuilder {
             final FileInputStream installServiceBatTemplateContent = new FileInputStream(templatesPath.toAbsolutePath()
                     .normalize().toString() + "/" + new File(INSTALL_SERVICE_TEMPLATE));
             String scriptContent = resourceService.generateResourceFile("install_service.bat",
-                    IOUtils.toString(installServiceBatTemplateContent, Charset.forName("UTF-8")),
+                    IOUtils.toString(installServiceBatTemplateContent, StandardCharsets.UTF_8),
                     resourceService.generateResourceGroup(), jvm,
                     ResourceGeneratorType.TEMPLATE);
 
