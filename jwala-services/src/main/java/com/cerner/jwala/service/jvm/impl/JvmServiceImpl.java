@@ -303,7 +303,7 @@ public class JvmServiceImpl implements JvmService {
             // copy the install and deploy scripts
             deployScriptsToUserJwalaScriptsDir(jvm, user);
 
-            // delete the service, needs service.bat
+            // delete the service, needs install-service.bat
             // TODO make generic to support multiple OSs
             deleteJvmWindowsService(new ControlJvmRequest(jvm.getId(), JvmControlOperation.DELETE_SERVICE), jvm, user);
 

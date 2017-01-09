@@ -19,7 +19,7 @@ IF "%ERRORLEVEL%" NEQ "0" (
 )
 
 ECHO Install the service
-CMD /C %TOMCAT_BIN_DIR%\service.bat install ${jvm.jvmName}
+CMD /C %TOMCAT_BIN_DIR%\install-service.bat install ${jvm.jvmName}
 
 SET SERVICE_OPTS=""
 IF "%JAVA_SERVICE_OPTS%" NEQ "" SERVICE_OPTS="%SERVICE_OPTS% ++JvmOptions %JAVA_SERVICE_OPTS%"

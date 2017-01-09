@@ -36,7 +36,7 @@ public class ManagedJvmBuilder {
     private static final String PATHS_RESOURCE_TEMPLATES = "paths.resource-templates";
     private static final String INSTALL_SERVICE_TEMPLATE = "install-service-jvm.bat.tpl";
     private static final String SERVER_XML_TEMPLATE = "server.xml.tpl";
-    public static final String INSTALL_SERVICE_BAT = "install_service.bat";
+    public static final String INSTALL_SERVICE_BAT = "install-service.bat";
     public static final String SERVER_XML = "server.xml";
 
     private Jvm jvm;
@@ -236,7 +236,7 @@ public class ManagedJvmBuilder {
                     resourceService.generateResourceGroup(), jvm,
                     ResourceGeneratorType.TEMPLATE);
 
-            LOGGER.debug("Generated install_service.bat text: {}", scriptContent);
+            LOGGER.debug("Generated install-service.bat text: {}", scriptContent);
 
             return scriptContent;
         } catch (final IOException e) {
