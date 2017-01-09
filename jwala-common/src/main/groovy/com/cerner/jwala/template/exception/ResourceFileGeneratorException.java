@@ -5,7 +5,7 @@ import com.cerner.jwala.template.ResourceFileGenerator;
 /**
  * Class wrapper for exceptions thrown from {@link ResourceFileGenerator}.
  *
- * Created by JC043760 on 7/15/2016.
+ * Created by Jedd Cuison on 7/15/2016.
  */
 public class ResourceFileGeneratorException extends RuntimeException {
 

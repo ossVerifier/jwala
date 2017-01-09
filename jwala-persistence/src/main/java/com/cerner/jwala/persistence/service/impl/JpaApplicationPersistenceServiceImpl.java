@@ -4,7 +4,9 @@ import com.cerner.jwala.common.domain.model.app.Application;
 import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
-import com.cerner.jwala.common.request.app.*;
+import com.cerner.jwala.common.request.app.CreateApplicationRequest;
+import com.cerner.jwala.common.request.app.UpdateApplicationRequest;
+import com.cerner.jwala.common.request.app.UploadAppTemplateRequest;
 import com.cerner.jwala.persistence.jpa.domain.JpaApplication;
 import com.cerner.jwala.persistence.jpa.domain.JpaApplicationConfigTemplate;
 import com.cerner.jwala.persistence.jpa.domain.JpaGroup;
@@ -13,7 +15,6 @@ import com.cerner.jwala.persistence.jpa.domain.builder.JpaAppBuilder;
 import com.cerner.jwala.persistence.jpa.service.ApplicationCrudService;
 import com.cerner.jwala.persistence.jpa.service.GroupCrudService;
 import com.cerner.jwala.persistence.service.ApplicationPersistenceService;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -73,22 +74,6 @@ public class JpaApplicationPersistenceServiceImpl implements ApplicationPersiste
     @Override
     public String getMetaData(String appName, String jvmName, String groupName, String resourceTemplateName) {
         return applicationCrudService.getMetaData(appName, jvmName, groupName, resourceTemplateName);
-    }
-
-    @Override
-    public Application updateWARPath(UploadWebArchiveRequest uploadWebArchiveRequest, String warPath) {
-        final JpaApplication jpaOriginal = applicationCrudService.getExisting(uploadWebArchiveRequest.getApplication().getId());
-        jpaOriginal.setWarPath(warPath);
-        jpaOriginal.setWarName(uploadWebArchiveRequest.getFilename());
-        return JpaAppBuilder.appFrom(jpaOriginal);
-    }
-
-    @Override
-    public Application removeWarPathAndName(RemoveWebArchiveRequest removeWebArchiveRequest) {
-        final JpaApplication jpaOriginal = applicationCrudService.getExisting(removeWebArchiveRequest.getApplication().getId());
-        jpaOriginal.setWarPath(null);
-        jpaOriginal.setWarName(null);
-        return JpaAppBuilder.appFrom(jpaOriginal);
     }
 
     @Override

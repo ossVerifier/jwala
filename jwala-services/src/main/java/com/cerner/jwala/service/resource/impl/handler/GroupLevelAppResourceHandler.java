@@ -3,7 +3,6 @@ package com.cerner.jwala.service.resource.impl.handler;
 import com.cerner.jwala.common.domain.model.app.Application;
 import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
-import com.cerner.jwala.common.domain.model.resource.ContentType;
 import com.cerner.jwala.common.domain.model.resource.ResourceIdentifier;
 import com.cerner.jwala.common.domain.model.resource.ResourceTemplateMetaData;
 import com.cerner.jwala.common.request.app.UploadAppTemplateRequest;
@@ -17,19 +16,20 @@ import com.cerner.jwala.service.exception.ResourceServiceException;
 import com.cerner.jwala.service.resource.ResourceHandler;
 import com.cerner.jwala.service.resource.impl.CreateResourceResponseWrapper;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.tika.mime.MediaType;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 /**
  * Handler for a group level application resource identified by a "resource identifier" {@link ResourceIdentifier}
  *
- * Created by JC043760 on 7/21/2016
+ * Created by Jedd Cuison on 7/21/2016
  */
 public class GroupLevelAppResourceHandler extends ResourceHandler {
 
     private static final String WAR_FILE_EXTENSION = ".war";
-    private static final String MSG_ERR_CONVERTING_DATA_INPUTSTREAM_TO_STR = "Error converting data input stream to string!";
     private static final String MSG_CAN_ONLY_HAVE_ONE_WAR = "A web application can only have 1 war file. To change it, delete the war file first before uploading a new one.";
 
     private final GroupPersistenceService groupPersistenceService;
@@ -71,8 +71,8 @@ public class GroupLevelAppResourceHandler extends ResourceHandler {
             final Group group = groupPersistenceService.getGroup(groupName);
             final ConfigTemplate createdConfigTemplate;
 
-            if (metaData.getContentType().equals(ContentType.APPLICATION_BINARY.contentTypeStr) &&
-                    templateContent.toLowerCase().endsWith(WAR_FILE_EXTENSION)) {
+            if (metaData.getContentType().equals(MediaType.APPLICATION_ZIP) &&
+                    templateContent.toLowerCase(Locale.US).endsWith(WAR_FILE_EXTENSION)) {
                 final Application app = applicationPersistenceService.getApplication(resourceIdentifier.webAppName);
                 if (StringUtils.isEmpty(app.getWarName())) {
                     applicationPersistenceService.updateWarInfo(resourceIdentifier.webAppName, metaData.getTemplateName(), templateContent);

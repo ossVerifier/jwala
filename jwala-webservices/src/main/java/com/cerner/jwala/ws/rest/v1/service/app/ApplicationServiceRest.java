@@ -7,17 +7,14 @@ import com.cerner.jwala.common.domain.model.jvm.Jvm;
 import com.cerner.jwala.ws.rest.v1.provider.AuthenticatedUser;
 import com.cerner.jwala.ws.rest.v1.service.app.impl.JsonCreateApplication;
 import com.cerner.jwala.ws.rest.v1.service.app.impl.JsonUpdateApplication;
-import org.apache.cxf.jaxrs.ext.MessageContext;
-import org.springframework.beans.factory.InitializingBean;
 
 import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 @Path("/applications")
 @Produces(MediaType.APPLICATION_JSON)
-public interface ApplicationServiceRest extends InitializingBean {
+public interface ApplicationServiceRest {
 
     @GET
     Response getApplications(@QueryParam("group.id") final Identifier<Group> aGroupId);
@@ -49,17 +46,6 @@ public interface ApplicationServiceRest extends InitializingBean {
     Response removeApplication(@PathParam("applicationId") final Identifier<Application> anAppToRemove,
                                @BeanParam final AuthenticatedUser aUser);
 
-    @POST
-    @Path("/{applicationId}/war")
-    @Consumes(MediaType.MULTIPART_FORM_DATA)
-    Response uploadWebArchive(@PathParam("applicationId") final Identifier<Application> appId,
-                              @Context MessageContext messageContext);
-
-    @DELETE
-    @Path("/{applicationId}/war")
-    Response deleteWebArchive(@PathParam("applicationId") final Identifier<Application> anAppToGet,
-                              @BeanParam final AuthenticatedUser aUser);
-
     @PUT
     @Path("/{applicationId}/war/deploy")
     Response deployWebArchive(@PathParam("applicationId") final Identifier<Application> anAppToGet,
@@ -73,22 +59,6 @@ public interface ApplicationServiceRest extends InitializingBean {
     @GET
     @Path("/{jvmName}/{appName}/resources/name")
     Response getResourceNames(@PathParam("appName") String appName, @PathParam("jvmName") String jvmName);
-
-    /**
-     * Get resource template content.
-     *
-     * @param appName              web application name.
-     * @param resourceTemplateName the resource template name.
-     * @param tokensReplaced       flag that indicates whether to fetch the template with its tokens replaced by their mapped values from the db.
-     * @return the template contents
-     */
-    @GET
-    @Path("/{appName}/resources/template/{resourceTemplateName}")
-    Response getResourceTemplate(@PathParam("appName") String appName,
-                                 @MatrixParam("groupName") String groupName,
-                                 @MatrixParam("jvmName") String jvmName,
-                                 @PathParam("resourceTemplateName") String resourceTemplateName,
-                                 @QueryParam("tokensReplaced") boolean tokensReplaced);
 
     @PUT
     @Path("/{appName}/resources/template/{resourceTemplateName}")
@@ -119,5 +89,9 @@ public interface ApplicationServiceRest extends InitializingBean {
     @PUT
     @Path("/{appName}/conf")
     Response deployConf(@PathParam("appName") String appName, @BeanParam AuthenticatedUser aUser, @QueryParam("hostName") String hostName);
+
+    @GET
+    @Path("/fileExists")
+    Response checkIfFileExists(@QueryParam("filePath") String filePath, @BeanParam AuthenticatedUser aUser, @QueryParam("hostName") String hostName);
 
 }

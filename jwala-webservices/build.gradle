@@ -1,3 +1,4 @@
+description "The module exposes the REST webservices to the Jwala UI and other clients"
 
 dependencies {
     compile project(":jwala-services")

@@ -1,6 +1,6 @@
 package com.cerner.jwala.ws.rest.v1.service.jvm.impl;
 
-import com.cerner.jwala.common.domain.model.fault.AemFaultType;
+import com.cerner.jwala.common.domain.model.fault.FaultType;
 import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.id.IdentifierSetBuilder;
@@ -88,7 +88,7 @@ public class JsonUpdateJvm {
         try {
             return new Identifier<>(jvmId);
         } catch (final NumberFormatException nfe) {
-            throw new BadRequestException(AemFaultType.INVALID_IDENTIFIER,
+            throw new BadRequestException(FaultType.INVALID_IDENTIFIER,
                                           nfe.getMessage(),
                                           nfe);
         }

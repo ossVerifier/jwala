@@ -1,19 +1,16 @@
 package com.cerner.jwala.common.request.group;
 
+import com.cerner.jwala.common.domain.model.group.Group;
+import com.cerner.jwala.common.domain.model.id.Identifier;
+import com.cerner.jwala.common.domain.model.jvm.JvmControlOperation;
+import com.cerner.jwala.common.rule.group.GroupIdRule;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
-import com.cerner.jwala.common.domain.model.group.Group;
-import com.cerner.jwala.common.domain.model.id.Identifier;
-import com.cerner.jwala.common.domain.model.jvm.JvmControlOperation;
-import com.cerner.jwala.common.exception.BadRequestException;
-import com.cerner.jwala.common.rule.group.GroupIdRule;
-
 import java.io.Serializable;
 
 public class ControlGroupJvmRequest implements Serializable, GroupRequest {
-    private static final long serialVersionUID = 1L;
 
     private final Identifier<Group> groupId;
     private final JvmControlOperation controlOperation;
@@ -35,11 +32,6 @@ public class ControlGroupJvmRequest implements Serializable, GroupRequest {
     @Override
     public void validate() {
         new GroupIdRule(groupId).validate();
-    }
-
-    @Override
-    public String getExternalOperationName() {
-        return controlOperation.getExternalValue();
     }
 
     @Override

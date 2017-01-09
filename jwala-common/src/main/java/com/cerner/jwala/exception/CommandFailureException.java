@@ -2,7 +2,7 @@ package com.cerner.jwala.exception;
 
 import com.cerner.jwala.common.exec.ExecCommand;
 
-public class CommandFailureException extends Exception {
+public class CommandFailureException extends RuntimeException {
 
     private final ExecCommand command;
 
@@ -15,4 +15,5 @@ public class CommandFailureException extends Exception {
     public ExecCommand getCommand() {
         return command;
     }
+
 }

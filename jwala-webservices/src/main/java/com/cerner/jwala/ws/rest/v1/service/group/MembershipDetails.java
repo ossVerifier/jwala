@@ -6,7 +6,7 @@ import java.util.List;
 /**
  * A generic representation of membership details.
  *
- * Created by Z003BPEJ on 10/29/14.
+ * Created by Jedd Cuison on 10/29/14.
  */
 public class MembershipDetails implements Serializable {
 

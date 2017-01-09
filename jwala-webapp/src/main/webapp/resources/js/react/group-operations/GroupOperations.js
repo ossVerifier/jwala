@@ -134,6 +134,9 @@ var GroupOperations = React.createClass({
         this.state.groups.forEach(function(group){
             response.applicationResponseContent.forEach(function(info){
                 if (group.name === info.groupName) {
+                    if (!group.currentState) {
+                        group.currentState = {};
+                    }
                     group.currentState.jvmCount = info.jvmCount;
                     group.currentState.jvmStartedCount = info.jvmStartedCount;
                     group.currentState.jvmStoppedCount = info.jvmStoppedCount;
@@ -304,7 +307,7 @@ var GroupOperations = React.createClass({
                             }
 
 
-                        } else if (newWebServerState.stateString === GroupOperations.SECURE_COPY || newWebServerState.stateString === GroupOperations.INSTALL_SERVICE || newWebServerState.stateString === GroupOperations.DELETE_SERVICE){
+                        } else if (newWebServerState.stateString === GroupOperations.SCP || newWebServerState.stateString === GroupOperations.INSTALL_SERVICE || newWebServerState.stateString === GroupOperations.DELETE_SERVICE){
                               var commandStatusWidget = self.commandStatusWidgetMap[GroupOperations.getExtDivCompId(webServer.id.id)];
                               if (commandStatusWidget !== undefined) {
                                   commandStatusWidget.push({stateString: newWebServerState.stateString,
@@ -361,7 +364,7 @@ var GroupOperations = React.createClass({
                                                           "error-status-font" : "action-status-font");
                             }
 
-                        } else if (newJvmState.stateString === GroupOperations.SECURE_COPY || newJvmState.stateString === GroupOperations.INSTALL_SERVICE || newJvmState.stateString === GroupOperations.DELETE_SERVICE){
+                        } else if (newJvmState.stateString === GroupOperations.SCP || newJvmState.stateString === GroupOperations.INSTALL_SERVICE || newJvmState.stateString === GroupOperations.DELETE_SERVICE){
                             var commandStatusWidget = self.commandStatusWidgetMap[GroupOperations.getExtDivCompId(jvm.groupId.id)];
                             if (commandStatusWidget !== undefined) {
                                 commandStatusWidget.push({stateString: newJvmState.stateString,
@@ -441,7 +444,7 @@ var GroupOperations = React.createClass({
         FAILED: "FAILED",
         START_SENT: "START SENT",
         STOP_SENT: "STOP SENT",
-        SECURE_COPY: "secureCopy",
+        SCP: "secureCopy",
         INSTALL_SERVICE: "installService",
         DELETE_SERVICE: "deleteService",
         DRAIN_USER: "drainUser",

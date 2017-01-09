@@ -1,9 +1,7 @@
 package com.cerner.jwala.service.resource;
 
 import com.cerner.jwala.common.domain.model.app.Application;
-import com.cerner.jwala.common.domain.model.group.CurrentGroupState;
 import com.cerner.jwala.common.domain.model.group.Group;
-import com.cerner.jwala.common.domain.model.group.GroupState;
 import com.cerner.jwala.common.domain.model.group.History;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
@@ -15,31 +13,27 @@ import com.cerner.jwala.common.domain.model.webserver.WebServer;
 import com.cerner.jwala.common.domain.model.webserver.WebServerReachableState;
 import com.cerner.jwala.common.exception.InternalErrorException;
 import com.cerner.jwala.common.properties.ApplicationProperties;
-import com.cerner.jwala.common.request.app.RemoveWebArchiveRequest;
 import com.cerner.jwala.common.request.app.UploadAppTemplateRequest;
-import com.cerner.jwala.common.request.app.UploadWebArchiveRequest;
 import com.cerner.jwala.common.request.jvm.UploadJvmConfigTemplateRequest;
 import com.cerner.jwala.common.request.webserver.UploadWebServerTemplateRequest;
 import com.cerner.jwala.control.command.RemoteCommandExecutorImpl;
-import com.cerner.jwala.files.FileManager;
-import com.cerner.jwala.files.RepositoryFileInformation;
-import com.cerner.jwala.files.WebArchiveManager;
 import com.cerner.jwala.persistence.jpa.domain.JpaJvm;
 import com.cerner.jwala.persistence.jpa.domain.resource.config.template.ConfigTemplate;
 import com.cerner.jwala.persistence.jpa.type.EventType;
 import com.cerner.jwala.persistence.service.*;
 import com.cerner.jwala.service.HistoryFacadeService;
 import com.cerner.jwala.service.app.ApplicationService;
-import com.cerner.jwala.service.app.PrivateApplicationService;
+import com.cerner.jwala.service.binarydistribution.BinaryDistributionService;
 import com.cerner.jwala.service.exception.ResourceServiceException;
 import com.cerner.jwala.service.resource.impl.CreateResourceResponseWrapper;
 import com.cerner.jwala.service.resource.impl.ResourceContentGeneratorServiceImpl;
 import com.cerner.jwala.service.resource.impl.ResourceGeneratorType;
 import com.cerner.jwala.service.resource.impl.ResourceServiceImpl;
 import org.apache.commons.lang.StringUtils;
+import org.apache.tika.Tika;
+import org.apache.tika.mime.MediaType;
 import org.codehaus.groovy.runtime.ResourceGroovyMethods;
 import org.codehaus.jackson.map.ObjectMapper;
-import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -49,7 +43,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.io.*;
-import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -66,9 +59,6 @@ import static org.mockito.Mockito.*;
  * Unit tests for {@link ResourceService}.
  */
 public class ResourceServiceImplTest {
-
-    @Mock
-    private FileManager mockFileManager;
 
     @Mock
     private ResourcePersistenceService mockResourcePersistenceService;
@@ -91,13 +81,7 @@ public class ResourceServiceImplTest {
     private ResourceService resourceService;
 
     @Mock
-    private PrivateApplicationService mockPrivateApplicationService;
-
-    @Mock
     private ResourceDao mockResourceDao;
-
-    @Mock
-    private WebArchiveManager mockWebArchiveManager;
 
     @Mock
     private ResourceHandler mockResourceHandler;
@@ -107,6 +91,12 @@ public class ResourceServiceImplTest {
 
     @Mock
     private HistoryFacadeService mockHistoryFacadeService;
+
+    @Mock
+    private BinaryDistributionService mockBinaryDistributionService;
+
+    @Mock
+    private ResourceRepositoryService mockResourceRepositoryService;
 
     Map<String, ReentrantReadWriteLock> resourceWriteLockMap = new HashMap<>();
 
@@ -122,19 +112,12 @@ public class ResourceServiceImplTest {
 
         resourceService = new ResourceServiceImpl(mockResourcePersistenceService, mockGroupPesistenceService,
                 mockAppPersistenceService, mockJvmPersistenceService, mockWebServerPersistenceService,
-                mockPrivateApplicationService, mockResourceDao, mockWebArchiveManager, mockResourceHandler, mockRemoteCommandExector, resourceWriteLockMap,
-                resourceContentGeneratorService);
+                mockResourceDao, mockResourceHandler, mockRemoteCommandExector, resourceWriteLockMap,
+                resourceContentGeneratorService, mockBinaryDistributionService, new Tika(), mockResourceRepositoryService);
 
         when(mockJvmPersistenceService.findJvmByExactName(eq("someJvm"))).thenReturn(mock(Jvm.class));
 
-        // emulates uploadIfBinaryData
-        final RepositoryFileInformation mockRepositoryFileInformation = mock(RepositoryFileInformation.class);
-        final Path mockPath = mock(Path.class);
-        when(mockPath.toString()).thenReturn("thePath");
-        when(mockRepositoryFileInformation.getPath()).thenReturn(mockPath);
-        when(mockPrivateApplicationService.uploadWebArchiveData(any(UploadWebArchiveRequest.class)))
-                .thenReturn(mockRepositoryFileInformation);
-
+        when(mockResourceRepositoryService.upload(anyString(), any(InputStream.class))).thenReturn("thePath");
     }
 
     @Test
@@ -142,7 +125,6 @@ public class ResourceServiceImplTest {
         final String encryptedHello = "aGVsbG8=";
         final String clearTextHello = "hello";
         assertEquals(encryptedHello, resourceService.encryptUsingPlatformBean(clearTextHello));
-        assertEquals(clearTextHello, resourceService.decryptUsingPlatformBean(encryptedHello));
     }
 
     @Test
@@ -269,7 +251,8 @@ public class ResourceServiceImplTest {
         when(mockJvmPersistenceService.getJpaJvm(any(Identifier.class), anyBoolean())).thenReturn(mockJpaJvm);
         User mockUser = mock(User.class);
         when(mockUser.getId()).thenReturn("user-id");
-        resourceService.createTemplate(metaDataIn, templateIn, "test-jvm-name", mockUser);
+        resourceService.createTemplate(metaDataIn, templateIn, "some application", mockUser);
+        verify(mockJvmPersistenceService).findJvmByExactName("some jvm name");
         verify(mockAppPersistenceService).getApplication("some application");
         verify(mockAppPersistenceService).uploadAppTemplate(any(UploadAppTemplateRequest.class), any(JpaJvm.class));
     }
@@ -282,16 +265,13 @@ public class ResourceServiceImplTest {
                 .getResourceAsStream("resource-service-test-files/app.xml.tpl");
         Jvm mockJvm = mock(Jvm.class);
         JpaJvm mockJpaJvm = mock(JpaJvm.class);
-        RepositoryFileInformation mockRepoFilInfo = mock(RepositoryFileInformation.class);
-        Path mockPath = mock(Path.class);
-        when(mockPath.toString()).thenReturn("./anyPath");
-        when(mockRepoFilInfo.getPath()).thenReturn(mockPath);
         when(mockJvmPersistenceService.findJvmByExactName(anyString())).thenReturn(mockJvm);
         when(mockJvmPersistenceService.getJpaJvm(any(Identifier.class), anyBoolean())).thenReturn(mockJpaJvm);
-        when(mockPrivateApplicationService.uploadWebArchiveData(any(UploadWebArchiveRequest.class))).thenReturn(mockRepoFilInfo);
+        when(mockResourceRepositoryService.upload(anyString(), any(InputStream.class))).thenReturn("./anyPath");
         User mockUser = mock(User.class);
         when(mockUser.getId()).thenReturn("user-id");
-        resourceService.createTemplate(metaDataIn, templateIn, "test-jvm-name", mockUser);
+        resourceService.createTemplate(metaDataIn, templateIn, "some application", mockUser);
+        verify(mockJvmPersistenceService).findJvmByExactName("some jvm name");
         verify(mockAppPersistenceService).getApplication("some application");
         verify(mockAppPersistenceService).uploadAppTemplate(any(UploadAppTemplateRequest.class), any(JpaJvm.class));
     }
@@ -337,7 +317,6 @@ public class ResourceServiceImplTest {
                     "groupName",
                     new HashSet<>(jvms),
                     new HashSet<>(webServers),
-                    new CurrentGroupState(new Identifier<Group>(1111L), GroupState.GRP_STOPPED, DateTime.now()),
                     new HashSet<History>(),
                     new HashSet<>(applications));
             groups.add(group);
@@ -510,12 +489,7 @@ public class ResourceServiceImplTest {
 
     @Test
     public void testUploadResource() {
-        final RepositoryFileInformation mockRepositoryFileInformation = mock(RepositoryFileInformation.class);
-        final Path mockPath = mock(Path.class);
-        when(mockPath.toString()).thenReturn("thePath");
-        when(mockRepositoryFileInformation.getPath()).thenReturn(mockPath);
-        when(mockPrivateApplicationService.uploadWebArchiveData(any(UploadWebArchiveRequest.class)))
-                .thenReturn(mockRepositoryFileInformation);
+        when(mockResourceRepositoryService.upload(anyString(), any(InputStream.class))).thenReturn("thePath");
         assertEquals("thePath", resourceService.uploadResource(mock(ResourceTemplateMetaData.class), new ByteArrayInputStream("data".getBytes())));
     }
 
@@ -562,14 +536,11 @@ public class ResourceServiceImplTest {
         Jvm mockJvm = mock(Jvm.class);
         jvms.add(mockJvm);
         Application mockApp = mock(Application.class);
-        RepositoryFileInformation mockRepositoryFileInformation = mock(RepositoryFileInformation.class);
         when(mockResourceDao.deleteGroupLevelAppResources(anyString(), anyString(), anyList())).thenReturn(1);
         when(mockJvmPersistenceService.getJvmsByGroupName(anyString())).thenReturn(jvms);
         when(mockResourceDao.deleteAppResources(anyList(), anyString(), anyString())).thenReturn(1);
         when(mockAppPersistenceService.getApplication(anyString())).thenReturn(mockApp);
         when(mockAppPersistenceService.deleteWarInfo(anyString())).thenReturn(mockApp);
-        when(mockWebArchiveManager.remove(any(RemoveWebArchiveRequest.class))).thenReturn(mockRepositoryFileInformation);
-        when(mockRepositoryFileInformation.getType()).thenReturn(RepositoryFileInformation.Type.DELETED);
         assertEquals(1, resourceService.deleteGroupLevelAppResources("test-app", "test-group", templateList));
     }
 
@@ -581,22 +552,21 @@ public class ResourceServiceImplTest {
         Jvm mockJvm = mock(Jvm.class);
         jvms.add(mockJvm);
         Application mockApp = mock(Application.class);
-        RepositoryFileInformation mockRepositoryFileInformation = mock(RepositoryFileInformation.class);
         when(mockResourceDao.deleteGroupLevelAppResources(anyString(), anyString(), anyList())).thenReturn(1);
         when(mockJvmPersistenceService.getJvmsByGroupName(anyString())).thenReturn(jvms);
         when(mockResourceDao.deleteAppResources(anyList(), anyString(), anyString())).thenReturn(1);
         when(mockAppPersistenceService.getApplication(anyString())).thenReturn(mockApp);
         when(mockAppPersistenceService.deleteWarInfo(anyString())).thenReturn(mockApp);
-        when(mockWebArchiveManager.remove(any(RemoveWebArchiveRequest.class))).thenThrow(IOException.class);
-        when(mockRepositoryFileInformation.getType()).thenReturn(RepositoryFileInformation.Type.DELETED);
+        doThrow(ResourceRepositoryServiceException.class).when(mockResourceRepositoryService).delete(anyString());
         assertEquals(1, resourceService.deleteGroupLevelAppResources("test-app", "test-group", templateList));
     }
 
     @Test
     public void testCreateResource() {
-        ResourceIdentifier resourceIdentifier = mock(ResourceIdentifier.class);
-        ResourceTemplateMetaData resourceTemplateMetaData = mock(ResourceTemplateMetaData.class);
-        InputStream inputStream = mock(InputStream.class);
+        final ResourceIdentifier resourceIdentifier = mock(ResourceIdentifier.class);
+        final ResourceTemplateMetaData resourceTemplateMetaData = mock(ResourceTemplateMetaData.class);
+        when(resourceTemplateMetaData.getContentType()).thenReturn(MediaType.TEXT_PLAIN);
+        final InputStream inputStream = mock(InputStream.class);
         CreateResourceResponseWrapper createResourceResponseWrapper = mock(CreateResourceResponseWrapper.class);
         when(mockResourceHandler.createResource(eq(resourceIdentifier), eq(resourceTemplateMetaData), anyString())).thenReturn(createResourceResponseWrapper);
         assertEquals(createResourceResponseWrapper, resourceService.createResource(resourceIdentifier, resourceTemplateMetaData, inputStream));
@@ -604,9 +574,10 @@ public class ResourceServiceImplTest {
 
     @Test(expected = ResourceServiceException.class)
     public void testCreateResourceFail() {
-        ResourceIdentifier resourceIdentifier = mock(ResourceIdentifier.class);
-        ResourceTemplateMetaData resourceTemplateMetaData = mock(ResourceTemplateMetaData.class);
-        InputStream inputStream = mock(InputStream.class);
+        final ResourceIdentifier resourceIdentifier = mock(ResourceIdentifier.class);
+        final ResourceTemplateMetaData resourceTemplateMetaData = mock(ResourceTemplateMetaData.class);
+        when(resourceTemplateMetaData.getContentType()).thenReturn(MediaType.TEXT_PLAIN);
+        final InputStream inputStream = mock(InputStream.class);
         when(mockResourceHandler.createResource(eq(resourceIdentifier), eq(resourceTemplateMetaData), anyString())).thenThrow(ResourceServiceException.class);
         resourceService.createResource(resourceIdentifier, resourceTemplateMetaData, inputStream);
     }
@@ -934,6 +905,57 @@ public class ResourceServiceImplTest {
 
         assertNotNull(caughtException);
         assertEquals(2, caughtException.getErrorDetails().get("test-jvm-resource-validation").size());
+    }
+
+    @Test
+    public void testGetResourceMimeTypes() throws IOException {
+        // jpg
+        assertEquals("image/jpeg", resourceService.getResourceMimeType(new BufferedInputStream(
+                this.getClass().getResourceAsStream("/get-resource-mime-type-test-files/jpg"))));
+        assertEquals("image/jpeg", resourceService.getResourceMimeType(new BufferedInputStream(
+                this.getClass().getResourceAsStream("/get-resource-mime-type-test-files/jpg.jpg"))));
+        assertEquals("image/jpeg", resourceService.getResourceMimeType(new BufferedInputStream(
+                this.getClass().getResourceAsStream("/get-resource-mime-type-test-files/jpg.txt"))));
+
+        // xml
+        assertEquals("application/xml", resourceService.getResourceMimeType(new BufferedInputStream(
+                this.getClass().getResourceAsStream("/get-resource-mime-type-test-files/xml-tpl"))));
+        assertEquals("application/xml", resourceService.getResourceMimeType(new BufferedInputStream(
+                this.getClass().getResourceAsStream("/get-resource-mime-type-test-files/xml-tpl.tpl"))));
+        assertEquals("application/xml", resourceService.getResourceMimeType(new BufferedInputStream(
+                this.getClass().getResourceAsStream("/get-resource-mime-type-test-files/xml-tpl.war"))));
+        assertEquals("application/xml", resourceService.getResourceMimeType(new BufferedInputStream(
+                this.getClass().getResourceAsStream("/get-resource-mime-type-test-files/xml-tpl.zip"))));
+
+        // war
+        assertEquals("application/zip", resourceService.getResourceMimeType(new BufferedInputStream(
+                this.getClass().getResourceAsStream("/get-resource-mime-type-test-files/war"))));
+        assertEquals("application/zip", resourceService.getResourceMimeType(new BufferedInputStream(
+                this.getClass().getResourceAsStream("/get-resource-mime-type-test-files/war.txt"))));
+        assertEquals("application/zip", resourceService.getResourceMimeType(new BufferedInputStream(
+                this.getClass().getResourceAsStream("/get-resource-mime-type-test-files/war.war"))));
+        assertEquals("application/zip", resourceService.getResourceMimeType(new BufferedInputStream(
+                this.getClass().getResourceAsStream("/get-resource-mime-type-test-files/war.zip"))));
+
+        // zip
+        assertEquals("application/zip", resourceService.getResourceMimeType(new BufferedInputStream(
+                this.getClass().getResourceAsStream("/get-resource-mime-type-test-files/zip"))));
+        assertEquals("application/zip", resourceService.getResourceMimeType(new BufferedInputStream(
+                this.getClass().getResourceAsStream("/get-resource-mime-type-test-files/zip.txt"))));
+        assertEquals("application/zip", resourceService.getResourceMimeType(new BufferedInputStream(
+                this.getClass().getResourceAsStream("/get-resource-mime-type-test-files/zip.zip"))));
+
+        // properties file/text
+        assertEquals("text/plain", resourceService.getResourceMimeType(new BufferedInputStream(
+                this.getClass().getResourceAsStream("/get-resource-mime-type-test-files/properties-file-tpl"))));
+        assertEquals("text/plain", resourceService.getResourceMimeType(new BufferedInputStream(
+                this.getClass().getResourceAsStream("/get-resource-mime-type-test-files/properties-file-tpl.tpl"))));
+        assertEquals("text/plain", resourceService.getResourceMimeType(new BufferedInputStream(
+                this.getClass().getResourceAsStream("/get-resource-mime-type-test-files/properties-file-tpl.war"))));
+
+        // jar
+        assertEquals("application/zip", resourceService.getResourceMimeType(new BufferedInputStream(
+                this.getClass().getResourceAsStream("/get-resource-mime-type-test-files/jar.jar"))));
     }
 
 }

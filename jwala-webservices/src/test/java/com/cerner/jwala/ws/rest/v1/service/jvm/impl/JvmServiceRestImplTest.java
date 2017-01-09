@@ -21,7 +21,6 @@ import com.cerner.jwala.service.jvm.state.JvmStateReceiverAdapter;
 import com.cerner.jwala.service.resource.ResourceService;
 import com.cerner.jwala.ws.rest.v1.provider.AuthenticatedUser;
 import com.cerner.jwala.ws.rest.v1.response.ApplicationResponse;
-import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -32,7 +31,6 @@ import org.mockito.runners.MockitoJUnitRunner;
 import javax.servlet.ServletInputStream;
 import javax.ws.rs.core.Response;
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
@@ -117,11 +115,6 @@ public class JvmServiceRestImplTest {
         System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, "./src/test/resources");
         jvmServiceRest = new JvmServiceRestImpl(jvmService, jvmControlService, resourceService);
         when(authenticatedUser.getUser()).thenReturn(new User("Unused"));
-        try {
-            jvmServiceRest.afterPropertiesSet();
-        } catch (Exception e) {
-            assertTrue("This should not fail, but ... " + e.getMessage(), false);
-        }
     }
 
     @After
@@ -354,17 +347,6 @@ public class JvmServiceRestImplTest {
         when(jvmService.previewResourceTemplate(anyString(), anyString(), anyString(), anyString())).thenThrow(new RuntimeException("Test failed preview"));
         response = jvmServiceRest.previewResourceTemplate("myFile", jvm.getJvmName(), "group1", "ServerXMLTemplate.tpl");
         assertNotNull(response.getEntity());
-    }
-
-    @Test
-    public void testCreateConfigFile() {
-        try {
-            jvmServiceRest.createConfigFile("./src/test/resources/", "testConfigFile.bat", "REM BAT ME");
-            FileUtils.forceDelete(new File("./src/test/resources/testConfigFile.bat"));
-        } catch (IOException e) {
-            e.printStackTrace();
-            assertFalse(true);
-        }
     }
 
     /**

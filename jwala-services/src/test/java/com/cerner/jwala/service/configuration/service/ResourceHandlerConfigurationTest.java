@@ -15,14 +15,17 @@ import com.cerner.jwala.persistence.jpa.domain.JpaJvm;
 import com.cerner.jwala.persistence.service.*;
 import com.cerner.jwala.service.HistoryFacadeService;
 import com.cerner.jwala.service.MessagingService;
+import com.cerner.jwala.service.resource.ResourceRepositoryService;
 import com.cerner.jwala.service.resource.ResourceService;
 import com.cerner.jwala.service.resource.impl.ResourceServiceImpl;
 import com.cerner.jwala.service.resource.impl.handler.WebServerResourceHandler;
+import org.apache.tika.Tika;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -41,7 +44,7 @@ import static org.mockito.Mockito.*;
 /**
  * Test resource handler chain
  * <p>
- * Created by JC043760 on 7/22/2016.
+ * Created by Jedd Cuison on 7/22/2016.
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(loader = AnnotationConfigContextLoader.class, classes = {ResourceHandlerConfiguration.class,
@@ -57,8 +60,11 @@ public class ResourceHandlerConfigurationTest {
 
     private ResourceTemplateMetaData metaData;
 
+    @Mock
+    private ResourceRepositoryService mockResourceRepositoryService;
+
     private ResourceService resourceService = new ResourceServiceImpl(null, null, null, null, null, null, null, null,
-            null, null, null, null);
+            null, null, null, new Tika(), mockResourceRepositoryService);
 
     @BeforeClass
     public static void init() {
@@ -240,7 +246,7 @@ public class ResourceHandlerConfigurationTest {
         final ObjectMapper objectMapper = new ObjectMapper();
         final Map<String, Object> metaDataMap = objectMapper.readValue(metaData.getJsonData(), Map.class);
         metaDataMap.put("entity", entity);
-        metaDataMap.put("contentType", "application/binary");
+        metaDataMap.put("contentType", "application/zip");
         metaData = resourceService.getMetaData(objectMapper.writeValueAsString(metaDataMap));
 
         when(MockConfig.MOCK_APPLICATION_PERSISTENCE_SERVICE.getApplication(anyString())).thenReturn(mock(Application.class));

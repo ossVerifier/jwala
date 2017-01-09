@@ -8,7 +8,7 @@ import java.util.Collection;
 /**
  * Wrapper for exceptions that happens inside the {@link com.cerner.jwala.service.app.ApplicationService} implementation(s)
  *
- * Created by z003bpej on 9/16/2015
+ * Created by Jedd Cuison on 9/16/2015
  */
 public class ApplicationServiceException extends InternalErrorException {
 
@@ -16,8 +16,8 @@ public class ApplicationServiceException extends InternalErrorException {
         super(null, msg);
     }
 
-    public ApplicationServiceException(final MessageResponseStatus theMessageResponseStatus, final String theMessage,
+    public ApplicationServiceException(final MessageResponseStatus msgResponseStatus, final String msg,
                                        final Collection<String> entityDetailsCollection) {
-        super(theMessageResponseStatus, theMessage, entityDetailsCollection);
+        super(msgResponseStatus, msg, entityDetailsCollection);
     }
 }

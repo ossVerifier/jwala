@@ -10,11 +10,9 @@ import com.cerner.jwala.common.exec.CommandOutput;
 import com.cerner.jwala.common.request.app.CreateApplicationRequest;
 import com.cerner.jwala.common.request.app.UpdateApplicationRequest;
 import com.cerner.jwala.common.request.app.UploadAppTemplateRequest;
-import com.cerner.jwala.common.request.app.UploadWebArchiveRequest;
 import com.cerner.jwala.exception.CommandFailureException;
 import com.cerner.jwala.persistence.jpa.domain.JpaApplicationConfigTemplate;
 
-import java.io.IOException;
 import java.util.List;
 
 public interface ApplicationService {
@@ -35,14 +33,7 @@ public interface ApplicationService {
 
     List<Application> findApplicationsByJvmId(Identifier<Jvm> jvmId);
 
-    Application uploadWebArchive(UploadWebArchiveRequest command, User user);
-
-    Application deleteWebArchive(Identifier<Application> appToRemoveWAR, User user);
-
     List<String> getResourceTemplateNames(final String appName, String jvmName);
-
-    String getResourceTemplate(final String appName, String groupName, String jvmName, final String resourceTemplateName,
-                               final ResourceGroup resourceGroup, final boolean tokensReplaced);
 
     String updateResourceTemplate(final String appName, final String resourceTemplateName, final String template, final String jvmName, final String groupName);
 
@@ -75,18 +66,7 @@ public interface ApplicationService {
 
     void copyApplicationWarToHost(Application application, String hostName);
 
-    void copyApplicationConfigToGroupJvms(Group group, String appName, ResourceGroup resourceGroup, User user);
-
     void deployApplicationResourcesToGroupHosts(String groupName, Application app, ResourceGroup resourceGroup);
-
-    /**
-     * Upload a WAR for an application.
-     * @param appId the application id
-     * @param warName the war name
-     * @param war the war byte data
-     * @param deployPath @return {@link Application}
-     */
-    Application uploadWebArchive(final Identifier<Application> appId, String warName, byte[] war, String deployPath) throws IOException;
 
     CommandOutput executeBackUpCommand(String entity, String host, String source) throws CommandFailureException;
 

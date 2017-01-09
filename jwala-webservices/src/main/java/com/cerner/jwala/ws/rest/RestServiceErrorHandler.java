@@ -1,24 +1,25 @@
 package com.cerner.jwala.ws.rest;
 
 import com.cerner.jwala.common.exception.InternalErrorException;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
+import java.util.Map;
 
 /**
  * Handler for internal server errors in the REST layer
- * <p>
+ *
  * Note: This handler's purpose is to intercept uncaught errors so that they won't bubble up to the UI.
  * It does not replace proper error handling in the REST layer.
- * <p>
- * Created by JC043760 on 8/11/2016.
+ *
+ * Created by Jedd Cuison on 8/11/2016
  */
 public class RestServiceErrorHandler implements ExceptionMapper {
     private final static Logger LOGGER = LoggerFactory.getLogger(RestServiceErrorHandler.class);
-    public static final String INTERNAL_SERVER_ERR_MSG = "An error occurred while processing the request! Please check logs for details.";
 
     @Override
     public Response toResponse(final Throwable t) {
@@ -36,7 +37,14 @@ public class RestServiceErrorHandler implements ExceptionMapper {
 
         final JsonResponseBuilder jsonResponseBuilder = new JsonResponseBuilder().setStatusCode(status).setMessage(msg);
         if (t instanceof InternalErrorException && ((InternalErrorException) t).getErrorDetails() != null) {
-            jsonResponseBuilder.setContent(((InternalErrorException) t).getErrorDetails());
+            final Map errorDetails = ((InternalErrorException) t).getErrorDetails();
+            if (errorDetails.isEmpty()) {
+                jsonResponseBuilder.setContent(ExceptionUtils.getStackTrace(t));
+            } else {
+                jsonResponseBuilder.setContent(errorDetails);
+            }
+        } else {
+            jsonResponseBuilder.setContent(ExceptionUtils.getStackTrace(t));
         }
 
         return jsonResponseBuilder.build();

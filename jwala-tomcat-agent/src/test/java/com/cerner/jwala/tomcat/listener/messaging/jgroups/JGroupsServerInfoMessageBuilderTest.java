@@ -10,7 +10,7 @@ import static org.junit.Assert.assertNotNull;
 /**
  * Unit test for {@link JGroupsServerInfoMessageBuilderTest}
  *
- * Created by JC043760 on 8/16/2016
+ * Created by Jedd Cuison on 8/16/2016
  */
 public class JGroupsServerInfoMessageBuilderTest {
 

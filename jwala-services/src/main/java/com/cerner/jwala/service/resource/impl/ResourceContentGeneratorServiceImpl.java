@@ -27,7 +27,7 @@ import java.util.List;
 /**
  * Implement {@link ResourceContentGeneratorService}
  * <p>
- * Created by JC043760 on 7/26/2016.
+ * Created by Jedd Cuison on 7/26/2016.
  */
 @Service
 public class ResourceContentGeneratorServiceImpl implements ResourceContentGeneratorService {
@@ -98,7 +98,6 @@ public class ResourceContentGeneratorServiceImpl implements ResourceContentGener
                     group.getName(),
                     null != jvms ? new LinkedHashSet<>(jvms) : new LinkedHashSet<Jvm>(),
                     null != webServers ? new LinkedHashSet<>(webServers) : new LinkedHashSet<WebServer>(),
-                    group.getCurrentState(),
                     group.getHistory(),
                     null != applications ? new LinkedHashSet<>(applications) : new LinkedHashSet<Application>()));
         }

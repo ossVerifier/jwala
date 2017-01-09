@@ -4,23 +4,23 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
-import com.cerner.jwala.common.domain.model.fault.AemFaultType;
+import com.cerner.jwala.common.domain.model.fault.FaultType;
 import com.cerner.jwala.common.exception.BadRequestException;
 import com.cerner.jwala.common.exception.MessageResponseStatus;
 
 public class PortNumberRule implements Rule {
 
     private final Integer port;
-    private final AemFaultType error;
+    private final FaultType error;
     private final boolean nullable;
 
-    public PortNumberRule(final Integer thePort, final AemFaultType errorCode) {
+    public PortNumberRule(final Integer thePort, final FaultType errorCode) {
         this(thePort,
                 errorCode,
                 false);
     }
 
-    public PortNumberRule(final Integer thePort, final AemFaultType errorCode, final boolean nullable) {
+    public PortNumberRule(final Integer thePort, final FaultType errorCode, final boolean nullable) {
         port = thePort;
         error = errorCode;
         this.nullable = nullable;

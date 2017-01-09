@@ -4,6 +4,7 @@ import com.cerner.jwala.common.domain.model.webserver.WebServerControlOperation;
 import com.cerner.jwala.common.exec.ExecCommand;
 import com.cerner.jwala.common.exec.ShellCommand;
 import com.cerner.jwala.common.properties.ApplicationProperties;
+import com.cerner.jwala.common.properties.PropertyKeys;
 import com.cerner.jwala.control.AemControl;
 import com.cerner.jwala.control.command.ServiceCommandBuilder;
 
@@ -17,8 +18,9 @@ public enum WindowsWebServerNetOperation implements ServiceCommandBuilder {
     START(WebServerControlOperation.START) {
         @Override
         public ExecCommand buildCommandForService(final String aServiceName, final String... aParams) {
+            String remoteScriptPath = ApplicationProperties.getRequired(PropertyKeys.REMOTE_SCRIPT_DIR);
             return new ShellCommand(
-                    cygpathWrapper(START_SCRIPT_NAME, WEBSERVER_CONF_PATH + "/"),
+                    cygpathWrapper(START_SCRIPT_NAME, remoteScriptPath + "/"),
                     quotedServiceName(aServiceName),
                     SLEEP_TIME.getValue()
             );
@@ -27,8 +29,9 @@ public enum WindowsWebServerNetOperation implements ServiceCommandBuilder {
     STOP(WebServerControlOperation.STOP) {
         @Override
         public ExecCommand buildCommandForService(final String aServiceName, final String... aParams) {
+            String remoteScriptPath = ApplicationProperties.getRequired(PropertyKeys.REMOTE_SCRIPT_DIR);
             return new ShellCommand(
-                    cygpathWrapper(STOP_SCRIPT_NAME, WEBSERVER_CONF_PATH + "/"),
+                    cygpathWrapper(STOP_SCRIPT_NAME, remoteScriptPath + "/"),
                     quotedServiceName(aServiceName),
                     SLEEP_TIME.getValue());
         }
@@ -39,7 +42,7 @@ public enum WindowsWebServerNetOperation implements ServiceCommandBuilder {
             return new ExecCommand("cat", aParams[0]);
         }
     },
-    SECURE_COPY(WebServerControlOperation.SECURE_COPY) {
+    SCP(WebServerControlOperation.SCP) {
         @Override
         public ExecCommand buildCommandForService(String aServiceName, String... aParams) {
             return new ExecCommand(SCP_SCRIPT_NAME.getValue(), aParams[0], aParams[1]);
@@ -63,10 +66,10 @@ public enum WindowsWebServerNetOperation implements ServiceCommandBuilder {
     INSTALL_SERVICE(WebServerControlOperation.INSTALL_SERVICE) {
         @Override
         public ExecCommand buildCommandForService(String aServiceName, String... aParams) {
+            String remoteScriptPath = ApplicationProperties.getRequired(PropertyKeys.REMOTE_SCRIPT_DIR);
             return new ExecCommand(
-                    cygpathWrapper(INSTALL_SERVICE_WS_SERVICE_SCRIPT_NAME, REMOTE_COMMANDS_USER_SCRIPTS + "/"),
-                    aServiceName,
-                    WEBSERVER_CONF_PATH
+                    cygpathWrapper(INSTALL_SERVICE_WS_SERVICE_SCRIPT_NAME, remoteScriptPath + "/"),
+                    aServiceName
             );
         }
     },
@@ -97,8 +100,6 @@ public enum WindowsWebServerNetOperation implements ServiceCommandBuilder {
 
     private static final Map<WebServerControlOperation, WindowsWebServerNetOperation> LOOKUP_MAP = new EnumMap<>(WebServerControlOperation.class);
 
-    public static final String WEBSERVER_CONF_PATH = ApplicationProperties.get("remote.paths.httpd.conf");
-    private static final String REMOTE_COMMANDS_USER_SCRIPTS = ApplicationProperties.get("remote.commands.user-scripts");
     private static final String USR_BIN_MV = "/usr/bin/mv";
     private static final String USR_BIN_MKDIR = "/usr/bin/mkdir";
     private static final String USR_BIN_CHMOD = "/usr/bin/chmod";

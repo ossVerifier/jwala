@@ -169,10 +169,13 @@ var WebAppConfig = React.createClass({
     },
     deleteWarCallback: function(data) {
         var self = this;
-        this.props.service.deleteWar(data.id.id).then(function(){
-            self.refs.confirmDeleteWarDlg.close();
-            self.loadTableData();
-        });
+        ServiceFactory.getResourceService()
+            .deleteResources([data.warName], data.group.name, null, null, data.name).then(function(){
+                self.refs.confirmDeleteWarDlg.close();
+                self.loadTableData();
+            }).caught(function(response){
+                $.errorAlert(response, "Error");
+            });
     }
 })
 
@@ -201,7 +204,7 @@ var WebAppConfigForm = React.createClass({
                        {idTextHidden}
                        <label>*Name</label><br/>
                        <label htmlFor="name" className="error"/>
-                       <input name="name" type="text" valueLink={this.linkState("name")} maxLength="255" required
+                       <input ref="webServerName" name="name" type="text" valueLink={this.linkState("name")} maxLength="255" required
                               className="width-max"/>
                        <label>*Context path</label><br/>
                        <label htmlFor="webappContext" className="error"/>
@@ -247,6 +250,7 @@ var WebAppConfigForm = React.createClass({
         ServiceFactory.getGroupService().getGroups().then(function(response){
             self.setState({groupData: response.applicationResponseContent});
         }).lastly(function(){
+            $(self.refs.webServerName.getDOMNode()).focus();
             if (self.validator === null) {
                 self.validator = $(self.getDOMNode().children[0])
                     .validate({ignore: ":hidden", rules: {"groupId": {required: true}},
@@ -294,8 +298,10 @@ var UploadWarWidget = React.createClass({
         return {
             properties: {},
             showProperties: false,
+            uploadFilename: "",
             deployPath: "",
-            uploadData: null
+            uploadData: null,
+            assignToJvms: false
         }
     },
     render: function() {
@@ -311,34 +317,41 @@ var UploadWarWidget = React.createClass({
 
         var propertiesTable = <div><table ref="propertiesTable">{rows}</table></div>;
 
-        return <div className="war-upload-component">
-                  <div className="archive-file">
-                      <div className="file-upload">
-                          <form ref="warUploadForm" encType='multipart/form-data' method="POST" action={'v1.0/applications/' + this.props.data.id.id + '/war'}>
-                              <div className="fileUploadContainer">
-                                  <input ref="fileInput" type="file" name="file"></input>
-                              </div>
-                              <div>Deploy Path</div>
-                              <div className="deployPath">
-                                  <input ref="deployPathInput" name="deployPath" value={this.state.deployPath} onChange={this.onDeployPathChanged} />
-                                  <div className="openCloseProperties">
-                                      <span ref="openClosePropertiesIcon" className={this.state.showProperties ? "ui-icon ui-icon-triangle-1-s" : "ui-icon ui-icon-triangle-1-e"}
-                                            onClick={this.openClosePropertiesIconCallback} />
-                                      <span>Properties</span>
-                                      {this.state.showProperties ? propertiesTable : null}
-                                  </div>
-                              </div>
-                          </form>
-                          <span ref="uploadResult" />
-                          <div className="progressBar">
-                            <div ref="progressBar" className="inner" />
-                          </div>
+        console.log('v1.0/resources/' + this.props.data.id.id + '/war');
+
+        return <div className="UploadWarWidget">
+                   <form ref="warUploadForm">
+                       <label>*WAR File</label>
+                       <label ref="fileInputLabel" htmlFor="fileInput" className="error"/>
+                       <input ref="fileInput" name="fileInput" type="file" required onChange={this.onChangeFileInput}/>
+                       <br/>
+                       <input type="checkbox" value={this.state.assignToJvms} onChange={this.onChangeAssignToJvms}>
+                           <span>Assign to JVMs</span>
+                       </input>
+                       <br/>
+                       <label>Deploy Path</label>
+                       <input ref="deployPathInput" name="deployPath" value={this.state.deployPath} onChange={this.onChangeDeployPath}/>
+                       <div className="openCloseProperties">
+                            <span>Select deploy path from properties</span>
+                            <span ref="openClosePropertiesIcon"
+                                  className={this.state.showProperties ? "ui-icon ui-icon-triangle-1-s" : "ui-icon ui-icon-triangle-1-e"}
+                                  onClick={this.openClosePropertiesIconCallback} />
+                            {this.state.showProperties ? propertiesTable : null}
                        </div>
-                  </div>
-              </div>;
+                   </form>
+               </div>;
     },
-    componentDidMount: function() {
-        this.initFileUpload();
+    onComponentDidMount: function() {
+        $(this.refs.warUploadForm.getDOMNode()).validate({
+                                rules: {"fileInput": {
+                                            required: true
+                                            }
+                                        },
+                                messages: {
+                                    "fileInput": {
+                                        required: "Please select a file for upload"
+                                     },
+                                }});
     },
     openClosePropertiesIconCallback: function() {
         if (this.state.showProperties) {
@@ -350,64 +363,49 @@ var UploadWarWidget = React.createClass({
     onPropertiesLoad: function(response) {
         this.setState({properties: response.applicationResponseContent, showProperties: true});
     },
-    onDeployPathChanged: function(e) {
+    onChangeFileInput: function() {
+        // This is necessary since jquery validate does not clear the error
+        // after user specifies a file not unless user clicks on something
+        // Note: We are not modifying the DOM here in such a way that will affect React
+        if ($(this.refs.fileInputLabel.getDOMNode()).hasClass("error")) {
+            $(this.refs.fileInputLabel.getDOMNode()).removeClass("error");
+            $(this.refs.fileInputLabel.getDOMNode()).html("");
+            $(this.refs.fileInput.getDOMNode()).removeClass("error");
+        }
+
+        this.setState({uploadFilename: $(this.refs.fileInput.getDOMNode()).val()});
+    },
+    onChangeAssignToJvms: function() {
+        this.setState({assignToJvms: !this.state.assignToJvms});
+    },
+    onChangeDeployPath: function() {
         this.setState({deployPath: $(this.refs.deployPathInput.getDOMNode()).val()});
     },
     onAddPropertiesClick: function(val) {
         this.setState({deployPath: this.state.deployPath + val});
     },
-    initFileUpload :function() {
-        var self = this;
-        var d = new Date();
-        $(this.refs.fileInput.getDOMNode()).fileupload({
-            dataType: "json",
-            url: "v1.0/applications/" + this.props.data.id.id + "/war" + "?_"+ d.getTime(),
-            forceIframeTransport: false,
-            replaceFileInput: false,
-            add: function(e, data) {
-                self.setState({uploadData: data});
-            },
-            progressall: function(e, data) {
-                var progress = parseInt(data.loaded / data.total * 100, 10);
-                $(self.refs.progressBar.getDOMNode()).css({'width' : progress + '%', 'background-color' : 'green'});
-            }
-        });
-    },
     performUpload: function() {
-        var self = this;
-        if (this.state.uploadData !== null) {
-            // Note: Don't confuse with "form" submit. Please see initFileUpload.
-            this.state.uploadData.submit().success(function(result, textStatus, jqXHR) {
-
-                if (result && result.msgCode === "0") {
-                    if ($.isFunction(self.props.afterUploadCallback)) {
-                        self.props.afterUploadCallback(self.refs.fileInput.getDOMNode().files);
-                    }
-                } else {
-                    self.progressError("Error has occurred! Please check browser console logs for details.");
-                    console.log(result);
-                    console.log(textStatus);
-                }
-
-            }).error (function(result, textStatus, jqXHR) {
-                console.log(result);
-                self.progressError(JSON.parse(result.responseText).applicationResponseContent);
-            });
-        } else {
-            $(this.refs.fileInput.getDOMNode()).effect("highlight")
+        if (!$(this.refs.warUploadForm.getDOMNode()).validate().form()) {
+            return;
         }
-    },
-    progressError: function(errorMsg, progress) {
 
-      $(this.refs.progressBar.getDOMNode()).css({
-          'width' : (progress !== undefined ? progress : 100) + '%',
-          'background-color' : 'red'
-      });
+        var self = this;
+        var formData = new FormData();
 
-      var uploadResult = $(this.refs.uploadResult.getDOMNode());
-      uploadResult.addClass("error");
-      uploadResult.removeClass("ok");
-      uploadResult.text(errorMsg);
+        formData.append("assignToJvms", this.state.assignToJvms);
+        formData.append("templateFile", this.refs.fileInput.getDOMNode().files[0]);
+        $(this.refs.warUploadForm.getDOMNode()).serializeArray().forEach(function(item){
+            formData.append(item.name, item.value);
+        });
+
+        ServiceFactory.getResourceService().createResource(this.props.data.group.name, null, null, this.props.data.name,
+            formData, null, this.state.uploadFilename.split("\\").pop()).then(function(response){
+                if ($.isFunction(self.props.afterUploadCallback)) {
+                    self.props.afterUploadCallback(self.refs.fileInput.getDOMNode().files);
+                }
+            }).caught(function(response){
+                $.errorAlert(response, "Error");
+            });
     },
     statics: {
         isPossiblePath: function(path) {

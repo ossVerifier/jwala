@@ -1,18 +1,13 @@
 package com.cerner.jwala.service.webserver.component;
 
 import com.cerner.jwala.common.domain.model.id.Identifier;
-import com.cerner.jwala.common.domain.model.state.CurrentState;
-import com.cerner.jwala.common.domain.model.state.StateType;
 import com.cerner.jwala.common.domain.model.webserver.WebServer;
 import com.cerner.jwala.common.domain.model.webserver.WebServerReachableState;
 import com.cerner.jwala.common.domain.model.webserver.WebServerState;
-import com.cerner.jwala.common.request.state.SetStateRequest;
-import com.cerner.jwala.common.request.state.WebServerSetStateRequest;
 import com.cerner.jwala.service.MessagingService;
 import com.cerner.jwala.service.group.GroupStateNotificationService;
 import com.cerner.jwala.service.state.InMemoryStateManagerService;
 import com.cerner.jwala.service.webserver.WebServerService;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.conn.ConnectTimeoutException;
 import org.joda.time.DateTime;
@@ -43,7 +38,7 @@ import java.util.concurrent.Future;
  * which uses Spring config and component scanning from picking up other Spring components that it does not need
  * which also results to spring bean definition problems.
  * <p>
- * Created by Z003BPEJ on 6/25/2015.
+ * Created by Jedd Cuison on 6/25/2015.
  */
 @Service
 public class WebServerStateSetterWorker {
@@ -87,7 +82,7 @@ public class WebServerStateSetterWorker {
             final WebServerReachableState webServerState = webServer.getState();
             if (!isWebServerBusy(webServer) && inMemoryStateManagerService.get(webServer.getId()) != WebServerReachableState.WS_NEW) {
                 final String webServerName = webServer.getName();
-                LOGGER.debug(">>>> Send ping for web server {}", webServerName);
+                LOGGER.debug(">>>> Send ping to {} for web server {}", webServer.getStatusUri(), webServerName);
                 try {
                     final ClientHttpRequest request = httpRequestFactory.createRequest(webServer.getStatusUri(), HttpMethod.GET);
                     response = request.execute();
@@ -146,7 +141,7 @@ public class WebServerStateSetterWorker {
         if (!isWebServerBusy(webServer) && checkStateChangedAndOrMsgNotEmpty(webServer, webServerReachableState, msg)) {
             webServerService.updateState(webServer.getId(), webServerReachableState, msg);
             messagingService.send(new WebServerState(webServer.getId(), webServerReachableState, DateTime.now()));
-            groupStateNotificationService.retrieveStateAndSendToATopic(webServer.getId(), WebServer.class);
+            groupStateNotificationService.retrieveStateAndSend(webServer.getId(), WebServer.class);
         }
     }
 
@@ -172,30 +167,6 @@ public class WebServerStateSetterWorker {
             stateChangedAndOrMsgNotEmpty = true;
         }
         return stateChangedAndOrMsgNotEmpty;
-    }
-
-    /**
-     * Sets the web server state.
-     *
-     * @param id    the web server id {@link com.cerner.jwala.common.domain.model.id.Identifier}
-     * @param state the state {@link com.cerner.jwala.common.domain.model.webserver.WebServerReachableState}
-     * @param msg   a message
-     * @return {@link SetStateRequest}
-     */
-    private SetStateRequest<WebServer, WebServerReachableState> createStateCommand(final Identifier<WebServer> id,
-                                                                                   final WebServerReachableState state,
-                                                                                   final String msg) {
-        if (StringUtils.isEmpty(msg)) {
-            return new WebServerSetStateRequest(new CurrentState<>(id,
-                    state,
-                    DateTime.now(),
-                    StateType.WEB_SERVER));
-        }
-        return new WebServerSetStateRequest(new CurrentState<>(id,
-                state,
-                DateTime.now(),
-                StateType.WEB_SERVER,
-                msg));
     }
 
 }

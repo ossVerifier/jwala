@@ -3,7 +3,7 @@ package com.cerner.jwala.ws.rest.v1.response;
 import com.cerner.jwala.common.exception.MessageResponseStatus;
 
 /**
- * Created by z003bpej on 2/21/14.
+ * Created by Jedd Cuison on 2/21/14.
  */
 public class ApplicationResponse {
 

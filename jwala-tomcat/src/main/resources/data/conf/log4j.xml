@@ -5,7 +5,7 @@
     <!-- Console Appender -->
     <appender name="CONSOLE" class="org.apache.log4j.ConsoleAppender">
         <layout class="org.apache.log4j.PatternLayout">
-            <param name="ConversionPattern" value="${log4jproperties.CommonConversionPattern}\t%c{3}\t%m%n" />
+            <param name="ConversionPattern" value="%d{yyyy-MM-dd HH:mm:ss,SSS} [%p] [%t] [%c{1}:%L] %m%n" />
         </layout>
     </appender>
 
@@ -24,7 +24,7 @@
 
     <!-- Jwala logger -->
     <logger name="com.cerner.jwala" additivity="false">
-        <level value="WARN" />
+        <level value="DEBUG" />
         <appender-ref ref="TRACE_JWALA" />
         <appender-ref ref="CONSOLE" />
     </logger>
@@ -36,8 +36,15 @@
         <appender-ref ref="CONSOLE" />
     </logger>
 
-    <logger name="com.cerner.jwala.service" additivity="false">
+    <logger name="com.cerner.jwala.service.webserver.WebServerStateRetrievalScheduledTaskHandler" additivity="false">
         <level value="INFO" />
+        <appender-ref ref="TRACE_JWALA" />
+        <appender-ref ref="CONSOLE" />
+    </logger>
+
+
+    <logger name="com.cerner.jwala.service" additivity="false">
+        <level value="DEBUG" />
         <appender-ref ref="TRACE_JWALA" />
         <appender-ref ref="CONSOLE" />
     </logger>
@@ -57,4 +64,3 @@
 
 
 </log4j:configuration>
-

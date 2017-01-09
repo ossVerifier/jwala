@@ -10,7 +10,7 @@ import java.util.List;
 /**
  * History DAO.
  *
- * Created by JC043760 on 11/30/2015.
+ * Created by Jedd Cuison on 11/30/2015.
  */
 public interface HistoryCrudService extends CrudService<JpaHistory> {
 

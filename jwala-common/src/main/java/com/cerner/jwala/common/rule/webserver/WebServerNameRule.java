@@ -1,6 +1,6 @@
 package com.cerner.jwala.common.rule.webserver;
 
-import com.cerner.jwala.common.domain.model.fault.AemFaultType;
+import com.cerner.jwala.common.domain.model.fault.FaultType;
 import com.cerner.jwala.common.exception.MessageResponseStatus;
 import com.cerner.jwala.common.rule.ValidNameRule;
 
@@ -12,7 +12,7 @@ public class WebServerNameRule extends ValidNameRule {
 
     @Override
     protected MessageResponseStatus getMessageResponseStatus() {
-        return AemFaultType.INVALID_WEBSERVER_NAME;
+        return FaultType.INVALID_WEBSERVER_NAME;
     }
 
     @Override

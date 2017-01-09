@@ -2,7 +2,7 @@ package com.cerner.jwala.service.app.impl;
 
 import com.cerner.jwala.common.domain.model.app.Application;
 import com.cerner.jwala.common.domain.model.app.ApplicationControlOperation;
-import com.cerner.jwala.common.domain.model.fault.AemFaultType;
+import com.cerner.jwala.common.domain.model.fault.FaultType;
 import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
@@ -13,37 +13,33 @@ import com.cerner.jwala.common.domain.model.resource.ResourceIdentifier;
 import com.cerner.jwala.common.domain.model.resource.ResourceTemplateMetaData;
 import com.cerner.jwala.common.domain.model.ssh.SshConfiguration;
 import com.cerner.jwala.common.domain.model.user.User;
-import com.cerner.jwala.common.exception.ApplicationException;
 import com.cerner.jwala.common.exception.BadRequestException;
 import com.cerner.jwala.common.exception.InternalErrorException;
 import com.cerner.jwala.common.exec.CommandOutput;
 import com.cerner.jwala.common.exec.ExecCommand;
 import com.cerner.jwala.common.exec.ExecReturnCode;
 import com.cerner.jwala.common.properties.ApplicationProperties;
-import com.cerner.jwala.common.request.app.*;
+import com.cerner.jwala.common.request.app.CreateApplicationRequest;
+import com.cerner.jwala.common.request.app.UpdateApplicationRequest;
+import com.cerner.jwala.common.request.app.UploadAppTemplateRequest;
 import com.cerner.jwala.control.application.command.impl.WindowsApplicationPlatformCommandProvider;
 import com.cerner.jwala.control.command.PlatformCommandProvider;
 import com.cerner.jwala.control.command.RemoteCommandExecutor;
 import com.cerner.jwala.control.command.RemoteCommandExecutorImpl;
 import com.cerner.jwala.control.configuration.AemSshConfig;
 import com.cerner.jwala.exception.CommandFailureException;
-import com.cerner.jwala.files.FileManager;
-import com.cerner.jwala.files.RepositoryFileInformation;
-import com.cerner.jwala.files.WebArchiveManager;
 import com.cerner.jwala.persistence.jpa.domain.JpaJvm;
 import com.cerner.jwala.persistence.service.ApplicationPersistenceService;
 import com.cerner.jwala.persistence.service.JvmPersistenceService;
 import com.cerner.jwala.persistence.service.ResourceDao;
 import com.cerner.jwala.service.HistoryFacadeService;
-import com.cerner.jwala.service.app.PrivateApplicationService;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionControlService;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionService;
 import com.cerner.jwala.service.exception.ApplicationServiceException;
 import com.cerner.jwala.service.group.GroupService;
 import com.cerner.jwala.service.resource.ResourceService;
-import com.cerner.jwala.service.resource.impl.CreateResourceResponseWrapper;
 import com.cerner.jwala.service.resource.impl.ResourceGeneratorType;
-import org.codehaus.jackson.map.ObjectMapper;
+import org.apache.tika.mime.MediaType;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -55,9 +51,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.ByteBuffer;
-import java.nio.file.FileSystems;
 import java.util.*;
 
 import static org.junit.Assert.assertEquals;
@@ -75,12 +69,6 @@ public class ApplicationServiceImplTest {
     private ApplicationPersistenceService applicationPersistenceService;
 
     @Mock
-    private WebArchiveManager webArchiveManager;
-
-    @Mock
-    private PrivateApplicationService privateApplicationService = new PrivateApplicationServiceImpl();
-
-    @Mock
     private JvmPersistenceService jvmPersistenceService;
 
     @Mock
@@ -91,9 +79,6 @@ public class ApplicationServiceImplTest {
 
     @Mock
     private GroupService groupService;
-
-    @Mock
-    private FileManager fileManager;
 
     private ApplicationServiceImpl applicationService;
 
@@ -171,11 +156,8 @@ public class ApplicationServiceImplTest {
         groupService = mock(GroupService.class);
         when(groupService.getGroup(any(Identifier.class))).thenReturn(group);
 
-        when(fileManager.getResourceTypeTemplate(eq("AppContextXMLTemplate.tpl"))).thenReturn("The application context template.");
-        when(fileManager.getResourceTypeTemplate(eq("RoleMappingTemplate.tpl"))).thenReturn("The role mapping properties template.");
-
         applicationService = new ApplicationServiceImpl(applicationPersistenceService,
-                jvmPersistenceService, remoteCommandExecutor, groupService, webArchiveManager, privateApplicationService,
+                jvmPersistenceService, groupService,
                 mockResourceService, remoteCommandExecutorImpl, binaryDistributionService, mockHistoryFacadeService);
     }
 
@@ -282,82 +264,12 @@ public class ApplicationServiceImplTest {
         verify(applicationPersistenceService, Mockito.times(1)).removeApplication(Mockito.any(Identifier.class));
     }
 
-    @SuppressWarnings("unchecked")
-    @Test
-    public void testUploadWebArchive() throws IOException {
-        UploadWebArchiveRequest uwac = new UploadWebArchiveRequest(mockApplication, "fn.war", 2L, uploadedFile);
-
-        when(webArchiveManager.store(uwac)).thenReturn(RepositoryFileInformation.stored(FileSystems.getDefault().getPath("D:\\fn.war"), 2L));
-
-        applicationService.uploadWebArchive(uwac, testUser);
-
-        verify(privateApplicationService, Mockito.times(1)).uploadWebArchiveData(uwac);
-        verify(privateApplicationService, Mockito.times(1)).uploadWebArchiveUpdateDB(any(UploadWebArchiveRequest.class), any(RepositoryFileInformation.class));
-    }
-
-    @SuppressWarnings("unchecked")
-    @Test
-    public void testDeleteWebArchive() throws IOException {
-        when(mockApplication.getName()).thenReturn("hct");
-        when(mockApplication.getWarName()).thenReturn("hct.war");
-        when(applicationPersistenceService.getApplication(any(Identifier.class))).thenReturn(mockApplication);
-        when(webArchiveManager.remove(any(RemoveWebArchiveRequest.class))).thenReturn(RepositoryFileInformation.deleted(FileSystems.getDefault().getPath("D:\\fn.war")));
-
-        applicationService.deleteWebArchive(mockApplication.getId(), testUser);
-
-        verify(webArchiveManager, Mockito.times(1)).remove(any(RemoveWebArchiveRequest.class));
-        verify(mockResourceService).deleteGroupLevelAppResources(eq("hct"), anyString(), anyList());
-    }
-
-    @Test
-    public void testDeleteWebArchiveWithIoException() throws IOException {
-        when(applicationPersistenceService.getApplication(any(Identifier.class))).thenReturn(mockApplication);
-        when(webArchiveManager.remove(any(RemoveWebArchiveRequest.class))).thenThrow(IOException.class);
-        applicationService.deleteWebArchive(mockApplication.getId(), testUser);
-        verify(webArchiveManager).remove(any(RemoveWebArchiveRequest.class));
-    }
-
-    @Test
-    public void testDeleteWebArchiveDeleteFailedDueToArchiveNotFound() throws IOException {
-        when(applicationPersistenceService.getApplication(any(Identifier.class))).thenReturn(mockApplication);
-        final RepositoryFileInformation mockRepositoryFileInformation = mock(RepositoryFileInformation.class);
-        when(mockRepositoryFileInformation.getType()).thenReturn(RepositoryFileInformation.Type.NONE);
-        when(webArchiveManager.remove(any(RemoveWebArchiveRequest.class))).thenReturn(mockRepositoryFileInformation);
-        applicationService.deleteWebArchive(mockApplication.getId(), testUser);
-        verify(webArchiveManager).remove(any(RemoveWebArchiveRequest.class));
-    }
-
     @Test
     public void testGetResourceTemplateNames() {
         final String[] nameArray = {"hct.xml"};
         when(applicationPersistenceService.getResourceTemplateNames(eq("hct"), anyString())).thenReturn(Arrays.asList(nameArray));
         final List names = applicationService.getResourceTemplateNames("hct", "any");
         assertEquals("hct.xml", names.get(0));
-    }
-
-    @Test
-    public void testGetResourceTemplate() {
-        final String theTemplate = "<context>${webApp.warPath}</context>";
-        when(applicationPersistenceService.getResourceTemplate(eq("hct"), eq("hct.xml"), eq("jvm1"), eq("group1"))).thenReturn(theTemplate);
-        assertEquals(theTemplate, applicationService.getResourceTemplate("hct", "group1", "jvm1", "hct.xml", new ResourceGroup(), false));
-    }
-
-    @Test
-    public void testGetResourceTemplateWithTokensReplaced() {
-        final String theTemplate = "<context>${webApp.warPath}</context>";
-        when(applicationPersistenceService.getResourceTemplate(eq("hct"), eq("hct.xml"), eq("jvm1"), eq("group1"))).thenReturn(theTemplate);
-        final Application app = mock(Application.class);
-        when(app.getWarPath()).thenReturn("theWarPath");
-        when(applicationPersistenceService.findApplication(eq("hct"), anyString(), anyString())).thenReturn(app);
-        when(jvmPersistenceService.findJvm(anyString(), anyString())).thenReturn(null);
-        applicationService.getResourceTemplate("hct", "group1", "jvm1", "hct.xml", new ResourceGroup(), true);
-        verify(mockResourceService).generateResourceFile(anyString(), anyString(), any(ResourceGroup.class), any(Application.class), any(ResourceGeneratorType.class));
-        when(applicationPersistenceService.getResourceTemplate(eq("hct"), eq("hct.xml"), eq("jvm1"), eq("group1"))).thenReturn(theTemplate);
-        try {
-            applicationService.getResourceTemplate("hct", "group1", "jvm1", "hct.xml", new ResourceGroup(), true);
-        } catch (ApplicationException ae) {
-            assertTrue(ae.getMessage().contains("replacement failed"));
-        }
     }
 
     @Test
@@ -388,9 +300,10 @@ public class ApplicationServiceImplTest {
         ResourceTemplateMetaData mockMetaData = mock(ResourceTemplateMetaData.class);
         when(mockMetaData.getDeployFileName()).thenReturn("hct.xml");
         when(mockMetaData.getDeployPath()).thenReturn("./test/deploy-path/conf/CatalinaSSL/localhost");
-        when(mockMetaData.getContentType()).thenReturn("text/xml");
+        when(mockMetaData.getContentType()).thenReturn(MediaType.APPLICATION_XML);
         when(mockResourceService.getTokenizedMetaData(anyString(), any(Object.class), anyString())).thenReturn(mockMetaData);
         when(mockResourceService.generateResourceFile(anyString(), anyString(), any(ResourceGroup.class), any(), any(ResourceGeneratorType.class))).thenReturn("{\"deployPath\":\"./test/deploy-path/conf/CatalinaSSL/localhost\",\"contentType\":\"text/xml\",\"entity\":{\"type\":\"APPLICATION\",\"target\":\"soarcom-hct\",\"group\":\"soarcom-616\",\"parentName\":null,\"deployToJvms\":true},\"templateName\":\"hctXmlTemplate.tpl\",\"deployFileName\":\"hct.xml\"}");
+        when(mockResourceService.generateAndDeployFile(any(ResourceIdentifier.class), anyString(), anyString(), anyString())).thenReturn(execData);
 
         CommandOutput retExecData = applicationService.deployConf("hct", "hct-group", "jvm-1", "hct.xml", mock(ResourceGroup.class), testUser);
         assertTrue(retExecData.getReturnCode().wasSuccessful());
@@ -407,7 +320,7 @@ public class ApplicationServiceImplTest {
         when(execData.getReturnCode()).thenReturn(new ExecReturnCode(1));
         when(execData.getStandardError()).thenReturn("REMOTE COMMAND FAILURE");
         when(remoteCommandExecutorImpl.executeRemoteCommand(
-                anyString(), anyString(), eq(ApplicationControlOperation.SECURE_COPY), any(WindowsApplicationPlatformCommandProvider.class), anyString(), anyString())).thenReturn(execData);
+                anyString(), anyString(), eq(ApplicationControlOperation.SCP), any(WindowsApplicationPlatformCommandProvider.class), anyString(), anyString())).thenReturn(execData);
         when(remoteCommandExecutorImpl.executeRemoteCommand(anyString(), anyString(), eq(ApplicationControlOperation.CHECK_FILE_EXISTS), any(WindowsApplicationPlatformCommandProvider.class), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(1), "", ""));
         try {
             applicationService.deployConf("hct", "hct-group", "jvm-1", "hct.xml", mock(ResourceGroup.class), testUser);
@@ -416,7 +329,7 @@ public class ApplicationServiceImplTest {
         }
 
         when(remoteCommandExecutorImpl.executeRemoteCommand(
-                anyString(), anyString(), eq(ApplicationControlOperation.SECURE_COPY), any(WindowsApplicationPlatformCommandProvider.class), anyString(), anyString())).thenThrow(new CommandFailureException(new ExecCommand("fail me"), new Throwable("should fail")));
+                anyString(), anyString(), eq(ApplicationControlOperation.SCP), any(WindowsApplicationPlatformCommandProvider.class), anyString(), anyString())).thenThrow(new CommandFailureException(new ExecCommand("fail me"), new Throwable("should fail")));
         when(remoteCommandExecutorImpl.executeRemoteCommand(anyString(), anyString(), eq(ApplicationControlOperation.CHECK_FILE_EXISTS), any(WindowsApplicationPlatformCommandProvider.class), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(1), "", ""));
         try {
             applicationService.deployConf("hct", "hct-group", "jvm-1", "hct.xml", mock(ResourceGroup.class), testUser);
@@ -424,84 +337,6 @@ public class ApplicationServiceImplTest {
             assertTrue(ee.getCause() instanceof CommandFailureException);
         }
 
-    }
-
-    @Test(expected = DeployApplicationConfException.class)
-    public void testDeployConfExecDataWasNotSuccessful() throws CommandFailureException, IOException {
-        final Jvm jvm = mock(Jvm.class);
-        when(jvm.getHostName()).thenReturn("localhost");
-        when(jvm.getState()).thenReturn(JvmState.JVM_STOPPED);
-        when(jvmPersistenceService.findJvmByExactName(eq("jvm-1"))).thenReturn(jvm);
-        final CommandOutput execData = mock(CommandOutput.class);
-        when(execData.getReturnCode()).thenReturn(new ExecReturnCode(ExecReturnCode.JWALA_EXIT_CODE_NO_OP));
-        when(execData.getStandardError()).thenReturn("No operation!");
-        when(remoteCommandExecutorImpl.executeRemoteCommand(
-                anyString(), anyString(), any(ApplicationControlOperation.class), any(WindowsApplicationPlatformCommandProvider.class), anyString(), anyString())).thenReturn(execData);
-        when(remoteCommandExecutorImpl.executeRemoteCommand(anyString(), anyString(), eq(ApplicationControlOperation.CHECK_FILE_EXISTS), any(WindowsApplicationPlatformCommandProvider.class), anyString())).thenReturn(execData);
-        when(remoteCommandExecutorImpl.executeRemoteCommand(anyString(), anyString(), eq(ApplicationControlOperation.CREATE_DIRECTORY), any(WindowsApplicationPlatformCommandProvider.class), anyString())).thenReturn(execData);
-        when(applicationPersistenceService.getResourceTemplate(eq("hct"), eq("hct.xml"), eq("jvm-1"), eq("hct-group"))).thenReturn("Test template");
-        when(applicationPersistenceService.findApplication(eq("hct"), eq("hct-group"), eq("jvm-1"))).thenReturn(mockApplication);
-        when(applicationPersistenceService.getMetaData(anyString(), anyString(), anyString(), anyString())).thenReturn(META_DATA_TEST_VALUES);
-        when(jvmPersistenceService.findJvm(eq("jvm-1"), eq("hct-group"))).thenReturn(jvm);
-        ResourceTemplateMetaData mockMetaData = mock(ResourceTemplateMetaData.class);
-        when(mockMetaData.getDeployFileName()).thenReturn("hct.xml");
-        when(mockMetaData.getDeployPath()).thenReturn("./test/deploy-path/conf/CatalinaSSL/localhost");
-        when(mockMetaData.getContentType()).thenReturn("text/xml");
-        when(mockResourceService.getTokenizedMetaData(anyString(), any(Object.class), anyString())).thenReturn(mockMetaData);
-        when(mockResourceService.generateResourceFile(anyString(), anyString(), any(ResourceGroup.class), any(), any(ResourceGeneratorType.class))).thenReturn("anything");
-        applicationService.deployConf("hct", "hct-group", "jvm-1", "hct.xml", mock(ResourceGroup.class), testUser);
-    }
-
-    @Test(expected = DeployApplicationConfException.class)
-    public void testDeployConfExecDataCommandFailureException() throws CommandFailureException, IOException {
-        final Jvm jvm = mock(Jvm.class);
-        when(jvm.getHostName()).thenReturn("localhost");
-        when(jvm.getState()).thenReturn(JvmState.JVM_STOPPED);
-        when(jvmPersistenceService.findJvmByExactName(eq("jvm-1"))).thenReturn(jvm);
-        final CommandOutput execData = mock(CommandOutput.class);
-        when(execData.getReturnCode()).thenReturn(new ExecReturnCode(ExecReturnCode.JWALA_EXIT_CODE_NO_OP));
-        when(execData.getStandardError()).thenReturn("No operation!");
-        when(remoteCommandExecutorImpl.executeRemoteCommand(
-                anyString(), anyString(), any(ApplicationControlOperation.class), any(WindowsApplicationPlatformCommandProvider.class), anyString(), anyString())).thenReturn(execData);
-        when(remoteCommandExecutorImpl.executeRemoteCommand(anyString(), anyString(), eq(ApplicationControlOperation.CHECK_FILE_EXISTS), any(WindowsApplicationPlatformCommandProvider.class), anyString())).thenReturn(execData);
-        when(remoteCommandExecutorImpl.executeRemoteCommand(anyString(), anyString(), eq(ApplicationControlOperation.CREATE_DIRECTORY), any(WindowsApplicationPlatformCommandProvider.class), anyString())).thenReturn(execData);
-        when(applicationPersistenceService.getResourceTemplate(eq("hct"), eq("hct.xml"), eq("jvm-1"), eq("hct-group"))).thenReturn("Test template");
-        when(applicationPersistenceService.findApplication(eq("hct"), eq("hct-group"), eq("jvm-1"))).thenReturn(mockApplication);
-        when(applicationPersistenceService.getMetaData(anyString(), anyString(), anyString(), anyString())).thenReturn(META_DATA_TEST_VALUES);
-        when(jvmPersistenceService.findJvm(eq("jvm-1"), eq("hct-group"))).thenReturn(jvm);
-        ResourceTemplateMetaData mockMetaData = mock(ResourceTemplateMetaData.class);
-        when(mockMetaData.getDeployFileName()).thenReturn("hct.xml");
-        when(mockMetaData.getDeployPath()).thenReturn("./test/deploy-path/conf/CatalinaSSL/localhost");
-        when(mockMetaData.getContentType()).thenReturn("text/xml");
-        when(mockResourceService.getTokenizedMetaData(anyString(), any(Object.class), anyString())).thenReturn(mockMetaData);
-        when(mockResourceService.generateResourceFile(anyString(), anyString(), any(ResourceGroup.class), any(), any(ResourceGeneratorType.class))).thenReturn("anything");
-        applicationService.deployConf("hct", "hct-group", "jvm-1", "hct.xml", mock(ResourceGroup.class), testUser);
-    }
-
-    @Test (expected = DeployApplicationConfException.class)
-    public void testDeployConfExecDataFileNotFoundException() throws CommandFailureException, IOException {
-        final Jvm jvm = mock(Jvm.class);
-        when(jvm.getHostName()).thenReturn("localhost");
-        when(jvm.getState()).thenReturn(JvmState.JVM_STOPPED);
-        when(jvmPersistenceService.findJvmByExactName(eq("jvm-1"))).thenReturn(jvm);
-        final CommandOutput execData = mock(CommandOutput.class);
-        when(execData.getReturnCode()).thenReturn(new ExecReturnCode(ExecReturnCode.JWALA_EXIT_CODE_NO_OP));
-        when(execData.getStandardError()).thenReturn("No operation!");
-        when(remoteCommandExecutorImpl.executeRemoteCommand(
-                anyString(), anyString(), any(ApplicationControlOperation.class), any(WindowsApplicationPlatformCommandProvider.class), anyString(), anyString())).thenReturn(execData);
-        when(remoteCommandExecutorImpl.executeRemoteCommand(anyString(), anyString(), eq(ApplicationControlOperation.CHECK_FILE_EXISTS), any(WindowsApplicationPlatformCommandProvider.class), anyString())).thenReturn(execData);
-        when(remoteCommandExecutorImpl.executeRemoteCommand(anyString(), anyString(), eq(ApplicationControlOperation.CREATE_DIRECTORY), any(WindowsApplicationPlatformCommandProvider.class), anyString())).thenReturn(execData);
-        when(applicationPersistenceService.getResourceTemplate(eq("hct"), eq("hct.xml"), eq("jvm-1"), eq("hct-group"))).thenReturn("Test template");
-        when(applicationPersistenceService.findApplication(eq("hct"), eq("hct-group"), eq("jvm-1"))).thenReturn(mockApplication);
-        when(applicationPersistenceService.getMetaData(anyString(), anyString(), anyString(), anyString())).thenReturn(META_DATA_TEST_VALUES);
-        when(jvmPersistenceService.findJvm(eq("jvm-1"), eq("hct-group"))).thenReturn(jvm);
-        ResourceTemplateMetaData mockMetaData = mock(ResourceTemplateMetaData.class);
-        when(mockMetaData.getDeployFileName()).thenReturn("hct.xml");
-        when(mockMetaData.getDeployPath()).thenReturn("./test/deploy-path/conf/CatalinaSSL/localhost");
-        when(mockMetaData.getContentType()).thenReturn("text/xml");
-        when(mockResourceService.getTokenizedMetaData(anyString(), any(Object.class), anyString())).thenReturn(mockMetaData);
-        when(mockResourceService.generateResourceFile(anyString(), anyString(), any(ResourceGroup.class), any(), any(ResourceGeneratorType.class))).thenReturn("anything");
-        applicationService.deployConf("hct", "hct-group", "jvm-1", "hct.xml", mock(ResourceGroup.class), testUser);
     }
 
     @Test(expected = InternalErrorException.class)
@@ -582,7 +417,7 @@ public class ApplicationServiceImplTest {
         when(mockJvm2.getHostName()).thenReturn("localhost");
 
         ApplicationServiceImpl mockApplicationService = new ApplicationServiceImpl(applicationPersistenceService,
-                jvmPersistenceService, remoteCommandExecutor, mockGroupService, webArchiveManager, privateApplicationService,
+                jvmPersistenceService, mockGroupService,
                 mockResourceService, remoteCommandExecutorImpl, binaryDistributionService, mockHistoryFacadeService);
 
         try {
@@ -602,7 +437,7 @@ public class ApplicationServiceImplTest {
         } catch (CommandFailureException e) {
             assertTrue("should not fail " + e.getMessage(), false);
         } catch (InternalErrorException ie) {
-            assertEquals(AemFaultType.REMOTE_COMMAND_FAILURE, ie.getMessageResponseStatus());
+            assertEquals(FaultType.REMOTE_COMMAND_FAILURE, ie.getMessageResponseStatus());
         }
         new File("./src/test/resources/webapps/test.war").delete();
 
@@ -634,7 +469,7 @@ public class ApplicationServiceImplTest {
         CommandOutput successCommandOutput = new CommandOutput(new ExecReturnCode(0), "SUCCESS", "");
 
         ApplicationServiceImpl mockApplicationService = new ApplicationServiceImpl(applicationPersistenceService,
-                jvmPersistenceService, remoteCommandExecutor, null, webArchiveManager, privateApplicationService,
+                jvmPersistenceService, null,
                 mockResourceService, remoteCommandExecutorImpl, binaryDistributionService, mockHistoryFacadeService);
 
         try {
@@ -671,81 +506,6 @@ public class ApplicationServiceImplTest {
     }
 
     @Test
-    public void testCopyToGroupJvms() throws CommandFailureException {
-        GroupService mockGroupService = mock(GroupService.class);
-        Group mockGroup = mock(Group.class);
-        when(mockGroupService.getGroup(any(Identifier.class))).thenReturn(mockGroup);
-        when(mockGroupService.getGroup(anyString())).thenReturn(mockGroup);
-        Set<Group> groupSet = new HashSet<>();
-        groupSet.add(mockGroup);
-
-        Set<Jvm> jvms = new HashSet<>();
-        final Jvm testjvm = mock(Jvm.class);
-        when(testjvm.getId()).thenReturn(new Identifier<Jvm>(11111L));
-        when(testjvm.getJvmName()).thenReturn("testjvm");
-        when(testjvm.getState()).thenReturn(JvmState.JVM_STOPPED);
-        jvms.add(testjvm);
-
-        when(jvmPersistenceService.findJvmByExactName(anyString())).thenReturn(testjvm);
-        when(mockGroup.getJvms()).thenReturn(jvms);
-        when(mockGroup.getName()).thenReturn("testGroupName");
-        List<String> templateNames = new ArrayList<>();
-        templateNames.add("app.xml");
-        when(applicationPersistenceService.getResourceTemplateNames(anyString(), anyString())).thenReturn(templateNames);
-        when(applicationPersistenceService.findApplication(anyString(), anyString(), anyString())).thenReturn(new Application(new Identifier<Application>(111L), "appName", "./warPath", "/context", mockGroup, true, true, false, "app.war"));
-        when(applicationPersistenceService.getResourceTemplate(anyString(), anyString(), anyString(), anyString())).thenReturn("template this!");
-        when(remoteCommandExecutor.executeRemoteCommand(anyString(), anyString(), any(ApplicationControlOperation.class), any(PlatformCommandProvider.class), anyString(), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(0), "Success!", ""));
-
-        ApplicationServiceImpl mockApplicationService = new ApplicationServiceImpl(applicationPersistenceService,
-                jvmPersistenceService, remoteCommandExecutor, mockGroupService, webArchiveManager, privateApplicationService,
-                mockResourceService, remoteCommandExecutorImpl, binaryDistributionService, mockHistoryFacadeService);
-        mockApplicationService.copyApplicationConfigToGroupJvms(mockGroup, "testApp", mock(ResourceGroup.class), testUser);
-
-    }
-
-    @Test
-    public void testUploadWebArchiveWithWarName() throws IOException {
-        Identifier<Application> id = new Identifier<>("1");
-        Group mockGroup = mock(Group.class);
-        Application app = new Application(id, "testApp", "D:/ctp/app/webapps", "/test", mockGroup, false, false, false, "test.war");
-        Application returnApp = new Application(id, "testApp", null, "/test", mockGroup, false, false, false, null);
-        when(applicationPersistenceService.getApplication(any(Identifier.class))).thenReturn(returnApp);
-        when(mockGroup.getName()).thenReturn("testGroup");
-        byte[] bytes = new byte[0];
-        when(mockResourceService.uploadResource(any(ResourceTemplateMetaData.class), any(InputStream.class))).thenReturn("");
-        CreateResourceResponseWrapper createResourceResponseWrapper = mock(CreateResourceResponseWrapper.class);
-        when(mockResourceService.createResource(any(ResourceIdentifier.class), any(ResourceTemplateMetaData.class), any(InputStream.class))).thenReturn(createResourceResponseWrapper);
-        when(mockResourceService.getAppTemplate(anyString(), anyString(), anyString())).thenReturn("");
-
-        final ResourceTemplateMetaData resourceTemplateMetaData = new ObjectMapper().readValue("{\n" +
-                                                                        "  \"unpack\" : false,\n" +
-                                                                        "  \"deployPath\" : \"D:/stp/app/webapps\",\n" +
-                                                                        "  \"entity\" : {\n" +
-                                                                        "    \"type\" : \"GROUPED_APPS\",\n" +
-                                                                        "    \"group\" : \"testGroup\",\n" +
-                                                                        "    \"target\" : \"testApp\",\n" +
-                                                                        "    \"parentName\" : null,\n" +
-                                                                        "    \"deployToJvms\" : false\n" +
-                                                                        "  },\n" +
-                                                                        "  \"overwrite\" : false,\n" +
-                                                                        "  \"contentType\" : \"application/binary\",\n" +
-                                                                        "  \"deployFileName\" : \"test.war\",\n" +
-                                                                        "  \"templateName\" : \"test.war\"\n" +
-                                                                        "}", ResourceTemplateMetaData.class);
-
-        when(mockResourceService.getMetaData(anyString())).thenReturn(resourceTemplateMetaData);
-
-        Application app2 = applicationService.uploadWebArchive(app.getId(), app.getWarName(), bytes, app.getWarPath());
-        assertEquals(app.getWarName(), app2.getWarName());
-        assertEquals(app.getWarPath(), app.getWarPath());
-    }
-
-    @Test (expected = ApplicationServiceException.class)
-    public void testUploadWebArchiveWithWarNameFail() throws IOException {
-        applicationService.uploadWebArchive(new Identifier<Application>("1"), null, new byte[0], new String());
-    }
-
-    @Test
     public void testAppDeployConf() throws IOException {
         final String appName = "test-app";
         List<String> hosts = new ArrayList<>();
@@ -775,10 +535,10 @@ public class ApplicationServiceImplTest {
         when(mockMetaData.getEntity()).thenReturn(mockEntity);
         when(mockEntity.getDeployToJvms()).thenReturn(false);
         when(groupService.getGroupAppsResourceTemplateNames(anyString(), anyString())).thenReturn(templateNames);
-        when(groupService.deployGroupAppTemplate(anyString(), anyString(), any(ResourceGroup.class), any(Application.class), anyString())).thenReturn(mockCommandOutput);
+        when(groupService.deployGroupAppTemplate(anyString(), anyString(), any(Application.class), anyString())).thenReturn(mockCommandOutput);
         when(mockCommandOutput.getReturnCode()).thenReturn(new ExecReturnCode(0));
         applicationService.deployConf(appName, null, testUser);
-        verify(groupService, times(2)).deployGroupAppTemplate(eq("test-group"), anyString(), any(ResourceGroup.class), eq(mockApplication), anyString());
+        verify(groupService, times(2)).deployGroupAppTemplate(eq("test-group"), anyString(), eq(mockApplication), anyString());
     }
 
     @Test (expected = InternalErrorException.class)
@@ -810,7 +570,7 @@ public class ApplicationServiceImplTest {
         when(mockMetaData.getEntity()).thenReturn(mockEntity);
         when(mockEntity.getDeployToJvms()).thenReturn(false);
         when(groupService.getGroupAppsResourceTemplateNames(anyString(), anyString())).thenReturn(templateNames);
-        when(groupService.deployGroupAppTemplate(anyString(), anyString(), any(ResourceGroup.class), any(Application.class), anyString())).thenReturn(mockCommandOutput);
+        when(groupService.deployGroupAppTemplate(anyString(), anyString(), any(Application.class), anyString())).thenReturn(mockCommandOutput);
         when(mockCommandOutput.getReturnCode()).thenReturn(new ExecReturnCode(1));
         applicationService.deployConf(appName, null, testUser);
     }

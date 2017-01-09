@@ -1,7 +1,7 @@
 package com.cerner.jwala.ws.rest.v1.configuration;
 
 import com.cerner.jwala.files.FilesConfiguration;
-import com.cerner.jwala.persistence.jpa.service.HistoryCrudService;
+import com.cerner.jwala.service.HistoryFacadeService;
 import com.cerner.jwala.service.HistoryService;
 import com.cerner.jwala.service.app.ApplicationService;
 import com.cerner.jwala.service.balancermanager.BalancerManagerService;
@@ -12,7 +12,6 @@ import com.cerner.jwala.service.group.GroupService;
 import com.cerner.jwala.service.group.GroupWebServerControlService;
 import com.cerner.jwala.service.jvm.JvmControlService;
 import com.cerner.jwala.service.jvm.JvmService;
-import com.cerner.jwala.service.jvm.JvmStateService;
 import com.cerner.jwala.service.resource.ResourceService;
 import com.cerner.jwala.service.webserver.WebServerCommandService;
 import com.cerner.jwala.service.webserver.WebServerControlService;
@@ -86,11 +85,12 @@ public class AemWebServiceConfiguration {
     @Autowired
     private ResourceService resourceService;
 
-    @Autowired
-    private HistoryCrudService historyCrudService;
 
     @Autowired
     private HistoryService historyService;
+
+    @Autowired
+    private HistoryFacadeService historyFacadeService;
 
     @Autowired
     private GroupControlService groupControlService;
@@ -101,8 +101,6 @@ public class AemWebServiceConfiguration {
     @Autowired
     private GroupWebServerControlService groupWebServerControlService;
 
-    @Autowired
-    private JvmStateService jvmStateService;
 
     @Autowired
     private BalancerManagerService balancerManagerService;
@@ -110,7 +108,6 @@ public class AemWebServiceConfiguration {
     @Autowired
     private BinaryDistributionService binaryDistributionService;
 
-    private final Map<String, ReentrantReadWriteLock> jvmWriteLockMap = new HashMap<>();
     private final Map<String, ReentrantReadWriteLock> wsWriteLockMap = new HashMap<>();
 
     @Bean
@@ -152,7 +149,8 @@ public class AemWebServiceConfiguration {
     @Bean
     public GroupServiceRest getV1GroupServiceRest() {
         return new GroupServiceRestImpl(groupService, resourceService, groupControlService, groupJvmControlService,
-                groupWebServerControlService, jvmService, webServerService, applicationService);
+                groupWebServerControlService, jvmService, webServerService, applicationService, getV1ApplicationServiceRest(),
+                getV1WebServerServiceRest());
     }
 
     @Bean
@@ -177,7 +175,8 @@ public class AemWebServiceConfiguration {
                 wsWriteLockMap,
                 resourceService,
                 groupService,
-                binaryDistributionService);
+                binaryDistributionService,
+                historyFacadeService);
     }
 
     @Bean
@@ -188,7 +187,7 @@ public class AemWebServiceConfiguration {
 
     @Bean
     public ApplicationServiceRest getV1ApplicationServiceRest() {
-        return new ApplicationServiceRestImpl(applicationService, resourceService, getServletFileUpload(), groupService);
+        return new ApplicationServiceRestImpl(applicationService, resourceService, groupService);
     }
 
     @Bean

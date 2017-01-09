@@ -12,7 +12,7 @@ import javax.servlet.http.HttpServletResponse;
  * Intercepts requests via Spring MVC interceptor which sets and un-sets the {@link UserId}.
  * TODO: This is a work in progress. This interceptor does not run when a REST request is made, this has to be fixed.
  *
- * Created by JC043760 on 12/30/2015.
+ * Created by Jedd Cuison on 12/30/2015.
  */
 public class UserIdHandlerInterceptor implements HandlerInterceptor {
 

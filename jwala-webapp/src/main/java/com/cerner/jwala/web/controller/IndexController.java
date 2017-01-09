@@ -38,11 +38,6 @@ public class IndexController {
         return "jwala/index";
     }
 
-    @RequestMapping(value = "/sandbox")
-    public String sandbox() {
-        return "jwala/sandbox";
-    }
-
     @RequestMapping(value = "/index-page-scripts")
     public String indexPageScripts(@ModelAttribute(DEV_MODE_COOKIE_NAME) String modelDevMode,
                                    @CookieValue(value = DEV_MODE_COOKIE_NAME, defaultValue = "false") boolean devMode) {

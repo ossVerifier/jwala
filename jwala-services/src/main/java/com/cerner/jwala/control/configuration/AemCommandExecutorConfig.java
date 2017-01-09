@@ -1,7 +1,7 @@
 package com.cerner.jwala.control.configuration;
 
 import com.cerner.jwala.commandprocessor.CommandExecutor;
-import com.cerner.jwala.commandprocessor.impl.ThreadedCommandExecutorImpl;
+import com.cerner.jwala.commandprocessor.impl.CommandExecutorImpl;
 import com.cerner.jwala.commandprocessor.jsch.impl.ChannelSessionKey;
 import com.cerner.jwala.common.properties.ApplicationProperties;
 import com.cerner.jwala.control.command.RemoteCommandExecutorImpl;
@@ -26,7 +26,7 @@ public class AemCommandExecutorConfig {
 
     @Bean
     protected CommandExecutor getCommandExecutor() {
-        return new ThreadedCommandExecutorImpl();
+        return new CommandExecutorImpl();
     }
 
     @Bean(destroyMethod = "shutdownNow")

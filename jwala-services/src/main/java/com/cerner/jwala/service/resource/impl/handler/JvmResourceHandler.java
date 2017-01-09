@@ -19,7 +19,7 @@ import java.util.List;
 /**
  * Handler for a jvm resource identified by a "resource identifier" {@link ResourceIdentifier}
  *
- * Created by JC043760 on 7/21/2016
+ * Created by Jedd Cuison on 7/21/2016
  */
 public class JvmResourceHandler extends ResourceHandler {
 

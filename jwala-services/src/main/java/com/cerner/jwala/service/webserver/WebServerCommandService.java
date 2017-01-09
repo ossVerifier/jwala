@@ -8,7 +8,7 @@ import com.cerner.jwala.exception.CommandFailureException;
 /**
  * Defines non-state altering commands to a web server.
  * <p/>
- * Created by z003bpej on 8/25/14.
+ * Created by Jedd Cuison on 8/25/14.
  */
 public interface WebServerCommandService {
 

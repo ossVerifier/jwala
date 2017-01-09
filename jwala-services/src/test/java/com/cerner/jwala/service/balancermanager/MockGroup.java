@@ -1,9 +1,5 @@
 package com.cerner.jwala.service.balancermanager;
 
-import static com.cerner.jwala.common.domain.model.id.Identifier.id;
-
-import java.util.*;
-
 import com.cerner.jwala.common.domain.model.app.Application;
 import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.id.Identifier;
@@ -13,6 +9,10 @@ import com.cerner.jwala.common.domain.model.path.FileSystemPath;
 import com.cerner.jwala.common.domain.model.path.Path;
 import com.cerner.jwala.common.domain.model.webserver.WebServer;
 import com.cerner.jwala.common.domain.model.webserver.WebServerReachableState;
+
+import java.util.*;
+
+import static com.cerner.jwala.common.domain.model.id.Identifier.id;
 
 public class MockGroup {
 
@@ -27,7 +27,6 @@ public class MockGroup {
                 groupName,
                 jvms,
                 webServers,
-                null,
                 null,
                 applications);
         this.groups.add(group);

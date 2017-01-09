@@ -1,7 +1,7 @@
 package com.cerner.jwala.service.binarydistribution;
 
 /**
- * Created by AK048646 on 10/11/2016.
+ * Created by Arvindo Kinny on 10/11/2016.
  */
 public interface BinaryDistributionLockManager {
     /**

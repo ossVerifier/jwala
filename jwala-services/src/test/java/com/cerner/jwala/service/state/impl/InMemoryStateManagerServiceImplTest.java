@@ -12,7 +12,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * Test for {@link InMemoryStateManagerServiceImpl}.
  *
- * Created by JC043760 on 4/18/2016.
+ * Created by Jedd Cuison on 4/18/2016.
  */
 public class InMemoryStateManagerServiceImplTest {
 

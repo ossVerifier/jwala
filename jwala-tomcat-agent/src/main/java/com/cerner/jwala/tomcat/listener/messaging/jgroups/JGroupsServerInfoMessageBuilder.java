@@ -12,7 +12,7 @@ import java.util.Map;
 /**
  * A message content builder
  *
- * Created by JC043760 on 8/15/2016
+ * Created by Jedd Cuison on 8/15/2016
  */
 public class JGroupsServerInfoMessageBuilder {
 

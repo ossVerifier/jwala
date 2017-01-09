@@ -1,21 +1,21 @@
 package com.cerner.jwala.persistence.service;
 
 import com.cerner.jwala.common.domain.model.group.Group;
-import com.cerner.jwala.common.domain.model.group.GroupState;
 import com.cerner.jwala.common.domain.model.id.Identifier;
-import com.cerner.jwala.common.domain.model.state.CurrentState;
 import com.cerner.jwala.common.domain.model.user.User;
 import com.cerner.jwala.common.exception.NotFoundException;
-import com.cerner.jwala.common.request.group.*;
+import com.cerner.jwala.common.request.group.AddJvmToGroupRequest;
+import com.cerner.jwala.common.request.group.CreateGroupRequest;
+import com.cerner.jwala.common.request.group.RemoveJvmFromGroupRequest;
+import com.cerner.jwala.common.request.group.UpdateGroupRequest;
 import com.cerner.jwala.common.request.jvm.UploadJvmTemplateRequest;
 import com.cerner.jwala.common.request.webserver.UploadWebServerTemplateRequest;
 import com.cerner.jwala.persistence.jpa.domain.resource.config.template.ConfigTemplate;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
-public interface GroupPersistenceService extends StatePersistenceService<Group, GroupState> {
+public interface GroupPersistenceService {
 
     Group updateGroup(UpdateGroupRequest updateGroupRequest) throws NotFoundException;
 
@@ -43,11 +43,7 @@ public interface GroupPersistenceService extends StatePersistenceService<Group, 
 
     Group removeJvmFromGroup(RemoveJvmFromGroupRequest removeJvmFromGroupRequest) throws NotFoundException;
 
-    Group updateGroupStatus(SetGroupStateRequest setGroupStateRequest);
-
     Group getGroup(final Identifier<Group> aGroupId, final boolean fetchWebServers) throws NotFoundException;
-
-    Set<CurrentState<Group, GroupState>> getAllKnownStates();
 
     Group populateJvmConfig(Identifier<Group> aGroupId, List<UploadJvmTemplateRequest> uploadJvmTemplateCommands, User user, boolean overwriteExisting);
 
@@ -78,8 +74,6 @@ public interface GroupPersistenceService extends StatePersistenceService<Group, 
     String getGroupAppResourceTemplateMetaData(String groupName, String fileName);
 
     String updateGroupAppResourceTemplate(String groupName, String appName, String resourceTemplateName, String content);
-
-    void updateState(Identifier<Group> id, GroupState state);
 
     String getGroupJvmResourceTemplateMetaData(String groupName, String fileName);
 

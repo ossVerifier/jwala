@@ -10,7 +10,7 @@ import java.util.Arrays;
 /**
  * POJO that wraps JVM related data
  *
- * Created by JC043760 on 8/9/2016.
+ * Created by Jedd Cuison on 8/9/2016.
  */
 
 @XmlAccessorType(XmlAccessType.FIELD)

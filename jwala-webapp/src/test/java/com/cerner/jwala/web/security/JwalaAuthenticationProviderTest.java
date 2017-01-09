@@ -26,7 +26,7 @@ import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 
 /**
- * @author AK048646
+ * @author Arvindo Kinny
  *
  */
 public class JwalaAuthenticationProviderTest {

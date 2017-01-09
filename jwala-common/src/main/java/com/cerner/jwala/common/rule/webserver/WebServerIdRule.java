@@ -1,6 +1,6 @@
 package com.cerner.jwala.common.rule.webserver;
 
-import com.cerner.jwala.common.domain.model.fault.AemFaultType;
+import com.cerner.jwala.common.domain.model.fault.FaultType;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.webserver.WebServer;
 import com.cerner.jwala.common.exception.BadRequestException;
@@ -22,7 +22,7 @@ public class WebServerIdRule implements Rule {
     @Override
     public void validate() throws BadRequestException {
         if (!isValid()) {
-            throw new BadRequestException(AemFaultType.WEBSERVER_NOT_SPECIFIED,
+            throw new BadRequestException(FaultType.WEBSERVER_NOT_SPECIFIED,
                                           "WebServer Id was not specified");
         }
     }

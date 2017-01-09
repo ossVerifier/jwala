@@ -12,8 +12,6 @@ import java.io.Serializable;
 
 public class CreateApplicationRequest implements Serializable, Request {
 
-    private static final long serialVersionUID = 1L;
-
     private String name;
     private String webAppContext;
     private Identifier<Group> groupId;

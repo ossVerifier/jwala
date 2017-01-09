@@ -1,6 +1,6 @@
 package com.cerner.jwala.service.webserver.impl;
 
-import com.cerner.jwala.common.domain.model.fault.AemFaultType;
+import com.cerner.jwala.common.domain.model.fault.FaultType;
 import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.resource.ResourceGroup;
@@ -12,10 +12,10 @@ import com.cerner.jwala.common.domain.model.webserver.WebServerReachableState;
 import com.cerner.jwala.common.exception.InternalErrorException;
 import com.cerner.jwala.common.request.webserver.CreateWebServerRequest;
 import com.cerner.jwala.common.request.webserver.UpdateWebServerRequest;
-import com.cerner.jwala.files.FileManager;
 import com.cerner.jwala.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
 import com.cerner.jwala.persistence.jpa.service.exception.ResourceTemplateUpdateException;
 import com.cerner.jwala.persistence.service.WebServerPersistenceService;
+import com.cerner.jwala.service.binarydistribution.BinaryDistributionLockManager;
 import com.cerner.jwala.service.resource.ResourceService;
 import com.cerner.jwala.service.resource.impl.ResourceGeneratorType;
 import com.cerner.jwala.service.state.InMemoryStateManagerService;
@@ -37,13 +37,10 @@ import java.util.List;
 public class WebServerServiceImpl implements WebServerService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(WebServerServiceImpl.class);
-    private static final String INSTALL_SERVICE_WSBAT_TEMPLATE_TPL_PATH = "/Install_ServiceWSBatTemplate.tpl";
+    private static final String INSTALL_SERVICE_WSBAT_TEMPLATE_TPL_PATH = "/install-service-http.bat.tpl";
+    public static final String INSTALL_SERVICE_SCRIPT_NAME = "install-service-http.bat";
 
     private final WebServerPersistenceService webServerPersistenceService;
-
-    private final FileManager fileManager;
-
-    private final String HTTPD_CONF = "httpd.conf";
 
     private final ResourceService resourceService;
 
@@ -51,23 +48,24 @@ public class WebServerServiceImpl implements WebServerService {
 
     private final String templatePath;
 
+    private final BinaryDistributionLockManager binaryDistributionLockManager;
+
     public WebServerServiceImpl(final WebServerPersistenceService webServerPersistenceService,
-                                final FileManager fileManager,
                                 final ResourceService resourceService,
                                 @Qualifier("webServerInMemoryStateManagerService")
                                 final InMemoryStateManagerService<Identifier<WebServer>, WebServerReachableState> inMemoryStateManagerService,
-                                final String templatePath) {
+                                final String templatePath,
+                                final BinaryDistributionLockManager binaryDistributionLockManager) {
         this.webServerPersistenceService = webServerPersistenceService;
-        this.fileManager = fileManager;
         this.inMemoryStateManagerService = inMemoryStateManagerService;
         this.templatePath = templatePath;
         this.resourceService = resourceService;
-
+        this.binaryDistributionLockManager = binaryDistributionLockManager;
         initInMemoryStateService();
     }
 
     private void initInMemoryStateService() {
-        for(WebServer webServer : webServerPersistenceService.getWebServers()){
+        for (WebServer webServer : webServerPersistenceService.getWebServers()) {
             inMemoryStateManagerService.put(webServer.getId(), webServer.getState());
         }
     }
@@ -184,29 +182,16 @@ public class WebServerServiceImpl implements WebServerService {
     }
 
     @Override
-    public String generateInstallServiceWSBat(WebServer webServer) {
+    public String generateInstallServiceScript(WebServer webServer) {
         try {
             // NOTE: install_serviceWS.bat is internal to Jwala that is why the template is not in Db.
-            return resourceService.generateResourceFile("install_serviceWS.bat", FileUtils.readFileToString(new File(templatePath + INSTALL_SERVICE_WSBAT_TEMPLATE_TPL_PATH)),
+            return resourceService.generateResourceFile(INSTALL_SERVICE_SCRIPT_NAME, FileUtils.readFileToString(new File(templatePath + INSTALL_SERVICE_WSBAT_TEMPLATE_TPL_PATH)),
                     resourceService.generateResourceGroup(), webServer, ResourceGeneratorType.TEMPLATE);
         } catch (final IOException ioe) {
-            throw new WebServerServiceException("Error generating install_serviceWS.bat!", ioe);
+            throw new WebServerServiceException("Error generating " + INSTALL_SERVICE_SCRIPT_NAME+ "!", ioe);
         }
     }
 
-    @Override
-    @Transactional(readOnly = true)
-    public String generateHttpdConfig(final String aWebServerName, ResourceGroup resourceGroup) {
-        final WebServer server = webServerPersistenceService.findWebServerByName(aWebServerName);
-
-        try {
-            String httpdConfText = webServerPersistenceService.getResourceTemplate(aWebServerName, HTTPD_CONF);
-            return resourceService.generateResourceFile(HTTPD_CONF, httpdConfText, resourceGroup, server, ResourceGeneratorType.TEMPLATE);
-        } catch (NonRetrievableResourceTemplateContentException nrtce) {
-            LOGGER.error("Failed to retrieve resource template from the database", nrtce);
-            throw new InternalErrorException(AemFaultType.TEMPLATE_NOT_FOUND, nrtce.getMessage());
-        }
-    }
 
     @Override
     @Transactional(readOnly = true)
@@ -214,7 +199,6 @@ public class WebServerServiceImpl implements WebServerService {
         return webServerPersistenceService.getResourceTemplateNames(webServerName);
     }
 
-    //TODO: remove ResourceGroup class, we can use resourceService.generateResourceGroup()
     @Override
     @Transactional(readOnly = true)
     public String getResourceTemplate(final String webServerName, final String resourceTemplateName,
@@ -246,7 +230,7 @@ public class WebServerServiceImpl implements WebServerService {
 
         } catch (IOException e) {
             LOGGER.error("Failed to map meta data when uploading web server config {} for {}", templateName, webServer, e);
-            throw new InternalErrorException(AemFaultType.BAD_STREAM, "Unable to map the meta data for template " + templateName, e);
+            throw new InternalErrorException(FaultType.BAD_STREAM, "Unable to map the meta data for template " + templateName, e);
         }
     }
 
@@ -286,4 +270,25 @@ public class WebServerServiceImpl implements WebServerService {
         return webServerPersistenceService.getWebServerStoppedCount(groupName);
     }
 
+    @Override
+    public WebServer generateAndDeployFile(String webServerName, String fileName, User user) {
+        WebServer webServer = getWebServer(webServerName);
+        binaryDistributionLockManager.writeLock(webServerName + "-" + webServer.getId().getId().toString());
+        try {
+            // check the web server state
+            if (isStarted(getWebServer(webServerName))) {
+                LOGGER.error("The target Web Server {} must be stopped before attempting to update the resource file", webServerName);
+                throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, "The target Web Server must be stopped before attempting to update the resource file");
+            }
+            ResourceIdentifier resourceIdentifier = new ResourceIdentifier.Builder()
+                    .setWebServerName(webServerName)
+                    .setResourceName(fileName)
+                    .build();
+            resourceService.validateSingleResourceForGeneration(resourceIdentifier);
+            resourceService.generateAndDeployFile(resourceIdentifier, webServerName, fileName, webServer.getHost());
+        } finally {
+            binaryDistributionLockManager.writeUnlock(webServerName + "-" + webServer.getId().getId().toString());
+        }
+        return webServer;
+    }
 }

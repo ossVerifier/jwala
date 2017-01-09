@@ -9,7 +9,7 @@ import static org.junit.Assert.*;
 /**
  * Unit tests for {@link ParamValidator}
  *
- * Created by JC043760 on 6/6/2016.
+ * Created by Jedd Cuison on 6/6/2016.
  */
 public class ParamValidatorTest {
 

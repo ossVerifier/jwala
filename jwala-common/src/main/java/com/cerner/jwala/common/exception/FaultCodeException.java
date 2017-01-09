@@ -2,7 +2,6 @@ package com.cerner.jwala.common.exception;
 
 public class FaultCodeException extends RuntimeException {
 
-    private static final long serialVersionUID = 1L;
     private final MessageResponseStatus messageResponseStatus;
 
     public FaultCodeException(final MessageResponseStatus theMessageResponseStatus,

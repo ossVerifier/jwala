@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Implementation of the {@link MessagingService} via JGroups
  *
- * Created by JC043760 on 8/15/2016
+ * Created by Jedd Cuison on 8/15/2016
  */
 public class JGroupsMessagingServiceImpl implements MessagingService<Message> {
 

@@ -12,13 +12,6 @@ import com.cerner.jwala.common.properties.ApplicationProperties;
 import com.cerner.jwala.control.command.RemoteCommandExecutor;
 import com.cerner.jwala.control.command.RemoteCommandExecutorImpl;
 import com.cerner.jwala.control.configuration.AemSshConfig;
-import com.cerner.jwala.files.FileManager;
-import com.cerner.jwala.files.FilesConfiguration;
-import com.cerner.jwala.files.JwalaPath;
-import com.cerner.jwala.files.RepositoryService;
-import com.cerner.jwala.files.impl.FileManagerImpl;
-import com.cerner.jwala.files.impl.LocalFileSystemRepositoryServiceImpl;
-import com.cerner.jwala.files.resources.ResourceTypeDeserializer;
 import com.cerner.jwala.persistence.jpa.service.ApplicationCrudService;
 import com.cerner.jwala.persistence.jpa.service.GroupCrudService;
 import com.cerner.jwala.persistence.jpa.service.GroupJvmRelationshipService;
@@ -54,7 +47,6 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.File;
-import java.nio.file.Path;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -122,7 +114,7 @@ public class ApplicationServiceImplIntegrationTest {
 
         @Bean
         public ApplicationCommandService getApplicationCommandService() {
-            final SshConfiguration sshConfiguration = new SshConfiguration("z003bpej", 22, "", "", "MrI6SA43vbcIws0pJygEDA==");
+            final SshConfiguration sshConfiguration = new SshConfiguration("JeddCuison", 22, "", "", "MrI6SA43vbcIws0pJygEDA==".toCharArray());
             JschBuilder jschBuilder = new JschBuilder();
             return new ApplicationCommandServiceImpl(sshConfiguration, jschBuilder);
         }
@@ -135,38 +127,6 @@ public class ApplicationServiceImplIntegrationTest {
         @Bean
         public ClientFactoryHelper getClientFactoryHelper() {
             return new ClientFactoryHelper();
-        }
-
-        @Bean
-        public FilesConfiguration getFilesConfiguration() {
-            return new FilesConfiguration() {
-                @Override
-                public Path getConfiguredPath(JwalaPath webArchive) {
-                    // Implement this when the need arises...
-                    return null;
-                }
-
-                @Override
-                public void reload() {
-                    // Implement this when the need arises...
-                }
-            };
-        }
-
-        @Bean
-        public RepositoryService getFileSystemStorage() {
-            return new LocalFileSystemRepositoryServiceImpl();
-        }
-
-        @Bean
-        public ResourceTypeDeserializer getResourceTypeDeserializer() {
-            // Implement this when the need arises...
-            return null;
-        }
-
-        @Bean
-        public FileManager getFileManager() {
-            return new FileManagerImpl();
         }
 
     }
@@ -186,9 +146,6 @@ public class ApplicationServiceImplIntegrationTest {
     private RemoteCommandExecutorImpl remoteCommandExecutorImpl;
     private BinaryDistributionService binaryDistributionService;
 
-    @Autowired
-    private FileManager fileManager;
-
     @Before
     public void setup() {
         System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, new File(".").getAbsolutePath() + "/src/test/resources");
@@ -202,10 +159,7 @@ public class ApplicationServiceImplIntegrationTest {
         applicationService = new ApplicationServiceImpl(
                 applicationPersistenceService,
                 jvmPersistenceService,
-                remoteCommandExecutor,
                 groupService,
-                null,
-                null,
                 mockResourceService,
                 remoteCommandExecutorImpl, binaryDistributionService, mockHistoryFacadeService);
     }

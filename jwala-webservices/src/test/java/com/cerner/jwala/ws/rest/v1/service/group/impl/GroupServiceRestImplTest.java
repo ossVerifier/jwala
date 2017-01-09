@@ -24,6 +24,8 @@ import com.cerner.jwala.common.request.group.UpdateGroupRequest;
 import com.cerner.jwala.exception.CommandFailureException;
 import com.cerner.jwala.persistence.jpa.service.exception.ResourceTemplateUpdateException;
 import com.cerner.jwala.persistence.service.GroupPersistenceService;
+import com.cerner.jwala.service.HistoryFacadeService;
+import com.cerner.jwala.service.HistoryService;
 import com.cerner.jwala.service.app.ApplicationService;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionService;
 import com.cerner.jwala.service.exception.GroupServiceException;
@@ -50,6 +52,7 @@ import com.cerner.jwala.ws.rest.v1.service.webserver.WebServerServiceRest;
 import com.cerner.jwala.ws.rest.v1.service.webserver.impl.JsonControlWebServer;
 import com.cerner.jwala.ws.rest.v1.service.webserver.impl.WebServerServiceRestImpl;
 import org.apache.openjpa.persistence.EntityExistsException;
+import org.apache.tika.mime.MediaType;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -111,6 +114,15 @@ public class GroupServiceRestImplTest {
     private GroupPersistenceService mockGroupPersistenceService;
 
     @Mock
+    private WebServerServiceRest mockWebServerServiceRest;
+
+    @Mock
+    private HistoryService mockHistoryService;
+
+    @Mock
+    private HistoryFacadeService mockHistoryFacadeService;
+
+    @Mock
     private Jvm mockJvm;
 
     private List<Jvm> jvms;
@@ -154,6 +166,9 @@ public class GroupServiceRestImplTest {
     @Mock
     private BinaryDistributionService mockBinaryDistributionService;
 
+    @Mock
+    private ApplicationServiceRest applicationServiceRest;
+
 
     private static List<Group> createGroupList() {
         final Group ws = new Group(Identifier.id(1L, Group.class), name);
@@ -196,11 +211,15 @@ public class GroupServiceRestImplTest {
         mockBinaryDistributionService = mock(BinaryDistributionService.class);
 
         groupServiceRest = new GroupServiceRestImpl(mockGroupService, mockResourceService, mockGroupControlService,
-                mockGroupJvmControlService, mockGroupWSControlService, mockJvmService, mockWebServerService, mockApplicationService);
+                mockGroupJvmControlService, mockGroupWSControlService, mockJvmService, mockWebServerService,
+                mockApplicationService, applicationServiceRest, mockWebServerServiceRest);
 
 
-        final WebServerServiceRest webServerServiceRest = new WebServerServiceRestImpl(mockWebServerService, mockWebServerControlService, mockWebServerCommandService, new HashMap<String, ReentrantReadWriteLock>(), mockResourceService, mockGroupService, mockBinaryDistributionService);
-        webServerServiceRest.afterPropertiesSet();
+        final WebServerServiceRest webServerServiceRest = new WebServerServiceRestImpl(mockWebServerService, mockWebServerControlService, mockWebServerCommandService, new HashMap<String, ReentrantReadWriteLock>(), mockResourceService, mockGroupService, mockBinaryDistributionService, mockHistoryFacadeService);
+
+        groupServiceRest = new GroupServiceRestImpl(mockGroupService, mockResourceService, mockGroupControlService,
+                mockGroupJvmControlService, mockGroupWSControlService, mockJvmService, mockWebServerService,
+                mockApplicationService, applicationServiceRest, webServerServiceRest);
     }
 
     @After
@@ -469,7 +488,7 @@ public class GroupServiceRestImplTest {
         final String rawMetaData = "{\"deployPath\":\"/some/test/path\",\"contentType\":\"text/plain\",\"deployFileName\":\"httpd.conf\"}";
         final String httpdConfTemplateContent = "fake httpd.conf content for testing";
         ResourceTemplateMetaData mockMetaData = mock(ResourceTemplateMetaData.class);
-        when(mockMetaData.getContentType()).thenReturn("text/plain");
+        when(mockMetaData.getContentType()).thenReturn(MediaType.TEXT_PLAIN);
         when(mockMetaData.getDeployFileName()).thenReturn("httpd.conf");
         when(mockMetaData.getDeployPath()).thenReturn("/some/test/path");
 
@@ -479,7 +498,6 @@ public class GroupServiceRestImplTest {
         when(mockGroupService.getGroup(anyString())).thenReturn(mockGroup);
         when(mockGroupService.getGroupWithWebServers(any(Identifier.class))).thenReturn(mockGroup);
         when(mockGroup.getWebServers()).thenReturn(wsSet);
-        when(mockWebServerService.updateResourceTemplate(anyString(), anyString(), anyString())).thenReturn(httpdConfTemplateContent);
         when(mockWebServerService.getResourceTemplateMetaData(anyString(), anyString())).thenReturn(rawMetaData);
         when(mockWebServerService.getResourceTemplate(anyString(), anyString(), anyBoolean(), any(ResourceGroup.class))).thenReturn(httpdConfTemplateContent);
         when(mockResourceService.updateResourceMetaData(any(ResourceIdentifier.class), anyString(), anyString())).thenReturn(rawMetaData);

@@ -7,7 +7,6 @@ import com.cerner.jwala.common.domain.model.resource.ResourceGroup;
 import com.cerner.jwala.common.domain.model.resource.ResourceIdentifier;
 import com.cerner.jwala.common.domain.model.resource.ResourceTemplateMetaData;
 import com.cerner.jwala.common.domain.model.user.User;
-import com.cerner.jwala.common.request.resource.ResourceInstanceRequest;
 import com.cerner.jwala.persistence.jpa.domain.resource.config.template.ConfigTemplate;
 import com.cerner.jwala.persistence.jpa.service.exception.ResourceTemplateMetaDataUpdateException;
 import com.cerner.jwala.service.group.GroupService;
@@ -56,8 +55,8 @@ import static org.mockito.Mockito.*;
 
 /**
  * Unit test for {@link ResourceServiceRestImpl}.
- * <p>
- * Created by z0033r5b on 9/29/2015.
+ * <p/>
+ * Created by Jeffery Mahmood on 9/29/2015.
  */
 @RunWith(MockitoJUnitRunner.class)
 public class ResourceServiceRestImplTest {
@@ -69,8 +68,7 @@ public class ResourceServiceRestImplTest {
     private GroupService groupService;
     @Mock
     private JvmService jvmService;
-    @Mock
-    private JsonResourceInstance jsonResourceInstance;
+
     private ResourceServiceRestImpl cut;
     private Group group;
 
@@ -79,7 +77,6 @@ public class ResourceServiceRestImplTest {
         group = new Group(new Identifier<Group>(1L), "theGroup");
         cut = new ResourceServiceRestImpl(impl);
         when(authenticatedUser.getUser()).thenReturn(new User("Unused"));
-        when(jsonResourceInstance.getCommand()).thenReturn(new ResourceInstanceRequest("resourceType", "resourceName", group.getName(), new HashMap<String, String>()));
     }
 
     @Test
@@ -156,13 +153,13 @@ public class ResourceServiceRestImplTest {
         final Attachment deployPathAttachment = mock(Attachment.class);
         when(deployPathAttachment.getDataHandler()).thenReturn(deployPathDataHandler);
 
-        // Content type
-        final DataHandler contentTypeDataHandler = mock(DataHandler.class);
-        when(contentTypeDataHandler.getName()).thenReturn("contentType");
-        when(contentTypeDataHandler.getInputStream()).thenReturn(IOUtils.toInputStream("text/plain"));
+        // assign to JVMs
+        final DataHandler assignToJvmsDataHandler = mock(DataHandler.class);
+        when(assignToJvmsDataHandler.getName()).thenReturn("assignToJvms");
+        when(assignToJvmsDataHandler.getInputStream()).thenReturn(IOUtils.toInputStream("true", Charset.defaultCharset()));
 
-        final Attachment contentTypeAttachment = mock(Attachment.class);
-        when(contentTypeAttachment.getDataHandler()).thenReturn(contentTypeDataHandler);
+        final Attachment assignToJvmsPathAttachment = mock(Attachment.class);
+        when(assignToJvmsPathAttachment.getDataHandler()).thenReturn(assignToJvmsDataHandler);
 
         // File attachment
         final DataHandler fileAttachmentDataHandler = mock(DataHandler.class);
@@ -176,7 +173,7 @@ public class ResourceServiceRestImplTest {
         final List<Attachment> attachmentList = new ArrayList<>();
         attachmentList.add(fileAttachment);
         attachmentList.add(deployPathAttachment);
-        attachmentList.add(contentTypeAttachment);
+        attachmentList.add(assignToJvmsPathAttachment);
 
         final Response response = cut.createResource("httpd.conf", createResourceParam, attachmentList);
         assertEquals("0", ((ApplicationResponse) response.getEntity()).getMsgCode());
@@ -221,18 +218,18 @@ public class ResourceServiceRestImplTest {
         // Deploy path
         final DataHandler deployPathDataHandler = mock(DataHandler.class);
         when(deployPathDataHandler.getName()).thenReturn("deployPath");
-        when(deployPathDataHandler.getInputStream()).thenReturn(IOUtils.toInputStream("c:/tmp"));
+        when(deployPathDataHandler.getInputStream()).thenReturn(IOUtils.toInputStream("c:/tmp", Charset.defaultCharset()));
 
         final Attachment deployPathAttachment = mock(Attachment.class);
         when(deployPathAttachment.getDataHandler()).thenReturn(deployPathDataHandler);
 
-        // Content type
-        final DataHandler contentTypeDataHandler = mock(DataHandler.class);
-        when(contentTypeDataHandler.getName()).thenReturn("contentType");
-        when(contentTypeDataHandler.getInputStream()).thenReturn(IOUtils.toInputStream("text/plain"));
+        // assign to JVMs
+        final DataHandler assignToJvmsDataHandler = mock(DataHandler.class);
+        when(assignToJvmsDataHandler.getName()).thenReturn("assignToJvms");
+        when(assignToJvmsDataHandler.getInputStream()).thenReturn(IOUtils.toInputStream("true", Charset.defaultCharset()));
 
-        final Attachment contentTypeAttachment = mock(Attachment.class);
-        when(contentTypeAttachment.getDataHandler()).thenReturn(contentTypeDataHandler);
+        final Attachment assignToJvmsPathAttachment = mock(Attachment.class);
+        when(assignToJvmsPathAttachment.getDataHandler()).thenReturn(assignToJvmsDataHandler);
 
         // File attachment
         final DataHandler fileAttachmentDataHandler = mock(DataHandler.class);
@@ -246,7 +243,7 @@ public class ResourceServiceRestImplTest {
         final List<Attachment> attachmentList = new ArrayList<>();
         attachmentList.add(fileAttachment);
         attachmentList.add(deployPathAttachment);
-        attachmentList.add(contentTypeAttachment);
+        attachmentList.add(assignToJvmsPathAttachment);
 
         when(impl.getMetaData(anyString())).thenThrow(new IOException());
 
@@ -444,19 +441,6 @@ public class ResourceServiceRestImplTest {
         ApplicationResponse entity = (ApplicationResponse) result.getEntity();
         int recCount = (int) entity.getApplicationResponseContent();
         Assert.assertEquals(1, recCount);
-    }
-
-    @Test
-    public void testExternalPropertiesSetAfterInitialization() throws Exception {
-        final List<String> names = new ArrayList<>();
-        names.add("external.properties");
-        when(impl.getResourceNames(any(ResourceIdentifier.class))).thenReturn(names);
-        when(impl.getResourceContent(any(ResourceIdentifier.class))).thenReturn(new ResourceContent("{}", "key=value"));
-
-        cut.afterPropertiesSet();
-
-        verify(impl).getResourceNames(any(ResourceIdentifier.class));
-        verify(impl).getResourceContent(any(ResourceIdentifier.class));
     }
 
     @Test

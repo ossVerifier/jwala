@@ -5,7 +5,7 @@ import com.cerner.jwala.persistence.jpa.domain.resource.config.template.ConfigTe
 /**
  * A response object wrapper the object being the meta data of a successfully created resource template.
  *
- * Created by JC043760 on 4/13/2016.
+ * Created by Jedd Cuison on 4/13/2016.
  */
 public class CreateResourceResponseWrapper {
 

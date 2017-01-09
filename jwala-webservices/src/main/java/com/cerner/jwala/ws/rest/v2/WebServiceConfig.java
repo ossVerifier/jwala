@@ -18,7 +18,7 @@ import java.util.List;
 /**
  * Web Service Spring Configuration
  *
- * Created by JC043760 on 8/10/2016
+ * Created by Jedd Cuison on 8/10/2016
  */
 @Configuration
 public class WebServiceConfig {

@@ -13,7 +13,6 @@ import com.cerner.jwala.common.exec.CommandOutput;
 import com.cerner.jwala.common.exec.ExecReturnCode;
 import com.cerner.jwala.common.exec.RemoteExecCommand;
 import com.cerner.jwala.common.properties.ApplicationProperties;
-import com.cerner.jwala.common.request.state.SetStateRequest;
 import com.cerner.jwala.common.request.webserver.ControlWebServerRequest;
 import com.cerner.jwala.control.command.PlatformCommandProvider;
 import com.cerner.jwala.control.command.RemoteCommandExecutor;
@@ -21,14 +20,11 @@ import com.cerner.jwala.control.webserver.command.impl.WindowsWebServerPlatformC
 import com.cerner.jwala.exception.CommandFailureException;
 import com.cerner.jwala.persistence.jpa.type.EventType;
 import com.cerner.jwala.service.*;
-import com.cerner.jwala.service.HistoryFacadeService;
 import com.cerner.jwala.service.webserver.WebServerService;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.http.HttpStatus;
@@ -37,9 +33,7 @@ import org.springframework.http.client.ClientHttpResponse;
 import java.io.File;
 import java.util.HashSet;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 
@@ -53,9 +47,6 @@ public class WebServerControlServiceImplVerifyTest extends VerificationBehaviorS
 
     @Mock
     private RemoteCommandExecutor<WebServerControlOperation> commandExecutor;
-
-    @Captor
-    private ArgumentCaptor<SetStateRequest<WebServer, WebServerReachableState>> setStateCommandCaptor;
 
     @Mock
     private MessagingService mockMessagingService;
@@ -166,7 +157,7 @@ public class WebServerControlServiceImplVerifyTest extends VerificationBehaviorS
         when(commandExecutor.executeRemoteCommand(anyString(), anyString(), eq(WebServerControlOperation.BACK_UP), any(PlatformCommandProvider.class), anyString(), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(0), "Back up succeeded", ""));
         when(commandExecutor.executeRemoteCommand(anyString(), anyString(), eq(WebServerControlOperation.CREATE_DIRECTORY), any(PlatformCommandProvider.class), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(0), "Directory Created", ""));
         webServerControlService.secureCopyFile("testWebServer", "./source", "./dest", "user-id");
-        verify(commandExecutor).executeRemoteCommand(anyString(), anyString(), eq(WebServerControlOperation.SECURE_COPY), any(WindowsWebServerPlatformCommandProvider.class), anyString(), anyString());
+        verify(commandExecutor).executeRemoteCommand(anyString(), anyString(), eq(WebServerControlOperation.SCP), any(WindowsWebServerPlatformCommandProvider.class), anyString(), anyString());
     }
 
     @Test (expected = InternalErrorException.class)

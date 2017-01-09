@@ -3,6 +3,10 @@ package com.cerner.jwala.service.binarydistribution;
 import com.cerner.jwala.common.exec.CommandOutput;
 import com.cerner.jwala.exception.CommandFailureException;
 
+/**
+ * Created by Arvindo Kinny on 10/11/2016.
+ */
+
 public interface BinaryDistributionControlService {
     CommandOutput secureCopyFile(final String hostname, final String source, final String destination) throws CommandFailureException;
 

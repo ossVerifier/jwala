@@ -15,7 +15,7 @@ import java.util.List;
 /**
  * Implements {@link ResourceDao}
  *
- * Created by JC043760 on 6/3/2016.
+ * Created by Jedd Cuison on 6/3/2016.
  */
 public class ResourceDaoImpl implements ResourceDao {
 

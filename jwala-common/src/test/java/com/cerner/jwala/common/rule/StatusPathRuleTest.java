@@ -9,7 +9,7 @@ import com.cerner.jwala.common.rule.StatusPathRule;
 import static org.junit.Assert.*;
 
 /**
- * Created by Z003BPEJ on 12/8/14.
+ * Created by Jedd Cuison on 12/8/14.
  *
  * Tests for {@link com.cerner.jwala.common.rule.StatusPathRule}
  */

@@ -7,7 +7,7 @@ import javax.persistence.*;
 /**
  * POJO that describes a db table that holds data about JVM related resource configuration templates.
  * <p/>
- * Created by z0033r5b on 8/18/2015.
+ * Created by Jeffery Mahmood on 8/18/2015.
  */
 @Entity
 @Table(name = "JVM_CONFIG_TEMPLATE", uniqueConstraints = {@UniqueConstraint(columnNames = {"JVM_ID", "TEMPLATE_NAME"})})

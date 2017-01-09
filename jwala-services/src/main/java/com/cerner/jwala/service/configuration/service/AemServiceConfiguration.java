@@ -17,8 +17,7 @@ import com.cerner.jwala.common.properties.ApplicationProperties;
 import com.cerner.jwala.control.command.RemoteCommandExecutor;
 import com.cerner.jwala.control.configuration.AemCommandExecutorConfig;
 import com.cerner.jwala.control.configuration.AemSshConfig;
-import com.cerner.jwala.files.FileManager;
-import com.cerner.jwala.files.WebArchiveManager;
+import com.cerner.jwala.common.FileUtility;
 import com.cerner.jwala.persistence.configuration.AemPersistenceServiceConfiguration;
 import com.cerner.jwala.persistence.jpa.service.*;
 import com.cerner.jwala.persistence.jpa.service.impl.GroupJvmRelationshipServiceImpl;
@@ -34,10 +33,8 @@ import com.cerner.jwala.service.MessagingService;
 import com.cerner.jwala.service.RemoteCommandExecutorService;
 import com.cerner.jwala.service.app.ApplicationCommandService;
 import com.cerner.jwala.service.app.ApplicationService;
-import com.cerner.jwala.service.app.PrivateApplicationService;
 import com.cerner.jwala.service.app.impl.ApplicationCommandServiceImpl;
 import com.cerner.jwala.service.app.impl.ApplicationServiceImpl;
-import com.cerner.jwala.service.app.impl.PrivateApplicationServiceImpl;
 import com.cerner.jwala.service.balancermanager.BalancerManagerService;
 import com.cerner.jwala.service.balancermanager.impl.BalancerManagerHtmlParser;
 import com.cerner.jwala.service.balancermanager.impl.BalancerManagerHttpClient;
@@ -63,6 +60,7 @@ import com.cerner.jwala.service.jvm.impl.JvmControlServiceImpl;
 import com.cerner.jwala.service.jvm.impl.JvmServiceImpl;
 import com.cerner.jwala.service.jvm.state.JvmStateReceiverAdapter;
 import com.cerner.jwala.service.resource.ResourceContentGeneratorService;
+import com.cerner.jwala.service.resource.ResourceRepositoryService;
 import com.cerner.jwala.service.resource.ResourceService;
 import com.cerner.jwala.service.resource.impl.ResourceServiceImpl;
 import com.cerner.jwala.service.resource.impl.handler.WebServerResourceHandler;
@@ -83,6 +81,7 @@ import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import org.apache.commons.pool2.impl.GenericKeyedObjectPool;
 import org.apache.commons.pool2.impl.GenericKeyedObjectPoolConfig;
+import org.apache.tika.Tika;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -91,7 +90,6 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
-import org.springframework.core.env.Environment;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
@@ -101,7 +99,6 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
-import javax.annotation.Resource;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -121,7 +118,9 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
         "com.cerner.jwala.commandprocessor.jsch.impl.spring.component",
         "com.cerner.jwala.service.group.impl.spring.component",
         "com.cerner.jwala.service.jvm.impl.spring.component",
-        "com.cerner.jwala.service.impl.spring.component"})
+        "com.cerner.jwala.service.impl.spring.component",
+        "com.cerner.jwala.service.resource.impl",
+        "com.cerner.jwala.common"})
 public class AemServiceConfiguration {
 
     @Autowired
@@ -129,9 +128,6 @@ public class AemServiceConfiguration {
 
     @Autowired
     private AemCommandExecutorConfig aemCommandExecutorConfig;
-
-    @Autowired
-    private FileManager fileManager;
 
     @Autowired
     private CommandExecutor commandExecutor;
@@ -149,9 +145,6 @@ public class AemServiceConfiguration {
     private GroupStateNotificationService groupStateNotificationService;
 
     private final Map webServerFutureMap = new HashMap();
-
-    @Resource
-    private Environment env;
 
     @Autowired
     private BinaryDistributionService binaryDistributionService;
@@ -183,8 +176,8 @@ public class AemServiceConfiguration {
                                     persistenceServiceConfiguration.getApplicationPersistenceService(),
                                     aemCommandExecutorConfig.getRemoteCommandExecutor(),
                                     binaryDistributionService,
-                                    resourceService,
-                historyFacadeService);
+                                    resourceService
+        );
     }
 
     @Bean(name = "jvmService")
@@ -192,12 +185,13 @@ public class AemServiceConfiguration {
                                     final ApplicationService applicationService,
                                     final ResourceService resourceService, final ClientFactoryHelper clientFactoryHelper,
                                     @Value("${spring.messaging.topic.serverStates:/topic/server-states}") final String topicServerStates,
-                                    final JvmControlService jvmControlService, final HistoryFacadeService historyFacadeService) {
+                                    final JvmControlService jvmControlService, final HistoryFacadeService historyFacadeService,
+                                    final FileUtility fileUtility) {
         final JvmPersistenceService jvmPersistenceService = persistenceServiceConfiguration.getJvmPersistenceService();
         return new JvmServiceImpl(jvmPersistenceService, groupService, applicationService,
-                fileManager, messagingTemplate, groupStateNotificationService, resourceService,
+                messagingTemplate, groupStateNotificationService, resourceService,
                 clientFactoryHelper, topicServerStates, jvmControlService, binaryDistributionService, binaryDistributionLockManager,
-                historyFacadeService);
+                historyFacadeService, fileUtility);
     }
 
     @Bean(name = "binaryDistributionLockManager")
@@ -224,10 +218,10 @@ public class AemServiceConfiguration {
                                                 @Value("${paths.resource-templates:../data/templates}") final String templatePath) {
         return new WebServerServiceImpl(
                 persistenceServiceConfiguration.getWebServerPersistenceService(),
-                fileManager,
                 resourceService,
                 inMemoryStateManagerService,
-                templatePath);
+                templatePath,
+                binaryDistributionLockManager);
     }
 
     @Bean
@@ -248,13 +242,8 @@ public class AemServiceConfiguration {
                                                     final HistoryCrudService historyCrudService, final MessagingService messagingService,
                                                     final ResourceService resourceService, final HistoryFacadeService historyFacadeService) {
         return new ApplicationServiceImpl(persistenceServiceConfiguration.getApplicationPersistenceService(),
-                jvmPersistenceService, aemCommandExecutorConfig.getRemoteCommandExecutor(), groupService, null, null,
+                jvmPersistenceService, groupService,
                 resourceService, aemCommandExecutorConfig.getRemoteCommandExecutor(), binaryDistributionService, historyFacadeService);
-    }
-
-    @Bean
-    public PrivateApplicationService getPrivateApplicationService() {
-        return new PrivateApplicationServiceImpl(/** Relying on autowire */);
     }
 
     @Bean(name = "jvmControlService")
@@ -304,10 +293,7 @@ public class AemServiceConfiguration {
 
         return new WebServerCommandServiceImpl(
                 webServerService,
-                commandExecutor,
-                jschBuilder,
                 sshConfig,
-                channelPool,
                 remoteCommandExecutorService);
     }
 
@@ -321,14 +307,14 @@ public class AemServiceConfiguration {
                                               final JvmPersistenceService jvmPersistenceService,
                                               final WebServerPersistenceService webServerPersistenceService,
                                               final ResourceDao resourceDao,
-                                              final WebArchiveManager webArchiveManager,
                                               final WebServerResourceHandler webServerResourceHandler,
-                                              final ResourceContentGeneratorService resourceContentGeneratorService) {
+                                              final ResourceContentGeneratorService resourceContentGeneratorService,
+                                              final ResourceRepositoryService resourceRepositoryService) {
         return new ResourceServiceImpl(persistenceServiceConfiguration.getResourcePersistenceService(),
                 persistenceServiceConfiguration.getGroupPersistenceService(), applicationPersistenceService,
-                jvmPersistenceService, webServerPersistenceService, getPrivateApplicationService(), resourceDao,
-                webArchiveManager, webServerResourceHandler, aemCommandExecutorConfig.getRemoteCommandExecutor(), binaryWriteLockMap,
-                resourceContentGeneratorService);
+                jvmPersistenceService, webServerPersistenceService, resourceDao, webServerResourceHandler,
+                aemCommandExecutorConfig.getRemoteCommandExecutor(), binaryWriteLockMap,
+                resourceContentGeneratorService, binaryDistributionService, new Tika(), resourceRepositoryService);
     }
 
     @Bean

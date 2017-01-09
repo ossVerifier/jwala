@@ -8,8 +8,6 @@ import java.io.Serializable;
 
 public class CommandOutput implements Serializable {
 
-    private static final long serialVersionUID = 1L;
-
     private final ExecReturnCode returnCode;
     private String standardOutput;
     private final String standardError;

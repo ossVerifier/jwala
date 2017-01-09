@@ -1,6 +1,6 @@
 package com.cerner.jwala.ws.rest.v1.service.jvm.impl;
 
-import com.cerner.jwala.common.domain.model.fault.AemFaultType;
+import com.cerner.jwala.common.domain.model.fault.FaultType;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
 import com.cerner.jwala.common.domain.model.user.User;
@@ -16,7 +16,6 @@ import com.cerner.jwala.service.resource.ResourceService;
 import com.cerner.jwala.ws.rest.v1.provider.AuthenticatedUser;
 import com.cerner.jwala.ws.rest.v1.response.ResponseBuilder;
 import com.cerner.jwala.ws.rest.v1.service.jvm.JvmServiceRest;
-import org.apache.commons.io.FileUtils;
 import org.apache.cxf.jaxrs.ext.MessageContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,8 +23,6 @@ import org.slf4j.LoggerFactory;
 import javax.persistence.EntityExistsException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -77,7 +74,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
             return ResponseBuilder.created(jvm);
         } catch (EntityExistsException eee) {
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
-                    AemFaultType.DUPLICATE_JVM_NAME, eee.getMessage(), eee));
+                    FaultType.DUPLICATE_JVM_NAME, eee.getMessage(), eee));
         }
     }
 
@@ -88,7 +85,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
             return ResponseBuilder.ok(jvmService.updateJvm(aJvmToUpdate.toUpdateJvmRequest(), aUser.getUser()));
         } catch (EntityExistsException eee) {
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
-                    AemFaultType.DUPLICATE_JVM_NAME, eee.getMessage(), eee));
+                    FaultType.DUPLICATE_JVM_NAME, eee.getMessage(), eee));
         }
     }
 
@@ -114,7 +111,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
             } catch (final InterruptedException | JvmControlServiceException e) {
                 LOGGER.error("Control a JVM synchronously has failed!", e);
                 return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR,
-                        new FaultCodeException(AemFaultType.SERVICE_EXCEPTION, e.getMessage()));
+                        new FaultCodeException(FaultType.SERVICE_EXCEPTION, e.getMessage()));
             }
         } else {
             commandOutput = jvmControlService.controlJvm(controlJvmRequest, aUser.getUser());
@@ -127,7 +124,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
             final String standardOutput = commandOutput.getStandardOutput();
             String errMessage = standardError != null && !standardError.isEmpty() ? standardError : standardOutput;
             LOGGER.error("Control JVM unsuccessful: " + errMessage);
-            throw new InternalErrorException(AemFaultType.CONTROL_OPERATION_UNSUCCESSFUL, CommandOutputReturnCode.fromReturnCode(commandOutput.getReturnCode().getReturnCode()).getDesc());
+            throw new InternalErrorException(FaultType.CONTROL_OPERATION_UNSUCCESSFUL, CommandOutputReturnCode.fromReturnCode(commandOutput.getReturnCode().getReturnCode()).getDesc());
         }
     }
 
@@ -146,14 +143,6 @@ public class JvmServiceRestImpl implements JvmServiceRest {
     public Response generateAndDeployFile(final String jvmName, final String fileName, AuthenticatedUser user) {
         LOGGER.info("Generate and deploy file {} to JVM {} by user {}", fileName, jvmName, user.getUser().getId());
         return ResponseBuilder.ok(jvmService.generateAndDeployFile(jvmName, fileName, user.getUser()));
-    }
-
-    protected void createConfigFile(String path, String configFileName, String templateContent) throws IOException {
-        File configFile = new File(path + configFileName);
-        if (configFileName.endsWith(".bat")) {
-            templateContent = templateContent.replaceAll("\n", "\r\n");
-        }
-        FileUtils.writeStringToFile(configFile, templateContent);
     }
 
     @Override
@@ -188,7 +177,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
             return ResponseBuilder.ok(someContent);
         } else {
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
-                    AemFaultType.PERSISTENCE_ERROR, "Failed to update the template " + resourceTemplateName + " for " + jvmName + ". See the log for more details."));
+                    FaultType.PERSISTENCE_ERROR, "Failed to update the template " + resourceTemplateName + " for " + jvmName + ". See the log for more details."));
         }
     }
 
@@ -200,7 +189,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
         } catch (RuntimeException rte) {
             LOGGER.debug("Error previewing resource.", rte);
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
-                    AemFaultType.INVALID_TEMPLATE, rte.getMessage()));
+                    FaultType.INVALID_TEMPLATE, rte.getMessage()));
         }
     }
 

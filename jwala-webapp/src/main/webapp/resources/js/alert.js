@@ -7,7 +7,7 @@ $.extend({ alert: function (message, aTitle, aModal) {
     close: function (event, ui) { $(this).remove(); },
     resizable: true,
     title: aTitle === undefined ? "Message" : aTitle,
-    modal: aModal === undefined ? true : false
+    modal: aModal === undefined ? true : aModal
   }).text(message);
 }
 });

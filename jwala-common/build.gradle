@@ -1,3 +1,4 @@
+description "Common module used by other for jwala modules"
 apply plugin: 'groovy'
 
 ext {
@@ -33,8 +34,11 @@ dependencies {
 	
     compile group: "joda-time", name: "joda-time", version: "$project.versions.jodaTime"
 
+
 	compile group: "org.apache.commons", name: "commons-pool2", version: "$localVersions.commonsPool"
 	compile group: "com.jcraft", name: "jsch", version: "$localVersions.jsch"
+
+	compile group: "org.apache.tika", name: "tika-parsers", version: "$project.versions.tika"
 
 	testCompile group: "org.mockito", name: "mockito-core", version: "$project.versions.mockito"
 	testCompile group: 'org.objenesis', name: 'objenesis', version: "$project.versions.objenesis"
@@ -56,3 +60,4 @@ dependencies {
 /*test {
 	workingDir(rootProject.projectDir)
 }*/
+

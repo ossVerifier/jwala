@@ -13,7 +13,7 @@ import com.jcraft.jsch.JSchException;
 /**
  * An implementation of ApplicationCommandService.
  * <p/>
- * Created by z003bpej on 9/9/2015.
+ * Created by Jedd Cuison on 9/9/2015.
  */
 public class ApplicationCommandServiceImpl implements ApplicationCommandService {
 
@@ -29,7 +29,7 @@ public class ApplicationCommandServiceImpl implements ApplicationCommandService 
     public CommandOutput controlApplication(ControlApplicationRequest applicationRequest, Application app, String... params) throws CommandFailureException {
         RemoteSystemConnection remoteConnection = new RemoteSystemConnection(
                 sshConfig.getUserName(),
-                sshConfig.getPassword(),
+                sshConfig.getEncryptedPassword(),
                 params[0],
                 sshConfig.getPort());
         ExecCommand execCommand = new ExecCommand("secure-copy", params[1], params[2]);

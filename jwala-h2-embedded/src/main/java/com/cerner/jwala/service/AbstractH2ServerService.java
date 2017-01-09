@@ -10,7 +10,7 @@ import java.util.logging.Logger;
 /**
  * A partial contract for H2 database server functionality
  *
- * Created by JC043760 on 8/30/2016
+ * Created by Jedd Cuison on 8/30/2016
  */
 public abstract class AbstractH2ServerService {
 
@@ -20,7 +20,17 @@ public abstract class AbstractH2ServerService {
 
     private Logger logger = Logger.getLogger(this.getClass().getName());
 
+    /**
+     * Constructs the h2 server service
+     * @param serverParams the h2 server parameter e.g. -tcpPort,9094,-tcpAllowOthers,-baseDir,${catalina.home}\\data\\db
+     *                     Please note that a comma is needed as a delimiter for individual parameters
+     */
     public AbstractH2ServerService(final String serverParams) {
+        // Remove extra spaces since h2's createTcpServer and createWebServer compares parameters as is e.g.
+        // " -tcpAllowOther" is not equal to "-tcpAllowOther"
+        // for example if input for the tcp server is "-tcpPort,9094, -tcpAllowOthers,-baseDir,${catalina.home}\\data\\db"
+        // one will get the following error -> Feature not supported: " -tcpAllowOthers" due to a space in between the
+        // comma and "-"
         this.serverParams = serverParams.replaceAll(" ", "").split(",");
     }
 

@@ -16,7 +16,7 @@ import java.util.List;
 /**
  * {@link HistoryCrudService} implementation.
  *
- * Created by JC043760 on 11/30/2015.
+ * Created by Jedd Cuison on 11/30/2015.
  */
 public class HistoryCrudServiceImpl extends AbstractCrudServiceImpl<JpaHistory> implements HistoryCrudService {
 

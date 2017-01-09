@@ -1,6 +1,6 @@
 package com.cerner.jwala.common.request.jvm;
 
-import com.cerner.jwala.common.domain.model.fault.AemFaultType;
+import com.cerner.jwala.common.domain.model.fault.FaultType;
 import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
@@ -20,8 +20,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class UpdateJvmRequest implements Serializable, Request {
-
-    private static final long serialVersionUID = 1L;
 
     private final Identifier<Jvm> id;
     private final String newJvmName;
@@ -124,11 +122,11 @@ public class UpdateJvmRequest implements Serializable, Request {
                           new StatusPathRule(newStatusPath),
                           new JvmIdRule(id),
                           new GroupIdsRule(groupIds),
-                          new PortNumberRule(newHttpPort, AemFaultType.INVALID_JVM_HTTP_PORT),
-                          new PortNumberRule(newHttpsPort, AemFaultType.INVALID_JVM_HTTPS_PORT, true),
-                          new PortNumberRule(newRedirectPort, AemFaultType.INVALID_JVM_REDIRECT_PORT),
-                          new ShutdownPortNumberRule(newShutdownPort, AemFaultType.INVALID_JVM_SHUTDOWN_PORT),
-                          new PortNumberRule(newAjpPort, AemFaultType.INVALID_JVM_AJP_PORT)).validate();
+                          new PortNumberRule(newHttpPort, FaultType.INVALID_JVM_HTTP_PORT),
+                          new PortNumberRule(newHttpsPort, FaultType.INVALID_JVM_HTTPS_PORT, true),
+                          new PortNumberRule(newRedirectPort, FaultType.INVALID_JVM_REDIRECT_PORT),
+                          new ShutdownPortNumberRule(newShutdownPort, FaultType.INVALID_JVM_SHUTDOWN_PORT),
+                          new PortNumberRule(newAjpPort, FaultType.INVALID_JVM_AJP_PORT)).validate();
     }
 
     @Override

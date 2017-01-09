@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -13,12 +14,13 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import com.cerner.jwala.common.properties.ApplicationProperties;
 
 /**
- * @author AK048646
+ * @author Arvindo Kinny
  *
  */
 @Configuration
 @ComponentScan("com.cerner.jwala.web.security")
 @EnableWebSecurity
+
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Autowired
@@ -33,10 +35,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     }
 
     private static Logger LOGGER = Logger.getLogger(SecurityConfig.class);
-    private static final String ACTIVE_DIRECTORY_DOMAIN = "active.directory.fqdn";
-    private static final String ACTIVE_DIRECTORY_SERVER_NAME = "active.directory.server.name";
-    private static final String ACTIVE_DIRECTORY_SERVER_PORT = "active.directory.server.port";
-    private static final String ACTIVE_DIRECTORY_PROTOCOL = "active.directory.server.protocol";
     private static final String JWALA_AUTH_ENABLED = "jwala.authorization";
 
     private static final String LOGIN_PAGE = "/login";

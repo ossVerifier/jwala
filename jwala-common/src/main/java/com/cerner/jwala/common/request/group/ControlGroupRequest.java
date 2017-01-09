@@ -13,8 +13,6 @@ import java.io.Serializable;
 
 public class ControlGroupRequest implements Serializable, GroupRequest {
 
-    private static final long serialVersionUID = 1L;
-
     private final Identifier<Group> groupId;
     private final GroupControlOperation controlOperation;
 
@@ -37,11 +35,6 @@ public class ControlGroupRequest implements Serializable, GroupRequest {
     public void validate() {
         // can only partially validate without state
         new GroupIdRule(groupId).validate();
-    }
-
-    @Override
-    public String getExternalOperationName() {
-        return controlOperation.getExternalValue();
     }
 
     @Override

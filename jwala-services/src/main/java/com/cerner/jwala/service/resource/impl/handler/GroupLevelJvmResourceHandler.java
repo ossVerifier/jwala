@@ -20,11 +20,10 @@ import java.util.Set;
 /**
  * Handler for a group level JVM resource identified by a "resource identifier" {@link ResourceIdentifier}
  *
- * Created by JC043760 on 7/21/2016
+ * Created by Jedd Cuison on 7/21/2016
  */
 public class GroupLevelJvmResourceHandler extends ResourceHandler {
 
-    private static final String MSG_ERR_CONVERTING_DATA_INPUTSTREAM_TO_STR = "Error converting data input stream to string!";
     private final GroupPersistenceService groupPersistenceService;
     private final JvmPersistenceService jvmPersistenceService;
 

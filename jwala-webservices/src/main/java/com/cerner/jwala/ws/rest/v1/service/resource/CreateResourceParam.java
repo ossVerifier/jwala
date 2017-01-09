@@ -3,7 +3,7 @@ package com.cerner.jwala.ws.rest.v1.service.resource;
 /**
  * Wrapper that contains parameters for create resource REST service.
  *
- * Created by JC043760 on 6/6/2016.
+ * Created by Jedd Cuison on 6/6/2016.
  */
 public class CreateResourceParam {
 

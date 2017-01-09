@@ -3,7 +3,7 @@ package com.cerner.jwala.common.request.jvm;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
 
 /**
- * Created by z0033r5b on 9/15/2015.
+ * Created by Jeffery Mahmood on 9/15/2015.
  */
 public class UploadJvmConfigTemplateRequest extends UploadJvmTemplateRequest {
     private String confFileName;

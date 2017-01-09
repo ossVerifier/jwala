@@ -145,9 +145,14 @@
     margin-bottom: 2px;
 }
 
-.MetaDataEntryForm input {
+.MetaDataEntryForm input[type=text] {
     display: block;
     width: 320px;
+}
+
+.MetaDataEntryForm input[type=checkbox] {
+    margin-top: 10px;
+    margin-bottom: 5px;
 }
 
 .MetaDataEntryForm select {

@@ -9,8 +9,6 @@ import java.io.Serializable;
 
 public class Identifier<T> implements Serializable {
 
-    private static final long serialVersionUID = 1L;
-
     private final Long id;
 
     public Identifier(final String id) {
@@ -18,7 +16,6 @@ public class Identifier<T> implements Serializable {
     }
 
     public Identifier(final Long id) {
-        // TODO Throw new IllegalArgumentException if null?
         this.id = id;
     }
 

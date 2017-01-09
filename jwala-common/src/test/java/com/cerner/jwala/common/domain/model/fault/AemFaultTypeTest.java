@@ -2,12 +2,7 @@ package com.cerner.jwala.common.domain.model.fault;
 
 import org.junit.Test;
 
-import com.cerner.jwala.common.domain.model.fault.AemFaultType;
-
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 import static org.junit.Assert.assertEquals;
 
@@ -17,10 +12,10 @@ public class AemFaultTypeTest {
     public void testUniquenessOfMessageCodes() {
 
         final Set<String> messageCodes = new HashSet<>();
-        final Set<AemFaultType> duplicates = EnumSet.noneOf(AemFaultType.class);
+        final Set<FaultType> duplicates = EnumSet.noneOf(FaultType.class);
 
-        for (final AemFaultType faultType : AemFaultType.values()) {
-            final String messageCode = faultType.getMessageCode().toLowerCase();
+        for (final FaultType faultType : FaultType.values()) {
+            final String messageCode = faultType.getMessageCode().toLowerCase(Locale.US);
             if (messageCodes.contains(messageCode)) {
                 duplicates.add(faultType);
             } else {

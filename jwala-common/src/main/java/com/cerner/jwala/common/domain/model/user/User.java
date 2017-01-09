@@ -18,8 +18,6 @@ public class User implements Serializable {
         return new User("systemUser");
     }
 
-    private static final long serialVersionUID = 1L;
-
     private final String id;
 
     public User(final String theId) {
@@ -32,7 +30,6 @@ public class User implements Serializable {
 
     public void addToThread() {
         User.USER_THREAD_LOCAL.set(this);
-        LOGGER.debug("Added user {} to ThreadLocal", this);
     }
 
     public static User getThreadLocalUser() {
@@ -41,7 +38,6 @@ public class User implements Serializable {
 
     public void invalidate() {
         User.USER_THREAD_LOCAL.set(null);
-        LOGGER.debug("Removed user {} from ThreadLocal", this);
     }
 
     @Override

@@ -3,7 +3,7 @@ package com.cerner.jwala.commandprocessor.jsch.impl;
 /**
  * JSCH Chanel Type enum.
  *
- * Created by JC043760 on 2/25/2016.
+ * Created by Jedd Cuison on 2/25/2016.
  */
 public enum ChannelType {
     SHELL("shell"), EXEC("exec");

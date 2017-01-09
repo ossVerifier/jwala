@@ -17,11 +17,8 @@ import com.cerner.jwala.common.properties.ApplicationProperties;
 import com.cerner.jwala.common.request.webserver.CreateWebServerRequest;
 import com.cerner.jwala.common.request.webserver.UpdateWebServerRequest;
 import com.cerner.jwala.common.request.webserver.UploadWebServerTemplateRequest;
-import com.cerner.jwala.files.FileManager;
-import com.cerner.jwala.files.RepositoryFileInformation;
-import com.cerner.jwala.files.JwalaFile;
-import com.cerner.jwala.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
 import com.cerner.jwala.persistence.service.WebServerPersistenceService;
+import com.cerner.jwala.service.binarydistribution.BinaryDistributionLockManager;
 import com.cerner.jwala.service.resource.ResourceService;
 import com.cerner.jwala.service.resource.impl.ResourceGeneratorType;
 import com.cerner.jwala.service.state.InMemoryStateManagerService;
@@ -33,26 +30,25 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Matchers;
 import org.mockito.Mock;
-import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.mockito.stubbing.Answer;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 
 /**
- * Created by z0031wps on 4/2/2014.
+ * Created by Arvindo Kinny on 4/2/2014.
  */
 @RunWith(MockitoJUnitRunner.class)
 public class WebServerServiceImplTest {
@@ -67,11 +63,7 @@ public class WebServerServiceImplTest {
     @Mock
     private WebServer mockWebServer2;
 
-    @Mock
-    private FileManager fileManager;
-
-    @Mock
-    private RepositoryFileInformation repositoryFileInformation;
+    private BinaryDistributionLockManager binaryDistributionLockManager;
 
     private ArrayList<WebServer> mockWebServersAll = new ArrayList<>();
     private ArrayList<WebServer> mockWebServers11 = new ArrayList<>();
@@ -141,20 +133,7 @@ public class WebServerServiceImplTest {
         mockWebServers11.add(mockWebServer);
         mockWebServers12.add(mockWebServer2);
 
-        wsService = new WebServerServiceImpl(webServerPersistenceService, fileManager, resourceService, inMemService, StringUtils.EMPTY);
-
-        when(repositoryFileInformation.getType()).thenReturn(RepositoryFileInformation.Type.NONE);
-        when(fileManager.getAbsoluteLocation(any(JwalaFile.class))).thenAnswer(new Answer<String>() {
-
-            @Override
-            public String answer(InvocationOnMock invocation) throws Throwable {
-                JwalaFile file = (JwalaFile) invocation.getArguments()[0];
-                if (file != null) {
-                    return "/" + file.getFileName();
-                }
-                return null;
-            }
-        });
+        wsService = new WebServerServiceImpl(webServerPersistenceService, resourceService, inMemService, StringUtils.EMPTY, binaryDistributionLockManager);
 
         resourceGroup = new ResourceGroup(new ArrayList<>(groups));
     }
@@ -272,42 +251,6 @@ public class WebServerServiceImplTest {
         } while (line != null);
 
         return referenceHttpdConfBuilder.toString();
-    }
-
-    @Test
-    public void testGenerateHttpdConfig() throws IOException {
-        System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, new File(".").getAbsolutePath() + "/src/test/resources");
-        Application app1 = new Application(null, "hello-world-1", null, "/hello-world-1", null, true, true, false, "testWar.war");
-        Application app2 = new Application(null, "hello-world-2", null, "/hello-world-2", null, true, true, false, "testWar.war");
-
-        Application[] appArray = {app1, app2};
-        Jvm[] jvmArray = {};
-
-        when(webServerPersistenceService.findWebServerByName(anyString())).thenReturn(mockWebServer);
-        when(webServerPersistenceService.findApplications(anyString())).thenReturn(Arrays.asList(appArray));
-        when(webServerPersistenceService.findJvms(anyString())).thenReturn(Arrays.asList(jvmArray));
-        when(webServerPersistenceService.getResourceTemplate(anyString(), anyString())).thenReturn("httpd.conf template content");
-
-        wsService.generateHttpdConfig("Apache2.4", resourceGroup);
-        verify(resourceService).generateResourceFile(eq("httpd.conf"), eq("httpd.conf template content"), any(ResourceGroup.class), any(WebServer.class), any(ResourceGeneratorType.class));
-    }
-
-    @Test(expected = InternalErrorException.class)
-    public void testGenerateHttpdConfigWithNonRetrievableResourceTemplateContentException() throws IOException {
-        Application app1 = new Application(null, "hello-world-1", null, "/hello-world-1", null, true, true, false, "testWar.war");
-        Application app2 = new Application(null, "hello-world-2", null, "/hello-world-2", null, true, true, false, "testWar.war");
-
-        Application[] appArray = {app1, app2};
-
-        when(webServerPersistenceService.findWebServerByName(anyString())).thenReturn(mockWebServer);
-        when(webServerPersistenceService.findApplications(anyString())).thenReturn(Arrays.asList(appArray));
-
-        when(webServerPersistenceService.getResourceTemplate(anyString(), anyString())).thenThrow(NonRetrievableResourceTemplateContentException.class);
-
-        String generatedHttpdConf = wsService.generateHttpdConfig("Apache2.4", resourceGroup);
-
-        assertEquals(removeCarriageReturnsAndNewLines(readReferenceFile("/httpd-ssl.conf")),
-                removeCarriageReturnsAndNewLines(generatedHttpdConf));
     }
 
     @Test
@@ -437,7 +380,7 @@ public class WebServerServiceImplTest {
     @Test (expected = WebServerServiceException.class)
     public void testGenerateInstallServiceWSBat() {
         when(resourceService.generateResourceFile(anyString(), anyString(), any(ResourceGroup.class), eq(mockWebServer), any(ResourceGeneratorType.class))).thenThrow(IOException.class);
-        wsService.generateInstallServiceWSBat(mockWebServer);
+        wsService.generateInstallServiceScript(mockWebServer);
     }
 
     @Test

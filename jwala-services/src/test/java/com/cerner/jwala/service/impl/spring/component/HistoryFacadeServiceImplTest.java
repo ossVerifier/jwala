@@ -23,7 +23,7 @@ import static org.mockito.MockitoAnnotations.initMocks;
 /**
  * Unit test for {@link HistoryFacadeServiceImpl}
  *
- * Created by JC043760 on 11/9/2016
+ * Created by Jedd Cuison on 11/9/2016
  */
 public class HistoryFacadeServiceImplTest {
 

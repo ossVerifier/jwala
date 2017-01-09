@@ -1,3 +1,5 @@
+description "This module generates and deploys Jwala binaries. This layes creates the zip file which can be distributed and published to a repository for releases"
+
 apply plugin: 'de.undercouch.download'
 apply plugin: 'maven-publish'
 

@@ -1,6 +1,5 @@
 package com.cerner.jwala.service.jvm;
 
-import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
 import com.cerner.jwala.common.domain.model.jvm.JvmState;
 import com.cerner.jwala.service.RemoteCommandReturnInfo;
@@ -8,7 +7,7 @@ import com.cerner.jwala.service.RemoteCommandReturnInfo;
 /**
  * The contract for a JVM state related services.
  *
- * Created by JC043760 on 3/22/2016.
+ * Created by Jedd Cuison on 3/22/2016.
  */
 public interface JvmStateService {
 
@@ -34,22 +33,17 @@ public interface JvmStateService {
 
     /**
      * Update JVM state.
-     * @param id jvm id
+     * @param jvm the JVM.
      * @param state {@link JvmState}
      */
-    void updateState(Identifier<Jvm> id, JvmState state);
+    void updateState(Jvm jvm, JvmState state);
 
     /**
      * Update JVM state.
-     * @param id jvm id
+     * @param jvm The jvm
      * @param state {@link JvmState}
      * @param errMsg the error message
      */
-    void updateState(Identifier<Jvm> id, JvmState state, String errMsg);
+    void updateState(Jvm jvm, JvmState state, String errMsg);
 
-    /**
-     * Make a request to retrieve and send "current" states.
-     * @param groupName the group name
-     */
-    int requestCurrentStatesRetrievalAndNotification(String groupName);
 }

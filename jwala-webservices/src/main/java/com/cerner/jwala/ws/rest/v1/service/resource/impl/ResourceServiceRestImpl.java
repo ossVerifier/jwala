@@ -1,11 +1,11 @@
 package com.cerner.jwala.ws.rest.v1.service.resource.impl;
 
-import com.cerner.jwala.common.domain.model.fault.AemFaultType;
+import com.cerner.jwala.common.domain.model.fault.FaultType;
+import com.cerner.jwala.common.domain.model.resource.Entity;
 import com.cerner.jwala.common.domain.model.resource.ResourceContent;
 import com.cerner.jwala.common.domain.model.resource.ResourceIdentifier;
 import com.cerner.jwala.common.domain.model.resource.ResourceTemplateMetaData;
 import com.cerner.jwala.common.exception.FaultCodeException;
-import com.cerner.jwala.common.exec.CommandOutput;
 import com.cerner.jwala.common.properties.ExternalProperties;
 import com.cerner.jwala.persistence.jpa.service.exception.ResourceTemplateMetaDataUpdateException;
 import com.cerner.jwala.service.exception.ResourceServiceException;
@@ -32,16 +32,14 @@ import javax.activation.DataHandler;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
+import java.nio.charset.Charset;
 import java.util.*;
 
 /**
  * {@link ResourceServiceRest} implementation.
  * <p/>
- * Created by z003e5zv on 3/16/2015.
+ * Created by Eric Pinder on 3/16/2015.
  */
 public class ResourceServiceRestImpl implements ResourceServiceRest {
 
@@ -79,7 +77,7 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
                     final DataHandler handler = attachment.getDataHandler();
                     try {
                         LOGGER.debug("filename is {}", handler.getName());
-                        if (handler.getName().toLowerCase().endsWith(JSON_FILE_EXTENSION)) {
+                        if (handler.getName().toLowerCase(Locale.US).endsWith(JSON_FILE_EXTENSION)) {
                             metadataInputStream = attachment.getDataHandler().getInputStream();
                         } else {
                             templateInputStream = attachment.getDataHandler().getInputStream();
@@ -87,19 +85,19 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
                     } catch (final IOException ioe) {
                         LOGGER.error("Create template failed!", ioe);
                         return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR,
-                                new FaultCodeException(AemFaultType.IO_EXCEPTION, ioe.getMessage()));
+                                new FaultCodeException(FaultType.IO_EXCEPTION, ioe.getMessage()));
                     }
                 }
                 return ResponseBuilder.created(resourceService.createTemplate(metadataInputStream, templateInputStream, targetName, user.getUser()));
             } else {
                 return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
-                        AemFaultType.INVALID_NUMBER_OF_ATTACHMENTS,
+                        FaultType.INVALID_NUMBER_OF_ATTACHMENTS,
                         "Invalid number of attachments! 2 attachments is expected by the service."));
             }
         } catch (final ResourceServiceException rse) {
             LOGGER.error("Remove template failed!", rse);
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR,
-                    new FaultCodeException(AemFaultType.SERVICE_EXCEPTION, rse.getMessage()));
+                    new FaultCodeException(FaultType.SERVICE_EXCEPTION, rse.getMessage()));
         }
     }
 
@@ -143,28 +141,40 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
 
         if (attachments == null || !isExternalProperty && attachments.size() != CREATE_RESOURCE_ATTACHMENT_SIZE) {
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
-                    AemFaultType.INVALID_NUMBER_OF_ATTACHMENTS,
+                    FaultType.INVALID_NUMBER_OF_ATTACHMENTS,
                     "Invalid number of attachments! " + CREATE_RESOURCE_ATTACHMENT_SIZE + " attachments is expected by the service."));
         }
 
         try {
             final Map<String, Object> metaDataMap = new HashMap<>();
-            InputStream template = null;
+            BufferedInputStream bufferedInputStream = null;
             String templateName = null;
             for (final Attachment attachment : attachments) {
-                if ("application/octet-stream".equalsIgnoreCase(attachment.getHeader("Content-Type"))) {
-                    templateName = attachment.getDataHandler().getName();
-                    template = attachment.getDataHandler().getInputStream();
-                } else {
+                if (attachment.getHeader("Content-Type") == null) {
                     metaDataMap.put(attachment.getDataHandler().getName(),
-                            IOUtils.toString(attachment.getDataHandler().getInputStream()));
+                            IOUtils.toString(attachment.getDataHandler().getInputStream(), Charset.defaultCharset()));
+                } else {
+                    templateName = attachment.getDataHandler().getName();
+                    bufferedInputStream = new BufferedInputStream(attachment.getDataHandler().getInputStream());
                 }
             }
 
             metaDataMap.put("deployFileName", deployFilename);
             metaDataMap.put("templateName", templateName);
+            metaDataMap.put("contentType", resourceService.getResourceMimeType(bufferedInputStream));
+
+            // Note: In the create resource UI "assign to JVMs" makes more sense than "deploy to JVMs" e.g.
+            //       one create's a resource that will be assigned to JVMs.
+            //       We have to put it in its meta data counter part which is deployToJvms.
+            //       IMHO meta data's deployToJvms should be renamed to assignToJvms but it can't be changed just yet
+            //       not until an impact analysis has been made.
+            // TODO: Discuss with the team about renaming meta data's deployToJvms to assignToJvms
+            final Entity entity = new Entity(null, null, null, null, Boolean.parseBoolean((String) metaDataMap.get("assignToJvms")));
+            metaDataMap.remove("assignToJvms");
+            metaDataMap.put("entity", entity);
+
             final ResourceTemplateMetaData resourceTemplateMetaData =
-                    resourceService.getMetaData(new ObjectMapper().writeValueAsString(metaDataMap));
+                    resourceService.getMetaData(new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(metaDataMap));
 
             final ResourceIdentifier resourceIdentifier = new ResourceIdentifier.Builder().setResourceName(templateName)
                     .setGroupName(createResourceParam.getGroup())
@@ -173,10 +183,10 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
                     .setWebAppName(createResourceParam.getWebApp()).build();
 
             createResourceResponseWrapper = resourceService.createResource(resourceIdentifier, resourceTemplateMetaData,
-                    template);
+                    bufferedInputStream);
         } catch (final IOException e) {
             LOGGER.error("Failed to create resource {}!", deployFilename, e);
-            return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(AemFaultType.IO_EXCEPTION, e.getMessage()));
+            return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(FaultType.IO_EXCEPTION, e.getMessage()));
         }
 
         return ResponseBuilder.ok(createResourceResponseWrapper);
@@ -218,11 +228,11 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
         } catch (IOException ioe) {
             LOGGER.error("IOException thrown in uploadExternalProperties", ioe);
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR,
-                    new FaultCodeException(AemFaultType.SERVICE_EXCEPTION, ioe.getMessage()));
+                    new FaultCodeException(FaultType.SERVICE_EXCEPTION, ioe.getMessage()));
         } catch (FileUploadException fue) {
             LOGGER.error("FileUploadException thrown in uploadExternalProperties", fue);
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR,
-                    new FaultCodeException(AemFaultType.SERVICE_EXCEPTION, fue.getMessage()));
+                    new FaultCodeException(FaultType.SERVICE_EXCEPTION, fue.getMessage()));
         } finally {
             assert data != null;
             try {
@@ -297,7 +307,7 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
         } else {
 
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR,
-                    new FaultCodeException(AemFaultType.INVALID_REST_SERVICE_PARAMETER,
+                    new FaultCodeException(FaultType.INVALID_REST_SERVICE_PARAMETER,
                             "Parameters passed to the rest service is/are invalid!"));
 
         }
@@ -374,7 +384,7 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
         } else {
 
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR,
-                    new FaultCodeException(AemFaultType.INVALID_REST_SERVICE_PARAMETER,
+                    new FaultCodeException(FaultType.INVALID_REST_SERVICE_PARAMETER,
                             "Parameters passed to the rest service is/are invalid!"));
 
         }
@@ -425,7 +435,7 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
             return ResponseBuilder.ok(resourceService.updateResourceMetaData(resourceIdentifier, resourceName, metaData));
         } catch (ResourceTemplateMetaDataUpdateException ue) {
             LOGGER.error("Failed to update the resource", ue);
-            return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(AemFaultType.RESOURCE_META_DATA_UPDATE_FAILED, ue.getMessage()));
+            return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(FaultType.RESOURCE_META_DATA_UPDATE_FAILED, ue.getMessage()));
         }
     }
 
@@ -478,7 +488,7 @@ public class ResourceServiceRestImpl implements ResourceServiceRest {
             response = responseBuilder.build();
         } catch (IOException e) {
             LOGGER.error("Error attempting to download the external properties file", e);
-            response = ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(AemFaultType.BAD_STREAM, "Unable to provide the external properties file as a download."));
+            response = ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(FaultType.BAD_STREAM, "Unable to provide the external properties file as a download."));
         }
         return response;
     }

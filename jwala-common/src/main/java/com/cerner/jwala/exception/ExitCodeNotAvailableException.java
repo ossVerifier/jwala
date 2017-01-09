@@ -3,7 +3,7 @@ package com.cerner.jwala.exception;
 /**
  * Exception wrapper when an executed command does not return an exit code.
  *
- * Created by JC043760 on 2/17/2016.
+ * Created by Jedd Cuison on 2/17/2016.
  */
 public class ExitCodeNotAvailableException extends RuntimeException {
 

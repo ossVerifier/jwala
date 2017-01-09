@@ -14,8 +14,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class WebServer implements Serializable {
 
-    private static final long serialVersionUID = 1L;
-
     private final Identifier<WebServer> id;
     private final Map<Identifier<Group>, Group> groups = new ConcurrentHashMap<>();
     private final String host;

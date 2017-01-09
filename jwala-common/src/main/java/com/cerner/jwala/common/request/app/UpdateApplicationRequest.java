@@ -14,8 +14,6 @@ import java.io.Serializable;
 
 public class UpdateApplicationRequest implements Serializable, Request {
 
-    private static final long serialVersionUID = 1L;
-
     private final Identifier<Application> id;
     private final Identifier<Group> newGroupId;
     private final String newWebAppContext;

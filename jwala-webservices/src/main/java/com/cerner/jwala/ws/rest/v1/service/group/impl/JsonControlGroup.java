@@ -1,6 +1,8 @@
 package com.cerner.jwala.ws.rest.v1.service.group.impl;
 
+import com.cerner.jwala.common.domain.model.fault.FaultType;
 import com.cerner.jwala.common.domain.model.group.GroupControlOperation;
+import com.cerner.jwala.common.exception.InternalErrorException;
 import com.cerner.jwala.ws.rest.v1.json.AbstractJsonDeserializer;
 
 import org.codehaus.jackson.JsonNode;
@@ -25,7 +27,15 @@ public class JsonControlGroup {
     }
 
     public GroupControlOperation toControlOperation() {
-        return GroupControlOperation.convertFrom(controlOperation);
+        if (controlOperation.isEmpty()){
+            throw new InternalErrorException(FaultType.CONTROL_OPERATION_UNSUCCESSFUL, "Group control operation was not specified. Cannot continue with request.");
+        }
+
+        GroupControlOperation retVal = GroupControlOperation.STOP;
+        if (controlOperation.equalsIgnoreCase("start")){
+            retVal = GroupControlOperation.START;
+        }
+        return retVal;
     }
 
     @Override

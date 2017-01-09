@@ -1,10 +1,10 @@
 package com.cerner.jwala.common.rule;
 
-import com.cerner.jwala.common.domain.model.fault.AemFaultType;
+import com.cerner.jwala.common.domain.model.fault.FaultType;
 import com.cerner.jwala.common.exception.MessageResponseStatus;
 
 /**
- * Created by z0033r5b on 8/20/2015.
+ * Created by Jeffery Mahmood on 8/20/2015.
  */
 public class ValidTemplateNameRule extends ValidNameRule {
 
@@ -19,7 +19,7 @@ public class ValidTemplateNameRule extends ValidNameRule {
 
     @Override
     protected MessageResponseStatus getMessageResponseStatus() {
-        return AemFaultType.INVALID_TEMPLATE_NAME;
+        return FaultType.INVALID_TEMPLATE_NAME;
     }
 
     @Override

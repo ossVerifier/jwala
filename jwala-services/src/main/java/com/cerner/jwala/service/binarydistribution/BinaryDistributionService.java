@@ -1,11 +1,14 @@
 package com.cerner.jwala.service.binarydistribution;
 
-public interface BinaryDistributionService {
-    void distributeJdk(final String hostname);
+/**
+ * Created by Arvindo Kinny on 10/11/2016.
+ */
 
-    void distributeTomcat(final String hostname);
+public interface BinaryDistributionService {
+
+    void distributeJdk(final String hostname);
 
     void distributeWebServer(final String hostname);
 
-    void prepareUnzip(final String hostname);
+    void distributeUnzip(final String hostname);
 }

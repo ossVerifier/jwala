@@ -1,18 +1,15 @@
 package com.cerner.jwala.common.request.webserver;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-
 import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.webserver.WebServerControlOperation;
-import com.cerner.jwala.common.exception.BadRequestException;
 import com.cerner.jwala.common.request.group.GroupRequest;
 import com.cerner.jwala.common.rule.group.GroupIdRule;
+import org.apache.commons.lang3.builder.EqualsBuilder;
 
 import java.io.Serializable;
 
 public class ControlGroupWebServerRequest implements Serializable, GroupRequest {
-    private static final long serialVersionUID = 1L;
 
     private final Identifier<Group> groupId;
     private final WebServerControlOperation controlOperation;
@@ -34,11 +31,6 @@ public class ControlGroupWebServerRequest implements Serializable, GroupRequest 
     @Override
     public void validate() {
         new GroupIdRule(groupId).validate();
-    }
-
-    @Override
-    public String getExternalOperationName() {
-        return controlOperation.getExternalValue();
     }
 
     @Override

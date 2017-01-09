@@ -1,7 +1,7 @@
 package com.cerner.jwala.ws.rest.v1.service.balancemanager.impl;
 
 import com.cerner.jwala.common.domain.model.balancermanager.BalancerManagerState;
-import com.cerner.jwala.common.domain.model.fault.AemFaultType;
+import com.cerner.jwala.common.domain.model.fault.FaultType;
 import com.cerner.jwala.common.exception.InternalErrorException;
 import com.cerner.jwala.service.balancermanager.BalancerManagerService;
 import com.cerner.jwala.ws.rest.v1.provider.AuthUser;
@@ -21,7 +21,7 @@ import static org.mockito.MockitoAnnotations.initMocks;
 /**
  * Unit test for {@link BalancerManagerServiceRest}
  *
- * Created by JC043760 on 10/25/2016.
+ * Created by Jedd Cuison on 10/25/2016.
  */
 public class BalancerManagerServiceRestImplTest {
 
@@ -52,7 +52,7 @@ public class BalancerManagerServiceRestImplTest {
     @Test
     public void testDrainUserGroupWithInternalException() {
         when(mockBalancerManagerService.drainUserGroup(anyString(), anyString(), anyString()))
-                .thenThrow(new InternalErrorException(AemFaultType.IO_EXCEPTION, "IO Exception"));
+                .thenThrow(new InternalErrorException(FaultType.IO_EXCEPTION, "IO Exception"));
         final Response response = balancerManagerServiceRest.drainUserGroup("zGroup", "zWebServer", mockAuthUser);
         assertEquals(500, response.getStatus());
     }
@@ -65,7 +65,7 @@ public class BalancerManagerServiceRestImplTest {
     @Test
     public void testDrainUserWebServerWithInternalException() {
         when(mockBalancerManagerService.drainUserWebServer(anyString(), anyString(), anyString(), anyString()))
-                .thenThrow(new InternalErrorException(AemFaultType.IO_EXCEPTION, "IO Exception"));
+                .thenThrow(new InternalErrorException(FaultType.IO_EXCEPTION, "IO Exception"));
         final Response response = balancerManagerServiceRest.drainUserWebServer("zGroup", "zWebServer", "xJvm, yJVM, zJvm", mockAuthUser);
         assertEquals(500, response.getStatus());
     }
@@ -85,7 +85,7 @@ public class BalancerManagerServiceRestImplTest {
     @Test
     public void testDrainUserGroupJvmWithInternalException() {
         when(mockBalancerManagerService.drainUserGroupJvm(anyString(), anyString(), anyString()))
-                .thenThrow(new InternalErrorException(AemFaultType.IO_EXCEPTION, "IO Exception"));
+                .thenThrow(new InternalErrorException(FaultType.IO_EXCEPTION, "IO Exception"));
         final Response response = balancerManagerServiceRest.drainUserGroupJvm("zGroup", "zJvm", mockAuthUser);
         assertEquals(500, response.getStatus());
     }

@@ -22,7 +22,7 @@
  *                            of the current node in case it is needed like displaying it while providing copy/paste
  *                            functionality.
  *
- * Created by JC043760 on 5/03/2016.
+ * Created by Jedd Cuison on 5/03/2016.
  */
 var RJsonDataTreeDisplay = React.createClass({
     getInitialState: function() {

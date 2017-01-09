@@ -11,7 +11,7 @@ import static groovy.util.GroovyTestCase.assertEquals;
 /**
  * Unit test for {@link com.cerner.jwala.common.domain.model.resource.ResourceTemplateMetaData}
  *
- * Created by JC043760 on 10/6/2016.
+ * Created by Jedd Cuison on 10/6/2016
  */
 public class ResourceTemplateMetaDataTest {
 
@@ -31,14 +31,9 @@ public class ResourceTemplateMetaDataTest {
             "}";
 
     private static final String EXPECTED_META_DATA_STR = "ResourceTemplateMetaData{templateName='SetenvBatTemplate.tpl', " +
-            "contentType=PLAIN_TEXT_UTF_8, deployFileName='setenv.bat', deployPath='${vars.'remote.paths.instances'}/${jvm.jvmName}/bin', " +
+            "contentType=text/plain, deployFileName='setenv.bat', deployPath='${vars.'remote.paths.instances'}/${jvm.jvmName}/bin', " +
             "entity=Entity{type='GROUPED_JVMS', group='HEALTH CHECK 4.0', target='HEALTH CHECK 4.0', parentName='null', deployToJvms=true}, " +
             "unpack=false, overwrite=false}";
-
-    private static final String EXPECTED_META_DATA_JSON = "{\"templateName\":\"SetenvBatTemplate.tpl\",\"contentType\"" +
-            ":\"text/plain\",\"deployFileName\":\"setenv.bat\",\"deployPath\":\"${vars.'remote.paths.instances'}/" +
-            "${jvm.jvmName}/bin\",\"entity\":{\"type\":\"GROUPED_JVMS\",\"group\":\"HEALTH CHECK 4.0\",\"target\":\"" +
-            "HEALTH CHECK 4.0\",\"parentName\":null,\"deployToJvms\":true},\"unpack\":false,\"overwrite\":false}";
 
     @Test
     public void testCreateMetaData() throws IOException {

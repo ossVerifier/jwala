@@ -1,6 +1,6 @@
 package com.cerner.jwala.ws.rest.v1.exceptionmapper;
 
-import com.cerner.jwala.common.domain.model.fault.AemFaultType;
+import com.cerner.jwala.common.domain.model.fault.FaultType;
 import com.cerner.jwala.common.exception.FaultCodeException;
 import com.cerner.jwala.ws.rest.v1.response.ResponseBuilder;
 
@@ -14,6 +14,6 @@ public class TransactionRequiredExceptionMapper implements ExceptionMapper<Trans
     @Override
     public Response toResponse(final TransactionRequiredException exception) {
         return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR,
-                new FaultCodeException(AemFaultType.PERSISTENCE_ERROR, "Database transaction missing", exception));
+                new FaultCodeException(FaultType.PERSISTENCE_ERROR, "Database transaction missing", exception));
     }
 }

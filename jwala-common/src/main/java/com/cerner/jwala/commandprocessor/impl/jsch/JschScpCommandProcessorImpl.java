@@ -1,12 +1,12 @@
 package com.cerner.jwala.commandprocessor.impl.jsch;
 
 import com.cerner.jwala.commandprocessor.CommandProcessor;
+import com.cerner.jwala.common.domain.model.ssh.DecryptPassword;
 import com.cerner.jwala.common.exec.ExecReturnCode;
 import com.cerner.jwala.common.exec.RemoteExecCommand;
 import com.cerner.jwala.common.exec.RemoteSystemConnection;
 import com.cerner.jwala.exception.RemoteCommandFailureException;
 import com.jcraft.jsch.*;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,7 +22,6 @@ public class JschScpCommandProcessorImpl implements CommandProcessor {
 
     private OutputStream localInput;
     private InputStream remoteOutput;
-    private InputStream remoteError;
 
     public JschScpCommandProcessorImpl(JSch jsch, RemoteExecCommand remoteCommand) {
         this.jsch = jsch;
@@ -61,7 +60,6 @@ public class JschScpCommandProcessorImpl implements CommandProcessor {
             // get I/O streams for remote scp
             localInput = channelExec.getOutputStream();
             remoteOutput = channelExec.getInputStream();
-            remoteError = channelExec.getErrStream();
 
             channelExec.connect();
 
@@ -161,16 +159,16 @@ public class JschScpCommandProcessorImpl implements CommandProcessor {
         }
 
         if (b == 1 || b == 2) {
-            StringBuffer sb = new StringBuffer(); // TODO: Find out if we can use StringBuilder instead.
+            StringBuffer sb = new StringBuffer();
             int c;
             do {
                 c = in.read();
                 sb.append((char) c);
             } while (c != '\n');
             if (b == 1) { // error
-                throw new IOException("ERROR in secure copy: " + sb.toString());
+                throw new IOException("ERROR in SCP: " + sb.toString());
             }
-            throw new IOException("FATAL ERROR in secure copy: " + sb.toString());
+            throw new IOException("FATAL ERROR in SCP: " + sb.toString());
         }
         return b;
     }
@@ -197,9 +195,9 @@ public class JschScpCommandProcessorImpl implements CommandProcessor {
     private Session prepareSession(final RemoteSystemConnection remoteSystemConnection) throws JSchException {
         final Session session = jsch.getSession(remoteSystemConnection.getUser(), remoteSystemConnection.getHost(),
                 remoteSystemConnection.getPort());
-        final String password = remoteSystemConnection.getPassword();
-        if (password != null) {
-            session.setPassword(password);
+        final char[] encryptedPassword = remoteSystemConnection.getEncryptedPassword();
+        if (encryptedPassword != null) {
+            session.setPassword(new DecryptPassword().decrypt(encryptedPassword));
             session.setConfig("StrictHostKeyChecking", "no");
             session.setConfig("PreferredAuthentications", "password,gssapi-with-mic,publickey,keyboard-interactive");
         }

@@ -5,7 +5,7 @@ import org.apache.commons.lang3.StringUtils;
 /**
  * Validates a parameter or a series of parameters.
  *
- * Created by JC043760 on 6/6/2016.
+ * Created by Jedd Cuison on 6/6/2016.
  */
 public class ParamValidator {
     private boolean valid = true;

@@ -68,8 +68,6 @@ public interface JvmPersistenceService {
 
     List<JpaJvmConfigTemplate> getConfigTemplates(String jvmName);
 
-    List<JpaJvm> getJpaJvmsByGroupName(String groupName);
-
     /**
      * This service returns a list of JpaJvm objects which belong to a particular group. This method uses the group name to lookup the JpaJvms.
      * @param groupName
@@ -83,8 +81,6 @@ public interface JvmPersistenceService {
      * @return List of {@link Jvm}
      */
     List<Jvm> getJvmsAndWebAppsByGroupName(String groupName);
-
-    String getResourceTemplateMetaData(String jvmName, String fileName);
 
     /**
      * This method checks if a resource file exists for a jvm.

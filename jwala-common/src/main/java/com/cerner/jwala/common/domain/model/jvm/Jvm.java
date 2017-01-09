@@ -13,8 +13,6 @@ import com.cerner.jwala.common.domain.model.uri.UriBuilder;
 
 public class Jvm implements Serializable {
 
-    private static final long serialVersionUID = 1L;
-
     private Identifier<Jvm> id;
     private String jvmName;
     private String hostName;
@@ -36,6 +34,11 @@ public class Jvm implements Serializable {
     private Calendar lastUpdatedDate;
     private String userName;
     private String encryptedPassword;
+
+    public Jvm(final Identifier<Jvm> id, final String name) {
+        this.id = id;
+        this.jvmName = name;
+    }
 
     /**
      * Constructor for a bare minimum Jvm with group details.

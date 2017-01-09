@@ -8,7 +8,9 @@ import com.cerner.jwala.exception.CommandFailureException;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionControlService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
+/**
+ * Created by Arvindo Kinny on 10/11/2016.
+ */
 public class BinaryDistributionControlServiceImpl implements BinaryDistributionControlService {
     private static final Logger LOGGER = LoggerFactory.getLogger(BinaryDistributionControlServiceImpl.class);
     private final RemoteCommandExecutor<BinaryDistributionControlOperation> remoteCommandExecutor;
@@ -21,7 +23,7 @@ public class BinaryDistributionControlServiceImpl implements BinaryDistributionC
     public CommandOutput secureCopyFile(final String hostname, final String source, final String destination) throws CommandFailureException {
         return remoteCommandExecutor.executeRemoteCommand(null,
                 hostname,
-                BinaryDistributionControlOperation.SECURE_COPY,
+                BinaryDistributionControlOperation.SCP,
                 new WindowsBinaryDistributionPlatformCommandProvider(),
                 source,
                 destination);
