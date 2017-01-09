@@ -10,7 +10,6 @@ import com.cerner.jwala.ws.rest.v1.response.ResponseBuilder;
 import com.cerner.jwala.ws.rest.v1.service.admin.AdminServiceRest;
 
 import org.apache.log4j.LogManager;
-import org.apache.log4j.PropertyConfigurator;
 import org.apache.log4j.xml.DOMConfigurator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,7 +23,6 @@ import javax.servlet.ServletContext;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
 import java.util.Collection;
 import java.util.Properties;
 import java.util.TreeMap;
@@ -58,29 +56,11 @@ public class AdminServiceRestImpl implements AdminServiceRest {
 
         filesConfiguration.reload();
 
-        String logProperties = System.getProperty("log4j.configuration", "");
-        if (logProperties.endsWith(".xml")) {
-            URL logPropsUrl = getClass().getClassLoader().getResource(logProperties);
-            if (logPropsUrl != null) {
-                LOGGER.info("Reloading logging configuration from " + logProperties);
-                copyToReturn.put("logging-reload-state", "failed reload from " + logPropsUrl.toString());
-                LogManager.resetConfiguration();
-                DOMConfigurator.configure(logPropsUrl);
-                copyToReturn.put("logging-reload-state", "reloaded from " + logPropsUrl.toString());
-            } else {
-                LOGGER.warn("Could not reload logging configuration from " + logProperties);
-                copyToReturn.put("logging-reload-state", "failed, could not locate: " + logProperties);
-            }
-        } else if (logProperties.endsWith(".properties")) {
-            LogManager.resetConfiguration();
-            PropertyConfigurator.configure(logProperties);
-            copyToReturn.put("logging-reload-state", "reloaded from " + logProperties);
-        } else {
-            LOGGER.info("Reloading logging configuration from ApplicationProperties...");
-            LogManager.resetConfiguration();
-            PropertyConfigurator.configure(ApplicationProperties.getProperties());
-            copyToReturn.put("logging-reload-state", "reloaded from properties");
-        }
+        LogManager.resetConfiguration();
+        DOMConfigurator.configure("../data/conf/log4j.xml");
+
+        copyToReturn.put("logging-reload-state", "Property reload complete");
+
         return ResponseBuilder.ok(new TreeMap<>(copyToReturn));
     }
 
@@ -122,7 +102,7 @@ public class AdminServiceRestImpl implements AdminServiceRest {
         String auth = ApplicationProperties.get(JWALA_AUTHORIZATION, "true");
         if("false".equals(auth))
             return ResponseBuilder.ok(JSON_RESPONSE_FALSE);
-        else 
+        else
             return ResponseBuilder.ok(JSON_RESPONSE_TRUE);
     }
 

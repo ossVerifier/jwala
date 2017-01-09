@@ -27,7 +27,7 @@ public interface WebServerService {
 
     void removeWebServer(final Identifier<WebServer> aWebServerId);
 
-    String generateInstallServiceWSBat(WebServer webServer);
+    String generateInstallServiceScript(WebServer webServer);
 
     List<String> getResourceTemplateNames(final String webServerName);
 

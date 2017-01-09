@@ -166,9 +166,9 @@ public class JschScpCommandProcessorImpl implements CommandProcessor {
                 sb.append((char) c);
             } while (c != '\n');
             if (b == 1) { // error
-                throw new IOException("ERROR in secure copy: " + sb.toString());
+                throw new IOException("ERROR in SCP: " + sb.toString());
             }
-            throw new IOException("FATAL ERROR in secure copy: " + sb.toString());
+            throw new IOException("FATAL ERROR in SCP: " + sb.toString());
         }
         return b;
     }

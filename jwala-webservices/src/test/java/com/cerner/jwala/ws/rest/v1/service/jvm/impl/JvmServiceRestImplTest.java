@@ -115,11 +115,6 @@ public class JvmServiceRestImplTest {
         System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, "./src/test/resources");
         jvmServiceRest = new JvmServiceRestImpl(jvmService, jvmControlService, resourceService);
         when(authenticatedUser.getUser()).thenReturn(new User("Unused"));
-        try {
-            jvmServiceRest.afterPropertiesSet();
-        } catch (Exception e) {
-            assertTrue("This should not fail, but ... " + e.getMessage(), false);
-        }
     }
 
     @After

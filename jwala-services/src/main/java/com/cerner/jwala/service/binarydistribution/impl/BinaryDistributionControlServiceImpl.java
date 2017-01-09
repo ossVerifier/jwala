@@ -23,7 +23,7 @@ public class BinaryDistributionControlServiceImpl implements BinaryDistributionC
     public CommandOutput secureCopyFile(final String hostname, final String source, final String destination) throws CommandFailureException {
         return remoteCommandExecutor.executeRemoteCommand(null,
                 hostname,
-                BinaryDistributionControlOperation.SECURE_COPY,
+                BinaryDistributionControlOperation.SCP,
                 new WindowsBinaryDistributionPlatformCommandProvider(),
                 source,
                 destination);

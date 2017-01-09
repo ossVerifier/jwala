@@ -50,7 +50,6 @@ public class BalancerManagerHtmlParser {
         Pattern pattern = Pattern.compile(type.toString());
         Matcher matcher = pattern.matcher(content);
         while (matcher.find()) {
-            System.out.println(matcher.group());
             ignoreError = "Off";
         }
         return ignoreError;

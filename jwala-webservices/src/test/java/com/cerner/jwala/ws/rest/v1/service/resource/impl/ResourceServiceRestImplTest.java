@@ -444,19 +444,6 @@ public class ResourceServiceRestImplTest {
     }
 
     @Test
-    public void testExternalPropertiesSetAfterInitialization() throws Exception {
-        final List<String> names = new ArrayList<>();
-        names.add("external.properties");
-        when(impl.getResourceNames(any(ResourceIdentifier.class))).thenReturn(names);
-        when(impl.getResourceContent(any(ResourceIdentifier.class))).thenReturn(new ResourceContent("{}", "key=value"));
-
-        cut.afterPropertiesSet();
-
-        verify(impl).getResourceNames(any(ResourceIdentifier.class));
-        verify(impl).getResourceContent(any(ResourceIdentifier.class));
-    }
-
-    @Test
     public void testGetExternalPropertiesAsFile() throws IOException {
         when(impl.getExternalPropertiesAsFile()).thenReturn(new File("./src/test/resources/vars.properties"));
         Response result = cut.getExternalPropertiesDownload();
