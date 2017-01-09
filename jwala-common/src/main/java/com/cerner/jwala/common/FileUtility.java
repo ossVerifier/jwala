@@ -59,7 +59,7 @@ public class FileUtility {
 
     public void createJarArchive(File archiveFile, File[] filesToBeJared, String parent) {
 
-        int BUFFER_SIZE = 10240;
+        final int BUFFER_SIZE = 10240;
         try (
             FileOutputStream stream = new FileOutputStream(archiveFile);
             JarOutputStream out = new JarOutputStream(stream, new Manifest())) {
