@@ -209,7 +209,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
     @Override
     public Response generateAndDeployWebServer(final String aWebServerName, final AuthenticatedUser aUser) {
         LOGGER.info("Generate and deploy web server {} by user {}", aWebServerName, aUser.getUser().getId());
-        boolean didSucceed = true;
+        boolean didSucceed = false;
 
         // only one at a time per web server
         lock(aWebServerName);
@@ -249,9 +249,8 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
             installWebServerWindowsService(aUser, new ControlWebServerRequest(webServer.getId(), WebServerControlOperation.INSTALL_SERVICE), webServer);
 
             webServerService.updateState(webServer.getId(), WebServerReachableState.WS_UNREACHABLE, StringUtils.EMPTY);
-
+            didSucceed = true;
         } catch (CommandFailureException e) {
-            didSucceed = false;
             LOGGER.error("Failed for {}", aWebServerName, e);
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
                     FaultType.REMOTE_COMMAND_FAILURE, e.getMessage(), e));
