@@ -2,7 +2,7 @@
 #
 # httpd        Startup script for the Apache HTTP Server
 #
-# chkconfig: - 99 15
+# chkconfig: 2345 99 15
 # description: The Apache HTTP Server is an efficient and extensible  \
 #          server implementing the current HTTP standards.
 # processname: httpd
