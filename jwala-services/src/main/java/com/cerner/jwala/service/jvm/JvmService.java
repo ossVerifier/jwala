@@ -89,7 +89,11 @@ public interface JvmService {
 
     String getResourceTemplateMetaData(String jvmName, String fileName);
 
-    void checkForSetenvBat(String jvmName);
+    /**
+     * Check for setEnv Script
+     * @param jvmName
+     */
+    void checkForSetenvScript(String jvmName);
 
     /**
      * Delete a JVM

@@ -40,7 +40,7 @@ public enum WindowsBinaryDistributionNetOperation implements ServiceCommandBuild
     DELETE_BINARY(BinaryDistributionControlOperation.DELETE_BINARY){
         @Override
         public ExecCommand buildCommandForService(String aServiceName, String... aParams){
-            return new ShellCommand("/usr/bin/rm " + aParams[0]);
+            return new ShellCommand("rm " + aParams[0]);
         }
     },
     UNZIP_BINARY(BinaryDistributionControlOperation.UNZIP_BINARY){

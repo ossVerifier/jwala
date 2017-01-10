@@ -40,13 +40,12 @@ public interface BinaryDistributionControlService {
      *
      * @param hostname
      * @param zipPath
-     * @param binaryLocation
      * @param destination
      * @param exclude
      * @return
      * @throws CommandFailureException
      */
-    CommandOutput unzipBinary(final String hostname, final String zipPath, final String binaryLocation, final String destination, final String exclude) throws CommandFailureException;
+    CommandOutput unzipBinary(final String hostname, final String zipPath, final String destination, final String exclude) throws CommandFailureException;
 
     /**
      *

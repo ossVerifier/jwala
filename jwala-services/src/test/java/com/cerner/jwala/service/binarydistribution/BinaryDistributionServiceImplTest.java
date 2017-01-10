@@ -123,8 +123,8 @@ public class BinaryDistributionServiceImplTest {
         final String binaryLocation = "testBinaryLocation";
         final String destination = "testDest";
         final String exclude = "xxxx";
-        when(mockBinaryDistributionControlService.unzipBinary(hostname, zipPath, binaryLocation, destination, exclude)).thenReturn(new CommandOutput(new ExecReturnCode(0), "SUCCESS", ""));
-        binaryDistributionService.remoteUnzipBinary(hostname, zipPath, binaryLocation, destination, exclude);
+        when(mockBinaryDistributionControlService.unzipBinary(hostname, binaryLocation, destination, exclude)).thenReturn(new CommandOutput(new ExecReturnCode(0), "SUCCESS", ""));
+        binaryDistributionService.remoteUnzipBinary(hostname, binaryLocation, destination, exclude);
     }
 
     @Test(expected = InternalErrorException.class)
@@ -134,8 +134,8 @@ public class BinaryDistributionServiceImplTest {
         final String binaryLocation = "testBinaryLocation";
         final String destination = "testDest";
         final String exclude = "xxxx";
-        when(mockBinaryDistributionControlService.unzipBinary(hostname, zipPath, binaryLocation, destination, exclude)).thenReturn(new CommandOutput(new ExecReturnCode(1), "FAIL", ""));
-        binaryDistributionService.remoteUnzipBinary(hostname, zipPath, binaryLocation, destination, exclude);
+        when(mockBinaryDistributionControlService.unzipBinary(hostname,  binaryLocation, destination, exclude)).thenReturn(new CommandOutput(new ExecReturnCode(1), "FAIL", ""));
+        binaryDistributionService.remoteUnzipBinary(hostname,  binaryLocation, destination, exclude);
     }
 
     @Test(expected = InternalErrorException.class)
@@ -145,8 +145,8 @@ public class BinaryDistributionServiceImplTest {
         final String binaryLocation = "testBinaryLocation";
         final String destination = "testDest";
         final String exclude = "xxxx";
-        when(mockBinaryDistributionControlService.unzipBinary(hostname, zipPath, binaryLocation, destination, exclude)).thenThrow(new CommandFailureException(new ExecCommand("failed command"), new Throwable()));
-        binaryDistributionService.remoteUnzipBinary(hostname, zipPath, binaryLocation, destination, exclude);
+        when(mockBinaryDistributionControlService.unzipBinary(hostname,  binaryLocation, destination, exclude)).thenThrow(new CommandFailureException(new ExecCommand("failed command"), new Throwable()));
+        binaryDistributionService.remoteUnzipBinary(hostname, binaryLocation, destination, exclude);
     }
 
     @Test
@@ -225,7 +225,7 @@ public class BinaryDistributionServiceImplTest {
         when(mockBinaryDistributionControlService.checkFileExists(hostname, binaryDeployDir + "/" + tomcatDir)).thenReturn(new CommandOutput(new ExecReturnCode(1), "FAIL", ""));
         when(mockBinaryDistributionControlService.createDirectory(hostname, binaryDeployDir)).thenReturn(new CommandOutput(new ExecReturnCode(0), "SUCCESS", ""));
         when(mockBinaryDistributionControlService.secureCopyFile(anyString(), anyString(), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(0), "SUCCESS", ""));
-        when(mockBinaryDistributionControlService.unzipBinary(hostname, "~/.jwala/unzip.exe", binaryDeployDir + "/" + tomcatDir + ".zip", binaryDeployDir, "")).thenReturn(new CommandOutput(new ExecReturnCode(0), "SUCCESS", ""));
+        when(mockBinaryDistributionControlService.unzipBinary(hostname, binaryDeployDir + "/" + tomcatDir + ".zip", binaryDeployDir, "")).thenReturn(new CommandOutput(new ExecReturnCode(0), "SUCCESS", ""));
         when(mockBinaryDistributionControlService.deleteBinary(hostname, binaryDeployDir + "/" + tomcatDir + ".zip")).thenReturn(new CommandOutput(new ExecReturnCode(0), "SUCCESS", ""));
         binaryDistributionService.distributeTomcat(hostname);
     }
@@ -240,7 +240,7 @@ public class BinaryDistributionServiceImplTest {
         when(mockBinaryDistributionControlService.createDirectory(hostname, webServerBinaryDeployDir)).thenReturn(new CommandOutput(new ExecReturnCode(0), "SUCCESS", ""));
         when(mockBinaryDistributionControlService.secureCopyFile(anyString(), anyString(), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(0), "SUCCESS", ""));
         ApplicationProperties.get("remote.commands.user-scripts");
-        when(mockBinaryDistributionControlService.unzipBinary(hostname, "~/.jwala/unzip.exe", webServerBinaryDeployDir + "/" + webServerDir + ".zip", webServerBinaryDeployDir, "ReadMe.txt *--")).thenReturn(new CommandOutput(new ExecReturnCode(0), "SUCCESS", ""));
+        when(mockBinaryDistributionControlService.unzipBinary(hostname, webServerBinaryDeployDir + "/" + webServerDir + ".zip", webServerBinaryDeployDir, "ReadMe.txt *--")).thenReturn(new CommandOutput(new ExecReturnCode(0), "SUCCESS", ""));
         when(mockBinaryDistributionControlService.deleteBinary(hostname, webServerBinaryDeployDir + "/" + webServerDir + ".zip")).thenReturn(new CommandOutput(new ExecReturnCode(0), "SUCCESS", ""));
         binaryDistributionService.distributeWebServer(hostname);
     }

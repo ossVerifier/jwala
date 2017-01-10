@@ -28,13 +28,11 @@ import com.cerner.jwala.service.RemoteCommandExecutorService;
 import com.cerner.jwala.service.RemoteCommandReturnInfo;
 import com.cerner.jwala.service.VerificationBehaviorSupport;
 import com.cerner.jwala.service.host.HostService;
-import com.cerner.jwala.service.host.impl.HostServiceImpl;
 import com.cerner.jwala.service.jvm.JvmStateService;
 import com.cerner.jwala.service.jvm.exception.JvmControlServiceException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
@@ -87,8 +85,7 @@ public class JvmControlServiceImplTest extends VerificationBehaviorSupport {
         mockCommandFactory = mock(JvmCommandFactory.class);
         jvmControlService = new JvmControlServiceImpl(mockJvmPersistenceService, commandExecutor,  mockJvmStateService,
                 mockRemoteCommandExecutorService, mockSshConfig, mockHistoryFacadeService);
-        jvmControlService.setHostService(mockHostService);
-        jvmControlService.setCommandFactory(mockCommandFactory);
+        jvmControlService.setJvmCommandFactory(mockCommandFactory);
         when(mockHostService.getUName(anyString())).thenReturn("CYGWIN_NT-6.3");
         user = new User("unused");
     }

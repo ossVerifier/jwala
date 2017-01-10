@@ -11,10 +11,10 @@ import com.cerner.jwala.common.exception.InternalErrorException;
 import com.cerner.jwala.common.exec.*;
 import com.cerner.jwala.common.properties.ApplicationProperties;
 import com.cerner.jwala.common.request.jvm.ControlJvmRequest;
-import com.cerner.jwala.control.command.PlatformCommandProvider;
 import com.cerner.jwala.control.command.RemoteCommandExecutor;
+import com.cerner.jwala.control.command.common.*;
+import com.cerner.jwala.control.command.common.ShellCommand;
 import com.cerner.jwala.control.jvm.command.JvmCommandFactory;
-import com.cerner.jwala.control.jvm.command.impl.LinuxJvmPlatformCommandProvider;
 import com.cerner.jwala.control.jvm.command.impl.WindowsJvmPlatformCommandProvider;
 import com.cerner.jwala.exception.CommandFailureException;
 import com.cerner.jwala.persistence.jpa.domain.JpaHistory;
@@ -23,7 +23,6 @@ import com.cerner.jwala.persistence.service.JvmPersistenceService;
 import com.cerner.jwala.service.HistoryFacadeService;
 import com.cerner.jwala.service.RemoteCommandExecutorService;
 import com.cerner.jwala.service.RemoteCommandReturnInfo;
-import com.cerner.jwala.service.exception.ApplicationServiceException;
 import com.cerner.jwala.service.exception.RemoteCommandExecutorServiceException;
 import com.cerner.jwala.service.host.HostService;
 import com.cerner.jwala.service.jvm.JvmControlService;
@@ -49,7 +48,10 @@ public class JvmControlServiceImpl implements JvmControlService {
     private JvmOperationService jvmOperationService;
 
     @Autowired
-    private JvmCommandFactory commandFactory;
+    private JvmCommandFactory jvmCommandFactory;
+
+    @Autowired
+    private ShellCommandFactory shellCommandFactory;
 
     @Value("${spring.messaging.topic.serverStates:/topic/server-states}")
     protected String topicServerStates;
@@ -92,7 +94,7 @@ public class JvmControlServiceImpl implements JvmControlService {
             final String event = controlOperation.getOperationState() == null ? controlOperation.name() : controlOperation.getOperationState().toStateLabel();
             //Write message to history
             historyFacadeService.write(getServerName(jvm), new ArrayList<>(jvm.getGroups()), event, EventType.USER_ACTION_INFO, aUser.getId());
-            RemoteCommandReturnInfo remoteCommandReturnInfo = commandFactory.executeCommand(jvm,controlJvmRequest.getControlOperation());
+            RemoteCommandReturnInfo remoteCommandReturnInfo = jvmCommandFactory.executeCommand(jvm,controlJvmRequest.getControlOperation());
             CommandOutput commandOutput = new CommandOutput(new ExecReturnCode(remoteCommandReturnInfo.retCode),
                     remoteCommandReturnInfo.standardOuput, remoteCommandReturnInfo.errorOupout);
 
@@ -298,107 +300,51 @@ public class JvmControlServiceImpl implements JvmControlService {
 
         }
 
-        return remoteCommandExecutor.executeRemoteCommand(name, hostName, secureCopyRequest.getControlOperation(),
-                new WindowsJvmPlatformCommandProvider(), sourcePath, destPath);
+     //   return remoteCommandExecutor.executeRemoteCommand(name, hostName, secureCopyRequest.getControlOperation(),
+//                new WindowsJvmPlatformCommandProvider(), sourcePath, destPath);
+        RemoteCommandReturnInfo remoteCommandReturnInfo = shellCommandFactory.executeRemoteCommand(jvm.getHostName(), Command.SCP, new String[]{sourcePath, destPath});
+        return new CommandOutput(new ExecReturnCode(remoteCommandReturnInfo.retCode),
+                remoteCommandReturnInfo.standardOuput, remoteCommandReturnInfo.errorOupout);
     }
 
     @Override
     public CommandOutput executeChangeFileModeCommand(final Jvm jvm, final String modifiedPermissions, final String targetAbsoluteDir, final String targetFile)
             throws CommandFailureException {
-        return remoteCommandExecutor.executeRemoteCommand(
-                jvm.getJvmName(),
-                jvm.getHostName(),
-                JvmControlOperation.CHANGE_FILE_MODE,
-                new WindowsJvmPlatformCommandProvider(),
-                modifiedPermissions,
-                targetAbsoluteDir,
-                targetFile);
+        RemoteCommandReturnInfo remoteCommandReturnInfo = shellCommandFactory.executeRemoteCommand(jvm.getHostName(), Command.CHANGE_FILE_MODE, new String[]{modifiedPermissions, targetAbsoluteDir+"/"+targetFile});
+        return new CommandOutput(new ExecReturnCode(remoteCommandReturnInfo.retCode),
+                remoteCommandReturnInfo.standardOuput, remoteCommandReturnInfo.errorOupout);
     }
+
 
     @Override
     public CommandOutput executeCreateDirectoryCommand(final Jvm jvm, final String dirAbsolutePath) throws CommandFailureException {
-        return remoteCommandExecutor.executeRemoteCommand(
-                jvm.getJvmName(),
-                jvm.getHostName(),
-                JvmControlOperation.CREATE_DIRECTORY,
-                new WindowsJvmPlatformCommandProvider(),
-                dirAbsolutePath);
+        RemoteCommandReturnInfo remoteCommandReturnInfo = shellCommandFactory.executeRemoteCommand(jvm.getHostName(), Command.CREATE_DIR, dirAbsolutePath);
+        return new CommandOutput(new ExecReturnCode(remoteCommandReturnInfo.retCode),
+                remoteCommandReturnInfo.standardOuput, remoteCommandReturnInfo.errorOupout);
+
     }
 
     @Override
     public CommandOutput executeCheckFileExistsCommand(final Jvm jvm, final String filename) throws CommandFailureException {
-        return remoteCommandExecutor.executeRemoteCommand(
-                jvm.getJvmName(),
-                jvm.getHostName(),
-                JvmControlOperation.CHECK_FILE_EXISTS,
-                new WindowsJvmPlatformCommandProvider(),
-                filename
-        );
+        RemoteCommandReturnInfo remoteCommandReturnInfo = shellCommandFactory.executeRemoteCommand(jvm.getHostName(), Command.CHECK_FILE_EXISTS, filename);
+        return new CommandOutput(new ExecReturnCode(remoteCommandReturnInfo.retCode),
+                remoteCommandReturnInfo.standardOuput, remoteCommandReturnInfo.errorOupout);
     }
 
     @Override
     public CommandOutput executeBackUpCommand(final Jvm jvm, final String filename) throws CommandFailureException {
         final String currentDateSuffix = new SimpleDateFormat(".yyyyMMdd_HHmmss").format(new Date());
         final String destPathBackup = filename + currentDateSuffix;
-        return remoteCommandExecutor.executeRemoteCommand(
-                jvm.getJvmName(),
-                jvm.getHostName(),
-                JvmControlOperation.BACK_UP,
-                new WindowsJvmPlatformCommandProvider(),
-                filename,
-                destPathBackup);
+        RemoteCommandReturnInfo remoteCommandReturnInfo = shellCommandFactory.executeRemoteCommand(jvm.getHostName(), Command.MOVE, filename, destPathBackup);
+        return new CommandOutput(new ExecReturnCode(remoteCommandReturnInfo.retCode),
+                remoteCommandReturnInfo.standardOuput, remoteCommandReturnInfo.errorOupout);
     }
 
     /**
      *
-     * @param aJvm
-     * @return
+     * @param jvmCommandFactory
      */
-    private PlatformCommandProvider<JvmControlOperation> getPlatformCommandProvider(Jvm aJvm) throws ApplicationServiceException{
-        //Determine Host OS
-        if(HostService.UNAME_LINUX.equals(getHostOS(aJvm.getHostName()))) {
-            LinuxJvmPlatformCommandProvider linuxJvmPlatformCommandProvider = new LinuxJvmPlatformCommandProvider();
-            return linuxJvmPlatformCommandProvider;
-        }else if (HostService.UNAME_CYGWIN.equals(getHostOS(aJvm.getHostName()))) {
-            WindowsJvmPlatformCommandProvider windowsJvmPlatformCommandProvider = new WindowsJvmPlatformCommandProvider();
-            return windowsJvmPlatformCommandProvider;
-        }
-        return null;
-    }
-
-    /**
-     *
-     * @param hostName
-     * @return
-     */
-    private String getHostOS(String hostName) throws ApplicationServiceException{
-       String uName = hostService.getUName(hostName);
-        if(uName!=null && uName.indexOf(hostService.UNAME_LINUX)>-1) {
-            return HostService.UNAME_LINUX;
-        }else if (uName!=null && uName.indexOf(hostService.UNAME_CYGWIN)>-1) {
-            return HostService.UNAME_CYGWIN;
-        }else{
-            throw new ApplicationServiceException("Unknown host OS");
-        }
-    }
-
-    public void setHostService(HostService hostService) {
-        this.hostService = hostService;
-    }
-
-    public JvmOperationService getJvmOperationService() {
-        return jvmOperationService;
-    }
-
-    public void setJvmOperationService(JvmOperationService jvmOperationService) {
-        this.jvmOperationService = jvmOperationService;
-    }
-
-    /**
-     *
-     * @param commandFactory
-     */
-    public void setCommandFactory(JvmCommandFactory commandFactory){
-        this.commandFactory=commandFactory;
+    public void setJvmCommandFactory(JvmCommandFactory jvmCommandFactory){
+        this.jvmCommandFactory = jvmCommandFactory;
     }
 }

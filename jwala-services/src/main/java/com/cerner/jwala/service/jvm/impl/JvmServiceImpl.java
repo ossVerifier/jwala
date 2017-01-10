@@ -75,7 +75,8 @@ public class JvmServiceImpl implements JvmService {
     private static final String MEDIA_TYPE_TEXT = "text";
     private static final String PATHS_RESOURCE_TEMPLATES = "paths.resource-templates";
     private static final String INSTALL_SERVICE_TEMPLATE_TPL = "Install_ServiceTemplate.tpl";
-
+    private static final String SET_ENV_BAT = "setenv.bat";
+    private static final String SET_ENV_SH = "setenv.sh";
     private final BinaryDistributionLockManager binaryDistributionLockManager;
     private String topicServerStates;
     private final JvmPersistenceService jvmPersistenceService;
@@ -319,7 +320,7 @@ public class JvmServiceImpl implements JvmService {
 
             distributeBinaries(jvm.getHostName());
             // check for setenv.bat
-            checkForSetenvBat(jvm.getJvmName());
+            checkForSetenvScript(jvm.getJvmName());
 
             // create the scripts directory if it doesn't exist
             createScriptsDirectory(jvm);
@@ -461,7 +462,8 @@ public class JvmServiceImpl implements JvmService {
         }
 
         // make sure the scripts are executable
-        if (!jvmControlService.executeChangeFileModeCommand(jvm, "a+x", stagingArea, "*.sh").getReturnCode().wasSuccessful()) {
+        //TODO refactor to remove "/"
+        if (!jvmControlService.executeChangeFileModeCommand(jvm, "a+x", stagingArea+"/", "*.sh").getReturnCode().wasSuccessful()) {
             String message = "Failed to change the file permissions in " + stagingArea + duringCreationMessage + jvmName;
             LOGGER.error(message);
             throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, message);
@@ -752,14 +754,14 @@ public class JvmServiceImpl implements JvmService {
     }
 
     @Override
-    public void checkForSetenvBat(String jvmName) {
-        try {
-            jvmPersistenceService.getResourceTemplate(jvmName, "setenv.bat");
-        } catch (NonRetrievableResourceTemplateContentException e) {
-            LOGGER.error("No setenv.bat configured for JVM: {}", jvmName, e);
-            throw new InternalErrorException(FaultType.TEMPLATE_NOT_FOUND, "No setenv.bat template found for " + jvmName + ". Unable to continue processing.");
+    public void checkForSetenvScript(String jvmName) {
+        //check for setenv.bat or setenv.sh
+        List<String> templates = jvmPersistenceService.getResourceTemplateNames(jvmName);
+        if(!(templates.contains(SET_ENV_BAT) || templates.contains(SET_ENV_SH))){
+            LOGGER.error("No setenv script configured for JVM: {}", jvmName);
+            throw new InternalErrorException(FaultType.TEMPLATE_NOT_FOUND, "No setenv script template found for " + jvmName + ". Unable to continue processing.");
         }
-        LOGGER.debug("Found setenv.bat for JVM: {}. Continuing with process. ", jvmName);
+        LOGGER.debug("Found setenv script for JVM: {}. Continuing with process. ", jvmName);
     }
 
     /**

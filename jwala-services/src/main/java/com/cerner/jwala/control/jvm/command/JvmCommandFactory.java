@@ -29,6 +29,7 @@ import org.springframework.util.StringUtils;
 
 import javax.annotation.PostConstruct;
 
+
 /**
  * The CommandFactory class.<br/>
  */
@@ -67,7 +68,7 @@ public class JvmCommandFactory {
         if (commands.containsKey(operation.getExternalValue())) {
             return commands.get(operation.getExternalValue()).apply(jvm);
         }
-        throw new ApplicationServiceException("JvmCommand not found");
+        throw new ApplicationServiceException("JvmCommand not implemented: "+ operation.getExternalValue());
     }
 
     public void listCommands() {
@@ -90,8 +91,6 @@ public class JvmCommandFactory {
                 -> remoteCommandExecutorService.executeCommand(new RemoteExecCommand(getConnection(jvm),getExecCommandForThreadDump(THREAD_DUMP_JVM, jvm))));
         commands.put(JvmControlOperation.HEAP_DUMP.getExternalValue(), (Jvm jvm)
                 -> remoteCommandExecutorService.executeCommand(new RemoteExecCommand(getConnection(jvm),getExecCommandForHeapDump(HEAP_DUMP_JVM_, jvm))));
-        commands.put(JvmControlOperation.DEPLOY_CONFIG_ARCHIVE.getExternalValue(), (Jvm jvm)
-                -> remoteCommandExecutorService.executeCommand(new RemoteExecCommand(getConnection(jvm),getExecCommandForHeapDump("mkdir", jvm))));
     }
 
     /**
@@ -146,5 +145,13 @@ public class JvmCommandFactory {
      */
     private ExecCommand getExecCommand(String scriptName, Jvm jvm){
         return new ExecCommand(getFullPathScript(jvm, scriptName), jvm.getJvmName());
+    }
+    private String getDeployConfigurationArchiveScript(Jvm jvm){
+
+    /*  cygpathWrapper(DEPLOY_CONFIG_ARCHIVE_SCRIPT_NAME, REMOTE_COMMANDS_USER_SCRIPTS + "/" + aServiceName + "/"),
+                REMOTE_COMMANDS_USER_SCRIPTS + "/" + aServiceName + "_config.jar",
+                REMOTE_PATHS_INSTANCES + "/" + aServiceName,
+                REMOTE_JAVA_HOME + "/bin/jar"*/
+    return null;
     }
 }

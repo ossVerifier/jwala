@@ -21,11 +21,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.PrintStream;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 /**
  * Implementation of {@link RemoteCommandExecutorService} using JSCH.
@@ -70,7 +68,7 @@ public class JschRemoteCommandExecutorServiceImpl implements RemoteCommandExecut
         ChannelShell channel = null;
         ChannelSessionKey channelSessionKey = new ChannelSessionKey(remoteExecCommand.getRemoteSystemConnection(), ChannelType.SHELL);
         LOGGER.debug("channel session key = {}", channelSessionKey);
-
+        LOGGER.debug("RemoteExecCommand {}", remoteExecCommand.getCommand().getCommandFragments().toString());
         InputStream in = null;
         OutputStream out = null;
 
@@ -138,6 +136,8 @@ public class JschRemoteCommandExecutorServiceImpl implements RemoteCommandExecut
         ExecReturnCode retCode;
         String commandOutputStr = null;
         String errorOutputStr = null;
+        List<String> commandFragments = remoteExecCommand.getCommand().getCommandFragments();
+        LOGGER.debug("RemoteExecCommand {}", commandFragments.toString());
         try {
             // We can't keep the session and the channels open for type exec since we need the exit code and the
             // standard error e.g. thread dump uses this and requires the exit code and the standard error.
@@ -150,7 +150,9 @@ public class JschRemoteCommandExecutorServiceImpl implements RemoteCommandExecut
 
             final InputStream remoteOutput = channel.getInputStream();
             final InputStream remoteError = channel.getErrStream();
-
+            if(commandFragments.contains("scp")) {
+                OutputStream localInput = channel.getOutputStream();
+            }
             LOGGER.debug("channel {} connecting...", channel.getId());
             channel.connect(CHANNEL_CONNECT_TIMEOUT);
             LOGGER.debug("channel {} connected!", channel.getId());

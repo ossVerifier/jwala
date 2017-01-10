@@ -107,7 +107,18 @@ public class BinaryDistributionControlServiceImplTest {
         try {
             when(remoteCommandExecutor.executeRemoteCommand(anyString(), anyString(), eq(BinaryDistributionControlOperation.UNZIP_BINARY),
                     any(WindowsBinaryDistributionPlatformCommandProvider.class), anyString(), anyString(), anyString(), anyString())).thenReturn(execData);
-            binaryDistributionControlServiceImpl.unzipBinary(hostname, zipPath, binaryLocation, destination, exclude);
+            binaryDistributionControlServiceImpl.unzipBinary(hostname, zipPath,
+
+
+
+
+
+
+
+
+
+
+                    destination, exclude);
             verify(remoteCommandExecutor).executeRemoteCommand(anyString(), eq(hostname), eq(BinaryDistributionControlOperation.UNZIP_BINARY),
                     any(WindowsBinaryDistributionPlatformCommandProvider.class), eq(zipPath), eq(binaryLocation), eq(destination), eq(exclude));
         } catch (CommandFailureException e) {
