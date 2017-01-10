@@ -49,9 +49,9 @@ public class ApplicationRequestServiceImplTest {
         final Identifier<Application> appId = new Identifier<>(11L);
         when(mockApp.getId()).thenReturn(appId);
         when(sshConfiguration.getUserName()).thenReturn("user");
-        when(sshConfiguration.getPassword()).thenReturn("oops");
+        when(sshConfiguration.getEncryptedPassword()).thenReturn("==oops==".toCharArray());
         when(sshConfiguration.getPort()).thenReturn(22);
-        ControlApplicationRequest appRequest = new ControlApplicationRequest(appId, ApplicationControlOperation.SECURE_COPY);
+        ControlApplicationRequest appRequest = new ControlApplicationRequest(appId, ApplicationControlOperation.SCP);
         applicationCommandService.controlApplication(appRequest, mockApp, "testHost", "source path", "dest path");
     }
 

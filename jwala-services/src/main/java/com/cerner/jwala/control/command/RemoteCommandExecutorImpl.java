@@ -35,7 +35,7 @@ public class RemoteCommandExecutorImpl<T> implements RemoteCommandExecutor<T> {
                                               final PlatformCommandProvider provider,
                                               String... params) throws CommandFailureException {
 
-        final DefaultExecCommandBuilderImpl<T> commandBuilder = new DefaultExecCommandBuilderImpl();
+        final DefaultExecCommandBuilderImpl<T> commandBuilder = new DefaultExecCommandBuilderImpl<>();
         commandBuilder.setOperation(anOperation);
         commandBuilder.setEntityName(entityName);
         if (params.length > 0) {

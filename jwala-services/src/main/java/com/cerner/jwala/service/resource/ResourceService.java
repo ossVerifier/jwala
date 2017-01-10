@@ -21,8 +21,6 @@ import java.util.Properties;
 
 public interface ResourceService {
 
-    String decryptUsingPlatformBean(String encryptedString);
-
     String encryptUsingPlatformBean(String cleartext);
 
     /**
@@ -88,6 +86,8 @@ public interface ResourceService {
     String getAppTemplate(String groupName, String appName, String templateName);
 
     Map<String, String> checkFileExists(String groupName, String jvmName, String webappName, String webserverName, String fileName);
+
+    boolean checkJvmFileExists(String groupName, String jvmName, String fileName);
 
     /**
      * Delete a web server resource.

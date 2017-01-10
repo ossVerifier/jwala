@@ -41,6 +41,7 @@ import com.cerner.jwala.ws.rest.v1.service.group.MembershipDetails;
 import com.cerner.jwala.ws.rest.v1.service.jvm.JvmServiceRest;
 import com.cerner.jwala.ws.rest.v1.service.jvm.impl.JsonControlJvm;
 import com.cerner.jwala.ws.rest.v1.service.jvm.impl.JvmServiceRestImpl;
+import com.cerner.jwala.ws.rest.v1.service.webserver.WebServerServiceRest;
 import com.cerner.jwala.ws.rest.v1.service.webserver.impl.JsonControlWebServer;
 import com.cerner.jwala.ws.rest.v1.service.webserver.impl.WebServerServiceRestImpl;
 import org.apache.cxf.jaxrs.ext.MessageContext;
@@ -71,13 +72,14 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     private final JvmService jvmService;
     private final WebServerService webServerService;
     final ApplicationServiceRest applicationServiceRest;
+    private final WebServerServiceRest webServerServiceRest;
 
     @Autowired
     public GroupServiceRestImpl(final GroupService groupService, final ResourceService resourceService,
                                 final GroupControlService groupControlService, final GroupJvmControlService groupJvmControlService,
                                 final GroupWebServerControlService groupWebServerControlService, final JvmService jvmService,
                                 final WebServerService webServerService, ApplicationService applicationService,
-                                final ApplicationServiceRest applicationServiceRest) {
+                                final ApplicationServiceRest applicationServiceRest, final WebServerServiceRest webServerServiceRest) {
         this.groupService = groupService;
         this.resourceService = resourceService;
         this.groupControlService = groupControlService;
@@ -87,6 +89,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
         this.webServerService = webServerService;
         this.applicationService = applicationService;
         this.applicationServiceRest = applicationServiceRest;
+        this.webServerServiceRest = webServerServiceRest;
         executorService = Executors.newFixedThreadPool(Integer.parseInt(ApplicationProperties.get("resources.thread-task-executor.pool.size", "25")));
     }
 
@@ -369,11 +372,11 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     @Override
     public Response generateAndDeployGroupWebServersFile(final String groupName, final String resourceFileName, final AuthenticatedUser aUser) {
         LOGGER.info("generate and deploy the web server file {} to group {} by user", resourceFileName, groupName, aUser.getUser().getId());
+        //TODO: why is group getting populated twice
         Group group = groupService.getGroup(groupName);
         group = groupService.getGroupWithWebServers(group.getId());
         final String httpdTemplateContent = groupService.getGroupWebServerResourceTemplate(groupName, resourceFileName, false, resourceService.generateResourceGroup());
         final String resourceMetaData = groupService.getGroupWebServerResourceTemplateMetaData(groupName, resourceFileName);
-        final WebServerServiceRestImpl webServerServiceRest = WebServerServiceRestImpl.get();
         final Set<WebServer> webServers = group.getWebServers();
         if (null != webServers && !webServers.isEmpty()) {
             for (WebServer webServer : webServers) {
@@ -484,7 +487,6 @@ public class GroupServiceRestImpl implements GroupServiceRest {
             }
 
             // generate and deploy the web servers
-            final WebServerServiceRestImpl webServerServiceRest = WebServerServiceRestImpl.get();
             Map<String, Future<Response>> futuresMap = new HashMap<>();
             final Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             for (final WebServer webServer : webServers) {

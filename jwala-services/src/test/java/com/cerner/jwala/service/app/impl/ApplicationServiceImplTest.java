@@ -13,7 +13,6 @@ import com.cerner.jwala.common.domain.model.resource.ResourceIdentifier;
 import com.cerner.jwala.common.domain.model.resource.ResourceTemplateMetaData;
 import com.cerner.jwala.common.domain.model.ssh.SshConfiguration;
 import com.cerner.jwala.common.domain.model.user.User;
-import com.cerner.jwala.common.exception.ApplicationException;
 import com.cerner.jwala.common.exception.BadRequestException;
 import com.cerner.jwala.common.exception.InternalErrorException;
 import com.cerner.jwala.common.exec.CommandOutput;
@@ -274,31 +273,6 @@ public class ApplicationServiceImplTest {
     }
 
     @Test
-    public void testGetResourceTemplate() {
-        final String theTemplate = "<context>${webApp.warPath}</context>";
-        when(applicationPersistenceService.getResourceTemplate(eq("hct"), eq("hct.xml"), eq("jvm1"), eq("group1"))).thenReturn(theTemplate);
-        assertEquals(theTemplate, applicationService.getResourceTemplate("hct", "group1", "jvm1", "hct.xml", new ResourceGroup(), false));
-    }
-
-    @Test
-    public void testGetResourceTemplateWithTokensReplaced() {
-        final String theTemplate = "<context>${webApp.warPath}</context>";
-        when(applicationPersistenceService.getResourceTemplate(eq("hct"), eq("hct.xml"), eq("jvm1"), eq("group1"))).thenReturn(theTemplate);
-        final Application app = mock(Application.class);
-        when(app.getWarPath()).thenReturn("theWarPath");
-        when(applicationPersistenceService.findApplication(eq("hct"), anyString(), anyString())).thenReturn(app);
-        when(jvmPersistenceService.findJvm(anyString(), anyString())).thenReturn(null);
-        applicationService.getResourceTemplate("hct", "group1", "jvm1", "hct.xml", new ResourceGroup(), true);
-        verify(mockResourceService).generateResourceFile(anyString(), anyString(), any(ResourceGroup.class), any(Application.class), any(ResourceGeneratorType.class));
-        when(applicationPersistenceService.getResourceTemplate(eq("hct"), eq("hct.xml"), eq("jvm1"), eq("group1"))).thenReturn(theTemplate);
-        try {
-            applicationService.getResourceTemplate("hct", "group1", "jvm1", "hct.xml", new ResourceGroup(), true);
-        } catch (ApplicationException ae) {
-            assertTrue(ae.getMessage().contains("replacement failed"));
-        }
-    }
-
-    @Test
     public void testUpdateResourceTemplate() {
         applicationService.updateResourceTemplate("hct", "hct.xml", "content", "jvm1", "group1");
         verify(applicationPersistenceService).updateResourceTemplate(eq("hct"), eq("hct.xml"), eq("content"), eq("jvm1"), eq("group1"));
@@ -346,7 +320,7 @@ public class ApplicationServiceImplTest {
         when(execData.getReturnCode()).thenReturn(new ExecReturnCode(1));
         when(execData.getStandardError()).thenReturn("REMOTE COMMAND FAILURE");
         when(remoteCommandExecutorImpl.executeRemoteCommand(
-                anyString(), anyString(), eq(ApplicationControlOperation.SECURE_COPY), any(WindowsApplicationPlatformCommandProvider.class), anyString(), anyString())).thenReturn(execData);
+                anyString(), anyString(), eq(ApplicationControlOperation.SCP), any(WindowsApplicationPlatformCommandProvider.class), anyString(), anyString())).thenReturn(execData);
         when(remoteCommandExecutorImpl.executeRemoteCommand(anyString(), anyString(), eq(ApplicationControlOperation.CHECK_FILE_EXISTS), any(WindowsApplicationPlatformCommandProvider.class), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(1), "", ""));
         try {
             applicationService.deployConf("hct", "hct-group", "jvm-1", "hct.xml", mock(ResourceGroup.class), testUser);
@@ -355,7 +329,7 @@ public class ApplicationServiceImplTest {
         }
 
         when(remoteCommandExecutorImpl.executeRemoteCommand(
-                anyString(), anyString(), eq(ApplicationControlOperation.SECURE_COPY), any(WindowsApplicationPlatformCommandProvider.class), anyString(), anyString())).thenThrow(new CommandFailureException(new ExecCommand("fail me"), new Throwable("should fail")));
+                anyString(), anyString(), eq(ApplicationControlOperation.SCP), any(WindowsApplicationPlatformCommandProvider.class), anyString(), anyString())).thenThrow(new CommandFailureException(new ExecCommand("fail me"), new Throwable("should fail")));
         when(remoteCommandExecutorImpl.executeRemoteCommand(anyString(), anyString(), eq(ApplicationControlOperation.CHECK_FILE_EXISTS), any(WindowsApplicationPlatformCommandProvider.class), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(1), "", ""));
         try {
             applicationService.deployConf("hct", "hct-group", "jvm-1", "hct.xml", mock(ResourceGroup.class), testUser);
@@ -529,39 +503,6 @@ public class ApplicationServiceImplTest {
             exceptionThrown = true;
         }
         assertTrue(exceptionThrown);
-    }
-
-    @Test
-    public void testCopyToGroupJvms() throws CommandFailureException {
-        GroupService mockGroupService = mock(GroupService.class);
-        Group mockGroup = mock(Group.class);
-        when(mockGroupService.getGroup(any(Identifier.class))).thenReturn(mockGroup);
-        when(mockGroupService.getGroup(anyString())).thenReturn(mockGroup);
-        Set<Group> groupSet = new HashSet<>();
-        groupSet.add(mockGroup);
-
-        Set<Jvm> jvms = new HashSet<>();
-        final Jvm testjvm = mock(Jvm.class);
-        when(testjvm.getId()).thenReturn(new Identifier<Jvm>(11111L));
-        when(testjvm.getJvmName()).thenReturn("testjvm");
-        when(testjvm.getState()).thenReturn(JvmState.JVM_STOPPED);
-        jvms.add(testjvm);
-
-        when(jvmPersistenceService.findJvmByExactName(anyString())).thenReturn(testjvm);
-        when(mockGroup.getJvms()).thenReturn(jvms);
-        when(mockGroup.getName()).thenReturn("testGroupName");
-        List<String> templateNames = new ArrayList<>();
-        templateNames.add("app.xml");
-        when(applicationPersistenceService.getResourceTemplateNames(anyString(), anyString())).thenReturn(templateNames);
-        when(applicationPersistenceService.findApplication(anyString(), anyString(), anyString())).thenReturn(new Application(new Identifier<Application>(111L), "appName", "./warPath", "/context", mockGroup, true, true, false, "app.war"));
-        when(applicationPersistenceService.getResourceTemplate(anyString(), anyString(), anyString(), anyString())).thenReturn("template this!");
-        when(remoteCommandExecutor.executeRemoteCommand(anyString(), anyString(), any(ApplicationControlOperation.class), any(PlatformCommandProvider.class), anyString(), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(0), "Success!", ""));
-
-        ApplicationServiceImpl mockApplicationService = new ApplicationServiceImpl(applicationPersistenceService,
-                jvmPersistenceService, mockGroupService,
-                mockResourceService, remoteCommandExecutorImpl, binaryDistributionService, mockHistoryFacadeService);
-        mockApplicationService.copyApplicationConfigToGroupJvms(mockGroup, "testApp", mock(ResourceGroup.class), testUser);
-
     }
 
     @Test

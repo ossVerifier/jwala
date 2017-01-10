@@ -60,22 +60,6 @@ public interface ApplicationServiceRest {
     @Path("/{jvmName}/{appName}/resources/name")
     Response getResourceNames(@PathParam("appName") String appName, @PathParam("jvmName") String jvmName);
 
-    /**
-     * Get resource template content.
-     *
-     * @param appName              web application name.
-     * @param resourceTemplateName the resource template name.
-     * @param tokensReplaced       flag that indicates whether to fetch the template with its tokens replaced by their mapped values from the db.
-     * @return the template contents
-     */
-    @GET
-    @Path("/{appName}/resources/template/{resourceTemplateName}")
-    Response getResourceTemplate(@PathParam("appName") String appName,
-                                 @MatrixParam("groupName") String groupName,
-                                 @MatrixParam("jvmName") String jvmName,
-                                 @PathParam("resourceTemplateName") String resourceTemplateName,
-                                 @QueryParam("tokensReplaced") boolean tokensReplaced);
-
     @PUT
     @Path("/{appName}/resources/template/{resourceTemplateName}")
     @Consumes(MediaType.TEXT_PLAIN)
@@ -105,5 +89,9 @@ public interface ApplicationServiceRest {
     @PUT
     @Path("/{appName}/conf")
     Response deployConf(@PathParam("appName") String appName, @BeanParam AuthenticatedUser aUser, @QueryParam("hostName") String hostName);
+
+    @GET
+    @Path("/fileExists")
+    Response checkIfFileExists(@QueryParam("filePath") String filePath, @BeanParam AuthenticatedUser aUser, @QueryParam("hostName") String hostName);
 
 }

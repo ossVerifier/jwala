@@ -51,10 +51,10 @@ public class BinaryDistributionControlServiceImplTest {
         final CommandOutput execData = mock(CommandOutput.class);
         when(execData.getReturnCode()).thenReturn(new ExecReturnCode(0));
         try {
-            when(remoteCommandExecutor.executeRemoteCommand(anyString(), anyString(), eq(BinaryDistributionControlOperation.SECURE_COPY),
+            when(remoteCommandExecutor.executeRemoteCommand(anyString(), anyString(), eq(BinaryDistributionControlOperation.SCP),
                     any(WindowsBinaryDistributionPlatformCommandProvider.class), anyString(), anyString())).thenReturn(execData);
             binaryDistributionControlServiceImpl.secureCopyFile(hostname, source, destination);
-            verify(remoteCommandExecutor).executeRemoteCommand(anyString(), eq(hostname), eq(BinaryDistributionControlOperation.SECURE_COPY),
+            verify(remoteCommandExecutor).executeRemoteCommand(anyString(), eq(hostname), eq(BinaryDistributionControlOperation.SCP),
                     any(WindowsBinaryDistributionPlatformCommandProvider.class), eq(source), eq(destination));
         } catch (CommandFailureException e) {
             e.printStackTrace();

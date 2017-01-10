@@ -31,7 +31,7 @@ public enum WindowsBinaryDistributionNetOperation implements ServiceCommandBuild
             return new ShellCommand("if [ ! -e \"" + aParams[0] + "\" ]; then /usr/bin/mkdir -p " + aParams[0] + "; fi;");
         }
     },
-    SECURE_COPY(BinaryDistributionControlOperation.SECURE_COPY){
+    SCP(BinaryDistributionControlOperation.SCP){
         @Override
         public ExecCommand buildCommandForService(String aServiceName, String... aParams) {
             return new ShellCommand(SCP_SCRIPT_NAME.getValue(), aParams[0], aParams[1]);

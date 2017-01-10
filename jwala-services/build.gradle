@@ -27,6 +27,10 @@ dependencies {
     compile group: "org.springframework.security", name: "spring-security-config", version: "$project.versions.spring_security"
     compile group: "org.springframework.security", name: "spring-security-ldap", version: "$project.versions.spring_security"
 
+    compile group: 'org.slf4j', name: 'slf4j-api', version: "$project.versions.slf4j"
+    testCompile group: "org.slf4j", name:"slf4j-log4j12", version:"$project.versions.slf4j"
+    testCompile group: "log4j", name:"log4j", version:"$project.versions.log4j"
+
     providedCompile group: 'org.apache.tomcat', name: 'tomcat-catalina', version: "$project.versions.tomcat"
 
     compile group: "de.jkeylockmanager", name: "jkeylockmanager", version: "$project.versions.jkeylockmanager"

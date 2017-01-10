@@ -7,6 +7,7 @@ import com.cerner.jwala.common.exception.ApplicationException;
 import com.cerner.jwala.common.exception.InternalErrorException;
 import com.cerner.jwala.common.exec.RemoteSystemConnection;
 import com.cerner.jwala.common.properties.ApplicationProperties;
+import com.cerner.jwala.common.properties.PropertyKeys;
 import com.cerner.jwala.exception.CommandFailureException;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionControlService;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionLockManager;
@@ -14,7 +15,6 @@ import com.cerner.jwala.service.binarydistribution.BinaryDistributionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-
 
 /**
  * Created by Arvindo Kinny on 10/11/2016.
@@ -24,7 +24,6 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
     @Autowired
     protected SshConfiguration sshConfig;
 
-    private static final String BINARY_LOCATION_PROPERTY_KEY = "jwala.binary.dir";
     private static final String UNZIPEXE = "unzip.exe";
     private static final String APACHE_EXCLUDE = "ReadMe.txt *--";
 
@@ -37,53 +36,53 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
     }
 
     @Override
-    public void distributeJdk(final String hostname) {
-        LOGGER.info("Start deploy jdk for {}", hostname);
-        String jdkDir = ApplicationProperties.get("remote.jwala.java.root.dir.name");
-        String jwalaRemoteHome= ApplicationProperties.get("remote.jwala.home");
-        String jdkBinary = ApplicationProperties.get("jwala.default.jdk.zip");
-        String jwalaBinaryDir = ApplicationProperties.get("jwala.binary.dir");
-        if (!jdkDir.isEmpty()) {
-            distributeBinary(hostname, jdkDir, jdkBinary, jwalaRemoteHome, "");
-        } else {
-            LOGGER.warn("JDK dir location is null or empty {}", jdkDir);
+    public void distributeWebServer(final String hostname) {
+        String writeLockResourceName = hostname + "-" + EntityType.WEB_SERVER.toString();
+        try {
+            binaryDistributionLockManager.writeLock(writeLockResourceName);
+            String remoteDeployDir =  ApplicationProperties.getRequired(PropertyKeys.REMOTE_PATHS_APACHE_HTTPD);
+            String apacheDirName = ApplicationProperties.get(PropertyKeys.REMOTE_PATHS_HTTPD_ROOT_DIR_NAME);
+            distributeBinary(hostname, apacheDirName, remoteDeployDir, APACHE_EXCLUDE);
+        } finally {
+            binaryDistributionLockManager.writeUnlock(writeLockResourceName);
         }
+    }
+
+    @Override
+    public void distributeJdk(final String hostname) {
+        LOGGER.info("Start deploy jdk for host {}", hostname);
+        String remoteDeployDir = ApplicationProperties.getRequired(PropertyKeys.REMOTE_JAVA_HOME);
+        String javaDirName = ApplicationProperties.getRequired(PropertyKeys.REMOTE_JWALA_JAVA_ROOT_DIR_NAME);
+        distributeBinary(hostname, javaDirName, remoteDeployDir, "");
         LOGGER.info("End deploy jdk for {}", hostname);
     }
 
-    @Override
-    public void distributeTomcat(final String hostname) {
-        LOGGER.info("Start deploy tomcat binaries for {}", hostname);
-        String tomcatDir = ApplicationProperties.get("remote.tomcat.dir.name");
-        String jwalaRemoteHome= ApplicationProperties.get("remote.jwala.home");
-        String tomcatBinary = ApplicationProperties.get("jwala.default.tomcat.zip");
-        String jwalaBinaryDir = ApplicationProperties.get("jwala.binary.dir");
-        if (tomcatDir != null && !tomcatDir.isEmpty()) {
-                distributeBinary(hostname, tomcatDir, tomcatBinary, jwalaRemoteHome, "");
-        } else {
-            LOGGER.warn("Tomcat dir location is null or empty {}", tomcatDir);
-        }
-        LOGGER.info("End deploy tomcat binaries for {}", hostname);
-    }
+    private void distributeBinary(final String hostname, final String binaryName, final String binaryDeployDir, final String excludeFromZip) {
+        String binaryDir = ApplicationProperties.getRequired(PropertyKeys.LOCAL_JWALA_BINARY_DIR);
+        LOGGER.debug("SCP binary starting for remote host {}. binary name is {}, binary deploy dir is {}", hostname, binaryName, binaryDeployDir);
 
-    @Override
-    public void distributeWebServer(final String hostname) {
-        String wrietLockResourceName = hostname + "-" + EntityType.WEB_SERVER.toString();
-        try {
-            binaryDistributionLockManager.writeLock(wrietLockResourceName);
-            String webServerDir = ApplicationProperties.get("remote.paths.httpd.root.dir.name");
-            String jwalaRemoteHome= ApplicationProperties.get("remote.jwala.home");
-            String httpdZipFile = ApplicationProperties.get("jwala.default.apache.httpd.zip");
-            String jwalaBinaryDir = ApplicationProperties.get("jwala.binary.dir");
-            if (webServerDir != null && !webServerDir.isEmpty()) {
-                distributeBinary(hostname, webServerDir, httpdZipFile, jwalaRemoteHome, APACHE_EXCLUDE);
-            } else {
-                LOGGER.warn("WebServer dir location is null or empty {}", webServerDir);
-            }
-        }finally {
-            binaryDistributionLockManager.writeUnlock(wrietLockResourceName);
+        if (remoteFileCheck(hostname, binaryDeployDir)) {
+            LOGGER.info("Found {} on host {}. Nothing to do.", binaryName, hostname);
+            return;
         }
-    }
+
+        LOGGER.info("Binary {} on host {} not found. Trying to deploy it", binaryName, hostname);
+
+        String zipFile = binaryDir + "/" + binaryName + ".zip";
+        String destinationZipFile = binaryDeployDir + ".zip";
+
+        remoteCreateDirectory(hostname, binaryDeployDir);
+        remoteSecureCopyFile(hostname, zipFile, destinationZipFile);
+
+        try {
+            remoteUnzipBinary(hostname,
+                    ApplicationProperties.getRequired(PropertyKeys.REMOTE_SCRIPT_DIR) + "/" + UNZIPEXE,
+                    destinationZipFile,
+                    ApplicationProperties.getRequired(PropertyKeys.REMOTE_PATHS_DEPLOY_DIR),
+                    excludeFromZip);
+        } finally {
+            remoteDeleteBinary(hostname, destinationZipFile);
+        }
 
     private void distributeBinary(final String hostname, final String zipFileRootDir, final String zipFileName, final String jwalaRemoteHome, final String exclude) {
 //TODO: cleanup if logic
@@ -170,60 +169,59 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
                 throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, message);
             }
         } catch (CommandFailureException e) {
-            final String message = "Error in remote secure copy at host: " + hostname + " source: " + source + " destination: " + destination;
+            final String message = "Error issuing SCP to host " + hostname + " using source " + source +
+                    " and destination " + destination + ". Exception is " + e.getMessage();
             LOGGER.error(message, e);
             throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, message, e);
         }
     }
 
-    public void remoteCreateDirectory(final String hostname, final String destination) {
+    public void remoteCreateDirectory(final String hostname, final String remoteDir) {
+        LOGGER.debug("Attempting to create directory {} on host {}", remoteDir, hostname);
         try {
-            if (binaryDistributionControlService.createDirectory(hostname, destination).getReturnCode().wasSuccessful()) {
-                LOGGER.info("successfully created directories {}", destination);
+            if (binaryDistributionControlService.createDirectory(hostname, remoteDir).getReturnCode().wasSuccessful()) {
+                LOGGER.info("successfully created directories {}", remoteDir);
             } else {
-                final String message = "User does not have permission to create the directory " + destination;
+                final String message = "User does not have permission to create the directory " + remoteDir;
                 LOGGER.error(message);
                 throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, message);
             }
         } catch (CommandFailureException e) {
-            final String message = "Error in create remote directory at host: " + hostname + " destination: " + destination;
+            final String message = "Error in create remote directory at host: " + hostname + " destination: " + remoteDir;
             LOGGER.error(message, e);
             throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, message, e);
         }
     }
 
-    public boolean remoteFileCheck(final String hostname, final String destination) {
-        LOGGER.info("remoteFileCheck hostname: " + hostname + " destination: " + destination);
+    public boolean remoteFileCheck(final String hostname, final String remoteFilePath) {
+        LOGGER.info("Looking for the remote file {} on host {}", remoteFilePath, hostname);
         boolean result;
         try {
-            result = binaryDistributionControlService.checkFileExists(hostname, destination).getReturnCode().wasSuccessful();
+            result = binaryDistributionControlService.checkFileExists(hostname, remoteFilePath).getReturnCode().wasSuccessful();
         } catch (CommandFailureException e) {
-            final String message = "Error in check remote File at host: " + hostname + " destination: " + destination;
+            final String message = "Error in check remote File at host: " + hostname + " destination: " + remoteFilePath;
             LOGGER.error(message, e);
             throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, message, e);
         }
-        LOGGER.info("result: " + result);
+        LOGGER.info("Remote file {} {}", remoteFilePath, result ? "found" : "not found");
         return result;
     }
 
     @Override
-    public void prepareUnzip(String hostname) {
+    public void distributeUnzip(String hostname) {
         LOGGER.info("Start deploy unzip for {}", hostname);
-        final String jwalaScriptsPath = ApplicationProperties.get("remote.commands.user-scripts");
-        if (remoteFileCheck(hostname, jwalaScriptsPath)) {
-            LOGGER.info(jwalaScriptsPath + " exists at " + hostname);
-        } else {
+        final String jwalaScriptsPath = ApplicationProperties.getRequired(PropertyKeys.REMOTE_SCRIPT_DIR);
+        if (!remoteFileCheck(hostname, jwalaScriptsPath)) {
             remoteCreateDirectory(hostname, jwalaScriptsPath);
         }
-        final String unzipFileDestination = jwalaScriptsPath;
-        if (remoteFileCheck(hostname, unzipFileDestination + "/" + UNZIPEXE)) {
-            LOGGER.info(unzipFileDestination + "/" + UNZIPEXE + " exists at " + hostname);
-        } else {
-            final String unzipFileSource = ApplicationProperties.get(BINARY_LOCATION_PROPERTY_KEY) + "/" + UNZIPEXE;
-            LOGGER.info("unzipFileSource: " + unzipFileSource);
-            remoteSecureCopyFile(hostname, unzipFileSource, unzipFileDestination);
+
+        if (!remoteFileCheck(hostname, jwalaScriptsPath + "/" + UNZIPEXE)) {
+            final String unzipFile= ApplicationProperties.get(PropertyKeys.LOCAL_JWALA_BINARY_DIR) + "/" + UNZIPEXE;
+            LOGGER.info("SCP {} " + unzipFile);
+            remoteSecureCopyFile(hostname, unzipFile, jwalaScriptsPath);
             changeFileMode(hostname, "a+x", jwalaScriptsPath, UNZIPEXE);
         }
+
         LOGGER.info("End deploy unzip for {}", hostname);
     }
 

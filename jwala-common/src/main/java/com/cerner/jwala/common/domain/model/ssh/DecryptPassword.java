@@ -24,6 +24,10 @@ public class DecryptPassword {
         decryptorImpl = decryptImpl;
     }
 
+    public String decrypt(char[] encyptedValue) {
+        return decrypt(String.valueOf(encyptedValue));
+    }
+
     public String decrypt(String encryptedValue) {
         if (encryptedValue==null) {
             return null;

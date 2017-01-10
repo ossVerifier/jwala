@@ -8,7 +8,6 @@ import com.cerner.jwala.common.domain.model.jvm.Jvm;
 import com.cerner.jwala.common.domain.model.jvm.JvmState;
 import com.cerner.jwala.common.domain.model.path.Path;
 import com.cerner.jwala.common.domain.model.webserver.WebServer;
-import com.cerner.jwala.common.domain.model.webserver.WebServerReachableState;
 import com.cerner.jwala.common.rule.*;
 import com.cerner.jwala.common.rule.app.ApplicationIdRule;
 import com.cerner.jwala.common.rule.group.GroupIdRule;
@@ -38,12 +37,10 @@ public class RuleTest {
     private Identifier [] jvmIds = {new Identifier<Jvm>(1L)};
     private Rule [] rules = {new HostNameRule("any"),
                              new MultipleRules(),
-                             new PathRule(mockPath),
                              new PortNumberRule(8080, FaultType.CANNOT_CONNECT),
                              new ShutdownPortNumberRule(8080, FaultType.CANNOT_CONNECT),
                              new StatusPathRule(mockPath),
                              new ValidTemplateNameRule("any"),
-                             new ValidWebArchiveNameRule("any"),
                              new ApplicationIdRule(new Identifier<Application>(1L)),
                              new GroupIdRule(groupIds[0]),
                              new GroupIdsRule(new HashSet<Identifier<Group>>(Arrays.<Identifier<Group>>asList(groupIds))),
@@ -51,6 +48,7 @@ public class RuleTest {
                              new JvmIdRule(jvmIds[0]),
                              new JvmIdsRule(new HashSet<Identifier<Jvm>>(Arrays.<Identifier<Jvm>>asList(jvmIds))),
                              new JvmStateRule(JvmState.JVM_STOPPED),
+                             new WebServerIdRule(new Identifier<WebServer>(1L))};
                              new HttpConfigFileRule(mock(Path.class)),
                              new WebServerIdRule(new Identifier<WebServer>(1L)),
                              new WebServerReachableStateRule(WebServerReachableState.WS_UNREACHABLE)};

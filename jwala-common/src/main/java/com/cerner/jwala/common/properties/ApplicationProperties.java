@@ -18,7 +18,9 @@ public class ApplicationProperties {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ApplicationProperties.class);
 
-    public static final String PROPERTIES_FILE_NAME = "vars.properties";
+    private static final String PROPERTIES_FILE_NAME = "vars.properties";
+
+    private static final String REQUIRED = "#REQUIRED#";
 
     private ApplicationProperties() {
         properties = new Properties();
@@ -47,9 +49,41 @@ public class ApplicationProperties {
         getInstance().init();
     }
 
+    public static String getRequired(PropertyKeys propertyNames) {
+        if (propertyNames == null) {
+            throw new ApplicationException("Attempted to call " + ApplicationProperties.class.getName() + ".get(property) with a null property key");
+        }
+
+        return getRequired(propertyNames.getPropertyName());
+    }
+
+    public static String getRequired(String key) {
+        String propVal = getProperties().getProperty(key);
+        LOGGER.trace("ApplicationsProperties.get({})=({})", key, propVal);
+
+        if (propVal == null || propVal.isEmpty()) {
+            throw new PropertyNotFoundException("Required property with key " + key + " was not valued.");
+        }
+
+        return propVal;
+    }
+
+    public static String get(PropertyKeys propertyNames) {
+        if (propertyNames == null) {
+            throw new ApplicationException("Attempted to call " + ApplicationProperties.class.getName() + ".get(property) with a null property key");
+        }
+
+        return get(propertyNames.getPropertyName());
+    }
+
     public static String get(String key) {
         String propVal = getProperties().getProperty(key);
-        LOGGER.debug("PropertyGet(" + key + ")=(" + propVal + ")");
+        LOGGER.trace("ApplicationsProperties.get({})=({})", key, propVal);
+
+        if (REQUIRED.equalsIgnoreCase(propVal)) {
+            LOGGER.warn("Required property with key {} was not valued.", key);
+        }
+
         return propVal;
     }
 
@@ -59,6 +93,11 @@ public class ApplicationProperties {
 
     public static Boolean getAsBoolean(String key) {
         return Boolean.parseBoolean(getProperties().getProperty(key));
+    }
+
+    public static Boolean getRequiredAsBoolean(PropertyKeys key) {
+        String value = getRequired(key);
+        return Boolean.parseBoolean(value);
     }
 
     public static int size() {

@@ -26,7 +26,7 @@ public class AemSshConfig {
                                                                     getStringPropertyFrom(sshProperties,
                                                                                           AemSshProperty.KNOWN_HOSTS_FILE),
                                                                     getStringPropertyFrom(sshProperties,
-                                                                                           AemSshProperty.ENCRYPTED_PASSWORD));
+                                                                                           AemSshProperty.ENCRYPTED_PASSWORD).toCharArray());
 
         return configuration;
     }

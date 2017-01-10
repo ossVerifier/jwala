@@ -28,7 +28,7 @@ public class CommonSshTestConfiguration {
                                   getPrivateKey());
         channelPool = new GenericKeyedObjectPool(new KeyedPooledJschChannelFactory(builder.build()));
         remoteSystemConnection = new RemoteSystemConnection("N9SFGLabTomcatAdmin",
-                                                            "Passw0rd1",
+                                                            /*"Passw0rd1"*/"===encryptMe===".toCharArray(),
                                                             "somehost0005",
                                                             22);
     }
@@ -51,8 +51,8 @@ public class CommonSshTestConfiguration {
         return file.getAbsolutePath();
     }
 
-    public String getPassword() {
-        return remoteSystemConnection.getPassword();
+    public char[] getEncryptedPassword() {
+        return remoteSystemConnection.getEncryptedPassword();
     }
 
     public GenericKeyedObjectPool<ChannelSessionKey, Channel> getChannelPool() {

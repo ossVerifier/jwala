@@ -35,9 +35,6 @@ public interface ApplicationService {
 
     List<String> getResourceTemplateNames(final String appName, String jvmName);
 
-    String getResourceTemplate(final String appName, String groupName, String jvmName, final String resourceTemplateName,
-                               final ResourceGroup resourceGroup, final boolean tokensReplaced);
-
     String updateResourceTemplate(final String appName, final String resourceTemplateName, final String template, final String jvmName, final String groupName);
 
     /**
@@ -68,8 +65,6 @@ public interface ApplicationService {
     void copyApplicationWarToGroupHosts(Application application);
 
     void copyApplicationWarToHost(Application application, String hostName);
-
-    void copyApplicationConfigToGroupJvms(Group group, String appName, ResourceGroup resourceGroup, User user);
 
     void deployApplicationResourcesToGroupHosts(String groupName, Application app, ResourceGroup resourceGroup);
 

@@ -1,22 +1,23 @@
 package com.cerner.jwala.common.exec;
 
 import java.io.Serializable;
+import java.util.Arrays;
 
 public class RemoteSystemConnection implements Serializable {
 
     private final String user;
     private final String host;
     private final Integer port;
-    private final String password;
+    private final char[] encryptedPassword;
 
     public RemoteSystemConnection(final String theUser,
-                                  final String thePassword,
+                                  final char[] theEncryptedPassword,
                                   final String theHost,
                                   final Integer thePort) {
         user = theUser;
         host = theHost;
         port = thePort;
-        password = thePassword;
+        encryptedPassword = theEncryptedPassword != null ? Arrays.copyOf(theEncryptedPassword, theEncryptedPassword.length) : new char[]{};
     }
 
     public String getUser() {
@@ -31,8 +32,8 @@ public class RemoteSystemConnection implements Serializable {
         return port;
     }
 
-    public String getPassword() {
-        return password;
+    public char[] getEncryptedPassword() {
+        return Arrays.copyOf(encryptedPassword, encryptedPassword.length);
     }
 
     @Override

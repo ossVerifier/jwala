@@ -29,7 +29,6 @@ import com.cerner.jwala.persistence.service.*;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionService;
 import com.cerner.jwala.service.exception.ResourceServiceException;
 import com.cerner.jwala.service.resource.*;
-import com.cerner.jwala.service.resource.impl.handler.exception.ResourceHandlerException;
 import com.cerner.jwala.template.exception.ResourceFileGeneratorException;
 import opennlp.tools.util.StringUtil;
 import org.apache.commons.io.FileUtils;
@@ -48,12 +47,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.*;
 import java.nio.charset.Charset;
+import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class ResourceServiceImpl implements ResourceService {
@@ -126,13 +122,6 @@ public class ResourceServiceImpl implements ResourceService {
         this.binaryDistributionService = binaryDistributionService;
         this.fileTypeDetector = fileTypeDetector;
         this.resourceRepositoryService = resourceRepositoryService;
-    }
-
-    @Override
-    public String decryptUsingPlatformBean(String encryptedString) {
-        StandardEvaluationContext context = new StandardEvaluationContext();
-        context.setVariable("stringToDecrypt", encryptedString);
-        return decryptExpression.getValue(context, String.class);
     }
 
     @Override
@@ -216,11 +205,8 @@ public class ResourceServiceImpl implements ResourceService {
     @Override
     public ResourceGroup generateResourceGroup() {
         List<Group> groups = groupPersistenceService.getGroups();
-        List<Group> groupsToBeAdded = null;
+        List<Group> groupsToBeAdded = new ArrayList<>(groups.size());
         for (Group group : groups) {
-            if (groupsToBeAdded == null) {
-                groupsToBeAdded = new ArrayList<>(groups.size());
-            }
             List<Jvm> jvms = jvmPersistenceService.getJvmsAndWebAppsByGroupName(group.getName());
             List<WebServer> webServers = webServerPersistenceService.getWebServersByGroupName(group.getName());
             List<Application> applications = applicationPersistenceService.findApplicationsBelongingTo(group.getName());
@@ -262,7 +248,7 @@ public class ResourceServiceImpl implements ResourceService {
                     continue;
                 }
             } catch (IOException e) {
-                throw new ApplicationException("Unable to retrieve meta data for " + resourceName + " during validation step.", e);
+                throw new ApplicationException(MessageFormat.format("Unable to retrieve meta data for {0} during validation step.", resourceName), e);
             }
 
             try {
@@ -352,17 +338,17 @@ public class ResourceServiceImpl implements ResourceService {
         if (groupName != null && !groupName.isEmpty() && fileName != null && !fileName.isEmpty()) {
             if (jvmName != null && !jvmName.isEmpty()) {
                 // Search for file in jvms
-                LOGGER.debug("searching for resource {} in group {} and jvm {}", fileName, groupName, jvmName);
+                LOGGER.debug("Searching for resource {} in group {} and jvm {}", fileName, groupName, jvmName);
                 resultBoolean = groupPersistenceService.checkGroupJvmResourceFileName(groupName, fileName) ||
                         jvmPersistenceService.checkJvmResourceFileName(groupName, jvmName, fileName);
             } else if (webappName != null && !webappName.isEmpty()) {
                 // Search for file in webapps
-                LOGGER.debug("searching for resource {} in group {} and webapp {}", fileName, groupName, webappName);
+                LOGGER.debug("Searching for resource {} in group {} and webapp {}", fileName, groupName, webappName);
                 resultBoolean = groupPersistenceService.checkGroupAppResourceFileName(groupName, fileName) ||
                         applicationPersistenceService.checkAppResourceFileName(groupName, webappName, fileName);
             } else if (webserverName != null && !webserverName.isEmpty()) {
                 // Search for file in webservers
-                LOGGER.debug("searching for resource {} in group {} and webserver {}", fileName, groupName, webserverName);
+                LOGGER.debug("Searching for resource {} in group {} and webserver {}", fileName, groupName, webserverName);
                 resultBoolean = groupPersistenceService.checkGroupWebServerResourceFileName(groupName, fileName) ||
                         webServerPersistenceService.checkWebServerResourceFileName(groupName, webserverName, fileName);
             }
@@ -372,6 +358,13 @@ public class ResourceServiceImpl implements ResourceService {
         result.put("exists", Boolean.toString(resultBoolean));
         LOGGER.debug("result: {}", result.toString());
         return result;
+    }
+
+    @Override
+    public boolean checkJvmFileExists(String groupName, String jvmName, String fileName) {
+        LOGGER.debug("Searching for resource {} in group {} and jvm {}", fileName, groupName, jvmName);
+        return groupPersistenceService.checkGroupJvmResourceFileName(groupName, fileName) ||
+                jvmPersistenceService.checkJvmResourceFileName(groupName, jvmName, fileName);
     }
 
     @Override
@@ -731,33 +724,6 @@ public class ResourceServiceImpl implements ResourceService {
         return generateResourceFile(resourceIdentifier.resourceName, content, generateResourceGroup(), resourceHandler.getSelectedValue(resourceIdentifier), ResourceGeneratorType.PREVIEW);
     }
 
-    protected void checkFuturesResults(Map<String, Future<CommandOutput>> futures, String fileName) throws ExecutionException, InterruptedException {
-        for (String hostName : futures.keySet()) {
-            Future<CommandOutput> deployFuture = futures.get(hostName);
-            if (!deployFuture.get().getReturnCode().wasSuccessful()) {
-                LOGGER.error("Failed to deploy {} to host {}", fileName, hostName);
-                throw new InternalErrorException(FaultType.CONTROL_OPERATION_UNSUCCESSFUL, "Failed to deploy the template " + fileName + " to host " + hostName);
-            }
-        }
-    }
-
-    protected void waitForDeployToComplete(Map<String, Future<CommandOutput>> futures) {
-        final int size = futures.size();
-        if (size > 0) {
-            LOGGER.info("Check to see if all {} tasks completed", size);
-            boolean allDone = false;
-            // TODO think about adding a manual timeout
-            while (!allDone) {
-                boolean isDone = true;
-                for (Future<CommandOutput> isDoneFuture : futures.values()) {
-                    isDone = isDone && isDoneFuture.isDone();
-                }
-                allDone = isDone;
-            }
-            LOGGER.info("Tasks complete: {}", size);
-        }
-    }
-
     public CommandOutput secureCopyFile(final String hostName, final String sourcePath, final String destPath) throws CommandFailureException {
         final int beginIndex = destPath.lastIndexOf("/");
         final String fileName = destPath.substring(beginIndex + 1, destPath.length());
@@ -767,7 +733,7 @@ public class ResourceServiceImpl implements ResourceService {
         /*if (!AemControl.Properties.USER_JWALA_SCRIPTS_PATH.getValue().endsWith(fileName)) {
             final String eventDescription = "SECURE COPY " + fileName;
             historyService.createHistory(hostName, new ArrayList<>(*//*jvm.getGroups()*//*), eventDescription, EventType.USER_ACTION_INFO, userId);
-            messagingService.send(new JvmHistoryEvent(jvm.getId(), eventDescription, userId, DateTime.now(), JvmControlOperation.SECURE_COPY));
+            messagingService.send(new JvmHistoryEvent(jvm.getId(), eventDescription, userId, DateTime.now(), JvmControlOperation.SCP));
         }*/
 
         // TODO update this to be derived from the resource type being copied
@@ -819,7 +785,7 @@ public class ResourceServiceImpl implements ResourceService {
         return remoteCommandExecutor.executeRemoteCommand(
                 name,
                 hostName,
-                ApplicationControlOperation.SECURE_COPY,
+                ApplicationControlOperation.SCP,
                 new WindowsApplicationPlatformCommandProvider(),
                 sourcePath,
                 destPath);
@@ -907,7 +873,7 @@ public class ResourceServiceImpl implements ResourceService {
 
         try {
             return resourceHandler.createResource(resourceIdentifier, metaData, templateContent);
-        } catch (final ResourceHandlerException rhe) {
+        } catch (final ResourceServiceException rhe) {
             throw new ResourceServiceException(rhe);
         }
     }
@@ -947,11 +913,11 @@ public class ResourceServiceImpl implements ResourceService {
                 commandOutput = doUnpack(entity, hostName, resourceTemplateMetaData.getDeployPath() + "/" + resourceTemplateMetaData.getDeployFileName());
             }
         } catch (IOException e) {
-            String message = "Failed to write file " + fileName;
+            String message = "Failed to write file " + fileName + ". " + e.toString();
             LOGGER.error(badStreamMessage + message, e);
             throw new InternalErrorException(FaultType.BAD_STREAM, message, e);
         } catch (CommandFailureException ce) {
-            String message = "Failed to copy file " + fileName;
+            String message = "Failed to copy file " + fileName + ". " + ce.getMessage();
             LOGGER.error(badStreamMessage + message, ce);
             throw new InternalErrorException(FaultType.BAD_STREAM, message, ce);
         }
@@ -962,7 +928,7 @@ public class ResourceServiceImpl implements ResourceService {
         CommandOutput commandOutput;
         try {
             String standardError;
-            binaryDistributionService.prepareUnzip(hostName);
+            binaryDistributionService.distributeUnzip(hostName);
             final String zipDestinationOption = FilenameUtils.removeExtension(destPath);
             LOGGER.debug("checking if unpacked destination exists: {}", zipDestinationOption);
             commandOutput = executeCheckFileExistsCommand(entity, hostName, zipDestinationOption);

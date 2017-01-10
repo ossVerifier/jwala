@@ -31,8 +31,6 @@ public interface JvmService {
 
     void deleteJvmWindowsService(ControlJvmRequest controlJvmRequest, Jvm jvm, User user);
 
-    String generateConfigFile(String aJvmName, String templateName);
-
     Jvm generateAndDeployJvm(String jvmName, User user);
 
     Jvm generateAndDeployFile(String jvmName, String fileName, User user);
@@ -44,8 +42,6 @@ public interface JvmService {
     String getResourceTemplate(final String jvmName, final String resourceTemplateName, final boolean tokensReplaced);
 
     String updateResourceTemplate(final String jvmName, final String resourceTemplateName, final String template);
-
-    String generateInstallServiceBat(String jvmName);
 
     String previewResourceTemplate(String fileName, String jvmName, String groupName, String template);
 
@@ -86,8 +82,6 @@ public interface JvmService {
      * @param parentGroup
      */
     void createDefaultTemplates(String jvmName, Group parentGroup);
-
-    String getResourceTemplateMetaData(String jvmName, String fileName);
 
     /**
      * Check for setEnv Script

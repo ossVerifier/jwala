@@ -238,13 +238,6 @@ public class ApplicationServiceRestImplTest {
     }
 
     @Test
-    public void testGetResourceTemplate() {
-        when(service.getResourceTemplate(anyString(), anyString(), anyString(), anyString(), any(ResourceGroup.class), anyBoolean())).thenReturn("<server>template</server>");
-        Response response = cut.getResourceTemplate(application.getName(), group1.getName(), "jvmName", "ServerXMLTemplate.tpl", true);
-        assertNotNull(response.getEntity());
-    }
-
-    @Test
     public void testUpdateResourceTemplate() {
         final String updateContent = "<server>updatedContent</server>";
         when(service.updateResourceTemplate(anyString(), anyString(), anyString(), anyString(), anyString())).thenReturn(updateContent);

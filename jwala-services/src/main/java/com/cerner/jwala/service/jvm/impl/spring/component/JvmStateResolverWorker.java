@@ -35,8 +35,8 @@ public class JvmStateResolverWorker {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JvmStateResolverWorker.class);
     private static final String STOPPED = "STOPPED";
-    private static final String NOT_RECEIVING_JVM_STATE_ERR_MSG = "The JVM state listener is not receiving any state. " +
-            "Possible causes are messaging settings are wrong, messaging server is down, JVM is not functioning correctly " +
+    private static final String NOT_RECEIVING_JVM_STATE_ERR_MSG = "Jwala not receiving updates from this JVM. " +
+            "Possible causes are messaging settings in vars.properties are wrong, JVM is not functioning correctly " +
             "(configuration error(s) etc) even though the service is running.";
 
     private final ClientFactoryHelper clientFactoryHelper;

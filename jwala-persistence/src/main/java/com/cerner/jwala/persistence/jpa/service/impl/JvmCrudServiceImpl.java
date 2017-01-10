@@ -347,13 +347,6 @@ public class JvmCrudServiceImpl extends AbstractCrudServiceImpl<JpaJvm> implemen
     }
 
     @Override
-    public List<JpaJvm> getJvmsByGroupId(final String groupName) {
-        final Query q = entityManager.createNamedQuery(JpaJvm.QUERY_GET_JVMS_BY_GROUP_NAME);
-        q.setParameter(JpaJvm.QUERY_PARAM_GROUP_NAME, groupName);
-        return q.getResultList();
-    }
-
-    @Override
     public List<Jvm> getJvmsByGroupName(String groupName) {
         final Query q = entityManager.createNamedQuery(JpaJvm.QUERY_GET_JVMS_BY_GROUP_NAME);
         q.setParameter(JpaJvm.QUERY_PARAM_GROUP_NAME, groupName);

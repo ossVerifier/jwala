@@ -8,9 +8,9 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.Serializable;
+import java.util.Arrays;
 
-public class SshConfiguration implements Serializable {
+public class SshConfiguration {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SshConfiguration.class);
 
@@ -18,13 +18,13 @@ public class SshConfiguration implements Serializable {
     private final Integer port;
     private final String privateKeyFile;
     private final String knownHostsFile;
-    private final String iAmNotThePasswordYoureLookingFor;
+    private final char[] encPassword;
 
     public SshConfiguration(final String theUserName,
                             final Integer thePort,
                             final String thePrivateKeyFile,
                             final String theKnownHostsFile,
-                            final String theEncPassword) {
+                            final char[] theEncPassword) {
 
 
         if (theUserName == null
@@ -39,11 +39,7 @@ public class SshConfiguration implements Serializable {
         port = thePort;
         privateKeyFile = thePrivateKeyFile;
         knownHostsFile = theKnownHostsFile;
-        if (theEncPassword == null) {
-            iAmNotThePasswordYoureLookingFor = null;
-        } else {
-            iAmNotThePasswordYoureLookingFor = new DecryptPassword().decrypt(theEncPassword);
-        }
+        encPassword = theEncPassword != null ? Arrays.copyOf(theEncPassword, theEncPassword.length) : new char[]{};
     }
 
     public String getUserName() {
@@ -62,7 +58,9 @@ public class SshConfiguration implements Serializable {
         return knownHostsFile;
     }
 
-    public String getPassword() { return iAmNotThePasswordYoureLookingFor; }
+    public char[] getEncryptedPassword() {
+        return Arrays.copyOf(encPassword, encPassword.length);
+    }
 
     @Override
     public boolean equals(Object obj) {

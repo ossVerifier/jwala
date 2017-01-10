@@ -30,8 +30,6 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
     private ResourceService resourceService;
     private final GroupService groupService;
 
-    private static ApplicationServiceRestImpl instance;
-
     public ApplicationServiceRestImpl(ApplicationService applicationService,
                                       ResourceService resourceService,
                                       final GroupService groupService) {
@@ -130,8 +128,6 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
     public Response deployWebArchive(final Identifier<Application> anAppToGet, String hostName) {
         LOGGER.info("Deploying web archive for app ID {}", anAppToGet);
         Application app = service.getApplication(anAppToGet);
-        final Group group = app.getGroup();
-        final String appName = app.getName();
         service.copyApplicationWarToHost(app, hostName);
         return null;
     }
@@ -140,13 +136,6 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
     public Response getResourceNames(final String appName, final String jvmName) {
         LOGGER.debug("get resource names for {}@{}", appName, jvmName);
         return ResponseBuilder.ok(service.getResourceTemplateNames(appName, jvmName));
-    }
-
-    @Override
-    public Response getResourceTemplate(final String appName, final String groupName, final String jvmName,
-                                        final String resourceTemplateName, final boolean tokensReplaced) {
-        LOGGER.debug("get resource template {} for app {} in group {} associated with JVM {} : tokens replaced={}", resourceTemplateName, appName, groupName, jvmName, tokensReplaced);
-        return ResponseBuilder.ok(service.getResourceTemplate(appName, groupName, jvmName, resourceTemplateName, resourceService.generateResourceGroup(), tokensReplaced));
     }
 
     @Override
@@ -200,4 +189,11 @@ public class ApplicationServiceRestImpl implements ApplicationServiceRest {
         service.deployConf(appName, hostName, aUser.getUser());
         return ResponseBuilder.ok(appName);
     }
+
+    @Override
+    public Response checkIfFileExists(final String filePath, final AuthenticatedUser aUser, final String hostName) {
+        return ResponseBuilder.ok(service.executeCheckIfFileExistsCommand(null, hostName, filePath));
+    }
+
+
 }

@@ -63,7 +63,7 @@ public class RemoteCommandProcessorBuilder implements CommandProcessorBuilder {
     }
 
     protected RemoteSystemConnection getRemoteSystemConnection() {
-        return new RemoteSystemConnection(sshConfig.getUserName(), sshConfig.getPassword(), hostName, sshConfig.getPort());
+        return new RemoteSystemConnection(sshConfig.getUserName(), sshConfig.getEncryptedPassword(), hostName, sshConfig.getPort());
     }
 
 }

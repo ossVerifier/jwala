@@ -92,7 +92,7 @@ public class JvmControlServiceImpl implements JvmControlService {
         final Jvm jvm = jvmPersistenceService.getJvm(controlJvmRequest.getJvmId());
         try {
             final String event = controlOperation.getOperationState() == null ? controlOperation.name() : controlOperation.getOperationState().toStateLabel();
-            //Write message to history
+
             historyFacadeService.write(getServerName(jvm), new ArrayList<>(jvm.getGroups()), event, EventType.USER_ACTION_INFO, aUser.getId());
             RemoteCommandReturnInfo remoteCommandReturnInfo = jvmCommandFactory.executeCommand(jvm,controlJvmRequest.getControlOperation());
             CommandOutput commandOutput = new CommandOutput(new ExecReturnCode(remoteCommandReturnInfo.retCode),
@@ -104,7 +104,7 @@ public class JvmControlServiceImpl implements JvmControlService {
             if (StringUtils.isNotEmpty(standardOutput) && (JvmControlOperation.START.equals(controlOperation) ||
                     JvmControlOperation.STOP.equals(controlOperation))) {
                 commandOutput.cleanStandardOutput();
-                LOGGER.info("shell command output{}", standardOutput);
+                LOGGER.info("shell command output is {}", standardOutput);
             } else if (StringUtils.isNoneBlank(standardOutput) && JvmControlOperation.HEAP_DUMP.equals(controlOperation)
                     && returnCode.wasSuccessful()) {
                 commandOutput.cleanHeapDumpStandardOutput();
@@ -113,7 +113,7 @@ public class JvmControlServiceImpl implements JvmControlService {
             if (returnCode.wasSuccessful()) {
                 if (JvmControlOperation.STOP.equals(controlOperation)) {
                     LOGGER.debug("Updating state to {}...", JvmState.JVM_STOPPED);
-                    jvmStateService.updateState(jvm.getId(), JvmState.JVM_STOPPED);
+                    jvmStateService.updateState(jvm, JvmState.JVM_STOPPED);
                     LOGGER.debug("State successfully updated to {}", JvmState.JVM_STOPPED);
                 }
             } else {
@@ -122,7 +122,7 @@ public class JvmControlServiceImpl implements JvmControlService {
                 switch (returnCode.getReturnCode()) {
                     case ExecReturnCode.JWALA_EXIT_PROCESS_KILLED:
                         commandOutput = new CommandOutput(new ExecReturnCode(0), FORCED_STOPPED, commandOutput.getStandardError());
-                        jvmStateService.updateState(jvm.getId(), JvmState.FORCED_STOPPED);
+                        jvmStateService.updateState(jvm, JvmState.FORCED_STOPPED);
                         break;
                     case ExecReturnCode.JWALA_EXIT_CODE_ABNORMAL_SUCCESS:
                         int retCode = 0;
@@ -204,7 +204,7 @@ public class JvmControlServiceImpl implements JvmControlService {
                 case DEPLOY_CONFIG_ARCHIVE:
                 case HEAP_DUMP:
                 case INSTALL_SERVICE:
-                case SECURE_COPY:
+                case SCP:
                 case THREAD_DUMP:
                     throw new UnsupportedOperationException();
             }

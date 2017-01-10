@@ -1,11 +1,9 @@
 package com.cerner.jwala.commandprocessor.impl.jsch;
 
 import com.cerner.jwala.commandprocessor.impl.CommonSshTestConfiguration;
-import com.cerner.jwala.commandprocessor.impl.jsch.JschBuilder;
 import com.jcraft.jsch.HostKeyRepository;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
-
 import org.junit.Before;
 import org.junit.Test;
 

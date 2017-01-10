@@ -16,7 +16,6 @@ import com.cerner.jwala.common.properties.ApplicationProperties;
 import com.cerner.jwala.common.request.webserver.CreateWebServerRequest;
 import com.cerner.jwala.common.request.webserver.UpdateWebServerRequest;
 import com.cerner.jwala.common.request.webserver.UploadWebServerTemplateRequest;
-import com.cerner.jwala.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
 import com.cerner.jwala.persistence.service.WebServerPersistenceService;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionLockManager;
 import com.cerner.jwala.service.resource.ResourceService;
@@ -32,7 +31,10 @@ import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -251,42 +253,6 @@ public class WebServerServiceImplTest {
     }
 
     @Test
-    public void testGenerateHttpdConfig() throws IOException {
-        System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, new File(".").getAbsolutePath() + "/src/test/resources");
-        Application app1 = new Application(null, "hello-world-1", null, "/hello-world-1", null, true, true, false, "testWar.war");
-        Application app2 = new Application(null, "hello-world-2", null, "/hello-world-2", null, true, true, false, "testWar.war");
-
-        Application[] appArray = {app1, app2};
-        Jvm[] jvmArray = {};
-
-        when(webServerPersistenceService.findWebServerByName(anyString())).thenReturn(mockWebServer);
-        when(webServerPersistenceService.findApplications(anyString())).thenReturn(Arrays.asList(appArray));
-        when(webServerPersistenceService.findJvms(anyString())).thenReturn(Arrays.asList(jvmArray));
-        when(webServerPersistenceService.getResourceTemplate(anyString(), anyString())).thenReturn("httpd.conf template content");
-
-        wsService.generateHttpdConfig("Apache2.4", resourceGroup);
-        verify(resourceService).generateResourceFile(eq("httpd.conf"), eq("httpd.conf template content"), any(ResourceGroup.class), any(WebServer.class), any(ResourceGeneratorType.class));
-    }
-
-    @Test(expected = InternalErrorException.class)
-    public void testGenerateHttpdConfigWithNonRetrievableResourceTemplateContentException() throws IOException {
-        Application app1 = new Application(null, "hello-world-1", null, "/hello-world-1", null, true, true, false, "testWar.war");
-        Application app2 = new Application(null, "hello-world-2", null, "/hello-world-2", null, true, true, false, "testWar.war");
-
-        Application[] appArray = {app1, app2};
-
-        when(webServerPersistenceService.findWebServerByName(anyString())).thenReturn(mockWebServer);
-        when(webServerPersistenceService.findApplications(anyString())).thenReturn(Arrays.asList(appArray));
-
-        when(webServerPersistenceService.getResourceTemplate(anyString(), anyString())).thenThrow(NonRetrievableResourceTemplateContentException.class);
-
-        String generatedHttpdConf = wsService.generateHttpdConfig("Apache2.4", resourceGroup);
-
-        assertEquals(removeCarriageReturnsAndNewLines(readReferenceFile("/httpd-ssl.conf")),
-                removeCarriageReturnsAndNewLines(generatedHttpdConf));
-    }
-
-    @Test
     public void testGetWebServer() {
         final WebServer mockWebServer = mock(WebServer.class);
         when(mockWebServer.getName()).thenReturn("mockWebServer");
@@ -413,7 +379,7 @@ public class WebServerServiceImplTest {
     @Test (expected = WebServerServiceException.class)
     public void testGenerateInstallServiceWSBat() {
         when(resourceService.generateResourceFile(anyString(), anyString(), any(ResourceGroup.class), eq(mockWebServer), any(ResourceGeneratorType.class))).thenThrow(IOException.class);
-        wsService.generateInstallServiceWSBat(mockWebServer);
+        wsService.generateInstallServiceScript(mockWebServer);
     }
 
     @Test

@@ -1,5 +1,6 @@
 package com.cerner.jwala.service.jvm.impl;
 
+import com.cerner.jwala.common.FileUtility;
 import com.cerner.jwala.common.domain.model.app.Application;
 import com.cerner.jwala.common.domain.model.fault.FaultType;
 import com.cerner.jwala.common.domain.model.group.Group;
@@ -13,7 +14,6 @@ import com.cerner.jwala.common.domain.model.resource.ResourceIdentifier;
 import com.cerner.jwala.common.domain.model.resource.ResourceTemplateMetaData;
 import com.cerner.jwala.common.domain.model.ssh.SshConfiguration;
 import com.cerner.jwala.common.domain.model.user.User;
-import com.cerner.jwala.common.exception.BadRequestException;
 import com.cerner.jwala.common.exception.InternalErrorException;
 import com.cerner.jwala.common.exec.CommandOutput;
 import com.cerner.jwala.common.exec.ExecCommand;
@@ -27,7 +27,6 @@ import com.cerner.jwala.common.request.jvm.UpdateJvmRequest;
 import com.cerner.jwala.control.AemControl;
 import com.cerner.jwala.control.command.RemoteCommandExecutor;
 import com.cerner.jwala.exception.CommandFailureException;
-import com.cerner.jwala.common.FileUtility;
 import com.cerner.jwala.persistence.jpa.domain.resource.config.template.JpaJvmConfigTemplate;
 import com.cerner.jwala.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
 import com.cerner.jwala.persistence.service.JvmPersistenceService;
@@ -44,15 +43,20 @@ import com.cerner.jwala.service.jvm.JvmService;
 import com.cerner.jwala.service.jvm.exception.JvmServiceException;
 import com.cerner.jwala.service.resource.ResourceService;
 import com.cerner.jwala.service.resource.impl.ResourceGeneratorType;
+import com.cerner.jwala.service.resource.impl.ResourceServiceImpl;
 import com.cerner.jwala.service.webserver.component.ClientFactoryHelper;
 import com.jcraft.jsch.JSchException;
+import net.didion.jwnl.dictionary.file_manager.FileManagerImpl;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.tika.mime.MediaType;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Matchers;
 import org.mockito.Mock;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -61,6 +65,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.charset.Charset;
 import java.util.*;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -127,6 +132,8 @@ public class JvmServiceImplTest extends VerificationBehaviorSupport {
 
     private final Map<String, ReentrantReadWriteLock> lockMap = new HashMap<>();
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(JvmServiceImplTest.class);
+
     @Before
     public void setup() {
 
@@ -135,7 +142,7 @@ public class JvmServiceImplTest extends VerificationBehaviorSupport {
         jvmServiceImpl = new JvmServiceImpl(mockJvmPersistenceService, mockGroupService, mockApplicationService,
                 mockMessagingTemplate, mockGroupStateNotificationService, mockResourceService, mockClientFactoryHelper,
                 "/topic/server-states", mockJvmControlService, mockBinaryDistributionService, mockBinaryDistributionLockManager,
-                mockHistoryFacadeService, mockFileUtility);
+                mockHistoryFacadeService, new FileUtility());
         jvmService = jvmServiceImpl;
     }
 
@@ -404,35 +411,6 @@ public class JvmServiceImplTest extends VerificationBehaviorSupport {
         verify(mockJvmPersistenceService, times(1)).getJvms();
     }
 
-
-    @Test
-    public void testGenerateConfig() throws IOException {
-
-        final Jvm jvm = new Jvm(new Identifier<Jvm>(-123456L),
-                "jvm-name", "host-name", new HashSet<Group>(), 80, 443, 443, 8005, 8009, new Path("/"),
-                "EXAMPLE_OPTS=%someEnv%/someVal", JvmState.JVM_STOPPED, null, null, null, null, null);
-
-        when(mockJvmPersistenceService.findJvmByExactName(eq(jvm.getJvmName()))).thenReturn(jvm);
-        final String templateContent = "<server>test</server>";
-        when(mockJvmPersistenceService.getJvmTemplate(eq("server.xml"), eq(jvm.getId()))).thenReturn(templateContent);
-        when(mockResourceService.generateResourceGroup()).thenReturn(new ResourceGroup());
-        when(mockResourceService.generateResourceFile(anyString(), anyString(), any(ResourceGroup.class), any(Jvm.class), any(ResourceGeneratorType.class))).thenReturn(templateContent);
-        String generatedXml = jvmService.generateConfigFile(jvm.getJvmName(), "server.xml");
-
-        assert !generatedXml.isEmpty();
-    }
-
-    @Test(expected = BadRequestException.class)
-    public void testGenerateThrowsExceptionForEmptyTemplate() {
-        final Jvm jvm = new Jvm(new Identifier<Jvm>(-123456L),
-                "jvm-name", "host-name", new HashSet<Group>(), 80, 443, 443, 8005, 8009, new Path("/"),
-                "EXAMPLE_OPTS=%someEnv%/someVal", JvmState.JVM_STOPPED, null, null, null, null, null);
-
-        when(mockJvmPersistenceService.findJvmByExactName(eq(jvm.getJvmName()))).thenReturn(jvm);
-        when(mockJvmPersistenceService.getJvmTemplate(eq("server.xml"), eq(jvm.getId()))).thenReturn("");
-        jvmService.generateConfigFile(jvm.getJvmName(), "server.xml");
-    }
-
     @Test
     public void testGetSpecific() {
 
@@ -447,54 +425,6 @@ public class JvmServiceImplTest extends VerificationBehaviorSupport {
         final Jvm jvm = mock(Jvm.class);
         when(jvm.getId()).thenReturn(anId);
         return jvm;
-    }
-
-    @SuppressWarnings("unchecked")
-    @Test
-    public void testGenerateServerXmlConfig() {
-        String testJvmName = "testjvm";
-        final Jvm testJvm = new Jvm(new Identifier<Jvm>(99L), testJvmName, new HashSet<Group>());
-        when(mockJvmPersistenceService.findJvmByExactName(testJvmName)).thenReturn(testJvm);
-        String expectedValue = "<server>xml-content</server>";
-        when(mockResourceService.generateResourceGroup()).thenReturn(new ResourceGroup());
-        when(mockResourceService.generateResourceFile(anyString(), eq(expectedValue), any(ResourceGroup.class), eq(testJvm), any(ResourceGeneratorType.class))).thenReturn(expectedValue);
-        when(mockJvmPersistenceService.getJvmTemplate(anyString(), any(Identifier.class))).thenReturn(expectedValue);
-
-        // happy case
-        String serverXml = jvmService.generateConfigFile(testJvmName, "server.xml");
-        assertEquals(expectedValue, serverXml);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Test
-    public void testGenerateContextXmlConfig() {
-        String testJvmName = "testjvm";
-        final Jvm jvm = new Jvm(new Identifier<Jvm>(99L), testJvmName, new HashSet<Group>());
-        when(mockJvmPersistenceService.findJvmByExactName(testJvmName)).thenReturn(jvm);
-        String expectedValue = "<server>xml-content</server>";
-        when(mockJvmPersistenceService.getJvmTemplate(anyString(), any(Identifier.class))).thenReturn(expectedValue);
-        when(mockResourceService.generateResourceGroup()).thenReturn(new ResourceGroup());
-        when(mockResourceService.generateResourceFile(anyString(), eq(expectedValue), any(ResourceGroup.class), eq(jvm), any(ResourceGeneratorType.class))).thenReturn(expectedValue);
-
-        // happy case
-        String serverXml = jvmService.generateConfigFile(testJvmName, "server.xml");
-        assertEquals(expectedValue, serverXml);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Test
-    public void testGenerateSetenvBatConfig() {
-        String testJvmName = "testjvm";
-        final Jvm testJvm = new Jvm(new Identifier<Jvm>(99L), testJvmName, new HashSet<Group>());
-        when(mockJvmPersistenceService.findJvmByExactName(testJvmName)).thenReturn(testJvm);
-        String expectedValue = "<server>xml-content</server>";
-        when(mockJvmPersistenceService.getJvmTemplate(anyString(), any(Identifier.class))).thenReturn(expectedValue);
-        when(mockResourceService.generateResourceGroup()).thenReturn(new ResourceGroup());
-        when(mockResourceService.generateResourceFile(anyString(), eq(expectedValue), any(ResourceGroup.class), eq(testJvm), any(ResourceGeneratorType.class))).thenReturn(expectedValue);
-
-        // happy case
-        String serverXml = jvmService.generateConfigFile(testJvmName, "server.xml");
-        assertEquals(expectedValue, serverXml);
     }
 
     @Test
@@ -726,7 +656,6 @@ public class JvmServiceImplTest extends VerificationBehaviorSupport {
         when(mockJvmControlService.controlJvm(eq(new ControlJvmRequest(mockJvm.getId(), JvmControlOperation.DEPLOY_CONFIG_ARCHIVE)), any(User.class))).thenReturn(commandOutput);
         when(mockJvmControlService.controlJvm(eq(new ControlJvmRequest(mockJvm.getId(), JvmControlOperation.INSTALL_SERVICE)), any(User.class))).thenReturn(commandOutput);
 
-        when(mockJvmPersistenceService.getResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"deployFileName\":\"server-test-deploy-config.xml\", \"deployPath\":\"c:/fake/test/path\"}");
         when(mockJvmPersistenceService.findJvmByExactName(anyString())).thenReturn(mockJvm);
         when(mockJvmPersistenceService.getJvmTemplate(anyString(), any(Identifier.class))).thenReturn("<server>some xml</server>");
 
@@ -949,7 +878,6 @@ public class JvmServiceImplTest extends VerificationBehaviorSupport {
         when(mockExecData.getReturnCode()).thenReturn(new ExecReturnCode(0));
         when(mockJvmPersistenceService.findJvmByExactName(anyString())).thenReturn(mockJvm);
         when(mockResourceService.generateResourceFile(anyString(), anyString(), any(ResourceGroup.class), anyString(), any(ResourceGeneratorType.class))).thenReturn("<server>xml</server>");
-        when(mockJvmPersistenceService.getResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"deployFileName\":\"server.xml\", \"deployPath\":\"/\",\"contentType\":\"application/xml\"}");
         when(mockJvmPersistenceService.getJvmTemplate(anyString(), any(Identifier.class))).thenReturn("<server>xml</server>");
         when(mockJvmControlService.secureCopyFile(any(ControlJvmRequest.class), anyString(), anyString(), anyString())).thenReturn(mockExecData);
         when(mockJvmControlService.executeCreateDirectoryCommand(any(Jvm.class), anyString())).thenReturn(mockExecData);
@@ -1009,5 +937,31 @@ public class JvmServiceImplTest extends VerificationBehaviorSupport {
         when(mockJvm.getId()).thenReturn(new Identifier<Jvm>(11111L));
         when(mockJvmPersistenceService.findJvmByExactName(anyString())).thenReturn(mockJvm);
         jvmService.generateAndDeployFile("jvmName", "fileName", mockUser);
+    }
+
+    @Test
+    public void testGenerateJvmConfigJar() {
+        Set<Group> groups = new HashSet<Group>() {{
+            add(new Group(Identifier.id(2L, Group.class), "junit-group"));
+        }};
+
+        Jvm jvm = new Jvm(Identifier.id(1L, Jvm.class), "junit-jvm", groups);
+
+        jvmServiceImpl = new JvmServiceImpl(mockJvmPersistenceService, mockGroupService, mockApplicationService,
+                mockMessagingTemplate, mockGroupStateNotificationService, mockResourceService, mockClientFactoryHelper,
+                "/topic/server-states", mockJvmControlService, mockBinaryDistributionService, mockBinaryDistributionLockManager,
+                mockHistoryFacadeService, new FileUtility());
+
+        when(mockJvmPersistenceService.findJvmByExactName(jvm.getJvmName())).thenReturn(jvm);
+        when(mockResourceService.generateResourceFile(anyString(),
+                anyString(),
+                any(ResourceGroup.class),
+                any(Jvm.class),
+                eq(ResourceGeneratorType.TEMPLATE))).thenReturn("some file content");
+        try {
+            jvmServiceImpl.generateJvmConfigJar(jvm);
+        } catch (CommandFailureException e) {
+            LOGGER.error("Failed to generate remote jar.", e);
+        }
     }
 }

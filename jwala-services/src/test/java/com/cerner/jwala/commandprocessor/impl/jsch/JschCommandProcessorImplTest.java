@@ -1,11 +1,10 @@
 package com.cerner.jwala.commandprocessor.impl.jsch;
 
-import com.cerner.jwala.commandprocessor.impl.jsch.JschCommandProcessorImpl;
 import com.cerner.jwala.commandprocessor.jsch.impl.ChannelSessionKey;
 import com.cerner.jwala.common.exec.*;
+import com.cerner.jwala.common.properties.ApplicationProperties;
 import com.cerner.jwala.exception.RemoteCommandFailureException;
 import com.jcraft.jsch.*;
-
 import org.apache.commons.pool2.impl.GenericKeyedObjectPool;
 import org.junit.Before;
 import org.junit.Test;
@@ -14,6 +13,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -52,6 +52,7 @@ public class JschCommandProcessorImplTest {
 
     @Before
     public void setup() throws JSchException {
+        System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, new File(".").getAbsolutePath() + "/src/test/resources");
         remoteOutputStream = new InputStream() {
             private int i = 0;
             byte [] bytes = "Blah blah...EXIT_CODE=0***".getBytes();
@@ -76,7 +77,7 @@ public class JschCommandProcessorImplTest {
         when(mockChannel.getOutputStream()).thenReturn(mockLocalInput);
         when(mockChannel.getErrStream()).thenReturn(mockRemoteErr);
         when(mockChannel.isClosed()).thenReturn(true);
-        jschCommandProcessor = new JschCommandProcessorImpl(mockJsch, new RemoteExecCommand(new RemoteSystemConnection("testUser", "testPassword", "testHost", 1111),
+        jschCommandProcessor = new JschCommandProcessorImpl(mockJsch, new RemoteExecCommand(new RemoteSystemConnection("testUser", "==encryptedPassword==".toCharArray(), "testHost", 1111),
                 new ExecCommand("scp ./jwala-services/src/test/resources/known_hosts destpath/testfile.txt".split(" "))), null);
         try {
             jschCommandProcessor.processCommand();
@@ -97,7 +98,7 @@ public class JschCommandProcessorImplTest {
         when(mockChannelPool.borrowObject(any(ChannelSessionKey.class))).thenReturn(mockChannelShell);
         when(mockChannelShell.isConnected()).thenReturn(true);
         jschCommandProcessor = new JschCommandProcessorImpl(mockJsch,
-                new RemoteExecCommand(new RemoteSystemConnection("testUser", "testPassword", "testHost", 1111),
+                new RemoteExecCommand(new RemoteSystemConnection("testUser", "==encrypredTestPassword==".toCharArray(), "testHost", 1111),
                 new ShellCommand("start", "jvm", "testShellCommand")), mockChannelPool);
         try {
             jschCommandProcessor.processCommand();
