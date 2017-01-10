@@ -13,11 +13,12 @@ CYGWIN*) cygwin=true;;
 Linux*) linux=true;;
 esac
 
+if [ "$1" = "" -o "$2" = "" ]; then
+    echo $0 not invoked with service name and timeout in seconds.
+    exit $JWALA_EXIT_CODE_NO_OP
+fi
+
 if $cygwin; then
-  if [ "$1" = "" -o "$2" = "" ]; then
-      /usr/bin/echo $0 not invoked with service name and timeout in seconds.
-      exit $JWALA_EXIT_CODE_NO_OP
-  fi
   export JVMINST=`sc queryex $1 | /usr/bin/head -1 | /usr/bin/awk '{ sub(/:/,"",$4); print $4 }'`
   export JVMPID=`sc queryex $1 | /usr/bin/grep PID | /usr/bin/awk '{ print $3 }'`
   if [ "$JVMINST" = "1060" ]; then
@@ -51,5 +52,5 @@ if $cygwin; then
 fi
 
 if $linux; then
-  /sbin/service $1 stop
+  /sbin/sudo service $1 stop
 fi

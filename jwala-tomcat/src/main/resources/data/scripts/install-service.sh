@@ -11,12 +11,12 @@ CYGWIN*) cygwin=true;;
 Linux*) linux=true;;
 esac
 
-if $cygwin; then
-  if [ "$1" = "" -o "$2" = "" ]; then
-    /usr/bin/echo $0 usage: install-service.sh \<jvm-name\> \<jwala-jvm-instances-dir\> \<tomcat-name\>
+if [ "$1" = "" -o "$2" = "" ]; then
+    echo $0 not invoked with service name or instances folder path
     exit $JWALA_EXIT_CODE_NO_OP;
-  fi
+fi
 
+if $cygwin; then
   export JVMINST=`sc queryex $1 | head -1 | awk '{ sub(/:/,"",$4); print $4 }'`
   if [ "$JVMINST" = "1060" ]; then
     echo Service $1 not installed on server, continuing with install
@@ -50,4 +50,5 @@ if $linux; then
   sed -e "s/@TOMCAT_HOME@/${2//\//\\/}\\/$1/g" -e "s/@JVM_NAME@/$1/g" /linux/jvm-service> $1
   chmod 755 $1
   sudo cp $1 /etc/init.d
+  sudo chkconfig --add $1
 fi

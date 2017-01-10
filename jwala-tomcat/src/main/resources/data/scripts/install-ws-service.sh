@@ -11,11 +11,12 @@ CYGWIN*) cygwin=true;;
 Linux*) linux=true;;
 esac
 
+if [ "$1" = "" -o "$2" = "" ]; then
+    echo $0 not invoked with service name or instances folder path
+    exit $JWALA_EXIT_CODE_NO_OP;
+fi
+
 if $cygwin; then
-  if [ "$1" = "" ]; then
-      /usr/bin/echo $0 usage: install-ws-service.sh \<web-server-name-name\>
-      exit $JWALA_EXIT_CODE_NO_OP;
-  fi
   export WSINST=`sc queryex $1 | head -1 | awk '{ sub(/:/,"",$4); print $4 }'`
   if [ "$WSINST" = "1060" ]; then
       echo Service $1 not installed on server, continuing with install
@@ -45,4 +46,5 @@ if $linux; then
   sed -e "s/@APACHE_HOME@/${3//\//\\/}/g" -e "s/@HTTPD_CONF@/${2//\//\\/}\\/httpd.conf/g" /linux/httpd-ws-service> $1
   chmod 755 $1
   sudo cp $1 /etc/init.d
+  sudo chkconfig --add $1
 fi

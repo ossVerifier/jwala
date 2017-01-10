@@ -14,11 +14,12 @@ CYGWIN*) cygwin=true;;
 Linux*) linux=true;;
 esac
 
+if [ "$1" = "" ]; then
+    echo $0 not invoked with service name
+    exit $JWALA_EXIT_CODE_NO_OP;
+fi
+
 if $cygwin; then
-  if [ "$1" = "" ]; then
-      /usr/bin/echo $0 not invoked with service name
-      exit $JWALA_EXIT_CODE_NO_OP;
-  fi
   export JVMINST=`sc queryex $1 | /usr/bin/head -1 | /usr/bin/awk '{ sub(/:/,"",$4); print $4 }'`
   if [ "$JVMINST" = "1060" ]; then
       /usr/bin/echo `sc queryex $1`
@@ -48,5 +49,5 @@ if $cygwin; then
 fi
 
 if $linux; then
-  /sbin/service $1 start
+  /sbin/sudo service $1 start
 fi
