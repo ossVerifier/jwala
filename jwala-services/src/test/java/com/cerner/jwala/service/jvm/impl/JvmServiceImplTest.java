@@ -699,12 +699,12 @@ public class JvmServiceImplTest extends VerificationBehaviorSupport {
     public void testCheckSetenvBat() {
         final String jvmName = "test-jvm-check-for-setenvbat";
         when(mockJvmPersistenceService.getResourceTemplate(jvmName, "setenv.bat")).thenReturn("ignore template content, just need to check no exception is thrown");
-        jvmService.checkForSetenvBat(jvmName);
+        jvmService.checkForSetenvScript(jvmName);
 
         verify(mockJvmPersistenceService).getResourceTemplate(anyString(), anyString());
 
         when(mockJvmPersistenceService.getResourceTemplate(jvmName, "setenv.bat")).thenThrow(new NonRetrievableResourceTemplateContentException("JVM", "setenv.bat", new Throwable()));
-        jvmService.checkForSetenvBat(jvmName);
+        jvmService.checkForSetenvScript(jvmName);
     }
 
     @Test
