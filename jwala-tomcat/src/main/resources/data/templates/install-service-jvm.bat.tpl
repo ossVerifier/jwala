@@ -22,12 +22,12 @@ ECHO Install the service
 CMD /C %TOMCAT_BIN_DIR%\service.bat install ${jvm.jvmName}
 
 SET SERVICE_OPTS=""
-IF "%JAVA_SERVICE_OPTS%" NEQ "" SERVICE_OPTS="%SERVICE_OPTS% ++JvmOptions %JAVA_SERVICE_OPTS%"
-IF "%START_PATH%" NEQ "" SERVICE_OPTS="%SERVICE_OPTS% --StartPath %START_PATH%"
+IF "%JAVA_SERVICE_OPTS%" NEQ "" SET SERVICE_OPTS=++JvmOptions %JAVA_SERVICE_OPTS%
+IF "%START_PATH%" NEQ "" SET SERVICE_OPTS=%SERVICE_OPTS% --StartPath %START_PATH%
 
 ECHO Update Java Options
 CMD /C  %TOMCAT_BIN_DIR%\tomcat7 //US//${jvm.jvmName} --JavaHome ${vars['remote.jwala.java.home']} %SERVICE_OPTS% --StdOutput "" --StdError ""
-``
+
 ECHO Change the service to automatically start
 SC CONFIG ${jvm.jvmName} start= auto
 

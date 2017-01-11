@@ -76,16 +76,17 @@ public class ManagedJvmBuilder {
                 addScripts().
                 overwriteServerXml().
                 addLibs().
-                createLogDir().
+                createDirInJvmTomcat("/logs").
+                createDirInJvmTomcat("/temp").
                 jar();
     }
 
-    protected ManagedJvmBuilder createLogDir() {
+    protected ManagedJvmBuilder createDirInJvmTomcat(final String createDirName) {
 
-        File logDir = new File(getTomcatStagingDir().getAbsoluteFile() + "/logs");
-        if (!logDir.exists() && !logDir.mkdirs()) {
-            LOGGER.error("Failed to create tomcat log directory " + logDir);
-            throw new InternalErrorException(FaultType.BAD_STREAM, "Failed to create directory" + logDir.getAbsolutePath());
+        File createDir = new File(getTomcatStagingDir().getAbsoluteFile() + createDirName);
+        if (!createDir.exists() && !createDir.mkdirs()) {
+            LOGGER.error("Failed to create JVM tomcat directory " + createDir);
+            throw new InternalErrorException(FaultType.BAD_STREAM, "Failed to create directory" + createDir.getAbsolutePath());
         }
 
         return this;
