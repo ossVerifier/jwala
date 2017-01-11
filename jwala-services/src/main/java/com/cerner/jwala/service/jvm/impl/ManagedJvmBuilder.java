@@ -38,6 +38,8 @@ public class ManagedJvmBuilder {
     private static final String SERVER_XML_TEMPLATE = "server.xml.tpl";
     public static final String INSTALL_SERVICE_BAT = "install-service.bat";
     public static final String SERVER_XML = "server.xml";
+    private static final String LOGS = "/logs";
+    private static final String TEMP = "/temp";
 
     private Jvm jvm;
     private FileUtility fileUtility;
@@ -76,9 +78,25 @@ public class ManagedJvmBuilder {
                 addScripts().
                 overwriteServerXml().
                 addLibs().
-                createDirInJvmTomcat("/logs").
-                createDirInJvmTomcat("/temp").
+                createDirInJvmTomcat(LOGS).
+                createTempFile().
                 jar();
+    }
+
+    private ManagedJvmBuilder createTempFile() {
+
+        createDirInJvmTomcat(TEMP);
+
+        final String tempFilePath = getTomcatStagingDir().getAbsoluteFile() + TEMP + "/temp.txt";
+        File tempFile = new File(tempFilePath);
+        try {
+            FileUtils.writeStringToFile(tempFile, "Place holder for temp directory", Charset.forName("UTF-8"));
+        } catch (IOException e) {
+            LOGGER.error("Failed to write temp.txt in temp directory: {}", tempFilePath);
+            throw new InternalErrorException(FaultType.BAD_STREAM, "Failed to write temp.txt in temp directory: " + tempFilePath);
+        }
+
+        return this;
     }
 
     protected ManagedJvmBuilder createDirInJvmTomcat(final String createDirName) {
