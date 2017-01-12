@@ -48,9 +48,9 @@ import org.springframework.context.annotation.Configuration;
 
 import javax.ws.rs.ext.MessageBodyWriter;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -108,7 +108,7 @@ public class AemWebServiceConfiguration {
     @Autowired
     private BinaryDistributionService binaryDistributionService;
 
-    private final Map<String, ReentrantReadWriteLock> wsWriteLockMap = new HashMap<>();
+    private final Map<String, ReentrantReadWriteLock> wsWriteLockMap = new ConcurrentHashMap<>();
 
     @Bean
     public Server getV1JaxResServer() {
