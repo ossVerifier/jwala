@@ -9,6 +9,7 @@ import com.cerner.jwala.common.domain.model.ssh.SshConfiguration;
 import com.cerner.jwala.common.exec.ExecCommand;
 import com.cerner.jwala.common.exec.RemoteExecCommand;
 import com.cerner.jwala.common.exec.RemoteSystemConnection;
+import com.cerner.jwala.common.jsch.JschService;
 import com.cerner.jwala.control.AemControl;
 import com.cerner.jwala.exception.CommandFailureException;
 import com.jcraft.jsch.Channel;
@@ -21,6 +22,7 @@ public class RemoteCommandProcessorBuilder implements CommandProcessorBuilder {
     private ExecCommand command;
     private String hostName;
     private JSch jsch;
+    private JschService jschService;
     private SshConfiguration sshConfig;
     private GenericKeyedObjectPool<ChannelSessionKey, Channel> channelPool;
 
@@ -42,6 +44,11 @@ public class RemoteCommandProcessorBuilder implements CommandProcessorBuilder {
         return this;
     }
 
+    public RemoteCommandProcessorBuilder setJschService(final JschService jschService) {
+        this.jschService = jschService;
+        return this;
+    }
+
     public RemoteCommandProcessorBuilder setSshConfig(final SshConfiguration aConfig) {
         sshConfig = aConfig;
         return this;
@@ -58,7 +65,7 @@ public class RemoteCommandProcessorBuilder implements CommandProcessorBuilder {
         if (command.getCommandFragments().get(0).contains(AemControl.Properties.SCP_SCRIPT_NAME.getValue())) {
             return new JschScpCommandProcessorImpl(jsch, remoteCommand);
         } else {
-            return new JschCommandProcessorImpl(jsch, remoteCommand, channelPool);
+            return new JschCommandProcessorImpl(remoteCommand, jschService);
         }
     }
 

@@ -34,7 +34,7 @@ public class JschRequestProcessorImplTest {
     @Test(expected = ExitCodeNotAvailableException.class)
     public void testGetReturnCodeBeforeFinishing() throws Exception {
         final RemoteExecCommand remoteExecCommand = new RemoteExecCommand(remoteSystemConnection, new ExecCommand("vi"));
-        final JschCommandProcessorImpl sshProcessor = new JschCommandProcessorImpl(builder.build(), remoteExecCommand,
+        final JschCommandProcessorImpl sshProcessor = new JschCommandProcessorImpl(remoteExecCommand,
                 null);
         sshProcessor.processCommand();
         final ExecReturnCode returnCode = sshProcessor.getExecutionReturnCode();
@@ -44,7 +44,7 @@ public class JschRequestProcessorImplTest {
     public void testBadRemoteCommand() throws Exception {
         final RemoteExecCommand remoteExecCommand =
                 new RemoteExecCommand(new RemoteSystemConnection("abc", "==encryptedPassword==".toCharArray(), "example.com", 123456), new ExecCommand("vi"));
-        final JschCommandProcessorImpl jschCommandProcessor = new JschCommandProcessorImpl(builder.build(), remoteExecCommand,
+        final JschCommandProcessorImpl jschCommandProcessor = new JschCommandProcessorImpl(remoteExecCommand,
                 null);
         jschCommandProcessor.processCommand();
     }

@@ -1,9 +1,9 @@
-package com.cerner.jwala.service;
+package com.cerner.jwala.common.jsch;
 
 /**
  * Wrapper that contains information on a remote command execution.
  *
- * Created by Jedd Cuison on 3/25/2016.
+ * Created by Jedd Cuison on 3/25/2016
  */
 public class RemoteCommandReturnInfo {
 

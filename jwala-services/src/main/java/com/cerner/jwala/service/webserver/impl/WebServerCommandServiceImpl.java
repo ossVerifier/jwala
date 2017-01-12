@@ -10,7 +10,7 @@ import com.cerner.jwala.control.command.DefaultExecCommandBuilderImpl;
 import com.cerner.jwala.control.webserver.command.impl.WindowsWebServerPlatformCommandProvider;
 import com.cerner.jwala.exception.CommandFailureException;
 import com.cerner.jwala.service.RemoteCommandExecutorService;
-import com.cerner.jwala.service.RemoteCommandReturnInfo;
+import com.cerner.jwala.common.jsch.RemoteCommandReturnInfo;
 import com.cerner.jwala.service.webserver.WebServerCommandService;
 import com.cerner.jwala.service.webserver.WebServerService;
 

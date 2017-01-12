@@ -6,6 +6,7 @@ import com.cerner.jwala.commandprocessor.jsch.impl.ChannelSessionKey;
 import com.cerner.jwala.common.domain.model.ssh.SshConfiguration;
 import com.cerner.jwala.common.exec.CommandOutput;
 import com.cerner.jwala.common.exec.ExecCommand;
+import com.cerner.jwala.common.jsch.JschService;
 import com.cerner.jwala.exception.CommandFailureException;
 import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.JSchException;
@@ -15,17 +16,20 @@ import org.apache.commons.pool2.impl.GenericKeyedObjectPool;
 public class RemoteCommandExecutorImpl<T> implements RemoteCommandExecutor<T> {
     private final com.cerner.jwala.commandprocessor.CommandExecutor executor;
     private final JschBuilder jsch;
+    private final JschService jschService;
     private final SshConfiguration sshConfig;
     private final GenericKeyedObjectPool<ChannelSessionKey, Channel> channelPool;
 
     public RemoteCommandExecutorImpl(final CommandExecutor theExecutor,
                                      final JschBuilder theJschBuilder,
                                      final SshConfiguration theSshConfig,
-                                     final GenericKeyedObjectPool<ChannelSessionKey, Channel> channelPool) {
+                                     final GenericKeyedObjectPool<ChannelSessionKey, Channel> channelPool,
+                                     final JschService jschService) {
         executor = theExecutor;
         jsch = theJschBuilder;
         sshConfig = theSshConfig;
         this.channelPool = channelPool;
+        this.jschService = jschService;
     }
 
     @Override
@@ -45,8 +49,8 @@ public class RemoteCommandExecutorImpl<T> implements RemoteCommandExecutor<T> {
 
         try {
             final RemoteCommandProcessorBuilder processorBuilder = new RemoteCommandProcessorBuilder();
-            processorBuilder.setCommand(execCommand).setHost(entityHost).setJsch(jsch.build()).setSshConfig(sshConfig)
-                    .setChannelPool(channelPool);
+            processorBuilder.setCommand(execCommand).setHost(entityHost).setJsch(jsch.build()).setJschService(jschService)
+                    .setSshConfig(sshConfig).setChannelPool(channelPool);
 
             return executor.execute(processorBuilder);
         } catch (final JSchException jsche) {

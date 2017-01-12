@@ -3,6 +3,7 @@ package com.cerner.jwala.control.configuration;
 import com.cerner.jwala.commandprocessor.CommandExecutor;
 import com.cerner.jwala.commandprocessor.impl.CommandExecutorImpl;
 import com.cerner.jwala.commandprocessor.jsch.impl.ChannelSessionKey;
+import com.cerner.jwala.common.jsch.JschService;
 import com.cerner.jwala.common.properties.ApplicationProperties;
 import com.cerner.jwala.control.command.RemoteCommandExecutorImpl;
 import com.jcraft.jsch.Channel;
@@ -22,6 +23,9 @@ public class AemCommandExecutorConfig {
     private AemSshConfig sshConfig;
 
     @Autowired
+    private JschService jschService;
+
+    @Autowired
     private GenericKeyedObjectPool<ChannelSessionKey, Channel> channelPool;
 
     @Bean
@@ -37,7 +41,7 @@ public class AemCommandExecutorConfig {
     @Bean
     public RemoteCommandExecutorImpl getRemoteCommandExecutor() {
         return new RemoteCommandExecutorImpl(getCommandExecutor(), sshConfig.getJschBuilder(), sshConfig.getSshConfiguration(),
-                channelPool);
+                channelPool, jschService);
     }
 
 }
