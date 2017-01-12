@@ -35,7 +35,7 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
         try {
             binaryDistributionLockManager.writeLock(writeLockResourceName);
             String remoteDeployDir =  ApplicationProperties.getRequired(PropertyKeys.REMOTE_PATHS_APACHE_HTTPD);
-            String apacheDirName = ApplicationProperties.get(PropertyKeys.REMOTE_PATHS_HTTPD_ROOT_DIR_NAME);
+            String apacheDirName = ApplicationProperties.getRequired(PropertyKeys.REMOTE_PATHS_HTTPD_ROOT_DIR_NAME);
             distributeBinary(hostname, apacheDirName, remoteDeployDir, APACHE_EXCLUDE);
         } finally {
             binaryDistributionLockManager.writeUnlock(writeLockResourceName);
