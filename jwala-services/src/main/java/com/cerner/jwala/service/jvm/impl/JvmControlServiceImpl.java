@@ -271,6 +271,8 @@ public class JvmControlServiceImpl implements JvmControlService {
         final String name = jvm.getJvmName();
         final String hostName = jvm.getHostName();
         final String parentDir;
+
+        //TODOhandle ~
         if (destPath.startsWith("~")) {
             parentDir = destPath.substring(0, destPath.lastIndexOf("/"));
         } else {

@@ -531,7 +531,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
 
             for (Jvm jvm : jvms) {
                 LOGGER.info("Checking if setenv.bat exists for the jvm {}", jvm.getJvmName());
-                jvmService.checkForSetenvBat(jvm.getJvmName());
+                jvmService.checkForSetenvScript(jvm.getJvmName());
             }
 
             final JvmServiceRest jvmServiceRest = JvmServiceRestImpl.get();

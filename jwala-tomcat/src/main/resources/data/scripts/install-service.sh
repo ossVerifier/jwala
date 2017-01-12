@@ -47,7 +47,7 @@ if $cygwin; then
 fi
 
 if $linux; then
-  sed -e "s/@TOMCAT_HOME@/${2//\//\\/}\\/$1/g" -e "s/@JVM_NAME@/$1/g" /linux/jvm-service> $1
+  sed -e "s/@TOMCAT_HOME@/${2//\//\\/}\\/$1\\/$3/g" -e "s/@JVM_NAME@/$1/g" $(dirname $0)/linux/jvm-service> $1
   chmod 755 $1
   sudo cp $1 /etc/init.d
   sudo chkconfig --add $1

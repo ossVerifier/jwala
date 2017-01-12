@@ -74,7 +74,7 @@ public class ShellCommandFactory {
     }
 
     private RemoteSystemConnection getConnection(String host) {
-        return new RemoteSystemConnection(aemSshConfig.getSshConfiguration().getUserName(), aemSshConfig.getSshConfiguration().getPassword(), host, aemSshConfig.getSshConfiguration().getPort());
+        return new RemoteSystemConnection(aemSshConfig.getSshConfiguration().getUserName(), aemSshConfig.getSshConfiguration().getEncryptedPassword(), host, aemSshConfig.getSshConfiguration().getPort());
     }
 
     private String[] concatArray(String command, String... parameters){

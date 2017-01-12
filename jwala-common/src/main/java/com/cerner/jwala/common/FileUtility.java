@@ -1,47 +1,5 @@
 package com.cerner.jwala.common;
 
-import org.springframework.stereotype.Component;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Enumeration;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
-
-/**
- * A utility class for file related operations
- *
- * Created by Jedd Anthony Cuison on 12/1/2016
- */
-@Component
-public class FileUtility {
-    private static final Logger LOGGER = LoggerFactory.getLogger(FileUtility.class);
-    /**
-     * Unzips the file to the specified destination
-     * @param destination the destination e.g. c:/scratch
-     */
-    public void unzip(final File zipFile, final File destination) {
-
-        if (!destination.exists() && !destination.mkdir()) {
-            throw new FileUtilityException("Failed to create zip file destination directory \"" + destination + "\"!");
-        }
-        JarFile jarFile = null;
-        try {
-            jarFile = new JarFile(zipFile);
-            final Enumeration entries = jarFile.entries();
-            while (entries.hasMoreElements()) {
-                final JarEntry jarEntry = (JarEntry) entries.nextElement();
-                final File f = new File(destination + File.separator + jarEntry.getName());
-                if (jarEntry.isDirectory()) {
-                    boolean created = f.mkdir();
-                    continue;
-                }
-package com.cerner.jwala.common;
-
 import com.cerner.jwala.common.exception.ApplicationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,6 +11,7 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
+import java.util.zip.GZIPInputStream;
 
 /**
  * A utility class for file related operations
@@ -69,12 +28,12 @@ public class FileUtility {
      * @param destination the destination e.g. c:/scratch
      */
     public void unzip(final File zipFile, final File destination) {
-
         if (!destination.exists() && !destination.mkdir()) {
             throw new FileUtilityException("Failed to create zip file destination directory \"" + destination.getAbsolutePath() + "\"!");
         }
-
+        long startTime = System.currentTimeMillis();
         try {
+            LOGGER.debug("Start unzip {}", zipFile.getAbsoluteFile());
             final JarFile jarFile = new JarFile(zipFile);
             final Enumeration entries = jarFile.entries();
             while (entries.hasMoreElements()) {
@@ -88,32 +47,27 @@ public class FileUtility {
                 }
                 final InputStream in = jarFile.getInputStream(jarEntry);
                 final FileOutputStream fos = new FileOutputStream(f);
+                BufferedOutputStream bufout = new BufferedOutputStream(fos);
+
                 while (in.available() > 0) {
-                    fos.write(in.read());
+                    bufout.write(in.read());
                 }
-                fos.close();
+                bufout.close();
+                bufout.close();
                 in.close();
             }
         } catch (final IOException e) {
             throw new FileUtilityException("Failed to unpack " + zipFile.getAbsolutePath() + "!", e);
-        }finally {
-            if(jarFile!=null){
-                try {
-                    jarFile.close();
-                }catch (IOException ioe){
-                    LOGGER.info("Error closing jar",ioe);
-                }
-            }
-
         }
+        LOGGER.debug("End unzip {} in {} ms", zipFile.getAbsoluteFile(), (System.currentTimeMillis() - startTime));
     }
 
     public void createJarArchive(File archiveFile, File[] filesToBeJared, String parent) {
 
         final int BUFFER_SIZE = 10240;
         try (
-            FileOutputStream stream = new FileOutputStream(archiveFile);
-            JarOutputStream out = new JarOutputStream(stream, new Manifest())) {
+                FileOutputStream stream = new FileOutputStream(archiveFile);
+                JarOutputStream out = new JarOutputStream(stream, new Manifest())) {
 
             byte buffer[] = new byte[BUFFER_SIZE];
 
@@ -137,7 +91,7 @@ public class FileUtility {
                 JarEntry jarAdd = new JarEntry(relPath);
                 jarAdd.setTime(aFileTobeJared.lastModified());
                 out.putNextEntry(jarAdd);
-
+                BufferedOutputStream bout = new BufferedOutputStream(out);
 
                 // Write file to archive
                 try (FileInputStream in = new FileInputStream(aFileTobeJared)) {
@@ -145,7 +99,7 @@ public class FileUtility {
                         int nRead = in.read(buffer, 0, buffer.length);
                         if (nRead <= 0)
                             break;
-                        out.write(buffer, 0, nRead);
+                        bout.write(buffer, 0, nRead);
                     }
                 }
             }
@@ -155,5 +109,30 @@ public class FileUtility {
             throw new ApplicationException(e);
         }
 
+    }
+
+    /**
+     * Unzips the file to the specified destination
+     * @param destination the destination e.g. c:/scratch
+     */
+    public void unGzip(final File gZipFile, final File destination) {
+
+        if (!destination.exists() && !destination.mkdir()) {
+            throw new FileUtilityException("Failed to create zip file destination directory \"" + destination.getAbsolutePath() + "\"!");
+        }
+        try {
+            byte[] buffer = new byte[1024];
+            final GZIPInputStream gzis  = new  GZIPInputStream(new FileInputStream(gZipFile));
+            FileOutputStream out = new FileOutputStream(destination);
+            int len;
+            while ((len = gzis.read(buffer)) > 0) {
+                out.write(buffer, 0, len);
+            }
+            gzis.close();
+            out.close();
+
+        } catch (final Throwable e) {
+            throw new FileUtilityException("Failed to unpack " + gZipFile.getAbsolutePath() + "!", e);
+        }
     }
 }

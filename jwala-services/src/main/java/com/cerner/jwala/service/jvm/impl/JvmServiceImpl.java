@@ -439,29 +439,54 @@ public class JvmServiceImpl implements JvmService {
 
         final String installServicePath = commandsScriptsPath + "/" + AemControl.Properties.INSTALL_SERVICE_SCRIPT_NAME.getValue();
         final String destinationInstallServicePath = stagingArea + "/" + AemControl.Properties.INSTALL_SERVICE_SCRIPT_NAME.getValue();
+
         if (!jvmControlService.secureCopyFile(secureCopyRequest, installServicePath, destinationInstallServicePath, userId).getReturnCode().wasSuccessful()) {
             String message = failedToCopyMessage + installServicePath + duringCreationMessage + jvmName;
             LOGGER.error(message);
             throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, message);
         }
+        //TODO move to properties
+        final String deleteServicePath = commandsScriptsPath + "/delete-service.sh";
+        final String destinationDeleteServicePath = stagingArea + "/delete-service.sh";
 
+        if (!jvmControlService.secureCopyFile(secureCopyRequest, deleteServicePath, destinationDeleteServicePath, userId).getReturnCode().wasSuccessful()) {
+            String message = failedToCopyMessage + installServicePath + duringCreationMessage + jvmName;
+            LOGGER.error(message);
+            throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, message);
+        }
+
+        final String linuxJvmService = "/linux/jvm-service";
+        if (!jvmControlService.secureCopyFile(secureCopyRequest, commandsScriptsPath + linuxJvmService, stagingArea + linuxJvmService, userId).getReturnCode().wasSuccessful()) {
+            String message = failedToCopyMessage + commandsScriptsPath +linuxJvmService +  duringCreationMessage + jvmName;
+            LOGGER.error(message);
+            throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, message);
+        }
         // make sure the scripts are executable
-        //TODO refactor to remove "/"
-        if (!jvmControlService.executeChangeFileModeCommand(jvm, "a+x", stagingArea+"/", "*.sh").getReturnCode().wasSuccessful()) {
+        //TODO refactor linux scripts
+        if (!jvmControlService.executeChangeFileModeCommand(jvm, "a+x", stagingArea, "*.sh").getReturnCode().wasSuccessful()) {
             String message = "Failed to change the file permissions in " + stagingArea + duringCreationMessage + jvmName;
             LOGGER.error(message);
             throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, message);
         }
+        //TODO fix constants
+        if (!jvmControlService.executeChangeFileModeCommand(jvm, "a+x", stagingArea+"/linux", "jvm-service").getReturnCode().wasSuccessful()) {
+            String message = "Failed to change the file permissions in " + stagingArea+linuxJvmService + duringCreationMessage + jvmName;
+            LOGGER.error(message);
+            throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, message);
+        }
+
     }
 
     protected String generateJvmConfigJar(Jvm jvm) throws CommandFailureException {
+        long startTime = System.currentTimeMillis();
+        LOGGER.debug("Start generateJvmConfigJar ");
         ManagedJvmBuilder managedJvmBuilder =
                 new ManagedJvmBuilder().
                         jvm(jvmPersistenceService.findJvmByExactName(jvm.getJvmName())).
                         fileUtility(fileUtility).
                         resourceService(resourceService).
                         build();
-
+        LOGGER.debug("End generateJvmConfigJar, timetaken {} ms", (System.currentTimeMillis()-startTime));
         return managedJvmBuilder.getStagingDir().getAbsolutePath();
     }
 
@@ -553,11 +578,8 @@ public class JvmServiceImpl implements JvmService {
      */
     protected void secureCopyFileToJvm(final Jvm jvm, final String sourceFile, final String destinationFile, User user) throws CommandFailureException {
         final String parentDir;
-        if (destinationFile.startsWith("~")) {
-            parentDir = destinationFile.substring(0, destinationFile.lastIndexOf("/"));
-        } else {
-            parentDir = new File(destinationFile).getParentFile().getAbsolutePath().replaceAll("\\\\", "/");
-        }
+        //TODO: May need fix for Windows
+        parentDir = destinationFile.replaceAll("\\\\", "/");
         createParentDir(jvm, parentDir);
         final ControlJvmRequest controlJvmRequest = new ControlJvmRequest(jvm.getId(), JvmControlOperation.SCP);
         final CommandOutput commandOutput = jvmControlService.secureCopyFile(controlJvmRequest, sourceFile, destinationFile, user.getId());

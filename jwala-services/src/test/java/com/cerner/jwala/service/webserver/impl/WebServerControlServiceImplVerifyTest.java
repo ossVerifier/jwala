@@ -72,7 +72,6 @@ public class WebServerControlServiceImplVerifyTest extends VerificationBehaviorS
         System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, new File(".").getAbsolutePath() + "/src/test/resources");
         webServerControlService = new WebServerControlServiceImpl(webServerService, commandExecutor,
                 remoteCommandExecutorService, mockSshConfig, mockHistoryFacadeService);
-        webServerControlService.setHostService(hostService);
         when(hostService.getUName(anyString())).thenReturn(HostService.UNAME_CYGWIN);
         user = new User("unused");
     }

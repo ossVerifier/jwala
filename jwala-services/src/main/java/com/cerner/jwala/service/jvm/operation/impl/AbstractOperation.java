@@ -29,7 +29,7 @@ abstract class AbstractOperation implements Operation {
     @Override
     public void execute(final Jvm jvm) {
         remoteCommandExecutorService.executeCommand(new RemoteExecCommand(
-                new RemoteSystemConnection(sshConfig.getUserName(), sshConfig.getPassword(), jvm.getHostName(), sshConfig.getPort()),
+                new RemoteSystemConnection(sshConfig.getUserName(), sshConfig.getEncryptedPassword(), jvm.getHostName(), sshConfig.getPort()),
                 getCommand(jvm)));
     }
 

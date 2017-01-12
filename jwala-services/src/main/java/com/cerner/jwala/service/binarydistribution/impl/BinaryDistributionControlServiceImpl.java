@@ -1,8 +1,6 @@
 package com.cerner.jwala.service.binarydistribution.impl;
 
-import com.cerner.jwala.commandprocessor.CommandProcessor;
 import com.cerner.jwala.commandprocessor.impl.jsch.JschScpCommandProcessorImpl;
-import com.cerner.jwala.common.domain.model.app.Application;
 import com.cerner.jwala.common.domain.model.binarydistribution.BinaryDistributionControlOperation;
 import com.cerner.jwala.common.domain.model.ssh.SshConfiguration;
 import com.cerner.jwala.common.exception.ApplicationException;
@@ -13,16 +11,9 @@ import com.cerner.jwala.exception.CommandFailureException;
 import com.cerner.jwala.service.RemoteCommandExecutorService;
 import com.cerner.jwala.service.RemoteCommandReturnInfo;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionControlService;
-import com.jcraft.jsch.JSchException;
-import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.env.SystemEnvironmentPropertySource;
-
-import java.io.IOException;
-import java.util.Formatter;
-import java.util.Locale;
 
 /**
  * Created by Arvindo Kinny on 10/11/2016.
@@ -123,7 +114,7 @@ public class BinaryDistributionControlServiceImpl implements BinaryDistributionC
      * @return
      */
     private RemoteSystemConnection getConnection(String host) {
-        return new RemoteSystemConnection(sshConfig.getUserName(), sshConfig.getPassword(), host, sshConfig.getPort());
+        return new RemoteSystemConnection(sshConfig.getUserName(), sshConfig.getEncryptedPassword(), host, sshConfig.getPort());
     }
 
     private String getUnzipCommand(String zipFileName, String destination){

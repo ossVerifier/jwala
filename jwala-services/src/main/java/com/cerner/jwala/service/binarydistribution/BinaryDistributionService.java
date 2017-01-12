@@ -12,12 +12,6 @@ public interface BinaryDistributionService {
     void distributeJdk(final String hostname);
 
     /**
-     * Distribute jwala tomcat binaries to remote host
-     * @param hostname
-     */
-    void distributeTomcat(final String hostname);
-
-    /**
      * Distribute jwala Apache http webserver to remote host
      * @param hostname
      */
@@ -27,5 +21,5 @@ public interface BinaryDistributionService {
      * This method copies unzip.exe to remote host
      * @param hostname
      */
-    void prepareUnzip(final String hostname);
+    void distributeUnzip(final String hostname);
 }

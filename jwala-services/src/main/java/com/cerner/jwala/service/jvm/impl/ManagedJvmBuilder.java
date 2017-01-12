@@ -134,7 +134,6 @@ public class ManagedJvmBuilder {
         LOGGER.debug("Unzipping the tomcat binary {} to {} ", getTomcatBinary(), getStagingDir());
 
         fileUtility.unzip(getTomcatBinary(), getStagingDir());
-
         return this;
     }
 
@@ -291,7 +290,7 @@ public class ManagedJvmBuilder {
     }
 
     private String getTomcatBinaryName() {
-        return ApplicationProperties.get("jwala.tomcat.zip.name");
+        return ApplicationProperties.getRequired(PropertyKeys.TOMCAT_BINARY_FILE_NAME);
     }
 
     private String getBinaryDir() {

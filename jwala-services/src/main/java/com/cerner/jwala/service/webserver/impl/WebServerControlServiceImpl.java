@@ -8,13 +8,9 @@ import com.cerner.jwala.common.domain.model.webserver.WebServerControlOperation;
 import com.cerner.jwala.common.domain.model.webserver.WebServerReachableState;
 import com.cerner.jwala.common.exception.InternalErrorException;
 import com.cerner.jwala.common.exec.*;
-import com.cerner.jwala.common.properties.ApplicationProperties;
 import com.cerner.jwala.common.request.webserver.ControlWebServerRequest;
-import com.cerner.jwala.control.command.PlatformCommandProvider;
 import com.cerner.jwala.control.command.RemoteCommandExecutor;
-import com.cerner.jwala.control.command.ServiceCommandBuilder;
 import com.cerner.jwala.control.webserver.command.WebServerCommandFactory;
-import com.cerner.jwala.control.webserver.command.impl.LinuxWebServerPlatformCommandProvider;
 import com.cerner.jwala.control.webserver.command.impl.WindowsWebServerPlatformCommandProvider;
 import com.cerner.jwala.control.webserver.command.windows.WindowsWebServerNetOperation;
 import com.cerner.jwala.exception.CommandFailureException;
@@ -22,7 +18,6 @@ import com.cerner.jwala.persistence.jpa.type.EventType;
 import com.cerner.jwala.service.HistoryFacadeService;
 import com.cerner.jwala.service.RemoteCommandExecutorService;
 import com.cerner.jwala.service.RemoteCommandReturnInfo;
-import com.cerner.jwala.service.exception.ApplicationServiceException;
 import com.cerner.jwala.service.exception.RemoteCommandExecutorServiceException;
 import com.cerner.jwala.service.host.HostService;
 import com.cerner.jwala.service.webserver.WebServerControlService;
@@ -310,45 +305,5 @@ public class WebServerControlServiceImpl implements WebServerControlService {
             }
         }
         return false;
-    }
-
-
-    /**
-     * @param aWebServer
-     * @return
-     */
-    private PlatformCommandProvider<WebServerControlOperation> getPlatformCommandProvider(WebServer aWebServer) throws ApplicationServiceException {
-        //Determine Host OS
-        if (HostService.UNAME_LINUX.equals(getHostOS(aWebServer.getHost()))) {
-            LinuxWebServerPlatformCommandProvider linuxWindowsPlatformCommandProvider = new LinuxWebServerPlatformCommandProvider();
-            return linuxWindowsPlatformCommandProvider;
-        } else if (HostService.UNAME_CYGWIN.equals(getHostOS(aWebServer.getHost()))) {
-            WindowsWebServerPlatformCommandProvider windowsWindowsPlatformCommandProvider = new WindowsWebServerPlatformCommandProvider();
-            return windowsWindowsPlatformCommandProvider;
-        }
-        return null;
-    }
-
-    /**
-     * @param hostName
-     * @return
-     */
-    private String getHostOS(String hostName) throws ApplicationServiceException {
-        String uName = hostService.getUName(hostName);
-        if (uName != null && uName.indexOf(hostService.UNAME_LINUX) > -1) {
-            return HostService.UNAME_LINUX;
-        } else if (uName != null && uName.indexOf(hostService.UNAME_CYGWIN) > -1) {
-            return HostService.UNAME_CYGWIN;
-        } else {
-            throw new ApplicationServiceException("Unknown host OS");
-        }
-    }
-
-    public void setHostService(HostService hostService) {
-        this.hostService = hostService;
-    }
-
-    public void setWebServerCommandFactory(WebServerCommandFactory webServerCommandFactory) {
-        this.webServerCommandFactory = webServerCommandFactory;
     }
 }

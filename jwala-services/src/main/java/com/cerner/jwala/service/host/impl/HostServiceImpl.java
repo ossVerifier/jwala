@@ -30,7 +30,7 @@ public class HostServiceImpl implements HostService {
     public String getUName(String hostName) {
         final ExecCommand execCommand = new ShellCommand("uname");
         final RemoteExecCommand remoteExecCommand = new RemoteExecCommand(new RemoteSystemConnection(sshConfig.getUserName(),
-                sshConfig.getPassword(), hostName, sshConfig.getPort()), execCommand);
+                sshConfig.getEncryptedPassword(), hostName, sshConfig.getPort()), execCommand);
         RemoteCommandReturnInfo remoteCommandReturnInfo = remoteCommandExecutorService.executeCommand(remoteExecCommand);
 
         CommandOutput commandOutput = new CommandOutput(new ExecReturnCode(remoteCommandReturnInfo.retCode),
