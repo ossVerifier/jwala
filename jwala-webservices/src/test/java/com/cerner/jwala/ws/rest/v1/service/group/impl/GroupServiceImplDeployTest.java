@@ -27,7 +27,6 @@ import com.cerner.jwala.persistence.jpa.service.exception.ResourceTemplateUpdate
 import com.cerner.jwala.persistence.service.ApplicationPersistenceService;
 import com.cerner.jwala.persistence.service.GroupPersistenceService;
 import com.cerner.jwala.service.HistoryFacadeService;
-import com.cerner.jwala.service.HistoryService;
 import com.cerner.jwala.service.app.ApplicationService;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionService;
 import com.cerner.jwala.service.group.GroupControlService;
@@ -70,6 +69,7 @@ import javax.ws.rs.core.Response;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import static org.junit.Assert.*;
@@ -150,36 +150,10 @@ public class GroupServiceImplDeployTest {
     }
 
     @Test
-    public void testGroupJvmDeploy() throws CommandFailureException, IOException {
-        Group mockGroup = mock(Group.class);
-        Jvm mockJvm = mock(Jvm.class);
-        Response mockResponse = mock(Response.class);
-
-        Set<Jvm> jvmSet = new HashSet<>();
-        jvmSet.add(mockJvm);
-
-        when(mockGroup.getJvms()).thenReturn(jvmSet);
-        when(mockJvm.getJvmName()).thenReturn("testJvm");
-        when(mockJvm.getId()).thenReturn(new Identifier<Jvm>(99L));
-        when(mockJvm.getState()).thenReturn(JvmState.JVM_STOPPED);
-        when(mockResponse.getStatus()).thenReturn(200);
-        when(mockGroupService.getGroup(anyString())).thenReturn(mockGroup);
-        when(mockGroupService.getGroupJvmResourceTemplate(anyString(), anyString(), any(ResourceGroup.class), anyBoolean())).thenReturn("new server.xml content");
-        when(mockJvmService.updateResourceTemplate(anyString(), anyString(), anyString())).thenReturn("new server.xml content");
-        when(mockJvmService.getJvm(anyString())).thenReturn(mockJvm);
-        when(mockJvmControlService.secureCopyFile(any(ControlJvmRequest.class), anyString(), anyString(), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(0), "SUCCESS", ""));
-
-        Response returnedResponse = groupServiceRest.generateAndDeployGroupJvmFile("testGroup", "server.xml", mockAuthUser);
-        assertEquals(200, returnedResponse.getStatusInfo().getStatusCode());
-
-        boolean internalError = false;
-        when(mockJvm.getState()).thenReturn(JvmState.JVM_STARTED);
-        try {
-            groupServiceRest.generateAndDeployGroupJvmFile("testGroup", "server.xml", mockAuthUser);
-        } catch (InternalErrorException iee) {
-            internalError = true;
-        }
-        assertTrue(internalError);
+    public void testGroupJvmDeploy() {
+        final Response response = groupServiceRest.generateAndDeployGroupJvmFile("testGroup", "server.xml", mockAuthUser);
+        verify(mockGroupService).generateAndDeployGroupJvmFile(eq("testGroup"), eq("server.xml"), any(User.class));
+        assertEquals(200, response.getStatus());
     }
 
     @Test
@@ -385,7 +359,7 @@ public class GroupServiceImplDeployTest {
         GroupPersistenceService groupPersistenceService = mock(GroupPersistenceService.class);
         ApplicationPersistenceService applicationPersistenceService = mock(ApplicationPersistenceService.class);
         RemoteCommandExecutorImpl remoteCommandExecutorImpl = mock(RemoteCommandExecutorImpl.class);
-        GroupServiceImpl groupServiceImpl = new GroupServiceImpl(groupPersistenceService, applicationPersistenceService, remoteCommandExecutorImpl, binaryDistributionService, mockResourceService);
+        GroupServiceImpl groupServiceImpl = new GroupServiceImpl(groupPersistenceService, applicationPersistenceService, mockResourceService);
         CommandOutput commandOutput = mock(CommandOutput.class);
 
         String metaData = "{\"templateName\":\"someTemplateName\",\"contentType\":\"application/binary\",\"deployPath\":" +
@@ -634,6 +608,10 @@ public class GroupServiceImplDeployTest {
     @Configuration
     static class Config {
 
+        private final static ExecutorService EXECUTOR_SERVICE = mock(ExecutorService.class);
+
+        final static JvmService JVM_SERVICE = mock(JvmService.class);
+
         @Bean
         public GroupServiceRest getGroupServiceRest() {
             return new GroupServiceRestImpl(mockGroupService, mockResourceService, mockGroupControlService, mockGroupJvmControlService,
@@ -669,6 +647,16 @@ public class GroupServiceImplDeployTest {
         @Bean
         public GroupWebServerControlService getGroupWebServerControlService() {
             return mockGroupWebServerControlService;
+        }
+
+        @Bean
+        public static ExecutorService getExecutorService() {
+            return EXECUTOR_SERVICE;
+        }
+
+        @Bean
+        public static JvmService getJvmService() {
+            return JVM_SERVICE;
         }
     }
 }

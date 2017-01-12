@@ -13,44 +13,48 @@ import com.cerner.jwala.common.domain.model.webserver.WebServer;
 import com.cerner.jwala.common.exception.ApplicationException;
 import com.cerner.jwala.common.exception.InternalErrorException;
 import com.cerner.jwala.common.exec.CommandOutput;
+import com.cerner.jwala.common.properties.ApplicationProperties;
 import com.cerner.jwala.common.request.group.*;
 import com.cerner.jwala.common.request.jvm.UploadJvmTemplateRequest;
 import com.cerner.jwala.common.rule.group.GroupNameRule;
-import com.cerner.jwala.control.command.RemoteCommandExecutorImpl;
 import com.cerner.jwala.persistence.service.ApplicationPersistenceService;
 import com.cerner.jwala.persistence.service.GroupPersistenceService;
-import com.cerner.jwala.service.binarydistribution.BinaryDistributionService;
 import com.cerner.jwala.service.exception.GroupServiceException;
 import com.cerner.jwala.service.group.GroupService;
+import com.cerner.jwala.service.jvm.JvmService;
 import com.cerner.jwala.service.resource.ResourceService;
 import com.cerner.jwala.service.resource.impl.ResourceGeneratorType;
 import com.cerner.jwala.template.exception.ResourceFileGeneratorException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.PersistenceException;
+import javax.ws.rs.core.Response;
+import java.text.MessageFormat;
 import java.util.*;
+import java.util.concurrent.*;
 
 public class GroupServiceImpl implements GroupService {
 
     private final GroupPersistenceService groupPersistenceService;
-    private final RemoteCommandExecutorImpl remoteCommandExecutor;
-    private final BinaryDistributionService binaryDistributionService;
     private ApplicationPersistenceService applicationPersistenceService;
     private ResourceService resourceService;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GroupServiceImpl.class);
 
+    @Autowired
+    private ExecutorService executorService;
+
+    @Autowired
+    private JvmService jvmService;
+
     public GroupServiceImpl(final GroupPersistenceService groupPersistenceService,
                             final ApplicationPersistenceService applicationPersistenceService,
-                            final RemoteCommandExecutorImpl remoteCommandExecutor,
-                            final BinaryDistributionService binaryDistributionService,
                             final ResourceService resourceService) {
         this.groupPersistenceService = groupPersistenceService;
         this.applicationPersistenceService = applicationPersistenceService;
-        this.remoteCommandExecutor = remoteCommandExecutor;
-        this.binaryDistributionService = binaryDistributionService;
         this.resourceService = resourceService;
     }
 
@@ -407,4 +411,75 @@ public class GroupServiceImpl implements GroupService {
         }
         return new ArrayList<>(allHosts);
     }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public void generateAndDeployGroupJvmFile(final String groupName, final String fileName, final User user) {
+        final Group group = groupPersistenceService.getGroup(groupName);
+        final Set<Jvm> jvms = group.getJvms();
+
+        // Check if any JVMs are running before generating the file
+        final List<String> startedJvmNameList = new ArrayList<>();
+        jvms.stream().filter(jvm -> jvm.getState().isStartedState()).forEach(startedJvm -> startedJvmNameList.add(startedJvm.getJvmName()));
+        if (!startedJvmNameList.isEmpty()) {
+            final String errMsg = MessageFormat.format("Failed to deploy file {0} for group {1} since the following JVMs are running: {2}",
+                    fileName, groupName, startedJvmNameList);
+            LOGGER.error(errMsg);
+            throw new GroupServiceException(errMsg);
+        }
+
+        final Map<String, Future<Response>> futures = new HashMap<>();
+        final String template = groupPersistenceService.getGroupJvmResourceTemplate(groupName, fileName);
+        final String metaData = groupPersistenceService.getGroupJvmResourceTemplateMetaData(groupName, fileName);
+        jvms.stream().forEach(jvm -> {
+            final Future<Response> future = (Future) executorService.submit(() -> {
+                jvmService.updateResourceTemplate(jvm.getJvmName(), fileName, template);
+                ResourceIdentifier resourceId = new ResourceIdentifier.Builder().setResourceName(fileName)
+                        .setGroupName(groupName).setJvmName(jvm.getJvmName()).build();
+                resourceService.updateResourceMetaData(resourceId, fileName, metaData);
+                return jvmService.generateAndDeployFile(jvm.getJvmName(), fileName, user);
+            });
+            futures.put(jvm.getJvmName(), future);
+        });
+
+        checkResponsesForErrorStatus(futures);
+    }
+
+    protected void checkResponsesForErrorStatus(Map<String, Future<Response>> futureMap) {
+        Map<String, List<String>> entityDetailsMap = new HashMap<>();
+        for (String keyEntityName : futureMap.keySet()) {
+            Response response;
+            try {
+                long timeout = Long.parseLong(ApplicationProperties.get("remote.jwala.execution.timeout.seconds", "600"));
+                response = futureMap.get(keyEntityName).get(timeout, TimeUnit.SECONDS);
+                if (response.getStatus() > 399) {
+                    final String reasonPhrase = response.getStatusInfo().getReasonPhrase();
+                    LOGGER.error("Remote Command Failure for " + keyEntityName + ": " + reasonPhrase);
+                    entityDetailsMap.put(keyEntityName, Collections.singletonList(reasonPhrase));
+                }
+            } catch (InterruptedException | ExecutionException e) {
+                LOGGER.error("FAILURE getting response for {}", keyEntityName, e);
+                final Throwable cause = e.getCause();
+                if (cause instanceof InternalErrorException) {
+                    if (((InternalErrorException) cause).getErrorDetails() != null) {
+                        entityDetailsMap.putAll(((InternalErrorException) cause).getErrorDetails());
+                    } else {
+                        entityDetailsMap.put(keyEntityName, Collections.singletonList(cause.getMessage()));
+                    }
+                } else {
+                    entityDetailsMap.put(keyEntityName, Collections.singletonList(e.getMessage()));
+                }
+            } catch (TimeoutException e) {
+                LOGGER.error("Timed out getting response.", e);
+                entityDetailsMap.put(keyEntityName, Collections.singletonList(e.getMessage()));
+            }
+        }
+
+        if (!entityDetailsMap.isEmpty()) {
+            throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, "Request failed for the following errors:", null, entityDetailsMap);
+        } else {
+            LOGGER.info("Finished checking requests for error statuses.");
+        }
+    }
+
 }

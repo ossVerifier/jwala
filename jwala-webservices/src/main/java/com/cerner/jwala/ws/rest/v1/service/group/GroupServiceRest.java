@@ -67,9 +67,8 @@ public interface GroupServiceRest {
      *********************/
     @PUT
     @Path("/{groupName}/jvms/conf/{fileName}")
-    Response generateAndDeployGroupJvmFile(@PathParam("groupName") final String groupName,
-                                           @PathParam("fileName") final String fileName,
-                                           @BeanParam final AuthenticatedUser aUser);
+    Response generateAndDeployGroupJvmFile(@PathParam("groupName") String groupName, @PathParam("fileName") String fileName,
+                                           @BeanParam AuthenticatedUser authUser);
 
     @GET
     @Path("/{groupName}/jvms/resources/name")
