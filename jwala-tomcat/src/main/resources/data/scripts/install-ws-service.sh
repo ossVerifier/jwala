@@ -11,8 +11,8 @@ CYGWIN*) cygwin=true;;
 Linux*) linux=true;;
 esac
 
-if [ "$1" = "" -o "$2" = "" ]; then
-    echo $0 not invoked with service name or instances folder path
+if [ "$1" = "" ]; then
+    echo $0 not invoked with service name
     exit $JWALA_EXIT_CODE_NO_OP;
 fi
 
@@ -33,13 +33,14 @@ if $cygwin; then
     /usr/bin/sleep 1
   done
 
-export WSINST=`sc queryex $1 | head -1 | awk '{ sub(/:/,"",$4); print $4 }'`
-if [ "$WSINST" = "1060" ]; then
-    /usr/bin/echo Failed to install service $1
-    exit $JWALA_EXIT_CODE_FAILED
+  export WSINST=`sc queryex $1 | head -1 | awk '{ sub(/:/,"",$4); print $4 }'`
+  if [ "$WSINST" = "1060" ]; then
+      /usr/bin/echo Failed to install service $1
+      exit $JWALA_EXIT_CODE_FAILED
+  fi
+  /usr/bin/echo Invoke of service $1 was successful
+  exit $JWALA_EXIT_CODE_SUCCESS
 fi
-/usr/bin/echo Invoke of service $1 was successful
-exit $JWALA_EXIT_CODE_SUCCESS
 
 if $linux; then
   # Need to pass $3 for apache home ex: /opt/ctp/apache-httpd-2.4.20, remote.paths.apache.httpd from vars.properties
