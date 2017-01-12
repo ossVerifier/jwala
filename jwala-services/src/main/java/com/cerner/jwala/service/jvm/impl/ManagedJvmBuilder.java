@@ -77,7 +77,6 @@ public class ManagedJvmBuilder {
                 overwriteServerXml().
                 addLibs().
                 createDirInJvmTomcat("/logs").
-                createDirInJvmTomcat("/temp").
                 jar();
     }
 
