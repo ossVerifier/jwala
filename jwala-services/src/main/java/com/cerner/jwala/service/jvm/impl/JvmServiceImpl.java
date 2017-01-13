@@ -297,7 +297,7 @@ public class JvmServiceImpl implements JvmService {
 
             checkForJdkBinaries(jvm);
 
-            distributeBinaries(jvm.getHostName());
+            distributeBinaries(jvm);
             // check for setenv.bat
             checkForSetenvBat(jvm.getJvmName());
 
