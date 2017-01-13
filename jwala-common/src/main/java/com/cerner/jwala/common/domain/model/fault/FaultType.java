@@ -84,8 +84,6 @@ public enum FaultType implements MessageResponseStatus {
 
     WEB_SERVER_HTTPD_CONF_TEMPLATE_NOT_FOUND("AEM38", "WebServerHttpdConfTemplateNotFound"),
 
-    WEB_SERVER_CONF_TEMPLATE_NOT_FOUND("AEM72", "WebServerConfTemplateNotFound"),
-
     GROUP_CONTROL_HISTORY_NOT_FOUND("AEM39", "GroupControlHistoryNotFound"),
 
     GROUP_STATE_NOT_SPECIFIED("AEM40", "GroupStateNotSpecified"),
@@ -146,7 +144,11 @@ public enum FaultType implements MessageResponseStatus {
 
     RESOURCE_DEPLOY_FAILURE("AEM70", "ResourceDeployFailed"),
 
-    GROUP_MISSING_HOSTS("AEM71", "GroupMissingHosts");
+    GROUP_MISSING_HOSTS("AEM71", "GroupMissingHosts"),
+
+    WEB_SERVER_CONF_TEMPLATE_NOT_FOUND("AEM72", "WebServerConfTemplateNotFound"),
+
+    JVM_JDK_NOT_SPECIFIED("AEM73", "NoJDKSpecifiedForJVM");
 
     private final String faultCode;
     private final String faultMessage;

@@ -6,9 +6,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.io.*;
+import java.text.MessageFormat;
 import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.zip.ZipFile;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
 
@@ -32,17 +36,19 @@ public class FileUtility {
             throw new FileUtilityException("Failed to create zip file destination directory \"" + destination.getAbsolutePath() + "\"!");
         }
 
+        JarFile jarFile = null;
+        final String errMsg = MessageFormat.format("Failed to unpack {0}!", destination.getAbsolutePath());
         try {
-            final JarFile jarFile = new JarFile(zipFile);
+            jarFile = new JarFile(zipFile);
             final Enumeration entries = jarFile.entries();
             while (entries.hasMoreElements()) {
                 final JarEntry jarEntry = (JarEntry) entries.nextElement();
                 final File f = new File(destination + File.separator + jarEntry.getName());
                 if (jarEntry.isDirectory()) {
-                    if (!f.mkdir()) {
-                        throw new ApplicationException("File to create directory " + jarEntry.getName());
+                    if (f.exists() || f.mkdir()) {
+                        continue;
                     }
-                    continue;
+                    throw new FileUtilityException(errMsg + MessageFormat.format(" Cannot crate directory {}.", jarEntry));
                 }
                 final InputStream in = jarFile.getInputStream(jarEntry);
                 final FileOutputStream fos = new FileOutputStream(f);
@@ -53,7 +59,39 @@ public class FileUtility {
                 in.close();
             }
         } catch (final IOException e) {
-            throw new FileUtilityException("Failed to unpack " + zipFile.getAbsolutePath() + "!", e);
+            throw new FileUtilityException(errMsg, e);
+        } finally {
+            if (jarFile != null) {
+                try {
+                    jarFile.close();
+                } catch (IOException e) {
+                    throw new FileUtilityException(errMsg, e);
+                }
+            }
+        }
+    }
+
+    /**
+     * Gets the root directories of a zip file
+     * @param zipFilename the zip filename
+     * @return zip file root directories
+     */
+    public Set<String> getZipRootDirs(final String zipFilename) {
+        final Set<String> zipRootDirs = new HashSet<>();
+        try {
+            final ZipFile zipFile = new ZipFile(zipFilename);
+            final Enumeration zipEntryEnumeration = zipFile.entries();
+            while (zipEntryEnumeration.hasMoreElements()) {
+                final String zipEntry = zipEntryEnumeration.nextElement().toString();
+                final int slashIdx = zipEntry.indexOf('/');
+                if (slashIdx > 0) {
+                    zipRootDirs.add(zipEntry.substring(0, slashIdx));
+                }
+            }
+            zipFile.close();
+            return zipRootDirs;
+        } catch (final IOException e) {
+            throw new FileUtilityException(MessageFormat.format("Failed to get {0} parent path!", zipFilename), e);
         }
     }
 

@@ -1,6 +1,8 @@
 package com.cerner.jwala.persistence.service.jvm.impl;
 
 import com.cerner.jwala.common.configuration.TestExecutionProfile;
+import com.cerner.jwala.dao.MediaDao;
+import com.cerner.jwala.dao.impl.MediaDaoImpl;
 import com.cerner.jwala.persistence.configuration.TestJpaConfiguration;
 import com.cerner.jwala.persistence.jpa.service.ApplicationCrudService;
 import com.cerner.jwala.persistence.jpa.service.GroupCrudService;
@@ -15,7 +17,6 @@ import com.cerner.jwala.persistence.service.JvmPersistenceService;
 import com.cerner.jwala.persistence.service.impl.JpaGroupPersistenceServiceImpl;
 import com.cerner.jwala.persistence.service.impl.JpaJvmPersistenceServiceImpl;
 import com.cerner.jwala.persistence.service.jvm.AbstractJvmPersistenceServiceTest;
-
 import org.junit.runner.RunWith;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -71,5 +72,8 @@ public class JpaJvmPersistenceServiceImplTest extends AbstractJvmPersistenceServ
         public JvmCrudService getJvmCrudService() {
             return new JvmCrudServiceImpl();
         }
+
+        @Bean
+        public MediaDao getMediaDao() { return new MediaDaoImpl(); }
     }
 }

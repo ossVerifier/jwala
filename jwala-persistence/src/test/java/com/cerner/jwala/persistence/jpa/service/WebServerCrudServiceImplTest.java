@@ -14,11 +14,10 @@ import com.cerner.jwala.common.request.app.CreateApplicationRequest;
 import com.cerner.jwala.common.request.group.CreateGroupRequest;
 import com.cerner.jwala.common.request.jvm.CreateJvmRequest;
 import com.cerner.jwala.common.request.webserver.UploadWebServerTemplateRequest;
+import com.cerner.jwala.dao.MediaDao;
+import com.cerner.jwala.dao.impl.MediaDaoImpl;
 import com.cerner.jwala.persistence.configuration.TestJpaConfiguration;
-import com.cerner.jwala.persistence.jpa.domain.JpaApplication;
-import com.cerner.jwala.persistence.jpa.domain.JpaGroup;
-import com.cerner.jwala.persistence.jpa.domain.JpaJvm;
-import com.cerner.jwala.persistence.jpa.domain.JpaWebServer;
+import com.cerner.jwala.persistence.jpa.domain.*;
 import com.cerner.jwala.persistence.jpa.domain.resource.config.template.JpaWebServerConfigTemplate;
 import com.cerner.jwala.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
 import com.cerner.jwala.persistence.jpa.service.exception.ResourceTemplateUpdateException;
@@ -26,6 +25,7 @@ import com.cerner.jwala.persistence.jpa.service.impl.ApplicationCrudServiceImpl;
 import com.cerner.jwala.persistence.jpa.service.impl.GroupCrudServiceImpl;
 import com.cerner.jwala.persistence.jpa.service.impl.JvmCrudServiceImpl;
 import com.cerner.jwala.persistence.jpa.service.impl.WebServerCrudServiceImpl;
+import com.cerner.jwala.persistence.jpa.type.MediaType;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.After;
 import org.junit.Before;
@@ -79,6 +79,9 @@ public class WebServerCrudServiceImplTest {
 
     @Autowired
     private JvmCrudService jvmCrudService;
+
+    @Autowired
+    private MediaDao mediaDao;
 
 
     @Before
@@ -211,8 +214,14 @@ public class WebServerCrudServiceImplTest {
         List<JpaWebServer> wsList = new ArrayList<>();
         wsList.add(webServerCrudService.findById(webServer.getId().getId()));
         group.setWebServers(wsList);
-        CreateJvmRequest createJvmReq = new CreateJvmRequest("testJvmName", "testHostName", 1212, 1213, 1214, -1, 1215, new Path("./statusPath"), "", null, null);
-        final JpaJvm jvm = jvmCrudService.createJvm(createJvmReq);
+        CreateJvmRequest createJvmReq = new CreateJvmRequest("testJvmName", "testHostName", 1212, 1213, 1214, -1, 1215, new Path("./statusPath"), "", null, null, null);
+        final JpaMedia media = new JpaMedia();
+        media.setName("test-media");
+        media.setType(MediaType.JDK);
+        media.setLocalPath(new File("d:/not/a/real/path.zip").toPath());
+        media.setRemoteDir(new File("d:/fake/remote/path").toPath());
+        media.setMediaDir(new File("test-media").toPath());
+        final JpaJvm jvm = jvmCrudService.createJvm(createJvmReq, mediaDao.create(media));
         List<JpaJvm> jvmsList = new ArrayList<>();
         jvmsList.add(jvm);
         group.setJvms(jvmsList);
@@ -600,6 +609,11 @@ public class WebServerCrudServiceImplTest {
         @Bean
         public JvmCrudService getJvmCrudService() {
             return new JvmCrudServiceImpl();
+        }
+
+        @Bean
+        public MediaDao getMediaDao() {
+            return new MediaDaoImpl();
         }
     }
 

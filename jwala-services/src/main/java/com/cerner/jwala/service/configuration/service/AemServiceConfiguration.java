@@ -60,7 +60,7 @@ import com.cerner.jwala.service.jvm.impl.JvmControlServiceImpl;
 import com.cerner.jwala.service.jvm.impl.JvmServiceImpl;
 import com.cerner.jwala.service.jvm.state.JvmStateReceiverAdapter;
 import com.cerner.jwala.service.resource.ResourceContentGeneratorService;
-import com.cerner.jwala.service.resource.ResourceRepositoryService;
+import com.cerner.jwala.service.repository.RepositoryService;
 import com.cerner.jwala.service.resource.ResourceService;
 import com.cerner.jwala.service.resource.impl.ResourceServiceImpl;
 import com.cerner.jwala.service.resource.impl.handler.WebServerResourceHandler;
@@ -113,15 +113,17 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 @EnableAsync
 @EnableScheduling
 @ComponentScan({"com.cerner.jwala.service.webserver.component",
-        "com.cerner.jwala.service.state",
-        "com.cerner.jwala.service.spring.component",
-        "com.cerner.jwala.commandprocessor.jsch.impl.spring.component",
-        "com.cerner.jwala.service.group.impl.spring.component",
-        "com.cerner.jwala.service.jvm.impl.spring.component",
-        "com.cerner.jwala.service.impl.spring.component",
-        "com.cerner.jwala.service.resource.impl",
-        "com.cerner.jwala.common",
-        "com.cerner.jwala.common.jsch.impl"})
+                "com.cerner.jwala.service.state",
+                "com.cerner.jwala.service.spring.component",
+                "com.cerner.jwala.commandprocessor.jsch.impl.spring.component",
+                "com.cerner.jwala.service.group.impl.spring.component",
+                "com.cerner.jwala.service.jvm.impl.spring.component",
+                "com.cerner.jwala.service.impl.spring.component",
+                "com.cerner.jwala.service.resource.impl",
+                "com.cerner.jwala.common",
+                "com.cerner.jwala.service.impl",
+                "com.cerner.jwala.service.media.impl",
+                "com.cerner.jwala.common.jsch.impl"})
 public class AemServiceConfiguration {
 
     @Autowired
@@ -310,12 +312,13 @@ public class AemServiceConfiguration {
                                               final ResourceDao resourceDao,
                                               final WebServerResourceHandler webServerResourceHandler,
                                               final ResourceContentGeneratorService resourceContentGeneratorService,
-                                              final ResourceRepositoryService resourceRepositoryService) {
+                                              @Qualifier("resourceRepositoryService")
+                                              final RepositoryService repositoryService) {
         return new ResourceServiceImpl(persistenceServiceConfiguration.getResourcePersistenceService(),
                 persistenceServiceConfiguration.getGroupPersistenceService(), applicationPersistenceService,
                 jvmPersistenceService, webServerPersistenceService, resourceDao, webServerResourceHandler,
                 aemCommandExecutorConfig.getRemoteCommandExecutor(), binaryWriteLockMap,
-                resourceContentGeneratorService, binaryDistributionService, new Tika(), resourceRepositoryService);
+                resourceContentGeneratorService, binaryDistributionService, new Tika(), repositoryService);
     }
 
     @Bean
@@ -451,7 +454,7 @@ public class AemServiceConfiguration {
     }
 
     @Bean(name = "binaryDistributionService")
-    public BinaryDistributionService getBinaryDistributionService(BinaryDistributionControlService binaryDistributionControlService) {
-        return new BinaryDistributionServiceImpl(binaryDistributionControlService, getBinaryDistributionLockManager());
+    public BinaryDistributionService getBinaryDistributionService(BinaryDistributionControlService binaryDistributionControlService, HistoryFacadeService historyFacadeService) {
+        return new BinaryDistributionServiceImpl(binaryDistributionControlService, getBinaryDistributionLockManager(), historyFacadeService);
     }
 }

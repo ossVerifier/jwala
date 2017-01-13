@@ -22,5 +22,8 @@ var ServiceFactory = {
     },
     getServerStateWebSocketService: function() {
         return serverStateWebSocketService;
+    },
+    getMediaService: function () {
+        return mediaService;
     }
 };

@@ -1,32 +1,46 @@
 package com.cerner.jwala.service.binarydistribution.impl;
 
 import com.cerner.jwala.common.domain.model.fault.FaultType;
+import com.cerner.jwala.common.domain.model.jvm.Jvm;
+import com.cerner.jwala.common.domain.model.media.Media;
 import com.cerner.jwala.common.domain.model.resource.EntityType;
+import com.cerner.jwala.common.exception.ApplicationException;
 import com.cerner.jwala.common.exception.InternalErrorException;
 import com.cerner.jwala.common.properties.ApplicationProperties;
 import com.cerner.jwala.common.properties.PropertyKeys;
 import com.cerner.jwala.exception.CommandFailureException;
+import com.cerner.jwala.persistence.jpa.type.EventType;
+import com.cerner.jwala.service.HistoryFacadeService;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionControlService;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionLockManager;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+
+import java.io.File;
+import java.text.MessageFormat;
 
 /**
- * Created by Arvindo Kinny on 10/11/2016.
+ * Created by Arvindo Kinny on 10/11/2016
  */
 public class BinaryDistributionServiceImpl implements BinaryDistributionService {
     private static final Logger LOGGER = LoggerFactory.getLogger(BinaryDistributionServiceImpl.class);
 
+    private static final String BINARY_LOCATION_PROPERTY_KEY = "jwala.binary.dir";
     private static final String UNZIPEXE = "unzip.exe";
     private static final String APACHE_EXCLUDE = "ReadMe.txt *--";
 
     private final BinaryDistributionControlService binaryDistributionControlService;
     private final BinaryDistributionLockManager binaryDistributionLockManager;
+    private HistoryFacadeService historyFacadeService;
 
-    public BinaryDistributionServiceImpl(BinaryDistributionControlService binaryDistributionControlService, BinaryDistributionLockManager binaryDistributionLockManager) {
+    public BinaryDistributionServiceImpl(BinaryDistributionControlService binaryDistributionControlService, BinaryDistributionLockManager binaryDistributionLockManager, HistoryFacadeService historyFacadeService) {
         this.binaryDistributionControlService = binaryDistributionControlService;
         this.binaryDistributionLockManager = binaryDistributionLockManager;
+        this.historyFacadeService = historyFacadeService;
     }
 
     @Override
@@ -34,37 +48,57 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
         String writeLockResourceName = hostname + "-" + EntityType.WEB_SERVER.toString();
         try {
             binaryDistributionLockManager.writeLock(writeLockResourceName);
-            String remoteDeployDir =  ApplicationProperties.getRequired(PropertyKeys.REMOTE_PATHS_APACHE_HTTPD);
-            String apacheDirName = ApplicationProperties.getRequired(PropertyKeys.REMOTE_PATHS_HTTPD_ROOT_DIR_NAME);
-            distributeBinary(hostname, apacheDirName, remoteDeployDir, APACHE_EXCLUDE);
+            File apache = new File(ApplicationProperties.get("remote.paths.apache.httpd"));
+            String webServerDir = apache.getName();
+            String binaryDeployDir = apache.getParentFile().getAbsolutePath().replaceAll("\\\\", "/");
+            final String localArchivePath = ApplicationProperties.get(BINARY_LOCATION_PROPERTY_KEY) + "/" + webServerDir + ".zip";
+            distributeBinary(hostname, webServerDir, binaryDeployDir, APACHE_EXCLUDE, localArchivePath);
         } finally {
             binaryDistributionLockManager.writeUnlock(writeLockResourceName);
         }
     }
 
     @Override
-    public void distributeJdk(final String hostname) {
-        LOGGER.info("Start deploy jdk for host {}", hostname);
-        String remoteDeployDir = ApplicationProperties.getRequired(PropertyKeys.REMOTE_JAVA_HOME);
-        String javaDirName = ApplicationProperties.getRequired(PropertyKeys.REMOTE_JWALA_JAVA_ROOT_DIR_NAME);
-        distributeBinary(hostname, javaDirName, remoteDeployDir, "");
-        LOGGER.info("End deploy jdk for {}", hostname);
+    public void distributeJdk(final Jvm jvm) {
+        LOGGER.info("Start deploy jdk for {}", jvm);
+        final Media jdkMedia = jvm.getJdkMedia();
+        final String binaryDeployDir = new File(jdkMedia.getRemoteHostPath()).getAbsolutePath().replaceAll("\\\\", "/");
+        if (binaryDeployDir != null && !binaryDeployDir.isEmpty()) {
+            historyFacadeService.write(jvm.getHostName(), jvm.getGroups(), "DISTRIBUTE_JDK " + jdkMedia.getName(),
+                    EventType.APPLICATION_EVENT, getUserNameFromSecurityContext());
+            if (!checkIfMediaDirExists(jvm.getJdkMedia().getMediaDir().split(","), jvm.getHostName(), binaryDeployDir)) {
+                distributeBinary(jvm.getHostName(), jdkMedia.getName(), binaryDeployDir, "", jdkMedia.getPath());
+            } else {
+                LOGGER.warn("Jdk directories already exists, installation of {} skipped!", jvm.getJdkMedia().getName());
+            }
+        } else {
+            final String errMsg = MessageFormat.format("JDK dir location is null or empty for JVM {0}. Not deploying JDK.", jvm.getJvmName());
+            LOGGER.error(errMsg);
+            throw new ApplicationException(errMsg);
+        }
+        LOGGER.info("End deploy jdk {} for {}", jdkMedia.getName(), jvm.getJvmName());
     }
 
-    private void distributeBinary(final String hostname, final String binaryName, final String binaryDeployDir, final String excludeFromZip) {
-        String binaryDir = ApplicationProperties.getRequired(PropertyKeys.LOCAL_JWALA_BINARY_DIR);
-        LOGGER.debug("SCP binary starting for remote host {}. binary name is {}, binary deploy dir is {}", hostname, binaryName, binaryDeployDir);
+    private void distributeBinary(final String hostname, final String binaryName, final String binaryDeployDir, final String excludeFromZip, String localArchivePath) {
+        if (binaryDeployDir == null || binaryDeployDir.isEmpty()) {
+            LOGGER.warn("Binary deploy location not provided value is {}", binaryDeployDir);
+            return;
+        }
 
-        if (remoteFileCheck(hostname, binaryDeployDir)) {
-            LOGGER.info("Found {} on host {}. Nothing to do.", binaryName, hostname);
+        if (remoteFileCheck(hostname, binaryDeployDir + "/" + binaryName)) {
+            LOGGER.warn("Found {} on host {}. Nothing to do.", binaryName, hostname);
+            return;
+        }
+
+        if (localArchivePath == null || localArchivePath.isEmpty()) {
+            LOGGER.warn("Cannot find the binary directory location in jwala, value is {}", localArchivePath);
             return;
         }
 
         LOGGER.info("Binary {} on host {} not found. Trying to deploy it", binaryName, hostname);
 
-        String zipFile = binaryDir + "/" + binaryName + ".zip";
-        String destinationZipFile = binaryDeployDir + ".zip";
-
+        String zipFile = localArchivePath;
+        String destinationZipFile = binaryDeployDir + "/" + binaryName + ".zip";
         remoteCreateDirectory(hostname, binaryDeployDir);
         remoteSecureCopyFile(hostname, zipFile, destinationZipFile);
 
@@ -72,12 +106,11 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
             remoteUnzipBinary(hostname,
                     ApplicationProperties.getRequired(PropertyKeys.REMOTE_SCRIPT_DIR) + "/" + UNZIPEXE,
                     destinationZipFile,
-                    ApplicationProperties.getRequired(PropertyKeys.REMOTE_PATHS_DEPLOY_DIR),
+                    binaryDeployDir,
                     excludeFromZip);
         } finally {
             remoteDeleteBinary(hostname, destinationZipFile);
         }
-
     }
 
     public void changeFileMode(final String hostname, final String mode, final String targetDir, final String target) {
@@ -193,4 +226,37 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
 
         LOGGER.info("End deploy unzip for {}", hostname);
     }
+
+    /**
+     * Checks if the binary media directories already exists
+     * @param mediaDirs the binary media directories to check
+     * @param hostName the host name where to check the binary media directories
+     * @param binaryDeployDir the location where the binary media directories are in
+     * @return true if all the binary media root directories already exists, otherwise false
+     */
+    private boolean checkIfMediaDirExists(final String [] mediaDirs, final String hostName, final String binaryDeployDir) {
+        for (final String mediaDir : mediaDirs) {
+            if (!remoteFileCheck(hostName, binaryDeployDir + "/" + mediaDir)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private String getUserNameFromSecurityContext() {
+        final SecurityContext context = SecurityContextHolder.getContext();
+        if (context == null) {
+            LOGGER.debug("No context found getting user name from SecurityContextHolder");
+            return "";
+        }
+
+        final Authentication authentication = context.getAuthentication();
+        if (authentication == null) {
+            LOGGER.debug("No authentication found getting user name from SecuriyContextHolder");
+            return "";
+        }
+
+        return authentication.getName();
+    }
+
 }

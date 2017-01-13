@@ -10,6 +10,7 @@ import com.cerner.jwala.common.request.jvm.CreateJvmRequest;
 import com.cerner.jwala.common.request.jvm.UpdateJvmRequest;
 import com.cerner.jwala.common.request.jvm.UploadJvmTemplateRequest;
 import com.cerner.jwala.persistence.jpa.domain.JpaJvm;
+import com.cerner.jwala.persistence.jpa.domain.JpaMedia;
 import com.cerner.jwala.persistence.jpa.domain.builder.JvmBuilder;
 import com.cerner.jwala.persistence.jpa.domain.resource.config.template.JpaJvmConfigTemplate;
 import com.cerner.jwala.persistence.jpa.service.JvmCrudService;
@@ -30,7 +31,7 @@ public class JvmCrudServiceImpl extends AbstractCrudServiceImpl<JpaJvm> implemen
     private EntityManager entityManager;
 
     @Override
-    public JpaJvm createJvm(CreateJvmRequest createJvmRequest) {
+    public JpaJvm createJvm(CreateJvmRequest createJvmRequest, JpaMedia jdkMedia) {
 
         try {
             final JpaJvm jpaJvm = new JpaJvm();
@@ -46,6 +47,8 @@ public class JvmCrudServiceImpl extends AbstractCrudServiceImpl<JpaJvm> implemen
             jpaJvm.setSystemProperties(createJvmRequest.getSystemProperties());
             jpaJvm.setUserName(createJvmRequest.getUserName());
             jpaJvm.setEncryptedPassword(createJvmRequest.getEncryptedPassword());
+            jpaJvm.setJdkMedia(jdkMedia);
+//            jpaJvm.setTomcatMedia(createJvmRequest.getTomcatMediaId());
 
             return create(jpaJvm);
         } catch (final EntityExistsException eee) {
@@ -55,7 +58,7 @@ public class JvmCrudServiceImpl extends AbstractCrudServiceImpl<JpaJvm> implemen
     }
 
     @Override
-    public JpaJvm updateJvm(UpdateJvmRequest updateJvmRequest) {
+    public JpaJvm updateJvm(UpdateJvmRequest updateJvmRequest, JpaMedia jdkMedia) {
 
         try {
             final Identifier<Jvm> jvmId = updateJvmRequest.getId();
@@ -72,6 +75,8 @@ public class JvmCrudServiceImpl extends AbstractCrudServiceImpl<JpaJvm> implemen
             jpaJvm.setSystemProperties(updateJvmRequest.getNewSystemProperties());
             jpaJvm.setUserName(updateJvmRequest.getNewUserName());
             jpaJvm.setEncryptedPassword(updateJvmRequest.getNewEncryptedPassword());
+            jpaJvm.setJdkMedia(jdkMedia);
+//            jpaJvm.setTomcatMedia(updateJvmRequest.getNewTomcatMediaId());
 
             return update(jpaJvm);
         } catch (final EntityExistsException eee) {

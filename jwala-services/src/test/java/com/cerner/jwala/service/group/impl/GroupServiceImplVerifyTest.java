@@ -21,7 +21,7 @@ import com.cerner.jwala.service.VerificationBehaviorSupport;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionService;
 import com.cerner.jwala.service.resource.ResourceContentGeneratorService;
 import com.cerner.jwala.service.resource.ResourceHandler;
-import com.cerner.jwala.service.resource.ResourceRepositoryService;
+import com.cerner.jwala.service.repository.RepositoryService;
 import com.cerner.jwala.service.resource.ResourceService;
 import com.cerner.jwala.service.resource.impl.ResourceContentGeneratorServiceImpl;
 import com.cerner.jwala.service.resource.impl.ResourceServiceImpl;
@@ -85,7 +85,7 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
     private ResourceContentGeneratorService resourceContentGeneratorService;
 
     @Mock
-    private ResourceRepositoryService mockResourceRepositoryService;
+    private RepositoryService mockRepositoryService;
 
     Map<String, ReentrantReadWriteLock> resourceWriteLockMap = new HashMap<>();
 
@@ -116,7 +116,7 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
         resourceService = new ResourceServiceImpl(mockResourcePersistenceService, mockGroupPesistenceService,
                 mockAppPersistenceService, mockJvmPersistenceService, mockWebServerPersistenceService,
                  mockResourceDao, mockResourceHandler, mockRemoteCommandExector, resourceWriteLockMap,
-                resourceContentGeneratorService, binaryDistributionService, new Tika(), mockResourceRepositoryService);
+                resourceContentGeneratorService, binaryDistributionService, new Tika(), mockRepositoryService);
 
         groupService = new GroupServiceImpl(groupPersistenceService,
                 applicationPersistenceService,

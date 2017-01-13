@@ -108,6 +108,8 @@ var JvmConfig = React.createClass({
                                             this.refs.jvmAddForm.state.ajpPort,
                                             this.refs.jvmAddForm.state.userName,
                                             this.refs.jvmAddForm.state.encryptedPassword,
+                                            this.refs.jvmAddForm.state.jdkVersion,
+                                            this.refs.jvmAddForm.state.tomcatVersion,
                                             function(){
                                                 self.state.selectedJvm = null;
                                                 self.refreshData({showModalFormAddDialog:false});
@@ -198,6 +200,10 @@ var JvmConfigForm = React.createClass({
         var host = "";
         var statusPath = "/manager"; // TODO: Define in a properties file
         var groupIds = [];
+        var jdkVersions = [];
+        var tomcatVersions = [];
+        var jdkMedia = {};
+        var tomcatVersion = "";
         var httpPort = "";
         var httpsPort = "";
         var redirectPort = "";
@@ -221,6 +227,8 @@ var JvmConfigForm = React.createClass({
             ajpPort = this.props.data.ajpPort;
             userName = this.props.data.userName;
             encryptedPassword = this.props.data.encryptedPassword;
+            jdkMedia = this.props.data.jdkMedia;
+            tomcatVersion = this.props.data.tomcatVersion;
         }
 
         return {
@@ -229,6 +237,10 @@ var JvmConfigForm = React.createClass({
             host: host,
             statusPath: statusPath,
             groupIds: groupIds,
+            jdkVersions: [],
+            tomcatVersions: [],
+            jdkMedia: jdkMedia,
+            tomcatVersion: tomcatVersion,
             groupMultiSelectData: [],
             httpPort: httpPort,
             httpsPort: httpsPort,
@@ -356,7 +368,7 @@ var JvmConfigForm = React.createClass({
                             <tr>
                             	<td><input name="userName" type="text" valueLink={this.linkState("userName")} /></td>
                             </tr>
-                            
+
                             <tr>
                             	<td>Password</td>
                             </tr>
@@ -368,7 +380,30 @@ var JvmConfigForm = React.createClass({
                             <tr>
                         		<td><input name="encryptedPassword" type="password" valueLink={this.linkState("encryptedPassword")} /></td>
                         	</tr>
-                            
+                        	<tr>
+                        	    <td>JDK Version</td>
+                        	</tr>
+                        	<tr>
+                        	    <td>
+                        	    <select name="jdkVersion" ref="jdkVersion" valueLink={this.linkState("jdkVersion")}>
+                                    {this.getJdkVersions()}
+                                </select>
+                        	    </td>
+                        	</tr>
+
+{/*                        	TODO remove the tomcat version for now - the main focus is the JDK update
+
+                        	<tr>
+                        	    <td>Apache Tomcat Version</td>
+                        	</tr>
+                        	<tr>
+                        	    <td>
+                        	    <select name="tomcatVersion" ref="tomcatVersion" valueLink={this.linkState("tomcatVersion")}>
+                                    {this.getTomcatVersions()}
+                                </select>
+                        	    </td>
+                        	</tr>*/}
+
                             <tr>
                                 <td>
                                     *Group
@@ -414,16 +449,16 @@ var JvmConfigForm = React.createClass({
             var basePort = parseInt(this.state.httpPort);
             var ports = {};
             if (!$.trim(this.state.httpsPort)) {
-                ports.httpsPort = basePort + 1;
+                ports.httpsPort = basePort + 1 + "";
             }
             if (!$.trim(this.state.redirectPort)) {
-                ports.redirectPort = basePort + 2;
+                ports.redirectPort = basePort + 2 + "";
             }
             if (!$.trim(this.state.shutdownPort)) {
-                ports.shutdownPort = basePort + 3;
+                ports.shutdownPort = basePort + 3 + "";
             }
             if (!$.trim(this.state.ajpPort)) {
-                ports.ajpPort = basePort + 4;
+                ports.ajpPort = basePort + 4 + "";
             }
             this.setState(ports);
         }
@@ -445,7 +480,9 @@ var JvmConfigForm = React.createClass({
                                                                                 range: [-1, 65535],
                                                                                 notEqualTo: 0
                                                                              },
-                                                                            "ajpPort": {range: [1, 65535]}
+                                                                            "ajpPort": {range: [1, 65535]},
+                                                                            "jdkVersion": {required: true}/*,
+                                                                            "tomcatVersion": {required: false}*/
                                                                             },
                                                                             messages: {
                                                                                 "groupSelector[]": {
@@ -460,6 +497,7 @@ var JvmConfigForm = React.createClass({
         });
 
         this.retrieveGroups();
+        this.getMedia();
     },
     isValid: function() {
         this.validator.form();
@@ -473,6 +511,40 @@ var JvmConfigForm = React.createClass({
         groupService.getGroups().then(function(response){
                                         self.setState({groupMultiSelectData:response.applicationResponseContent});
                                       });
+    },
+    getMedia: function() {
+        var self = this;
+        mediaService.getAllMedia().then((function(response){
+            var allMedia = response.applicationResponseContent;
+            var jdkVersions = [], tomcatVersions = [];
+            for (var i=0; i<allMedia.length; i++) {
+                if (allMedia[i].type === "JDK") {
+                    jdkVersions.push(allMedia[i]);
+                } else {
+                    tomcatVersions.push(allMedia[i]);
+                }
+            }
+            self.setState({jdkVersions: jdkVersions, tomcatVersions: tomcatVersions});
+        })).caught(function(response){
+            $.errorAlert(response);
+        });
+    },
+    getJdkVersions: function() {
+        var items=[<option key='no-jvm-version' value=''></option>];
+        for (var i=0; i < this.state.jdkVersions.length; i++){
+            var jdkVersionOption = this.state.jdkVersions[i];
+            var selected = this.state.jdkMedia !== null && jdkVersionOption.id == this.state.jdkMedia.id;
+            items.push(<option selected={selected} value={jdkVersionOption.id}>{jdkVersionOption.name}</option>);
+        }
+        return items;
+    },
+    getTomcatVersions: function() {
+        var items=[<option key='no-apache-tomcat-version' value=''></option>];
+        for (var i=0; i < this.state.tomcatVersions.length; i++){
+            var apacheTomcatOption = this.state.tomcatVersions[i];
+            items.push(<option value={apacheTomcatOption.id}>{apacheTomcatOption.name}</option>);
+        }
+        return items;
     }
 });
 
@@ -499,7 +571,9 @@ var JvmConfigDataTable = React.createClass({
                         {sTitle:"Redir", mData:"redirectPort"},
                         {sTitle:"Shutd", mData:"shutdownPort"},
                         {sTitle:"AJP", mData:"ajpPort"},
-                        {sTitle:"Username", mData: "userName"}];
+                        {sTitle:"Username", mData: "userName"},
+                        {sTitle:"JDK", mData:"jdkMedia", jwalaType:"custom", jwalaRenderCfgFn:this.renderJdkMediaName}/*,
+                        {sTitle:"Tomcat", mData:"tomcatMedia"}*/];
         return <JwalaDataTable ref="dataTableWrapper"
                                tableId="jvm-config-datatable"
                                tableDef={tableDef}
@@ -515,5 +589,12 @@ var JvmConfigDataTable = React.createClass({
                 $(this.getDOMNode()).click(oData, self.props.editCallback);
             });
         };
+   },
+   renderJdkMediaName:function(dataTable, data, aoColumnDefs, itemIndex) {
+        var self = this;
+        aoColumnDefs[itemIndex].fnCreatedCell = function (nTd, sData, oData, iRow, iCol) {
+            var jdkMediaName = sData && sData.name ? sData.name : "";
+            return React.renderComponent(React.createElement("span", {}, jdkMediaName), nTd);
+        }
    }
 });

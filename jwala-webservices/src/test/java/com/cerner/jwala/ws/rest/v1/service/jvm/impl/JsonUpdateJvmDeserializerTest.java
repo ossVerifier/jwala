@@ -4,13 +4,12 @@ import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.id.IdentifierSetBuilder;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
+import com.cerner.jwala.common.domain.model.media.Media;
 import com.cerner.jwala.common.domain.model.ssh.DecryptPassword;
 import com.cerner.jwala.common.exception.BadRequestException;
 import com.cerner.jwala.common.request.group.AddJvmToGroupRequest;
 import com.cerner.jwala.common.request.jvm.UpdateJvmRequest;
 import com.cerner.jwala.ws.rest.v1.service.JsonDeserializationBehavior;
-import com.cerner.jwala.ws.rest.v1.service.jvm.impl.JsonUpdateJvm;
-
 import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
@@ -37,7 +36,9 @@ public class JsonUpdateJvmDeserializerTest {
     private static final String userName = "John Doe";
     private static final String clearTextPassword = "The Quick Brown Fox";
     private static final String encryptedPassword = new DecryptPassword().encrypt(clearTextPassword);
-    
+    private static final String jdkVersion = "1";
+    private static final String tomcatVersion = "11";
+
     @Before
     public void setUp() {
         mapper = new JsonDeserializationBehavior().addMapping(JsonUpdateJvm.class, new JsonUpdateJvm.JsonUpdateJvmDeserializer()).toObjectMapper();
@@ -53,37 +54,41 @@ public class JsonUpdateJvmDeserializerTest {
         final String secondGroupId = "2";
 
         final String json = object(keyTextValue("jvmId", jvmId),
-                                   keyTextValue("jvmName", jvmName),
-                                   keyTextValue("hostName", hostName),
-                                   keyValue("groupIds", array(object(keyTextValue("groupId", firstGroupId)),
-                                                              object(keyTextValue("groupId", secondGroupId)))),
-                                   keyTextValue("httpPort", httpPort),
-                                   keyTextValue("httpsPort", httpsPort),
-                                   keyTextValue("redirectPort", redirectPort),
-                                   keyTextValue("shutdownPort", shutdownPort),
-                                   keyTextValue("ajpPort", ajpPort),
-                                   keyTextValue("statusPath", statusPath),
-                                   keyTextValue("systemProperties", systemProperties),
-                                   keyTextValue("userName", userName),
-                                   keyTextValue("encryptedPassword", clearTextPassword));
+                keyTextValue("jvmName", jvmName),
+                keyTextValue("hostName", hostName),
+                keyValue("groupIds", array(object(keyTextValue("groupId", firstGroupId)),
+                        object(keyTextValue("groupId", secondGroupId)))),
+                keyTextValue("httpPort", httpPort),
+                keyTextValue("httpsPort", httpsPort),
+                keyTextValue("redirectPort", redirectPort),
+                keyTextValue("shutdownPort", shutdownPort),
+                keyTextValue("ajpPort", ajpPort),
+                keyTextValue("statusPath", statusPath),
+                keyTextValue("systemProperties", systemProperties),
+                keyTextValue("userName", userName),
+                keyTextValue("encryptedPassword", clearTextPassword),
+                keyTextValue("jdkVersion", jdkVersion),
+                keyTextValue("tomcatVersion", tomcatVersion));
 
         final JsonUpdateJvm update = readValue(json);
 
         verifyAssertions(update,
-                         jvmId,
-                         jvmName,
-                         hostName,
-                         httpPort,
-                         httpsPort,
-                         redirectPort,
-                         shutdownPort,
-                         ajpPort,
-                         statusPath,
-                         systemProperties,
-                         userName,
-                         encryptedPassword,
-                         firstGroupId,
-                         secondGroupId);
+                jvmId,
+                jvmName,
+                hostName,
+                httpPort,
+                httpsPort,
+                redirectPort,
+                shutdownPort,
+                ajpPort,
+                statusPath,
+                systemProperties,
+                userName,
+                encryptedPassword,
+                jdkVersion,
+                tomcatVersion,
+                firstGroupId,
+                secondGroupId);
     }
 
     @Test
@@ -95,37 +100,41 @@ public class JsonUpdateJvmDeserializerTest {
         final String firstGroupId = "1";
 
         final String json = object(keyTextValue("jvmId", jvmId),
-                                   keyTextValue("jvmName", jvmName),
-                                   keyTextValue("hostName", hostName),
-                                   keyValue("groupIds", array(object(keyTextValue("groupId",
-                                                                                  firstGroupId)))),
-                                   keyTextValue("httpPort", httpPort),
-                                   keyTextValue("httpsPort", httpsPort),
-                                   keyTextValue("redirectPort", redirectPort),
-                                   keyTextValue("shutdownPort", shutdownPort),
-                                   keyTextValue("ajpPort", ajpPort),
-                                   keyTextValue("statusPath", statusPath),
-                                   keyTextValue("systemProperties", systemProperties),
-                                   keyTextValue("userName", userName),
-                                   keyTextValue("encryptedPassword", clearTextPassword));
+                keyTextValue("jvmName", jvmName),
+                keyTextValue("hostName", hostName),
+                keyValue("groupIds", array(object(keyTextValue("groupId",
+                        firstGroupId)))),
+                keyTextValue("httpPort", httpPort),
+                keyTextValue("httpsPort", httpsPort),
+                keyTextValue("redirectPort", redirectPort),
+                keyTextValue("shutdownPort", shutdownPort),
+                keyTextValue("ajpPort", ajpPort),
+                keyTextValue("statusPath", statusPath),
+                keyTextValue("systemProperties", systemProperties),
+                keyTextValue("userName", userName),
+                keyTextValue("encryptedPassword", clearTextPassword),
+                keyTextValue("jdkVersion", jdkVersion),
+                keyTextValue("tomcatVersion", tomcatVersion));
 
 
         final JsonUpdateJvm update = readValue(json);
 
         verifyAssertions(update,
-                         jvmId,
-                         jvmName,
-                         hostName,
-                         httpPort,
-                         httpsPort,
-                         redirectPort,
-                         shutdownPort,
-                         ajpPort,
-                         statusPath,
-                         systemProperties,
-                         userName,
-                         encryptedPassword,
-                         firstGroupId);
+                jvmId,
+                jvmName,
+                hostName,
+                httpPort,
+                httpsPort,
+                redirectPort,
+                shutdownPort,
+                ajpPort,
+                statusPath,
+                systemProperties,
+                userName,
+                encryptedPassword,
+                jdkVersion,
+                tomcatVersion,
+                firstGroupId);
     }
 
     @Test
@@ -137,35 +146,39 @@ public class JsonUpdateJvmDeserializerTest {
         final String firstGroupId = "1";
 
         final String json = object(keyTextValue("jvmId", jvmId),
-                                   keyTextValue("jvmName", jvmName),
-                                   keyTextValue("hostName", hostName),
-                                   keyTextValue("groupId", firstGroupId),
-                                   keyTextValue("httpPort", httpPort),
-                                   keyTextValue("httpsPort", httpsPort),
-                                   keyTextValue("redirectPort", redirectPort),
-                                   keyTextValue("shutdownPort", shutdownPort),
-                                   keyTextValue("ajpPort", ajpPort),
-                                   keyTextValue("statusPath", statusPath),
-                                   keyTextValue("systemProperties", systemProperties),
-                                   keyTextValue("userName", userName),
-                                   keyTextValue("encryptedPassword", clearTextPassword));
+                keyTextValue("jvmName", jvmName),
+                keyTextValue("hostName", hostName),
+                keyTextValue("groupId", firstGroupId),
+                keyTextValue("httpPort", httpPort),
+                keyTextValue("httpsPort", httpsPort),
+                keyTextValue("redirectPort", redirectPort),
+                keyTextValue("shutdownPort", shutdownPort),
+                keyTextValue("ajpPort", ajpPort),
+                keyTextValue("statusPath", statusPath),
+                keyTextValue("systemProperties", systemProperties),
+                keyTextValue("userName", userName),
+                keyTextValue("encryptedPassword", clearTextPassword),
+                keyTextValue("jdkVersion", jdkVersion),
+                keyTextValue("tomcatVersion", tomcatVersion));
 
         final JsonUpdateJvm update = readValue(json);
 
         verifyAssertions(update,
-                         jvmId,
-                         jvmName,
-                         hostName,
-                         httpPort,
-                         httpsPort,
-                         redirectPort,
-                         shutdownPort,
-                         ajpPort,
-                         statusPath,
-                         systemProperties,
-                         userName,
-                         encryptedPassword,
-                         firstGroupId);
+                jvmId,
+                jvmName,
+                hostName,
+                httpPort,
+                httpsPort,
+                redirectPort,
+                shutdownPort,
+                ajpPort,
+                statusPath,
+                systemProperties,
+                userName,
+                encryptedPassword,
+                jdkVersion,
+                tomcatVersion,
+                firstGroupId);
     }
 
     @Test
@@ -176,33 +189,37 @@ public class JsonUpdateJvmDeserializerTest {
         final String hostName = "a host name";
 
         final String json = object(keyTextValue("jvmId", jvmId),
-                                   keyTextValue("jvmName", jvmName),
-                                   keyTextValue("hostName", hostName),
-                                   keyTextValue("httpPort", httpPort),
-                                   keyTextValue("httpsPort", httpsPort),
-                                   keyTextValue("redirectPort", redirectPort),
-                                   keyTextValue("shutdownPort", shutdownPort),
-                                   keyTextValue("ajpPort", ajpPort),
-                                   keyTextValue("statusPath", statusPath),
-                                   keyTextValue("systemProperties", systemProperties),
-                                   keyTextValue("userName", userName),
-                                   keyTextValue("encryptedPassword", clearTextPassword));
+                keyTextValue("jvmName", jvmName),
+                keyTextValue("hostName", hostName),
+                keyTextValue("httpPort", httpPort),
+                keyTextValue("httpsPort", httpsPort),
+                keyTextValue("redirectPort", redirectPort),
+                keyTextValue("shutdownPort", shutdownPort),
+                keyTextValue("ajpPort", ajpPort),
+                keyTextValue("statusPath", statusPath),
+                keyTextValue("systemProperties", systemProperties),
+                keyTextValue("userName", userName),
+                keyTextValue("encryptedPassword", clearTextPassword),
+                keyTextValue("jdkVersion", jdkVersion),
+                keyTextValue("tomcatVersion", tomcatVersion));
 
         final JsonUpdateJvm update = readValue(json);
 
         verifyAssertions(update,
-                         jvmId,
-                         jvmName,
-                         hostName,
-                         httpPort,
-                         httpsPort,
-                         redirectPort,
-                         shutdownPort,
-                         ajpPort,
-                         statusPath,
-                         systemProperties,
-                         userName,
-                         encryptedPassword);
+                jvmId,
+                jvmName,
+                hostName,
+                httpPort,
+                httpsPort,
+                redirectPort,
+                shutdownPort,
+                ajpPort,
+                statusPath,
+                systemProperties,
+                userName,
+                encryptedPassword,
+                jdkVersion,
+                tomcatVersion);
     }
 
     @Test(expected = BadRequestException.class)
@@ -214,35 +231,39 @@ public class JsonUpdateJvmDeserializerTest {
         final String firstGroupId = "this is not a valid group identifier";
 
         final String json = object(keyTextValue("jvmId", jvmId),
-                                   keyTextValue("jvmName", jvmName),
-                                   keyTextValue("hostName", hostName),
-                                   keyTextValue("groupId", firstGroupId),
-                                   keyTextValue("httpPort", httpPort),
-                                   keyTextValue("httpsPort", httpsPort),
-                                   keyTextValue("redirectPort", redirectPort),
-                                   keyTextValue("shutdownPort", shutdownPort),
-                                   keyTextValue("ajpPort", ajpPort),
-                                   keyTextValue("statusPath", statusPath),
-                                   keyTextValue("systemProperties", systemProperties),
-                                   keyTextValue("userName", userName),
-                                   keyTextValue("encryptedPassword", clearTextPassword));
+                keyTextValue("jvmName", jvmName),
+                keyTextValue("hostName", hostName),
+                keyTextValue("groupId", firstGroupId),
+                keyTextValue("httpPort", httpPort),
+                keyTextValue("httpsPort", httpsPort),
+                keyTextValue("redirectPort", redirectPort),
+                keyTextValue("shutdownPort", shutdownPort),
+                keyTextValue("ajpPort", ajpPort),
+                keyTextValue("statusPath", statusPath),
+                keyTextValue("systemProperties", systemProperties),
+                keyTextValue("userName", userName),
+                keyTextValue("encryptedPassword", clearTextPassword),
+                keyTextValue("jdkVersion", jdkVersion),
+                keyTextValue("tomcatVersion", tomcatVersion));
 
         final JsonUpdateJvm update = readValue(json);
 
         verifyAssertions(update,
-                         jvmId,
-                         jvmName,
-                         hostName,
-                         httpPort,
-                         httpsPort,
-                         redirectPort,
-                         shutdownPort,
-                         ajpPort,
-                         statusPath,
-                         systemProperties,
-                         userName,
-                         encryptedPassword,
-                         firstGroupId);
+                jvmId,
+                jvmName,
+                hostName,
+                httpPort,
+                httpsPort,
+                redirectPort,
+                shutdownPort,
+                ajpPort,
+                statusPath,
+                systemProperties,
+                userName,
+                encryptedPassword,
+                jdkVersion,
+                tomcatVersion,
+                firstGroupId);
     }
 
     @Test(expected = BadRequestException.class)
@@ -254,35 +275,39 @@ public class JsonUpdateJvmDeserializerTest {
         final String firstGroupId = "1";
 
         final String json = object(keyTextValue("jvmId", jvmId),
-                                   keyTextValue("jvmName", jvmName),
-                                   keyTextValue("hostName", hostName),
-                                   keyTextValue("groupId", firstGroupId),
-                                   keyTextValue("httpPort", httpPort),
-                                   keyTextValue("httpsPort", httpsPort),
-                                   keyTextValue("redirectPort", redirectPort),
-                                   keyTextValue("shutdownPort", shutdownPort),
-                                   keyTextValue("ajpPort", ajpPort),
-                                   keyTextValue("statusPath", statusPath),
-                                   keyTextValue("systemProperties", systemProperties),
-                                   keyTextValue("userName", userName),
-                                   keyTextValue("encryptedPassword", clearTextPassword));
+                keyTextValue("jvmName", jvmName),
+                keyTextValue("hostName", hostName),
+                keyTextValue("groupId", firstGroupId),
+                keyTextValue("httpPort", httpPort),
+                keyTextValue("httpsPort", httpsPort),
+                keyTextValue("redirectPort", redirectPort),
+                keyTextValue("shutdownPort", shutdownPort),
+                keyTextValue("ajpPort", ajpPort),
+                keyTextValue("statusPath", statusPath),
+                keyTextValue("systemProperties", systemProperties),
+                keyTextValue("userName", userName),
+                keyTextValue("encryptedPassword", clearTextPassword),
+                keyTextValue("jdkVersion", jdkVersion),
+                keyTextValue("tomcatVersion", tomcatVersion));
 
         final JsonUpdateJvm update = readValue(json);
 
         verifyAssertions(update,
-                         jvmId,
-                         jvmName,
-                         hostName,
-                         httpPort,
-                         httpsPort,
-                         redirectPort,
-                         shutdownPort,
-                         ajpPort,
-                         statusPath,
-                         systemProperties,
-                         userName,
-                         encryptedPassword,
-                         firstGroupId);
+                jvmId,
+                jvmName,
+                hostName,
+                httpPort,
+                httpsPort,
+                redirectPort,
+                shutdownPort,
+                ajpPort,
+                statusPath,
+                systemProperties,
+                userName,
+                encryptedPassword,
+                jdkVersion,
+                tomcatVersion,
+                firstGroupId);
     }
 
     protected JsonUpdateJvm readValue(final String someJson) throws IOException {
@@ -306,36 +331,42 @@ public class JsonUpdateJvmDeserializerTest {
                                     final String aSystemProperties,
                                     final String aUserName,
                                     final String anEncryptedPassword,
-                                    final String ... someGroupIds) {
+                                    final String aJdkVersion,
+                                    final String aTomcatVersion,
+                                    final String... someGroupIds) {
 
         final UpdateJvmRequest update = anUpdate.toUpdateJvmRequest();
 
         assertEquals(new Identifier<Jvm>(aJvmId),
-                     update.getId());
+                update.getId());
         assertEquals(aJvmName,
-                     update.getNewJvmName());
+                update.getNewJvmName());
         assertEquals(aHostName,
-                     update.getNewHostName());
+                update.getNewHostName());
         assertEquals(aHttpPort,
-                     integerToString(update.getNewHttpPort()));
+                integerToString(update.getNewHttpPort()));
         assertEquals(aHttpsPort,
-                     integerToString(update.getNewHttpsPort()));
+                integerToString(update.getNewHttpsPort()));
         assertEquals(aRedirectPort,
-                     integerToString(update.getNewRedirectPort()));
+                integerToString(update.getNewRedirectPort()));
         assertEquals(aShutdownPort,
-                     integerToString(update.getNewShutdownPort()));
+                integerToString(update.getNewShutdownPort()));
         assertEquals(aAjpPort,
-                     integerToString(update.getNewAjpPort()));
+                integerToString(update.getNewAjpPort()));
         assertEquals(aStatusPath,
-                     update.getNewStatusPath().getUriPath());
+                update.getNewStatusPath().getUriPath());
         assertEquals(aSystemProperties,
                 update.getNewSystemProperties());
         assertEquals(someGroupIds.length,
-                     update.getAssignmentCommands().size());
+                update.getAssignmentCommands().size());
         assertEquals(aUserName,
-                    update.getNewUserName());
+                update.getNewUserName());
         assertEquals(anEncryptedPassword,
-                    update.getNewEncryptedPassword());
+                update.getNewEncryptedPassword());
+        assertEquals(new Identifier<Media>(Long.parseLong(aJdkVersion)),
+                update.getNewJdkMediaId());
+/*        assertEquals(new Identifier<Media>(Long.parseLong(aTomcatVersion)),
+                update.getNewTomcatMediaId());*/
         final Set<Identifier<Group>> expectedGroupIds = new IdentifierSetBuilder(Arrays.asList(someGroupIds)).build();
         for (final AddJvmToGroupRequest addCommand : update.getAssignmentCommands()) {
             assertTrue(expectedGroupIds.contains(addCommand.getGroupId()));

@@ -69,8 +69,8 @@ var serviceFoundation = {
                                         }
                                    });
     },
-    promisedPost : function(url, dataType, content, contentType, isFileUpload) {
-        var loadingUiBehavior = serviceFoundationUi.visibleLoading(false);
+    promisedPost : function(url, dataType, content, contentType, isFileUpload, showLoading) {
+        var loadingUiBehavior = serviceFoundationUi.visibleLoading(showLoading ? showLoading : false);
         var ajaxParams = {url: url,
                           dataType: dataType,
                           type: 'POST',

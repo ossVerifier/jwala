@@ -6,13 +6,13 @@ import com.cerner.jwala.common.domain.model.jvm.Jvm;
 import com.cerner.jwala.common.domain.model.webserver.WebServer;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.joda.time.DateTime;
 
-import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-public class Group implements Serializable {
+public class Group {
 
     private final Identifier<Group> id;
     private final String name;
@@ -117,10 +117,10 @@ public class Group implements Serializable {
         return "Group{" +
                 "id=" + id +
                 ", name='" + name + '\'' +
-                ", jvms=" + jvms +
-                ", webServers=" + webServers +
+                ", jvms=" + (jvms != null ? jvms.size() : 0) +
+                ", webServers=" + (webServers  != null ? webServers.size() : 0)+
                 ", history=" + history +
-                ", applications=" + applications +
+                ", applications=" + (applications != null ? applications.size() : 0)+
                 '}';
     }
 }

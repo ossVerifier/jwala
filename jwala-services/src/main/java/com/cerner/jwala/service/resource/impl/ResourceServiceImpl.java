@@ -28,6 +28,8 @@ import com.cerner.jwala.persistence.jpa.domain.resource.config.template.ConfigTe
 import com.cerner.jwala.persistence.service.*;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionService;
 import com.cerner.jwala.service.exception.ResourceServiceException;
+import com.cerner.jwala.service.repository.RepositoryService;
+import com.cerner.jwala.service.repository.RepositoryServiceException;
 import com.cerner.jwala.service.resource.*;
 import com.cerner.jwala.template.exception.ResourceFileGeneratorException;
 import opennlp.tools.util.StringUtil;
@@ -91,7 +93,7 @@ public class ResourceServiceImpl implements ResourceService {
 
     private final Tika fileTypeDetector;
 
-    private final ResourceRepositoryService resourceRepositoryService;
+    private final RepositoryService repositoryService;
 
     public ResourceServiceImpl(final ResourcePersistenceService resourcePersistenceService,
                                final GroupPersistenceService groupPersistenceService,
@@ -105,7 +107,7 @@ public class ResourceServiceImpl implements ResourceService {
                                final ResourceContentGeneratorService resourceContentGeneratorService,
                                final BinaryDistributionService binaryDistributionService,
                                final Tika fileTypeDetector,
-                               final ResourceRepositoryService resourceRepositoryService) {
+                               final RepositoryService repositoryService) {
         this.resourcePersistenceService = resourcePersistenceService;
         this.groupPersistenceService = groupPersistenceService;
         this.remoteCommandExecutor = remoteCommandExecutor;
@@ -121,7 +123,7 @@ public class ResourceServiceImpl implements ResourceService {
         this.resourceContentGeneratorService = resourceContentGeneratorService;
         this.binaryDistributionService = binaryDistributionService;
         this.fileTypeDetector = fileTypeDetector;
-        this.resourceRepositoryService = resourceRepositoryService;
+        this.repositoryService = repositoryService;
     }
 
     @Override
@@ -436,7 +438,10 @@ public class ResourceServiceImpl implements ResourceService {
                 jvm.getErrorStatus(),
                 jvm.getLastUpdatedDate(),
                 jvm.getUserName(),
-                jvm.getEncryptedPassword());
+                jvm.getEncryptedPassword(),
+                jvm.getJdkMedia(),
+                jvm.getTomcatMedia(),
+                jvm.getJavaHome());
 
         final UploadJvmConfigTemplateRequest uploadJvmTemplateRequest = new UploadJvmConfigTemplateRequest(jvmWithParentGroup, metaData.getTemplateName(),
                 templateContent, metaData.getJsonData());
@@ -662,8 +667,8 @@ public class ResourceServiceImpl implements ResourceService {
                     applicationPersistenceService.deleteWarInfo(appName);
 
                     try {
-                        resourceRepositoryService.delete(app.getWarPath());
-                    } catch (final ResourceRepositoryServiceException e) {
+                        repositoryService.delete(app.getWarPath());
+                    } catch (final RepositoryServiceException e) {
                         LOGGER.error("Failed to delete the archive {}!", app.getWarPath(), e);
                     }
 
@@ -880,7 +885,7 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Override
     public String uploadResource(final ResourceTemplateMetaData resourceTemplateMetaData, final InputStream resourceDataIn) {
-        return resourceRepositoryService.upload(resourceTemplateMetaData.getDeployFileName(), resourceDataIn);
+        return repositoryService.upload(resourceTemplateMetaData.getDeployFileName(), resourceDataIn);
     }
 
     @Override

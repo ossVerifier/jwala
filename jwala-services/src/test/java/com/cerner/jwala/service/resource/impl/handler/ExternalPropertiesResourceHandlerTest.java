@@ -7,7 +7,7 @@ import com.cerner.jwala.persistence.jpa.domain.resource.config.template.ConfigTe
 import com.cerner.jwala.persistence.jpa.domain.resource.config.template.JpaResourceConfigTemplate;
 import com.cerner.jwala.persistence.service.ResourceDao;
 import com.cerner.jwala.service.resource.ResourceHandler;
-import com.cerner.jwala.service.resource.ResourceRepositoryService;
+import com.cerner.jwala.service.repository.RepositoryService;
 import com.cerner.jwala.service.resource.ResourceService;
 import com.cerner.jwala.service.resource.impl.CreateResourceResponseWrapper;
 import com.cerner.jwala.service.resource.impl.ResourceServiceImpl;
@@ -40,10 +40,10 @@ public class ExternalPropertiesResourceHandlerTest {
     private ResourceDao mockResourceDao;
 
     @Mock
-    private ResourceRepositoryService mockResourceRepositoryService;
+    private RepositoryService mockRepositoryService;
 
     private ResourceService resourceService = new ResourceServiceImpl(null, null, null, null, null, null, null, null,
-                                                                      null, null, null, new Tika(), mockResourceRepositoryService);
+                                                                      null, null, null, new Tika(), mockRepositoryService);
     @Before
     public void setup(){
         mockResourceDao = mock(ResourceDao.class);

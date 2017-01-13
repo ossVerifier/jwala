@@ -1,6 +1,8 @@
 package com.cerner.jwala.common.request.jvm;
 
 import com.cerner.jwala.common.domain.model.fault.FaultType;
+import com.cerner.jwala.common.domain.model.id.Identifier;
+import com.cerner.jwala.common.domain.model.media.Media;
 import com.cerner.jwala.common.domain.model.path.Path;
 import com.cerner.jwala.common.request.Request;
 import com.cerner.jwala.common.rule.*;
@@ -27,7 +29,9 @@ public class CreateJvmRequest implements Serializable, Request {
     private final String systemsProperties;
     private final String userName;
     private final String encryptedPassword;
-    
+    private final Identifier<Media> jdkMediaId;
+//    private final Identifier<Media> tomcatMediaId;
+
     public CreateJvmRequest(final String theName,
                             final String theHostName,
                             final Integer theHttpPort,
@@ -38,7 +42,9 @@ public class CreateJvmRequest implements Serializable, Request {
                             final Path theStatusPath,
                             final String theSystemProperties,
                             final String theUserName,
-                            final String theEncryptedPassword) {
+                            final String theEncryptedPassword,
+                            final Identifier<Media> jdkMediaId/*,
+                            final Identifier<Media> tomcatMediaId*/) {
         jvmName = theName;
         hostName = theHostName;
         httpPort = theHttpPort;
@@ -50,7 +56,8 @@ public class CreateJvmRequest implements Serializable, Request {
         systemsProperties = theSystemProperties;
         userName = theUserName;
         encryptedPassword = theEncryptedPassword;
-        
+        this.jdkMediaId = jdkMediaId;
+//        this.tomcatMediaId = tomcatMediaId;
     }
 
     public String getJvmName() {
@@ -109,47 +116,55 @@ public class CreateJvmRequest implements Serializable, Request {
                           new PortNumberRule(ajpPort, FaultType.INVALID_JVM_AJP_PORT)).validate();
     }
 
+    public Identifier<Media> getJdkMediaId() {
+        return jdkMediaId;
+    }
+
+//    public Identifier<Media> getTomcatMediaId() {
+//        return tomcatMediaId;
+//    }
+
     @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
-        }
-        if (obj == this) {
-            return true;
-        }
-        if (obj.getClass() != getClass()) {
-            return false;
-        }
-        CreateJvmRequest rhs = (CreateJvmRequest) obj;
+    public boolean equals(Object o) {
+        if (this == o) return true;
+
+        if (o == null || getClass() != o.getClass()) return false;
+
+        CreateJvmRequest that = (CreateJvmRequest) o;
+
         return new EqualsBuilder()
-                .append(this.jvmName, rhs.jvmName)
-                .append(this.hostName, rhs.hostName)
-                .append(this.statusPath, rhs.statusPath)
-                .append(this.httpPort, rhs.httpPort)
-                .append(this.httpsPort, rhs.httpsPort)
-                .append(this.redirectPort, rhs.redirectPort)
-                .append(this.shutdownPort, rhs.shutdownPort)
-                .append(this.ajpPort, rhs.ajpPort)
-                .append(this.systemsProperties, rhs.systemsProperties)
-                .append(this.userName,rhs.userName)
-                .append(this.encryptedPassword, rhs.encryptedPassword)
+                .append(jvmName, that.jvmName)
+                .append(hostName, that.hostName)
+                .append(httpPort, that.httpPort)
+                .append(httpsPort, that.httpsPort)
+                .append(redirectPort, that.redirectPort)
+                .append(shutdownPort, that.shutdownPort)
+                .append(ajpPort, that.ajpPort)
+                .append(statusPath, that.statusPath)
+                .append(systemsProperties, that.systemsProperties)
+                .append(userName, that.userName)
+                .append(encryptedPassword, that.encryptedPassword)
+                .append(jdkMediaId, that.jdkMediaId)
+//                .append(tomcatMediaId, that.tomcatMediaId)
                 .isEquals();
     }
 
     @Override
     public int hashCode() {
-        return new HashCodeBuilder()
+        return new HashCodeBuilder(17, 37)
                 .append(jvmName)
                 .append(hostName)
-                .append(statusPath)
                 .append(httpPort)
                 .append(httpsPort)
                 .append(redirectPort)
                 .append(shutdownPort)
                 .append(ajpPort)
+                .append(statusPath)
                 .append(systemsProperties)
                 .append(userName)
                 .append(encryptedPassword)
+                .append(jdkMediaId)
+//                .append(tomcatMediaId)
                 .toHashCode();
     }
 
@@ -167,6 +182,8 @@ public class CreateJvmRequest implements Serializable, Request {
                 ", systemsProperties='" + systemsProperties + '\'' +
                 ", userName='" + userName + '\'' +
                 ", encryptedPassword='" + encryptedPassword + '\'' +
+                ", jdkMediaId='" + jdkMediaId + '\'' +
+//                ", tomcatMediaId='" + tomcatMediaId + '\'' +
                 '}';
     }
 }

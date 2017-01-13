@@ -111,6 +111,7 @@ var ConfigureTabs = React.createClass({
         }
 
         this.state.items.push({title: "Group", content:<GroupConfig service={ServiceFactory.getGroupService()}/>});
+        this.state.items.push({title: "Media", content:<MediaConfig/>});
         this.forceUpdate();
     }
 });

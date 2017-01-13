@@ -6,10 +6,23 @@ import com.cerner.jwala.persistence.service.*;
 import com.cerner.jwala.persistence.service.impl.*;
 
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+
 @Configuration
+@ComponentScan({"com.cerner.jwala.dao.impl"})
 public class AemPersistenceServiceConfiguration {
+
+    @PersistenceContext(unitName = "jwala-unit")
+    private EntityManager em;
+
+    @Bean
+    public EntityManager getEntityManager() {
+        return em;
+    }
 
     @Bean
     public ResourcePersistenceService getResourcePersistenceService() {
