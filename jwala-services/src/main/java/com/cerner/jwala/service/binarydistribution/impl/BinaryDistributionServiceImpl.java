@@ -92,23 +92,6 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
     }
 
     @Override
-    public void distributeTomcat(final String hostname) {
-        LOGGER.info("Start deploy tomcat binaries for {}", hostname);
-        File tomcat = new File(ApplicationProperties.get("remote.paths.tomcat.core"));
-        String tomcatDir = tomcat.getParentFile().getName();
-        String binaryDeployDir = tomcat.getParentFile().getParentFile().getAbsolutePath().replaceAll("\\\\", "/");
-        if (tomcatDir != null && !tomcatDir.isEmpty()) {
-            final String localArchivePath = ApplicationProperties.get(BINARY_LOCATION_PROPERTY_KEY) + "/" + tomcatDir + ".zip";
-            // TODO write history
-            //historyFacadeService.write(hostname, jvm.getGroups(), "DISTRIBUTE_TOMCAT", EventType.APPLICATION_EVENT, SecurityContextHolder.getContext().getAuthentication().getName());
-            distributeBinary(hostname, tomcatDir, binaryDeployDir, "", localArchivePath);
-        } else {
-            LOGGER.warn("Tomcat dir location is null or empty {}", tomcatDir);
-        }
-        LOGGER.info("End deploy tomcat binaries for {}", hostname);
-    }
-
-    @Override
     public void distributeWebServer(final String hostname) {
         String wrietLockResourceName = hostname + "-" + EntityType.WEB_SERVER.toString();
         try {
@@ -249,7 +232,7 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
     }
 
     @Override
-    public void prepareUnzip(String hostname) {
+    public void distributeUnzip(String hostname) {
         LOGGER.info("Start deploy unzip for {}", hostname);
         final String jwalaScriptsPath = ApplicationProperties.get("remote.commands.user-scripts");
         if (remoteFileCheck(hostname, jwalaScriptsPath)) {
