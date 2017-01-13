@@ -336,7 +336,7 @@ public class ResourceServiceImplTest {
 
             when(mockGroupPesistenceService.getGroups()).thenReturn(groups);
             when(mockAppPersistenceService.findApplicationsBelongingTo(anyString())).thenReturn(applications);
-            when(mockJvmPersistenceService.getJvmsByGroupName(anyString())).thenReturn(jvms);
+            when(mockJvmPersistenceService.getJvmsAndWebAppsByGroupName(anyString())).thenReturn(jvms);
             when(mockWebServerPersistenceService.getWebServersByGroupName(anyString())).thenReturn(webServers);
 
             System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH,
