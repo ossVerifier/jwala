@@ -33,6 +33,7 @@ import org.springframework.http.client.ClientHttpResponse;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.net.ConnectException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
@@ -487,12 +488,9 @@ public class BalancemanagerServiceImplTest {
         try {
             balancerManagerHttpClient.doHttpClientPost("https://localhost", getNvp());
             fail();
-        } catch (KeyManagementException e) {
+        }catch (IOException e) {
             e.printStackTrace();
-        } catch (IOException e) {
-            assertTrue(e instanceof HttpHostConnectException);
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
+            assertTrue(e instanceof ConnectException);
         }
     }
 

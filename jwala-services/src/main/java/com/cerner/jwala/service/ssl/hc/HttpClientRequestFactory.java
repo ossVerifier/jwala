@@ -41,7 +41,6 @@ public class HttpClientRequestFactory extends HttpComponentsClientHttpRequestFac
 
         SchemeRegistry schemeRegistry = SchemeRegistryFactory.createDefault();
         
-        schemeRegistry.register(new Scheme("https", 443, new TrustingSSLSocketFactory()));
         schemeRegistry.register(new Scheme("http", 80, new PlainSocketFactory()));
 
         poolMgr = new PoolingClientConnectionManager(schemeRegistry);
