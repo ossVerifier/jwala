@@ -177,7 +177,11 @@ public class JschServiceImpl implements JschService {
             while (true) {
                 if (buffIn.available() != 0) {
                     final int size = buffIn.read(bytes);
-                    out.write(bytes, 0, size);
+
+                    if (size > 0) {
+                        out.write(bytes, 0, size);
+                    }
+
                     startTime = System.currentTimeMillis();
 
                     if (dataEndMarker != null && new String(bytes).indexOf(dataEndMarker) > -1) {
