@@ -10,15 +10,14 @@ import com.cerner.jwala.common.jsch.JschServiceException;
 import com.cerner.jwala.common.jsch.RemoteCommandReturnInfo;
 import com.cerner.jwala.exception.ExitCodeNotAvailableException;
 import com.jcraft.jsch.*;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.pool2.impl.GenericKeyedObjectPool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
 
@@ -36,6 +35,7 @@ public class JschServiceImpl implements JschService {
     private static final int CHANNEL_BORROW_LOOP_WAIT_TIME = 180000;
     private static final String EXIT_CODE_START_MARKER = "EXIT_CODE";
     private static final String EXIT_CODE_END_MARKER = "***";
+    private static final int BYTE_CHUNK_SIZE = 1024;
 
     @Autowired
     private JSch jsch;
@@ -168,26 +168,35 @@ public class JschServiceImpl implements JschService {
      */
     private String readRemoteOutput(final InputStream remoteOutput, final Character dataEndMarker, final long timeout)
             throws IOException {
-        final StringBuilder remoteOutputStringBuilder = new StringBuilder();
+        final BufferedInputStream buffIn = new BufferedInputStream(remoteOutput);
+        final byte [] bytes = new byte[BYTE_CHUNK_SIZE];
+        final ByteArrayOutputStream out = new ByteArrayOutputStream();
+        String result;
         long startTime = System.currentTimeMillis();
-        while (true) {
-            if (remoteOutput.available() != 0) {
-                char readChar = Character.toChars(remoteOutput.read())[0];
-                remoteOutputStringBuilder.append(readChar);
-                startTime = System.currentTimeMillis();
+        try {
+            while (true) {
+                if (buffIn.available() != 0) {
+                    final int size = buffIn.read(bytes);
+                    out.write(bytes, 0, size);
+                    startTime = System.currentTimeMillis();
 
-                if (dataEndMarker != null && readChar == dataEndMarker) {
-                    LOGGER.debug("Read EOF character '{}', stopping remote output reading...", readChar);
-                    return remoteOutputStringBuilder.toString();
+                    if (dataEndMarker != null && new String(bytes).indexOf(dataEndMarker) > -1) {
+                        LOGGER.debug("Read EOF character '{}', stopping remote output reading...", bytes[size - 1]);
+                        break;
+                    }
+                }
+
+                if ((System.currentTimeMillis() - startTime) > timeout) {
+                    LOGGER.warn("Remote output reading timeout!");
+                    break;
                 }
             }
-
-            if ((System.currentTimeMillis() - startTime) > timeout) {
-                LOGGER.warn("Remote output reading timeout!");
-                break;
-            }
+        } finally {
+            result = out.toString(StandardCharsets.UTF_8.name());
+            out.close();
         }
-        return remoteOutputStringBuilder.toString();
+
+        return result;
     }
 
     /**
