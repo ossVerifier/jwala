@@ -234,22 +234,6 @@ public class JsonCreateJvm {
 
     /*** Setters and Getters: End ***/
 
-    @XmlAccessorType(XmlAccessType.FIELD)
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class GroupIdWrapper {
-
-        private String groupId;
-
-        public void setGroupId(String groupId) {
-            this.groupId = groupId;
-        }
-
-        public String getGroupId() {
-            return groupId;
-        }
-
-    }
-
     @Override
     public String toString() {
         return "JsonCreateJvm{" +
