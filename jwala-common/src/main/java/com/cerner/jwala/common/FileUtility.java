@@ -6,7 +6,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.io.*;
-import java.text.MessageFormat;
 import java.util.Enumeration;;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -28,47 +27,46 @@ public class FileUtility {
      * @param destination the destination e.g. c:/scratch
      */
     public void unzip(final File zipFile, final File destination) {
-
         if (!destination.exists() && !destination.mkdir()) {
             throw new FileUtilityException("Failed to create zip file destination directory \"" + destination.getAbsolutePath() + "\"!");
         }
-
-        JarFile jarFile = null;
-        final String errMsg = MessageFormat.format("Failed to unpack {0}!", destination.getAbsolutePath());
-        try {
+        final JarFile jarFile;
+        long startTime = System.currentTimeMillis();
+        final String errMsg = MessageFormat.format("Failed to unpack {0}!", destination.getAbsolutePath());        try {
+            LOGGER.debug("Start unzip {}", zipFile.getAbsoluteFile());
             jarFile = new JarFile(zipFile);
             final Enumeration entries = jarFile.entries();
             while (entries.hasMoreElements()) {
                 final JarEntry jarEntry = (JarEntry) entries.nextElement();
                 final File f = new File(destination + File.separator + jarEntry.getName());
-                System.out.println(f.getAbsoluteFile());
                 if (jarEntry.isDirectory()) {
-                    if (f.exists() || f.mkdir()) {
-                        continue;
+                    if (!f.mkdir()) {
+                        throw new ApplicationException("Failed to create directory " + jarEntry.getName());
                     }
-                    throw new FileUtilityException(errMsg + MessageFormat.format(" Cannot crate directory {}.", jarEntry));
+                    continue;
                 }
                 final InputStream in = jarFile.getInputStream(jarEntry);
                 final FileOutputStream fos = new FileOutputStream(f);
+                BufferedOutputStream bufout = new BufferedOutputStream(fos);
+
                 while (in.available() > 0) {
-                    fos.write(in.read());
+                    bufout.write(in.read());
                 }
-                fos.close();
+                bufout.close();
                 in.close();
             }
         } catch (final IOException e) {
-            throw new FileUtilityException(errMsg, e);
+            throw new FileUtilityException("Failed to unpack " + zipFile.getAbsolutePath() + "!", e);
         } finally {
-            if (jarFile != null) {
-                try {
-                    jarFile.close();
-                } catch (IOException e) {
-                    throw new FileUtilityException(errMsg, e);
-                }
+        if (jarFile != null) {
+            try {
+                jarFile.close();
+            } catch (IOException e) {
+                throw new FileUtilityException(errMsg, e);
             }
         }
+        LOGGER.debug("End unzip {} in {} ms", zipFile.getAbsoluteFile(), (System.currentTimeMillis() - startTime));
     }
-
 
     public void createJarArchive(File archiveFile, File[] filesToBeJared, String parent) {
 
@@ -116,8 +114,8 @@ public class FileUtility {
         } catch (Exception e) {
             throw new ApplicationException(e);
         }
-
     }
+
     public static void main(String args[]){
         try{
         FileUtility fileUtility = new FileUtility();
