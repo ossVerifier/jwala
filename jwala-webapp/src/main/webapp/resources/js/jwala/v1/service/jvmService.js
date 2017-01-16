@@ -56,7 +56,7 @@
                                                       ajpPort: ajpPort,
                                                       userName: userName,
                                                       encryptedPassword: encryptedPassword,
-                                                      jdkMediaId: 1,
+                                                      jdkMediaId: jdkMediaId,
                                                       tomcatVersion: tomcatVersion}),
                                                       successCallback,
                                                       errorCallback);
