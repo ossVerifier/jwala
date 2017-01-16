@@ -19,6 +19,7 @@ import com.cerner.jwala.common.request.jvm.UploadJvmTemplateRequest;
 import com.cerner.jwala.common.rule.group.GroupNameRule;
 import com.cerner.jwala.persistence.service.ApplicationPersistenceService;
 import com.cerner.jwala.persistence.service.GroupPersistenceService;
+import com.cerner.jwala.service.Message;
 import com.cerner.jwala.service.exception.GroupServiceException;
 import com.cerner.jwala.service.group.GroupService;
 import com.cerner.jwala.service.jvm.JvmService;
@@ -110,11 +111,8 @@ public class GroupServiceImpl implements GroupService {
     @Transactional
     public Group updateGroup(final UpdateGroupRequest anUpdateGroupRequest,
                              final User anUpdatingUser) {
-
         anUpdateGroupRequest.validate();
-        Group group = groupPersistenceService.updateGroup(anUpdateGroupRequest);
-
-        return group;
+        return groupPersistenceService.updateGroup(anUpdateGroupRequest);
     }
 
     @Override
@@ -428,7 +426,7 @@ public class GroupServiceImpl implements GroupService {
             throw new GroupServiceException(errMsg);
         }
 
-        final Map<String, Future<Response>> futures = new HashMap<>();
+        final Map<String, Future<Response>> futures = new HashMap<>(jvms.size());
         final String template = groupPersistenceService.getGroupJvmResourceTemplate(groupName, fileName);
         final String metaData = groupPersistenceService.getGroupJvmResourceTemplateMetaData(groupName, fileName);
         jvms.stream().forEach(jvm -> {
@@ -445,41 +443,40 @@ public class GroupServiceImpl implements GroupService {
         checkResponsesForErrorStatus(futures);
     }
 
-    protected void checkResponsesForErrorStatus(Map<String, Future<Response>> futureMap) {
-        Map<String, List<String>> entityDetailsMap = new HashMap<>();
-        for (String keyEntityName : futureMap.keySet()) {
-            Response response;
+    private void checkResponsesForErrorStatus(final Map<String, Future<Response>> futureMap) {
+        final Map<String, List<String>> errorMap = new HashMap<>(futureMap.size());
+        final long timeout = Long.parseLong(ApplicationProperties.get("remote.jwala.execution.timeout.seconds", "600"));
+        Response response = null;
+        for (final String key : futureMap.keySet()) {
             try {
-                long timeout = Long.parseLong(ApplicationProperties.get("remote.jwala.execution.timeout.seconds", "600"));
-                response = futureMap.get(keyEntityName).get(timeout, TimeUnit.SECONDS);
-                if (response.getStatus() > 399) {
-                    final String reasonPhrase = response.getStatusInfo().getReasonPhrase();
-                    LOGGER.error("Remote Command Failure for " + keyEntityName + ": " + reasonPhrase);
-                    entityDetailsMap.put(keyEntityName, Collections.singletonList(reasonPhrase));
-                }
-            } catch (InterruptedException | ExecutionException e) {
-                LOGGER.error("FAILURE getting response for {}", keyEntityName, e);
+                response = futureMap.get(key).get(timeout, TimeUnit.SECONDS);
+            } catch (final InterruptedException | ExecutionException | TimeoutException e) {
+                LOGGER.error("Remote Command Failure for {}!", key, e);
                 final Throwable cause = e.getCause();
                 if (cause instanceof InternalErrorException) {
                     if (((InternalErrorException) cause).getErrorDetails() != null) {
-                        entityDetailsMap.putAll(((InternalErrorException) cause).getErrorDetails());
+                        errorMap.putAll(((InternalErrorException) cause).getErrorDetails());
                     } else {
-                        entityDetailsMap.put(keyEntityName, Collections.singletonList(cause.getMessage()));
+                        errorMap.put(key, Collections.singletonList(cause.getMessage()));
                     }
                 } else {
-                    entityDetailsMap.put(keyEntityName, Collections.singletonList(e.getMessage()));
+                    errorMap.put(key, Collections.singletonList(e.getMessage()));
                 }
-            } catch (TimeoutException e) {
-                LOGGER.error("Timed out getting response.", e);
-                entityDetailsMap.put(keyEntityName, Collections.singletonList(e.getMessage()));
+            }
+
+            if (response != null && response.getStatus() > 399) {
+                final String reasonPhrase = response.getStatusInfo().getReasonPhrase();
+                LOGGER.error("Remote command failure for {} : {}", key, reasonPhrase);
+                errorMap.put(key, Collections.singletonList(reasonPhrase));
             }
         }
 
-        if (!entityDetailsMap.isEmpty()) {
-            throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, "Request failed for the following errors:", null, entityDetailsMap);
-        } else {
-            LOGGER.info("Finished checking requests for error statuses.");
+        if (!errorMap.isEmpty()) {
+            throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, "Request failed for the following errors:",
+                    null, errorMap);
         }
+
+        LOGGER.info("Finished checking requests for error statuses.");
     }
 
 }
