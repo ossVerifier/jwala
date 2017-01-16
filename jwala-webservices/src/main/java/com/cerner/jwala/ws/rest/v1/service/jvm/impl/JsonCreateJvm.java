@@ -34,7 +34,7 @@ public class JsonCreateJvm {
 
     private List<GroupIdWrapper> groupIds;
 
-    // Required by Jackson serializer
+    // Required by Jackson deserializer
     public JsonCreateJvm() {}
 
     public JsonCreateJvm(final String theJvmName,
