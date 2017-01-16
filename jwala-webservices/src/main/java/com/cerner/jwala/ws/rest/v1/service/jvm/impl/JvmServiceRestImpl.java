@@ -50,9 +50,9 @@ public class JvmServiceRestImpl implements JvmServiceRest {
     @Override
     public Response getJvms() {
         LOGGER.debug("Get JVMs requested");
-        final List<Jvm> jvms = new ArrayList<Jvm>();
+        final List<Jvm> jvms = new ArrayList<>();
         for (Jvm jvm : jvmService.getJvms()) {
-            // TODO why are we sending the decrypted password back to the browser in the response??
+            // TODO 1/15/2017: Fix this!!! We should not be decrypting passwords and sending them back in the response!!!
             jvms.add(jvm.toDecrypted());
         }
         return ResponseBuilder.ok(jvms);
@@ -66,11 +66,11 @@ public class JvmServiceRestImpl implements JvmServiceRest {
     }
 
     @Override
-    public Response createJvm(final JsonCreateJvm aJvmToCreate, final AuthenticatedUser aUser) {
+    public Response createJvm(final JsonCreateJvm jsonCreateJvm, final AuthenticatedUser aUser) {
         try {
             final User user = aUser.getUser();
-            LOGGER.info("Create JVM requested: {} by user {}", aJvmToCreate, user.getId());
-            Jvm jvm = jvmService.createJvm(aJvmToCreate.toCreateAndAddRequest(), user);
+            LOGGER.info("Create JVM requested: {} by user {}", jsonCreateJvm, user.getId());
+            Jvm jvm = jvmService.createJvm(jsonCreateJvm.toCreateAndAddRequest(), user);
             return ResponseBuilder.created(jvm);
         } catch (EntityExistsException eee) {
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
