@@ -51,10 +51,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
@@ -106,7 +103,6 @@ public class WebServerServiceRestImplTest {
     private BinaryDistributionService binaryDistributionService;
 
     private WebServerServiceRestImpl webServerServiceRest;
-    private Map<String, ReentrantReadWriteLock> writeLockMap = new HashMap<>();
     private Response statusNotOk;
 
     private static List<WebServer> createWebServerList() {
@@ -132,7 +128,7 @@ public class WebServerServiceRestImplTest {
     @Before
     public void setUp() {
         System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, "./src/test/resources");
-        webServerServiceRest = new WebServerServiceRestImpl(impl, webServerControlService, commandImpl, writeLockMap, resourceService, groupService, binaryDistributionService, mockHistoryFacadeService);
+        webServerServiceRest = new WebServerServiceRestImpl(impl, webServerControlService, commandImpl, resourceService, groupService, binaryDistributionService, mockHistoryFacadeService);
         when(authenticatedUser.getUser()).thenReturn(new User("Unused"));
 
         InternalErrorException iee = new InternalErrorException(null, "User does not have permission to create the directory ~/.jwala");

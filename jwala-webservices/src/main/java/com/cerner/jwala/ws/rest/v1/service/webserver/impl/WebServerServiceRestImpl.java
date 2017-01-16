@@ -43,40 +43,41 @@ import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class WebServerServiceRestImpl implements WebServerServiceRest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(WebServerServiceRestImpl.class);
-    public static final String PATHS_GENERATED_RESOURCE_DIR = "paths.generated.resource.dir";
+    private static final String PATHS_GENERATED_RESOURCE_DIR = "paths.generated.resource.dir";
     private static final String COMMANDS_SCRIPTS_PATH = ApplicationProperties.get("commands.scripts-path");
     private static final String HTTPD_CONF = "httpd.conf";
+    private static final Long DEFAULT_WAIT_TIMEOUT = 30000L;
 
     private final WebServerService webServerService;
     private final WebServerControlService webServerControlService;
     private final WebServerCommandService webServerCommandService;
-    private final Map<String, ReentrantReadWriteLock> wsWriteLocks;
-    private ResourceService resourceService;
-    private GroupService groupService;
-    private HistoryFacadeService historyFacadeService;
+    private final ConcurrentHashMap<String, ReentrantReadWriteLock> wsWriteLocks;
+    private final ResourceService resourceService;
+    private final GroupService groupService;
+    private final HistoryFacadeService historyFacadeService;
     private final BinaryDistributionService binaryDistributionService;
-    private static final Long DEFAULT_WAIT_TIMEOUT = 30000L;
 
     public WebServerServiceRestImpl(final WebServerService theWebServerService,
                                     final WebServerControlService theWebServerControlService,
                                     final WebServerCommandService theWebServerCommandService,
-                                    final Map<String, ReentrantReadWriteLock> theWriteLocks,
                                     final ResourceService theResourceService, GroupService groupService,
                                     final BinaryDistributionService binaryDistributionService,
                                     final HistoryFacadeService historyFacadeService) {
         webServerService = theWebServerService;
         webServerControlService = theWebServerControlService;
         webServerCommandService = theWebServerCommandService;
-        wsWriteLocks = theWriteLocks;
         resourceService = theResourceService;
         this.groupService = groupService;
         this.binaryDistributionService = binaryDistributionService;
         this.historyFacadeService = historyFacadeService;
+
+        wsWriteLocks = new ConcurrentHashMap<>();
     }
 
     @Override
