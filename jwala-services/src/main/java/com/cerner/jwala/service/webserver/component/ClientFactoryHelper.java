@@ -5,9 +5,8 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.client.ClientHttpRequest;
 import org.springframework.http.client.ClientHttpResponse;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
-
-import com.cerner.jwala.service.ssl.hc.HttpClientRequestFactory;
 
 import java.io.IOException;
 import java.net.URI;
@@ -16,11 +15,12 @@ import java.net.URI;
 public class ClientFactoryHelper {
 
     @Autowired
-    @Qualifier("webServerHttpRequestFactory")
-    private HttpClientRequestFactory httpClientFactory;
+    @Qualifier("httpRequestFactory")
+    private HttpComponentsClientHttpRequestFactory httpClientFactory;
 
     public ClientHttpResponse requestGet(URI statusUri) throws IOException {
         ClientHttpRequest request = httpClientFactory.createRequest(statusUri, HttpMethod.GET);
         return request.execute();
     }
+
 }

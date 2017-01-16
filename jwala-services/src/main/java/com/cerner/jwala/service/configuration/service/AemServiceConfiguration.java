@@ -64,7 +64,6 @@ import com.cerner.jwala.service.repository.RepositoryService;
 import com.cerner.jwala.service.resource.ResourceService;
 import com.cerner.jwala.service.resource.impl.ResourceServiceImpl;
 import com.cerner.jwala.service.resource.impl.handler.WebServerResourceHandler;
-import com.cerner.jwala.service.ssl.hc.HttpClientRequestFactory;
 import com.cerner.jwala.service.state.InMemoryStateManagerService;
 import com.cerner.jwala.service.state.impl.InMemoryStateManagerServiceImpl;
 import com.cerner.jwala.service.webserver.WebServerCommandService;
@@ -324,27 +323,6 @@ public class AemServiceConfiguration {
     @Bean
     public ResourceDao getResourceDao() {
         return new ResourceDaoImpl();
-    }
-
-    @Bean(name = "webServerHttpRequestFactory")
-    @DependsOn("aemServiceConfigurationPropertiesConfigurer")
-    // TODO: Refactor the @value parameter names e.g. ping.jvm.connectTimeout -> ping.request.connectTimeout
-    // TODO: Better yet if we can do away with this, just use HttpComponentsClientHttpRequestFactory directly
-    // This bean is used by the ClientFactoryHelper.
-    public HttpClientRequestFactory getHttpClientRequestFactory(
-            @Value("${ping.jvm.connectTimeout}") final int connectionTimeout,
-            @Value("${ping.jvm.readTimeout}") final int readTimeout,
-            @Value("${ping.jvm.period.millis}") final long millis,
-            @Value("${ping.jvm.maxHttpConnections}") final int maxHttpConnections) throws UnrecoverableKeyException,
-            NoSuchAlgorithmException,
-            KeyStoreException,
-            KeyManagementException {
-        HttpClientRequestFactory httpClientRequestFactory = new HttpClientRequestFactory();
-        httpClientRequestFactory.setConnectTimeout(connectionTimeout);
-        httpClientRequestFactory.setReadTimeout(readTimeout);
-        httpClientRequestFactory.setPeriodMillis(millis);
-        httpClientRequestFactory.setMaxHttpConnections(maxHttpConnections);
-        return httpClientRequestFactory;
     }
 
     @Bean(name = "httpRequestFactory")
