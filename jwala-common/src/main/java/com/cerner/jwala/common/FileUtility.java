@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.io.*;
+import java.text.MessageFormat;
 import java.util.Enumeration;;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -30,9 +31,10 @@ public class FileUtility {
         if (!destination.exists() && !destination.mkdir()) {
             throw new FileUtilityException("Failed to create zip file destination directory \"" + destination.getAbsolutePath() + "\"!");
         }
-        final JarFile jarFile;
+        JarFile jarFile = null;
         long startTime = System.currentTimeMillis();
-        final String errMsg = MessageFormat.format("Failed to unpack {0}!", destination.getAbsolutePath());        try {
+        final String errMsg = MessageFormat.format("Failed to unpack {0}!", destination.getAbsolutePath());
+        try {
             LOGGER.debug("Start unzip {}", zipFile.getAbsoluteFile());
             jarFile = new JarFile(zipFile);
             final Enumeration entries = jarFile.entries();
@@ -66,8 +68,8 @@ public class FileUtility {
             }
         }
         LOGGER.debug("End unzip {} in {} ms", zipFile.getAbsoluteFile(), (System.currentTimeMillis() - startTime));
+        }
     }
-
     public void createJarArchive(File archiveFile, File[] filesToBeJared, String parent) {
 
         final int BUFFER_SIZE = 10240;
