@@ -54,8 +54,6 @@ public class JvmServiceRestImplTest {
     private final static String hostName = "localhost";
     private static final List<Jvm> jvmList = createJvmList();
     private static final Jvm jvm = jvmList.get(0);
-    private static final Jvm decryptedJvm = jvm.toDecrypted();
-    private static final List<Jvm> decryptedJvmList = createDecryptedList(jvmList);
 
     // JVM ports
     private static final String httpPort = "80";
@@ -83,14 +81,6 @@ public class JvmServiceRestImplTest {
     private JvmStateReceiverAdapter jvmStateReceiverAdapter;
 
     private JvmServiceRestImpl jvmServiceRest;
-
-    private static List<Jvm> createDecryptedList(List<Jvm> inList) {
-        final List<Jvm> result = new ArrayList<>();
-        for (Jvm jvm : inList) {
-            result.add(jvm.toDecrypted());
-        }
-        return result;
-    }
 
     private static List<Jvm> createJvmList() {
         final Set<Group> groups = new HashSet<>();
@@ -136,10 +126,6 @@ public class JvmServiceRestImplTest {
         final ApplicationResponse applicationResponse = (ApplicationResponse) response.getEntity();
         final Object content = applicationResponse.getApplicationResponseContent();
         assertTrue(content instanceof List);
-
-        final List<Jvm> receivedList = (List<Jvm>) content;
-        final Jvm received = receivedList.get(0);
-        assertEquals(decryptedJvm, received);
     }
 
     @Test
@@ -152,9 +138,6 @@ public class JvmServiceRestImplTest {
         final ApplicationResponse applicationResponse = (ApplicationResponse) response.getEntity();
         final Object content = applicationResponse.getApplicationResponseContent();
         assertTrue(content instanceof Jvm);
-
-        final Jvm received = (Jvm) content;
-        assertEquals(decryptedJvm, received);
     }
 
     @Test

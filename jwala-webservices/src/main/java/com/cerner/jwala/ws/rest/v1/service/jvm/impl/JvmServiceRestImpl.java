@@ -52,8 +52,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
         LOGGER.debug("Get JVMs requested");
         final List<Jvm> jvms = new ArrayList<>();
         for (Jvm jvm : jvmService.getJvms()) {
-            // TODO 1/15/2017: Fix this!!! We should not be decrypting passwords and sending them back in the response!!!
-            jvms.add(jvm.toDecrypted());
+            jvms.add(jvm.toJvmWithoutEncrytedPassword());
         }
         return ResponseBuilder.ok(jvms);
     }
@@ -61,7 +60,7 @@ public class JvmServiceRestImpl implements JvmServiceRest {
     @Override
     public Response getJvm(final Identifier<Jvm> aJvmId) {
         LOGGER.debug("Get JVM requested: {}", aJvmId);
-        Jvm aJvm = jvmService.getJvm(aJvmId).toDecrypted();
+        Jvm aJvm = jvmService.getJvm(aJvmId).toJvmWithoutEncrytedPassword();
         return ResponseBuilder.ok(aJvm);
     }
 

@@ -17,6 +17,7 @@ import com.cerner.jwala.persistence.jpa.service.JvmCrudService;
 import com.cerner.jwala.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
 import com.cerner.jwala.persistence.jpa.service.exception.ResourceTemplateMetaDataUpdateException;
 import com.cerner.jwala.persistence.jpa.service.exception.ResourceTemplateUpdateException;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -74,7 +75,12 @@ public class JvmCrudServiceImpl extends AbstractCrudServiceImpl<JpaJvm> implemen
             jpaJvm.setStatusPath(updateJvmRequest.getNewStatusPath().getPath());
             jpaJvm.setSystemProperties(updateJvmRequest.getNewSystemProperties());
             jpaJvm.setUserName(updateJvmRequest.getNewUserName());
-            jpaJvm.setEncryptedPassword(updateJvmRequest.getNewEncryptedPassword());
+
+            // TODO 1/16/2017: UpdateJvmRequest should have a "reset password" property since users cannot reset the password by specifying an empty password
+            if (StringUtils.isNotEmpty(updateJvmRequest.getNewEncryptedPassword())) {
+                jpaJvm.setEncryptedPassword(updateJvmRequest.getNewEncryptedPassword());
+            }
+
             jpaJvm.setJdkMedia(jdkMedia);
 //            jpaJvm.setTomcatMedia(updateJvmRequest.getNewTomcatMediaId());
 

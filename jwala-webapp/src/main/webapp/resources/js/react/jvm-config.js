@@ -385,7 +385,7 @@ var JvmConfigForm = React.createClass({
                         	</tr>
                         	<tr>
                         	    <td>
-                        	    <select name="jdkVersion" ref="jdkVersion" valueLink={this.linkState("jdkVersion")}>
+                        	    <select name="jdkMediaId" ref="jdkVersion" valueLink={this.linkState("jdkVersion")}>
                                     {this.getJdkVersions()}
                                 </select>
                         	    </td>

@@ -4,7 +4,6 @@ import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.media.Media;
 import com.cerner.jwala.common.domain.model.path.Path;
-import com.cerner.jwala.common.domain.model.ssh.DecryptPassword;
 import com.cerner.jwala.common.domain.model.uri.UriBuilder;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -60,27 +59,31 @@ public class Jvm implements Serializable {
         this.groups = Collections.unmodifiableSet(new HashSet<>(groups));
     }
 
-    public Jvm toDecrypted() {
+    /**
+     * Excludes the encrypted password
+     * @return jvm without the encrypted password
+     */
+    public Jvm toJvmWithoutEncrytedPassword() {
         return new Jvm(this.id,
-                this.jvmName,
-                this.hostName,
-                this.groups,
-                this.parentGroup,
-                this.httpPort,
-                this.httpsPort,
-                this.redirectPort,
-                this.shutdownPort,
-                this.ajpPort,
-                this.statusPath,
-                this.systemProperties,
-                this.state,
-                this.errorStatus,
-                this.lastUpdatedDate,
-                this.userName,
-                this.encryptedPassword != null && this.encryptedPassword.length() > 0 ? new DecryptPassword().decrypt(this.encryptedPassword) : "",
-                this.jdkMedia,
-                this.tomcatMedia,
-                this.javaHome);
+                       this.jvmName,
+                       this.hostName,
+                       this.groups,
+                       this.parentGroup,
+                       this.httpPort,
+                       this.httpsPort,
+                       this.redirectPort,
+                       this.shutdownPort,
+                       this.ajpPort,
+                       this.statusPath,
+                       this.systemProperties,
+                       this.state,
+                       this.errorStatus,
+                       this.lastUpdatedDate,
+                       this.userName,
+                       "",
+                       this.jdkMedia,
+                       this.tomcatMedia,
+                       this.javaHome);
     }
 
     public Jvm(Identifier<Jvm> id,
