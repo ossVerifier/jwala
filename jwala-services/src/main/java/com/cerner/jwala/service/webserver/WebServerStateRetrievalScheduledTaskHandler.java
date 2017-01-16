@@ -46,19 +46,25 @@ public class WebServerStateRetrievalScheduledTaskHandler {
 
     @Scheduled(fixedDelayString = "${ping.webServer.period.millis}")
     public void execute() {
-        if (isEnabled()) {
-            final List<WebServer> webServers = webServerService.getWebServersPropagationNew();
-            LOGGER.debug("# of web servers to ping = {}", webServers.size());
-            try {
-                for (WebServer webServer : webServers) {
-                    LOGGER.debug(">>> Web server {} future {}", webServer.getId().getId(), webServerFutureMap.get(webServer.getId()));
+        if (!isEnabled()) {
+            return;
+        }
 
-                    if (webServerFutureMap.get(webServer.getId()) != null) {
-                        LOGGER.debug(">>> Web server {} is done {}", webServer.getId().getId(), webServerFutureMap.get(webServer.getId()).isDone());
-                        LOGGER.debug(">>> Web server {} is cancelled {}", webServer.getId().getId(), webServerFutureMap.get(webServer.getId()).isCancelled());
+        final List<WebServer> webServers = webServerService.getWebServersPropagationNew();
+        LOGGER.debug("# of web servers to ping = {}", webServers.size());
+
+        synchronized (webServerFutureMap) {
+            try {
+                for (final WebServer webServer : webServers) {
+                    final Future<?> webServerFuture = webServerFutureMap.get(webServer.getId());
+                    LOGGER.debug(">>> Web server {} future {}", webServer.getId().getId(), webServerFuture);
+
+                    if (webServerFuture != null) {
+                        LOGGER.debug(">>> Web server {} is done {}", webServer.getId().getId(), webServerFuture.isDone());
+                        LOGGER.debug(">>> Web server {} is cancelled {}", webServer.getId().getId(), webServerFuture.isCancelled());
                     }
 
-                    if (webServerFutureMap.get(webServer.getId()) == null || webServerFutureMap.get(webServer.getId()).isDone()) {
+                    if (webServerFuture == null || webServerFuture.isDone()) {
                         LOGGER.debug(">>> Pinging web server {}...", webServer.getId().getId());
                         webServerFutureMap.put(webServer.getId(), webServerStateSetterWorker.pingWebServer(webServer));
                         LOGGER.debug(">>> Web server {} pinged", webServer.getId().getId());
