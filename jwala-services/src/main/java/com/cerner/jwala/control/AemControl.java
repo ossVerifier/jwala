@@ -18,6 +18,8 @@ public class AemControl {
     public enum Properties {
         CYGPATH("commands.cygwin.cygpath", "/usr/bin/cygpath"),
         START_SCRIPT_NAME("commands.cygwin.start-service", "start-service.sh"),
+        HEAP_DUMP_SCRIPT_NAME("commands.cygwin.heap-dump", "heap-dump.sh"),
+        THREAD_DUMP_SCRIPT_NAME("commands.cygwin.thread-dump", "thread-dump.sh"),
         STOP_SCRIPT_NAME("commands.cygwin.stop-service", "stop-service.sh"),
         SCP_SCRIPT_NAME("commands.cygwin.scp", "secure-copy.sh"),
         DEPLOY_CONFIG_ARCHIVE_SCRIPT_NAME("commands.cygwin.deploy-config-tar", "unjar-jvm.sh"),

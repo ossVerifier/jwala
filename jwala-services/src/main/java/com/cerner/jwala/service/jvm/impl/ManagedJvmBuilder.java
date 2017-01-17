@@ -150,6 +150,8 @@ public class ManagedJvmBuilder {
         try {
             FileUtils.copyFileToDirectory(new File(commandsScriptsPath + "/" + AemControl.Properties.START_SCRIPT_NAME.getValue()), generatedJvmDestDirBin);
             FileUtils.copyFileToDirectory(new File(commandsScriptsPath + "/" + AemControl.Properties.STOP_SCRIPT_NAME.getValue()), generatedJvmDestDirBin);
+            FileUtils.copyFileToDirectory(new File(commandsScriptsPath + "/" + AemControl.Properties.HEAP_DUMP_SCRIPT_NAME.getValue()), generatedJvmDestDirBin);
+            FileUtils.copyFileToDirectory(new File(commandsScriptsPath + "/" + AemControl.Properties.THREAD_DUMP_SCRIPT_NAME.getValue()), generatedJvmDestDirBin);
         } catch (IOException e) {
             throw new JvmServiceException(e);
         }

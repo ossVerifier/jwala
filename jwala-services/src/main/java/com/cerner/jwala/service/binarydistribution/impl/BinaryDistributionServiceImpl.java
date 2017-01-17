@@ -12,6 +12,7 @@ import com.cerner.jwala.exception.CommandFailureException;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionControlService;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionLockManager;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionService;
+import com.cerner.jwala.service.binarydistribution.DistributionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 /**
  * Created by Arvindo Kinny on 10/11/2016.
  */
-public class BinaryDistributionServiceImpl implements BinaryDistributionService {
+public class BinaryDistributionServiceImpl implements BinaryDistributionService, DistributionService {
     private static final Logger LOGGER = LoggerFactory.getLogger(BinaryDistributionServiceImpl.class);
     @Autowired
     protected SshConfiguration sshConfig;
@@ -37,11 +38,11 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
 
     @Override
     public void distributeWebServer(final String hostname) {
-        String writeLockResourceName = hostname + "-" + EntityType.WEB_SERVER.toString();
+        String writeLockResourceName = hostname;
         try {
             binaryDistributionLockManager.writeLock(writeLockResourceName);
             String apacheDirName = ApplicationProperties.get(PropertyKeys.REMOTE_PATHS_HTTPD_ROOT_DIR_NAME);
-            String remoteDeployDir =  ApplicationProperties.getRequired(PropertyKeys.REMOTE_PATHS_APACHE_HTTPD);
+            String remoteDeployDir = ApplicationProperties.getRequired(PropertyKeys.REMOTE_PATHS_DEPLOY_DIR);
             String httpdZipFile = ApplicationProperties.getRequired(PropertyKeys.APACHE_HTTPD_FILE_NAME);
             distributeBinary(hostname, apacheDirName, httpdZipFile, remoteDeployDir, APACHE_EXCLUDE);
         } finally {
@@ -75,6 +76,7 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
         remoteDeleteBinary(hostname, jwalaRemoteHome+"/"+zipFileName);
     }
 
+    @Override
     public void changeFileMode(final String hostname, final String mode, final String targetDir, final String target) {
         try {
             if (binaryDistributionControlService.changeFileMode(hostname, mode, targetDir, target).getReturnCode().wasSuccessful()) {
@@ -91,6 +93,7 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
         }
     }
 
+    @Override
     public void remoteDeleteBinary(final String hostname, final String destination) {
         try {
             if (binaryDistributionControlService.deleteBinary(hostname, destination).getReturnCode().wasSuccessful()) {
@@ -108,6 +111,7 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
         }
     }
 
+    @Override
     public void remoteUnzipBinary(final String hostname, final String zipFileName, final String destination, final String exclude) {
         try {
             if (binaryDistributionControlService.unzipBinary(hostname, zipFileName, destination, exclude).getReturnCode().wasSuccessful()) {
@@ -124,6 +128,7 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
         }
     }
 
+    @Override
     public void remoteSecureCopyFile(final String hostname, final String source, final String destination) {
         try {
             if (binaryDistributionControlService.secureCopyFile(hostname, source, destination).getReturnCode().wasSuccessful()) {
@@ -141,6 +146,7 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
         }
     }
 
+    @Override
     public void remoteCreateDirectory(final String hostname, final String remoteDir) {
         LOGGER.debug("Attempting to create directory {} on host {}", remoteDir, hostname);
         try {
@@ -157,7 +163,7 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
             throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, message, e);
         }
     }
-
+    @Override
     public boolean remoteFileCheck(final String hostname, final String remoteFilePath) {
         LOGGER.info("Looking for the remote file {} on host {}", remoteFilePath, hostname);
         boolean result;

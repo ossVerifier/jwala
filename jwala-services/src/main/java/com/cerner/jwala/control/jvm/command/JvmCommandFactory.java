@@ -33,8 +33,7 @@ import org.springframework.util.StringUtils;
 
 import javax.annotation.PostConstruct;
 
-import static com.cerner.jwala.control.AemControl.Properties.DEPLOY_CONFIG_ARCHIVE_SCRIPT_NAME;
-import static com.cerner.jwala.control.AemControl.Properties.INSTALL_SERVICE_SCRIPT_NAME;
+import static com.cerner.jwala.control.AemControl.Properties.*;
 
 
 /**
@@ -43,11 +42,7 @@ import static com.cerner.jwala.control.AemControl.Properties.INSTALL_SERVICE_SCR
 @Component
 public class JvmCommandFactory {
     private static final Logger LOGGER = LoggerFactory.getLogger(JvmCommandFactory.class);
-    private static final  String START_JVM_SERVICE = "start-service.sh";
-    private static final  String STOP_JVM_SERVICE = "stop-service.sh";
-    private static final  String HEAP_DUMP_JVM = "heap-dump.sh";
-    private static final  String THREAD_DUMP_JVM = "stop-service.sh";
-    private static final  String DELETE_SERVICE = "delete-service.sh";
+
     private HashMap<String, JvmCommand> commands;
 
     @Autowired
@@ -82,13 +77,13 @@ public class JvmCommandFactory {
     public void initJvmCommands() {
         commands = new HashMap<>();
         commands.put(JvmControlOperation.START.getExternalValue(), (Jvm jvm)
-                -> remoteCommandExecutorService.executeCommand(new RemoteExecCommand(getConnection(jvm),getExecCommand(START_JVM_SERVICE, jvm))));
+                -> remoteCommandExecutorService.executeCommand(new RemoteExecCommand(getConnection(jvm),getExecCommand(START_SCRIPT_NAME.getValue(), jvm))));
         commands.put(JvmControlOperation.STOP.getExternalValue(), (Jvm jvm)
-                -> remoteCommandExecutorService.executeCommand(new RemoteExecCommand(getConnection(jvm),getExecCommand(STOP_JVM_SERVICE, jvm))));
+                -> remoteCommandExecutorService.executeCommand(new RemoteExecCommand(getConnection(jvm),getExecCommandForStopService(jvm))));
         commands.put(JvmControlOperation.THREAD_DUMP.getExternalValue(), (Jvm jvm)
-                -> remoteCommandExecutorService.executeCommand(new RemoteExecCommand(getConnection(jvm),getExecCommandForThreadDump(THREAD_DUMP_JVM, jvm))));
+                -> remoteCommandExecutorService.executeCommand(new RemoteExecCommand(getConnection(jvm),getExecCommandForThreadDump(THREAD_DUMP_SCRIPT_NAME.getValue(), jvm))));
         commands.put(JvmControlOperation.HEAP_DUMP.getExternalValue(), (Jvm jvm)
-                -> remoteCommandExecutorService.executeCommand(new RemoteExecCommand(getConnection(jvm),getExecCommandForHeapDump(HEAP_DUMP_JVM, jvm))));
+                -> remoteCommandExecutorService.executeCommand(new RemoteExecCommand(getConnection(jvm),getExecCommandForHeapDump(HEAP_DUMP_SCRIPT_NAME.getValue(), jvm))));
         commands.put(JvmControlOperation.DEPLOY_CONFIG_ARCHIVE.getExternalValue(), (Jvm jvm)
                 -> remoteCommandExecutorService.executeCommand(new RemoteExecCommand(getConnection(jvm),getExecCommandForDeploy(jvm))));
         commands.put(JvmControlOperation.INSTALL_SERVICE.getExternalValue(), (Jvm jvm)
@@ -128,12 +123,15 @@ public class JvmCommandFactory {
     private ExecCommand getExecCommandForHeapDump(String scriptName, Jvm jvm) {
         DateTimeFormatter fmt = DateTimeFormat.forPattern("yyyyMMdd.HHmmss");
         String dumpFile = "heapDump." + StringUtils.replace(jvm.getJvmName(), " ", "") + "." +fmt.print(DateTime.now());
-        String dumpLiveStr = ApplicationProperties.getAsBoolean(PropertyKeys.JMAP_DUMP_LIVE_ENABLED.name()) ? "live," : "";
-        String jvmInstanceDir = ApplicationProperties.get(PropertyKeys.REMOTE_PATH_INSTANCES_DIR) + "/" +StringUtils.replace(jvm.getJvmName(), " ", "");
+        String dumpLiveStr = ApplicationProperties.getAsBoolean(PropertyKeys.JMAP_DUMP_LIVE_ENABLED.name()) ? "live," : "\"\"";
+        String jvmInstanceDir = ApplicationProperties.get(PropertyKeys.REMOTE_PATH_INSTANCES_DIR) + "/" +
+                                StringUtils.replace(jvm.getJvmName(), " ", "")+ "/"+
+                                ApplicationProperties.get(PropertyKeys.REMOTE_TOMCAT_DIR_NAME);
         return new ExecCommand(getFullPathScript(jvm, scriptName),
                 ApplicationProperties.get(PropertyKeys.REMOTE_JAVA_HOME),
                 ApplicationProperties.get(PropertyKeys.REMOTE_JAWALA_DATA_DIR),
                 dumpFile, dumpLiveStr, jvmInstanceDir);
+        //Windows " | grep PID | awk '{ print $3 }'`
     }
 
     /**
@@ -144,8 +142,9 @@ public class JvmCommandFactory {
      */
     private ExecCommand getExecCommandForThreadDump(String scriptName, Jvm jvm) {
         String jvmInstanceDir = ApplicationProperties.get(PropertyKeys.REMOTE_PATH_INSTANCES_DIR) + "/" +
-                                ApplicationProperties.get(PropertyKeys.REMOTE_TOMCAT_DIR_NAME)+"/"+
-                                StringUtils.replace(jvm.getJvmName(), " ", "");
+                                StringUtils.replace(jvm.getJvmName(), " ", "")+ "/" +
+                                ApplicationProperties.get(PropertyKeys.REMOTE_TOMCAT_DIR_NAME);
+
         return new ExecCommand(getFullPathScript(jvm, scriptName),
                                 ApplicationProperties.get(PropertyKeys.REMOTE_JAVA_HOME),
                                 jvmInstanceDir);
@@ -215,6 +214,11 @@ public class JvmCommandFactory {
 
     private ExecCommand getExecCommandForDeleteService(Jvm jvm){
         //copy delete script
-        return new ExecCommand(ApplicationProperties.getRequired(PropertyKeys.REMOTE_SCRIPT_DIR)+ "/" + jvm.getJvmName() + "/" +DELETE_SERVICE);
+        return new ExecCommand(ApplicationProperties.getRequired(PropertyKeys.REMOTE_SCRIPT_DIR)+ "/" + jvm.getJvmName() + "/" +DELETE_SERVICE_SCRIPT_NAME.getValue());
+    }
+
+    private ExecCommand getExecCommandForStopService(Jvm jvm){
+        //copy delete script
+        return new ExecCommand(getFullPathScript(jvm, STOP_SCRIPT_NAME.getValue()), jvm.getJvmName(), SLEEP_TIME.getValue());
     }
 }
