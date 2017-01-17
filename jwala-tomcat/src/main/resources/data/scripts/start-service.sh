@@ -49,5 +49,5 @@ if $cygwin; then
 fi
 
 if $linux; then
-  /sbin/sudo service $1 start
+  /usr/bin/sudo /sbin/service $1 start
 fi
