@@ -100,8 +100,6 @@ public class ResourceServiceImplTest {
     @Mock
     private RepositoryService mockRepositoryService;
 
-    Map<String, ReentrantReadWriteLock> resourceWriteLockMap = new HashMap<>();
-
     @Before
     public void setup() {
         // It is good practice to start with a clean sheet of paper before each test that is why resourceService is
@@ -114,7 +112,7 @@ public class ResourceServiceImplTest {
 
         resourceService = new ResourceServiceImpl(mockResourcePersistenceService, mockGroupPesistenceService,
                 mockAppPersistenceService, mockJvmPersistenceService, mockWebServerPersistenceService,
-                mockResourceDao, mockResourceHandler, mockRemoteCommandExector, resourceWriteLockMap,
+                mockResourceDao, mockResourceHandler, mockRemoteCommandExector,
                 resourceContentGeneratorService, mockBinaryDistributionService, new Tika(), mockRepositoryService);
 
         when(mockJvmPersistenceService.findJvmByExactName(eq("someJvm"))).thenReturn(mock(Jvm.class));

@@ -4,6 +4,7 @@ import com.cerner.jwala.commandprocessor.CommandExecutor;
 import com.cerner.jwala.commandprocessor.impl.jsch.JschBuilder;
 import com.cerner.jwala.commandprocessor.jsch.impl.ChannelSessionKey;
 import com.cerner.jwala.commandprocessor.jsch.impl.KeyedPooledJschChannelFactory;
+import com.cerner.jwala.common.FileUtility;
 import com.cerner.jwala.common.domain.model.binarydistribution.BinaryDistributionControlOperation;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
@@ -17,14 +18,11 @@ import com.cerner.jwala.common.properties.ApplicationProperties;
 import com.cerner.jwala.control.command.RemoteCommandExecutor;
 import com.cerner.jwala.control.configuration.AemCommandExecutorConfig;
 import com.cerner.jwala.control.configuration.AemSshConfig;
-import com.cerner.jwala.common.FileUtility;
 import com.cerner.jwala.persistence.configuration.AemPersistenceServiceConfiguration;
 import com.cerner.jwala.persistence.jpa.service.*;
 import com.cerner.jwala.persistence.jpa.service.impl.GroupJvmRelationshipServiceImpl;
-import com.cerner.jwala.persistence.service.ApplicationPersistenceService;
 import com.cerner.jwala.persistence.service.JvmPersistenceService;
 import com.cerner.jwala.persistence.service.ResourceDao;
-import com.cerner.jwala.persistence.service.WebServerPersistenceService;
 import com.cerner.jwala.persistence.service.impl.JpaJvmPersistenceServiceImpl;
 import com.cerner.jwala.persistence.service.impl.ResourceDaoImpl;
 import com.cerner.jwala.service.HistoryFacadeService;
@@ -59,12 +57,7 @@ import com.cerner.jwala.service.jvm.JvmStateService;
 import com.cerner.jwala.service.jvm.impl.JvmControlServiceImpl;
 import com.cerner.jwala.service.jvm.impl.JvmServiceImpl;
 import com.cerner.jwala.service.jvm.state.JvmStateReceiverAdapter;
-import com.cerner.jwala.service.resource.ResourceContentGeneratorService;
-import com.cerner.jwala.service.repository.RepositoryService;
 import com.cerner.jwala.service.resource.ResourceService;
-import com.cerner.jwala.service.resource.impl.ResourceServiceImpl;
-import com.cerner.jwala.service.resource.impl.handler.WebServerResourceHandler;
-import com.cerner.jwala.service.ssl.hc.HttpClientRequestFactory;
 import com.cerner.jwala.service.state.InMemoryStateManagerService;
 import com.cerner.jwala.service.state.impl.InMemoryStateManagerServiceImpl;
 import com.cerner.jwala.service.webserver.WebServerCommandService;
@@ -81,14 +74,12 @@ import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import org.apache.commons.pool2.impl.GenericKeyedObjectPool;
 import org.apache.commons.pool2.impl.GenericKeyedObjectPoolConfig;
-import org.apache.tika.Tika;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.task.TaskExecutor;
@@ -99,15 +90,10 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
-import java.security.KeyManagementException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.UnrecoverableKeyException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 @Configuration
 @EnableAsync
@@ -157,8 +143,6 @@ public class AemServiceConfiguration {
 
     @Autowired
     private BinaryDistributionLockManager binaryDistributionLockManager;
-
-    private final Map<String, ReentrantReadWriteLock> binaryWriteLockMap = new HashMap<>();
 
     /**
      * Make vars.properties available to spring integration configuration
@@ -305,46 +289,9 @@ public class AemServiceConfiguration {
         return new ApplicationCommandServiceImpl(aemSshConfig.getSshConfiguration(), aemSshConfig.getJschBuilder());
     }
 
-    @Bean(name = "resourceService")
-    public ResourceService getResourceService(final ApplicationPersistenceService applicationPersistenceService,
-                                              final JvmPersistenceService jvmPersistenceService,
-                                              final WebServerPersistenceService webServerPersistenceService,
-                                              final ResourceDao resourceDao,
-                                              final WebServerResourceHandler webServerResourceHandler,
-                                              final ResourceContentGeneratorService resourceContentGeneratorService,
-                                              @Qualifier("resourceRepositoryService")
-                                              final RepositoryService repositoryService) {
-        return new ResourceServiceImpl(persistenceServiceConfiguration.getResourcePersistenceService(),
-                persistenceServiceConfiguration.getGroupPersistenceService(), applicationPersistenceService,
-                jvmPersistenceService, webServerPersistenceService, resourceDao, webServerResourceHandler,
-                aemCommandExecutorConfig.getRemoteCommandExecutor(), binaryWriteLockMap,
-                resourceContentGeneratorService, binaryDistributionService, new Tika(), repositoryService);
-    }
-
     @Bean
     public ResourceDao getResourceDao() {
         return new ResourceDaoImpl();
-    }
-
-    @Bean(name = "webServerHttpRequestFactory")
-    @DependsOn("aemServiceConfigurationPropertiesConfigurer")
-    // TODO: Refactor the @value parameter names e.g. ping.jvm.connectTimeout -> ping.request.connectTimeout
-    // TODO: Better yet if we can do away with this, just use HttpComponentsClientHttpRequestFactory directly
-    // This bean is used by the ClientFactoryHelper.
-    public HttpClientRequestFactory getHttpClientRequestFactory(
-            @Value("${ping.jvm.connectTimeout}") final int connectionTimeout,
-            @Value("${ping.jvm.readTimeout}") final int readTimeout,
-            @Value("${ping.jvm.period.millis}") final long millis,
-            @Value("${ping.jvm.maxHttpConnections}") final int maxHttpConnections) throws UnrecoverableKeyException,
-            NoSuchAlgorithmException,
-            KeyStoreException,
-            KeyManagementException {
-        HttpClientRequestFactory httpClientRequestFactory = new HttpClientRequestFactory();
-        httpClientRequestFactory.setConnectTimeout(connectionTimeout);
-        httpClientRequestFactory.setReadTimeout(readTimeout);
-        httpClientRequestFactory.setPeriodMillis(millis);
-        httpClientRequestFactory.setMaxHttpConnections(maxHttpConnections);
-        return httpClientRequestFactory;
     }
 
     @Bean(name = "httpRequestFactory")

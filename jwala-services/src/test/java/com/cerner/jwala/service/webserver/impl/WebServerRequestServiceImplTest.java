@@ -15,7 +15,6 @@ import com.cerner.jwala.common.properties.ApplicationProperties;
 import com.cerner.jwala.exception.CommandFailureException;
 import com.cerner.jwala.service.RemoteCommandExecutorService;
 import com.cerner.jwala.common.jsch.RemoteCommandReturnInfo;
-import com.cerner.jwala.service.ssl.hc.HttpClientRequestFactory;
 import com.cerner.jwala.service.webserver.WebServerService;
 import com.cerner.jwala.service.webserver.component.ClientFactoryHelper;
 import com.jcraft.jsch.Channel;
@@ -37,6 +36,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.client.ClientHttpRequest;
 import org.springframework.http.client.ClientHttpResponse;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -148,14 +148,14 @@ public class WebServerRequestServiceImplTest {
     @Configuration
     static class Config {
         @Mock
-        private static HttpClientRequestFactory httpClientRequestFactory;
+        private static HttpComponentsClientHttpRequestFactory httpClientRequestFactory;
 
         public Config() {
             MockitoAnnotations.initMocks(this);
         }
 
-        @Bean(name = "webServerHttpRequestFactory")
-        public HttpClientRequestFactory getHttpClientRequestFactory() {
+        @Bean(name = "httpRequestFactory")
+        public HttpComponentsClientHttpRequestFactory getHttpClientRequestFactory() {
             return httpClientRequestFactory;
         }
 

@@ -17,16 +17,16 @@ import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
+import org.mockito.internal.verification.Times;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.concurrent.Future;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 /**
@@ -84,6 +84,7 @@ public class JvmStateServiceImplTest {
         final List<Jvm> jvmList = new ArrayList<>();
         jvmList.add(new Jvm(new Identifier<Jvm>(1L), "some-jvm", new HashSet<Group>()));
         when(mockJvmPersistenceService.getJvms()).thenReturn(jvmList);
+        when(mockJvmStateResolverWorker.pingAndUpdateJvmState(eq(jvmList.get(0)), any(JvmStateService.class))).thenReturn(mock(Future.class));
         jvmStateService.verifyAndUpdateNotInMemOrStaleStates();
         verify(mockJvmStateResolverWorker).pingAndUpdateJvmState(eq(jvmList.get(0)), any(JvmStateService.class));
     }
@@ -96,7 +97,23 @@ public class JvmStateServiceImplTest {
     }
 
     @Test
-    public void testUpdateState() {
+    public void testUpdateStateOnStateStarted() {
+        final Identifier<Jvm> id = new Identifier<>(1L);
+        final Jvm mockJvm = mock(Jvm.class);
+        final CurrentState<Jvm, JvmState> mockCurrentState = mock(CurrentState.class);
+        when(mockCurrentState.getState()).thenReturn(JvmState.JVM_STARTED);
+        when(mockCurrentState.getMessage()).thenReturn("some message...");
+        when(mockJvm.getId()).thenReturn(id);
+        when(mockInMemoryStateManagerService.get(eq(id))).thenReturn(mockCurrentState);
+        when(mockInMemoryStateManagerService.containsKey(eq(id))).thenReturn(true);
+        jvmStateService.updateState(mockJvm, JvmState.JVM_STOPPED);
+        verify(mockJvmPersistenceService).updateState(eq(id), eq(JvmState.JVM_STOPPED), eq(StringUtils.EMPTY));
+        verify(mockMessagingService).send(any(CurrentState.class));
+        verify(mockGroupStateNotificationService).retrieveStateAndSend(eq(id), eq(Jvm.class));
+    }
+
+    @Test
+    public void testUpdateStateOnStateStopped() {
         final Identifier<Jvm> id = new Identifier<>(1L);
         final Jvm mockJvm = mock(Jvm.class);
         final CurrentState<Jvm, JvmState> mockCurrentState = mock(CurrentState.class);
@@ -106,9 +123,7 @@ public class JvmStateServiceImplTest {
         when(mockInMemoryStateManagerService.get(eq(id))).thenReturn(mockCurrentState);
         when(mockInMemoryStateManagerService.containsKey(eq(id))).thenReturn(true);
         jvmStateService.updateState(mockJvm, JvmState.JVM_STOPPED);
-        verify(mockJvmPersistenceService).updateState(eq(id), eq(JvmState.JVM_STOPPED), eq(StringUtils.EMPTY));
-        verify(mockMessagingService).send(any(CurrentState.class));
-        verify(mockGroupStateNotificationService).retrieveStateAndSend(eq(id), eq(Jvm.class));
+        verify(mockJvmPersistenceService, never()).updateState(eq(id), eq(JvmState.JVM_STOPPED), eq(StringUtils.EMPTY));
     }
 
 }
