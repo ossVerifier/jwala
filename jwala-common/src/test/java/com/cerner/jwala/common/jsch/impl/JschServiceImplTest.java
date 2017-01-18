@@ -9,7 +9,6 @@ import com.cerner.jwala.common.jsch.RemoteCommandReturnInfo;
 import com.jcraft.jsch.*;
 import org.apache.commons.pool2.impl.GenericKeyedObjectPool;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -25,7 +24,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Mockito.*;
@@ -107,7 +106,6 @@ public class JschServiceImplTest {
         verify(mockChannelExec).connect(anyInt());
     }
 
-    @Ignore
     @Test
     public void testRunCommandUsingChannelExecWithExitStatusNotZero() throws IOException, JSchException {
         when(mockChannelExec.getInputStream()).thenReturn(mockIn);
