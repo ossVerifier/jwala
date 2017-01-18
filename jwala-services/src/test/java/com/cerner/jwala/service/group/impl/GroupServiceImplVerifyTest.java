@@ -87,6 +87,8 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
     @Mock
     private RepositoryService mockRepositoryService;
 
+    Map<String, ReentrantReadWriteLock> resourceWriteLockMap = new HashMap<>();
+
     private ResourceService resourceService;
 
     public GroupServiceImplVerifyTest() {
@@ -113,7 +115,7 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
 
         resourceService = new ResourceServiceImpl(mockResourcePersistenceService, mockGroupPesistenceService,
                 mockAppPersistenceService, mockJvmPersistenceService, mockWebServerPersistenceService,
-                 mockResourceDao, mockResourceHandler, mockRemoteCommandExector,
+                 mockResourceDao, mockResourceHandler, mockRemoteCommandExector, resourceWriteLockMap,
                 resourceContentGeneratorService, binaryDistributionService, new Tika(), mockRepositoryService);
 
         groupService = new GroupServiceImpl(groupPersistenceService,
