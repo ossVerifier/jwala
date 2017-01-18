@@ -94,7 +94,6 @@ public class JschServiceImplTest {
         assertEquals("", result.standardOuput);
     }
 
-    @Ignore
     @Test
     public void testRunCommandUsingChannelExec() throws IOException, JSchException {
         when(mockChannelExec.getInputStream()).thenReturn(mockIn);
