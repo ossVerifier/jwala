@@ -106,7 +106,7 @@ public class JschServiceImplTest {
         verify(mockChannelExec).connect(anyInt());
     }
 
-    @Test
+    @Test (timeout = 90000L)
     public void testRunCommandUsingChannelExecWithExitStatusNotZero() throws IOException, JSchException {
         when(mockChannelExec.getInputStream()).thenReturn(mockIn);
         when(mockChannelExec.getErrStream()).thenReturn(mockInErr);
