@@ -9,6 +9,7 @@ import com.cerner.jwala.common.jsch.RemoteCommandReturnInfo;
 import com.jcraft.jsch.*;
 import org.apache.commons.pool2.impl.GenericKeyedObjectPool;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -68,6 +69,7 @@ public class JschServiceImplTest {
         initMocks(this);
     }
 
+    @Ignore
     @Test
     public void testRunCommandUsingChannelShell() throws Exception {
         when(mockChannelShell.getInputStream()).thenReturn(new ByteArrayInputStream("EXIT_CODE=0*** \0xff".getBytes()));
@@ -80,6 +82,7 @@ public class JschServiceImplTest {
         assertEquals("EXIT_CODE=0*** \0xff", result.standardOuput);
     }
 
+    @Ignore
     @Test(expected = JschServiceException.class)
     public void testRunCommandUsingChannelShellAndTimesOut() throws Exception {
         when(mockChannelShell.getInputStream()).thenReturn(mockIn);
@@ -93,6 +96,7 @@ public class JschServiceImplTest {
         assertEquals("", result.standardOuput);
     }
 
+    @Ignore
     @Test
     public void testRunCommandUsingChannelExec() throws IOException, JSchException {
         when(mockChannelExec.getInputStream()).thenReturn(mockIn);
@@ -106,6 +110,7 @@ public class JschServiceImplTest {
         verify(mockChannelExec).connect(anyInt());
     }
 
+    @Ignore
     @Test
     public void testRunCommandUsingChannelExecWithExitStatusNotZero() throws IOException, JSchException {
         when(mockChannelExec.getInputStream()).thenReturn(mockIn);
