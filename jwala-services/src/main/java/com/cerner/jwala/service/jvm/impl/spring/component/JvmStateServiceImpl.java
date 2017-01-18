@@ -212,8 +212,9 @@ public class JvmStateServiceImpl implements JvmStateService {
                 // If the JVM is already stopped and the new state is stopping, don't do anything!
                 // We can't go from stopped to stopping. The stopped state that the JvmControlService issued has
                 // the last say for it means that the (windows) service has already stopped.
-                if (JvmState.JVM_STOPPING.equals(state) || isCurrentStateStopped(id)) {
-                    LOGGER.warn("Ignoring {} state since the JVM is currently stopped.", state);
+                LOGGER.debug(">>>>>> JVM {}: {}", jvm.getJvmName(), jvm.getState());
+                if (JvmState.JVM_STOPPING.equals(state) && isJvmStateStoppingOrStopped(jvm.getId())) {
+                    LOGGER.warn("Ignoring {} state since the JVM is currently stopping/stopped.", state);
                     return;
                 }
 
@@ -231,16 +232,15 @@ public class JvmStateServiceImpl implements JvmStateService {
     }
 
     /**
-     * Checks whether the current state of the JVM is stopped.
-     *
-     * @return true if the state is stopped.
+     * Checks if in-memory jvm state is stopping or stopped, if in-memory state is not available it compares it in
+     * the state in the persistence context
+     * @param id the JVM id
+     * @return true if JVM state is stopping or stopped
      */
-    protected boolean isCurrentStateStopped(final Identifier<Jvm> id) {
-        if (inMemoryStateManagerService.containsKey(id)) {
-            return JvmState.JVM_STOPPED.equals(inMemoryStateManagerService.get(id).getState());
-        }
-        final Jvm jvm = jvmPersistenceService.getJvm(id);
-        return JvmState.JVM_STOPPED.equals(jvm.getState());
+    private boolean isJvmStateStoppingOrStopped(final Identifier<Jvm> id) {
+        final CurrentState<Jvm, JvmState> currentState = inMemoryStateManagerService.get(id);
+        final JvmState state = currentState == null ? jvmPersistenceService.getJvm(id).getState() : currentState.getState();
+        return JvmState.JVM_STOPPING.equals(state) || JvmState.JVM_STOPPED.equals(state);
     }
 
     /**
