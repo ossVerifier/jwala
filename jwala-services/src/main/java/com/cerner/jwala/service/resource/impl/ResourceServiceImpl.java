@@ -30,9 +30,7 @@ import com.cerner.jwala.service.binarydistribution.BinaryDistributionService;
 import com.cerner.jwala.service.exception.ResourceServiceException;
 import com.cerner.jwala.service.repository.RepositoryService;
 import com.cerner.jwala.service.repository.RepositoryServiceException;
-import com.cerner.jwala.service.resource.ResourceContentGeneratorService;
-import com.cerner.jwala.service.resource.ResourceHandler;
-import com.cerner.jwala.service.resource.ResourceService;
+import com.cerner.jwala.service.resource.*;
 import com.cerner.jwala.template.exception.ResourceFileGeneratorException;
 import opennlp.tools.util.StringUtil;
 import org.apache.commons.io.FileUtils;
@@ -54,6 +52,7 @@ import java.nio.charset.Charset;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class ResourceServiceImpl implements ResourceService {
 
@@ -69,6 +68,7 @@ public class ResourceServiceImpl implements ResourceService {
 
     // TODO replace ApplicationControlOperation (and all operation classes) with ResourceControlOperation
     private RemoteCommandExecutorImpl remoteCommandExecutor;
+    private Map<String, ReentrantReadWriteLock> resourceWriteLockMap;
 
     private final String encryptExpressionString = ApplicationProperties.get("encryptExpression");
 
@@ -103,6 +103,7 @@ public class ResourceServiceImpl implements ResourceService {
                                final ResourceDao resourceDao,
                                final ResourceHandler resourceHandler,
                                final RemoteCommandExecutorImpl remoteCommandExecutor,
+                               final Map<String, ReentrantReadWriteLock> resourceWriteLockMap,
                                final ResourceContentGeneratorService resourceContentGeneratorService,
                                final BinaryDistributionService binaryDistributionService,
                                final Tika fileTypeDetector,
@@ -110,6 +111,7 @@ public class ResourceServiceImpl implements ResourceService {
         this.resourcePersistenceService = resourcePersistenceService;
         this.groupPersistenceService = groupPersistenceService;
         this.remoteCommandExecutor = remoteCommandExecutor;
+        this.resourceWriteLockMap = resourceWriteLockMap;
         expressionParser = new SpelExpressionParser();
         encryptExpression = expressionParser.parseExpression(encryptExpressionString);
         decryptExpression = expressionParser.parseExpression(decryptExpressionString);
