@@ -69,7 +69,6 @@ public class JschServiceImplTest {
         initMocks(this);
     }
 
-    @Ignore
     @Test
     public void testRunCommandUsingChannelShell() throws Exception {
         when(mockChannelShell.getInputStream()).thenReturn(new ByteArrayInputStream("EXIT_CODE=0*** \0xff".getBytes()));
@@ -82,7 +81,6 @@ public class JschServiceImplTest {
         assertEquals("EXIT_CODE=0*** \0xff", result.standardOuput);
     }
 
-    @Ignore
     @Test(expected = JschServiceException.class)
     public void testRunCommandUsingChannelShellAndTimesOut() throws Exception {
         when(mockChannelShell.getInputStream()).thenReturn(mockIn);
