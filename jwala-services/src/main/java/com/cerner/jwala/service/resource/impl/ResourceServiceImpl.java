@@ -13,6 +13,7 @@ import com.cerner.jwala.common.exception.ApplicationException;
 import com.cerner.jwala.common.exception.BadRequestException;
 import com.cerner.jwala.common.exception.InternalErrorException;
 import com.cerner.jwala.common.exec.CommandOutput;
+import com.cerner.jwala.common.exec.ExecReturnCode;
 import com.cerner.jwala.common.properties.ApplicationProperties;
 import com.cerner.jwala.common.properties.ExternalProperties;
 import com.cerner.jwala.common.request.app.UploadAppTemplateRequest;
@@ -21,12 +22,17 @@ import com.cerner.jwala.common.request.jvm.UploadJvmTemplateRequest;
 import com.cerner.jwala.common.request.webserver.UploadWebServerTemplateRequest;
 import com.cerner.jwala.control.application.command.impl.WindowsApplicationPlatformCommandProvider;
 import com.cerner.jwala.control.command.RemoteCommandExecutorImpl;
+import com.cerner.jwala.control.command.common.Command;
+import com.cerner.jwala.control.command.common.ShellCommandFactory;
 import com.cerner.jwala.control.command.impl.WindowsBinaryDistributionPlatformCommandProvider;
 import com.cerner.jwala.exception.CommandFailureException;
 import com.cerner.jwala.persistence.jpa.domain.JpaJvm;
 import com.cerner.jwala.persistence.jpa.domain.resource.config.template.ConfigTemplate;
 import com.cerner.jwala.persistence.service.*;
+import com.cerner.jwala.service.HistoryFacadeService;
+import com.cerner.jwala.service.RemoteCommandReturnInfo;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionService;
+import com.cerner.jwala.service.binarydistribution.DistributionService;
 import com.cerner.jwala.service.exception.ResourceServiceException;
 import com.cerner.jwala.service.resource.*;
 import com.cerner.jwala.template.exception.ResourceFileGeneratorException;
@@ -35,11 +41,13 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.regexp.RE;
 import org.apache.tika.Tika;
 import org.apache.tika.mime.MediaType;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.expression.Expression;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
@@ -53,6 +61,13 @@ import java.util.*;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class ResourceServiceImpl implements ResourceService {
+
+    @Autowired
+    ShellCommandFactory shellCommandFactory;
+    @Autowired
+    DistributionService distributionService;
+    @Autowired
+    HistoryFacadeService historyFacadeService;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ResourceServiceImpl.class);
     private static final String WAR_FILE_EXTENSION = ".war";
@@ -724,71 +739,14 @@ public class ResourceServiceImpl implements ResourceService {
         return generateResourceFile(resourceIdentifier.resourceName, content, generateResourceGroup(), resourceHandler.getSelectedValue(resourceIdentifier), ResourceGeneratorType.PREVIEW);
     }
 
-    public CommandOutput secureCopyFile(final String hostName, final String sourcePath, final String destPath) throws CommandFailureException {
-        final int beginIndex = destPath.lastIndexOf("/");
-        final String fileName = destPath.substring(beginIndex + 1, destPath.length());
-
-        // TODO put this back in when we start processing events for JVMs, and then make it generic for Web Servers, Applications, etc.
-        // don't add any usage of the Jwala user internal directory to the history
-        /*if (!AemControl.Properties.USER_JWALA_SCRIPTS_PATH.getValue().endsWith(fileName)) {
-            final String eventDescription = "SECURE COPY " + fileName;
-            historyService.createHistory(hostName, new ArrayList<>(*//*jvm.getGroups()*//*), eventDescription, EventType.USER_ACTION_INFO, userId);
-            messagingService.send(new JvmHistoryEvent(jvm.getId(), eventDescription, userId, DateTime.now(), JvmControlOperation.SCP));
-        }*/
-
-        // TODO update this to be derived from the resource type being copied
-        final String name = "Ext Properties";
-
-        final String parentDir = new File(destPath).getParentFile().getAbsolutePath().replaceAll("\\\\", "/");
-        CommandOutput commandOutput = remoteCommandExecutor.executeRemoteCommand(
-                name,
-                hostName,
-                ApplicationControlOperation.CREATE_DIRECTORY,
-                new WindowsApplicationPlatformCommandProvider(),
-                parentDir
-        );
-        if (commandOutput.getReturnCode().wasSuccessful()) {
-            LOGGER.info("Successfully created the parent dir {} on host {}", parentDir, hostName);
-        } else {
-            final String stdErr = commandOutput.getStandardError().isEmpty() ? commandOutput.getStandardOutput() : commandOutput.getStandardError();
-            LOGGER.error("Error in creating parent dir {} on host {}:: ERROR : {}", parentDir, hostName, stdErr);
-            throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, stdErr);
+    public void secureCopyFile(final String hostName, final String sourcePath, final String destPath) throws CommandFailureException {
+        final String fileName = new File(destPath).getName();
+        if(distributionService.remoteFileCheck(hostName,destPath)){
+            LOGGER.info("Found the file {}", destPath);
+            distributionService.backupFile(hostName,destPath);
         }
+        distributionService.remoteSecureCopyFile(hostName, sourcePath,destPath);
 
-        commandOutput = remoteCommandExecutor.executeRemoteCommand(
-                name,
-                hostName,
-                ApplicationControlOperation.CHECK_FILE_EXISTS,
-                new WindowsApplicationPlatformCommandProvider(),
-                destPath
-        );
-        if (commandOutput.getReturnCode().wasSuccessful()) {
-            String currentDateSuffix = new SimpleDateFormat(".yyyyMMdd_HHmmss").format(new Date());
-            final String destPathBackup = destPath + currentDateSuffix;
-            commandOutput = remoteCommandExecutor.executeRemoteCommand(
-                    name,
-                    hostName,
-                    ApplicationControlOperation.BACK_UP,
-                    new WindowsApplicationPlatformCommandProvider(),
-                    destPath,
-                    destPathBackup);
-            if (!commandOutput.getReturnCode().wasSuccessful()) {
-                final String standardError = "Failed to back up the " + destPath + " for " + name + ". Continuing with secure copy.";
-                LOGGER.error(standardError);
-                throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, standardError);
-            } else {
-                LOGGER.info("Successfully backed up " + destPath + " at " + hostName);
-            }
-
-        }
-
-        return remoteCommandExecutor.executeRemoteCommand(
-                name,
-                hostName,
-                ApplicationControlOperation.SCP,
-                new WindowsApplicationPlatformCommandProvider(),
-                sourcePath,
-                destPath);
     }
 
     protected void createConfigFile(String path, String configFileName, String templateContent) throws IOException {
@@ -884,8 +842,8 @@ public class ResourceServiceImpl implements ResourceService {
     }
 
     @Override
-    public <T> CommandOutput generateAndDeployFile(final ResourceIdentifier resourceIdentifier, final String entity, final String fileName, final String hostName) {
-        CommandOutput commandOutput;
+    public CommandOutput generateAndDeployFile(final ResourceIdentifier resourceIdentifier, final String entity, final String fileName, final String hostName) {
+        CommandOutput commandOutput = null;
         final String badStreamMessage = "Bad Stream: ";
         String metaDataStr;
         ResourceTemplateMetaData resourceTemplateMetaData;
@@ -908,7 +866,7 @@ public class ResourceServiceImpl implements ResourceService {
                 resourceSourceCopy = generateTemplateForNotText(resourceHandler.getSelectedValue(resourceIdentifier), fileName);
             }
 
-            commandOutput = secureCopyFile(hostName, resourceSourceCopy, resourceDestPath);
+            secureCopyFile(hostName, resourceSourceCopy, resourceDestPath);
             if (resourceTemplateMetaData.isUnpack()) {
                 commandOutput = doUnpack(entity, hostName, resourceTemplateMetaData.getDeployPath() + "/" + resourceTemplateMetaData.getDeployFileName());
             }

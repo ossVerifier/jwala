@@ -8,6 +8,7 @@ public enum PropertyKeys {
     REMOTE_JAWALA_DATA_DIR("remote.jwala.data.dir"),
     APACHE_HTTPD_FILE_NAME("jwala.apache.httpd.zip.name"),
     REMOTE_PATHS_APACHE_HTTPD("remote.paths.apache.httpd"),
+    REMOTE_PATHS_APACHE_HTTPD_CONF("remote.paths.httpd.conf"),
     REMOTE_PATHS_HTTPD_ROOT_DIR_NAME("remote.paths.httpd.root.dir.name"),
     SCRIPTS_PATH("commands.scripts-path"),
     REMOTE_TOMCAT_DIR_NAME("remote.tomcat.dir.name"),
@@ -22,6 +23,7 @@ public enum PropertyKeys {
     REMOTE_PATHS_TOMCAT_CORE("remote.paths.tomcat.core"),
     LOCAL_JWALA_BINARY_DIR("jwala.binary.dir"),
     JMAP_DUMP_LIVE_ENABLED("jmap.dump.live.enabled");
+
 
     private String propertyName;
 

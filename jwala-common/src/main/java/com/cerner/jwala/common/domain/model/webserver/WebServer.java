@@ -165,6 +165,16 @@ public class WebServer implements Serializable {
         return state;
     }
 
+    /**
+     * Return stateLabel for UI
+     * @return
+     */
+    public String getStateLabel() {
+        if(state != null)
+            return state.toStateLabel();
+        else
+            return "";
+    }
     public String getErrorStatus() {
         return errorStatus;
     }

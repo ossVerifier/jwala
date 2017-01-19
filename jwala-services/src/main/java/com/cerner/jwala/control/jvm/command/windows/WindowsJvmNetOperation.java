@@ -138,8 +138,7 @@ public enum WindowsJvmNetOperation implements ServiceCommandBuilder {
             List<String> formatStrings = Arrays.asList(cygpathWrapper(INSTALL_SERVICE_SCRIPT_NAME,
                     remoteScriptDir + "/" + aServiceName + "/"),
                     aServiceName,
-                    remotePathsInstancesDir,
-                    ApplicationProperties.getRequired(PropertyKeys.REMOTE_TOMCAT_DIR_NAME));
+                    remotePathsInstancesDir+"/"+ApplicationProperties.getRequired(PropertyKeys.REMOTE_TOMCAT_DIR_NAME));
             List<String> unformatStrings = Arrays.asList(quotedUsername, decryptedPassword);
             return new ExecCommand(
                     formatStrings,

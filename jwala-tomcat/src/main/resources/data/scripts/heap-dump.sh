@@ -14,7 +14,7 @@ if $linux; then
 	export JVM_INSTANCE_PATH=$5
 
 	mkdir -p /opt/ctp/app/data
-	/usr/bin/sudo -u tomcat ${JAVA_HOME}/bin/jmap -dump:${DUMP_LIVE},format=b,file=${DATA_DIR}/${DUMP_FILE} $(<${JVM_INSTANCE_PATH}/logs/catalina.pid)
+	/usr/bin/sudo -u tomcat ${JAVA_HOME}/bin/jmap -dump:${DUMP_LIVE}format=b,file=${DATA_DIR}/${DUMP_FILE} $(<${JVM_INSTANCE_PATH}/logs/catalina.pid)
 fi
 echo '***heapdump-end***'
 	

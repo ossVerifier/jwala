@@ -22,6 +22,7 @@ import com.cerner.jwala.exception.CommandFailureException;
 import com.cerner.jwala.persistence.jpa.type.EventType;
 import com.cerner.jwala.service.HistoryFacadeService;
 import com.cerner.jwala.service.HistoryService;
+import com.cerner.jwala.service.binarydistribution.BinaryDistributionLockManager;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionService;
 import com.cerner.jwala.service.group.GroupService;
 import com.cerner.jwala.service.resource.ResourceService;
@@ -37,6 +38,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.persistence.EntityExistsException;
 import javax.ws.rs.core.Response;
@@ -47,7 +49,6 @@ import java.io.PrintWriter;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class WebServerServiceRestImpl implements WebServerServiceRest {
 
@@ -55,11 +56,11 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
     public static final String PATHS_GENERATED_RESOURCE_DIR = "paths.generated.resource.dir";
     private static final String COMMANDS_SCRIPTS_PATH = ApplicationProperties.get("commands.scripts-path");
     private static final String HTTPD_CONF = "httpd.conf";
-
+    @Autowired
+    BinaryDistributionLockManager binaryDistributionLockManager;
     private final WebServerService webServerService;
     private final WebServerControlService webServerControlService;
     private final WebServerCommandService webServerCommandService;
-    private final Map<String, ReentrantReadWriteLock> wsWriteLocks;
     private ResourceService resourceService;
     private GroupService groupService;
     private HistoryFacadeService historyFacadeService;
@@ -69,14 +70,12 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
     public WebServerServiceRestImpl(final WebServerService theWebServerService,
                                     final WebServerControlService theWebServerControlService,
                                     final WebServerCommandService theWebServerCommandService,
-                                    final Map<String, ReentrantReadWriteLock> theWriteLocks,
                                     final ResourceService theResourceService, GroupService groupService,
                                     final BinaryDistributionService binaryDistributionService,
                                     final HistoryFacadeService historyFacadeService) {
         webServerService = theWebServerService;
         webServerControlService = theWebServerControlService;
         webServerCommandService = theWebServerCommandService;
-        wsWriteLocks = theWriteLocks;
         resourceService = theResourceService;
         this.groupService = groupService;
         this.binaryDistributionService = binaryDistributionService;
@@ -212,7 +211,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
         boolean didSucceed = false;
 
         // only one at a time per web server
-        lock(aWebServerName);
+        binaryDistributionLockManager.writeLock(aWebServerName);
 
         WebServer webServer = webServerService.getWebServer(aWebServerName);
 
@@ -246,7 +245,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
             }
 
             // re-install the service
-            installWebServerWindowsService(aUser, new ControlWebServerRequest(webServer.getId(), WebServerControlOperation.INSTALL_SERVICE), webServer);
+            installWebServerService(aUser, new ControlWebServerRequest(webServer.getId(), WebServerControlOperation.INSTALL_SERVICE), webServer);
 
             webServerService.updateState(webServer.getId(), WebServerReachableState.WS_UNREACHABLE, StringUtils.EMPTY);
             didSucceed = true;
@@ -255,7 +254,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
                     FaultType.REMOTE_COMMAND_FAILURE, e.getMessage(), e));
         } finally {
-            unlock(aWebServerName);
+            binaryDistributionLockManager.writeUnlock(aWebServerName);
             final String historyMessage = didSucceed ? "Remote generation of web server " + aWebServerName + " succeeded" :
                     "Remote generation of web server " + aWebServerName + " failed";
             historyFacadeService.write(aWebServerName, new ArrayList<>(webServer.getGroups()), historyMessage, EventType.USER_ACTION_INFO, aUser.getUser().getId());
@@ -280,16 +279,6 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
         }
     }
 
-    private void unlock(String aWebServerName) {
-        wsWriteLocks.get(aWebServerName).writeLock().unlock();
-    }
-
-    private void lock(String aWebServerName) {
-        if (!wsWriteLocks.containsKey(aWebServerName)) {
-            wsWriteLocks.put(aWebServerName, new ReentrantReadWriteLock());
-        }
-        wsWriteLocks.get(aWebServerName).writeLock().lock();
-    }
 
     protected void validateHttpdConf(WebServer webServer) {
         final String aWebServerName = webServer.getName();
@@ -310,13 +299,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
 
     protected void createScriptsDirectory(WebServer webServer) throws CommandFailureException {
         final String remoteScriptsDir = ApplicationProperties.getRequired(PropertyKeys.REMOTE_SCRIPT_DIR);
-        final CommandOutput result = webServerControlService.createDirectory(webServer, remoteScriptsDir);
-
-        final ExecReturnCode resultReturnCode = result.getReturnCode();
-        if (!resultReturnCode.wasSuccessful()) {
-            LOGGER.error("Creating scripts directory {} FAILED ", remoteScriptsDir);
-            throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, CommandOutputReturnCode.fromReturnCode(resultReturnCode.getReturnCode()).getDesc());
-        }
+        webServerControlService.createDirectory(webServer, remoteScriptsDir);
     }
 
     public ResourceTemplateMetaData getMetaData(String aWebServerName) {
@@ -347,41 +330,37 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
         final String serviceStartScriptPath = COMMANDS_SCRIPTS_PATH + "/" + serviceStartScriptName;
         final String remoteDestStartScriptPath = remoteScriptDir + "/" + serviceStartScriptName;
 
-        if (webServerControlService.createDirectory(webServer, remoteScriptDir).getReturnCode().wasSuccessful()) {
-            LOGGER.info("Successfully created the directory {}", remoteScriptDir);
-        } else {
-            LOGGER.error("Failed to create the directory {} during creation of {}", remoteScriptDir, webServerName);
-            throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, "Failed to secure copy file " + serviceStartScriptPath + " during the creation of " + webServerName);
-        }
-        if (!webServerControlService.secureCopyFile(webServerName, serviceStartScriptPath, remoteDestStartScriptPath, userId).getReturnCode().wasSuccessful()) {
-            LOGGER.error("Failed to secure copy file {} during creation of {}", serviceStartScriptPath, webServerName);
-            throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, "Failed to secure copy file " + serviceStartScriptPath + " during the creation of " + webServerName);
-        }
+        webServerControlService.createDirectory(webServer, remoteScriptDir);
+        webServerControlService.secureCopyFile(webServerName, serviceStartScriptPath, remoteDestStartScriptPath, userId);
 
         final String serviceStopScriptName = AemControl.Properties.STOP_SCRIPT_NAME.getValue();
         final String serviceStopScriptPath = COMMANDS_SCRIPTS_PATH + "/" + serviceStopScriptName;
         final String remoteDestStopScriptPath = remoteScriptDir + "/" + serviceStopScriptName;
 
-        if (!webServerControlService.secureCopyFile(webServerName, serviceStopScriptPath, remoteDestStopScriptPath, userId).getReturnCode().wasSuccessful()) {
-            LOGGER.error("Failed to secure copy file {} during creation of {}", serviceStopScriptPath, webServerName);
-            throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, "Failed to secure copy file " + serviceStopScriptPath + " during the creation of " + webServerName);
-        }
+        webServerControlService.secureCopyFile(webServerName, serviceStopScriptPath, remoteDestStopScriptPath, userId);
 
         final String installServiceWsScriptName = AemControl.Properties.INSTALL_SERVICE_WS_SERVICE_SCRIPT_NAME.getValue();
         final String sourceInstallServiceWsServicePath = COMMANDS_SCRIPTS_PATH + "/" + installServiceWsScriptName;
-        if (!webServerControlService.secureCopyFile(webServerName, sourceInstallServiceWsServicePath, remoteScriptDir + "/" + installServiceWsScriptName, userId).getReturnCode().wasSuccessful()) {
-            LOGGER.error("Failed to secure copy file {} during creation of {}", sourceInstallServiceWsServicePath, webServerName);
-            throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, "Failed to secure copy file " + sourceInstallServiceWsServicePath + " during the creation of " + webServerName);
-        }
+        webServerControlService.secureCopyFile(webServerName, sourceInstallServiceWsServicePath, remoteScriptDir + "/" + installServiceWsScriptName, userId);
 
-        // make sure the scripts are executable
-        if (!webServerControlService.changeFileMode(webServer, "a+x", remoteScriptDir, "*.sh").getReturnCode().wasSuccessful()) {
-            LOGGER.error("Failed to update the *.sh permissions in {} during the creation of {}", remoteScriptDir, webServerName);
-            throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, "Failed to update the permissions in " + sourceInstallServiceWsServicePath + " during the creation of " + webServerName);
-        }
+        //Delete script
+        final String serviceDeleteScriptName = AemControl.Properties.DELETE_SERVICE_SCRIPT_NAME.getValue();
+        final String serviceDeleteScriptPath = COMMANDS_SCRIPTS_PATH + "/" + serviceDeleteScriptName;
+        final String remoteDestDeleteScriptPath = remoteScriptDir + "/" + serviceDeleteScriptName;
+
+        webServerControlService.secureCopyFile(webServerName, serviceDeleteScriptPath, remoteDestDeleteScriptPath, userId);
+
+        final String installLinuxServiceWsScriptName = "linux/httpd-ws-service";
+        final String sourceLinuxInstallServiceWsServicePath = COMMANDS_SCRIPTS_PATH + "/" + installLinuxServiceWsScriptName;
+        webServerControlService.createDirectory(webServer, remoteScriptDir+"/linux");
+        webServerControlService.secureCopyFile(webServerName, sourceLinuxInstallServiceWsServicePath, remoteScriptDir + "/" + installLinuxServiceWsScriptName, userId);
+        //make scripts executable
+        webServerControlService.changeFileMode(webServer, "a+x", remoteScriptDir, "*.sh");
+        webServerControlService.changeFileMode(webServer, "a+x", remoteScriptDir, "linux/*");
+
     }
 
-    protected void installWebServerWindowsService(final AuthenticatedUser user, final ControlWebServerRequest installServiceRequest, final WebServer webServer) throws CommandFailureException {
+    protected void installWebServerService(final AuthenticatedUser user, final ControlWebServerRequest installServiceRequest, final WebServer webServer) throws CommandFailureException {
 
         final String remoteScriptDir = ApplicationProperties.getRequired(PropertyKeys.REMOTE_SCRIPT_DIR);
 
@@ -396,19 +375,12 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
         // copy the install_serviceWS.bat file
         final String installServiceScriptPath = installServiceScript.getAbsolutePath().replaceAll("\\\\", "/");
         String remoteInstallServiceScriptPath = remoteScriptDir + "/" + WebServerServiceImpl.INSTALL_SERVICE_SCRIPT_NAME;
-        CommandOutput copyResult = webServerControlService.secureCopyFile(name, installServiceScriptPath, remoteInstallServiceScriptPath, user.getUser().getId());
-        if (copyResult.getReturnCode().wasSuccessful()) {
-            LOGGER.info("Successfully copied {} to host {} and path {}", installServiceScriptPath, webServer.getHost(), remoteInstallServiceScriptPath);
-        } else {
-            LOGGER.error("Failed to copy {} to host {} and path {}", installServiceScriptPath, webServer.getHost(), remoteInstallServiceScriptPath);
-            throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, "Failed to copy " + installServiceScriptPath +
-                    " to " + webServer.getHost() + " path " + remoteInstallServiceScriptPath);
-        }
+        webServerControlService.createDirectory(webServer, remoteInstallServiceScriptPath);
+        webServerControlService.secureCopyFile(name, installServiceScriptPath, remoteInstallServiceScriptPath, user.getUser().getId());
 
-        if (!webServerControlService.changeFileMode(webServer, "a+x", remoteScriptDir, "*.bat").getReturnCode().wasSuccessful()) {
-            LOGGER.error("Failed to update the *.bat permissions in {} during the creation of {}", remoteScriptDir, webServer.getName());
-            throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, "Failed to update the permissions in " + remoteScriptDir + " during the creation of " + webServer.getName());
-        }
+        //Do we need this?
+        webServerControlService.changeFileMode(webServer, "a+x", remoteScriptDir, "*.sh");
+        webServerControlService.changeFileMode(webServer, "a+x", remoteScriptDir, "linux/*");
 
         // call the install service script file
         CommandOutput installServiceResult = webServerControlService.controlWebServer(installServiceRequest, user.getUser());

@@ -18,6 +18,8 @@ import com.cerner.jwala.persistence.jpa.type.EventType;
 import com.cerner.jwala.service.HistoryFacadeService;
 import com.cerner.jwala.service.RemoteCommandExecutorService;
 import com.cerner.jwala.service.RemoteCommandReturnInfo;
+import com.cerner.jwala.service.binarydistribution.BinaryDistributionControlService;
+import com.cerner.jwala.service.binarydistribution.DistributionService;
 import com.cerner.jwala.service.exception.RemoteCommandExecutorServiceException;
 import com.cerner.jwala.service.host.HostService;
 import com.cerner.jwala.service.webserver.WebServerControlService;
@@ -41,11 +43,11 @@ public class WebServerControlServiceImpl implements WebServerControlService {
 
     @Value("${spring.messaging.topic.serverStates:/topic/server-states}")
     protected String topicServerStates;
-    @Autowired
-    private HostService hostService;
+
     @Autowired
     private WebServerCommandFactory webServerCommandFactory;
-
+    @Autowired
+    DistributionService distributionService;
     private static final String FORCED_STOPPED = "FORCED STOPPED";
     private static final String WEB_SERVER = "Web Server";
     private final WebServerService webServerService;
@@ -171,104 +173,28 @@ public class WebServerControlServiceImpl implements WebServerControlService {
     }
 
     @Override
-    public CommandOutput secureCopyFile(final String aWebServerName, final String sourcePath, final String destPath, String userId) throws CommandFailureException {
-
+    public void secureCopyFile(final String aWebServerName, final String sourcePath, final String destPath, String userId) throws CommandFailureException {
         final WebServer aWebServer = webServerService.getWebServer(aWebServerName);
         final String fileName = new File(destPath).getName();
         if (destPath.endsWith(fileName)) {
             historyFacadeService.write(getServerName(aWebServer), new ArrayList<>(aWebServer.getGroups()),
                     WindowsWebServerNetOperation.SCP.name() + " " + fileName, EventType.USER_ACTION_INFO, userId);
         }
-
-        // back up the original file first
-        final String host = aWebServer.getHost();
-        CommandOutput commandOutput = commandExecutor.executeRemoteCommand(
-                aWebServerName,
-                host,
-                WebServerControlOperation.CHECK_FILE_EXISTS,
-                new WindowsWebServerPlatformCommandProvider(),
-                destPath
-        );
-        if (commandOutput.getReturnCode().wasSuccessful()) {
+        if(distributionService.remoteFileCheck(aWebServer.getHost(),destPath)){
             LOGGER.info("Found the file {}", destPath);
-        } else {
-            final String parentDir;
-            if (destPath.startsWith("~")) {
-                parentDir = destPath.substring(0, destPath.lastIndexOf("/"));
-            } else {
-                parentDir = new File(destPath).getParentFile().getAbsolutePath().replaceAll("\\\\", "/");
-            }
-            commandOutput = commandExecutor.executeRemoteCommand(
-                    aWebServerName,
-                    host,
-                    WebServerControlOperation.CREATE_DIRECTORY,
-                    new WindowsWebServerPlatformCommandProvider(),
-                    parentDir
-            );
-            if (commandOutput.getReturnCode().wasSuccessful()) {
-                LOGGER.info("Successfully created parent directory {} on host {}", parentDir, host);
-            } else {
-                final String standardError = commandOutput.getStandardError().isEmpty() ? commandOutput.getStandardOutput() : commandOutput.getStandardError();
-                LOGGER.error("create command failed with error trying to create parent directory {} on {} :: ERROR: {}", parentDir, host, standardError);
-                throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, standardError.isEmpty() ? CommandOutputReturnCode.fromReturnCode(commandOutput.getReturnCode().getReturnCode()).getDesc() : standardError);
-            }
+            distributionService.backupFile(aWebServer.getHost(),destPath);
         }
-        commandOutput = commandExecutor.executeRemoteCommand(aWebServerName,
-                host,
-                WebServerControlOperation.CHECK_FILE_EXISTS,
-                new WindowsWebServerPlatformCommandProvider(),
-                destPath);
-        if (commandOutput.getReturnCode().wasSuccessful()) {
-            String currentDateSuffix = new SimpleDateFormat(".yyyyMMdd_HHmmss").format(new Date());
-            final String destPathBackup = destPath + currentDateSuffix;
-            commandOutput = commandExecutor.executeRemoteCommand(
-                    aWebServerName,
-                    host,
-                    WebServerControlOperation.BACK_UP,
-                    new WindowsWebServerPlatformCommandProvider(),
-                    destPath,
-                    destPathBackup);
-            if (!commandOutput.getReturnCode().wasSuccessful()) {
-                final String standardError = "Failed to back up the " + destPath + " for " + aWebServerName + ". Continuing with secure copy.";
-                LOGGER.error(standardError);
-                throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, standardError);
-            } else {
-                LOGGER.info("Successfully backed up " + destPath + " at " + host);
-            }
-        }
-
-        // run the scp command
-        return commandExecutor.executeRemoteCommand(
-                aWebServer.getName(),
-                host,
-                WebServerControlOperation.SCP,
-                new WindowsWebServerPlatformCommandProvider(),
-                sourcePath,
-                destPath);
+        distributionService.remoteSecureCopyFile(aWebServer.getHost(), sourcePath,destPath);
     }
 
     @Override
-    public CommandOutput createDirectory(WebServer webServer, String dirAbsolutePath) throws CommandFailureException {
-        return commandExecutor.executeRemoteCommand(
-                webServer.getName(),
-                webServer.getHost(),
-                WebServerControlOperation.CREATE_DIRECTORY,
-                new WindowsWebServerPlatformCommandProvider(),
-                dirAbsolutePath);
-
+    public void createDirectory(WebServer webServer, String dirAbsolutePath) throws CommandFailureException {
+        distributionService.remoteCreateDirectory(webServer.getHost(), dirAbsolutePath);
     }
 
     @Override
-    public CommandOutput changeFileMode(WebServer webServer, String fileMode, String targetDirPath, String targetFile) throws CommandFailureException {
-        return commandExecutor.executeRemoteCommand(
-                webServer.getName(),
-                webServer.getHost(),
-                WebServerControlOperation.CHANGE_FILE_MODE,
-                new WindowsWebServerPlatformCommandProvider(),
-                fileMode,
-                targetDirPath,
-                targetFile);
-
+    public void changeFileMode(WebServer webServer, String fileMode, String targetDirPath, String targetFile) throws CommandFailureException {
+        distributionService.changeFileMode(webServer.getHost(),fileMode, targetDirPath, targetFile);
     }
 
     @Override

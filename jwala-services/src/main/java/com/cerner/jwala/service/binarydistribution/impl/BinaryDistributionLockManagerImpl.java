@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
@@ -16,7 +17,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  */
 public class BinaryDistributionLockManagerImpl implements BinaryDistributionLockManager {
 
-    private final Map<String, ReentrantReadWriteLock> binariesWriteLocks = new HashMap<>();
+    private final Map<String, ReentrantReadWriteLock> binariesWriteLocks = new ConcurrentHashMap<>();
     private static final Logger LOGGER = LoggerFactory.getLogger(BinaryDistributionLockManagerImpl.class);
 
     @Override

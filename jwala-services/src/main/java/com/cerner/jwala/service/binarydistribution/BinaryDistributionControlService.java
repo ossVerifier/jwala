@@ -75,4 +75,12 @@ public interface BinaryDistributionControlService {
      * @throws CommandFailureException
      */
     CommandOutput getUName(final String hostname) throws CommandFailureException;
+
+    /**
+     *
+     * @param hostname Name of the host
+     * @param remotePath remote file of directory
+     * @throws CommandFailureException
+     */
+    CommandOutput backupFile(final String hostname, final String remotePath) throws CommandFailureException;
 }

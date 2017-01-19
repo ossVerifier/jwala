@@ -48,12 +48,9 @@ import org.springframework.context.annotation.Configuration;
 
 import javax.ws.rs.ext.MessageBodyWriter;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 @Configuration
 public class AemWebServiceConfiguration {
@@ -108,8 +105,6 @@ public class AemWebServiceConfiguration {
     @Autowired
     private BinaryDistributionService binaryDistributionService;
 
-    private final Map<String, ReentrantReadWriteLock> wsWriteLockMap = new HashMap<>();
-
     @Bean
     public Server getV1JaxResServer() {
         final JAXRSServerFactoryBean factory = new JAXRSServerFactoryBean();
@@ -122,7 +117,6 @@ public class AemWebServiceConfiguration {
     @Bean
     public List<Object> getV1ServiceBeans() {
         final List<Object> serviceBeans = new ArrayList<>();
-
         serviceBeans.add(getV1GroupServiceRest());
         serviceBeans.add(getV1JvmServiceRest());
         serviceBeans.add(getV1WebServerServiceRest());
@@ -172,7 +166,6 @@ public class AemWebServiceConfiguration {
         return new WebServerServiceRestImpl(webServerService,
                 webServerControlService,
                 webServerCommandService,
-                wsWriteLockMap,
                 resourceService,
                 groupService,
                 binaryDistributionService,
@@ -206,8 +199,6 @@ public class AemWebServiceConfiguration {
 
         providers.add(getV1FormUploadProvider());
         providers.add(getV1JsonProvider());
-
-        // TODO do we use these exception mappers anymore? Especially now that we use the RestServiceErrorHandler
         providers.add(getV1NotFoundExceptionMapper());
         providers.add(getV1BadRequestExceptionMapper());
         providers.add(getV1InternalErrorExceptionMapper());

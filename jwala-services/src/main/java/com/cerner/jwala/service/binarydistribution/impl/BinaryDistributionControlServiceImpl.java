@@ -15,6 +15,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.util.Date;
+
 /**
  * Created by Arvindo Kinny on 10/11/2016.
  */
@@ -34,6 +38,7 @@ public class BinaryDistributionControlServiceImpl implements BinaryDistributionC
     static String SECURE_COPY = "scp";
     static String TEST = "test -e";
     static String CHMOD = "chmod";
+    static String MOVE = "mv";
     public BinaryDistributionControlServiceImpl(RemoteCommandExecutor<BinaryDistributionControlOperation> remoteCommandExecutor) {
         this.remoteCommandExecutor = remoteCommandExecutor;
     }
@@ -89,7 +94,7 @@ public class BinaryDistributionControlServiceImpl implements BinaryDistributionC
 
     @Override
     public CommandOutput changeFileMode(String hostname, String mode, String targetDir, String target) throws CommandFailureException {
-        RemoteCommandReturnInfo remoteCommandReturnInfo = remoteCommandExecutorService.executeCommand(new RemoteExecCommand(getConnection(hostname),  new ExecCommand(CHMOD, mode, targetDir, target )));
+        RemoteCommandReturnInfo remoteCommandReturnInfo = remoteCommandExecutorService.executeCommand(new RemoteExecCommand(getConnection(hostname),  new ExecCommand(CHMOD, mode, targetDir+"/"+target )));
         CommandOutput commandOutput = new CommandOutput(new ExecReturnCode(remoteCommandReturnInfo.retCode),
                 remoteCommandReturnInfo.standardOuput, remoteCommandReturnInfo.errorOupout);
         return commandOutput;
@@ -98,6 +103,15 @@ public class BinaryDistributionControlServiceImpl implements BinaryDistributionC
     @Override
     public CommandOutput getUName(String hostname) throws CommandFailureException {
         RemoteCommandReturnInfo remoteCommandReturnInfo = remoteCommandExecutorService.executeCommand(new RemoteExecCommand(getConnection(hostname),  new ExecCommand("uname")));
+        CommandOutput commandOutput = new CommandOutput(new ExecReturnCode(remoteCommandReturnInfo.retCode),
+                remoteCommandReturnInfo.standardOuput, remoteCommandReturnInfo.errorOupout);
+        return commandOutput;
+    }
+
+    @Override
+    public CommandOutput backupFile(final String hostname, final String remotePath) throws CommandFailureException {
+        final String destPathBackup = remotePath + Instant.now();
+        RemoteCommandReturnInfo remoteCommandReturnInfo = remoteCommandExecutorService.executeCommand(new RemoteExecCommand(getConnection(hostname),  new ExecCommand(MOVE, remotePath, destPathBackup)));
         CommandOutput commandOutput = new CommandOutput(new ExecReturnCode(remoteCommandReturnInfo.retCode),
                 remoteCommandReturnInfo.standardOuput, remoteCommandReturnInfo.errorOupout);
         return commandOutput;

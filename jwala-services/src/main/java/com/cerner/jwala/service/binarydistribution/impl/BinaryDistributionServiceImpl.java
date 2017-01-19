@@ -5,6 +5,7 @@ import com.cerner.jwala.common.domain.model.resource.EntityType;
 import com.cerner.jwala.common.domain.model.ssh.SshConfiguration;
 import com.cerner.jwala.common.exception.ApplicationException;
 import com.cerner.jwala.common.exception.InternalErrorException;
+import com.cerner.jwala.common.exec.ExecCommand;
 import com.cerner.jwala.common.exec.RemoteSystemConnection;
 import com.cerner.jwala.common.properties.ApplicationProperties;
 import com.cerner.jwala.common.properties.PropertyKeys;
@@ -16,6 +17,11 @@ import com.cerner.jwala.service.binarydistribution.DistributionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import java.io.File;
+import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.util.Date;
 
 /**
  * Created by Arvindo Kinny on 10/11/2016.
@@ -82,7 +88,7 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService,
             if (binaryDistributionControlService.changeFileMode(hostname, mode, targetDir, target).getReturnCode().wasSuccessful()) {
                 LOGGER.info("change file mode " + mode + " at targetDir " + targetDir);
             } else {
-                String message = "Failed to change the file permissions in " + targetDir + "/" + UNZIPEXE;
+                String message = "Failed to change the file permissions in " + targetDir + "/" + target;
                 LOGGER.error(message);
                 throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, message);
             }
@@ -194,5 +200,10 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService,
         }
 
         LOGGER.info("End deploy unzip for {}", hostname);
+    }
+
+    @Override
+    public void backupFile(final String hostname, final String remoteFilePath){
+        binaryDistributionControlService.backupFile(hostname,remoteFilePath);
     }
 }

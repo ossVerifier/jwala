@@ -6,16 +6,12 @@ package com.cerner.jwala.control.command.common;
 
 
 import com.cerner.jwala.commandprocessor.impl.jsch.JschScpCommandProcessorImpl;
-import com.cerner.jwala.common.domain.model.app.Application;
-import com.cerner.jwala.common.domain.model.app.ApplicationControlOperation;
-import com.cerner.jwala.common.domain.model.ssh.SshConfiguration;
 import com.cerner.jwala.common.exception.ApplicationException;
 import com.cerner.jwala.common.exec.*;
 import com.cerner.jwala.control.configuration.AemSshConfig;
 import com.cerner.jwala.service.RemoteCommandExecutorService;
 import com.cerner.jwala.service.RemoteCommandReturnInfo;
 import com.cerner.jwala.service.exception.ApplicationServiceException;
-import org.apache.commons.lang.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,7 +51,6 @@ public class ShellCommandFactory {
         throw new ApplicationServiceException("ShellCommand not found");
     }
 
-   /* Factory pattern */
     @PostConstruct
     public void initApplicationCommands() {
         commands = new HashMap<>();
