@@ -95,6 +95,7 @@ public class JschServiceImplTest {
         when(mockChannelExec.getExitStatus()).thenReturn(0);
         when(Config.mockJsch.getSession(anyString(), anyString(), anyInt())).thenReturn(mockSession);
         when(mockSession.openChannel(eq(ChannelType.EXEC.getChannelType()))).thenReturn(mockChannelExec);
+        when(mockChannelExec.isClosed()).thenReturn(true);
         jschService.runExecCommand(mockRemoteSystemConnection, "scp", 0);
         verify(mockChannelExec).setCommand(any(byte[].class));
         verify(mockChannelExec).connect(anyInt());
@@ -107,6 +108,7 @@ public class JschServiceImplTest {
         when(mockChannelExec.getExitStatus()).thenReturn(1);
         when(Config.mockJsch.getSession(anyString(), anyString(), anyInt())).thenReturn(mockSession);
         when(mockSession.openChannel(eq(ChannelType.EXEC.getChannelType()))).thenReturn(mockChannelExec);
+        when(mockChannelExec.isClosed()).thenReturn(true);
         jschService.runExecCommand(mockRemoteSystemConnection, "scp", 0);
         verify(mockChannelExec).setCommand(any(byte[].class));
         verify(mockChannelExec).connect(anyInt());
