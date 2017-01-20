@@ -35,7 +35,7 @@ public class JschServiceImpl implements JschService {
     private static final String EXIT_CODE_START_MARKER = "EXIT_CODE";
     private static final String EXIT_CODE_END_MARKER = "***";
     private static final int BYTE_CHUNK_SIZE = 1024;
-    private static final int CHANNEL_EXEC_CLOSE_TIMEOUT = 5000;
+    private static final int CHANNEL_EXEC_CLOSE_TIMEOUT = 300000;
 
     @Autowired
     private JSch jsch;
