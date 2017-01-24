@@ -118,7 +118,7 @@ public class JvmStateServiceImplTest {
         final Jvm mockJvm = mock(Jvm.class);
         final CurrentState<Jvm, JvmState> mockCurrentState = mock(CurrentState.class);
         when(mockCurrentState.getState()).thenReturn(JvmState.JVM_STOPPED);
-        when(mockCurrentState.getMessage()).thenReturn("some message...");
+        when(mockCurrentState.getMessage()).thenReturn(StringUtils.EMPTY);
         when(mockJvm.getId()).thenReturn(id);
         when(mockInMemoryStateManagerService.get(eq(id))).thenReturn(mockCurrentState);
         when(mockInMemoryStateManagerService.containsKey(eq(id))).thenReturn(true);

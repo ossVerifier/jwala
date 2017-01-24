@@ -24,7 +24,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Mockito.*;
@@ -48,11 +48,7 @@ public class JschServiceImplTest {
     @Mock
     private ChannelExec mockChannelExec;
 
-    @Mock
-    private InputStream mockIn;
-
-    @Mock
-    private InputStream mockInErr;
+    private InputStream in;
 
     @Mock
     private OutputStream mockOut;
@@ -66,6 +62,7 @@ public class JschServiceImplTest {
     @Before
     public void setup() {
         initMocks(this);
+        in = new ByteArrayInputStream("test".getBytes());
     }
 
     @Test
@@ -82,11 +79,10 @@ public class JschServiceImplTest {
 
     @Test(expected = JschServiceException.class)
     public void testRunCommandUsingChannelShellAndTimesOut() throws Exception {
-        when(mockChannelShell.getInputStream()).thenReturn(mockIn);
+        when(mockChannelShell.getInputStream()).thenReturn(new ByteArrayInputStream("output without eof".getBytes()));
         when(mockChannelShell.getOutputStream()).thenReturn(mockOut);
         when(mockChannelShell.isConnected()).thenReturn(true);
         when(Config.getMockPool().borrowObject(any(ChannelSessionKey.class))).thenReturn(mockChannelShell);
-        when(mockIn.available()).thenReturn(0);
         final RemoteCommandReturnInfo result = jschService.runShellCommand(mockRemoteSystemConnection, "scp", 500);
         verify(mockOut, times(6)).write(any(byte[].class));
         verify(mockOut).flush();
@@ -95,12 +91,11 @@ public class JschServiceImplTest {
 
     @Test
     public void testRunCommandUsingChannelExec() throws IOException, JSchException {
-        when(mockChannelExec.getInputStream()).thenReturn(mockIn);
+        when(mockChannelExec.getInputStream()).thenReturn(in);
         when(mockChannelExec.getExitStatus()).thenReturn(0);
-        when(mockIn.available()).thenReturn(1);
-        when(mockIn.read()).thenReturn(0xfd);
         when(Config.mockJsch.getSession(anyString(), anyString(), anyInt())).thenReturn(mockSession);
         when(mockSession.openChannel(eq(ChannelType.EXEC.getChannelType()))).thenReturn(mockChannelExec);
+        when(mockChannelExec.isClosed()).thenReturn(true);
         jschService.runExecCommand(mockRemoteSystemConnection, "scp", 0);
         verify(mockChannelExec).setCommand(any(byte[].class));
         verify(mockChannelExec).connect(anyInt());
@@ -108,15 +103,12 @@ public class JschServiceImplTest {
 
     @Test
     public void testRunCommandUsingChannelExecWithExitStatusNotZero() throws IOException, JSchException {
-        when(mockChannelExec.getInputStream()).thenReturn(mockIn);
-        when(mockChannelExec.getErrStream()).thenReturn(mockInErr);
+        when(mockChannelExec.getInputStream()).thenReturn(in);
+        when(mockChannelExec.getErrStream()).thenReturn(new ByteArrayInputStream("invalid command".getBytes()));
         when(mockChannelExec.getExitStatus()).thenReturn(1);
-        when(mockIn.available()).thenReturn(1);
-        when(mockIn.read()).thenReturn(0xfd);
-        when(mockInErr.available()).thenReturn(1);
-        when(mockInErr.read()).thenReturn(0xfd);
         when(Config.mockJsch.getSession(anyString(), anyString(), anyInt())).thenReturn(mockSession);
         when(mockSession.openChannel(eq(ChannelType.EXEC.getChannelType()))).thenReturn(mockChannelExec);
+        when(mockChannelExec.isClosed()).thenReturn(true);
         jschService.runExecCommand(mockRemoteSystemConnection, "scp", 0);
         verify(mockChannelExec).setCommand(any(byte[].class));
         verify(mockChannelExec).connect(anyInt());

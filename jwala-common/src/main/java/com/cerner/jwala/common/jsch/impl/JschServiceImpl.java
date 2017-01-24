@@ -10,7 +10,6 @@ import com.cerner.jwala.common.jsch.JschServiceException;
 import com.cerner.jwala.common.jsch.RemoteCommandReturnInfo;
 import com.cerner.jwala.exception.ExitCodeNotAvailableException;
 import com.jcraft.jsch.*;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.pool2.impl.GenericKeyedObjectPool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,6 +35,7 @@ public class JschServiceImpl implements JschService {
     private static final String EXIT_CODE_START_MARKER = "EXIT_CODE";
     private static final String EXIT_CODE_END_MARKER = "***";
     private static final int BYTE_CHUNK_SIZE = 1024;
+    private static final int CHANNEL_EXEC_CLOSE_TIMEOUT = 300000;
 
     @Autowired
     private JSch jsch;
@@ -143,13 +143,25 @@ public class JschServiceImpl implements JschService {
         channelExec.connect(CHANNEL_CONNECT_TIMEOUT);
         LOGGER.debug("channel {} connected!", channelExec.getId());
 
-        LOGGER.debug("Channel exec exit status = {}", channelExec.getExitStatus());
-
         final String output = readRemoteOutput(remoteOutput, null, timeout);
         LOGGER.debug("remote output = {}", output);
 
         String errorOutput = null;
-        if (channelExec.getExitStatus() != 0) {
+
+        // wait for the channel to close before checking the exit status
+        final long startTime = System.currentTimeMillis();
+        while (!channelExec.isClosed()) {
+            if ((System.currentTimeMillis() - startTime) > CHANNEL_EXEC_CLOSE_TIMEOUT) {
+                errorOutput = MessageFormat.format("Wait for channel to close timeout! Timeout = {0} ms",
+                        CHANNEL_EXEC_CLOSE_TIMEOUT);
+                LOGGER.error(errorOutput);
+                break;
+            }
+        }
+
+        LOGGER.debug("Channel exec exit status = {}", channelExec.getExitStatus());
+
+        if (channelExec.getExitStatus() != 0 && channelExec.getExitStatus() != -1) {
             errorOutput = readRemoteOutput(remoteError, null, timeout);
             LOGGER.debug("remote error output = {}", errorOutput);
         }

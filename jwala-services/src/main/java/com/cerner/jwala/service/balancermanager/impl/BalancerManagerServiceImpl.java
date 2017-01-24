@@ -22,12 +22,11 @@ import org.apache.commons.io.IOUtils;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.message.BasicNameValuePair;
+import org.apache.sis.internal.jdk7.StandardCharsets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.*;
 
 public class BalancerManagerServiceImpl implements BalancerManagerService {
@@ -353,13 +352,11 @@ public class BalancerManagerServiceImpl implements BalancerManagerService {
     public String getBalancerManagerResponse(final String statusUri) {
         LOGGER.info("Entering getBalancerManagerResponse: " + statusUri);
         try {
-            return IOUtils.toString(clientFactoryHelper.requestGet(new URI(statusUri)).getBody(), "UTF-8");
+            return IOUtils.toString(clientFactoryHelper.getHttpsURLConnection(statusUri).getInputStream(),
+                                    StandardCharsets.UTF_8);
         } catch (IOException e) {
             LOGGER.error("io exception", e);
             throw new ApplicationException("Failed to get the response for Balancer Manager ", e);
-        } catch (URISyntaxException e) {
-            LOGGER.error("uri syntax exception", e);
-            throw new ApplicationException("Failed to cannot convert this path to URI ", e);
         }
     }
 

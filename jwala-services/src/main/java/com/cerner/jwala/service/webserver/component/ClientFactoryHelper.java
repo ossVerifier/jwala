@@ -8,8 +8,10 @@ import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
 
+import javax.net.ssl.HttpsURLConnection;
 import java.io.IOException;
 import java.net.URI;
+import java.net.URL;
 
 @Service
 public class ClientFactoryHelper {
@@ -21,6 +23,11 @@ public class ClientFactoryHelper {
     public ClientHttpResponse requestGet(URI statusUri) throws IOException {
         ClientHttpRequest request = httpClientFactory.createRequest(statusUri, HttpMethod.GET);
         return request.execute();
+    }
+
+    public HttpsURLConnection getHttpsURLConnection(final String urlStr) throws IOException {
+        final URL url = new URL(urlStr);
+        return (HttpsURLConnection) url.openConnection();
     }
 
 }

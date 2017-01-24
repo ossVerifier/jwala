@@ -756,7 +756,8 @@ public class ResourceServiceImpl implements ResourceService {
             LOGGER.info("Successfully created the parent dir {} on host {}", parentDir, hostName);
         } else {
             final String stdErr = commandOutput.getStandardError().isEmpty() ? commandOutput.getStandardOutput() : commandOutput.getStandardError();
-            LOGGER.error("Error in creating parent dir {} on host {}:: ERROR : {}", parentDir, hostName, stdErr);
+            LOGGER.error("Error in creating dir {} on host {}! Details: Error Code = {}, Error Msg = {}", parentDir,
+                    hostName, commandOutput.getReturnCode(), stdErr);
             throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, stdErr);
         }
 

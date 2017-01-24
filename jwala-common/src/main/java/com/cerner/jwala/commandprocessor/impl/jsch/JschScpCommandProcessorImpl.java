@@ -11,9 +11,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 public class JschScpCommandProcessorImpl implements CommandProcessor {
+    private static final int TIMEOUT = 300000;
     private boolean checkAckOk;
     private static final Logger LOGGER = LoggerFactory.getLogger(JschScpCommandProcessorImpl.class);
 
@@ -36,23 +38,23 @@ public class JschScpCommandProcessorImpl implements CommandProcessor {
     @Override
     public void processCommand() throws RemoteCommandFailureException {
         checkAckOk = false;
-        FileInputStream fis = null;
-        List<String> commandFragments = remoteCommand.getCommand().getCommandFragments();
+
+        final List<String> commandFragments = remoteCommand.getCommand().getCommandFragments();
         Session session = null;
         Channel channel = null;
 
-
         try {
             final RemoteSystemConnection remoteSystemConnection = remoteCommand.getRemoteSystemConnection();
-            session = prepareSession(remoteSystemConnection);
-            session.connect();
 
             LOGGER.debug("scp remote command {} source:{} destination:{}", remoteSystemConnection, commandFragments.get(1), commandFragments.get(2));
 
-            String target = commandFragments.get(2).replace("\\", "/");
+            session = prepareSession(remoteSystemConnection);
+            session.connect();
+
+            final String target = commandFragments.get(2).replace("\\", "/");
 
             // exec 'scp -t rfile' remotely
-            String command = "scp -t " + target;
+            final String command = "scp -t " + target;
             channel = session.openChannel("exec");
             final ChannelExec channelExec = (ChannelExec) channel;
             channelExec.setCommand(command);
@@ -62,76 +64,100 @@ public class JschScpCommandProcessorImpl implements CommandProcessor {
             remoteOutput = channelExec.getInputStream();
 
             channelExec.connect();
-
+            LOGGER.debug(">>>>>> Channel connected...");
             if (checkAck(remoteOutput) != 0) {
                 throw new RemoteCommandFailureException(remoteCommand, new Throwable("Failed to connect to the remote host during secure copy"));
             }
 
-            final String lfilePath = commandFragments.get(1);
-            File lfile = new File(lfilePath);
-
-            // send "C0644 filesize filename", where filename should not include '/'
-            long filesize = lfile.length();
-            command = "C0644 " + filesize + " ";
-            if (lfilePath.lastIndexOf('/') > 0) {
-                command += lfilePath.substring(lfilePath.lastIndexOf('/') + 1);
-            } else {
-                command += lfilePath;
-            }
-            command += "\n";
-            localInput.write(command.getBytes());
-            localInput.flush();
-            if (checkAck(remoteOutput) != 0) {
-                throw new RemoteCommandFailureException(remoteCommand, new Throwable("Failed to initialize secure copy"));
-            }
-
-            // send content of lfile
-            fis = new FileInputStream(lfilePath);
-            byte[] buf = new byte[1024];
-            while (true) {
-                int len = fis.read(buf, 0, buf.length);
-                if (len <= 0) {
-                    break;
-                }
-                localInput.write(buf, 0, len); //out.flush();
-            }
-            fis.close();
-            fis = null;
-            // send '\0'
-            buf[0] = 0;
-            localInput.write(buf, 0, 1);
-            localInput.flush();
-            if (checkAck(remoteOutput) != 0) {
-                throw new RemoteCommandFailureException(remoteCommand, new Throwable("Failed to finalize secure copy"));
-            } else {
-                // Jsch only sets the channel exit status for certain types of channels - scp is NOT one of them
-                // checkAck performs a check of the exit status manually so if the remoteOutput is 0 then scp succeeded even though channel.getExitStatus() still returns -1
-                checkAckOk = true;
-            }
+            final String filePath = commandFragments.get(1);
+            sendFileInfo(filePath);
+            sendFileContent(filePath);
         } catch (Exception e) {
             LOGGER.error("Failed to copy file with error: {}", e.getMessage(), e);
             throw new RemoteCommandFailureException(remoteCommand, e);
         } finally {
-            if (fis != null) {
-                try {
-                    fis.close();
-                } catch (IOException e) {
-                    LOGGER.error(e.getMessage(), e);
-                }
-            }
-            if (localInput != null) {
-                try {
-                    localInput.close();
-                } catch (IOException e) {
-                    LOGGER.error(e.getMessage(), e);
-                }
-            }
+            closeLocalInput();
+
             if (channel != null && channel.isConnected()) {
                 channel.disconnect();
             }
+
             if (session != null && session.isConnected()) {
                 session.disconnect();
             }
+        }
+    }
+
+    /**
+     * Send info about the file
+     * @param filePath path and filename
+     * @throws IOException
+     */
+    private void sendFileInfo(final String filePath) throws IOException {
+        LOGGER.debug(">>>>>> Sending file INFO of {}", filePath);
+        String command;
+        File file = new File(filePath);
+
+        // send "C0644 filesize filename", where filename should not include '/'
+        long fileSize = file.length();
+        command = "C0644 " + fileSize + " ";
+        if (filePath.lastIndexOf('/') > 0) {
+            command += filePath.substring(filePath.lastIndexOf('/') + 1);
+        } else {
+            command += filePath;
+        }
+        command += "\n";
+        localInput.write(command.getBytes());
+        localInput.flush();
+
+        LOGGER.debug(">>>>>> Finished sending file INFO of {}", filePath);
+
+        if (checkAck(remoteOutput) != 0) {
+            throw new RemoteCommandFailureException(remoteCommand, new Throwable("Failed to initialize secure copy"));
+        }
+    }
+
+    /**
+     * Close localInput class variable
+     */
+    private void closeLocalInput() {
+        if (localInput != null) {
+            try {
+                localInput.close();
+            } catch (final IOException e) {
+                LOGGER.error(e.getMessage(), e);
+            }
+        }
+    }
+
+    /**
+     * Send the file contents
+     * @param filePath the path and filename
+     * @throws IOException
+     */
+    private void sendFileContent(final String filePath) throws IOException {
+        byte[] buf = new byte[1024];
+
+        LOGGER.debug(">>>>>> Sending file CONTENTS of {}", filePath);
+
+        try (FileInputStream fis = new FileInputStream(filePath)) {
+            while (fis.available() > 0) {
+                final int size = fis.read(buf);
+                localInput.write(buf, 0, size);
+            }
+        }
+
+        localInput.write(0);
+        localInput.flush();
+
+        LOGGER.debug(">>>>>> Done sending file CONTENTS of {}", filePath);
+
+        if (checkAck(remoteOutput) != 0) {
+            throw new RemoteCommandFailureException(remoteCommand, new Throwable("Failed to finalize secure copy"));
+        } else {
+            // Jsch only sets the channel exit status for certain types of channels - scp is NOT one of them
+            // checkAck performs a check of the exit status manually so if the remoteOutput is 0 then scp succeeded even though channel.getExitStatus() still returns -1
+            checkAckOk = true;
         }
     }
 
@@ -145,37 +171,87 @@ public class JschScpCommandProcessorImpl implements CommandProcessor {
         return null;
     }
 
-    private static int checkAck(InputStream in) throws IOException {
-        int b = in.read();
-        // b may be 0 for success,
-        //          1 for error,
-        //          2 for fatal error,
-        //          -1
-        if (b == 0) {
-            return b;
+    /**
+     * Check JSCH acknowledgement response
+     * @param in the remote output input stream
+     * @return 0 = success, 1 = error, 2 fatal error
+     * @throws IOException
+     */
+    private static int checkAck(final InputStream in) throws IOException {
+        final int ack = readAck(in, TIMEOUT);
+        if (ack == 0 || ack == -1) {
+            return ack;
+        } else if (ack == 1 || ack == 2) {
+            final String msg = readRemoteOutput(new BufferedInputStream(in), TIMEOUT);
+            LOGGER.debug(">>>>>> JSCH SCP checkAck Remote Output: {}", msg);
+            if (ack == 1) {
+                throw new IOException("ERROR in SCP: " + msg);
+            }
+            throw new IOException("FATAL ERROR in SCP: " + msg);
         }
-        if (b == -1) {
-            return b;
+        return ack;
+    }
+
+    /**
+     * Reads the remote output, assumes that input stream will have '\n' to indicate end of stream. If it does not
+     * then read input stream will terminate on timeout.
+     * @param in a buffered inputstream
+     * @param timeout timeout in ms
+     * @return output string from remote JSCH
+     * @throws IOException
+     */
+    private static String readRemoteOutput(final BufferedInputStream in, final int timeout) throws IOException {
+        final byte [] bytesRead = new byte [1024];
+        final ByteArrayOutputStream out = new ByteArrayOutputStream();
+
+        final long startTime = System.currentTimeMillis();
+        while (true) {
+            if (in.available() > 0) {
+                final int size = in.read(bytesRead);
+                if (size > 0) {
+                    out.write(bytesRead, 0, size);
+                }
+
+                if (bytesRead[size - 1] == '\n') {
+                    break;
+                }
+            }
+
+            if ((System.currentTimeMillis() - startTime) > timeout) {
+                LOGGER.error("Timeout reading remote output!!!");
+                break;
+            }
         }
 
-        if (b == 1 || b == 2) {
-            StringBuffer sb = new StringBuffer();
-            int c;
-            do {
-                c = in.read();
-                sb.append((char) c);
-            } while (c != '\n');
-            if (b == 1) { // error
-                throw new IOException("ERROR in SCP: " + sb.toString());
+        return new String(out.toByteArray(), StandardCharsets.UTF_8);
+    }
+
+    /**
+     * Read JSCH connection ack
+     * @param in the inputstream
+     * @param timeout the timeout
+     * @return the ack
+     * @throws IOException
+     */
+    private static int readAck(final InputStream in, final int timeout) throws IOException {
+        int ack;
+        final long startTime = System.currentTimeMillis();
+        LOGGER.debug(">>>>>> Reading ack...");
+        do {
+            if (in.available() > 0) {
+                ack = in.read();
+                LOGGER.debug(">>>>>> Ack = {}", ack);
+                return ack;
             }
-            throw new IOException("FATAL ERROR in SCP: " + sb.toString());
-        }
-        return b;
+        } while ((System.currentTimeMillis() - startTime) < timeout);
+        final String errMsg = "Reading ack timeout!!!";
+        LOGGER.error(errMsg);
+        throw new RuntimeException("Timeout!");
     }
 
     @Override
     public ExecReturnCode getExecutionReturnCode() {
-        // if checkAck returned 0 then return success (see comment where checkAckOk set to true)
+        // if checkAc k returned 0 then return success (see comment where checkAckOk set to true)
         int returnCode = checkAckOk ? 0 : 1;
         return new ExecReturnCode(returnCode);
     }
@@ -188,7 +264,7 @@ public class JschScpCommandProcessorImpl implements CommandProcessor {
     /**
      * Prepare the session by setting session properties.
      *
-     * @param remoteSystemConnection
+     * @param remoteSystemConnection see {@link RemoteSystemConnection}
      * @return {@link Session}
      * @throws JSchException
      */
