@@ -22,7 +22,7 @@ import java.text.MessageFormat;
 
 /**
  * Implements {@link JschService}
- *
+ * <p>
  * Created by JC043760 on 12/26/2016
  */
 @Service
@@ -95,9 +95,10 @@ public class JschServiceImpl implements JschService {
 
     /**
      * Runs a command in a shell
-     * @param command the command to run
+     *
+     * @param command      the command to run
      * @param channelShell the channel where the command is sent for execution
-     * @param timeout the length of time in ms in which the method waits for a available byte(s) as a result of command
+     * @param timeout      the length of time in ms in which the method waits for a available byte(s) as a result of command
      * @return result of the command
      * @throws IOException
      */
@@ -127,9 +128,10 @@ public class JschServiceImpl implements JschService {
     /**
      * Runs a command via jsch's exec channel.
      * Unlike the shell channel, an exec channel closes after an execution of a command.
-     * @param command the command to run
+     *
+     * @param command     the command to run
      * @param channelExec the channel where the command is sent for execution
-     * @param timeout the length of time in ms in which the method waits for a available byte(s) as a result of command
+     * @param timeout     the length of time in ms in which the method waits for a available byte(s) as a result of command
      * @return result of the command
      */
     private RemoteCommandReturnInfo runExecCommand(final String command, final ChannelExec channelExec, final long timeout) throws IOException, JSchException {
@@ -143,7 +145,7 @@ public class JschServiceImpl implements JschService {
         channelExec.connect(CHANNEL_CONNECT_TIMEOUT);
         LOGGER.debug("channel {} connected!", channelExec.getId());
 
-        final String output = readRemoteOutput(remoteOutput, null, timeout);
+        final String output = readExecRemoteOutput(channelExec);
         LOGGER.debug("remote output = {}", output);
 
         String errorOutput = null;
@@ -170,18 +172,52 @@ public class JschServiceImpl implements JschService {
     }
 
     /**
+     * Read the remote output for the exec channel. This is the code provided on the jcraft site and does not rely
+     * on a timeout.
+     * @param channelExec the exec channel
+     * @return the output from the channel
+     * @throws IOException for any issues encoutered when retrieving the input stream from the channel
+     */
+    private String readExecRemoteOutput(ChannelExec channelExec) throws IOException {
+        InputStream in = channelExec.getInputStream();
+        StringBuilder outputBuilder = new StringBuilder();
+
+        byte[] tmp = new byte[BYTE_CHUNK_SIZE];
+        while (true) {
+            while (in.available() > 0) {
+                int i = in.read(tmp, 0, BYTE_CHUNK_SIZE);
+                if (i < 0) break;
+                outputBuilder.append(new String(tmp, 0, i, StandardCharsets.UTF_8));
+            }
+            if (channelExec.isClosed()) {
+                if (in.available() > 0) continue;
+                outputBuilder.append("exit-status: ");
+                outputBuilder.append(channelExec.getExitStatus());
+                break;
+            }
+            try {
+                Thread.sleep(1000);
+            } catch (Exception ee) {
+                LOGGER.error("Interrupted sleep", ee);
+            }
+        }
+        return outputBuilder.toString();
+    }
+
+    /**
      * Reads data streamed from a remote connection
-     * @param remoteOutput the inputstream where the remote connection will stream data to
+     *
+     * @param remoteOutput  the inputstream where the remote connection will stream data to
      * @param dataEndMarker a marker which tells the method to stop reading from the inputstream. If this is null
-     *            then the method will try to read data from the input stream until read timeout is reached.
-     * @param timeout the length of time in which to wait for incoming data from the stream
+     *                      then the method will try to read data from the input stream until read timeout is reached.
+     * @param timeout       the length of time in which to wait for incoming data from the stream
      * @return the data streamed from the remote connection
      * @throws IOException
      */
     private String readRemoteOutput(final InputStream remoteOutput, final Character dataEndMarker, final long timeout)
             throws IOException {
         final BufferedInputStream buffIn = new BufferedInputStream(remoteOutput);
-        final byte [] bytes = new byte[BYTE_CHUNK_SIZE];
+        final byte[] bytes = new byte[BYTE_CHUNK_SIZE];
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
         String result;
         long startTime = System.currentTimeMillis();
@@ -219,7 +255,7 @@ public class JschServiceImpl implements JschService {
      * Parse the return code from the output string.
      *
      * @param outputStr the output string
-     * @param command the command string
+     * @param command   the command string
      * @return {@link ExecReturnCode}
      */
     private int parseReturnCode(final String outputStr, final String command) {
@@ -239,6 +275,7 @@ public class JschServiceImpl implements JschService {
 
     /**
      * Get a {@link ChannelShell}
+     *
      * @param channelSessionKey the session key that identifies the channel
      * @return {@link ChannelShell}
      * @throws Exception thrown by borrowObject and invalidateObject
