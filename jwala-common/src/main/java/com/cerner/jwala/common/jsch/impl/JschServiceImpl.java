@@ -196,9 +196,9 @@ public class JschServiceImpl implements JschService {
                 break;
             }
             try {
-                Thread.sleep(1000);
+                Thread.sleep(250);
             } catch (Exception ee) {
-                LOGGER.error("Interrupted sleep", ee);
+                LOGGER.error("Interrupted sleep while reading jsch exec remote output", ee);
             }
         }
         return outputBuilder.toString();
