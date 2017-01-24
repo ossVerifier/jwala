@@ -110,7 +110,7 @@ public class BinaryDistributionControlServiceImpl implements BinaryDistributionC
 
     @Override
     public CommandOutput backupFile(final String hostname, final String remotePath) throws CommandFailureException {
-        final String destPathBackup = remotePath + Instant.now();
+        final String destPathBackup = remotePath + "." +Instant.now();
         RemoteCommandReturnInfo remoteCommandReturnInfo = remoteCommandExecutorService.executeCommand(new RemoteExecCommand(getConnection(hostname),  new ExecCommand(MOVE, remotePath, destPathBackup)));
         CommandOutput commandOutput = new CommandOutput(new ExecReturnCode(remoteCommandReturnInfo.retCode),
                 remoteCommandReturnInfo.standardOuput, remoteCommandReturnInfo.errorOupout);
@@ -131,6 +131,12 @@ public class BinaryDistributionControlServiceImpl implements BinaryDistributionC
         return new RemoteSystemConnection(sshConfig.getUserName(), sshConfig.getEncryptedPassword(), host, sshConfig.getPort());
     }
 
+    /**
+     * Determine to use unzip or tar
+     * @param zipFileName
+     * @param destination
+     * @return
+     */
     private String getUnzipCommand(String zipFileName, String destination){
             if(zipFileName.indexOf(".zip")>-1){
             return "~/.jwala/unzip.exe + \" -q -o \" + aParams[1] + \" -d \" + aParams[2] + \" -x \" + aParams[3]";

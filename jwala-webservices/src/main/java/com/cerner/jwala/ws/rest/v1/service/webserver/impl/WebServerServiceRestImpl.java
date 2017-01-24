@@ -56,16 +56,18 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
     public static final String PATHS_GENERATED_RESOURCE_DIR = "paths.generated.resource.dir";
     private static final String COMMANDS_SCRIPTS_PATH = ApplicationProperties.get("commands.scripts-path");
     private static final String HTTPD_CONF = "httpd.conf";
+    private static final Long DEFAULT_WAIT_TIMEOUT = 30000L;
+
     @Autowired
     BinaryDistributionLockManager binaryDistributionLockManager;
     private final WebServerService webServerService;
     private final WebServerControlService webServerControlService;
     private final WebServerCommandService webServerCommandService;
-    private ResourceService resourceService;
-    private GroupService groupService;
-    private HistoryFacadeService historyFacadeService;
+    private final ResourceService resourceService;
+    private final GroupService groupService;
+    private final HistoryFacadeService historyFacadeService;
     private final BinaryDistributionService binaryDistributionService;
-    private static final Long DEFAULT_WAIT_TIMEOUT = 30000L;
+
 
     public WebServerServiceRestImpl(final WebServerService theWebServerService,
                                     final WebServerControlService theWebServerControlService,

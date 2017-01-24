@@ -14,6 +14,7 @@ import com.cerner.jwala.common.domain.model.user.User;
 import com.cerner.jwala.common.exception.InternalErrorException;
 import com.cerner.jwala.common.exec.CommandOutput;
 import com.cerner.jwala.common.properties.ApplicationProperties;
+import com.cerner.jwala.common.properties.PropertyKeys;
 import com.cerner.jwala.common.request.app.CreateApplicationRequest;
 import com.cerner.jwala.common.request.app.UpdateApplicationRequest;
 import com.cerner.jwala.common.request.app.UploadAppTemplateRequest;
@@ -29,6 +30,7 @@ import com.cerner.jwala.persistence.service.ApplicationPersistenceService;
 import com.cerner.jwala.persistence.service.JvmPersistenceService;
 import com.cerner.jwala.service.HistoryFacadeService;
 import com.cerner.jwala.service.app.ApplicationService;
+import com.cerner.jwala.service.binarydistribution.BinaryDistributionLockManager;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionService;
 import com.cerner.jwala.service.exception.ApplicationServiceException;
 import com.cerner.jwala.service.group.GroupService;
@@ -55,9 +57,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class ApplicationServiceImpl implements ApplicationService {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ApplicationServiceImpl.class);
-    private final ExecutorService executorService;
-    final String JWALA_SCRIPTS_PATH = ApplicationProperties.get("remote.commands.user-scripts");
+    private static final String UNZIP_EXE = "unzip.exe";
 
     @Autowired
     private ApplicationPersistenceService applicationPersistenceService;
@@ -65,19 +65,22 @@ public class ApplicationServiceImpl implements ApplicationService {
     @Autowired
     private JvmPersistenceService jvmPersistenceService;
 
-    private final ResourceService resourceService;
+    @Autowired
+    private BinaryDistributionLockManager lockManager;
 
-    private Map<String, ReentrantReadWriteLock> writeLock = new HashMap<>();
+    private static final Logger LOGGER = LoggerFactory.getLogger(ApplicationServiceImpl.class);
+
+    private final ExecutorService executorService;
+
+    private final ResourceService resourceService;
 
     private final RemoteCommandExecutorImpl remoteCommandExecutor;
 
     private final BinaryDistributionService binaryDistributionService;
 
-    private GroupService groupService;
+    private final GroupService groupService;
 
     private final HistoryFacadeService historyFacadeService;
-
-    private static final String UNZIP_EXE = "unzip.exe";
 
     public ApplicationServiceImpl(final ApplicationPersistenceService applicationPersistenceService,
                                   final JvmPersistenceService jvmPersistenceService,
@@ -172,10 +175,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         key.append(groupName).append(jvmName).append(appName).append(resourceTemplateName);
         try {
             // only one at a time
-            if (!writeLock.containsKey(key.toString())) {
-                writeLock.put(key.toString(), new ReentrantReadWriteLock());
-            }
-            writeLock.get(key.toString()).writeLock().lock();
+            lockManager.writeLock(key.toString());
             ResourceIdentifier resourceIdentifier = new ResourceIdentifier.Builder()
                     .setResourceName(resourceTemplateName)
                     .setGroupName(groupName)
@@ -194,7 +194,7 @@ public class ApplicationServiceImpl implements ApplicationService {
             LOGGER.error("Fail to generate the resource file {}", resourceTemplateName, e);
             throw new DeployApplicationConfException(e);
         } finally {
-            writeLock.get(key.toString()).writeLock().unlock();
+            lockManager.writeLock(key.toString());
         }
     }
 
@@ -334,19 +334,19 @@ public class ApplicationServiceImpl implements ApplicationService {
                 if (application.isUnpackWar()) {
                     final String warName = application.getWarName();
                     LOGGER.info("Unpacking war {} on host {}", warName, host);
-
+                    String jwalaScriptDir = ApplicationProperties.getRequired(PropertyKeys.REMOTE_SCRIPT_DIR);
                     // create the .jwala directory as the destination for the unpack-war script
-                    commandOutput = executeCreateDirectoryCommand(null, host, JWALA_SCRIPTS_PATH);
+                    commandOutput = executeCreateDirectoryCommand(null, host, jwalaScriptDir);
                     if (commandOutput.getReturnCode().wasSuccessful()) {
-                        LOGGER.info("Successfully created the parent dir {} on host", JWALA_SCRIPTS_PATH, host);
+                        LOGGER.info("Successfully created the parent dir {} on host", jwalaScriptDir, host);
                     } else {
                         final String standardError = commandOutput.getStandardError().isEmpty() ? commandOutput.getStandardOutput() : commandOutput.getStandardError();
-                        LOGGER.error("Error in creating parent dir {} on host {}:: ERROR : {}", JWALA_SCRIPTS_PATH, host, standardError);
+                        LOGGER.error("Error in creating parent dir {} on host {}:: ERROR : {}", jwalaScriptDir, host, standardError);
                         throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, standardError);
                     }
 
                     final String unpackWarScriptPath = ApplicationProperties.get("commands.scripts-path") + "/" + AemControl.Properties.UNPACK_BINARY_SCRIPT_NAME;
-                    final String destinationUnpackWarScriptPath = JWALA_SCRIPTS_PATH + "/" + AemControl.Properties.UNPACK_BINARY_SCRIPT_NAME;
+                    final String destinationUnpackWarScriptPath = jwalaScriptDir + "/" + AemControl.Properties.UNPACK_BINARY_SCRIPT_NAME;
                     commandOutput = executeSecureCopyCommand(null, host, unpackWarScriptPath, destinationUnpackWarScriptPath);
 
                     if (!commandOutput.getReturnCode().wasSuccessful()) {
@@ -355,9 +355,9 @@ public class ApplicationServiceImpl implements ApplicationService {
                     }
 
                     // make sure the scripts are executable
-                    commandOutput = executeChangeFileModeCommand(null, host, "a+x", JWALA_SCRIPTS_PATH, "*.sh");
+                    commandOutput = executeChangeFileModeCommand(null, host, "a+x", jwalaScriptDir, "*.sh");
                     if (!commandOutput.getReturnCode().wasSuccessful()) {
-                        LOGGER.error("Error in changing file permissions on " + JWALA_SCRIPTS_PATH + " on host:" + host);
+                        LOGGER.error("Error in changing file permissions on " + jwalaScriptDir + " on host:" + host);
                         return commandOutput;
                     }
 
@@ -478,9 +478,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         validateApplicationResources(appName, group);
 
         final Set<String> resourceSet = getWebAppOnlyResources(group, appName);
-
         final List<String> keys = getKeysAndAcquireWriteLock(appName, hostNames);
-
         try {
             final Map<String, Future<Set<CommandOutput>>> futures = deployApplicationResourcesForHosts(hostNames, group, application, resourceSet);
             waitForDeploy(appName, futures);
@@ -607,7 +605,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                     long timeout = Long.parseLong(ApplicationProperties.get("remote.jwala.execution.timeout.seconds", "600"));
                     Set<CommandOutput> commandOutputSet = entry.getValue().get(timeout, TimeUnit.SECONDS);
                     for (CommandOutput commandOutput : commandOutputSet) {
-                        if (!commandOutput.getReturnCode().wasSuccessful()) {
+                        if (commandOutput!=null && !commandOutput.getReturnCode().wasSuccessful()) {
                             final String errorMessage = "Error in deploying resources to host " + entry.getKey() +
                                     " for application " + appName;
                             LOGGER.error(errorMessage);
@@ -626,26 +624,16 @@ public class ApplicationServiceImpl implements ApplicationService {
         List<String> keys = new ArrayList<>();
         for (final String host : hostNames) {
             final String key = appName + "/" + host;
-            if (!writeLock.containsKey(key)) {
-                writeLock.put(key, new ReentrantReadWriteLock());
-            }
-            boolean gotLock = writeLock.get(key).writeLock().tryLock();
-            if (!gotLock) {
-                LOGGER.error("Could not get lock for host: {} and app: {}", host, appName);
-                releaseWriteLocks(keys);
-                throw new InternalErrorException(FaultType.SERVICE_EXCEPTION, "Current resource is being deployed, wait for deploy to complete.");
-            } else {
-                keys.add(key);
-            }
+            lockManager.writeLock(key);
+            keys.add(key);
         }
         return keys;
     }
 
     protected void releaseWriteLocks(List<String> keys) {
         for (String key : keys) {
-            if (writeLock.containsKey(key) && writeLock.get(key).isWriteLocked()) {
-                writeLock.get(key).writeLock().unlock();
-            }
+            lockManager.writeUnlock(key);
         }
     }
+
 }

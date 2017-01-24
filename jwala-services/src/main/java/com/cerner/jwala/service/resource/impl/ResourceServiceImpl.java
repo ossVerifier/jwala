@@ -31,6 +31,8 @@ import com.cerner.jwala.persistence.jpa.domain.resource.config.template.ConfigTe
 import com.cerner.jwala.persistence.service.*;
 import com.cerner.jwala.service.HistoryFacadeService;
 import com.cerner.jwala.service.RemoteCommandReturnInfo;
+import com.cerner.jwala.service.binarydistribution.BinaryDistributionControlService;
+import com.cerner.jwala.service.binarydistribution.BinaryDistributionLockManager;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionService;
 import com.cerner.jwala.service.binarydistribution.DistributionService;
 import com.cerner.jwala.service.exception.ResourceServiceException;
@@ -67,7 +69,11 @@ public class ResourceServiceImpl implements ResourceService {
     @Autowired
     DistributionService distributionService;
     @Autowired
+    BinaryDistributionControlService distributionControlService;
+    @Autowired
     HistoryFacadeService historyFacadeService;
+    @Autowired
+    BinaryDistributionLockManager lockManager;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ResourceServiceImpl.class);
     private static final String WAR_FILE_EXTENSION = ".war";
@@ -739,14 +745,13 @@ public class ResourceServiceImpl implements ResourceService {
         return generateResourceFile(resourceIdentifier.resourceName, content, generateResourceGroup(), resourceHandler.getSelectedValue(resourceIdentifier), ResourceGeneratorType.PREVIEW);
     }
 
-    public void secureCopyFile(final String hostName, final String sourcePath, final String destPath) throws CommandFailureException {
+    public CommandOutput secureCopyFile(final String hostName, final String sourcePath, final String destPath) throws CommandFailureException {
         final String fileName = new File(destPath).getName();
         if(distributionService.remoteFileCheck(hostName,destPath)){
             LOGGER.info("Found the file {}", destPath);
-            distributionService.backupFile(hostName,destPath);
+            distributionControlService.backupFile(hostName,destPath);
         }
-        distributionService.remoteSecureCopyFile(hostName, sourcePath,destPath);
-
+        return distributionControlService.secureCopyFile(hostName, sourcePath,destPath);
     }
 
     protected void createConfigFile(String path, String configFileName, String templateContent) throws IOException {
@@ -865,7 +870,6 @@ public class ResourceServiceImpl implements ResourceService {
             } else {
                 resourceSourceCopy = generateTemplateForNotText(resourceHandler.getSelectedValue(resourceIdentifier), fileName);
             }
-
             secureCopyFile(hostName, resourceSourceCopy, resourceDestPath);
             if (resourceTemplateMetaData.isUnpack()) {
                 commandOutput = doUnpack(entity, hostName, resourceTemplateMetaData.getDeployPath() + "/" + resourceTemplateMetaData.getDeployFileName());
