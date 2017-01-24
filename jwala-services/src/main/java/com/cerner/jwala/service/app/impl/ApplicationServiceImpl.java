@@ -70,17 +70,17 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ApplicationServiceImpl.class);
 
-    private final ExecutorService executorService;
+    private ExecutorService executorService;
 
-    private final ResourceService resourceService;
+    private ResourceService resourceService;
 
-    private final RemoteCommandExecutorImpl remoteCommandExecutor;
+    private RemoteCommandExecutorImpl remoteCommandExecutor;
 
-    private final BinaryDistributionService binaryDistributionService;
+    private BinaryDistributionService binaryDistributionService;
 
-    private final GroupService groupService;
+    private GroupService groupService;
 
-    private final HistoryFacadeService historyFacadeService;
+    private HistoryFacadeService historyFacadeService;
 
     public ApplicationServiceImpl(final ApplicationPersistenceService applicationPersistenceService,
                                   final JvmPersistenceService jvmPersistenceService,
@@ -171,11 +171,10 @@ public class ApplicationServiceImpl implements ApplicationService {
     // TODO: Have an option to do a hot deploy or not.
     public CommandOutput deployConf(final String appName, final String groupName, final String jvmName,
                                     final String resourceTemplateName, ResourceGroup resourceGroup, User user) {
-        final StringBuilder key = new StringBuilder();
-        key.append(groupName).append(jvmName).append(appName).append(resourceTemplateName);
+        String lockKey = generateKey(groupName, jvmName, appName, resourceTemplateName);
         try {
             // only one at a time
-            lockManager.writeLock(key.toString());
+            lockManager.writeLock(lockKey);
             ResourceIdentifier resourceIdentifier = new ResourceIdentifier.Builder()
                     .setResourceName(resourceTemplateName)
                     .setGroupName(groupName)
@@ -194,8 +193,21 @@ public class ApplicationServiceImpl implements ApplicationService {
             LOGGER.error("Fail to generate the resource file {}", resourceTemplateName, e);
             throw new DeployApplicationConfException(e);
         } finally {
-            lockManager.writeLock(key.toString());
+            lockManager.writeLock(lockKey);
         }
+    }
+
+    /**
+     * Method to generate lock key;
+     *
+     * @return
+     */
+    private String generateKey(String... keys) {
+        final StringBuilder keyBuilder = new StringBuilder();
+        for (String key:keys) {
+            keyBuilder.append(key);
+        }
+        return keyBuilder.toString();
     }
 
     @Override
@@ -636,4 +648,11 @@ public class ApplicationServiceImpl implements ApplicationService {
         }
     }
 
+    public ApplicationServiceImpl(){
+
+    }
+    public static void main(String args[]){
+        ApplicationServiceImpl ap = new ApplicationServiceImpl();
+        System.out.println(ap.generateKey("groupname", "jvmName", "resourceName"));
+    }
 }
