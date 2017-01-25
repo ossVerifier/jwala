@@ -64,11 +64,9 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
@@ -217,7 +215,7 @@ public class GroupServiceRestImplTest {
                 mockApplicationService, applicationServiceRest, mockWebServerServiceRest);
 
 
-        final WebServerServiceRest webServerServiceRest = new WebServerServiceRestImpl(mockWebServerService, mockWebServerControlService, mockWebServerCommandService, mockResourceService, mockGroupService, mockBinaryDistributionService, mockHistoryFacadeService);
+        final WebServerServiceRest webServerServiceRest = new WebServerServiceRestImpl(mockWebServerService, mockWebServerControlService, mockWebServerCommandService, new HashMap<String, ReentrantReadWriteLock>(), mockResourceService, mockGroupService, mockBinaryDistributionService, mockHistoryFacadeService);
 
         groupServiceRest = new GroupServiceRestImpl(mockGroupService, mockResourceService, mockGroupControlService,
                 mockGroupJvmControlService, mockGroupWSControlService, mockJvmService, mockWebServerService,
