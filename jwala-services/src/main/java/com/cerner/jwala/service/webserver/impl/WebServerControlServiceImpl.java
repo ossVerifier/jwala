@@ -17,7 +17,7 @@ import com.cerner.jwala.exception.CommandFailureException;
 import com.cerner.jwala.persistence.jpa.type.EventType;
 import com.cerner.jwala.service.HistoryFacadeService;
 import com.cerner.jwala.service.RemoteCommandExecutorService;
-import com.cerner.jwala.service.RemoteCommandReturnInfo;
+import com.cerner.jwala.common.jsch.RemoteCommandReturnInfo;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionControlService;
 import com.cerner.jwala.service.binarydistribution.DistributionService;
 import com.cerner.jwala.service.exception.RemoteCommandExecutorServiceException;

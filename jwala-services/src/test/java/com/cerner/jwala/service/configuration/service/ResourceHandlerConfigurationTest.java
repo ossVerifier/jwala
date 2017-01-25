@@ -15,7 +15,7 @@ import com.cerner.jwala.persistence.jpa.domain.JpaJvm;
 import com.cerner.jwala.persistence.service.*;
 import com.cerner.jwala.service.HistoryFacadeService;
 import com.cerner.jwala.service.MessagingService;
-import com.cerner.jwala.service.resource.ResourceRepositoryService;
+import com.cerner.jwala.service.repository.RepositoryService;
 import com.cerner.jwala.service.resource.ResourceService;
 import com.cerner.jwala.service.resource.impl.ResourceServiceImpl;
 import com.cerner.jwala.service.resource.impl.handler.WebServerResourceHandler;
@@ -61,10 +61,10 @@ public class ResourceHandlerConfigurationTest {
     private ResourceTemplateMetaData metaData;
 
     @Mock
-    private ResourceRepositoryService mockResourceRepositoryService;
+    private RepositoryService mockRepositoryService;
 
     private ResourceService resourceService = new ResourceServiceImpl(null, null, null, null, null, null, null, null,
-            null, null, null, new Tika(), mockResourceRepositoryService);
+            null, null, null, new Tika(), mockRepositoryService);
 
     @BeforeClass
     public static void init() {

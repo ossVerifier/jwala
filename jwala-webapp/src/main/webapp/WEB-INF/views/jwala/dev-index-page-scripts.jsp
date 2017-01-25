@@ -33,6 +33,7 @@
 <script src="public-resources/js/jwala/v1/service/webServerService.js"></script>
 <script src="public-resources/js/jwala/v1/service/webAppService.js"></script>
 <script src="public-resources/js/jwala/v1/service/jvmService.js"></script>
+<script src="public-resources/js/jwala/v1/service/mediaService.js"></script>
 <script src="public-resources/js/jwala/v1/service/historyService.js"></script>
 <script src="public-resources/js/jwala/v1/service/serviceFactory.js"></script>
 <script src="public-resources/js/jwala/v1/service/groupControlService.js"></script>
@@ -83,6 +84,7 @@
 <script type="text/jsx" src="public-resources/js/react/admin-tab.js"></script>
 <script type="text/jsx" src="public-resources/js/react/jvm-config.js"></script>
 <script type="text/jsx" src="public-resources/js/react/group-config.js"></script>
+<script type="text/jsx" src="public-resources/js/react/MediaConfig.js"></script>
 <script type="text/jsx" src="public-resources/js/react/webserver-config.js"></script>
 <script type="text/jsx" src="public-resources/js/react/WebAppConfig.js"></script>
 <script type="text/jsx" src="public-resources/js/react/ResourcesConfig.js"></script>

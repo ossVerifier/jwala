@@ -1,10 +1,17 @@
 description "This modules has the persistance layer for Jwala. CRUD (create, read, update delete) logic resides here."
 apply plugin: 'maven-publish'
 
+sourceCompatibility = 1.8
+
 dependencies {
     compile project(":jwala-common")
 
     compile group: "org.apache.openjpa", name: "openjpa", version: "$project.versions.jpa"
+
+    compile group: "javax.validation", name: "validation-api", version: "1.1.0.Final"
+    compile 'javax.el:javax.el-api:3.0.0'
+    compile 'org.glassfish:javax.el:3.0.0'
+    compile 'org.hibernate:hibernate-validator:5.3.4.Final'
 
     testCompile group: 'org.springframework', name: 'spring-context', version: "$project.versions.spring"
     testCompile group: 'org.springframework', name: 'spring-core', version: "$project.versions.spring"

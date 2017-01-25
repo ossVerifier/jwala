@@ -1,5 +1,7 @@
 description "The module exposes the REST webservices to the Jwala UI and other clients"
 
+sourceCompatibility = 1.8
+
 dependencies {
     compile project(":jwala-services")
 

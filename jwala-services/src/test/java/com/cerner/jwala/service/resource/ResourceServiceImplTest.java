@@ -25,6 +25,8 @@ import com.cerner.jwala.service.HistoryFacadeService;
 import com.cerner.jwala.service.app.ApplicationService;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionService;
 import com.cerner.jwala.service.exception.ResourceServiceException;
+import com.cerner.jwala.service.repository.RepositoryService;
+import com.cerner.jwala.service.repository.RepositoryServiceException;
 import com.cerner.jwala.service.resource.impl.CreateResourceResponseWrapper;
 import com.cerner.jwala.service.resource.impl.ResourceContentGeneratorServiceImpl;
 import com.cerner.jwala.service.resource.impl.ResourceGeneratorType;
@@ -96,7 +98,7 @@ public class ResourceServiceImplTest {
     private BinaryDistributionService mockBinaryDistributionService;
 
     @Mock
-    private ResourceRepositoryService mockResourceRepositoryService;
+    private RepositoryService mockRepositoryService;
 
     Map<String, ReentrantReadWriteLock> resourceWriteLockMap = new HashMap<>();
 
@@ -113,11 +115,11 @@ public class ResourceServiceImplTest {
         resourceService = new ResourceServiceImpl(mockResourcePersistenceService, mockGroupPesistenceService,
                 mockAppPersistenceService, mockJvmPersistenceService, mockWebServerPersistenceService,
                 mockResourceDao, mockResourceHandler, mockRemoteCommandExector, resourceWriteLockMap,
-                resourceContentGeneratorService, mockBinaryDistributionService, new Tika(), mockResourceRepositoryService);
+                resourceContentGeneratorService, mockBinaryDistributionService, new Tika(), mockRepositoryService);
 
         when(mockJvmPersistenceService.findJvmByExactName(eq("someJvm"))).thenReturn(mock(Jvm.class));
 
-        when(mockResourceRepositoryService.upload(anyString(), any(InputStream.class))).thenReturn("thePath");
+        when(mockRepositoryService.upload(anyString(), any(InputStream.class))).thenReturn("thePath");
     }
 
     @Test
@@ -267,7 +269,7 @@ public class ResourceServiceImplTest {
         JpaJvm mockJpaJvm = mock(JpaJvm.class);
         when(mockJvmPersistenceService.findJvmByExactName(anyString())).thenReturn(mockJvm);
         when(mockJvmPersistenceService.getJpaJvm(any(Identifier.class), anyBoolean())).thenReturn(mockJpaJvm);
-        when(mockResourceRepositoryService.upload(anyString(), any(InputStream.class))).thenReturn("./anyPath");
+        when(mockRepositoryService.upload(anyString(), any(InputStream.class))).thenReturn("./anyPath");
         User mockUser = mock(User.class);
         when(mockUser.getId()).thenReturn("user-id");
         resourceService.createTemplate(metaDataIn, templateIn, "some application", mockUser);
@@ -327,10 +329,10 @@ public class ResourceServiceImplTest {
                     new com.cerner.jwala.common.domain.model.path.Path("/statusPath"), new Path("D:/jwala/app/data/httpd//httpd.conf"),
                     new com.cerner.jwala.common.domain.model.path.Path("./"), new com.cerner.jwala.common.domain.model.path.Path("htdocs"), WebServerReachableState.WS_UNREACHABLE, "");
             webServers.add(webServer);
-            jvms.add(new Jvm(new Identifier<Jvm>(11L), "tc1", "someHostGenerateMe", new HashSet<>(groups), 11010, 11011, 11012, -1, 11013,
-                    new com.cerner.jwala.common.domain.model.path.Path("/statusPath"), "EXAMPLE_OPTS=%someEvn%/someVal", JvmState.JVM_STOPPED, "", null, null, null, null));
-            jvms.add(new Jvm(new Identifier<Jvm>(22L), "tc2", "someHostGenerateMe", new HashSet<>(groups), 11020, 11021, 11022, -1, 11023,
-                    new com.cerner.jwala.common.domain.model.path.Path("/statusPath"), "EXAMPLE_OPTS=%someEvn%/someVal", JvmState.JVM_STOPPED, "", null, null, null, null));
+            jvms.add(new Jvm(new Identifier<Jvm>(11L), "tc1", "someHostGenerateMe", new HashSet<>(groups), group, 11010, 11011, 11012, -1, 11013,
+                    new com.cerner.jwala.common.domain.model.path.Path("/statusPath"), "EXAMPLE_OPTS=%someEvn%/someVal", JvmState.JVM_STOPPED, "", null, null, null, null, null, null));
+            jvms.add(new Jvm(new Identifier<Jvm>(22L), "tc2", "someHostGenerateMe", new HashSet<>(groups), group, 11020, 11021, 11022, -1, 11023,
+                    new com.cerner.jwala.common.domain.model.path.Path("/statusPath"), "EXAMPLE_OPTS=%someEvn%/someVal", JvmState.JVM_STOPPED, "", null, null, null, null, null, null));
 
             when(mockGroupPesistenceService.getGroups()).thenReturn(groups);
             when(mockAppPersistenceService.findApplicationsBelongingTo(anyString())).thenReturn(applications);
@@ -489,7 +491,7 @@ public class ResourceServiceImplTest {
 
     @Test
     public void testUploadResource() {
-        when(mockResourceRepositoryService.upload(anyString(), any(InputStream.class))).thenReturn("thePath");
+        when(mockRepositoryService.upload(anyString(), any(InputStream.class))).thenReturn("thePath");
         assertEquals("thePath", resourceService.uploadResource(mock(ResourceTemplateMetaData.class), new ByteArrayInputStream("data".getBytes())));
     }
 
@@ -557,7 +559,7 @@ public class ResourceServiceImplTest {
         when(mockResourceDao.deleteAppResources(anyList(), anyString(), anyString())).thenReturn(1);
         when(mockAppPersistenceService.getApplication(anyString())).thenReturn(mockApp);
         when(mockAppPersistenceService.deleteWarInfo(anyString())).thenReturn(mockApp);
-        doThrow(ResourceRepositoryServiceException.class).when(mockResourceRepositoryService).delete(anyString());
+        doThrow(RepositoryServiceException.class).when(mockRepositoryService).delete(anyString());
         assertEquals(1, resourceService.deleteGroupLevelAppResources("test-app", "test-group", templateList));
     }
 

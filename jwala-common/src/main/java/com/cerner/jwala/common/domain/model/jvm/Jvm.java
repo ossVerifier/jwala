@@ -1,18 +1,23 @@
 package com.cerner.jwala.common.domain.model.jvm;
 
-import java.io.Serializable;
-import java.net.URI;
-import java.util.*;
-
-import com.cerner.jwala.common.domain.model.app.Application;
 import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.id.Identifier;
+import com.cerner.jwala.common.domain.model.media.Media;
 import com.cerner.jwala.common.domain.model.path.Path;
-import com.cerner.jwala.common.domain.model.ssh.DecryptPassword;
 import com.cerner.jwala.common.domain.model.uri.UriBuilder;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+
+import java.io.Serializable;
+import java.net.URI;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 public class Jvm implements Serializable {
 
+    private String javaHome;
     private Identifier<Jvm> id;
     private String jvmName;
     private String hostName;
@@ -30,10 +35,11 @@ public class Jvm implements Serializable {
     private String systemProperties;
     private JvmState state;
     private String errorStatus;
-    private List<Application> webApps;
     private Calendar lastUpdatedDate;
     private String userName;
     private String encryptedPassword;
+    private Media jdkMedia;
+    private Media tomcatMedia;
 
     public Jvm(final Identifier<Jvm> id, final String name) {
         this.id = id;
@@ -53,62 +59,31 @@ public class Jvm implements Serializable {
         this.groups = Collections.unmodifiableSet(new HashSet<>(groups));
     }
 
-    public Jvm(final Identifier<Jvm> id,
-               final String name,
-               final String hostName,
-               final Set<Group> groups,
-               final Integer httpPort,
-               final Integer httpsPort,
-               final Integer redirectPort,
-               final Integer shutdownPort,
-               final Integer ajpPort,
-               final Path statusPath,
-               final String systemsProperties,
-               final JvmState state,
-               final String errorStatus,
-               final List<Application> webApps,
-               final Calendar lastUpdatedDate,
-               final String userName,
-               final String encryptedPassword) {
-        this.id = id;
-        this.jvmName = name;
-        this.hostName = hostName;
-        this.groups = Collections.unmodifiableSet(new HashSet<>(groups));
-        this.httpPort = httpPort;
-        this.httpsPort = httpsPort;
-        this.redirectPort = redirectPort;
-        this.shutdownPort = shutdownPort;
-        this.ajpPort = ajpPort;
-        this.statusPath = statusPath;
-        this.systemProperties = systemsProperties;
-        this.state = state;
-        this.errorStatus = errorStatus;
-        this.webApps = webApps;
-
-
-        this.lastUpdatedDate = lastUpdatedDate;
-        this.userName = userName;
-        this.encryptedPassword = encryptedPassword;
-    }
-
-    public Jvm toDecrypted() {
+    /**
+     * Excludes the encrypted password
+     * @return jvm without the encrypted password
+     */
+    public Jvm toJvmWithoutEncrytedPassword() {
         return new Jvm(this.id,
-                this.jvmName,
-                this.hostName,
-                this.groups,
-                this.httpPort,
-                this.httpsPort,
-                this.redirectPort,
-                this.shutdownPort,
-                this.ajpPort,
-                this.statusPath,
-                this.systemProperties,
-                this.state,
-                this.errorStatus,
-                this.webApps,
-                this.lastUpdatedDate,
-                this.userName,
-                this.encryptedPassword != null && this.encryptedPassword.length() > 0 ? new DecryptPassword().decrypt(this.encryptedPassword) : "");
+                       this.jvmName,
+                       this.hostName,
+                       this.groups,
+                       this.parentGroup,
+                       this.httpPort,
+                       this.httpsPort,
+                       this.redirectPort,
+                       this.shutdownPort,
+                       this.ajpPort,
+                       this.statusPath,
+                       this.systemProperties,
+                       this.state,
+                       this.errorStatus,
+                       this.lastUpdatedDate,
+                       this.userName,
+                       "",
+                       this.jdkMedia,
+                       this.tomcatMedia,
+                       this.javaHome);
     }
 
     public Jvm(Identifier<Jvm> id,
@@ -127,7 +102,10 @@ public class Jvm implements Serializable {
                String errorStatus,
                Calendar lastUpdatedDate,
                String userName,
-               String encryptedPassword) {
+               String encryptedPassword,
+               Media jdkMedia,
+               Media tomcatMedia,
+               String javaHome) {
         this.id = id;
         this.jvmName = jvmName;
         this.hostName = hostName;
@@ -145,8 +123,18 @@ public class Jvm implements Serializable {
         this.lastUpdatedDate = lastUpdatedDate;
         this.userName = userName;
         this.encryptedPassword = encryptedPassword;
+        this.jdkMedia = jdkMedia;
+        this.tomcatMedia = tomcatMedia;
+        this.javaHome = javaHome;
     }
 
+    public Media getJdkMedia() {
+        return jdkMedia;
+    }
+
+    public Media getTomcatMedia() {
+        return tomcatMedia;
+    }
     public String getEncryptedPassword() {
         return encryptedPassword;
     }
@@ -228,6 +216,10 @@ public class Jvm implements Serializable {
         this.parentGroup = parentGroup;
     }
 
+    public String getJavaHome() {
+        return javaHome;
+    }
+
     public URI getStatusUri() {
         final UriBuilder builder = new UriBuilder().setHost(getHostName())
                 .setHttpsPort(getHttpsPort())
@@ -236,27 +228,58 @@ public class Jvm implements Serializable {
         return builder.buildUnchecked();
     }
 
-    public List<Application> getWebApps() {
-        return webApps;
-    }
-
     @Override
     public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
+        if (this == o) return true;
+
+        if (o == null || getClass() != o.getClass()) return false;
 
         Jvm jvm = (Jvm) o;
 
-        return id.equals(jvm.id);
+        return new EqualsBuilder()
+                .append(id, jvm.id)
+                .append(jvmName, jvm.jvmName)
+                .append(hostName, jvm.hostName)
+                .append(groups, jvm.groups)
+                .append(parentGroup, jvm.parentGroup)
+                .append(httpPort, jvm.httpPort)
+                .append(httpsPort, jvm.httpsPort)
+                .append(redirectPort, jvm.redirectPort)
+                .append(shutdownPort, jvm.shutdownPort)
+                .append(ajpPort, jvm.ajpPort)
+                .append(statusPath, jvm.statusPath)
+                .append(systemProperties, jvm.systemProperties)
+                .append(state, jvm.state)
+                .append(errorStatus, jvm.errorStatus)
+                .append(lastUpdatedDate, jvm.lastUpdatedDate)
+                .append(userName, jvm.userName)
+                .append(encryptedPassword, jvm.encryptedPassword)
+                .append(jdkMedia, jvm.jdkMedia)
+                .append(tomcatMedia, jvm.tomcatMedia)
+                .isEquals();
     }
 
     @Override
     public int hashCode() {
-        return id.hashCode();
+        return new HashCodeBuilder(17, 37)
+                .append(id)
+                .append(jvmName)
+                .append(hostName)
+                .append(httpPort)
+                .append(httpsPort)
+                .append(redirectPort)
+                .append(shutdownPort)
+                .append(ajpPort)
+                .append(statusPath)
+                .append(systemProperties)
+                .append(state)
+                .append(errorStatus)
+                .append(lastUpdatedDate)
+                .append(userName)
+                .append(encryptedPassword)
+                .append(jdkMedia)
+                .append(tomcatMedia)
+                .toHashCode();
     }
 
     @Override
@@ -276,10 +299,11 @@ public class Jvm implements Serializable {
                 ", systemProperties='" + systemProperties + '\'' +
                 ", state=" + state +
                 ", errorStatus='" + errorStatus + '\'' +
-                ", webApps=" + webApps +
                 ", lastUpdatedDate=" + lastUpdatedDate +
                 ", userName='" + userName + '\'' +
                 ", encryptedPassword='" + encryptedPassword + '\'' +
+                ", jdkMedia='" + jdkMedia + '\'' +
+                ", tomcatMedia='" + tomcatMedia + '\'' +
                 '}';
     }
 }

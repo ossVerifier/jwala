@@ -8,6 +8,7 @@ import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
 import com.cerner.jwala.common.domain.model.jvm.JvmControlOperation;
 import com.cerner.jwala.common.domain.model.jvm.JvmState;
+import com.cerner.jwala.common.domain.model.media.Media;
 import com.cerner.jwala.common.domain.model.path.Path;
 import com.cerner.jwala.common.domain.model.resource.ResourceGroup;
 import com.cerner.jwala.common.domain.model.resource.ResourceIdentifier;
@@ -43,12 +44,9 @@ import com.cerner.jwala.service.jvm.JvmService;
 import com.cerner.jwala.service.jvm.exception.JvmServiceException;
 import com.cerner.jwala.service.resource.ResourceService;
 import com.cerner.jwala.service.resource.impl.ResourceGeneratorType;
-import com.cerner.jwala.service.resource.impl.ResourceServiceImpl;
 import com.cerner.jwala.service.webserver.component.ClientFactoryHelper;
 import com.jcraft.jsch.JSchException;
-import net.didion.jwnl.dictionary.file_manager.FileManagerImpl;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.tika.mime.MediaType;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Before;
@@ -65,7 +63,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.charset.Charset;
 import java.util.*;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -524,7 +521,7 @@ public class JvmServiceImplTest extends VerificationBehaviorSupport {
     @Test
     public void testPreviewTemplate() {
         final String jvmName = "jvm-1Test";
-        Jvm testJvm = new Jvm(new Identifier<Jvm>(111L), jvmName, "testHost", new HashSet<Group>(), 9101, 9102, 9103, -1, 9104, new Path("./"), "", JvmState.JVM_STOPPED, "", null, null, null, null);
+        Jvm testJvm = new Jvm(new Identifier<Jvm>(111L), jvmName, "testHost", new HashSet<Group>(), mock(Group.class), 9101, 9102, 9103, -1, 9104, new Path("./"), "", JvmState.JVM_STOPPED, "", null, null, null, null, null, null);
         List<Jvm> jvmList = new ArrayList<>();
         jvmList.add(testJvm);
         when(mockJvmPersistenceService.findJvm(anyString(), anyString())).thenReturn(testJvm);
@@ -647,6 +644,7 @@ public class JvmServiceImplTest extends VerificationBehaviorSupport {
         when(mockJvm.getState()).thenReturn(JvmState.JVM_STOPPED);
         when(mockJvm.getJvmName()).thenReturn("test-jvm-deploy-config");
         when(mockJvm.getId()).thenReturn(new Identifier<Jvm>(111L));
+        when(mockJvm.getJdkMedia()).thenReturn(new Media(1, "test media", "x:/test/archive/path.zip", "JDK", "x:/test-destination", "root-dir-destination"));
         when(commandOutput.getReturnCode()).thenReturn(new ExecReturnCode(0));
         when(mockJvmControlService.secureCopyFile(any(ControlJvmRequest.class), anyString(), anyString(), anyString())).thenReturn(commandOutput);
         when(mockJvmControlService.executeCreateDirectoryCommand(any(Jvm.class), anyString())).thenReturn(commandOutput);

@@ -6,10 +6,8 @@ import com.cerner.jwala.common.domain.model.webserver.WebServerReachableState;
 import com.cerner.jwala.common.domain.model.webserver.WebServerState;
 import com.cerner.jwala.service.MessagingService;
 import com.cerner.jwala.service.group.GroupStateNotificationService;
-import com.cerner.jwala.service.ssl.hc.HttpClientRequestFactory;
 import com.cerner.jwala.service.state.InMemoryStateManagerService;
 import com.cerner.jwala.service.webserver.WebServerService;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -52,7 +50,7 @@ public class WebServerStateSetterWorkerTest {
     private ClientHttpRequest mockClientHttpRequest;
 
     @Mock
-    private HttpClientRequestFactory mockHttpClientRequestFactory;
+    private HttpComponentsClientHttpRequestFactory mockHttpClientRequestFactory;
 
     @Mock
     private WebServerService mockWebServerService;

@@ -5,7 +5,6 @@ import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.resource.ResourceGroup;
 import com.cerner.jwala.common.domain.model.resource.ResourceIdentifier;
-import com.cerner.jwala.common.domain.model.resource.ResourceTemplateMetaData;
 import com.cerner.jwala.common.domain.model.webserver.WebServer;
 import com.cerner.jwala.common.domain.model.webserver.WebServerControlOperation;
 import com.cerner.jwala.common.domain.model.webserver.WebServerReachableState;
@@ -21,7 +20,6 @@ import com.cerner.jwala.control.AemControl;
 import com.cerner.jwala.exception.CommandFailureException;
 import com.cerner.jwala.persistence.jpa.type.EventType;
 import com.cerner.jwala.service.HistoryFacadeService;
-import com.cerner.jwala.service.HistoryService;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionLockManager;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionService;
 import com.cerner.jwala.service.group.GroupService;
@@ -44,9 +42,7 @@ import javax.persistence.EntityExistsException;
 import javax.ws.rs.core.Response;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.PrintWriter;
-import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -302,26 +298,6 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
     protected void createScriptsDirectory(WebServer webServer) throws CommandFailureException {
         final String remoteScriptsDir = ApplicationProperties.getRequired(PropertyKeys.REMOTE_SCRIPT_DIR);
         webServerControlService.createDirectory(webServer, remoteScriptsDir);
-    }
-
-    public ResourceTemplateMetaData getMetaData(String aWebServerName) {
-        String metaData = webServerService.getResourceTemplateMetaData(aWebServerName, HTTPD_CONF);
-
-        LOGGER.debug("Returned webserver {} metaData {}", aWebServerName, metaData);
-
-        if (metaData == null || metaData.isEmpty()) {
-            throw new WebServerServiceException(MessageFormat.format("Metadata not found for template {0} and web server {1}", aWebServerName, HTTPD_CONF));
-        }
-
-        ResourceTemplateMetaData resourceTemplateMetaData;
-        try {
-            resourceTemplateMetaData = resourceService.getMetaData(metaData);
-            LOGGER.debug("Metadata deploy path is {}", resourceTemplateMetaData.getDeployPath());
-        } catch (IOException e) {
-            throw new WebServerServiceException(e);
-        }
-
-        return resourceTemplateMetaData;
     }
 
     protected void deployStartStopScripts(WebServer webServer, String userId) throws CommandFailureException {

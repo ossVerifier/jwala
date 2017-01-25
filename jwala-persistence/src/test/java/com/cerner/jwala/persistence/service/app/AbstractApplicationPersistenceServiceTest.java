@@ -11,11 +11,13 @@ import com.cerner.jwala.common.request.app.*;
 import com.cerner.jwala.common.request.group.AddJvmToGroupRequest;
 import com.cerner.jwala.common.request.group.CreateGroupRequest;
 import com.cerner.jwala.common.request.jvm.CreateJvmRequest;
+import com.cerner.jwala.dao.MediaDao;
 import com.cerner.jwala.persistence.jpa.domain.JpaJvm;
+import com.cerner.jwala.persistence.jpa.domain.JpaMedia;
+import com.cerner.jwala.persistence.jpa.type.MediaType;
 import com.cerner.jwala.persistence.service.ApplicationPersistenceService;
 import com.cerner.jwala.persistence.service.GroupPersistenceService;
 import com.cerner.jwala.persistence.service.JvmPersistenceService;
-
 import org.apache.commons.lang.RandomStringUtils;
 import org.junit.After;
 import org.junit.Before;
@@ -49,6 +51,9 @@ public abstract class AbstractApplicationPersistenceServiceTest {
     @Autowired
     private JvmPersistenceService jvmPersistenceService;
 
+    @Autowired
+    private MediaDao mediaDao;
+
     private String aUser;
     
     private String alphaLower = "abcdefghijklmnopqrstuvwxyz";
@@ -80,7 +85,12 @@ public abstract class AbstractApplicationPersistenceServiceTest {
         Group updGroup = groupPersistenceService.createGroup(new CreateGroupRequest(textUpdatedGroup));
         expGroupId = group.getId();
         expUpdatedGroupId = updGroup.getId();
-        
+
+        final JpaMedia media = new JpaMedia();
+        media.setName("test-media");
+        media.setType(MediaType.JDK);
+        mediaDao.create(media);
+
         deleteAppId = null;
         updateAppId = null;
     }
@@ -174,7 +184,7 @@ public abstract class AbstractApplicationPersistenceServiceTest {
         CreateApplicationRequest request = new CreateApplicationRequest(group.getId(), "testAppName", "/hctTest", true, true, false);
         Application app = applicationPersistenceService.createApplication(request);
 
-        CreateJvmRequest createJvmRequest = new CreateJvmRequest(jvmName, "testHost", 9101, 9102, 9103, -1, 9104, new Path("./"), "", null, null);
+        CreateJvmRequest createJvmRequest = new CreateJvmRequest(jvmName, "testHost", 9101, 9102, 9103, -1, 9104, new Path("./"), "", null, null, null);
         Jvm jvm = jvmPersistenceService.createJvm(createJvmRequest);
 
         AddJvmToGroupRequest addJvmToGroup = new AddJvmToGroupRequest(group.getId(), jvm.getId());
@@ -196,7 +206,7 @@ public abstract class AbstractApplicationPersistenceServiceTest {
         CreateGroupRequest createGroupReq = new CreateGroupRequest("testGroupName");
         Group group = groupPersistenceService.createGroup(createGroupReq);
 
-        CreateJvmRequest createJvmRequest = new CreateJvmRequest(jvmName, "testHost", 9101, 9102, 9103, -1, 9104, new Path("./"), "", null, null);
+        CreateJvmRequest createJvmRequest = new CreateJvmRequest(jvmName, "testHost", 9101, 9102, 9103, -1, 9104, new Path("./"), "", null, null, null);
         Jvm jvm = jvmPersistenceService.createJvm(createJvmRequest);
 
         AddJvmToGroupRequest addJvmToGroup = new AddJvmToGroupRequest(group.getId(), jvm.getId());
@@ -212,7 +222,7 @@ public abstract class AbstractApplicationPersistenceServiceTest {
 
     @Test
     public void testUploadAppTemplate() throws FileNotFoundException {
-        CreateJvmRequest createJvmRequest = new CreateJvmRequest("testJvmName", "testHostName", 9101, 9102, 9103, -1, 9104, new Path("./"), "", null, null);
+        CreateJvmRequest createJvmRequest = new CreateJvmRequest("testJvmName", "testHostName", 9101, 9102, 9103, -1, 9104, new Path("./"), "", null, null, null);
 
         CreateGroupRequest createGroupReq = new CreateGroupRequest("testGroupName");
         Group group = groupPersistenceService.createGroup(createGroupReq);

@@ -10,77 +10,115 @@ import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
+import org.apache.commons.lang3.ArrayUtils;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.initMocks;
 
 @RunWith(MockitoJUnitRunner.class)
 public class JschScpCommandProcessorImplTest {
 
-    @Test
-    public void testProcessCommand() throws JSchException, IOException {
-        System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, new File(".").getAbsolutePath() + "/src/test/resources");
+    @Mock
+    private JSch mockJsch;
 
-        JSch mockJsch = mock(JSch.class);
-        Session mockSession = mock(Session.class);
-        ChannelExec mockChannel = mock(ChannelExec.class);
-        InputStream mockRemoteOutput = mock(InputStream.class);
-        InputStream mockRemoteErr = mock(InputStream.class);
-        OutputStream mockLocalInput = mock(OutputStream.class);
+    @Mock
+    private Session mockSession;
+
+    @Mock
+    private ChannelExec mockChannel;
+
+    @Mock
+    private InputStream mockRemoteErr;
+
+    @Mock
+    private OutputStream mockLocalInput;
+
+    JschScpCommandProcessorImpl jschScpCommandProcessor;
+
+
+    @Before
+    public void setup() throws JSchException, IOException {
+        initMocks(this);
+
         when(mockJsch.getSession(anyString(), anyString(), anyInt())).thenReturn(mockSession);
         when(mockSession.openChannel("exec")).thenReturn(mockChannel);
-        when(mockChannel.getInputStream()).thenReturn(mockRemoteOutput);
         when(mockChannel.getOutputStream()).thenReturn(mockLocalInput);
         when(mockChannel.getErrStream()).thenReturn(mockRemoteErr);
-        when(mockRemoteOutput.read()).thenReturn(0); // return success for checkAck
-        RemoteSystemConnection remoteSystemConnection = new RemoteSystemConnection("testUser", "==encryptedTestPassword==".toCharArray(), "testHost", 1111);
-        ExecCommand execCommand = new ExecCommand("scp src/test/resources/known_hosts destpath/testfile.txt".split(" "));
-         
-        RemoteExecCommand remoteExecCommand = new RemoteExecCommand(remoteSystemConnection, execCommand);
-        JschScpCommandProcessorImpl jschScpCommandProcessor = new JschScpCommandProcessorImpl(mockJsch, remoteExecCommand);
-        try {
-            jschScpCommandProcessor.processCommand();
-            ExecReturnCode returnCode = jschScpCommandProcessor.getExecutionReturnCode();
-            assertTrue(returnCode.getWasSuccessful());
-        } catch (RemoteCommandFailureException e) {
-            assertTrue("This should not fail ... " + e.getMessage(), false);
-        }
 
-        // test the error output
-        when(mockRemoteOutput.read()).thenReturn(1,10); //1 is error, 10 is newline character
-        try {
-            jschScpCommandProcessor.processCommand();
-        } catch (RemoteCommandFailureException e) {
-            assertTrue("This will fail because of return code 1" + e.getMessage(), true);
-        }
+        System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, new File(".").getAbsolutePath() + "/src/test/resources");
 
-        // test the fatal error output
-        when(mockRemoteOutput.read()).thenReturn(2,10); //2 is fatal error, 10 is newline character
-        try {
-            jschScpCommandProcessor.processCommand();
-        } catch (RemoteCommandFailureException e) {
-            assertTrue("This will fail because of return code 2" + e.getMessage(), true);
-        }
+        final RemoteExecCommand remoteExecCommand = new RemoteExecCommand(
+                new RemoteSystemConnection("testUser", "==encryptedTestPassword==".toCharArray(), "testHost", 1111),
+                new ExecCommand("scp src/test/resources/known_hosts destpath/testfile.txt".split(" ")));
 
-        // test the other non 0, 1, or 2 return codes for more complete branch coverage
-        when(mockRemoteOutput.read()).thenReturn(3); //not 0, 1, or 2
-        try {
-            jschScpCommandProcessor.processCommand();
-        } catch (RemoteCommandFailureException e) {
-            assertTrue("This will fail because of return code 3" + e.getMessage(), true);
-        }
+        jschScpCommandProcessor = new JschScpCommandProcessorImpl(mockJsch, remoteExecCommand);
+    }
 
+    @After
+    public void tearDown() {
         System.clearProperty(ApplicationProperties.PROPERTIES_ROOT_PATH);
     }
+
+    @Test
+    public void testProcessCommand() throws IOException {
+        final byte [] remoteOuputBytes = {0, 0, 0}; // processCommand happy path gets ack 3x
+        InputStream remoteOutput = new ByteArrayInputStream(remoteOuputBytes);
+        when(mockChannel.getInputStream()).thenReturn(remoteOutput);
+
+        jschScpCommandProcessor.processCommand();
+        ExecReturnCode returnCode = jschScpCommandProcessor.getExecutionReturnCode();
+        assertTrue(returnCode.getWasSuccessful());
+    }
+
+    @Test
+    public void testProcessCommandWithErrorCode1()  throws JSchException, IOException {
+        final byte [] remoteOuputBytes = {1};
+        final byte [] msg = "Error code 1\n".getBytes();
+        InputStream remoteOutput = new ByteArrayInputStream(ArrayUtils.addAll(remoteOuputBytes, msg));
+        when(mockChannel.getInputStream()).thenReturn(remoteOutput);
+        try {
+            jschScpCommandProcessor.processCommand();
+        } catch (final RemoteCommandFailureException e) {
+            assertEquals("java.io.IOException: ERROR in SCP: Error code 1\n", e.getMessage());
+        }
+    }
+
+    @Test
+    public void testProcessCommandWithErrorCode2()  throws JSchException, IOException {
+        final byte [] remoteOuputBytes = {2};
+        final byte [] msg = "Error code 2\n".getBytes();
+        InputStream remoteOutput = new ByteArrayInputStream(ArrayUtils.addAll(remoteOuputBytes, msg));
+        when(mockChannel.getInputStream()).thenReturn(remoteOutput);
+        try {
+            jschScpCommandProcessor.processCommand();
+        } catch (final RemoteCommandFailureException e) {
+            assertEquals("java.io.IOException: FATAL ERROR in SCP: Error code 2\n", e.getMessage());
+        }
+    }
+
+    @Test
+    public void testProcessCommandWithErrorCode3()  throws JSchException, IOException {
+        final byte [] remoteOuputBytes = {3};
+        InputStream remoteOutput = new ByteArrayInputStream(remoteOuputBytes);
+        when(mockChannel.getInputStream()).thenReturn(remoteOutput);
+        try {
+            jschScpCommandProcessor.processCommand();
+        } catch (final RemoteCommandFailureException e) {
+            assertEquals("com.cerner.jwala.exception.RemoteCommandFailureException: java.lang.Throwable: Failed to connect to the remote host during secure copy", e.getMessage());
+        }
+    }
+
 }
+

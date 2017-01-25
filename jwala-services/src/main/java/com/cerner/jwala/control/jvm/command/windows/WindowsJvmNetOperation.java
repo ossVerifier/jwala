@@ -60,8 +60,7 @@ public enum WindowsJvmNetOperation implements ServiceCommandBuilder {
     THREAD_DUMP(JvmControlOperation.THREAD_DUMP) {
         @Override
         public ExecCommand buildCommandForService(final String aServiceName, final String... aParams) {
-            String remoteJavaHome = ApplicationProperties.get(PropertyKeys.REMOTE_JAVA_HOME);
-            String jStackCmd = remoteJavaHome + "/bin/jstack";
+            String jStackCmd = aParams[2] + "/bin/jstack";
             return new ExecCommand(jStackCmd, "-l `sc queryex", aServiceName, "| grep PID | awk '{ print $3 }'`");
         }
     },
@@ -71,12 +70,10 @@ public enum WindowsJvmNetOperation implements ServiceCommandBuilder {
         // Note: The heap dump creates the directories, executes an echo to mark the start, then executes the heap dump
         //       itself then an echo to mark the end of the heap dump command sequence.
         public ExecCommand buildCommandForService(final String aServiceName, final String... aParams) {
-            String remoteJavaHome = ApplicationProperties.get(PropertyKeys.REMOTE_JAVA_HOME);
-            String dataDir = ApplicationProperties.getRequired(PropertyKeys.REMOTE_JAWALA_DATA_DIR);
-            Boolean dumpLiveEnabled = ApplicationProperties.getRequiredAsBoolean(PropertyKeys.JMAP_DUMP_LIVE_ENABLED);
-
+            String dataDir = REMOTE_HEAP_DUMP_DIR;
             String jMapCmd = "echo '***heapdump-start***';" + USR_BIN_MKDIR + " -p " + dataDir + ";" +
-                    remoteJavaHome + "/bin/jmap";
+                    aParams[2] + "/bin/jmap";
+            final boolean dumpLiveEnabled = Boolean.parseBoolean(JMAP_DUMP_LIVE_ENABLED);
             DateTimeFormatter fmt = DateTimeFormat.forPattern("yyyyMMdd.HHmmss");
             String dumpFile = dataDir + "/heapDump." + StringUtils.replace(aServiceName, " ", "") + "." +
                     fmt.print(DateTime.now());
@@ -97,7 +94,7 @@ public enum WindowsJvmNetOperation implements ServiceCommandBuilder {
                     cygpathWrapper(DEPLOY_CONFIG_ARCHIVE_SCRIPT_NAME, remoteScriptDir + "/" + aServiceName + "/"),
                     remoteScriptDir + "/" + aServiceName + ".jar",
                     remotePathsInstancesDir + "/" + aServiceName,
-                    remoteJavaHome + "/bin/jar"
+                    aParams[2] + "/bin/jar"
             );
 
         }
@@ -181,6 +178,8 @@ public enum WindowsJvmNetOperation implements ServiceCommandBuilder {
     private static final Map<JvmControlOperation, WindowsJvmNetOperation> LOOKUP_MAP = new EnumMap<>(
             JvmControlOperation.class);
 
+    private static final String REMOTE_HEAP_DUMP_DIR = ApplicationProperties.get("remote.jwala.data.dir");
+    private static final String JMAP_DUMP_LIVE_ENABLED = ApplicationProperties.get("jmap.dump.live.enabled");
 
     private static final String USR_BIN_MKDIR = "/usr/bin/mkdir";
     private static final String USR_BIN_CYGPATH = "/usr/bin/cygpath";

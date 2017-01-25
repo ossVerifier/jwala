@@ -26,8 +26,7 @@ public interface JvmServiceRest extends InitializingBean{
 
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
-    Response createJvm(final JsonCreateJvm aJvmToCreate,
-                       @BeanParam final AuthenticatedUser aUser);
+    Response createJvm(JsonCreateJvm jsonCreateJvm, @BeanParam AuthenticatedUser aUser);
 
     @PUT
     @Consumes(MediaType.APPLICATION_JSON)
@@ -119,7 +118,7 @@ public interface JvmServiceRest extends InitializingBean{
      * @param jvmName the JVM name
      * @param groupName a group name
      * @param template a template
-     * @return
+     * @return {@link Response}
      */
     @PUT
     @Path("/{jvmName}/resources/preview/{resourceTemplateName}")

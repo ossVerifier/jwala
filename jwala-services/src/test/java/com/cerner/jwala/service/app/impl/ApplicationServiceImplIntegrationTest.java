@@ -12,6 +12,8 @@ import com.cerner.jwala.common.properties.ApplicationProperties;
 import com.cerner.jwala.control.command.RemoteCommandExecutor;
 import com.cerner.jwala.control.command.RemoteCommandExecutorImpl;
 import com.cerner.jwala.control.configuration.AemSshConfig;
+import com.cerner.jwala.dao.MediaDao;
+import com.cerner.jwala.dao.impl.MediaDaoImpl;
 import com.cerner.jwala.persistence.jpa.service.ApplicationCrudService;
 import com.cerner.jwala.persistence.jpa.service.GroupCrudService;
 import com.cerner.jwala.persistence.jpa.service.GroupJvmRelationshipService;
@@ -29,7 +31,6 @@ import com.cerner.jwala.service.binarydistribution.BinaryDistributionService;
 import com.cerner.jwala.service.configuration.TestJpaConfiguration;
 import com.cerner.jwala.service.group.GroupService;
 import com.cerner.jwala.service.resource.ResourceService;
-import com.cerner.jwala.service.ssl.hc.HttpClientRequestFactory;
 import com.cerner.jwala.service.webserver.component.ClientFactoryHelper;
 import org.junit.After;
 import org.junit.Before;
@@ -39,6 +40,7 @@ import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.test.annotation.IfProfileValue;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -119,15 +121,18 @@ public class ApplicationServiceImplIntegrationTest {
             return new ApplicationCommandServiceImpl(sshConfiguration, jschBuilder);
         }
 
-        @Bean(name = "webServerHttpRequestFactory")
-        public HttpClientRequestFactory getHttpClientRequestFactory() throws Exception {
-            return new HttpClientRequestFactory();
+        @Bean(name = "httpRequestFactory")
+        public HttpComponentsClientHttpRequestFactory getHttpClientRequestFactory() throws Exception {
+            return new HttpComponentsClientHttpRequestFactory();
         }
 
         @Bean
         public ClientFactoryHelper getClientFactoryHelper() {
             return new ClientFactoryHelper();
         }
+
+        @Bean
+        public MediaDao getMediaDao() { return new MediaDaoImpl(); }
 
     }
 

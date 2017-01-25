@@ -9,10 +9,14 @@ import com.cerner.jwala.common.domain.model.path.Path;
 import com.cerner.jwala.common.domain.model.user.User;
 import com.cerner.jwala.common.request.jvm.CreateJvmRequest;
 import com.cerner.jwala.common.request.jvm.UploadJvmTemplateRequest;
+import com.cerner.jwala.dao.MediaDao;
+import com.cerner.jwala.dao.impl.MediaDaoImpl;
 import com.cerner.jwala.persistence.configuration.TestJpaConfiguration;
 import com.cerner.jwala.persistence.jpa.domain.JpaJvm;
+import com.cerner.jwala.persistence.jpa.domain.JpaMedia;
 import com.cerner.jwala.persistence.jpa.domain.resource.config.template.JpaJvmConfigTemplate;
 import com.cerner.jwala.persistence.jpa.service.impl.JvmCrudServiceImpl;
+import com.cerner.jwala.persistence.jpa.type.MediaType;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.After;
 import org.junit.Before;
@@ -47,11 +51,16 @@ import static org.junit.Assert.*;
 public class JvmCrudServiceImplTest {
 
     public static final String SERVER_XML = "server.xml";
+
     @Autowired
     private JvmCrudServiceImpl jvmCrudService;
 
+    @Autowired
+    private MediaDao mediaDao;
+
     private User user;
     private Jvm jvm;
+    private JpaMedia jpaMedia;
 
     @Before
     public void setup() throws Exception {
@@ -59,8 +68,15 @@ public class JvmCrudServiceImplTest {
         user.addToThread();
 
         String testJvmName = "testJvmName";
-        CreateJvmRequest createJvmRequest = new CreateJvmRequest(testJvmName, "testHostName", 100, 101, 102, 103, 104, new Path("./jwala.png"), "", null, null);
-        JpaJvm jpaJvm = jvmCrudService.createJvm(createJvmRequest);
+        final JpaMedia media = new JpaMedia();
+        media.setName("test-media");
+        media.setType(MediaType.JDK);
+        media.setLocalPath(new File("d:/not/a/real/path.zip").toPath());
+        media.setRemoteDir(new File("d:/fake/remote/path").toPath());
+        media.setMediaDir(new File("test-media").toPath());
+        jpaMedia = mediaDao.create(media);
+        CreateJvmRequest createJvmRequest = new CreateJvmRequest(testJvmName, "testHostName", 100, 101, 102, 103, 104, new Path("./jwala.png"), "", null, null, null);
+        JpaJvm jpaJvm = jvmCrudService.createJvm(createJvmRequest, jpaMedia);
         jvm = new Jvm(Identifier.<Jvm>id(jpaJvm.getId()), jpaJvm.getName(), new HashSet<Group>());
     }
 
@@ -110,10 +126,10 @@ public class JvmCrudServiceImplTest {
 
     @Test
     public void testGetJvmByExactName() {
-        CreateJvmRequest createJvmRequest = new CreateJvmRequest("jvm-1", "testHost", 9101, 9102, 9103, -1, 9104, new Path("./"), "", null, null);
-        CreateJvmRequest createJvmWithSimilarNameRequest = new CreateJvmRequest("jvm-11", "testHost", 9111, 9112, 9113, -1, 9114, new Path("./"), "", null, null);
-        JpaJvm jvmOne = jvmCrudService.createJvm(createJvmRequest);
-        JpaJvm jvmOneOne = jvmCrudService.createJvm(createJvmWithSimilarNameRequest);
+        CreateJvmRequest createJvmRequest = new CreateJvmRequest("jvm-1", "testHost", 9101, 9102, 9103, -1, 9104, new Path("./"), "", null, null, null);
+        CreateJvmRequest createJvmWithSimilarNameRequest = new CreateJvmRequest("jvm-11", "testHost", 9111, 9112, 9113, -1, 9114, new Path("./"), "", null, null, null);
+        JpaJvm jvmOne = jvmCrudService.createJvm(createJvmRequest, jpaMedia);
+        JpaJvm jvmOneOne = jvmCrudService.createJvm(createJvmWithSimilarNameRequest, jpaMedia);
 
         Jvm foundJvm = jvmCrudService.findJvmByExactName("jvm-1");
         assertEquals(jvmOne.getName(), foundJvm.getJvmName());
@@ -125,8 +141,8 @@ public class JvmCrudServiceImplTest {
     @Test
     public void testUpdateState() throws InterruptedException {
         final CreateJvmRequest createJvmRequest = new CreateJvmRequest("jvmName", "hostName", 0, 0, 0, 0, 0,
-                new Path("./jwala.png"), StringUtils.EMPTY, null, null);
-        final JpaJvm newJpaJvm = jvmCrudService.createJvm(createJvmRequest);
+                new Path("./jwala.png"), StringUtils.EMPTY, null, null, null);
+        final JpaJvm newJpaJvm = jvmCrudService.createJvm(createJvmRequest, jpaMedia);
         final Identifier<Jvm> jpaJvmId = new Identifier<>(newJpaJvm.getId());
         assertEquals(1, jvmCrudService.updateState(jpaJvmId, JvmState.JVM_STOPPED));
     }
@@ -134,8 +150,8 @@ public class JvmCrudServiceImplTest {
     @Test
     public void testUpdateErrorStatus() {
         final CreateJvmRequest createJvmRequest = new CreateJvmRequest("jvmName", "hostName", 0, 0, 0, 0, 0,
-                new Path("./jwala.png"), StringUtils.EMPTY, null, null);
-        final JpaJvm newJpaJvm = jvmCrudService.createJvm(createJvmRequest);
+                new Path("./jwala.png"), StringUtils.EMPTY, null, null, null);
+        final JpaJvm newJpaJvm = jvmCrudService.createJvm(createJvmRequest, jpaMedia);
         final Identifier<Jvm> jpaJvmId = new Identifier<>(newJpaJvm.getId());
         assertEquals(1, jvmCrudService.updateErrorStatus(jpaJvmId, "error!"));
     }
@@ -143,8 +159,8 @@ public class JvmCrudServiceImplTest {
     @Test
     public void testUpdateStateAndErrSts() {
         final CreateJvmRequest createJvmRequest = new CreateJvmRequest("jvmName", "hostName", 0, 0, 0, 0, 0,
-                new Path("./jwala.png"), StringUtils.EMPTY, null, null);
-        final JpaJvm newJpaJvm = jvmCrudService.createJvm(createJvmRequest);
+                new Path("./jwala.png"), StringUtils.EMPTY, null, null, null);
+        final JpaJvm newJpaJvm = jvmCrudService.createJvm(createJvmRequest, jpaMedia);
         final Identifier<Jvm> jpaJvmId = new Identifier<>(newJpaJvm.getId());
         assertEquals(1, jvmCrudService.updateState(jpaJvmId, JvmState.JVM_FAILED, "error!"));
     }
@@ -156,6 +172,11 @@ public class JvmCrudServiceImplTest {
         @Bean
         public JvmCrudServiceImpl getJvmCrudServiceImpl() {
             return new JvmCrudServiceImpl();
+        }
+
+        @Bean
+        public MediaDao getMediaDao() {
+            return new MediaDaoImpl();
         }
     }
 }

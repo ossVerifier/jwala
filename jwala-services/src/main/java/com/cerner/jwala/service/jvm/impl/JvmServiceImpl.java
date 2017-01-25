@@ -297,9 +297,13 @@ public class JvmServiceImpl implements JvmService {
 
             validateJvmAndAppResources(jvm);
 
-            distributeBinaries(jvm.getHostName());
+            checkForJdkBinaries(jvm);
             // check for setenv.bat
             checkForSetenvScript(jvm.getJvmName());
+
+            distributeBinaries(jvm);
+            // check for setenv.bat
+            checkForSetenvBat(jvm.getJvmName());
 
             // create the scripts directory if it doesn't exist
             createScriptsDirectory(jvm);
@@ -351,6 +355,14 @@ public class JvmServiceImpl implements JvmService {
         return jvm;
     }
 
+    private void checkForJdkBinaries(Jvm jvm) {
+        if (jvm.getJdkMedia() == null){
+            final String jvmName = jvm.getJvmName();
+            LOGGER.error("No JDK version specified for JVM {}. Stopping the JV generation.", jvmName);
+            throw new InternalErrorException(FaultType.JVM_JDK_NOT_SPECIFIED, "No JDK version specified for JVM " + jvmName + ". Stopping the JVM generation.");
+        }
+    }
+
     private void validateJvmAndAppResources(Jvm jvm) {
         String jvmName = jvm.getJvmName();
         Map<String, List<String>> jvmAndAppResourcesExceptions = new HashMap<>();
@@ -396,11 +408,12 @@ public class JvmServiceImpl implements JvmService {
         }
     }
 
-    private void distributeBinaries(String hostName) {
+    private void distributeBinaries(Jvm jvm) {
+        final String hostName = jvm.getHostName();
         try {
             binaryDistributionLockManager.writeLock(hostName);
             binaryDistributionService.distributeUnzip(hostName);
-            binaryDistributionService.distributeJdk(hostName);
+            binaryDistributionService.distributeJdk(jvm);
         } finally {
             binaryDistributionLockManager.writeUnlock(hostName);
         }

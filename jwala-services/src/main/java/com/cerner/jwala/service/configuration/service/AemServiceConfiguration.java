@@ -4,6 +4,7 @@ import com.cerner.jwala.commandprocessor.CommandExecutor;
 import com.cerner.jwala.commandprocessor.impl.jsch.JschBuilder;
 import com.cerner.jwala.commandprocessor.jsch.impl.ChannelSessionKey;
 import com.cerner.jwala.commandprocessor.jsch.impl.KeyedPooledJschChannelFactory;
+import com.cerner.jwala.common.FileUtility;
 import com.cerner.jwala.common.domain.model.binarydistribution.BinaryDistributionControlOperation;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
@@ -17,7 +18,6 @@ import com.cerner.jwala.common.properties.ApplicationProperties;
 import com.cerner.jwala.control.command.RemoteCommandExecutor;
 import com.cerner.jwala.control.configuration.AemCommandExecutorConfig;
 import com.cerner.jwala.control.configuration.AemSshConfig;
-import com.cerner.jwala.common.FileUtility;
 import com.cerner.jwala.control.webserver.command.WebServerCommandFactory;
 import com.cerner.jwala.persistence.configuration.AemPersistenceServiceConfiguration;
 import com.cerner.jwala.persistence.jpa.service.*;
@@ -60,12 +60,11 @@ import com.cerner.jwala.service.jvm.JvmStateService;
 import com.cerner.jwala.service.jvm.impl.JvmControlServiceImpl;
 import com.cerner.jwala.service.jvm.impl.JvmServiceImpl;
 import com.cerner.jwala.service.jvm.state.JvmStateReceiverAdapter;
+import com.cerner.jwala.service.repository.RepositoryService;
 import com.cerner.jwala.service.resource.ResourceContentGeneratorService;
-import com.cerner.jwala.service.resource.ResourceRepositoryService;
 import com.cerner.jwala.service.resource.ResourceService;
 import com.cerner.jwala.service.resource.impl.ResourceServiceImpl;
 import com.cerner.jwala.service.resource.impl.handler.WebServerResourceHandler;
-import com.cerner.jwala.service.ssl.hc.HttpClientRequestFactory;
 import com.cerner.jwala.service.state.InMemoryStateManagerService;
 import com.cerner.jwala.service.state.impl.InMemoryStateManagerServiceImpl;
 import com.cerner.jwala.service.webserver.WebServerCommandService;
@@ -89,7 +88,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.task.TaskExecutor;
@@ -100,10 +98,6 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
-import java.security.KeyManagementException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.UnrecoverableKeyException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ThreadFactory;
@@ -114,22 +108,23 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 @EnableAsync
 @EnableScheduling
 @ComponentScan({"com.cerner.jwala.service.webserver.component",
-        "com.cerner.jwala.service.state",
-        "com.cerner.jwala.service.spring.component",
-        "com.cerner.jwala.commandprocessor.jsch.impl.spring.component",
-        "com.cerner.jwala.service.group.impl.spring.component",
-        "com.cerner.jwala.service.jvm.impl.spring.component",
-        "com.cerner.jwala.service.impl.spring.component",
-        "com.cerner.jwala.service.resource.impl",
-        "com.cerner.jwala.common",
-        "com.cerner.jwala.service.host.impl",
-        "com.cerner.jwala.service.jvm.impl",
-        "com.cerner.jwala.service.jvm.operation.impl",
-        "com.cerner.jwala.control.jvm.command",
-        "com.cerner.jwala.control.webserver.command",
-        "com.cerner.jwala.commandprocessor.impl.jsch",
-        "com.cerner.jwala.control.command.common"})
-
+                "com.cerner.jwala.service.state",
+                "com.cerner.jwala.service.spring.component",
+                "com.cerner.jwala.commandprocessor.jsch.impl.spring.component",
+                "com.cerner.jwala.service.group.impl.spring.component",
+                "com.cerner.jwala.service.jvm.impl.spring.component",
+                "com.cerner.jwala.service.impl.spring.component",
+                "com.cerner.jwala.service.resource.impl",
+                "com.cerner.jwala.common",
+                "com.cerner.jwala.service.impl",
+                "com.cerner.jwala.service.media.impl",
+                "com.cerner.jwala.common.jsch.impl",
+                "com.cerner.jwala.service.jvm.impl",
+                "com.cerner.jwala.service.jvm.operation.impl",
+                "com.cerner.jwala.control.jvm.command",
+                "com.cerner.jwala.control.webserver.command",
+                "com.cerner.jwala.commandprocessor.impl.jsch",
+                "com.cerner.jwala.control.command.common"})
 public class AemServiceConfiguration {
 
     @Autowired
@@ -318,38 +313,18 @@ public class AemServiceConfiguration {
                                               final ResourceDao resourceDao,
                                               final WebServerResourceHandler webServerResourceHandler,
                                               final ResourceContentGeneratorService resourceContentGeneratorService,
-                                              final ResourceRepositoryService resourceRepositoryService) {
+                                              @Qualifier("resourceRepositoryService")
+                                              final RepositoryService repositoryService) {
         return new ResourceServiceImpl(aemPersistenceServiceConfiguration.getResourcePersistenceService(),
                 aemPersistenceServiceConfiguration.getGroupPersistenceService(), applicationPersistenceService,
                 jvmPersistenceService, webServerPersistenceService, resourceDao, webServerResourceHandler,
                 aemCommandExecutorConfig.getRemoteCommandExecutor(), binaryWriteLockMap,
-                resourceContentGeneratorService, binaryDistributionService, new Tika(), resourceRepositoryService);
+                resourceContentGeneratorService, binaryDistributionService, new Tika(), repositoryService);
     }
 
     @Bean
     public ResourceDao getResourceDao() {
         return new ResourceDaoImpl();
-    }
-
-    @Bean(name = "webServerHttpRequestFactory")
-    @DependsOn("aemServiceConfigurationPropertiesConfigurer")
-    // TODO: Refactor the @value parameter names e.g. ping.jvm.connectTimeout -> ping.request.connectTimeout
-    // TODO: Better yet if we can do away with this, just use HttpComponentsClientHttpRequestFactory directly
-    // This bean is used by the ClientFactoryHelper.
-    public HttpClientRequestFactory getHttpClientRequestFactory(
-            @Value("${ping.jvm.connectTimeout}") final int connectionTimeout,
-            @Value("${ping.jvm.readTimeout}") final int readTimeout,
-            @Value("${ping.jvm.period.millis}") final long millis,
-            @Value("${ping.jvm.maxHttpConnections}") final int maxHttpConnections) throws UnrecoverableKeyException,
-            NoSuchAlgorithmException,
-            KeyStoreException,
-            KeyManagementException {
-        HttpClientRequestFactory httpClientRequestFactory = new HttpClientRequestFactory();
-        httpClientRequestFactory.setConnectTimeout(connectionTimeout);
-        httpClientRequestFactory.setReadTimeout(readTimeout);
-        httpClientRequestFactory.setPeriodMillis(millis);
-        httpClientRequestFactory.setMaxHttpConnections(maxHttpConnections);
-        return httpClientRequestFactory;
     }
 
     @Bean(name = "httpRequestFactory")
@@ -459,7 +434,7 @@ public class AemServiceConfiguration {
     }
 
     @Bean(name = "binaryDistributionService")
-    public BinaryDistributionService getBinaryDistributionService(BinaryDistributionControlService binaryDistributionControlService) {
-        return new BinaryDistributionServiceImpl(binaryDistributionControlService, getBinaryDistributionLockManager());
+    public BinaryDistributionService getBinaryDistributionService(BinaryDistributionControlService binaryDistributionControlService, HistoryFacadeService historyFacadeService) {
+        return new BinaryDistributionServiceImpl(binaryDistributionControlService, getBinaryDistributionLockManager(), historyFacadeService);
     }
 }

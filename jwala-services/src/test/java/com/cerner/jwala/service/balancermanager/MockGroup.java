@@ -5,6 +5,8 @@ import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
 import com.cerner.jwala.common.domain.model.jvm.JvmState;
+import com.cerner.jwala.common.domain.model.media.Media;
+import com.cerner.jwala.common.domain.model.path.FileSystemPath;
 import com.cerner.jwala.common.domain.model.path.Path;
 import com.cerner.jwala.common.domain.model.webserver.WebServer;
 import com.cerner.jwala.common.domain.model.webserver.WebServerReachableState;
@@ -17,19 +19,20 @@ public class MockGroup {
 
     private Identifier<Group> groupId = new Identifier<>((long) 1);
     private String groupName = "mygroupName";
+    private Group parentGroup;
 
     public Group getGroup() {
         getJvms();
         getApplications();
         getWebServers();
-        Group group = new Group(groupId,
+        parentGroup = new Group(groupId,
                 groupName,
                 jvms,
                 webServers,
                 null,
                 applications);
-        this.groups.add(group);
-        return group;
+        this.groups.add(parentGroup);
+        return parentGroup;
     }
 
     public List<Jvm> getJvms() {
@@ -38,6 +41,7 @@ public class MockGroup {
                 "jvmname",
                 "somehost0057",
                 groups,
+                parentGroup,
                 9100,
                 9101,
                 9102,
@@ -47,10 +51,12 @@ public class MockGroup {
                 "systemProperties",
                 JvmState.JVM_START,
                 "errorStatus",
-                getApplications(),
                 Calendar.getInstance(),
                 "username",
-                "encryptedpassword");
+                "encryptedpassword",
+                new Media(1, "JDK 1.7-test", "/local/archive/path.zip", "JDK", "/remote/host/path", "unzipped-root-deploy-dir"),
+                new Media(2, "Apache Tomcat 7.0.55-test", "/local/archive/path.zip", "Tomcat", "/remote/host/path", "unzipped-root-deploy-dir"),
+                "d:/java/home");
         this.jvms.add(jvm);
         jvms.add(jvm);
         return jvms;
@@ -61,6 +67,7 @@ public class MockGroup {
                 jvmName,
                 "somehost0057",
                 groups,
+                parentGroup,
                 9100,
                 9101,
                 9102,
@@ -70,10 +77,12 @@ public class MockGroup {
                 "systemProperties",
                 JvmState.JVM_START,
                 "errorStatus",
-                getApplications(),
                 Calendar.getInstance(),
                 "username",
-                "encryptedpassword");
+                "encryptedpassword",
+                new Media(1, "JDK 1.7-test", "/local/archive/path", "JDK", "/remote/host/path", "unzipped-root-deploy-dir"),
+                new Media(1, "Apache Tomcat 7.0.55-test", "/local/archive/path", "Tomcat", "/remote/host/path", "unzipped-root-deploy-dir"),
+                "d:/java/home");
         return jvm;
     }
 
@@ -85,7 +94,7 @@ public class MockGroup {
                 80,
                 443,
                 new Path("path"),
-                new Path("filesystempath"),
+                new FileSystemPath("filesystempath"),
                 new Path("svrRoot"),
                 new Path("docRoot"),
                 WebServerReachableState.WS_REACHABLE,
@@ -102,7 +111,7 @@ public class MockGroup {
                 80,
                 443,
                 new Path("path"),
-                new Path("filesystempath"),
+                new FileSystemPath("filesystempath"),
                 new Path("svrRoot"),
                 new Path("docRoot"),
                 WebServerReachableState.WS_REACHABLE,
@@ -179,7 +188,7 @@ public class MockGroup {
                 80,
                 443,
                 new Path("path"),
-                new Path("filesystempath"),
+                new FileSystemPath("filesystempath"),
                 new Path("svrRoot"),
                 new Path("docRoot"),
                 WebServerReachableState.WS_REACHABLE,
@@ -191,7 +200,7 @@ public class MockGroup {
                 80,
                 443,
                 new Path("path"),
-                new Path("filesystempath"),
+                new FileSystemPath("filesystempath"),
                 new Path("svrRoot"),
                 new Path("docRoot"),
                 WebServerReachableState.WS_REACHABLE,

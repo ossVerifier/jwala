@@ -1,11 +1,9 @@
-package com.cerner.jwala.ws.rest.v1.impl;
+package com.cerner.jwala.ws.rest.v1.service.impl;
 
 import com.cerner.jwala.persistence.jpa.domain.JpaHistory;
 import com.cerner.jwala.service.HistoryService;
 import com.cerner.jwala.ws.rest.v1.service.HistoryServiceRest;
 
-import javax.ws.rs.PathParam;
-import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 import java.util.List;
 

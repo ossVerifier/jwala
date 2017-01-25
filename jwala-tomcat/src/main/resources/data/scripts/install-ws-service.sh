@@ -11,8 +11,8 @@ CYGWIN*) cygwin=true;;
 Linux*) linux=true;;
 esac
 
-if [ "$1" = "" -o "$2" = "" ]; then
-    echo $0 not invoked with service name or instances folder path
+if [ "$1" = "" ]; then
+    echo $0 not invoked with service name
     exit $JWALA_EXIT_CODE_NO_OP;
 fi
 

@@ -433,10 +433,10 @@ public class GroupServiceRestImpl implements GroupServiceRest {
                 LOGGER.error("FAILURE getting response for {}", keyEntityName, e);
                 final Throwable cause = e.getCause();
                 if (cause instanceof InternalErrorException) {
-                    if (((InternalErrorException) cause).getErrorDetails() != null) {
-                        entityDetailsMap.putAll(((InternalErrorException) cause).getErrorDetails());
-                    } else {
+                    if (((InternalErrorException) cause).getErrorDetails().isEmpty()) {
                         entityDetailsMap.put(keyEntityName, Collections.singletonList(cause.getMessage()));
+                    } else {
+                        entityDetailsMap.putAll(((InternalErrorException) cause).getErrorDetails());
                     }
                 } else {
                     entityDetailsMap.put(keyEntityName, Collections.singletonList(e.getMessage()));

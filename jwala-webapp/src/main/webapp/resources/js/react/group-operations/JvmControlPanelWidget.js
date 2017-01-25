@@ -88,9 +88,10 @@ var JvmControlPanelWidget = React.createClass({
         this.props.jvmDiagnoseCallback(this.props.data, this.refs.diagnoseBtn, function(){});
     },
     showMgr: function() {
-        var url =  window.location.protocol + "//" +
+        var managerProtocol = jwalaVars["tomcatManagerProtocol"] || "http"
+        var url =  managerProtocol + "://" +
                    this.props.data.hostName + ":" +
-                   (window.location.protocol.toUpperCase() === "HTTPS:" ? this.props.data.httpsPort : this.props.data.httpPort) + "/manager/";
+                   (managerProtocol.toUpperCase() === "HTTPS" ? this.props.data.httpsPort : this.props.data.httpPort) + "/manager/";
         window.open(url);
     },
     jvmDrain: function(doneCallback) {
