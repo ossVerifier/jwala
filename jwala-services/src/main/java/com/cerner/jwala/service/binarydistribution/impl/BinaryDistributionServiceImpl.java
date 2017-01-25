@@ -246,8 +246,8 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService 
     private String getUserNameFromSecurityContext() {
         final SecurityContext context = SecurityContextHolder.getContext();
         if (context == null) {
-            LOGGER.debug("No context found getting user name from SecurityContextHolder");
-            return "";
+            LOGGER.error("No context found getting user name from SecurityContextHolder");
+            throw new SecurityException("No context found getting user name from SecurityContextHolder");
         }
 
         final Authentication authentication = context.getAuthentication();
