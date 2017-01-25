@@ -376,6 +376,7 @@ subprojects {
             property "sonar.junit.reportsPath", test.reports.junitXml.destination   // will be fixed in Gradle 1.12
             property "sonar.jacoco.reportPath", project.rootProject.buildDir.path + "/jacoco/" + "accum.exec"
             property "sonar.jacoco.itReportPath", project.rootProject.buildDir.path + "/jacoco/" + "integration_test_jwala.exec"
+
         }
     }
 }
@@ -385,8 +386,13 @@ apply plugin: "org.sonarqube"
 
 sonarqube {
     properties {
-//        property "sonar.junit.reportsPath", test.reports.junitXml.destination   // will be fixed in Gradle 1.12
-        property "sonar.jacoco.reportPath", project.rootProject.buildDir.path + "/jacoco/" + "accum.exec"
-        property "sonar.jacoco.itReportPath", project.rootProject.buildDir.path + "/jacoco/" + "integration_test_jwala.exec"
-    }
+        property 'sonar.jacoco.reportPath', project.rootProject.buildDir.path + "/jacoco/" + "accum.exec"
+        property 'sonar.jacoco.itReportPath', project.rootProject.buildDir.path + "/jacoco/" + "integration_test_jwala.exec"
+        property 'sonar.host.url',  project.properties['sonarHostUrl']
+        property 'sonar.jdbc.driverClassName', 'com.mysql.jdbc.Driver'
+        property 'sonar.projectKey', 'cto.tco.toc'
+	    property 'sonar.projectName', 'tomcat operations center'
+        property 'sonar.projectVersion', '1.0.0'
+	}
+	
 }
