@@ -145,7 +145,7 @@ public class JschServiceImpl implements JschService {
         channelExec.connect(CHANNEL_CONNECT_TIMEOUT);
         LOGGER.debug("channel {} connected!", channelExec.getId());
 
-        final String output = readExecRemoteOutput(channelExec);
+        final String output = readExecRemoteOutput(channelExec, timeout);
         LOGGER.debug("remote output = {}", output);
 
         String errorOutput = null;
@@ -175,14 +175,16 @@ public class JschServiceImpl implements JschService {
      * Read the remote output for the exec channel. This is the code provided on the jcraft site and does not rely
      * on a timeout.
      * @param channelExec the exec channel
+     * @param timeout the maximum period of time for reading the channel output
      * @return the output from the channel
      * @throws IOException for any issues encoutered when retrieving the input stream from the channel
      */
-    private String readExecRemoteOutput(ChannelExec channelExec) throws IOException {
+    private String readExecRemoteOutput(ChannelExec channelExec, long timeout) throws IOException {
         InputStream in = channelExec.getInputStream();
         StringBuilder outputBuilder = new StringBuilder();
 
         byte[] tmp = new byte[BYTE_CHUNK_SIZE];
+        long startTime = System.currentTimeMillis();
         while (true) {
             while (in.available() > 0) {
                 int i = in.read(tmp, 0, BYTE_CHUNK_SIZE);
@@ -195,6 +197,12 @@ public class JschServiceImpl implements JschService {
                 outputBuilder.append(channelExec.getExitStatus());
                 break;
             }
+
+            if ((System.currentTimeMillis() - startTime) > timeout) {
+                LOGGER.warn("Remote exec output reading timeout!");
+                break;
+            }
+
             try {
                 Thread.sleep(250);
             } catch (Exception ee) {
