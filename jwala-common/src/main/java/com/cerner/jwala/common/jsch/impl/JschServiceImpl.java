@@ -245,6 +245,10 @@ public class JschServiceImpl implements JschService {
 
                     startTime = System.currentTimeMillis();
 
+                    // need to verify this works on non-windows systems
+                    // currently setting the encoding to UTF8, UTF16, ASCII, or ISO all fail this conditional
+                    // e.g. new String(bytes, StandardCharsets.UTF-8)
+                    // printing out Charset.defaultCharset() shows it's using windows-1252 on a Windows JVM
                     if (new String(bytes).indexOf(dataEndMarker) > -1) {
                         LOGGER.debug("Read EOF character '{}', stopping remote output reading...", bytes[size - 1]);
                         break;
