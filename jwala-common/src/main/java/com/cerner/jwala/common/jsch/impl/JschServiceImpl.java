@@ -164,7 +164,7 @@ public class JschServiceImpl implements JschService {
         LOGGER.debug("Channel exec exit status = {}", channelExec.getExitStatus());
 
         if (channelExec.getExitStatus() != 0 && channelExec.getExitStatus() != -1) {
-            errorOutput = readRemoteOutput(remoteError, null, timeout);
+            errorOutput = readExecRemoteOutput(channelExec, timeout);
             LOGGER.debug("remote error output = {}", errorOutput);
         }
 
@@ -172,10 +172,10 @@ public class JschServiceImpl implements JschService {
     }
 
     /**
-     * Read the remote output for the exec channel. This is the code provided on the jcraft site and does not rely
-     * on a timeout.
+     * Read the remote output for the exec channel. This is the code provided on the jcraft site with a timeout added.
+     *
      * @param channelExec the exec channel
-     * @param timeout the maximum period of time for reading the channel output
+     * @param timeout     the maximum period of time for reading the channel output
      * @return the output from the channel
      * @throws IOException for any issues encoutered when retrieving the input stream from the channel
      */
@@ -224,6 +224,11 @@ public class JschServiceImpl implements JschService {
      */
     private String readRemoteOutput(final InputStream remoteOutput, final Character dataEndMarker, final long timeout)
             throws IOException {
+
+        if (null == dataEndMarker) {
+            throw new JschServiceException("Expecting non-null end marker when reading remote output");
+        }
+
         final BufferedInputStream buffIn = new BufferedInputStream(remoteOutput);
         final byte[] bytes = new byte[BYTE_CHUNK_SIZE];
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -240,7 +245,7 @@ public class JschServiceImpl implements JschService {
 
                     startTime = System.currentTimeMillis();
 
-                    if (dataEndMarker != null && new String(bytes).indexOf(dataEndMarker) > -1) {
+                    if (new String(bytes).indexOf(dataEndMarker) > -1) {
                         LOGGER.debug("Read EOF character '{}', stopping remote output reading...", bytes[size - 1]);
                         break;
                     }
