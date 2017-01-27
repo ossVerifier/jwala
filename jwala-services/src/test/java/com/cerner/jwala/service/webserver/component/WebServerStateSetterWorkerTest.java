@@ -8,11 +8,11 @@ import com.cerner.jwala.service.MessagingService;
 import com.cerner.jwala.service.group.GroupStateNotificationService;
 import com.cerner.jwala.service.state.InMemoryStateManagerService;
 import com.cerner.jwala.service.webserver.WebServerService;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.mockito.internal.verification.Times;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.client.ClientHttpRequest;
@@ -23,9 +23,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.Map;
 
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 
 /**
@@ -76,62 +74,82 @@ public class WebServerStateSetterWorkerTest {
     }
 
     @Test
-    @SuppressWarnings("unchecked")
     public void testPingWebServer() throws Exception {
-        final URI uri = new URI("any");
-        when(mockWebServerReachableStateMap.get(any(Identifier.class))).thenReturn(WebServerReachableState.WS_UNREACHABLE);
-        when(mockWebServer.getStatusUri()).thenReturn(uri);
         when(mockClientHttpResponse.getStatusCode()).thenReturn(HttpStatus.OK);
-        when(mockHttpRequestFactory.createRequest(eq(uri), eq(HttpMethod.GET))).thenReturn(mockClientHttpRequest);
         when(mockClientHttpRequest.execute()).thenReturn(mockClientHttpResponse);
-        when(mockWebServer.getId()).thenReturn(new Identifier<WebServer>(1L));
+        when(mockHttpRequestFactory.createRequest(any(URI.class), eq(HttpMethod.GET))).thenReturn(mockClientHttpRequest);
+        final Identifier<WebServer> id = new Identifier<>(1L);
+        when(mockWebServer.getId()).thenReturn(id);
         webServerStateSetterWorker.pingWebServer(mockWebServer);
-        verify(mockWebServerService).updateState(any(Identifier.class), any(WebServerReachableState.class), anyString());
+        verify(mockWebServerService).updateState(any(Identifier.class), eq(WebServerReachableState.WS_REACHABLE),
+                eq(StringUtils.EMPTY));
         verify(mockMessagingService).send(any(WebServerState.class));
+    }
 
-        // State did not change so there shouldn't be any updates
-        reset(mockWebServerService);
-        reset(mockMessagingService);
+    @Test
+    public void testPingWebServerNotFound() throws Exception {
+        when(mockClientHttpResponse.getStatusCode()).thenReturn(HttpStatus.NOT_FOUND);
+        when(mockClientHttpRequest.execute()).thenReturn(mockClientHttpResponse);
+        when(mockHttpRequestFactory.createRequest(any(URI.class), eq(HttpMethod.GET))).thenReturn(mockClientHttpRequest);
+        final Identifier<WebServer> id = new Identifier<>(1L);
+        when(mockWebServer.getId()).thenReturn(id);
         webServerStateSetterWorker.pingWebServer(mockWebServer);
-        verify(mockWebServerService, new Times(0)).updateState(any(Identifier.class), any(WebServerReachableState.class), anyString());
-        verify(mockMessagingService, new Times(0)).send(any(WebServerState.class));
+        verify(mockWebServerService).updateState(any(Identifier.class), eq(WebServerReachableState.WS_UNREACHABLE),
+                contains("failed with a response code"));
+        verify(mockMessagingService).send(any(WebServerState.class));
+    }
 
-        // State changes so there should be updates
+    @Test
+    public void testPingWebServerWithIOException() throws Exception {
         when(mockClientHttpRequest.execute()).thenThrow(IOException.class);
-        when(mockWebServer.getState()).thenReturn(WebServerReachableState.WS_UNREACHABLE);
-        reset(mockWebServerService);
-        reset(mockMessagingService);
+        when(mockHttpRequestFactory.createRequest(any(URI.class), eq(HttpMethod.GET))).thenReturn(mockClientHttpRequest);
+        final Identifier<WebServer> id = new Identifier<>(1L);
+        when(mockWebServer.getId()).thenReturn(id);
         webServerStateSetterWorker.pingWebServer(mockWebServer);
-        verify(mockWebServerService).updateState(any(Identifier.class), any(WebServerReachableState.class), anyString());
+        verify(mockWebServerService).updateState(any(Identifier.class), eq(WebServerReachableState.WS_UNREACHABLE),
+                eq(StringUtils.EMPTY));
         verify(mockMessagingService).send(any(WebServerState.class));
+    }
 
-        // State did not change but there's an error, db should be updated and notification sent
-        reset(mockHttpRequestFactory);
-        reset(mockClientHttpRequest);
-        when(mockHttpRequestFactory.createRequest(eq(uri), eq(HttpMethod.GET))).thenReturn(mockClientHttpRequest);
+    @Test
+    public void testPingWebServerTwice() throws Exception {
+        when(mockClientHttpResponse.getStatusCode()).thenReturn(HttpStatus.OK);
         when(mockClientHttpRequest.execute()).thenReturn(mockClientHttpResponse);
-        when(mockClientHttpResponse.getStatusCode()).thenReturn(HttpStatus.NO_CONTENT);
-        reset(mockWebServerService);
-        reset(mockMessagingService);
+        when(mockHttpRequestFactory.createRequest(any(URI.class), eq(HttpMethod.GET))).thenReturn(mockClientHttpRequest);
+        final Identifier<WebServer> id = new Identifier<>(1L);
+        when(mockWebServer.getId()).thenReturn(id);
         webServerStateSetterWorker.pingWebServer(mockWebServer);
-        verify(mockWebServerService).updateState(any(Identifier.class), any(WebServerReachableState.class), anyString());
+        verify(mockWebServerService).updateState(any(Identifier.class), eq(WebServerReachableState.WS_REACHABLE),
+                eq(StringUtils.EMPTY));
         verify(mockMessagingService).send(any(WebServerState.class));
 
-        // State did not change but there's an error (but same error), db should'nt be updated and notification is not sent
-        when(mockClientHttpResponse.getStatusCode()).thenReturn(HttpStatus.NO_CONTENT);
-        reset(mockWebServerService);
-        reset(mockMessagingService);
-        webServerStateSetterWorker.pingWebServer(mockWebServer);
-        verify(mockWebServerService, new Times(0)).updateState(any(Identifier.class), any(WebServerReachableState.class), anyString());
-        verify(mockMessagingService, new Times(0)).send(any(WebServerState.class));
 
-        // Web server is busy so there shouldn't be any db and notification updates
-        when(mockWebServerReachableStateMap.get(any(Identifier.class))).thenReturn(WebServerReachableState.WS_STOP_SENT);
         reset(mockWebServerService);
         reset(mockMessagingService);
         webServerStateSetterWorker.pingWebServer(mockWebServer);
-        verify(mockWebServerService, new Times(0)).updateState(any(Identifier.class), any(WebServerReachableState.class), anyString());
-        verify(mockMessagingService, new Times(0)).send(any(WebServerState.class));
+        verify(mockWebServerService, never()).updateState(any(Identifier.class), eq(WebServerReachableState.WS_REACHABLE),
+                eq(StringUtils.EMPTY));
+        verify(mockMessagingService, never()).send(any(WebServerState.class));
+    }
+
+    @Test
+    public void testPingWebServerNotFoundTwice() throws Exception {
+        when(mockClientHttpResponse.getStatusCode()).thenReturn(HttpStatus.NOT_FOUND);
+        when(mockClientHttpRequest.execute()).thenReturn(mockClientHttpResponse);
+        when(mockHttpRequestFactory.createRequest(any(URI.class), eq(HttpMethod.GET))).thenReturn(mockClientHttpRequest);
+        final Identifier<WebServer> id = new Identifier<>(1L);
+        when(mockWebServer.getId()).thenReturn(id);
+        webServerStateSetterWorker.pingWebServer(mockWebServer);
+        verify(mockWebServerService).updateState(any(Identifier.class), eq(WebServerReachableState.WS_UNREACHABLE),
+                contains("failed with a response code"));
+        verify(mockMessagingService).send(any(WebServerState.class));
+
+        reset(mockWebServerService);
+        reset(mockMessagingService);
+        webServerStateSetterWorker.pingWebServer(mockWebServer);
+        verify(mockWebServerService, never()).updateState(any(Identifier.class), eq(WebServerReachableState.WS_REACHABLE),
+                eq(StringUtils.EMPTY));
+        verify(mockMessagingService, never()).send(any(WebServerState.class));
     }
 
 }

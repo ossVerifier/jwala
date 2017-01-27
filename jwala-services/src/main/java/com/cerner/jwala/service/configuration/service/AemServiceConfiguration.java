@@ -333,7 +333,7 @@ public class AemServiceConfiguration {
     @Bean(name = "webServerStateRetrievalScheduledTaskHandler")
     public WebServerStateRetrievalScheduledTaskHandler getWebServerStateRetrievalScheduledTaskHandler(
             final WebServerService webServerService, final WebServerStateSetterWorker webServerStateSetterWorker) {
-        return new WebServerStateRetrievalScheduledTaskHandler(webServerService, webServerStateSetterWorker, webServerFutureMap, true);
+        return new WebServerStateRetrievalScheduledTaskHandler(webServerService, webServerStateSetterWorker, true);
     }
 
     @Bean(name = "webServerTaskExecutor")
