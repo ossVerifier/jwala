@@ -47,9 +47,7 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
     private GroupServiceImpl groupService;
     private GroupPersistenceService groupPersistenceService;
     private ApplicationPersistenceService applicationPersistenceService;
-    private WebServerPersistenceService webServerPersistenceService;
     private User user;
-    private RemoteCommandExecutorImpl remoteCommandExecutor;
     private BinaryDistributionService binaryDistributionService;
 
     @Mock
@@ -101,8 +99,6 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
     public void setUp() {
         groupPersistenceService = mock(GroupPersistenceService.class);
         applicationPersistenceService = mock(ApplicationPersistenceService.class);
-        webServerPersistenceService = mock(WebServerPersistenceService.class);
-        remoteCommandExecutor = mock(RemoteCommandExecutorImpl.class);
         binaryDistributionService = mock(BinaryDistributionService.class);
 
         mockGroupPesistenceService = mock(GroupPersistenceService.class);
@@ -120,7 +116,6 @@ public class GroupServiceImplVerifyTest extends VerificationBehaviorSupport {
 
         groupService = new GroupServiceImpl(groupPersistenceService,
                 applicationPersistenceService,
-                remoteCommandExecutor, binaryDistributionService,
                 resourceService);
         user = new User("unused");
 

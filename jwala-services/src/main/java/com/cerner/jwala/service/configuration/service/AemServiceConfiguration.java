@@ -171,9 +171,7 @@ public class AemServiceConfiguration {
     public GroupService getGroupService(final HistoryFacadeService historyFacadeService) {
         return new GroupServiceImpl(persistenceServiceConfiguration.getGroupPersistenceService(),
                                     persistenceServiceConfiguration.getApplicationPersistenceService(),
-                                    aemCommandExecutorConfig.getRemoteCommandExecutor(),
-                                    binaryDistributionService,
-                                    resourceService
+                resourceService
         );
     }
 

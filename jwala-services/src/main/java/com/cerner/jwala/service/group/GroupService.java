@@ -118,4 +118,6 @@ public interface GroupService {
      */
     List<String> getAllHosts();
 
+    void generateAndDeployGroupJvmFile(final String groupName, final String fileName, final User user);
+
 }
