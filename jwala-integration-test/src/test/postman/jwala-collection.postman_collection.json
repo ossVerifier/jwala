@@ -457,11 +457,12 @@
 									"key": "mediaArchiveFile",
 									"type": "file",
 									"enabled": true,
-									"src": "d:/postman/jdk1.8.0_92.zip"
+									"src": "{{jwalaResourcesDir}}/{{jwalaBinaryJdkZip}}",
+									"value": ""
 								},
 								{
 									"key": "remoteDir",
-									"value": "d:/stp",
+									"value": "{{jwalaBinaryJdkDest}}",
 									"type": "text",
 									"enabled": true
 								}
