@@ -18,10 +18,8 @@ import com.cerner.jwala.persistence.jpa.type.EventType;
 import com.cerner.jwala.service.HistoryFacadeService;
 import com.cerner.jwala.service.RemoteCommandExecutorService;
 import com.cerner.jwala.common.jsch.RemoteCommandReturnInfo;
-import com.cerner.jwala.service.binarydistribution.BinaryDistributionControlService;
 import com.cerner.jwala.service.binarydistribution.DistributionService;
 import com.cerner.jwala.service.exception.RemoteCommandExecutorServiceException;
-import com.cerner.jwala.service.host.HostService;
 import com.cerner.jwala.service.webserver.WebServerControlService;
 import com.cerner.jwala.service.webserver.WebServerService;
 import org.apache.commons.lang3.StringUtils;
@@ -32,9 +30,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
 import java.io.File;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 
 import static com.cerner.jwala.common.domain.model.webserver.WebServerControlOperation.START;
 import static com.cerner.jwala.common.domain.model.webserver.WebServerControlOperation.STOP;

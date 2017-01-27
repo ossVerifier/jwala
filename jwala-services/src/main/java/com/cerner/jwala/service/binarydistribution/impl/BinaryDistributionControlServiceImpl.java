@@ -5,11 +5,11 @@ import com.cerner.jwala.common.domain.model.binarydistribution.BinaryDistributio
 import com.cerner.jwala.common.domain.model.ssh.SshConfiguration;
 import com.cerner.jwala.common.exception.ApplicationException;
 import com.cerner.jwala.common.exec.*;
+import com.cerner.jwala.common.jsch.RemoteCommandReturnInfo;
 import com.cerner.jwala.control.command.RemoteCommandExecutor;
 import com.cerner.jwala.control.configuration.AemSshConfig;
 import com.cerner.jwala.exception.CommandFailureException;
 import com.cerner.jwala.service.RemoteCommandExecutorService;
-import com.cerner.jwala.service.RemoteCommandReturnInfo;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionControlService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

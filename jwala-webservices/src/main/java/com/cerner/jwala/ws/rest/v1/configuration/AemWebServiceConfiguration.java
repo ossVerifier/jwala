@@ -18,7 +18,6 @@ import com.cerner.jwala.service.webserver.WebServerControlService;
 import com.cerner.jwala.service.webserver.WebServerService;
 import com.cerner.jwala.ws.rest.RestServiceErrorHandler;
 import com.cerner.jwala.ws.rest.v1.exceptionmapper.*;
-import com.cerner.jwala.ws.rest.v1.impl.HistoryServiceRestImpl;
 import com.cerner.jwala.ws.rest.v1.response.ApplicationResponse;
 import com.cerner.jwala.ws.rest.v1.response.ResponseMessageBodyWriter;
 import com.cerner.jwala.ws.rest.v1.service.HistoryServiceRest;
@@ -30,9 +29,11 @@ import com.cerner.jwala.ws.rest.v1.service.balancermanager.BalancerManagerServic
 import com.cerner.jwala.ws.rest.v1.service.balancermanager.impl.BalancerManagerServiceRestImpl;
 import com.cerner.jwala.ws.rest.v1.service.group.GroupServiceRest;
 import com.cerner.jwala.ws.rest.v1.service.group.impl.GroupServiceRestImpl;
+import com.cerner.jwala.ws.rest.v1.service.impl.HistoryServiceRestImpl;
 import com.cerner.jwala.ws.rest.v1.service.jvm.JvmServiceRest;
 import com.cerner.jwala.ws.rest.v1.service.jvm.impl.JvmServiceRestImpl;
 import com.cerner.jwala.ws.rest.v1.service.resource.ResourceServiceRest;
+import com.cerner.jwala.ws.rest.v1.service.media.MediaServiceRest;
 import com.cerner.jwala.ws.rest.v1.service.resource.impl.ResourceServiceRestImpl;
 import com.cerner.jwala.ws.rest.v1.service.user.UserServiceRest;
 import com.cerner.jwala.ws.rest.v1.service.user.impl.UserServiceRestImpl;
@@ -44,6 +45,7 @@ import org.apache.cxf.jaxrs.JAXRSServerFactoryBean;
 import org.codehaus.jackson.jaxrs.JacksonJsonProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
 import javax.ws.rs.ext.MessageBodyWriter;
@@ -53,7 +55,10 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 @Configuration
+@ComponentScan({"com.cerner.jwala.ws.rest.v1.service"})
 public class AemWebServiceConfiguration {
+    @Autowired
+    private MediaServiceRest mediaServiceRest;
 
     @Autowired
     private FilesConfiguration filesConfiguration;
@@ -119,6 +124,7 @@ public class AemWebServiceConfiguration {
         final List<Object> serviceBeans = new ArrayList<>();
         serviceBeans.add(getV1GroupServiceRest());
         serviceBeans.add(getV1JvmServiceRest());
+        serviceBeans.add(mediaServiceRest);
         serviceBeans.add(getV1WebServerServiceRest());
         serviceBeans.add(getV1ApplicationServiceRest());
         serviceBeans.add(getV1UserServiceRest());

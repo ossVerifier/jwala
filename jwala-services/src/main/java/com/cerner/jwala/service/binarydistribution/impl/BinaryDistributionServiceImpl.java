@@ -21,6 +21,9 @@ import com.cerner.jwala.service.binarydistribution.DistributionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.io.File;
 import java.text.MessageFormat;
@@ -33,7 +36,6 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService,
     @Autowired
     protected SshConfiguration sshConfig;
 
-    private static final String BINARY_LOCATION_PROPERTY_KEY = "jwala.binary.dir";
     private static final String UNZIPEXE = "unzip.exe";
     private static final String APACHE_EXCLUDE = "ReadMe.txt *--";
 
@@ -63,9 +65,9 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService,
 
     @Override
     public void distributeJdk(final Jvm jvm) {
-        LOGGER.info("Start deploy jdk for {}", jvm);
+        LOGGER.info("Start deploy jdk for {}", jvm.getHostName());
         final Media jdkMedia = jvm.getJdkMedia();
-        final String binaryDeployDir = new File(jdkMedia.getRemoteHostPath()).getAbsolutePath().replaceAll("\\\\", "/");
+        final String binaryDeployDir = jdkMedia.getRemoteHostPath().replaceAll("\\\\", "/");
         if (binaryDeployDir != null && !binaryDeployDir.isEmpty()) {
             historyFacadeService.write(jvm.getHostName(), jvm.getGroups(), "DISTRIBUTE_JDK " + jdkMedia.getName(),
                     EventType.APPLICATION_EVENT, getUserNameFromSecurityContext());
@@ -76,50 +78,23 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService,
             }
         } else {
             final String errMsg = MessageFormat.format("JDK dir location is null or empty for JVM {0}. Not deploying JDK.", jvm.getJvmName());
-        LOGGER.info("Start deploy jdk for host {}", hostname);
-        String remoteDeployDir = ApplicationProperties.getRequired(PropertyKeys.REMOTE_PATHS_DEPLOY_DIR);
-        String javaDirName = ApplicationProperties.getRequired(PropertyKeys.REMOTE_JWALA_JAVA_ROOT_DIR_NAME);
-        String jdkBinary = ApplicationProperties.get(PropertyKeys.JDK_BINARY_FILE_NAME);
-        distributeBinary(hostname, javaDirName,jdkBinary, remoteDeployDir, "");
-        LOGGER.info("End deploy jdk for {}", hostname);
+            LOGGER.info("Start deploy jdk for host {}", jvm.getHostName());
+            String remoteDeployDir = jdkMedia.getRemoteHostPath();
+            String javaDirName = jdkMedia.getMediaDir();
+            String jdkBinary = jdkMedia.getPath();
+            distributeBinary(jvm.getHostName(), javaDirName, jdkBinary, remoteDeployDir, "");
+            LOGGER.info("End deploy jdk for {}", jvm.getHostName());
+        }
     }
 
     private void distributeBinary(final String hostname, final String zipFileRootDir, final String zipFileName, final String jwalaRemoteHome, final String exclude) {
         String jwalaBinaryDir = ApplicationProperties.getRequired(PropertyKeys.LOCAL_JWALA_BINARY_DIR);
-        String binaryDeployDir = jwalaRemoteHome +"/"+zipFileRootDir;
-        String zipFile = jwalaBinaryDir +"/"+zipFileName;
-        if (remoteFileCheck(hostname, binaryDeployDir)) {
-            LOGGER.info("Found {} on host {}. Nothing to do.", binaryDeployDir, hostname);
-            return;
-        }
-
-        if (localArchivePath == null || localArchivePath.isEmpty()) {
-            LOGGER.warn("Cannot find the binary directory location in jwala, value is {}", localArchivePath);
-            return;
-        }
-
-        LOGGER.info("Binary {} on host {} not found. Trying to deploy it", binaryName, hostname);
-
-        String zipFile = localArchivePath;
-        String destinationZipFile = binaryDeployDir + "/" + binaryName + ".zip";
-        remoteCreateDirectory(hostname, binaryDeployDir);
-        remoteSecureCopyFile(hostname, zipFile, destinationZipFile);
-
-        try {
-            remoteUnzipBinary(hostname,
-                    ApplicationProperties.getRequired(PropertyKeys.REMOTE_SCRIPT_DIR) + "/" + UNZIPEXE,
-                    destinationZipFile,
-                    binaryDeployDir,
-                    excludeFromZip);
-        } finally {
-            remoteDeleteBinary(hostname, destinationZipFile);
-        }
-        LOGGER.info("Binary {} on host {} not found. Trying to deploy it", binaryDeployDir, hostname);
-        String destinationZipFile = binaryDeployDir + "/" + zipFile;
+        String binaryDeployDir = jwalaRemoteHome + "/" + zipFileRootDir;
+        String zipFile = jwalaBinaryDir + "/" + zipFileName;
         remoteCreateDirectory(hostname, jwalaRemoteHome);
-        remoteSecureCopyFile(hostname, zipFile, jwalaRemoteHome+"/"+zipFileName);
-        remoteUnzipBinary(hostname, jwalaRemoteHome +"/"+zipFileName, jwalaRemoteHome+"/", exclude);
-        remoteDeleteBinary(hostname, jwalaRemoteHome+"/"+zipFileName);
+        remoteSecureCopyFile(hostname, zipFile, jwalaRemoteHome + "/" + zipFileName);
+        remoteUnzipBinary(hostname, jwalaRemoteHome + "/" + zipFileName, jwalaRemoteHome + "/", exclude);
+        remoteDeleteBinary(hostname, jwalaRemoteHome + "/" + zipFileName);
     }
 
     @Override
@@ -163,7 +138,7 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService,
             if (binaryDistributionControlService.unzipBinary(hostname, zipFileName, destination, exclude).getReturnCode().wasSuccessful()) {
                 LOGGER.info("successfully unzipped the binary {}", zipFileName);
             } else {
-                final String message = "cannot unzip from " + zipFileName+ " to " + destination;
+                final String message = "cannot unzip from " + zipFileName + " to " + destination;
                 LOGGER.error(message);
                 throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, message);
             }
@@ -209,6 +184,7 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService,
             throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, message, e);
         }
     }
+
     @Override
     public boolean remoteFileCheck(final String hostname, final String remoteFilePath) {
         LOGGER.info("Looking for the remote file {} on host {}", remoteFilePath, hostname);
@@ -233,7 +209,7 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService,
         }
 
         if (!remoteFileCheck(hostname, jwalaScriptsPath + "/" + UNZIPEXE)) {
-            final String unzipFile= ApplicationProperties.get(PropertyKeys.LOCAL_JWALA_BINARY_DIR) + "/" + UNZIPEXE;
+            final String unzipFile = ApplicationProperties.get(PropertyKeys.LOCAL_JWALA_BINARY_DIR) + "/" + UNZIPEXE;
             LOGGER.info("SCP {} " + unzipFile);
             remoteSecureCopyFile(hostname, unzipFile, jwalaScriptsPath);
             changeFileMode(hostname, "a+x", jwalaScriptsPath, UNZIPEXE);
@@ -243,18 +219,19 @@ public class BinaryDistributionServiceImpl implements BinaryDistributionService,
     }
 
     @Override
-    public void backupFile(final String hostname, final String remoteFilePath){
-        binaryDistributionControlService.backupFile(hostname,remoteFilePath);
+    public void backupFile(final String hostname, final String remoteFilePath) {
+        binaryDistributionControlService.backupFile(hostname, remoteFilePath);
     }
 
     /**
      * Checks if the binary media directories already exists
-     * @param mediaDirs the binary media directories to check
-     * @param hostName the host name where to check the binary media directories
+     *
+     * @param mediaDirs       the binary media directories to check
+     * @param hostName        the host name where to check the binary media directories
      * @param binaryDeployDir the location where the binary media directories are in
      * @return true if all the binary media root directories already exists, otherwise false
      */
-    private boolean checkIfMediaDirExists(final String [] mediaDirs, final String hostName, final String binaryDeployDir) {
+    private boolean checkIfMediaDirExists(final String[] mediaDirs, final String hostName, final String binaryDeployDir) {
         for (final String mediaDir : mediaDirs) {
             if (!remoteFileCheck(hostName, binaryDeployDir + "/" + mediaDir)) {
                 return false;

@@ -43,7 +43,7 @@ public class JpaMedia extends AbstractEntity<JpaMedia> {
     @Enumerated(EnumType.STRING)
     private MediaType type;
 
-    @ValidPath(allowableFileExtensions = {"zip"})
+    @ValidPath(allowableFileExtensions = {"zip", "gz"})
     private String localPath;
 
     @ValidPath

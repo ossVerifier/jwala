@@ -1,17 +1,28 @@
 package com.cerner.jwala.common;
 
 import com.cerner.jwala.common.exception.ApplicationException;
+import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
+import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
+import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
+import org.apache.commons.compress.archivers.zip.ZipArchiveInputStream;
+import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
+import org.apache.commons.compress.utils.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.attribute.PosixFilePermission;
 import java.text.MessageFormat;
-import java.util.Enumeration;;
+import java.util.*;;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.ZipFile;
 
 /**
  * A utility class for file related operations
@@ -20,8 +31,10 @@ import java.util.jar.Manifest;
  */
 @Component
 public class FileUtility {
-
+    private static final String ZIP_FILE_EXT = ".zip";
+    private static final String TAR_GZIP_FILE_EXT = ".gz";
     private static final Logger LOGGER = LoggerFactory.getLogger(FileUtility.class);
+    private ZipFile zipFile;
 
     /**
      * Unzips the file to the specified destination
@@ -70,6 +83,41 @@ public class FileUtility {
         LOGGER.debug("End unzip {} in {} ms", zipFile.getAbsoluteFile(), (System.currentTimeMillis() - startTime));
         }
     }
+
+
+    /**
+     * Gets the root directories of a zip file
+     * @param zipFilename the zip filename
+     * @return zip file root directories
+     */
+    public Set<String> getZipRootDirs(final String zipFilename) {
+        final Set<String> zipRootDirs = new HashSet<>();
+        try {
+            if(zipFilename.indexOf(TAR_GZIP_FILE_EXT)>0){
+                return getGZipRootDirs(zipFilename);
+            }
+            final ZipFile zipFile =  new ZipFile(zipFilename);
+            final Enumeration zipEntryEnumeration = zipFile.entries();
+            while (zipEntryEnumeration.hasMoreElements()) {
+                final String zipEntry = zipEntryEnumeration.nextElement().toString();
+                final int slashIdx = zipEntry.indexOf('/');
+                if (slashIdx > 0) {
+                    zipRootDirs.add(zipEntry.substring(0, slashIdx));
+                }
+            }
+            zipFile.close();
+            return zipRootDirs;
+        } catch (final IOException e) {
+            throw new FileUtilityException(MessageFormat.format("Failed to get {0} parent path!", zipFilename), e);
+        }
+    }
+
+    /**
+     * Create archive in zip format
+     * @param archiveFile
+     * @param filesToBeJared
+     * @param parent
+     */
     public void createJarArchive(File archiveFile, File[] filesToBeJared, String parent) {
 
         final int BUFFER_SIZE = 10240;
@@ -118,15 +166,26 @@ public class FileUtility {
         }
     }
 
-    public static void main(String args[]){
-        try{
-        FileUtility fileUtility = new FileUtility();
-        long startTime = System.currentTimeMillis();
-        System.out.println("Start unzip..");
-        fileUtility.unzip(new File("C:\\dev\\apache-tomcat-7.0.55\\data\\binaries\\apache-tomcat-7.0.55-linux.zip"),new File("C:\\dev\\deleteme"));
-        System.out.println("Time taken: "+(System.currentTimeMillis()-startTime)/1000);
-        }catch(Throwable th){
-            th.printStackTrace();
+    /**
+     * Get the list of tar gzip
+     *
+     * @param tarGzipFile tar gzip filename
+     * @return the list of extracted filenames
+     * @throws IOException
+     */
+    public static Set<String> getGZipRootDirs(String tarGzipFile) throws IOException {
+        final Set<String> zipRootDirs = new HashSet<>();
+        TarArchiveInputStream in = new TarArchiveInputStream(new GzipCompressorInputStream(new FileInputStream(tarGzipFile)));
+        TarArchiveEntry entry = in.getNextTarEntry();
+        while (entry != null) {
+            final int slashIdx = entry.getName().indexOf('/');
+            if (slashIdx > 0) {
+                zipRootDirs.add(entry.getName().substring(0, slashIdx));
+            }
+            entry = in.getNextTarEntry();
         }
+        in.close();
+        return zipRootDirs;
     }
+
 }

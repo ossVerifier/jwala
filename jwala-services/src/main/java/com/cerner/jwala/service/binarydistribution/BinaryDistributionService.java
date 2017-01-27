@@ -1,15 +1,16 @@
 package com.cerner.jwala.service.binarydistribution;
 
+import com.cerner.jwala.common.domain.model.jvm.Jvm;
+
 /**
  * Created by Arvindo Kinny on 10/11/2016.
  */
 public interface BinaryDistributionService {
     /**
      * Distribute jwala JDK to remote host
-     * @param hostname remote host name
-     *
+     * @param jvm
      */
-    void distributeJdk(final String hostname);
+    void distributeJdk(final Jvm jvm);
 
     /**
      * Distribute jwala Apache http webserver to remote host

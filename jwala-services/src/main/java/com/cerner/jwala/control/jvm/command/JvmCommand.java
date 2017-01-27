@@ -5,7 +5,7 @@ package com.cerner.jwala.control.jvm.command;
  */
 
 import com.cerner.jwala.common.domain.model.jvm.Jvm;
-import com.cerner.jwala.service.RemoteCommandReturnInfo;
+import com.cerner.jwala.common.jsch.RemoteCommandReturnInfo;
 
 /**
  * The JvmCommand functional interface.<br/>

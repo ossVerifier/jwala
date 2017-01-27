@@ -24,7 +24,6 @@ import com.cerner.jwala.service.HistoryFacadeService;
 import com.cerner.jwala.service.RemoteCommandExecutorService;
 import com.cerner.jwala.common.jsch.RemoteCommandReturnInfo;
 import com.cerner.jwala.service.exception.RemoteCommandExecutorServiceException;
-import com.cerner.jwala.service.host.HostService;
 import com.cerner.jwala.service.jvm.JvmControlService;
 import com.cerner.jwala.service.jvm.JvmStateService;
 import com.cerner.jwala.service.jvm.exception.JvmControlServiceException;
@@ -41,8 +40,6 @@ import java.util.ArrayList;
 import java.util.Date;
 
 public class JvmControlServiceImpl implements JvmControlService {
-    @Autowired
-    private HostService hostService;
 
     @Autowired
     private JvmOperationService jvmOperationService;

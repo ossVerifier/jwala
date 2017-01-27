@@ -2,8 +2,8 @@ package com.cerner.jwala.service.host.impl;
 
 import com.cerner.jwala.common.domain.model.ssh.SshConfiguration;
 import com.cerner.jwala.common.exec.*;
+import com.cerner.jwala.common.jsch.RemoteCommandReturnInfo;
 import com.cerner.jwala.service.RemoteCommandExecutorService;
-import com.cerner.jwala.service.RemoteCommandReturnInfo;
 import com.cerner.jwala.service.host.HostService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
