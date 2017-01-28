@@ -89,26 +89,28 @@ public class GroupServiceImplDeployTest {
     @Autowired
     JvmServiceRest jvmServiceRest;
 
+/*
     @Autowired
     WebServerServiceRest webServerServiceRest;
+*/
 
     @Autowired
     ApplicationServiceRest applicationServiceRest;
 
-    static final BinaryDistributionService binaryDistributionService = mock(BinaryDistributionService.class);
-    static final GroupService mockGroupService = mock(GroupService.class);
-    static final ResourceService mockResourceService = mock(ResourceService.class);
-    static final GroupControlService mockGroupControlService = mock(GroupControlService.class);
-    static final GroupJvmControlService mockGroupJvmControlService = mock(GroupJvmControlService.class);
-    static final GroupWebServerControlService mockGroupWebServerControlService = mock(GroupWebServerControlService.class);
-    static final JvmService mockJvmService = mock(JvmService.class);
-    static final JvmControlService mockJvmControlService = mock(JvmControlService.class);
-    static final WebServerService mockWebServerService = mock(WebServerService.class);
-    static final WebServerControlService mockWebServerControlService = mock(WebServerControlService.class);
-    static final ApplicationService mockApplicationService = mock(ApplicationService.class);
-    static final ApplicationServiceRest mockApplicationServiceRest = mock(ApplicationServiceRest.class);
-    static final WebServerServiceRest mockWebServerServiceRest = mock(WebServerServiceRest.class);
-    static final HistoryFacadeService mockHistoryService = mock(HistoryFacadeService.class);
+    private static final BinaryDistributionService binaryDistributionService = mock(BinaryDistributionService.class);
+    private static final GroupService mockGroupService = mock(GroupService.class);
+    private static final ResourceService mockResourceService = mock(ResourceService.class);
+    private static final GroupControlService mockGroupControlService = mock(GroupControlService.class);
+    private static final GroupWebServerControlService mockGroupWebServerControlService = mock(GroupWebServerControlService.class);
+    private static final GroupJvmControlService mockGroupJvmControlService = mock(GroupJvmControlService.class);
+    private static final JvmService mockJvmService = mock(JvmService.class);
+    private static final JvmControlService mockJvmControlService = mock(JvmControlService.class);
+    private static final WebServerService mockWebServerService = mock(WebServerService.class);
+    private static final WebServerControlService mockWebServerControlService = mock(WebServerControlService.class);
+    private static final ApplicationService mockApplicationService = mock(ApplicationService.class);
+    private static final ApplicationServiceRest mockApplicationServiceRest = mock(ApplicationServiceRest.class);
+    private static final WebServerServiceRest mockWebServerServiceRest = mock(WebServerServiceRest.class);
+    private static final HistoryFacadeService mockHistoryService = mock(HistoryFacadeService.class);
 
 
     private AuthenticatedUser mockAuthUser = mock(AuthenticatedUser.class);
@@ -204,12 +206,14 @@ public class GroupServiceImplDeployTest {
         when(mockResourceService.generateResourceGroup()).thenReturn(new ResourceGroup());
         when(mockWebServerService.getResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"contentType\":\"text/plain\",\"deployPath\":\"./anyPath\"}");
         when(mockWebServerService.updateResourceTemplate(anyString(), anyString(), anyString())).thenReturn("new httpd.conf context");
+/*
         when(mockWebServerControlService.secureCopyFile(anyString(), anyString(), anyString(), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(0), "SUCCESS", ""));
+*/
 
         Response returnedResponse = groupServiceRest.generateAndDeployGroupWebServersFile("testGroup", "httpd.conf", mockAuthUser);
         assertEquals(200, returnedResponse.getStatusInfo().getStatusCode());
 
-        when(mockWebServerControlService.secureCopyFile(anyString(), anyString(), anyString(), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(1), "", "NOT OK"));
+/*        when(mockWebServerControlService.secureCopyFile(anyString(), anyString(), anyString(), anyString())).thenReturn(new CommandOutput(new ExecReturnCode(1), "", "NOT OK"));*/
         try {
             groupServiceRest.generateAndDeployGroupWebServersFile("testGroup", "httpd.conf", mockAuthUser);
         } catch (InternalErrorException ie) {
@@ -463,9 +467,11 @@ public class GroupServiceImplDeployTest {
         when(mockWebServerService.getResourceTemplateMetaData(anyString(), anyString())).thenReturn("{\"contentType\":\"text/plain\",\"deployPath\":./anyPath}");
         when(mockResourceService.generateResourceGroup()).thenReturn(new ResourceGroup());
         when(mockWebServerControlService.controlWebServer(any(ControlWebServerRequest.class), any(User.class))).thenReturn(successCommandOutput);
+/*
         when(mockWebServerControlService.createDirectory(any(WebServer.class), anyString())).thenReturn(successCommandOutput);
         when(mockWebServerControlService.changeFileMode(any(WebServer.class), anyString(), anyString(), anyString())).thenReturn(successCommandOutput);
         when(mockWebServerControlService.secureCopyFile(anyString(), anyString(), anyString(), anyString())).thenReturn(successCommandOutput);
+*/
         when(mockWebServerService.generateInstallServiceScript(any(WebServer.class))).thenReturn("install_ServiceWS.bat content");
         when(mockWebServerService.getResourceTemplateNames(anyString())).thenReturn(resourceTemplateNames);
 
@@ -646,10 +652,13 @@ public class GroupServiceImplDeployTest {
             return new JvmServiceRestImpl(mockJvmService, mockJvmControlService, mockResourceService);
         }
 
+/*
         @Bean
         WebServerServiceRest getWebServerServiceRest() {
+
             return new WebServerServiceRestImpl(mockWebServerService, mockWebServerControlService, mock(WebServerCommandService.class), new HashMap<String, ReentrantReadWriteLock>(), mockResourceService, mockGroupService, binaryDistributionService, mockHistoryService);
         }
+*/
 
         @Bean
         ApplicationServiceRest getApplicationServiceRest() {

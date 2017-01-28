@@ -216,7 +216,7 @@ public class JvmCommandFactory {
         //copy delete script
         return new ExecCommand(ApplicationProperties.getRequired(PropertyKeys.REMOTE_SCRIPT_DIR)+
                                 "/" + jvm.getJvmName() + "/" +
-                                DELETE_SERVICE_SCRIPT_NAME.getValue());
+                                DELETE_SERVICE_SCRIPT_NAME.getValue(), jvm.getJvmName());
     }
 
     private ExecCommand getExecCommandForStopService(Jvm jvm){

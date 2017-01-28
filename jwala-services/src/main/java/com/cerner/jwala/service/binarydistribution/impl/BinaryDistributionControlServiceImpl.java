@@ -6,6 +6,8 @@ import com.cerner.jwala.common.domain.model.ssh.SshConfiguration;
 import com.cerner.jwala.common.exception.ApplicationException;
 import com.cerner.jwala.common.exec.*;
 import com.cerner.jwala.common.jsch.RemoteCommandReturnInfo;
+import com.cerner.jwala.common.properties.ApplicationProperties;
+import com.cerner.jwala.common.properties.PropertyKeys;
 import com.cerner.jwala.control.command.RemoteCommandExecutor;
 import com.cerner.jwala.control.configuration.AemSshConfig;
 import com.cerner.jwala.exception.CommandFailureException;
@@ -139,7 +141,7 @@ public class BinaryDistributionControlServiceImpl implements BinaryDistributionC
      */
     private String getUnzipCommand(String zipFileName, String destination){
             if(zipFileName.indexOf(".zip")>-1){
-            return "~/.jwala/unzip.exe + \" -q -o \" + aParams[1] + \" -d \" + aParams[2] + \" -x \" + aParams[3]";
+            return ApplicationProperties.getRequired(PropertyKeys.REMOTE_SCRIPT_DIR)+"/unzip.exe -q -o \"" + zipFileName + "\" -d \"" + destination + "\""; /*-x \" + aParams[3]"; TODO: exclude list*/
         }else if(zipFileName.indexOf(".gz")>-1){
             return String.format("tar xvf %s -C %s", zipFileName, destination);
         }else{

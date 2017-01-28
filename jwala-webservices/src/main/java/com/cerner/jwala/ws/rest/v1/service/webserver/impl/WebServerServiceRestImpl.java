@@ -355,8 +355,6 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
         String remoteInstallServiceScriptPath = remoteScriptDir + "/" + WebServerServiceImpl.INSTALL_SERVICE_SCRIPT_NAME;
         webServerControlService.createDirectory(webServer, remoteInstallServiceScriptPath);
         webServerControlService.secureCopyFile(name, installServiceScriptPath, remoteInstallServiceScriptPath, user.getUser().getId());
-
-        //Do we need this?
         webServerControlService.changeFileMode(webServer, "a+x", remoteScriptDir, "*.sh");
         webServerControlService.changeFileMode(webServer, "a+x", remoteScriptDir, "linux/*");
 

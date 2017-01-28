@@ -29,7 +29,7 @@ public interface JvmService {
 
     void removeJvm(final Identifier<Jvm> aJvmId, User user);
 
-    void deleteJvmWindowsService(ControlJvmRequest controlJvmRequest, Jvm jvm, User user);
+    void deleteJvmService(ControlJvmRequest controlJvmRequest, Jvm jvm, User user);
 
     Jvm generateAndDeployJvm(String jvmName, User user);
 
@@ -45,7 +45,12 @@ public interface JvmService {
 
     String previewResourceTemplate(String fileName, String jvmName, String groupName, String template);
 
-    void updateState(Identifier<Jvm> id, JvmState state);
+    /**
+     * Update state of JVM
+     * @param id JVM id
+     * @param state JVM State
+     */
+    public void updateState(Identifier<Jvm> id, JvmState state);
 
     /**
      * Ping's the JVM and updates its state.
@@ -54,15 +59,40 @@ public interface JvmService {
      */
     void pingAndUpdateJvmState(Jvm jvm);
 
+    /**
+     * Deploy application context xml for JVM's
+     * @param jvm JVM
+     * @param user User
+     */
     void deployApplicationContextXMLs(Jvm jvm, User user);
 
-    Long getJvmStartedCount(String groupName);
+    /**
+     * get Get the count of JVM's which are started
+     * @param groupName
+     * @return
+     */
+    public Long getJvmStartedCount(String groupName);
 
-    Long getJvmCount(String groupName);
+    /**
+     * Get the jvm count for a group
+     * @param groupName
+     * @return
+     */
+    public Long getJvmCount(String groupName);
 
-    Long getJvmStoppedCount(String groupName);
+    /**
+     * Get the count of stopped JVM's
+     * @param groupName
+     * @return
+     */
+    public Long getJvmStoppedCount(String groupName);
 
-    Long getJvmForciblyStoppedCount(String groupName);
+    /**
+     * Get the count of forcibly stopped JVM's
+     * @param groupName
+     * @return
+     */
+    public Long getJvmForciblyStoppedCount(String groupName);
 
     /**
      * Generates all the required templates for the required jvm, and returns the source location and the destination
@@ -73,7 +103,7 @@ public interface JvmService {
      * as the absolute location of the destination file.
      * @throws IOException
      */
-    Map<String, String> generateResourceFiles(String jvmName) throws IOException;
+    public Map<String, String> generateResourceFiles(String jvmName) throws IOException;
 
     /**
      * Create JVM default templates.

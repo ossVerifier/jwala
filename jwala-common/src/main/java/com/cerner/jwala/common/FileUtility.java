@@ -173,19 +173,34 @@ public class FileUtility {
      * @return the list of extracted filenames
      * @throws IOException
      */
-    public static Set<String> getGZipRootDirs(String tarGzipFile) throws IOException {
+    public static Set<String> getGZipRootDirs(String tarGzipFile){
         final Set<String> zipRootDirs = new HashSet<>();
-        TarArchiveInputStream in = new TarArchiveInputStream(new GzipCompressorInputStream(new FileInputStream(tarGzipFile)));
-        TarArchiveEntry entry = in.getNextTarEntry();
-        while (entry != null) {
-            final int slashIdx = entry.getName().indexOf('/');
-            if (slashIdx > 0) {
-                zipRootDirs.add(entry.getName().substring(0, slashIdx));
+        TarArchiveInputStream in = null;
+        try {
+            in = new TarArchiveInputStream(new GzipCompressorInputStream(new FileInputStream(tarGzipFile)));
+            TarArchiveEntry entry = in.getNextTarEntry();
+            while (entry != null) {
+                final int slashIdx = entry.getName().indexOf('/');
+                if (slashIdx > 0) {
+                    zipRootDirs.add(entry.getName().substring(0, slashIdx));
+                }
+                entry = in.getNextTarEntry();
             }
-            entry = in.getNextTarEntry();
+        }catch (Throwable th){
+            throw new ApplicationException(th);
         }
-        in.close();
+        finally {
+            try {
+                if(in !=null) {
+                    in.close();
+                }
+            }catch (IOException e){
+                LOGGER.error("Error closing gzip stream",e);
+            }
+        }
+
         return zipRootDirs;
+
     }
 
 }

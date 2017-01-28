@@ -59,19 +59,21 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.*;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 public class JvmServiceImpl implements JvmService {
-
-
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JvmServiceImpl.class);
     private static final String REMOTE_COMMANDS_USER_SCRIPTS = ApplicationProperties.get("remote.commands.user-scripts");
     private static final String MEDIA_TYPE_TEXT = "text";
     private static final String SET_ENV_BAT = "setenv.bat";
     private static final String SET_ENV_SH = "setenv.sh";
+    private static final String DIAGNOSIS_INITIATED = "Diagnosis Initiated on JVM ${jvm.jvmName}, host ${jvm.hostName}";
+
     private final BinaryDistributionLockManager binaryDistributionLockManager;
-    private String topicServerStates;
+    private final String topicServerStates;
     private final JvmPersistenceService jvmPersistenceService;
     private final GroupService groupService;
     private final ApplicationService applicationService;
@@ -83,10 +85,6 @@ public class JvmServiceImpl implements JvmService {
     private final HistoryFacadeService historyFacadeService;
     private final BinaryDistributionService binaryDistributionService;
     private final FileUtility fileUtility;
-    private static final String JWALA_SCRIPTS_PATH = ApplicationProperties.get("remote.commands.user-scripts");
-
-
-    private static final String DIAGNOSIS_INITIATED = "Diagnosis Initiated on JVM ${jvm.jvmName}, host ${jvm.hostName}";
 
     public JvmServiceImpl(final JvmPersistenceService jvmPersistenceService,
                           final GroupService groupService,
@@ -147,7 +145,8 @@ public class JvmServiceImpl implements JvmService {
             final Group parentGroup = jvm.getGroups().iterator().next();
             createDefaultTemplates(jvm.getJvmName(), parentGroup);
             if (jvm.getGroups().size() > 1) {
-                LOGGER.warn("Multiple groups were associated with the JVM, but the JVM was created using the templates from group " + parentGroup.getName());
+                LOGGER.warn("Multiple groups were associated with the JVM, but the JVM was created using the templates from group "
+                            + parentGroup.getName());
             }
         }
 
@@ -161,16 +160,18 @@ public class JvmServiceImpl implements JvmService {
         // get the group JVM templates
         List<String> templateNames = groupService.getGroupJvmsResourceTemplateNames(groupName);
         for (final String templateName : templateNames) {
-            String templateContent = groupService.getGroupJvmResourceTemplate(groupName, templateName, resourceService.generateResourceGroup(), false);
+            String templateContent = groupService.getGroupJvmResourceTemplate(groupName, templateName,
+                                    resourceService.generateResourceGroup(), false);
             String metaDataStr = groupService.getGroupJvmResourceTemplateMetaData(groupName, templateName);
             try {
-                ResourceTemplateMetaData metaData = resourceService.getTokenizedMetaData(templateName, jvmPersistenceService.findJvmByExactName(jvmName), metaDataStr);
+                ResourceTemplateMetaData metaData = resourceService.getTokenizedMetaData(templateName,
+                                                    jvmPersistenceService.findJvmByExactName(jvmName), metaDataStr);
                 final ResourceIdentifier resourceIdentifier = new ResourceIdentifier.Builder()
                         .setResourceName(metaData.getDeployFileName())
                         .setJvmName(jvmName)
                         .setGroupName(groupName)
                         .build();
-                resourceService.createResource(resourceIdentifier, metaData, IOUtils.toInputStream(templateContent));
+                resourceService.createResource(resourceIdentifier, metaData, IOUtils.toInputStream(templateContent,StandardCharsets.UTF_8));
 
             } catch (IOException e) {
                 LOGGER.error("Failed to map meta data for JVM {} in group {}", jvmName, groupName, e);
@@ -185,15 +186,19 @@ public class JvmServiceImpl implements JvmService {
             try {
                 ResourceTemplateMetaData metaData = resourceService.getMetaData(metaDataStr);
                 if (metaData.getEntity().getDeployToJvms()) {
-                    final String template = resourceService.getAppTemplate(groupName, metaData.getEntity().getTarget(), templateName);
+                    final String template = resourceService.getAppTemplate(groupName, metaData.getEntity().getTarget(),
+                                                                           templateName);
                     final ResourceIdentifier resourceIdentifier = new ResourceIdentifier.Builder()
                             .setResourceName(metaData.getTemplateName()).setJvmName(jvmName)
                             .setWebAppName(metaData.getEntity().getTarget()).build();
-                    resourceService.createResource(resourceIdentifier, metaData, new ByteArrayInputStream(template.getBytes()));
+                    resourceService.createResource(resourceIdentifier, metaData,
+                                                   new ByteArrayInputStream(template.getBytes(StandardCharsets.UTF_8)));
                 }
             } catch (IOException e) {
-                LOGGER.error("Failed to map meta data while creating JVM for template {} in group {}", templateName, groupName, e);
-                throw new InternalErrorException(FaultType.BAD_STREAM, "Failed to map data for template " + templateName + " in group " + groupName, e);
+                LOGGER.error("Failed to map meta data while creating JVM for template {} in group {}",
+                        templateName, groupName, e);
+                throw new InternalErrorException(FaultType.BAD_STREAM, "Failed to map data for template " +
+                                                 templateName + " in group " + groupName, e);
             }
         }
     }
@@ -238,7 +243,7 @@ public class JvmServiceImpl implements JvmService {
         if (!jvm.getState().isStartedState()) {
             LOGGER.info("Removing JVM from the database and deleting the service for id {}", aJvmId.getId());
             if (!jvm.getState().equals(JvmState.JVM_NEW)) {
-                deleteJvmWindowsService(new ControlJvmRequest(aJvmId, JvmControlOperation.DELETE_SERVICE), jvm, user);
+                deleteJvmService(new ControlJvmRequest(aJvmId, JvmControlOperation.DELETE_SERVICE), jvm, user);
             }
             jvmPersistenceService.removeJvm(aJvmId);
         } else {
@@ -250,7 +255,7 @@ public class JvmServiceImpl implements JvmService {
     }
 
     @Override
-    public void deleteJvmWindowsService(ControlJvmRequest controlJvmRequest, Jvm jvm, User user) {
+    public void deleteJvmService(ControlJvmRequest controlJvmRequest, Jvm jvm, User user) {
         if (!jvm.getState().equals(JvmState.JVM_NEW)) {
             CommandOutput commandOutput = jvmControlService.controlJvm(controlJvmRequest, user);
             final String jvmName = jvm.getJvmName();
@@ -263,7 +268,11 @@ public class JvmServiceImpl implements JvmService {
                         commandOutput.getStandardError().isEmpty() ?
                                 commandOutput.getStandardOutput() : commandOutput.getStandardError();
                 LOGGER.error("Deleting windows service {} failed :: ERROR: {}", jvmName, standardError);
-                throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, standardError.isEmpty() ? CommandOutputReturnCode.fromReturnCode(commandOutput.getReturnCode().getReturnCode()).getDesc() : standardError);
+                throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE,
+                                                 standardError.isEmpty() ?
+                                                         CommandOutputReturnCode.fromReturnCode(
+                                                                 commandOutput.getReturnCode().getReturnCode())
+                                                                 .getDesc() : standardError);
             }
         }
     }
@@ -283,7 +292,8 @@ public class JvmServiceImpl implements JvmService {
         Jvm jvm = getJvm(jvmName);
         LOGGER.debug("Start generateAndDeployJvm for {} by user {}", jvmName, user.getId());
 
-        historyFacadeService.write(jvm.getHostName(), jvm.getGroups(), "Starting to generate remote JVM " + jvm.getJvmName(), EventType.USER_ACTION_INFO, user.getId());
+        historyFacadeService.write(jvm.getHostName(), jvm.getGroups(), "Starting to generate remote JVM " +
+                                   jvm.getJvmName(), EventType.USER_ACTION_INFO, user.getId());
 
         //add write lock for multiple write
         binaryDistributionLockManager.writeLock(jvmName + "-" + jvm.getId().toString());
@@ -302,8 +312,6 @@ public class JvmServiceImpl implements JvmService {
             checkForSetenvScript(jvm.getJvmName());
 
             distributeBinaries(jvm);
-            // check for setenv.bat
-            checkForSetenvBat(jvm.getJvmName());
 
             // create the scripts directory if it doesn't exist
             createScriptsDirectory(jvm);
@@ -312,14 +320,12 @@ public class JvmServiceImpl implements JvmService {
             deployScriptsToUserJwalaScriptsDir(jvm, user);
 
             // delete the service, needs install-service.bat
-            // TODO make generic to support multiple OSs
-            deleteJvmWindowsService(new ControlJvmRequest(jvm.getId(), JvmControlOperation.DELETE_SERVICE), jvm, user);
+            deleteJvmService(new ControlJvmRequest(jvm.getId(), JvmControlOperation.DELETE_SERVICE), jvm, user);
 
-            // create the tar file
-            //
+            // create the jar file
             final String jvmConfigJar = generateJvmConfigJar(jvm);
 
-            // copy the tar file
+            // copy the jar file
             secureCopyJvmConfigJar(jvm, jvmConfigJar, user);
 
             // call script to backup and tar the current directory and
@@ -340,7 +346,7 @@ public class JvmServiceImpl implements JvmService {
 
             didSucceed = true;
         } catch (CommandFailureException | IOException e) {
-            LOGGER.error("Failed to generate the JVM config for {} :: ERROR: {}", jvm.getJvmName(), e);
+            LOGGER.error("Failed to generate the JVM config for {}", jvm.getJvmName(), e);
             throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, "Failed to generate the JVM config: " + jvm.getJvmName(), e);
         } finally {
             binaryDistributionLockManager.writeUnlock(jvmName + "-" + jvm.getId().toString());
@@ -437,8 +443,8 @@ public class JvmServiceImpl implements JvmService {
         final String deployConfigJarPath = commandsScriptsPath + "/" + AemControl.Properties.DEPLOY_CONFIG_ARCHIVE_SCRIPT_NAME.getValue();
         final String jvmName = jvm.getJvmName();
         final String userId = user.getId();
-
-        final String stagingArea = JWALA_SCRIPTS_PATH + "/" + jvmName;
+        final String jwalaScriptPath = ApplicationProperties.getRequired(PropertyKeys.REMOTE_SCRIPT_DIR);
+        final String stagingArea = jwalaScriptPath + "/" + jvmName;
 
         createParentDir(jvm, stagingArea);
         final String failedToCopyMessage = "Failed to secure copy ";
@@ -458,24 +464,31 @@ public class JvmServiceImpl implements JvmService {
             LOGGER.error(message);
             throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, message);
         }
-        //TODO move to properties
-        final String deleteServicePath = commandsScriptsPath + "/delete-service.sh";
-        final String destinationDeleteServicePath = stagingArea + "/delete-service.sh";
+        final String deleteServicePath = commandsScriptsPath + "/" + AemControl.Properties.DELETE_SERVICE_SCRIPT_NAME.getValue();
+        final String destinationDeleteServicePath = stagingArea + "/" + AemControl.Properties.DELETE_SERVICE_SCRIPT_NAME.getValue();
 
         if (!jvmControlService.secureCopyFile(secureCopyRequest, deleteServicePath, destinationDeleteServicePath, userId).getReturnCode().wasSuccessful()) {
             String message = failedToCopyMessage + installServicePath + duringCreationMessage + jvmName;
             LOGGER.error(message);
             throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, message);
         }
-
+        //TODO move to constant
         final String linuxJvmService = "/linux/jvm-service";
+        final CommandOutput commandOutput = jvmControlService.executeCreateDirectoryCommand(jvm, stagingArea + "/linux");
+        if (commandOutput.getReturnCode().wasSuccessful()) {
+            LOGGER.info("created {} directory successfully", stagingArea + "/linux");
+        } else {
+            final String standardError = commandOutput.getStandardError().isEmpty() ? commandOutput.getStandardOutput() : commandOutput.getStandardError();
+            LOGGER.error("create command failed with error trying to create parent directory {} on {} :: ERROR: {}", stagingArea + "/linux", jvm.getHostName(), standardError);
+            throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, standardError.isEmpty() ? CommandOutputReturnCode.fromReturnCode(commandOutput.getReturnCode().getReturnCode()).getDesc() : standardError);
+        }
+
         if (!jvmControlService.secureCopyFile(secureCopyRequest, commandsScriptsPath + linuxJvmService, stagingArea + linuxJvmService, userId).getReturnCode().wasSuccessful()) {
             String message = failedToCopyMessage + commandsScriptsPath +linuxJvmService +  duringCreationMessage + jvmName;
             LOGGER.error(message);
             throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, message);
         }
         // make sure the scripts are executable
-        //TODO refactor linux scripts
         if (!jvmControlService.executeChangeFileModeCommand(jvm, "a+x", stagingArea, "*.sh").getReturnCode().wasSuccessful()) {
             String message = "Failed to change the file permissions in " + stagingArea + duringCreationMessage + jvmName;
             LOGGER.error(message);
@@ -490,7 +503,7 @@ public class JvmServiceImpl implements JvmService {
 
     }
 
-    protected String generateJvmConfigJar(Jvm jvm) throws CommandFailureException {
+    private String generateJvmConfigJar(Jvm jvm) throws CommandFailureException {
         long startTime = System.currentTimeMillis();
         LOGGER.debug("Start generateJvmConfigJar ");
         ManagedJvmBuilder managedJvmBuilder =
@@ -503,7 +516,7 @@ public class JvmServiceImpl implements JvmService {
         return managedJvmBuilder.getStagingDir().getAbsolutePath();
     }
 
-    protected void createParentDir(final Jvm jvm, final String parentDir) throws CommandFailureException {
+    private void createParentDir(final Jvm jvm, final String parentDir) throws CommandFailureException {
         final CommandOutput commandOutput = jvmControlService.executeCreateDirectoryCommand(jvm, parentDir);
         if (commandOutput.getReturnCode().wasSuccessful()) {
             LOGGER.info("created {} directory successfully", parentDir);
@@ -514,13 +527,13 @@ public class JvmServiceImpl implements JvmService {
         }
     }
 
-    protected void secureCopyJvmConfigJar(Jvm jvm, String jvmConfigTar, User user) throws CommandFailureException {
+    private void secureCopyJvmConfigJar(Jvm jvm, String jvmConfigTar, User user) throws CommandFailureException {
         String configTarName = jvm.getJvmName() + ".jar";
         secureCopyFileToJvm(jvm, ApplicationProperties.get("paths.generated.resource.dir") + "/" + jvm.getJvmName() + "/" + configTarName, REMOTE_COMMANDS_USER_SCRIPTS + "/" + configTarName, user);
         LOGGER.info("Copy of config tar successful: {}", jvmConfigTar);
     }
 
-    protected void deployJvmConfigJar(Jvm jvm, User user, String jvmJar) throws CommandFailureException {
+    private void deployJvmConfigJar(Jvm jvm, User user, String jvmJar) throws CommandFailureException {
         final String parentDir = ApplicationProperties.get("remote.paths.instances");
         CommandOutput execData = jvmControlService.executeCreateDirectoryCommand(jvm, parentDir);
         if (execData.getReturnCode().wasSuccessful()) {
@@ -557,7 +570,7 @@ public class JvmServiceImpl implements JvmService {
 
     }
 
-    protected void deployJvmResourceFiles(Jvm jvm, User user) throws IOException, CommandFailureException {
+    private void deployJvmResourceFiles(Jvm jvm, User user) throws IOException, CommandFailureException {
         final Map<String, String> generatedFiles = generateResourceFiles(jvm.getJvmName());
         if (generatedFiles != null) {
             for (Map.Entry<String, String> entry : generatedFiles.entrySet()) {
@@ -566,7 +579,7 @@ public class JvmServiceImpl implements JvmService {
         }
     }
 
-    protected void installJvmWindowsService(Jvm jvm, User user) {
+    private void installJvmWindowsService(Jvm jvm, User user) {
         CommandOutput execData = jvmControlService.controlJvm(new ControlJvmRequest(jvm.getId(), JvmControlOperation.INSTALL_SERVICE),
                 user);
         if (execData.getReturnCode().wasSuccessful()) {
@@ -589,9 +602,8 @@ public class JvmServiceImpl implements JvmService {
      * @param user
      * @throws CommandFailureException If the command fails, this exception contains the details of the failure.
      */
-    protected void secureCopyFileToJvm(final Jvm jvm, final String sourceFile, final String destinationFile, User user) throws CommandFailureException {
+    private void secureCopyFileToJvm(final Jvm jvm, final String sourceFile, final String destinationFile, User user) throws CommandFailureException {
         final String parentDir;
-        //TODO: May need fix for Windows
         parentDir = destinationFile.replaceAll("\\\\", "/");
         createParentDir(jvm, parentDir);
         final ControlJvmRequest controlJvmRequest = new ControlJvmRequest(jvm.getId(), JvmControlOperation.SCP);
@@ -653,6 +665,7 @@ public class JvmServiceImpl implements JvmService {
             // debugged.
         }
     }
+
 
     @Override
     public void checkForSetenvScript(String jvmName) {
@@ -754,11 +767,16 @@ public class JvmServiceImpl implements JvmService {
     @Transactional
     public void deployApplicationContextXMLs(Jvm jvm, User user) {
         List<Group> groupList = jvmPersistenceService.findGroupsByJvm(jvm.getId());
-        for (Group group : groupList) {
-            for (Application app : applicationService.findApplications(group.getId())) {
-                for (String templateName : applicationService.getResourceTemplateNames(app.getName(), jvm.getJvmName())) {
-                    LOGGER.info("Deploying application xml {} for JVM {} in group {}", templateName, jvm.getJvmName(), group.getName());
-                    applicationService.deployConf(app.getName(), group.getName(), jvm.getJvmName(), templateName, resourceService.generateResourceGroup(), user);
+        if(groupList != null){
+            for (Group group : groupList) {
+                List<Application> apps = applicationService.findApplications(group.getId());
+                if(apps != null){
+                    for (Application app : apps) {
+                        for (String templateName : applicationService.getResourceTemplateNames(app.getName(), jvm.getJvmName())) {
+                            LOGGER.info("Deploying application xml {} for JVM {} in group {}", templateName, jvm.getJvmName(), group.getName());
+                            applicationService.deployConf(app.getName(), group.getName(), jvm.getJvmName(), templateName, resourceService.generateResourceGroup(), user);
+                        }
+                    }
                 }
             }
         }
@@ -788,19 +806,19 @@ public class JvmServiceImpl implements JvmService {
 
     @Override
     public Map<String, String> generateResourceFiles(final String jvmName) throws IOException {
-        Map<String, String> generatedFiles = null;
+        Map<String, String> generatedFiles = new HashMap<>();
         final List<JpaJvmConfigTemplate> jpaJvmConfigTemplateList = jvmPersistenceService.getConfigTemplates(jvmName);
         for (final JpaJvmConfigTemplate jpaJvmConfigTemplate : jpaJvmConfigTemplateList) {
             final ResourceGroup resourceGroup = resourceService.generateResourceGroup();
             final Jvm jvm = jvmPersistenceService.findJvmByExactName(jvmName);
             String resourceTemplateMetaDataString = "";
-            resourceTemplateMetaDataString = resourceService.generateResourceFile(jpaJvmConfigTemplate.getTemplateName(), jpaJvmConfigTemplate.getMetaData(), resourceGroup, jvm, ResourceGeneratorType.METADATA);
+            resourceTemplateMetaDataString = resourceService.generateResourceFile(jpaJvmConfigTemplate.getTemplateName(),
+                                                                                  jpaJvmConfigTemplate.getMetaData(),
+                                                                                  resourceGroup,
+                                                                                  jvm,
+                                                                                  ResourceGeneratorType.METADATA);
             final ResourceTemplateMetaData resourceTemplateMetaData = resourceService.getMetaData(resourceTemplateMetaDataString);
             final String deployFileName = resourceTemplateMetaData.getDeployFileName();
-            if (generatedFiles == null) {
-                generatedFiles = new HashMap<>();
-            }
-
             if (resourceTemplateMetaData.getContentType().getType().equalsIgnoreCase(MEDIA_TYPE_TEXT) ||
                     MediaType.APPLICATION_XML.equals(resourceTemplateMetaData.getContentType())) {
                 final String generatedResourceStr = resourceService.generateResourceFile(jpaJvmConfigTemplate.getTemplateName(), jpaJvmConfigTemplate.getTemplateContent(),
@@ -808,9 +826,6 @@ public class JvmServiceImpl implements JvmService {
                 generatedFiles.put(createConfigFile(ApplicationProperties.get("paths.generated.resource.dir") + "/" + jvmName, deployFileName, generatedResourceStr),
                         resourceTemplateMetaData.getDeployPath() + "/" + deployFileName);
             } else {
-                if (generatedFiles == null) {
-                    generatedFiles = new HashMap<>();
-                }
                 generatedFiles.put(jpaJvmConfigTemplate.getTemplateContent(),
                         resourceTemplateMetaData.getDeployPath() + "/" + deployFileName);
             }
@@ -843,7 +858,7 @@ public class JvmServiceImpl implements JvmService {
         if (!jvm.getState().isStartedState()) {
             LOGGER.info("Removing JVM from the database and deleting the service for jvm {}", name);
             if (!jvm.getState().equals(JvmState.JVM_NEW)) {
-                deleteJvmWindowsService(new ControlJvmRequest(jvm.getId(), JvmControlOperation.DELETE_SERVICE), jvm,
+                deleteJvmService(new ControlJvmRequest(jvm.getId(), JvmControlOperation.DELETE_SERVICE), jvm,
                         new User(userName));
             }
             jvmPersistenceService.removeJvm(jvm.getId());
