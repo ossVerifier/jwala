@@ -173,14 +173,14 @@ public class AemServiceConfiguration {
     }
 
     @Bean(name = "jvmService")
-    public JvmService getJvmService(final GroupService groupService,
+    public JvmService getJvmService(final GroupPersistenceService groupPersistenceService,
                                     final ApplicationService applicationService,
                                     final ResourceService resourceService, final ClientFactoryHelper clientFactoryHelper,
                                     @Value("${spring.messaging.topic.serverStates:/topic/server-states}") final String topicServerStates,
                                     final JvmControlService jvmControlService, final HistoryFacadeService historyFacadeService,
                                     final FileUtility fileUtility) {
         final JvmPersistenceService jvmPersistenceService = persistenceServiceConfiguration.getJvmPersistenceService();
-        return new JvmServiceImpl(jvmPersistenceService, groupService, applicationService,
+        return new JvmServiceImpl(jvmPersistenceService, groupPersistenceService, applicationService,
                 messagingTemplate, groupStateNotificationService, resourceService,
                 clientFactoryHelper, topicServerStates, jvmControlService, binaryDistributionService, binaryDistributionLockManager,
                 historyFacadeService, fileUtility);

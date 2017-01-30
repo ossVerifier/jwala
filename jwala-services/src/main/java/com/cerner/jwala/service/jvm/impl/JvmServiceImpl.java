@@ -32,12 +32,12 @@ import com.cerner.jwala.persistence.jpa.domain.resource.config.template.JpaJvmCo
 import com.cerner.jwala.persistence.jpa.service.exception.NonRetrievableResourceTemplateContentException;
 import com.cerner.jwala.persistence.jpa.service.exception.ResourceTemplateUpdateException;
 import com.cerner.jwala.persistence.jpa.type.EventType;
+import com.cerner.jwala.persistence.service.GroupPersistenceService;
 import com.cerner.jwala.persistence.service.JvmPersistenceService;
 import com.cerner.jwala.service.HistoryFacadeService;
 import com.cerner.jwala.service.app.ApplicationService;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionLockManager;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionService;
-import com.cerner.jwala.service.group.GroupService;
 import com.cerner.jwala.service.group.GroupStateNotificationService;
 import com.cerner.jwala.service.jvm.JvmControlService;
 import com.cerner.jwala.service.jvm.JvmService;
@@ -60,7 +60,9 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.IOException;
 import java.util.*;
 
 public class JvmServiceImpl implements JvmService {
@@ -72,7 +74,7 @@ public class JvmServiceImpl implements JvmService {
     private final BinaryDistributionLockManager binaryDistributionLockManager;
     private String topicServerStates;
     private final JvmPersistenceService jvmPersistenceService;
-    private final GroupService groupService;
+    private final GroupPersistenceService groupPersistenceService;
     private final ApplicationService applicationService;
     private final SimpMessagingTemplate messagingTemplate;
     private final GroupStateNotificationService groupStateNotificationService;
@@ -87,7 +89,7 @@ public class JvmServiceImpl implements JvmService {
     private static final String DIAGNOSIS_INITIATED = "Diagnosis Initiated on JVM ${jvm.jvmName}, host ${jvm.hostName}";
 
     public JvmServiceImpl(final JvmPersistenceService jvmPersistenceService,
-                          final GroupService groupService,
+                          final GroupPersistenceService groupPersistenceService,
                           final ApplicationService applicationService,
                           final SimpMessagingTemplate messagingTemplate,
                           final GroupStateNotificationService groupStateNotificationService,
@@ -100,7 +102,7 @@ public class JvmServiceImpl implements JvmService {
                           final HistoryFacadeService historyFacadeService,
                           final FileUtility fileUtility) {
         this.jvmPersistenceService = jvmPersistenceService;
-        this.groupService = groupService;
+        this.groupPersistenceService = groupPersistenceService;
         this.applicationService = applicationService;
         this.messagingTemplate = messagingTemplate;
         this.groupStateNotificationService = groupStateNotificationService;
@@ -123,7 +125,7 @@ public class JvmServiceImpl implements JvmService {
                                      final User aCreatingUser) {
         aCreateAndAssignRequest.validate();
 
-        // The commands are validated in createJvm() and groupService.addJvmToGroup()
+        // The commands are validated in createJvm() and groupPersistenceService.addJvmToGroup()
         final Jvm newJvm = createJvm(aCreateAndAssignRequest.getCreateCommand());
 
         if (!aCreateAndAssignRequest.getGroups().isEmpty()) {
@@ -157,10 +159,10 @@ public class JvmServiceImpl implements JvmService {
     public void createDefaultTemplates(final String jvmName, Group parentGroup) {
         final String groupName = parentGroup.getName();
         // get the group JVM templates
-        List<String> templateNames = groupService.getGroupJvmsResourceTemplateNames(groupName);
+        List<String> templateNames = groupPersistenceService.getGroupJvmsResourceTemplateNames(groupName);
         for (final String templateName : templateNames) {
-            String templateContent = groupService.getGroupJvmResourceTemplate(groupName, templateName, resourceService.generateResourceGroup(), false);
-            String metaDataStr = groupService.getGroupJvmResourceTemplateMetaData(groupName, templateName);
+            String templateContent = getGroupJvmResourceTemplate(groupName, templateName, resourceService.generateResourceGroup(), false);
+            String metaDataStr = groupPersistenceService.getGroupJvmResourceTemplateMetaData(groupName, templateName);
             try {
                 ResourceTemplateMetaData metaData = resourceService.getTokenizedMetaData(templateName, jvmPersistenceService.findJvmByExactName(jvmName), metaDataStr);
                 final ResourceIdentifier resourceIdentifier = new ResourceIdentifier.Builder()
@@ -177,9 +179,9 @@ public class JvmServiceImpl implements JvmService {
         }
 
         // get the group App templates
-        templateNames = groupService.getGroupAppsResourceTemplateNames(groupName);
+        templateNames = groupPersistenceService.getGroupAppsResourceTemplateNames(groupName);
         for (String templateName : templateNames) {
-            String metaDataStr = groupService.getGroupAppResourceTemplateMetaData(groupName, templateName);
+            String metaDataStr = groupPersistenceService.getGroupAppResourceTemplateMetaData(groupName, templateName);
             try {
                 ResourceTemplateMetaData metaData = resourceService.getMetaData(metaDataStr);
                 if (metaData.getEntity().getDeployToJvms()) {
@@ -194,6 +196,23 @@ public class JvmServiceImpl implements JvmService {
                 throw new InternalErrorException(FaultType.BAD_STREAM, "Failed to map data for template " + templateName + " in group " + groupName, e);
             }
         }
+    }
+
+    @Transactional
+    private String getGroupJvmResourceTemplate(final String groupName,
+                                              final String resourceTemplateName,
+                                              final ResourceGroup resourceGroup,
+                                              final boolean tokensReplaced) {
+
+        final String template = groupPersistenceService.getGroupJvmResourceTemplate(groupName, resourceTemplateName);
+        if (tokensReplaced) {
+            // TODO returns the tokenized version of a dummy JVM, but make sure that when deployed each instance is tokenized per JVM
+            final Set<Jvm> jvms = groupPersistenceService.getGroup(groupName).getJvms();
+            if (jvms != null && !jvms.isEmpty()) {
+                return resourceService.generateResourceFile(resourceTemplateName, template, resourceGroup, jvms.iterator().next(), ResourceGeneratorType.TEMPLATE);
+            }
+        }
+        return template;
     }
 
     @Override
@@ -271,7 +290,7 @@ public class JvmServiceImpl implements JvmService {
                                   final User anAddingUser) {
         for (final AddJvmToGroupRequest command : someAddCommands) {
             LOGGER.info("Adding jvm {} to group {}", command.getJvmId(), command.getGroupId());
-            groupService.addJvmToGroup(command, anAddingUser);
+            groupPersistenceService.addJvmToGroup(command);
         }
     }
 

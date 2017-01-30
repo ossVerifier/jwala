@@ -411,7 +411,7 @@ public class GroupServiceImpl implements GroupService {
 
     @Override
     @SuppressWarnings("unchecked")
-    public void generateAndDeployGroupJvmFile(final String groupName, final String fileName, final User user) {
+    public Group generateAndDeployGroupJvmFile(final String groupName, final String fileName, final User user) {
         final Group group = groupPersistenceService.getGroup(groupName);
         final Set<Jvm> jvms = group.getJvms();
 
@@ -440,6 +440,7 @@ public class GroupServiceImpl implements GroupService {
         });
 
         checkResponsesForErrorStatus(futures);
+        return group;
     }
 
     private void checkResponsesForErrorStatus(final Map<String, Future<Response>> futureMap) {
