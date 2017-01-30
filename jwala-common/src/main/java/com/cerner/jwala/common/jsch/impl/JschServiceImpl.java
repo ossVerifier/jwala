@@ -8,6 +8,7 @@ import com.cerner.jwala.common.exec.RemoteSystemConnection;
 import com.cerner.jwala.common.jsch.JschService;
 import com.cerner.jwala.common.jsch.JschServiceException;
 import com.cerner.jwala.common.jsch.RemoteCommandReturnInfo;
+import com.cerner.jwala.common.properties.ApplicationProperties;
 import com.cerner.jwala.exception.ExitCodeNotAvailableException;
 import com.jcraft.jsch.*;
 import org.apache.commons.pool2.impl.GenericKeyedObjectPool;
@@ -138,9 +139,6 @@ public class JschServiceImpl implements JschService {
         LOGGER.debug("Executing command \"{}\"...", command);
         channelExec.setCommand(command.getBytes(StandardCharsets.UTF_8));
 
-        final InputStream remoteOutput = channelExec.getInputStream();
-        final InputStream remoteError = channelExec.getErrStream();
-
         LOGGER.debug("channel {} connecting...", channelExec.getId());
         channelExec.connect(CHANNEL_CONNECT_TIMEOUT);
         LOGGER.debug("channel {} connected!", channelExec.getId());
@@ -186,25 +184,36 @@ public class JschServiceImpl implements JschService {
         byte[] tmp = new byte[BYTE_CHUNK_SIZE];
         long startTime = System.currentTimeMillis();
         while (true) {
+
+            // read the stream
             while (in.available() > 0) {
                 int i = in.read(tmp, 0, BYTE_CHUNK_SIZE);
-                if (i < 0) break;
+                if (i < 0) {
+                    break;
+                }
                 outputBuilder.append(new String(tmp, 0, i, StandardCharsets.UTF_8));
             }
+
+            // check if the channel is closed
             if (channelExec.isClosed()) {
-                if (in.available() > 0) continue;
+                // check for any more bytes on the input stream
+                if (in.available() > 0){
+                    continue;
+                }
                 outputBuilder.append("exit-status: ");
                 outputBuilder.append(channelExec.getExitStatus());
                 break;
             }
 
+            // check max timeout
             if ((System.currentTimeMillis() - startTime) > timeout) {
                 LOGGER.warn("Remote exec output reading timeout!");
                 break;
             }
 
+            // wait for channel to be closed
             try {
-                Thread.sleep(250);
+                Thread.sleep(Long.parseLong(ApplicationProperties.get("jwala.read.channel.wait.for.close", "250")));
             } catch (Exception ee) {
                 LOGGER.error("Interrupted sleep while reading jsch exec remote output", ee);
             }
@@ -220,7 +229,7 @@ public class JschServiceImpl implements JschService {
      *                      then the method will try to read data from the input stream until read timeout is reached.
      * @param timeout       the length of time in which to wait for incoming data from the stream
      * @return the data streamed from the remote connection
-     * @throws IOException
+     * @throws IOException thrown when reading bytes from input stream
      */
     private String readRemoteOutput(final InputStream remoteOutput, final Character dataEndMarker, final long timeout)
             throws IOException {
