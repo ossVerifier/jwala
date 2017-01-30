@@ -130,7 +130,7 @@ public class JvmCommandFactory {
         return new ExecCommand(getFullPathScript(jvm, scriptName),
                 ApplicationProperties.get(PropertyKeys.REMOTE_JAVA_HOME),
                 ApplicationProperties.get(PropertyKeys.REMOTE_JAWALA_DATA_DIR),
-                dumpFile, dumpLiveStr, jvmInstanceDir);
+                dumpFile, dumpLiveStr, jvmInstanceDir, jvm.getJvmName());
         //Windows " | grep PID | awk '{ print $3 }'`
     }
 
@@ -147,7 +147,7 @@ public class JvmCommandFactory {
 
         return new ExecCommand(getFullPathScript(jvm, scriptName),
                                 ApplicationProperties.get(PropertyKeys.REMOTE_JAVA_HOME),
-                                jvmInstanceDir);
+                                jvmInstanceDir, jvm.getJvmName());
     }
 
     /**
