@@ -183,8 +183,9 @@ public class JschServiceImpl implements JschService {
 
         byte[] tmp = new byte[BYTE_CHUNK_SIZE];
         long startTime = System.currentTimeMillis();
+        final long readWaitTime = Long.parseLong(ApplicationProperties.get("jwala.read.channel.wait.for.close", "250"));
+        
         while (true) {
-
             // read the stream
             while (in.available() > 0) {
                 int i = in.read(tmp, 0, BYTE_CHUNK_SIZE);
@@ -197,7 +198,12 @@ public class JschServiceImpl implements JschService {
             // check if the channel is closed
             if (channelExec.isClosed()) {
                 // check for any more bytes on the input stream
-                if (in.available() > 0){
+                try {
+                    Thread.sleep(readWaitTime);
+                } catch (Exception ee) {
+                    LOGGER.error("Interrupted sleep while reading jsch exec remote output", ee);
+                }
+                if (in.available() > 0) {
                     continue;
                 }
                 LOGGER.debug("exit-status: {}", channelExec.getExitStatus());
@@ -212,7 +218,7 @@ public class JschServiceImpl implements JschService {
 
             // wait for channel to be closed
             try {
-                Thread.sleep(Long.parseLong(ApplicationProperties.get("jwala.read.channel.wait.for.close", "250")));
+                Thread.sleep(readWaitTime);
             } catch (Exception ee) {
                 LOGGER.error("Interrupted sleep while reading jsch exec remote output", ee);
             }
