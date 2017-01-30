@@ -26,12 +26,12 @@ import com.cerner.jwala.persistence.jpa.domain.JpaApplicationConfigTemplate;
 import com.cerner.jwala.persistence.jpa.domain.JpaJvm;
 import com.cerner.jwala.persistence.jpa.type.EventType;
 import com.cerner.jwala.persistence.service.ApplicationPersistenceService;
+import com.cerner.jwala.persistence.service.GroupPersistenceService;
 import com.cerner.jwala.persistence.service.JvmPersistenceService;
 import com.cerner.jwala.service.HistoryFacadeService;
 import com.cerner.jwala.service.app.ApplicationService;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionService;
 import com.cerner.jwala.service.exception.ApplicationServiceException;
-import com.cerner.jwala.service.group.GroupService;
 import com.cerner.jwala.service.resource.ResourceService;
 import com.cerner.jwala.service.resource.impl.ResourceGeneratorType;
 import com.cerner.jwala.template.exception.ResourceFileGeneratorException;
@@ -73,7 +73,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     private final BinaryDistributionService binaryDistributionService;
 
-    private GroupService groupService;
+    private GroupPersistenceService groupPersistenceService;
 
     private final HistoryFacadeService historyFacadeService;
 
@@ -81,14 +81,14 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     public ApplicationServiceImpl(final ApplicationPersistenceService applicationPersistenceService,
                                   final JvmPersistenceService jvmPersistenceService,
-                                  final GroupService groupService,
+                                  final GroupPersistenceService groupPersistenceService,
                                   final ResourceService resourceService,
                                   final RemoteCommandExecutorImpl remoteCommandExecutor,
                                   final BinaryDistributionService binaryDistributionService,
                                   final HistoryFacadeService historyFacadeService) {
         this.applicationPersistenceService = applicationPersistenceService;
         this.jvmPersistenceService = jvmPersistenceService;
-        this.groupService = groupService;
+        this.groupPersistenceService = groupPersistenceService;
         this.historyFacadeService = historyFacadeService;
         this.resourceService = resourceService;
         this.remoteCommandExecutor = remoteCommandExecutor;
@@ -223,7 +223,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     @Override
     @Transactional
     public void copyApplicationWarToGroupHosts(Application application) {
-        Group group = groupService.getGroup(application.getGroup().getId());
+        Group group = groupPersistenceService.getGroup(application.getGroup().getId());
         final Set<Jvm> theJvms = group.getJvms();
         if (theJvms != null && !theJvms.isEmpty()) {
             Set<String> hostNames = new HashSet<>();
@@ -240,12 +240,12 @@ public class ApplicationServiceImpl implements ApplicationService {
     @Override
     @Transactional
     public void deployApplicationResourcesToGroupHosts(String groupName, Application app, ResourceGroup resourceGroup) {
-        List<String> appResourcesNames = groupService.getGroupAppsResourceTemplateNames(groupName);
-        Group group = groupService.getGroup(app.getGroup().getId());
+        List<String> appResourcesNames = groupPersistenceService.getGroupAppsResourceTemplateNames(groupName);
+        Group group = groupPersistenceService.getGroup(app.getGroup().getId());
         final Set<Jvm> jvms = group.getJvms();
         if (null != appResourcesNames && !appResourcesNames.isEmpty()) {
             for (String resourceTemplateName : appResourcesNames) {
-                String metaDataStr = groupService.getGroupAppResourceTemplateMetaData(groupName, resourceTemplateName);
+                String metaDataStr = groupPersistenceService.getGroupAppResourceTemplateMetaData(groupName, resourceTemplateName);
                 try {
                     ResourceTemplateMetaData metaData = resourceService.getTokenizedMetaData(resourceTemplateName, app, metaDataStr);
                     if (jvms != null && !jvms.isEmpty() && !metaData.getEntity().getDeployToJvms()) {
@@ -255,7 +255,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                             final String host = jvm.getHostName().toLowerCase(Locale.US);
                             if (!hostNames.contains(host)) {
                                 hostNames.add(host);
-                                groupService.deployGroupAppTemplate(groupName, resourceTemplateName, app, jvm);
+                                executeDeployGroupAppTemplate(group.getName(), resourceTemplateName, app, jvm.getHostName());
                             }
                         }
 
@@ -467,7 +467,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     @Override
     public void deployConf(final String appName, final String hostName, final User user) {
         final Application application = applicationPersistenceService.getApplication(appName);
-        final Group group = groupService.getGroup(application.getGroup().getId());
+        final Group group = groupPersistenceService.getGroup(application.getGroup().getId());
         final List<String> hostNames = getDeployHostList(hostName, group, application);
 
         LOGGER.info("deploying templates to hosts: {}", hostNames.toString());
@@ -504,7 +504,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         final String groupName = group.getName();
         final String appName = application.getName();
         final List<String> hostNames = new ArrayList<>();
-        final List<String> allHosts = groupService.getHosts(groupName);
+        final List<String> allHosts = groupPersistenceService.getHosts(groupName);
         if (allHosts == null || allHosts.isEmpty()) {
             LOGGER.error("No hosts found for the group: {} and application: {}", groupName, appName);
             throw new InternalErrorException(FaultType.GROUP_MISSING_HOSTS, "No host found for the application " + appName);
@@ -555,9 +555,9 @@ public class ApplicationServiceImpl implements ApplicationService {
     protected Set<String> getWebAppOnlyResources(final Group group, String appName) {
         final String groupName = group.getName();
         final Set<String> resourceSet = new HashSet<>();
-        List<String> resourceTemplates = groupService.getGroupAppsResourceTemplateNames(groupName, appName);
+        List<String> resourceTemplates = groupPersistenceService.getGroupAppsResourceTemplateNames(groupName, appName);
         for (String resourceTemplate : resourceTemplates) {
-            String metaDataStr = groupService.getGroupAppResourceTemplateMetaData(groupName, resourceTemplate);
+            String metaDataStr = groupPersistenceService.getGroupAppResourceTemplateMetaData(groupName, resourceTemplate);
             LOGGER.debug("metadata for template: {} is {}", resourceTemplate, metaDataStr);
             try {
                 ResourceTemplateMetaData metaData = resourceService.getMetaData(metaDataStr);
@@ -589,7 +589,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                              SecurityContextHolder.getContext().setAuthentication(authentication);
                              for (final String resource : resourceSet) {
                                  LOGGER.info("Deploying {} to host {}", resource, host);
-                                 commandOutputs.add(groupService.deployGroupAppTemplate(group.getName(), resource, application, host));
+                                 commandOutputs.add(executeDeployGroupAppTemplate(group.getName(), resource, application, host));
                              }
                              return commandOutputs;
                          }
@@ -598,6 +598,28 @@ public class ApplicationServiceImpl implements ApplicationService {
             futures.put(host, commandOutputFutureSet);
         }
         return futures;
+    }
+
+    /**
+     * This method executes all the commands for copying the template over to the destination for a group app config file
+     *
+     * NOTE!!! This method has a duplicate in GroupServiceImpl. DO NOT USE GroupService just to remote this because it will
+     *         create an intermittent Spring circular dependency!!!
+     *
+     * @param groupName     name of the group in which the application can be found
+     * @param fileName      name of the file that needs to deployed
+     * @param application   the application object for the application to deploy the config file too
+     * @param hostName      name of the host which needs the application file
+     * @return returns a command output object
+     */
+    private CommandOutput executeDeployGroupAppTemplate(final String groupName, final String fileName,
+                                                        final Application application, final String hostName) {
+        ResourceIdentifier resourceIdentifier = new ResourceIdentifier.Builder()
+                .setResourceName(fileName)
+                .setGroupName(groupName)
+                .setWebAppName(application.getName())
+                .build();
+        return resourceService.generateAndDeployFile(resourceIdentifier, application.getName(), fileName, hostName);
     }
 
     protected void waitForDeploy(final String appName, final Map<String, Future<Set<CommandOutput>>> futures) {

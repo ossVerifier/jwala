@@ -21,10 +21,7 @@ import com.cerner.jwala.control.configuration.AemSshConfig;
 import com.cerner.jwala.persistence.configuration.AemPersistenceServiceConfiguration;
 import com.cerner.jwala.persistence.jpa.service.*;
 import com.cerner.jwala.persistence.jpa.service.impl.GroupJvmRelationshipServiceImpl;
-import com.cerner.jwala.persistence.service.ApplicationPersistenceService;
-import com.cerner.jwala.persistence.service.JvmPersistenceService;
-import com.cerner.jwala.persistence.service.ResourceDao;
-import com.cerner.jwala.persistence.service.WebServerPersistenceService;
+import com.cerner.jwala.persistence.service.*;
 import com.cerner.jwala.persistence.service.impl.JpaJvmPersistenceServiceImpl;
 import com.cerner.jwala.persistence.service.impl.ResourceDaoImpl;
 import com.cerner.jwala.service.HistoryFacadeService;
@@ -233,11 +230,11 @@ public class AemServiceConfiguration {
     }
 
     @Bean
-    public ApplicationService getApplicationService(final JvmPersistenceService jvmPersistenceService, final GroupService groupService,
+    public ApplicationService getApplicationService(final JvmPersistenceService jvmPersistenceService, final GroupPersistenceService groupPersistenceService,
                                                     final HistoryCrudService historyCrudService, final MessagingService messagingService,
                                                     final ResourceService resourceService, final HistoryFacadeService historyFacadeService) {
         return new ApplicationServiceImpl(persistenceServiceConfiguration.getApplicationPersistenceService(),
-                jvmPersistenceService, groupService,
+                jvmPersistenceService, groupPersistenceService,
                 resourceService, aemCommandExecutorConfig.getRemoteCommandExecutor(), binaryDistributionService, historyFacadeService);
     }
 

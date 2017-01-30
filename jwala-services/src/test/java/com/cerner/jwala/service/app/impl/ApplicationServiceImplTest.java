@@ -30,13 +30,13 @@ import com.cerner.jwala.control.configuration.AemSshConfig;
 import com.cerner.jwala.exception.CommandFailureException;
 import com.cerner.jwala.persistence.jpa.domain.JpaJvm;
 import com.cerner.jwala.persistence.service.ApplicationPersistenceService;
+import com.cerner.jwala.persistence.service.GroupPersistenceService;
 import com.cerner.jwala.persistence.service.JvmPersistenceService;
 import com.cerner.jwala.persistence.service.ResourceDao;
 import com.cerner.jwala.service.HistoryFacadeService;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionControlService;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionService;
 import com.cerner.jwala.service.exception.ApplicationServiceException;
-import com.cerner.jwala.service.group.GroupService;
 import com.cerner.jwala.service.resource.ResourceService;
 import com.cerner.jwala.service.resource.impl.ResourceGeneratorType;
 import org.apache.tika.mime.MediaType;
@@ -78,7 +78,7 @@ public class ApplicationServiceImplTest {
     private AemSshConfig aemSshConfig;
 
     @Mock
-    private GroupService groupService;
+    private GroupPersistenceService mockGroupPersistenceService;
 
     private ApplicationServiceImpl applicationService;
 
@@ -153,11 +153,11 @@ public class ApplicationServiceImplTest {
         when(mockSshConfig.getUserName()).thenReturn("mockUser");
         when(aemSshConfig.getSshConfiguration()).thenReturn(mockSshConfig);
 
-        groupService = mock(GroupService.class);
-        when(groupService.getGroup(any(Identifier.class))).thenReturn(group);
+        mockGroupPersistenceService = mock(GroupPersistenceService.class);
+        when(mockGroupPersistenceService.getGroup(any(Identifier.class))).thenReturn(group);
 
         applicationService = new ApplicationServiceImpl(applicationPersistenceService,
-                jvmPersistenceService, groupService,
+                jvmPersistenceService, mockGroupPersistenceService,
                 mockResourceService, remoteCommandExecutorImpl, binaryDistributionService, mockHistoryFacadeService);
     }
 
@@ -404,7 +404,7 @@ public class ApplicationServiceImplTest {
         jvmSet.add(mockJvm);
         jvmSet.add(mockJvm2);
         Group mockGroup = mock(Group.class);
-        GroupService mockGroupService = mock(GroupService.class);
+        GroupPersistenceService mockGroupService = mock(GroupPersistenceService.class);
         final Identifier<Group> mockGroupId = new Identifier<>(999L);
         when(mockGroup.getId()).thenReturn(mockGroupId);
         when(mockGroup.getJvms()).thenReturn(jvmSet);
@@ -522,23 +522,25 @@ public class ApplicationServiceImplTest {
         CommandOutput mockCommandOutput = mock(CommandOutput.class);
         when(applicationPersistenceService.getApplication(eq(appName))).thenReturn(mockApplication);
         when(mockApplication.getName()).thenReturn(appName);
-        when(groupService.getGroup(any(Identifier.class))).thenReturn(mockGroup);
+        when(mockGroupPersistenceService.getGroup(any(Identifier.class))).thenReturn(mockGroup);
         when(mockApplication.getGroup()).thenReturn(mockGroup);
         when(mockGroup.getName()).thenReturn("test-group");
         when(mockGroup.getId()).thenReturn(new Identifier<Group>(1L));
         when(mockGroup.getJvms()).thenReturn(jvms);
         when(mockJvm.getHostName()).thenReturn("testserver");
         when(mockJvm.getState()).thenReturn(JvmState.JVM_NEW);
-        when(groupService.getHosts(anyString())).thenReturn(hosts);
-        when(groupService.getGroupAppResourceTemplateMetaData(anyString(), anyString())).thenReturn("");
+        when(mockGroupPersistenceService.getHosts(anyString())).thenReturn(hosts);
+        when(mockGroupPersistenceService.getGroupAppResourceTemplateMetaData(anyString(), anyString())).thenReturn("");
         when(mockResourceService.getMetaData(anyString())).thenReturn(mockMetaData);
         when(mockMetaData.getEntity()).thenReturn(mockEntity);
         when(mockEntity.getDeployToJvms()).thenReturn(false);
-        when(groupService.getGroupAppsResourceTemplateNames(anyString(), anyString())).thenReturn(templateNames);
-        when(groupService.deployGroupAppTemplate(anyString(), anyString(), any(Application.class), anyString())).thenReturn(mockCommandOutput);
+        when(mockGroupPersistenceService.getGroupAppsResourceTemplateNames(anyString(), anyString())).thenReturn(templateNames);
+        when(mockResourceService.generateAndDeployFile(any(ResourceIdentifier.class), anyString(), anyString(),
+                anyString())).thenReturn(mockCommandOutput);
         when(mockCommandOutput.getReturnCode()).thenReturn(new ExecReturnCode(0));
         applicationService.deployConf(appName, null, testUser);
-        verify(groupService, times(2)).deployGroupAppTemplate(eq("test-group"), anyString(), eq(mockApplication), anyString());
+        verify(mockResourceService, times(2)).generateAndDeployFile(any(ResourceIdentifier.class), anyString(),
+                anyString(), anyString());
     }
 
     @Test (expected = InternalErrorException.class)
@@ -558,19 +560,20 @@ public class ApplicationServiceImplTest {
         CommandOutput mockCommandOutput = mock(CommandOutput.class);
         when(applicationPersistenceService.getApplication(eq(appName))).thenReturn(mockApplication);
         when(mockApplication.getName()).thenReturn(appName);
-        when(groupService.getGroup(any(Identifier.class))).thenReturn(mockGroup);
+        when(mockGroupPersistenceService.getGroup(any(Identifier.class))).thenReturn(mockGroup);
         when(mockApplication.getGroup()).thenReturn(mockGroup);
         when(mockGroup.getId()).thenReturn(new Identifier<Group>(1L));
         when(mockGroup.getJvms()).thenReturn(jvms);
         when(mockJvm.getHostName()).thenReturn("testserver");
         when(mockJvm.getState()).thenReturn(JvmState.JVM_NEW);
-        when(groupService.getHosts(anyString())).thenReturn(hosts);
-        when(groupService.getGroupAppResourceTemplateMetaData(anyString(), anyString())).thenReturn("");
+        when(mockGroupPersistenceService.getHosts(anyString())).thenReturn(hosts);
+        when(mockGroupPersistenceService.getGroupAppResourceTemplateMetaData(anyString(), anyString())).thenReturn("");
         when(mockResourceService.getMetaData(anyString())).thenReturn(mockMetaData);
         when(mockMetaData.getEntity()).thenReturn(mockEntity);
         when(mockEntity.getDeployToJvms()).thenReturn(false);
-        when(groupService.getGroupAppsResourceTemplateNames(anyString(), anyString())).thenReturn(templateNames);
-        when(groupService.deployGroupAppTemplate(anyString(), anyString(), any(Application.class), anyString())).thenReturn(mockCommandOutput);
+        when(mockGroupPersistenceService.getGroupAppsResourceTemplateNames(anyString(), anyString())).thenReturn(templateNames);
+        when(mockResourceService.generateAndDeployFile(any(ResourceIdentifier.class), anyString(), anyString(),
+                anyString())).thenReturn(mockCommandOutput);
         when(mockCommandOutput.getReturnCode()).thenReturn(new ExecReturnCode(1));
         applicationService.deployConf(appName, null, testUser);
     }
@@ -579,9 +582,9 @@ public class ApplicationServiceImplTest {
     public void testAppDeployConfNoHostFailure() {
         final String appName = "test-app";
         when(applicationPersistenceService.getApplication(eq(appName))).thenReturn(mockApplication);
-        when(groupService.getGroup(any(Identifier.class))).thenReturn(group);
+        when(mockGroupPersistenceService.getGroup(any(Identifier.class))).thenReturn(group);
         when(mockApplication.getGroup()).thenReturn(group);
-        when(groupService.getHosts(anyString())).thenReturn(null);
+        when(mockGroupPersistenceService.getHosts(anyString())).thenReturn(null);
         applicationService.deployConf(appName, null, testUser);
     }
 
@@ -596,13 +599,13 @@ public class ApplicationServiceImplTest {
         jvms.add(mockJvm);
         Group mockGroup = mock(Group.class);
         when(applicationPersistenceService.getApplication(eq(appName))).thenReturn(mockApplication);
-        when(groupService.getGroup(any(Identifier.class))).thenReturn(mockGroup);
+        when(mockGroupPersistenceService.getGroup(any(Identifier.class))).thenReturn(mockGroup);
         when(mockApplication.getGroup()).thenReturn(mockGroup);
         when(mockGroup.getId()).thenReturn(new Identifier<Group>(1L));
         when(mockGroup.getJvms()).thenReturn(jvms);
         when(mockJvm.getHostName()).thenReturn("testserver");
         when(mockJvm.getState()).thenReturn(JvmState.JVM_STARTED);
-        when(groupService.getHosts(anyString())).thenReturn(hosts);
+        when(mockGroupPersistenceService.getHosts(anyString())).thenReturn(hosts);
         applicationService.deployConf(appName, null, testUser);
     }
 
@@ -613,9 +616,9 @@ public class ApplicationServiceImplTest {
         hosts.add("testServer");
         hosts.add("testServer2");
         when(applicationPersistenceService.getApplication(eq(appName))).thenReturn(mockApplication);
-        when(groupService.getGroup(any(Identifier.class))).thenReturn(group);
+        when(mockGroupPersistenceService.getGroup(any(Identifier.class))).thenReturn(group);
         when(mockApplication.getGroup()).thenReturn(group);
-        when(groupService.getHosts(anyString())).thenReturn(hosts);
+        when(mockGroupPersistenceService.getHosts(anyString())).thenReturn(hosts);
         applicationService.deployConf(appName, "test", testUser);
     }
 
@@ -632,16 +635,16 @@ public class ApplicationServiceImplTest {
         jvms.add(mockJvm);
         Group mockGroup = mock(Group.class);
         when(applicationPersistenceService.getApplication(eq(appName))).thenReturn(mockApplication);
-        when(groupService.getGroup(any(Identifier.class))).thenReturn(mockGroup);
+        when(mockGroupPersistenceService.getGroup(any(Identifier.class))).thenReturn(mockGroup);
         when(mockApplication.getGroup()).thenReturn(mockGroup);
         when(mockGroup.getId()).thenReturn(new Identifier<Group>(1L));
         when(mockGroup.getJvms()).thenReturn(jvms);
         when(mockJvm.getHostName()).thenReturn("testserver");
         when(mockJvm.getState()).thenReturn(JvmState.JVM_NEW);
-        when(groupService.getHosts(anyString())).thenReturn(hosts);
-        when(groupService.getGroupAppResourceTemplateMetaData(anyString(), anyString())).thenReturn("");
+        when(mockGroupPersistenceService.getHosts(anyString())).thenReturn(hosts);
+        when(mockGroupPersistenceService.getGroupAppResourceTemplateMetaData(anyString(), anyString())).thenReturn("");
         when(mockResourceService.getMetaData(anyString())).thenThrow(IOException.class);
-        when(groupService.getGroupAppsResourceTemplateNames(anyString(), anyString())).thenReturn(templateNames);
+        when(mockGroupPersistenceService.getGroupAppsResourceTemplateNames(anyString(), anyString())).thenReturn(templateNames);
         applicationService.deployConf(appName, "testserver", testUser);
     }
 
