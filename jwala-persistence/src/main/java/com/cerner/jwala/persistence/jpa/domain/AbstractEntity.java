@@ -1,6 +1,6 @@
 package com.cerner.jwala.persistence.jpa.domain;
 
-import com.cerner.jwala.common.domain.model.user.User;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import javax.persistence.*;
 import java.util.Calendar;
@@ -85,12 +85,10 @@ public abstract class AbstractEntity<T extends AbstractEntity<T>> implements Aud
      * @return the user id
      */
     private String getUserId(final String providedUserId) {
-        // Note: User.getThreadLocalUser() will be null when the thread that implicitly calls this was created by another
-        //       thread. If the User.getThreadLocalUser() is null then we just use providedUserId. Please note that
-        //       create and update by can be null if the a persist or update is caused by an automated event or by
-        //       succeeding system events caused by user a action. That the said events can
-        //       also pass user id information if needed hence the parameter providedUserId.
-        return User.getThreadLocalUser() == null ? providedUserId : User.getThreadLocalUser().getId();
+        if (SecurityContextHolder.getContext() != null && SecurityContextHolder.getContext().getAuthentication() != null) {
+            return SecurityContextHolder.getContext().getAuthentication().getName();
+        }
+        return providedUserId;
     }
 
 }

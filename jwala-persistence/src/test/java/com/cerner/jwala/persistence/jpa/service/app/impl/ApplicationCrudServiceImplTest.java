@@ -154,7 +154,6 @@ public class ApplicationCrudServiceImplTest {
     @Before
     public void setup() {
         User user = new User("testUser");
-        user.addToThread();
 
         aUser = "TestUserId";
         userObj = new User(aUser);
@@ -176,7 +175,6 @@ public class ApplicationCrudServiceImplTest {
         } catch (Exception x) {
             LOGGER.trace("Test tearDown", x);
         }
-        User.getThreadLocalUser().invalidate();
     }
 
     @Test(expected = EntityExistsException.class)

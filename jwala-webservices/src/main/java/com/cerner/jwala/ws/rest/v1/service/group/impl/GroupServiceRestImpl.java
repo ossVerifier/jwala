@@ -43,7 +43,6 @@ import com.cerner.jwala.ws.rest.v1.service.jvm.impl.JsonControlJvm;
 import com.cerner.jwala.ws.rest.v1.service.jvm.impl.JvmServiceRestImpl;
 import com.cerner.jwala.ws.rest.v1.service.webserver.WebServerServiceRest;
 import com.cerner.jwala.ws.rest.v1.service.webserver.impl.JsonControlWebServer;
-import com.cerner.jwala.ws.rest.v1.service.webserver.impl.WebServerServiceRestImpl;
 import org.apache.cxf.jaxrs.ext.MessageContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,9 +65,9 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     private final ResourceService resourceService;
     private final ExecutorService executorService;
     private final ApplicationService applicationService;
-    private GroupControlService groupControlService;
-    private GroupJvmControlService groupJvmControlService;
-    private GroupWebServerControlService groupWebServerControlService;
+    private final GroupControlService groupControlService;
+    private final GroupJvmControlService groupJvmControlService;
+    private final GroupWebServerControlService groupWebServerControlService;
     private final JvmService jvmService;
     private final WebServerService webServerService;
     final ApplicationServiceRest applicationServiceRest;
@@ -158,7 +157,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
             if (byName) {
                 groupService.removeGroup(name);
             } else {
-                groupService.removeGroup(new Identifier<Group>(name));
+                groupService.removeGroup(new Identifier<>(name));
             }
             return ResponseBuilder.ok();
         } catch (GroupServiceException e) {
@@ -210,17 +209,15 @@ public class GroupServiceRestImpl implements GroupServiceRest {
             group = groupService.getGroupWithWebServers(group.getId());
 
             Set<WebServer> groupWebServers = group.getWebServers();
-            Map<String, Future<Response>> futureContents = new HashMap<>();
             if (null != groupWebServers) {
+                final Map<String, Future<Response>> futureContents = new HashMap<>(groupWebServers.size());
                 LOGGER.info("Updating the templates for all the Web Servers in group {}", groupName);
-                final Authentication auth = SecurityContextHolder.getContext().getAuthentication();
                 for (final WebServer webServer : groupWebServers) {
                     final String webServerName = webServer.getName();
                     LOGGER.info("Updating Web Server {} template {}", webServerName, resourceTemplateName);
                     Future<Response> futureContent = executorService.submit(new Callable<Response>() {
                         @Override
                         public Response call() throws Exception {
-                            SecurityContextHolder.getContext().setAuthentication(auth);
                             return ResponseBuilder.ok(webServerService.updateResourceTemplate(webServerName, resourceTemplateName, updatedContent));
                         }
                     });
@@ -261,46 +258,10 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     }
 
     @Override
-    public Response generateAndDeployGroupJvmFile(final String groupName, final String fileName, final AuthenticatedUser aUser) {
-        LOGGER.info("generate and deploy group JVM file {} to group {} by user {}", fileName, groupName, aUser.getUser().getId());
-        Group group = groupService.getGroup(groupName);
-        final boolean doNotReplaceTokens = false;
-        final String groupJvmTemplateContent = groupService.getGroupJvmResourceTemplate(groupName, fileName, resourceService.generateResourceGroup(), doNotReplaceTokens);
-        final String groupJvmResourceTemplateMetaData = groupService.getGroupJvmResourceTemplateMetaData(groupName, fileName);
-        Map<String, Future<Response>> futures = new HashMap<>();
-        final JvmServiceRest jvmServiceRest = JvmServiceRestImpl.get();
-        final Set<Jvm> jvms = group.getJvms();
-        if (null != jvms && !jvms.isEmpty()) {
-            for (final Jvm jvm : jvms) {
-                if (jvm.getState().isStartedState()) {
-                    LOGGER.info("Failed to deploy file {} for group {}: not all JVMs were stopped - {} was started", fileName, group.getName(), jvm.getJvmName());
-                    throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, "All JVMs in the group must be stopped before continuing. Operation stopped for JVM " + jvm.getJvmName());
-                }
-            }
-            final Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-            for (final Jvm jvm : jvms) {
-                final String jvmName = jvm.getJvmName();
-                Future<Response> responseFuture = executorService.submit(new Callable<Response>() {
-                    @Override
-                    public Response call() throws Exception {
-                        SecurityContextHolder.getContext().setAuthentication(auth);
-                        jvmServiceRest.updateResourceTemplate(jvmName, fileName, groupJvmTemplateContent);
-                        ResourceIdentifier resourceId = new ResourceIdentifier.Builder()
-                                .setResourceName(fileName)
-                                .setGroupName(groupName)
-                                .setJvmName(jvmName).build();
-                        resourceService.updateResourceMetaData(resourceId, fileName, groupJvmResourceTemplateMetaData);
-                        return jvmServiceRest.generateAndDeployFile(jvmName, fileName, aUser);
-
-                    }
-                });
-                futures.put(jvmName, responseFuture);
-            }
-            checkResponsesForErrorStatus(futures);
-        } else {
-            LOGGER.info("No JVMs in group {}", groupName);
-        }
-        return ResponseBuilder.ok(group);
+    public Response generateAndDeployGroupJvmFile(final String groupName, final String fileName,
+                                                  final AuthenticatedUser authUser) {
+        groupService.generateAndDeployGroupJvmFile(groupName, fileName, authUser.getUser());
+        return Response.ok().build();
     }
 
     @Override
@@ -838,7 +799,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
             @Override
             public Response call() throws Exception {
                 SecurityContextHolder.getContext().setAuthentication(auth);
-                CommandOutput commandOutput = null;
+                CommandOutput commandOutput;
                 if (jvm != null) {
                     LOGGER.debug("got jvm object with id {}, creating command output with jvm", jvm.getId().getId());
                     commandOutput = groupService.deployGroupAppTemplate(groupName, fileName, application, jvm);
@@ -884,8 +845,9 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     @Override
     public Response getStartedWebServersAndJvmsCount() {
         LOGGER.debug("Get started Web Servers and JVMs count");
-        final List<GroupServerInfo> groupServerInfos = new ArrayList<>();
-        for (final Group group : groupService.getGroups()) {
+        final List<Group> groupList = groupService.getGroups();
+        final List<GroupServerInfo> groupServerInfos = new ArrayList<>(groupList.size());
+        for (final Group group : groupList) {
             final GroupServerInfo groupServerInfo = new GroupServerInfoBuilder().setGroupName(group.getName())
                     .setJvmStartedCount(jvmService.getJvmStartedCount(group.getName()))
                     .setJvmCount(jvmService.getJvmCount(group.getName()))
@@ -929,7 +891,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
      * Get a group's children servers info (e.g. jvm count, web server count etc...)
      *
      * @param groupName the group name
-     * @return {@GroupServerInfo}
+     * @return {@link GroupServerInfo}
      */
     protected GroupServerInfo getGroupServerInfo(final String groupName) {
         return new GroupServerInfoBuilder().setGroupName(groupName)

@@ -24,7 +24,7 @@ ext {
             tomcat                : '7.0.55',
             ant                   : '1.8.2',
             groovy                : '2.4.3',
-            jacoco                : '0.7.0.201403182114',
+            jacoco                : '0.7.7.201606060606',
             objenesis             : '1.0',
             jgroups               : '3.6.6.Final',
             commons_io            : '2.4',
@@ -86,6 +86,7 @@ buildscript {
     }
     dependencies {
         classpath 'de.undercouch:gradle-download-task:3.1.1'
+        classpath "org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:2.1"
     }
 }
 
@@ -375,7 +376,23 @@ subprojects {
             property "sonar.junit.reportsPath", test.reports.junitXml.destination   // will be fixed in Gradle 1.12
             property "sonar.jacoco.reportPath", project.rootProject.buildDir.path + "/jacoco/" + "accum.exec"
             property "sonar.jacoco.itReportPath", project.rootProject.buildDir.path + "/jacoco/" + "integration_test_jwala.exec"
+
         }
     }
 }
 /*** Sonar Runner: end ***/
+
+apply plugin: "org.sonarqube"
+
+sonarqube {
+    properties {
+        property 'sonar.jacoco.reportPath', project.rootProject.buildDir.path + "/jacoco/" + "accum.exec"
+        property 'sonar.jacoco.itReportPath', project.rootProject.buildDir.path + "/jacoco/" + "integration_test_jwala.exec"
+        property 'sonar.host.url',  project.properties['sonarHostUrl']
+        property 'sonar.jdbc.driverClassName', 'com.mysql.jdbc.Driver'
+        property 'sonar.projectKey', 'cto.tco.toc'
+	    property 'sonar.projectName', 'tomcat operations center'
+        property 'sonar.projectVersion', '1.0.0'
+	}
+	
+}
