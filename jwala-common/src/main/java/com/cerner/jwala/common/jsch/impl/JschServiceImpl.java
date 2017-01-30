@@ -200,8 +200,7 @@ public class JschServiceImpl implements JschService {
                 if (in.available() > 0){
                     continue;
                 }
-                outputBuilder.append("exit-status: ");
-                outputBuilder.append(channelExec.getExitStatus());
+                LOGGER.debug("exit-status: {}", channelExec.getExitStatus());
                 break;
             }
 
