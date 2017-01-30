@@ -23,7 +23,7 @@ public class SeleniumTestCase {
     private static final String PROPERTY_WEBDRIVER_VALUE = "webdriver.value";
     private static final String PROPERTY_WEBDRIVER_CLASS = "webdriver.class";
 
-    private static final String JWALA_INTEGRATION_TEST_PROPERTIES = "jwala-integration-test.properties";
+    private static final String JWALA_SELENIUM_TEST_PROPERTIES = "jwala-selenium-test.properties";
 
     // shared properties
     protected static final String PROPERTY_JWALA_RESOURCES_UPLOAD_DIR = "jwala.resources.upload.dir";
@@ -39,7 +39,7 @@ public class SeleniumTestCase {
         properties = new Properties();
         final String propertyFile = System.getProperty(PROPERTY_SELENIUM_PROPERTY_FILE);
         try (InputStream inputStream = (propertyFile == null || propertyFile.isEmpty()) ?
-                ClassLoader.getSystemResourceAsStream(JWALA_INTEGRATION_TEST_PROPERTIES) : new FileInputStream(propertyFile)) {
+                ClassLoader.getSystemResourceAsStream(JWALA_SELENIUM_TEST_PROPERTIES) : new FileInputStream(propertyFile)) {
             properties.load(inputStream);
         }
         System.setProperty(properties.getProperty(PROPERTY_WEBDRIVER_NAME), properties.getProperty(PROPERTY_WEBDRIVER_VALUE));
