@@ -70,7 +70,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     private final GroupWebServerControlService groupWebServerControlService;
     private final JvmService jvmService;
     private final WebServerService webServerService;
-    final ApplicationServiceRest applicationServiceRest;
+    private final ApplicationServiceRest applicationServiceRest;
     private final WebServerServiceRest webServerServiceRest;
 
     @Autowired
