@@ -41,7 +41,7 @@ public class JGroupsReportingLifeCycleListener implements LifecycleListener {
     private JChannel channel;
 
     @Override
-    public void lifecycleEvent(final LifecycleEvent event) {
+    public synchronized void lifecycleEvent(final LifecycleEvent event) {
         LOGGER.info("LifeCycleEvent received: {} on {}", event.getType(), event.getLifecycle().getStateName());
         if (messagingService == null) {
             // init messaging service...
