@@ -306,7 +306,7 @@ public class AemServiceConfiguration {
         return new ResourceServiceImpl(persistenceServiceConfiguration.getResourcePersistenceService(),
                 persistenceServiceConfiguration.getGroupPersistenceService(), applicationPersistenceService,
                 jvmPersistenceService, webServerPersistenceService, resourceDao, webServerResourceHandler,
-                aemCommandExecutorConfig.getRemoteCommandExecutor(), binaryWriteLockMap,
+                aemCommandExecutorConfig.getRemoteCommandExecutor(),
                 resourceContentGeneratorService, binaryDistributionService, new Tika(), repositoryService);
     }
 
