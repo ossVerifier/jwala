@@ -54,6 +54,7 @@ import javax.persistence.EntityExistsException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.*;
 
@@ -386,7 +387,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
                 response = futureMap.get(keyEntityName).get(timeout, TimeUnit.SECONDS);
                 if (response.getStatus() > 399) {
                     final String reasonPhrase = response.getStatusInfo().getReasonPhrase();
-                    LOGGER.error("Remote Command Failure for " + keyEntityName + ": " + reasonPhrase);
+                    LOGGER.error(MessageFormat.format("Remote command failed for {0}: {1}", keyEntityName, reasonPhrase));
                     entityDetailsMap.put(keyEntityName, Collections.singletonList(reasonPhrase));
                 }
             } catch (InterruptedException | ExecutionException e) {
