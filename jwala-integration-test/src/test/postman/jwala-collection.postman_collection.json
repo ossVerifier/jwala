@@ -457,7 +457,7 @@
 									"key": "mediaArchiveFile",
 									"type": "file",
 									"enabled": true,
-									"src": "C:/Users/RS045609/Desktop/it/New/jwala/jwala-integration-test/src/test/resources/postman/test.zip",
+									"src": "D:/jenkins_home/jobs/tomcat-operations-center/workspace/jwala-integration-test/src/test/resources/postman/test.zip",
 									"value": ""
 								},
 								{
@@ -699,7 +699,7 @@
 									"type": "file",
 									"enabled": true,
 									"warning": "",
-									"src": "C:/Users/RS045609/Desktop/it/New/jwala/jwala-integration-test/src/test/resources/postman/hello-world.war",
+									"src": "D:/jenkins_home/jobs/tomcat-operations-center/workspace/jwala-integration-test/src/test/resources/postman/hello-world.war",
 									"value": ""
 								},
 								{
@@ -770,14 +770,14 @@
 									"key": "metaData",
 									"type": "file",
 									"enabled": true,
-									"src": "C:/Users/RS045609/Desktop/it/New/jwala/jwala-integration-test/src/test/resources/postman/httpd.json",
+									"src": "D:/jenkins_home/jobs/tomcat-operations-center/workspace/jwala-integration-test/src/test/resources/postman/httpd.json",
 									"value": ""
 								},
 								{
 									"key": "tplFile",
 									"type": "file",
 									"enabled": true,
-									"src": "C:/Users/RS045609/Desktop/it/New/jwala/jwala-integration-test/src/test/resources/postman/httpdconf.tpl",
+									"src": "D:/jenkins_home/jobs/tomcat-operations-center/workspace/jwala-integration-test/src/test/resources/postman/httpdconf.tpl",
 									"value": ""
 								}
 							]
@@ -810,14 +810,14 @@
 									"key": "metaData",
 									"type": "file",
 									"enabled": true,
-									"src": "C:/Users/RS045609/Desktop/it/New/jwala/jwala-integration-test/src/test/resources/postman/setenv.json",
+									"src": "D:/jenkins_home/jobs/tomcat-operations-center/workspace/jwala-integration-test/src/test/resources/postman/setenv.json",
 									"value": ""
 								},
 								{
 									"key": "tplFile",
 									"type": "file",
 									"enabled": true,
-									"src": "C:/Users/RS045609/Desktop/it/New/jwala/jwala-integration-test/src/test/resources/postman/setenv.tpl",
+									"src": "D:/jenkins_home/jobs/tomcat-operations-center/workspace/jwala-integration-test/src/test/resources/postman/setenv.tpl",
 									"value": ""
 								}
 							]
@@ -850,14 +850,14 @@
 									"key": "metaData",
 									"type": "file",
 									"enabled": true,
-									"src": "C:/Users/RS045609/Desktop/it/New/jwala/jwala-integration-test/src/test/resources/postman/server.xml.json",
+									"src": "D:/jenkins_home/jobs/tomcat-operations-center/workspace/jwala-integration-test/src/test/resources/postman/server.xml.json",
 									"value": ""
 								},
 								{
 									"key": "tplFile",
 									"type": "file",
 									"enabled": true,
-									"src": "C:/Users/RS045609/Desktop/it/New/jwala/jwala-integration-test/src/test/resources/postman/server.xml.tpl",
+									"src": "D:/jenkins_home/jobs/tomcat-operations-center/workspace/jwala-integration-test/src/test/resources/postman/server.xml.tpl",
 									"value": ""
 								}
 							]
@@ -890,14 +890,14 @@
 									"key": "metaData",
 									"type": "file",
 									"enabled": true,
-									"src": "C:/Users/RS045609/Desktop/it/New/jwala/jwala-integration-test/src/test/resources/postman/hello.xml.json",
+									"src": "D:/jenkins_home/jobs/tomcat-operations-center/workspace/jwala-integration-test/src/test/resources/postman/hello.xml.json",
 									"value": ""
 								},
 								{
 									"key": "tplFile",
 									"type": "file",
 									"enabled": true,
-									"src": "C:/Users/RS045609/Desktop/it/New/jwala/jwala-integration-test/src/test/resources/postman/hello.xml.tpl",
+									"src": "D:/jenkins_home/jobs/tomcat-operations-center/workspace/jwala-integration-test/src/test/resources/postman/hello.xml.tpl",
 									"value": ""
 								}
 							]
@@ -930,7 +930,7 @@
 									"key": "metaData",
 									"type": "file",
 									"enabled": true,
-									"src": "C:/Users/RS045609/Desktop/it/New/jwala/jwala-integration-test/src/test/resources/postman/hello.xml.json",
+									"src": "D:/jenkins_home/jobs/tomcat-operations-center/workspace/jwala-integration-test/src/test/resources/postman/hello.xml.json",
 									"value": ""
 								}
 							]
@@ -963,14 +963,14 @@
 									"key": "metaData",
 									"type": "file",
 									"enabled": true,
-									"src": "C:/Users/RS045609/Desktop/it/New/jwala/jwala-integration-test/src/test/resources/postman/hello.xml.json",
+									"src": "D:/jenkins_home/jobs/tomcat-operations-center/workspace/jwala-integration-test/src/test/resources/postman/hello.xml.json",
 									"value": ""
 								},
 								{
 									"key": "tplFile",
 									"type": "file",
 									"enabled": true,
-									"src": "C:/Users/RS045609/Desktop/it/New/jwala/jwala-integration-test/src/test/resources/postman/hello.xml.tpl",
+									"src": "D:/jenkins_home/jobs/tomcat-operations-center/workspace/jwala-integration-test/src/test/resources/postman/hello.xml.tpl",
 									"value": ""
 								}
 							]
@@ -1034,7 +1034,7 @@
 									"key": "file",
 									"type": "file",
 									"enabled": true,
-									"src": "C:/Users/RS045609/Desktop/it/New/jwala/jwala-integration-test/src/test/resources/postman/test.json",
+									"src": "D:/jenkins_home/jobs/tomcat-operations-center/workspace/jwala-integration-test/src/test/resources/postman/test.json",
 									"value": ""
 								}
 							]
@@ -1092,7 +1092,7 @@
 									"key": "tplFile",
 									"type": "file",
 									"enabled": true,
-									"src": "C:/Users/RS045609/Desktop/it/New/jwala/jwala-integration-test/src/test/resources/postman/hello.xml.tpl",
+									"src": "D:/jenkins_home/jobs/tomcat-operations-center/workspace/jwala-integration-test/src/test/resources/postman/hello.xml.tpl",
 									"value": ""
 								},
 								{
@@ -1162,7 +1162,7 @@
 									"key": "tplFile",
 									"type": "file",
 									"enabled": true,
-									"src": "C:/Users/RS045609/Desktop/it/New/jwala/jwala-integration-test/src/test/resources/postman/hello.xml.tpl",
+									"src": "D:/jenkins_home/jobs/tomcat-operations-center/workspace/jwala-integration-test/src/test/resources/postman/hello.xml.tpl",
 									"value": ""
 								},
 								{
@@ -1213,7 +1213,7 @@
 									"key": "templateFile",
 									"type": "file",
 									"enabled": true,
-									"src": "C:/Users/RS045609/Desktop/it/New/jwala/jwala-integration-test/src/test/resources/postman/hello.xml.tpl",
+									"src": "D:/jenkins_home/jobs/tomcat-operations-center/workspace/jwala-integration-test/src/test/resources/postman/hello.xml.tpl",
 									"value": ""
 								}
 							]
@@ -1277,14 +1277,14 @@
 									"key": "metaData",
 									"type": "file",
 									"enabled": true,
-									"src": "C:/Users/RS045609/Desktop/it/New/jwala/jwala-integration-test/src/test/resources/postman/tomcat-users.json",
+									"src": "D:/jenkins_home/jobs/tomcat-operations-center/workspace/jwala-integration-test/src/test/resources/postman/tomcat-users.json",
 									"value": ""
 								},
 								{
 									"key": "templateFile",
 									"type": "file",
 									"enabled": true,
-									"src": "C:/Users/RS045609/Desktop/it/New/jwala/jwala-integration-test/src/test/resources/postman/tomcat-users.xml",
+									"src": "D:/jenkins_home/jobs/tomcat-operations-center/workspace/jwala-integration-test/src/test/resources/postman/tomcat-users.xml",
 									"value": ""
 								}
 							]
@@ -1542,7 +1542,7 @@
 									"key": "templateFile",
 									"type": "file",
 									"enabled": true,
-									"src": "C:/Users/RS045609/Desktop/it/New/jwala/jwala-integration-test/src/test/resources/postman/httpd.json",
+									"src": "D:/jenkins_home/jobs/tomcat-operations-center/workspace/jwala-integration-test/src/test/resources/postman/httpd.json",
 									"value": ""
 								}
 							]
