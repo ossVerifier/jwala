@@ -260,7 +260,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     @Override
     public Response generateAndDeployGroupJvmFile(final String groupName, final String fileName,
                                                   final AuthenticatedUser authUser) {
-        return Response.ok(groupService.generateAndDeployGroupJvmFile(groupName, fileName, authUser.getUser())).build();
+        return ResponseBuilder.ok(groupService.generateAndDeployGroupJvmFile(groupName, fileName, authUser.getUser()));
     }
 
     @Override
