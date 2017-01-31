@@ -42,7 +42,6 @@ public class UserServiceRestImpl implements UserServiceRest {
     @Override
     public Response login(HttpServletRequest request, String userName, String password) {
         try {
-            SecurityContextHolder.setStrategyName(SecurityContextHolder.MODE_INHERITABLETHREADLOCAL);
             Authentication authRequest = new UsernamePasswordAuthenticationToken( userName, password );
             Authentication result = authenticationConfiguration.getAuthenticationManager().authenticate( authRequest );
             SecurityContextHolder.getContext().setAuthentication( result );
