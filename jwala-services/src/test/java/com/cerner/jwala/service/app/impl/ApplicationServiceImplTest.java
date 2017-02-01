@@ -35,7 +35,9 @@ import com.cerner.jwala.persistence.service.JvmPersistenceService;
 import com.cerner.jwala.persistence.service.ResourceDao;
 import com.cerner.jwala.service.HistoryFacadeService;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionControlService;
+import com.cerner.jwala.service.binarydistribution.BinaryDistributionLockManager;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionService;
+import com.cerner.jwala.service.binarydistribution.impl.BinaryDistributionLockManagerImpl;
 import com.cerner.jwala.service.exception.ApplicationServiceException;
 import com.cerner.jwala.service.resource.ResourceService;
 import com.cerner.jwala.service.resource.impl.ResourceGeneratorType;
@@ -99,6 +101,9 @@ public class ApplicationServiceImplTest {
     @Mock
     private RemoteCommandExecutorImpl remoteCommandExecutorImpl;
 
+    @Mock
+    private BinaryDistributionLockManager lockManager;
+
     private BinaryDistributionService binaryDistributionService;
 
     private Group group;
@@ -158,7 +163,7 @@ public class ApplicationServiceImplTest {
 
         applicationService = new ApplicationServiceImpl(applicationPersistenceService,
                 jvmPersistenceService, mockGroupPersistenceService,
-                mockResourceService, remoteCommandExecutorImpl, binaryDistributionService, mockHistoryFacadeService);
+                mockResourceService, remoteCommandExecutorImpl, binaryDistributionService, mockHistoryFacadeService,new BinaryDistributionLockManagerImpl() );
     }
 
     @SuppressWarnings("unchecked")
@@ -418,7 +423,7 @@ public class ApplicationServiceImplTest {
 
         ApplicationServiceImpl mockApplicationService = new ApplicationServiceImpl(applicationPersistenceService,
                 jvmPersistenceService, mockGroupService,
-                mockResourceService, remoteCommandExecutorImpl, binaryDistributionService, mockHistoryFacadeService);
+                mockResourceService, remoteCommandExecutorImpl, binaryDistributionService, mockHistoryFacadeService, new BinaryDistributionLockManagerImpl());
 
         try {
             CommandOutput successCommandOutput = new CommandOutput(new ExecReturnCode(0), "SUCCESS", "");
@@ -470,7 +475,7 @@ public class ApplicationServiceImplTest {
 
         ApplicationServiceImpl mockApplicationService = new ApplicationServiceImpl(applicationPersistenceService,
                 jvmPersistenceService, null,
-                mockResourceService, remoteCommandExecutorImpl, binaryDistributionService, mockHistoryFacadeService);
+                mockResourceService, remoteCommandExecutorImpl, binaryDistributionService, mockHistoryFacadeService, new BinaryDistributionLockManagerImpl());
 
         try {
             when(remoteCommandExecutor.executeRemoteCommand(anyString(), anyString(), any(ApplicationControlOperation.class), any(PlatformCommandProvider.class), anyString())).thenReturn(successCommandOutput);

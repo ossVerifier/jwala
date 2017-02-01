@@ -14,6 +14,7 @@ import com.cerner.jwala.common.domain.model.user.User;
 import com.cerner.jwala.common.exception.InternalErrorException;
 import com.cerner.jwala.common.exec.CommandOutput;
 import com.cerner.jwala.common.properties.ApplicationProperties;
+import com.cerner.jwala.common.properties.PropertyKeys;
 import com.cerner.jwala.common.request.app.CreateApplicationRequest;
 import com.cerner.jwala.common.request.app.UpdateApplicationRequest;
 import com.cerner.jwala.common.request.app.UploadAppTemplateRequest;
@@ -30,6 +31,7 @@ import com.cerner.jwala.persistence.service.GroupPersistenceService;
 import com.cerner.jwala.persistence.service.JvmPersistenceService;
 import com.cerner.jwala.service.HistoryFacadeService;
 import com.cerner.jwala.service.app.ApplicationService;
+import com.cerner.jwala.service.binarydistribution.BinaryDistributionLockManager;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionService;
 import com.cerner.jwala.service.exception.ApplicationServiceException;
 import com.cerner.jwala.service.resource.ResourceService;
@@ -41,6 +43,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.FileCopyUtils;
@@ -48,16 +51,18 @@ import org.springframework.util.FileCopyUtils;
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.*;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class ApplicationServiceImpl implements ApplicationService {
-
     private static final Logger LOGGER = LoggerFactory.getLogger(ApplicationServiceImpl.class);
+
+    private static final String UNZIP_EXE = "unzip.exe";
+
     private final ExecutorService executorService;
-    final String JWALA_SCRIPTS_PATH = ApplicationProperties.get("remote.commands.user-scripts");
 
     @Autowired
     private ApplicationPersistenceService applicationPersistenceService;
@@ -65,9 +70,11 @@ public class ApplicationServiceImpl implements ApplicationService {
     @Autowired
     private JvmPersistenceService jvmPersistenceService;
 
+    @Autowired
+    private BinaryDistributionLockManager binaryDistributionLockManager;
+
     private final ResourceService resourceService;
 
-    private Map<String, ReentrantReadWriteLock> writeLock = new HashMap<>();
 
     private final RemoteCommandExecutorImpl remoteCommandExecutor;
 
@@ -76,8 +83,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     private GroupPersistenceService groupPersistenceService;
 
     private final HistoryFacadeService historyFacadeService;
-
-    private static final String UNZIP_EXE = "unzip.exe";
+    Object lockObject = new Object();
 
     public ApplicationServiceImpl(final ApplicationPersistenceService applicationPersistenceService,
                                   final JvmPersistenceService jvmPersistenceService,
@@ -85,7 +91,8 @@ public class ApplicationServiceImpl implements ApplicationService {
                                   final ResourceService resourceService,
                                   final RemoteCommandExecutorImpl remoteCommandExecutor,
                                   final BinaryDistributionService binaryDistributionService,
-                                  final HistoryFacadeService historyFacadeService) {
+                                  final HistoryFacadeService historyFacadeService,
+                                  final BinaryDistributionLockManager binaryDistributionLockManager) {
         this.applicationPersistenceService = applicationPersistenceService;
         this.jvmPersistenceService = jvmPersistenceService;
         this.groupPersistenceService = groupPersistenceService;
@@ -93,6 +100,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         this.resourceService = resourceService;
         this.remoteCommandExecutor = remoteCommandExecutor;
         this.binaryDistributionService = binaryDistributionService;
+        this.binaryDistributionLockManager = binaryDistributionLockManager;
         executorService = Executors.newFixedThreadPool(Integer.parseInt(ApplicationProperties.get("resources.thread-task-executor.pool.size", "25")));
     }
 
@@ -168,14 +176,10 @@ public class ApplicationServiceImpl implements ApplicationService {
     // TODO: Have an option to do a hot deploy or not.
     public CommandOutput deployConf(final String appName, final String groupName, final String jvmName,
                                     final String resourceTemplateName, ResourceGroup resourceGroup, User user) {
-        final StringBuilder key = new StringBuilder();
-        key.append(groupName).append(jvmName).append(appName).append(resourceTemplateName);
+        String lockKey = generateKey(groupName, jvmName, appName, resourceTemplateName);
         try {
             // only one at a time
-            if (!writeLock.containsKey(key.toString())) {
-                writeLock.put(key.toString(), new ReentrantReadWriteLock());
-            }
-            writeLock.get(key.toString()).writeLock().lock();
+            binaryDistributionLockManager.writeLock(lockKey);
             ResourceIdentifier resourceIdentifier = new ResourceIdentifier.Builder()
                     .setResourceName(resourceTemplateName)
                     .setGroupName(groupName)
@@ -194,8 +198,20 @@ public class ApplicationServiceImpl implements ApplicationService {
             LOGGER.error("Fail to generate the resource file {}", resourceTemplateName, e);
             throw new DeployApplicationConfException(e);
         } finally {
-            writeLock.get(key.toString()).writeLock().unlock();
+            binaryDistributionLockManager.writeUnlock(lockKey);
         }
+    }
+    /**
+     * Method to generate lock key;
+     *
+     * @return
+     */
+    private String generateKey(String... keys) {
+        final StringBuilder keyBuilder = new StringBuilder(keys.length);
+        for (String key:keys) {
+            keyBuilder.append(key);
+        }
+        return keyBuilder.toString();
     }
 
     @Override
@@ -334,19 +350,20 @@ public class ApplicationServiceImpl implements ApplicationService {
                 if (application.isUnpackWar()) {
                     final String warName = application.getWarName();
                     LOGGER.info("Unpacking war {} on host {}", warName, host);
+                    String jwalaScriptPath =  ApplicationProperties.get(PropertyKeys.REMOTE_SCRIPT_DIR);
 
                     // create the .jwala directory as the destination for the unpack-war script
-                    commandOutput = executeCreateDirectoryCommand(null, host, JWALA_SCRIPTS_PATH);
+                    commandOutput = executeCreateDirectoryCommand(null, host, jwalaScriptPath);
                     if (commandOutput.getReturnCode().wasSuccessful()) {
-                        LOGGER.info("Successfully created the parent dir {} on host", JWALA_SCRIPTS_PATH, host);
+                        LOGGER.info("Successfully created the parent dir {} on host", jwalaScriptPath, host);
                     } else {
                         final String standardError = commandOutput.getStandardError().isEmpty() ? commandOutput.getStandardOutput() : commandOutput.getStandardError();
-                        LOGGER.error("Error in creating parent dir {} on host {}:: ERROR : {}", JWALA_SCRIPTS_PATH, host, standardError);
+                        LOGGER.error("Error in creating parent dir {} on host {}:: ERROR : {}", jwalaScriptPath, host, standardError);
                         throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, standardError);
                     }
 
                     final String unpackWarScriptPath = ApplicationProperties.get("commands.scripts-path") + "/" + AemControl.Properties.UNPACK_BINARY_SCRIPT_NAME;
-                    final String destinationUnpackWarScriptPath = JWALA_SCRIPTS_PATH + "/" + AemControl.Properties.UNPACK_BINARY_SCRIPT_NAME;
+                    final String destinationUnpackWarScriptPath = jwalaScriptPath + "/" + AemControl.Properties.UNPACK_BINARY_SCRIPT_NAME;
                     commandOutput = executeSecureCopyCommand(null, host, unpackWarScriptPath, destinationUnpackWarScriptPath);
 
                     if (!commandOutput.getReturnCode().wasSuccessful()) {
@@ -355,9 +372,9 @@ public class ApplicationServiceImpl implements ApplicationService {
                     }
 
                     // make sure the scripts are executable
-                    commandOutput = executeChangeFileModeCommand(null, host, "a+x", JWALA_SCRIPTS_PATH, "*.sh");
+                    commandOutput = executeChangeFileModeCommand(null, host, "a+x", jwalaScriptPath, "*.sh");
                     if (!commandOutput.getReturnCode().wasSuccessful()) {
-                        LOGGER.error("Error in changing file permissions on " + JWALA_SCRIPTS_PATH + " on host:" + host);
+                        LOGGER.error("Error in changing file permissions on " + jwalaScriptPath + " on host:" + host);
                         return commandOutput;
                     }
 
@@ -391,7 +408,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     @Override
     public CommandOutput executeBackUpCommand(final String entity, final String host, final String source) throws CommandFailureException {
-        final String currentDateSuffix = new SimpleDateFormat(".yyyyMMdd_HHmmss").format(new Date());
+        final String currentDateSuffix = Instant.now().toString();
         final String destination = source + currentDateSuffix;
         return remoteCommandExecutor.executeRemoteCommand(
                 entity,
@@ -517,7 +534,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         } else {
             LOGGER.info("host name provided {}", hostName);
             for (final String host : allHosts) {
-                if (hostName.toLowerCase(Locale.US).equals(host.toLowerCase(Locale.US))) {
+                if (hostName.equalsIgnoreCase(host)) {
                     hostNames.add(host.toLowerCase(Locale.US));
                 }
             }
@@ -529,9 +546,8 @@ public class ApplicationServiceImpl implements ApplicationService {
         return hostNames;
     }
 
-    // TODO: See if we can implement method chaining for resource deployment which can be used by other resource related service
     protected void checkForRunningJvms(final Group group, final List<String> hostNames, final User user) {
-        final List<Jvm> runningJvmList = new ArrayList<>();
+        final Set<Jvm> runningJvmList = new HashSet<>();
         final List<String> runningJvmNameList = new ArrayList<>();
         for (final Jvm jvm : group.getJvms()) {
             if (hostNames.contains(jvm.getHostName().toLowerCase(Locale.US)) && jvm.getState().isStartedState()) {
@@ -575,23 +591,31 @@ public class ApplicationServiceImpl implements ApplicationService {
         return resourceSet;
     }
 
-    protected Map<String, Future<Set<CommandOutput>>> deployApplicationResourcesForHosts(
-            final List<String> hostNames, final Group group, final Application application, final Set<String> resourceSet) {
-        final ResourceGroup resourceGroup = resourceService.generateResourceGroup();
+    protected Map<String, Future<Set<CommandOutput>>> deployApplicationResourcesForHosts(final List<String> hostNames,
+                                                                                         final Group group,
+                                                                                         final Application application,
+                                                                                         final Set<String> resourceSet) {
         final Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        final Map<String, Future<Set<CommandOutput>>> futures = new HashMap<>();
+        final Map<String, Future<Set<CommandOutput>>>futures = new HashMap<>();
         for (final String host : hostNames) {
             Future<Set<CommandOutput>> commandOutputFutureSet = executorService.submit
                     (new Callable<Set<CommandOutput>>() {
                          @Override
                          public Set<CommandOutput> call() throws Exception {
-                             Set<CommandOutput> commandOutputs = new HashSet<>();
-                             SecurityContextHolder.getContext().setAuthentication(authentication);
-                             for (final String resource : resourceSet) {
-                                 LOGGER.info("Deploying {} to host {}", resource, host);
-                                 commandOutputs.add(executeDeployGroupAppTemplate(group.getName(), resource, application, host));
+                             SecurityContext context = SecurityContextHolder.createEmptyContext();
+                             try {
+                                 Set<CommandOutput> commandOutputs = new HashSet<>();
+                                 context.setAuthentication(authentication);
+                                 SecurityContextHolder.setContext(context);
+                                 for (final String resource : resourceSet) {
+                                     LOGGER.info("Deploying {} to host {}", resource, host);
+                                     commandOutputs.add(executeDeployGroupAppTemplate(group.getName(), resource, application, host));
+                                 }
+                                 return commandOutputs;
+                             }finally{
+                                 SecurityContextHolder.clearContext();
                              }
-                             return commandOutputs;
+
                          }
                      }
                     );
@@ -623,10 +647,10 @@ public class ApplicationServiceImpl implements ApplicationService {
     }
 
     protected void waitForDeploy(final String appName, final Map<String, Future<Set<CommandOutput>>> futures) {
+        long timeout = Long.parseLong(ApplicationProperties.get("remote.jwala.execution.timeout.seconds", "600"));
         if (futures != null) {
             for (Entry<String, Future<Set<CommandOutput>>> entry : futures.entrySet()) {
                 try {
-                    long timeout = Long.parseLong(ApplicationProperties.get("remote.jwala.execution.timeout.seconds", "600"));
                     Set<CommandOutput> commandOutputSet = entry.getValue().get(timeout, TimeUnit.SECONDS);
                     for (CommandOutput commandOutput : commandOutputSet) {
                         if (!commandOutput.getReturnCode().wasSuccessful()) {
@@ -648,26 +672,24 @@ public class ApplicationServiceImpl implements ApplicationService {
         List<String> keys = new ArrayList<>();
         for (final String host : hostNames) {
             final String key = appName + "/" + host;
-            if (!writeLock.containsKey(key)) {
-                writeLock.put(key, new ReentrantReadWriteLock());
-            }
-            boolean gotLock = writeLock.get(key).writeLock().tryLock();
-            if (!gotLock) {
-                LOGGER.error("Could not get lock for host: {} and app: {}", host, appName);
-                releaseWriteLocks(keys);
-                throw new InternalErrorException(FaultType.SERVICE_EXCEPTION, "Current resource is being deployed, wait for deploy to complete.");
-            } else {
-                keys.add(key);
-            }
+            binaryDistributionLockManager.writeLock(key);
+            keys.add(key);
         }
         return keys;
     }
 
     protected void releaseWriteLocks(List<String> keys) {
         for (String key : keys) {
-            if (writeLock.containsKey(key) && writeLock.get(key).isWriteLocked()) {
-                writeLock.get(key).writeLock().unlock();
-            }
+            binaryDistributionLockManager.writeUnlock(key);
         }
+    }
+
+    public BinaryDistributionLockManager getLockManager() {
+        return binaryDistributionLockManager;
+    }
+
+    public ApplicationServiceImpl setLockManager(BinaryDistributionLockManager binaryDistributionLockManager) {
+        this.binaryDistributionLockManager = binaryDistributionLockManager;
+        return this;
     }
 }

@@ -28,7 +28,9 @@ import com.cerner.jwala.persistence.service.impl.JpaJvmPersistenceServiceImpl;
 import com.cerner.jwala.service.HistoryFacadeService;
 import com.cerner.jwala.service.app.ApplicationCommandService;
 import com.cerner.jwala.service.app.ApplicationService;
+import com.cerner.jwala.service.binarydistribution.BinaryDistributionLockManager;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionService;
+import com.cerner.jwala.service.binarydistribution.impl.BinaryDistributionLockManagerImpl;
 import com.cerner.jwala.service.configuration.TestJpaConfiguration;
 import com.cerner.jwala.service.resource.ResourceService;
 import com.cerner.jwala.service.webserver.component.ClientFactoryHelper;
@@ -141,6 +143,8 @@ public class ApplicationServiceImplIntegrationTest {
 
     private ApplicationService applicationService;
 
+    BinaryDistributionLockManager binaryDistributionLockManager;
+
     private JvmPersistenceService jvmPersistenceService;
 
     @Autowired
@@ -161,12 +165,14 @@ public class ApplicationServiceImplIntegrationTest {
         binaryDistributionService = mock(BinaryDistributionService.class);
         when(mockSshConfig.getUserName()).thenReturn("mockUser");
         when(aemSshConfig.getSshConfiguration()).thenReturn(mockSshConfig);
+        binaryDistributionLockManager = new BinaryDistributionLockManagerImpl();
         applicationService = new ApplicationServiceImpl(
                 applicationPersistenceService,
                 jvmPersistenceService,
                 mockGroupPersistenceService,
                 mockResourceService,
-                remoteCommandExecutorImpl, binaryDistributionService, mockHistoryFacadeService);
+                remoteCommandExecutorImpl, binaryDistributionService, mockHistoryFacadeService, binaryDistributionLockManager
+                );
     }
 
     @After

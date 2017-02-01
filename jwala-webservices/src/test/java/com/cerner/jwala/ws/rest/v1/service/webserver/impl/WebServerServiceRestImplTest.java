@@ -132,7 +132,7 @@ public class WebServerServiceRestImplTest {
     @Before
     public void setUp() {
         System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, "./src/test/resources");
-        webServerServiceRest = new WebServerServiceRestImpl(impl, webServerControlService, commandImpl, writeLockMap, resourceService, groupService, binaryDistributionService, mockHistoryFacadeService);
+        webServerServiceRest = new WebServerServiceRestImpl(impl, webServerControlService, commandImpl, resourceService, groupService, binaryDistributionService, mockHistoryFacadeService);
         when(authenticatedUser.getUser()).thenReturn(new User("Unused"));
 
         InternalErrorException iee = new InternalErrorException(null, "User does not have permission to create the directory ~/.jwala");

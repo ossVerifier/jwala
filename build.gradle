@@ -184,17 +184,8 @@ subprojects {
     apply plugin: "jacoco"
     apply plugin: "eclipse"
     apply plugin: "maven"
-    apply plugin: "findbugs"
     sourceCompatibility = 1.8
 
-    tasks.withType(FindBugs) {
-        ignoreFailures = true
-        reports {
-            xml.enabled false
-            html.enabled true
-            //html.stylesheet resources.text.fromFile('config/xsl/colors.xsl')
-        }
-    }
     group = "com.cerner.jwala"
 
     version = project.properties['buildVersion']

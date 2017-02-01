@@ -28,7 +28,9 @@ import com.cerner.jwala.persistence.service.ApplicationPersistenceService;
 import com.cerner.jwala.persistence.service.GroupPersistenceService;
 import com.cerner.jwala.service.HistoryFacadeService;
 import com.cerner.jwala.service.app.ApplicationService;
+import com.cerner.jwala.service.binarydistribution.BinaryDistributionLockManager;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionService;
+import com.cerner.jwala.service.binarydistribution.impl.BinaryDistributionLockManagerImpl;
 import com.cerner.jwala.service.group.GroupControlService;
 import com.cerner.jwala.service.group.GroupJvmControlService;
 import com.cerner.jwala.service.group.GroupService;
@@ -70,7 +72,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
@@ -626,7 +627,9 @@ public class GroupServiceImplDeployTest {
 
         @Bean
         WebServerServiceRest getWebServerServiceRest() {
-            return new WebServerServiceRestImpl(mockWebServerService, mockWebServerControlService, mock(WebServerCommandService.class), new HashMap<String, ReentrantReadWriteLock>(), mockResourceService, mockGroupService, binaryDistributionService, mockHistoryService);
+            WebServerServiceRestImpl webServerServiceRest = new WebServerServiceRestImpl(mockWebServerService, mockWebServerControlService, mock(WebServerCommandService.class), mockResourceService, mockGroupService, binaryDistributionService, mockHistoryService);
+            webServerServiceRest.setLockManager(new BinaryDistributionLockManagerImpl());
+            return webServerServiceRest;
         }
 
         @Bean
