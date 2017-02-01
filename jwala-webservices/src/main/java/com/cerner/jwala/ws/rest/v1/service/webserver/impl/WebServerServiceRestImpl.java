@@ -414,7 +414,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
         PrintWriter out = null;
         final File httpdConfFile =
                 new File(httpdDataDir + System.getProperty("file.separator") + aWebServerName + "_" + fileNamePrefix + "."
-                        + Instant.now()+ "." + fileNameSuffix.replace("\\", "/"));
+                        + new SimpleDateFormat("yyyyMMdd_HHmmss").format(Date.from(Instant.now()))+ "." + fileNameSuffix.replace("\\", "/"));
         final String httpdConfAbsolutePath = httpdConfFile.getAbsolutePath().replace("\\", "/");
         try {
             out = new PrintWriter(httpdConfAbsolutePath);

@@ -408,7 +408,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     @Override
     public CommandOutput executeBackUpCommand(final String entity, final String host, final String source) throws CommandFailureException {
-        final String currentDateSuffix = Instant.now().toString();
+        final String currentDateSuffix = new SimpleDateFormat("yyyyMMdd_HHmmss").format(Date.from(Instant.now()));
         final String destination = source + currentDateSuffix;
         return remoteCommandExecutor.executeRemoteCommand(
                 entity,
