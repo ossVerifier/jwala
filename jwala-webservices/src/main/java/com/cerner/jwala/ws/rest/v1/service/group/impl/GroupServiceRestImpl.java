@@ -542,9 +542,9 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     }
 
     protected List<MembershipDetails> createMembershipDetailsFromJvms(final List<Jvm> jvms) {
-        final List<MembershipDetails> membershipDetailsList = new LinkedList<>();
+        final List<MembershipDetails> membershipDetailsList = new ArrayList<>(jvms.size());
         for (Jvm jvm : jvms) {
-            final List<String> groupNames = new LinkedList<>();
+            final List<String> groupNames = new ArrayList<>(jvm.getGroups().size());
             for (Group group : jvm.getGroups()) {
                 groupNames.add(group.getName());
             }
@@ -556,9 +556,9 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     }
 
     protected List<MembershipDetails> createMembershipDetailsFromWebServers(final List<WebServer> webServers) {
-        final List<MembershipDetails> membershipDetailsList = new LinkedList<>();
+        final List<MembershipDetails> membershipDetailsList = new ArrayList<>(webServers.size());
         for (WebServer webServer : webServers) {
-            final List<String> groupNames = new LinkedList<>();
+            final List<String> groupNames = new ArrayList<>(webServer.getGroups().size());
             for (Group group : webServer.getGroups()) {
                 groupNames.add(group.getName());
             }
@@ -728,7 +728,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
                     throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, "All JVMs in the group must be stopped before continuing. Operation stopped for JVM " + jvm.getJvmName());
                 }
             }
-            List<String> deployedHosts = new LinkedList<>();
+            List<String> deployedHosts = new ArrayList<>(jvms.size());
             for (final Jvm jvm : jvms) {
                 final String hostName = jvm.getHostName();
                 if (!deployedHosts.contains(hostName)) {
@@ -861,7 +861,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     @Override
     public Response getStartedAndStoppedWebServersAndJvmsCount() {
         LOGGER.debug("Get started and stopped Web Servers and JVMs count");
-        final List<GroupServerInfo> groupServerInfos = new ArrayList<>();
+        final List<GroupServerInfo> groupServerInfos = new ArrayList<>(groupService.getGroups().size());
         for (final Group group : groupService.getGroups()) {
             final GroupServerInfo groupServerInfo = getGroupServerInfo(group.getName());
             groupServerInfos.add(groupServerInfo);
@@ -907,7 +907,7 @@ public class GroupServiceRestImpl implements GroupServiceRest {
     @Override
     public Response getStoppedWebServersAndJvmsCount() {
         LOGGER.debug("Get stopped Web Servers and JVMs count");
-        final List<GroupServerInfo> groupServerInfos = new ArrayList<>();
+        final List<GroupServerInfo> groupServerInfos = new ArrayList<>(groupService.getGroups().size());
         for (final Group group : groupService.getGroups()) {
             final GroupServerInfo groupServerInfo = new GroupServerInfoBuilder().setGroupName(group.getName())
                     .setJvmStoppedCount(jvmService.getJvmStoppedCount(group.getName()))
