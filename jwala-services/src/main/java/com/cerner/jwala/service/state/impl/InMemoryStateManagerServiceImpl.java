@@ -1,9 +1,9 @@
 package com.cerner.jwala.service.state.impl;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import com.cerner.jwala.service.state.InMemoryStateManagerService;
+
+import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Implements {@link InMemoryStateManagerService} using a {@link HashMap}.
@@ -12,7 +12,7 @@ import com.cerner.jwala.service.state.InMemoryStateManagerService;
  */
 public class InMemoryStateManagerServiceImpl<K, V>  implements InMemoryStateManagerService<K, V>  {
 
-    private final Map<K, V> stateMap = new HashMap<>();
+    private final ConcurrentHashMap<K, V> stateMap = new ConcurrentHashMap<>();
 
     @Override
     public void put(K key, V val) {
