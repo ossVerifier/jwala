@@ -110,6 +110,7 @@ public class GroupServiceImplDeployTest {
     static final ApplicationServiceRest mockApplicationServiceRest = mock(ApplicationServiceRest.class);
     static final WebServerServiceRest mockWebServerServiceRest = mock(WebServerServiceRest.class);
     static final HistoryFacadeService mockHistoryService = mock(HistoryFacadeService.class);
+    static final BinaryDistributionLockManager mockBinaryDistributionLockManager = mock(BinaryDistributionLockManager.class);
 
 
     private AuthenticatedUser mockAuthUser = mock(AuthenticatedUser.class);
@@ -635,6 +636,11 @@ public class GroupServiceImplDeployTest {
         @Bean
         ApplicationServiceRest getApplicationServiceRest() {
             return new ApplicationServiceRestImpl(mockApplicationService, mock(ResourceService.class), mockGroupService);
+        }
+
+        @Bean
+        BinaryDistributionLockManager getBinaryDistributionLockManager() {
+            return mockBinaryDistributionLockManager;
         }
 
         @Bean
