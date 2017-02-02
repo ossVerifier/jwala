@@ -40,6 +40,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
+import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -474,6 +475,10 @@ public class ResourceServiceRestImplTest {
 
         final SecurityContext securityContextMock = mock(SecurityContext.class);
         final AuthenticatedUser authenticatedUser = new AuthenticatedUser(securityContextMock);
+
+        final Principal mockPrincipal = mock(Principal.class);
+        when(mockPrincipal.getName()).thenReturn("user");
+        when(securityContextMock.getUserPrincipal()).thenReturn(mockPrincipal);
 
         cut.uploadExternalProperties(authenticatedUser);
         verify(impl).createResource(any(ResourceIdentifier.class), any(ResourceTemplateMetaData.class), any(InputStream.class));

@@ -232,10 +232,10 @@ public class AemServiceConfiguration {
     @Bean
     public ApplicationService getApplicationService(final JvmPersistenceService jvmPersistenceService, final GroupPersistenceService groupPersistenceService,
                                                     final HistoryCrudService historyCrudService, final MessagingService messagingService,
-                                                    final ResourceService resourceService, final HistoryFacadeService historyFacadeService) {
+                                                    final ResourceService resourceService, final HistoryFacadeService historyFacadeService, BinaryDistributionLockManager lockManager) {
         return new ApplicationServiceImpl(persistenceServiceConfiguration.getApplicationPersistenceService(),
                 jvmPersistenceService, groupPersistenceService,
-                resourceService, aemCommandExecutorConfig.getRemoteCommandExecutor(), binaryDistributionService, historyFacadeService);
+                resourceService, aemCommandExecutorConfig.getRemoteCommandExecutor(), binaryDistributionService, historyFacadeService, lockManager);
     }
 
     @Bean(name = "jvmControlService")

@@ -20,6 +20,7 @@ import com.cerner.jwala.control.AemControl;
 import com.cerner.jwala.exception.CommandFailureException;
 import com.cerner.jwala.persistence.jpa.type.EventType;
 import com.cerner.jwala.service.HistoryFacadeService;
+import com.cerner.jwala.service.binarydistribution.BinaryDistributionLockManager;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionService;
 import com.cerner.jwala.service.group.GroupService;
 import com.cerner.jwala.service.resource.ResourceService;
@@ -35,6 +36,8 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.InstantiationAwareBeanPostProcessor;
 
 import javax.persistence.EntityExistsException;
 import javax.ws.rs.core.Response;
@@ -42,6 +45,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -51,28 +55,27 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
     public static final String PATHS_GENERATED_RESOURCE_DIR = "paths.generated.resource.dir";
     private static final String COMMANDS_SCRIPTS_PATH = ApplicationProperties.get("commands.scripts-path");
     private static final String HTTPD_CONF = "httpd.conf";
-
+    private static final Long DEFAULT_WAIT_TIMEOUT = 30000L;
+    @Autowired
+    private BinaryDistributionLockManager binaryDistributionLockManager;
     private final WebServerService webServerService;
     private final WebServerControlService webServerControlService;
     private final WebServerCommandService webServerCommandService;
-    private final Map<String, ReentrantReadWriteLock> wsWriteLocks;
     private ResourceService resourceService;
     private GroupService groupService;
     private HistoryFacadeService historyFacadeService;
     private final BinaryDistributionService binaryDistributionService;
-    private static final Long DEFAULT_WAIT_TIMEOUT = 30000L;
 
     public WebServerServiceRestImpl(final WebServerService theWebServerService,
                                     final WebServerControlService theWebServerControlService,
                                     final WebServerCommandService theWebServerCommandService,
-                                    final Map<String, ReentrantReadWriteLock> theWriteLocks,
                                     final ResourceService theResourceService, GroupService groupService,
                                     final BinaryDistributionService binaryDistributionService,
-                                    final HistoryFacadeService historyFacadeService) {
+                                    final HistoryFacadeService historyFacadeService
+                                    ) {
         webServerService = theWebServerService;
         webServerControlService = theWebServerControlService;
         webServerCommandService = theWebServerCommandService;
-        wsWriteLocks = theWriteLocks;
         resourceService = theResourceService;
         this.groupService = groupService;
         this.binaryDistributionService = binaryDistributionService;
@@ -208,7 +211,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
         boolean didSucceed = false;
 
         // only one at a time per web server
-        lock(aWebServerName);
+        binaryDistributionLockManager.writeLock(aWebServerName);
 
         WebServer webServer = webServerService.getWebServer(aWebServerName);
 
@@ -251,7 +254,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
                     FaultType.REMOTE_COMMAND_FAILURE, e.getMessage(), e));
         } finally {
-            unlock(aWebServerName);
+            binaryDistributionLockManager.writeUnlock(aWebServerName);
             final String historyMessage = didSucceed ? "Remote generation of web server " + aWebServerName + " succeeded" :
                     "Remote generation of web server " + aWebServerName + " failed";
             historyFacadeService.write(aWebServerName, new ArrayList<>(webServer.getGroups()), historyMessage, EventType.USER_ACTION_INFO, aUser.getUser().getId());
@@ -274,17 +277,6 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
             LOGGER.error(errorMessage);
             throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, errorMessage);
         }
-    }
-
-    private void unlock(String aWebServerName) {
-        wsWriteLocks.get(aWebServerName).writeLock().unlock();
-    }
-
-    private void lock(String aWebServerName) {
-        if (!wsWriteLocks.containsKey(aWebServerName)) {
-            wsWriteLocks.put(aWebServerName, new ReentrantReadWriteLock());
-        }
-        wsWriteLocks.get(aWebServerName).writeLock().lock();
     }
 
     protected void validateHttpdConf(WebServer webServer) {
@@ -422,7 +414,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
         PrintWriter out = null;
         final File httpdConfFile =
                 new File(httpdDataDir + System.getProperty("file.separator") + aWebServerName + "_" + fileNamePrefix + "."
-                        + new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date()) + "." + fileNameSuffix.replace("\\", "/"));
+                        + new SimpleDateFormat("yyyyMMdd_HHmmss").format(Date.from(Instant.now()))+ "." + fileNameSuffix.replace("\\", "/"));
         final String httpdConfAbsolutePath = httpdConfFile.getAbsolutePath().replace("\\", "/");
         try {
             out = new PrintWriter(httpdConfAbsolutePath);
@@ -487,5 +479,9 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
                     FaultType.INVALID_TEMPLATE, rte.getMessage()));
         }
+    }
+
+    public void setLockManager(BinaryDistributionLockManager binaryDistributionLockManager) {
+        this.binaryDistributionLockManager = binaryDistributionLockManager;
     }
 }

@@ -86,11 +86,8 @@ public class JwalaAuthenticationProvider implements AuthenticationProvider {
      */
     public Realm getTomcatContextRealm() throws AttributeNotFoundException, InstanceNotFoundException, MBeanException, ReflectionException {
         try {
-            if (mBeanServer == null) {
-                mBeanServer = ManagementFactory.getPlatformMBeanServer();
-            }
             ObjectName name = new ObjectName("Catalina", "type", "Engine");
-            Engine engine = (Engine) mBeanServer.getAttribute(name, "managedResource");
+            Engine engine = (Engine) JwalaAuthenticationProvider.getmBeanServer().getAttribute(name, "managedResource");
             return engine.getRealm();
         } catch (MalformedObjectNameException ex) {
             LOGGER.error("Invalid Realm", ex);
@@ -98,12 +95,12 @@ public class JwalaAuthenticationProvider implements AuthenticationProvider {
         return null;
     }
 
-    public MBeanServer getmBeanServer() {
-        return mBeanServer;
+    public static MBeanServer getmBeanServer() {
+        return DeferredLoader.PLATFORM_MBEAN_SERVER;
     }
 
-    public void setmBeanServer(MBeanServer mBeanServer) {
-        this.mBeanServer = mBeanServer;
+    private static final class DeferredLoader {
+        public static final MBeanServer PLATFORM_MBEAN_SERVER = ManagementFactory.getPlatformMBeanServer();
     }
 
 }
