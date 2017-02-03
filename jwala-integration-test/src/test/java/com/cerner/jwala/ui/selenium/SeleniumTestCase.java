@@ -1,6 +1,9 @@
 package com.cerner.jwala.ui.selenium;
 
+import org.openqa.selenium.By;
+import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -8,6 +11,8 @@ import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
+
+import static org.junit.Assert.fail;
 
 /**
  * Created on 11/9/2016
@@ -75,6 +80,27 @@ public class SeleniumTestCase {
         if (isWaitPropertySet){
             final long sleepTime = Long.parseLong(properties.getProperty(PROPERTY_JWALA_WAIT_BETWEEN_STEPS_TIME_MS, "1000"));
             Thread.sleep(sleepTime);
+        }
+    }
+
+    protected void login() throws InterruptedException {
+        driver.get(baseUrl + "/login");
+        driver.findElement(By.id("userName")).sendKeys(properties.getProperty("jwala.user.name"));
+        driver.findElement(By.id("password")).sendKeys(properties.getProperty("jwala.user.password"));
+        driver.findElement(By.cssSelector("input[type=\"button\"]")).click();
+        for (int second = 0; ; second++) {
+            if (second >= 60) fail("timeout");
+            if (isElementPresent(By.xpath("//div[@id='group-operations-table_wrapper']/div"))) break;
+            Thread.sleep(1000);
+        }
+    }
+
+    protected boolean isElementPresent(final By by) {
+        try {
+            final WebElement webElement = driver.findElement(by);
+            return webElement != null;
+        } catch (final NoSuchElementException e) {
+            return false;
         }
     }
 
