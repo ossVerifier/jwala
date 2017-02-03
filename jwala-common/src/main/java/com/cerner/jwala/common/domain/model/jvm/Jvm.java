@@ -1,5 +1,6 @@
 package com.cerner.jwala.common.domain.model.jvm;
 
+import com.cerner.jwala.common.domain.model.app.Application;
 import com.cerner.jwala.common.domain.model.group.Group;
 import com.cerner.jwala.common.domain.model.id.Identifier;
 import com.cerner.jwala.common.domain.model.media.Media;
@@ -10,10 +11,7 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import java.io.Serializable;
 import java.net.URI;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 public class Jvm implements Serializable {
 
@@ -41,6 +39,8 @@ public class Jvm implements Serializable {
     private Media jdkMedia;
     private Media tomcatMedia;
 
+    private List<Application> webApps;
+
     public Jvm(final Identifier<Jvm> id, final String name) {
         this.id = id;
         this.jvmName = name;
@@ -57,6 +57,50 @@ public class Jvm implements Serializable {
         this.id = id;
         this.jvmName = name;
         this.groups = Collections.unmodifiableSet(new HashSet<>(groups));
+    }
+
+    public Jvm(Identifier<Jvm> id,
+               String jvmName,
+               String hostName,
+               Set<Group> groups,
+               Group parentGroup,
+               Integer httpPort,
+               Integer httpsPort,
+               Integer redirectPort,
+               Integer shutdownPort,
+               Integer ajpPort,
+               Path statusPath,
+               String systemProperties,
+               JvmState state,
+               String errorStatus,
+               Calendar lastUpdatedDate,
+               String userName,
+               String encryptedPassword,
+               Media jdkMedia,
+               Media tomcatMedia,
+               String javaHome,
+               List<Application> webApps) {
+        this.id = id;
+        this.jvmName = jvmName;
+        this.hostName = hostName;
+        this.groups = groups;
+        this.parentGroup = parentGroup;
+        this.httpPort = httpPort;
+        this.httpsPort = httpsPort;
+        this.redirectPort = redirectPort;
+        this.shutdownPort = shutdownPort;
+        this.ajpPort = ajpPort;
+        this.statusPath = statusPath;
+        this.systemProperties = systemProperties;
+        this.state = state;
+        this.errorStatus = errorStatus;
+        this.lastUpdatedDate = lastUpdatedDate;
+        this.userName = userName;
+        this.encryptedPassword = encryptedPassword;
+        this.jdkMedia = jdkMedia;
+        this.tomcatMedia = tomcatMedia;
+        this.javaHome = javaHome;
+        this.webApps = webApps;
     }
 
     /**
@@ -83,49 +127,8 @@ public class Jvm implements Serializable {
                        "",
                        this.jdkMedia,
                        this.tomcatMedia,
-                       this.javaHome);
-    }
-
-    public Jvm(Identifier<Jvm> id,
-               String jvmName,
-               String hostName,
-               Set<Group> groups,
-               Group parentGroup,
-               Integer httpPort,
-               Integer httpsPort,
-               Integer redirectPort,
-               Integer shutdownPort,
-               Integer ajpPort,
-               Path statusPath,
-               String systemProperties,
-               JvmState state,
-               String errorStatus,
-               Calendar lastUpdatedDate,
-               String userName,
-               String encryptedPassword,
-               Media jdkMedia,
-               Media tomcatMedia,
-               String javaHome) {
-        this.id = id;
-        this.jvmName = jvmName;
-        this.hostName = hostName;
-        this.groups = groups;
-        this.parentGroup = parentGroup;
-        this.httpPort = httpPort;
-        this.httpsPort = httpsPort;
-        this.redirectPort = redirectPort;
-        this.shutdownPort = shutdownPort;
-        this.ajpPort = ajpPort;
-        this.statusPath = statusPath;
-        this.systemProperties = systemProperties;
-        this.state = state;
-        this.errorStatus = errorStatus;
-        this.lastUpdatedDate = lastUpdatedDate;
-        this.userName = userName;
-        this.encryptedPassword = encryptedPassword;
-        this.jdkMedia = jdkMedia;
-        this.tomcatMedia = tomcatMedia;
-        this.javaHome = javaHome;
+                       this.javaHome,
+                       this.webApps);
     }
 
     public Media getJdkMedia() {
@@ -228,6 +231,10 @@ public class Jvm implements Serializable {
         return builder.buildUnchecked();
     }
 
+    public List<Application> getWebApps() {
+        return webApps;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -306,4 +313,5 @@ public class Jvm implements Serializable {
                 ", tomcatMedia='" + tomcatMedia + '\'' +
                 '}';
     }
+
 }
