@@ -55,7 +55,6 @@ import java.time.Instant;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.*;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class ApplicationServiceImpl implements ApplicationService {
     private static final Logger LOGGER = LoggerFactory.getLogger(ApplicationServiceImpl.class);
@@ -76,13 +75,13 @@ public class ApplicationServiceImpl implements ApplicationService {
     private final ResourceService resourceService;
 
 
-    private ExecutorService executorService;
+    private final RemoteCommandExecutorImpl remoteCommandExecutor;
 
-    private ResourceService resourceService;
+    private final BinaryDistributionService binaryDistributionService;
 
     private GroupPersistenceService groupPersistenceService;
 
-    private HistoryFacadeService historyFacadeService;
+    private final HistoryFacadeService historyFacadeService;
     Object lockObject = new Object();
 
     public ApplicationServiceImpl(final ApplicationPersistenceService applicationPersistenceService,
@@ -208,19 +207,6 @@ public class ApplicationServiceImpl implements ApplicationService {
      */
     private String generateKey(String... keys) {
         final StringBuilder keyBuilder = new StringBuilder(keys.length);
-        for (String key:keys) {
-            keyBuilder.append(key);
-        }
-        return keyBuilder.toString();
-    }
-
-    /**
-     * Method to generate lock key;
-     *
-     * @return
-     */
-    private String generateKey(String... keys) {
-        final StringBuilder keyBuilder = new StringBuilder();
         for (String key:keys) {
             keyBuilder.append(key);
         }

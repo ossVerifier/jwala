@@ -98,9 +98,6 @@ public class ResourceServiceImpl implements ResourceService {
 
     private final ResourceDao resourceDao;
 
-    @Autowired
-    BinaryDistributionLockManager lockManager;
-
     private final ResourceHandler resourceHandler;
 
     private final ResourceContentGeneratorService resourceContentGeneratorService;

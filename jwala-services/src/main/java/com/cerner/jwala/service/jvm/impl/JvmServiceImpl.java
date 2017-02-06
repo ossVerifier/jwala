@@ -72,7 +72,6 @@ public class JvmServiceImpl implements JvmService {
     private static final String MEDIA_TYPE_TEXT = "text";
     private static final String SET_ENV_BAT = "setenv.bat";
     private static final String SET_ENV_SH = "setenv.sh";
-    private static final String DIAGNOSIS_INITIATED = "Diagnosis Initiated on JVM ${jvm.jvmName}, host ${jvm.hostName}";
 
     private final BinaryDistributionLockManager binaryDistributionLockManager;
     private final String topicServerStates;

@@ -15,5 +15,5 @@ fi
 
 if $cygwin; then
     export JVMPID=`sc queryex $JVM_NAME | /usr/bin/grep PID | /usr/bin/awk '{ print $3 }'`
-	${JAVA_HOME}/bin/jstack ${JVMPID}
+	${JAVA_HOME}/bin/jstack -l ${JVMPID}
 fi
