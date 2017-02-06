@@ -1,8 +1,10 @@
 package com.cerner.jwala.service.bootstrap;
 
+import com.cerner.jwala.common.properties.ApplicationProperties;
 import com.cerner.jwala.persistence.jpa.domain.JpaMedia;
 import com.cerner.jwala.persistence.jpa.type.MediaType;
 import com.cerner.jwala.service.media.MediaService;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +16,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -30,6 +33,11 @@ public class ApplicationContextListenerTest {
 
     @Autowired
     private ApplicationContextListener applicationContextListener;
+
+    @Before
+    public void setup(){
+        System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, new File(".").getAbsolutePath() + "/src/test/resources");
+    }
 
     @Test
     public void testNoApplicationContext() {
