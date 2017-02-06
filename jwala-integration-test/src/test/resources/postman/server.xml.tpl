@@ -91,8 +91,8 @@
 
     <Connector 
       port="${jvm.httpsPort}" 
-	  SSLCertificateFile="D:/stp/app/data/security/id/USMLVV1CDS0050.cer"
-      SSLCertificateKeyFile="D:/stp/app/data/security/id/USMLVV1CDS0050.key"
+	  SSLCertificateFile="${vars['remote.paths.deploy.dir']}\app\data\security\id\\${jvm.hostName}.cer"
+      SSLCertificateKeyFile="${vars['remote.paths.deploy.dir']}\app\data\security\id\\${jvm.hostName}.key"
       SSLEnabled="true"
       SSLPassword="" 
       acceptCount="100" 
