@@ -26,7 +26,7 @@ public class ApplicationContextListener {
     private final static Logger LOGGER = LoggerFactory.getLogger(ApplicationContextListener.class);
 
     @Autowired
-    MediaService mediaService;
+    private MediaService mediaService;
 
     /**
      * The spring event listener interface
