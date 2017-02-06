@@ -43,6 +43,7 @@ import com.cerner.jwala.service.binarydistribution.BinaryDistributionService;
 import com.cerner.jwala.service.binarydistribution.impl.BinaryDistributionControlServiceImpl;
 import com.cerner.jwala.service.binarydistribution.impl.BinaryDistributionLockManagerImpl;
 import com.cerner.jwala.service.binarydistribution.impl.BinaryDistributionServiceImpl;
+import com.cerner.jwala.service.bootstrap.ApplicationContextListener;
 import com.cerner.jwala.service.group.*;
 import com.cerner.jwala.service.group.impl.GroupControlServiceImpl;
 import com.cerner.jwala.service.group.impl.GroupJvmControlServiceImpl;
@@ -424,5 +425,10 @@ public class AemServiceConfiguration {
     @Bean(name = "binaryDistributionService")
     public BinaryDistributionService getBinaryDistributionService(BinaryDistributionControlService binaryDistributionControlService, HistoryFacadeService historyFacadeService) {
         return new BinaryDistributionServiceImpl(binaryDistributionControlService, getBinaryDistributionLockManager(), historyFacadeService);
+    }
+
+    @Bean
+    public ApplicationContextListener getApplicationContextListener(){
+        return new ApplicationContextListener();
     }
 }
