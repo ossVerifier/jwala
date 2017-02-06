@@ -184,18 +184,8 @@ subprojects {
     apply plugin: "jacoco"
     apply plugin: "eclipse"
     apply plugin: "maven"
-    apply plugin: "findbugs"
     sourceCompatibility = 1.8
 
-    tasks.withType(FindBugs) {
-        ignoreFailures = true
-        reportLevel 'low'
-        reports {
-            xml.enabled false
-            html.enabled true
-            //html.stylesheet resources.text.fromFile('config/xsl/colors.xsl')
-        }
-    }
     group = "com.cerner.jwala"
 
     version = project.properties['buildVersion']
@@ -377,6 +367,7 @@ subprojects {
             property "sonar.junit.reportsPath", test.reports.junitXml.destination   // will be fixed in Gradle 1.12
             property "sonar.jacoco.reportPath", project.rootProject.buildDir.path + "/jacoco/" + "accum.exec"
             property "sonar.jacoco.itReportPath", project.rootProject.buildDir.path + "/jacoco/" + "integration_test_jwala.exec"
+
         }
     }
 }
@@ -386,8 +377,13 @@ apply plugin: "org.sonarqube"
 
 sonarqube {
     properties {
-//        property "sonar.junit.reportsPath", test.reports.junitXml.destination   // will be fixed in Gradle 1.12
-        property "sonar.jacoco.reportPath", project.rootProject.buildDir.path + "/jacoco/" + "accum.exec"
-        property "sonar.jacoco.itReportPath", project.rootProject.buildDir.path + "/jacoco/" + "integration_test_jwala.exec"
-    }
+        property 'sonar.jacoco.reportPath', project.rootProject.buildDir.path + "/jacoco/" + "accum.exec"
+        property 'sonar.jacoco.itReportPath', project.rootProject.buildDir.path + "/jacoco/" + "integration_test_jwala.exec"
+        property 'sonar.host.url',  project.properties['sonarHostUrl']
+        property 'sonar.jdbc.driverClassName', 'com.mysql.jdbc.Driver'
+        property 'sonar.projectKey', 'cto.tco.toc'
+	    property 'sonar.projectName', 'tomcat operations center'
+        property 'sonar.projectVersion', '1.0.0'
+	}
+	
 }

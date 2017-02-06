@@ -20,6 +20,7 @@ import com.cerner.jwala.persistence.jpa.service.GroupJvmRelationshipService;
 import com.cerner.jwala.persistence.jpa.service.WebServerCrudService;
 import com.cerner.jwala.persistence.jpa.service.impl.*;
 import com.cerner.jwala.persistence.service.ApplicationPersistenceService;
+import com.cerner.jwala.persistence.service.GroupPersistenceService;
 import com.cerner.jwala.persistence.service.JvmPersistenceService;
 import com.cerner.jwala.persistence.service.ResourceDao;
 import com.cerner.jwala.persistence.service.impl.JpaApplicationPersistenceServiceImpl;
@@ -27,9 +28,10 @@ import com.cerner.jwala.persistence.service.impl.JpaJvmPersistenceServiceImpl;
 import com.cerner.jwala.service.HistoryFacadeService;
 import com.cerner.jwala.service.app.ApplicationCommandService;
 import com.cerner.jwala.service.app.ApplicationService;
+import com.cerner.jwala.service.binarydistribution.BinaryDistributionLockManager;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionService;
+import com.cerner.jwala.service.binarydistribution.impl.BinaryDistributionLockManagerImpl;
 import com.cerner.jwala.service.configuration.TestJpaConfiguration;
-import com.cerner.jwala.service.group.GroupService;
 import com.cerner.jwala.service.resource.ResourceService;
 import com.cerner.jwala.service.webserver.component.ClientFactoryHelper;
 import org.junit.After;
@@ -69,7 +71,7 @@ public class ApplicationServiceImplIntegrationTest {
     private AemSshConfig aemSshConfig;
 
     @Mock
-    private GroupService groupService;
+    private GroupPersistenceService mockGroupPersistenceService;
 
     @Mock
     private HistoryFacadeService mockHistoryFacadeService;
@@ -141,6 +143,8 @@ public class ApplicationServiceImplIntegrationTest {
 
     private ApplicationService applicationService;
 
+    BinaryDistributionLockManager binaryDistributionLockManager;
+
     private JvmPersistenceService jvmPersistenceService;
 
     @Autowired
@@ -156,17 +160,19 @@ public class ApplicationServiceImplIntegrationTest {
         System.setProperty(ApplicationProperties.PROPERTIES_ROOT_PATH, new File(".").getAbsolutePath() + "/src/test/resources");
         SshConfiguration mockSshConfig = mock(SshConfiguration.class);
         aemSshConfig = mock(AemSshConfig.class);
-        groupService = mock(GroupService.class);
+        mockGroupPersistenceService = mock(GroupPersistenceService.class);
         remoteCommandExecutorImpl = mock(RemoteCommandExecutorImpl.class);
         binaryDistributionService = mock(BinaryDistributionService.class);
         when(mockSshConfig.getUserName()).thenReturn("mockUser");
         when(aemSshConfig.getSshConfiguration()).thenReturn(mockSshConfig);
+        binaryDistributionLockManager = new BinaryDistributionLockManagerImpl();
         applicationService = new ApplicationServiceImpl(
                 applicationPersistenceService,
                 jvmPersistenceService,
-                groupService,
+                mockGroupPersistenceService,
                 mockResourceService,
-                remoteCommandExecutorImpl, binaryDistributionService, mockHistoryFacadeService);
+                remoteCommandExecutorImpl, binaryDistributionService, mockHistoryFacadeService, binaryDistributionLockManager
+                );
     }
 
     @After

@@ -65,7 +65,6 @@ public class JvmCrudServiceImplTest {
     @Before
     public void setup() throws Exception {
         user = new User("testUser");
-        user.addToThread();
 
         String testJvmName = "testJvmName";
         final JpaMedia media = new JpaMedia();
@@ -78,11 +77,6 @@ public class JvmCrudServiceImplTest {
         CreateJvmRequest createJvmRequest = new CreateJvmRequest(testJvmName, "testHostName", 100, 101, 102, 103, 104, new Path("./jwala.png"), "", null, null, null);
         JpaJvm jpaJvm = jvmCrudService.createJvm(createJvmRequest, jpaMedia);
         jvm = new Jvm(Identifier.<Jvm>id(jpaJvm.getId()), jpaJvm.getName(), new HashSet<Group>());
-    }
-
-    @After
-    public void tearDown() {
-        User.getThreadLocalUser().invalidate();
     }
 
     @Test

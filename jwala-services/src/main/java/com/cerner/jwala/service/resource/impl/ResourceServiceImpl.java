@@ -37,7 +37,9 @@ import com.cerner.jwala.service.binarydistribution.DistributionService;
 import com.cerner.jwala.service.exception.ResourceServiceException;
 import com.cerner.jwala.service.repository.RepositoryService;
 import com.cerner.jwala.service.repository.RepositoryServiceException;
-import com.cerner.jwala.service.resource.*;
+import com.cerner.jwala.service.resource.ResourceContentGeneratorService;
+import com.cerner.jwala.service.resource.ResourceHandler;
+import com.cerner.jwala.service.resource.ResourceService;
 import com.cerner.jwala.template.exception.ResourceFileGeneratorException;
 import opennlp.tools.util.StringUtil;
 import org.apache.commons.io.FileUtils;
@@ -61,7 +63,6 @@ import java.nio.charset.Charset;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class ResourceServiceImpl implements ResourceService {
 
@@ -78,38 +79,33 @@ public class ResourceServiceImpl implements ResourceService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ResourceServiceImpl.class);
     private static final String WAR_FILE_EXTENSION = ".war";
+    private static final String UNZIP_EXE = "unzip.exe";
     private static final String MEDIA_TYPE_TEXT = "text";
 
-    private final SpelExpressionParser expressionParser;
     private final Expression encryptExpression;
-    private final Expression decryptExpression;
     private final ResourcePersistenceService resourcePersistenceService;
+
     private final GroupPersistenceService groupPersistenceService;
 
-    // TODO replace ApplicationControlOperation (and all operation classes) with ResourceControlOperation
-    private RemoteCommandExecutorImpl remoteCommandExecutor;
-    private Map<String, ReentrantReadWriteLock> resourceWriteLockMap;
+    private final RemoteCommandExecutorImpl remoteCommandExecutor;
 
-    private final String encryptExpressionString = ApplicationProperties.get("encryptExpression");
+    private final ApplicationPersistenceService applicationPersistenceService;
 
-    private final String decryptExpressionString = ApplicationProperties.get("decryptExpression");
+    private final JvmPersistenceService jvmPersistenceService;
 
-    private ApplicationPersistenceService applicationPersistenceService;
+    private final WebServerPersistenceService webServerPersistenceService;
 
-    private JvmPersistenceService jvmPersistenceService;
-
-    private WebServerPersistenceService webServerPersistenceService;
 
     private final ResourceDao resourceDao;
 
+    @Autowired
+    BinaryDistributionLockManager lockManager;
 
     private final ResourceHandler resourceHandler;
 
     private final ResourceContentGeneratorService resourceContentGeneratorService;
 
     private final BinaryDistributionService binaryDistributionService;
-
-    private static final String UNZIP_EXE = "unzip.exe";
 
     private final Tika fileTypeDetector;
 
@@ -123,7 +119,6 @@ public class ResourceServiceImpl implements ResourceService {
                                final ResourceDao resourceDao,
                                final ResourceHandler resourceHandler,
                                final RemoteCommandExecutorImpl remoteCommandExecutor,
-                               final Map<String, ReentrantReadWriteLock> resourceWriteLockMap,
                                final ResourceContentGeneratorService resourceContentGeneratorService,
                                final BinaryDistributionService binaryDistributionService,
                                final Tika fileTypeDetector,
@@ -131,10 +126,9 @@ public class ResourceServiceImpl implements ResourceService {
         this.resourcePersistenceService = resourcePersistenceService;
         this.groupPersistenceService = groupPersistenceService;
         this.remoteCommandExecutor = remoteCommandExecutor;
-        this.resourceWriteLockMap = resourceWriteLockMap;
-        expressionParser = new SpelExpressionParser();
+        SpelExpressionParser expressionParser = new SpelExpressionParser();
+        String encryptExpressionString = ApplicationProperties.get("encryptExpression");
         encryptExpression = expressionParser.parseExpression(encryptExpressionString);
-        decryptExpression = expressionParser.parseExpression(decryptExpressionString);
         this.applicationPersistenceService = applicationPersistenceService;
         this.jvmPersistenceService = jvmPersistenceService;
         this.webServerPersistenceService = webServerPersistenceService;
@@ -249,7 +243,6 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Override
     public void validateAllResourcesForGeneration(ResourceIdentifier resourceIdentifier) {
-        Map<String, List<String>> resourceExceptionMap = new HashMap<>();
         List<String> exceptionList = new ArrayList<>();
         List<String> resourceNames = resourceHandler.getResourceNames(resourceIdentifier);
         Object entity = resourceHandler.getSelectedValue(resourceIdentifier);
@@ -288,12 +281,11 @@ public class ResourceServiceImpl implements ResourceService {
             }
         }
 
-        checkForResourceGenerationException(resourceIdentifier, resourceExceptionMap, exceptionList, entity);
+        checkForResourceGenerationException(resourceIdentifier, exceptionList, entity);
     }
 
     @Override
     public void validateSingleResourceForGeneration(ResourceIdentifier resourceIdentifier) {
-        Map<String, List<String>> resourceExceptionMap = new HashMap<>();
         List<String> exceptionList = new ArrayList<>();
         ConfigTemplate resource = resourceHandler.fetchResource(resourceIdentifier);
         Object entity = resourceHandler.getSelectedValue(resourceIdentifier);
@@ -313,12 +305,13 @@ public class ResourceServiceImpl implements ResourceService {
             exceptionList.add(e.getMessage());
         }
 
-        checkForResourceGenerationException(resourceIdentifier, resourceExceptionMap, exceptionList, entity);
+        checkForResourceGenerationException(resourceIdentifier, exceptionList, entity);
     }
 
-    private void checkForResourceGenerationException(ResourceIdentifier resourceIdentifier, Map<String, List<String>> resourceExceptionMap, List<String> exceptionList, Object entity) {
+    private void checkForResourceGenerationException(ResourceIdentifier resourceIdentifier, List<String> exceptionList, Object entity) {
         if (!exceptionList.isEmpty()) {
             final String resourceName = resourceIdentifier.jvmName != null ? resourceIdentifier.jvmName : resourceIdentifier.webServerName != null ? resourceIdentifier.webServerName : resourceIdentifier.webAppName;
+            Map<String, List<String>> resourceExceptionMap = new HashMap<>();
             resourceExceptionMap.put(resourceName, exceptionList);
             throw new InternalErrorException(FaultType.RESOURCE_GENERATION_FAILED, "Failed to validate the following resources.", null, resourceExceptionMap);
         } else {
@@ -357,7 +350,7 @@ public class ResourceServiceImpl implements ResourceService {
     @Override
     public Map<String, String> checkFileExists(final String groupName, final String jvmName, final String webappName, final String webserverName, final String fileName) {
         boolean resultBoolean = false;
-        if (groupName != null && !groupName.isEmpty() && fileName != null && !fileName.isEmpty()) {
+        if (StringUtils.isNotEmpty(groupName) && StringUtils.isNoneEmpty(fileName)) {
             if (jvmName != null && !jvmName.isEmpty()) {
                 // Search for file in jvms
                 LOGGER.debug("Searching for resource {} in group {} and jvm {}", fileName, groupName, jvmName);
@@ -717,7 +710,6 @@ public class ResourceServiceImpl implements ResourceService {
 
         LOGGER.debug("Update template content for {} :: Updated content={}", resourceIdentifier, templateContent);
 
-        // TODO either derive or pass in the EntityType
         resourceDao.updateResource(resourceIdentifier, EntityType.EXT_PROPERTIES, templateContent);
 
         // if the external properties resource was just saved then update properties

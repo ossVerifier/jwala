@@ -2,6 +2,8 @@ description "This module is the service layer for Jwala, it mostly used by the w
 
 configurations { providedCompile }
 
+sourceCompatibility = 1.8
+
 dependencies {
     compile project(":jwala-persistence")
     compile project(":jwala-common")

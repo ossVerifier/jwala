@@ -14,8 +14,10 @@ public class ApplicationProperties {
     public static final String PROPERTIES_ROOT_PATH = "PROPERTIES_ROOT_PATH";
     private volatile Properties properties;
 
-    private static volatile ApplicationProperties SELF;
-
+    private static final class DeferredLoader {
+        public static final ApplicationProperties INSTANCE = new ApplicationProperties();
+    }
+    
     private static final Logger LOGGER = LoggerFactory.getLogger(ApplicationProperties.class);
 
     private static final String PROPERTIES_FILE_NAME = "vars.properties";
@@ -28,15 +30,7 @@ public class ApplicationProperties {
     }
 
     public static ApplicationProperties getInstance() {
-        if (SELF == null) {
-            synchronized (ApplicationProperties.class) {
-                if (SELF == null) {
-                    SELF = new ApplicationProperties();
-                }
-            }
-        }
-
-        return SELF;
+        return DeferredLoader.INSTANCE;
     }
 
     public static Properties getProperties() {
@@ -117,11 +111,6 @@ public class ApplicationProperties {
     }
 
     public static String get(String key, String defaultValue) {
-        String result = getProperties().getProperty(key);
-        if (result == null) {
-            return defaultValue;
-        } else {
-            return result;
-        }
+        return getProperties().getProperty(key, defaultValue);
     }
 }

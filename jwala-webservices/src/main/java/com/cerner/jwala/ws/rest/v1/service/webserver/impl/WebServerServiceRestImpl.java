@@ -37,6 +37,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.InstantiationAwareBeanPostProcessor;
 
 import javax.persistence.EntityExistsException;
 import javax.ws.rs.core.Response;
@@ -44,6 +45,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.util.*;
 
 public class WebServerServiceRestImpl implements WebServerServiceRest {
@@ -59,9 +61,9 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
     private final WebServerService webServerService;
     private final WebServerControlService webServerControlService;
     private final WebServerCommandService webServerCommandService;
-    private final ResourceService resourceService;
-    private final GroupService groupService;
-    private final HistoryFacadeService historyFacadeService;
+    private ResourceService resourceService;
+    private GroupService groupService;
+    private HistoryFacadeService historyFacadeService;
     private final BinaryDistributionService binaryDistributionService;
 
 
@@ -70,7 +72,8 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
                                     final WebServerCommandService theWebServerCommandService,
                                     final ResourceService theResourceService, GroupService groupService,
                                     final BinaryDistributionService binaryDistributionService,
-                                    final HistoryFacadeService historyFacadeService) {
+                                    final HistoryFacadeService historyFacadeService
+                                    ) {
         webServerService = theWebServerService;
         webServerControlService = theWebServerControlService;
         webServerCommandService = theWebServerCommandService;
@@ -277,7 +280,6 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
         }
     }
 
-
     protected void validateHttpdConf(WebServer webServer) {
         final String aWebServerName = webServer.getName();
         boolean foundHttpdConf = false;
@@ -395,7 +397,7 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
         PrintWriter out = null;
         final File httpdConfFile =
                 new File(httpdDataDir + System.getProperty("file.separator") + aWebServerName + "_" + fileNamePrefix + "."
-                        + new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date()) + "." + fileNameSuffix.replace("\\", "/"));
+                        + new SimpleDateFormat("yyyyMMdd_HHmmss").format(Date.from(Instant.now()))+ "." + fileNameSuffix.replace("\\", "/"));
         final String httpdConfAbsolutePath = httpdConfFile.getAbsolutePath().replace("\\", "/");
         try {
             out = new PrintWriter(httpdConfAbsolutePath);
@@ -460,5 +462,9 @@ public class WebServerServiceRestImpl implements WebServerServiceRest {
             return ResponseBuilder.notOk(Response.Status.INTERNAL_SERVER_ERROR, new FaultCodeException(
                     FaultType.INVALID_TEMPLATE, rte.getMessage()));
         }
+    }
+
+    public void setLockManager(BinaryDistributionLockManager binaryDistributionLockManager) {
+        this.binaryDistributionLockManager = binaryDistributionLockManager;
     }
 }

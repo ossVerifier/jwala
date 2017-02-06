@@ -18,6 +18,7 @@ import com.cerner.jwala.service.webserver.WebServerControlService;
 import com.cerner.jwala.service.webserver.WebServerService;
 import com.cerner.jwala.ws.rest.RestServiceErrorHandler;
 import com.cerner.jwala.ws.rest.v1.exceptionmapper.*;
+import com.cerner.jwala.ws.rest.v1.service.impl.HistoryServiceRestImpl;
 import com.cerner.jwala.ws.rest.v1.response.ApplicationResponse;
 import com.cerner.jwala.ws.rest.v1.response.ResponseMessageBodyWriter;
 import com.cerner.jwala.ws.rest.v1.service.HistoryServiceRest;
@@ -29,11 +30,10 @@ import com.cerner.jwala.ws.rest.v1.service.balancermanager.BalancerManagerServic
 import com.cerner.jwala.ws.rest.v1.service.balancermanager.impl.BalancerManagerServiceRestImpl;
 import com.cerner.jwala.ws.rest.v1.service.group.GroupServiceRest;
 import com.cerner.jwala.ws.rest.v1.service.group.impl.GroupServiceRestImpl;
-import com.cerner.jwala.ws.rest.v1.service.impl.HistoryServiceRestImpl;
 import com.cerner.jwala.ws.rest.v1.service.jvm.JvmServiceRest;
 import com.cerner.jwala.ws.rest.v1.service.jvm.impl.JvmServiceRestImpl;
-import com.cerner.jwala.ws.rest.v1.service.resource.ResourceServiceRest;
 import com.cerner.jwala.ws.rest.v1.service.media.MediaServiceRest;
+import com.cerner.jwala.ws.rest.v1.service.resource.ResourceServiceRest;
 import com.cerner.jwala.ws.rest.v1.service.resource.impl.ResourceServiceRestImpl;
 import com.cerner.jwala.ws.rest.v1.service.user.UserServiceRest;
 import com.cerner.jwala.ws.rest.v1.service.user.impl.UserServiceRestImpl;
@@ -51,12 +51,16 @@ import org.springframework.context.annotation.Configuration;
 import javax.ws.rs.ext.MessageBodyWriter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 @Configuration
 @ComponentScan({"com.cerner.jwala.ws.rest.v1.service"})
 public class AemWebServiceConfiguration {
+
     @Autowired
     private MediaServiceRest mediaServiceRest;
 
@@ -110,6 +114,8 @@ public class AemWebServiceConfiguration {
     @Autowired
     private BinaryDistributionService binaryDistributionService;
 
+    private final Map<String, ReentrantReadWriteLock> wsWriteLockMap = new ConcurrentHashMap<>();
+
     @Bean
     public Server getV1JaxResServer() {
         final JAXRSServerFactoryBean factory = new JAXRSServerFactoryBean();
@@ -122,6 +128,7 @@ public class AemWebServiceConfiguration {
     @Bean
     public List<Object> getV1ServiceBeans() {
         final List<Object> serviceBeans = new ArrayList<>();
+
         serviceBeans.add(getV1GroupServiceRest());
         serviceBeans.add(getV1JvmServiceRest());
         serviceBeans.add(mediaServiceRest);
@@ -205,6 +212,7 @@ public class AemWebServiceConfiguration {
 
         providers.add(getV1FormUploadProvider());
         providers.add(getV1JsonProvider());
+
         providers.add(getV1NotFoundExceptionMapper());
         providers.add(getV1BadRequestExceptionMapper());
         providers.add(getV1InternalErrorExceptionMapper());

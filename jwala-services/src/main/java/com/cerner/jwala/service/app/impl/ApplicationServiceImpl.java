@@ -27,13 +27,13 @@ import com.cerner.jwala.persistence.jpa.domain.JpaApplicationConfigTemplate;
 import com.cerner.jwala.persistence.jpa.domain.JpaJvm;
 import com.cerner.jwala.persistence.jpa.type.EventType;
 import com.cerner.jwala.persistence.service.ApplicationPersistenceService;
+import com.cerner.jwala.persistence.service.GroupPersistenceService;
 import com.cerner.jwala.persistence.service.JvmPersistenceService;
 import com.cerner.jwala.service.HistoryFacadeService;
 import com.cerner.jwala.service.app.ApplicationService;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionLockManager;
 import com.cerner.jwala.service.binarydistribution.BinaryDistributionService;
 import com.cerner.jwala.service.exception.ApplicationServiceException;
-import com.cerner.jwala.service.group.GroupService;
 import com.cerner.jwala.service.resource.ResourceService;
 import com.cerner.jwala.service.resource.impl.ResourceGeneratorType;
 import com.cerner.jwala.template.exception.ResourceFileGeneratorException;
@@ -43,6 +43,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.FileCopyUtils;
@@ -50,14 +51,18 @@ import org.springframework.util.FileCopyUtils;
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.*;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class ApplicationServiceImpl implements ApplicationService {
+    private static final Logger LOGGER = LoggerFactory.getLogger(ApplicationServiceImpl.class);
 
     private static final String UNZIP_EXE = "unzip.exe";
+
+    private final ExecutorService executorService;
 
     @Autowired
     private ApplicationPersistenceService applicationPersistenceService;
@@ -66,36 +71,36 @@ public class ApplicationServiceImpl implements ApplicationService {
     private JvmPersistenceService jvmPersistenceService;
 
     @Autowired
-    private BinaryDistributionLockManager lockManager;
+    private BinaryDistributionLockManager binaryDistributionLockManager;
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ApplicationServiceImpl.class);
+    private final ResourceService resourceService;
+
 
     private ExecutorService executorService;
 
     private ResourceService resourceService;
 
-    private RemoteCommandExecutorImpl remoteCommandExecutor;
-
-    private BinaryDistributionService binaryDistributionService;
-
-    private GroupService groupService;
+    private GroupPersistenceService groupPersistenceService;
 
     private HistoryFacadeService historyFacadeService;
+    Object lockObject = new Object();
 
     public ApplicationServiceImpl(final ApplicationPersistenceService applicationPersistenceService,
                                   final JvmPersistenceService jvmPersistenceService,
-                                  final GroupService groupService,
+                                  final GroupPersistenceService groupPersistenceService,
                                   final ResourceService resourceService,
                                   final RemoteCommandExecutorImpl remoteCommandExecutor,
                                   final BinaryDistributionService binaryDistributionService,
-                                  final HistoryFacadeService historyFacadeService) {
+                                  final HistoryFacadeService historyFacadeService,
+                                  final BinaryDistributionLockManager binaryDistributionLockManager) {
         this.applicationPersistenceService = applicationPersistenceService;
         this.jvmPersistenceService = jvmPersistenceService;
-        this.groupService = groupService;
+        this.groupPersistenceService = groupPersistenceService;
         this.historyFacadeService = historyFacadeService;
         this.resourceService = resourceService;
         this.remoteCommandExecutor = remoteCommandExecutor;
         this.binaryDistributionService = binaryDistributionService;
+        this.binaryDistributionLockManager = binaryDistributionLockManager;
         executorService = Executors.newFixedThreadPool(Integer.parseInt(ApplicationProperties.get("resources.thread-task-executor.pool.size", "25")));
     }
 
@@ -174,7 +179,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         String lockKey = generateKey(groupName, jvmName, appName, resourceTemplateName);
         try {
             // only one at a time
-            lockManager.writeLock(lockKey);
+            binaryDistributionLockManager.writeLock(lockKey);
             ResourceIdentifier resourceIdentifier = new ResourceIdentifier.Builder()
                     .setResourceName(resourceTemplateName)
                     .setGroupName(groupName)
@@ -193,8 +198,20 @@ public class ApplicationServiceImpl implements ApplicationService {
             LOGGER.error("Fail to generate the resource file {}", resourceTemplateName, e);
             throw new DeployApplicationConfException(e);
         } finally {
-            lockManager.writeUnlock(lockKey);
+            binaryDistributionLockManager.writeUnlock(lockKey);
         }
+    }
+    /**
+     * Method to generate lock key;
+     *
+     * @return
+     */
+    private String generateKey(String... keys) {
+        final StringBuilder keyBuilder = new StringBuilder(keys.length);
+        for (String key:keys) {
+            keyBuilder.append(key);
+        }
+        return keyBuilder.toString();
     }
 
     /**
@@ -235,7 +252,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     @Override
     @Transactional
     public void copyApplicationWarToGroupHosts(Application application) {
-        Group group = groupService.getGroup(application.getGroup().getId());
+        Group group = groupPersistenceService.getGroup(application.getGroup().getId());
         final Set<Jvm> theJvms = group.getJvms();
         if (theJvms != null && !theJvms.isEmpty()) {
             Set<String> hostNames = new HashSet<>();
@@ -252,12 +269,12 @@ public class ApplicationServiceImpl implements ApplicationService {
     @Override
     @Transactional
     public void deployApplicationResourcesToGroupHosts(String groupName, Application app, ResourceGroup resourceGroup) {
-        List<String> appResourcesNames = groupService.getGroupAppsResourceTemplateNames(groupName);
-        Group group = groupService.getGroup(app.getGroup().getId());
+        List<String> appResourcesNames = groupPersistenceService.getGroupAppsResourceTemplateNames(groupName);
+        Group group = groupPersistenceService.getGroup(app.getGroup().getId());
         final Set<Jvm> jvms = group.getJvms();
         if (null != appResourcesNames && !appResourcesNames.isEmpty()) {
             for (String resourceTemplateName : appResourcesNames) {
-                String metaDataStr = groupService.getGroupAppResourceTemplateMetaData(groupName, resourceTemplateName);
+                String metaDataStr = groupPersistenceService.getGroupAppResourceTemplateMetaData(groupName, resourceTemplateName);
                 try {
                     ResourceTemplateMetaData metaData = resourceService.getTokenizedMetaData(resourceTemplateName, app, metaDataStr);
                     if (jvms != null && !jvms.isEmpty() && !metaData.getEntity().getDeployToJvms()) {
@@ -267,7 +284,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                             final String host = jvm.getHostName().toLowerCase(Locale.US);
                             if (!hostNames.contains(host)) {
                                 hostNames.add(host);
-                                groupService.deployGroupAppTemplate(groupName, resourceTemplateName, app, jvm);
+                                executeDeployGroupAppTemplate(group.getName(), resourceTemplateName, app, jvm.getHostName());
                             }
                         }
 
@@ -346,19 +363,20 @@ public class ApplicationServiceImpl implements ApplicationService {
                 if (application.isUnpackWar()) {
                     final String warName = application.getWarName();
                     LOGGER.info("Unpacking war {} on host {}", warName, host);
-                    String jwalaScriptDir = ApplicationProperties.getRequired(PropertyKeys.REMOTE_SCRIPT_DIR);
+                    String jwalaScriptPath =  ApplicationProperties.get(PropertyKeys.REMOTE_SCRIPT_DIR);
+
                     // create the .jwala directory as the destination for the unpack-war script
-                    commandOutput = executeCreateDirectoryCommand(null, host, jwalaScriptDir);
+                    commandOutput = executeCreateDirectoryCommand(null, host, jwalaScriptPath);
                     if (commandOutput.getReturnCode().wasSuccessful()) {
-                        LOGGER.info("Successfully created the parent dir {} on host", jwalaScriptDir, host);
+                        LOGGER.info("Successfully created the parent dir {} on host", jwalaScriptPath, host);
                     } else {
                         final String standardError = commandOutput.getStandardError().isEmpty() ? commandOutput.getStandardOutput() : commandOutput.getStandardError();
-                        LOGGER.error("Error in creating parent dir {} on host {}:: ERROR : {}", jwalaScriptDir, host, standardError);
+                        LOGGER.error("Error in creating parent dir {} on host {}:: ERROR : {}", jwalaScriptPath, host, standardError);
                         throw new InternalErrorException(FaultType.REMOTE_COMMAND_FAILURE, standardError);
                     }
 
                     final String unpackWarScriptPath = ApplicationProperties.get("commands.scripts-path") + "/" + AemControl.Properties.UNPACK_BINARY_SCRIPT_NAME;
-                    final String destinationUnpackWarScriptPath = jwalaScriptDir + "/" + AemControl.Properties.UNPACK_BINARY_SCRIPT_NAME;
+                    final String destinationUnpackWarScriptPath = jwalaScriptPath + "/" + AemControl.Properties.UNPACK_BINARY_SCRIPT_NAME;
                     commandOutput = executeSecureCopyCommand(null, host, unpackWarScriptPath, destinationUnpackWarScriptPath);
 
                     if (!commandOutput.getReturnCode().wasSuccessful()) {
@@ -367,9 +385,9 @@ public class ApplicationServiceImpl implements ApplicationService {
                     }
 
                     // make sure the scripts are executable
-                    commandOutput = executeChangeFileModeCommand(null, host, "a+x", jwalaScriptDir, "*.sh");
+                    commandOutput = executeChangeFileModeCommand(null, host, "a+x", jwalaScriptPath, "*.sh");
                     if (!commandOutput.getReturnCode().wasSuccessful()) {
-                        LOGGER.error("Error in changing file permissions on " + jwalaScriptDir + " on host:" + host);
+                        LOGGER.error("Error in changing file permissions on " + jwalaScriptPath + " on host:" + host);
                         return commandOutput;
                     }
 
@@ -403,7 +421,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     @Override
     public CommandOutput executeBackUpCommand(final String entity, final String host, final String source) throws CommandFailureException {
-        final String currentDateSuffix = new SimpleDateFormat(".yyyyMMdd_HHmmss").format(new Date());
+        final String currentDateSuffix = new SimpleDateFormat("yyyyMMdd_HHmmss").format(Date.from(Instant.now()));
         final String destination = source + currentDateSuffix;
         return remoteCommandExecutor.executeRemoteCommand(
                 entity,
@@ -479,7 +497,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     @Override
     public void deployConf(final String appName, final String hostName, final User user) {
         final Application application = applicationPersistenceService.getApplication(appName);
-        final Group group = groupService.getGroup(application.getGroup().getId());
+        final Group group = groupPersistenceService.getGroup(application.getGroup().getId());
         final List<String> hostNames = getDeployHostList(hostName, group, application);
 
         LOGGER.info("deploying templates to hosts: {}", hostNames.toString());
@@ -514,7 +532,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         final String groupName = group.getName();
         final String appName = application.getName();
         final List<String> hostNames = new ArrayList<>();
-        final List<String> allHosts = groupService.getHosts(groupName);
+        final List<String> allHosts = groupPersistenceService.getHosts(groupName);
         if (allHosts == null || allHosts.isEmpty()) {
             LOGGER.error("No hosts found for the group: {} and application: {}", groupName, appName);
             throw new InternalErrorException(FaultType.GROUP_MISSING_HOSTS, "No host found for the application " + appName);
@@ -527,7 +545,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         } else {
             LOGGER.info("host name provided {}", hostName);
             for (final String host : allHosts) {
-                if (hostName.toLowerCase(Locale.US).equals(host.toLowerCase(Locale.US))) {
+                if (hostName.equalsIgnoreCase(host)) {
                     hostNames.add(host.toLowerCase(Locale.US));
                 }
             }
@@ -539,9 +557,8 @@ public class ApplicationServiceImpl implements ApplicationService {
         return hostNames;
     }
 
-    // TODO: See if we can implement method chaining for resource deployment which can be used by other resource related service
     protected void checkForRunningJvms(final Group group, final List<String> hostNames, final User user) {
-        final List<Jvm> runningJvmList = new ArrayList<>();
+        final Set<Jvm> runningJvmList = new HashSet<>();
         final List<String> runningJvmNameList = new ArrayList<>();
         for (final Jvm jvm : group.getJvms()) {
             if (hostNames.contains(jvm.getHostName().toLowerCase(Locale.US)) && jvm.getState().isStartedState()) {
@@ -565,9 +582,9 @@ public class ApplicationServiceImpl implements ApplicationService {
     protected Set<String> getWebAppOnlyResources(final Group group, String appName) {
         final String groupName = group.getName();
         final Set<String> resourceSet = new HashSet<>();
-        List<String> resourceTemplates = groupService.getGroupAppsResourceTemplateNames(groupName, appName);
+        List<String> resourceTemplates = groupPersistenceService.getGroupAppsResourceTemplateNames(groupName, appName);
         for (String resourceTemplate : resourceTemplates) {
-            String metaDataStr = groupService.getGroupAppResourceTemplateMetaData(groupName, resourceTemplate);
+            String metaDataStr = groupPersistenceService.getGroupAppResourceTemplateMetaData(groupName, resourceTemplate);
             LOGGER.debug("metadata for template: {} is {}", resourceTemplate, metaDataStr);
             try {
                 ResourceTemplateMetaData metaData = resourceService.getMetaData(metaDataStr);
@@ -585,23 +602,31 @@ public class ApplicationServiceImpl implements ApplicationService {
         return resourceSet;
     }
 
-    protected Map<String, Future<Set<CommandOutput>>> deployApplicationResourcesForHosts(
-            final List<String> hostNames, final Group group, final Application application, final Set<String> resourceSet) {
-        final ResourceGroup resourceGroup = resourceService.generateResourceGroup();
+    protected Map<String, Future<Set<CommandOutput>>> deployApplicationResourcesForHosts(final List<String> hostNames,
+                                                                                         final Group group,
+                                                                                         final Application application,
+                                                                                         final Set<String> resourceSet) {
         final Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        final Map<String, Future<Set<CommandOutput>>> futures = new HashMap<>();
+        final Map<String, Future<Set<CommandOutput>>>futures = new HashMap<>();
         for (final String host : hostNames) {
             Future<Set<CommandOutput>> commandOutputFutureSet = executorService.submit
                     (new Callable<Set<CommandOutput>>() {
                          @Override
                          public Set<CommandOutput> call() throws Exception {
-                             Set<CommandOutput> commandOutputs = new HashSet<>();
-                             SecurityContextHolder.getContext().setAuthentication(authentication);
-                             for (final String resource : resourceSet) {
-                                 LOGGER.info("Deploying {} to host {}", resource, host);
-                                 commandOutputs.add(groupService.deployGroupAppTemplate(group.getName(), resource, application, host));
+                             SecurityContext context = SecurityContextHolder.createEmptyContext();
+                             try {
+                                 Set<CommandOutput> commandOutputs = new HashSet<>();
+                                 context.setAuthentication(authentication);
+                                 SecurityContextHolder.setContext(context);
+                                 for (final String resource : resourceSet) {
+                                     LOGGER.info("Deploying {} to host {}", resource, host);
+                                     commandOutputs.add(executeDeployGroupAppTemplate(group.getName(), resource, application, host));
+                                 }
+                                 return commandOutputs;
+                             }finally{
+                                 SecurityContextHolder.clearContext();
                              }
-                             return commandOutputs;
+
                          }
                      }
                     );
@@ -610,11 +635,33 @@ public class ApplicationServiceImpl implements ApplicationService {
         return futures;
     }
 
+    /**
+     * This method executes all the commands for copying the template over to the destination for a group app config file
+     *
+     * NOTE!!! This method has a duplicate in GroupServiceImpl. DO NOT USE GroupService just to remote this because it will
+     *         create an intermittent Spring circular dependency!!!
+     *
+     * @param groupName     name of the group in which the application can be found
+     * @param fileName      name of the file that needs to deployed
+     * @param application   the application object for the application to deploy the config file too
+     * @param hostName      name of the host which needs the application file
+     * @return returns a command output object
+     */
+    private CommandOutput executeDeployGroupAppTemplate(final String groupName, final String fileName,
+                                                        final Application application, final String hostName) {
+        ResourceIdentifier resourceIdentifier = new ResourceIdentifier.Builder()
+                .setResourceName(fileName)
+                .setGroupName(groupName)
+                .setWebAppName(application.getName())
+                .build();
+        return resourceService.generateAndDeployFile(resourceIdentifier, application.getName(), fileName, hostName);
+    }
+
     protected void waitForDeploy(final String appName, final Map<String, Future<Set<CommandOutput>>> futures) {
+        long timeout = Long.parseLong(ApplicationProperties.get("remote.jwala.execution.timeout.seconds", "600"));
         if (futures != null) {
             for (Entry<String, Future<Set<CommandOutput>>> entry : futures.entrySet()) {
                 try {
-                    long timeout = Long.parseLong(ApplicationProperties.get("remote.jwala.execution.timeout.seconds", "600"));
                     Set<CommandOutput> commandOutputSet = entry.getValue().get(timeout, TimeUnit.SECONDS);
                     for (CommandOutput commandOutput : commandOutputSet) {
                         if (commandOutput!=null && !commandOutput.getReturnCode().wasSuccessful()) {
@@ -636,7 +683,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         List<String> keys = new ArrayList<>();
         for (final String host : hostNames) {
             final String key = appName + "/" + host;
-            lockManager.writeLock(key);
+            binaryDistributionLockManager.writeLock(key);
             keys.add(key);
         }
         return keys;
@@ -644,15 +691,16 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     protected void releaseWriteLocks(List<String> keys) {
         for (String key : keys) {
-            lockManager.writeUnlock(key);
+            binaryDistributionLockManager.writeUnlock(key);
         }
     }
 
-    public ApplicationServiceImpl(){
-
+    public BinaryDistributionLockManager getLockManager() {
+        return binaryDistributionLockManager;
     }
-    public static void main(String args[]){
-        ApplicationServiceImpl ap = new ApplicationServiceImpl();
-        System.out.println(ap.generateKey("groupname", "jvmName", "resourceName"));
+
+    public ApplicationServiceImpl setLockManager(BinaryDistributionLockManager binaryDistributionLockManager) {
+        this.binaryDistributionLockManager = binaryDistributionLockManager;
+        return this;
     }
 }

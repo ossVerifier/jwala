@@ -12,8 +12,6 @@ public class ExternalProperties {
 
     private volatile Properties properties;
 
-    private static volatile ExternalProperties SELF;
-
     private static final Logger LOGGER = LoggerFactory.getLogger(ExternalProperties.class);
 
     public static String PROPERTIES_FILE_PATH = null;
@@ -23,16 +21,12 @@ public class ExternalProperties {
         init();
     }
 
+    private static final class DeferredLoader {
+        public static final ExternalProperties INSTANCE = new ExternalProperties();
+    }
+    
     public static ExternalProperties getInstance() {
-        if (SELF == null) {
-            synchronized (ExternalProperties.class) {
-                if (SELF == null) {
-                    SELF = new ExternalProperties();
-                }
-            }
-        }
-
-        return SELF;
+        return DeferredLoader.INSTANCE;
     }
 
     public static Properties getProperties() {
@@ -52,7 +46,7 @@ public class ExternalProperties {
 
     public static String get(String key) {
         String propVal = getProperties().getProperty(key);
-        LOGGER.debug("PropertyGet(" + key + ")=(" + propVal + ")");
+        LOGGER.debug("PropertyGet({})=({})",key,propVal);
         return propVal;
     }
 
@@ -83,12 +77,7 @@ public class ExternalProperties {
     }
 
     public static String get(String key, String defaultValue) {
-        String result = getProperties().getProperty(key);
-        if (result == null) {
-            return defaultValue;
-        } else {
-            return result;
-        }
+        return getProperties().getProperty(key, defaultValue);
     }
 
     public static void loadFromInputStream(InputStream inputStream) {

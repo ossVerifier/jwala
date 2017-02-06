@@ -62,7 +62,8 @@ var MediaConfig = React.createClass({
                 self.refs.modalAddMediaDlg.close();
                 self.loadTableData();
             }).caught(function(response){
-                this.refs.modalAddMediaDlg.setEnabled(true);
+                self.refs.modalAddMediaDlg.setEnabled(true);
+                self.refs.mediaAddForm.setBusy(false);
                 $.errorAlert(JSON.parse(response.responseText).message);
             });
         }
@@ -206,6 +207,9 @@ var MediaConfigForm = React.createClass({
     },
     getMediaArchiveFile: function() {
         return this.state.mediaArchiveFile;
+    },
+    setBusy: function(val) {
+        this.setState({showUploadBusy: val});
     }
 });
 

@@ -10,6 +10,9 @@ import org.slf4j.LoggerFactory;
 /**
  * Implementation of the {@link MessagingService} via JGroups
  *
+ * Users of this class are required to synchronize the access to init(), send() and destroy() in one block, so that
+ * these methods can not be called from different threads at the same time.
+ * 
  * Created by Jedd Cuison on 8/15/2016
  */
 public class JGroupsMessagingServiceImpl implements MessagingService<Message> {
@@ -35,7 +38,7 @@ public class JGroupsMessagingServiceImpl implements MessagingService<Message> {
     }
 
     @Override
-    public synchronized void send(final Message msg) {
+    public void send(final Message msg) {
         try {
             connect(clusterName);
             LOGGER.info("Sending msg {}", msg);

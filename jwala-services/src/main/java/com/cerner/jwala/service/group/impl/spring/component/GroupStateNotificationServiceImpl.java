@@ -66,7 +66,6 @@ public class GroupStateNotificationServiceImpl implements GroupStateNotification
                 LOGGER.error(errMsg);
                 throw new GroupStateNotificationServiceException(errMsg);
             }
-
             for (final JpaGroup group: groups) {
                 final Long jvmStartedCount = jvmCrudService.getJvmStartedCount(group.getName());
                 final Long jvmStoppedCount = jvmCrudService.getJvmStoppedCount(group.getName());

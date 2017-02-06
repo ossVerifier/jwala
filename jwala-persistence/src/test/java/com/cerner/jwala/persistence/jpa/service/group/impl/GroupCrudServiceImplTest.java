@@ -101,7 +101,6 @@ public class GroupCrudServiceImplTest {
     @Before
     public void setup() {
         User user = new User("testUser");
-        user.addToThread();
         CreateGroupRequest createGroupRequest = new CreateGroupRequest(groupName);
         JpaGroup testGroup = groupCrudService.createGroup(createGroupRequest);
         groupId = new Identifier<>(testGroup.getId());
@@ -117,7 +116,6 @@ public class GroupCrudServiceImplTest {
         applicationCrudService.removeApplication(new Identifier<Application>(jpaApplication.getId()));
         applicationCrudService.removeApplication(new Identifier<Application>(jpaOtherApplication.getId()));
         groupCrudService.removeGroup(groupId);
-        User.getThreadLocalUser().invalidate();
     }
 
     @Test

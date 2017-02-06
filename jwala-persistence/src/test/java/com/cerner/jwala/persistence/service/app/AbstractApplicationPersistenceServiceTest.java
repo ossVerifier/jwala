@@ -79,7 +79,6 @@ public abstract class AbstractApplicationPersistenceServiceTest {
     @Before
     public void setup() {
         User user = new User("testUser");
-        user.addToThread();
 
         Group group = groupPersistenceService.createGroup(new CreateGroupRequest(textGroup));
         Group updGroup = groupPersistenceService.createGroup(new CreateGroupRequest(textUpdatedGroup));
@@ -102,7 +101,6 @@ public abstract class AbstractApplicationPersistenceServiceTest {
         }
         try { groupPersistenceService.removeGroup(expUpdatedGroupId); } catch (Exception x) { LOGGER.trace("Test tearDown", x); }
         try { groupPersistenceService.removeGroup(expGroupId); } catch (Exception x) { LOGGER.trace("Test tearDown", x); }
-        User.getThreadLocalUser().invalidate();
     }
     
     @Test

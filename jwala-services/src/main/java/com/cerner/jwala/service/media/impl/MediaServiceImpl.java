@@ -78,7 +78,7 @@ public class MediaServiceImpl implements MediaService {
 
         repositoryService.delete(dest);
         throw new MediaServiceException(MessageFormat
-                .format("{} does not have any root directories! the said file may not be a valid media file.", filename));
+                .format("{0} does not have any root directories! It may not be a valid media file.", filename));
     }
 
     @Override

@@ -96,11 +96,9 @@ public class JwalaAuthenticationProvider implements AuthenticationProvider {
     }
 
     public static MBeanServer getmBeanServer() {
-            return DeferredLoader.PLATFORM_MBEAN_SERVER;
+        return DeferredLoader.PLATFORM_MBEAN_SERVER;
     }
-    public void setmBeanServer(MBeanServer mBeanServer){
 
-    }
     private static final class DeferredLoader {
         public static final MBeanServer PLATFORM_MBEAN_SERVER = ManagementFactory.getPlatformMBeanServer();
     }
