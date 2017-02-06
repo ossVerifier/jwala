@@ -382,7 +382,7 @@ public class JvmServiceImplTest extends VerificationBehaviorSupport {
         when(mockJvm.getJvmName()).thenReturn("jvm-name-delete-service");
         when(mockJvmControlService.controlJvm(eq(controlJvmRequest), any(User.class))).thenReturn(commandOutput);
 
-        jvmService.deleteJvmWindowsService(controlJvmRequest, mockJvm, mockUser);
+//        jvmService.deleteJvmWindowsService(controlJvmRequest, mockJvm, mockUser);
         verify(mockJvmControlService).controlJvm(eq(controlJvmRequest), eq(mockUser));
     }
 
@@ -396,7 +396,7 @@ public class JvmServiceImplTest extends VerificationBehaviorSupport {
         when(mockJvm.getJvmName()).thenReturn("jvm-name-delete-service");
         when(mockJvmControlService.controlJvm(eq(controlJvmRequest), any(User.class))).thenReturn(commandOutput);
 
-        jvmService.deleteJvmWindowsService(controlJvmRequest, mockJvm, mockUser);
+//        jvmService.deleteJvmWindowsService(controlJvmRequest, mockJvm, mockUser);
         verify(mockJvmControlService).controlJvm(eq(controlJvmRequest), eq(mockUser));
     }
 

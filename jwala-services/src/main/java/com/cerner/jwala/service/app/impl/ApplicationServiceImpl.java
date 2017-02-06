@@ -193,7 +193,7 @@ public class ApplicationServiceImpl implements ApplicationService {
             LOGGER.error("Fail to generate the resource file {}", resourceTemplateName, e);
             throw new DeployApplicationConfException(e);
         } finally {
-            lockManager.writeLock(lockKey);
+            lockManager.writeUnlock(lockKey);
         }
     }
 

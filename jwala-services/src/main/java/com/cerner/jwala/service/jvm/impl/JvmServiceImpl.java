@@ -503,7 +503,7 @@ public class JvmServiceImpl implements JvmService {
 
     }
 
-    private String generateJvmConfigJar(Jvm jvm) throws CommandFailureException {
+    public String generateJvmConfigJar(Jvm jvm) throws CommandFailureException {
         long startTime = System.currentTimeMillis();
         LOGGER.debug("Start generateJvmConfigJar ");
         ManagedJvmBuilder managedJvmBuilder =

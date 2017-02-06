@@ -174,7 +174,7 @@ public class WebServerControlServiceImpl implements WebServerControlService {
         final String fileName = new File(destPath).getName();
         if (destPath.endsWith(fileName)) {
             historyFacadeService.write(getServerName(aWebServer), new ArrayList<>(aWebServer.getGroups()),
-                    WindowsWebServerNetOperation.SCP.name() + " " + fileName, EventType.USER_ACTION_INFO, userId);
+                    WebServerControlOperation.SCP.name() + " " + fileName, EventType.USER_ACTION_INFO, userId);
         }
         if(distributionService.remoteFileCheck(aWebServer.getHost(),destPath)){
             LOGGER.info("Found the file {}", destPath);
