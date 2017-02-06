@@ -1,11 +1,16 @@
 package com.cerner.jwala.service.bootstrap;
 
+import com.cerner.jwala.persistence.jpa.domain.JpaMedia;
+import com.cerner.jwala.service.media.MediaService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.event.EventListener;
+
+import java.util.List;
 
 /**
  * The application startup listener that checks for upgrades.
@@ -20,6 +25,13 @@ public class ApplicationContextListener {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(ApplicationContextListener.class);
 
+    @Autowired
+    MediaService mediaService;
+
+    /**
+     * The spring event listener interface
+     * @param event the spring event from the application
+     */
     @EventListener
     public void handleEvent(ApplicationEvent event) {
         LOGGER.info("Received application event {}", event);
@@ -43,7 +55,42 @@ public class ApplicationContextListener {
         processUpgradeEvent();
     }
 
+    /**
+     * Run the upgrade steps
+     */
     private void processUpgradeEvent() {
         LOGGER.info("Begin upgrade process.");
+
+        // set the JDK in the media tab
+        JpaMedia jdkMedia = populateJDKMedia();
+
+        // associate the JVMs if no JDK media is associated
+    }
+
+    private JpaMedia populateJDKMedia() {
+        JpaMedia retVal = null;
+        List<JpaMedia> allMedia = mediaService.findAll();
+        if (allMedia.isEmpty()){
+            LOGGER.info("No media, upload JDK media");
+            retVal = uploadJDKFromJwala();
+        } else {
+            LOGGER.info("Found existing media. Current count {}", allMedia.size());
+            for (JpaMedia media : allMedia){
+                if (com.cerner.jwala.persistence.jpa.type.MediaType.JDK.equals(media.getType())){
+                    LOGGER.info("Found existing JDK media");
+                    retVal = media;
+                    break;
+                }
+            }
+            if (null == retVal) {
+                LOGGER.info("No JDK media found, upload JDK media");
+                retVal = uploadJDKFromJwala();
+            }
+        }
+        return retVal;
+    }
+
+    private JpaMedia uploadJDKFromJwala() {
+        return null;
     }
 }
